@@ -97,7 +97,9 @@ public class StandardClassLoader extends ClassLoader {
 		return clazz;
 	}
 
-	public synchronized Class loadClass(String name, boolean resolve) {
+	public synchronized Class loadClass(String name, boolean resolve)
+		throws ClassNotFoundException
+	{
 		Class c = cache.get(name);
 		if (c == null) {
 			if( name.charAt(0)=='[' || name.startsWith("java.") )
@@ -121,7 +123,9 @@ public class StandardClassLoader extends ClassLoader {
 		return classpath.findSourceFile(name);
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+		throws Throwable
+	{
 		if( args.length == 0 ) {
 			System.err.println("Usage:\njava kiev.bytecode.StandardClassLoader class.name [args...]");
 			return;

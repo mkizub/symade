@@ -26,6 +26,7 @@ import kiev.stdlib.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/FileUnit.java,v 1.5.2.1.2.1 1999/05/29 21:03:11 max Exp $
@@ -132,7 +133,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 		ASTNode@ syn;
 	{
 		syn @= syntax,
@@ -159,7 +160,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ syn;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)

@@ -52,7 +52,7 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 
     public ASTNode resolve(Type reqType) {
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),name.name,null,0) )
+		if( !PassInfo.resolveNameR(v,null,name.name,null,0) )
 			throw new CompilerException(pos,"Unresolved identifier "+name.name);
 		if( !(v instanceof Var) )
     		throw new CompilerException(name.getPos(),"Identifier is not a var");

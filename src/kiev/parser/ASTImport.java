@@ -61,7 +61,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 	public ASTNode pass1_1() {
 		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),name,null,0) )
+		if( !PassInfo.resolveNameR(v,null,name,null,0) )
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		ASTNode n = v;
 		if (mode == IMPORT_CLASS && !(n instanceof Struct))
@@ -89,7 +89,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		for(int j=0; j < exprs.length; j++,i++)
 			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,
 				(args[i] instanceof ASTType ? ((ASTType)args[i]).pass2() : (kiev.vlang.Type)args[i]),0));
-		if( !PassInfo.resolveMethodR(v,new PVar<List<ASTNode>>(List.Nil),name,exprs,null,null,0) )
+		if( !PassInfo.resolveMethodR(v,null,name,exprs,null,null,0) )
 			throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
 		ASTNode n = v;
 		if (mode != IMPORT_STATIC || !(n instanceof Method))

@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.*;
 
+import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
@@ -48,7 +49,6 @@ public interface ResolveFlags {
 
 	// Both unique & exists requared
 	public static final int		UniqEx	= 3;
-
 }
 
 public class MatchNode implements ResolveFlags {
@@ -76,11 +76,11 @@ public class MatchNode implements ResolveFlags {
 }
 
 public interface ScopeOfNames {
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type type, int resfl);
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type type, int resfl);
 }
 
 public interface ScopeOfMethods extends ScopeOfNames {
-	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 
 public interface ScopeOfOperators {

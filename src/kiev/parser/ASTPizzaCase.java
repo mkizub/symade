@@ -57,7 +57,7 @@ public class ASTPizzaCase extends ASTNode {
     	try {
 	    	KString n = ((ASTQName)val).toKString();
 			PVar<ASTNode> v = new PVar<ASTNode>();
-			if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),n,null,0) )
+			if( !PassInfo.resolveNameR(v,null,n,null,0) )
 				throw new CompilerException(val.pos,"Unresolved class "+n);
 	    	val = v;
 	    	if( !(val instanceof Struct) || !((Struct)val).isPizzaCase() )

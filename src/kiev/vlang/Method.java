@@ -23,8 +23,9 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
-import static kiev.stdlib.Debug.*;
 import static kiev.vlang.WorkByContractCondition.*;
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Method.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
@@ -349,7 +350,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return dmp;
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node).name.equals(name)
@@ -370,7 +371,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					PassInfo.addResolvedNode(params[i],this);
+					PassInfo.addResolvedNode(params[i].getName().name,params[i],this);
 					NodeInfoPass.setNodeType(params[i],params[i].type);
 					NodeInfoPass.setNodeInitialized(params[i],true);
 				}
@@ -543,17 +544,27 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return true;
 	}
 
-	public static Expr getAccessExpr(List<ASTNode> path) {
-		Expr expr = new FieldAccessExpr(0,(Field)path.head());
+	public static Expr getAccessExpr(ResPath p) {
+		Expr expr;
+		List<ASTNode> path = p.toList();
+		if (path.head() instanceof Field)
+			expr = new FieldAccessExpr(0,(Field)path.head());
+		else if (path.head() instanceof Var)
+			expr = new VarAccessExpr(0,(Var)path.head());
+		else
+			throw new CompilerException(0,"Forward/with access path not with Field or Var");
 		path = path.tail();
-		foreach(ASTNode n; path)
+		foreach(ASTNode n; path) {
 			expr = new AccessExpr(0,expr,(Field)n);
+		}
 		return expr;
 	}
 
-	public static Expr getAccessExpr(List<ASTNode> path,Expr expr) {
-		foreach(ASTNode n; path)
+	public static Expr getAccessExpr(ResPath p,Expr expr) {
+		List<ASTNode> path = p.toList();
+		foreach(ASTNode n; path) {
 			expr = new AccessExpr(0,expr,(Field)n);
+		}
 		return expr;
 	}
 

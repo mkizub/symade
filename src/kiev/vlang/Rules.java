@@ -25,6 +25,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Rules.java,v 1.4.2.1.2.1 1999/02/15 21:45:14 max Exp $
@@ -75,7 +76,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -93,13 +94,13 @@ public class RuleMethod extends Method {
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					PassInfo.addResolvedNode(params[i],this);
+					PassInfo.addResolvedNode(params[i].getName().name,params[i],this);
 					NodeInfoPass.setNodeType(params[i],params[i].type);
 					NodeInfoPass.setNodeInitialized(params[i],true);
 				}
 			}
 			for(int i=0; i < localvars.length; i++) {
-				PassInfo.addResolvedNode(localvars[i],this);
+				PassInfo.addResolvedNode(localvars[i].getName().name,localvars[i],this);
 				NodeInfoPass.setNodeType(localvars[i],localvars[i].type);
 //				NodeInfoPass.setNodeInitialized(localvars[i],true);
 			}
@@ -413,7 +414,7 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 		ASTNode@ stat;
 	{
 		stat @= stats,
@@ -680,7 +681,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itypes[i] = ctype;
 				modes[i] = JENUM;
-			} else if( ctype.clazz.resolveMethodR(elems,new PVar<List<ASTNode>>(List.Nil),nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
+			} else if( ctype.clazz.resolveMethodR(elems,null,nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
 				itypes[i] = Type.getRealType(ctype,elems.type.ret);
 				modes[i] = ELEMS;
 			} else {

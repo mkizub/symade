@@ -25,6 +25,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LoopStatement.java,v 1.5.2.1 1999/02/12 18:47:07 max Exp $
@@ -259,7 +260,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node).name.equals(name)
 	}
@@ -348,7 +349,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 							vars[j] = new Var(vdecl.pos,this,vname,tp,flags);
 							if( vdecl.init != null )
 								inits[j] = vdecl.init.resolveExpr(vars[j].type);
-							PassInfo.addResolvedNode(vars[j],this);
+							PassInfo.addResolvedNode(vars[j].getName().name,vars[j],this);
 						}
 						init = new ForInit(init.pos,type,vars,inits);
 					}
@@ -395,7 +396,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit, ((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
@@ -601,7 +602,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itype = ctype;
 				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new PVar<List<ASTNode>>(List.Nil),nameElements,Expr.emptyArray,null,ctype,0) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,null,nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
 				itype = Type.getRealType(ctype,elems.type.ret);
 				mode = ELEMS;
 			} else if( ctype == Type.tpRule &&
@@ -703,8 +704,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			case JENUM:
 			case ELEMS:
 				/* iter.hasMoreElements() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,
-					new PVar<List<ASTNode>>(List.Nil),nameHasMoreElements,Expr.emptyArray,null,ctype,0) )
+				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,null,
+					nameHasMoreElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new BooleanWrapperExpr(iter.pos,
 					new CallAccessExpr(iter.pos, new VarAccessExpr(iter.pos,this,iter),
@@ -742,8 +743,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			case JENUM:
 			case ELEMS:
 				/* var = iter.nextElement() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,
-					new PVar<List<ASTNode>>(List.Nil),nameNextElement,Expr.emptyArray,null,ctype,0) )
+				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,null,
+					nameNextElement,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 					var_init = new CallAccessExpr(iter.pos,
 						new VarAccessExpr(iter.pos,iter),
@@ -804,7 +805,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter

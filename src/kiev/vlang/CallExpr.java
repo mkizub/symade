@@ -745,7 +745,7 @@ public class ClosureCallExpr extends Expr {
 			else
 				call_it_name = KString.from("call_"+((MethodType)tp).ret);
 			PVar<ASTNode> callIt = new PVar<ASTNode>();
-			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,new PVar<List<ASTNode>>(List.Nil),call_it_name,Expr.emptyArray,null,reqType,0) ) {
+			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,null,call_it_name,Expr.emptyArray,null,reqType,0) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
 			} else {
 				call_it = (Method)callIt;

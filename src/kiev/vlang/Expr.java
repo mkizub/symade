@@ -28,6 +28,8 @@ import kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
 
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Expr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -517,8 +519,7 @@ public class AssignExpr extends LvalueExpr {
 					// Need to resolve initial var and mark it as RefProxy
 					KString name = var.name.name;
 					PVar<ASTNode> v = new PVar<ASTNode>();
-					PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
-					if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
+					if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
 						Kiev.reportError(pos,"Internal error: can't find var "+name);
 					}
 					Var pv = (Var)v;
@@ -1567,8 +1568,7 @@ public class IncrementExpr extends LvalueExpr {
 				// Need to resolve initial var and mark it as RefProxy
 				KString name = var.name.name;
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
-				if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
+				if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
 					Kiev.reportError(pos,"Internal error: can't find var "+name);
 				}
 				Var pv = (Var)v;
@@ -2003,13 +2003,12 @@ public class CastExpr extends Expr {
 
 	public Expr tryOverloadedCast(Type et) {
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
+		ResPath path = new ResPath();
 		Struct cl = et.clazz;
 		v = null;
-		path = List.Nil;
 		if( PassInfo.resolveBestMethodR(cl,v,path,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
 			Expr ce;
-			if( path  == List.Nil )
+			if( path.length() == 0 )
 				ce = new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			else {
 				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(path,expr),(Method)v,Expr.emptyArray);
@@ -2018,7 +2017,7 @@ public class CastExpr extends Expr {
 			return this;
 		}
 		v = null;
-		path = List.Nil;
+		path = new ResPath();
 		if( PassInfo.resolveMethodR(v,path,nameCastOp,new Expr[]{expr},this.type,et,ResolveFlags.Static) ) {
 			assert(v.isStatic());
 			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
@@ -2040,6 +2039,10 @@ public class CastExpr extends Expr {
 				expr = Expr.toExpr((Struct)e,reqType,pos,parent);
 			else
 				expr = (Expr)e;
+			if (reqType == Type.tpVoid) {
+				setResolved(true);
+				return this;
+			}
 			Type et = Type.getRealType(type,expr.getType());
 			// Try wrapped field
 			if (et.clazz.isWrapper() && et.clazz.wrapped_field.type.equals(type)) {
@@ -2146,6 +2149,7 @@ public class CastExpr extends Expr {
 
 	public void setNodeCastType() {
 		ASTNode n;
+		if (type == Type.tpVoid) return;
 		switch(expr) {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
 		case FieldAccessExpr:		n = ((FieldAccessExpr)expr).var;	break;

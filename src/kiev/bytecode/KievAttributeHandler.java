@@ -108,8 +108,8 @@ public class KievAttribute extends Attribute {
 }
 
 public class KievAttributeClazz extends Clazz implements BytecodeElement,BytecodeFileConstants {
-	public forward Clazz	inclazz;
-	public int				pool_offset;
+	public Clazz	inclazz;
+	public int		pool_offset;
 
 	public KievAttributeClazz(Clazz inclazz) {
 		this.inclazz = inclazz;

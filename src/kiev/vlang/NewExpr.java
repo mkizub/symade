@@ -117,7 +117,7 @@ public class NewExpr extends Expr {
 				PVar<Method> m = new PVar<Method>();
 				// First try overloaded 'new', than real 'new'
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp))
-				 &&	type.clazz.resolveMethodR(m,new PVar<List<ASTNode>>(List.Nil),nameNewOp,outer_args,
+				 &&	type.clazz.resolveMethodR(m,null,nameNewOp,outer_args,
 			 		type,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
 				 	ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
@@ -125,7 +125,7 @@ public class NewExpr extends Expr {
 				 	n.setResolved(true);
 				 	return n;
 				}
-				else if( !type.clazz.resolveMethodR(m,new PVar<List<ASTNode>>(List.Nil),nameInit,outer_args,
+				else if( !type.clazz.resolveMethodR(m,null,nameInit,outer_args,
 					Type.tpVoid,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
 					throw new RuntimeException("Can't find apropriative initializer for "
@@ -532,8 +532,7 @@ public class NewClosure extends Expr {
 					if( func.params[i].isClosureProxy() ) {
 						KString name = func.params[i].name.name;
 						PVar<ASTNode> v = new PVar<ASTNode>();
-						PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
-						if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
+						if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
 							Kiev.reportError(pos,"Internal error: can't find var "+name);
 						}
 						Expr vae = new VarAccessExpr(pos,this,(Var)v)

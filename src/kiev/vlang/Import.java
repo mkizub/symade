@@ -26,6 +26,7 @@ import kiev.stdlib.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Import.java,v 1.5.2.1.2.1 1999/05/29 21:03:11 max Exp $
@@ -70,7 +71,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public void generate() {}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 		Struct@ s;
 		Struct@ sub;
 		ASTNode@ tmp;
@@ -120,7 +121,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		mode == IMPORT_STATIC && !star && this.node instanceof Method,
 		((Method)this.node).equalsByCast(name,args,ret,type,resfl),

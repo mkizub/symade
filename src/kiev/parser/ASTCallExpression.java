@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTCallExpression.java,v 1.4.2.1.2.1 1999/02/15 21:45:08 max Exp $
  * @author Maxim Kizub
@@ -68,7 +71,7 @@ public class ASTCallExpression extends Expr {
         }
 		// method of current class or first-order function
 		PVar<ASTNode> m = new PVar<ASTNode>();
-		PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
+		ResPath path = new ResPath();
 		Type tp = PassInfo.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -84,7 +87,7 @@ public class ASTCallExpression extends Expr {
 			}
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,path,PassInfo.method.name.name,args,ret,tp,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path == List.Nil )
+            if( path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),false).resolve(ret);
 			else
 				return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
@@ -112,7 +115,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,
 					m,path,PassInfo.method.name.name,args,ret,PassInfo.clazz.super_clazz,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path == List.Nil )
+            if( path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
@@ -126,7 +129,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveMethodR(m,path,func,args1,ret,tp,0) ) {
 				// May be a closure
 				PVar<ASTNode> closure = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
+				ResPath path = new ResPath();
 				if( !PassInfo.resolveNameR(closure,path,func,tp,0) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args,ret));
@@ -135,7 +138,7 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
-						if( path  == List.Nil )
+						if( path.length()  == 0 )
 							return new ClosureCallExpr(pos,parent,closure,args).resolve(ret);
 						else {
 							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path),closure,args).resolve(ret);
@@ -177,8 +180,8 @@ public class ASTCallExpression extends Expr {
 				}
 			} else {
 				if( m.isStatic() )
-					path = List.Nil;
-	            if( path == List.Nil )
+					path.setLength(0);
+	            if( path.length() == 0 )
 					return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 				else
 					return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);

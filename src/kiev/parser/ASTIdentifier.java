@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTIdentifier.java,v 1.4.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -73,7 +76,7 @@ public class ASTIdentifier extends Expr {
 			name = Constants.nameResultVar;
 		}
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
+		ResPath path = new ResPath();
 		if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
 			// May be a function
 			if( reqType instanceof MethodType ) {
@@ -81,7 +84,7 @@ public class ASTIdentifier extends Expr {
 				for(int i=0; i < args.length; i++) {
 					args[i] = new VarAccessExpr(pos,this,new Var(pos,this,KString.from("arg"+1),reqType.args[i],0));
 				}
-				if( PassInfo.resolveMethodR(v,path,name,args,((MethodType)reqType).ret,null,0) ) {
+				if( PassInfo.resolveMethodR(v,null,name,args,((MethodType)reqType).ret,null,0) ) {
 //					System.out.println("First-order function "+v);
 					if( Kiev.kaffe ) {
 						return new NewClosure(pos,(Method)v).resolve(reqType);
@@ -146,12 +149,13 @@ public class ASTIdentifier extends Expr {
 		else if( v instanceof Field ) {
 			Field f = (Field)v;
 			if( f.isStatic() ) return new StaticFieldAccessExpr(pos,PassInfo.clazz,f).resolve(reqType);
-			if( path == List.Nil )
+			if( path.length() == 0 )
 				e = new FieldAccessExpr(pos,f);
 			else {
-				e = new FieldAccessExpr(pos,(Field)path.head());
-				path = path.tail();
-				foreach(ASTNode n; path) {
+				List<ASTNode> acc = path.toList();
+				e = new FieldAccessExpr(pos,(Field)acc.head());
+				acc = acc.tail();
+				foreach(ASTNode n; acc) {
 					e = new AccessExpr(pos,this,e,(Field)n);
 				}
 				e = new AccessExpr(pos,this,e,(Field)f);

@@ -26,6 +26,9 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTAccessExpression.java,v 1.3.2.1 1999/02/12 18:47:02 max Exp $
  * @author Maxim Kizub
@@ -66,8 +69,10 @@ public class ASTAccessExpression extends Expr {
 			Type tp = null;
 			Type[] snitps = null;
 			int snitps_index = 0;
-			if( o instanceof Struct ) cl = (Struct)o;
-			else {
+			if( o instanceof Struct ) {
+				cl = (Struct)o;
+				tp = cl.type;
+			} else {
 				obj = (Expr)o;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
@@ -94,51 +99,97 @@ public class ASTAccessExpression extends Expr {
 			if( o instanceof Struct && name.equals(nameThis) ) {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
-	retry_resolving:;
+			List<ASTNode> res = List.Nil;
 			ASTNode@ v;
-			List<ASTNode>@ path = new List.Nil<ASTNode>();
-			if( !cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
-				if( o instanceof Expr && snitps != null ) {
-					if( snitps_index < snitps.length ) {
-						tp = snitps[snitps_index++];
-						cl = (Struct)tp.clazz;
-						goto retry_resolving;
+			ResPath path;
+			if( o instanceof Expr && snitps != null && snitps.length > 1) {
+				snitps_index = 0;
+				while (snitps_index < snitps.length) {
+					v.$unbind();
+					path = new ResPath();
+					tp = snitps[snitps_index++];
+					cl = (Struct)tp.clazz;
+					foreach(cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+						ASTNode e = makeExpr(v,path,o,cl);
+						res = new List.Cons<ASTNode>(e,res);
 					}
 				}
-				throw new CompilerException(pos,"Unresolved identifier "+name+" in class "+cl+" for type "
+			} else {
+					v.$unbind();
+					path = new ResPath();
+					foreach(cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+						ASTNode e = makeExpr(v,path,o,cl);
+						res = new List.Cons<ASTNode>(e,res);
+					}
+			}
+			if (res == List.Nil) {
+				resolve(reqType);
+				throw new CompilerException(pos,"Unresolved identifier "+name+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 			}
-			if( v instanceof Field ) {
-				if( v.isStatic() ) {
-					return new StaticFieldAccessExpr(pos,cl,(Field)v).resolve(reqType);
-				} else {
-					if( path == List.Nil ) {
-						if( o instanceof Struct )
-							throw new CompilerException(pos,"Static access to non-static field "+v);
-						return new AccessExpr(pos,(Expr)o,(Field)v).resolve(reqType);
-					} else {
-						if( o instanceof Struct && path.head().isStatic() )
-							throw new CompilerException(pos,"Static access to non-static field "+v);
-
-						Expr expr;
-						expr = new AccessExpr(pos,(Expr)o,(Field)path.head());
-						expr.parent = parent;
-						path = path.tail();
-						foreach(ASTNode n; path)
-							expr = new AccessExpr(pos,expr,(Field)n);
-						return new AccessExpr(pos,expr,(Field)v).resolve(reqType);
-					}
-				}
+			if (res.length() > 1) {
+				String msg = "Umbigous identifier "+name+" in class "+cl+" for type(s) "
+					+(snitps==null?tp.toString():Arrays.toString(snitps));
+				Dumper dmp = new Dumper(false);
+				dmp.newLine(1);
+				foreach (ASTNode r; res) r.toJava(dmp).newLine();
+				dmp.newLine(-1);
+				throw new CompilerException(pos,msg+dmp);
 			}
-			else if( v instanceof Struct ) {
-				return (Struct)v;
-			}
-			else if( v instanceof Method ) {
-				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray).resolve(reqType);
-			} else {
-				throw new CompilerException(pos,"Identifier "+name+" must be a class's field");
-			}
+			ASTNode n = res.head();
+			if (n instanceof Expr)	return ((Expr)n).resolve(reqType);
+			return n;
 		} finally { PassInfo.pop(this); }
+	}
+
+	private ASTNode makeExpr(ASTNode v, ResPath path, ASTNode o, Struct cl) {
+		if( v instanceof Field ) {
+			if( v.isStatic() )
+				return new StaticFieldAccessExpr(pos,cl,(Field)v);
+			if( path.length() == 0 ) {
+				if( o instanceof Struct )
+					throw new CompilerException(pos,"Static access to non-static field "+v);
+				return new AccessExpr(pos,(Expr)o,(Field)v);
+			} else {
+				List<ASTNode> acc = path.toList();
+				if( o instanceof Struct && acc.head().isStatic() )
+					throw new CompilerException(pos,"Static access to non-static field "+v);
+
+				Expr expr;
+				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
+				expr.parent = parent;
+				acc = acc.tail();
+				foreach(ASTNode f; acc)
+					expr = new AccessExpr(pos,expr,(Field)f);
+				return new AccessExpr(pos,expr,(Field)v);
+			}
+		}
+		else if( v instanceof Struct ) {
+			return (Struct)v;
+		}
+		else if( v instanceof Method ) {
+			if( v.isStatic() )
+				return new CallExpr(pos,parent,(Method)v,Expr.emptyArray);
+			if( path.length() == 0 ) {
+				if( o instanceof Struct )
+					throw new CompilerException(pos,"Static access to non-static method "+v);
+				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray);
+			} else {
+				List<ASTNode> acc = path.toList();
+				if( o instanceof Struct && acc.head().isStatic() )
+					throw new CompilerException(pos,"Static access to non-static method "+v);
+
+				Expr expr;
+				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
+				expr.parent = parent;
+				acc = acc.tail();
+				foreach(ASTNode f; path)
+					expr = new AccessExpr(pos,expr,(Field)f);
+				return new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
+			}
+		} else {
+			throw new CompilerException(pos,"Identifier "+name+" must be a class's field");
+		}
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

@@ -113,7 +113,7 @@ public class ASTOperatorAlias extends ASTAlias {
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz;
     	if( pkg == null || pkg == Env.root ) return;
     	foreach(ASTNode n; pkg.imported; n == m ) return;
-    	Kiev.reportWarning(0,"Static public method "+m+" with operator alias must be imported by package");
+    	//Kiev.reportWarning(0,"Static public method "+m+" with operator alias must be imported by package");
     }
 
 	public void attach(ASTNode n) {

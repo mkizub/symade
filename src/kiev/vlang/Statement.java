@@ -25,6 +25,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Statement.java,v 1.6.2.1.2.2 1999/05/29 21:03:12 max Exp $
@@ -56,7 +57,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -162,7 +163,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return var;
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node).name.equals(name)
 	}
@@ -265,7 +266,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 					cl.autoProxyMethods();
 					cl.resolveFinalFields(false);
 					stats[i] = new TypeDeclStat(decl.pos,parent,cl).resolve(null);
-					PassInfo.addResolvedNode(cl,(ScopeOfNames)parent);
+					PassInfo.addResolvedNode(cl.getName().name,cl,(ScopeOfNames)parent);
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -436,7 +437,7 @@ public class DeclStat extends Statement {
 			while( p != null && !(p instanceof BlockStat) ) p = p.parent;
 			if( p != null ) {
 				((BlockStat)p).addVar(var);
-				PassInfo.addResolvedNode(var,(ScopeOfNames)p);
+				PassInfo.addResolvedNode(var.getName().name,var,(ScopeOfNames)p);
 				NodeInfoPass.setNodeType(var,var.type);
 				if( init != null )
 					NodeInfoPass.setNodeValue(var,init);
@@ -462,8 +463,8 @@ public class DeclStat extends Statement {
 					Code.addInstr(Instr.op_dup);
 					init.generate(var.type);
 					PVar<Method> in = new PVar<Method>();
-					PassInfo.resolveBestMethodR(prt.clazz,in
-						,new PVar<List<ASTNode>>(List.Nil),nameInit,new Expr[]{init},Type.tpVoid,null,ResolveFlags.NoForwards);
+					PassInfo.resolveBestMethodR(prt.clazz,in,null,
+						nameInit,new Expr[]{init},Type.tpVoid,null,ResolveFlags.NoForwards);
 					Code.addInstr(Instr.op_call,in,false);
 					Code.addInstr(Instr.op_store,var);
 				}
@@ -815,7 +816,7 @@ public class IfElseStat extends Statement {
 					if( !thenSt.isMethodAbrupted() ) {
 						if( isAutoReturnable() )
 							ReturnStat.generateReturn();
-						else
+						else if (!thenSt.isAbrupted())
 							Code.addInstr(Instr.op_goto,end_label);
 					}
 					Code.addInstr(Instr.set_label,else_label);

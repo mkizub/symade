@@ -27,6 +27,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTMethodDeclaration.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
@@ -107,7 +108,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         }
     }
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		ftypes instanceof Type[] && ftypes.length > 0,
 		node @= ((Type[])ftypes),

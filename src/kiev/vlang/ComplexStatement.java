@@ -24,6 +24,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/ComplexStatement.java,v 1.5.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -676,7 +679,7 @@ public class CatchInfo extends ASTNode implements ScopeOfNames {
 		body = null;
 	}
 
-	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}

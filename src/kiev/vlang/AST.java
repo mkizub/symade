@@ -35,23 +35,23 @@ import static kiev.stdlib.Debug.*;
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 public interface TopLevelDecl {
 	// create top-level, inner named, argument Struct-s
-	public ASTNode pass1();
+	public ASTNode pass1() { return (ASTNode)this; }
 	// resolve some imports, remember typedef's names, remember
 	// operator declarations, remember names/operators for type macroses
-	public ASTNode pass1_1();
+	public ASTNode pass1_1() { return (ASTNode)this; }
 	// process inheritance for type arguments, create
 	// Struct's for template types
-	public ASTNode pass2();
+	public ASTNode pass2() { return (ASTNode)this; }
 	// process Struct's inheritance (extends/implements)
-	public ASTNode pass2_2();
+	public ASTNode pass2_2() { return (ASTNode)this; }
 	// process Struct's members (fields, methods)
-	public ASTNode pass3();
+	public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
-	public ASTNode autoProxyMethods();
+	public ASTNode autoProxyMethods() { return (ASTNode)this; }
 	// resolveImports()
-	public ASTNode resolveImports();
+	public ASTNode resolveImports() { return (ASTNode)this; }
 	// resolveFinalFields()
-	public ASTNode resolveFinalFields(boolean cleanup);
+	public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
 };
 
 public enum TopLevelPass /*extends int*/ {

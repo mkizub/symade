@@ -116,12 +116,12 @@ public class AccessExpr extends LvalueExpr {
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
 					PVar<Method> fsg = new PVar<Method>();
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,set_name,new Expr[]{this},Type.tpVoid,obj.getType(),ResolveFlags.NoForwards);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
 					fset = fsg;
 					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),obj.getType(),0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,get_name,Expr.emptyArray,getType(),obj.getType(),ResolveFlags.NoForwards);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),obj.getType(),0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
 					fget = fsg;
@@ -398,10 +398,9 @@ public class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
 				Struct s = t.clazz;
 				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(s,v,null,nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
@@ -478,8 +477,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			} else {
 				// Resolve overloaded access method
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
-				if( !PassInfo.resolveBestMethodR(obj.getType().clazz,v,path,nameArrayOp,new Expr[]{index},null,obj.getType(),ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(obj.getType().clazz,v,null,nameArrayOp,new Expr[]{index},null,obj.getType(),ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
 				obj.generate(null);
 				index.generate(null);
@@ -529,13 +527,12 @@ public class ContainerAccessExpr extends LvalueExpr {
 			} else {
 				// Resolve overloaded set method
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
 				Struct s = objType.clazz;
 				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(s,v,null,nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
 				Code.addInstr(Instr.op_call,(Method)v,false,objType);
 				// Pop return value
@@ -554,7 +551,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 			} else {
 				// Resolve overloaded set method
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
@@ -562,7 +558,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
 				Struct s = obj.getType().clazz;
 				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(s,v,null,nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
 				// The method must return the value to duplicate
 				Method func = (Method)v;
@@ -1144,12 +1140,12 @@ public class FieldAccessExpr extends LvalueExpr {
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
 					PVar<Method> fsg = new PVar<Method>();
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,set_name,new Expr[]{this},Type.tpVoid,null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
 					fset = fsg;
 					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,get_name,Expr.emptyArray,getType(),null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
 					fget = fsg;
@@ -1453,12 +1449,12 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
 					PVar<Method> fsg = new PVar<Method>();
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,set_name,new Expr[]{this},Type.tpVoid,null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
 					fset = fsg;
 					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0);
+					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,null,get_name,Expr.emptyArray,getType(),null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
 					fget = fsg;
