@@ -1273,6 +1273,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		case TypeDeclStat:	break;
 		case DeclStat:	    break;
 		case GotoStat:  	break;
+		case GotoCaseStat: 	break;
 		case ReturnStat:	break;
 		case ThrowStat: 	break;
 		case ExprStat:	    break;
@@ -1483,7 +1484,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("goto");
 		if( expr != null )
-			dmp.space().append(expr);
+			dmp.append(" case ").append(expr);
 		else
 			dmp.space().append("default");
 		return dmp.append(';');

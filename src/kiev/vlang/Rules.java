@@ -36,37 +36,34 @@ import static kiev.stdlib.Debug.*;
 public class RuleMethod extends Method {
 
 	public Var[]	localvars = Var.emptyArray;
-	public int		base = 0;
-	public int		max_states = 5;
-	public int		state_depth = 5;
+	public int		base = 1;
+	public int		max_depth = 0;
+	public int		state_depth = 0;
 	public int		max_vars;
+	public int		index;		// index counter for RuleNode.idx
 
 	public RuleMethod(ASTNode clazz, KString name, MethodType type, int acc) {
 		super(clazz,name,type,acc | ACC_RULEMETHOD);
 	}
 
-	public int allocNewBase() {
+	public int allocNewBase(int n) {
 		int b = base;
-		base += 5;
+		base += n;
 		return b;
 	}
 
-	public void push_state() {
+	public int push() {
 		state_depth++;
-		if( state_depth > max_states )
-			max_states = state_depth;
+		if( state_depth > max_depth )
+			max_depth = state_depth;
+		return state_depth-1;
 	}
 
-	public void push_state(int i) {
-		state_depth += i;
-		if( state_depth > max_states )
-			max_states = state_depth;
-	}
-
-	public void set_depth(int i) {
+	public int set_depth(int i) {
 		state_depth = i;
-		if( state_depth > max_states )
-			max_states = state_depth;
+		if( state_depth > max_depth )
+			max_depth = state_depth;
+		return state_depth;
 	}
 
 	public int add_iterator_var() {
@@ -257,7 +254,9 @@ public abstract class ASTRuleNode extends ASTNode {
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
-	public virtual int		base = -100000;
+	public virtual int		base;
+	public virtual int		idx;
+	public int				depth = -1;
 
 	public ASTRuleNode(int pos) {
 		super(pos);
@@ -271,97 +270,50 @@ public abstract class ASTRuleNode extends ASTNode {
 	public int get$base() { return base; }
 	public void set$base(int b) { base = b; }
 
+	public int get$idx() { return idx; }
+	public void set$idx(int i) { idx = i; }
+
 	public ASTNode resolve(Type tp) {
 		throw new CompilerException(pos,"Resolving of ASTRuleNode");
 	}
 
-	public String createTextMakeLocalVars() {
-/*		Var[] lvs = ((RuleMethod)PassInfo.method).localvars;
-		String s = "";
-		for(int i=0; i < lvs.length; i++) {
-			if( !lvs[i].isLocalPrologForVar() )
-				s = s + "$env.setVar("+i+",new "+lvs[i].type+"().self);";
-		}
-		return s;
-*/		return "";
-	}
-
 	public String createTextUnification(Var var) {
-		return
-			"case "+base+":\n"+
-				( base==0? createTextMakeLocalVars(): "\n")+
-				"if( "+createTextVarAccess(var)+".$is_bound ) {\n"+
-					"$states[$state_pc] = "+(base+3)+";"+"goto case "+(base+3)+";\n"+
-				"} else {\n"+
-					"$states[$state_pc] = "+(base+1)+";"+"goto case "+(base+1)+";\n"+
-				"}\n"
-			;
+		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
 	}
 
-	public String createTextBacktrack() {
-		return
-				( jn.more_back?
-					( jn.next_back!=null ?
-						( jn.jump_to_back ?
-							"$states[$state_pc] = "+jn.next_back.base+";"+"goto case "+jn.next_back.base+";\n"
-							:
-							"goto case $states[--$state_pc];\n"		// pop backtrack
-						)
-						:
-						"goto case $states[--$state_pc];\n"		// pop method's state
-					)
-					:
-					"return null;\n"		// return false
-				)
-			;
+	public String createTextBacktrack(boolean load) {
+		if (!jn.more_back)
+			return "return null;\n";	// return false - no more solutions
+		assert( ((RuleMethod)PassInfo.method).base != 1 || load==false);
+		if (jn.next_back!=null && jn.jump_to_back) {
+			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+jn.next_back.idx+";\n";
+			return "goto enter$"+jn.next_back.idx+";\n";
+		}
+		if (load)
+			return "bt$ = $env.bt$"+depth+"; goto case bt$;\n"; // backtrack to saved address
+		if (((RuleMethod)PassInfo.method).base == 1)
+			return "return null;\n";
+		return "goto case bt$;\n"; // backtrack to saved address
 	}
 
 
-	public String createTextMoreCheck(int backtrack_to) {
-		return
-				( backtrack_to > 0 ?
-					"$states[$state_pc] = "+(base+backtrack_to)+";\n"		// set backtrack state
-					:
-					""
-				)+
-				( jn.more_check?
-					"$states[++$state_pc]="+jn.next_check.base+";\n"+		// jump to new check
-					"goto case "+jn.next_check.base+";\n"
-					:
-					"$env.$state_pc=$state_pc; return $env;\n"
-				)
-			;
-	}
-
-	public String createTextMoreCheckPush(int backtrack_to) {
-		return
-				"$states[$state_pc]="+(base+backtrack_to)+";\n"+		// set backtrack state
-				( jn.more_check?
-					"$states[++$state_pc]="+jn.next_check.base+";\n"+		// jump to new check
-					"goto case "+jn.next_check.base+";\n"
-					:
-					"$env.$state_pc=$state_pc; return $env;\n"
-				)
-			;
+	public String createTextMoreCheck(boolean force_goto) {
+		if (!jn.more_check)
+			return "$env.bt$=bt$; return $env;\n";				// return true - we've found a solution
+		if (force_goto || jn.next_check.idx != (idx+1))
+			return	"goto enter$"+jn.next_check.idx+";\n";		// jump to new check
+		return "";
 	}
 
 	public String createTextVarAccess(Var v) {
 		if( !v.isLocalPrologVar() ) return v.name.toString();
-/*		int offs = -1;
-		Var[] lvars = ((RuleMethod)PassInfo.method).localvars;
-		for(int i=0; i < lvars.length; i++)
-			if( v.name.equals(lvars[i].name) )
-				{ offs = i; break; }
-		if( offs < 0 )
-			throw new RuntimeException("Var "+v+" not found in rule's local vars");
-		return "(($cast "+v.getType()+")$env.getVar("+offs+"))";
-*/		return "$env."+v;
+		return "$env."+v;
 	}
 
 }
 
 
-public class RuleBlock extends ASTNode implements ScopeOfNames {
+public final class RuleBlock extends ASTNode implements ScopeOfNames {
 
 	public ASTRuleNode	node;
 	public ASTNode[]	stats;
@@ -401,23 +353,17 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 			node.parent = this;
 			StringBuffer sb = new StringBuffer(256);
 			sb.append("{ ");
-/*			sb.append("$env.enter(");
-			if( Kiev.debugOutputR )
-				sb.append("\"Entered method ").append(PassInfo.method.name.toString())
-				.append('/').append(PassInfo.method.type.args.length-1).append('"').append(',');
-			sb.append( ((RuleMethod)PassInfo.method).max_states ).append(',')
-				.append( ((RuleMethod)PassInfo.method).max_vars+1 );
-			sb.append("); ");
-*/
 			// Declare private method frame class
 			String tmpClassName = "frame$$";
 			sb.append("static class ").append(tmpClassName).append(" extends rule{\n");
-			sb.append("int[] $states; int $state_pc;\n");
+			sb.append("int bt$;\n");
+			RuleMethod rule_method = (RuleMethod)PassInfo.method;
+			// Backtrace holders
+			for (int i=0; i < rule_method.max_depth; i++)
+				sb.append("int bt$").append(i).append(";\n");
 			// Local variables
-			foreach(Var v; ((RuleMethod)PassInfo.method).localvars) {
-				/*if( v.isPrologVar() )
-					sb.append("pvar ").append(v.type.args[0]).append(' ').append(v.name.name).append(";\n");
-				else*/ if( v.type.clazz.isWrapper() )
+			foreach(Var v; rule_method.localvars) {
+				if( v.type.clazz.isWrapper() )
 					sb.append(v.type).append(' ').append(v.name.name)
 					  .append(" := new ").append(v.type).append("();\n");
 				else
@@ -429,16 +375,27 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 			sb.append("}\n");
 			// Create new method frame or hash values from
 			// existing one
-			sb.append("int $states[],$state_pc;\n");
+			sb.append("int bt$;\n");
 			sb.append("if($env==null) {\n");
-			sb.append(" $env=new ").append(tmpClassName).append("();$env.$states=$states=new int[50];$state_pc=0;\n");
-			sb.append("}else{\n");
-			sb.append(" $env=($cast ").append(tmpClassName).append(")$env;\n");
-			sb.append(" $states=$env.$states;$state_pc=$env.$state_pc;\n");
-			sb.append("}\nswitch($states[$state_pc]) {\n");
+			sb.append(" $env=new ").append(tmpClassName).append("(); bt$=0;\n");
+			sb.append(" goto enter$1;\n");
+			sb.append("}\n");
+			if (rule_method.base != 1) {
+				sb.append("else{\n");
+				sb.append(" $env=($cast ").append(tmpClassName).append(")$env;\n");
+				sb.append(" bt$=$env.bt$;\n");
+				sb.append("}\n");
+				sb.append("switch(bt$) {\ncase 0:\n");
+			} else {
+				// BUG!!!
+				sb.append("else{\n$env=($cast ").append(tmpClassName).append(")$env;}\n");
+			}
+			sb.append("return null;\n");
 			node.createText(sb);
 			// Close method
-			sb.append("} return null; }\n");
+			if (rule_method.base != 1)
+				sb.append("}\nreturn null;\n");
+			sb.append("}\n");
 			trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 			PassInfo.method.body = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
 			if( stats != null && stats.length > 0 ) {
@@ -464,19 +421,18 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 		((DeclStat)stat).var.name.equals(name),
 		node ?= ((DeclStat)stat).var
 	}
-
-
 }
 
 
-public class RuleOrExpr extends ASTRuleNode {
+public final class RuleOrExpr extends ASTRuleNode {
 
 	public ASTRuleNode[]	rules;
 
-	public int get$base() {
-		return rules[0].get$base();
-	}
+	public int get$base() {	return rules[0].get$base(); }
 	public void set$base(int b) {}
+
+	public int get$idx() {	return rules[0].get$idx(); }
+	public void set$idx(int i) {}
 
 	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
@@ -507,6 +463,7 @@ public class RuleOrExpr extends ASTRuleNode {
 		this.jn = jn;
 		JumpNodes j;
 		int depth = ((RuleMethod)PassInfo.method).state_depth;
+		int max_depth = depth;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
 				j = new JumpNodes(jn.more_check, jn.next_check, true, rules[i+1], true);
@@ -517,19 +474,21 @@ public class RuleOrExpr extends ASTRuleNode {
 			rules[i].parent = this;
 			rules[i].resolve1(j);
 			rules[i].parent = this;
+			max_depth = Math.max(max_depth,((RuleMethod)PassInfo.method).state_depth);
 		}
-		((RuleMethod)PassInfo.method).set_depth(((RuleMethod)PassInfo.method).max_states);
+		((RuleMethod)PassInfo.method).set_depth(max_depth);
 	}
 }
 
-public class RuleAndExpr extends ASTRuleNode {
+public final class RuleAndExpr extends ASTRuleNode {
 
 	public ASTRuleNode[]	rules;
 
-	public int get$base() {
-		return rules[0].get$base();
-	}
+	public int get$base() {	return rules[0].get$base();	}
 	public void set$base(int b) {}
+
+	public int get$idx() {	return rules[0].get$idx(); }
+	public void set$idx(int i) {}
 
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
@@ -553,20 +512,62 @@ public class RuleAndExpr extends ASTRuleNode {
     		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
 			rules[i].parent = this;
     	}
+    	// combine simple boolean expressions
+    	for(int i=0; i < (rules.length-1); i++) {
+    		ASTRuleNode r1 = rules[i];
+    		ASTRuleNode r2 = rules[i+1];
+    		if (!(r1 instanceof RuleExpr)) continue;
+    		if (!(r2 instanceof RuleExpr)) continue;
+    		RuleExpr e1 = (RuleExpr)r1;
+    		RuleExpr e2 = (RuleExpr)r2;
+    		if (!e1.expr.getType().equals(Type.tpBoolean)) continue;
+    		if (!e2.expr.getType().equals(Type.tpBoolean)) continue;
+    		BooleanExpr b1, b2;
+        	if(!(e1.expr instanceof BooleanExpr))
+          		b1=new BooleanWrapperExpr(e1.expr.getPos(),e1.expr);
+          	else
+          		b1 = (BooleanExpr)e1.expr;
+        	if(!(e2.expr instanceof BooleanExpr))
+          		b2=new BooleanWrapperExpr(e2.expr.getPos(),e2.expr);
+          	else
+          		b2 = (BooleanExpr)e2.expr;
+    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,b1,b2));
+    		rules[i] = e;
+    		ASTRuleNode[] arr = new ASTRuleNode[rules.length-1];
+    		for (int k=0; k < i; k++) arr[k] = rules[k];
+    		arr[i] = e;
+    		for (int k=i+2; k < rules.length; k++) arr[k-1] = rules[k];
+    		rules = arr;
+    		i--;
+    	}
+    	if (rules.length == 1)
+    		return rules[0];
     	return this;
     }
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 		JumpNodes j;
+		boolean more_back = jn.more_back;
+		ASTRuleNode next_back = jn.next_back;
+		boolean jump_to_back = jn.jump_to_back;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
-				if( i==0 )
-					j = new JumpNodes(true, rules[i+1], jn.more_back, jn.next_back, jn.jump_to_back);
-				else
-					j = new JumpNodes(true, rules[i+1], true, rules[i-1], false);
+				j = new JumpNodes(true, rules[i+1], more_back, next_back, jump_to_back);
+				if (rules[i] instanceof RuleExpr) {
+				}
+				else if (rules[i] instanceof RuleCutExpr) {
+					more_back = false;
+					next_back = null;
+					jump_to_back = false;
+				}
+				else {
+					more_back = true;
+					next_back = rules[i];
+					jump_to_back = false;
+				}
 			} else {
-				j = new JumpNodes(jn.more_check, jn.next_check, true, rules[i-1], false);
+				j = new JumpNodes(jn.more_check, jn.next_check, more_back, next_back, jump_to_back);
 			}
 			rules[i].parent = this;
 			rules[i].resolve1(j);
@@ -575,7 +576,7 @@ public class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
-public class RuleIstheExpr extends ASTRuleNode {
+public final class RuleIstheExpr extends ASTRuleNode {
 
 	public Var		var;		// variable of type PVar<...>
 	public Expr		expr;		// expression to check/unify
@@ -596,40 +597,39 @@ public class RuleIstheExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
-		((RuleMethod)PassInfo.method).push_state();
+		idx = ++((RuleMethod)PassInfo.method).index;
+		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
+		depth = ((RuleMethod)PassInfo.method).push();
 	}
 
 	public void createText(StringBuffer sb) {
 		sb.append(
-			createTextUnification(var)+
+			"enter$"+idx+":\n"+
+				createTextUnification(var)+
 
-			// Bind here
-			"case "+(base+1)+":\n"+								// unification assign value, no checks
+			// Unbound
 				createTextVarAccess(var)+".$bind(#e"+expr.parserAddr()+");\n"+
-				"if( "+createTextVarAccess(var)+".$is_bound ) {\n"+
-					createTextMoreCheck(2)+
-				"} else {\n"+
-					createTextBacktrack()+
+				"if( !"+createTextVarAccess(var)+".$is_bound ) {\n"+
+					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
-			"case "+(base+2)+":\n"+								// backtracking, always fail state
-				createTextVarAccess(var)+".$unbind();\n"+			// binded here, unbind
-				createTextBacktrack()+
+				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
+				createTextMoreCheck(true)+						// check next
+			"case "+base+":\n"+									// backtracking, always fail state
+				createTextVarAccess(var)+".$unbind();\n"+		// was binded here, unbind
+				createTextBacktrack(true)+						// backtrack, bt$ needs to be loaded
 
-			// Already binded
-			"case "+(base+3)+":\n"+								// unification, check
-				"if( "+createTextVarAccess(var)+".equals(#e"+expr.parserAddr()+") ) {\n"+	// check
-					createTextMoreCheck(4)+
-				"} else {\n"+
-					createTextBacktrack()+
+			// Already bound
+			"bound$"+idx+":\n"+
+				"if( !"+createTextVarAccess(var)+".equals(#e"+expr.parserAddr()+") ) {\n"+	// check
+					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
-			"case "+(base+4)+":\n"+
-				createTextBacktrack()
+				createTextMoreCheck(false)							// check next
 		);
 	}
 }
 
-public class RuleIsoneofExpr extends ASTRuleNode {
+public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public Var[]	vars;		// variable of type PVar<...>
 	public Expr[]	exprs;		// expression to check/unify
@@ -659,8 +659,9 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
-		((RuleMethod)PassInfo.method).push_state();
+		idx = ++((RuleMethod)PassInfo.method).index;
+		base = ((RuleMethod)PassInfo.method).allocNewBase(2);
+		depth = ((RuleMethod)PassInfo.method).push();
 		iter_vars = new int[vars.length];
 		itypes = new Type[vars.length];
 		modes = new int[vars.length];
@@ -710,12 +711,8 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextUnification() {
 		if( vars.length > 1 ) {
 			return
-			"case "+base+":\n"+
-				( base==0? createTextMakeLocalVars(): "")+
 				"if( "+createTextCheckUnbinded()+" ) {\n"+
 					"throw new RuntimeException(\"All vars must be unbinded\");\n"+
-				"} else {\n"+
-					"$states[$state_pc]="+(base+1)+";"+"goto case "+(base+1)+";\n"+
 				"}\n"
 			;
 		} else {
@@ -741,7 +738,7 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextNewIterators() {
 		String s = "";
 		for(int i=0; i < vars.length; i++ )
-			s = s+"$env.$iter$"+iter_vars[i]+"="+createTextNewIterator(i)+";\n";
+			s += "$env.$iter$"+iter_vars[i]+"="+createTextNewIterator(i)+";\n";
 		return s;
 	}
 
@@ -780,40 +777,35 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void createText(StringBuffer sb) {
 		sb.append(
-			createTextUnification()+
+			"enter$"+idx+":\n"+
+				createTextUnification()+
 
 			// Bind here
-			"case "+(base+1)+":\n"+								// unification assign value, no checks
-				"{\n"+createTextNewIterators()+					// create iterators
+				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
+				createTextNewIterators()+						// create iterators
+			"case "+(base+0)+":\n"+								// backtracking, check next element
 				"if( "+createTextCheckNext()+" ) {\n"+
-					createTextMoreCheck(2)+
+					createTextMoreCheck(true)+
 				"} else {\n"+
 					createTextUnbindVars()+						// binded here, unbind
-					createTextBacktrack()+
-				"}}\n"+
-			"case "+(base+2)+":\n"+								// backtracking, check next element
-				"{\n"+
-				"if( "+createTextCheckNext()+" ) {\n"+
-					createTextMoreCheck(0)+
-				"} else {\n"+
-					createTextUnbindVars()+						// binded here, unbind
-					createTextBacktrack()+
-				"}}\n"+
+					createTextBacktrack(true)+					// backtrack, bt$ may needs to be loaded
+				"}\n"+
 
 			// Already binded
-			"case "+(base+3)+":\n"+								// unification, check
+			"bound$"+idx+":\n"+
+				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				"bt$ = "+(base+1)+";\n"+						// set new backtrack state to point itself
 				"if( "+createTextContaince(0)+" ) {\n"+			// check
-					createTextMoreCheck(4)+
-				"} else {\n"+
-					createTextBacktrack()+
+					createTextMoreCheck(true)+
 				"}\n"+
-			"case "+(base+4)+":\n"+
-				createTextBacktrack()
+			"case "+(base+1)+":\n"+
+				createTextBacktrack(true)						// backtrack, bt$ may needs to be loaded
 		);
 	}
 }
 
-public class RuleCutExpr extends ASTRuleNode {
+public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr(int pos) {
 		super(pos);
@@ -821,26 +813,20 @@ public class RuleCutExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
-		((RuleMethod)PassInfo.method).push_state();
+		idx = ++((RuleMethod)PassInfo.method).index;
 	}
 
 	public void createText(StringBuffer sb) {
 		sb.append(
 			// No unification need
-			"case "+base+":\n"+
-				( base==0? createTextMakeLocalVars(): "")+
-			"case "+(base+1)+":\n"+								// unification assign value, no checks
-			"case "+(base+3)+":\n"+								// unification, check
-				createTextMoreCheck(2)+
-			"case "+(base+2)+":\n"+								// backtracking, always fail state
-			"case "+(base+4)+":\n"+
-				"return null;\n"		// return false
+			"enter$"+idx+":\n"+
+				"bt$ = 0;\n"+								// backtracking, always fail state, state 0 is 'return null'
+				createTextMoreCheck(false)
 		);
 	}
 }
-
-public class RuleIfExpr extends ASTRuleNode {
+/*
+public final class RuleIfExpr extends ASTRuleNode {
 
 	public Expr			cond;
     public ASTRuleNode	thenSt;
@@ -883,7 +869,7 @@ public class RuleIfExpr extends ASTRuleNode {
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
+		base = ((RuleMethod)PassInfo.method).allocNewBase(5);
 		((RuleMethod)PassInfo.method).push_state();
 
 		int depth = ((RuleMethod)PassInfo.method).state_depth;
@@ -908,7 +894,6 @@ public class RuleIfExpr extends ASTRuleNode {
 		sb.append(
 			// No unification need
 			"case "+base+":\n"+
-				( base==0? createTextMakeLocalVars(): "")+
 			"case "+(base+1)+":\n"+								// unification assign value, no checks
 			"case "+(base+3)+":\n"+								// unification, check
 				"if ( #e"+cond.parserAddr()+" ) {\n"+
@@ -932,7 +917,8 @@ public class RuleIfExpr extends ASTRuleNode {
 	}
 }
 
-public class RuleForExpr extends ASTRuleNode {
+
+public final class RuleForExpr extends ASTRuleNode {
 
 	public ASTNode		init;
 	public DeclStat		initstats[] = new DeclStat[0];
@@ -990,7 +976,7 @@ public class RuleForExpr extends ASTRuleNode {
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
+		base = ((RuleMethod)PassInfo.method).allocNewBase(5);
 		((RuleMethod)PassInfo.method).push_state();
 
 		JumpNodes j;
@@ -1009,7 +995,6 @@ public class RuleForExpr extends ASTRuleNode {
 	public void createText(StringBuffer sb) {
 		sb.append(
 			"case "+base+":\n"+									// TODO make check on vars in resolve!
-				( base==0? createTextMakeLocalVars(): "")+
 				"if("+initstats[0].var.name.name+"){\n"+
 					"#e"+iter.parserAddr()+";\n"+
 				"}else{\n"+
@@ -1031,8 +1016,9 @@ public class RuleForExpr extends ASTRuleNode {
 		);
 	}
 }
+*/
 
-public class RuleCallExpr extends ASTRuleNode {
+public final class RuleCallExpr extends ASTRuleNode {
 
 	public Expr		obj;
 	public Named	func;
@@ -1091,8 +1077,9 @@ public class RuleCallExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
-		((RuleMethod)PassInfo.method).push_state(5);
+		idx = ++((RuleMethod)PassInfo.method).index;
+		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
+		depth = ((RuleMethod)PassInfo.method).push();
 		env_var = ((RuleMethod)PassInfo.method).add_iterator_var();
 		ASTNode rb = this.parent;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
@@ -1118,54 +1105,28 @@ public class RuleCallExpr extends ASTRuleNode {
 		sb.append("))");
 		return sb.toString();
 	}
-/*
-	private String createTextCheckBinded() {
-		if( !Kiev.debugOutputR ) return "";
-		StringBuffer sb = new StringBuffer();
-		foreach(Expr e; args; e instanceof VarAccessExpr) {
-			VarAccessExpr vae = (VarAccessExpr)e;
-			if( vae.var.type.clazz.equals(Type.tpPrologVar.clazz) )
-				sb.append("#e").append(vae.parserAddr()).append(".$is_bound(\"")
-					.append(vae.var.name).append("\");\n");
-		}
-		return sb.toString();
-	}
-*/
+
 	public void createText(StringBuffer sb) {
 		sb.append(
-			"case "+base+":\n"+									// TODO make check on vars in resolve!
-				( base==0? createTextMakeLocalVars(): "")+
-				"$states[$state_pc]="+(base+1)+";\n"+
-				"goto case "+(base+1)+";\n"+
-
-			// Bind here
-			"case "+(base+1)+":\n"+								// unification assign value, no checks
-			"case "+(base+3)+":\n"+								// unification, check
-			"case "+(base+2)+":\n"+								// backtracking
-			"case "+(base+4)+":\n"+
-				"if( "+createTextCall()+" ) {\n"+
-					createTextMoreCheck(2)+
-				"} else {\n"+
-					createTextBacktrack()+
-				"}\n"
+			"enter$"+idx+":\n"+
+				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
+			"case "+base+":\n"+
+				"if( ! "+createTextCall()+" ) {\n"+
+					createTextBacktrack(true)+					// backtrack, bt$ may needs to be loaded
+				"}\n"+
+				createTextMoreCheck(false)
 		);
 	}
 }
 
-public class RuleExpr extends ASTRuleNode {
-
+public abstract class RuleExprBase extends ASTRuleNode {
 	public Expr		expr;
-	public boolean	while_mode;
 
-	public RuleExpr(Expr expr) {
+	public RuleExprBase(Expr expr) {
 		super(expr.pos);
 		this.expr = expr;
 		expr.parent = this;
-	}
-
-	public RuleExpr(Expr expr, boolean wm) {
-		this(expr);
-		while_mode = wm;
 	}
 
 	public void cleanup() {
@@ -1175,70 +1136,98 @@ public class RuleExpr extends ASTRuleNode {
 	}
 
 	public ASTNode resolve(Type reqType) {
-//		if( !expr.getType().equals(Type.tpBoolean) )
-//			throw new CompilerException(expr.pos,"Boolean expression is requared");
 		expr.parent = this;
 		expr = (Expr)expr.resolve(null);
 		expr.parent = this;
-		if( !while_mode ) {
-			if( expr instanceof CallExpr ) {
-				CallExpr e = (CallExpr)expr;
-				if( e.func.type.ret == Type.tpRule )
-					return new RuleCallExpr(e).resolve(reqType);
-			}
-			else if( expr instanceof CallAccessExpr ) {
-				CallAccessExpr e = (CallAccessExpr)expr;
-				if( e.func.type.ret == Type.tpRule )
-					return new RuleCallExpr(e).resolve(reqType);
-			}
-			else if( expr instanceof ClosureCallExpr ) {
-				ClosureCallExpr e = (ClosureCallExpr)expr;
-				Type tp = e.getType();
-				if( tp == Type.tpRule || (tp instanceof MethodType && ((MethodType)tp).ret == Type.tpRule && tp.args.length == 0) )
-					return new RuleCallExpr(e).resolve(reqType);
-				else
-					System.out.println("ClosureCall "+e+" returns "+e.getType());
-			}
+
+		if( expr instanceof CallExpr ) {
+			CallExpr e = (CallExpr)expr;
+			if( e.func.type.ret == Type.tpRule )
+				return new RuleCallExpr(e).resolve(reqType);
 		}
+		else if( expr instanceof CallAccessExpr ) {
+			CallAccessExpr e = (CallAccessExpr)expr;
+			if( e.func.type.ret == Type.tpRule )
+				return new RuleCallExpr(e).resolve(reqType);
+		}
+		else if( expr instanceof ClosureCallExpr ) {
+			ClosureCallExpr e = (ClosureCallExpr)expr;
+			Type tp = e.getType();
+			if( tp == Type.tpRule || (tp instanceof MethodType && ((MethodType)tp).ret == Type.tpRule && tp.args.length == 0) )
+				return new RuleCallExpr(e).resolve(reqType);
+			else
+				System.out.println("ClosureCall "+e+" returns "+e.getType());
+		}
+		return this;
+	}
+}
+
+public final class RuleWhileExpr extends RuleExprBase {
+
+	public RuleWhileExpr(Expr expr) {
+		super(expr);
+	}
+
+	public ASTNode resolve(Type reqType) {
+		ASTNode n = super.resolve(reqType);
+		if (n != this) return n;
+		if (!expr.getType().equals(Type.tpBoolean))
+			throw new CompilerException(expr.pos,"Boolean expression is requared");
 		return this;
 	}
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		base = ((RuleMethod)PassInfo.method).allocNewBase();
-		((RuleMethod)PassInfo.method).push_state();
+		idx = ++((RuleMethod)PassInfo.method).index;
+		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
+		depth = ((RuleMethod)PassInfo.method).push();
 	}
 
 	public void createText(StringBuffer sb) {
 		sb.append(
 			// No unification need
+			"enter$"+idx+":\n"+
+				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
-				( base==0? createTextMakeLocalVars(): "")+
-			"case "+(base+1)+":\n"+								// unification assign value, no checks
-			"case "+(base+3)+":\n"+								// unification, check
-			( while_mode ?
-				"case "+(base+2)+":\n"+								// backtracking, always fail state
-				"case "+(base+4)+":\n"
-			:
-				""
-			)+
+				"if ( !#e"+expr.parserAddr()+" ) {\n"+
+					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
+				"}\n"+
+				createTextMoreCheck(false)
+		);
+	}
+}
+
+public final class RuleExpr extends RuleExprBase {
+
+	public RuleExpr(Expr expr) {
+		super(expr);
+	}
+
+	public ASTNode resolve(Type reqType) {
+		ASTNode n = super.resolve(reqType);
+		if (n != this) return n;
+		return this;
+	}
+
+	public void resolve1(JumpNodes jn) {
+		this.jn = jn;
+		idx = ++((RuleMethod)PassInfo.method).index;
+	}
+
+	public void createText(StringBuffer sb) {
+		sb.append(
+			// No unification need
+			"enter$"+idx+":\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-					"if ( #e"+expr.parserAddr()+" ) {\n"+
-						createTextMoreCheck(2)+
-					"} else {\n"+
-						createTextBacktrack()+
-					"}\n"
+					"if ( ! #e"+expr.parserAddr()+" ) {\n"+
+						createTextBacktrack(false)+					// backtrack, bt$ already loaded
+					"}\n"+
+					createTextMoreCheck(false)
 				:
 					"#e"+expr.parserAddr()+";\n"+
-						createTextMoreCheck(2)
-				)+
-			( while_mode ?
-				""
-			:
-				"case "+(base+2)+":\n"+								// backtracking, always fail state
-				"case "+(base+4)+":\n"+
-					createTextBacktrack()
-			)
+					createTextMoreCheck(false)
+				)
 		);
 	}
 }

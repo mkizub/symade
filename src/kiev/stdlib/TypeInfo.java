@@ -144,7 +144,7 @@ public class TypeInfo {
 			} catch (Exception e) {
 				System.err.println("Error: "+e);
 				throw new AssertionFailedException("Class '"+t1+"$__ti__"+"' not found");
-				return new TypeInfo(args,t,t1);
+				//return new TypeInfo(args,t,t1);
 			}
 		} catch( Throwable e ) {
 			e.printStackTrace();

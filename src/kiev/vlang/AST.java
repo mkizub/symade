@@ -77,6 +77,7 @@ public abstract class ASTNode implements Constants {
 	public static int[]		max_instances = new int[1024];
 	public static int[]		curr_instances = new int[1024];
 	public static int[]		total_instances = new int[1024];
+	private static int		parserAddrIdx;
 
 	public int			pos;
     public ASTNode		parent;
@@ -122,7 +123,7 @@ public abstract class ASTNode implements Constants {
 	}
 
 	public String parserAddr() {
-		String addr = Integer.toHexString(super.hashCode());		// #+address in memory
+		String addr = Integer.toHexString(++parserAddrIdx);
 		while( addr.length() < 8 ) {
 			addr = '0'+addr;
 		}

@@ -1,1 +1,1 @@
-c:\jdk1.3\bin\java -classpath C:\Work\kiev\kiev-0.1b.jar kiev.Main %1 %2 %3 %4 %5 %6 %7 %8 %9
+c:\jdk1.3\bin\java -classpath classes -verify kiev.Main %1 %2 %3 %4 %5 %6 %7 %8 %9

@@ -393,12 +393,12 @@ kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
 kiev.vlang.RuleCallExpr kiev/vlang/RuleCallExpr kiev\vlang\Rules.java
 kiev.vlang.RuleCutExpr kiev/vlang/RuleCutExpr kiev\vlang\Rules.java
 kiev.vlang.RuleExpr kiev/vlang/RuleExpr kiev\vlang\Rules.java
-kiev.vlang.RuleForExpr kiev/vlang/RuleForExpr kiev\vlang\Rules.java
-kiev.vlang.RuleIfExpr kiev/vlang/RuleIfExpr kiev\vlang\Rules.java
+kiev.vlang.RuleExprBase kiev/vlang/RuleExprBase kiev\vlang\Rules.java
 kiev.vlang.RuleIsoneofExpr kiev/vlang/RuleIsoneofExpr kiev\vlang\Rules.java
 kiev.vlang.RuleIstheExpr kiev/vlang/RuleIstheExpr kiev\vlang\Rules.java
 kiev.vlang.RuleMethod kiev/vlang/RuleMethod kiev\vlang\Rules.java
 kiev.vlang.RuleOrExpr kiev/vlang/RuleOrExpr kiev\vlang\Rules.java
+kiev.vlang.RuleWhileExpr kiev/vlang/RuleWhileExpr kiev\vlang\Rules.java
 kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java
 kiev.vlang.ScopeNodeInfoVector kiev/vlang/ScopeNodeInfoVector kiev\vlang\Var.java
 kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java

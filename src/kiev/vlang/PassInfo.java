@@ -281,7 +281,9 @@ public class PassInfo {
 		KString@ qname_tail;
 		ASTNode@ p;
 	{
+		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
 		name.indexOf('.') > 0, $cut,
+		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
 		resolveNameR(p,path,qname_head,tp,resfl),
@@ -291,6 +293,7 @@ public class PassInfo {
 		checkSymbolInHash(node,path,name,resfl), $cut
 	;
 		p @= new PathEnumerator(), p instanceof ScopeOfNames,
+		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
 		((ScopeOfNames)p).resolveNameR(node,path,name,tp,resfl),
 		checkResolvedPathForName(node,path), $cut,
 		{ node instanceof Named, addResolvedNode((Named)node,path,(ScopeOfNames)p); true }
