@@ -54,7 +54,7 @@ kiev.bytecode.PoolConstant kiev/bytecode/PoolConstant kiev\bytecode\PoolConstant
 kiev.bytecode.ReadContext kiev/bytecode/ReadContext kiev\bytecode\Clazz.java
 kiev.bytecode.RefPoolConstant kiev/bytecode/RefPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.SourceFileAttribute kiev/bytecode/SourceFileAttribute kiev\bytecode\Attribute.java
-kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java bad
+kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java
 kiev.bytecode.StringPoolConstant kiev/bytecode/StringPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
@@ -118,7 +118,7 @@ kiev.parser.ASTLabeledStatement kiev/parser/ASTLabeledStatement kiev\parser\ASTL
 kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTLexicalStateList.java
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
 kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java
-kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java bad
+kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
@@ -148,7 +148,7 @@ kiev.parser.ASTReturnStatement kiev/parser/ASTReturnStatement kiev\parser\ASTRet
 kiev.parser.ASTRuleAndExpression kiev/parser/ASTRuleAndExpression kiev\parser\ASTRuleAndExpression.java
 kiev.parser.ASTRuleBlock kiev/parser/ASTRuleBlock kiev\parser\ASTRuleBlock.java
 kiev.parser.ASTRuleCutExpression kiev/parser/ASTRuleCutExpression kiev\parser\ASTRuleCutExpression.java
-kiev.parser.ASTRuleDeclaration kiev/parser/ASTRuleDeclaration kiev\parser\ASTRuleDeclaration.java bad
+kiev.parser.ASTRuleDeclaration kiev/parser/ASTRuleDeclaration kiev\parser\ASTRuleDeclaration.java
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java

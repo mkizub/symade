@@ -36,10 +36,6 @@ public class StandardClassLoader extends ClassLoader {
 	protected Classpath					classpath;
 	public Vector<BytecodeHandler>		handlers = new Vector<BytecodeHandler>();
 
-	{
-		handlers.append(repackage);
-	}
-
 	public StandardClassLoader() {
 		classpath = new Classpath();
 	}

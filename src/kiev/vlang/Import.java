@@ -96,13 +96,23 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 			}
 		;	s.$var.isPackage(), s.$var.resolveNameR(node,path,name,tp,resfl)
 		}
+	;
+		mode == IMPORT_STATIC && star && this.node instanceof Struct,
+		((Struct)this.node).checkResolved(),
+		((Struct)this.node).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		node.$var instanceof Field && node.$var.isStatic() && node.$var.isPublic()
 	}
 
 	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
-		mode == IMPORT_STATIC && this.node instanceof Method,
+		mode == IMPORT_STATIC && !star && this.node instanceof Method,
 		((Method)this.node).equals(name,args,ret,type,resfl),
 		node ?= ((Method)this.node)
+	;
+		mode == IMPORT_STATIC && star && this.node instanceof Struct,
+		((Struct)this.node).checkResolved(),
+		((Struct)this.node).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		node.$var instanceof Method && node.$var.isStatic() && node.$var.isPublic()
 	}
 
 	public Dumper toJava(Dumper dmp) {
