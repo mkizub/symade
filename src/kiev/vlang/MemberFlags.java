@@ -58,7 +58,7 @@ public interface AccessFlags {
 	public static final int ACC_STATEMENTS_GENERATED	= 1 << 19;
 	public static final int ACC_GENERATED		= 1 << 20;
 	public static final int ACC_ENUM			= 1 << 21;
-	public static final int ACC_GRAMMAR			= 1 << 22;
+	public static final int ACC_SYNTAX			= 1 << 22;
 	public static final int ACC_PRIMITIVE_ENUM	= 1 << 23;
 	public static final int ACC_WRAPPER			= 1 << 24;
 

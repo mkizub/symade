@@ -97,6 +97,9 @@ public class ASTFileUnit extends ASTNode {
 					//case ASTPackageDeclaration:
 					//	members = (Struct[])Arrays.append(members,((ASTPackageDeclaration)decls[i]).pass1());
 					//	break;
+					case ASTSyntaxDeclaration:
+						members = (Struct[])Arrays.append(members,((ASTSyntaxDeclaration)decls[i]).pass1());
+						break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -167,6 +170,9 @@ public class ASTFileUnit extends ASTNode {
 				//case ASTPackageDeclaration:
 				//	file_unit.members[j] = (Struct)((ASTPackageDeclaration)decls[j]).pass2();
 				//	break;
+				case ASTSyntaxDeclaration:
+					file_unit.members[j] = (Struct)((ASTSyntaxDeclaration)decls[j]).pass2();
+					break;
 				default:
 					throw new CompilerException(decls[j].pos,"Unknown type of file declaration "+decls[j].getClass());
 				}
@@ -194,6 +200,9 @@ public class ASTFileUnit extends ASTNode {
 					//case ASTPackageDeclaration:
 					//	((ASTPackageDeclaration)decls[j]).pass2_2();
 					//	break;
+					case ASTSyntaxDeclaration:
+						((ASTSyntaxDeclaration)decls[j]).pass2_2();
+						break;
 					default:
 						throw new CompilerException(decls[j].pos,"Unknown type of file declaration "+decls[j].getClass());
 					}
@@ -225,6 +234,10 @@ public class ASTFileUnit extends ASTNode {
 					//	file_unit.members[i] = (Struct)((ASTPackageDeclaration)decls[i])
 					//		.pass3(((ASTPackageDeclaration)decls[i]).me,((ASTPackageDeclaration)decls[i]).members);
 					//	break;
+					case ASTSyntaxDeclaration:
+						file_unit.members[i] = (Struct)((ASTSyntaxDeclaration)decls[i])
+							.pass3(((ASTSyntaxDeclaration)decls[i]).me,((ASTSyntaxDeclaration)decls[i]).members);
+						break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -252,6 +265,9 @@ public class ASTFileUnit extends ASTNode {
 					//case ASTPackageDeclaration:
 					//	((ASTPackageDeclaration)decls[i]).me.autoProxyMethods();
 					//	break;
+					case ASTSyntaxDeclaration:
+						((ASTSyntaxDeclaration)decls[i]).me.autoProxyMethods();
+						break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -290,6 +306,9 @@ public class ASTFileUnit extends ASTNode {
 					//case ASTPackageDeclaration:
 					//	((ASTPackageDeclaration)decls[i]).me.resolveImports();
 					//	break;
+					case ASTSyntaxDeclaration:
+						((ASTSyntaxDeclaration)decls[i]).me.resolveImports();
+						break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -318,6 +337,9 @@ public class ASTFileUnit extends ASTNode {
 					//case ASTPackageDeclaration:
 					//	((ASTPackageDeclaration)decls[i]).resolveFinalFields(cleanup);
 					//	break;
+					case ASTSyntaxDeclaration:
+						((ASTSyntaxDeclaration)decls[i]).resolveFinalFields(cleanup);
+						break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}

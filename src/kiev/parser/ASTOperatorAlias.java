@@ -38,15 +38,22 @@ import static kiev.vlang.Operator.*;
  */
 
 public class ASTOperatorAlias extends ASTAlias {
+	public static final int	XFIX_UNKNOWN = 0;
+	public static final int	XFIX_PREFIX  = 1;
+	public static final int	XFIX_POSTFIX = 2;
+	public static final int	XFIX_INFIX   = 3;
+
 	public int					prior;
 	public int					opmode;
 	public KString				image;
+	public int					xfix;
 
 	public ASTOperatorAlias(int id) {
 		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
+		if (xfix != XFIX_UNKNOWN) i = 2;
 		switch(i) {
 		case 0:
 			if( n instanceof ASTConstExpression ) {
@@ -89,6 +96,16 @@ public class ASTOperatorAlias extends ASTAlias {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
+  	public void set(Token t) {
+  		if (t.image.equals("prefix"))		xfix = XFIX_PREFIX;
+  		else if (t.image.equals("suffix"))	xfix = XFIX_POSTFIX;
+  		else if (t.image.equals("postfix"))	xfix = XFIX_POSTFIX;
+  		else if (t.image.equals("infix"))	xfix = XFIX_INFIX;
+  		else if (t.image.equals("binary"))	xfix = XFIX_INFIX;
+    	else
+    		throw new RuntimeException("Bad xfix mode of operator declaration "+t);
+	}
+
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
@@ -104,6 +121,36 @@ public class ASTOperatorAlias extends ASTAlias {
 			throw new CompilerException(pos,"Node of type "+n.getClass()+" cannot be aliased with operator");
 		Method m = (Method)n;
 		iopt = null;
+
+		if (xfix != XFIX_UNKNOWN) {
+			Operator op = null;
+			switch (xfix) {
+			case XFIX_INFIX:
+				op = BinaryOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Infix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			case XFIX_PREFIX:
+				op = PrefixOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Prefix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			case XFIX_POSTFIX:
+				op = PostfixOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Postfix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			default:
+				throw new CompilerException(pos,"Internal error: xfix "+xfix+" unknown");
+			}
+		}
+
 		switch(opmode) {
 		case Operator.LFY:
 			{

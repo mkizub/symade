@@ -694,6 +694,9 @@ ASTFileUnit FileUnit(String filename) :
 	|
 			LOOKAHEAD( (Modifier())* "enum" )
 			EnumDeclaration() [ ";" ]
+	|
+			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			SyntaxDeclaration() [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
@@ -754,6 +757,37 @@ void Typedef() :
 	catch(ParseError e) { rpe("Bad typedef declaration",e); }
 	catch(Throwable e) { rperr(e); }
 }
+
+void Opdef() :
+{}
+{
+	"operator"
+	(
+		Operator()
+	|	Identifier()
+	)
+	","
+	Identifier()	// FX,FY,XF,YF,XFX,YFX,XFY,YFY
+	","
+	DecimalConstExpression()
+	";"
+}
+
+void SyntaxDeclaration() :
+{ Token t=null; }
+{
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+	<IDENTIFIER>	// "syntax"
+	Identifier()
+	"{"
+	(
+		Typedef()
+	|	Opdef()
+	)*
+	"}"
+}
+
+
 
 void TypeDeclaration() :
 { Token t=null; }
@@ -1365,20 +1399,40 @@ void IdentifierAlias() :
 }
 
 void OperatorAlias() :
-{}
+{ Token t = null; }
 {
 	"operator"
-	"("
-	DecimalConstExpression()	","
-	Identifier()		","
-	(
-		Operator()
-	|	Identifier()
-	|	"[" "]"	{ jjtThis.image = kiev.vlang.Constants.nameArrayOp; }
-	|	"new"	{ jjtThis.image = kiev.vlang.Constants.nameNewOp; }
-	|	"$cast"	{ jjtThis.image = kiev.vlang.Constants.nameCastOp; }
+	(	// temporary, for backward compatibility
+		"("
+		DecimalConstExpression()	","
+		Identifier()		","
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"	{ jjtThis.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"	{ jjtThis.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"	{ jjtThis.image = kiev.vlang.Constants.nameCastOp; }
+		)
+		")"
+	|
+		LOOKAHEAD({
+			getToken(1).kind==IDENTIFIER &&
+			(  getToken(1).image.equals("prefix")
+			|| getToken(1).image.equals("suffix")
+			|| getToken(1).image.equals("postfix")
+			|| getToken(1).image.equals("infix")
+			|| getToken(1).image.equals("binary")
+			)
+		})
+		t=<IDENTIFIER> { jjtThis.set(t); }
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"	{ jjtThis.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"	{ jjtThis.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"	{ jjtThis.image = kiev.vlang.Constants.nameCastOp; }
+		)
 	)
-	")"
 }
 
 void MaybeSkipBlock() #void :

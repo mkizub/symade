@@ -126,6 +126,7 @@ kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpr
 kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java
 kiev.parser.ASTNonArrayType kiev/parser/ASTNonArrayType kiev\parser\ASTNonArrayType.java
 kiev.parser.ASTNormalCase kiev/parser/ASTNormalCase kiev\parser\ASTNormalCase.java
+kiev.parser.ASTOpdef kiev/parser/ASTOpdef kiev\parser\ASTOpdef.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 kiev.parser.ASTOptionBinding kiev/parser/ASTOptionBinding kiev\parser\ASTOptionBinding.java
@@ -158,6 +159,7 @@ kiev.parser.ASTSimpleRegularExpression kiev/parser/ASTSimpleRegularExpression ki
 kiev.parser.ASTStatementExpression kiev/parser/ASTStatementExpression kiev\parser\ASTStatementExpression.java
 kiev.parser.ASTSwitchStatement kiev/parser/ASTSwitchStatement kiev\parser\ASTSwitchStatement.java
 kiev.parser.ASTSynchronizedStatement kiev/parser/ASTSynchronizedStatement kiev\parser\ASTSynchronizedStatement.java
+kiev.parser.ASTSyntaxDeclaration kiev/parser/ASTSyntaxDeclaration kiev\parser\ASTSyntaxDeclaration.java
 kiev.parser.ASTThrowStatement kiev/parser/ASTThrowStatement kiev\parser\ASTThrowStatement.java
 kiev.parser.ASTThrows kiev/parser/ASTThrows kiev\parser\ASTThrows.java
 kiev.parser.ASTTryStatement kiev/parser/ASTTryStatement kiev\parser\ASTTryStatement.java

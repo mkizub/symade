@@ -702,6 +702,9 @@ ASTFileUnit FileUnit(String filename) :
 	|
 			LOOKAHEAD( (Modifier())* "enum" )
 			EnumDeclaration() [ ";" ]
+	|
+			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			SyntaxDeclaration() [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
@@ -865,6 +868,89 @@ void Typedef() :
         }
 /*@egen*/
 }
+
+void Opdef() :
+{/*@bgen(jjtree) Opdef */
+  ASTOpdef jjtn000 = new ASTOpdef(JJTOPDEF);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) Opdef */
+        try {
+/*@egen*/
+	"operator"
+	(
+		Operator()
+	|	Identifier()
+	)
+	","
+	Identifier()	// FX,FY,XF,YF,XFX,YFX,XFY,YFY
+	","
+	DecimalConstExpression()
+	";"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void SyntaxDeclaration() :
+{/*@bgen(jjtree) SyntaxDeclaration */
+  ASTSyntaxDeclaration jjtn000 = new ASTSyntaxDeclaration(JJTSYNTAXDECLARATION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t=null; }
+{/*@bgen(jjtree) SyntaxDeclaration */
+        try {
+/*@egen*/
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+	<IDENTIFIER>	// "syntax"
+	Identifier()
+	"{"
+	(
+		Typedef()
+	|	Opdef()
+	)*
+	"}"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+
 
 void TypeDeclaration() :
 {/*@bgen(jjtree) TypeDeclaration */
@@ -1962,22 +2048,57 @@ void OperatorAlias() :
   ASTOperatorAlias jjtn000 = new ASTOperatorAlias(JJTOPERATORALIAS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token t = null; }
 {/*@bgen(jjtree) OperatorAlias */
         try {
 /*@egen*/
 	"operator"
-	"("
-	DecimalConstExpression()	","
-	Identifier()		","
-	(
-		Operator()
-	|	Identifier()
-	|	"[" "]"	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
-	|	"new"	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
-	|	"$cast"	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
-	)
-	")"/*@bgen(jjtree)*/
+	(	// temporary, for backward compatibility
+		"("
+		DecimalConstExpression()	","
+		Identifier()		","
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
+		)
+		")"
+	|
+		LOOKAHEAD({
+			getToken(1).kind==IDENTIFIER &&
+			(  getToken(1).image.equals("prefix")
+			|| getToken(1).image.equals("suffix")
+			|| getToken(1).image.equals("postfix")
+			|| getToken(1).image.equals("infix")
+			|| getToken(1).image.equals("binary")
+			)
+		})
+		t=<IDENTIFIER> { jjtn000.set(t); }
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
+		)
+	)/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
