@@ -2040,6 +2040,10 @@ public class CastExpr extends Expr {
 				expr = Expr.toExpr((Struct)e,reqType,pos,parent);
 			else
 				expr = (Expr)e;
+			if (reqType == Type.tpVoid) {
+				setResolved(true);
+				return this;
+			}
 			Type et = Type.getRealType(type,expr.getType());
 			// Try wrapped field
 			if (et.clazz.isWrapper() && et.clazz.wrapped_field.type.equals(type)) {
@@ -2146,6 +2150,7 @@ public class CastExpr extends Expr {
 
 	public void setNodeCastType() {
 		ASTNode n;
+		if (type == Type.tpVoid) return;
 		switch(expr) {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
 		case FieldAccessExpr:		n = ((FieldAccessExpr)expr).var;	break;
