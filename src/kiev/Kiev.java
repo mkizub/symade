@@ -325,10 +325,6 @@ public final class Kiev {
 
 	public static boolean errorPrompt		= false;
 
-	public static boolean javaMode			= false;
-	public static boolean kaffe				=
-		System.getProperties().get("java.ext.version") != null;
-
 	public static boolean source_only		= false;
 	public static boolean make_project		= false;
 	public static boolean makeall_project	= false;
@@ -519,4 +515,85 @@ public final class Kiev {
 		}
 	}
 
+
+	// Extensions settings
+	public static boolean javaMode			= false;
+	public static boolean kaffe				= false;
+		//System.getProperties().get("java.ext.version") != null;
+	static public enum Ext {
+		JavaOnly				: "java only"		,
+		GotoCase				: "goto case"		,
+		Goto					: "goto"			,
+		With					: "with"			,
+		Closures				: "closures"		,
+		VirtualFields			: "virtual fields"	,
+		PackedFields			: "packed fields"	,
+		VarArgs					: "varargs"			,
+		Forward					: "forward"			,
+		Logic					: "logic"			,
+		Alias					: "alias"			,
+		Operator				: "operators"		,
+		Typedef					: "typedef"			,
+		Enum					: "enum"			,
+		EnumInt					: "enum int"		,
+		Contract				: "contract"		,
+		Generics				: "generics"		,
+		Templates				: "templates"		,
+		Wrappers				: "wrappers"		,
+		Access					: "access"
+	};
+	
+	private static boolean[] command_line_disabled_extensions	= new boolean[20];
+	private static boolean[] disabled_extensions				= new boolean[20];
+	
+	public static boolean disabled(Ext ext) {
+		int idx = (int)ext;
+		return disabled_extensions[idx-1];
+	}
+	
+	public static boolean enabled(Ext ext) {
+		int idx = (int)ext;
+		return !disabled_extensions[idx-1];
+	}
+	
+	public static void check(int pos, Ext ext) {
+		if (!enabled(ext))
+			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
+	}
+	
+	public static boolean[] getCmdLineExtSet() {
+		return (boolean[])command_line_disabled_extensions.clone();
+	}
+	
+	public static boolean[] getExtSet() {
+		return (boolean[])disabled_extensions.clone();
+	}
+	
+	public static void setExtSet(boolean[] set) {
+		disabled_extensions = set;
+	}
+	
+	public static void enable(Ext ext) {
+		disabled_extensions[((int)ext)-1] = false;
+	}
+	
+	static void setExtension(boolean enabled, String s) {
+		Ext ext;
+		try {
+			ext = Ext.fromString(s);
+		} catch(RuntimeException e) {
+			Kiev.reportWarning(0,"Unknown pragma '"+s+"'");
+			return;
+		}
+		int i = ((int)ext)-1;
+		if (i < 0) {
+			for (int i=0; i < disabled_extensions.length; i++) {
+				command_line_disabled_extensions[i] = !enabled;
+				disabled_extensions[i] = !enabled;
+			}
+		} else {
+			command_line_disabled_extensions[i] = !enabled;
+			disabled_extensions[i] = !enabled;
+		}
+	}
 }

@@ -42,6 +42,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	public Struct[]				members = Struct.emptyArray;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
+	public boolean[]			disabled_extensions;
+
 	public FileUnit() {
 		this(KString.Empty,Env.root,Struct.emptyArray);
 	}
@@ -69,7 +71,9 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		PassInfo.push(this);
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
-		try {
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
 			for(int i=0; i < members.length; i++) {
 				try {
 					members[i] = (Struct)members[i].resolve(null);
@@ -77,7 +81,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					Kiev.reportError(members[i].pos,e);
 				}
 			}
-		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; /*RuleNode.curr = RuleNode.curr.joinUp();*/ }
+		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); /*RuleNode.curr = RuleNode.curr.joinUp();*/ }
 		return this;
 	}
 
@@ -86,7 +90,9 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		PassInfo.push(this);
 		KString cur_file = Kiev.curFile;
 		Kiev.curFile = filename;
-		try {
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
 			for(int i=0; i < members.length; i++) {
 				diff_time = curr_time = System.currentTimeMillis();
 				members[i].generate();
@@ -112,7 +118,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					}
 				}
 			}
-		} finally { PassInfo.pop(this); Kiev.curFile = cur_file; }
+		} finally { PassInfo.pop(this); Kiev.curFile = cur_file; Kiev.setExtSet(exts); }
 	}
 
 	private boolean debugTryResolveIn(KString name, String msg) {

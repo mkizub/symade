@@ -21,6 +21,7 @@
 package kiev.vlang;
 
 import kiev.Kiev;
+import kiev.Kiev.Ext;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
@@ -114,7 +115,14 @@ public class RuleMethod extends Method {
 					body.parent = this;
 					body = ((ASTRuleBlock)body).resolve(Type.tpVoid);
 					body.parent = this;
-					body = ((ASTBlock)body).resolve(Type.tpVoid);
+		
+					boolean[] exts = Kiev.getExtSet();
+					try {
+						Kiev.enable(Ext.GotoCase);
+						Kiev.enable(Ext.Goto);
+						body = ((ASTBlock)body).resolve(Type.tpVoid);
+					} finally { Kiev.setExtSet(exts); }
+					
 					body.parent = this;
 				} else {
 					//body.parent = this;

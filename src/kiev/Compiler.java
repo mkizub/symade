@@ -163,6 +163,12 @@ public class Compiler {
 					}
 					args[a] = null;
 				}
+				else if( args[a].equals("-disable") ) {
+					args[a] = null;
+					Kiev.setExtension(!onoff,args[++a]);
+					args[a] = null;
+					continue;
+				}
 				else if( args[a].equals("-prompt")) {
 					Kiev.errorPrompt = onoff;
 					args[a] = null;
@@ -753,7 +759,21 @@ stop:;
 	}
 
 	public static void printHelp() {
-			System.out.println(
+		StringBuffer exts = new StringBuffer();
+		int N = Kiev.getCmdLineExtSet().length;
+		for (int i=0, sz=0; i < N; i++) {
+			try {
+				Kiev.Ext ext = (Kiev.Ext)i;
+				String s = ext.toString();
+				if (sz + s.length() + 3 >= 70) {
+					exts.append("\n\t");
+					sz = 0;
+				}
+				sz += s.length() + 3;
+				exts.append('\"').append(s).append("\" ");
+			} catch (ClassCastException e) {}
+		}
+		System.out.println(
  "Usage:  java kiev.Main [-g] [-debug x,y,z,..] [-prompt] [-i]\n"
 +"           [-pipe] [-server]\n"
 +"           [-gc N] [-d output_dir] [-verbose] [-classpath search_path]\n"
@@ -815,7 +835,11 @@ stop:;
 +"      System properties provide predefined variables,	as supported by\n"
 +"      (System.getProperties()).\n"
 +"      The compile-time constants $FILE, $METHOD, $LINENO, and $DEBUG\n"
-+"      are also defined."
++"      are also defined.\n"
++" -disable \"extension\" completly disable the specified extension,\n"
++"      also you can manage extensions by pragmas in file headers,\n"
++"      complete list of extensions to enable/disable is:\n\t"
++       exts.toString()
 			);
 	}
 

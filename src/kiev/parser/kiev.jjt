@@ -38,14 +38,8 @@ PARSER_BEGIN(kiev020)
 package kiev.parser;
 
 import kiev.Kiev;
+import kiev.Kiev.Ext;
 import kiev.vlang.*;
-
-/**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/kiev.jjt,v 1.3.2.1.2.3 1999/05/29 21:03:06 max Exp $
- * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.3 $
- *
- */
 
 public class kiev020 {
 
@@ -318,7 +312,7 @@ TOKEN_MGR_DECLS :
   static int skip_depth = 0;
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT,IN_CONSTRAINT,IN_PRAGMA>
 SKIP : /* WHITE SPACE */
 {
   " "
@@ -423,7 +417,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 // | < SUPER: "super" >
 | < SWITCH: "switch" >
 | < SYNCHRONIZED: "synchronized" >
-| < WITH: "with" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
+| < WITH: "with" > { if(Kiev.javaMode||Kiev.disabled(Ext.With)) matchedToken.kind=IDENTIFIER; }
 // | < THIS: "this" >
 | < THROW: "throw" >
 | < THROWS: "throws" >
@@ -436,26 +430,26 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < ARROW: "->" >
 | < FUNCTION: "fun" >
-| < VIRTUAL: "virtual" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < VIRTUAL: "virtual" > { if(Kiev.javaMode || Kiev.disabled(Ext.VirtualFields) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < VARARGS: "..." >
-| < FORWARD: "forward" > { if(Kiev.javaMode /*|| !kiev020.declMode*/) matchedToken.kind=IDENTIFIER; }
-| < RULE: "rule" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < PCUT: "$cut" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
+| < FORWARD: "forward" > { if(Kiev.javaMode || Kiev.disabled(Ext.Forward) /*|| !kiev020.declMode*/) matchedToken.kind=IDENTIFIER; }
+| < RULE: "rule" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
+| < PCUT: "$cut" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
 | < CAST: "$cast" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < REINTERP: "$reinterp" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < ALIAS: "alias" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
-| < OPERATOR_ID: "operator" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < TYPEDEF: "typedef" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
-| < ENUM: "enum" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < ALIAS: "alias" > { if(Kiev.javaMode || Kiev.disabled(Ext.Alias)  || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < OPERATOR_ID: "operator" > { if(Kiev.javaMode || Kiev.disabled(Ext.Operator) ) matchedToken.kind=IDENTIFIER; }
+| < TYPEDEF: "typedef" > { if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < ENUM: "enum" > { if(Kiev.javaMode || Kiev.disabled(Ext.Enum) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < REQUIRE: "require" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
-| < ENSURE: "ensure" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
-| < INVARIANT: "invariant" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < REQUIRE: "require" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < GENERATE: "$generate" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < GENERATE: "$generate" > { if(Kiev.javaMode || Kiev.disabled(Ext.Templates) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < PACKED: "packed" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
-| < WRAPPER: "$wrapper" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
 }
 
@@ -481,6 +475,18 @@ SKIP :
  | "\n" : DEFAULT
  | "\r" : DEFAULT
  | "\f" : DEFAULT
+}
+
+
+TOKEN :
+{
+< PRAGMA: "pragma" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; } : IN_PRAGMA
+}
+<IN_PRAGMA>
+TOKEN :
+{
+   < PRAGMA_ENABLE:  "enable" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
+ | < PRAGMA_DISABLE: "disable"> { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
 }
 
 
@@ -712,6 +718,7 @@ ASTFileUnit FileUnit(String filename) :
 		Import()
 	|	Typedef()
 	|	Opdef()
+	|	Pragma()
 	)*
 	//(	MacroDecl()	)*
 	(
@@ -743,6 +750,18 @@ void Package() :
 	}
 	catch(ParseError e) { rpe("Bad package declaration",e); }
 	catch(Throwable e) { rperr(e); }
+}
+
+void Pragma() :
+{}
+{
+	"pragma"
+	(
+		<PRAGMA_ENABLE>		{ jjtThis.enable = true; }
+	|	<PRAGMA_DISABLE>	{ jjtThis.enable = false; }
+	)
+	( StringConstExpression() )+
+	";"
 }
 
 void Import() :
@@ -1107,6 +1126,7 @@ void Pack() :
 void Access() :
 { int acc; }
 {
+	LOOKAHEAD({Kiev.enabled(Ext.Access)})
 	"access:"
 	acc = AccessSpec() { jjtThis.set(acc); }
 	[ <COMMA1> acc = AccessSpec() { jjtThis.set(acc); }
@@ -1362,7 +1382,11 @@ void MethodDeclaration() :
 		[
 			mmFormalParameter()
 			(LOOKAHEAD(2)	","	mmFormalParameter()	)*
-			[ [","] "..." { jjtThis.setVarArgs(true); } ]
+			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
+				[","]
+				"..."
+				{ jjtThis.setVarArgs(true); }
+			]
 		]
 		}
 		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
@@ -1510,7 +1534,8 @@ ASTType Type() :
 		(	LOOKAHEAD(2)
 			"[" "]" { jjtThis.dim++; }
 		)*
-	|	ClosureType()
+	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
+		ClosureType()
 	)
 	{ return jjtThis; }
 }
@@ -1534,14 +1559,14 @@ void NonArrayType() :
 	(
 		PrimitiveType()
 	|	QName()
-		[
+		[	LOOKAHEAD(1, ("<" | "/*<"), {Kiev.enabled(Ext.Generics)})
 			("<" | "/*<")
 				Type()
 				( "," Type() )*
 			(">" | ">*/")
 		]
 	)
-	(	LOOKAHEAD(1,TypeOperatorChar(),{checkNoSpace(getToken(0),getToken(1))})
+	(	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
 		t=TypeOperatorChar() { jjtThis.addOperation(t); }
 	)*
 	}

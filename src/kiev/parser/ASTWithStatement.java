@@ -23,6 +23,7 @@
 package kiev.parser;
 
 import kiev.Kiev;
+import kiev.Kiev.Ext;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
@@ -50,6 +51,7 @@ public class ASTWithStatement extends Statement {
     }
 
 	public ASTNode resolve(Type reqType) {
+		Kiev.check(pos,Ext.With);
 		return new WithStat(pos,parent,arg,body).resolve(Type.tpVoid);
 	}
 

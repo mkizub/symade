@@ -23,15 +23,11 @@
 package kiev.parser;
 
 import kiev.Kiev;
+import kiev.Kiev.Ext;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
-/**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTGotoStatement.java,v 1.3 1998/10/26 23:47:03 max Exp $
- * @author Maxim Kizub
- * @version $Revision: 1.3 $
- *
- */
+import syntax kiev.Syntax;
 
 public class ASTGotoStatement extends Statement {
 	ASTNode	expr;
@@ -49,10 +45,13 @@ public class ASTGotoStatement extends Statement {
     }
 
 	public ASTNode resolve(Type reqType) {
-		if( !casemode )
+		if( !casemode ) {
+			Kiev.check(pos,Ext.Goto);
 			return new GotoStat(pos,parent,((ASTIdentifier)expr).name).resolve(Type.tpVoid);
-		else
+		} else {
+			Kiev.check(pos,Ext.GotoCase);
 			return new GotoCaseStat(pos,parent,(Expr)expr).resolve(Type.tpVoid);
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
