@@ -32,7 +32,7 @@ public final class PVar<A>
 {
 
 	forward public virtual A			$var;
-	private PVar<A>						$pvar;
+	private PVar<A>						$pvar := null;
 	public virtual abstract boolean		$is_bound;
 
 	public PVar() {

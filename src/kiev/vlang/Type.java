@@ -522,6 +522,7 @@ public class Type extends ASTNode implements AccessFlags {
 //		typeHash.put(tpPrologEnv);
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
+		tpPrologVarClazz.setWrapper(true);
 		Struct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
 		Type tpPrologVarArg = new Type(tpPrologVarArgClazz);
 		tpPrologVar	= new Type(tpPrologVarClazz,new Type[]{tpPrologVarArg});
