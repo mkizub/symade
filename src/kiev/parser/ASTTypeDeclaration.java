@@ -585,6 +585,7 @@ public class ASTTypeDeclaration extends ASTNode {
 								f.setInitWrapper(false);
 							}
 						}
+
 						if( ((ASTFieldDecl)members[i]).acc != null )
 							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
 					}

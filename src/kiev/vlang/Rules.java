@@ -419,6 +419,9 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 			foreach(Var v; ((RuleMethod)PassInfo.method).localvars) {
 				if( v.isPrologVar() )
 					sb.append("pvar ").append(v.type.args[0]).append(' ').append(v.name.name).append(";\n");
+				else if( v.type.clazz.isWrapper() )
+					sb.append(v.type).append(' ').append(v.name.name)
+					  .append(" := new ").append(v.type).append("();\n");
 				else
 					sb.append(v.type).append(' ').append(v.name.name).append(";\n");
 			}

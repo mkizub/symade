@@ -76,8 +76,8 @@ public class ASTAccessExpression extends Expr {
 						throw new CompilerException(obj.getPos(),"Class "+tp+" is not a wrapper");
 				}
 				else if (tp.clazz.isWrapper() && name.byteAt(0) != '$') {
-					obj = (Expr)new AccessExpr(obj.pos,obj,tp.clazz.wrapped_field).resolve(null);
-					tp = obj.getType();
+					o = (Expr)new AccessExpr(obj.pos,obj,tp.clazz.wrapped_field).resolve(null);
+					tp = o.getType();
 				}
 				if( tp.isArray() ) {
 					if( name.equals("length") ) {

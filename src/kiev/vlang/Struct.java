@@ -2911,7 +2911,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			for(int i=0; fields!=null && i < fields.length; i++) {
 				Field f = fields[i];
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
-				if( f.isStatic() && f.init != null ) {
+				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
 						if (isPrimitiveEnum())
 							f.init = f.init.resolveExpr(f.type.clazz.getPrimitiveEnumType());
@@ -2921,7 +2921,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						Kiev.reportError(f.init.pos,e);
 					}
 					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-							"Static fields: "+name+"::"+f.name+" = "+f.init);
+							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 				}
 				if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
 					f.init = null;
