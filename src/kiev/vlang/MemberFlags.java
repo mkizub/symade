@@ -86,6 +86,7 @@ public interface AccessFlags {
 	public static final int ACC_LOCALPROLOGVAR	= 1 << 19;
 	public static final int ACC_LOCALPROLOGFORVAR	= 1 << 20;
 	public static final int ACC_CLOSURE_PROXY	= 1 << 21;
+	public static final int ACC_INIT_WRAPPER	= 1 << 22;
 
 	// Expression specific
 	public static final int ACC_USE_NOPROXY		= 1 << 11;

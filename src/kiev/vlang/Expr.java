@@ -722,6 +722,53 @@ public class AssignExpr extends LvalueExpr {
 	}
 }
 
+
+public class InitializeExpr extends AssignExpr {
+
+	import kiev.stdlib.Debug;
+	import kiev.vlang.Instr;
+
+    public boolean	of_wrapper;
+
+	public InitializeExpr(int pos, AssignOperator op, Expr lval, Expr value, boolean of_wrapper) {
+		super(pos,op,lval,value);
+		this.of_wrapper = of_wrapper;
+	}
+
+	public Expr tryResolve(Type reqType) {
+		setTryResolved(true);
+		if (!(op==AssignOperator.Assign || op==AssignOperator.Assign2))
+			return null;
+		{
+			Expr e = lval.tryResolve(reqType);
+			if( e == null ) return null;
+			lval = e;
+			e = value.tryResolve(getType());
+			if( e == null ) return null;
+			value = e;
+		}
+		Type et1 = lval.getType();
+		Type et2 = value.getType();
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.clazz.isWrapper() && !et2.clazz.isWrapper()) {
+			return (Expr)this.resolve(reqType);
+		}
+		else if((of_wrapper || op == AssignOperator.Assign2) && et1.clazz.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
+			return (Expr)this.resolve(reqType);
+		}
+		// Try wrapped classes
+		if (op != AssignOperator.Assign2) {
+			if (et2.clazz.isWrapper()) {
+				Expr e = new InitializeExpr(pos,op,lval,new AccessExpr(value.pos,value,et2.clazz.wrapped_field),of_wrapper).tryResolve(reqType);
+				if (e != null) return e;
+			}
+		}
+		return null;
+	}
+
+}
+
+
+
 public class BinaryExpr extends Expr {
 
 	import kiev.stdlib.Debug;

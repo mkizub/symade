@@ -193,6 +193,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
 	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
 	public boolean isClosureProxy()	{ return (flags & ACC_CLOSURE_PROXY) != 0; }
+	public boolean isInitWrapper()	{ return (flags & ACC_INIT_WRAPPER) != 0; }
 
 	// Field specific
 	public boolean isVirtual()		{ return (flags & ACC_VIRTUAL) != 0; }
@@ -472,6 +473,14 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CLOSURE_PROXY set to "+on+" from "+((flags & ACC_CLOSURE_PROXY)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_CLOSURE_PROXY;
 		else flags &= ~ACC_CLOSURE_PROXY;
+	}
+
+	// Var/field specific
+	public void setInitWrapper(boolean on) {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INIT_WRAPPER set to "+on+" from "+((flags & ACC_INIT_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_INIT_WRAPPER;
+		else flags &= ~ACC_INIT_WRAPPER;
 	}
 
 

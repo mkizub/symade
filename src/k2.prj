@@ -338,6 +338,7 @@ kiev.vlang.Grammar kiev/vlang/Grammar kiev\vlang\Grammar.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
+kiev.vlang.InitializeExpr kiev/vlang/InitializeExpr kiev\vlang\Expr.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java

@@ -1978,8 +1978,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				else
 					((BlockStat)class_init.body).addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
-							new AssignExpr(f.init.getPos(),AssignOperator.Assign
-								,new StaticFieldAccessExpr(f.pos,this,f),f.init)
+							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
+								,new StaticFieldAccessExpr(f.pos,this,f),f.init,f.isInitWrapper())
 						)
 					);
 			} else {
@@ -1991,7 +1991,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					init_stat = ((StatExpr)f.init).stat;
 				} else {
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
-						new AssignExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init)
+						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init,f.isInitWrapper())
 					);
 				}
 				instance_init.addStatement(init_stat);

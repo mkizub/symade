@@ -830,7 +830,7 @@ void TypeBodyDeclaration() #void :
 			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
-			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | "," | ";") )
+			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
 			FieldDecl()
 		|
 			Import()

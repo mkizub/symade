@@ -564,12 +564,27 @@ public class ASTTypeDeclaration extends ASTNode {
 						if( f.isVirtual() || f.isExportCpp() ) {
 							abstr_fields = abstr_fields.concat(f);
 						}
-						if( fdecl.dim==0 && (flags & ACC_PROLOGVAR) != 0 && !fdecl.of_wrapper)
-							f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-						else if( fdecl.dim==0 && type.clazz.isWrapper() && !fdecl.of_wrapper)
-							f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-						else
-							f.init = fdecl.init;
+						if (fdecl.init == null && fdecl.dim==0) {
+							if( (flags & ACC_PROLOGVAR) != 0) {
+								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
+								f.setInitWrapper(true);
+							}
+							else if(type.clazz.isWrapper()) {
+								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
+								f.setInitWrapper(true);
+							}
+						} else {
+							if( (flags & ACC_PROLOGVAR) != 0 || type.clazz.isWrapper()) {
+								if (fdecl.of_wrapper)
+									f.init = fdecl.init;
+								else
+									f.init = new NewExpr(fdecl.pos,type, (fdecl.init==null)? Expr.emptyArray : new Expr[]{fdecl.init});
+								f.setInitWrapper(true);
+							} else {
+								f.init = fdecl.init;
+								f.setInitWrapper(false);
+							}
+						}
 						if( ((ASTFieldDecl)members[i]).acc != null )
 							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
 					}
