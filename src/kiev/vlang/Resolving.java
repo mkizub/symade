@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -37,7 +37,7 @@ public interface ResolveFlags {
 	public static final int		Exists	= 2;
 	// Resolving may not use class-level imports
 	public static final int		NoImports	= 4;
-	// Resolving may not use forwarding 
+	// Resolving may not use forwarding
 	public static final int		NoForwards	= 8;
 	// Resolving may not check super classes
 	public static final int		NoSuper		= 16;
@@ -46,7 +46,7 @@ public interface ResolveFlags {
 
 	// Both unique & exists requared
 	public static final int		UniqEx	= 3;
-	
+
 }
 
 public class MatchNode implements ResolveFlags {
@@ -66,20 +66,20 @@ public class MatchNode implements ResolveFlags {
 		if( (resfl & Unique) != 0 && objs.length() > 1 )
 			throw new RuntimeException("Ambigous identifier");
 	}
-	
+
 	public Method method() {
 		return (Method)node;
 	}
-	
+
 }
 
 public interface ScopeOfNames {
 //	public List<MatchNode> resolveName(List<MatchNode> lst, KString name, int resfl);
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type type, int resfl);
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type type, int resfl);
 }
 
 public interface ScopeOfMethods extends ScopeOfNames {
 //	public List<MatchNode> resolveMethod(List<MatchNode> lst, KString name, Expr[] args, Type type, int resfl);
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 

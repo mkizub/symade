@@ -303,11 +303,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Type sup;
-		pvar Field forw;
-		pvar List<ASTNode> p;
-		pvar Method vf;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		Type@ sup;
+		Field@ forw;
+		List<ASTNode>@ p;
+		Method@ vf;
 	{
 		trace(Kiev.debugResolve,"Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
 		checkResolved(),
@@ -338,7 +338,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	public boolean tryLoad(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryLoad(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
         if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
@@ -369,7 +369,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return false;
 	}
 
-	public boolean tryAbstractField(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryAbstractField(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
 		if( !isPackage() ) {
 			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
 				append_fast(nameSet).append_fast(name).toKString();
@@ -396,11 +396,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	 	return false;
 	}
 
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type tp, int resfl)
-		pvar Type sup;
-		pvar Struct defaults;
-		pvar Field forw;
-		pvar List<ASTNode> p;
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type tp, int resfl)
+		Type@ sup;
+		Struct@ defaults;
+		Field@ forw;
+		List<ASTNode>@ p;
 	{
 		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path.$var==List.Nil?"":" in forward path "+path)),
@@ -1083,7 +1083,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	rule locatePackerField(pvar Field f, int size)
+	rule locatePackerField(Field@ f, int size)
 	{
 		super_clazz != null,
 		super_clazz.clazz.locatePackerField(f,size)
@@ -1102,7 +1102,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 		// Setup packed/packer fields
 		foreach(Field f; fields; f.isPackedField() ) {
-			pvar Field packer;
+			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			if( f.pack.packer == null ) {
 				if( f.pack.packer_name != null ) {
@@ -1978,8 +1978,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				else
 					((BlockStat)class_init.body).addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
-							new AssignExpr(f.init.getPos(),AssignOperator.Assign
-								,new StaticFieldAccessExpr(f.pos,this,f),f.init)
+							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
+								,new StaticFieldAccessExpr(f.pos,this,f),f.init,f.isInitWrapper())
 						)
 					);
 			} else {
@@ -1991,7 +1991,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					init_stat = ((StatExpr)f.init).stat;
 				} else {
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
-						new AssignExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init)
+						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init,f.isInitWrapper())
 					);
 				}
 				instance_init.addStatement(init_stat);
@@ -2911,7 +2911,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			for(int i=0; fields!=null && i < fields.length; i++) {
 				Field f = fields[i];
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
-				if( f.isStatic() && f.init != null ) {
+				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
 						if (isPrimitiveEnum())
 							f.init = f.init.resolveExpr(f.type.clazz.getPrimitiveEnumType());
@@ -2921,7 +2921,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						Kiev.reportError(f.init.pos,e);
 					}
 					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-							"Static fields: "+name+"::"+f.name+" = "+f.init);
+							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 				}
 				if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
 					f.init = null;

@@ -56,8 +56,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar ParamRedir	redir;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		ParamRedir@	redir;
 	{
 		redir @= params_redir,
 		redir.old_var.name.equals(name),
@@ -164,7 +164,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return var;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node.$var).name.equals(name)
 	}
@@ -217,10 +217,10 @@ public class BlockStat extends Statement implements ScopeOfNames {
 					for(int j=0; j < vdecls.modifier.length; j++)
 						flags |= ((ASTModifier)vdecls.modifier[j]).flag();
 					Type type = ((ASTType)vdecls.type).pass2();
-					if( (flags & ACC_PROLOGVAR) != 0 ) {
-            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-					}
+					//if( (flags & ACC_PROLOGVAR) != 0 ) {
+            		//	Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
+					//	type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
+					//}
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
@@ -237,9 +237,9 @@ public class BlockStat extends Statement implements ScopeOfNames {
 									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),
 									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
 						}
-						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
-							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
-								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
+						//else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
+						//	vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
+						//		,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));

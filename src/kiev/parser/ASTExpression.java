@@ -102,10 +102,10 @@ public class ASTExpression extends Expr {
 	 *  @param rest		- output rest of list (uprased yet part)
 	 */
 
-	public rule resolveExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
-		pvar List<ASTNode>	expr1;
+	public rule resolveExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
+		List<ASTNode>@	expr1;
 	{
 		trace( Kiev.debugOperators, "resolving "+expr+" with priority "+priority),
 		expr.length() > 1,
@@ -147,10 +147,10 @@ public class ASTExpression extends Expr {
 		throw new CompilerException(pos,msg);
 	}
 
-	rule resolveCastExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveCastExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		Constants.opCastPriority >= priority,
 		expr.length() > 1,
@@ -163,10 +163,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolvePrefixExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolvePrefixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -184,10 +184,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolvePostfixExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolvePostfixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -205,10 +205,10 @@ public class ASTExpression extends Expr {
 		rest.$var = expr.tail().tail()
 	}
 
-	rule resolveBinaryExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveBinaryExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -238,10 +238,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveAssignExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveAssignExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -261,10 +261,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveMultiExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar List<ASTNode>	result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveMultiExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		List<ASTNode>@	result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		{
@@ -281,11 +281,11 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveMultiExpr(MultiOperator op, int n, pvar List<ASTNode> result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, boolean may_be_resolved)
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	result2;
-		pvar List<ASTNode>	rest1;
-		pvar List<ASTNode>	rest2;
+	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, boolean may_be_resolved)
+		ASTNode@		result1;
+		List<ASTNode>@	result2;
+		List<ASTNode>@	rest1;
+		List<ASTNode>@	rest2;
 	{
 		resolveExpr(result1,expr,rest1,op.getArgPriority(n), may_be_resolved),
 		{

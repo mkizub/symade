@@ -189,10 +189,11 @@ public abstract class ASTNode implements Constants {
 	// Var specific
 	public boolean isNeedProxy()	{ return (flags & ACC_NEED_PROXY) != 0; }
 	public boolean isNeedRefProxy()	{ return (flags & ACC_NEED_REFPROXY) != 0; }
-	public boolean isPrologVar()	{ return (flags & ACC_PROLOGVAR) != 0; }
+//	public boolean isPrologVar()	{ return (flags & ACC_PROLOGVAR) != 0; }
 	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
 	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
 	public boolean isClosureProxy()	{ return (flags & ACC_CLOSURE_PROXY) != 0; }
+	public boolean isInitWrapper()	{ return (flags & ACC_INIT_WRAPPER) != 0; }
 
 	// Field specific
 	public boolean isVirtual()		{ return (flags & ACC_VIRTUAL) != 0; }
@@ -449,12 +450,12 @@ public abstract class ASTNode implements Constants {
 		if( on ) flags |= ACC_NEED_PROXY | ACC_NEED_REFPROXY;
 		else flags &= ~ACC_NEED_REFPROXY;
 	}
-	public void setPrologVar(boolean on) {
-		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROLOGVAR set to "+on+" from "+((flags & ACC_PROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PROLOGVAR;
-		else flags &= ~ACC_PROLOGVAR;
-	}
+//	public void setPrologVar(boolean on) {
+//		assert(this instanceof Var,"For node "+this.getClass());
+//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROLOGVAR set to "+on+" from "+((flags & ACC_PROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
+//		if( on ) flags |= ACC_PROLOGVAR;
+//		else flags &= ~ACC_PROLOGVAR;
+//	}
 	public void setLocalPrologVar(boolean on) {
 		assert(this instanceof Var || this instanceof kiev.parser.ASTFormalParameter,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
@@ -472,6 +473,14 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CLOSURE_PROXY set to "+on+" from "+((flags & ACC_CLOSURE_PROXY)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_CLOSURE_PROXY;
 		else flags &= ~ACC_CLOSURE_PROXY;
+	}
+
+	// Var/field specific
+	public void setInitWrapper(boolean on) {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INIT_WRAPPER set to "+on+" from "+((flags & ACC_INIT_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_INIT_WRAPPER;
+		else flags &= ~ACC_INIT_WRAPPER;
 	}
 
 

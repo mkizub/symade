@@ -498,10 +498,10 @@ public class ASTTypeDeclaration extends ASTNode {
 						flags |= ACC_PUBLIC;
 					}
 					Type type = ((ASTType)fields.type).pass2();
-					if( (flags & ACC_PROLOGVAR) != 0 ) {
-            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-					}
+					//if( (flags & ACC_PROLOGVAR) != 0 ) {
+            		//	Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
+					//	type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
+					//}
 					ASTPack pack = fields.pack;
 					if( pack != null ) {
 						if( !type.isIntegerInCode() ) {
@@ -564,12 +564,8 @@ public class ASTTypeDeclaration extends ASTNode {
 						if( f.isVirtual() || f.isExportCpp() ) {
 							abstr_fields = abstr_fields.concat(f);
 						}
-						if( fdecl.dim==0 && (flags & ACC_PROLOGVAR) != 0 && !fdecl.of_wrapper)
-							f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-						else if( fdecl.dim==0 && type.clazz.isWrapper() && !fdecl.of_wrapper)
-							f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-						else
-							f.init = fdecl.init;
+						f.init = fdecl.init;
+						if (fdecl.of_wrapper != f.isInitWrapper()) f.setInitWrapper(fdecl.of_wrapper);
 						if( ((ASTFieldDecl)members[i]).acc != null )
 							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
 					}

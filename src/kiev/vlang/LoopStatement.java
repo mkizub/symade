@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -58,7 +58,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 
 
 public class WhileStat extends LoopStat {
-	
+
 	import kiev.stdlib.Debug;
 
 	public BooleanExpr	cond;
@@ -121,7 +121,7 @@ public class WhileStat extends LoopStat {
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
 			Code.addInstr(Instr.set_label,continue_label);
-		
+
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					Code.addInstr(Instr.op_goto,body_label);
@@ -148,7 +148,7 @@ public class WhileStat extends LoopStat {
 }
 
 public class DoWhileStat extends LoopStat {
-	
+
 	import kiev.stdlib.Debug;
 
 	public BooleanExpr	cond;
@@ -210,7 +210,7 @@ public class DoWhileStat extends LoopStat {
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
 			Code.addInstr(Instr.set_label,continue_label);
-		
+
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					Code.addInstr(Instr.op_goto,body_label);
@@ -245,14 +245,14 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 	public Type	type;
 	public Var[]	vars;
 	public Expr[]	inits;
-	
+
 	public ForInit(int pos, Type type, Var[] vars, Expr[] inits) {
 		super(pos);
 		this.type = type;
 		this.vars = vars;
 		this.inits = inits;
 	}
-	
+
 	public void cleanup() {
 		parent=null;
 		type = null;
@@ -265,7 +265,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node.$var).name.equals(name)
 	}
@@ -284,7 +284,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 }
 
 public class ForStat extends LoopStat implements ScopeOfNames {
-	
+
 	import kiev.stdlib.Debug;
 
 	public ASTNode		init;
@@ -389,7 +389,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 					Kiev.reportError(iter.pos,e);
 				}
 			}
-			if( ( cond==null 
+			if( ( cond==null
 				|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
 				)
 				&& !isBreaked()
@@ -403,7 +403,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit, ((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
@@ -437,12 +437,12 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 			if( cond != null ) {
 				Code.addInstr(Instr.op_goto,check_label);
 			}
-		
+
 			Code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
-		
+
 			Code.addInstr(Instr.set_label,continue_label);
 			if( iter != null )
 				iter.generate(Type.tpVoid);
@@ -497,7 +497,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 }
 
 public class ForEachStat extends LoopStat implements ScopeOfNames {
-	
+
 	import kiev.stdlib.Debug;
 
 	public Var			var;
@@ -509,13 +509,13 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 	public Expr			container;
 	public BooleanExpr	cond;
 	public Statement	body;
-	
+
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
 	public static final int	JENUM = 2;
 	public static final int	ELEMS = 3;
 	public static final int	RULE  = 4;
-	
+
 	public int			mode;
 
 	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
@@ -580,7 +580,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			//	or if container is an array:
 			//	for(int x$iter=0; x$iter < container.length; x$iter++) {
 			//		type x = container[ x$iter ];
-			//		
+			//
 			//		if( !cond ) continue;
 			//		...
 			//	}
@@ -610,7 +610,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new PVar<List<ASTNode>>(List.Nil),nameElements,Expr.emptyArray,null,ctype,0) ) {
 				itype = Type.getRealType(ctype,elems.$var.type.ret);
 				mode = ELEMS;
-			} else if( ctype == Type.tpRule && 
+			} else if( ctype == Type.tpRule &&
 				(
 				   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
 				|| ( container instanceof CallAccessExpr && ((CallAccessExpr)container).func.type.ret == Type.tpRule )
@@ -810,7 +810,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter
@@ -830,7 +830,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 				Code.addVar(iter);
 			if( var != null )
 				Code.addVar(var);
-			
+
 			// Init iterator
 			iter_init.generate(Type.tpVoid);
 
@@ -844,7 +844,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 				var_init.generate(Type.tpVoid);
 			if( cond != null )
 				cond.generate_iffalse(continue_label);
-			
+
 			body.generate(Type.tpVoid);
 
 			// Continue - iterate iterator and check iterator condition
@@ -861,7 +861,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 				Code.removeVar(var);
 			if( iter != null )
 				Code.removeVar(iter);
-			
+
 			Code.addInstr(Instr.set_label,break_label);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
@@ -884,7 +884,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			dmp.append(var_init).newLine();
 		if( cond != null )
 			dmp.append("if(").append(cond).append(") break;").newLine();
-		
+
 		dmp.append(body);
 		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();
 		else dmp.newLine(-1);

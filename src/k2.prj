@@ -325,7 +325,7 @@ kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
 kiev.vlang.Field.PackInfo kiev/vlang/Field$PackInfo kiev\vlang\Field.java
 kiev.vlang.FieldAccessExpr kiev/vlang/FieldAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.FieldCP kiev/vlang/FieldCP kiev\vlang\ConstPool.java
-kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java
+kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java bad
 kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java
 kiev.vlang.FlagsAttr kiev/vlang/FlagsAttr kiev\vlang\Attr.java
 kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
@@ -338,6 +338,7 @@ kiev.vlang.Grammar kiev/vlang/Grammar kiev\vlang\Grammar.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
+kiev.vlang.InitializeExpr kiev/vlang/InitializeExpr kiev\vlang\Expr.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
@@ -426,7 +427,7 @@ kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeDeclStat kiev/vlang/TypeDeclStat kiev\vlang\Statement.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
-kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\FileUnit.java
+kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\FileUnit.java bad
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java

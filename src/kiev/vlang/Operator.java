@@ -188,7 +188,7 @@ public class OpTypes {
 	}
 
 	rule resolveRef(TypeRule tr, int ref, Type[] types, ASTNode[] nodes)
-		pvar TypeRule at;
+		TypeRule@ at;
 	{
 		trace( Kiev.debugOperators,"need to find out "+(ref==0?"ret":"arg"+ref)+" ("+nodes[ref]+") referred by "+tr),
 		{
@@ -254,7 +254,7 @@ public class OpTypes {
 
 		public rtUpperCastNumber(int ref1, int ref2) { this.ref1 = ref1; this.ref2 = ref2; }
 		public rule resolve(Type[] types, ASTNode[] nodes)
-			pvar Type tp;
+			Type@ tp;
 		{
 			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be UpperCastNumber("+ref1+","+ref2+")"),
 			{

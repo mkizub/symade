@@ -82,10 +82,11 @@ public interface AccessFlags {
 	public static final int ACC_FORWARD			= 1 << 15;
 	public static final int ACC_PACKER_FIELD	= 1 << 16;
 	public static final int ACC_PACKED_FIELD	= 1 << 17;
-	public static final int ACC_PROLOGVAR		= 1 << 18;
+//	public static final int ACC_PROLOGVAR		= 1 << 18;
 	public static final int ACC_LOCALPROLOGVAR	= 1 << 19;
 	public static final int ACC_LOCALPROLOGFORVAR	= 1 << 20;
 	public static final int ACC_CLOSURE_PROXY	= 1 << 21;
+	public static final int ACC_INIT_WRAPPER	= 1 << 22;
 
 	// Expression specific
 	public static final int ACC_USE_NOPROXY		= 1 << 11;

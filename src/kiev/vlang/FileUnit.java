@@ -121,10 +121,10 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		return true;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Typedef td;
-		pvar Struct s;
-		pvar Struct sub;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		Typedef@ td;
+		Struct@ s;
+		Struct@ sub;
 	{
 		td @= typedefs,
 		trace( Kiev.debugResolve, "Compare "+name+" with "+td),
@@ -161,7 +161,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
 	}

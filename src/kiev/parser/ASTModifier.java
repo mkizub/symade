@@ -88,7 +88,7 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
     	//case MULTIMETHOD:	return ACC_MULTIMETHOD;
     	case VIRTUAL:		return ACC_VIRTUAL;
     	case FORWARD:		return ACC_FORWARD;
-    	case PVAR:			return ACC_PROLOGVAR;
+//    	case PVAR:			return ACC_PROLOGVAR;
 //    	case MM_GRAMMAR:	return ACC_GRAMMAR;
     	case CONST:			return ACC_CONST_CPP;
     	case EXPORT_CPP:	return ACC_EXPORT_CPP;
@@ -97,7 +97,7 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
     		if( image == "multimethod" )	return ACC_MULTIMETHOD;
     		else if( image == "virtual" )	return ACC_VIRTUAL;
     		else if( image == "forward" )	return ACC_FORWARD;
-    		else if( image == "pvar" )		return ACC_PROLOGVAR;
+    		//else if( image == "pvar" )		return ACC_PROLOGVAR;
     		else if( image == "$export_cpp" )	return ACC_EXPORT_CPP;
     		return 0;
     	default:			return 0;
