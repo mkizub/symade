@@ -72,7 +72,7 @@ public class ASTExpression extends Expr {
 				foreach( resolveExpr(result,nodes,rest,0,may_be_resolved) ) {
 					trace( Kiev.debugOperators, (may_be_resolved?"WARNING: ":"")+"May be resolved as: "+result+" and rest is "+rest);
 					Expr res = null;
-					if( (res = ((Expr)result.$var).tryResolve(reqType)) == null ) {
+					if( (res = ((Expr)result).tryResolve(reqType)) == null ) {
 						trace( Kiev.debugOperators, "WARNING: full resolve of "+result+" to type "+reqType+" fails");
 						continue;
 					}
@@ -132,11 +132,11 @@ public class ASTExpression extends Expr {
 		expr.head() instanceof Expr && ((Expr)expr.head()).getPriority() >= priority,
 		trace( Kiev.debugOperators, "return expr "+expr.head()+" and rest "+expr.tail()),
 		result ?= expr.head(),
-		rest.$var = expr.tail()
+		rest = expr.tail()
 	;
 		expr.length() == 1,
 		result ?= expr.head(),
-		rest.$var = expr.tail()
+		rest = expr.tail()
 //	;
 //		!may_be_resolved,
 //		throwResolveError(expr.head().pos,"resolve error")
@@ -157,9 +157,9 @@ public class ASTExpression extends Expr {
 		op ?= ((ASTCastOperator)expr.head()).resolveOperator(),
 		trace( Kiev.debugOperators, "trying cast "+op),
 		resolveExpr(result1,expr.tail(),rest1,Constants.opCastPriority, may_be_resolved),
-		result ?= new CastExpr(expr.head().pos,((CastOperator)op.$var).type,getExpr(result1),false,((CastOperator)op.$var).reinterp),
+		result ?= new CastExpr(expr.head().pos,((CastOperator)op).type,getExpr(result1),false,((CastOperator)op).reinterp),
 		trace( Kiev.debugOperators, "found cast "+result),
-		rest.$var = rest1.$var
+		rest = rest1.$var
 	}
 
 	rule resolvePrefixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
@@ -182,7 +182,7 @@ public class ASTExpression extends Expr {
 		resolveExpr(result1,expr.tail(),rest1,op.getArgPriority(0), may_be_resolved),
 		result ?= new UnaryExpr(expr.head().pos,op,getExpr(result1)),
 		trace( Kiev.debugOperators, "found prefix "+result),
-		rest.$var = rest1.$var
+		rest = rest1.$var
 	}
 
 	rule resolvePostfixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
@@ -205,7 +205,7 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "trying postfix "+op),
 		result ?= new UnaryExpr(expr.tail().head().pos,op,getExpr(expr.head())),
 		trace( Kiev.debugOperators, "found postfix "+result),
-		rest.$var = expr.tail().tail()
+		rest = expr.tail().tail()
 	}
 
 	rule resolveBinaryExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
@@ -233,14 +233,14 @@ public class ASTExpression extends Expr {
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,expr.tail().tail(),rest1,op.getArgPriority(1), may_be_resolved),
 			{
-				((BinaryOperator)op.$var).is_boolean_op, $cut,
-				result ?= new BinaryBooleanExpr(expr.tail().head().pos,(BinaryOperator)op.$var,getExpr(expr.head()),getExpr(result1))
-			;	!((BinaryOperator)op.$var).is_boolean_op, $cut,
-				result ?= new BinaryExpr(expr.tail().head().pos,(BinaryOperator)op.$var,getExpr(expr.head()),getExpr(result1))
+				((BinaryOperator)op).is_boolean_op, $cut,
+				result ?= new BinaryBooleanExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
+			;	!((BinaryOperator)op).is_boolean_op, $cut,
+				result ?= new BinaryExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
 			}
 		},
 		trace( Kiev.debugOperators, "found binary "+result+" and rest is "+rest1),
-		rest.$var = rest1.$var
+		rest = rest1.$var
 	}
 
 	rule resolveAssignExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
@@ -263,9 +263,9 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "trying assign "+op),
 		getPriority(expr.head()) >= op.getArgPriority(0),
 		resolveExpr(result1,expr.tail().tail(),rest1,op.getArgPriority(1), may_be_resolved),
-		result ?= new AssignExpr(expr.tail().head().pos,(AssignOperator)op.$var,getExpr(expr.head()),getExpr(result1)),
+		result ?= new AssignExpr(expr.tail().head().pos,(AssignOperator)op,getExpr(expr.head()),getExpr(result1)),
 		trace( Kiev.debugOperators, "found assign "+result+" and rest is "+rest1),
-		rest.$var = rest1.$var
+		rest = rest1.$var
 	}
 
 	rule resolveMultiExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
@@ -285,9 +285,9 @@ public class ASTExpression extends Expr {
 		},
 		op.priority >= priority,
 		getPriority(expr.head()) >= op.getArgPriority(0),
-		resolveMultiExpr((MultiOperator)op.$var,1,result1,expr.tail().tail(),rest1, may_be_resolved),
-		result ?= new MultiExpr(expr.tail().head().pos,(MultiOperator)op.$var,new ConsAN(expr.head(),result1)),
-		rest.$var = rest1.$var
+		resolveMultiExpr((MultiOperator)op,1,result1,expr.tail().tail(),rest1, may_be_resolved),
+		result ?= new MultiExpr(expr.tail().head().pos,(MultiOperator)op,new ConsAN(expr.head(),result1)),
+		rest = rest1.$var
 	}
 
 	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, boolean may_be_resolved)
@@ -299,7 +299,7 @@ public class ASTExpression extends Expr {
 		resolveExpr(result1,expr,rest1,op.getArgPriority(n), may_be_resolved),
 		{
 			n == op.images.length,
-			rest.$var = rest1.$var,
+			rest = rest1.$var,
 			result ?= new ConsAN(result1,List.Nil)
 		;
 			n < op.images.length,
@@ -311,7 +311,7 @@ public class ASTExpression extends Expr {
 				op.images[n].equals(((ASTIdentifier)rest1.head()).name)
 			},
 			resolveMultiExpr(op,n+1,result2,rest1.tail(),rest2, may_be_resolved),
-			rest.$var = rest2.$var,
+			rest = rest2.$var,
 			result ?= new ConsAN(result1,result2)
 		}
 	}

@@ -80,9 +80,9 @@ public class RuleMethod extends Method {
 
 	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
-		node @= localvars, ((Var)node.$var).name.equals(name)
+		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
-	;	node @= params, ((Var)node.$var).name.equals(name)
+	;	node @= params, ((Var)node).name.equals(name)
 //		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this);
 	}
 
@@ -460,9 +460,9 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 		ASTNode@ stat;
 	{
 		stat @= stats,
-		stat.$var instanceof DeclStat,
-		((DeclStat)stat.$var).var.name.equals(name),
-		node ?= ((DeclStat)stat.$var).var
+		stat instanceof DeclStat,
+		((DeclStat)stat).var.name.equals(name),
+		node ?= ((DeclStat)stat).var
 	}
 
 
@@ -680,7 +680,7 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 				itypes[i] = ctype;
 				modes[i] = JENUM;
 			} else if( ctype.clazz.resolveMethodR(elems,new PVar<List<ASTNode>>(List.Nil),nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
-				itypes[i] = Type.getRealType(ctype,elems.$var.type.ret);
+				itypes[i] = Type.getRealType(ctype,elems.type.ret);
 				modes[i] = ELEMS;
 			} else {
 				throw new CompilerException(exprs[i].pos,"Container must be an array or an Enumeration "+

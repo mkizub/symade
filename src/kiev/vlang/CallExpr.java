@@ -121,6 +121,10 @@ public class CallExpr extends Expr {
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
+		if (args != null) {
+			for (int i=0; i < args.length; i++)
+				args[i] = args[i].resolveExpr(Type.getRealType(PassInfo.clazz.type,func.type.args[i]));
+		}
 		setResolved(true);
 		return this;
 	}
@@ -329,6 +333,10 @@ public class CallAccessExpr extends Expr {
 				args = CallExpr.insertPEnvForRuleCall(args,this);
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
+		}
+		if (args != null) {
+			for (int i=0; i < args.length; i++)
+				args[i] = args[i].resolveExpr(Type.getRealType(obj.getType(),func.type.args[i]));
 		}
 		setResolved(true);
 		return this;
@@ -687,7 +695,7 @@ public class ClosureCallExpr extends Expr {
 //				if( !PassInfo.resolveNameR(f,new PVar<List<ASTNode>>(List.Nil),((Named)func).getName().name,null,0) )
 //					throw new RuntimeException("Unresolved method "+Method.toString(((Named)func).getName().name,args));
 //				else
-					v = func; //f.$var;
+					v = func; //f;
 			}
 			Type tp1 = expr==null?null:expr.getType();
 			Type tp;
@@ -727,7 +735,7 @@ public class ClosureCallExpr extends Expr {
 //				if( !PassInfo.resolveBestMethodR(tp.clazz,addArgM,new PVar<List<ASTNode>>(List.Nil),KString.from("addArg"),new Expr[]{args[i]},null,reqType,0) ) {
 //					throw new RuntimeException("Can't resolve method "+Method.toString(KString.from("addArg"),new Expr[]{args[i]})+" in class "+tp.clazz);
 //				} else {
-//					addArg[i] = (Method)addArgM.$var;
+//					addArg[i] = (Method)addArgM;
 //				}
 //			}
 			clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
@@ -740,7 +748,7 @@ public class ClosureCallExpr extends Expr {
 			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,new PVar<List<ASTNode>>(List.Nil),call_it_name,Expr.emptyArray,null,reqType,0) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
 			} else {
-				call_it = (Method)callIt.$var;
+				call_it = (Method)callIt;
 				if( call_it.type.ret == Type.tpRule ) {
 					env_access = CallExpr.insertPEnvForRuleCall(args,this)[0];
 				} else {

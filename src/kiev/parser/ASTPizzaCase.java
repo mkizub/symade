@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,7 +19,7 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
@@ -51,15 +51,15 @@ public class ASTPizzaCase extends ASTNode {
         else
 			stats = (ASTNode[])Arrays.append(stats,n);
     }
-    
+
     public ASTNode resolve(Type reqType) {
     	Var[] pattern = new Var[params.length];
     	try {
 	    	KString n = ((ASTQName)val).toKString();
 			PVar<ASTNode> v = new PVar<ASTNode>();
-			if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),n,null,0) ) 
+			if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),n,null,0) )
 				throw new CompilerException(val.pos,"Unresolved class "+n);
-	    	val = v.$var;
+	    	val = v;
 	    	if( !(val instanceof Struct) || !((Struct)val).isPizzaCase() )
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
 	    	for(int i=0; i < params.length; i++) {

@@ -119,12 +119,12 @@ public class AccessExpr extends LvalueExpr {
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
-					fset = fsg.$var;
-					fsg.$var = null;
+					fset = fsg;
+					fsg = null;
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),obj.getType(),0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),obj.getType(),0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
-					fget = fsg.$var;
+					fget = fsg;
 				}
 			}
 
@@ -403,7 +403,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if (s.generated_from != null) s = s.generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
-				return Type.getRealType(t,((Method)v.$var).type.ret);
+				return Type.getRealType(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
 			Kiev.reportError(pos,e);
@@ -483,7 +483,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
 				obj.generate(null);
 				index.generate(null);
-				Method func = (Method)v.$var;
+				Method func = (Method)v;
 				Code.addInstr(Instr.op_call,func,false,obj.getType());
 				if( Kiev.verify
 				 && func.type.ret.isReference()
@@ -537,7 +537,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if (s.generated_from != null) s = s.generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
-				Code.addInstr(Instr.op_call,(Method)v.$var,false,objType);
+				Code.addInstr(Instr.op_call,(Method)v,false,objType);
 				// Pop return value
 				Code.addInstr(Instr.op_pop);
 			}
@@ -565,7 +565,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if( !PassInfo.resolveBestMethodR(s,v,path,nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
 				// The method must return the value to duplicate
-				Method func = (Method)v.$var;
+				Method func = (Method)v;
 				Code.addInstr(Instr.op_call,func,false,obj.getType());
 				if( Kiev.verify
 				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
@@ -1146,12 +1146,12 @@ public class FieldAccessExpr extends LvalueExpr {
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
-					fset = fsg.$var;
-					fsg.$var = null;
+					fset = fsg;
+					fsg = null;
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
-					fget = fsg.$var;
+					fget = fsg;
 				}
 			}
 			if( PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() ) {
@@ -1455,12 +1455,12 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),set_name,new Expr[]{this},Type.tpVoid,null,0) )
 //						throw new CompilerException(pos,"Method "+set_name+" not found");
-					fset = fsg.$var;
-					fsg.$var = null;
+					fset = fsg;
+					fsg = null;
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0);
 //					if( !PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new PVar<List<ASTNode>>(List.Nil),get_name,Expr.emptyArray,getType(),null,0) )
 //						throw new CompilerException(pos,"Method "+get_name+" not found");
-					fget = fsg.$var;
+					fget = fsg;
 				}
 			}
 

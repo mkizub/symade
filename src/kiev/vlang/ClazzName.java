@@ -286,7 +286,7 @@ public class NodeName {
 			n ?= name;
 			n @= aliases
 		},
-		nm.equals(n.$var)
+		nm.equals(n)
 	}
 
 	rule public equals(KString nm)
@@ -296,7 +296,7 @@ public class NodeName {
 			n ?= name;
 			n @= aliases
 		},
-		nm.equals(n.$var)
+		nm.equals(n)
 	}
 */
 

@@ -127,8 +127,8 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 			op @= syntax,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
 		;	syn @= syntax,
-			syn.$var instanceof Import && ((Import)syn.$var).mode == Import.IMPORT_SYNTAX,
-			((Struct)((Import)syn.$var).node).resolveOperatorR(op)
+			syn instanceof Import && ((Import)syn).mode == Import.IMPORT_SYNTAX,
+			((Struct)((Import)syn).node).resolveOperatorR(op)
 		}
 	}
 
@@ -137,13 +137,13 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 	{
 		syn @= syntax,
 		{
-			syn.$var instanceof Typedef,
+			syn instanceof Typedef,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			name.equals(((Typedef)syn.$var).name),
-			node ?= ((Typedef)syn.$var).type
-		;	syn.$var instanceof Import && !((Import)syn.$var).star,
+			name.equals(((Typedef)syn).name),
+			node ?= ((Typedef)syn).type
+		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			((Import)syn.$var).resolveNameR(node,path,name,tp,resfl)
+			((Import)syn).resolveNameR(node,path,name,tp,resfl)
 		}
 	;
 		pkg != null,
@@ -151,9 +151,9 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		pkg.resolveNameR(node,path,name,tp,resfl)
 	;
 		syn @= syntax,
-		syn.$var instanceof Import && ((Import)syn.$var).star,
+		syn instanceof Import && ((Import)syn).star,
 		trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-		((Import)syn.$var).resolveNameR(node,path,name,tp,resfl)
+		((Import)syn).resolveNameR(node,path,name,tp,resfl)
 	;
 		trace( Kiev.debugResolve, "In root package"),
 		Env.root.resolveNameR(node,path,name,tp,resfl)
@@ -164,9 +164,9 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
 	;	syn @= syntax,
-		syn.$var instanceof Import && ((Import)syn.$var).mode == Import.IMPORT_STATIC,
+		syn instanceof Import && ((Import)syn).mode == Import.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
-		((Import)syn.$var).resolveMethodR(node,path,name,args,ret,type,resfl)
+		((Import)syn).resolveMethodR(node,path,name,args,ret,type,resfl)
 	}
 
 	public Dumper toJava(Dumper dmp) {

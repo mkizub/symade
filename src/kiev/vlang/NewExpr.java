@@ -120,7 +120,7 @@ public class NewExpr extends Expr {
 				 &&	type.clazz.resolveMethodR(m,new PVar<List<ASTNode>>(List.Nil),nameNewOp,outer_args,
 			 		type,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
-				 	ASTNode n = new CallExpr(pos,parent,(Method)m.$var,m.makeArgs(args,type));
+				 	ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
 					n.type_of_static = type;
 				 	n.setResolved(true);
 				 	return n;
@@ -131,7 +131,7 @@ public class NewExpr extends Expr {
 					throw new RuntimeException("Can't find apropriative initializer for "
 						+Method.toString(nameInit,outer_args,Type.tpVoid)+" for "+type);
 				} else {
-					func = m.$var;
+					func = m;
 					outer_args = m.makeArgs(outer_args,type);
 					int po = 0;
 					int pa = 0;
@@ -536,7 +536,7 @@ public class NewClosure extends Expr {
 						if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
 							Kiev.reportError(pos,"Internal error: can't find var "+name);
 						}
-						Expr vae = new VarAccessExpr(pos,this,(Var)v.$var)
+						Expr vae = new VarAccessExpr(pos,this,(Var)v)
 							.resolveExpr(func.params[i].type);
 						vae.setUseNoProxy(true);
 						args = (Expr[])Arrays.insert(args,vae,func.isStatic()?i:i-1);

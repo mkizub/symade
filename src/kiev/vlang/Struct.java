@@ -311,8 +311,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			op @= imported,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
 		;	imp @= imported,
-			imp.$var instanceof Import && ((Import)imp.$var).mode == Import.IMPORT_SYNTAX,
-			((Struct)((Import)imp.$var).node).resolveOperatorR(op)
+			imp instanceof Import && ((Import)imp).mode == Import.IMPORT_SYNTAX,
+			((Struct)((Import)imp).node).resolveOperatorR(op)
 		}
 	}
 
@@ -326,13 +326,13 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		trace(Kiev.debugResolve,"Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
 		checkResolved(),
 		{
-			node ?= this, ((Struct)node.$var).name.short_name.equals(name)
-		;	node @= fields, ((Field)node.$var).name.equals(name)
-		;	node @= virtual_fields, ((Field)node.$var).name.equals(name)
+			node ?= this, ((Struct)node).name.short_name.equals(name)
+		;	node @= fields, ((Field)node).name.equals(name)
+		;	node @= virtual_fields, ((Field)node).name.equals(name)
 		;	(resfl & ResolveFlags.NoImports) == 0,
 			node @= imported,
-			{	node.$var instanceof Field && ((Field)node.$var).name.equals(name)
-			;	node.$var instanceof Typedef && ((Typedef)node.$var).name.equals(name)
+			{	node instanceof Field && ((Field)node).name.equals(name)
+			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 		;	sup @= type.args,
 			sup.clazz.name.short_name.equals(name),
@@ -343,15 +343,15 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		;	this.name.short_name.equals(nameIdefault),
 			package_clazz.resolveNameR(node,path,name,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
-			{	sup ?= super_clazz, sup.$var.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
-			;	sup @= interfaces, sup.$var.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
+			{	sup ?= super_clazz, sup.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
+			;	sup @= interfaces, sup.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
 			}
 		;	(resfl & ResolveFlags.NoForwards) == 0,
 			forw @= fields,
-			forw.$var.isForward(),
-			p ?= path.$var.concat(forw.$var),
-			Type.getRealType(tp,forw.$var.type).clazz.resolveNameR(node,p,name,tp,resfl | ResolveFlags.NoImports),
-			path.$var = p.$var
+			forw.isForward(),
+			p ?= path.concat(forw),
+			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,p,name,tp,resfl | ResolveFlags.NoImports),
+			path = p.$var
 		;	isPackage(), tryLoad(node,path,name,resfl), $cut
 		;	!isPackage(), tryAbstractField(node,path,name,resfl), $cut
 		}
@@ -373,7 +373,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				}
 				if( cl != null ) {
 					trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
-					node.$var = cl;
+					node = cl;
 					return true;
 				} else {
 					trace(Kiev.debugResolve,"Class "+clname.name
@@ -384,7 +384,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				Kiev.reportError(0,e);
 			}
 		}
-		node.$var = null;
+		node = null;
 		return false;
 	}
 
@@ -400,18 +400,18 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				if( methods[i].name.equals(set_name) ) {
 				 	Field f = new Field(this,name,methods[i].type.args[0],
 				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-				 	node.$var = f;
+				 	node = f;
 				 	return true;
 				 }
 				if( methods[i].name.equals(get_name) ) {
 				 	Field f = new Field(this,name,methods[i].type.ret,
 				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-				 	node.$var = f;
+				 	node = f;
 				 	return true;
 				 }
 			}
 		}
-	 	node.$var = null;
+	 	node = null;
 	 	return false;
 	}
 
@@ -422,34 +422,34 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		List<ASTNode>@ p;
 	{
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path.$var==List.Nil?"":" in forward path "+path)),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path==List.Nil?"":" in forward path "+path)),
 		{
 			node @= methods,
-			((Method)node.$var).equalsByCast(name,args,ret,tp,resfl),
+			((Method)node).equalsByCast(name,args,ret,tp,resfl),
 			{
 				(resfl & ResolveFlags.Static) == 0
 			;	(resfl & ResolveFlags.Static) != 0, node.isStatic()
 			}
 		;	(resfl & ResolveFlags.NoImports) == 0 || isPackage(),
-			node @= imported, node.$var instanceof Method,
-			((Method)node.$var).equalsByCast(name,args,ret,tp,resfl)
+			node @= imported, node instanceof Method,
+			((Method)node).equalsByCast(name,args,ret,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			sup ?= super_clazz,
-			sup.$var.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	isInterface(),
 			defaults @= sub_clazz,
-			defaults.$var.isClazz() && defaults.$var.name.short_name.equals(nameIdefault),
-			defaults.$var.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
+			defaults.isClazz() && defaults.name.short_name.equals(nameIdefault),
+			defaults.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			isInterface(),
 			sup @= interfaces,
-			sup.$var.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	(resfl & ResolveFlags.NoForwards) == 0,
 			forw @= fields,
-			forw.$var.isForward(),
-			p ?= path.$var.concat(forw.$var),
-			Type.getRealType(tp,forw.$var.type).clazz.resolveMethodR(node,p,name,args,Type.getRealType(tp,ret),Type.getRealType(tp,forw.$var.type),resfl | ResolveFlags.NoImports),
-			path.$var = p.$var
+			forw.isForward(),
+			p ?= path.concat(forw),
+			Type.getRealType(tp,forw.type).clazz.resolveMethodR(node,p,name,args,Type.getRealType(tp,ret),Type.getRealType(tp,forw.type),resfl | ResolveFlags.NoImports),
+			path = p.$var
 		}
 	}
 
@@ -1107,7 +1107,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		super_clazz != null,
 		super_clazz.clazz.locatePackerField(f,size)
 	;	f @= fields,
-		f.$var.isPackerField(),
+		f.isPackerField(),
 		(32-f.pack.size) >= size
 	}
 
@@ -1779,17 +1779,17 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		pvar Method m;	// method we proceed
 	{
 		m @= methods,					// For all methods
-		!m.$var.name.equals(nameInit),
-		debugMsg(Kiev.debugMultiMethod, "Checking if "+m.$var+" needs to be dispatched"),
-		needToBeDispatched(m.$var),		// Check it needs to be dispatched
-		debugMsg(Kiev.debugMultiMethod, "Method "+m.$var+" needs to be dispatched"),
+		!m.name.equals(nameInit),
+		debugMsg(Kiev.debugMultiMethod, "Checking if "+m+" needs to be dispatched"),
+		needToBeDispatched(m),		// Check it needs to be dispatched
+		debugMsg(Kiev.debugMultiMethod, "Method "+m+" needs to be dispatched"),
 		{
-			checkIsNotDispatched(m.$var),	// Check it's not already dispatched
-			debugMsg(Kiev.debugMultiMethod, "Method "+m.$var+" has no a dispatch method already"),
-			makeDispatchMethod(m.$var)		// and make a dispatch method
+			checkIsNotDispatched(m),	// Check it's not already dispatched
+			debugMsg(Kiev.debugMultiMethod, "Method "+m+" has no a dispatch method already"),
+			makeDispatchMethod(m)		// and make a dispatch method
 		;
 			!Kiev.kaffe,
-			setDispatchableName(m.$var)
+			setDispatchableName(m)
 		},
 		false							// process next method
 	}
@@ -1805,11 +1805,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		$cut,true
 	;	at @= m.type.args,
 		{
-			at.$var.clazz.isPizzaCase()
-		;	!at.isArray(), at.$var.args.length > 0, at.$var.checkResolved(),
-			ata @= at.$var.args & ata1 @= at.$var.clazz.type.args,
-			!ata.$var.clazz.isArgument(),
-			!ata.$var.equals(ata1.$var),
+			at.clazz.isPizzaCase()
+		;	!at.isArray(), at.args.length > 0, at.checkResolved(),
+			ata @= at.args & ata1 @= at.clazz.type.args,
+			!ata.clazz.isArgument(),
+			!ata.equals(ata1),
 			debugMsg(Kiev.debugMultiMethod, "Needs to be dispatched because of argument "+ata+" != "+ata1)
 		},
 		$cut,true
@@ -1819,12 +1819,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		pvar Method dm;		// didpatch method
 	{
 		dm @= methods,					// For all methods in this class
-		dm.$var.name.equals(m.name),	// with the same name, args and static flag
-		m.type.args.length==dm.$var.type.args.length && m.isStatic()==dm.$var.isStatic(),
+		dm.name.equals(m.name),	// with the same name, args and static flag
+		m.type.args.length==dm.type.args.length && m.isStatic()==dm.isStatic(),
 		debugMsg(Kiev.debugMultiMethod, "Checking if method "+m+" is dispatched by "+dm+" ?.."),
-		m.type.getMMType().argsClassesEquals(dm.$var.type),
+		m.type.getMMType().argsClassesEquals(dm.type),
 		debugMsg(Kiev.debugMultiMethod, "Method "+m+" is probably dispatched by "+dm+" ?.."),
-		notNeedToBeDispatched(dm.$var),	// and not need to be dispatched
+		notNeedToBeDispatched(dm),	// and not need to be dispatched
 		debugMsg(Kiev.debugMultiMethod, "Method "+m+" is already dispatched by "+dm),
 		$cut, false
 	;

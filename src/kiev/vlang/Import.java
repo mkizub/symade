@@ -80,43 +80,43 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		mode == IMPORT_CLASS && this.node instanceof Struct && !star,
 		((Struct)this.node).checkResolved(),
 		s ?= ((Struct)this.node),
-		!s.$var.isPackage(),
+		!s.isPackage(),
 		{
-			s.$var.name.name.equals(name), node ?= s.$var
-		;	s.$var.name.short_name.equals(name), node ?= s.$var
+			s.name.name.equals(name), node ?= s.$var
+		;	s.name.short_name.equals(name), node ?= s.$var
 		}
 	;
 		mode == IMPORT_CLASS && this.node instanceof Struct && star,
 		((Struct)this.node).checkResolved(),
 		s ?= ((Struct)this.node),
 		{
-			!s.$var.isPackage(),
-			sub @= s.$var.sub_clazz, !sub.$var.isArgument(),
+			!s.isPackage(),
+			sub @= s.sub_clazz, !sub.isArgument(),
 			{
-				sub.$var.name.name.equals(name), node ?= sub.$var
-			;	sub.$var.name.short_name.equals(name), node ?= sub.$var
+				sub.name.name.equals(name), node ?= sub.$var
+			;	sub.name.short_name.equals(name), node ?= sub.$var
 			}
-		;	s.$var.isPackage(), s.$var.resolveNameR(node,path,name,tp,resfl)
+		;	s.isPackage(), s.resolveNameR(node,path,name,tp,resfl)
 		}
 	;
 		mode == IMPORT_STATIC && star && this.node instanceof Struct,
 		((Struct)this.node).checkResolved(),
 		((Struct)this.node).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
-		node.$var instanceof Field && node.$var.isStatic() && node.$var.isPublic()
+		node instanceof Field && node.isStatic() && node.isPublic()
 	;
 		mode == IMPORT_SYNTAX,
 		((Struct)this.node).checkResolved(),
 		tmp @= ((Struct)this.node).imported,
 		{
-			tmp.$var instanceof Field,
+			tmp instanceof Field,
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
-			((Field)tmp.$var).name.equals(name),
+			((Field)tmp).name.equals(name),
 			node ?= tmp
-		;	tmp.$var instanceof Typedef,
+		;	tmp instanceof Typedef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((Typedef)tmp.$var).name.equals(name),
-			node ?= ((Typedef)tmp.$var).type
-		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.$var.getClass()+" "+tmp+" == "+name), false
+			((Typedef)tmp).name.equals(name),
+			node ?= ((Typedef)tmp).type
+		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}
 
@@ -129,7 +129,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		mode == IMPORT_STATIC && star && this.node instanceof Struct,
 		((Struct)this.node).checkResolved(),
 		((Struct)this.node).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
-		node.$var instanceof Method && node.$var.isStatic() && node.$var.isPublic()
+		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 
 	public Dumper toJava(Dumper dmp) {

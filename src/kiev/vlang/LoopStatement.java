@@ -261,7 +261,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 
 	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
-		node @= vars, ((Var)node.$var).name.equals(name)
+		node @= vars, ((Var)node).name.equals(name)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -588,6 +588,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			PVar<Method> elems = new PVar<Method>();
 			PVar<Method> nextelem = new PVar<Method>();
 			PVar<Method> moreelem = new PVar<Method>();
+			if (ctype.clazz.isWrapper()) {
+				container = (Expr)new AccessExpr(container.pos,container,ctype.clazz.wrapped_field).resolve(null);
+				ctype = container.getType();
+			}
 			if( ctype.isArray() ) {
 				itype = Type.tpInt;
 				mode = ARRAY;
@@ -598,7 +602,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 				itype = ctype;
 				mode = JENUM;
 			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new PVar<List<ASTNode>>(List.Nil),nameElements,Expr.emptyArray,null,ctype,0) ) {
-				itype = Type.getRealType(ctype,elems.$var.type.ret);
+				itype = Type.getRealType(ctype,elems.type.ret);
 				mode = ELEMS;
 			} else if( ctype == Type.tpRule &&
 				(
@@ -654,7 +658,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 				/* iter = container.elements(); */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter),
-					new CallAccessExpr(container.pos,container,elems.$var,Expr.emptyArray)
+					new CallAccessExpr(container.pos,container,elems,Expr.emptyArray)
 					);
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
@@ -704,7 +708,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new BooleanWrapperExpr(iter.pos,
 					new CallAccessExpr(iter.pos, new VarAccessExpr(iter.pos,this,iter),
-						moreelem.$var,
+						moreelem,
 						Expr.emptyArray
 					));
 				break;
@@ -743,10 +747,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 					var_init = new CallAccessExpr(iter.pos,
 						new VarAccessExpr(iter.pos,iter),
-						nextelem.$var,
+						nextelem,
 						Expr.emptyArray
 					);
-				if (!nextelem.$var.type.ret.isInstanceOf(var.type))
+				if (!nextelem.type.ret.isInstanceOf(var.type))
 					var_init = new CastExpr(pos,var.type,var_init);
 				var_init = new AssignExpr(var.pos,AssignOperator.Assign,
 					new VarAccessExpr(var.pos,var),
@@ -804,7 +808,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 	{
 		{	node ?= var
 		;	node ?= iter
-		}, ((Var)node.$var).name.equals(name)
+		}, ((Var)node).name.equals(name)
 	}
 
 	public void generate(Type reqType) {

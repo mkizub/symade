@@ -521,7 +521,7 @@ public class AssignExpr extends LvalueExpr {
 					if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
 						Kiev.reportError(pos,"Internal error: can't find var "+name);
 					}
-					Var pv = (Var)v.$var;
+					Var pv = (Var)v;
 					pv.setNeedRefProxy(true);
 				}
 			}
@@ -1571,7 +1571,7 @@ public class IncrementExpr extends LvalueExpr {
 				if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
 					Kiev.reportError(pos,"Internal error: can't find var "+name);
 				}
-				Var pv = (Var)v.$var;
+				Var pv = (Var)v;
 				pv.setNeedRefProxy(true);
 			}
 		}
@@ -2005,23 +2005,23 @@ public class CastExpr extends Expr {
 		PVar<ASTNode> v = new PVar<ASTNode>();
 		PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
 		Struct cl = et.clazz;
-		v.$var = null;
-		path.$var = List.Nil;
+		v = null;
+		path = List.Nil;
 		if( PassInfo.resolveBestMethodR(cl,v,path,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
 			Expr ce;
-			if( path.$var  == List.Nil )
-				ce = new CallAccessExpr(pos,parent,expr,(Method)v.$var,Expr.emptyArray);
+			if( path  == List.Nil )
+				ce = new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			else {
-				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(path.$var,expr),(Method)v.$var,Expr.emptyArray);
+				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(path,expr),(Method)v,Expr.emptyArray);
 			}
 			expr = ce;
 			return this;
 		}
-		v.$var = null;
-		path.$var = List.Nil;
+		v = null;
+		path = List.Nil;
 		if( PassInfo.resolveMethodR(v,path,nameCastOp,new Expr[]{expr},this.type,et,ResolveFlags.Static) ) {
-			assert(v.$var.isStatic());
-			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v.$var,new Expr[]{expr}).resolve(type);
+			assert(v.isStatic());
+			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
 			expr = ce;
 			return this;
 		}
@@ -2048,10 +2048,10 @@ public class CastExpr extends Expr {
 			// try null to something...
 			if (et == Type.tpNull && reqType.isReference())
 				return expr;
-			if( et.clazz.equals(Type.tpPrologVar.clazz) && type.equals(et.args[0]) ) {
-				Field varf = (Field)et.clazz.resolveName(KString.from("$var"));
-				return new AccessExpr(pos,parent,expr,varf).resolve(reqType);
-			}
+//			if( et.clazz.equals(Type.tpPrologVar.clazz) && type.equals(et.args[0]) ) {
+//				Field varf = (Field)et.clazz.resolveName(KString.from("$var"));
+//				return new AccessExpr(pos,parent,expr,varf).resolve(reqType);
+//			}
 			if( type.clazz.equals(Type.tpPrologVar.clazz) && et.equals(type.args[0]) )
 				return new NewExpr(pos,
 						Type.newRefType(Type.tpPrologVar.clazz,new Type[]{et}),

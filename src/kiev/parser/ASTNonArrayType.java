@@ -59,31 +59,31 @@ public class ASTNonArrayType extends SimpleNode {
 	    	PVar<ASTNode> v = new PVar<ASTNode>();
 		    if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),qn.toKString(),null,0) )
 			    throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
-    		if( v.$var instanceof Type ) {
-    		    tp = (Type)v.$var;
+    		if( v instanceof Type ) {
+    		    tp = (Type)v;
     		} else {
-        		if( !(v.$var instanceof Struct) )
-		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v.$var);
+        		if( !(v instanceof Struct) )
+		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
         		Type[] atypes = new Type[children.length-1];
 		        for(int i=0; i < atypes.length; i++) {
         			atypes[i] = ((ASTType)children[i+1]).pass2();
 		        }
-		        tp = Type.newRefType((Struct)v.$var,atypes);
+		        tp = Type.newRefType((Struct)v,atypes);
 		    }
 		}
 		for (int i=0; i < ops.length; i++) {
 			PVar<ASTNode> v = new PVar<ASTNode>();
 			if (!PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),ops[i],null,0)) {
 				if (ops[i] == KString.from("@"))
-					v.$var = Type.tpPrologVar;
+					v = Type.tpPrologVar;
 				else if (ops[i] == KString.from("&"))
-					v.$var = Type.tpRefProxy;
+					v = Type.tpRefProxy;
 				else
 					throw new CompilerException(pos,"Typedef for type operator "+ops[i]+" not found");
 			}
-			if (!(v.$var instanceof Type))
+			if (!(v instanceof Type))
 				throw new CompilerException(pos,"Expected to find type for "+ops[i]+", but found "+v);
-			Type t = (Type)v.$var;
+			Type t = (Type)v;
 			if (t.args.length != 1)
 				throw new CompilerException(pos,"Type '"+t+"' of type operator "+ops[i]+" must have 1 argument");
 			Env.getStruct(t.clazz.name);

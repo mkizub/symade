@@ -678,7 +678,7 @@ public class CatchInfo extends ASTNode implements ScopeOfNames {
 
 	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
-		node ?= arg, ((Var)node.$var).name.equals(name)
+		node ?= arg, ((Var)node).name.equals(name)
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {

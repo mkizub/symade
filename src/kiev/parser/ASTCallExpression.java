@@ -84,10 +84,10 @@ public class ASTCallExpression extends Expr {
 			}
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,path,PassInfo.method.name.name,args,ret,tp,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path.$var == List.Nil )
-				return new CallExpr(pos,parent,(Method)m.$var,((Method)m.$var).makeArgs(args,tp),false).resolve(ret);
+            if( path == List.Nil )
+				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),false).resolve(ret);
 			else
-				return new CallAccessExpr(pos,parent,Method.getAccessExpr(path.$var),(Method)m.$var,((Method)m.$var).makeArgs(args,tp)).resolve(ret);
+				return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
 		}
 		else if( func.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
@@ -112,8 +112,8 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,
 					m,path,PassInfo.method.name.name,args,ret,PassInfo.clazz.super_clazz,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path.$var == List.Nil )
-				return new CallExpr(pos,parent,(Method)m.$var,((Method)m.$var).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
+            if( path == List.Nil )
+				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
 		} else {
@@ -132,13 +132,13 @@ public class ASTCallExpression extends Expr {
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args,ret));
 				}
 				try {
-					if( closure.$var instanceof Var && Type.getRealType(tp,((Var)closure.$var).type) instanceof MethodType
-					||  closure.$var instanceof Field && Type.getRealType(tp,((Field)closure.$var).type) instanceof MethodType
+					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
+					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
-						if( path.$var  == List.Nil )
-							return new ClosureCallExpr(pos,parent,closure.$var,args).resolve(ret);
+						if( path  == List.Nil )
+							return new ClosureCallExpr(pos,parent,closure,args).resolve(ret);
 						else {
-							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path.$var),closure.$var,args).resolve(ret);
+							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path),closure,args).resolve(ret);
 						}
 					}
 				} catch(Exception eee) {
@@ -148,15 +148,15 @@ public class ASTCallExpression extends Expr {
 			}
 			if( reqType instanceof MethodType ) {
 				if( Kiev.kaffe ) {
-					return new NewClosure(pos,(Method)m.$var,args).resolve(reqType);
+					return new NewClosure(pos,(Method)m,args).resolve(reqType);
 				} else {
 					ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
 					ac.pos = pos;
 					ac.parent = parent;
 					ac.type = ((MethodType)reqType).ret;
-					ac.params = new ASTNode[((Method)m.$var).type.args.length];
+					ac.params = new ASTNode[((Method)m).type.args.length];
 					for(int i=0; i < ac.params.length; i++)
-						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),((Method)m.$var).type.args[i],0);
+						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0);
 					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
 					Expr[] oldargs = args;
 					Expr[] cargs = new Expr[ac.params.length];
@@ -176,11 +176,12 @@ public class ASTCallExpression extends Expr {
 						return ac.resolve(reqType);
 				}
 			} else {
-				if( m.$var.isStatic() ) path.$var = List.Nil;
-	            if( path.$var == List.Nil )
-					return new CallExpr(pos,parent,(Method)m.$var,((Method)m.$var).makeArgs(args,tp)).resolve(reqType);
+				if( m.isStatic() )
+					path = List.Nil;
+	            if( path == List.Nil )
+					return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 				else
-					return new CallAccessExpr(pos,parent,Method.getAccessExpr(path.$var),(Method)m.$var,((Method)m.$var).makeArgs(args,tp)).resolve(reqType);
+					return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 			}
 		}
 	}

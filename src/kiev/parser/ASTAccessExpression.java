@@ -108,33 +108,33 @@ public class ASTAccessExpression extends Expr {
 				throw new CompilerException(pos,"Unresolved identifier "+name+" in class "+cl+" for type "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 			}
-			if( v.$var instanceof Field ) {
-				if( ((Field)v.$var).isStatic() ) {
-					return new StaticFieldAccessExpr(pos,cl,(Field)v.$var).resolve(reqType);
+			if( v instanceof Field ) {
+				if( v.isStatic() ) {
+					return new StaticFieldAccessExpr(pos,cl,(Field)v).resolve(reqType);
 				} else {
-					if( path.$var == List.Nil ) {
+					if( path == List.Nil ) {
 						if( o instanceof Struct )
-							throw new CompilerException(pos,"Static access to non-static field "+v.$var);
-						return new AccessExpr(pos,(Expr)o,(Field)v.$var).resolve(reqType);
+							throw new CompilerException(pos,"Static access to non-static field "+v);
+						return new AccessExpr(pos,(Expr)o,(Field)v).resolve(reqType);
 					} else {
-						if( o instanceof Struct && path.$var.head().isStatic() )
-							throw new CompilerException(pos,"Static access to non-static field "+v.$var);
+						if( o instanceof Struct && path.head().isStatic() )
+							throw new CompilerException(pos,"Static access to non-static field "+v);
 
 						Expr expr;
 						expr = new AccessExpr(pos,(Expr)o,(Field)path.head());
 						expr.parent = parent;
-						path.$var = path.$var.tail();
-						foreach(ASTNode n; path.$var)
+						path = path.tail();
+						foreach(ASTNode n; path)
 							expr = new AccessExpr(pos,expr,(Field)n);
-						return new AccessExpr(pos,expr,(Field)v.$var).resolve(reqType);
+						return new AccessExpr(pos,expr,(Field)v).resolve(reqType);
 					}
 				}
 			}
-			else if( v.$var instanceof Struct ) {
-				return (Struct)v.$var;
+			else if( v instanceof Struct ) {
+				return (Struct)v;
 			}
-			else if( v.$var instanceof Method ) {
-				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v.$var,Expr.emptyArray).resolve(reqType);
+			else if( v instanceof Method ) {
+				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray).resolve(reqType);
 			} else {
 				throw new CompilerException(pos,"Identifier "+name+" must be a class's field");
 			}

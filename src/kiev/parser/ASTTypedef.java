@@ -69,9 +69,9 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 			PVar<ASTNode> v = new PVar<ASTNode>();
 			if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),qn.toKString(),null,0) )
 				throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
-			if( !(v.$var instanceof Struct) )
-				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v.$var);
-			Struct s = (Struct)v.$var;
+			if( !(v instanceof Struct) )
+				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
+			Struct s = (Struct)v;
 			if (s.type.args.length != 1)
 				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
 			return td = new Typedef(pos,parent,name,s.type);

@@ -164,7 +164,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 
 	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
-		node @= vars, ((Var)node.$var).name.equals(name)
+		node @= vars, ((Var)node).name.equals(name)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -464,7 +464,7 @@ public class DeclStat extends Statement {
 					PVar<Method> in = new PVar<Method>();
 					PassInfo.resolveBestMethodR(prt.clazz,in
 						,new PVar<List<ASTNode>>(List.Nil),nameInit,new Expr[]{init},Type.tpVoid,null,ResolveFlags.NoForwards);
-					Code.addInstr(Instr.op_call,in.$var,false);
+					Code.addInstr(Instr.op_call,in,false);
 					Code.addInstr(Instr.op_store,var);
 				}
 			}

@@ -285,7 +285,7 @@ public class OpTypes {
 				;	types[ref1] == Type.tpShort || types[ref2] == Type.tpShort, tp ?= Type.tpShort
 				;	types[ref1] == Type.tpByte || types[ref2] == Type.tpByte, tp ?= Type.tpByte
 				},
-				types[position] = tp.$var
+				types[position] = tp
 			},
 			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
 		}

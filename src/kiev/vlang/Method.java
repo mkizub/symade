@@ -352,8 +352,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
-	;	node @= params, ((Var)node.$var).name.equals(name)
-	;	node ?= retvar, ((Var)node.$var).name.equals(name)
+	;	node @= params, ((Var)node).name.equals(name)
+	;	node ?= retvar, ((Var)node).name.equals(name)
 //		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this)
 	}
 

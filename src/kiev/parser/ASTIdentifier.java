@@ -84,7 +84,7 @@ public class ASTIdentifier extends Expr {
 				if( PassInfo.resolveMethodR(v,path,name,args,((MethodType)reqType).ret,null,0) ) {
 //					System.out.println("First-order function "+v);
 					if( Kiev.kaffe ) {
-						return new NewClosure(pos,(Method)v.$var).resolve(reqType);
+						return new NewClosure(pos,(Method)v).resolve(reqType);
 					} else {
 						ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
 						ac.pos = pos;
@@ -137,39 +137,39 @@ public class ASTIdentifier extends Expr {
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
 		Expr e = null;
-		if( v.$var instanceof Var ) {
-			if( v.$var.isLocalPrologVar() )
-				e = new LocalPrologVarAccessExpr(pos,this,(Var)v.$var);
+		if( v instanceof Var ) {
+			if( v.isLocalPrologVar() )
+				e = new LocalPrologVarAccessExpr(pos,this,(Var)v);
 			else
-				e = new VarAccessExpr(pos,this,(Var)v.$var);
+				e = new VarAccessExpr(pos,this,(Var)v);
 		}
-		else if( v.$var instanceof Field ) {
-			Field f = (Field)v.$var;
+		else if( v instanceof Field ) {
+			Field f = (Field)v;
 			if( f.isStatic() ) return new StaticFieldAccessExpr(pos,PassInfo.clazz,f).resolve(reqType);
-			if( path.$var == List.Nil )
+			if( path == List.Nil )
 				e = new FieldAccessExpr(pos,f);
 			else {
 				e = new FieldAccessExpr(pos,(Field)path.head());
-				path.$var = path.$var.tail();
-				foreach(ASTNode n; path.$var) {
+				path = path.tail();
+				foreach(ASTNode n; path) {
 					e = new AccessExpr(pos,this,e,(Field)n);
 				}
 				e = new AccessExpr(pos,this,e,(Field)f);
 			}
 		}
-		else if( v.$var instanceof Struct ) {
+		else if( v instanceof Struct ) {
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
-				Struct s = (Struct)v.$var;
+				Struct s = (Struct)v;
 				if( s.isPizzaCase() ) {
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
 					if( case_attr == null ) return s;
 					return new ConstExpr(pos,Kiev.newInteger(case_attr.caseno)).resolve(reqType);
 				}
 			}
-			return v.$var;
+			return v;
 		}
-		else if( v.$var instanceof Type ) {
-			return ((Type)v.$var).clazz;
+		else if( v instanceof Type ) {
+			return ((Type)v).clazz;
 		} else {
 			throw new CompilerException(pos,"Identifier "+name+" must be local var, class's field or class name");
 		}

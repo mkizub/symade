@@ -221,21 +221,21 @@ public class PassInfo {
 	public static boolean checkClassName(KString qname) {
 		PVar<ASTNode> node = new PVar<ASTNode>();
 		return resolveNameR(node,new PVar<List<ASTNode>>(List.Nil),qname,null,0)
-			&& ((node.$var instanceof Struct && !node.$var.isPackage()) || node.$var instanceof Type);
+			&& ((node instanceof Struct && !node.isPackage()) || node instanceof Type);
 	}
 
 	public static boolean resolveQualifiedPrefix(Struct@ qstruct, KString@ qname, KString name, int resfl)
 	{
 		KStringTokenizer sigt = new KStringTokenizer(name,'.');
 		PVar<ASTNode> cl = new PVar<ASTNode>();
-		if( !resolveNameR(cl,new PVar<List<ASTNode>>(List.Nil),sigt.nextToken(),null,resfl) || !(cl.$var instanceof Struct ))
+		if( !resolveNameR(cl,new PVar<List<ASTNode>>(List.Nil),sigt.nextToken(),null,resfl) || !(cl instanceof Struct ))
 			return false;
-		while( cl.$var instanceof Struct
+		while( cl instanceof Struct
 			&& sigt.hasMoreTokens()
-			&& ((Struct)cl.$var).resolveNameR(cl, new PVar<List<ASTNode>>(List.Nil), sigt.nextToken(), ((Struct)cl.$var).type, resfl & ResolveFlags.Unique)
+			&& ((Struct)cl).resolveNameR(cl, new PVar<List<ASTNode>>(List.Nil), sigt.nextToken(), ((Struct)cl).type, resfl & ResolveFlags.Unique)
 			);
-		if( !(cl.$var instanceof Struct) ) return false;
-		((Struct)cl.$var).checkResolved();
+		if( !(cl instanceof Struct) ) return false;
+		((Struct)cl).checkResolved();
 		if( sigt.hasMoreTokens() ) {
 			KStringBuffer ksb = new KStringBuffer();
 			boolean moretok = false;
@@ -247,11 +247,11 @@ public class PassInfo {
 				else
 					break;
 			}
-			qname.$var = ksb.toKString();
+			qname = ksb.toKString();
 		} else {
-			qname.$var = KString.Empty;
+			qname = KString.Empty;
 		}
-		qstruct.$var = (Struct)cl.$var;
+		qstruct = (Struct)cl;
 		return true;
 	}
 
@@ -259,11 +259,11 @@ public class PassInfo {
 		NameAndPath sym = symbols.get(name);
 		if( sym != null ) {
 			trace(Kiev.debugResolve,"Name "+name+" resolved from hash as "+sym);
-			node.$var = (ASTNode)sym.node;
-			path.$var = sym.nodepath;
+			node = (ASTNode)sym.node;
+			path = sym.nodepath;
 			return true;
 		} else {
-			node.$var = null;
+			node = null;
 			return false;
 		}
 	}
@@ -272,8 +272,8 @@ public class PassInfo {
 		ASTNode@ p;
 	{
 		p @= new PathEnumerator(),
-		p.$var instanceof ScopeOfOperators,
-		((ScopeOfOperators)p.$var).resolveOperatorR(op)
+		p instanceof ScopeOfOperators,
+		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
 	rule public static resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
@@ -284,16 +284,16 @@ public class PassInfo {
 		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,path,qname_head.$var,tp,resfl),
-		p.$var instanceof Struct,
-		((Struct)p.$var).resolveNameR(node, path, qname_tail, tp, resfl)
+		resolveNameR(p,path,qname_head,tp,resfl),
+		p instanceof Struct,
+		((Struct)p).resolveNameR(node, path, qname_tail, tp, resfl)
 	;
 		checkSymbolInHash(node,path,name,resfl), $cut
 	;
-		p @= new PathEnumerator(), p.$var instanceof ScopeOfNames,
-		((ScopeOfNames)p.$var).resolveNameR(node,path,name,tp,resfl),
+		p @= new PathEnumerator(), p instanceof ScopeOfNames,
+		((ScopeOfNames)p).resolveNameR(node,path,name,tp,resfl),
 		checkResolvedPathForName(node,path), $cut,
-		{ node.$var instanceof Named, addResolvedNode((Named)node.$var,path.$var,(ScopeOfNames)p.$var); true }
+		{ node instanceof Named, addResolvedNode((Named)node,path,(ScopeOfNames)p); true }
 	}
 
 	static boolean checkResolvedPathForName(ASTNode node, PVar<List<ASTNode>> path) {
@@ -302,7 +302,7 @@ public class PassInfo {
 		if( node instanceof Var ) return true;
 		// Structures/types/typedefs do not need path
 		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
-			path.$var = List.Nil;
+			path = List.Nil;
 			return true;
 		}
 		// Check field
@@ -310,23 +310,23 @@ public class PassInfo {
 			trace( Kiev.debugResolve, "check path for "+node+" to access from "+PassInfo.clazz+" to "+node.parent);
 			assert( node.parent instanceof Struct );
 			if( node.isStatic() ) {
-				path.$var = List.Nil;
+				path = List.Nil;
 				trace( Kiev.debugResolve, "path for static "+node+" trunkated");
 				return true;
 			}
 			if( PassInfo.clazz.instanceOf((Struct)node.parent) ) {
-				assert( path.$var == List.Nil );
+				assert( path == List.Nil );
 				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
 				return true;
 			}
 			if( node instanceof Field && node.isVirtual() ) {
-				assert( path.$var == List.Nil );
+				assert( path == List.Nil );
 				trace( Kiev.debugResolve, "virtual field "+node+" does not requare path");
 				return true;
 			}
 			Struct s = PassInfo.clazz;
 			// Check that path != List.Nil
-			if( path.$var == List.Nil ) {
+			if( path == List.Nil ) {
 				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
 				// If inner clazz is static - fail
 				if( PassInfo.clazz.isStatic() ) {
@@ -348,7 +348,7 @@ public class PassInfo {
 			for(;;) {
 				foreach(Field f; s.fields; f.name.name.startsWith(Constants.nameThisDollar) ) {
 					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
-					path.$var = new List.Cons<ASTNode>(f,path.$var);
+					path = new List.Cons<ASTNode>(f,path);
 					// Check we've finished
 					if( f.type.clazz.instanceOf((Struct)node.parent)) return true;
 					s = f.type.clazz;
@@ -379,19 +379,19 @@ public class PassInfo {
 		if( sc == Type.tpPrologVar.clazz )
 			resfl |= ResolveFlags.NoSuper;
 		foreach( sc.resolveMethodR(node,path,name,args,ret,type,resfl) ) {
-			trace(Kiev.debugResolve,"Candidate method "+node.$var+" found...");
-			if (node.$var.isPrivate() && clazz != (Struct)node.$var.parent)
+			trace(Kiev.debugResolve,"Candidate method "+node+" found...");
+			if (node.isPrivate() && clazz != (Struct)node.parent)
 				continue;
-			lm = lm.concat((Method)node.$var);
-			lp = lp.concat(path.$var);
+			lm = lm.concat((Method)node);
+			lp = lp.concat(path);
 		}
 		if( lm == List.Nil ) {
 			trace(Kiev.debugResolve,"Nothing found...");
 			return false;
 		}
 		if( lm.tail() == List.Nil ) {
-			node.$var = lm.head();
-			path.$var = lp.head();
+			node = lm.head();
+			path = lp.head();
 			return true;
 		}
 		List<Method> lm1 = lm;
@@ -449,8 +449,8 @@ public class PassInfo {
 				continue next_method;
 			}
 			// Is better than all in list
-			node.$var = m1;
-			path.$var = p1;
+			node = m1;
+			path = p1;
 			return true;
 		}
 		// Check that all methods in list are multimethods
@@ -467,8 +467,8 @@ public class PassInfo {
 			}
 		}
 		if( all_multi ) {
-			node.$var = m_multi;
-			path.$var = p_multi;
+			node = m_multi;
+			path = p_multi;
 			return true;
 		}
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
@@ -489,12 +489,12 @@ public class PassInfo {
 		name.indexOf('.') > 0,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,path,qname_head.$var,type,resfl),
-		p.$var instanceof Struct,
-		((Struct)p.$var).resolveMethodR(node, path, qname_tail.$var, args, ret, type, resfl)
+		resolveNameR(p,path,qname_head,type,resfl),
+		p instanceof Struct,
+		((Struct)p).resolveMethodR(node, path, qname_tail, args, ret, type, resfl)
 	;
-		p @= new PathEnumerator(), p.$var instanceof ScopeOfMethods,
-		resolveBestMethodR((ScopeOfMethods)p.$var,node,path,name,args,ret,type,resfl),
+		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
+		resolveBestMethodR((ScopeOfMethods)p,node,path,name,args,ret,type,resfl),
 		checkResolvedPathForName(node,path)
 	}
 
