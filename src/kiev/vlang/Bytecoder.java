@@ -91,7 +91,7 @@ public class Bytecoder implements Constants {
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
 		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_LOCAL|ACC_ANONYMOUSE|ACC_HAS_CASES
-				|ACC_VERIFIED|ACC_ENUM|ACC_GRAMMAR);
+				|ACC_VERIFIED|ACC_ENUM|ACC_GRAMMAR|ACC_WRAPPER);
 		fl |= bcclazz.flags;
 		cl.setFlags( fl );
 
@@ -125,13 +125,31 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
 		for(int i=0; i < attrs.length; i++) {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
-			if( at != null ) cl.addAttr(at);
+			if( at != null ) {
+				cl.addAttr(at);
+				if( at.name.equals(attrFlags) ) {
+					int flags = ((FlagsAttr)at).flags;
+					if ((flags & 1) == 1) {
+						if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+						cl.setWrapper(true);
+					}
+				}
+			}
 		}
 		if( kaclazz != null ) {
 			attrs = kaclazz.attrs;
 			for(int i=0; i < attrs.length; i++) {
 				Attr at = readAttr(kaclazz.attrs[i],kaclazz);
-				if( at != null ) cl.addAttr(at);
+				if( at != null ) {
+					cl.addAttr(at);
+					if( at.name.equals(attrFlags) ) {
+						int flags = ((FlagsAttr)at).flags;
+						if ((flags & 1) == 1) {
+							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+							cl.setWrapper(true);
+						}
+					}
+				}
 			}
 		}
 

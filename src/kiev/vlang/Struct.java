@@ -3214,6 +3214,13 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				}
 			}
 
+			{
+				int flags = 0;
+				if( jthis.isWrapper() ) flags |= 1;
+
+				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
+			}
+
 			for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
 			for(int i=0; fields!=null && i < fields.length; i++) {
 				Field f = fields[i];

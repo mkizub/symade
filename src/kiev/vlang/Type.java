@@ -530,6 +530,7 @@ public class Type extends ASTNode implements AccessFlags {
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
+		tpRefProxyClazz.setWrapper(true);
 		Struct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
 		Type tpRefProxyArg = new Type(tpRefProxyArgClazz);
 		tpRefProxy	= new Type(tpRefProxyClazz,new Type[]{tpRefProxyArg});
