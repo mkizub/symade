@@ -58,6 +58,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		if (mode == IMPORT_STATIC)  str.append("static ");
 		if (mode == IMPORT_PACKAGE) str.append("package ");
 		if (mode == IMPORT_SYNTAX)  str.append("syntax ");
+		if (node instanceof Field)  str.append(node.getType()).append('.');
 		str.append(node);
 		if (star) str.append(".*");
 		return str.toString();
@@ -106,7 +107,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		mode == IMPORT_STATIC && !star && this.node instanceof Method,
-		((Method)this.node).equals(name,args,ret,type,resfl),
+		((Method)this.node).equalsByCast(name,args,ret,type,resfl),
 		node ?= ((Method)this.node)
 	;
 		mode == IMPORT_STATIC && star && this.node instanceof Struct,

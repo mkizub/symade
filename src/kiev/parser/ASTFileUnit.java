@@ -122,13 +122,15 @@ public class ASTFileUnit extends ASTNode {
 
 			for(int i=0; i < imports.length; i++) {
 				try {
+					if (((ASTImport)imports[i]).mode == ASTImport.IMPORT_STATIC && !((ASTImport)imports[i]).star)
+						continue; // process later
 					Import imp = (Import)((ASTImport)imports[i]).pass2();
 					imps = (Import[])Arrays.append(imps,imp);
 					if( imp.mode == Import.IMPORT_CLASS && ((Struct)imp.node).name.name.equals(java_lang_name))
 						java_lang_found = true;
 					else if( imp.mode == Import.IMPORT_CLASS && ((Struct)imp.node).name.name.equals(kiev_stdlib_name))
 						kiev_stdlib_found = true;
-					trace(Kiev.debugResolve,"Add "+imps[imps.length-1]);
+					trace(Kiev.debugResolve,"Add "+imp);
 				} catch(Exception e ) {
 					Kiev.reportError/*Warning*/(imports[i].getPos(),e);
 				}
@@ -265,8 +267,19 @@ public class ASTFileUnit extends ASTNode {
         try {
 			// Process members - pass3()
 			PassInfo.push(file_unit);
-			try {
-				for(int i=0; i < decls.length; i++) {
+			for(int i=0; i < imports.length; i++) {
+				try {
+					if (((ASTImport)imports[i]).mode != ASTImport.IMPORT_STATIC || ((ASTImport)imports[i]).star)
+						continue; // processed at pass2
+					Import imp = (Import)((ASTImport)imports[i]).pass2();
+					file_unit.imports = (Import[])Arrays.append(file_unit.imports,imp);
+					trace(Kiev.debugResolve,"Add "+imp);
+				} catch(Exception e ) {
+					Kiev.reportError/*Warning*/(imports[i].getPos(),e);
+				}
+			}
+			for(int i=0; i < decls.length; i++) {
+				try {
 					switch(decls[i]) {
 					case ASTTypeDeclaration:
 						((ASTTypeDeclaration)decls[i]).me.resolveImports();
@@ -280,9 +293,11 @@ public class ASTFileUnit extends ASTNode {
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
+				} catch(Exception e ) {
+					Kiev.reportError/*Warning*/(decls[i].getPos(),e);
 				}
-			} finally { PassInfo.pop(file_unit); }
-		} finally { Kiev.curFile = oldfn; }
+			}
+		} finally { PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 	}
 
 	public void resolveFinalFields(boolean cleanup) {
