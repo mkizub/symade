@@ -62,6 +62,7 @@ public class PassInfo {
 	private PassInfo() {}
 
 	// Pass info and global resolving section
+	public static FileUnit			file_unit;
 	public static Struct			clazz;
 	public static Method			method;
 	public static ASTNode[]			path	= new ASTNode[1024];
@@ -71,7 +72,11 @@ public class PassInfo {
 	public static void push(ASTNode node) {
 		trace(Kiev.debugAST,"AST "+pathTop+" push '"+node+"'"+debugAt());
         path[pathTop++] = node;
-		if( node instanceof Struct ) {
+		if( node instanceof FileUnit ) {
+			trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
+			file_unit = (FileUnit)node;
+		}
+		else if( node instanceof Struct ) {
 			trace(Kiev.debugAST,"AST set clazz  '"+node+"'"+debugAt());
 			clazz = (Struct)node;
 		}
@@ -102,7 +107,10 @@ public class PassInfo {
     	if( n!=node )
     		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
         path[pathTop] = null;
-		if( node instanceof Struct ) {
+		if( node instanceof FileUnit ) {
+			file_unit = null;
+		}
+		else if( node instanceof Struct ) {
 			clazz = null;
 			for(int i=pathTop-1; i >= 0; i-- ) {
 				if( path[i] instanceof Struct ) {

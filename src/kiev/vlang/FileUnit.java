@@ -38,7 +38,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public Struct[]				imports = Struct.emptyArray;
+	public Import[]				imports = Import.emptyArray;
 	public Typedef[]			typedefs = Typedef.emptyArray;
 	public Struct[]				members = Struct.emptyArray;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
@@ -123,8 +123,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
 		pvar Typedef td;
-		pvar Struct s;
-		pvar Struct sub;
+		pvar Import imp;
 	{
 		td @= typedefs,
 		trace( Kiev.debugResolve, "Compare "+name+" with "+td),
@@ -132,38 +131,32 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		node.$var = td.type
 	;
 //		trace(Kiev.debugResolve,"Name "+name+" not found in file package "+pkg.name),
-		s @= imports, s.$var.checkResolved(),
-		!s.$var.isPackage(),
-		debugTryResolveIn(name," file import "+s.$var),
-		{
-			node ?= s.$var, s.$var.name.name.equals(name)
-		;	node ?= s.$var, s.$var.name.short_name.equals(name)
-		}
+		imp @= imports,
+		!imp.$var.star,
+		debugTryResolveIn(name," file import "+imp.$var),
+		imp.$var.resolveNameR(node,path,name,tp,resfl)
 	;
 		pkg != null,
 		debugTryResolveIn(name," file package "+pkg),
 		pkg.resolveNameR(node,path,name,tp,resfl)
 	;
 //		trace(Kiev.debugResolve,"Name "+name+" not found in file package "+pkg.name),
-		s @= imports, s.$var.checkResolved(),
-		debugTryResolveIn(name," file import "+s.$var),
-		{
-			node ?= s.$var, s.$var.name.name.equals(name)
-		;	node ?= s.$var, s.$var.name.short_name.equals(name)
-		;	sub @= s.$var.sub_clazz, !sub.$var.isArgument(),
-			{
-				node ?= sub.$var, sub.$var.name.name.equals(name)
-			;	node ?= sub.$var, sub.$var.name.short_name.equals(name)
-			}
-		;	s.$var.isPackage(), s.$var.resolveNameR(node,path,name,tp,resfl)
-		}
+		imp @= imports,
+		imp.$var.star,
+		debugTryResolveIn(name," file import "+imp.$var),
+		imp.$var.resolveNameR(node,path,name,tp,resfl)
 	;	debugTryResolveIn(name," root package"),
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
 	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
+		pvar Import imp;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
+	;	imp @= imports,
+		imp.mode == Import.IMPORT_STATIC,
+		debugTryResolveIn(name," file import "+imp.$var),
+		imp.$var.resolveMethodR(node,path,name,args,ret,type,resfl)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -253,10 +246,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 			dmp.append("package ").append(cl.package_clazz.name).append(';').newLine();
 		}
 		for(int j=0; j < imports.length; j++) {
-			dmp.append("import ").append(imports[j].name);
-			if( imports[j].isPackage() )
-				dmp.append(".*");
-			dmp.append(';').newLine();
+			dmp.append(imports[j]);
 		}
 
 		PassInfo.push(this);

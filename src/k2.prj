@@ -336,6 +336,7 @@ kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
 kiev.vlang.Grammar kiev/vlang/Grammar kiev\vlang\Grammar.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
+kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.InitializeExpr kiev/vlang/InitializeExpr kiev\vlang\Expr.java

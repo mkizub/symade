@@ -721,13 +721,26 @@ void Import() :
 {}
 {
 	try {
-		"import" QName()
-		[
-			"." "*" { jjtThis.star = true; }
-		|	"("		{ jjtThis.args = ASTType.emptyArray; }
-			(Type())*
-			")"
-		]
+		"import"
+		(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			<IDENTIFIER>{ jjtThis.mode = ASTImport.IMPORT_SYNTAX; }
+			[ QName() ]
+		|	"package"	{ jjtThis.mode = ASTImport.IMPORT_PACKAGE; }
+			[ QName() ]
+		|	"static"	{ jjtThis.mode = ASTImport.IMPORT_STATIC; }
+			QName()
+			[	"." "*" { jjtThis.star = true; }
+			|	"("		{ jjtThis.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		|	QName()
+			[	"." "*" { jjtThis.star = true; }
+			|	"("		{ jjtThis.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		)
 		";"
 	}
 	catch(ParseError e) { rpe("Bad import declaration",e); }

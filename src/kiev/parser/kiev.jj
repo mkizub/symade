@@ -786,13 +786,26 @@ void Import() :
         try {
 /*@egen*/
 	try {
-		"import" QName()
-		[
-			"." "*" { jjtn000.star = true; }
-		|	"("		{ jjtn000.args = ASTType.emptyArray; }
-			(Type())*
-			")"
-		]
+		"import"
+		(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			<IDENTIFIER>{ jjtn000.mode = ASTImport.IMPORT_SYNTAX; }
+			[ QName() ]
+		|	"package"	{ jjtn000.mode = ASTImport.IMPORT_PACKAGE; }
+			[ QName() ]
+		|	"static"	{ jjtn000.mode = ASTImport.IMPORT_STATIC; }
+			QName()
+			[	"." "*" { jjtn000.star = true; }
+			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		|	QName()
+			[	"." "*" { jjtn000.star = true; }
+			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		)
 		";"
 	}
 	catch(ParseError e) { rpe("Bad import declaration",e); }

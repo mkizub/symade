@@ -2952,6 +2952,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				ASTNode imp = old_imported[i];
 				if( imp instanceof ASTImport )
 					imp = ((ASTImport)imp).pass2();
+				if( imp instanceof Import) imp = ((Import)imp).node;
 				if( imp == null )
 					Kiev.reportWarning(pos,"Imported member "+imported[i]+" not found");
 				else if( imp instanceof Field ) {

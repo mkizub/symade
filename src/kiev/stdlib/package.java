@@ -29,7 +29,7 @@ package kiev.stdlib;
 
 package {
 
-	import KString.from(java.lang.String);
+	//import KString.from(java.lang.String);
 	import kiev.stdlib.Debug;
 
 }
