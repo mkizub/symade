@@ -588,6 +588,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			PVar<Method> elems = new PVar<Method>();
 			PVar<Method> nextelem = new PVar<Method>();
 			PVar<Method> moreelem = new PVar<Method>();
+			if (ctype.clazz.isWrapper()) {
+				container = (Expr)new AccessExpr(container.pos,container,ctype.clazz.wrapped_field).resolve(null);
+				ctype = container.getType();
+			}
 			if( ctype.isArray() ) {
 				itype = Type.tpInt;
 				mode = ARRAY;

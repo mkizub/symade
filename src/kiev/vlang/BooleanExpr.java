@@ -517,6 +517,10 @@ public class BinaryBooleanExpr extends BooleanExpr {
 			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 			ex = (Expr)new ConstExpr(pos,Kiev.newInteger(ca.caseno)).resolve(Type.tpInt);
 			Type tp = expr1.getType();
+			if (tp.clazz.isWrapper()) {
+				expr1 = new AccessExpr(expr1.pos,expr1,tp.clazz.wrapped_field).resolveExpr(null);
+				tp = expr1.getType();
+			}
 			if( !tp.clazz.isPizzaCase() && !tp.clazz.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp.clazz+" with class's case "+cas);
 			Method m = tp.clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));

@@ -330,6 +330,10 @@ public class CallAccessExpr extends Expr {
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
+		if (args != null) {
+			for (int i=0; i < args.length; i++)
+				args[i] = args[i].resolveExpr(Type.getRealType(obj.getType(),func.type.args[i]));
+		}
 		setResolved(true);
 		return this;
 	}
