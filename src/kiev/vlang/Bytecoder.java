@@ -23,6 +23,10 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+import static kiev.vlang.Operator.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Bytecoder.java,v 1.5.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,11 +35,6 @@ import kiev.stdlib.*;
  */
 
 public class Bytecoder implements Constants {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.OpTypes;
-	import kiev.vlang.Operator;
-
 	public Struct								cl;
 	public kiev.bytecode.Clazz					bcclazz;
 	public kiev.bytecode.KievAttributeClazz		kaclazz;

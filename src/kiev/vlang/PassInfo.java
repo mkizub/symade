@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import java.io.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/PassInfo.java,v 1.3.2.1.2.2 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -55,8 +57,6 @@ public class PathEnumerator implements Enumeration<ASTNode> {
 }
 
 public class PassInfo {
-
-	import kiev.stdlib.Debug;
 
 	// No instances
 	private PassInfo() {}

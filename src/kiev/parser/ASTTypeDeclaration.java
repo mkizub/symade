@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTTypeDeclaration.java,v 1.4.2.1.2.4 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -34,9 +36,6 @@ import kiev.vlang.*;
  */
 
 public class ASTTypeDeclaration extends ASTNode {
-
-	import kiev.stdlib.Debug;
-
 	public ASTNode[]	modifier = ASTNode.emptyArray;
 	public ASTAccess	acc;
     public int			kind;

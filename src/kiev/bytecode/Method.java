@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,8 +17,10 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.bytecode;
+
+import static kiev.stdlib.Debug.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Method.java,v 1.2 1998/10/21 19:44:17 max Exp $
@@ -28,10 +30,8 @@ package kiev.bytecode;
  */
 
 public class Method implements BytecodeElement,BytecodeFileConstants {
-	import kiev.stdlib.Debug;
-	
 	public static final Method[]	emptyArray = new Method[0];
-	
+
 	public int					flags;
 	public int					cp_name;
 	public int					cp_type;

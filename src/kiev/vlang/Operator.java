@@ -24,6 +24,10 @@ import kiev.Kiev;
 import kiev.vlang.OpTypes.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.OpTypes.*;
+import static kiev.vlang.Operator.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Operator.java,v 1.3.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -32,8 +36,6 @@ import kiev.stdlib.*;
  */
 
 public class OpTypes {
-	import kiev.stdlib.Debug;
-
 	public TypeRule		trtypes[];
     public Method		method;
 
@@ -364,8 +366,6 @@ public class OpTypes {
 
 public abstract class Operator implements Constants {
 
-	import OpTypes;
-
 	// Assign orders
 	public static final int LFY			= 0;
 
@@ -535,9 +535,6 @@ public abstract class Operator implements Constants {
 
 public class AssignOperator extends Operator {
 
-	import OpTypes;
-	import Operator;
-
 	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
 
 	// Assign (binary) operators
@@ -632,9 +629,6 @@ public class AssignOperator extends Operator {
 }
 
 public class BinaryOperator extends Operator {
-
-	import OpTypes;
-	import Operator;
 
 	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
 
@@ -771,9 +765,6 @@ public class BinaryOperator extends Operator {
 
 public class MultiOperator extends Operator {
 
-	import OpTypes;
-	import Operator;
-
 	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
 
 	// Binary operators
@@ -817,9 +808,6 @@ public class MultiOperator extends Operator {
 }
 
 public class PrefixOperator extends Operator {
-
-	import OpTypes;
-	import Operator;
 
 	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
 
@@ -880,9 +868,6 @@ public class PrefixOperator extends Operator {
 
 public class PostfixOperator extends Operator {
 
-	import OpTypes;
-	import Operator;
-
 	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
 
 	// Unary postfix operators
@@ -924,8 +909,6 @@ public class PostfixOperator extends Operator {
 }
 
 public class CastOperator extends Operator {
-
-	import OpTypes;
 
 	public Type		type;
 	public boolean  reinterp;

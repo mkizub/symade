@@ -25,6 +25,9 @@ import kiev.stdlib.*;
 
 import kiev.vlang.Instr.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Expr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -33,10 +36,6 @@ import kiev.vlang.Instr.*;
  */
 
 public class StatExpr extends Expr implements SetBody {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Statement	stat;
 
 	public StatExpr(int pos, Statement stat) {
@@ -87,10 +86,6 @@ public class StatExpr extends Expr implements SetBody {
 }
 
 public class ConstExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	Object	value;
 
 	public ConstExpr(int pos, Object value) {
@@ -293,10 +288,6 @@ public class ConstExpr extends Expr {
 }
 
 public class ArrayLengthAccessExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		array;
 
 	public ArrayLengthAccessExpr(int pos, Expr array) {
@@ -352,10 +343,6 @@ public class ArrayLengthAccessExpr extends Expr {
 }
 
 public class AssignExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public AssignOperator	op;
 	public Expr				lval;
 	public Expr				value;
@@ -724,10 +711,6 @@ public class AssignExpr extends LvalueExpr {
 
 
 public class InitializeExpr extends AssignExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
     public boolean	of_wrapper;
 
 	public InitializeExpr(int pos, AssignOperator op, Expr lval, Expr value, boolean of_wrapper) {
@@ -770,10 +753,6 @@ public class InitializeExpr extends AssignExpr {
 
 
 public class BinaryExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BinaryOperator		op;
 	public Expr					expr1;
 	public Expr					expr2;
@@ -1128,10 +1107,6 @@ public class BinaryExpr extends Expr {
 }
 
 public class StringConcatExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr[]	args		= new Expr[0];
 
 	public static Struct clazzStringBuffer;
@@ -1269,10 +1244,6 @@ public class StringConcatExpr extends Expr {
 }
 
 public class CommaExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr[]		exprs;
 
 	public CommaExpr(int pos, Expr[] exprs) {
@@ -1341,10 +1312,6 @@ public class CommaExpr extends Expr {
 }
 
 public class UnaryExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Operator				op;
 	public Expr					expr;
 
@@ -1532,10 +1499,6 @@ public class UnaryExpr extends Expr {
 }
 
 public class IncrementExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Operator				op;
 	public Expr					lval;
 
@@ -1791,10 +1754,6 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 public class MultiExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public MultiOperator	op;
 	public List<ASTNode>	exprs;
 
@@ -1830,10 +1789,6 @@ public class MultiExpr extends Expr {
 
 
 public class ConditionalExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		cond;
 	public Expr		expr1;
 	public Expr		expr2;
@@ -1961,10 +1916,6 @@ public class ConditionalExpr extends Expr {
 }
 
 public class CastExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Type					type;
 	public Expr					expr;
 	public boolean				explicit = false;

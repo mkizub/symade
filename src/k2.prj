@@ -2,7 +2,6 @@ kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
 kiev.Kiev.profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
-kiev.bytecode kiev/bytecode kiev\bytecode\package.java
 kiev.bytecode.Attribute kiev/bytecode/Attribute kiev\bytecode\Attribute.java
 kiev.bytecode.AttributeHandler kiev/bytecode/AttributeHandler kiev\bytecode\BytecodeHandler.java
 kiev.bytecode.BytecodeAttributeNames kiev/bytecode/BytecodeAttributeNames kiev\bytecode\Constants.java
@@ -54,16 +53,13 @@ kiev.bytecode.NumberPoolConstant kiev/bytecode/NumberPoolConstant kiev\bytecode\
 kiev.bytecode.PoolConstant kiev/bytecode/PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ReadContext kiev/bytecode/ReadContext kiev\bytecode\Clazz.java
 kiev.bytecode.RefPoolConstant kiev/bytecode/RefPoolConstant kiev\bytecode\PoolConstant.java
-kiev.bytecode.Repackage kiev/bytecode/Repackage kiev\bytecode\Repackage.java
-kiev.bytecode.Repackage.RepackageEntry kiev/bytecode/Repackage$RepackageEntry kiev\bytecode\Repackage.java
 kiev.bytecode.SourceFileAttribute kiev/bytecode/SourceFileAttribute kiev\bytecode\Attribute.java
-kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java
+kiev.bytecode.StandardClassLoader kiev/bytecode/StandardClassLoader kiev\bytecode\StandardClassLoader.java bad
 kiev.bytecode.StringPoolConstant kiev/bytecode/StringPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
-kiev.parser kiev/parser kiev\parser\package.java
 kiev.parser.ASCII_UCodeESC_CharStream kiev/parser/ASCII_UCodeESC_CharStream kiev\parser\ASCII_UCodeESC_CharStream.java
 kiev.parser.ASTAccess kiev/parser/ASTAccess kiev\parser\ASTAccess.java
 kiev.parser.ASTAccessExpression kiev/parser/ASTAccessExpression kiev\parser\ASTAccessExpression.java
@@ -122,7 +118,7 @@ kiev.parser.ASTLabeledStatement kiev/parser/ASTLabeledStatement kiev\parser\ASTL
 kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTLexicalStateList.java
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
 kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java
-kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
+kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java bad
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
@@ -145,7 +141,6 @@ kiev.parser.ASTPrimitiveType kiev/parser/ASTPrimitiveType kiev\parser\ASTPrimiti
 kiev.parser.ASTQName kiev/parser/ASTQName kiev\parser\ASTQName.java
 kiev.parser.ASTRegularExpressionKind kiev/parser/ASTRegularExpressionKind kiev\parser\ASTRegularExpressionKind.java
 kiev.parser.ASTRegularExpressionSpec kiev/parser/ASTRegularExpressionSpec kiev\parser\ASTRegularExpressionSpec.java
-kiev.parser.ASTRepackage kiev/parser/ASTRepackage kiev\parser\ASTRepackage.java
 kiev.parser.ASTReparseExpression kiev/parser/ASTReparseExpression kiev\parser\ASTReparseExpression.java
 kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTReparseStatement.java
 kiev.parser.ASTRequareDeclaration kiev/parser/ASTRequareDeclaration kiev\parser\ASTRequareDeclaration.java
@@ -153,7 +148,7 @@ kiev.parser.ASTReturnStatement kiev/parser/ASTReturnStatement kiev\parser\ASTRet
 kiev.parser.ASTRuleAndExpression kiev/parser/ASTRuleAndExpression kiev\parser\ASTRuleAndExpression.java
 kiev.parser.ASTRuleBlock kiev/parser/ASTRuleBlock kiev\parser\ASTRuleBlock.java
 kiev.parser.ASTRuleCutExpression kiev/parser/ASTRuleCutExpression kiev\parser\ASTRuleCutExpression.java
-kiev.parser.ASTRuleDeclaration kiev/parser/ASTRuleDeclaration kiev\parser\ASTRuleDeclaration.java
+kiev.parser.ASTRuleDeclaration kiev/parser/ASTRuleDeclaration kiev\parser\ASTRuleDeclaration.java bad
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
@@ -189,7 +184,6 @@ kiev.parser.kiev020 kiev/parser/kiev020 kiev\parser\kiev020.java
 kiev.parser.kiev020Constants kiev/parser/kiev020Constants kiev\parser\kiev020Constants.java
 kiev.parser.kiev020TokenManager kiev/parser/kiev020TokenManager kiev\parser\kiev020TokenManager.java
 kiev.parser.kiev020TreeConstants kiev/parser/kiev020TreeConstants kiev\parser\kiev020TreeConstants.java
-kiev.stdlib kiev/stdlib kiev\stdlib\package.java
 kiev.stdlib.Applayable kiev/stdlib/Applayable kiev\stdlib\Applayable.java
 kiev.stdlib.Array kiev/stdlib/Array kiev\stdlib\SupportTypes.java
 kiev.stdlib.ArrayEnumerator kiev/stdlib/ArrayEnumerator kiev\stdlib\ArrayEnumerator.java
@@ -254,7 +248,6 @@ kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\Type
 kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
-kiev.vlang kiev/vlang kiev\vlang\package.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java

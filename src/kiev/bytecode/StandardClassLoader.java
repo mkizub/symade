@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,10 +17,12 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.bytecode;
 
 import java.io.*;
+
+import static kiev.stdlib.Debug.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/StandardClassLoader.java,v 1.3.4.1 1999/05/29 21:03:05 max Exp $
@@ -30,33 +32,26 @@ import java.io.*;
  */
 
 public class StandardClassLoader extends ClassLoader {
-	import kiev.stdlib.Debug;
-	
 	protected Hashtable<String,Class>	cache = new Hashtable<String,Class>();
 	protected Classpath					classpath;
-	protected Repackage					repackage = new Repackage();
 	public Vector<BytecodeHandler>		handlers = new Vector<BytecodeHandler>();
-	
+
 	{
 		handlers.append(repackage);
 	}
-	
+
 	public StandardClassLoader() {
 		classpath = new Classpath();
 	}
-	
+
 	public StandardClassLoader(String path) {
 		classpath = new Classpath(path);
 	}
-	
+
 	public void addHandler(BytecodeHandler bh) {
 		handlers.append(bh);
 	}
-	
-	public void addRepackageRule(String from, String to) {
-		repackage.addRepackageRule(from,to);
-	}
-	
+
 	public void handleClazz(Clazz clazz) {
 		if( handlers.length <= 0 ) return;
 		Vector<BytecodeHandler> handls = new Vector<BytecodeHandler>();
@@ -77,33 +72,20 @@ public class StandardClassLoader extends ClassLoader {
 			nextstage = 1000;
 		}
 	}
-	
+
 	protected synchronized byte[] loadClazzData(String name, boolean force) {
 		byte data[] = classpath.read(name);
-		if( data == null || data.length == 0 ) {
-			// Check this is a repackaged class
-			String bcname = name.replace('.','/');
-			foreach(Repackage.RepackageEntry rpe; repackage.entries/*; rpe.to_package.startsWith(bcname)*/) {
-				trace(Clazz.traceRules,"Name "+bcname+" compared to match "+rpe.to_package);
-				if( !bcname.startsWith(rpe.to_package) ) continue;
-				name = rpe.from_package.concat(bcname.substring(rpe.to_package.length()));
-				trace(Clazz.traceRules,"Class "+bcname+" not found, lookung for "+name);
-				name = name.replace('/','.');
-				data = classpath.read(name);
-				if( data != null ) break;
-			}
-		}
 		if( force && (data == null || data.length == 0) ) {
 			data = classpath.createPlainPackage(KString.from(name.replace('.','/')));
 		}
 		trace(Clazz.traceRules && data != null ,"Bytecode for clazz "+name+" loaded");
 		return data;
 	}
-	
+
 	public synchronized Clazz loadClazz(String name) {
 		return loadClazz(name,false);
 	}
-	
+
 	public synchronized Clazz loadClazz(String name, boolean force) {
 		trace(Clazz.traceRules,"Loading bytecode for clazz "+name);
 		byte data[] = loadClazzData(name,force);
@@ -138,11 +120,11 @@ public class StandardClassLoader extends ClassLoader {
 		}
 		return c;
 	}
-	
+
 	public synchronized File findSourceFile(String name) {
 		return classpath.findSourceFile(name);
 	}
-	
+
 	public static void main(String[] args) {
 		if( args.length == 0 ) {
 			System.err.println("Usage:\njava kiev.bytecode.StandardClassLoader class.name [args...]");
@@ -152,7 +134,6 @@ public class StandardClassLoader extends ClassLoader {
 //		Clazz.traceWrite = true;
 //		Clazz.traceRules = true;
 		StandardClassLoader cl = new StandardClassLoader();
-//		cl.addRepackageRule("kiev.stdlib","kiev.std");
 //		cl.addHandler(new KievAttributeHandler());
 		Class c = cl.loadClass(args[0],true);
 //		System.out.println("Class "+c+" loaded");

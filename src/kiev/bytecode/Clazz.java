@@ -20,6 +20,8 @@
 
 package kiev.bytecode;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Clazz.java,v 1.2 1998/10/21 19:44:16 max Exp $
  * @author Maxim Kizub
@@ -28,8 +30,6 @@ package kiev.bytecode;
  */
 
 public class Clazz implements BytecodeElement,BytecodeFileConstants {
-	import kiev.stdlib.Debug;
-
 	public static boolean	traceRead = false;
 	public static boolean	traceWrite = false;
 	public static boolean	traceRules = false;

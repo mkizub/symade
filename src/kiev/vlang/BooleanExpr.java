@@ -24,6 +24,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/BooleanExpr.java,v 1.5.2.1.2.1 1999/02/15 21:45:10 max Exp $
  * @author Maxim Kizub
@@ -32,10 +35,6 @@ import kiev.vlang.Instr.*;
  */
 
 public class BooleanWrapperExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		expr;
 
 	public BooleanWrapperExpr(int pos, Expr expr) {
@@ -155,10 +154,6 @@ public class BooleanWrapperExpr extends BooleanExpr {
 }
 
 public class ConstBooleanExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public boolean value;
 
 	public ConstBooleanExpr(int pos, boolean val) {
@@ -216,10 +211,6 @@ public class ConstBooleanExpr extends BooleanExpr {
 }
 
 public class BinaryBooleanOrExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BooleanExpr			expr1;
 	public BooleanExpr			expr2;
 
@@ -319,10 +310,6 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 
 
 public class BinaryBooleanAndExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BooleanExpr			expr1;
 	public BooleanExpr			expr2;
 
@@ -415,10 +402,6 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 }
 
 public class BinaryBooleanExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BinaryOperator		op;
 	public Expr					expr1;
 	public Expr					expr2;
@@ -719,10 +702,6 @@ public class BinaryBooleanExpr extends BooleanExpr {
 }
 
 public class InstanceofExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		expr;
 	public Type		type;
 
@@ -818,10 +797,6 @@ public class InstanceofExpr extends BooleanExpr {
 }
 
 public class BooleanNotExpr extends BooleanExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BooleanExpr				expr;
 
 	public BooleanNotExpr(int pos, BooleanExpr expr) {

@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Statement.java,v 1.6.2.1.2.2 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -32,8 +34,6 @@ import kiev.parser.*;
  */
 
 public class InlineMethodStat extends Statement implements ScopeOfNames {
-
-	import kiev.stdlib.Debug;
 
 	static class ParamRedir {
 		Var		old_var;
@@ -133,8 +133,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 }
 
 public class BlockStat extends Statement implements ScopeOfNames {
-
-	import kiev.stdlib.Debug;
 
 	public ASTNode[]	stats = Statement.emptyArray;
 	public Var[]		vars = Var.emptyArray;
@@ -329,8 +327,6 @@ public class BlockStat extends Statement implements ScopeOfNames {
 
 public class EmptyStat extends Statement {
 
-	import kiev.stdlib.Debug;
-
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
 
 	public ASTNode resolve(Type reqType) {
@@ -355,8 +351,6 @@ public class EmptyStat extends Statement {
 }
 
 public class ExprStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		expr;
 
@@ -405,8 +399,6 @@ public class ExprStat extends Statement {
 }
 
 public class DeclStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public Var		var;
 	public Expr		init;
@@ -506,8 +498,6 @@ public class DeclStat extends Statement {
 
 public class TypeDeclStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public Struct		struct;
 
 	public TypeDeclStat(int pos, ASTNode parent, Struct struct) {
@@ -551,8 +541,6 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 }
 
 public class ReturnStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		expr;
 
@@ -662,8 +650,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 public class ThrowStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public Expr		expr;
 
 	public ThrowStat(int pos, ASTNode parent, Expr expr) {
@@ -715,8 +701,6 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 public class IfElseStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public BooleanExpr	cond;
 	public Statement	thenSt;
@@ -893,8 +877,6 @@ public class IfElseStat extends Statement {
 
 public class CondStat extends Statement {
 
-	import kiev.stdlib.Debug;
-
 	public BooleanExpr	cond;
 	public Expr			message;
 
@@ -1019,8 +1001,6 @@ public class CondStat extends Statement {
 
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
-	import kiev.stdlib.Debug;
-
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	public KString		name;
@@ -1077,8 +1057,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 }
 
 public class BreakStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public KString		name;
 
@@ -1158,8 +1136,6 @@ public class BreakStat extends Statement/*defaults*/ {
 
 public class ContinueStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public KString		name;
 
 	public ContinueStat(int pos, ASTNode parent, KString name) {
@@ -1208,8 +1184,6 @@ public class ContinueStat extends Statement/*defaults*/ {
 }
 
 public class GotoStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public KString		name;
 
@@ -1394,8 +1368,6 @@ public class GotoStat extends Statement/*defaults*/ {
 }
 
 public class GotoCaseStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public Expr			expr;
 	public SwitchStat	sw;

@@ -20,6 +20,8 @@
 
 package kiev.bytecode;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Attribute.java,v 1.3.2.1.2.2 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
@@ -28,7 +30,6 @@ package kiev.bytecode;
  */
 
 public class Attribute implements BytecodeElement,BytecodeFileConstants,BytecodeAttributeNames {
-	import kiev.stdlib.Debug;
 
 	public static final Attribute[]	emptyArray = new Attribute[0];
 
@@ -112,7 +113,6 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 }
 
 public class SourceFileAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					cp_filename;
 
@@ -141,7 +141,6 @@ public class SourceFileAttribute extends Attribute {
 }
 
 public class ConstantValueAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					cp_value;
 
@@ -168,7 +167,6 @@ public class ConstantValueAttribute extends Attribute {
 }
 
 public class ExceptionsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					cp_exceptions;
 
@@ -201,7 +199,6 @@ public class ExceptionsAttribute extends Attribute {
 }
 
 public class CodeAttribute extends Attribute implements JavaOpcodes {
-	import kiev.stdlib.Debug;
 
 	public int					max_stack;
 	public int					max_locals;
@@ -421,7 +418,6 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 }
 
 public class LocalVariableTableAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					start_pc;
 	public int[]					length_pc;
@@ -473,7 +469,6 @@ public class LocalVariableTableAttribute extends Attribute {
 }
 
 public class InnerClassesAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					cp_inners;
 	public int[]					cp_outers;
@@ -523,7 +518,6 @@ public class InnerClassesAttribute extends Attribute {
 }
 
 public class LineNumberTableAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					start_pc;
 	public int[]					lineno;
@@ -560,7 +554,6 @@ public class LineNumberTableAttribute extends Attribute {
 }
 
 public class KievClassArgumentsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					cp_argname;
 	public int[]					cp_supername;
@@ -598,7 +591,6 @@ public class KievClassArgumentsAttribute extends Attribute {
 }
 
 public class KievFlagsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					flags;
 
@@ -621,7 +613,6 @@ public class KievFlagsAttribute extends Attribute {
 }
 
 public class KievImportAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					cp_ref;
 
@@ -660,7 +651,6 @@ public class KievImportAttribute extends Attribute {
 }
 
 public class KievAliasAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]				cp_alias;
 
@@ -691,7 +681,6 @@ public class KievAliasAttribute extends Attribute {
 }
 
 public class KievOperatorAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					priority;
 	public int					cp_optype;
@@ -727,7 +716,6 @@ public class KievOperatorAttribute extends Attribute {
 }
 
 public class KievCaseAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					caseno;
 	public int[]				cp_casefields;
@@ -758,7 +746,6 @@ public class KievCaseAttribute extends Attribute {
 }
 
 public class KievEnumAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					fields;
 	public int[]					values;
@@ -798,7 +785,6 @@ public class KievEnumAttribute extends Attribute {
 }
 
 public class KievPrimitiveEnumAttribute extends KievEnumAttribute {
-	import kiev.stdlib.Debug;
 
 	public int						signature;
 
@@ -820,7 +806,6 @@ public class KievPrimitiveEnumAttribute extends KievEnumAttribute {
 }
 
 public class KievContractAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					max_stack;
 	public int					max_locals;
@@ -866,7 +851,6 @@ public class KievContractAttribute extends Attribute {
 }
 
 public class KievCheckFieldsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					fields;
 
@@ -909,7 +893,6 @@ public class KievCheckFieldsAttribute extends Attribute {
 }
 
 public class KievGenerationsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					gens;
 
@@ -945,7 +928,6 @@ public class KievGenerationsAttribute extends Attribute {
 }
 
 public class KievPackedFieldsAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int[]					fields;
 	public int[]					signatures;
@@ -1007,7 +989,6 @@ public class KievPackedFieldsAttribute extends Attribute {
 }
 
 public class KievPackerFieldAttribute extends Attribute {
-	import kiev.stdlib.Debug;
 
 	public int					size;
 

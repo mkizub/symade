@@ -26,6 +26,8 @@ import kiev.parser.*;
 
 import java.io.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Struct.java,v 1.6.2.1.2.6 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -34,8 +36,6 @@ import java.io.*;
  */
 
 public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, SetBody, Accessable {
-
-	import kiev.stdlib.Debug;
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -2944,7 +2944,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	}
 
 	public void resolveImports() {
-		PassInfo.push(this);
+/*		PassInfo.push(this);
 		try {
 			ASTNode[] old_imported = imported;
 			imported = ASTNode.emptyArray;
@@ -2987,7 +2987,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			try {
 				if( !isPackage() ) {
 					for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-						if( !sub_clazz[i].isAnonymouse() /*&& !sub_clazz[i].isPassed_2()*/)
+						if( !sub_clazz[i].isAnonymouse()) //&& !sub_clazz[i].isPassed_2()
 							sub_clazz[i].resolveImports();
 					}
 				}
@@ -2995,7 +2995,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				Kiev.reportError(pos,e);
 			}
 		} finally { PassInfo.pop(this); }
-	}
+*/	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isGenerated() ) return this;
@@ -3231,11 +3231,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				addAttr(new PackedFieldsAttr(this));
 			}
 
-			if( isPackage() ) {
-				for(int i=0; i < imported.length; i++) {
-					addAttr(new ImportAttr(imported[i]));
-				}
-			}
+//			if( isPackage() ) {
+//				for(int i=0; i < imported.length; i++) {
+//					addAttr(new ImportAttr(imported[i]));
+//				}
+//			}
 
 			if( jthis.gens != null ) {
 				jthis.addAttr(new GenerationsAttr(jthis.gens));

@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTFileUnit.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -34,9 +36,6 @@ import kiev.vlang.*;
  */
 
 public class ASTFileUnit extends ASTNode {
-
-	import kiev.stdlib.Debug;
-
 	public KString	filename;
 	public FileUnit	file_unit;
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
@@ -95,9 +94,9 @@ public class ASTFileUnit extends ASTNode {
 					case ASTEnumDeclaration:
 						members = (Struct[])Arrays.append(members,((ASTEnumDeclaration)decls[i]).pass1());
 						break;
-					case ASTPackageDeclaration:
-						members = (Struct[])Arrays.append(members,((ASTPackageDeclaration)decls[i]).pass1());
-						break;
+					//case ASTPackageDeclaration:
+					//	members = (Struct[])Arrays.append(members,((ASTPackageDeclaration)decls[i]).pass1());
+					//	break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -163,9 +162,9 @@ public class ASTFileUnit extends ASTNode {
 				case ASTEnumDeclaration:
 					file_unit.members[j] = (Struct)((ASTEnumDeclaration)decls[j]).pass2();
 					break;
-				case ASTPackageDeclaration:
-					file_unit.members[j] = (Struct)((ASTPackageDeclaration)decls[j]).pass2();
-					break;
+				//case ASTPackageDeclaration:
+				//	file_unit.members[j] = (Struct)((ASTPackageDeclaration)decls[j]).pass2();
+				//	break;
 				default:
 					throw new CompilerException(decls[j].pos,"Unknown type of file declaration "+decls[j].getClass());
 				}
@@ -190,9 +189,9 @@ public class ASTFileUnit extends ASTNode {
 					case ASTEnumDeclaration:
 						((ASTEnumDeclaration)decls[j]).pass2_2();
 						break;
-					case ASTPackageDeclaration:
-						((ASTPackageDeclaration)decls[j]).pass2_2();
-						break;
+					//case ASTPackageDeclaration:
+					//	((ASTPackageDeclaration)decls[j]).pass2_2();
+					//	break;
 					default:
 						throw new CompilerException(decls[j].pos,"Unknown type of file declaration "+decls[j].getClass());
 					}
@@ -220,10 +219,10 @@ public class ASTFileUnit extends ASTNode {
 						file_unit.members[i] = (Struct)((ASTEnumDeclaration)decls[i])
 							.pass3(((ASTEnumDeclaration)decls[i]).me,((ASTEnumDeclaration)decls[i]).members);
 						break;
-					case ASTPackageDeclaration:
-						file_unit.members[i] = (Struct)((ASTPackageDeclaration)decls[i])
-							.pass3(((ASTPackageDeclaration)decls[i]).me,((ASTPackageDeclaration)decls[i]).members);
-						break;
+					//case ASTPackageDeclaration:
+					//	file_unit.members[i] = (Struct)((ASTPackageDeclaration)decls[i])
+					//		.pass3(((ASTPackageDeclaration)decls[i]).me,((ASTPackageDeclaration)decls[i]).members);
+					//	break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -248,9 +247,9 @@ public class ASTFileUnit extends ASTNode {
 					case ASTEnumDeclaration:
 						((ASTEnumDeclaration)decls[i]).me.autoProxyMethods();
 						break;
-					case ASTPackageDeclaration:
-						((ASTPackageDeclaration)decls[i]).me.autoProxyMethods();
-						break;
+					//case ASTPackageDeclaration:
+					//	((ASTPackageDeclaration)decls[i]).me.autoProxyMethods();
+					//	break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -275,9 +274,9 @@ public class ASTFileUnit extends ASTNode {
 					case ASTEnumDeclaration:
 						((ASTEnumDeclaration)decls[i]).me.resolveImports();
 						break;
-					case ASTPackageDeclaration:
-						((ASTPackageDeclaration)decls[i]).me.resolveImports();
-						break;
+					//case ASTPackageDeclaration:
+					//	((ASTPackageDeclaration)decls[i]).me.resolveImports();
+					//	break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}
@@ -301,9 +300,9 @@ public class ASTFileUnit extends ASTNode {
 					case ASTEnumDeclaration:
 						((ASTEnumDeclaration)decls[i]).resolveFinalFields(cleanup);
 						break;
-					case ASTPackageDeclaration:
-						((ASTPackageDeclaration)decls[i]).resolveFinalFields(cleanup);
-						break;
+					//case ASTPackageDeclaration:
+					//	((ASTPackageDeclaration)decls[i]).resolveFinalFields(cleanup);
+					//	break;
 					default:
 						throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 					}

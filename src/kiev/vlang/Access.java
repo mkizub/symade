@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header$
  * @author Maxim Kizub
@@ -37,9 +39,6 @@ public interface Accessable {
 }
 
 public class Access implements Constants {
-
-	import kiev.stdlib.Debug;
-	
 	public int flags;
 	public packed:1,flags,7 boolean	r_public;
 	public packed:1,flags,6 boolean	w_public;
@@ -49,18 +48,18 @@ public class Access implements Constants {
 	public packed:1,flags,2 boolean	w_default;
 	public packed:1,flags,1 boolean	r_private;
 	public packed:1,flags,0 boolean	w_private;
-	
+
 	public Access(int flags) {
 		this.flags = flags;
 	}
-	
+
 	public boolean readable() {
 		return r_private || r_default || r_protected || r_public;
 	}
 	public boolean writeable() {
 		return w_private || w_default || w_protected || w_public;
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer("access:");
 
@@ -83,7 +82,7 @@ public class Access implements Constants {
 		else if( r_private ) sb.append("r");
 		else if( w_private ) sb.append("w");
 		else sb.append("n");
-		
+
 		return sb.toString();
 	}
 
@@ -167,11 +166,11 @@ public class Access implements Constants {
 			}
 		}
 	}
-	
+
 	public void verifyReadAccess(ASTNode n) { verifyAccess(n,2); }
 	public void verifyWriteAccess(ASTNode n) { verifyAccess(n,1); }
 	public void verifyReadWriteAccess(ASTNode n) { verifyAccess(n,3); }
-	
+
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
 		return (Struct)n.parent;
@@ -227,7 +226,7 @@ public class Access implements Constants {
 		// Public was already checked, just throw an error
 		throwAccessError(n,acc,"public");
 	}
-	
+
 	private void throwAccessError(ASTNode n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');

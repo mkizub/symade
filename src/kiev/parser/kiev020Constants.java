@@ -327,7 +327,6 @@ public interface kiev020Constants {
     "\"@\"",
     "\"#\"",
     "<OPERATOR>",
-    "\"#repackage\"",
   };
 
 }

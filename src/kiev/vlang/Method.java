@@ -23,6 +23,9 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.WorkByContractCondition.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Method.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,10 +34,6 @@ import kiev.stdlib.*;
  */
 
 public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,Accessable {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.WorkByContractCondition;
-
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */

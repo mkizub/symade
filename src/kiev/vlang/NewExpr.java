@@ -25,6 +25,9 @@ import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/NewExpr.java,v 1.6.2.1.2.1 1999/02/15 21:45:13 max Exp $
  * @author Maxim Kizub
@@ -33,9 +36,6 @@ import kiev.vlang.Operator.*;
  */
 
 public class NewExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public Type		type;
 	public Expr[]	args;
@@ -261,9 +261,6 @@ public class NewExpr extends Expr {
 
 public class NewArrayExpr extends Expr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Type		type;
 	public Expr[]	args;
 	public int		dim;
@@ -381,9 +378,6 @@ public class NewArrayExpr extends Expr {
 
 public class NewInitializedArrayExpr extends Expr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Type			type;
 	public int			dim;
 	public int[]		dims;
@@ -483,9 +477,6 @@ public class NewInitializedArrayExpr extends Expr {
 }
 
 public class NewClosure extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public Type		type;
 	public Expr[]	args = Expr.emptyArray;

@@ -683,12 +683,10 @@ ASTFileUnit FileUnit(String filename) :
 		LOOKAHEAD("package" QName() ";")
 		Package()
 	]
-	(	Import()	)*
-	(	Typedef()	)*
-	[
-		LOOKAHEAD("package" "{")
-		PackageDeclaration()
-	]
+	(
+		Import()
+	|	Typedef()
+	)*
 	(
 		try {
 			LOOKAHEAD( (Modifier())* ("class" | "interface") )
@@ -757,33 +755,6 @@ void Typedef() :
 	catch(Throwable e) { rperr(e); }
 }
 
-void Repackage() :
-{}
-{
-	try {
-		"#repackage" QName() "->" QName() ";"
-	}
-	catch(ParseError e) { rpe("Bad repackage declaration",e); }
-	catch(Throwable e) { rperr(e); }
-}
-
-void PackageDeclaration() :
-{}
-{
-	try {
-		"package"
-	}
-	catch(ParseError e) { rpe("Bad start of package declaration",e); }
-	catch(Throwable e) { rperr(e); }
-	"{"
-	(
-		Typedef()
-	|	Import()
-	|	Repackage()
-	)*
-	"}"
-}
-
 void TypeDeclaration() :
 { Token t=null; }
 {
@@ -836,20 +807,12 @@ void TypeBodyDeclaration() #void :
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
 			RuleDeclaration()
-//		|
-//			LOOKAHEAD( ( Modifier() )* "production" ( Modifier() )* Type() <IDENTIFIER> "(")
-//			ProductionDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
 			FieldDecl()
-		|
-			Import()
-
-//		| OptionSpec()
-//		| TokenDeclaration()
 		)*
 	}
 	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }

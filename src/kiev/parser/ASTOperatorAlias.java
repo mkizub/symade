@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,12 +19,16 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.OpTypes.*;
+import static kiev.vlang.Operator.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTOperatorAlias.java,v 1.3.4.2 1999/05/29 21:03:06 max Exp $
@@ -34,10 +38,6 @@ import kiev.vlang.*;
  */
 
 public class ASTOperatorAlias extends ASTAlias {
-
-	import kiev.vlang.OpTypes;
-	import kiev.vlang.Operator;
-
 	public int					prior;
 	public int					opmode;
 	public KString				image;
@@ -88,7 +88,7 @@ public class ASTOperatorAlias extends ASTAlias {
 		}
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
-    
+
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
@@ -128,7 +128,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
-				
+
 				Type opret = m.type.ret;
 				Type oparg1, oparg2;
 				if( prior != Constants.opAssignPriority )
@@ -266,7 +266,7 @@ public class ASTOperatorAlias extends ASTAlias {
 	public String toString() {
 		return image.toString();
 	}
-    
+
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("/* alias operator(")
 			.append(Integer.toString(prior)).append(",")

@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 typedef kiev.stdlib.List<kiev.vlang.ASTNode>		ListAN;
 typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 
@@ -37,9 +39,6 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
  */
 
 public class ASTExpression extends Expr {
-
-	import kiev.stdlib.Debug;
-
 	public List<ASTNode>		nodes = List.Nil;
 
 

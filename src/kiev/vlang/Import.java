@@ -25,6 +25,8 @@ import kiev.parser.PrescannedBody;
 import kiev.stdlib.*;
 import java.io.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Import.java,v 1.5.2.1.2.1 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -33,9 +35,6 @@ import java.io.*;
  */
 
 public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods {
-
-	import kiev.stdlib.Debug;
-
 	public static final Import[] emptyArray = new Import[0];
 
 	public static final int	IMPORT_CLASS   = 0;

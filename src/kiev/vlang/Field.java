@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Field.java,v 1.3.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,9 +33,6 @@ import kiev.stdlib.*;
  */
 
 public class Field extends ASTNode implements Named, Typed, Accessable {
-
-	import kiev.stdlib.Debug;
-
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */

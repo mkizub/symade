@@ -691,12 +691,10 @@ ASTFileUnit FileUnit(String filename) :
 		LOOKAHEAD("package" QName() ";")
 		Package()
 	]
-	(	Import()	)*
-	(	Typedef()	)*
-	[
-		LOOKAHEAD("package" "{")
-		PackageDeclaration()
-	]
+	(
+		Import()
+	|	Typedef()
+	)*
 	(
 		try {
 			LOOKAHEAD( (Modifier())* ("class" | "interface") )
@@ -868,85 +866,6 @@ void Typedef() :
 /*@egen*/
 }
 
-void Repackage() :
-{/*@bgen(jjtree) Repackage */
-  ASTRepackage jjtn000 = new ASTRepackage(JJTREPACKAGE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Repackage */
-        try {
-/*@egen*/
-	try {
-		"#repackage" QName() "->" QName() ";"
-	}
-	catch(ParseError e) { rpe("Bad repackage declaration",e); }
-	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
-}
-
-void PackageDeclaration() :
-{/*@bgen(jjtree) PackageDeclaration */
-  ASTPackageDeclaration jjtn000 = new ASTPackageDeclaration(JJTPACKAGEDECLARATION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) PackageDeclaration */
-        try {
-/*@egen*/
-	try {
-		"package"
-	}
-	catch(ParseError e) { rpe("Bad start of package declaration",e); }
-	catch(Throwable e) { rperr(e); }
-	"{"
-	(
-		Typedef()
-	|	Import()
-	|	Repackage()
-	)*
-	"}"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
-}
-
 void TypeDeclaration() :
 {/*@bgen(jjtree) TypeDeclaration */
   ASTTypeDeclaration jjtn000 = new ASTTypeDeclaration(JJTTYPEDECLARATION);
@@ -1025,20 +944,12 @@ void TypeBodyDeclaration()       :
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
 			RuleDeclaration()
-//		|
-//			LOOKAHEAD( ( Modifier() )* "production" ( Modifier() )* Type() <IDENTIFIER> "(")
-//			ProductionDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
 			FieldDecl()
-		|
-			Import()
-
-//		| OptionSpec()
-//		| TokenDeclaration()
 		)*
 	}
 	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }

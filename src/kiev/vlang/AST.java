@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/AST.java,v 1.6.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,8 +33,6 @@ import kiev.stdlib.*;
  */
 
 public abstract class ASTNode implements Constants {
-
-	import kiev.stdlib.Debug;
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
@@ -628,8 +628,6 @@ public abstract class ASTNode implements Constants {
 
 public abstract class Expr extends ASTNode {
 
-	import kiev.stdlib.Debug;
-
 	public static Expr[] emptyArray = new Expr[0];
 
 	public Expr(int pos) { super(pos); }
@@ -726,8 +724,6 @@ public abstract class Expr extends ASTNode {
 
 public class WrapedExpr extends Expr {
 
-	import kiev.stdlib.Debug;
-
 	public ASTNode	expr;
 	public Type		base_type;
 	public WrapedExpr(int pos, ASTNode expr) {
@@ -755,8 +751,6 @@ public class WrapedExpr extends Expr {
 }
 
 public abstract class BooleanExpr extends Expr {
-
-	import kiev.stdlib.Debug;
 
 	public BooleanExpr(int pos) { super(pos); }
 
@@ -786,8 +780,6 @@ public abstract class BooleanExpr extends Expr {
 }
 
 public abstract class LvalueExpr extends Expr {
-
-	import kiev.stdlib.Debug;
 
 	public LvalueExpr(int pos) { super(pos); }
 
@@ -823,8 +815,6 @@ public abstract class LvalueExpr extends Expr {
 }
 
 public abstract class Statement extends ASTNode {
-
-	import kiev.stdlib.Debug;
 
 	public static Statement[] emptyArray = new Statement[0];
 

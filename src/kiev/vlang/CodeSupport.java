@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -24,6 +24,8 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/CodeSupport.java,v 1.3 1998/10/26 23:47:20 max Exp $
  * @author Maxim Kizub
@@ -32,27 +34,24 @@ import kiev.vlang.Instr.*;
  */
 
 public class CodeLabel implements Constants {
-
-	import kiev.stdlib.Debug;
-
 	public static CodeLabel[] emptyArray = new CodeLabel[0];
 
 	/** PC position of this label */
 	public int			pc = -1;
-	
+
 	/** List of instructions that needs this label be setted up */
 //	public short[]		instrs;
-	
+
 	/** Stack state expected at this label */
 	public Type[]	stack;
-	
+
 	/** If check state does not allowed */
 	public boolean	check = true;
-	
+
 	public CodeLabel() {
 		stack = null;
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("label at ").append(pc);
@@ -62,7 +61,7 @@ public class CodeLabel implements Constants {
 //		}
 		return sb.toString();
 	}
-	
+
 	public void addInstr() {
 		// Instruction is added AFTER it was placed in stack
 		// so, we must set instruction's PC at current PC-2-1
@@ -166,9 +165,6 @@ public abstract class CodeSwitch {
 
 
 public class CodeTableSwitch extends CodeSwitch {
-
-	import kiev.stdlib.Debug;
-
 	public int	pc;	// the PC of opc_tableswitch
 	public int	def_pc;	// the PC of default label
 	public int	lo;	// bottom value
@@ -190,7 +186,7 @@ public class CodeTableSwitch extends CodeSwitch {
 		if( cases[val-lo] != null )
 			throw new RuntimeException("Case with value "+val+" added, but this case already defined for tableswitch");
 		cases[val-lo] = l;
-		
+
 	}
 
 	public void addDefault(CodeLabel l) {
@@ -221,9 +217,6 @@ public class CodeTableSwitch extends CodeSwitch {
 }
 
 public class CodeLookupSwitch extends CodeSwitch {
-
-	import kiev.stdlib.Debug;
-
 	public int	pc;	// the PC of opc_tableswitch
 	public int	def_pc;	// the PC of default label
 	public int[]	tags;	// number of tags in table
@@ -273,16 +266,13 @@ public class CodeLookupSwitch extends CodeSwitch {
 }
 
 public class CodeCatchInfo {
-
-	import kiev.stdlib.Debug;
-
 	public static CodeCatchInfo[] emptyArray = new CodeCatchInfo[0];
 
 	public int			start_pc;
 	public int			end_pc;
 	public CodeLabel	handler;
 	public Type			type;
-	
+
 	public CodeCatchInfo(CodeLabel handler, Type type) {
 		this.handler = handler;
 		this.type = type;

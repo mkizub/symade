@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Rules.java,v 1.4.2.1.2.1 1999/02/15 21:45:14 max Exp $
  * @author Maxim Kizub
@@ -32,8 +34,6 @@ import kiev.parser.*;
  */
 
 public class RuleMethod extends Method {
-
-	import kiev.stdlib.Debug;
 
 	public Var[]	localvars = Var.emptyArray;
 	public int		base = 0;
@@ -363,8 +363,6 @@ public abstract class ASTRuleNode extends ASTNode {
 
 public class RuleBlock extends ASTNode implements ScopeOfNames {
 
-	import kiev.stdlib.Debug;
-
 	public ASTRuleNode	node;
 	public ASTNode[]	stats;
 	public StringBuffer	fields_buf;
@@ -473,8 +471,6 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 
 public class RuleOrExpr extends ASTRuleNode {
 
-	import kiev.stdlib.Debug;
-
 	public ASTRuleNode[]	rules;
 
 	public int get$base() {
@@ -527,8 +523,6 @@ public class RuleOrExpr extends ASTRuleNode {
 }
 
 public class RuleAndExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public ASTRuleNode[]	rules;
 
@@ -583,8 +577,6 @@ public class RuleAndExpr extends ASTRuleNode {
 
 public class RuleIstheExpr extends ASTRuleNode {
 
-	import kiev.stdlib.Debug;
-
 	public Var		var;		// variable of type PVar<...>
 	public Expr		expr;		// expression to check/unify
 
@@ -638,8 +630,6 @@ public class RuleIstheExpr extends ASTRuleNode {
 }
 
 public class RuleIsoneofExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public Var[]	vars;		// variable of type PVar<...>
 	public Expr[]	exprs;		// expression to check/unify
@@ -825,8 +815,6 @@ public class RuleIsoneofExpr extends ASTRuleNode {
 
 public class RuleCutExpr extends ASTRuleNode {
 
-	import kiev.stdlib.Debug;
-
 	public RuleCutExpr(int pos) {
 		super(pos);
 	}
@@ -853,8 +841,6 @@ public class RuleCutExpr extends ASTRuleNode {
 }
 
 public class RuleIfExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public Expr			cond;
     public ASTRuleNode	thenSt;
@@ -947,8 +933,6 @@ public class RuleIfExpr extends ASTRuleNode {
 }
 
 public class RuleForExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public ASTNode		init;
 	public DeclStat		initstats[] = new DeclStat[0];
@@ -1049,8 +1033,6 @@ public class RuleForExpr extends ASTRuleNode {
 }
 
 public class RuleCallExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		obj;
 	public Named	func;
@@ -1171,8 +1153,6 @@ public class RuleCallExpr extends ASTRuleNode {
 }
 
 public class RuleExpr extends ASTRuleNode {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		expr;
 	public boolean	while_mode;

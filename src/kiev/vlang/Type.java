@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Type.java,v 1.5.2.1.2.1 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -31,9 +33,6 @@ import kiev.stdlib.*;
  */
 
 public class Type extends ASTNode implements AccessFlags {
-
-	import kiev.stdlib.Debug;
-
 	public static Type[]	emptyArray = new Type[0];
 
 	public static final int flReference			= 1;
@@ -1284,9 +1283,6 @@ public class Type extends ASTNode implements AccessFlags {
 
 
 public class MethodType extends Type {
-
-	import kiev.stdlib.Debug;
-
 	public Type		ret;
 
 	protected MethodType(Struct clazz, Type ret, Type[] args) {
