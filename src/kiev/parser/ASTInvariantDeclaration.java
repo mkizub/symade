@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.WorkByContractCondition.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTInvariantDeclaration.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -34,8 +37,6 @@ import kiev.vlang.*;
  */
 
 public class ASTInvariantDeclaration extends ASTCondDeclaration {
-	import kiev.vlang.WorkByContractCondition;
-
 	public ASTNode[]	modifier = ASTNode.emptyArray;
 	public KString		name;
 

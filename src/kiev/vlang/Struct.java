@@ -26,6 +26,8 @@ import kiev.parser.*;
 
 import java.io.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Struct.java,v 1.6.2.1.2.6 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -33,9 +35,7 @@ import java.io.*;
  *
  */
 
-public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, SetBody, Accessable {
-
-	import kiev.stdlib.Debug;
+public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -88,14 +88,17 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	/** Array of fields defined in this structure */
 	public Field[]			virtual_fields = Field.emptyArray;
 
+	/** The field this structure is wrapper of */
+	public Field			wrapped_field = null;
+
 	/** Array of methods defined in this structure */
 	public Method[]			methods = Method.emptyArray;
 
 	/** Array of imported classes,fields and methods */
 	public ASTNode[]		imported = ASTNode.emptyArray;
 
-	/** Grammar assiciated with this structure */
-	public Grammar			gram;
+	/** Array of declared members */
+	public ASTNode[]		members = ASTNode.emptyArray;
 
 	/** Array of attributes of this structure */
 	public Attr[]			attrs = Attr.emptyArray;
@@ -300,11 +303,25 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Type sup;
-		pvar Field forw;
-		pvar List<ASTNode> p;
-		pvar Method vf;
+	rule public resolveOperatorR(ASTNode@ op)
+		ASTNode@ imp;
+	{
+		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
+		{
+			op @= imported,
+			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
+		;	imp @= imported,
+			imp.$var instanceof Import && ((Import)imp.$var).mode == Import.IMPORT_SYNTAX,
+			((Struct)((Import)imp.$var).node).resolveOperatorR(op)
+		}
+	}
+
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		Type@ sup;
+		Struct@ sub;
+		Field@ forw;
+		List<ASTNode>@ p;
+		Method@ vf;
 	{
 		trace(Kiev.debugResolve,"Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
 		checkResolved(),
@@ -314,10 +331,15 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		;	node @= virtual_fields, ((Field)node.$var).name.equals(name)
 		;	(resfl & ResolveFlags.NoImports) == 0,
 			node @= imported,
-			node.$var instanceof Field,
-			((Field)node.$var).name.equals(name)
-		;	node @= type.args, ((Type)node.$var).clazz.name.short_name.equals(name), node.$var = ((Type)node.$var).clazz
-		;	node @= sub_clazz, ((Struct)node.$var).name.short_name.equals(name)
+			{	node.$var instanceof Field && ((Field)node.$var).name.equals(name)
+			;	node.$var instanceof Typedef && ((Typedef)node.$var).name.equals(name)
+			}
+		;	sup @= type.args,
+			sup.clazz.name.short_name.equals(name),
+			node ?= sup.clazz
+		;	sub @= sub_clazz,
+			sub.name.short_name.equals(name),
+			node ?= sub.$var
 		;	this.name.short_name.equals(nameIdefault),
 			package_clazz.resolveNameR(node,path,name,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
@@ -330,12 +352,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			p ?= path.$var.concat(forw.$var),
 			Type.getRealType(tp,forw.$var.type).clazz.resolveNameR(node,p,name,tp,resfl | ResolveFlags.NoImports),
 			path.$var = p.$var
-		;	isPackage(), tryLoad(node,path,name,resfl)
-		;	!isPackage(), tryAbstractField(node,path,name,resfl)
+		;	isPackage(), tryLoad(node,path,name,resfl), $cut
+		;	!isPackage(), tryAbstractField(node,path,name,resfl), $cut
 		}
 	}
 
-	public boolean tryLoad(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryLoad(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
         if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
@@ -366,7 +388,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return false;
 	}
 
-	public boolean tryAbstractField(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryAbstractField(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
 		if( !isPackage() ) {
 			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
 				append_fast(nameSet).append_fast(name).toKString();
@@ -393,11 +415,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	 	return false;
 	}
 
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type tp, int resfl)
-		pvar Type sup;
-		pvar Struct defaults;
-		pvar Field forw;
-		pvar List<ASTNode> p;
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type tp, int resfl)
+		Type@ sup;
+		Struct@ defaults;
+		Field@ forw;
+		List<ASTNode>@ p;
 	{
 		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path.$var==List.Nil?"":" in forward path "+path)),
@@ -937,6 +959,39 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
+	public void setupWrappedField() {
+		if (!isWrapper()) {
+			wrapped_field = null;
+			return;
+		}
+		if (wrapped_field != null)
+			return;
+		if (super_clazz != null) {
+			super_clazz.clazz.setupWrappedField();
+			if(super_clazz.clazz.wrapped_field != null) {
+				wrapped_field = super_clazz.clazz.wrapped_field;
+				return;
+			}
+		}
+		Field wf = null;
+		foreach(Field f; fields; f.isForward()) {
+			if (wf == null)
+				wf = f;
+			else
+				throw new CompilerException(f.pos,"Wrapper class with multiple forward fields");
+		}
+		foreach(Field f; virtual_fields; f.isForward()) {
+			if (wf == null)
+				wf = f;
+			else
+				throw new CompilerException(f.pos,"Wrapper class with multiple forward fields");
+		}
+		if ( wf == null )
+			throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
+		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
+		wrapped_field = wf;
+	}
+
 	public void addAbstractFields() {
 		foreach(Method m; methods; m.name.name.startsWith(nameSet) || m.name.name.startsWith(nameGet) ) {
 			Field f = resolveField( m.name.name.substr(nameSet.length()), false );
@@ -1047,7 +1102,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	rule locatePackerField(pvar Field f, int size)
+	rule locatePackerField(Field@ f, int size)
 	{
 		super_clazz != null,
 		super_clazz.clazz.locatePackerField(f,size)
@@ -1066,7 +1121,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 		// Setup packed/packer fields
 		foreach(Field f; fields; f.isPackedField() ) {
-			pvar Field packer;
+			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			if( f.pack.packer == null ) {
 				if( f.pack.packer_name != null ) {
@@ -1942,8 +1997,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				else
 					((BlockStat)class_init.body).addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
-							new AssignExpr(f.init.getPos(),AssignOperator.Assign
-								,new StaticFieldAccessExpr(f.pos,this,f),f.init)
+							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
+								,new StaticFieldAccessExpr(f.pos,this,f),f.init,f.isInitWrapper())
 						)
 					);
 			} else {
@@ -1955,7 +2010,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					init_stat = ((StatExpr)f.init).stat;
 				} else {
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
-						new AssignExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init)
+						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init,f.isInitWrapper())
 					);
 				}
 				instance_init.addStatement(init_stat);
@@ -2875,7 +2930,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			for(int i=0; fields!=null && i < fields.length; i++) {
 				Field f = fields[i];
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
-				if( f.isStatic() && f.init != null ) {
+				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
 						if (isPrimitiveEnum())
 							f.init = f.init.resolveExpr(f.type.clazz.getPrimitiveEnumType());
@@ -2885,7 +2940,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						Kiev.reportError(f.init.pos,e);
 					}
 					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-							"Static fields: "+name+"::"+f.name+" = "+f.init);
+							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 				}
 				if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
 					f.init = null;
@@ -2908,7 +2963,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	}
 
 	public void resolveImports() {
-		PassInfo.push(this);
+/*		PassInfo.push(this);
 		try {
 			ASTNode[] old_imported = imported;
 			imported = ASTNode.emptyArray;
@@ -2916,6 +2971,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				ASTNode imp = old_imported[i];
 				if( imp instanceof ASTImport )
 					imp = ((ASTImport)imp).pass2();
+				if( imp instanceof Import) imp = ((Import)imp).node;
 				if( imp == null )
 					Kiev.reportWarning(pos,"Imported member "+imported[i]+" not found");
 				else if( imp instanceof Field ) {
@@ -2950,7 +3006,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			try {
 				if( !isPackage() ) {
 					for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-						if( !sub_clazz[i].isAnonymouse() /*&& !sub_clazz[i].isPassed_2()*/)
+						if( !sub_clazz[i].isAnonymouse()) //&& !sub_clazz[i].isPassed_2()
 							sub_clazz[i].resolveImports();
 					}
 				}
@@ -2958,7 +3014,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				Kiev.reportError(pos,e);
 			}
 		} finally { PassInfo.pop(this); }
-	}
+*/	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isGenerated() ) return this;
@@ -3194,9 +3250,17 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				addAttr(new PackedFieldsAttr(this));
 			}
 
-			if( isPackage() ) {
+			if( isSyntax() ) { // || isPackage()
 				for(int i=0; i < imported.length; i++) {
-					addAttr(new ImportAttr(imported[i]));
+					ASTNode node = imported[i];
+					if (node instanceof Typedef)
+						addAttr(new TypedefAttr((Typedef)node));
+					else if (node instanceof Operator)
+						addAttr(new OperatorAttr((Operator)node));
+//					else if (node instanceof Import)
+//						addAttr(new ImportAlias(node));
+//					else
+//						addAttr(new ImportAttr(imported[i]));
 				}
 			}
 
@@ -3217,6 +3281,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			{
 				int flags = 0;
 				if( jthis.isWrapper() ) flags |= 1;
+				if( jthis.isSyntax()  ) flags |= 2;
 
 				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
 			}

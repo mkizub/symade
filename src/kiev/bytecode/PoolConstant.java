@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,8 +17,10 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.bytecode;
+
+import static kiev.stdlib.Debug.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/PoolConstant.java,v 1.2 1998/10/21 19:44:17 max Exp $
@@ -28,19 +30,18 @@ package kiev.bytecode;
  */
 
 public abstract class PoolConstant implements BytecodeFileConstants, BytecodeElement {
-	import kiev.stdlib.Debug;
-	
+
 	public int				constant_type;
-	
+
 	public abstract void	read(ReadContext cont);
 	public abstract void	write(ReadContext cont);
 	public abstract int		size();
 	public boolean			double_slot() { return false; }
-	
+
 	public PoolConstant(int constant_type) {
 		this.constant_type = constant_type;
 	}
-	
+
 	public static PoolConstant[] readConstantPool(ReadContext cont) {
 		int len = cont.readShort();
 		trace(Clazz.traceRead,cont.offset+": Pool containce "+len+" constants");
@@ -135,7 +136,7 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 			pool[i].write(cont);
 		}
 	}
-	
+
 	public static void writeKievConstantPool(ReadContext cont, PoolConstant[] pool, int pool_offset) {
 		int len = pool.length;
 		trace(Clazz.traceWrite,cont.offset+": Pool containce "+len+" constants, starting from "+pool_offset);
@@ -149,10 +150,9 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 }
 
 public class VoidPoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public VoidPoolConstant() { super(0); }
-	
+
 	public void read(ReadContext cont) {
 		assert(false,"VoidPoolConstant read");
 	}
@@ -163,12 +163,11 @@ public class VoidPoolConstant extends PoolConstant {
 }
 
 public class Utf8PoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public KString			value;
 
 	public Utf8PoolConstant() { super(CONSTANT_UTF8); }
-	
+
 	public void read(ReadContext cont) {
 		int len = cont.readShort();
 		assert(cont.data.length-cont.offset >= len,"Too big length "+len+" specified for UTF8 string ");
@@ -186,10 +185,9 @@ public class Utf8PoolConstant extends PoolConstant {
 }
 
 public class UnicodePoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public UnicodePoolConstant() { super(CONSTANT_UNICODE); }
-	
+
 	public void read(ReadContext cont) {
 		assert(false,"UnicodePoolConstant read");
 	}
@@ -202,17 +200,16 @@ public class UnicodePoolConstant extends PoolConstant {
 public abstract class NumberPoolConstant extends PoolConstant {
 
 	public NumberPoolConstant(int constant_type) { super(constant_type); }
-	
+
 	public abstract	Number getValue();
 }
 
 public class IntegerPoolConstant extends NumberPoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public int				value;
 
 	public IntegerPoolConstant() { super(CONSTANT_INTEGER); }
-	
+
 	public void read(ReadContext cont) {
 		value = cont.readInt();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
@@ -227,12 +224,11 @@ public class IntegerPoolConstant extends NumberPoolConstant {
 }
 
 public class FloatPoolConstant extends NumberPoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public float			value;
 
 	public FloatPoolConstant() { super(CONSTANT_FLOAT); }
-	
+
 	public void read(ReadContext cont) {
 		value = cont.readFloat();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
@@ -247,12 +243,11 @@ public class FloatPoolConstant extends NumberPoolConstant {
 }
 
 public class LongPoolConstant extends NumberPoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public long				value;
 
 	public LongPoolConstant() { super(CONSTANT_LONG); }
-	
+
 	public void read(ReadContext cont) {
 		value = cont.readLong();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
@@ -268,12 +263,11 @@ public class LongPoolConstant extends NumberPoolConstant {
 }
 
 public class DoublePoolConstant extends NumberPoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public double			value;
 
 	public DoublePoolConstant() { super(CONSTANT_DOUBLE); }
-	
+
 	public void read(ReadContext cont) {
 		value = cont.readDouble();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
@@ -289,14 +283,13 @@ public class DoublePoolConstant extends NumberPoolConstant {
 }
 
 public abstract class RefPoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public int				ref;
 
 	public RefPoolConstant(int constant_type) {
 		super(constant_type);
 	}
-	
+
 	public void read(ReadContext cont) {
 		ref = cont.readShort();
 		trace(Clazz.traceRead,cont.offset+": ref = "+ref);
@@ -312,29 +305,26 @@ public abstract class RefPoolConstant extends PoolConstant {
 }
 
 public class ClazzPoolConstant extends RefPoolConstant {
-	import kiev.stdlib.Debug;
 
 	public ClazzPoolConstant() { super(CONSTANT_CLASS); }
-	
+
 }
 
 public class StringPoolConstant extends RefPoolConstant {
-	import kiev.stdlib.Debug;
 
 	public StringPoolConstant() { super(CONSTANT_STRING); }
-	
+
 }
 
 public abstract class ClazzNameTypePoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public int				ref_clazz;
 	public int				ref_nametype;
 
 	public ClazzNameTypePoolConstant(int constant_type) {
 		super(constant_type);
 	}
-	
+
 	public void read(ReadContext cont) {
 		ref_clazz = cont.readShort();
 		ref_nametype = cont.readShort();
@@ -358,34 +348,30 @@ public abstract class ClazzNameTypePoolConstant extends PoolConstant {
 }
 
 public class FieldPoolConstant extends ClazzNameTypePoolConstant {
-	import kiev.stdlib.Debug;
 
 	public FieldPoolConstant() { super(CONSTANT_FIELD); }
-	
+
 }
 
 public class MethodPoolConstant extends ClazzNameTypePoolConstant {
-	import kiev.stdlib.Debug;
 
 	public MethodPoolConstant() { super(CONSTANT_METHOD); }
-	
+
 }
 
 public class InterfaceMethodPoolConstant extends ClazzNameTypePoolConstant {
-	import kiev.stdlib.Debug;
 
 	public InterfaceMethodPoolConstant() { super(CONSTANT_INTERFACEMETHOD); }
-	
+
 }
 
 public class NameAndTypePoolConstant extends PoolConstant {
-	import kiev.stdlib.Debug;
-	
+
 	public int				ref_name;
 	public int				ref_type;
 
 	public NameAndTypePoolConstant() { super(CONSTANT_NAMEANDTYPE); }
-	
+
 	public void read(ReadContext cont) {
 		ref_name = cont.readShort();
 		ref_type = cont.readShort();

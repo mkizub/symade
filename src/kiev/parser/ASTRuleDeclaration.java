@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTRuleDeclaration.java,v 1.3.2.1.2.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -54,7 +56,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
-	
+
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier ) {
         	modifier = (ASTNode[])Arrays.append(modifier,n);

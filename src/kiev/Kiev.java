@@ -74,6 +74,16 @@ public final class Kiev {
 //        System.exit(1);
 	}
 
+   	public static void reportParserError(int pos, String msg, Throwable e) {
+		if( PassInfo.method != null ) PassInfo.method.setBad(true);
+		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
+        errorPrompt = false;
+		if( debug ) e.printStackTrace( /* */System.out /* */ );
+		errCount++;
+		reportError( pos, "Error", msg);
+//        System.exit(1);
+	}
+
    	public static void reportParserError(int pos, Throwable e) {
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
@@ -430,10 +440,17 @@ public final class Kiev {
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
 	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
 	public static Vector<ASTNode>		files_scanned = new Vector<ASTNode>();
-	public static int					pass_no = 0;
+	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 	public static Hashtable<String,ASTNode> parserAddresses =
 		new Hashtable<String,ASTNode>();
 	public static Type					argtype = null;
+
+	public static boolean passLessThen(TopLevelPass p) {
+		return ((int)pass_no) < ((int)p);
+	}
+	public static boolean passGreaterEquals(TopLevelPass p) {
+		return ((int)pass_no) >= ((int)p);
+	}
 
 	public static ASTNode parseBlock(StringBuffer sb, int begLine, int begCol) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());

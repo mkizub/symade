@@ -25,6 +25,9 @@ import kiev.stdlib.*;
 
 import kiev.vlang.Instr.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Expr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -33,10 +36,6 @@ import kiev.vlang.Instr.*;
  */
 
 public class StatExpr extends Expr implements SetBody {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Statement	stat;
 
 	public StatExpr(int pos, Statement stat) {
@@ -87,10 +86,6 @@ public class StatExpr extends Expr implements SetBody {
 }
 
 public class ConstExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	Object	value;
 
 	public ConstExpr(int pos, Object value) {
@@ -293,10 +288,6 @@ public class ConstExpr extends Expr {
 }
 
 public class ArrayLengthAccessExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		array;
 
 	public ArrayLengthAccessExpr(int pos, Expr array) {
@@ -352,10 +343,6 @@ public class ArrayLengthAccessExpr extends Expr {
 }
 
 public class AssignExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public AssignOperator	op;
 	public Expr				lval;
 	public Expr				value;
@@ -407,7 +394,10 @@ public class AssignExpr extends LvalueExpr {
 		}
 		Type et1 = lval.getType();
 		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) ) {
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.clazz.isWrapper() && !et2.clazz.isWrapper()) {
+			return (Expr)this.resolve(reqType);
+		}
+		else if( op == AssignOperator.Assign2 && et1.clazz.isWrapper() && et2.isInstanceOf(et1)) {
 			return (Expr)this.resolve(reqType);
 		}
 		else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
@@ -455,6 +445,21 @@ public class AssignExpr extends LvalueExpr {
 				Expr e;
 				e = new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{value}).tryResolve(reqType);
 				if( e != null ) return e;
+			}
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (op != AssignOperator.Assign2) {
+			if (et1.clazz.isWrapper()) {
+				Expr e = new AssignExpr(pos,op,new AccessExpr(lval.pos,lval,et1.clazz.wrapped_field),value).tryResolve(reqType);
+				if (e != null) return e;
+			}
+			if (et2.clazz.isWrapper()) {
+				Expr e = new AssignExpr(pos,op,lval,new AccessExpr(value.pos,value,et2.clazz.wrapped_field)).tryResolve(reqType);
+				if (e != null) return e;
+			}
+			if (et1.clazz.isWrapper() && et2.clazz.isWrapper()) {
+				Expr e = new AssignExpr(pos,op,new AccessExpr(lval.pos,lval,et1.clazz.wrapped_field),new AccessExpr(value.pos,value,et2.clazz.wrapped_field)).tryResolve(reqType);
+				if (e != null) return e;
 			}
 		}
 		return null;
@@ -690,7 +695,10 @@ public class AssignExpr extends LvalueExpr {
 		} else {
 			dmp.append(lval);
 		}
-		dmp.space().append(op.image).space();
+		if (op != AssignOperator.Assign2)
+			dmp.space().append(op.image).space();
+		else
+			dmp.space().append(AssignOperator.Assign.image).space();
 		if( value.getPriority() < opAssignPriority ) {
 			dmp.append('(');
 			dmp.append(value).append(')');
@@ -701,11 +709,50 @@ public class AssignExpr extends LvalueExpr {
 	}
 }
 
+
+public class InitializeExpr extends AssignExpr {
+    public boolean	of_wrapper;
+
+	public InitializeExpr(int pos, AssignOperator op, Expr lval, Expr value, boolean of_wrapper) {
+		super(pos,op,lval,value);
+		this.of_wrapper = of_wrapper;
+	}
+
+	public Expr tryResolve(Type reqType) {
+		setTryResolved(true);
+		if (!(op==AssignOperator.Assign || op==AssignOperator.Assign2))
+			return null;
+		{
+			Expr e = lval.tryResolve(reqType);
+			if( e == null ) return null;
+			lval = e;
+			e = value.tryResolve(getType());
+			if( e == null ) return null;
+			value = e;
+		}
+		Type et1 = lval.getType();
+		Type et2 = value.getType();
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.clazz.isWrapper() && !et2.clazz.isWrapper()) {
+			return (Expr)this.resolve(reqType);
+		}
+		else if((of_wrapper || op == AssignOperator.Assign2) && et1.clazz.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
+			return (Expr)this.resolve(reqType);
+		}
+		// Try wrapped classes
+		if (op != AssignOperator.Assign2) {
+			if (et2.clazz.isWrapper()) {
+				Expr e = new InitializeExpr(pos,op,lval,new AccessExpr(value.pos,value,et2.clazz.wrapped_field),of_wrapper).tryResolve(reqType);
+				if (e != null) return e;
+			}
+		}
+		return null;
+	}
+
+}
+
+
+
 public class BinaryExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public BinaryOperator		op;
 	public Expr					expr1;
 	public Expr					expr2;
@@ -790,17 +837,28 @@ public class BinaryExpr extends Expr {
 		}
 		Type et1 = expr1.getType();
 		Type et2 = expr2.getType();
-		if( op == BinaryOperator.Add && (et1 == Type.tpString || et2 == Type.tpString) ) {
+		if( op == BinaryOperator.Add
+			&& ( et1 == Type.tpString || et2 == Type.tpString ||
+			    (et1.clazz.isWrapper() && Type.getRealType(et1,et1.clazz.wrapped_field.type) == Type.tpString) ||
+			    (et2.clazz.isWrapper() && Type.getRealType(et2,et2.clazz.wrapped_field.type) == Type.tpString)
+			   )
+		) {
 			if( expr1 instanceof StringConcatExpr ) {
 				StringConcatExpr sce = (StringConcatExpr)expr1;
-				sce.appendArg((Expr)expr2.resolve(null));
-				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
+				Expr e = (Expr)expr2;
+				if (et2.clazz.isWrapper()) e = new AccessExpr(e.pos,e,et2.clazz.wrapped_field);
+				sce.appendArg((Expr)e.resolve(null));
+				trace(Kiev.debugStatGen,"Adding "+e+" to StringConcatExpr, now ="+sce);
 				return (Expr)sce.resolve(Type.tpString);
 			} else {
 				StringConcatExpr sce = new StringConcatExpr(pos);
-				sce.appendArg((Expr)expr1.resolve(null));
-				sce.appendArg((Expr)expr2.resolve(null));
-				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
+				Expr e1 = (Expr)expr1;
+				if (et1.clazz.isWrapper()) e1 = new AccessExpr(e1.pos,e1,et1.clazz.wrapped_field);
+				sce.appendArg((Expr)e1.resolve(null));
+				Expr e2 = (Expr)expr2;
+				if (et2.clazz.isWrapper()) e2 = new AccessExpr(e2.pos,e2,et2.clazz.wrapped_field);
+				sce.appendArg((Expr)e2.resolve(null));
+				trace(Kiev.debugStatGen,"Rewriting "+e1+"+"+e2+" as StringConcatExpr");
 				return (Expr)sce.resolve(Type.tpString);
 			}
 		}
@@ -842,6 +900,19 @@ public class BinaryExpr extends Expr {
 					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).tryResolve(reqType);
 				if( e != null ) return e;
 			}
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (et1.clazz.isWrapper()) {
+			Expr e = new BinaryExpr(pos,op,new AccessExpr(expr1.pos,expr1,et1.clazz.wrapped_field),expr2).tryResolve(reqType);
+			if (e != null) return e;
+		}
+		if (et2.clazz.isWrapper()) {
+			Expr e = new BinaryExpr(pos,op,expr1,new AccessExpr(expr2.pos,expr2,et2.clazz.wrapped_field)).tryResolve(reqType);
+			if (e != null) return e;
+		}
+		if (et1.clazz.isWrapper() && et2.clazz.isWrapper()) {
+			Expr e = new BinaryExpr(pos,op,new AccessExpr(expr1.pos,expr1,et1.clazz.wrapped_field),new AccessExpr(expr2.pos,expr2,et2.clazz.wrapped_field)).tryResolve(reqType);
+			if (e != null) return e;
 		}
 		return null;
 	}
@@ -1036,10 +1107,6 @@ public class BinaryExpr extends Expr {
 }
 
 public class StringConcatExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr[]	args		= new Expr[0];
 
 	public static Struct clazzStringBuffer;
@@ -1177,10 +1244,6 @@ public class StringConcatExpr extends Expr {
 }
 
 public class CommaExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr[]		exprs;
 
 	public CommaExpr(int pos, Expr[] exprs) {
@@ -1249,10 +1312,6 @@ public class CommaExpr extends Expr {
 }
 
 public class UnaryExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Operator				op;
 	public Expr					expr;
 
@@ -1339,6 +1398,11 @@ public class UnaryExpr extends Expr {
 					e = new CallAccessExpr(pos,parent,expr,opt.method,Expr.emptyArray).tryResolve(reqType);
 				if( e != null ) return e;
 			}
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (et.clazz.isWrapper()) {
+			Expr e = new UnaryExpr(pos,op,new AccessExpr(expr.pos,expr,et.clazz.wrapped_field)).tryResolve(reqType);
+			if (e != null) return e;
 		}
 		return null;
 	}
@@ -1435,10 +1499,6 @@ public class UnaryExpr extends Expr {
 }
 
 public class IncrementExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Operator				op;
 	public Expr					lval;
 
@@ -1694,10 +1754,6 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 public class MultiExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public MultiOperator	op;
 	public List<ASTNode>	exprs;
 
@@ -1733,10 +1789,6 @@ public class MultiExpr extends Expr {
 
 
 public class ConditionalExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		cond;
 	public Expr		expr1;
 	public Expr		expr2;
@@ -1864,10 +1916,6 @@ public class ConditionalExpr extends Expr {
 }
 
 public class CastExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Type					type;
 	public Expr					expr;
 	public boolean				explicit = false;
@@ -1930,6 +1978,15 @@ public class CastExpr extends Expr {
 		if( !extp.isAutoCastableTo(type) ) {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
+			if (extp.clazz.isWrapper()) {
+				return new CastExpr(pos,type,
+					new AccessExpr(expr.pos,expr,extp.clazz.wrapped_field),explicit,reinterp).tryResolve(reqType);
+			}
+		}
+		else if (extp.clazz.isWrapper() && Type.getRealType(extp,extp.clazz.wrapped_field.type).isAutoCastableTo(type)) {
+			Expr ocast = tryOverloadedCast(extp);
+			if( ocast == this ) return (Expr)resolve(reqType);
+			return new CastExpr(pos,type,new AccessExpr(expr.pos,expr,extp.clazz.wrapped_field),explicit,reinterp).tryResolve(reqType);
 		}
 		else {
 //			if( extp.isReference() && type.isReference() ) {
@@ -1984,6 +2041,11 @@ public class CastExpr extends Expr {
 			else
 				expr = (Expr)e;
 			Type et = Type.getRealType(type,expr.getType());
+			// Try wrapped field
+			if (et.clazz.isWrapper() && et.clazz.wrapped_field.type.equals(type)) {
+				return new AccessExpr(pos,parent,expr,et.clazz.wrapped_field).resolve(reqType);
+			}
+			// try null to something...
 			if (et == Type.tpNull && reqType.isReference())
 				return expr;
 			if( et.clazz.equals(Type.tpPrologVar.clazz) && type.equals(et.args[0]) ) {

@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,12 +19,16 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.OpTypes.*;
+import static kiev.vlang.Operator.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTOperatorAlias.java,v 1.3.4.2 1999/05/29 21:03:06 max Exp $
@@ -34,19 +38,22 @@ import kiev.vlang.*;
  */
 
 public class ASTOperatorAlias extends ASTAlias {
-
-	import kiev.vlang.OpTypes;
-	import kiev.vlang.Operator;
+	public static final int	XFIX_UNKNOWN = 0;
+	public static final int	XFIX_PREFIX  = 1;
+	public static final int	XFIX_POSTFIX = 2;
+	public static final int	XFIX_INFIX   = 3;
 
 	public int					prior;
 	public int					opmode;
 	public KString				image;
+	public int					xfix;
 
 	public ASTOperatorAlias(int id) {
 		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
+		if (xfix != XFIX_UNKNOWN) i = 2;
 		switch(i) {
 		case 0:
 			if( n instanceof ASTConstExpression ) {
@@ -88,7 +95,17 @@ public class ASTOperatorAlias extends ASTAlias {
 		}
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
-    
+
+  	public void set(Token t) {
+  		if (t.image.equals("prefix"))		xfix = XFIX_PREFIX;
+  		else if (t.image.equals("suffix"))	xfix = XFIX_POSTFIX;
+  		else if (t.image.equals("postfix"))	xfix = XFIX_POSTFIX;
+  		else if (t.image.equals("infix"))	xfix = XFIX_INFIX;
+  		else if (t.image.equals("binary"))	xfix = XFIX_INFIX;
+    	else
+    		throw new RuntimeException("Bad xfix mode of operator declaration "+t);
+	}
+
     private void checkPublicAccess(Method m) {
     	if( !m.isStatic() ) return;
     	if( m.isPrivate() || m.isProtected() ) return;
@@ -104,6 +121,36 @@ public class ASTOperatorAlias extends ASTAlias {
 			throw new CompilerException(pos,"Node of type "+n.getClass()+" cannot be aliased with operator");
 		Method m = (Method)n;
 		iopt = null;
+
+		if (xfix != XFIX_UNKNOWN) {
+			Operator op = null;
+			switch (xfix) {
+			case XFIX_INFIX:
+				op = BinaryOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Infix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			case XFIX_PREFIX:
+				op = PrefixOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Prefix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			case XFIX_POSTFIX:
+				op = PostfixOperator.getOperator(image);
+				if (op == null)
+					throw new CompilerException(pos,"Postfix operator "+image+" not known");
+				opmode = op.mode;
+				prior = op.priority;
+				break;
+			default:
+				throw new CompilerException(pos,"Internal error: xfix "+xfix+" unknown");
+			}
+		}
+
 		switch(opmode) {
 		case Operator.LFY:
 			{
@@ -128,7 +175,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
 				}
-				
+
 				Type opret = m.type.ret;
 				Type oparg1, oparg2;
 				if( prior != Constants.opAssignPriority )
@@ -140,7 +187,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must be virtual and have 1 argument");
 				AssignOperator op = AssignOperator.newAssignOperator(
-					image,m.name.name,null
+					image,m.name.name,null,false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otSame(1),otTheType(oparg1),otType(oparg2));
@@ -179,7 +226,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
@@ -221,7 +268,7 @@ public class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(pos,"Non-static method "+m+" must have 0 or 1 argument");
 				}
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
@@ -245,7 +292,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
@@ -266,7 +313,7 @@ public class ASTOperatorAlias extends ASTAlias {
 	public String toString() {
 		return image.toString();
 	}
-    
+
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("/* alias operator(")
 			.append(Integer.toString(prior)).append(",")

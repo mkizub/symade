@@ -25,6 +25,9 @@ import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/CallExpr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -33,10 +36,6 @@ import kiev.vlang.Operator.*;
  */
 
 public class CallExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Method	func;
 	public Expr[]	args;
 	public Type		type_of_static;
@@ -270,10 +269,6 @@ public class CallExpr extends Expr {
 }
 
 public class CallAccessExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		obj;
 	public Method	func;
 	public Expr[]	args;
@@ -598,10 +593,6 @@ public class CallAccessExpr extends Expr {
 }
 
 public class ClosureCallExpr extends Expr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		expr;
 	public ASTNode	func;	// Var or Field
 	public Expr[]	args;

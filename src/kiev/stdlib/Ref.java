@@ -27,7 +27,7 @@ package kiev.stdlib;
  *
  */
 
-public final class Ref<A>
+public final $wrapper class Ref<A>
 	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
@@ -51,5 +51,10 @@ public final class Ref<A>
 			return r.equals(value);
 	}
 
-}
+	public A getValue()
+//		alias operator(210,fy,$cast)
+	{
+		return $ref;
+	}
 
+}

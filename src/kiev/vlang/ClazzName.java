@@ -280,7 +280,7 @@ public class NodeName {
    These methods are rewritten in pure java.
 
 	rule public equals(NodeName nm)
-		pvar KString n;
+		KString@ n;
 	{
 		{
 			n ?= name;
@@ -290,7 +290,7 @@ public class NodeName {
 	}
 
 	rule public equals(KString nm)
-		pvar KString n;
+		KString@ n;
 	{
 		{
 			n ?= name;

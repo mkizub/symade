@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Type.java,v 1.5.2.1.2.1 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -31,9 +33,6 @@ import kiev.stdlib.*;
  */
 
 public class Type extends ASTNode implements AccessFlags {
-
-	import kiev.stdlib.Debug;
-
 	public static Type[]	emptyArray = new Type[0];
 
 	public static final int flReference			= 1;
@@ -523,6 +522,7 @@ public class Type extends ASTNode implements AccessFlags {
 //		typeHash.put(tpPrologEnv);
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
+		tpPrologVarClazz.setWrapper(true);
 		Struct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
 		Type tpPrologVarArg = new Type(tpPrologVarArgClazz);
 		tpPrologVar	= new Type(tpPrologVarClazz,new Type[]{tpPrologVarArg});
@@ -858,6 +858,10 @@ public class Type extends ASTNode implements AccessFlags {
 				return this.args[0].isAutoCastableTo(t.args[0]);
 			else if( this.clazz.instanceOf(tpPrologVar.clazz) && args[0].isAutoCastableTo(t) ) return true;
 			else if( t.clazz.instanceOf(tpPrologVar.clazz) && this.isAutoCastableTo(t.args[0]) ) return true;
+			return false;
+		}
+		if( this.clazz.isWrapper() ) {
+			if( Type.getRealType(this,this.clazz.wrapped_field.type).isAutoCastableTo(t) ) return true;
 			return false;
 		}
 		if( this instanceof MethodType
@@ -1280,9 +1284,6 @@ public class Type extends ASTNode implements AccessFlags {
 
 
 public class MethodType extends Type {
-
-	import kiev.stdlib.Debug;
-
 	public Type		ret;
 
 	protected MethodType(Struct clazz, Type ret, Type[] args) {

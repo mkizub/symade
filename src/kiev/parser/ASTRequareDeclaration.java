@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,12 +19,15 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.WorkByContractCondition.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTRequareDeclaration.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
@@ -34,8 +37,6 @@ import kiev.vlang.*;
  */
 
 public abstract class ASTCondDeclaration extends ASTNode implements PreScanneable {
-	import kiev.vlang.WorkByContractCondition;
-	
 	public KString		name;
     public Statement	body;
 	public virtual PrescannedBody pbody;
@@ -46,7 +47,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
-	
+
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTIdentifier ) {
         	name = ((ASTIdentifier)n).name;
@@ -60,14 +61,12 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
-    
+
     public abstract ASTNode pass3();
-    
+
 }
 
 public class ASTRequareDeclaration extends ASTCondDeclaration {
-	import kiev.vlang.WorkByContractCondition;
-
 	public ASTRequareDeclaration(int id) {
 		super(0);
 	}

@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,8 +17,10 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.bytecode;
+
+import static kiev.stdlib.Debug.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/KievAttributeHandler.java,v 1.2 1998/10/21 19:44:17 max Exp $
@@ -28,8 +30,6 @@ package kiev.bytecode;
  */
 
 public class KievAttributeHandler implements BytecodeFileConstants,AttributeHandler {
-	import kiev.stdlib.Debug;
-	
 	public virtual KString		aname = KString.from("kiev.Kiev");
 
 	public KString get$aname() { return aname; }
@@ -80,18 +80,18 @@ public class KievAttributeHandler implements BytecodeFileConstants,AttributeHand
 		}
 */
 	}
-	
+
 }
 
 public class KievAttribute extends Attribute {
-	
+
 	public KievAttributeClazz		clazz;
-	
+
 	private KievAttribute(Attribute a) {
 		this.cp_name = a.cp_name;
 		this.data = a.data;
 	}
-	
+
 	public static KievAttribute newKievAttribute(Clazz inclazz, Attribute a)
 		alias operator(240,lfy,new)
 	{
@@ -108,15 +108,13 @@ public class KievAttribute extends Attribute {
 }
 
 public class KievAttributeClazz extends Clazz implements BytecodeElement,BytecodeFileConstants {
-	import kiev.stdlib.Debug;
-	
 	public forward Clazz	inclazz;
 	public int				pool_offset;
-	
+
 	public KievAttributeClazz(Clazz inclazz) {
 		this.inclazz = inclazz;
 	}
-	
+
 	public void readConstantPool(ReadContext cont) {
 		pool_offset = inclazz.pool.length;
 		pool = PoolConstant.readKievConstantPool(cont,inclazz.pool);

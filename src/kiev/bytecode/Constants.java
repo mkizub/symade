@@ -356,6 +356,7 @@ public interface BytecodeAttributeNames {
 	public final static KString attrKiev			= KString.from("kiev.Kiev");
 	public final static KString attrFlags			= KString.from("kiev.Flags");
 	public final static KString attrAlias			= KString.from("kiev.Alias");
+	public final static KString attrTypedef			= KString.from("kiev.Typedef");
 	public final static KString attrOperator		= KString.from("kiev.Operator");
 	public final static KString attrImport			= KString.from("kiev.Import");
 	public final static KString attrEnum			= KString.from("kiev.Enum");

@@ -560,6 +560,41 @@ public class AliasAttr extends Attr {
 	}
 }
 
+public class TypedefAttr extends Attr {
+
+	public Type		type;
+	public KString	type_name;
+
+	public boolean get$isKiev() { return true; }
+
+	/** Constructor for bytecode reader and raw field creation */
+	public TypedefAttr(Typedef td) {
+		super(attrTypedef);
+		this.type = td.type;
+		this.type_name = td.name;
+	}
+
+	public TypedefAttr(Type type, KString type_name) {
+		super(attrTypedef);
+		this.type = type;
+		this.type_name = type_name;
+	}
+
+	public void generate() {
+		ConstPool.addAsciiCP(name);
+		ConstPool.addAsciiCP(type.signature);
+		ConstPool.addAsciiCP(type_name);
+	}
+
+	public kiev.bytecode.Attribute write() {
+		kiev.bytecode.KievTypedefAttribute ktda = new kiev.bytecode.KievTypedefAttribute();
+		ktda.cp_name = ConstPool.getAsciiCP(name).pos;
+		ktda.cp_type = ConstPool.getAsciiCP(type.signature).pos;
+		ktda.cp_tpnm = ConstPool.getAsciiCP(type_name).pos;
+		return ktda;
+	}
+}
+
 public class OperatorAttr extends Attr {
 
 	public Operator			op;

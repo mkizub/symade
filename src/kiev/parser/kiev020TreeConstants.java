@@ -8,8 +8,8 @@ public interface kiev020TreeConstants
   public int JJTPACKAGE = 1;
   public int JJTIMPORT = 2;
   public int JJTTYPEDEF = 3;
-  public int JJTREPACKAGE = 4;
-  public int JJTPACKAGEDECLARATION = 5;
+  public int JJTOPDEF = 4;
+  public int JJTSYNTAXDECLARATION = 5;
   public int JJTTYPEDECLARATION = 6;
   public int JJTVOID = 7;
   public int JJTENUMDECLARATION = 8;
@@ -94,8 +94,8 @@ public interface kiev020TreeConstants
     "Package",
     "Import",
     "Typedef",
-    "Repackage",
-    "PackageDeclaration",
+    "Opdef",
+    "SyntaxDeclaration",
     "TypeDeclaration",
     "void",
     "EnumDeclaration",

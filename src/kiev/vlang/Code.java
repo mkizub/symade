@@ -24,6 +24,9 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Code.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -32,10 +35,6 @@ import kiev.vlang.Instr.*;
  */
 
 public class Code implements Constants {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	/** Max stack deepness
 	 */
 	static public int				max_stack;

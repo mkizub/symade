@@ -25,6 +25,8 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Classpath.java,v 1.3.4.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
@@ -33,8 +35,6 @@ import java.util.zip.*;
  */
 
 public class Classpath implements BytecodeFileConstants {
-	import kiev.stdlib.Debug;
-
 	public Vector<ClasspathEntry>	entries;
 
 	public Classpath() {
@@ -124,8 +124,6 @@ public interface ClasspathEntry {
 }
 
 public class DirClasspathEntry implements ClasspathEntry {
-	import kiev.stdlib.Debug;
-
 	public File			dir;
 
 	public DirClasspathEntry(File dir) {
@@ -186,8 +184,6 @@ public class DirClasspathEntry implements ClasspathEntry {
 }
 
 public class ZipClasspathEntry implements ClasspathEntry {
-	import kiev.stdlib.Debug;
-
 	public ZipFile							zipfile;
 
 	public ZipClasspathEntry(File name) {

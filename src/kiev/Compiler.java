@@ -28,6 +28,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/Compiler.java,v 1.5.2.1.2.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
@@ -36,9 +38,6 @@ import java.util.*;
  */
 
 public class Compiler {
-
-	import kiev.stdlib.Debug;
-
 	public static ServerSocket		server;
 	public static Socket			socket;
 	public static InputStream		system_in = System.in;
@@ -491,9 +490,14 @@ public class Compiler {
 
 		try {
 //			if( Kiev.verbose ) System.out.println(Kiev.version);
+
+
+			Kiev.pass_no = TopLevelPass.passStartCleanup;
 			Kiev.file_unit.cleanup();
 			Kiev.file_unit.length = args.length;
-			Kiev.pass_no = 1;
+
+
+			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
 			for(int i=0; i < args.length; i++) {
 				try {
 					Kiev.curFile = KString.from(args[i]);
@@ -539,9 +543,29 @@ public class Compiler {
 			if( Kiev.interface_only ) {
 				goto stop;
 			}
-			Kiev.pass_no = 2;
 			diff_time = curr_time = System.currentTimeMillis();
 			runGC();
+
+
+			Kiev.pass_no = TopLevelPass.passProcessSyntax;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].pass1_1();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass1_1();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
+				}
+			}
+			runGC();
+
+
+			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
 				try { Kiev.file_unit[i].pass2();
@@ -557,7 +581,9 @@ public class Compiler {
 				}
 			}
 			runGC();
-			Kiev.pass_no = 3;
+
+
+			Kiev.pass_no = TopLevelPass.passStructInheritance;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
 				try { Kiev.file_unit[i].pass2_2();
@@ -578,7 +604,9 @@ public class Compiler {
 				goto stop;
 			}
 			runGC();
-			Kiev.pass_no = 4;
+
+
+			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
@@ -596,6 +624,9 @@ public class Compiler {
 				}
 			}
 			runGC();
+
+
+			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
 				try { Kiev.file_unit[i].autoProxyMethods();
@@ -611,6 +642,9 @@ public class Compiler {
 				}
 			}
 			runGC();
+
+
+			Kiev.pass_no = TopLevelPass.passResolveImports;
 			for(int i=0; i < Kiev.packages_scanned.length; i++) {
 				PassInfo.push(Env.root);
 				try{ Kiev.packages_scanned[i].resolveImports();
@@ -636,7 +670,9 @@ public class Compiler {
 				}
 			}
 			runGC();
-			Kiev.pass_no = 5;
+
+
+			Kiev.pass_no = TopLevelPass.passResolveFinalFields;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
 				try {
@@ -660,7 +696,9 @@ public class Compiler {
 			if (Kiev.safe)
 				foreach(ASTNode fu; Kiev.files_scanned; fu != null)
 					Kiev.files.append(((ASTFileUnit)fu).file_unit);
-			Kiev.pass_no = 6;
+
+
+			Kiev.pass_no = TopLevelPass.passGenerate;
 			Kiev.file_unit.cleanup();
 			Kiev.files_scanned.cleanup();
 			runGC();

@@ -34,8 +34,8 @@ import kiev.vlang.*;
  */
 
 public class ASTNonArrayType extends SimpleNode {
-    public boolean isPrologVar;
-    public boolean isRefProxy;
+	static private KString[] noops = new KString[0];
+	public KString[] ops = noops;
 
 	public ASTNonArrayType(int id) {
 		super(0);
@@ -44,6 +44,10 @@ public class ASTNonArrayType extends SimpleNode {
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 ) pos = n.getPos();
         super.jjtAddChild(n,i);
+    }
+
+    public void addOperation(Token t) {
+    	ops = (KString[])Arrays.append(ops,KString.from(t.image));
     }
 
 	public Type pass2() {
@@ -67,10 +71,24 @@ public class ASTNonArrayType extends SimpleNode {
 		        tp = Type.newRefType((Struct)v.$var,atypes);
 		    }
 		}
-		if (isPrologVar)
-		    tp = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{tp});
-		else if (isRefProxy)
-		    tp = Type.newRefType(Type.tpRefProxy.clazz,new Type[]{tp});
+		for (int i=0; i < ops.length; i++) {
+			PVar<ASTNode> v = new PVar<ASTNode>();
+			if (!PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),ops[i],null,0)) {
+				if (ops[i] == KString.from("@"))
+					v.$var = Type.tpPrologVar;
+				else if (ops[i] == KString.from("&"))
+					v.$var = Type.tpRefProxy;
+				else
+					throw new CompilerException(pos,"Typedef for type operator "+ops[i]+" not found");
+			}
+			if (!(v.$var instanceof Type))
+				throw new CompilerException(pos,"Expected to find type for "+ops[i]+", but found "+v);
+			Type t = (Type)v.$var;
+			if (t.args.length != 1)
+				throw new CompilerException(pos,"Type '"+t+"' of type operator "+ops[i]+" must have 1 argument");
+			Env.getStruct(t.clazz.name);
+			tp = Type.newRefType(t.clazz,new Type[]{tp});
+		}
 		return tp;
 	}
 

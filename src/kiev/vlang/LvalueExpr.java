@@ -25,6 +25,9 @@ import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LvalueExpr.java,v 1.6.2.1.2.5 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -33,9 +36,6 @@ import kiev.vlang.Operator.*;
  */
 
 public class AccessExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public Expr		obj;
 	public Field	var;
@@ -371,9 +371,6 @@ public class AccessExpr extends LvalueExpr {
 
 public class ContainerAccessExpr extends LvalueExpr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Expr		obj;
 	public Expr		index;
 
@@ -592,9 +589,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 
 
 public class VarAccessExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public Var		var;
 
@@ -949,9 +943,6 @@ public class VarAccessExpr extends LvalueExpr {
 
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Var		var;
 
 	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
@@ -1074,9 +1065,6 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 }
 
 public class FieldAccessExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public Field		var;
 	public Method	fset;		// for virtual fields
@@ -1376,9 +1364,6 @@ public class FieldAccessExpr extends LvalueExpr {
 
 public class StaticFieldAccessExpr extends LvalueExpr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Struct		obj;
 	public Field		var;
 	public Method	fset;		// for virtual fields
@@ -1592,9 +1577,6 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 public class OuterThisAccessExpr extends LvalueExpr {
 
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
-
 	public Struct		outer;
 	public Field[]		outer_refs = Field.emptyArray;
 
@@ -1704,9 +1686,6 @@ public class OuterThisAccessExpr extends LvalueExpr {
 }
 
 public class SelfAccessExpr extends LvalueExpr {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.Instr;
 
 	public LvalueExpr		expr;
 

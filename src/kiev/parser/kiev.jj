@@ -67,7 +67,7 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(pos, msg+"\n"+e);
+			kiev.Kiev.reportParserError(pos, msg, e);
 		} else {
 			kiev.Kiev.reportParserError(pos, msg);
 		}
@@ -116,9 +116,10 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 		return true;
 	}
 
-	private static boolean operatorLA() {
-		switch( getToken(1).kind ) {
+	private static boolean operatorLA(int tk) {
+		switch( getToken(tk).kind ) {
 		case ASSIGN:
+		case ASSIGN2:
 		case LT:
 		case GT:
 		case COLON:
@@ -159,7 +160,7 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 		case OPERATOR_AT:
 		case OPERATOR_SHARP:
 		case OPERATOR:
-			return notAToken(getToken(1));
+			return notAToken(getToken(tk));
 		case OPERATOR_ID:
 			return true;
 		}
@@ -433,6 +434,12 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < PACKED: "packed" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < WRAPPER: "$wrapper" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
+//| < MACRO:				"macro" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_EXPR:	"<expr>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_STAT:	"<stat>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_TYPE:	"<type>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_TEXT:	"<text>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_CONST:	"<const>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
@@ -615,6 +622,7 @@ TOKEN : /* Special Operators */
 TOKEN : /* OPERATORS */
 {
   < ASSIGN: "=" >
+| < ASSIGN2: ":=" >
 //| < GT: ">" >
 //| < LT: "<" >
 | < BANG: "!" >
@@ -689,12 +697,12 @@ ASTFileUnit FileUnit(String filename) :
 		LOOKAHEAD("package" QName() ";")
 		Package()
 	]
-	(	Import()	)*
-	(	Typedef()	)*
-	[
-		LOOKAHEAD("package" "{")
-		PackageDeclaration()
-	]
+	(
+		Import()
+	|	Typedef()
+	|	Opdef()
+	)*
+	//(	MacroDecl()	)*
 	(
 		try {
 			LOOKAHEAD( (Modifier())* ("class" | "interface") )
@@ -702,6 +710,9 @@ ASTFileUnit FileUnit(String filename) :
 	|
 			LOOKAHEAD( (Modifier())* "enum" )
 			EnumDeclaration() [ ";" ]
+	|
+			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			SyntaxDeclaration() [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
@@ -784,13 +795,26 @@ void Import() :
         try {
 /*@egen*/
 	try {
-		"import" QName()
-		[
-			"." "*" { jjtn000.star = true; }
-		|	"("		{ jjtn000.args = ASTType.emptyArray; }
-			(Type())*
-			")"
-		]
+		"import"
+		(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			<IDENTIFIER>{ jjtn000.mode = ASTImport.IMPORT_SYNTAX; }
+			[ QName() ]
+		|	"package"	{ jjtn000.mode = ASTImport.IMPORT_PACKAGE; }
+			[ QName() ]
+		|	"static"	{ jjtn000.mode = ASTImport.IMPORT_STATIC; }
+			QName()
+			[	"." "*" { jjtn000.star = true; }
+			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		|	QName()
+			[	"." "*" { jjtn000.star = true; }
+			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+				Type() ("," Type())*
+				")"
+			]
+		)
 		";"
 	}
 	catch(ParseError e) { rpe("Bad import declaration",e); }
@@ -822,12 +846,22 @@ void Typedef() :
   ASTTypedef jjtn000 = new ASTTypedef(JJTTYPEDEF);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token id1, id2; }
 {/*@bgen(jjtree) Typedef */
         try {
 /*@egen*/
 	try {
-		"typedef" Type() Identifier() ";"
+		"typedef"
+		(
+			LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+			{ jjtn000.opdef = true; }
+			id1=<IDENTIFIER> Operator() QName() "<" id2=<IDENTIFIER> ">"
+			{
+				if (!id1.image.equals(id2.image))
+					throw new ParseError("Typedef args "+id1+" and "+id2+" do not match");
+			}
+		|	Type() Identifier()
+		) ";"
 	}
 	catch(ParseError e) { rpe("Bad typedef declaration",e); }
 	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
@@ -853,20 +887,25 @@ void Typedef() :
 /*@egen*/
 }
 
-void Repackage() :
-{/*@bgen(jjtree) Repackage */
-  ASTRepackage jjtn000 = new ASTRepackage(JJTREPACKAGE);
+void Opdef() :
+{/*@bgen(jjtree) Opdef */
+  ASTOpdef jjtn000 = new ASTOpdef(JJTOPDEF);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) Repackage */
+{/*@bgen(jjtree) Opdef */
         try {
 /*@egen*/
-	try {
-		"#repackage" QName() "->" QName() ";"
-	}
-	catch(ParseError e) { rpe("Bad repackage declaration",e); }
-	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
+	"operator"
+	(
+		Operator()
+	|	Identifier()
+	)
+	","
+	Identifier()	// FX,FY,XF,YF,XFX,YFX,XFY,YFY
+	","
+	DecimalConstExpression()
+	";"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -889,26 +928,24 @@ void Repackage() :
 /*@egen*/
 }
 
-void PackageDeclaration() :
-{/*@bgen(jjtree) PackageDeclaration */
-  ASTPackageDeclaration jjtn000 = new ASTPackageDeclaration(JJTPACKAGEDECLARATION);
+void SyntaxDeclaration() :
+{/*@bgen(jjtree) SyntaxDeclaration */
+  ASTSyntaxDeclaration jjtn000 = new ASTSyntaxDeclaration(JJTSYNTAXDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) PackageDeclaration */
+/*@egen*/ Token t=null; }
+{/*@bgen(jjtree) SyntaxDeclaration */
         try {
 /*@egen*/
-	try {
-		"package"
-	}
-	catch(ParseError e) { rpe("Bad start of package declaration",e); }
-	catch(Throwable e) { rperr(e); }
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+	<IDENTIFIER>	// "syntax"
+	Identifier()
 	"{"
 	(
 		Typedef()
-	|	Import()
-	|	Repackage()
+	|	Opdef()
 	)*
+	//(	MacroDecl()	)*
 	"}"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -931,6 +968,8 @@ void PackageDeclaration() :
         }
 /*@egen*/
 }
+
+
 
 void TypeDeclaration() :
 {/*@bgen(jjtree) TypeDeclaration */
@@ -1010,20 +1049,12 @@ void TypeBodyDeclaration()       :
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
 			RuleDeclaration()
-//		|
-//			LOOKAHEAD( ( Modifier() )* "production" ( Modifier() )* Type() <IDENTIFIER> "(")
-//			ProductionDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
-			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | "," | ";") )
+			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
 			FieldDecl()
-		|
-			Import()
-
-//		| OptionSpec()
-//		| TokenDeclaration()
 		)*
 	}
 	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
@@ -1775,7 +1806,7 @@ void VarDecl() :
 /*@egen*/
 	Identifier()
 	( "[" "]" { jjtn000.dim++; } )*
-	[ "=" VariableInitializer() ]/*@bgen(jjtree)*/
+	[ ("=" | ":=" { jjtn000.of_wrapper=true; }) VariableInitializer() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1993,10 +2024,26 @@ void Alias()       :
 { Token t; }
 {
 	"alias"
-	(
-		IdentifierAlias()
-|		OperatorAlias()
-	)
+	try {
+		(
+			//LOOKAHEAD({
+			//	getToken(1).kind==IDENTIFIER &&
+			//	(  getToken(1).image.equals("prefix")
+			//	|| getToken(1).image.equals("suffix")
+			//	|| getToken(1).image.equals("postfix")
+			//	|| getToken(1).image.equals("infix")
+			//	|| getToken(1).image.equals("binary")
+			//	)
+			//	||
+			//	getToken(1).kind==OPERATOR_ID
+			//})
+			LOOKAHEAD(2)
+			OperatorAlias()
+		|	IdentifierAlias()
+		)
+	}
+	catch(ParseError e) { rpe("Alias expected",e); }
+	catch(Throwable e) { rperr(e); }
 }
 
 void IdentifierAlias() :
@@ -2036,22 +2083,58 @@ void OperatorAlias() :
   ASTOperatorAlias jjtn000 = new ASTOperatorAlias(JJTOPERATORALIAS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token t = null; }
 {/*@bgen(jjtree) OperatorAlias */
         try {
 /*@egen*/
-	"operator"
-	"("
-	DecimalConstExpression()	","
-	Identifier()		","
-	(
-		Operator()
-	|	Identifier()
-	|	"[" "]"	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
-	|	"new"	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
-	|	"$cast"	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
-	)
-	")"/*@bgen(jjtree)*/
+	(	// temporary, for backward compatibility
+		"operator"
+		"("
+		DecimalConstExpression()	","
+		Identifier()		","
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
+		)
+		")"
+	|
+		//LOOKAHEAD({
+		//	getToken(1).kind==IDENTIFIER &&
+		//	(  getToken(1).image.equals("prefix")
+		//	|| getToken(1).image.equals("suffix")
+		//	|| getToken(1).image.equals("postfix")
+		//	|| getToken(1).image.equals("infix")
+		//	|| getToken(1).image.equals("binary")
+		//	)
+		//})
+		t=<IDENTIFIER> { jjtn000.set(t); }
+		"operator"
+		(
+			Operator()
+		|	Identifier()
+		|	"[" "]"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameArrayOp; }
+		|	"new"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameNewOp; }
+		|	"$cast"/*@bgen(jjtree)*/
+                                {
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
+                                }
+/*@egen*/	{ jjtn000.image = kiev.vlang.Constants.nameCastOp; }
+		)
+	)/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2221,6 +2304,51 @@ void RequareDeclaration() :
         }
 /*@egen*/
 }
+
+//void MacroDecl() :
+//{ Token t; }
+//{
+//	"macro"
+//	Identifier()
+//	"("
+//		try {
+//		[
+//			MacroFormalParameter()
+//			( "," MacroFormalParameter() )*
+//		]
+//		}
+//		catch(ParseError e) { rpe("Macro formal parameter(s) expected",e); }
+//		catch(Throwable e) { rperr(e); }
+//	")"
+//	(	Alias()		)*
+//	try {
+//		Block()
+//		[ ";" ]
+//	}
+//	catch(ParseError e) { rpe("Macro body expected",e); }
+//	catch(Throwable e) { rperr(e); }
+//}
+
+//void MacroFormalParameter() :
+//{}
+//{
+//	(
+//		(	"<expr>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_EXPR; }
+//		|	"<const>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_CONST; }
+//		)
+//		[	LOOKAHEAD({ getToken(2).kind != COMMA && getToken(2).kind != RPAREN })
+//			Type()
+//		]
+//		Identifier()
+//	|
+//		(	"<stat>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_STAT; }
+//		|	"<type>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_TYPE; }
+//		|	"<text>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_TEXT; }
+//		)
+//		Identifier()
+//	)
+//}
+
 
 void EnsureDeclaration() :
 {/*@bgen(jjtree) EnsureDeclaration */
@@ -2499,7 +2627,7 @@ void NonArrayType() :
   ASTNonArrayType jjtn000 = new ASTNonArrayType(JJTNONARRAYTYPE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token t; }
 {/*@bgen(jjtree) NonArrayType */
         try {
 /*@egen*/
@@ -2508,17 +2636,15 @@ void NonArrayType() :
 		PrimitiveType()
 	|	QName()
 		[
-			LOOKAHEAD(2)
 			("<" | "/*<")
 				Type()
 				( "," Type() )*
 			(">" | ">*/")
 		]
 	)
-	[
-		"@" {jjtn000.isPrologVar = true; }
-	|	"&" {jjtn000.isRefProxy = true; }
-	]
+	(	LOOKAHEAD(1,TypeOperatorChar(),{checkNoSpace(getToken(0),getToken(1))})
+		t=TypeOperatorChar() { jjtn000.addOperation(t); }
+	)*
 	}
 	catch(ParseError e) { rpe("Bad type specification",e); }
 	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
@@ -2883,6 +3009,76 @@ void RuleCutExpression() :
 /*@egen*/
 }
 
+Token TypeOperatorChar()       :
+{ Token t; }
+{
+	(
+		t=<QUESTION>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
+Token OperatorChar()       :
+{ Token t; }
+{
+	(
+		t=<ASSIGN>
+	|	t=<ASSIGN2>
+	|	t=<LT>
+	|	t=<GT>
+	|	t=<COLON>
+	|	t=<QUESTION>
+	|	t=<ARROW>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<EQ>
+	|	t=<LE>
+	|	t=<GE>
+	|	t=<NE>
+	|	t=<SC_OR>
+	|	t=<SC_AND>
+	|	t=<INCR>
+	|	t=<DECR>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<LSHIFT>
+	|	t=<PLUSASSIGN>
+	|	t=<MINUSASSIGN>
+	|	t=<STARASSIGN>
+	|	t=<SLASHASSIGN>
+	|	t=<ANDASSIGN>
+	|	t=<ORASSIGN>
+	|	t=<XORASSIGN>
+	|	t=<REMASSIGN>
+	|	t=<LSHIFTASSIGN>
+	|	t=<RSIGNEDSHIFTASSIGN>
+	|	t=<RUNSIGNEDSHIFTASSIGN>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
 void Operator() :
 {/*@bgen(jjtree) Operator */
   ASTOperator jjtn000 = new ASTOperator(JJTOPERATOR);
@@ -2893,95 +3089,11 @@ void Operator() :
         try {
 /*@egen*/
 	(
-		(
-			t=<ASSIGN>
-		|	t=<LT>
-		|	t=<GT>
-		|	t=<COLON>
-		|	t=<QUESTION>
-		|	t=<ARROW>
-		|	t=<BANG>
-		|	t=<TILDE>
-		|	t=<EQ>
-		|	t=<LE>
-		|	t=<GE>
-		|	t=<NE>
-		|	t=<SC_OR>
-		|	t=<SC_AND>
-		|	t=<INCR>
-		|	t=<DECR>
-		|	t=<PLUS>
-		|	t=<MINUS>
-		|	t=<STAR>
-		|	t=<SLASH>
-		|	t=<BIT_AND>
-		|	t=<BIT_OR>
-		|	t=<XOR>
-		|	t=<REM>
-		|	t=<LSHIFT>
-//		|	t=<RSIGNEDSHIFT>
-//		|	t=<RUNSIGNEDSHIFT>
-		|	t=<PLUSASSIGN>
-		|	t=<MINUSASSIGN>
-		|	t=<STARASSIGN>
-		|	t=<SLASHASSIGN>
-		|	t=<ANDASSIGN>
-		|	t=<ORASSIGN>
-		|	t=<XORASSIGN>
-		|	t=<REMASSIGN>
-		|	t=<LSHIFTASSIGN>
-		|	t=<RSIGNEDSHIFTASSIGN>
-		|	t=<RUNSIGNEDSHIFTASSIGN>
-		|	t=<OPERATOR_AT>
-		|	t=<OPERATOR_SHARP>
-		|	t=<OPERATOR>
-		)
+		t=OperatorChar()
 		{ image = t.image; }
 		(
-			LOOKAHEAD({ !Kiev.javaMode && operatorLA() && checkNoSpace(getToken(0),getToken(1)) })
-			(
-				t=<ASSIGN>
-			|	t=<LT>
-			|	t=<GT>
-			|	t=<COLON>
-			|	t=<QUESTION>
-			|	t=<ARROW>
-			|	t=<BANG>
-			|	t=<TILDE>
-			|	t=<EQ>
-			|	t=<LE>
-			|	t=<GE>
-			|	t=<NE>
-			|	t=<SC_OR>
-			|	t=<SC_AND>
-			|	t=<INCR>
-			|	t=<DECR>
-			|	t=<PLUS>
-			|	t=<MINUS>
-			|	t=<STAR>
-			|	t=<SLASH>
-			|	t=<BIT_AND>
-			|	t=<BIT_OR>
-			|	t=<XOR>
-			|	t=<REM>
-			|	t=<LSHIFT>
-//			|	t=<RSIGNEDSHIFT>
-//			|	t=<RUNSIGNEDSHIFT>
-			|	t=<PLUSASSIGN>
-			|	t=<MINUSASSIGN>
-			|	t=<STARASSIGN>
-			|	t=<SLASHASSIGN>
-			|	t=<ANDASSIGN>
-			|	t=<ORASSIGN>
-			|	t=<XORASSIGN>
-			|	t=<REMASSIGN>
-			|	t=<LSHIFTASSIGN>
-			|	t=<RSIGNEDSHIFTASSIGN>
-			|	t=<RUNSIGNEDSHIFTASSIGN>
-			|	t=<OPERATOR_AT>
-			|	t=<OPERATOR_SHARP>
-			|	t=<OPERATOR>
-			)
+			LOOKAHEAD({ !Kiev.javaMode && operatorLA(1) && checkNoSpace(getToken(0),getToken(1)) })
+			t=OperatorChar()
 			{ image = image+t.image; }
 		|
 			LOOKAHEAD({ Kiev.javaMode && getToken(1).kind==GT && checkNoSpace(getToken(0),getToken(1)) })
@@ -3001,6 +3113,20 @@ void Operator() :
 		jjtn000.setPos(t.getPos());
 		jjtn000.image = KString.from(image);
 	}/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -3083,7 +3209,7 @@ void Expression() :
 		(
 			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
 			Identifier() Type()
-		|	LOOKAHEAD({ operatorLA() })
+		|	LOOKAHEAD({ operatorLA(1) })
 			Operator()
 //		|	LOOKAHEAD({ castLA() })
 		|	LOOKAHEAD( CastOperatorLA() )
@@ -3215,7 +3341,7 @@ void AccessExpression()       :
 		ReparseExpression()
 	|
 		"(" ExpressionNT(null) ")"
-	|
+	|   LOOKAHEAD("fun" "(")
 		AnonymouseClosure()
 	)
 	(
@@ -3250,30 +3376,31 @@ void AccessExpression()       :
 /*@egen*/
 	|
 		LOOKAHEAD(3)
+		"->" CallExpression()/*@bgen(jjtree) #CallAccessExpression( 2) */
+                {
+                  ASTCallAccessExpression jjtn003 = new ASTCallAccessExpression(JJTCALLACCESSEXPRESSION);
+                  boolean jjtc003 = true;
+                  jjtree.openNodeScope(jjtn003);
+                }
+                try {
+/*@egen*//*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn003,  2);
+                  jjtc003 = false;
+                }
+/*@egen*/
+		{ jjtn003.in_wrapper=true; }/*@bgen(jjtree)*/
+                } finally {
+                  if (jjtc003) {
+                    jjtree.closeNodeScope(jjtn003,  2);
+                  }
+                }
+/*@egen*/
+	|
+		LOOKAHEAD(3)
 		t="." Identifier()/*@bgen(jjtree) #AccessExpression( 2) */
         {
-          ASTAccessExpression jjtn003 = new ASTAccessExpression(JJTACCESSEXPRESSION);
-          boolean jjtc003 = true;
-          jjtree.openNodeScope(jjtn003);
-        }
-        try {
-/*@egen*//*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn003,  2);
-          jjtc003 = false;
-        }
-/*@egen*/
-        { jjtn003.setPos(t.getPos()); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc003) {
-            jjtree.closeNodeScope(jjtn003,  2);
-          }
-        }
-/*@egen*/
-	|	LOOKAHEAD(2)
-		t="[" ExpressionNT(null) "]"/*@bgen(jjtree) #ArrayElementAccessExpression( 2) */
-        {
-          ASTArrayElementAccessExpression jjtn004 = new ASTArrayElementAccessExpression(JJTARRAYELEMENTACCESSEXPRESSION);
+          ASTAccessExpression jjtn004 = new ASTAccessExpression(JJTACCESSEXPRESSION);
           boolean jjtc004 = true;
           jjtree.openNodeScope(jjtn004);
         }
@@ -3292,33 +3419,76 @@ void AccessExpression()       :
         }
 /*@egen*/
 	|
+		LOOKAHEAD(3)
+		t="->" Identifier()/*@bgen(jjtree) #AccessExpression( 2) */
+        {
+          ASTAccessExpression jjtn005 = new ASTAccessExpression(JJTACCESSEXPRESSION);
+          boolean jjtc005 = true;
+          jjtree.openNodeScope(jjtn005);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn005,  2);
+          jjtc005 = false;
+        }
+/*@egen*/
+        { jjtn005.setPos(t.getPos()); jjtn005.in_wrapper=true; }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc005) {
+            jjtree.closeNodeScope(jjtn005,  2);
+          }
+        }
+/*@egen*/
+	|	LOOKAHEAD(2)
+		t="[" ExpressionNT(null) "]"/*@bgen(jjtree) #ArrayElementAccessExpression( 2) */
+        {
+          ASTArrayElementAccessExpression jjtn006 = new ASTArrayElementAccessExpression(JJTARRAYELEMENTACCESSEXPRESSION);
+          boolean jjtc006 = true;
+          jjtree.openNodeScope(jjtn006);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn006,  2);
+          jjtc006 = false;
+        }
+/*@egen*/
+        { jjtn006.setPos(t.getPos()); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc006) {
+            jjtree.closeNodeScope(jjtn006,  2);
+          }
+        }
+/*@egen*/
+	|
 		LOOKAHEAD("." "new" QName() ( "(" | "<" | "/*<") )
 		"."/*@bgen(jjtree) #NewAccessExpression( 2) */
                 {
-                  ASTNewAccessExpression jjtn005 = new ASTNewAccessExpression(JJTNEWACCESSEXPRESSION);
-                  boolean jjtc005 = true;
-                  jjtree.openNodeScope(jjtn005);
+                  ASTNewAccessExpression jjtn007 = new ASTNewAccessExpression(JJTNEWACCESSEXPRESSION);
+                  boolean jjtc007 = true;
+                  jjtree.openNodeScope(jjtn007);
                 }
                 try {
 /*@egen*/
 		NewExpression()/*@bgen(jjtree)*/
-                } catch (Throwable jjte005) {
-                  if (jjtc005) {
-                    jjtree.clearNodeScope(jjtn005);
-                    jjtc005 = false;
+                } catch (Throwable jjte007) {
+                  if (jjtc007) {
+                    jjtree.clearNodeScope(jjtn007);
+                    jjtc007 = false;
                   } else {
                     jjtree.popNode();
                   }
-                  if (jjte005 instanceof RuntimeException) {
-                    throw (RuntimeException)jjte005;
+                  if (jjte007 instanceof RuntimeException) {
+                    throw (RuntimeException)jjte007;
                   }
-                  if (jjte005 instanceof ParseException) {
-                    throw (ParseException)jjte005;
+                  if (jjte007 instanceof ParseException) {
+                    throw (ParseException)jjte007;
                   }
-                  throw (Error)jjte005;
+                  throw (Error)jjte007;
                 } finally {
-                  if (jjtc005) {
-                    jjtree.closeNodeScope(jjtn005,  2);
+                  if (jjtc007) {
+                    jjtree.closeNodeScope(jjtn007,  2);
                   }
                 }
 /*@egen*/
@@ -4008,7 +4178,7 @@ void BlockStatement()       :
 { boolean old_declMode; }
 {
 	(
-		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 		VarDecls() //#DeclStatement
 	|	LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
 		{ old_declMode = declMode; declMode = false; }
@@ -4452,7 +4622,7 @@ void ForInit()      :
 {}
 {
 	(
-	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 	VarDecls()
 |	CommaExpression() ";"
 |	EmptyStatement()

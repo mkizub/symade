@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/AST.java,v 1.6.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -30,9 +32,43 @@ import kiev.stdlib.*;
  *
  */
 
-public abstract class ASTNode implements Constants {
+// AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
+public interface TopLevelDecl {
+	// create top-level, inner named, argument Struct-s
+	public ASTNode pass1();
+	// resolve some imports, remember typedef's names, remember
+	// operator declarations, remember names/operators for type macroses
+	public ASTNode pass1_1();
+	// process inheritance for type arguments, create
+	// Struct's for template types
+	public ASTNode pass2();
+	// process Struct's inheritance (extends/implements)
+	public ASTNode pass2_2();
+	// process Struct's members (fields, methods)
+	public ASTNode pass3();
+	// autoProxyMethods()
+	public ASTNode autoProxyMethods();
+	// resolveImports()
+	public ASTNode resolveImports();
+	// resolveFinalFields()
+	public ASTNode resolveFinalFields(boolean cleanup);
+};
 
-	import kiev.stdlib.Debug;
+public enum TopLevelPass /*extends int*/ {
+	passStartCleanup		= 0,	// start of compilation or cleanup before next incremental compilation
+	passCreateTopStruct		= 1,	// create top-level Struct
+	passProcessSyntax		= 2,	// process syntax - some import, typedef, operator and macro
+	passArgumentInheritance	= 3,	// inheritance of type arguments
+	passStructInheritance	= 4,	// inheritance of classe/interfaces/structures
+	passCreateMembers		= 5,	// create declared members of structures
+	passAutoProxyMethods	= 6,	// autoProxyMethods()
+	passResolveImports		= 7,	// recolve import static for import of fields and methods
+	passResolveFinalFields	= 8,	// resolve final fields, to find out if they are constants
+	passGenerate			= 9		// resolve, generate and so on - each file separatly
+};
+
+
+public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
@@ -120,6 +156,15 @@ public abstract class ASTNode implements Constants {
     	return toJava(dmp);
     }
 
+	public ASTNode pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass3(Object obj)  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode autoProxyMethods() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveImports()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+
 	public int setFlags(int fl) {
 		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
 		flags = fl;
@@ -170,7 +215,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isStatementsGenerated()	{ return (flags & ACC_STATEMENTS_GENERATED) != 0; }
 	public boolean isGenerated()	{ return (flags & ACC_GENERATED) != 0; }
 	public boolean isEnum()			{ return (flags & ACC_ENUM) != 0; }
-	public boolean isGrammar()		{ return (flags & ACC_GRAMMAR) != 0; }
+	public boolean isSyntax()		{ return (flags & ACC_SYNTAX) != 0; }
 	public boolean isPrimitiveEnum(){ return (flags & ACC_PRIMITIVE_ENUM) != 0; }
 	public boolean isWrapper()		{ return (flags & ACC_WRAPPER) != 0; }
 
@@ -193,6 +238,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
 	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
 	public boolean isClosureProxy()	{ return (flags & ACC_CLOSURE_PROXY) != 0; }
+	public boolean isInitWrapper()	{ return (flags & ACC_INIT_WRAPPER) != 0; }
 
 	// Field specific
 	public boolean isVirtual()		{ return (flags & ACC_VIRTUAL) != 0; }
@@ -206,6 +252,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isConstExpr()	{ return (flags & ACC_CONSTEXPR) != 0; }
 	public boolean isTryResolved()	{ return (flags & ACC_TRYRESOLVED) != 0; }
 	public boolean isGenResolve()	{ return (flags & ACC_GENRESOLVE) != 0; }
+	public boolean isForWrapper()	{ return (flags & ACC_FOR_WRAPPER) != 0; }
 
 	// Statement specific
 	public boolean isAbrupted()	{ return (flags & ACC_ABRUPTED) != 0; }
@@ -355,11 +402,11 @@ public abstract class ASTNode implements Constants {
 		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM);
 		if( on ) flags |= ACC_ENUM;
 	}
-	public void setGrammar(boolean on) {
+	public void setSyntax(boolean on) {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GRAMMAR set to "+on+" from "+((flags & ACC_GRAMMAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM|ACC_GRAMMAR);
-		if( on ) flags |= ACC_GRAMMAR;
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNTAX set to "+on+" from "+((flags & ACC_SYNTAX)!=0)+", now 0x"+Integer.toHexString(flags));
+		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM|ACC_SYNTAX);
+		if( on ) flags |= ACC_SYNTAX;
 	}
 	public void setPrimitiveEnum(boolean on) {
 		assert(this instanceof Struct && this.isEnum(),"For node "+this.getClass());
@@ -474,6 +521,14 @@ public abstract class ASTNode implements Constants {
 		else flags &= ~ACC_CLOSURE_PROXY;
 	}
 
+	// Var/field specific
+	public void setInitWrapper(boolean on) {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INIT_WRAPPER set to "+on+" from "+((flags & ACC_INIT_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_INIT_WRAPPER;
+		else flags &= ~ACC_INIT_WRAPPER;
+	}
+
 
 	// Field specific
 	public void setVirtual(boolean on) {
@@ -531,6 +586,12 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GENRESOLVE set to "+on+" from "+((flags & ACC_GENRESOLVE)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_GENRESOLVE;
 		else flags &= ~ACC_GENRESOLVE;
+	}
+	public void setForWrapper(boolean on) {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FOR_WRAPPER set to "+on+" from "+((flags & ACC_FOR_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_FOR_WRAPPER;
+		else flags &= ~ACC_FOR_WRAPPER;
 	}
 
 	// Statement specific
@@ -618,8 +679,6 @@ public abstract class ASTNode implements Constants {
 }
 
 public abstract class Expr extends ASTNode {
-
-	import kiev.stdlib.Debug;
 
 	public static Expr[] emptyArray = new Expr[0];
 
@@ -717,8 +776,6 @@ public abstract class Expr extends ASTNode {
 
 public class WrapedExpr extends Expr {
 
-	import kiev.stdlib.Debug;
-
 	public ASTNode	expr;
 	public Type		base_type;
 	public WrapedExpr(int pos, ASTNode expr) {
@@ -746,8 +803,6 @@ public class WrapedExpr extends Expr {
 }
 
 public abstract class BooleanExpr extends Expr {
-
-	import kiev.stdlib.Debug;
 
 	public BooleanExpr(int pos) { super(pos); }
 
@@ -777,8 +832,6 @@ public abstract class BooleanExpr extends Expr {
 }
 
 public abstract class LvalueExpr extends Expr {
-
-	import kiev.stdlib.Debug;
 
 	public LvalueExpr(int pos) { super(pos); }
 
@@ -815,8 +868,6 @@ public abstract class LvalueExpr extends Expr {
 
 public abstract class Statement extends ASTNode {
 
-	import kiev.stdlib.Debug;
-
 	public static Statement[] emptyArray = new Statement[0];
 
 	public Statement(int pos, ASTNode parent) { super(pos, parent); }
@@ -846,3 +897,4 @@ public class CompilerException extends RuntimeException {
 		this.clazz = PassInfo.clazz;
 	}
 }
+

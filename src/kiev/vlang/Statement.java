@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Statement.java,v 1.6.2.1.2.2 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -32,8 +34,6 @@ import kiev.parser.*;
  */
 
 public class InlineMethodStat extends Statement implements ScopeOfNames {
-
-	import kiev.stdlib.Debug;
 
 	static class ParamRedir {
 		Var		old_var;
@@ -56,8 +56,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar ParamRedir	redir;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		ParamRedir@	redir;
 	{
 		redir @= params_redir,
 		redir.old_var.name.equals(name),
@@ -134,8 +134,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 public class BlockStat extends Statement implements ScopeOfNames {
 
-	import kiev.stdlib.Debug;
-
 	public ASTNode[]	stats = Statement.emptyArray;
 	public Var[]		vars = Var.emptyArray;
 	public Statement[]	addstats = Statement.emptyArray;
@@ -164,7 +162,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return var;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node.$var).name.equals(name)
 	}
@@ -228,10 +226,19 @@ public class BlockStat extends Statement implements ScopeOfNames {
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						Statement vstat;
-						if( vdecl.init != null )
+						if( vdecl.init != null ) {
+							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
+							else
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),
+									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
+						}
+						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
-								,vdecl.init);
-						else if( (flags & ACC_PROLOGVAR) != 0 )
+								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
+						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else
@@ -320,8 +327,6 @@ public class BlockStat extends Statement implements ScopeOfNames {
 
 public class EmptyStat extends Statement {
 
-	import kiev.stdlib.Debug;
-
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
 
 	public ASTNode resolve(Type reqType) {
@@ -346,8 +351,6 @@ public class EmptyStat extends Statement {
 }
 
 public class ExprStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		expr;
 
@@ -396,8 +399,6 @@ public class ExprStat extends Statement {
 }
 
 public class DeclStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public Var		var;
 	public Expr		init;
@@ -497,8 +498,6 @@ public class DeclStat extends Statement {
 
 public class TypeDeclStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public Struct		struct;
 
 	public TypeDeclStat(int pos, ASTNode parent, Struct struct) {
@@ -542,8 +541,6 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 }
 
 public class ReturnStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public Expr		expr;
 
@@ -653,8 +650,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 public class ThrowStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public Expr		expr;
 
 	public ThrowStat(int pos, ASTNode parent, Expr expr) {
@@ -706,8 +701,6 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 public class IfElseStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public BooleanExpr	cond;
 	public Statement	thenSt;
@@ -865,10 +858,10 @@ public class IfElseStat extends Statement {
 		}
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
-		if( thenSt instanceof ExprStat || thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(thenSt);
-		if( thenSt instanceof ExprStat || thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.newLine();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.newLine();
 		else dmp.newLine(-1);
 		if( elseSt != null ) {
 			dmp.append("else");
@@ -883,8 +876,6 @@ public class IfElseStat extends Statement {
 }
 
 public class CondStat extends Statement {
-
-	import kiev.stdlib.Debug;
 
 	public BooleanExpr	cond;
 	public Expr			message;
@@ -1010,8 +1001,6 @@ public class CondStat extends Statement {
 
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
-	import kiev.stdlib.Debug;
-
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	public KString		name;
@@ -1068,8 +1057,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 }
 
 public class BreakStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public KString		name;
 
@@ -1149,8 +1136,6 @@ public class BreakStat extends Statement/*defaults*/ {
 
 public class ContinueStat extends Statement/*defaults*/ {
 
-	import kiev.stdlib.Debug;
-
 	public KString		name;
 
 	public ContinueStat(int pos, ASTNode parent, KString name) {
@@ -1199,8 +1184,6 @@ public class ContinueStat extends Statement/*defaults*/ {
 }
 
 public class GotoStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public KString		name;
 
@@ -1385,8 +1368,6 @@ public class GotoStat extends Statement/*defaults*/ {
 }
 
 public class GotoCaseStat extends Statement/*defaults*/ {
-
-	import kiev.stdlib.Debug;
 
 	public Expr			expr;
 	public SwitchStat	sw;

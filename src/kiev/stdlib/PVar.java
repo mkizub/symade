@@ -27,12 +27,12 @@ package kiev.stdlib;
  *
  */
 
-public final class PVar<A>
+public final $wrapper class PVar<A>
 	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	forward public virtual A			$var;
-	private PVar<A>						$pvar;
+	private PVar<A>						$pvar := null;
 	public virtual abstract boolean		$is_bound;
 
 	public PVar() {
@@ -59,9 +59,11 @@ public final class PVar<A>
 //			$is_bound = true;
 	}
 
-	public boolean get$$is_bound() {
+	public boolean get$$is_bound()
+		alias $get_is_bound
+	{
 		if ($pvar.$self != null)
-			return $pvar.get$$is_bound();
+			return $pvar.$get_is_bound();
 		if( A instanceof boolean )
 			return $var != (A)Integer.MIN_VALUE;
 		else if( A instanceof byte )

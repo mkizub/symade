@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import java.io.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/PassInfo.java,v 1.3.2.1.2.2 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -56,12 +58,11 @@ public class PathEnumerator implements Enumeration<ASTNode> {
 
 public class PassInfo {
 
-	import kiev.stdlib.Debug;
-
 	// No instances
 	private PassInfo() {}
 
 	// Pass info and global resolving section
+	public static FileUnit			file_unit;
 	public static Struct			clazz;
 	public static Method			method;
 	public static ASTNode[]			path	= new ASTNode[1024];
@@ -71,7 +72,11 @@ public class PassInfo {
 	public static void push(ASTNode node) {
 		trace(Kiev.debugAST,"AST "+pathTop+" push '"+node+"'"+debugAt());
         path[pathTop++] = node;
-		if( node instanceof Struct ) {
+		if( node instanceof FileUnit ) {
+			trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
+			file_unit = (FileUnit)node;
+		}
+		else if( node instanceof Struct ) {
 			trace(Kiev.debugAST,"AST set clazz  '"+node+"'"+debugAt());
 			clazz = (Struct)node;
 		}
@@ -102,7 +107,10 @@ public class PassInfo {
     	if( n!=node )
     		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
         path[pathTop] = null;
-		if( node instanceof Struct ) {
+		if( node instanceof FileUnit ) {
+			file_unit = null;
+		}
+		else if( node instanceof Struct ) {
 			clazz = null;
 			for(int i=pathTop-1; i >= 0; i-- ) {
 				if( path[i] instanceof Struct ) {
@@ -216,7 +224,7 @@ public class PassInfo {
 			&& ((node.$var instanceof Struct && !node.$var.isPackage()) || node.$var instanceof Type);
 	}
 
-	public static boolean resolveQualifiedPrefix(pvar Struct qstruct, pvar KString qname, KString name, int resfl)
+	public static boolean resolveQualifiedPrefix(Struct@ qstruct, KString@ qname, KString name, int resfl)
 	{
 		KStringTokenizer sigt = new KStringTokenizer(name,'.');
 		PVar<ASTNode> cl = new PVar<ASTNode>();
@@ -247,7 +255,7 @@ public class PassInfo {
 		return true;
 	}
 
-	static boolean checkSymbolInHash(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	static boolean checkSymbolInHash(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
 		NameAndPath sym = symbols.get(name);
 		if( sym != null ) {
 			trace(Kiev.debugResolve,"Name "+name+" resolved from hash as "+sym);
@@ -260,10 +268,18 @@ public class PassInfo {
 		}
 	}
 
-	rule public static resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar KString qname_head;
-		pvar KString qname_tail;
-		pvar ASTNode p;
+	rule public static resolveOperatorR(ASTNode@ op)
+		ASTNode@ p;
+	{
+		p @= new PathEnumerator(),
+		p.$var instanceof ScopeOfOperators,
+		((ScopeOfOperators)p.$var).resolveOperatorR(op)
+	}
+
+	rule public static resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		KString@ qname_head;
+		KString@ qname_tail;
+		ASTNode@ p;
 	{
 		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
@@ -284,8 +300,8 @@ public class PassInfo {
 		assert(node != null);
 		// Vars will be auto-wrapped in Cell if needed
 		if( node instanceof Var ) return true;
-		// Structures do not need path
-		if( node instanceof Struct || node instanceof Type ) {
+		// Structures/types/typedefs do not need path
+		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
 			path.$var = List.Nil;
 			return true;
 		}
@@ -347,8 +363,8 @@ public class PassInfo {
 
 	public static boolean resolveBestMethodR(
 		ScopeOfMethods sc,
-		pvar ASTNode node,
-		pvar List<ASTNode> path,
+		ASTNode@ node,
+		List<ASTNode>@ path,
 		KString name,
 		Expr[] args,
 		Type ret,
@@ -465,10 +481,10 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	rule public static resolveMethodR(pvar ASTNode node,pvar List<ASTNode> path,KString name, Expr[] args, Type ret, Type type, int resfl)
-		pvar KString qname_head;
-		pvar KString qname_tail;
-		pvar ASTNode p;
+	rule public static resolveMethodR(ASTNode@ node, List<ASTNode>@ path,KString name, Expr[] args, Type ret, Type type, int resfl)
+		KString@ qname_head;
+		KString@ qname_tail;
+		ASTNode@ p;
 	{
 		name.indexOf('.') > 0,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),

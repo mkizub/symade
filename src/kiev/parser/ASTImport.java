@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,7 +19,7 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
@@ -33,11 +33,16 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTImport extends ASTNode {
+public class ASTImport extends ASTNode implements TopLevelDecl {
+	public static final int	IMPORT_CLASS   = 0;
+	public static final int	IMPORT_STATIC  = 1;
+	public static final int	IMPORT_PACKAGE = 2;
+	public static final int	IMPORT_SYNTAX  = 3;
 	public KString		name;
+	public int			mode = IMPORT_CLASS;
     public boolean		star = false;
     public ASTNode[]	args = null;
-    
+
 	public ASTImport(int id) {
 		super(0);
 	}
@@ -53,32 +58,45 @@ public class ASTImport extends ASTNode {
 		}
     }
 
-	public ASTNode pass2() {
+	public ASTNode pass1_1() {
+		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		if( args==null ) {
-			if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),name,null,0) ) 
-				throw new CompilerException(pos,"Unresolved identifier "+name);
-			else
-				return v.$var;
-		} else {
-			int i = 0;
-			Expr[] exprs;
-			if( args.length > 0 && args[0]==Type.tpRule) {
-				exprs = new Expr[args.length-1];
-				i++;
-			} else {
-				exprs = new Expr[args.length];
-			}
-			for(int j=0; j < exprs.length; j++,i++)
-				exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,
-					(args[i] instanceof ASTType ? ((ASTType)args[i]).pass2() : (kiev.vlang.Type)args[i]),0));
-			if( !PassInfo.resolveMethodR(v,new PVar<List<ASTNode>>(List.Nil),name,exprs,null,null,0) )
-				throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
-			else
-				return v.$var;
-		}
+		if( !PassInfo.resolveNameR(v,new PVar<List<ASTNode>>(List.Nil),name,null,0) )
+			throw new CompilerException(pos,"Unresolved identifier "+name);
+		ASTNode n = v.$var;
+		if (mode == IMPORT_CLASS && !(n instanceof Struct))
+			throw new CompilerException(pos,"Identifier "+name+" is not a class or package");
+		else if (mode == IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
+			throw new CompilerException(pos,"Identifier "+name+" is not a package");
+		else if (mode == IMPORT_STATIC && !(star || (n instanceof Field)))
+			throw new CompilerException(pos,"Identifier "+name+" is not a field");
+		else if (mode == IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax()))
+			throw new CompilerException(pos,"Identifier "+name+" is not a syntax");
+		return new Import(pos,PassInfo.file_unit,n,mode,star);
 	}
-    
+
+	public ASTNode resolveImports() {
+		if (args == null || (mode==IMPORT_STATIC && star)) return null;
+		PVar<ASTNode> v = new PVar<ASTNode>();
+		int i = 0;
+		Expr[] exprs;
+		if( args.length > 0 && args[0]==Type.tpRule) {
+			exprs = new Expr[args.length-1];
+			i++;
+		} else {
+			exprs = new Expr[args.length];
+		}
+		for(int j=0; j < exprs.length; j++,i++)
+			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,
+				(args[i] instanceof ASTType ? ((ASTType)args[i]).pass2() : (kiev.vlang.Type)args[i]),0));
+		if( !PassInfo.resolveMethodR(v,new PVar<List<ASTNode>>(List.Nil),name,exprs,null,null,0) )
+			throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
+		ASTNode n = v.$var;
+		if (mode != IMPORT_STATIC || !(n instanceof Method))
+			throw new CompilerException(pos,"Identifier "+name+" is not a method");
+		return new Import(pos,PassInfo.file_unit,n,IMPORT_STATIC,false);
+	}
+
 	public Dumper toJava(Dumper dmp) {
     	dmp.append("import").space().append(name);
         if(star)

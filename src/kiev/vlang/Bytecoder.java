@@ -23,6 +23,10 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.Instr.*;
+import static kiev.vlang.Operator.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Bytecoder.java,v 1.5.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,11 +35,6 @@ import kiev.stdlib.*;
  */
 
 public class Bytecoder implements Constants {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.OpTypes;
-	import kiev.vlang.Operator;
-
 	public Struct								cl;
 	public kiev.bytecode.Clazz					bcclazz;
 	public kiev.bytecode.KievAttributeClazz		kaclazz;
@@ -91,7 +90,7 @@ public class Bytecoder implements Constants {
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
 		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_LOCAL|ACC_ANONYMOUSE|ACC_HAS_CASES
-				|ACC_VERIFIED|ACC_ENUM|ACC_GRAMMAR|ACC_WRAPPER);
+				|ACC_VERIFIED|ACC_ENUM|ACC_SYNTAX);
 		fl |= bcclazz.flags;
 		cl.setFlags( fl );
 
@@ -127,13 +126,17 @@ public class Bytecoder implements Constants {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
 			if( at != null ) {
 				cl.addAttr(at);
-				if( at.name.equals(attrFlags) ) {
-					int flags = ((FlagsAttr)at).flags;
-					if ((flags & 1) == 1) {
-						if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
-						cl.setWrapper(true);
-					}
-				}
+				//if( at.name.equals(attrFlags) ) {
+				//	int flags = ((FlagsAttr)at).flags;
+				//	if ((flags & 1) == 1) {
+				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+				//		cl.setWrapper(true);
+				//	}
+				//	else if ((flags & 2) == 2) {
+				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
+				//		cl.setSyntax(true);
+				//	}
+				//}
 			}
 		}
 		if( kaclazz != null ) {
@@ -148,12 +151,27 @@ public class Bytecoder implements Constants {
 							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
 							cl.setWrapper(true);
 						}
+						else if ((flags & 2) == 2) {
+							if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
+							cl.setSyntax(true);
+						}
+					}
+					else if (at.name.equals(attrTypedef)) {
+						Type type = ((TypedefAttr)at).type;
+						KString name = ((TypedefAttr)at).type_name;
+						Typedef td = new Typedef(0,cl,name,type);
+						cl.imported = (ASTNode[])Arrays.append(cl.imported,td);
+					}
+					else if( at.name.equals(attrOperator) ) {
+						Operator op = ((OperatorAttr)at).op;
+						cl.imported = (ASTNode[])Arrays.append(cl.imported,op);
 					}
 				}
 			}
 		}
 
 		cl.addAbstractFields();
+		cl.setupWrappedField();
 		return cl;
 	}
 
@@ -385,6 +403,12 @@ public class Bytecoder implements Constants {
 				nm.addAlias( aa.getAlias(i,clazz));
 			a = new AliasAttr(nm);
 		}
+		else if( name.equals(attrTypedef) ) {
+			kiev.bytecode.KievTypedefAttribute tda = (kiev.bytecode.KievTypedefAttribute)bca;
+			KString sign = tda.getType(clazz);
+			KString name = tda.getTypeName(clazz);
+			a = new TypedefAttr(Type.fromSignature(sign),name);
+		}
 		else if( name.equals(attrOperator) ) {
 			kiev.bytecode.KievOperatorAttribute oa = (kiev.bytecode.KievOperatorAttribute)bca;
 			int prior = oa.priority;
@@ -402,21 +426,21 @@ public class Bytecoder implements Constants {
 			Operator op = null;
 			switch(opmode) {
 			case Operator.LFY:
-				op = AssignOperator.newAssignOperator(image,KString.Empty,null);
+				op = AssignOperator.newAssignOperator(image,KString.Empty,null,false);
 				break;
 			case Operator.XFX:
 			case Operator.YFX:
 			case Operator.XFY:
 			case Operator.YFY:
-				op = BinaryOperator.newBinaryOperator(prior,image,KString.Empty,null,optype);
+				op = BinaryOperator.newBinaryOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.FX:
 			case Operator.FY:
-				op = PrefixOperator.newPrefixOperator(prior,image,KString.Empty,null,optype);
+				op = PrefixOperator.newPrefixOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.XF:
 			case Operator.YF:
-				op = PostfixOperator.newPostfixOperator(prior,image,KString.Empty,null,optype);
+				op = PostfixOperator.newPostfixOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.XFXFY:
 				throw new RuntimeException("Multioperators are not supported yet");
@@ -542,9 +566,24 @@ public class Bytecoder implements Constants {
 					}
 					if( ica.cp_inners[i] != 0 ) {
 						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz));
-						inner[i] = Env.getStruct(cn);
-						if( inner[i] == null )
-							throw new RuntimeException("Class "+cn+" not found");
+						// load only non-anonymouse classes
+						boolean anon = false;
+						for (int i=0; i < cn.bytecode_name.len; i++) {
+							i = cn.bytecode_name.indexOf((byte)'$',i);
+							if (i < 0) break;
+							char ch = cn.bytecode_name.byteAt(i+1);
+							if (ch >= '0' && ch <= '9') {
+								anon = true;
+								break;
+							}
+						}
+						if (anon) {
+							inner[i] == null;
+						} else {
+							inner[i] = Env.getStruct(cn);
+							if( inner[i] == null )
+								throw new RuntimeException("Class "+cn+" not found");
+						}
 					} else {
 						inner[i] = null;
 					}
@@ -569,8 +608,8 @@ public class Bytecoder implements Constants {
 			KString clname = kia.getClazzName(clazz);
 			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname));
 			if( s == null )
-				Kiev.reportWarning(0,"Package bytecode imports a member from unknown class "+clname);
-			else if( Kiev.pass_no < 5 ) {
+				Kiev.reportWarning(0,"Bytecode imports a member from unknown class "+clname);
+			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
 				kiev.parser.ASTImport imp = new kiev.parser.ASTImport(0);
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
 					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));

@@ -23,6 +23,8 @@ package kiev.vlang;
 import kiev.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Var.java,v 1.5.2.1 1999/02/12 18:47:10 max Exp $
  * @author Maxim Kizub
@@ -146,8 +148,6 @@ public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
 }
 
 public class NodeInfoPass {
-
-	import kiev.stdlib.Debug;
 
 	public static Stack<ScopeNodeInfoVector>	states;
 	public static Stack<Stack<ScopeNodeInfoVector>>	init_states =

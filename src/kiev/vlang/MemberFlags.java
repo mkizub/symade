@@ -58,7 +58,7 @@ public interface AccessFlags {
 	public static final int ACC_STATEMENTS_GENERATED	= 1 << 19;
 	public static final int ACC_GENERATED		= 1 << 20;
 	public static final int ACC_ENUM			= 1 << 21;
-	public static final int ACC_GRAMMAR			= 1 << 22;
+	public static final int ACC_SYNTAX			= 1 << 22;
 	public static final int ACC_PRIMITIVE_ENUM	= 1 << 23;
 	public static final int ACC_WRAPPER			= 1 << 24;
 
@@ -86,6 +86,7 @@ public interface AccessFlags {
 	public static final int ACC_LOCALPROLOGVAR	= 1 << 19;
 	public static final int ACC_LOCALPROLOGFORVAR	= 1 << 20;
 	public static final int ACC_CLOSURE_PROXY	= 1 << 21;
+	public static final int ACC_INIT_WRAPPER	= 1 << 22;
 
 	// Expression specific
 	public static final int ACC_USE_NOPROXY		= 1 << 11;
@@ -93,6 +94,7 @@ public interface AccessFlags {
 	public static final int ACC_CONSTEXPR		= 1 << 13;
 	public static final int ACC_TRYRESOLVED		= 1 << 14;
 	public static final int ACC_GENRESOLVE		= 1 << 15;
+	public static final int ACC_FOR_WRAPPER		= 1 << 16;
 
 	// Statement specific
 	public static final int ACC_ABRUPTED		= 1 << 11;

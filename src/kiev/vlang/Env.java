@@ -135,6 +135,8 @@ public class Env extends Struct {
 				cl.interfaces = Type.emptyArray;
 				cl.sub_clazz = Struct.emptyArray;
 				cl.fields = Field.emptyArray;
+				cl.virtual_fields = Field.emptyArray;
+				cl.wrapped_field = null;
 				if( cl.methods != null ) {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
@@ -369,6 +371,7 @@ public class Env extends Struct {
 			cl = loadClazz(name);
 		}
 		if( cl == null ) {
+//			cl = loadClazz(name);
 			classHashOfFails.put(name.name);
 //			throw new RuntimeException("Class "+name+" not found");
 		}
@@ -390,11 +393,11 @@ public class Env extends Struct {
 			Struct cl = classHash.get(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
-				Struct pkg = getStruct(ClazzName.fromToplevelName(name.package_name()));
+				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
-					pkg = getStruct(ClazzName.fromToplevelName(name.package_name()));
+					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
-						pkg = newPackage(ClazzName.fromToplevelName(name.package_name()));
+						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				}
 				if( !pkg.isResolved() ) {
 					pkg = getStruct(pkg.name);
@@ -405,7 +408,13 @@ public class Env extends Struct {
 			}
 			cl = new Bytecoder(cl,clazz).readClazz();
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Loaded "+(cl.isPackage()?"package ":"class   ")+name,diff_time);
+			if( Kiev.verbose )
+				Kiev.reportInfo("Loaded "+(
+					cl.isPackage()?  "package   ":
+					cl.isSyntax   ()?"syntax    ":
+					cl.isInterface()?"interface ":
+					                 "class     "
+					)+name,diff_time);
 			return cl;
 		}
 		// CLASSPATH is scanned, try project file
@@ -458,30 +467,20 @@ public class Env extends Struct {
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
 			System.gc();
 			try {
-				fu.pass1();
-				if( Kiev.pass_no <= 2 ) {
-					Kiev.files_scanned.append(fu);
-				} else {
-					fu.pass2();
-					if( Kiev.pass_no <= 3 ) {
-						Kiev.files_scanned.append(fu);
-					} else {
-						fu.pass2_2();
-						if( Kiev.pass_no <= 4 ) {
-							Kiev.files_scanned.append(fu);
-						} else {
-							fu.pass3();
-							if( Kiev.pass_no <= 5 ) {
-								Kiev.files_scanned.append(fu);
-							} else {
-								fu.resolveFinalFields(true);
-								if (Kiev.safe)
-									Kiev.files.append(fu.file_unit);
-								else
-									fu.file_unit.cleanup();
-							}
-						}
-					}
+				Kiev.files_scanned.append(fu);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )		fu.pass1();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )	fu.pass2();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveFinalFields) )	fu.resolveFinalFields(false);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
+					if (Kiev.safe)
+						Kiev.files.append(fu.file_unit);
+					else
+						fu.file_unit.cleanup();
 				}
 				fu = null;
 			} catch(Exception e ) {

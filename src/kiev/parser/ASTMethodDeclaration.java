@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTMethodDeclaration.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -51,7 +53,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable {
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
-	
+
 	ASTMethodDeclaration(int id) {
 		super(0);
 	}

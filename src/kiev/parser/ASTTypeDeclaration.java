@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTTypeDeclaration.java,v 1.4.2.1.2.4 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -33,10 +35,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTTypeDeclaration extends ASTNode {
-
-	import kiev.stdlib.Debug;
-
+public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 	public ASTNode[]	modifier = ASTNode.emptyArray;
 	public ASTAccess	acc;
     public int			kind;
@@ -185,6 +184,10 @@ public class ASTTypeDeclaration extends ASTNode {
 			}
 		} finally { PassInfo.pop(me); }
 
+		return me;
+	}
+
+	public ASTNode pass1_1() {
 		return me;
 	}
 
@@ -564,10 +567,28 @@ public class ASTTypeDeclaration extends ASTNode {
 						if( f.isVirtual() || f.isExportCpp() ) {
 							abstr_fields = abstr_fields.concat(f);
 						}
-						if( fdecl.dim==0 && (flags & ACC_PROLOGVAR) != 0 )
-							f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-						else
-							f.init = fdecl.init;
+						if (fdecl.init == null && fdecl.dim==0) {
+							if( (flags & ACC_PROLOGVAR) != 0) {
+								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
+								f.setInitWrapper(true);
+							}
+							else if(type.clazz.isWrapper()) {
+								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
+								f.setInitWrapper(true);
+							}
+						} else {
+							if( (flags & ACC_PROLOGVAR) != 0 || type.clazz.isWrapper()) {
+								if (fdecl.of_wrapper)
+									f.init = fdecl.init;
+								else
+									f.init = new NewExpr(fdecl.pos,type, (fdecl.init==null)? Expr.emptyArray : new Expr[]{fdecl.init});
+								f.setInitWrapper(true);
+							} else {
+								f.init = fdecl.init;
+								f.setInitWrapper(false);
+							}
+						}
+
 						if( ((ASTFieldDecl)members[i]).acc != null )
 							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
 					}
@@ -598,6 +619,7 @@ public class ASTTypeDeclaration extends ASTNode {
 			foreach(Field f; abstr_fields)
 				me.addMethodsForVirtualField(f);
 			me.addAbstractFields();
+			me.setupWrappedField();
 
     	    // Process inner classes and cases
         	if( !me.isPackage() ) {
@@ -651,8 +673,19 @@ public class ASTTypeDeclaration extends ASTNode {
 		return me;
 	}
 
-	public void resolveFinalFields(boolean cleanup) {
+	public ASTNode autoProxyMethods() {
+		me.autoProxyMethods();
+		return me;
+	}
+
+	public ASTNode resolveImports() {
+		me.resolveImports();
+		return me;
+	}
+
+	public ASTNode resolveFinalFields(boolean cleanup) {
 		me.resolveFinalFields(cleanup);
+		return me;
 	}
 
 	public Dumper toJava(Dumper dmp) {

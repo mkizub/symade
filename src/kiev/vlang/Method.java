@@ -23,6 +23,9 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import static kiev.vlang.WorkByContractCondition.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Method.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -31,10 +34,6 @@ import kiev.stdlib.*;
  */
 
 public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,Accessable {
-
-	import kiev.stdlib.Debug;
-	import kiev.vlang.WorkByContractCondition;
-
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -298,7 +297,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		int offset = 0;
 		if( !isStatic() ) offset++;
 		for(int i=offset; i < params.length; i++) {
-			params[i].toJavaDecl(dmp,jtype.args[i-offset]);
+			params[i].toJavaDecl(dmp,type.args[i-offset]);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
@@ -350,7 +349,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return dmp;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node.$var).name.equals(name)
