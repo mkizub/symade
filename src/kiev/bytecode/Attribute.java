@@ -48,6 +48,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		attrMap.put(attrKiev,			null /*Class.forName("kiev.bytecode.KievAttribute")*/);
 		attrMap.put(attrFlags,			Class.forName("kiev.bytecode.KievFlagsAttribute"));
 		attrMap.put(attrAlias,			Class.forName("kiev.bytecode.KievAliasAttribute"));
+		attrMap.put(attrTypedef,		Class.forName("kiev.bytecode.KievTypedefAttribute"));
 		attrMap.put(attrOperator,		Class.forName("kiev.bytecode.KievOperatorAttribute"));
 		attrMap.put(attrImport,			Class.forName("kiev.bytecode.KievImportAttribute"));
 		attrMap.put(attrEnum,			Class.forName("kiev.bytecode.KievEnumAttribute"));
@@ -677,6 +678,35 @@ public class KievAliasAttribute extends Attribute {
 	}
 	public KString getAlias(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[cp_alias[i]]).value;
+	}
+}
+
+public class KievTypedefAttribute extends Attribute {
+
+	public int					cp_type;
+	public int					cp_tpnm;
+
+	public int size() {
+		return 6+4;	// name+size(int)+data.length
+	}
+	public void read(ReadContext cont) {
+		int len = cont.readInt();
+		cp_type = cont.readShort();
+		cp_tpnm = cont.readShort();
+	}
+	public void write(ReadContext cont) {
+		trace(Clazz.traceWrite,cont.offset+": attribute"
+			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		cont.writeShort(cp_name);
+		cont.writeInt(4);
+		cont.writeShort(cp_type);
+		cont.writeShort(cp_tpnm);
+	}
+	public KString getType(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_type]).value;
+	}
+	public KString getTypeName(Clazz clazz) {
+		return ((Utf8PoolConstant)clazz.pool[cp_tpnm]).value;
 	}
 }
 

@@ -90,7 +90,7 @@ public class Bytecoder implements Constants {
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
 		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_LOCAL|ACC_ANONYMOUSE|ACC_HAS_CASES
-				|ACC_VERIFIED|ACC_ENUM|ACC_GRAMMAR);
+				|ACC_VERIFIED|ACC_ENUM|ACC_SYNTAX);
 		fl |= bcclazz.flags;
 		cl.setFlags( fl );
 
@@ -126,13 +126,17 @@ public class Bytecoder implements Constants {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
 			if( at != null ) {
 				cl.addAttr(at);
-				if( at.name.equals(attrFlags) ) {
-					int flags = ((FlagsAttr)at).flags;
-					if ((flags & 1) == 1) {
-						if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
-						cl.setWrapper(true);
-					}
-				}
+				//if( at.name.equals(attrFlags) ) {
+				//	int flags = ((FlagsAttr)at).flags;
+				//	if ((flags & 1) == 1) {
+				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+				//		cl.setWrapper(true);
+				//	}
+				//	else if ((flags & 2) == 2) {
+				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
+				//		cl.setSyntax(true);
+				//	}
+				//}
 			}
 		}
 		if( kaclazz != null ) {
@@ -147,6 +151,20 @@ public class Bytecoder implements Constants {
 							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
 							cl.setWrapper(true);
 						}
+						else if ((flags & 2) == 2) {
+							if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
+							cl.setSyntax(true);
+						}
+					}
+					else if (at.name.equals(attrTypedef)) {
+						Type type = ((TypedefAttr)at).type;
+						KString name = ((TypedefAttr)at).type_name;
+						Typedef td = new Typedef(0,cl,name,type);
+						cl.imported = (ASTNode[])Arrays.append(cl.imported,td);
+					}
+					else if( at.name.equals(attrOperator) ) {
+						Operator op = ((OperatorAttr)at).op;
+						cl.imported = (ASTNode[])Arrays.append(cl.imported,op);
 					}
 				}
 			}
@@ -385,6 +403,12 @@ public class Bytecoder implements Constants {
 				nm.addAlias( aa.getAlias(i,clazz));
 			a = new AliasAttr(nm);
 		}
+		else if( name.equals(attrTypedef) ) {
+			kiev.bytecode.KievTypedefAttribute tda = (kiev.bytecode.KievTypedefAttribute)bca;
+			KString sign = tda.getType(clazz);
+			KString name = tda.getTypeName(clazz);
+			a = new TypedefAttr(Type.fromSignature(sign),name);
+		}
 		else if( name.equals(attrOperator) ) {
 			kiev.bytecode.KievOperatorAttribute oa = (kiev.bytecode.KievOperatorAttribute)bca;
 			int prior = oa.priority;
@@ -402,21 +426,21 @@ public class Bytecoder implements Constants {
 			Operator op = null;
 			switch(opmode) {
 			case Operator.LFY:
-				op = AssignOperator.newAssignOperator(image,KString.Empty,null);
+				op = AssignOperator.newAssignOperator(image,KString.Empty,null,false);
 				break;
 			case Operator.XFX:
 			case Operator.YFX:
 			case Operator.XFY:
 			case Operator.YFY:
-				op = BinaryOperator.newBinaryOperator(prior,image,KString.Empty,null,optype);
+				op = BinaryOperator.newBinaryOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.FX:
 			case Operator.FY:
-				op = PrefixOperator.newPrefixOperator(prior,image,KString.Empty,null,optype);
+				op = PrefixOperator.newPrefixOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.XF:
 			case Operator.YF:
-				op = PostfixOperator.newPostfixOperator(prior,image,KString.Empty,null,optype);
+				op = PostfixOperator.newPostfixOperator(prior,image,KString.Empty,null,optype,false);
 				break;
 			case Operator.XFXFY:
 				throw new RuntimeException("Multioperators are not supported yet");
@@ -584,8 +608,8 @@ public class Bytecoder implements Constants {
 			KString clname = kia.getClazzName(clazz);
 			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname));
 			if( s == null )
-				Kiev.reportWarning(0,"Package bytecode imports a member from unknown class "+clname);
-			else if( Kiev.pass_no < 5 ) {
+				Kiev.reportWarning(0,"Bytecode imports a member from unknown class "+clname);
+			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
 				kiev.parser.ASTImport imp = new kiev.parser.ASTImport(0);
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
 					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));

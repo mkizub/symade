@@ -37,7 +37,7 @@ import static kiev.vlang.Operator.*;
  *
  */
 
-public class ASTOpdef extends ASTAlias {
+public class ASTOpdef extends ASTNode implements TopLevelDecl {
 	public int					prior;
 	public int					opmode;
 	public KString				image;
@@ -89,7 +89,7 @@ public class ASTOpdef extends ASTAlias {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public void pass2_2() {
+	public ASTNode pass1_1() {
 		switch(opmode) {
 		case Operator.LFY:
 			{
@@ -99,12 +99,12 @@ public class ASTOpdef extends ASTAlias {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return;
+					return op;
 				}
-				op = AssignOperator.newAssignOperator(image,null,null);
+				op = AssignOperator.newAssignOperator(image,null,null,false);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
 			}
-			break;
 		case Operator.XFX:
 		case Operator.YFX:
 		case Operator.XFY:
@@ -116,12 +116,12 @@ public class ASTOpdef extends ASTAlias {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return;
+					return op;
 				}
-				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode]);
+				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
 			}
-			break;
 		case Operator.FX:
 		case Operator.FY:
 			{
@@ -131,12 +131,12 @@ public class ASTOpdef extends ASTAlias {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return;
+					return op;
 				}
-				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode]);
+				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
 			}
-			break;
 		case Operator.XF:
 		case Operator.YF:
 			{
@@ -146,12 +146,12 @@ public class ASTOpdef extends ASTAlias {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return;
+					return op;
 				}
-				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode]);
+				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
 			}
-			break;
 		case Operator.XFXFY:
 			throw new CompilerException(pos,"Multioperators are not supported yet");
 		default:

@@ -519,7 +519,7 @@ public class NewClosure extends Expr {
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
-		if( Kiev.pass_no < 5 ) return this;
+		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return this;
 		PassInfo.push(this);
 		try {
 			if( Kiev.kaffe ) {

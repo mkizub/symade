@@ -35,7 +35,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, SetBody, Accessable {
+public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -97,8 +97,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	/** Array of imported classes,fields and methods */
 	public ASTNode[]		imported = ASTNode.emptyArray;
 
-	/** Grammar assiciated with this structure */
-	public Grammar			gram;
+	/** Array of declared members */
+	public ASTNode[]		members = ASTNode.emptyArray;
 
 	/** Array of attributes of this structure */
 	public Attr[]			attrs = Attr.emptyArray;
@@ -303,8 +303,22 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
+	rule public resolveOperatorR(pvar ASTNode op)
+		pvar ASTNode imp;
+	{
+		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
+		{
+			op @= imported,
+			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
+		;	imp @= imported,
+			imp.$var instanceof Import && ((Import)imp.$var).mode == Import.IMPORT_SYNTAX,
+			((Struct)((Import)imp.$var).node).resolveOperatorR(op)
+		}
+	}
+
 	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
 		pvar Type sup;
+		pvar Struct sub;
 		pvar Field forw;
 		pvar List<ASTNode> p;
 		pvar Method vf;
@@ -317,10 +331,15 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		;	node @= virtual_fields, ((Field)node.$var).name.equals(name)
 		;	(resfl & ResolveFlags.NoImports) == 0,
 			node @= imported,
-			node.$var instanceof Field,
-			((Field)node.$var).name.equals(name)
-		;	node @= type.args, ((Type)node.$var).clazz.name.short_name.equals(name), node.$var = ((Type)node.$var).clazz
-		;	node @= sub_clazz, ((Struct)node.$var).name.short_name.equals(name)
+			{	node.$var instanceof Field && ((Field)node.$var).name.equals(name)
+			;	node.$var instanceof Typedef && ((Typedef)node.$var).name.equals(name)
+			}
+		;	sup @= type.args,
+			sup.clazz.name.short_name.equals(name),
+			node ?= sup.clazz
+		;	sub @= sub_clazz,
+			sub.name.short_name.equals(name),
+			node ?= sub.$var
 		;	this.name.short_name.equals(nameIdefault),
 			package_clazz.resolveNameR(node,path,name,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
@@ -333,8 +352,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			p ?= path.$var.concat(forw.$var),
 			Type.getRealType(tp,forw.$var.type).clazz.resolveNameR(node,p,name,tp,resfl | ResolveFlags.NoImports),
 			path.$var = p.$var
-		;	isPackage(), tryLoad(node,path,name,resfl)
-		;	!isPackage(), tryAbstractField(node,path,name,resfl)
+		;	isPackage(), tryLoad(node,path,name,resfl), $cut
+		;	!isPackage(), tryAbstractField(node,path,name,resfl), $cut
 		}
 	}
 
@@ -3231,11 +3250,19 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				addAttr(new PackedFieldsAttr(this));
 			}
 
-//			if( isPackage() ) {
-//				for(int i=0; i < imported.length; i++) {
-//					addAttr(new ImportAttr(imported[i]));
-//				}
-//			}
+			if( isSyntax() ) { // || isPackage()
+				for(int i=0; i < imported.length; i++) {
+					ASTNode node = imported[i];
+					if (node instanceof Typedef)
+						addAttr(new TypedefAttr((Typedef)node));
+					else if (node instanceof Operator)
+						addAttr(new OperatorAttr((Operator)node));
+//					else if (node instanceof Import)
+//						addAttr(new ImportAlias(node));
+//					else
+//						addAttr(new ImportAttr(imported[i]));
+				}
+			}
 
 			if( jthis.gens != null ) {
 				jthis.addAttr(new GenerationsAttr(jthis.gens));
@@ -3254,6 +3281,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			{
 				int flags = 0;
 				if( jthis.isWrapper() ) flags |= 1;
+				if( jthis.isSyntax()  ) flags |= 2;
 
 				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
 			}

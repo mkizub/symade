@@ -268,6 +268,14 @@ public class PassInfo {
 		}
 	}
 
+	rule public static resolveOperatorR(pvar ASTNode op)
+		pvar ASTNode p;
+	{
+		p @= new PathEnumerator(),
+		p.$var instanceof ScopeOfOperators,
+		((ScopeOfOperators)p.$var).resolveOperatorR(op)
+	}
+
 	rule public static resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
 		pvar KString qname_head;
 		pvar KString qname_tail;
@@ -292,8 +300,8 @@ public class PassInfo {
 		assert(node != null);
 		// Vars will be auto-wrapped in Cell if needed
 		if( node instanceof Var ) return true;
-		// Structures do not need path
-		if( node instanceof Struct || node instanceof Type ) {
+		// Structures/types/typedefs do not need path
+		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
 			path.$var = List.Nil;
 			return true;
 		}

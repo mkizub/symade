@@ -32,6 +32,42 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+// AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
+public interface TopLevelDecl {
+	// create top-level, inner named, argument Struct-s
+	public ASTNode pass1();
+	// resolve some imports, remember typedef's names, remember
+	// operator declarations, remember names/operators for type macroses
+	public ASTNode pass1_1();
+	// process inheritance for type arguments, create
+	// Struct's for template types
+	public ASTNode pass2();
+	// process Struct's inheritance (extends/implements)
+	public ASTNode pass2_2();
+	// process Struct's members (fields, methods)
+	public ASTNode pass3();
+	// autoProxyMethods()
+	public ASTNode autoProxyMethods();
+	// resolveImports()
+	public ASTNode resolveImports();
+	// resolveFinalFields()
+	public ASTNode resolveFinalFields(boolean cleanup);
+};
+
+public enum TopLevelPass /*extends int*/ {
+	passStartCleanup		= 0,	// start of compilation or cleanup before next incremental compilation
+	passCreateTopStruct		= 1,	// create top-level Struct
+	passProcessSyntax		= 2,	// process syntax - some import, typedef, operator and macro
+	passArgumentInheritance	= 3,	// inheritance of type arguments
+	passStructInheritance	= 4,	// inheritance of classe/interfaces/structures
+	passCreateMembers		= 5,	// create declared members of structures
+	passAutoProxyMethods	= 6,	// autoProxyMethods()
+	passResolveImports		= 7,	// recolve import static for import of fields and methods
+	passResolveFinalFields	= 8,	// resolve final fields, to find out if they are constants
+	passGenerate			= 9		// resolve, generate and so on - each file separatly
+};
+
+
 public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
@@ -120,6 +156,15 @@ public abstract class ASTNode implements Constants {
     	return toJava(dmp);
     }
 
+	public ASTNode pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass3(Object obj)  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode autoProxyMethods() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveImports()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+
 	public int setFlags(int fl) {
 		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
 		flags = fl;
@@ -170,7 +215,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isStatementsGenerated()	{ return (flags & ACC_STATEMENTS_GENERATED) != 0; }
 	public boolean isGenerated()	{ return (flags & ACC_GENERATED) != 0; }
 	public boolean isEnum()			{ return (flags & ACC_ENUM) != 0; }
-	public boolean isGrammar()		{ return (flags & ACC_GRAMMAR) != 0; }
+	public boolean isSyntax()		{ return (flags & ACC_SYNTAX) != 0; }
 	public boolean isPrimitiveEnum(){ return (flags & ACC_PRIMITIVE_ENUM) != 0; }
 	public boolean isWrapper()		{ return (flags & ACC_WRAPPER) != 0; }
 
@@ -356,11 +401,11 @@ public abstract class ASTNode implements Constants {
 		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM);
 		if( on ) flags |= ACC_ENUM;
 	}
-	public void setGrammar(boolean on) {
+	public void setSyntax(boolean on) {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GRAMMAR set to "+on+" from "+((flags & ACC_GRAMMAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM|ACC_GRAMMAR);
-		if( on ) flags |= ACC_GRAMMAR;
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNTAX set to "+on+" from "+((flags & ACC_SYNTAX)!=0)+", now 0x"+Integer.toHexString(flags));
+		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM|ACC_SYNTAX);
+		if( on ) flags |= ACC_SYNTAX;
 	}
 	public void setPrimitiveEnum(boolean on) {
 		assert(this instanceof Struct && this.isEnum(),"For node "+this.getClass());
@@ -845,3 +890,4 @@ public class CompilerException extends RuntimeException {
 		this.clazz = PassInfo.clazz;
 	}
 }
+

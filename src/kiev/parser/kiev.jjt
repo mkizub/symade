@@ -65,7 +65,7 @@ public class kiev020 {
 		else if( token.next==null ) pos = token.getPos();
 		else pos = token.next.getPos();
 		if( kiev.Kiev.debug ) {
-			kiev.Kiev.reportParserError(pos, msg+"\n"+e);
+			kiev.Kiev.reportParserError(pos, msg, e);
 		} else {
 			kiev.Kiev.reportParserError(pos, msg);
 		}
@@ -114,8 +114,8 @@ public class kiev020 {
 		return true;
 	}
 
-	private static boolean operatorLA() {
-		switch( getToken(1).kind ) {
+	private static boolean operatorLA(int tk) {
+		switch( getToken(tk).kind ) {
 		case ASSIGN:
 		case ASSIGN2:
 		case LT:
@@ -158,7 +158,7 @@ public class kiev020 {
 		case OPERATOR_AT:
 		case OPERATOR_SHARP:
 		case OPERATOR:
-			return notAToken(getToken(1));
+			return notAToken(getToken(tk));
 		case OPERATOR_ID:
 			return true;
 		}
@@ -432,6 +432,12 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < PACKED: "packed" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < WRAPPER: "$wrapper" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 
+//| < MACRO:				"macro" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_EXPR:	"<expr>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_STAT:	"<stat>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_TYPE:	"<type>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_TEXT:	"<text>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+//| < TYPE_MACRO_CONST:	"<const>" >	{ if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
@@ -686,7 +692,9 @@ ASTFileUnit FileUnit(String filename) :
 	(
 		Import()
 	|	Typedef()
+	|	Opdef()
 	)*
+	//(	MacroDecl()	)*
 	(
 		try {
 			LOOKAHEAD( (Modifier())* ("class" | "interface") )
@@ -749,10 +757,20 @@ void Import() :
 }
 
 void Typedef() :
-{}
+{ Token id1, id2; }
 {
 	try {
-		"typedef" Type() Identifier() ";"
+		"typedef"
+		(
+			LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
+			{ jjtThis.opdef = true; }
+			id1=<IDENTIFIER> Operator() QName() "<" id2=<IDENTIFIER> ">"
+			{
+				if (!id1.image.equals(id2.image))
+					throw new ParseError("Typedef args "+id1+" and "+id2+" do not match");
+			}
+		|	Type() Identifier()
+		) ";"
 	}
 	catch(ParseError e) { rpe("Bad typedef declaration",e); }
 	catch(Throwable e) { rperr(e); }
@@ -784,6 +802,7 @@ void SyntaxDeclaration() :
 		Typedef()
 	|	Opdef()
 	)*
+	//(	MacroDecl()	)*
 	"}"
 }
 
@@ -1386,10 +1405,26 @@ void Alias() #void :
 { Token t; }
 {
 	"alias"
-	(
-		IdentifierAlias()
-|		OperatorAlias()
-	)
+	try {
+		(
+			//LOOKAHEAD({
+			//	getToken(1).kind==IDENTIFIER &&
+			//	(  getToken(1).image.equals("prefix")
+			//	|| getToken(1).image.equals("suffix")
+			//	|| getToken(1).image.equals("postfix")
+			//	|| getToken(1).image.equals("infix")
+			//	|| getToken(1).image.equals("binary")
+			//	)
+			//	||
+			//	getToken(1).kind==OPERATOR_ID
+			//})
+			LOOKAHEAD(2)
+			OperatorAlias()
+		|	IdentifierAlias()
+		)
+	}
+	catch(ParseError e) { rpe("Alias expected",e); }
+	catch(Throwable e) { rperr(e); }
 }
 
 void IdentifierAlias() :
@@ -1401,8 +1436,8 @@ void IdentifierAlias() :
 void OperatorAlias() :
 { Token t = null; }
 {
-	"operator"
 	(	// temporary, for backward compatibility
+		"operator"
 		"("
 		DecimalConstExpression()	","
 		Identifier()		","
@@ -1415,16 +1450,17 @@ void OperatorAlias() :
 		)
 		")"
 	|
-		LOOKAHEAD({
-			getToken(1).kind==IDENTIFIER &&
-			(  getToken(1).image.equals("prefix")
-			|| getToken(1).image.equals("suffix")
-			|| getToken(1).image.equals("postfix")
-			|| getToken(1).image.equals("infix")
-			|| getToken(1).image.equals("binary")
-			)
-		})
+		//LOOKAHEAD({
+		//	getToken(1).kind==IDENTIFIER &&
+		//	(  getToken(1).image.equals("prefix")
+		//	|| getToken(1).image.equals("suffix")
+		//	|| getToken(1).image.equals("postfix")
+		//	|| getToken(1).image.equals("infix")
+		//	|| getToken(1).image.equals("binary")
+		//	)
+		//})
 		t=<IDENTIFIER> { jjtThis.set(t); }
+		"operator"
 		(
 			Operator()
 		|	Identifier()
@@ -1530,6 +1566,51 @@ void RequareDeclaration() :
 	catch(ParseError e) { rpe("Bad 'require' declaration",e); }
 	catch(Throwable e) { rperr(e); }
 }
+
+//void MacroDecl() :
+//{ Token t; }
+//{
+//	"macro"
+//	Identifier()
+//	"("
+//		try {
+//		[
+//			MacroFormalParameter()
+//			( "," MacroFormalParameter() )*
+//		]
+//		}
+//		catch(ParseError e) { rpe("Macro formal parameter(s) expected",e); }
+//		catch(Throwable e) { rperr(e); }
+//	")"
+//	(	Alias()		)*
+//	try {
+//		Block()
+//		[ ";" ]
+//	}
+//	catch(ParseError e) { rpe("Macro body expected",e); }
+//	catch(Throwable e) { rperr(e); }
+//}
+
+//void MacroFormalParameter() :
+//{}
+//{
+//	(
+//		(	"<expr>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_EXPR; }
+//		|	"<const>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_CONST; }
+//		)
+//		[	LOOKAHEAD({ getToken(2).kind != COMMA && getToken(2).kind != RPAREN })
+//			Type()
+//		]
+//		Identifier()
+//	|
+//		(	"<stat>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_STAT; }
+//		|	"<type>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_TYPE; }
+//		|	"<text>"	{ jjtThis.mode = ASTMacroFormalParameter.MODE_TEXT; }
+//		)
+//		Identifier()
+//	)
+//}
+
 
 void EnsureDeclaration() :
 {}
@@ -1648,24 +1729,22 @@ void ClosureType() :
 
 
 void NonArrayType() :
-{}
+{ Token t; }
 {
 	try {
 	(
 		PrimitiveType()
 	|	QName()
 		[
-			LOOKAHEAD(2)
 			("<" | "/*<")
 				Type()
 				( "," Type() )*
 			(">" | ">*/")
 		]
 	)
-	[
-		"@" {jjtThis.isPrologVar = true; }
-	|	"&" {jjtThis.isRefProxy = true; }
-	]
+	(	LOOKAHEAD(1,TypeOperatorChar(),{checkNoSpace(getToken(0),getToken(1))})
+		t=TypeOperatorChar() { jjtThis.addOperation(t); }
+	)*
 	}
 	catch(ParseError e) { rpe("Bad type specification",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1785,101 +1864,85 @@ void RuleCutExpression() :
 	t="$cut" { jjtThis.setPos(t.getPos()); t = null; }
 }
 
+Token TypeOperatorChar() #void :
+{ Token t; }
+{
+	(
+		t=<QUESTION>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
+Token OperatorChar() #void :
+{ Token t; }
+{
+	(
+		t=<ASSIGN>
+	|	t=<ASSIGN2>
+	|	t=<LT>
+	|	t=<GT>
+	|	t=<COLON>
+	|	t=<QUESTION>
+	|	t=<ARROW>
+	|	t=<BANG>
+	|	t=<TILDE>
+	|	t=<EQ>
+	|	t=<LE>
+	|	t=<GE>
+	|	t=<NE>
+	|	t=<SC_OR>
+	|	t=<SC_AND>
+	|	t=<INCR>
+	|	t=<DECR>
+	|	t=<PLUS>
+	|	t=<MINUS>
+	|	t=<STAR>
+	|	t=<SLASH>
+	|	t=<BIT_AND>
+	|	t=<BIT_OR>
+	|	t=<XOR>
+	|	t=<REM>
+	|	t=<LSHIFT>
+	|	t=<PLUSASSIGN>
+	|	t=<MINUSASSIGN>
+	|	t=<STARASSIGN>
+	|	t=<SLASHASSIGN>
+	|	t=<ANDASSIGN>
+	|	t=<ORASSIGN>
+	|	t=<XORASSIGN>
+	|	t=<REMASSIGN>
+	|	t=<LSHIFTASSIGN>
+	|	t=<RSIGNEDSHIFTASSIGN>
+	|	t=<RUNSIGNEDSHIFTASSIGN>
+	|	t=<OPERATOR_AT>
+	|	t=<OPERATOR_SHARP>
+	|	t=<OPERATOR>
+	)
+	{ return t; }
+}
+
 void Operator() :
 { Token t; String image; }
 {
 	(
-		(
-			t=<ASSIGN>
-		|	t=<ASSIGN2>
-		|	t=<LT>
-		|	t=<GT>
-		|	t=<COLON>
-		|	t=<QUESTION>
-		|	t=<ARROW>
-		|	t=<BANG>
-		|	t=<TILDE>
-		|	t=<EQ>
-		|	t=<LE>
-		|	t=<GE>
-		|	t=<NE>
-		|	t=<SC_OR>
-		|	t=<SC_AND>
-		|	t=<INCR>
-		|	t=<DECR>
-		|	t=<PLUS>
-		|	t=<MINUS>
-		|	t=<STAR>
-		|	t=<SLASH>
-		|	t=<BIT_AND>
-		|	t=<BIT_OR>
-		|	t=<XOR>
-		|	t=<REM>
-		|	t=<LSHIFT>
-//		|	t=<RSIGNEDSHIFT>
-//		|	t=<RUNSIGNEDSHIFT>
-		|	t=<PLUSASSIGN>
-		|	t=<MINUSASSIGN>
-		|	t=<STARASSIGN>
-		|	t=<SLASHASSIGN>
-		|	t=<ANDASSIGN>
-		|	t=<ORASSIGN>
-		|	t=<XORASSIGN>
-		|	t=<REMASSIGN>
-		|	t=<LSHIFTASSIGN>
-		|	t=<RSIGNEDSHIFTASSIGN>
-		|	t=<RUNSIGNEDSHIFTASSIGN>
-		|	t=<OPERATOR_AT>
-		|	t=<OPERATOR_SHARP>
-		|	t=<OPERATOR>
-		)
+		t=OperatorChar()
 		{ image = t.image; }
 		(
-			LOOKAHEAD({ !Kiev.javaMode && operatorLA() && checkNoSpace(getToken(0),getToken(1)) })
-			(
-				t=<ASSIGN>
-			|	t=<ASSIGN2>
-			|	t=<LT>
-			|	t=<GT>
-			|	t=<COLON>
-			|	t=<QUESTION>
-			|	t=<ARROW>
-			|	t=<BANG>
-			|	t=<TILDE>
-			|	t=<EQ>
-			|	t=<LE>
-			|	t=<GE>
-			|	t=<NE>
-			|	t=<SC_OR>
-			|	t=<SC_AND>
-			|	t=<INCR>
-			|	t=<DECR>
-			|	t=<PLUS>
-			|	t=<MINUS>
-			|	t=<STAR>
-			|	t=<SLASH>
-			|	t=<BIT_AND>
-			|	t=<BIT_OR>
-			|	t=<XOR>
-			|	t=<REM>
-			|	t=<LSHIFT>
-//			|	t=<RSIGNEDSHIFT>
-//			|	t=<RUNSIGNEDSHIFT>
-			|	t=<PLUSASSIGN>
-			|	t=<MINUSASSIGN>
-			|	t=<STARASSIGN>
-			|	t=<SLASHASSIGN>
-			|	t=<ANDASSIGN>
-			|	t=<ORASSIGN>
-			|	t=<XORASSIGN>
-			|	t=<REMASSIGN>
-			|	t=<LSHIFTASSIGN>
-			|	t=<RSIGNEDSHIFTASSIGN>
-			|	t=<RUNSIGNEDSHIFTASSIGN>
-			|	t=<OPERATOR_AT>
-			|	t=<OPERATOR_SHARP>
-			|	t=<OPERATOR>
-			)
+			LOOKAHEAD({ !Kiev.javaMode && operatorLA(1) && checkNoSpace(getToken(0),getToken(1)) })
+			t=OperatorChar()
 			{ image = image+t.image; }
 		|
 			LOOKAHEAD({ Kiev.javaMode && getToken(1).kind==GT && checkNoSpace(getToken(0),getToken(1)) })
@@ -1938,7 +2001,7 @@ void Expression() :
 		(
 			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
 			Identifier() Type()
-		|	LOOKAHEAD({ operatorLA() })
+		|	LOOKAHEAD({ operatorLA(1) })
 			Operator()
 //		|	LOOKAHEAD({ castLA() })
 		|	LOOKAHEAD( CastOperatorLA() )

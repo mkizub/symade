@@ -73,6 +73,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
 		pvar Struct s;
 		pvar Struct sub;
+		pvar ASTNode tmp;
 	{
 		this.node instanceof Method, $cut, false
 	;
@@ -102,6 +103,21 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		((Struct)this.node).checkResolved(),
 		((Struct)this.node).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
 		node.$var instanceof Field && node.$var.isStatic() && node.$var.isPublic()
+	;
+		mode == IMPORT_SYNTAX,
+		((Struct)this.node).checkResolved(),
+		tmp @= ((Struct)this.node).imported,
+		{
+			tmp.$var instanceof Field,
+			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
+			((Field)tmp.$var).name.equals(name),
+			node ?= tmp
+		;	tmp.$var instanceof Typedef,
+			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
+			((Typedef)tmp.$var).name.equals(name),
+			node ?= ((Typedef)tmp.$var).type
+		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.$var.getClass()+" "+tmp+" == "+name), false
+		}
 	}
 
 	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)

@@ -34,11 +34,10 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public Import[]				imports = Import.emptyArray;
-	public Typedef[]			typedefs = Typedef.emptyArray;
+	public ASTNode[]			syntax = ASTNode.emptyArray;
 	public Struct[]				members = Struct.emptyArray;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
@@ -120,42 +119,54 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		return true;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Typedef td;
-		pvar Import imp;
+	rule public resolveOperatorR(pvar ASTNode op)
+		pvar ASTNode syn;
 	{
-		td @= typedefs,
-		trace( Kiev.debugResolve, "Compare "+name+" with "+td),
-		name.equals(td.name),
-		node.$var = td.type
-	;
-//		trace(Kiev.debugResolve,"Name "+name+" not found in file package "+pkg.name),
-		imp @= imports,
-		!imp.$var.star,
-		debugTryResolveIn(name," file import "+imp.$var),
-		imp.$var.resolveNameR(node,path,name,tp,resfl)
+		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
+		{
+			op @= syntax,
+			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
+		;	syn @= syntax,
+			syn.$var instanceof Import && ((Import)syn.$var).mode == Import.IMPORT_SYNTAX,
+			((Struct)((Import)syn.$var).node).resolveOperatorR(op)
+		}
+	}
+
+	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+		pvar ASTNode syn;
+	{
+		syn @= syntax,
+		{
+			syn.$var instanceof Typedef,
+			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
+			name.equals(((Typedef)syn.$var).name),
+			node ?= ((Typedef)syn.$var).type
+		;	syn.$var instanceof Import && !((Import)syn.$var).star,
+			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
+			((Import)syn.$var).resolveNameR(node,path,name,tp,resfl)
+		}
 	;
 		pkg != null,
-		debugTryResolveIn(name," file package "+pkg),
+		trace( Kiev.debugResolve, "In file package: "+pkg),
 		pkg.resolveNameR(node,path,name,tp,resfl)
 	;
-//		trace(Kiev.debugResolve,"Name "+name+" not found in file package "+pkg.name),
-		imp @= imports,
-		imp.$var.star,
-		debugTryResolveIn(name," file import "+imp.$var),
-		imp.$var.resolveNameR(node,path,name,tp,resfl)
-	;	debugTryResolveIn(name," root package"),
+		syn @= syntax,
+		syn.$var instanceof Import && ((Import)syn.$var).star,
+		trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
+		((Import)syn.$var).resolveNameR(node,path,name,tp,resfl)
+	;
+		trace( Kiev.debugResolve, "In root package"),
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
 	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
-		pvar Import imp;
+		pvar ASTNode syn;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
-	;	imp @= imports,
-		imp.mode == Import.IMPORT_STATIC,
-		debugTryResolveIn(name," file import "+imp.$var),
-		imp.$var.resolveMethodR(node,path,name,args,ret,type,resfl)
+	;	syn @= syntax,
+		syn.$var instanceof Import && ((Import)syn.$var).mode == Import.IMPORT_STATIC,
+		trace( Kiev.debugResolve, "In file syntax: "+syn),
+		((Import)syn.$var).resolveMethodR(node,path,name,args,ret,type,resfl)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -172,8 +183,8 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		Kiev.k.reset();
 		for(int i=0; i < members.length; i++)
 			members[i].cleanup();
-		foreach(ASTNode n; typedefs) n.cleanup();
-		typedefs = null;
+		foreach(ASTNode n; syntax) n.cleanup();
+		syntax = null;
 		foreach(ASTNode n; members) n.cleanup();
 		members = null;
 		foreach(PrescannedBody n; bodies) n.sb = null;
@@ -244,8 +255,8 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		if( cl.package_clazz != null && cl.package_clazz != Env.root ) {
 			dmp.append("package ").append(cl.package_clazz.name).append(';').newLine();
 		}
-		for(int j=0; j < imports.length; j++) {
-			dmp.append(imports[j]);
+		for(int j=0; j < syntax.length; j++) {
+			if (syntax[j] != null) dmp.append(syntax[j]);
 		}
 
 		PassInfo.push(this);
@@ -524,7 +535,7 @@ public class Typedef extends ASTNode implements Named {
 	}
 
 	public String toString() {
-		return "typedef "+type+" "+name+";";
+		return "typedef "+type+" "+name;
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -187,7 +187,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must be virtual and have 1 argument");
 				AssignOperator op = AssignOperator.newAssignOperator(
-					image,m.name.name,null
+					image,m.name.name,null,false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otSame(1),otTheType(oparg1),otType(oparg2));
@@ -226,7 +226,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
@@ -268,7 +268,7 @@ public class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(pos,"Non-static method "+m+" must have 0 or 1 argument");
 				}
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
@@ -292,7 +292,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else
 					throw new CompilerException(pos,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
-					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode]
+					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));

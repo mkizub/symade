@@ -35,7 +35,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ASTTypeDeclaration extends ASTNode {
+public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 	public ASTNode[]	modifier = ASTNode.emptyArray;
 	public ASTAccess	acc;
     public int			kind;
@@ -184,6 +184,10 @@ public class ASTTypeDeclaration extends ASTNode {
 			}
 		} finally { PassInfo.pop(me); }
 
+		return me;
+	}
+
+	public ASTNode pass1_1() {
 		return me;
 	}
 
@@ -669,8 +673,19 @@ public class ASTTypeDeclaration extends ASTNode {
 		return me;
 	}
 
-	public void resolveFinalFields(boolean cleanup) {
+	public ASTNode autoProxyMethods() {
+		me.autoProxyMethods();
+		return me;
+	}
+
+	public ASTNode resolveImports() {
+		me.resolveImports();
+		return me;
+	}
+
+	public ASTNode resolveFinalFields(boolean cleanup) {
 		me.resolveFinalFields(cleanup);
+		return me;
 	}
 
 	public Dumper toJava(Dumper dmp) {

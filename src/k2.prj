@@ -42,6 +42,7 @@ kiev.bytecode.KievOperatorAttribute kiev/bytecode/KievOperatorAttribute kiev\byt
 kiev.bytecode.KievPackedFieldsAttribute kiev/bytecode/KievPackedFieldsAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.KievPackerFieldAttribute kiev/bytecode/KievPackerFieldAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.KievPrimitiveEnumAttribute kiev/bytecode/KievPrimitiveEnumAttribute kiev\bytecode\Attribute.java
+kiev.bytecode.KievTypedefAttribute kiev/bytecode/KievTypedefAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LineNumberTableAttribute kiev/bytecode/LineNumberTableAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LocalVariableTableAttribute kiev/bytecode/LocalVariableTableAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LongPoolConstant kiev/bytecode/LongPoolConstant kiev\bytecode\PoolConstant.java
@@ -117,6 +118,8 @@ kiev.parser.ASTInvariantDeclaration kiev/parser/ASTInvariantDeclaration kiev\par
 kiev.parser.ASTLabeledStatement kiev/parser/ASTLabeledStatement kiev\parser\ASTLabeledStatement.java
 kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTLexicalStateList.java
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
+kiev.parser.ASTMacroDecl kiev/parser/ASTMacroDecl kiev\parser\ASTMacroDecl.java
+kiev.parser.ASTMacroFormalParameter kiev/parser/ASTMacroFormalParameter kiev\parser\ASTMacroFormalParameter.java
 kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java
 kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
@@ -133,11 +136,8 @@ kiev.parser.ASTOptionBinding kiev/parser/ASTOptionBinding kiev\parser\ASTOptionB
 kiev.parser.ASTOptionSpec kiev/parser/ASTOptionSpec kiev\parser\ASTOptionSpec.java
 kiev.parser.ASTPack kiev/parser/ASTPack kiev\parser\ASTPack.java
 kiev.parser.ASTPackage kiev/parser/ASTPackage kiev\parser\ASTPackage.java
-kiev.parser.ASTPackageDeclaration kiev/parser/ASTPackageDeclaration kiev\parser\ASTPackageDeclaration.java
+kiev.parser.ASTPackageDeclaration kiev/parser/ASTPackageDeclaration kiev\parser\ASTPackageDeclaration.java bad
 kiev.parser.ASTPizzaCase kiev/parser/ASTPizzaCase kiev\parser\ASTPizzaCase.java
-kiev.parser.ASTPostfixExpr kiev/parser/ASTPostfixExpr kiev\parser\ASTPostfixExpr.java
-kiev.parser.ASTPrefixBooleanExpr kiev/parser/ASTPrefixBooleanExpr kiev\parser\ASTPrefixBooleanExpr.java
-kiev.parser.ASTPrefixExpr kiev/parser/ASTPrefixExpr kiev\parser\ASTPrefixExpr.java
 kiev.parser.ASTPrimitiveType kiev/parser/ASTPrimitiveType kiev\parser\ASTPrimitiveType.java
 kiev.parser.ASTQName kiev/parser/ASTQName kiev\parser\ASTQName.java
 kiev.parser.ASTRegularExpressionKind kiev/parser/ASTRegularExpressionKind kiev\parser\ASTRegularExpressionKind.java
@@ -403,6 +403,7 @@ kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java
 kiev.vlang.ScopeNodeInfoVector kiev/vlang/ScopeNodeInfoVector kiev\vlang\Var.java
 kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
 kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
+kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
 kiev.vlang.SelfAccessExpr kiev/vlang/SelfAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
@@ -419,11 +420,14 @@ kiev.vlang.Symtable kiev/vlang/Symtable kiev\vlang\Symbol.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
 kiev.vlang.TokenDecl kiev/vlang/TokenDecl kiev\vlang\Grammar.java
+kiev.vlang.TopLevelDecl kiev/vlang/TopLevelDecl kiev\vlang\AST.java
+kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeDeclStat kiev/vlang/TypeDeclStat kiev\vlang\Statement.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\FileUnit.java
+kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java

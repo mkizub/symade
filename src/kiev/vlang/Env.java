@@ -408,7 +408,13 @@ public class Env extends Struct {
 			}
 			cl = new Bytecoder(cl,clazz).readClazz();
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Loaded "+(cl.isPackage()?"package ":"class   ")+name,diff_time);
+			if( Kiev.verbose )
+				Kiev.reportInfo("Loaded "+(
+					cl.isPackage()?  "package   ":
+					cl.isSyntax   ()?"syntax    ":
+					cl.isInterface()?"interface ":
+					                 "class     "
+					)+name,diff_time);
 			return cl;
 		}
 		// CLASSPATH is scanned, try project file
@@ -461,30 +467,20 @@ public class Env extends Struct {
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
 			System.gc();
 			try {
-				fu.pass1();
-				if( Kiev.pass_no <= 2 ) {
-					Kiev.files_scanned.append(fu);
-				} else {
-					fu.pass2();
-					if( Kiev.pass_no <= 3 ) {
-						Kiev.files_scanned.append(fu);
-					} else {
-						fu.pass2_2();
-						if( Kiev.pass_no <= 4 ) {
-							Kiev.files_scanned.append(fu);
-						} else {
-							fu.pass3();
-							if( Kiev.pass_no <= 5 ) {
-								Kiev.files_scanned.append(fu);
-							} else {
-								fu.resolveFinalFields(true);
-								if (Kiev.safe)
-									Kiev.files.append(fu.file_unit);
-								else
-									fu.file_unit.cleanup();
-							}
-						}
-					}
+				Kiev.files_scanned.append(fu);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )		fu.pass1();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )	fu.pass2();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveFinalFields) )	fu.resolveFinalFields(false);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
+					if (Kiev.safe)
+						Kiev.files.append(fu.file_unit);
+					else
+						fu.file_unit.cleanup();
 				}
 				fu = null;
 			} catch(Exception e ) {
