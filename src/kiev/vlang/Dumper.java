@@ -33,7 +33,6 @@ import kiev.stdlib.*;
 public class Dumper {
 
 	private StringBuffer sb = new StringBuffer(4096);
-	private boolean cpp_mode = false;
 	private boolean nl = false;
 	private boolean sp = false;
 	private boolean sp_forsed = false;
@@ -42,9 +41,7 @@ public class Dumper {
 	static String indent_image = "  ";
 	static boolean force_space = false;
 
-	public Dumper(boolean cpp_mode) {
-		this.cpp_mode = cpp_mode;
-	}
+	public Dumper() {}
 
 	private void addNewLine() {
 		sb.append(linesep);
@@ -57,18 +54,13 @@ public class Dumper {
 
 	public Dumper append(Type o) {
 		if( o == null ) return this;
-		if (cpp_mode)
-			return o.toCpp(this);
-		else
-			return o.toJava(this);
+		return o.toJava(this);
 	}
 
 	public Dumper append(Object o) {
 		if( o == null ) return this;
-		if( o instanceof Type ) {
-			if (cpp_mode)	((Type)o).toCpp(this);
-			else			((Type)o).toJava(this);
-		}
+		if( o instanceof Type )
+			((Type)o).toJava(this);
 		else
 			append(o.toString());
 		return this;
@@ -77,8 +69,7 @@ public class Dumper {
 	public Dumper append(ASTNode o) {
 		if( o == null ) return this;
 		try {
-			if (cpp_mode)	o.toCpp(this);
-			else			o.toJava(this);
+			o.toJava(this);
 		} catch( Throwable e ) {
 			System.out.println("Internal error in dumper for "+o.getClass());
 			e.printStackTrace();

@@ -102,22 +102,6 @@ public class Var extends ASTNode implements Named, Typed {
 		return dmp.forsed_space().append(name);
 	}
 
-	public Dumper toCpp(Dumper dmp) {
-		return dmp.append(name);
-	}
-
-	public Dumper toCppDecl(Dumper dmp) {
-		if (isConstCpp()) dmp.append("const").space();
-		dmp.append(Type.getRealType(Kiev.argtype,type));
-		return dmp.forsed_space().append(name);
-	}
-
-	public Dumper toCppDecl(Dumper dmp, Type jtype) {
-		if (isConstCpp()) dmp.append("const").space();
-		dmp.append(Type.getRealType(Kiev.argtype,jtype));
-		return dmp.forsed_space().append(name);
-	}
-
 	public void setBCpos(int pos) {
 		if( pos < 0 || pos > 255)
 			throw new RuntimeException("Bad bytecode position specified: "+pos);

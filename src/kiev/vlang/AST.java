@@ -152,11 +152,6 @@ public abstract class ASTNode implements Constants {
     	return dmp;
     }
 
-    public Dumper toCpp(Dumper dmp) {
-    	//dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
-    	return toJava(dmp);
-    }
-
 	public ASTNode pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
@@ -269,8 +264,6 @@ public abstract class ASTNode implements Constants {
 	public boolean isProductionMaybe()	{ return (flags & ACC_PRODUCTION_MAYBE) != 0; }
 
 	// General
-	public boolean isConstCpp()				{ return (flags & ACC_CONST_CPP) != 0; }
-	public boolean isExportCpp()			{ return (flags & ACC_EXPORT_CPP) != 0; }
 	public boolean isAccessedFromInner()	{ return (flags & ACC_FROM_INNER) != 0; }
 	public boolean isResolved()		{ return (flags & ACC_RESOLVED) != 0; }
 	public boolean isHidden()		{ return (flags & ACC_HIDDEN) != 0; }
@@ -657,16 +650,6 @@ public abstract class ASTNode implements Constants {
 	}
 
 	// General
-	public void setConstCpp(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CONST_CPP set to "+on+" from "+((flags & ACC_CONST_CPP)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_CONST_CPP;
-		else flags &= ~ACC_CONST_CPP;
-	}
-	public void setExportCpp(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_EXPORT_CPP set to "+on+" from "+((flags & ACC_EXPORT_CPP)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_EXPORT_CPP;
-		else flags &= ~ACC_EXPORT_CPP;
-	}
 	public void setAccessedFromInner(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FROM_INNER set to "+on+" from "+((flags & ACC_FROM_INNER)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_FROM_INNER;

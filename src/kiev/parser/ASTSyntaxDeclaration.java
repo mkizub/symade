@@ -56,7 +56,8 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 
 	public ASTNode pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for synax "+name);
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, name);
+		boolean isTop = (parent != null && parent instanceof ASTFileUnit);
+		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, name, false, !isTop);
 		me = Env.newStruct(clname,PassInfo.clazz,ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX,true);
 		me.setResolved(true);
 		me.setMembersGenerated(true);

@@ -108,8 +108,6 @@ public interface AccessFlags {
 	public static final int ACC_PRODUCTION_MAYBE= 1 << 18;
 
 	// General
-	public static final int ACC_CONST_CPP		= 1 << 26;	// is C++ const
-	public static final int ACC_EXPORT_CPP		= 1 << 27;	// to be exported to C++
 	public static final int ACC_FROM_INNER		= 1 << 28;	// Private member accessed from inner class
 	public static final int ACC_RESOLVED		= 1 << 29;
 	public static final int ACC_HIDDEN			= 1 << 30;

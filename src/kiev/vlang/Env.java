@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Env.java,v 1.4.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
@@ -73,6 +75,7 @@ public class Env extends Struct {
 	/** Hashtable of all defined and loaded classes */
 	public static Hashtable<KString,Struct>	classHash = new Hashtable<KString,Struct>();
 	public static Hash<KString>		classHashOfFails = new Hash<KString>();
+	public static Hashtable<KString,Struct>	classHashDbg = new Hashtable<KString,Struct>();
 
 	/** Hashtable for project file (class name + file name) */
 	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable/*<KString,ProjectFile>*/();
@@ -91,7 +94,6 @@ public class Env extends Struct {
 	 */
 	private Env() {
 		super(ClazzName.Empty);
-		name.cpp_name = Constants.GlobalCppNamespace;
 		setPackage(true);
 		setResolved(true);
 		type = Type.tpVoid;
@@ -114,18 +116,18 @@ public class Env extends Struct {
     	if( package_name.equals(KString.Empty) )
 	    	return newStruct(name,Env.root,0,cleanup);
 		else
-			return newStruct(name,newStruct(ClazzName.fromBytecodeName(package_name)),0,cleanup);
+			return newStruct(name,newStruct(ClazzName.fromBytecodeName(package_name,false)),0,cleanup);
 	}
 
 	public static Struct newStruct(ClazzName name) {
 		return newStruct(name,false);
     }
 
-	public static Struct newStruct(ClazzName name,Struct outer/*,Typ sup*/,int access) {
+	public static Struct newStruct(ClazzName name,Struct outer,int access) {
 		return newStruct(name,outer,access,false);
 	}
 
-	public static Struct newStruct(ClazzName name,Struct outer/*,Typ sup*/,int access, boolean cleanup) {
+	public static Struct newStruct(ClazzName name,Struct outer,int access, boolean cleanup) {
 		Struct cl = classHash.get(name.name);
 		if( cl != null ) {
 			if( cleanup ) {
@@ -148,14 +150,15 @@ public class Env extends Struct {
 				outer.addSubStruct((Struct)cl);
 			return cl;
 		}
-		cl = new Struct(name,outer/*,sup*/,access);
+		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated bytecode name "+name.bytecode_name+" of "+name.name);
+		cl = new Struct(name,outer,access);
 		classHash.put(cl.name.name,cl);
-//		cl.type = Type.newRefType(cl);
+		classHashDbg.put(cl.name.bytecode_name,cl);
 		if( outer == null ) {
 			if( name.name.equals(name.short_name) )
 				outer = root;
 			else
-				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 		}
 		outer.addSubStruct((Struct)cl);
 		return cl;
@@ -175,7 +178,7 @@ public class Env extends Struct {
 			cl.setPackage(true);
 			return cl;
 		}
-		return newPackage(ClazzName.fromToplevelName(name));
+		return newPackage(ClazzName.fromToplevelName(name,false));
 	}
 
 	public static Struct newPackage(ClazzName name) {
@@ -185,7 +188,8 @@ public class Env extends Struct {
 			cl.setPackage(true);
 			return cl;
 		}
-		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name())));
+		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
+		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name(),false)));
 	}
 
 	public static Struct newPackage(ClazzName name,Struct outer) {
@@ -195,20 +199,22 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct newArgument(KString nm,Struct outer/*,Type sup*/) {
+	public static Struct newArgument(KString nm,Struct outer) {
 		// If outer is an inner class - this argument may be an argument
 		// of it's outer class
-		ClazzName name = ClazzName.fromOuterAndName(outer,nm);
+		ClazzName name = ClazzName.fromOuterAndName(outer,nm,true,true);
 		name.isArgument = true;
 		Struct cl = classHash.get(name.name);
 		if( cl != null ) {
 			if( cl.isArgument() ) return cl;
 			throw new RuntimeException("Class "+cl+" is not a class's argument");
 		}
+		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated class argument name "+name.bytecode_name+" of "+name.name);
 		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT|ACC_RESOLVED);
 		cl.super_clazz = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);
+		classHashDbg.put(cl.name.bytecode_name,cl);
 		return cl;
 	}
 
@@ -222,7 +228,8 @@ public class Env extends Struct {
 				.append(outer.anonymouse_inner_counter)
 				.append((byte)'$')
 				.append(nm)
-				.toKString()
+				.toKString(),
+				true
 		);
 		name.isArgument = true;
 		Struct cl = classHash.get(name.name);
@@ -230,10 +237,12 @@ public class Env extends Struct {
 			if( cl.isArgument() ) return cl;
 			throw new RuntimeException("Class "+cl+" is not a class's argument");
 		}
+		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated method argument name "+name.bytecode_name+" of "+name.name);
 		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT|ACC_RESOLVED);
 		cl.super_clazz = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);
+		classHash.put(cl.name.bytecode_name,cl);
 		return cl;
 	}
 
@@ -264,8 +273,18 @@ public class Env extends Struct {
 					String bad = null;
 					if( st.hasMoreTokens() )
 						bad = st.nextToken();
-					ProjectFile value = new ProjectFile(ClazzName.fromBytecodeName(KString.from(class_bytecode_name))
-						,class_source_name);
+					String class_short_name;
+					int idx = class_name.lastIndexOf('.');
+					if (idx < 0) class_short_name = class_name;
+					else class_short_name = class_name.substring(idx+1);
+					ClazzName cn = new ClazzName(
+						KString.from(class_name),
+						KString.from(class_short_name),
+						KString.from(class_bytecode_name),
+						false,
+						idx>0 && class_bytecode_name.charAt(idx)=='$'
+						);
+					ProjectFile value = new ProjectFile(cn,class_source_name);
 					if( bad != null && bad.equals("bad") )
 						value.bad = true;
 					else
@@ -370,7 +389,7 @@ public class Env extends Struct {
 		Struct cl = classHash.get(name);
 		// Load if not loaded or not resolved
 		if( cl == null ) {
-			ClazzName clname = ClazzName.fromToplevelName(name);
+			ClazzName clname = ClazzName.fromToplevelName(name,false);
 			cl = loadClazz(clname);
 		}
 		else if( !cl.isResolved() && !cl.isAnonymouse() ) {
@@ -418,11 +437,11 @@ public class Env extends Struct {
 			Struct cl = classHash.get(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
-				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 				if( pkg == null ) {
-					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 					if( pkg == null )
-						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name()));
+						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 				}
 				if( !pkg.isResolved() ) {
 					pkg = getStruct(pkg.name);

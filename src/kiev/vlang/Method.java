@@ -312,46 +312,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp;
 	}
 
-	public Dumper toCppDecl(Dumper dmp) {
-		if (!isExportCpp())
-			return dmp;
-		Struct cl = (Struct)parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
-		if (!isPrivate() && !isProtected())	dmp.newLine(-1).append("public:    ").newLine(1);
-		else if (isProtected()) 			dmp.newLine(-1).append("protected: ").newLine(1);
-		else if (isPrivate()) 				dmp.newLine(-1).append("private:   ").newLine(1);
-		if( !name.equals(nameInit) ) {
-			if( isAbstract() || body == null )
-				dmp.append("virtual");
-			dmp.space();
-			Type ret = ((MethodType)Type.getRealType(Kiev.argtype,type)).ret;
-			if (isNative()) ret.toCppJNI(dmp);
-			else ret.toCpp(dmp);
-			dmp.forsed_space().append(name);
-		} else {
-			dmp.space().append(cl.name.short_name);
-		}
-		dmp.append('(');
-		int offset = 0;
-		if( !isStatic() ) offset++;
-		for(int i=offset; i < params.length; i++) {
-			Type arg = Type.getRealType(Kiev.argtype,jtype.args[i-offset]);
-			if (isNative()) arg.toCppJNI(dmp);
-			else arg.toCpp(dmp);
-			dmp.forsed_space().append(params[i].name.name);
-			if( i < (params.length-1) ) dmp.append(",");
-		}
-		dmp.append(')').space();
-		if (isConstCpp())
-			dmp.append("const").space();
-		if( isAbstract() || body == null ) {
-			dmp.append(" = 0;").newLine();
-		} else {
-			dmp.append(body).newLine();
-		}
-		return dmp;
-	}
-
 	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false

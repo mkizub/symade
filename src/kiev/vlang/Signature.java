@@ -186,15 +186,15 @@ public class Signature {
 			KString bcn = sc.str.substr(pos,sc.pos-1);
 			ClazzName name;
 			//if (bcn.indexOf((byte)'.') >= 0)
-				name = ClazzName.fromBytecodeName(bcn);
+				name = ClazzName.fromBytecodeName(bcn,isArgument);
 			//else
 			//	name = ClazzName.fromOuterAndName(bcn);
-			name.isArgument = true;
+			//name.isArgument = true;
 			clazz = Env.newArgument(name.short_name,Env.getStruct(name.package_name()));
 			clazz.setArgument(true);
 			clazz.setResolved(true);
 		} else {
-			ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
+			ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
 			clazz = Env.newStruct(name);
 		}
 
@@ -250,7 +250,7 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.peekChar()) != '<' ) sc.nextChar();
 		if( sc.hasMoreChars() && ch != '<' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '<' expected");
-		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos));
+		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos),false);
 		clazz = Env.newStruct(name);
 
 		if( !sc.hasMoreChars() )

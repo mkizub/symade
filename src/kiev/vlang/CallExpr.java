@@ -239,37 +239,6 @@ public class CallExpr extends Expr {
 		return dmp;
 	}
 
-	public Dumper toCpp(Dumper dmp) {
-		if( func.getName().equals(nameInit) ) {
-			if( super_flag ) dmp.append(nameSuper);
-			else dmp.append(nameThis);
-		} else {
-			if( super_flag )
-				dmp.append("super->");
-			else if( func.isStatic() )
-				dmp.append(((Struct)func.parent).name).append("::");
-			dmp.append(func.name);
-		}
-		dmp.append('(');
-		for(int i=0; i < args.length; i++) {
-			// Very special case for rule call from inside
-			// of RuleMethod
-			if( i==0
-			 && func instanceof RuleMethod
-			 && parent instanceof AssignExpr
-			 && ((AssignExpr)parent).op == AssignOperator.Assign
-			 && ((AssignExpr)parent).lval.getType() == Type.tpRule
-			) {
-				dmp.append(((AssignExpr)parent).lval).append(',');
-			} else {
-				dmp.append(args[i]);
-				if( i < args.length-1 )
-					dmp.append(',');
-			}
-		}
-		dmp.append(')');
-		return dmp;
-	}
 }
 
 public class CallAccessExpr extends Expr {
@@ -559,34 +528,6 @@ public class CallAccessExpr extends Expr {
 				dmp.append("super.");
 			else if( func instanceof Method && ((Method)func).isStatic() )
 				dmp.append(((Struct)((Method)func).parent).name).append('.');
-			dmp.append(func.getName());
-		}
-		dmp.append('(');
-		for(int i=0; i < args.length; i++) {
-			dmp.append(args[i]);
-			if( i < args.length-1 )
-				dmp.append(',');
-		}
-		dmp.append(')');
-		return dmp;
-	}
-
-	public Dumper toCpp(Dumper dmp) {
-		if( func.getName().equals(nameInit) ) {
-			if( super_flag ) dmp.append(nameSuper);
-			else dmp.append(nameThis);
-		} else {
-			if( obj != null ) {
-				if( obj.getPriority() < opCallPriority ) {
-					dmp.append('(').append(obj).append(")->");
-				} else {
-					dmp.append(obj).append("->");
-				}
-			}
-			else if( super_flag )
-				dmp.append("super->");
-			else if( func instanceof Method && ((Method)func).isStatic() )
-				dmp.append(((Struct)((Method)func).parent).name).append("::");
 			dmp.append(func.getName());
 		}
 		dmp.append('(');

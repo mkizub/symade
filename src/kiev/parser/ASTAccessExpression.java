@@ -141,7 +141,7 @@ public class ASTAccessExpression extends Expr {
 			if (res.length() > 1) {
 				String msg = "Umbigous identifier "+name+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps));
-				Dumper dmp = new Dumper(false);
+				Dumper dmp = new Dumper();
 				dmp.newLine(1);
 				foreach (ASTNode r; res.toList()) r.toJava(dmp).newLine();
 				dmp.newLine(-1);

@@ -334,12 +334,8 @@ public final class Kiev {
 	public static boolean makeall_project	= false;
 	public static boolean interactive		= false;
 	public static boolean initialized		= false;
-	public static boolean gen_cpp_sources	= false;
-	public static boolean gen_cpp_namespace	= false;
 
 	public static String output_dir			= "classes";
-	public static String output_hpp_dir		= "include";
-	public static String output_cpp_dir		= "cpp";
 
 	public static String compiler_classpath = null;
 

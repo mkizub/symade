@@ -91,7 +91,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 		for(int i=0; i < modifier.length; i++)
 			flags |= ((ASTModifier)modifier[i]).flag();
 		KString short_name = this.name;
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name);
+		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,true);
 
 		flags |= AccessFlags.ACC_PIZZACASE;
 

@@ -455,15 +455,6 @@ public interface Constants extends AccessFlags {
 	public final static KString nameMethod	= KString.from("<method>");
 	public final static KString sigMethod	= KString.from("(");
 
-	// C++
-	public final static KString GlobalCppNamespace	= KString.from("::");
-	public final static KString nameThisNative	= KString.from("this$native");
-	public final static KString nameSetNative	= KString.from("native_set_");
-	public final static KString nameCppCreateInstance	= KString.from("native_CreateInstance");
-	public final static KString nameCppDeleteInstance	= KString.from("native_DeleteInstance");
-	public final static KString nameCppCreateInstanceSign	= KString.from("()I");
-	public final static KString nameCppDeleteInstanceSign	= KString.from("(I)V");
-
 //	public final static Type tpVoid			= Type.tpVoid;
 //	public final static Type tpBoolean		= Type.tpBoolean;
 //	public final static Type tpByte			= Type.tpByte;

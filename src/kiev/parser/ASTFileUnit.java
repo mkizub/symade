@@ -83,6 +83,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			PassInfo.push(pkg);
 			try {
 				for(i=0; i < decls.length; i++) {
+					decls[i].parent = this;
 					members = (Struct[])Arrays.append(members,((TopLevelDecl)decls[i]).pass1());
 				}
 			} finally { PassInfo.pop(pkg); }

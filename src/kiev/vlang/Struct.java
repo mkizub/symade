@@ -288,12 +288,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			ClazzName clname = ClazzName.Empty;
 			try {
 				if( this.equals(Env.root) ) {
-					clname = ClazzName.fromToplevelName(name);
+					clname = ClazzName.fromToplevelName(name,false);
 					cl = Env.getStruct(clname);
 				} else {
 					KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
 					ksb.append(this.name.name).append('.').append(name);
-					clname = ClazzName.fromToplevelName(ksb.toKString());
+					clname = ClazzName.fromToplevelName(ksb.toKString(),false);
 					cl = Env.getStruct(clname);
 				}
 				if( cl != null ) return cl;
@@ -408,12 +408,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			ClazzName clname = ClazzName.Empty;
 			try {
 				if( this.equals(Env.root) ) {
-					clname = ClazzName.fromToplevelName(name);
+					clname = ClazzName.fromToplevelName(name,false);
 					cl = Env.getStruct(clname);
 				} else {
 					KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
 					ksb.append(this.name.name).append('.').append(name);
-					clname = ClazzName.fromToplevelName(ksb.toKString());
+					clname = ClazzName.fromToplevelName(ksb.toKString(),false);
 					cl = Env.getStruct(clname);
 				}
 				if( cl != null ) {
@@ -891,13 +891,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		if( isInterface() && f.isVirtual() ) f.setAbstract(true);
 
-		if( !f.isVirtual() && !f.isExportCpp() ) return;
+		if( !f.isVirtual() ) return;
 		// Check set$/get$ methods
 		boolean set_found = false;
 		boolean get_found = false;
 
-		KString native_set_name = new KStringBuffer(nameSetNative.length()+f.name.name.length()).
-			append_fast(nameSetNative).append_fast(f.name.name).toKString();
 		KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
 			append_fast(nameSet).append_fast(f.name.name).toKString();
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
@@ -938,35 +936,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						new VarAccessExpr(f.pos,value)
 					)
 				);
-				if (f.isExportCpp()) {
-					Method native_set_var = new Method(this,native_set_name,
-						f.isStatic()? MethodType.newMethodType(null,null,new Type[]{f.type},Type.tpVoid)
-									: MethodType.newMethodType(null,null,new Type[]{Type.tpInt,f.type},Type.tpVoid)
-						,
-						f.getJavaFlags()|ACC_FINAL);
-					native_set_var.setPrivate(true);
-					native_set_var.setNative(true);
-					this.addMethod(native_set_var);
-					Statement cpp_st;
-					if (f.isStatic()) {
-						cpp_st = new ExprStat(f.pos,body,
-							new ASTCallExpression(f.pos,native_set_name,
-								new Expr[]{new StaticFieldAccessExpr(f.pos,this,f,ACC_AS_FIELD)}
-							)
-						);
-					} else {
-						ASTAccessExpression this_native = new ASTAccessExpression(f.pos,
-							new ASTIdentifier(f.pos,nameThis),nameThisNative);
-						cpp_st = new ExprStat(f.pos,body,
-							new ASTCallExpression(f.pos,native_set_name,
-								new Expr[]{ this_native,new FieldAccessExpr(f.pos,f,ACC_AS_FIELD)}
-							)
-						);
-					}
-					body.stats = new ASTNode[]{ass_st,cpp_st,new ReturnStat(f.pos,body,null)};
-				} else {
-					body.stats = new ASTNode[]{ass_st,new ReturnStat(f.pos,body,null)};
-				}
+				body.stats = new ASTNode[]{ass_st,new ReturnStat(f.pos,body,null)};
 				set_var.body = body;
 			}
 			this.addMethod(set_var);
@@ -975,12 +945,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		else if( set_found && !f.acc.writeable() ) {
 			Kiev.reportError(f.pos,"Virtual set$ method for non-writeable field");
 		}
-		else if( set_found && f.isExportCpp() ) {
-			Kiev.reportError(f.pos,"Virtual set$ method for cpp-export field");
-		}
 
 		if (!isVirtual())
-			return;		// no need to generate getter for $export_cpp
+			return;		// no need to generate getter
 		if( !get_found && f.acc.readable()) {
 			Method get_var = new Method(this,get_name,
 				MethodType.newMethodType(null,Type.emptyArray,f.type),
@@ -1211,7 +1178,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
 			flags |= ACC_PUBLIC | ACC_STATIC | ACC_RESOLVED;
 			typeinfo_clazz = Env.newStruct(
-				ClazzName.fromOuterAndName(this,nameClTypeInfo),this,flags,true
+				ClazzName.fromOuterAndName(this,nameClTypeInfo,false,true),this,flags,true
 				);
 			typeinfo_clazz.setPublic(true);
 			if (super_clazz != null && super_clazz.clazz.typeinfo_clazz != null)
@@ -1511,7 +1478,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					// Make inner class name$default
 					if( defaults == null ) {
 						defaults = Env.newStruct(
-							ClazzName.fromOuterAndName(this,nameIdefault),
+							ClazzName.fromOuterAndName(this,nameIdefault,false,true),
 							this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
 						);
 						defaults.parent = this;
@@ -1674,26 +1641,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				);
 			addMethod(fromstr);
 			}
-		}
-
-		// generate native methods for creation/deletion native instance
-		getCppNativeInstMethods();
-
-	}
-
-	private void getCppNativeInstMethods() {
-		if (isExportCpp() && isClazz() && !isEnum() && !isPackage() && !isPizzaCase()) {
-			int flags = ACC_PROTECTED;
-			if (isAbstract()) flags |= ACC_ABSTRACT;
-			else flags |= ACC_NATIVE;
-			MethodType create_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpInt);
-			Method create = new Method(this,nameCppCreateInstance,create_type,create_type,flags);
-			create.params = new Var[]{new Var(pos,create,nameThis,this.type,0)};
-			this.addMethod(create);
-			MethodType delete_type = MethodType.newMethodType(null,new Type[]{Type.tpInt},Type.tpVoid);
-			Method delete = new Method(this,nameCppDeleteInstance,delete_type,delete_type,flags);
-			delete.params = new Var[]{new Var(pos,delete,nameThis,this.type,0),new Var(pos,delete,KString.from("nself"),this.type,0)};
-			this.addMethod(delete);
 		}
 	}
 
@@ -2205,16 +2152,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						),p++
 					);
 				}
-				if (isExportCpp() && !super_clazz.clazz.isExportCpp() && !isEnum() && !isPackage() && !isPizzaCase()) {
-					stats = (ASTNode[])Arrays.insert(stats,
-						new ExprStat(pos,null,
-							new AssignExpr(pos,AssignOperator.Assign,
-								new FieldAccessExpr(pos,resolveField(nameThisNative)),
-								new CallExpr(pos,resolveMethod(nameCppCreateInstance,nameCppCreateInstanceSign),Expr.emptyArray)
-							)
-						),p++
-					);
-				}
 				if( isPizzaCase() ) {
 					for(int j= package_clazz.isClazz() && !isStatic() ? 2 : 1;
 												j < methods[i].params.length; j++ ) {
@@ -2261,40 +2198,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					((BlockStat)initbody).stats = stats;
 			}
 		}
-
-		// add destruction of native instance
-		if (isExportCpp() && isClazz() && !isEnum() && !isPackage() && !isPizzaCase()) {
-			Method fin = resolveMethod(nameFinalize,nameFinalizeSig,false);
-			if (fin == null || fin.parent != this) {
-				fin = new Method(this,nameFinalize,MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid),ACC_PUBLIC);
-				fin.params = new Var[]{new Var(pos,fin,nameThis,this.type,0)};
-				this.addMethod(fin);
-				fin.body = new BlockStat(pos,fin);
-			}
-			BlockStat body = (BlockStat)fin.body;
-			body.addStatement(
-				new ExprStat(pos,body,
-					new CallExpr(pos,
-						resolveMethod(nameCppDeleteInstance,nameCppDeleteInstanceSign),
-						new Expr[]{new FieldAccessExpr(pos,resolveField(nameThisNative))}
-					)
-				)
-			);
-		}
-
-//		for(int i=0; i < methods.length; i++) {
-//			Method m = methods[i];
-//			if( !m.isProduction() ) continue;
-//			((Production)m).preresolve();
-//		}
-
-//		for(int i=0; i < methods.length; i++) {
-//			Method m = methods[i];
-//			if( !m.isMultiMethod() ) continue;
-//			if( m instanceof RuleMethod && m.body instanceof ASTRuleBlock ) continue;
-//			makeDispatch(m);
-//		}
-
 	}
 
 	protected void combineMethods() {
@@ -3340,7 +3243,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				int flags = 0;
 				if( f.isVirtual() ) flags |= 2;
 				if( f.isForward() ) flags |= 8;
-				if( f.isExportCpp() ) flags |= 64;
 				if( f.isAccessedFromInner()) {
 					flags |= (f.acc.flags << 24);
 					f.setPrivate(false);
@@ -3377,7 +3279,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					if( m.isVarArgs() ) flags |= 4;
 					if( m.isRuleMethod() ) flags |= 16;
 					if( m.isInvariantMethod() ) flags |= 32;
-					if( m.isExportCpp() ) flags |= 64;
 					if( m.isAccessedFromInner()) {
 						flags |= (m.acc.flags << 24);
 						m.setPrivate(false);
@@ -3494,305 +3395,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			methods[i].toJavaDecl(dmp).newLine();
 		}
 		dmp.newLine(-1).append('}').newLine();
-		} finally { PassInfo.pop(this); }
-		return dmp;
-	}
-
-	public Dumper toCppDecl(Dumper dmp) {
-		PassInfo.push(this);
-		try {
-		Struct jthis = Kiev.argtype == null? this : Kiev.argtype.clazz;
-		if( Kiev.verbose ) System.out.println("[ Exporting to C++ .h   "+jthis+"]");
-
-		String suffix = "";
-		if (jthis == this && this.type.args.length > 0)
-			suffix = "__A_";
-
-		if (isEnum()) {
-			dmp.append("enum").forsed_space();
-		} else {
-			dmp.append("class").forsed_space();
-		}
-		dmp.append(jthis.name.short_name.toString()).append(suffix);
-		dmp.forsed_space();
-		char parent_delimiter = ':';
-		if( super_clazz != null && !super_clazz.equals(Type.tpObject) && !isEnum()) {
-			super_clazz.clazz.name.make_cpp_name();
-			dmp.append(parent_delimiter).append(" public ").append(super_clazz.clazz.name.cpp_name);
-			parent_delimiter = ',';
-		}
-		if( interfaces!=null && interfaces.length > 0 ) {
-			for(int i=0; i < interfaces.length; i++) {
-				if (interfaces[i].isInstanceOf(Type.tpTypeInfoInterface)) continue;
-				this.interfaces[i].clazz.name.make_cpp_name();
-				dmp.append(parent_delimiter).append(" public ").append(this.interfaces[i].clazz.name.cpp_name);
-				parent_delimiter = ',';
-			}
-		}
-
-		dmp.forsed_space().append('{').newLine(1);
-		for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-			if( sub_clazz[i].isLocal() ) continue;
-			if( sub_clazz[i].isArgument() ) continue;
-			if (sub_clazz[i].instanceOf(Type.tpTypeInfo.clazz)) continue;
-			sub_clazz[i].toCppDecl(dmp).newLine();
-		}
-
-		if (!isEnum()) {
-			if (!super_clazz.clazz.isExportCpp() && !isInterface())
-				dmp.append("protected: jobject jself;").newLine();
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				fields[i].toCppDecl(dmp).newLine();
-			}
-			dmp.newLines(2);
-			dmp.append("//{ add native-only fields declarations here").newLine();
-			dmp.append("//} end of your code").newLine();
-			dmp.newLines(2);
-
-			if (!isInterface())
-				dmp.append("protected: ").append(jthis.name.short_name.toString()).append(suffix).append("();").newLines(2);
-
-			for(int i=0; methods!=null && i < methods.length; i++) {
-				methods[i].toCppDecl(dmp).newLine();
-			}
-
-			for(int i=0; methods!=null && i < methods.length; i++) {
-				Method m = methods[i];
-				if (m.isNative()) {
-					dmp.append("private: static JNIEXPORT ");
-					m.type.ret.toCppJNI(dmp);
-					dmp.append(" JNICALL ");
-					dmp.append(m.name.name).append("(JNIEnv*,");
-					if (m.isStatic())	dmp.append("jclass");
-					else				dmp.append("jobject");
-					if (m.name.name.startsWith(nameSetNative)) {
-						if (!m.isStatic()) {
-							dmp.append(",jint nself,");
-							m.type.args[1].toCppJNI(dmp);
-						} else {
-							dmp.append(",");
-							m.type.args[0].toCppJNI(dmp);
-						}
-						dmp.append(" value");
-					} else {
-						for (int i=0, j=m.isStatic()?0:1; i < m.type.args.length; i++, j++) {
-							dmp.append(',');
-							Type argtp = Type.getRealType(Kiev.argtype,m.type.args[i]);
-							argtp.toCppJNI(dmp);
-							dmp.space().append(m.params[j].name);
-						}
-					}
-					dmp.append(");").newLine();
-				}
-			}
-
-			dmp.newLines(2);
-			dmp.append("//{ add native-only methods declarations here").newLine();
-			dmp.append("//} end of your code").newLine();
-			dmp.newLines(2);
-
-			dmp.append("private: static JNINativeMethod ").append("NativeMethodTable[];").newLine();
-			dmp.append("public: static bool RegisterNativeMethods(JNIEnv *jenv);").newLine();
-		} else {
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				dmp.append(fields[i].name).append(" = ").append(fields[i].init);
-				if ( i < fields.length-1)
-					dmp.append(',');
-				dmp.newLine();
-			}
-		}
-
-		dmp.newLine(-1).append("};").newLines(2);
-		} finally { PassInfo.pop(this); }
-		return dmp;
-	}
-
-	public Dumper toCpp(Dumper dmp) {
-		if (isEnum()) return dmp;
-
-		dmp.append("//{ add native-only class initialization code here").newLine();
-		dmp.append("//} end of your code").newLine();
-		dmp.newLines(2);
-
-		PassInfo.push(this);
-		try {
-			Struct jthis = Kiev.argtype == null? this : Kiev.argtype.clazz;
-			if( Kiev.verbose ) System.out.println("[ Exporting to C++ .cpp "+jthis+"]");
-
-			String suffix = "";
-			if (jthis == this && this.type.args.length > 0)
-				suffix = "__A_";
-
-			// constructor
-			dmp.append(jthis.name.short_name).append(suffix).append("::")
-			   .append(jthis.name.short_name).append(suffix).append("()");
-			if( super_clazz != null && !super_clazz.equals(Type.tpObject) && !isEnum()) {
-				dmp.append(" : ").append(super_clazz.clazz.name.cpp_name).append("()");
-			}
-			dmp.newLine().append("{").newLine(1);
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				Field f = fields[i];
-				if (!f.isExportCpp() || f.isStatic()) continue;
-				if (f.init == null) {
-					if (f.type.clazz.isPrimitiveEnum()) {
-						f.type.clazz.name.make_cpp_name();
-						dmp.append(f.name).append(" = (").append(f.type.clazz.name.cpp_name).append(")0;").newLine();
-					} else {
-						dmp.append(f.name).append(" = ").append("0;").newLine();
-					}
-				} else {
-					if (f.init.isConstantExpr()) {
-						dmp.append(f.name).append(" = ");
-						Object val = f.init.getConstValue();
-						if (val == null || val instanceof KString) dmp.append('0');
-						else if (val instanceof Character) {
-							if (val.charValue() < 128)
-								dmp.append("(jchar)").append(val);
-							else
-								dmp.append("(jchar)").append(Integer.toHexString((int)val.charValue()));
-						}
-						else dmp.append(val);
-						dmp.append(";").newLine();
-					}
-				}
-			}
-			dmp.append("//{ add native instance initialization code here").newLine();
-			dmp.append("//} end of your code").newLine();
-			dmp.newLine(-1).append("}").newLines(2);
-
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				Field f = fields[i];
-				if (f.isExportCpp()) {
-					KString nm_name = new KStringBuffer(nameSetNative.len+f.name.name.len)
-						.append(nameSetNative).append(f.name.name).toKString();
-					Method m;
-					if (f.isStatic())
-						m = resolveMethod(nm_name,KString.from("("+f.type.signature+")V"));
-					else
-						m = resolveMethod(nm_name,KString.from("(I"+f.type.signature+")V"));
-					dmp.append("JNIEXPORT ");
-					m.type.ret.toCppJNI(dmp).append(" JNICALL ");
-					dmp.append(jthis.name.short_name).append(suffix).append("::").append(m.name);
-					dmp.append("(JNIEnv* jenv, ");
-					if (m.isStatic())	dmp.append("jclass jcls, ");
-					else				dmp.append("jobject jself, ");
-					if (!f.isStatic()) {
-						dmp.append("jint nself, ");
-						m.type.args[1].toCppJNI(dmp).append(" value");
-					} else {
-						m.type.args[0].toCppJNI(dmp).append(" value");
-					}
-					dmp.append(") {").newLine(1);
-					if (!f.isStatic()) {
-						dmp.append("register ").append(jthis.name.short_name).append(suffix).append("& self = ");
-						dmp.append("*(").append(jthis.name.short_name).append(suffix).append("*)").append("nself;").newLine();
-					}
-
-					if (f.type.clazz.isEnum() && f.type.clazz.isPrimitiveEnum()) {
-						f.type.clazz.name.make_cpp_name();
-						if (!f.isStatic()) { dmp.append("self."); }
-						dmp.append(f.name).append(" = ").append('(').append(f.type.clazz.name.cpp_name).append(')').append("value;").newLine();
-					}
-					else if (f.type.signature == nameKStringSignature) {
-						dmp.append("if (self.").append(f.name).append(") free(self.").append(f.name).append(");").newLine();
-						dmp.append("jbyteArray jbytes = (jbyteArray)jenv->CallObjectMethod(value,jenv->GetMethodID(jenv->GetObjectClass(value),\"getBytes\",\"()[B\"));").newLine();
-						dmp.append("jint length = jenv->GetArrayLength(jbytes);").newLine();
-						dmp.append("self.").append(f.name).append(" = (char*)malloc(length+1);").newLine();
-						dmp.append("jenv->GetByteArrayRegion(jbytes,0,length,(jbyte*)self.").append(f.name).append(");").newLine();
-						dmp.append("self.").append(f.name).append("[length] = 0;").newLine();
-					}
-					else if (f.type.clazz.isExportCpp()) {
-						if (!f.isStatic()) { dmp.append("self."); }
-						dmp.append(f.name).append(" = ").append('(')
-						.append(Type.getRealType(Kiev.argtype,f.type)).append(')')
-						.append("jenv->GetIntField(value,jenv->GetFieldID(jenv->GetObjectClass(value),\"this$native\",\"I\"));").newLine();
-					}
-					else if (f.type.isArray()) {
-						Type t = Type.getRealType(Kiev.argtype,f.type).args[0];
-						dmp.append("if (self.").append(f.name).append(") free(self.").append(f.name).append(");").newLine();
-						dmp.append("jint length = jenv->GetArrayLength(value);").newLine();
-						dmp.append("self.").append(f.name).append(" = (").append(t).append("*)");
-						dmp.append("malloc(length*sizeof(").append(t).append("));").newLine();
-						boolean is_primitive = true;
-						if		(t == Type.tpByte)dmp.append("jenv->GetByteArrayRegion(value,0,length,(jbyte*)self.");
-						else if (t == Type.tpBoolean)dmp.append("jenv->GetBooleanArrayRegion(value,0,length,(jboolean*)self.");
-						else if (t == Type.tpChar)	dmp.append("jenv->GetCharArrayRegion(value,0,length,(jchar*)self.");
-						else if (t == Type.tpShort)	dmp.append("jenv->GetShortArrayRegion(value,0,length,(jshort*)self.");
-						else if (t == Type.tpInt)	dmp.append("jenv->GetIntArrayRegion(value,0,length,(jint*)self.");
-						else if (t == Type.tpLong)	dmp.append("jenv->GetLongArrayRegion(value,0,length,(jlong*)self.");
-						else if (t == Type.tpFloat)	dmp.append("jenv->GetFloatArrayRegion(value,0,length,(jfloat*)self.");
-						else if (t == Type.tpDouble)dmp.append("jenv->GetDoubleArrayRegion(value,0,length,(jdouble*)self.");
-						else {
-							dmp.append("for (int i=0; i < length; i++) {").newLine(1);
-							dmp.append("self.").append(f.name).append("[i] = (void*)jenv->GetObjectArrayElement(value,i);");
-							dmp.newLine(-1).append("}").newLine();
-							is_primitive = false;
-						}
-						if (is_primitive) dmp.append(f.name).append(");").newLine();
-					}
-					else {
-						if (!f.isStatic()) { dmp.append("self."); }
-						dmp.append(f.name).append(" = value;").newLine();
-					}
-					dmp.append("//{ add code for field '"+f.name.name+"' here ").newLine();
-					dmp.append("//} end of your code").newLine();
-					dmp.newLine(-1).append("}").newLine();
-				}
-			}
-			if (!isAbstract()) {
-				dmp.append("JNIEXPORT jint JNICALL ").append(jthis.name.short_name).append(suffix)
-					.append("::native_CreateInstance(JNIEnv*jenv, jobject jself) {").newLine(1)
-					.append(jthis.name.short_name).append(suffix).append("& self = *new ")
-					.append(jthis.name.short_name).append(suffix).append("();").newLine()
-					.append("self.jself = jself;").newLine()
-					.append("//{ add ").append(jthis.name.short_name).append("::native_CreateInstance code here").newLine()
-					.append("//} end of your code").newLine()
-					.append("return (jint)&self;").newLine()
-					.newLine(-1).append("}").newLine();
-				dmp.append("JNIEXPORT void JNICALL ").append(jthis.name.short_name).append(suffix)
-					.append("::native_DeleteInstance(JNIEnv* jenv, jobject jself, jint nself) {").newLine(1)
-					.append("register ").append(jthis.name.short_name).append(suffix).append("& self = ")
-					.append("*(").append(jthis.name.short_name).append(suffix).append("*)").append("nself;").newLine()
-					.append("//{ add ").append(jthis.name.short_name).append("::native_DeleteInstance code here").newLine()
-					.append("//} end of your code").newLine()
-					.append("delete (").append(jthis.name.short_name).append(suffix).append("*)nself;").newLine()
-					.newLine(-1).append("}").newLine();
-			}
-
-			dmp.newLines(2);
-			dmp.append("//{ add rest of native code here").newLine();
-			dmp.append("//} end of your code").newLine();
-			dmp.newLines(2);
-
-			int n_native = 0;
-			dmp.append("static bool NativeMethodAlreadyRegistered;").newLine();
-			dmp.append("JNINativeMethod ").append(jthis.name.short_name).append(suffix).append("::NativeMethodTable[] = {").newLine(1);
-			for(int i=0; methods!=null && i < methods.length; i++) {
-				Method m = methods[i];
-				if (m.isNative()) {
-					dmp.append("{ ");
-					dmp.append("\"").append(m.name.name).append("\",\t");
-					Type mt = Type.getRealType(Kiev.argtype,m.type);
-					dmp.append("\"").append(mt.java_signature).append("\",\t");
-					dmp.append(jthis.name.short_name).append(suffix).append("::").append(m.name.name);
-					dmp.append(" },").newLine();
-					n_native ++;
-				}
-			}
-			dmp.newLine(-1).append("};").newLine();
-
-			dmp.append("bool ").append(jthis.name.short_name).append(suffix).append("::RegisterNativeMethods(JNIEnv *jenv) {").newLine(1);
-			dmp.append("if (NativeMethodAlreadyRegistered) return true;").newLine();
-			dmp.append("jclass cls = jenv->FindClass(\"").append(jthis.name.bytecode_name).append("\");").newLine();
-			dmp.append("if (!cls) return false;").newLine();
-			dmp.append("bool res_cls = 0 == jenv->RegisterNatives(cls,NativeMethodTable,"+n_native+");").newLine();
-			dmp.append("if (!res_cls) return false;").newLine();
-			dmp.append("jenv->NewGlobalRef(cls);").newLine();
-			dmp.append("NativeMethodAlreadyRegistered = true;").newLine();
-			dmp.append("return true;").newLine();
-			dmp.newLine(-1).append("};").newLine();
-
-
 		} finally { PassInfo.pop(this); }
 		return dmp;
 	}

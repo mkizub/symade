@@ -225,11 +225,6 @@ public class ConstExpr extends Expr {
 		return dmp;
 	}
 
-	public Dumper toCpp(Dumper dmp) {
-		if( value == null ) return dmp.space().append("NULL").space();
-		return toJava(dmp);
-	}
-
     public static long parseLong(String s, int radix)
               throws NumberFormatException
     {
@@ -1116,7 +1111,7 @@ public class StringConcatExpr extends Expr {
 
 	static {
 		try {
-		clazzStringBuffer = Env.getStruct(ClazzName.fromToplevelName(KString.from("java.lang.StringBuffer")) );
+		clazzStringBuffer = Env.getStruct(ClazzName.fromToplevelName(KString.from("java.lang.StringBuffer"),false) );
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
 		clazzStringBufferToString = (Method)clazzStringBuffer.resolveMethod(

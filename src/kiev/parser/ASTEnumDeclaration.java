@@ -79,7 +79,8 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 		KString short_name = this.name;
 		ClazzName clname = null;
 		if( this.name != null ) {
-			clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name);
+			boolean isTop = (parent != null && parent instanceof ASTFileUnit);
+			clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
 		}
 
         flags |= ACC_ENUM;

@@ -107,7 +107,8 @@ public class ASTAnonymouseClosure extends Expr {
 					.append_fast(PassInfo.clazz.name.bytecode_name)
 					.append_fast((byte)'$')
 					.append(PassInfo.clazz.anonymouse_inner_counter)
-					.toKString()
+					.toKString(),
+				false
 			);
 			Struct me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 			me.setResolved(true);

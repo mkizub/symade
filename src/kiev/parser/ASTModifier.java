@@ -48,8 +48,6 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 	public static final ASTModifier modSYNCHRONIZED	= new ASTModifier(SYNCHRONIZED,"synchronized");
 	public static final ASTModifier modVOLATILE		= new ASTModifier(VOLATILE,"volatile");
 	public static final ASTModifier modTRANSIENT	= new ASTModifier(TRANSIENT,"transient");
-	public static final ASTModifier modCONST_CPP	= new ASTModifier(CONST,"const");
-	public static final ASTModifier modEXPORT_CPP	= new ASTModifier(EXPORT_CPP,"$export_cpp");
 	public static final ASTModifier modWRAPPER		= new ASTModifier(WRAPPER,"$wrapper");
 
 	ASTModifier(int id) {
@@ -85,20 +83,12 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
     	case SYNCHRONIZED:	return ACC_SYNCHRONIZED;
     	case VOLATILE:		return ACC_VOLATILE;
     	case TRANSIENT:		return ACC_TRANSIENT;
-    	//case MULTIMETHOD:	return ACC_MULTIMETHOD;
     	case VIRTUAL:		return ACC_VIRTUAL;
     	case FORWARD:		return ACC_FORWARD;
-//    	case PVAR:			return ACC_PROLOGVAR;
-//    	case MM_GRAMMAR:	return ACC_GRAMMAR;
-    	case CONST:			return ACC_CONST_CPP;
-    	case EXPORT_CPP:	return ACC_EXPORT_CPP;
     	case WRAPPER:		return ACC_WRAPPER;
     	case IDENTIFIER:
-    		if( image == "multimethod" )	return ACC_MULTIMETHOD;
-    		else if( image == "virtual" )	return ACC_VIRTUAL;
+    		if     ( image == "virtual" )	return ACC_VIRTUAL;
     		else if( image == "forward" )	return ACC_FORWARD;
-//    		else if( image == "pvar" )		return ACC_PROLOGVAR;
-    		else if( image == "$export_cpp" )	return ACC_EXPORT_CPP;
     		return 0;
     	default:			return 0;
     	}

@@ -311,26 +311,6 @@ public class Compiler {
 					}
 					continue;
 				}
-				else if( args[a].equals("-dh")) {
-					args[a] = null;
-					if( onoff ) {
-						Kiev.output_hpp_dir = args[++a];
-						args[a] = null;
-					} else {
-						Kiev.output_hpp_dir = null;
-					}
-					continue;
-				}
-				else if( args[a].equals("-dcpp")) {
-					args[a] = null;
-					if( onoff ) {
-						Kiev.output_cpp_dir = args[++a];
-						args[a] = null;
-					} else {
-						Kiev.output_cpp_dir = null;
-					}
-					continue;
-				}
 				else if( args[a].equals("-p") || args[a].equals("-project") ) {
 					args[a] = null;
 					if( onoff ) {
@@ -379,16 +359,6 @@ public class Compiler {
 				}
 				else if( args[a].equals("-s")) {
 					Kiev.source_only = onoff;
-					args[a] = null;
-					continue;
-				}
-				else if( args[a].equals("-cpp")) {
-					Kiev.gen_cpp_sources = onoff;
-					args[a] = null;
-					continue;
-				}
-				else if( args[a].equals("-namespace")) {
-					Kiev.gen_cpp_namespace = onoff;
 					args[a] = null;
 					continue;
 				}
@@ -737,11 +707,6 @@ public class Compiler {
 				} else {
 					try {
 						Kiev.files[i].generate();
-					} catch (Exception rte) { Kiev.reportError(0,rte); }
-				}
-				if (Kiev.gen_cpp_sources) {
-					try {
-						Kiev.files[i].toCpp();
 					} catch (Exception rte) { Kiev.reportError(0,rte); }
 				}
 				Kiev.files[i].cleanup();

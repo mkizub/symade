@@ -194,25 +194,5 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 		}
 		return dmp.append(';');
 	}
-
-	public Dumper toCppDecl(Dumper dmp) {
-		if (!isExportCpp())
-			return dmp;
-		if (!isPrivate() && !isProtected()) {
-			dmp.append("public:    ");
-		}
-		else if (isProtected()) {
-			dmp.append("protected: ");
-		}
-		else if (isPrivate()) {
-			dmp.append("private:   ");
-		}
-		if (isStatic()) {
-			dmp.append("static ");
-		}
-		if( !name.equals(KString.Empty) )
-			Type.getRealType(Kiev.argtype,type).toCpp(dmp).forsed_space().append(name);
-		return dmp.append(';').newLine();
-	}
 }
 

@@ -203,12 +203,10 @@ public class Bytecoder implements Constants {
 				if( f==null ) {
 					if( (flags & 2) != 0 ) f_flags |= ACC_VIRTUAL;
 					if( (flags & 8) != 0 ) f_flags |= ACC_FORWARD;
-					if( (flags &64) != 0 ) f_flags |= ACC_EXPORT_CPP;
 					if( (flags & 0xFF000000) != 0 ) acc = new Access(flags >>> 24);
 				} else {
 					f.setVirtual( (flags & 2) != 0  );
 					f.setForward( (flags & 8) != 0  );
-					f.setExportCpp( (flags &64) != 0  );
 					f.acc = new Access(flags >>> 24);
 				}
 			}
@@ -258,13 +256,11 @@ public class Bytecoder implements Constants {
 					if( (flags & 4) != 0  ) m_flags |= ACC_VARARGS;
 					if( (flags & 16) != 0  ) m_flags |= ACC_RULEMETHOD;
 					if( (flags & 32) != 0  ) m_flags |= ACC_INVARIANT_METHOD;
-					if( (flags & 64) != 0  ) m_flags |= ACC_EXPORT_CPP;
 				} else {
 					m.setMultiMethod( (flags & 1) != 0  );
 					m.setVarArgs( (flags & 4) != 0  );
 					m.setRuleMethod( (flags & 16) != 0  );
 			    	m.setInvariantMethod( (flags & 32) != 0 );
-			    	m.setExportCpp( (flags & 64) != 0 );
 				}
 			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
@@ -288,7 +284,7 @@ public class Bytecoder implements Constants {
 		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.clazz,m.type.fargs,mtype.args,Type.tpRule);
+				mtype = MethodType.newMethodType(mtype.clazz,mtype.fargs,mtype.args,Type.tpRule);
 				m = new RuleMethod(cl,m_name,mtype,m_flags);
 			}
 			else
@@ -476,7 +472,7 @@ public class Bytecoder implements Constants {
 			Type[] exceptions = new Type[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
 				exceptions[i] = Type.newRefType(
-					ClazzName.fromBytecodeName( ea.getException(i,clazz) ));
+					ClazzName.fromBytecodeName( ea.getException(i,clazz), false ));
 			}
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
@@ -557,7 +553,7 @@ public class Bytecoder implements Constants {
 				try {
 					ClazzName cn;
 					if( ica.cp_outers[i] != 0 ) {
-						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz));
+						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz),false);
 						outer[i] = Env.getStruct(cn);
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
@@ -565,7 +561,7 @@ public class Bytecoder implements Constants {
 						outer[i] = null;
 					}
 					if( ica.cp_inners[i] != 0 ) {
-						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz));
+						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz),false);
 						// load only non-anonymouse classes
 						boolean anon = false;
 						for (int i=0; i < cn.bytecode_name.len; i++) {
@@ -606,7 +602,7 @@ public class Bytecoder implements Constants {
 		else if( name.equals(attrImport) ) {
 			kiev.bytecode.KievImportAttribute kia = (kiev.bytecode.KievImportAttribute)bca;
 			KString clname = kia.getClazzName(clazz);
-			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname));
+			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname,false));
 			if( s == null )
 				Kiev.reportWarning(0,"Bytecode imports a member from unknown class "+clname);
 			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {

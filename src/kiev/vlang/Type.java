@@ -123,7 +123,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpAnyClazz = Env.newStruct(new ClazzName(
 							KString.from("<any>"),
 							KString.from("<any>"),
-							KString.from("?")),null,ACC_PUBLIC);
+							KString.from("?"),false,false),null,ACC_PUBLIC);
 		tpAny				= new Type();
 		tpAny.clazz			= tpAnyClazz;
 //		typeHash.remove(tpAnyClazz.type);
@@ -137,7 +137,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpRuleClazz = Env.newStruct(new ClazzName(
 							KString.from("rule"),
 							KString.from("rule"),
-							KString.from("R")),null,ACC_PUBLIC);
+							KString.from("R"),false,false),null,ACC_PUBLIC);
 		tpRule					= new Type();
 		tpRule.clazz			= tpRuleClazz;
 //		typeHash.remove(tpRuleClazz.type);
@@ -151,7 +151,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpBooleanClazz = Env.newStruct(new ClazzName(
 							KString.from("boolean"),
 							KString.from("boolean"),
-							KString.from("Z")),null,ACC_PUBLIC);
+							KString.from("Z"),false,false),null,ACC_PUBLIC);
 		tpBoolean				= new Type();
 		tpBoolean.clazz			= tpBooleanClazz;
 //		typeHash.remove(tpBooleanClazz.type);
@@ -165,7 +165,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpByteClazz = Env.newStruct(new ClazzName(
 							KString.from("byte"),
 							KString.from("byte"),
-							KString.from("B")),null,ACC_PUBLIC);
+							KString.from("B"),false,false),null,ACC_PUBLIC);
 		tpByte					= new Type();
 		tpByte.clazz			= tpByteClazz;
 //		typeHash.remove(tpByteClazz.type);
@@ -179,7 +179,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpCharClazz = Env.newStruct(new ClazzName(
 							KString.from("char"),
 							KString.from("char"),
-							KString.from("C")),null,ACC_PUBLIC);
+							KString.from("C"),false,false),null,ACC_PUBLIC);
 		tpChar					= new Type();
 		tpChar.clazz			= tpCharClazz;
 //		typeHash.remove(tpCharClazz.type);
@@ -193,7 +193,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpShortClazz = Env.newStruct(new ClazzName(
 							KString.from("short"),
 							KString.from("short"),
-							KString.from("S")),null,ACC_PUBLIC);
+							KString.from("S"),false,false),null,ACC_PUBLIC);
 		tpShort					= new Type();
 		tpShort.clazz			= tpShortClazz;
 //		typeHash.remove(tpShortClazz.type);
@@ -207,7 +207,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpIntClazz = Env.newStruct(new ClazzName(
 							KString.from("int"),
 							KString.from("int"),
-							KString.from("I")),null,ACC_PUBLIC);
+							KString.from("I"),false,false),null,ACC_PUBLIC);
 		tpInt					= new Type();
 		tpInt.clazz			= tpIntClazz;
 //		typeHash.remove(tpIntClazz.type);
@@ -221,7 +221,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpLongClazz = Env.newStruct(new ClazzName(
 							KString.from("long"),
 							KString.from("long"),
-							KString.from("J")),null,ACC_PUBLIC);
+							KString.from("J"),false,false),null,ACC_PUBLIC);
 		tpLong					= new Type();
 		tpLong.clazz			= tpLongClazz;
 //		typeHash.remove(tpLongClazz.type);
@@ -235,7 +235,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpFloatClazz = Env.newStruct(new ClazzName(
 							KString.from("float"),
 							KString.from("float"),
-							KString.from("F")),null,ACC_PUBLIC);
+							KString.from("F"),false,false),null,ACC_PUBLIC);
 		tpFloat					= new Type();
 		tpFloat.clazz			= tpFloatClazz;
 //		typeHash.remove(tpFloatClazz.type);
@@ -249,7 +249,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpDoubleClazz = Env.newStruct(new ClazzName(
 							KString.from("double"),
 							KString.from("double"),
-							KString.from("D")),null,ACC_PUBLIC);
+							KString.from("D"),false,false),null,ACC_PUBLIC);
 		tpDouble				= new Type();
 		tpDouble.clazz			= tpDoubleClazz;
 //		typeHash.remove(tpDoubleClazz.type);
@@ -263,7 +263,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct tpVoidClazz = Env.newStruct(new ClazzName(
 							KString.from("void"),
 							KString.from("void"),
-							KString.from("V")),null,ACC_PUBLIC);
+							KString.from("V"),false,false),null,ACC_PUBLIC);
 		tpVoid					= new Type();
 		tpVoid.clazz			= tpVoidClazz;
 //		typeHash.remove(tpVoidClazz.type);
@@ -1190,98 +1190,6 @@ public class Type extends ASTNode implements AccessFlags {
 			return clazz.toJava(dmp);
 	}
 
-	public Dumper toCpp(Dumper dmp) {
-		if( isArray() )
-			return dmp.append(args[0]).append("*");
-		else if (isReference()) {
-			if (clazz.isExportCpp()) {
-				clazz.name.make_cpp_name();
-				if (clazz.isEnum())
-					return dmp.append(clazz.name.cpp_name);
-				else if (args.length > 0) {
-					dmp.append(clazz.name.cpp_name);
-					boolean first = true;
-					for (int i=0; i < args.length; i++) {
-						if (!args[i].isReference()) continue;
-						if (first) { dmp.append('<'); first = false; }
-						else dmp.append(',');
-						dmp.append(args[i]);
-					}
-					if (!first) dmp.append('>');
-					return dmp.append('*');
-				}
-				else
-					return dmp.append(clazz.name.cpp_name).append('*');
-			}
-			else if (this == Type.tpString)
-				return dmp.append("jstring");
-			else if (this == Type.tpClass)
-				return dmp.append("jclass");
-			else if (this.signature == Constants.nameKStringSignature)
-				return dmp.append("char*");
-			else if (clazz.isEnum())
-				return dmp.append("jint");
-			else if (clazz.isArgument())
-				return dmp.append("void*");
-			else
-				return dmp.append("jobject");
-		}
-		else if (clazz.isPrimitiveEnum()) {
-			if (clazz.isExportCpp()) {
-				clazz.name.make_cpp_name();
-				return dmp.append(clazz.name.cpp_name);
-			} else {
-				return dmp.append("jint");
-			}
-		}
-		else if( this == Type.tpBoolean )	return dmp.append("jboolean");
-		else if( this == Type.tpByte )		return dmp.append("jbyte");
-		else if( this == Type.tpChar )		return dmp.append("jchar");
-		else if( this == Type.tpShort)		return dmp.append("jshort");
-		else if( this == Type.tpInt  )		return dmp.append("jint");
-		else if( this == Type.tpLong )		return dmp.append("jlong");
-		else if( this == Type.tpFloat)		return dmp.append("jfloat");
-		else if( this == Type.tpDouble)		return dmp.append("jdouble");
-		else if( this == Type.tpVoid)		return dmp.append("void");
-		else return dmp.append("void* /* unknown */");
-	}
-
-	public Dumper toCppJNI(Dumper dmp) {
-		if( isArray() ) {
-			Type arg = Type.getRealType(Kiev.argtype,args[0]);
-			if		( arg == Type.tpBoolean )	return dmp.append("jbooleanArray");
-			else if	( arg == Type.tpByte )		return dmp.append("jbyteArray");
-			else if	( arg == Type.tpChar )		return dmp.append("jcharArray");
-			else if	( arg == Type.tpShort)		return dmp.append("jshortArray");
-			else if	( arg == Type.tpInt  )		return dmp.append("jintArray");
-			else if	( arg == Type.tpLong )		return dmp.append("jlongArray");
-			else if	( arg == Type.tpFloat)		return dmp.append("jfloatArray");
-			else if	( arg == Type.tpDouble)		return dmp.append("jdoubleArray");
-			else if	( arg.isReference())		return dmp.append("jobjectArray");
-			return									   dmp.append("jarray");
-		}
-		else if (isReference()) {
-			if (this == Type.tpString)
-				return dmp.append("jstring");
-			else if (this == Type.tpClass)
-				return dmp.append("jclass");
-			else if (clazz.isEnum())
-				return dmp.append("jint");
-			else
-				return dmp.append("jobject");
-		}
-		else if (clazz.isPrimitiveEnum())	return dmp.append("jint");
-		else if( this == Type.tpBoolean )	return dmp.append("jboolean");
-		else if( this == Type.tpByte )		return dmp.append("jbyte");
-		else if( this == Type.tpChar )		return dmp.append("jchar");
-		else if( this == Type.tpShort)		return dmp.append("jshort");
-		else if( this == Type.tpInt  )		return dmp.append("jint");
-		else if( this == Type.tpLong )		return dmp.append("jlong");
-		else if( this == Type.tpFloat)		return dmp.append("jfloat");
-		else if( this == Type.tpDouble)		return dmp.append("jdouble");
-		else if( this == Type.tpVoid)		return dmp.append("void");
-		else return dmp.append("void* /* unknown */");
-	}
 }
 
 

@@ -23,8 +23,9 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/ClazzName.java,v 1.3.4.1 1999/02/15 21:45:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.4.1 $
  *
@@ -47,45 +48,25 @@ public class ClazzName implements Constants {
 	 */
 	public KString			bytecode_name;
 
-	/** Full-qualified name of class/package/interface
-		for cpp code example - ::java::lang::Object or ::kiev::Type::tMethod,
-		if namespaces for cpp enabled
-	 */
-	public KString			cpp_name;
-
 	/** Class is an argument */
 	public boolean			isArgument = false;
+	public boolean			isInner = false;
 
-	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty);
+	public static ClazzName		Empty = new ClazzName(KString.Empty,KString.Empty,KString.Empty,false,false);
 
-	public String toString() { return name.toString(); }
+	public String toString() {
+		if (isArgument || isInner)
+			return short_name.toString();
+		else
+			return name.toString();
+	}
 
-	public ClazzName(KString name, KString short_name, KString bytecode_name) {
+	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isArg, boolean isInn) {
 		this.name = name;
 		this.short_name = short_name;
 		this.bytecode_name = bytecode_name;
-	}
-
-	public void make_cpp_name() {
-		if (cpp_name != null)
-			return;
-		StringBuffer nm = new StringBuffer();
-		int i = 0;
-		if (!Kiev.gen_cpp_namespace) {
-			i = name.lastIndexOf('.');
-			if (i < 0) i = 0;
-		} else {
-			nm.append("::");
-		}
-		for (; i < name.length(); i++) {
-			byte b = name.byteAt(i);
-			if (b=='.' || b=='$') {
-				nm.append("::");
-			} else {
-				nm.append((char)b);
-			}
-		}
-		cpp_name = KString.from(nm.toString());
+		this.isArgument = isArg;
+		this.isInner = isInn;
 	}
 
 	public KString package_name() {
@@ -104,14 +85,6 @@ public class ClazzName implements Constants {
 			return KString.Empty;
 	}
 
-	public KString package_cpp_namespace_name() {
-		int i;
-		if( (i=cpp_name.lastIndexOf(':')) > 1 )
-			return cpp_name.substr(0,i-1);
-		else
-			return Constants.GlobalCppNamespace;
-	}
-
 	public KString signature() {
 		KStringBuffer ksb = new KStringBuffer(bytecode_name.len+2);
 		if( isArgument )
@@ -124,72 +97,61 @@ public class ClazzName implements Constants {
 	public static ClazzName fromSignature(KString signature) {
 		if(signature.equals(KString.Empty)) return Empty;
 		KString bytecode_name = signature.substr(1,signature.length()-1);
-		KString name = bytecode_name.replace('/','.');
-		name = replaceDollars(name);
-		int i;
-		KString short_name;
-		if( (i=name.lastIndexOf('.')) >= 0 ) {
-			short_name = name.substr(i+1);
-		} else {
-			short_name = name;
-		}
-		ClazzName clname = new ClazzName(name,short_name,bytecode_name);
-		if( signature.byteAt(0) == 'A' ) clname.isArgument = true;
-		return clname;
+		boolean isArg = (signature.byteAt(0) == (byte)'A');
+		return fromBytecodeName(bytecode_name,isArg);
 	}
 
-	public static ClazzName fromBytecodeName(KString bytecode_name) {
-		if(bytecode_name.equals(KString.Empty)) return Empty;
-		KString name = bytecode_name.replace('/','.');
-		name = replaceDollars(name);
-		int i;
-		KString short_name;
-		if( (i=name.lastIndexOf('.')) >= 0 ) {
-			short_name = name.substr(i+1);
-		} else {
-			short_name = name;
-		}
-		return new ClazzName(name,short_name,bytecode_name);
-	}
-
-	public static ClazzName fromToplevelName(KString name) {
+	public static ClazzName fromToplevelName(KString name, boolean isArg) {
 		if(name.equals(KString.Empty)) return Empty;
 		KString bytecode_name = name.replace('.','/');
-		int i;
-		KString short_name;
-		name = fixLocalName(name);
-		if( (i=name.lastIndexOf('.')) >= 0 ) {
-			short_name = name.substr(i+1);
-		} else {
-			short_name = name;
-		}
-		return new ClazzName(name,short_name,bytecode_name);
+		return fromBytecodeName(bytecode_name,isArg);
 	}
 
-	public static ClazzName fromOuterAndName(Struct outer, KString short_name) {
+	public static ClazzName fromBytecodeName(KString bytecode_name, boolean isArg) {
+		if(bytecode_name.equals(KString.Empty)) return Empty;
+		KString name = bytecode_name.replace('/','.');
+		name = fixName(name);
+		int i;
+		KString short_name;
+		boolean isInn;
+		if( (i=name.lastIndexOf('.')) >= 0 ) {
+			isInn = (bytecode_name.byteAt(i) == (byte)'$');
+			short_name = name.substr(i+1);
+		} else {
+			isInn = false;
+			short_name = name;
+		}
+		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
+	}
+
+	public static ClazzName fromOuterAndName(Struct outer, KString short_name, boolean isArg, boolean isInn) {
 		if(short_name.equals(KString.Empty)) return Empty;
+		String delim = isInn ? "$" : "/" ;
 		KString bytecode_name;
 		try {
 			if( outer.isPackage() ) {
+				assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
 				if( !outer.name.name.equals(KString.Empty) )
-					bytecode_name = KString.from(outer.name.bytecode_name+"/"+short_name);
+					bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 				else
 					bytecode_name = short_name;
 			} else {
-				bytecode_name = KString.from(outer.name.bytecode_name+"$"+short_name);
+				assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 			}
 		} catch(Exception e) {
 			Kiev.reportError(0,e);
-			bytecode_name = KString.from(outer.name.bytecode_name+"."+short_name);
+			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 		}
-		KString name = replaceDollars(bytecode_name.replace('/','.'));
-		return new ClazzName(name,short_name,bytecode_name);
+		delim = isInn ? "$" : "." ;
+		KString name = KString.from(outer.name.name+delim+short_name);
+		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
 	}
 
 	public int hashCode() { return name.hashCode(); }
 
-	public boolean equals(ClazzName nm) { return name.equals(nm.name); }
-
+	public boolean equals(ClazzName nm) { return name == nm.name; }
+/*
 	public static KString fixLocalName(KString name) {
 		int i=0;
 		boolean fix_it = false;
@@ -232,23 +194,23 @@ public class ClazzName implements Constants {
 		}
 		return sb.toKString();
 	}
-
-	public static KString replaceDollars(KString str) {
+*/
+	public static KString fixName(KString str) {
 		KString.KStringScanner sc = new KString.KStringScanner(str);
 		KStringBuffer sb = new KStringBuffer(str.len);
 		while(sc.hasMoreChars()) {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
-				if( sc.peekChar() != '$' && !Character.isDigit(sc.peekChar()) )
-					sb.append_fast((byte)'.');
-				else sb.append(ch).append(sc.nextChar());
-				continue;
+				KString tmp = str.substr(0,sc.pos-1);
+				Struct s = Env.getStruct(tmp);
+				byte b = (byte)(s==null?'$':'.');
+				sb.append_fast(b);
+			} else {
+				sb.append(ch);
 			}
-			sb.append(ch);
 		}
 		return sb.toKString();
 	}
-
 }
 
 

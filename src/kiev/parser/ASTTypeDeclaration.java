@@ -109,10 +109,12 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 					KString.from(PassInfo.clazz.name.bytecode_name
 						+"$"+PassInfo.clazz.anonymouse_inner_counter
 						+"$"+short_name);
-				KString name = kiev.vlang.ClazzName.replaceDollars(bytecode_name.replace('/','.'));
-				clname = new ClazzName(name,short_name,bytecode_name);
+				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
+				KString name = bytecode_name.replace('/','.');
+				clname = new ClazzName(name,short_name,bytecode_name,false,false);
 			} else {
-				clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name);
+				boolean isTop = (parent != null && parent instanceof ASTFileUnit);
+				clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
 			}
 		}
 
@@ -173,10 +175,12 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
         	if( !me.isPackage() ) {
 				for(int i=0; i < members.length; i++) {
 					if( members[i] instanceof ASTTypeDeclaration ) {
+						members[i].parent = this;
 						((ASTTypeDeclaration)members[i]).pass1();
 						((ASTTypeDeclaration)members[i]).me.parent = me;
 					}
 					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
+						members[i].parent = this;
 						((ASTCaseTypeDeclaration)members[i]).pass1();
 						((ASTCaseTypeDeclaration)members[i]).me.parent = me;
 					}
@@ -248,7 +252,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							ksb.append_fast(gtypes[k][l].signature.byteAt(0));
 					}
 					ksb.append_fast((byte)'_');
-					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString());
+					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
 					Struct s = Env.newStruct(cn,true);
 					s.flags = me.flags;
 					s.acc = me.acc;
@@ -280,7 +284,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 								ksb.append_fast(Type.getRealType(gtype,sc.type.args[m]).signature.byteAt(0));
 						}
 						ksb.append_fast((byte)'_');
-						cn = ClazzName.fromBytecodeName(ksb.toKString());
+						cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
 						Struct scg = Env.newStruct(cn,true);
 						scg.flags = sc.flags;
 						Type scgt = Type.getRealType(gtype,sc.type);
@@ -564,20 +568,16 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							f.setPublic(true);
 						}
 						if( !f.isAbstract() ) me.addField(f);
-						if( f.isVirtual() || f.isExportCpp() ) {
+						if( f.isVirtual() ) {
 							abstr_fields = abstr_fields.concat(f);
 						}
 						if (fdecl.init == null && fdecl.dim==0) {
-//							if( (flags & ACC_PROLOGVAR) != 0) {
-//								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-//								f.setInitWrapper(true);
-//							} else
 							if(type.clazz.isWrapper()) {
 								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
 								f.setInitWrapper(true);
 							}
 						} else {
-							if( /*(flags & ACC_PROLOGVAR) != 0 ||*/ type.clazz.isWrapper()) {
+							if( type.clazz.isWrapper()) {
 								if (fdecl.of_wrapper)
 									f.init = fdecl.init;
 								else
@@ -608,14 +608,6 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
        	    	members[i].parent = me;
 			}
 
-			// add native$this for $export_cpp classes
-			if (me.isExportCpp() && me.isClazz() && !me.isEnum() && !me.isPackage() && !me.isPizzaCase()) {
-				if (!me.super_clazz.clazz.isExportCpp()) {
-					Field this_native = new Field(me,nameThisNative,Type.tpInt,ACC_FINAL | ACC_PROTECTED);
-					this_native.setPos(me.pos);
-					me.addField(this_native);
-				}
-			}
 			foreach(Field f; abstr_fields)
 				me.addMethodsForVirtualField(f);
 			me.addAbstractFields();

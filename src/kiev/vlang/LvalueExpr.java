@@ -104,7 +104,7 @@ public class AccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			obj = (Expr)obj.resolve(null);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
 					append_fast(nameGet).append_fast(var.name.name).toKString();
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
@@ -235,7 +235,7 @@ public class AccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyWriteAccess(var);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,obj.getType());
 			} else {
@@ -278,7 +278,7 @@ public class AccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup_x);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,obj.getType());
 			} else {
@@ -349,18 +349,6 @@ public class AccessExpr extends LvalueExpr {
 		} else {
 			dmp.append(var.name);
 		}
-		return dmp;
-	}
-
-	public Dumper toCpp(Dumper dmp) {
-		if( obj.getPriority() < opAccessPriority )
-			dmp.append('(').append(obj).append(")->");
-		else
-			dmp.append(obj).append("->");
-		if( isAsField() )
-			return dmp.space().append(var.name).space();
-		else
-			dmp.append(var.name);
 		return dmp;
 	}
 }
@@ -923,15 +911,6 @@ public class VarAccessExpr extends LvalueExpr {
 			dmp.append(".val");
 		return dmp.space();
 	}
-
-	public Dumper toCpp(Dumper dmp) {
-		dmp.space();
-		dmp.append(var);
-		if( var.isNeedRefProxy() )
-			dmp.append("->val");
-		return dmp.space();
-	}
-
 }
 
 public class LocalPrologVarAccessExpr extends LvalueExpr {
@@ -1124,7 +1103,7 @@ public class FieldAccessExpr extends LvalueExpr {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
 					append_fast(nameGet).append_fast(var.name.name).toKString();
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
@@ -1252,7 +1231,7 @@ public class FieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyWriteAccess(var);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
 			} else {
@@ -1295,7 +1274,7 @@ public class FieldAccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup_x);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
 			} else {
@@ -1339,14 +1318,6 @@ public class FieldAccessExpr extends LvalueExpr {
 			return dmp.space().append("this.").append(var.name).space();
 		} else {
 			return dmp.space().append("this.").append(var).space();
-		}
-	}
-
-	public Dumper toCpp(Dumper dmp) {
-		if( isAsField() ) {
-			return dmp.space().append("this->").append(var.name).space();
-		} else {
-			return dmp.space().append("this->").append(var).space();
 		}
 	}
 }
@@ -1429,7 +1400,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual()&& !isAsField() ) {
 				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
 					append_fast(nameGet).append_fast(var.name.name).toKString();
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
@@ -1500,7 +1471,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyWriteAccess(var);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
 			} else {
@@ -1515,7 +1486,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup);
-			if( (var.isVirtual() || var.isExportCpp()) && !isAsField() ) {
+			if( var.isVirtual() && !isAsField() ) {
 				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
 				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
 			} else {
@@ -1538,26 +1509,6 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		}
 	}
 
-	public Dumper toCpp(Dumper dmp) {
-		Struct cl = (Struct)var.parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
-		cl.name.make_cpp_name();
-		KString cl_cpp_name = cl.name.cpp_name;
-		if (cl.isPrimitiveEnum()) {
-			cl.package_clazz.name.make_cpp_name();
-			cl_cpp_name = cl.package_clazz.name.cpp_name;
-		}
-		if (!Kiev.gen_cpp_namespace) {
-			cl_cpp_name = KString.Empty;
-		}
-		if( isAsField() ) {
-			return dmp.space().append(cl_cpp_name)
-				.append("::").append(var.name).space();
-		} else {
-			return dmp.space().append(cl_cpp_name)
-				.append("::").append(var).space();
-		}
-	}
 }
 
 public class OuterThisAccessExpr extends LvalueExpr {
@@ -1739,15 +1690,6 @@ public class SelfAccessExpr extends LvalueExpr {
 			expr.toJava(dmp).append(")").space();
 		} else {
 			expr.toJava(dmp).space();
-		}
-		return dmp;
-	}
-
-	public Dumper toCpp(Dumper dmp) {
-		if( expr.getPriority() < opAccessPriority ) {
-			dmp.append('(').append(expr).append(")").space();
-		} else {
-			dmp.append(expr).space();
 		}
 		return dmp;
 	}
