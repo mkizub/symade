@@ -212,6 +212,31 @@ public class Env extends Struct {
 		return cl;
 	}
 
+	public static Struct newMethodArgument(KString nm, Struct outer) {
+		// If outer is an inner class - this argument may be an argument
+		// of it's outer class
+		ClazzName name = ClazzName.fromBytecodeName(
+			new KStringBuffer(outer.name.bytecode_name.len+8)
+				.append_fast(outer.name.bytecode_name)
+				.append_fast((byte)'$')
+				.append(outer.anonymouse_inner_counter)
+				.append((byte)'$')
+				.append(nm)
+				.toKString()
+		);
+		name.isArgument = true;
+		Struct cl = classHash.get(name.name);
+		if( cl != null ) {
+			if( cl.isArgument() ) return cl;
+			throw new RuntimeException("Class "+cl+" is not a class's argument");
+		}
+		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT|ACC_RESOLVED);
+		cl.super_clazz = Type.tpObject;
+		cl.type = Type.newRefType(cl);
+		classHash.put(cl.name.name,cl);
+		return cl;
+	}
+
 	/** Default environment initialization */
 	public static  void InitializeEnv() {
 	    InitializeEnv(System.getProperty("java.class.path"));

@@ -1076,7 +1076,7 @@ void TypeBodyDeclaration()       :
 			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
 			RuleDeclaration()
 		|
-			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
+			LOOKAHEAD( ( Modifier() | Access() )* [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
@@ -2223,11 +2223,12 @@ void MethodDeclaration() :
   ASTMethodDeclaration jjtn000 = new ASTMethodDeclaration(JJTMETHODDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
+/*@egen*/ Token t; ASTType tp; }
 {/*@bgen(jjtree) MethodDeclaration */
         try {
 /*@egen*/
 	( Modifier() | Access() )*
+	[	ClazzArguments()	]
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
 		Type()
@@ -2573,7 +2574,7 @@ void Initializer() :
  * Type, name and expression syntax follows.
  */
 
-void Type() :
+ASTType Type() :
 {/*@bgen(jjtree) Type */
   ASTType jjtn000 = new ASTType(JJTTYPE);
   boolean jjtc000 = true;
@@ -2588,6 +2589,12 @@ void Type() :
 		)*
 	|	ClosureType()
 	)/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ return jjtn000; }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2896,7 +2903,7 @@ void RuleAndExpression()                        :
 }
 
 void RuleExpression()       :
-{ Token t = null; }
+{ Token t = null; int n; }
 {
 	(
 	LOOKAHEAD( {
@@ -2911,31 +2918,62 @@ void RuleExpression()       :
 	})
 	RuleIsoneofExpression()
 |
-	LOOKAHEAD("$cut")
+	LOOKAHEAD({getToken(1).kind == PCUT})
 	RuleCutExpression()
 |
-	LOOKAHEAD("{")
+	LOOKAHEAD({getToken(1).kind == LBRACE})
 	"{" RuleOrExpression() "}"
 |
-	LOOKAHEAD(3)
-	[t="while"] Expression()/*@bgen(jjtree) #RuleExpression( 1) */
-                                 {
-                                   ASTRuleExpression jjtn001 = new ASTRuleExpression(JJTRULEEXPRESSION);
-                                   boolean jjtc001 = true;
-                                   jjtree.openNodeScope(jjtn001);
-                                 }
-                                 try {
+	LOOKAHEAD({getToken(1).kind == WHILE})
+	"while" Expression()/*@bgen(jjtree) #RuleExpression( 1) */
+                             {
+                               ASTRuleExpression jjtn001 = new ASTRuleExpression(JJTRULEEXPRESSION);
+                               boolean jjtc001 = true;
+                               jjtree.openNodeScope(jjtn001);
+                             }
+                             try {
 /*@egen*//*@bgen(jjtree)*/
-                                 {
-                                   jjtree.closeNodeScope(jjtn001,  1);
-                                   jjtc001 = false;
-                                 }
-/*@egen*/ { if( t!= null ) { jjtn001.while_mode=true; t=null; } }/*@bgen(jjtree)*/
-                                 } finally {
-                                   if (jjtc001) {
-                                     jjtree.closeNodeScope(jjtn001,  1);
-                                   }
-                                 }
+                             {
+                               jjtree.closeNodeScope(jjtn001,  1);
+                               jjtc001 = false;
+                             }
+/*@egen*/ { jjtn001.while_mode=true; t=null; }/*@bgen(jjtree)*/
+                             } finally {
+                               if (jjtc001) {
+                                 jjtree.closeNodeScope(jjtn001,  1);
+                               }
+                             }
+/*@egen*/
+|
+	LOOKAHEAD(0)
+	ExpressionNT(noColonTokenSet) { n = 1; }/*@bgen(jjtree) #RuleExpression( n) */
+        {
+          ASTRuleExpression jjtn002 = new ASTRuleExpression(JJTRULEEXPRESSION);
+          boolean jjtc002 = true;
+          jjtree.openNodeScope(jjtn002);
+        }
+        try {
+/*@egen*/
+	[ ":" ExpressionNT(noColonTokenSet) {n = 2;} ]/*@bgen(jjtree)*/
+        } catch (Throwable jjte002) {
+          if (jjtc002) {
+            jjtree.clearNodeScope(jjtn002);
+            jjtc002 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte002 instanceof RuntimeException) {
+            throw (RuntimeException)jjte002;
+          }
+          if (jjte002 instanceof ParseException) {
+            throw (ParseException)jjte002;
+          }
+          throw (Error)jjte002;
+        } finally {
+          if (jjtc002) {
+            jjtree.closeNodeScope(jjtn002,  n);
+          }
+        }
 /*@egen*/
 	)
 }

@@ -36,6 +36,7 @@ import kiev.vlang.*;
 public class ASTRuleExpression extends ASTRuleNode {
 
 	public Expr		expr;
+	public Expr		bt_expr;
 	boolean			while_mode;
 
 	public ASTRuleExpression(int id) {
@@ -46,6 +47,10 @@ public class ASTRuleExpression extends ASTRuleNode {
 		if( i==0 && n instanceof Expr ) {
 			pos = n.getPos();
 			expr=(Expr)n;
+		}
+		else if( i==1 && n instanceof Expr ) {
+			pos = n.getPos();
+			bt_expr=(Expr)n;
 		} else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
@@ -53,10 +58,11 @@ public class ASTRuleExpression extends ASTRuleNode {
 
     public ASTNode resolve(Type reqType) {
     	expr = (Expr)expr.resolve(null);
+    	if (bt_expr != null) bt_expr = (Expr)bt_expr.resolve(null);
     	if (while_mode)
    			return new RuleWhileExpr(expr).resolve(null);
    		else
-    		return new RuleExpr(expr).resolve(null);
+    		return new RuleExpr(expr,bt_expr).resolve(null);
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

@@ -67,7 +67,7 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
 		// TODO: check flags for fields
 		for(int i=0; i < modifier.length; i++)
 			flags |= ((ASTModifier)modifier[i]).flag();
-		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
+		MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
     	Method m = new Method(PassInfo.clazz,name,mt,flags);
     	m.setInvariantMethod(true);
     	if( !m.isStatic() ) {

@@ -662,7 +662,7 @@ public class ClosureCallExpr extends Expr {
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = MethodType.newMethodType(t.clazz,types,t.ret);
+		t = MethodType.newMethodType(t.clazz,null,types,t.ret);
 		return t;
 	}
 

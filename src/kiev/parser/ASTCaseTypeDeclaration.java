@@ -52,7 +52,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
-	
+
   	public void set(Token t) {
 	}
 
@@ -173,7 +173,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 			case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
 			f.setPublic(true);
 		}
-		MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,targs,Type.tpVoid);
+		MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs,Type.tpVoid);
 		Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 		init.setPos(getPos());
 		init.parent = me;

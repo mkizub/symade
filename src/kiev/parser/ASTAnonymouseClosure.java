@@ -136,7 +136,7 @@ public class ASTAnonymouseClosure extends Expr {
 				ret = ((ASTType)type).pass2();
 			else
 				ret = (Type)type;
-			me.type = MethodType.newMethodType(me,types,ret);
+			me.type = MethodType.newMethodType(me,null,types,ret);
 
 			ASTNode[] members;
 			if( ret != Type.tpRule ) {

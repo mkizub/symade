@@ -56,7 +56,7 @@ public class ASTClosureType extends ASTNode {
 			tps[i] = ((ASTType)types[i]).pass2();
 		}
         Type ret = ((ASTType)types[types.length-1]).pass2();
-        return MethodType.newMethodType(Type.tpClosureClazz,tps,ret);
+        return MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
 	}
 
 	public Dumper toJava(Dumper dmp) {

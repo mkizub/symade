@@ -402,7 +402,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				}
 				if( clinit == null ) {
 					clinit = new Method(PassInfo.clazz,nameClassInit,
-						MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
+						MethodType.newMethodType(null,null,null,Type.tpVoid),ACC_STATIC);
 					clinit.pos = PassInfo.clazz.pos;
 					PassInfo.clazz.addMethod(clinit);
 					clinit.body = new BlockStat(PassInfo.clazz.pos,clinit);

@@ -288,7 +288,7 @@ public class Bytecoder implements Constants {
 		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.clazz,mtype.args,Type.tpRule);
+				mtype = MethodType.newMethodType(mtype.clazz,m.type.fargs,mtype.args,Type.tpRule);
 				m = new RuleMethod(cl,m_name,mtype,m_flags);
 			}
 			else

@@ -38,7 +38,7 @@ public class Signature {
 		this.sig = sig;
 	}
 
-	public static KString from(Struct clazz,Type[] args,Type ret) {
+	public static KString from(Struct clazz, Type[] fargs, Type[] args, Type ret) {
 		KStringBuffer ksb = new KStringBuffer();
 		if( ret != null ) {
 			// Closure or method.
@@ -47,6 +47,12 @@ public class Signature {
 				ksb.append('&'); // Closure
 				if( clazz != Type.tpClosureClazz )
 					ksb.append(clazz.name.signature());
+			}
+			if (fargs.length > 0) {
+				ksb.append('<');
+				for(int i=0; i < fargs.length; i++)
+					ksb.append(fargs[i].signature);
+				ksb.append('>');
 			}
 			ksb.append('(');
 				if(args!=null && args.length > 0) {
@@ -106,9 +112,9 @@ public class Signature {
 		return ( o instanceof Signature && ((Signature)o).sig.equals(sig) );
 	}
 
-	public Type getType() {
-		return getType(new KString.KStringScanner(sig));
-	}
+	//public Type getType() {
+	//	return getType(new KString.KStringScanner(sig));
+	//}
 
 	public static Type getType(KString.KStringScanner sc) {
 		Struct clazz;
@@ -135,8 +141,14 @@ public class Signature {
 		}
 
 		// Check if this signature is a method signature
-		if( ch == '(' || ch == '&' ) {
+		if( ch == '(' || ch == '&' || ch == '<' ) {
 			// Method signature
+			Type[] fargs = Type.emptyArray;
+			if( ch == '<' ) {
+				while( sc.hasMoreChars() && sc.peekChar() != '>' )
+					fargs = (Type[])Arrays.append(fargs,getType(sc));
+				sc.nextChar();
+			}
 			if( ch == '(' ) clazz = MethodType.tpMethodClazz;
 			else {
 				ch = sc.peekChar();
@@ -156,7 +168,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return MethodType.newMethodType(clazz,args,ret);
+			return MethodType.newMethodType(clazz,fargs,args,ret);
 		}
 
 		// Normal reference type
@@ -171,7 +183,12 @@ public class Signature {
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
 		if( isArgument ) {
-			ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1));
+			KString bcn = sc.str.substr(pos,sc.pos-1);
+			ClazzName name;
+			//if (bcn.indexOf((byte)'.') >= 0)
+				name = ClazzName.fromBytecodeName(bcn);
+			//else
+			//	name = ClazzName.fromOuterAndName(bcn);
 			name.isArgument = true;
 			clazz = Env.newArgument(name.short_name,Env.getStruct(name.package_name()));
 			clazz.setArgument(true);

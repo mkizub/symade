@@ -129,6 +129,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		Var[] vars = new Var[params.length + 1];
 		vars[0] = new Var(pos,this,namePEnv,Type.tpRule,0);
 		Type[] margs = new Type[] {Type.tpRule};
+		Type[] mfargs = Type.emptyArray;
 		for(int i=0; i < params.length; i++) {
 			ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
 			vars[i+1] = fdecl.pass3();
@@ -144,7 +145,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 //			vars[vars.length-1] = new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0);
 //			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 //		}
-		MethodType mtype = MethodType.newMethodType(null,margs,type);
+		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
 		me = new RuleMethod(clazz,name,mtype,flags | ACC_MULTIMETHOD);
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());

@@ -2,6 +2,7 @@ kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
 kiev.Kiev.profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
+kiev.Syntax kiev/Syntax kiev\Syntax.java
 kiev.bytecode.Attribute kiev/bytecode/Attribute kiev\bytecode\Attribute.java
 kiev.bytecode.AttributeHandler kiev/bytecode/AttributeHandler kiev\bytecode\BytecodeHandler.java
 kiev.bytecode.BytecodeAttributeNames kiev/bytecode/BytecodeAttributeNames kiev\bytecode\Constants.java

@@ -549,7 +549,7 @@ public class Type extends ASTNode implements AccessFlags {
 	protected Type(Struct clazz) {
 		super(0);
 		this.clazz = clazz;
-		signature = Signature.from(clazz, null, null);
+		signature = Signature.from(clazz, null, null, null);
 		java_signature = Signature.getJavaSignature(signature);
 		flags = flReference;
 		if( clazz.isArgument() ) flags |= flArgumented;
@@ -560,7 +560,7 @@ public class Type extends ASTNode implements AccessFlags {
 	protected Type(Struct clazz, Type[] args) {
 		super(0);
 		this.clazz = clazz;
-		signature = Signature.from(clazz, args, null);
+		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
 			this.args = args;
 			if( clazz.gens != null ) {
@@ -594,7 +594,7 @@ public class Type extends ASTNode implements AccessFlags {
 					}
 				}
 			}
-			java_signature = Signature.from(clazz, null, null);
+			java_signature = Signature.from(clazz, null, null, null);
 		} else {
 			args = emptyArray;
 			java_signature = signature;
@@ -614,7 +614,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 	public static Type newJavaRefType(Struct clazz) {
 		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null,null);
+		KString signature = Signature.from(clazz,null,null,null);
 		Type t = typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 			if( t.clazz == null ) t.clazz = clazz;
@@ -639,7 +639,7 @@ public class Type extends ASTNode implements AccessFlags {
 		if( clazz != null && clazz.type != null && clazz.type.args.length > 0 )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null,null);
+		KString signature = Signature.from(clazz,null,null,null);
 		Type t = typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 			if( t.clazz == null ) t.clazz = clazz;
@@ -665,7 +665,7 @@ public class Type extends ASTNode implements AccessFlags {
 				}
 			}
 		}
-		KString signature = Signature.from(clazz,args,null);
+		KString signature = Signature.from(clazz,null,args,null);
 		Type t = typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 			if( t.clazz == null ) t.clazz = clazz;
@@ -1054,11 +1054,11 @@ public class Type extends ASTNode implements AccessFlags {
 			if( clazz.instanceOf(Type.tpClosureClazz) )
 				return newJavaRefType(clazz);
 			if( args.length == 0 )
-				return MethodType.newMethodType(null,Type.emptyArray,((MethodType)this).ret.getJavaType());
+				return MethodType.newMethodType(null,null,Type.emptyArray,((MethodType)this).ret.getJavaType());
 			Type[] targs = new Type[args.length];
 			for(int i=0; i < args.length; i++)
 				targs[i] = args[i].getJavaType();
-			return MethodType.newMethodType(null,targs,((MethodType)this).ret.getJavaType());
+			return MethodType.newMethodType(null,null,targs,((MethodType)this).ret.getJavaType());
 		}
 		if (clazz.isEnum() && clazz.isPrimitiveEnum())
 			return clazz.getPrimitiveEnumType();
@@ -1155,7 +1155,7 @@ public class Type extends ASTNode implements AccessFlags {
 			if( t2.clazz == tpArray.clazz )
 				tp = newArrayType(tpargs[0]);
 			else if( t2 instanceof MethodType )
-				tp = MethodType.newMethodType(t2.clazz,tpargs,tpret);
+				tp = MethodType.newMethodType(t2.clazz,null,tpargs,tpret);
 //			else if( t2.clazz == ClosureType.tpClosureClazz )
 //				tp = ClosureType.newClosureType(tpargs,getRealType(t1,((ClosureType)t2).ret));
 			else
@@ -1287,11 +1287,13 @@ public class Type extends ASTNode implements AccessFlags {
 
 public class MethodType extends Type {
 	public Type		ret;
+	public Type[]	fargs;	// formal arguments for parametriezed methods
 
-	protected MethodType(Struct clazz, Type ret, Type[] args) {
+	private MethodType(Struct clazz, Type ret, Type[] args, Type[] fargs) {
 		super(clazz==null?tpMethodClazz:clazz,args);
 		this.ret = ret;
-		signature = Signature.from(clazz,args,ret);
+		this.fargs = fargs;
+		signature = Signature.from(clazz,fargs,args,ret);
 		if( clazz == tpMethodClazz ) {
 			KStringBuffer ksb = new KStringBuffer(64);
 			ksb.append((byte)'(');
@@ -1311,20 +1313,33 @@ public class MethodType extends Type {
 		trace(Kiev.debugCreation,"New method type created: "+this+" with signature "+signature+" / "+java_signature);
 	}
 
-	public static MethodType newMethodType(Struct clazz,Type[] args,Type ret) {
-		if( clazz==null ) clazz = tpMethodClazz;
-		KString sign = Signature.from(clazz,args,ret);
+	public static MethodType newMethodType(Struct clazz, Type[] args, Type ret) {
+		return newMethodType(clazz,null,args,ret);
+	}
+	public static MethodType newMethodType(Struct clazz, Type[] fargs, Type[] args, Type ret) {
+		if (clazz == null) clazz = tpMethodClazz;
+		if (fargs == null) fargs = Type.emptyArray;
+		KString sign = Signature.from(clazz,fargs,args,ret);
 		MethodType t = (MethodType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
 			return t.signature.equals(sign) && t.clazz.equals(clazz); });
 		if( t != null ) return t;
-		t = new MethodType(clazz,ret,args);
+		t = new MethodType(clazz,ret,args,fargs);
 		return t;
-	};
+	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 //		if( clazz.instanceOf(Type.tpClosureClazz) )
 //			str.append('&');
+		if (fargs != null && fargs.length > 0) {
+			str.append('<');
+			for(int i=0; i < fargs.length; i++) {
+				str.append(fargs[i]);
+				if( i < fargs.length-1)
+					str.append(',');
+			}
+			str.append('>');
+		}
 		str.append('(');
 		if( args != null && args.length > 0 ) {
 			for(int i=0; i < args.length; i++) {
@@ -1343,7 +1358,7 @@ public class MethodType extends Type {
 			if( !args[i].isReference() ) types[i] = args[i];
 			else types[i] = Type.tpObject;
 		}
-		return MethodType.newMethodType(clazz,types,ret);
+		return MethodType.newMethodType(clazz,fargs,types,ret);
 	}
 
 	public boolean greater(MethodType tp) {
@@ -1405,14 +1420,7 @@ public class MethodType extends Type {
 	}
 
 	public void checkJavaSignature() {
-/*		for(int i=0; i < args.length; i++)
-			if( (args[i].flags & flJavaSigOk) == 0 )
-				goto update_sig;
-		if( (ret.flags & flJavaSigOk) == 0 )
-			goto update_sig;
-		return;
-update_sig:
-*/		if( clazz == tpMethodClazz ) {
+		if( clazz == tpMethodClazz ) {
 			KStringBuffer ksb = new KStringBuffer(64);
 			ksb.append((byte)'(');
 			for(int i=0; i < args.length; i++)

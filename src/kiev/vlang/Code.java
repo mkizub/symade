@@ -1499,7 +1499,7 @@ public class Code implements Constants {
 			Type[] targs = new Type[type.args.length-dim];
 			for(int i=0; i < targs.length; i++)
 				targs[i] = type.args[dim+i];
-			type = MethodType.newMethodType(Type.tpClosureClazz,targs,((MethodType)type).ret);
+			type = MethodType.newMethodType(Type.tpClosureClazz,null,targs,((MethodType)type).ret);
 			stack_push(type);
 			break;
 		default:
@@ -1557,7 +1557,7 @@ public class Code implements Constants {
 			}
 			add_code_byte(argslen);
 			for(int i=0;i < nargs; i++) stack_pop();
-			type = MethodType.newMethodType(Type.tpClosureClazz,method.type.args,method.type.ret);
+			type = MethodType.newMethodType(Type.tpClosureClazz,null,method.type.args,method.type.ret);
 			stack_push(Type.getRealType(tp,type));
 			break;
 		default:

@@ -95,8 +95,8 @@ public class ASTAccessExpression extends Expr {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
 	retry_resolving:;
-			PVar<ASTNode> v = new PVar<ASTNode>();
-			PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
+			ASTNode@ v;
+			List<ASTNode>@ path = new List.Nil<ASTNode>();
 			if( !cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
 				if( o instanceof Expr && snitps != null ) {
 					if( snitps_index < snitps.length ) {

@@ -513,7 +513,7 @@ public class AssignExpr extends LvalueExpr {
 						i--;
 					types[i] = Type.getProxyType(var.type);
 					PassInfo.method.type = MethodType.newMethodType(
-						null,types,PassInfo.method.type.ret);
+						null,null,types,PassInfo.method.type.ret);
 					// Need to resolve initial var and mark it as RefProxy
 					KString name = var.name.name;
 					PVar<ASTNode> v = new PVar<ASTNode>();
@@ -1563,7 +1563,7 @@ public class IncrementExpr extends LvalueExpr {
 					i--;
 				types[i] = Type.getProxyType(var.type);
 				PassInfo.method.type = MethodType.newMethodType(
-					null,types,PassInfo.method.type.ret);
+					null,null,types,PassInfo.method.type.ret);
 				// Need to resolve initial var and mark it as RefProxy
 				KString name = var.name.name;
 				PVar<ASTNode> v = new PVar<ASTNode>();

@@ -353,6 +353,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node).name.equals(name)
+	;	node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
 	;	node ?= retvar, ((Var)node).name.equals(name)
 //		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this)
 	}

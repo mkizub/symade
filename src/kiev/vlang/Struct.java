@@ -811,7 +811,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		if( class_init == null ) {
 			class_init = new Method(this,nameClassInit,
-				MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
+				MethodType.newMethodType(null,null,null,Type.tpVoid),ACC_STATIC);
 			class_init.pos = pos;
 			addMethod(class_init);
 			class_init.body = new BlockStat(pos,class_init);
@@ -872,7 +872,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		if( !set_found && f.acc.writeable() ) {
 			Method set_var = new Method(this,set_name,
-				MethodType.newMethodType(null,new Type[]{f.type},Type.tpVoid),
+				MethodType.newMethodType(null,null,new Type[]{f.type},Type.tpVoid),
 				f.getJavaFlags()
 			);
 			Var self;
@@ -897,8 +897,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				);
 				if (f.isExportCpp()) {
 					Method native_set_var = new Method(this,native_set_name,
-						f.isStatic()? MethodType.newMethodType(null,new Type[]{f.type},Type.tpVoid)
-									: MethodType.newMethodType(null,new Type[]{Type.tpInt,f.type},Type.tpVoid)
+						f.isStatic()? MethodType.newMethodType(null,null,new Type[]{f.type},Type.tpVoid)
+									: MethodType.newMethodType(null,null,new Type[]{Type.tpInt,f.type},Type.tpVoid)
 						,
 						f.getJavaFlags()|ACC_FINAL);
 					native_set_var.setPrivate(true);

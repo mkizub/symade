@@ -887,7 +887,7 @@ void TypeBodyDeclaration() #void :
 			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
 			RuleDeclaration()
 		|
-			LOOKAHEAD( ( Modifier() | Access() )* [ Type() ] [ <IDENTIFIER> ] "(" )
+			LOOKAHEAD( ( Modifier() | Access() )* [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
 			MethodDeclaration()
 		|
 			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
@@ -1533,9 +1533,10 @@ void MaybeSkipBlock() #void :
 }
 
 void MethodDeclaration() :
-{ Token t; }
+{ Token t; ASTType tp; }
 {
 	( Modifier() | Access() )*
+	[	ClazzArguments()	]
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
 		Type()
@@ -1731,7 +1732,7 @@ void Initializer() :
  * Type, name and expression syntax follows.
  */
 
-void Type() :
+ASTType Type() :
 {}
 {
 	(	NonArrayType()
@@ -1740,6 +1741,7 @@ void Type() :
 		)*
 	|	ClosureType()
 	)
+	{ return jjtThis; }
 }
 
 void ClosureType() :
@@ -1838,7 +1840,7 @@ void RuleAndExpression() #RuleAndExpression(>1) :
 }
 
 void RuleExpression() #void :
-{ Token t = null; }
+{ Token t = null; int n; }
 {
 	(
 	LOOKAHEAD( {
@@ -1853,14 +1855,20 @@ void RuleExpression() #void :
 	})
 	RuleIsoneofExpression()
 |
-	LOOKAHEAD("$cut")
+	LOOKAHEAD({getToken(1).kind == PCUT})
 	RuleCutExpression()
 |
-	LOOKAHEAD("{")
+	LOOKAHEAD({getToken(1).kind == LBRACE})
 	"{" RuleOrExpression() "}"
 |
-	LOOKAHEAD(3)
-	[t="while"] Expression() { if( t!= null ) { jjtThis.while_mode=true; t=null; } } #RuleExpression(1)
+	LOOKAHEAD({getToken(1).kind == WHILE})
+	"while" Expression() { jjtThis.while_mode=true; t=null; }
+	#RuleExpression(1)
+|
+	LOOKAHEAD(0)
+	ExpressionNT(noColonTokenSet) { n = 1; }
+	[ ":" ExpressionNT(noColonTokenSet) {n = 2;} ]
+	#RuleExpression(n)
 	)
 }
 

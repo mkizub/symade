@@ -491,19 +491,19 @@ public class NewClosure extends Expr {
 	public NewClosure(int pos, Method func) {
 		super(pos);
 		this.func = func;
-		this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.args,func.type.ret);
+		this.type = MethodType.newMethodType(Type.tpClosureClazz,null,func.type.args,func.type.ret);
 	}
 
 	public NewClosure(int pos, Method func, Expr[] args) {
 		super(pos);
 		this.func = func;
 		if(args.length==0)
-			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.args,func.type.ret);
+			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,func.type.args,func.type.ret);
 		else {
 			Type[] targs = new Type[func.type.args.length-args.length];
 			for(int i=args.length, j=0; i < func.type.args.length; i++, j++)
 				targs[j] = func.type.args[i];
-			this.type = MethodType.newMethodType(Type.tpClosureClazz,targs,func.type.ret);
+			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
 		}
 		this.args = args;
 		for(int i=0; i < args.length; i++) {
@@ -547,7 +547,7 @@ public class NewClosure extends Expr {
 					Type[] targs = new Type[func.type.args.length-args.length];
 					for(int i=args.length, j=0; i < func.type.args.length; i++, j++)
 						targs[j] = func.type.args[i];
-					this.type = MethodType.newMethodType(Type.tpClosureClazz,targs,func.type.ret);
+					this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
 				}
 			} else {
 				if( Env.getStruct(Type.tpClosureClazz.name) == null )

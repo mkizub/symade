@@ -35,13 +35,14 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ASTMethodDeclaration extends ASTNode implements PreScanneable {
+public class ASTMethodDeclaration extends ASTNode implements PreScanneable, ScopeOfNames {
 	public int			dim;
     public ASTNode[]	modifier = ASTNode.emptyArray;
 	public ASTAccess	acc;
     public KString		name;
     public ASTNode[]	params = ASTNode.emptyArray;
     public ASTNode		type;
+    public ASTNode[]	ftypes = ASTNode.emptyArray;
     public ASTAlias[]	aliases = ASTAlias.emptyArray;
     public ASTNode		throwns;
     public Statement	body;
@@ -66,6 +67,9 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable {
 			if( acc != null )
 				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
 			acc = (ASTAccess)n;
+		}
+        else if( n instanceof ASTArgumentDeclaration ) {
+			ftypes = (ASTNode[])Arrays.append(ftypes,n);
 		}
         else if( n instanceof ASTType ) {
         	type = n;
@@ -103,6 +107,13 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable {
         }
     }
 
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+	{
+		ftypes instanceof Type[] && ftypes.length > 0,
+		node @= ((Type[])ftypes),
+		((Type)node).clazz.name.short_name.equals(name)
+	}
+
     public Method pass3() {
 		Struct clazz;
 		if( parent instanceof ASTTypeDeclaration )
@@ -128,48 +139,61 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable {
 			if( pbody == null ) flags |= ACC_ABSTRACT;
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
-		Type type;
-		if( this.type != null ) {
-			if( this.type instanceof ASTType )
-				type = ((ASTType)this.type).pass2();
-			else
-				type = (Type)this.type;
-		} else {
-			type = Type.tpVoid;
-			if( !name.equals(clazz.name.short_name) )
-				throw new CompilerException(pos,"Return type missed or bad constructor name "+name);
-			name = Constants.nameInit;
-		}
-		for(int i=0; i < dim; i++) type = Type.newArrayType(type);
+
+		Type[] mfargs = new Type[ftypes.length];
+		for(int i=0; i < ftypes.length; i++)
+			mfargs[i] = Env.newMethodArgument(((ASTArgumentDeclaration)ftypes[i]).name,clazz).type;
+		ftypes = mfargs;	// become scope of names
+
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
 		Var[] vars = new Var[params.length + (isVarArgs()?1:0)];
 		boolean has_dispatcher = false;
-		for(int i=0; i < params.length; i++) {
-			ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
-			vars[i] = fdecl.pass3();
-			margs = (Type[])Arrays.append(margs,fdecl.resolved_type);
-			if (fdecl.resolved_jtype != null) {
-				mjargs = (Type[])Arrays.append(mjargs,fdecl.resolved_jtype);
-				has_dispatcher = true;
+		Type type;
+
+		// push the method, because formal parameters may refer method's type args
+		PassInfo.push(this);
+		try {
+			if( this.type != null ) {
+				if( this.type instanceof ASTType )
+					type = ((ASTType)this.type).pass2();
+				else
+					type = (Type)this.type;
+			} else {
+				type = Type.tpVoid;
+				if( !name.equals(clazz.name.short_name) )
+					throw new CompilerException(pos,"Return type missed or bad constructor name "+name);
+				name = Constants.nameInit;
 			}
-			else if (fdecl.resolved_type.clazz.isPizzaCase()) {
-				mjargs = (Type[])Arrays.append(mjargs,
-					Type.getRealType(PassInfo.clazz.type,
-						fdecl.resolved_type.clazz.super_clazz));
-				has_dispatcher = true;
+			for(int i=0; i < dim; i++) type = Type.newArrayType(type);
+			for(int i=0; i < params.length; i++) {
+				ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
+				vars[i] = fdecl.pass3();
+				margs = (Type[])Arrays.append(margs,fdecl.resolved_type);
+				if (fdecl.resolved_jtype != null) {
+					mjargs = (Type[])Arrays.append(mjargs,fdecl.resolved_jtype);
+					has_dispatcher = true;
+				}
+				else if (fdecl.resolved_type.clazz.isPizzaCase()) {
+					mjargs = (Type[])Arrays.append(mjargs,
+						Type.getRealType(PassInfo.clazz.type,
+							fdecl.resolved_type.clazz.super_clazz));
+					has_dispatcher = true;
+				}
+				else if (has_dispatcher) {
+					mjargs = (Type[])Arrays.append(mjargs,margs[i]);
+				}
 			}
-			else if (has_dispatcher) {
-				mjargs = (Type[])Arrays.append(mjargs,margs[i]);
-			}
+		} finally {
+			PassInfo.pop(this);
 		}
 		if( isVarArgs() ) {
 			vars[vars.length-1] = new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0);
 			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 		}
-		MethodType mtype = MethodType.newMethodType(null,margs,type);
-		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,mjargs,type) : null;
+		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
+		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,null,mjargs,type) : null;
 		me = new Method(clazz,name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);
 		me.setPos(getPos());

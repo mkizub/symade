@@ -132,7 +132,7 @@ public class ASTNewExpression extends Expr {
 			members = ASTNode.emptyArray;
 			me.type = Type.newRefType(me,Type.emptyArray);
 			Method m = md.pass3();
-			me.type = MethodType.newMethodType(me,m.type.args,m.type.ret);
+			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
 		} else {
 			me.type = Type.newRefType(me,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
@@ -146,7 +146,7 @@ public class ASTNewExpression extends Expr {
 					targs = (Type[])Arrays.append(targs,at);
 					params = (Var[])Arrays.append(params,new Var(pos,null,KString.from("arg$"+i),at,0));
 				}
-				mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
+				mt = MethodType.newMethodType(MethodType.tpMethodClazz,null,targs,Type.tpVoid);
 				Method init = new Method(me,nameInit,mt,ACC_PUBLIC);
 				init.params = params;
 				foreach(Var v; params) v.parent = init;

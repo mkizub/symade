@@ -653,6 +653,7 @@ public class VarAccessExpr extends LvalueExpr {
 						Type[] types = (Type[])Arrays.insert(PassInfo.method.type.args,var.type,0);
 						PassInfo.method.type = MethodType.newMethodType(
 							PassInfo.method.type.clazz,
+							PassInfo.method.type.fargs,
 							types,
 							PassInfo.method.type.ret
 							);
