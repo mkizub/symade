@@ -762,7 +762,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		String s = "";
 		for(int i=0; i < vars.length; i++ )
 			s = s + "($env.$iter$"+iter_vars[i]+".hasMoreElements()"+
-				" && "+createTextVarAccess(vars[i])+".$bind_chk($env.$iter$"+iter_vars[i]+".nextElement()))"+
+				" && "+createTextVarAccess(vars[i])+".$rebind_chk($env.$iter$"+iter_vars[i]+".nextElement()))"+
 				( i < vars.length-1 ? " && " : "" );
 		return s;
 	}

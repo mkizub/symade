@@ -592,7 +592,7 @@ public class AssignExpr extends LvalueExpr {
 		try {
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			if( reqType != Type.tpVoid ) {
-				if( op != AssignOperator.Assign) {
+				if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 					lval.generateLoadDup();
 					value.generate(null);
 					Code.addInstr(op.instr);
@@ -606,7 +606,7 @@ public class AssignExpr extends LvalueExpr {
 					lval.generateStoreDupValue();
 				}
 			} else {
-				if( op != AssignOperator.Assign ) {
+				if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 					lval.generateLoadDup();
 					value.generate(null);
 					Code.addInstr(op.instr);
@@ -633,7 +633,8 @@ public class AssignExpr extends LvalueExpr {
 				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
 			else
 				value.generate(null);
-			if( op != AssignOperator.Assign ) Code.addInstr(op.instr);
+			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+				Code.addInstr(op.instr);
 			lval.generateStoreDupValue();
 		} finally { PassInfo.pop(this); }
 	}
@@ -665,7 +666,8 @@ public class AssignExpr extends LvalueExpr {
 				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
 			else
 				value.generate(null);
-			if( op != AssignOperator.Assign ) Code.addInstr(op.instr);
+			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+				Code.addInstr(op.instr);
 			lval.generateStore();
 		} finally { PassInfo.pop(this); }
 	}
@@ -680,7 +682,8 @@ public class AssignExpr extends LvalueExpr {
 				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
 			else
 				value.generate(null);
-			if( op != AssignOperator.Assign ) Code.addInstr(op.instr);
+			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+				Code.addInstr(op.instr);
 			lval.generateStoreDupValue();
 		} finally { PassInfo.pop(this); }
 	}

@@ -321,43 +321,37 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		Boolean@ resolved;
 	{
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
-		resolved = Boolean.FALSE,
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Struct: resolving in "+this),
 			resolveNameR_1(node,info,name,tp,resfl),	// resolve in this class
-			resolved = Boolean.TRUE
-		;	!resolved.booleanValue(),
-			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
+			$cut
+		;	trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
 			(resfl & ResolveFlags.NoImports) == 0,
 			resolveNameR_2(node,info,name,tp,resfl),	// resolve in imports
-			resolved = Boolean.TRUE
-		;	!resolved.booleanValue(),
-			this.name.short_name.equals(nameIdefault),
+			$cut
+		;	this.name.short_name.equals(nameIdefault),
 			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
 			package_clazz.resolveNameR(node,info,name,tp,resfl),
-			resolved = Boolean.TRUE
-		;	!resolved.booleanValue(),
-			(resfl & ResolveFlags.NoSuper) == 0,
+			$cut
+		;	(resfl & ResolveFlags.NoSuper) == 0,
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
 			resolveNameR_3(node,info,name,tp,resfl),	// resolve in super-classes
-			resolved = Boolean.TRUE
-		;	!resolved.booleanValue(),
-			(resfl & ResolveFlags.NoForwards) == 0,
+			$cut
+		;	(resfl & ResolveFlags.NoForwards) == 0,
 			trace(Kiev.debugResolve,"Struct: resolving in forwards of "+this),
 			resolveNameR_4(node,info,name,tp,resfl),	// resolve in forwards
-			resolved = Boolean.TRUE
-		;	!resolved.booleanValue(),
-			this.isPackage(),
+			$cut
+		;	this.isPackage(),
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
-			tryLoad(node,name,resfl)
-		;	!resolved.booleanValue(),
-			!this.isPackage(),
+			tryLoad(node,name,resfl),
+			$cut
+		;	!this.isPackage(),
 			trace(Kiev.debugResolve,"Struct: trying abstract fields of "+this),
-			tryAbstractField(node,name,resfl)
+			tryAbstractField(node,name,resfl),
+			$cut
 		}
 	}
 	rule public resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
