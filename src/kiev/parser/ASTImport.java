@@ -68,7 +68,7 @@ public class ASTImport extends ASTNode {
 				throw new CompilerException(pos,"Identifier "+name+" is not a class or package");
 			else if (mode == IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
 				throw new CompilerException(pos,"Identifier "+name+" is not a package");
-			else if (mode == IMPORT_STATIC && !(n instanceof Field))
+			else if (mode == IMPORT_STATIC && !(star || (n instanceof Field)))
 				throw new CompilerException(pos,"Identifier "+name+" is not a field");
 			return new Import(pos,PassInfo.file_unit,n,mode,star);
 		} else {
