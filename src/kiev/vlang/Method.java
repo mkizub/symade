@@ -298,7 +298,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		int offset = 0;
 		if( !isStatic() ) offset++;
 		for(int i=offset; i < params.length; i++) {
-			params[i].toJavaDecl(dmp,jtype.args[i-offset]);
+			params[i].toJavaDecl(dmp,type.args[i-offset]);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();

@@ -228,10 +228,19 @@ public class BlockStat extends Statement implements ScopeOfNames {
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						Statement vstat;
-						if( vdecl.init != null )
+						if( vdecl.init != null ) {
+							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
+							else
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),
+									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
+						}
+						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
-								,vdecl.init);
-						else if( (flags & ACC_PROLOGVAR) != 0 )
+								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
+						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else

@@ -135,6 +135,8 @@ public class Env extends Struct {
 				cl.interfaces = Type.emptyArray;
 				cl.sub_clazz = Struct.emptyArray;
 				cl.fields = Field.emptyArray;
+				cl.virtual_fields = Field.emptyArray;
+				cl.wrapped_field = null;
 				if( cl.methods != null ) {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
@@ -369,6 +371,7 @@ public class Env extends Struct {
 			cl = loadClazz(name);
 		}
 		if( cl == null ) {
+//			cl = loadClazz(name);
 			classHashOfFails.put(name.name);
 //			throw new RuntimeException("Class "+name+" not found");
 		}
@@ -390,11 +393,11 @@ public class Env extends Struct {
 			Struct cl = classHash.get(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
-				Struct pkg = getStruct(ClazzName.fromToplevelName(name.package_name()));
+				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				if( pkg == null ) {
-					pkg = getStruct(ClazzName.fromToplevelName(name.package_name()));
+					pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 					if( pkg == null )
-						pkg = newPackage(ClazzName.fromToplevelName(name.package_name()));
+						pkg = newPackage(ClazzName.fromBytecodeName(name.package_bytecode_name()));
 				}
 				if( !pkg.isResolved() ) {
 					pkg = getStruct(pkg.name);

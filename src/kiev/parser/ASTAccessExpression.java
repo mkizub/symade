@@ -36,6 +36,7 @@ import kiev.vlang.*;
 public class ASTAccessExpression extends Expr {
 	public Expr		obj;
 	public KString	name;
+	public boolean  in_wrapper;
 
 	public ASTAccessExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
@@ -70,6 +71,14 @@ public class ASTAccessExpression extends Expr {
 				obj = (Expr)o;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
+				if (in_wrapper) {
+					if (!tp.clazz.isWrapper())
+						throw new CompilerException(obj.getPos(),"Class "+tp+" is not a wrapper");
+				}
+				else if (tp.clazz.isWrapper() && name.byteAt(0) != '$') {
+					obj = (Expr)new AccessExpr(obj.pos,obj,tp.clazz.wrapped_field).resolve(null);
+					tp = obj.getType();
+				}
 				if( tp.isArray() ) {
 					if( name.equals("length") ) {
 						return new ArrayLengthAccessExpr(pos,(Expr)o).resolve(reqType);
@@ -88,7 +97,7 @@ public class ASTAccessExpression extends Expr {
 	retry_resolving:;
 			PVar<ASTNode> v = new PVar<ASTNode>();
 			PVar<List<ASTNode>> path = new PVar<List<ASTNode>>(List.Nil);
-			if( !cl.resolveNameR(v,path,name,tp,0) ) {
+			if( !cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
 				if( o instanceof Expr && snitps != null ) {
 					if( snitps_index < snitps.length ) {
 						tp = snitps[snitps_index++];

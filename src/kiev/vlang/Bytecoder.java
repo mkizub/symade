@@ -125,17 +125,36 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
 		for(int i=0; i < attrs.length; i++) {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
-			if( at != null ) cl.addAttr(at);
+			if( at != null ) {
+				cl.addAttr(at);
+				if( at.name.equals(attrFlags) ) {
+					int flags = ((FlagsAttr)at).flags;
+					if ((flags & 1) == 1) {
+						if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+						cl.setWrapper(true);
+					}
+				}
+			}
 		}
 		if( kaclazz != null ) {
 			attrs = kaclazz.attrs;
 			for(int i=0; i < attrs.length; i++) {
 				Attr at = readAttr(kaclazz.attrs[i],kaclazz);
-				if( at != null ) cl.addAttr(at);
+				if( at != null ) {
+					cl.addAttr(at);
+					if( at.name.equals(attrFlags) ) {
+						int flags = ((FlagsAttr)at).flags;
+						if ((flags & 1) == 1) {
+							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+							cl.setWrapper(true);
+						}
+					}
+				}
 			}
 		}
 
 		cl.addAbstractFields();
+		cl.setupWrappedField();
 		return cl;
 	}
 
@@ -524,9 +543,24 @@ public class Bytecoder implements Constants {
 					}
 					if( ica.cp_inners[i] != 0 ) {
 						cn = ClazzName.fromBytecodeName(ica.getInnerName(i,clazz));
-						inner[i] = Env.getStruct(cn);
-						if( inner[i] == null )
-							throw new RuntimeException("Class "+cn+" not found");
+						// load only non-anonymouse classes
+						boolean anon = false;
+						for (int i=0; i < cn.bytecode_name.len; i++) {
+							i = cn.bytecode_name.indexOf((byte)'$',i);
+							if (i < 0) break;
+							char ch = cn.bytecode_name.byteAt(i+1);
+							if (ch >= '0' && ch <= '9') {
+								anon = true;
+								break;
+							}
+						}
+						if (anon) {
+							inner[i] == null;
+						} else {
+							inner[i] = Env.getStruct(cn);
+							if( inner[i] == null )
+								throw new RuntimeException("Class "+cn+" not found");
+						}
 					} else {
 						inner[i] = null;
 					}

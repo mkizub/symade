@@ -88,6 +88,9 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	/** Array of fields defined in this structure */
 	public Field[]			virtual_fields = Field.emptyArray;
 
+	/** The field this structure is wrapper of */
+	public Field			wrapped_field = null;
+
 	/** Array of methods defined in this structure */
 	public Method[]			methods = Method.emptyArray;
 
@@ -935,6 +938,39 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		else if( get_found && !f.acc.readable() ) {
 			Kiev.reportError(f.pos,"Virtual get$ method for non-readable field");
 		}
+	}
+
+	public void setupWrappedField() {
+		if (!isWrapper()) {
+			wrapped_field = null;
+			return;
+		}
+		if (wrapped_field != null)
+			return;
+		if (super_clazz != null) {
+			super_clazz.clazz.setupWrappedField();
+			if(super_clazz.clazz.wrapped_field != null) {
+				wrapped_field = super_clazz.clazz.wrapped_field;
+				return;
+			}
+		}
+		Field wf = null;
+		foreach(Field f; fields; f.isForward()) {
+			if (wf == null)
+				wf = f;
+			else
+				throw new CompilerException(f.pos,"Wrapper class with multiple forward fields");
+		}
+		foreach(Field f; virtual_fields; f.isForward()) {
+			if (wf == null)
+				wf = f;
+			else
+				throw new CompilerException(f.pos,"Wrapper class with multiple forward fields");
+		}
+		if ( wf == null )
+			throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
+		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
+		wrapped_field = wf;
 	}
 
 	public void addAbstractFields() {
@@ -3212,6 +3248,13 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						i--;
 					}
 				}
+			}
+
+			{
+				int flags = 0;
+				if( jthis.isWrapper() ) flags |= 1;
+
+				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
 			}
 
 			for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();

@@ -1,0 +1,1 @@
+c:\jdk1.3\bin\java -classpath classes -verify kiev.Main -classpath classes2 -d classes2 -verify -p k2.prj -g %1 %2 %3 %4 %5 %6 %7 %8 %9

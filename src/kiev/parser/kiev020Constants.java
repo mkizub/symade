@@ -115,41 +115,42 @@ public interface kiev020Constants {
   int GT = 128;
   int GT1 = 129;
   int ASSIGN = 130;
-  int BANG = 131;
-  int TILDE = 132;
-  int EQ = 133;
-  int LE = 134;
-  int GE = 135;
-  int NE = 136;
-  int SC_OR = 137;
-  int SC_AND = 138;
-  int INCR = 139;
-  int DECR = 140;
-  int PLUS = 141;
-  int MINUS = 142;
-  int STAR = 143;
-  int SLASH = 144;
-  int BIT_AND = 145;
-  int BIT_OR = 146;
-  int XOR = 147;
-  int REM = 148;
-  int LSHIFT = 149;
-  int PLUSASSIGN = 150;
-  int MINUSASSIGN = 151;
-  int STARASSIGN = 152;
-  int SLASHASSIGN = 153;
-  int ANDASSIGN = 154;
-  int ORASSIGN = 155;
-  int XORASSIGN = 156;
-  int REMASSIGN = 157;
-  int LSHIFTASSIGN = 158;
-  int RSIGNEDSHIFTASSIGN = 159;
-  int RUNSIGNEDSHIFTASSIGN = 160;
-  int IS_THE = 161;
-  int IS_ONE_OF = 162;
-  int OPERATOR_AT = 163;
-  int OPERATOR_SHARP = 164;
-  int OPERATOR = 165;
+  int ASSIGN2 = 131;
+  int BANG = 132;
+  int TILDE = 133;
+  int EQ = 134;
+  int LE = 135;
+  int GE = 136;
+  int NE = 137;
+  int SC_OR = 138;
+  int SC_AND = 139;
+  int INCR = 140;
+  int DECR = 141;
+  int PLUS = 142;
+  int MINUS = 143;
+  int STAR = 144;
+  int SLASH = 145;
+  int BIT_AND = 146;
+  int BIT_OR = 147;
+  int XOR = 148;
+  int REM = 149;
+  int LSHIFT = 150;
+  int PLUSASSIGN = 151;
+  int MINUSASSIGN = 152;
+  int STARASSIGN = 153;
+  int SLASHASSIGN = 154;
+  int ANDASSIGN = 155;
+  int ORASSIGN = 156;
+  int XORASSIGN = 157;
+  int REMASSIGN = 158;
+  int LSHIFTASSIGN = 159;
+  int RSIGNEDSHIFTASSIGN = 160;
+  int RUNSIGNEDSHIFTASSIGN = 161;
+  int IS_THE = 162;
+  int IS_ONE_OF = 163;
+  int OPERATOR_AT = 164;
+  int OPERATOR_SHARP = 165;
+  int OPERATOR = 166;
 
   int DEFAULT = 0;
   int IN_CONSTRAINT = 1;
@@ -290,6 +291,7 @@ public interface kiev020Constants {
     "\">\"",
     "\">*/\"",
     "\"=\"",
+    "\":=\"",
     "\"!\"",
     "\"~\"",
     "\"==\"",

@@ -117,6 +117,7 @@ public class kiev020 {
 	private static boolean operatorLA() {
 		switch( getToken(1).kind ) {
 		case ASSIGN:
+		case ASSIGN2:
 		case LT:
 		case GT:
 		case COLON:
@@ -613,6 +614,7 @@ TOKEN : /* Special Operators */
 TOKEN : /* OPERATORS */
 {
   < ASSIGN: "=" >
+| < ASSIGN2: ":=" >
 //| < GT: ">" >
 //| < LT: "<" >
 | < BANG: "!" >
@@ -1295,7 +1297,7 @@ void VarDecl() :
 {
 	Identifier()
 	( "[" "]" { jjtThis.dim++; } )*
-	[ "=" VariableInitializer() ]
+	[ ("=" | ":=" { jjtThis.of_wrapper=true; }) VariableInitializer() ]
 }
 
 void VariableInitializer() #void :
@@ -1759,6 +1761,7 @@ void Operator() :
 	(
 		(
 			t=<ASSIGN>
+		|	t=<ASSIGN2>
 		|	t=<LT>
 		|	t=<GT>
 		|	t=<COLON>
@@ -1805,6 +1808,7 @@ void Operator() :
 			LOOKAHEAD({ !Kiev.javaMode && operatorLA() && checkNoSpace(getToken(0),getToken(1)) })
 			(
 				t=<ASSIGN>
+			|	t=<ASSIGN2>
 			|	t=<LT>
 			|	t=<GT>
 			|	t=<COLON>
@@ -1965,7 +1969,7 @@ void AccessExpression() #void :
 		ReparseExpression()
 	|
 		"(" ExpressionNT(null) ")"
-	|
+	|   LOOKAHEAD("fun" "(")
 		AnonymouseClosure()
 	)
 	(
@@ -1973,8 +1977,16 @@ void AccessExpression() #void :
 		"." CallExpression()	#CallAccessExpression(2)
 	|
 		LOOKAHEAD(3)
+		"->" CallExpression()
+		{ jjtThis.in_wrapper=true; }	#CallAccessExpression(2)
+	|
+		LOOKAHEAD(3)
 		t="." Identifier()
         { jjtThis.setPos(t.getPos()); }	#AccessExpression(2)
+	|
+		LOOKAHEAD(3)
+		t="->" Identifier()
+        { jjtThis.setPos(t.getPos()); jjtThis.in_wrapper=true; }	#AccessExpression(2)
 	|	LOOKAHEAD(2)
 		t="[" ExpressionNT(null) "]"
         { jjtThis.setPos(t.getPos()); }	#ArrayElementAccessExpression(2)
@@ -2321,7 +2333,7 @@ void BlockStatement() #void :
 { boolean old_declMode; }
 {
 	(
-		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 		VarDecls() //#DeclStatement
 	|	LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
 		{ old_declMode = declMode; declMode = false; }
@@ -2488,7 +2500,7 @@ void ForInit() #void:
 {}
 {
 	(
-	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 	VarDecls()
 |	CommaExpression() ";"
 |	EmptyStatement()

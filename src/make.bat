@@ -1,0 +1,1 @@
+c:\jdk1.3\bin\java -classpath ..\..\trunk\src\classes -verify kiev.Main -classpath classes -verify -g -p k2.prj -no-warn %1 %2 %3 %4 %5 %6 %7 %8 %9

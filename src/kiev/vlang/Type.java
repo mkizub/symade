@@ -530,6 +530,7 @@ public class Type extends ASTNode implements AccessFlags {
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
+		tpRefProxyClazz.setWrapper(true);
 		Struct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
 		Type tpRefProxyArg = new Type(tpRefProxyArgClazz);
 		tpRefProxy	= new Type(tpRefProxyClazz,new Type[]{tpRefProxyArg});
@@ -857,6 +858,10 @@ public class Type extends ASTNode implements AccessFlags {
 				return this.args[0].isAutoCastableTo(t.args[0]);
 			else if( this.clazz.instanceOf(tpPrologVar.clazz) && args[0].isAutoCastableTo(t) ) return true;
 			else if( t.clazz.instanceOf(tpPrologVar.clazz) && this.isAutoCastableTo(t.args[0]) ) return true;
+			return false;
+		}
+		if( this.clazz.isWrapper() ) {
+			if( Type.getRealType(this,this.clazz.wrapped_field.type).isAutoCastableTo(t) ) return true;
 			return false;
 		}
 		if( this instanceof MethodType

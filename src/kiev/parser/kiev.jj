@@ -119,6 +119,7 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 	private static boolean operatorLA() {
 		switch( getToken(1).kind ) {
 		case ASSIGN:
+		case ASSIGN2:
 		case LT:
 		case GT:
 		case COLON:
@@ -615,6 +616,7 @@ TOKEN : /* Special Operators */
 TOKEN : /* OPERATORS */
 {
   < ASSIGN: "=" >
+| < ASSIGN2: ":=" >
 //| < GT: ">" >
 //| < LT: "<" >
 | < BANG: "!" >
@@ -1775,7 +1777,7 @@ void VarDecl() :
 /*@egen*/
 	Identifier()
 	( "[" "]" { jjtn000.dim++; } )*
-	[ "=" VariableInitializer() ]/*@bgen(jjtree)*/
+	[ ("=" | ":=" { jjtn000.of_wrapper=true; }) VariableInitializer() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2895,6 +2897,7 @@ void Operator() :
 	(
 		(
 			t=<ASSIGN>
+		|	t=<ASSIGN2>
 		|	t=<LT>
 		|	t=<GT>
 		|	t=<COLON>
@@ -2941,6 +2944,7 @@ void Operator() :
 			LOOKAHEAD({ !Kiev.javaMode && operatorLA() && checkNoSpace(getToken(0),getToken(1)) })
 			(
 				t=<ASSIGN>
+			|	t=<ASSIGN2>
 			|	t=<LT>
 			|	t=<GT>
 			|	t=<COLON>
@@ -3215,7 +3219,7 @@ void AccessExpression()       :
 		ReparseExpression()
 	|
 		"(" ExpressionNT(null) ")"
-	|
+	|   LOOKAHEAD("fun" "(")
 		AnonymouseClosure()
 	)
 	(
@@ -3250,30 +3254,31 @@ void AccessExpression()       :
 /*@egen*/
 	|
 		LOOKAHEAD(3)
+		"->" CallExpression()/*@bgen(jjtree) #CallAccessExpression( 2) */
+                {
+                  ASTCallAccessExpression jjtn003 = new ASTCallAccessExpression(JJTCALLACCESSEXPRESSION);
+                  boolean jjtc003 = true;
+                  jjtree.openNodeScope(jjtn003);
+                }
+                try {
+/*@egen*//*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn003,  2);
+                  jjtc003 = false;
+                }
+/*@egen*/
+		{ jjtn003.in_wrapper=true; }/*@bgen(jjtree)*/
+                } finally {
+                  if (jjtc003) {
+                    jjtree.closeNodeScope(jjtn003,  2);
+                  }
+                }
+/*@egen*/
+	|
+		LOOKAHEAD(3)
 		t="." Identifier()/*@bgen(jjtree) #AccessExpression( 2) */
         {
-          ASTAccessExpression jjtn003 = new ASTAccessExpression(JJTACCESSEXPRESSION);
-          boolean jjtc003 = true;
-          jjtree.openNodeScope(jjtn003);
-        }
-        try {
-/*@egen*//*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn003,  2);
-          jjtc003 = false;
-        }
-/*@egen*/
-        { jjtn003.setPos(t.getPos()); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc003) {
-            jjtree.closeNodeScope(jjtn003,  2);
-          }
-        }
-/*@egen*/
-	|	LOOKAHEAD(2)
-		t="[" ExpressionNT(null) "]"/*@bgen(jjtree) #ArrayElementAccessExpression( 2) */
-        {
-          ASTArrayElementAccessExpression jjtn004 = new ASTArrayElementAccessExpression(JJTARRAYELEMENTACCESSEXPRESSION);
+          ASTAccessExpression jjtn004 = new ASTAccessExpression(JJTACCESSEXPRESSION);
           boolean jjtc004 = true;
           jjtree.openNodeScope(jjtn004);
         }
@@ -3292,33 +3297,76 @@ void AccessExpression()       :
         }
 /*@egen*/
 	|
+		LOOKAHEAD(3)
+		t="->" Identifier()/*@bgen(jjtree) #AccessExpression( 2) */
+        {
+          ASTAccessExpression jjtn005 = new ASTAccessExpression(JJTACCESSEXPRESSION);
+          boolean jjtc005 = true;
+          jjtree.openNodeScope(jjtn005);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn005,  2);
+          jjtc005 = false;
+        }
+/*@egen*/
+        { jjtn005.setPos(t.getPos()); jjtn005.in_wrapper=true; }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc005) {
+            jjtree.closeNodeScope(jjtn005,  2);
+          }
+        }
+/*@egen*/
+	|	LOOKAHEAD(2)
+		t="[" ExpressionNT(null) "]"/*@bgen(jjtree) #ArrayElementAccessExpression( 2) */
+        {
+          ASTArrayElementAccessExpression jjtn006 = new ASTArrayElementAccessExpression(JJTARRAYELEMENTACCESSEXPRESSION);
+          boolean jjtc006 = true;
+          jjtree.openNodeScope(jjtn006);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn006,  2);
+          jjtc006 = false;
+        }
+/*@egen*/
+        { jjtn006.setPos(t.getPos()); }/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc006) {
+            jjtree.closeNodeScope(jjtn006,  2);
+          }
+        }
+/*@egen*/
+	|
 		LOOKAHEAD("." "new" QName() ( "(" | "<" | "/*<") )
 		"."/*@bgen(jjtree) #NewAccessExpression( 2) */
                 {
-                  ASTNewAccessExpression jjtn005 = new ASTNewAccessExpression(JJTNEWACCESSEXPRESSION);
-                  boolean jjtc005 = true;
-                  jjtree.openNodeScope(jjtn005);
+                  ASTNewAccessExpression jjtn007 = new ASTNewAccessExpression(JJTNEWACCESSEXPRESSION);
+                  boolean jjtc007 = true;
+                  jjtree.openNodeScope(jjtn007);
                 }
                 try {
 /*@egen*/
 		NewExpression()/*@bgen(jjtree)*/
-                } catch (Throwable jjte005) {
-                  if (jjtc005) {
-                    jjtree.clearNodeScope(jjtn005);
-                    jjtc005 = false;
+                } catch (Throwable jjte007) {
+                  if (jjtc007) {
+                    jjtree.clearNodeScope(jjtn007);
+                    jjtc007 = false;
                   } else {
                     jjtree.popNode();
                   }
-                  if (jjte005 instanceof RuntimeException) {
-                    throw (RuntimeException)jjte005;
+                  if (jjte007 instanceof RuntimeException) {
+                    throw (RuntimeException)jjte007;
                   }
-                  if (jjte005 instanceof ParseException) {
-                    throw (ParseException)jjte005;
+                  if (jjte007 instanceof ParseException) {
+                    throw (ParseException)jjte007;
                   }
-                  throw (Error)jjte005;
+                  throw (Error)jjte007;
                 } finally {
-                  if (jjtc005) {
-                    jjtree.closeNodeScope(jjtn005,  2);
+                  if (jjtc007) {
+                    jjtree.closeNodeScope(jjtn007,  2);
                   }
                 }
 /*@egen*/
@@ -4008,7 +4056,7 @@ void BlockStatement()       :
 { boolean old_declMode; }
 {
 	(
-		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 		VarDecls() //#DeclStatement
 	|	LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
 		{ old_declMode = declMode; declMode = false; }
@@ -4452,7 +4500,7 @@ void ForInit()      :
 {}
 {
 	(
-	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | "," | ";") )
+	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
 	VarDecls()
 |	CommaExpression() ";"
 |	EmptyStatement()

@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,7 +17,7 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.bytecode;
 
 /**
@@ -29,11 +29,11 @@ package kiev.bytecode;
 
 public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	import kiev.stdlib.Debug;
-	
+
 	public static boolean	traceRead = false;
 	public static boolean	traceWrite = false;
 	public static boolean	traceRules = false;
-	
+
 	public PoolConstant[]	pool;
 	public int				flags;
 	public int				cp_clazz;
@@ -42,23 +42,23 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public Field[]			fields;
 	public Method[]			methods;
 	public Attribute[]		attrs;
-	
+
 	public KString getClazzName() {
 		return ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_clazz]).ref]).value;
 	}
-	
+
 	public KString getSuperClazzName() {
 		if( cp_super_clazz == 0 ) return null;
 		return ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_super_clazz]).ref]).value;
 	}
-	
+
 	public KString[] getInterfaceNames() {
 		KString[] names = new KString[cp_interfaces.length];
 		for(int i=0; i < names.length; i++)
 			names[i] = ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_interfaces[i]]).ref]).value;
 		return names;
 	}
-	
+
 	public void readClazz(byte[] data) {
 		assert(data != null && data.length > 8 ,"Null bytecode");
 		ReadContext cont = new ReadContext();
@@ -187,6 +187,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		writeConstantPool(cont);
 
 		assert(cont.data.length-cont.offset > 8, "Write into too small buffer");
+		trace(traceWrite,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
 		cont.writeShort(flags);
 		assert(cp_clazz > 0 && cp_clazz < pool.length ,"Class name index "+cp_clazz+" out of range");
 		assert(pool[cp_clazz].constant_type == CONSTANT_CLASS ,"Class name index "+cp_clazz+" does not points to CONSTANT_CLASS");
@@ -250,12 +251,12 @@ public class ReadContext {
 	public Clazz			clazz;
 	public byte[]			data;
 	public int				offset;
-	
+
 	public void read(byte[] b) {
 		System.arraycopy(data,offset,b,0,b.length);
 		offset += b.length;
 	}
-	
+
 	public byte readByte() {
 		return data[offset++];
 	}
@@ -289,16 +290,16 @@ public class ReadContext {
 	}
 
 
-	public void write(byte[] b, int start, int end) {	
+	public void write(byte[] b, int start, int end) {
 		System.arraycopy(b,start,data,offset,end-start);
 		offset += end - start;
 	}
-	
-	public void write(byte[] b) {	
+
+	public void write(byte[] b) {
 		System.arraycopy(b,0,data,offset,b.length);
 		offset += b.length;
 	}
-	
+
 	public void writeByte(int i) {
 		data[offset++] = (byte)i;
 	}

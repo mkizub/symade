@@ -542,6 +542,7 @@ public class AssignOperator extends Operator {
 
 	// Assign (binary) operators
 	public static final AssignOperator Assign;
+	public static final AssignOperator Assign2;
 	public static final AssignOperator AssignBitOr;
 	public static final AssignOperator AssignBitXor;
 	public static final AssignOperator AssignBitAnd;
@@ -558,6 +559,9 @@ public class AssignOperator extends Operator {
 		Assign = newAssignOperator(KString.from("="), KString.from("opAssign"),null);
 			iopt=new OpTypes();
 			Assign.addTypes(otSame(1),otTheAny(),otSame(1));
+		Assign2 = newAssignOperator(KString.from(":="), KString.from("opAssign"),null);
+			iopt=new OpTypes();
+			Assign2.addTypes(otSame(1),otTheAny(),otSame(1));
 
 		AssignBitOr = newAssignOperator(KString.from("|="), KString.from("opAssignBitOr"), Instr.op_or);
 			iopt=new OpTypes();

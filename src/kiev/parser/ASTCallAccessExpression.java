@@ -37,6 +37,7 @@ public class ASTCallAccessExpression extends Expr {
 	public Expr		obj;
 	public KString	func;
     public Expr[]	args = Expr.emptyArray;
+	public boolean  in_wrapper;
 
 	public ASTCallAccessExpression(int id) {
 		super(0);
@@ -127,6 +128,14 @@ public class ASTCallAccessExpression extends Expr {
 				int snitps_index = 0;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
+				if (in_wrapper) {
+					if (!tp.clazz.isWrapper())
+						throw new CompilerException(o.getPos(),"Class "+tp+" is not a wrapper");
+				}
+				else if (tp.clazz.isWrapper() && func.byteAt(0) != '$') {
+					o = (Expr)new AccessExpr(o.pos,(Expr)o,tp.clazz.wrapped_field).resolve(null);
+					tp = o.getType();
+				}
 				if( reqType instanceof MethodType ) ret = null;
 				if( tp.isReference() ) {
 			retry_resolving:

@@ -121,6 +121,7 @@ public abstract class ASTNode implements Constants {
     }
 
 	public int setFlags(int fl) {
+		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
 		flags = fl;
 		if( this instanceof Struct ) {
 			Struct self = (Struct)this;

@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,7 +19,7 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
@@ -37,11 +37,12 @@ public class ASTVarDecl extends ASTNode {
 	public int		dim;
     public KString	name;
     public Expr		init;
-    
+    public boolean	of_wrapper;
+
 	ASTVarDecl(int id) {
 		super(0);
 	}
-    
+
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=((ASTIdentifier)n).name; pos=n.getPos(); break;
@@ -53,7 +54,7 @@ public class ASTVarDecl extends ASTNode {
 	public ASTNode resolve(Type reqType) {
 		return null;
 	}
-    
+
     public Dumper toJava(Dumper dmp) {
     	dmp.append(name);
         for(int i=0; i < dim; i++) dmp.append("[]");
