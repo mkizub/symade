@@ -101,10 +101,10 @@ public class ASTExpression extends Expr {
 	 *  @param rest		- output rest of list (uprased yet part)
 	 */
 
-	public rule resolveExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
-		pvar List<ASTNode>	expr1;
+	public rule resolveExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
+		List<ASTNode>@	expr1;
 	{
 		trace( Kiev.debugOperators, "resolving "+expr+" with priority "+priority),
 		expr.length() > 1,
@@ -146,10 +146,10 @@ public class ASTExpression extends Expr {
 		throw new CompilerException(pos,msg);
 	}
 
-	rule resolveCastExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveCastExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		Constants.opCastPriority >= priority,
 		expr.length() > 1,
@@ -162,10 +162,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolvePrefixExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolvePrefixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -185,10 +185,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolvePostfixExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolvePostfixExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -208,10 +208,10 @@ public class ASTExpression extends Expr {
 		rest.$var = expr.tail().tail()
 	}
 
-	rule resolveBinaryExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveBinaryExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -243,10 +243,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveAssignExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveAssignExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		ASTNode@		result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -268,10 +268,10 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveMultiExpr(pvar ASTNode result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, int priority, boolean may_be_resolved)
-		pvar Operator		op;
-		pvar List<ASTNode>	result1;
-		pvar List<ASTNode>	rest1;
+	rule resolveMultiExpr(ASTNode@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, int priority, boolean may_be_resolved)
+		Operator@		op;
+		List<ASTNode>@	result1;
+		List<ASTNode>@	rest1;
 	{
 		expr.length() > 2,
 		{
@@ -290,11 +290,11 @@ public class ASTExpression extends Expr {
 		rest.$var = rest1.$var
 	}
 
-	rule resolveMultiExpr(MultiOperator op, int n, pvar List<ASTNode> result, pvar List<ASTNode> expr, pvar List<ASTNode> rest, boolean may_be_resolved)
-		pvar ASTNode		result1;
-		pvar List<ASTNode>	result2;
-		pvar List<ASTNode>	rest1;
-		pvar List<ASTNode>	rest2;
+	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode>@ expr, List<ASTNode>@ rest, boolean may_be_resolved)
+		ASTNode@		result1;
+		List<ASTNode>@	result2;
+		List<ASTNode>@	rest1;
+		List<ASTNode>@	rest2;
 	{
 		resolveExpr(result1,expr,rest1,op.getArgPriority(n), may_be_resolved),
 		{
@@ -348,222 +348,6 @@ public class ASTExpression extends Expr {
 		throw new CompilerException(pos,"Node of type "+expr.getClass()+" cannot be an expression");
 	}
 
-/*
-	rule resolveE(pvar List<ASTNode> ln, int priority, Type tp)
-		pvar List<ASTNode> ln1;
-		pvar Operator op;
-		pvar OpTypes opt;
-		pvar ASTNode expr;
-		pvar Method opm;
-	{
-		trace( Kiev.debugOperators,"resolving "+ln+" with pr="+priority+" to be of type "+(tp==null?"<any>":tp.toString())),
-		{
-			ln.length() > 1,
-			ln.at(0) instanceof ASTCastOperator,
-			op ?= ((ASTCastOperator)ln.head()).resolveOperator(),
-			op.priority >= priority,
-			ln1.$var = ln.tail(),
-			resolveE(ln1,op.getArgPriority(),((CastOperator)op.$var).type),
-			ln.$var = new List.Cons<ASTNode>(
-				(Expr)new CastExpr(ln.head().pos,((CastOperator)op.$var).type,(Expr)ln1.head(),true
-				).resolve(tp),
-				ln1.tail()
-			),
-			$cut,
-			trace( Kiev.debugOperators,"resolved cast "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() > 1,
-			{
-				ln.at(0) instanceof ASTOperator,
-				op ?= PrefixOperator.getOperator(((ASTOperator)ln.at(0)).image)
-			;	ln.at(0) instanceof ASTIdentifier,
-				op ?= PrefixOperator.getOperator(((ASTIdentifier)ln.at(0)).name),
-				trace( Kiev.debugOperators,"identifier as operator: "+op)
-			},
-			op.priority >= priority,
-			ln1.$var = ln.tail(),
-			trace( Kiev.debugOperators,"trying prefix "+op+" to be of type "+(tp==null?"<any>":tp.toString())),
-			resolveE(ln1,op.getArgPriority(),tp),
-			opt @= op.types,
-			opt.match(new ASTNode[]{null,ln1.head()}),
-			{
-				opm ?= opt.method,
-				{
-					opm.$var.isStatic(),
-					expr ?= new CallExpr(ln.at(0).getPos(),opm.$var,new Expr[]{(Expr)ln1.head()}).resolve(tp)
-				;
-					!opm.$var.isStatic(),
-					expr ?= new CallAccessExpr(ln.at(0).getPos(),(Expr)ln1.head(),opm.$var,Expr.emptyArray).resolve(tp)
-				}
-			;
-				expr ?= new UnaryExpr(ln.at(0).getPos(),op,(Expr)ln1.head()).resolve(tp)
-			},
-			ln.$var = new List.Cons<ASTNode>(expr.$var,ln1.tail()),
-			$cut,
-			trace( Kiev.debugOperators,"resolved prefix "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() > 1,
-			canBeAnExpr(ln),
-			ln.at(1) instanceof ASTOperator,
-			op ?= PostfixOperator.getOperator(((ASTOperator)ln.at(1)).image),
-			op.priority >= priority,
-			trace( Kiev.debugOperators,"trying postfix "+op+" to be of type "+(tp==null?"<any>":tp.toString())),
-			expr ?= ((Expr)ln.head()).resolve(tp),
-			opt @= op.types,
-			opt.match(new ASTNode[]{null,expr.$var}),
-			ln.$var = new List.Cons<ASTNode>(
-				(Expr)new UnaryExpr(
-					ln.at(1).getPos(),op,(Expr)expr.$var
-				).resolve(tp),
-				ln.tail().tail()
-			),
-			$cut,
-			trace( Kiev.debugOperators,"resolved postfix "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() > 4,
-			canBeAnExpr(ln),
-			ln.at(1) instanceof ASTOperator,
-			op ?= MultiOperator.getOperator(((ASTOperator)ln.at(1)).image),
-			op.priority >= priority,
-			trace( Kiev.debugOperators,"trying multi "+op+" to be of type "+(tp==null?"<any>":tp.toString())),
-			checkMultiOperator(ln,tp,(MultiOperator)op.$var),
-			$cut,
-			trace( Kiev.debugOperators,"resolved assign "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() > 2,
-			canBeAnExpr(ln),
-			ln.at(1) instanceof ASTOperator,
-			op ?= AssignOperator.getOperator(((ASTOperator)ln.at(1)).image),
-			op.priority >= priority,
-			{
-				ln.head() instanceof LvalueExpr
-			;	!ln.head().isResolved(),
-				expr ?= ((Expr)ln.head()).resolve(tp),
-				expr.$var instanceof LvalueExpr,
-				ln.$var = new List.Cons<ASTNode>(expr.$var,ln.tail())
-			},
-			ln1 ?= ln.tail().tail(),
-			trace( Kiev.debugOperators,"trying assign "+op+" to be of type "+(tp==null?"<any>":tp.toString())),
-			resolveE(ln1,op.getArgPriority(),tp),
-			{ canBeAnExpr(ln1); true },
-			opt @= op.types,
-			opt.match(new ASTNode[]{null,ln.head(),ln1.head()}),
-			ln.$var = new List.Cons<ASTNode>(
-				makeAssignExpr(tp,ln.at(1).getPos(),(AssignOperator)op.$var,opt,
-					(Expr)ln.head(),
-					(Expr)ln1.head()
-				),ln1.tail()
-			),
-			$cut,
-			trace( Kiev.debugOperators,"resolved assign "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() > 2,
-			canBeAnExpr(ln),
-			{
-				ln.at(1) instanceof ASTOperator,
-				op ?= BinaryOperator.getOperator(((ASTOperator)ln.at(1)).image)
-			;
-				ln.at(1) instanceof ASTIdentifier,
-				op ?= BinaryOperator.getOperator(((ASTIdentifier)ln.at(1)).name),
-				trace( Kiev.debugOperators,"identifier as operator: "+op)
-			},
-			ln.$var = new List.Cons<ASTNode>(((Expr)ln.head()).resolve(null),ln.tail()),
-			op.priority >= priority,
-			trace( Kiev.debugOperators,"trying binary "+op+" to be of type "+(tp==null?"<any>":tp.toString())),
-			{
-				op ?= BinaryOperator.InstanceOf,
-				$cut,
-				ln.at(2) instanceof ASTType,
-				expr ?= ((ASTType)ln.at(2)).pass2(),
-				ln.$var = new List.Cons<ASTNode>(
-					new InstanceofExpr(ln.at(1).getPos(),(Expr)ln.head(),(Type)expr.$var).resolve(Type.tpBoolean),
-					ln.tail().tail().tail()
-				)
-			;
-				ln1 ?= ln.tail().tail(),
-				resolveE(ln1,op.getArgPriority(),null),
-				{ canBeAnExpr(ln1); true },
-				opt @= op.types,
-				opt.match(new ASTNode[]{null,ln.head(),ln1.head()}),
-				ln.$var = new List.Cons<ASTNode>(
-					makeBinaryExpr(tp,ln.at(1).getPos(),op,opt,ln.head(),ln1.head()),
-					ln1.tail()
-				)
-			},
-			$cut,
-			trace( Kiev.debugOperators,"resolved binary "+ln.head()+" and list is "+ln.tail())
-		;
-			ln.length() == 1,
-			$cut,
-			{
-				ln.head() instanceof Expr,
-				ln.$var = new List.Cons<ASTNode>(((Expr)ln.head()).resolve(tp),ln.tail())
-			;	ln.head() instanceof Struct
-			},
-			trace( Kiev.debugOperators,"resolved expr "+ln.head()+" and list is "+ln.tail())
-		},
-		{
-			while ln.length() > 1 && resolveE(ln,priority,tp)
-		;	$cut
-		}
-	;
-		canBeAnExpr(ln),
-		$cut,
-		trace( Kiev.debugOperators,"resolved primary "+ln.head()+" and list is "+ln.tail())
-	}
-
-
-	boolean canBeAnExpr(PVar<List<ASTNode>> ln)
-	{
-		if( ln.head() instanceof Expr ) {
-			if( ln.head().isResolved() ) return true;
-			ln.$var = new List.Cons<ASTNode>(((Expr)ln.head()).resolve(null),ln.tail());
-			trace( Kiev.debugResolve,"resolved to be "+ln.head());
-		}
-		if( ln.head() instanceof Struct ) {
-			ln.$var = new List.Cons<ASTNode>( Expr.toExpr((Struct)ln.head(),null,pos,parent),ln.tail());
-			trace( Kiev.debugResolve,"resolved to be "+ln.head());
-		}
-		trace( Kiev.debugResolve,ln.head()+" instanceof Expr => "+(ln.head() instanceof Expr));
-		return ln.head() instanceof Expr;
-	}
-
-
-
-	boolean checkMultiOperator(pvar List<ASTNode> ln, Type tp, MultiOperator op) {
-		KString[] images = op.images;
-		for(int i=0; i < images.length; i++) {
-			if( ln.length() > i*2+2
-			 && ln.at(i*2+1) instanceof ASTOperator
-			 && ((ASTOperator)ln.at(i*2+1)).image.equals(images[i])
-			) {
-				PVar<List<ASTNode>> ln1 = new PVar<List<ASTNode>>(ln.drop(i*2+2));
-				if( !resolveE(ln1,op.getArgPriority(),null) )
-					return false;
-				ln.$var = ln.take(i*2+2).concat(ln1.$var);
-			}
-		}
-		Expr[] exprs = new Expr[op.images.length+1];
-		int oppos = ln.at(1).pos;
-		for(int i=0; i <= images.length; i++) {
-			exprs[i] = (Expr)ln.$var.head();
-			if( i == images.length )
-				ln.$var = ln.tail();
-			else
-				ln.$var = ln.tail().tail();
-		}
-		if( op == MultiOperator.Conditional ) {
-			Expr ce = new ConditionalExpr(oppos,exprs[0],exprs[1],exprs[2]);
-			ce.parent = this;
-			ln.$var = new List.Cons<ASTNode>(
-				ce.resolve(null),ln.drop(exprs.length*2-1)
-			);
-		} else {
-			throw new CompilerException(oppos,"Unknown multi-operator "+op);
-		}
-		return true;
-	}
-*/
 	ASTNode makeAssignExpr(Type tp, int pos, Operator op, OpTypes opt, ASTNode expr1, ASTNode expr2) {
 		Expr e;
 		AssignOperator aop = (AssignOperator)op;

@@ -349,7 +349,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return dmp;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node.$var).name.equals(name)

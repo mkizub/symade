@@ -1978,6 +1978,10 @@ public class CastExpr extends Expr {
 		if( !extp.isAutoCastableTo(type) ) {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
+			if (extp.clazz.isWrapper()) {
+				return new CastExpr(pos,type,
+					new AccessExpr(expr.pos,expr,extp.clazz.wrapped_field),explicit,reinterp).tryResolve(reqType);
+			}
 		}
 		else if (extp.clazz.isWrapper() && Type.getRealType(extp,extp.clazz.wrapped_field.type).isAutoCastableTo(type)) {
 			Expr ocast = tryOverloadedCast(extp);

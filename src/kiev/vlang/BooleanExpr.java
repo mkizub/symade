@@ -748,9 +748,20 @@ public class InstanceofExpr extends BooleanExpr {
 				}
 			} else {
 				expr = (Expr)e;
+				if (!expr.isForWrapper() && expr.getType().clazz.isWrapper())
+					expr = new AccessExpr(expr.pos,expr,expr.getType().clazz.wrapped_field).resolveExpr(null);
 			}
 			if( !expr.getType().isCastableTo(type) ) {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
+			}
+			if (!type.isArray() && type.args.length > 0) {
+				BooleanExpr be = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
+						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type),
+						Type.tpTypeInfo.clazz.resolveMethod(
+							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
+						new Expr[]{expr}
+						));
+				return be.resolve(reqType);
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);

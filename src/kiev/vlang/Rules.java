@@ -78,7 +78,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node.$var).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -415,9 +415,9 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 			sb.append("int[] $states; int $state_pc;\n");
 			// Local variables
 			foreach(Var v; ((RuleMethod)PassInfo.method).localvars) {
-				if( v.isPrologVar() )
+				/*if( v.isPrologVar() )
 					sb.append("pvar ").append(v.type.args[0]).append(' ').append(v.name.name).append(";\n");
-				else if( v.type.clazz.isWrapper() )
+				else*/ if( v.type.clazz.isWrapper() )
 					sb.append(v.type).append(' ').append(v.name.name)
 					  .append(" := new ").append(v.type).append("();\n");
 				else
@@ -456,8 +456,8 @@ public class RuleBlock extends ASTNode implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar ASTNode stat;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		ASTNode@ stat;
 	{
 		stat @= stats,
 		stat.$var instanceof DeclStat,

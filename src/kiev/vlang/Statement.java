@@ -56,8 +56,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar ParamRedir	redir;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		ParamRedir@	redir;
 	{
 		redir @= params_redir,
 		redir.old_var.name.equals(name),
@@ -162,7 +162,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return var;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node.$var).name.equals(name)
 	}
@@ -858,10 +858,10 @@ public class IfElseStat extends Statement {
 		}
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
-		if( thenSt instanceof ExprStat || thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();
 		else dmp.newLine(1);
 		dmp.append(thenSt);
-		if( thenSt instanceof ExprStat || thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.newLine();
+		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.newLine();
 		else dmp.newLine(-1);
 		if( elseSt != null ) {
 			dmp.append("else");

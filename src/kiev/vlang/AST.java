@@ -252,6 +252,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isConstExpr()	{ return (flags & ACC_CONSTEXPR) != 0; }
 	public boolean isTryResolved()	{ return (flags & ACC_TRYRESOLVED) != 0; }
 	public boolean isGenResolve()	{ return (flags & ACC_GENRESOLVE) != 0; }
+	public boolean isForWrapper()	{ return (flags & ACC_FOR_WRAPPER) != 0; }
 
 	// Statement specific
 	public boolean isAbrupted()	{ return (flags & ACC_ABRUPTED) != 0; }
@@ -585,6 +586,12 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GENRESOLVE set to "+on+" from "+((flags & ACC_GENRESOLVE)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_GENRESOLVE;
 		else flags &= ~ACC_GENRESOLVE;
+	}
+	public void setForWrapper(boolean on) {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FOR_WRAPPER set to "+on+" from "+((flags & ACC_FOR_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_FOR_WRAPPER;
+		else flags &= ~ACC_FOR_WRAPPER;
 	}
 
 	// Statement specific

@@ -86,6 +86,7 @@ public class ASTNonArrayType extends SimpleNode {
 			Type t = (Type)v.$var;
 			if (t.args.length != 1)
 				throw new CompilerException(pos,"Type '"+t+"' of type operator "+ops[i]+" must have 1 argument");
+			Env.getStruct(t.clazz.name);
 			tp = Type.newRefType(t.clazz,new Type[]{tp});
 		}
 		return tp;

@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,7 +17,7 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.stdlib;
 
 import java.util.StringTokenizer;
@@ -45,13 +45,13 @@ public class TypeInfo {
 	public  String			name;
 	public  String			classname;
 	public  TypeInfo[][]	related;
-	
+
 	/* Use java.util.Hashtable, since our own kiev.stdlib.Hashtable uses TypeInfo! */
 	public static java.util.Hashtable typehash = new java.util.Hashtable(128);
-	
+
 	protected TypeInfo() {
 	}
-	
+
 	protected TypeInfo(TypeInfo[] ta, String nm, String clnm) {
 		if( ta.length == 0 )
 			typeargs = emptyArray;
@@ -62,15 +62,15 @@ public class TypeInfo {
 		hash = name.hashCode();
 		typehash.put(nm,this);
 	}
-	
+
 	protected TypeInfo(String nm, String clnm) {
 		this(emptyArray,nm,clnm);
 	}
-	
+
 	public int hashCode() {
 		return hash;
 	}
-	
+
 	protected Class getClazz() {
 		try {
 			return type=Class.forName(classname);
@@ -81,7 +81,7 @@ public class TypeInfo {
 //			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
+
 	public static TypeInfo newTypeInfo(String t) {
 		try {
 			t = t.intern();
@@ -165,7 +165,7 @@ public class TypeInfo {
 		if( ti != null ) return ti;
 		return new TypeInfo(args,t,t1);
 	}
-	
+
 	private void fill_type_info_from_reflection() {
 		if (classname != null)
 			return;
@@ -187,10 +187,10 @@ public class TypeInfo {
 		related = new TypeInfo[n][];
 
 		fill_type_info_from_reflection(this_class,n-1);
-		
+
 		typeargs = related[n-1];
 	}
-	
+
 	private void fill_type_info_from_reflection(Class cl, int n) {
 		if (n > 0) fill_type_info_from_reflection(cl.getSuperclass(),n-1);
 //		System.err.println("fill_type_info_from_reflection("+cl+","+n+")");
@@ -219,23 +219,23 @@ public class TypeInfo {
 	public String toString() {
 		return name;
 	}
-	
+
 	public boolean $instanceof(Object obj) {
-		if( obj == null ) return true;
+		if( obj == null ) return false;
 		if( type == null ) {
 			if( !getClazz().isInstance(obj) ) return false;
 		}
 		else if( !type.isInstance(obj) ) return false;
 		if( obj instanceof TypeInfoInterface ) {
 			TypeInfo ti = ((TypeInfoInterface)obj).getTypeInfoField();
-			return this.$instanceof(ti);
+			return this.$ti_instanceof_ti(ti);
 		} else {
 			return typeargs == emptyArray;
 		}
 	}
 
 	public boolean $instanceof(Object obj, TypeInfo oti) {
-		if( obj == null ) return true;
+		if( obj == null ) return false;
 		if( type == null ) {
 			if( !getClazz().isInstance(obj) ) return false;
 		}
@@ -259,7 +259,7 @@ public class TypeInfo {
 		}
 		return true;
 	}
-	
+
 	public Object newInstance() {
 		if( type == null )
 			return getClazz().newInstance();

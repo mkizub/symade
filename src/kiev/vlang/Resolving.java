@@ -75,16 +75,17 @@ public class MatchNode implements ResolveFlags {
 
 public interface ScopeOfNames {
 //	public List<MatchNode> resolveName(List<MatchNode> lst, KString name, int resfl);
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type type, int resfl);
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type type, int resfl);
 }
 
 public interface ScopeOfMethods extends ScopeOfNames {
 //	public List<MatchNode> resolveMethod(List<MatchNode> lst, KString name, Expr[] args, Type type, int resfl);
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 
 public interface ScopeOfOperators {
-	rule public resolveOperatorR(pvar ASTNode op);
+	rule public resolveOperatorR(ASTNode@ op);
 }
+
 
 

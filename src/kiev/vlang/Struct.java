@@ -303,8 +303,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
-	rule public resolveOperatorR(pvar ASTNode op)
-		pvar ASTNode imp;
+	rule public resolveOperatorR(ASTNode@ op)
+		ASTNode@ imp;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
 		{
@@ -316,12 +316,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Type sup;
-		pvar Struct sub;
-		pvar Field forw;
-		pvar List<ASTNode> p;
-		pvar Method vf;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		Type@ sup;
+		Struct@ sub;
+		Field@ forw;
+		List<ASTNode>@ p;
+		Method@ vf;
 	{
 		trace(Kiev.debugResolve,"Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
 		checkResolved(),
@@ -357,7 +357,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	public boolean tryLoad(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryLoad(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
         if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
@@ -388,7 +388,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		return false;
 	}
 
-	public boolean tryAbstractField(pvar ASTNode node, pvar List<ASTNode> path, KString name, int resfl) {
+	public boolean tryAbstractField(ASTNode@ node, List<ASTNode>@ path, KString name, int resfl) {
 		if( !isPackage() ) {
 			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
 				append_fast(nameSet).append_fast(name).toKString();
@@ -415,11 +415,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	 	return false;
 	}
 
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type tp, int resfl)
-		pvar Type sup;
-		pvar Struct defaults;
-		pvar Field forw;
-		pvar List<ASTNode> p;
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type tp, int resfl)
+		Type@ sup;
+		Struct@ defaults;
+		Field@ forw;
+		List<ASTNode>@ p;
 	{
 		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path.$var==List.Nil?"":" in forward path "+path)),
@@ -1102,7 +1102,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	rule locatePackerField(pvar Field f, int size)
+	rule locatePackerField(Field@ f, int size)
 	{
 		super_clazz != null,
 		super_clazz.clazz.locatePackerField(f,size)
@@ -1121,7 +1121,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 		// Setup packed/packer fields
 		foreach(Field f; fields; f.isPackedField() ) {
-			pvar Field packer;
+			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			if( f.pack.packer == null ) {
 				if( f.pack.packer_name != null ) {

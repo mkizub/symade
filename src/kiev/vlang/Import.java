@@ -70,10 +70,10 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public void generate() {}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
-		pvar Struct s;
-		pvar Struct sub;
-		pvar ASTNode tmp;
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
+		Struct@ s;
+		Struct@ sub;
+		ASTNode@ tmp;
 	{
 		this.node instanceof Method, $cut, false
 	;
@@ -120,7 +120,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		}
 	}
 
-	rule public resolveMethodR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, List<ASTNode>@ path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		mode == IMPORT_STATIC && !star && this.node instanceof Method,
 		((Method)this.node).equalsByCast(name,args,ret,type,resfl),

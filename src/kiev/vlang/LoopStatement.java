@@ -259,7 +259,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		node @= vars, ((Var)node.$var).name.equals(name)
 	}
@@ -395,7 +395,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit, ((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
@@ -800,7 +800,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(pvar ASTNode node, pvar List<ASTNode> path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, List<ASTNode>@ path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter

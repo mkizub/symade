@@ -94,6 +94,7 @@ public interface AccessFlags {
 	public static final int ACC_CONSTEXPR		= 1 << 13;
 	public static final int ACC_TRYRESOLVED		= 1 << 14;
 	public static final int ACC_GENRESOLVE		= 1 << 15;
+	public static final int ACC_FOR_WRAPPER		= 1 << 16;
 
 	// Statement specific
 	public static final int ACC_ABRUPTED		= 1 << 11;
