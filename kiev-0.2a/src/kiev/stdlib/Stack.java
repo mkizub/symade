@@ -1,0 +1,86 @@
+/*
+ Copyright (C) 1997-1998, Forestro, http://forestro.com
+
+ This file is part of the Kiev library.
+ 
+ The Kiev library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Library General Public License as
+ published by the Free Software Foundation.
+
+ The Kiev library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU Library General Public
+ License along with the Kiev compiler; see the file License.  If not,
+ write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
+*/
+  
+package kiev.stdlib;
+
+/**
+ * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Stack.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
+ * @author Maxim Kizub
+ * @version $Revision: 1.2.4.2 $
+ *
+ */
+
+public class Stack<A> extends Vector<A> implements Cloneable
+	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
+{
+
+	public Stack(int initialCapacity, int capacityIncrement) {
+		super(initialCapacity,capacityIncrement);
+	}
+
+	public Stack(int initialCapacity) {
+		super(initialCapacity, 0);
+	}
+
+	public Stack() {
+		super(10,0);
+	}
+
+	public void push(A obj) {
+		addElement(obj);
+	}
+
+	public A pop() {
+		if (count==0)
+			throw new NoSuchElementException("pop on empty stack");
+		A obj = data[--count];
+		data[count] = null;
+		return obj;
+	}
+
+	public A peek() {
+		if (count==0)
+			throw new NoSuchElementException("peek on empty stack");
+		return data[count-1];
+	}
+
+	public synchronized Enumeration<A> elements() {
+		return new StackEnumerator<A>();
+	}
+    
+	public class StackEnumerator<A> implements Enumeration<A> {
+		int current;
+
+		public StackEnumerator() {
+			current = Stack.this.count;
+		}
+
+		public boolean hasMoreElements() {
+			return current > 0;
+		}
+
+		public A nextElement() {
+			if ( current > 0 ) {
+				return Stack.this[--current];
+			}
+			throw new NoSuchElementException();
+		}
+	}
+}
