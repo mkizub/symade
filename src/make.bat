@@ -1,1 +1,1 @@
-c:\jdk1.3\bin\java -Xms32M -Xbatch -Xfuture -Xnoclassgc -server -verify -classpath ..\..\kiev-0.2d\src\classes kiev.Main -classpath classes -verify -g -p k2.prj -no-warn %1 %2 %3 %4 %5 %6 %7 %8 %9
+c:\jdk1.3\bin\java -verify -Xms32M -Xfuture -Xnoclassgc -classpath ..\..\kiev-0.2d\src\classes kiev.Main -classpath classes -verify -g -p k2.prj -no-warn %1 %2 %3 %4 %5 %6 %7 %8 %9

@@ -1032,3 +1032,94 @@ public class SynchronizedStat extends Statement {
 
 }
 
+public class WithStat extends Statement {
+
+	public Statement	body;
+	public Expr			expr;
+	public ASTNode		var_or_field;
+	public CodeLabel	end_label;
+
+	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
+		super(pos, parent);
+		this.expr = expr;
+		this.expr.parent = this;
+		this.body = body;
+		this.body.parent = this;
+	}
+
+	public void cleanup() {
+		parent=null;
+		body.cleanup();
+		body = null;
+		expr.cleanup();
+		expr = null;
+		var_or_field = null;
+	}
+
+	public ASTNode resolve(Type reqType) throws RuntimeException {
+		PassInfo.push(this);
+		try {
+			try {
+				expr = (Expr)expr.resolve(null);
+				switch (expr) {
+				case VarAccessExpr:				var_or_field = ((VarAccessExpr)expr).var;				break;
+				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)expr).var;	break;
+				case AccessExpr:				var_or_field = ((AccessExpr)expr).var;					break;
+				case FieldAccessExpr:			var_or_field = ((FieldAccessExpr)expr).var;				break;
+				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)expr).var;		break;
+				}
+				if (var_or_field == null) {
+					Kiev.reportError(pos,"With statement needs variable or field argument");
+					return body.resolve(Type.tpVoid);
+				}
+			} catch(Exception e ) {
+				Kiev.reportError(pos,e);
+				return body.resolve(Type.tpVoid);
+			}
+
+			boolean is_forward = var_or_field.isForward();
+			if (!is_forward) var_or_field.setForward(true);
+			try {
+				body = (Statement)body.resolve(Type.tpVoid);
+			} catch(Exception e ) {
+				Kiev.reportError(pos,e);
+			} finally {
+				if (!is_forward) var_or_field.setForward(false);
+			}
+
+			setAbrupted(body.isAbrupted());
+			setMethodAbrupted(body.isMethodAbrupted());
+		} finally { PassInfo.pop(this); }
+		return this;
+	}
+
+	public void generate(Type reqType) {
+		PassInfo.push(this);
+
+		try {
+			end_label = Code.newLabel();
+			try {
+				if( isAutoReturnable() )
+					body.setAutoReturnable(true);
+				body.generate(Type.tpVoid);
+			} catch(Exception e ) {
+				Kiev.reportError(pos,e);
+			}
+			if( !body.isMethodAbrupted() ) {
+				if( isAutoReturnable() )
+					ReturnStat.generateReturn();
+			}
+
+			Code.addInstr(Instr.set_label,end_label);
+		} finally {
+			PassInfo.pop(this);
+		}
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		dmp.append("/*with ").space().append('(').space().append(expr)
+			.space().append(")*/").forsed_space().append(body).newLine();
+		return dmp;
+	}
+}
+

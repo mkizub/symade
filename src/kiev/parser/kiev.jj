@@ -134,6 +134,7 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 			case RETURN:
 			case THROW:
 			case SYNCHRONIZED:
+			case WITH:
 			case TRY:
 			case GOTO:
 			case REPARSE_STATEMENT:
@@ -424,6 +425,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 // | < SUPER: "super" >
 | < SWITCH: "switch" >
 | < SYNCHRONIZED: "synchronized" >
+| < WITH: "with" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 // | < THIS: "this" >
 | < THROW: "throw" >
 | < THROWS: "throws" >
@@ -3943,6 +3945,7 @@ void Statement()       :
 	| ReturnStatement()
 	| ThrowStatement()
 	| SynchronizedStatement()
+	| WithStatement()
 	| TryStatement()
 	| GotoStatement()
 	| ReparseStatement()
@@ -4883,6 +4886,39 @@ void SynchronizedStatement() :
 /*@egen*/
 	t="synchronized" { jjtn000.setPos(t.getPos()); }
   "(" ExpressionNT(null) ")" Block()/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void WithStatement() :
+{/*@bgen(jjtree) WithStatement */
+  ASTWithStatement jjtn000 = new ASTWithStatement(JJTWITHSTATEMENT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t; }
+{/*@bgen(jjtree) WithStatement */
+        try {
+/*@egen*/
+	t="with" { jjtn000.setPos(t.getPos()); }
+  "(" Identifier() ")" Block()/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

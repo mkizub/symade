@@ -84,9 +84,10 @@ public interface kiev020TreeConstants
   public int JJTRETURNSTATEMENT = 77;
   public int JJTTHROWSTATEMENT = 78;
   public int JJTSYNCHRONIZEDSTATEMENT = 79;
-  public int JJTTRYSTATEMENT = 80;
-  public int JJTCATCHINFO = 81;
-  public int JJTFINALLYINFO = 82;
+  public int JJTWITHSTATEMENT = 80;
+  public int JJTTRYSTATEMENT = 81;
+  public int JJTCATCHINFO = 82;
+  public int JJTFINALLYINFO = 83;
 
 
   public String[] jjtNodeName = {
@@ -170,6 +171,7 @@ public interface kiev020TreeConstants
     "ReturnStatement",
     "ThrowStatement",
     "SynchronizedStatement",
+    "WithStatement",
     "TryStatement",
     "CatchInfo",
     "FinallyInfo",

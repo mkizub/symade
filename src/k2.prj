@@ -170,6 +170,7 @@ kiev.parser.ASTTypedef kiev/parser/ASTTypedef kiev\parser\ASTTypedef.java
 kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
 kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
 kiev.parser.ASTWhileStatement kiev/parser/ASTWhileStatement kiev\parser\ASTWhileStatement.java
+kiev.parser.ASTWithStatement kiev/parser/ASTWithStatement kiev\parser\ASTWithStatement.java
 kiev.parser.JJTkiev020State kiev/parser/JJTkiev020State kiev\parser\JJTkiev020State.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
 kiev.parser.KToken kiev/parser/KToken kiev\parser\KToken.java
@@ -430,5 +431,6 @@ kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
+kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WorkByContractCondition kiev/vlang/WorkByContractCondition kiev\vlang\Method.java
 kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java

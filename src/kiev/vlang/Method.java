@@ -556,10 +556,20 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public static Expr getAccessExpr(ResInfo info) {
 		Expr expr;
 		List<ASTNode> path = info.path.toList();
-		if (path.head() instanceof Field)
-			expr = new FieldAccessExpr(0,(Field)path.head());
-		else if (path.head() instanceof Var)
-			expr = new VarAccessExpr(0,(Var)path.head());
+		if (path.head() instanceof Field) {
+			Field f = (Field)path.head();
+			if (f.isStatic())
+				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
+			else
+				expr = new FieldAccessExpr(0,f);
+		}
+		else if (path.head() instanceof Var) {
+			Var v = (Var)path.head();
+			if( v.isLocalRuleVar() )
+				expr = new LocalPrologVarAccessExpr(0,null,v);
+			else
+				expr = new VarAccessExpr(0,v);
+		}
 		else
 			throw new CompilerException(0,"Forward/with access path not with Field or Var");
 		path = path.tail();

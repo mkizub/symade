@@ -132,6 +132,7 @@ public class kiev020 {
 			case RETURN:
 			case THROW:
 			case SYNCHRONIZED:
+			case WITH:
 			case TRY:
 			case GOTO:
 			case REPARSE_STATEMENT:
@@ -422,6 +423,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 // | < SUPER: "super" >
 | < SWITCH: "switch" >
 | < SYNCHRONIZED: "synchronized" >
+| < WITH: "with" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 // | < THIS: "this" >
 | < THROW: "throw" >
 | < THROWS: "throws" >
@@ -2292,6 +2294,7 @@ void Statement() #void :
 	| ReturnStatement()
 	| ThrowStatement()
 	| SynchronizedStatement()
+	| WithStatement()
 	| TryStatement()
 	| GotoStatement()
 	| ReparseStatement()
@@ -2688,6 +2691,13 @@ void SynchronizedStatement() :
 {
 	t="synchronized" { jjtThis.setPos(t.getPos()); }
   "(" ExpressionNT(null) ")" Block()
+}
+
+void WithStatement() :
+{ Token t; }
+{
+	t="with" { jjtThis.setPos(t.getPos()); }
+  "(" Identifier() ")" Block()
 }
 
 void TryStatement() :
