@@ -76,8 +76,8 @@ public class ASTIdentifier extends Expr {
 			name = Constants.nameResultVar;
 		}
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		ResPath path = new ResPath();
-		if( !PassInfo.resolveNameR(v,path,name,null,0) ) {
+		ResInfo info = new ResInfo();
+		if( !PassInfo.resolveNameR(v,info,name,null,0) ) {
 			// May be a function
 			if( reqType instanceof MethodType ) {
 				Expr[] args = new Expr[reqType.args.length];
@@ -141,7 +141,7 @@ public class ASTIdentifier extends Expr {
 		}
 		Expr e = null;
 		if( v instanceof Var ) {
-			if( v.isLocalPrologVar() )
+			if( v.isLocalRuleVar() )
 				e = new LocalPrologVarAccessExpr(pos,this,(Var)v);
 			else
 				e = new VarAccessExpr(pos,this,(Var)v);
@@ -149,11 +149,14 @@ public class ASTIdentifier extends Expr {
 		else if( v instanceof Field ) {
 			Field f = (Field)v;
 			if( f.isStatic() ) return new StaticFieldAccessExpr(pos,PassInfo.clazz,f).resolve(reqType);
-			if( path.length() == 0 )
+			if( info.path.length() == 0 )
 				e = new FieldAccessExpr(pos,f);
 			else {
-				List<ASTNode> acc = path.toList();
-				e = new FieldAccessExpr(pos,(Field)acc.head());
+				List<ASTNode> acc = info.path.toList();
+				if (acc.head() instanceof Field)
+					e = new FieldAccessExpr(pos,(Field)acc.head());
+				else if (acc.head() instanceof Var)
+					e = new VarAccessExpr(pos,(Var)acc.head());
 				acc = acc.tail();
 				foreach(ASTNode n; acc) {
 					e = new AccessExpr(pos,this,e,(Field)n);

@@ -1133,13 +1133,14 @@ public class Code implements Constants {
 		if( !v.name.equals(KString.Empty) ) {
 			lvta.addVar(vars[pos]);
 		}
+		trace(Kiev.debugInstrGen,"Code var "+v+" added to bc pos "+pos+" "+vars[pos]);
 		return vars[pos];
 	}
 
 	/** Remove local var for this code.
 	 */
 	static public void removeVar(Var v) {
-		trace(Kiev.debugInstrGen,"Code remove var "+v);
+		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.getBCpos()+" "+vars[v.getBCpos()]);
 		Type t = Type.getRealType(Kiev.argtype,v.type);
 		if( !v.name.equals(KString.Empty) ) {
 			lvta.vars[vars[v.getBCpos()].index].end_pc = pc-1;

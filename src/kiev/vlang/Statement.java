@@ -34,7 +34,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class InlineMethodStat extends Statement implements ScopeOfNames {
+public class InlineMethodStat extends Statement implements Scope {
 
 	static class ParamRedir {
 		Var		old_var;
@@ -57,13 +57,18 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
 		redir.old_var.name.equals(name),
 		$cut,
 		node ?= redir.new_var
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	{
+		false
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -133,10 +138,11 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	}
 }
 
-public class BlockStat extends Statement implements ScopeOfNames {
+public class BlockStat extends Statement implements Scope {
 
 	public ASTNode[]	stats = Statement.emptyArray;
 	public Var[]		vars = Var.emptyArray;
+	public ASTNode[]	members = ASTNode.emptyArray;
 	public Statement[]	addstats = Statement.emptyArray;
 
 	protected CodeLabel	break_label = null;
@@ -163,16 +169,41 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return var;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+		ASTNode@ n;
 	{
-		node @= vars, ((Var)node).name.equals(name)
+		n @= vars,
+		{
+			((Var)n).name.equals(name),
+			node ?= n
+		;	n.isForward(),
+			info.enterForward(n) : info.leaveForward(n),
+			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+		}
+	;	n @= members,
+		{	n instanceof Struct,
+			name.equals(((Struct)n).name.short_name),
+			node ?= n
+		;	n instanceof Typedef,
+			name.equals(((Typedef)n).name),
+			node ?= ((Typedef)n).type
+		}
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Var@ n;
+	{
+		n @= vars,
+		n.isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
-			stats = resolveBlockStats(this,stats);
+			resolveBlockStats();
 			if( addstats.length > 0 ) {
 				for(int i=0; i < addstats.length; i++) {
 					stats = (ASTNode[])Arrays.insert(stats,addstats[i],i);
@@ -189,25 +220,25 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		return this;
 	}
 
-	public static ASTNode[] resolveBlockStats(ASTNode parent, ASTNode[] stats) {
+	public void resolveBlockStats() {
 		for(int i=0; i < stats.length; i++) {
 			try {
-				if( (i == stats.length-1) && parent.isAutoReturnable() )
+				if( (i == stats.length-1) && isAutoReturnable() )
 					stats[i].setAutoReturnable(true);
-				stats[i].parent = parent;
-				if( stats[i].parent.isAbrupted() &&
+				stats[i].parent = this;
+				if( isAbrupted() &&
 					(stats[i] instanceof LabeledStat || stats[i] instanceof ASTLabeledStatement) ) {
-					stats[i].parent.setAbrupted(false);
+					setAbrupted(false);
 				}
-				if( stats[i].parent.isAbrupted() ) {
+				if( isAbrupted() ) {
 					Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
 //					stats[i].setHidden(true);
 //					continue;
 				}
 				if( stats[i] instanceof Statement ) {
 					stats[i] = (Statement)((Statement)stats[i]).resolve(Type.tpVoid);
-					if( stats[i].isAbrupted() && !parent.isBreaked() ) stats[i].parent.setAbrupted(true);
-					if( stats[i].isMethodAbrupted() && !parent.isBreaked() ) stats[i].parent.setMethodAbrupted(true);
+					if( stats[i].isAbrupted() && !isBreaked() ) setAbrupted(true);
+					if( stats[i].isMethodAbrupted() && !isBreaked() ) setMethodAbrupted(true);
 				}
 				else if( stats[i] instanceof ASTVarDecls ) {
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
@@ -216,37 +247,38 @@ public class BlockStat extends Statement implements ScopeOfNames {
 					for(int j=0; j < vdecls.modifier.length; j++)
 						flags |= ((ASTModifier)vdecls.modifier[j]).flag();
 					Type type = ((ASTType)vdecls.type).pass2();
-					if( (flags & ACC_PROLOGVAR) != 0 ) {
-            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-					}
+//					if( (flags & ACC_PROLOGVAR) != 0 ) {
+//            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
+//						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
+//					}
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 						KString vname = vdecl.name;
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-						Statement vstat;
+						DeclStat vstat;
 						if( vdecl.init != null ) {
 							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
 								vstat = (Statement)new DeclStat(
-									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
+									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
 							else
 								vstat = (Statement)new DeclStat(
-									vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags),
+									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),
 									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
 						}
-						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
-							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
-								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
+//						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
+//							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
+//								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
-							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags)
+							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else
-							vstat = (Statement)new DeclStat(vdecl.pos,stats[i].parent,new Var(vdecl.pos,vname,tp,flags));
-						vstat.parent = parent;
-						vstat = (Statement)vstat.resolve(Type.tpVoid);
+							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags));
+						vstat.parent = this;
+						vstat = (DeclStat)vstat.resolve(Type.tpVoid);
 						vstats = (ASTNode[])Arrays.append(vstats,vstat);
+//						vars = (Var[])Arrays.append(vars,vstat.var);
 					}
 					stats[i] = vstats[0];
 					for(int j=1; j < vstats.length; j++, i++) {
@@ -265,8 +297,8 @@ public class BlockStat extends Statement implements ScopeOfNames {
 					ASTTypeDeclaration.pass3(cl,decl.members);
 					cl.autoProxyMethods();
 					cl.resolveFinalFields(false);
-					stats[i] = new TypeDeclStat(decl.pos,parent,cl).resolve(null);
-					PassInfo.addResolvedNode(cl.getName().name,cl,(ScopeOfNames)parent);
+					stats[i] = new TypeDeclStat(decl.pos,this,cl).resolve(null);
+					members = (ASTNode[])Arrays.append(members,cl);
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -274,7 +306,6 @@ public class BlockStat extends Statement implements ScopeOfNames {
 				Kiev.reportError(stats[i].pos,e);
 			}
 		}
-		return stats;
 	}
 
 
@@ -283,7 +314,7 @@ public class BlockStat extends Statement implements ScopeOfNames {
 		PassInfo.push(this);
 		try {
 			break_label = Code.newLabel();
-			Code.addVars(vars);
+			//Code.addVars(vars);
 			for(int i=0; i < stats.length; i++) {
 				try {
 					((Statement)stats[i]).generate(Type.tpVoid);
@@ -437,7 +468,6 @@ public class DeclStat extends Statement {
 			while( p != null && !(p instanceof BlockStat) ) p = p.parent;
 			if( p != null ) {
 				((BlockStat)p).addVar(var);
-				PassInfo.addResolvedNode(var.getName().name,var,(ScopeOfNames)p);
 				NodeInfoPass.setNodeType(var,var.type);
 				if( init != null )
 					NodeInfoPass.setNodeValue(var,init);
@@ -456,6 +486,7 @@ public class DeclStat extends Statement {
 			if( init != null ) {
 				if( !var.isNeedRefProxy() ) {
 					init.generate(var.type);
+					Code.addVar(var);
 					Code.addInstr(Instr.op_store,var);
 				} else {
 					Type prt = Type.getProxyType(var.type);
@@ -463,11 +494,14 @@ public class DeclStat extends Statement {
 					Code.addInstr(Instr.op_dup);
 					init.generate(var.type);
 					PVar<Method> in = new PVar<Method>();
-					PassInfo.resolveBestMethodR(prt.clazz,in,null,
+					PassInfo.resolveBestMethodR(prt.clazz,in,new ResInfo(),
 						nameInit,new Expr[]{init},Type.tpVoid,null,ResolveFlags.NoForwards);
 					Code.addInstr(Instr.op_call,in,false);
+					Code.addVar(var);
 					Code.addInstr(Instr.op_store,var);
 				}
+			} else {
+				Code.addVar(var);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
@@ -1206,9 +1240,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			SwitchStat bst = (SwitchStat)st;
 			for(int j=0; j < bst.cases.length; j++ ) {
 				CaseLabel cl = (CaseLabel)bst.cases[j];
-				for(i=0; i < cl.stats.length; i++ ) {
-					stats = resolveStat(name,(Statement)cl.stats[i],stats);
-				}
+				stats = resolveStat(name,cl.stats,stats);
 			}
 		}
 			break;

@@ -75,12 +75,51 @@ public class MatchNode implements ResolveFlags {
 
 }
 
-public interface ScopeOfNames {
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type type, int resfl);
-}
+public class ResInfo {
+	public int					transforms;
+	public ListBuffer<ASTNode>	path = new ListBuffer<ASTNode>();
 
-public interface ScopeOfMethods extends ScopeOfNames {
-	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	public ResInfo() {
+	}
+	public ResInfo(ASTNode through) {
+		enterForward(through);
+	}
+
+	public void enterForward(ASTNode node) {
+		path.append(node);
+		transforms++;
+	}
+	public void leaveForward(ASTNode node) {
+		assert(path.length() > 0 && path.getAt(path.length()-1) == node);
+		path.setLength(path.length()-1);
+		transforms--;
+	}
+	public void enterSuper() {
+		transforms++;
+	}
+	public void leaveSuper() {
+		transforms++;
+	}
+
+	public ResInfo copy() {
+		ResInfo ri = new ResInfo();
+		ri.transforms = transforms;
+		foreach (ASTNode n; path.toList()) ri.path.append(n);
+		return ri;
+	}
+
+	public void set(ResInfo info)
+	{
+		if (this == info) return;
+		this.transforms = info.transforms;
+		this.path.setLength(0);
+		foreach (ASTNode n; info.path.toList()) this.path.append(n);
+	}
+};
+
+public interface Scope {
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type type, int resfl);
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 
 public interface ScopeOfOperators {

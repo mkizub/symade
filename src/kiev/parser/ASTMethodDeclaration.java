@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTMethodDeclaration extends ASTNode implements PreScanneable, ScopeOfNames {
+public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scope {
 	public int			dim;
     public ASTNode[]	modifier = ASTNode.emptyArray;
 	public ASTAccess	acc;
@@ -108,11 +108,16 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         }
     }
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		ftypes instanceof Type[] && ftypes.length > 0,
 		node @= ((Type[])ftypes),
 		((Type)node).clazz.name.short_name.equals(name)
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	{
+		false
 	}
 
     public Method pass3() {

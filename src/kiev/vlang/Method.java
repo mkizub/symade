@@ -34,7 +34,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,Accessable {
+public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -298,6 +298,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		int offset = 0;
 		if( !isStatic() ) offset++;
 		for(int i=offset; i < params.length; i++) {
+			if (params[i].isFinal()) dmp.append("final").forsed_space();
+			if (params[i].isForward()) dmp.append("forward").forsed_space();
 			params[i].toJavaDecl(dmp,type.args[i-offset]);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
@@ -350,13 +352,21 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return dmp;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node).name.equals(name)
 	;	node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
 	;	node ?= retvar, ((Var)node).name.equals(name)
-//		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this)
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Var@ n;
+	{
+		n @= params,
+		n.isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -371,7 +381,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					PassInfo.addResolvedNode(params[i].getName().name,params[i],this);
 					NodeInfoPass.setNodeType(params[i],params[i].type);
 					NodeInfoPass.setNodeInitialized(params[i],true);
 				}
@@ -544,9 +553,9 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return true;
 	}
 
-	public static Expr getAccessExpr(ResPath p) {
+	public static Expr getAccessExpr(ResInfo info) {
 		Expr expr;
-		List<ASTNode> path = p.toList();
+		List<ASTNode> path = info.path.toList();
 		if (path.head() instanceof Field)
 			expr = new FieldAccessExpr(0,(Field)path.head());
 		else if (path.head() instanceof Var)
@@ -560,8 +569,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,SetBody,
 		return expr;
 	}
 
-	public static Expr getAccessExpr(ResPath p,Expr expr) {
-		List<ASTNode> path = p.toList();
+	public static Expr getAccessExpr(ResInfo info,Expr expr) {
+		List<ASTNode> path = info.path.toList();
 		foreach(ASTNode n; path) {
 			expr = new AccessExpr(0,expr,(Field)n);
 		}

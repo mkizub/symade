@@ -519,7 +519,7 @@ public class AssignExpr extends LvalueExpr {
 					// Need to resolve initial var and mark it as RefProxy
 					KString name = var.name.name;
 					PVar<ASTNode> v = new PVar<ASTNode>();
-					if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
+					if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
 						Kiev.reportError(pos,"Internal error: can't find var "+name);
 					}
 					Var pv = (Var)v;
@@ -1568,7 +1568,7 @@ public class IncrementExpr extends LvalueExpr {
 				// Need to resolve initial var and mark it as RefProxy
 				KString name = var.name.name;
 				PVar<ASTNode> v = new PVar<ASTNode>();
-				if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
+				if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
 					Kiev.reportError(pos,"Internal error: can't find var "+name);
 				}
 				Var pv = (Var)v;
@@ -2002,23 +2002,23 @@ public class CastExpr extends Expr {
 	}
 
 	public Expr tryOverloadedCast(Type et) {
-		PVar<ASTNode> v = new PVar<ASTNode>();
-		ResPath path = new ResPath();
+		ASTNode@ v;
+		ResInfo info = new ResInfo();
 		Struct cl = et.clazz;
-		v = null;
-		if( PassInfo.resolveBestMethodR(cl,v,path,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
+		v.$unbind();
+		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
 			Expr ce;
-			if( path.length() == 0 )
+			if( info.path.length() == 0 )
 				ce = new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			else {
-				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(path,expr),(Method)v,Expr.emptyArray);
+				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(info,expr),(Method)v,Expr.emptyArray);
 			}
 			expr = ce;
 			return this;
 		}
-		v = null;
-		path = new ResPath();
-		if( PassInfo.resolveMethodR(v,path,nameCastOp,new Expr[]{expr},this.type,et,ResolveFlags.Static) ) {
+		v.$unbind();
+		info = new ResInfo();
+		if( PassInfo.resolveMethodR(v,info,nameCastOp,new Expr[]{expr},this.type,et,ResolveFlags.Static) ) {
 			assert(v.isStatic());
 			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
 			expr = ce;

@@ -38,7 +38,7 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public NodeName		name;
 	public Type			type;
-	private int			bcpos;
+	private int			bcpos = -1;
 
 	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {
 		super(pos,parent);
@@ -84,6 +84,8 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public Dumper toJavaDecl(Dumper dmp) {
 //		Env.toJavaModifiers(dmp,access);
+		if (isFinal()) dmp.append("final").forsed_space();
+		if (isForward()) dmp.append("forward").forsed_space();
 		if( isNeedRefProxy() )
 			dmp.append(Type.getProxyType(Type.getRealType(Kiev.argtype,type)));
 		else
@@ -139,6 +141,10 @@ public class CodeVar {
 	public CodeVar(Var var) {
 		this.var = var;
 		stack_pos = var.getBCpos();
+	}
+
+	public String toString() {
+		return "("+stack_pos+","+index+","+start_pc+","+end_pc+")";
 	}
 
 }

@@ -41,7 +41,7 @@ public class CaseLabel extends ASTNode {
 	public ASTNode		val;
 	public Type			type;
 	public Var[]		pattern;
-	public ASTNode[]	stats = ASTNode.emptyArray;
+	public BlockStat	stats;
 
 	public CodeLabel	case_label;
 
@@ -50,8 +50,7 @@ public class CaseLabel extends ASTNode {
 		this.val = val;
 		if( val != null && val instanceof Expr )
 			this.val.parent = this;
-		this.stats = stats;
-		for(int i=0; i < stats.length; i++) this.stats[i].parent = this;
+		this.stats = new BlockStat(pos,this,stats);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -73,11 +72,11 @@ public class CaseLabel extends ASTNode {
 		return "case "+val+':';
 	}
 
-//	public Statement addStatement(Statement st) {
-//		if( st == null ) return null;
-//		stats = (Statement[])Arrays.append(stats,st);
-//		return st;
-//	}
+	public Statement addStatement(int i, Statement st) {
+		if( st == null ) return null;
+		stats.stats = (ASTNode[])Arrays.insert(stats.stats,st,i);
+		return st;
+	}
 
 	public void cleanup() {
 		parent=null;
@@ -85,7 +84,7 @@ public class CaseLabel extends ASTNode {
 		val = null;
 		type = null;
 		pattern = null;
-		foreach(ASTNode n; stats; n!=null) n.cleanup();
+		stats.cleanup();
 		stats = null;
 	}
 
@@ -127,7 +126,6 @@ public class CaseLabel extends ASTNode {
 						this.type = ((Struct)v).type;
 						pizza_case = true;
 						Struct cas = (Struct)v;
-						BlockStat st = new BlockStat(val.getPos(),this);
 						if( cas.isPizzaCase() ) {
 							if( sw.mode != SwitchStat.PIZZA_SWITCH )
 								throw new CompilerException(pos,"Pizza case type in non-pizza switch");
@@ -136,7 +134,7 @@ public class CaseLabel extends ASTNode {
 							if( pattern != null && pattern.length > 0 ) {
 								if( pattern.length != case_attr.casefields.length )
 									throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
-								for(int i=0; i < pattern.length; i++) {
+								for(int i=0, j=0; i < pattern.length; i++) {
 									if( pattern[i]==null ) continue;
 									pattern[i] = (Var)pattern[i].resolve(null);
 									Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
@@ -148,13 +146,9 @@ public class CaseLabel extends ASTNode {
 												(Expr)new VarAccessExpr(pattern[i].pos,sw.tmpvar).resolve(null)),
 											case_attr.casefields[i]
 										);
-									st.addStatement(new DeclStat(pattern[i].pos,st,pattern[i],init));
+									addStatement(j++,new DeclStat(pattern[i].pos,stats,pattern[i],init));
 								}
 							}
-							for(int i=0; i < stats.length; i++) {
-								st.addStatement((Statement)stats[i]);
-							}
-							stats = new ASTNode[]{st};
 						} else {
 							if( sw.mode != SwitchStat.TYPE_SWITCH )
 								throw new CompilerException(pos,"Type case in non-type switch");
@@ -175,7 +169,10 @@ public class CaseLabel extends ASTNode {
 				}
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 
-			this.stats = BlockStat.resolveBlockStats(this,this.stats);
+			//this.stats.resolveBlockStats();
+			this.stats.resolve(Type.tpVoid);
+			this.setAbrupted(stats.isAbrupted());
+			this.setMethodAbrupted(stats.isMethodAbrupted());
 
 			if( val != null ) {
 				if( !((Expr)val).isConstantExpr() )
@@ -209,27 +206,21 @@ public class CaseLabel extends ASTNode {
 						throw new RuntimeException("Case label "+v+" must be of integer type");
 				}
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
-			for(int i=0; i < stats.length; i++) {
-				if( (i == stats.length-1) && isAutoReturnable() )
-					stats[i].setAutoReturnable(true);
-				try {
-					((Statement)stats[i]).generate(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(pos,e);
-				}
-			}
+			if (isAutoReturnable()) stats.setAutoReturnable(true);
+			stats.generate(Type.tpVoid);
 		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
 		if( val == null )
-			dmp.newLine(-1).append("default:").newLine(1);
+			dmp.newLine(-1).append("default:").newLine();
 		else
-			dmp.newLine(-1).append("case ").append(val).append(':').newLine(1);
-		for(int i=0; i < stats.length; i++) {
-			if( stats[i] == null ) dmp.append(';');
-			else dmp.append(stats[i]).newLine();
-		}
+			dmp.newLine(-1).append("case ").append(val).append(':').newLine();
+		dmp.append(stats).newLine(1);
+//		for(int i=0; i < stats.length; i++) {
+//			if( stats[i] == null ) dmp.append(';');
+//			else dmp.append(stats[i]).newLine();
+//		}
 		return dmp;
 	}
 }
@@ -291,7 +282,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		if( cases.length == 0 ) return new ExprStat(pos,parent,sel).resolve(Type.tpVoid);
 		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
 			CaseLabel cas = (CaseLabel)((ASTNormalCase)cases[0]).resolve(Type.tpVoid);
-			BlockStat st = new BlockStat(pos,parent,cas.stats);
+			BlockStat st = cas.stats;
 			st.setBreakTarget(true);
 			st = (BlockStat)st;
 			if( ((CaseLabel)cas).val == null ) {
@@ -602,13 +593,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				cosw = Code.newLookupSwitch(tags);
 				Code.addInstr(Instr.op_lookupswitch,cosw);
 			}
-			Code.addVars(vars);
+			//Code.addVars(vars);
 			for(int i=0; i < cases.length; i++) {
 				if( isAutoReturnable() )
 					cases[i].setAutoReturnable(true);
 				((CaseLabel)cases[i]).generate(Type.tpVoid);
 			}
-			Code.removeVars(vars);
+			//Code.removeVars(vars);
 			Code.addInstr(Instr.set_label,break_label);
 			Code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {
@@ -646,7 +637,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	}
 }
 
-public class CatchInfo extends ASTNode implements ScopeOfNames {
+public class CatchInfo extends ASTNode implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
@@ -679,9 +670,14 @@ public class CatchInfo extends ASTNode implements ScopeOfNames {
 		body = null;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	{
+		false
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {

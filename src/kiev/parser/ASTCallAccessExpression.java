@@ -66,15 +66,15 @@ public class ASTCallAccessExpression extends Expr {
 		Type ret = reqType;
 	retry_with_null_ret:;
 		ASTNode@ m;
-		ResPath path = new ResPath();
+		ResInfo info = new ResInfo();
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
 		&& !PassInfo.method.isStatic() ) {
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,m,path,func,args,ret,tp,0) ) {
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,m,info,func,args,ret,tp,0) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func,args,ret));
 			}
-			if( path.length() == 0 )
+			if( info.path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),true).resolve(ret);
 			else
 				throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
@@ -84,10 +84,11 @@ public class ASTCallAccessExpression extends Expr {
 				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 			if( o instanceof Struct ) {
 				cl = (Struct)o;
-				if( !PassInfo.resolveBestMethodR(cl,m,path,func,args,ret,tp,0) ) {
+				if( !PassInfo.resolveBestMethodR(cl,m,info,func,args,ret,tp,0) ) {
 					// May be a closure
 					PVar<ASTNode> closure = new PVar<ASTNode>();
-					if( !cl.resolveNameR(closure,null,func,tp,0) ) {
+					info = new ResInfo();
+					if( !cl.resolveNameR(closure,info,func,tp,0) ) {
 						if( ret != null ) { ret = null; goto retry_with_null_ret; }
 						throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args,ret));
 					}
@@ -95,10 +96,10 @@ public class ASTCallAccessExpression extends Expr {
 						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 						) {
-							if( path.length() == 0 )
+							if( info.path.length() == 0 )
 								return new ClosureCallExpr(pos,parent,closure,args).resolve(ret);
 							else {
-								return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path),closure,args).resolve(ret);
+								return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args).resolve(ret);
 							}
 						}
 					} catch(Exception eee) {
@@ -107,22 +108,8 @@ public class ASTCallAccessExpression extends Expr {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Method "+Method.toString(func,args,ret)+" unresolved in "+cl);
 				}
-				if( !m.isStatic() ) {
-/*					if( cl.isPizzaCase() ) {
-						PizzaCaseAttr case_attr = (PizzaCaseAttr)cl.getAttr(attrPizzaCase);
-						if( case_attr.casefields.length == 0 ) {
-							PVar<ASTNode> self = new PVar<ASTNode>();
-							if( !cl.resolveNameR(self,new PVar<List<ASTNode>>(List.Nil),nameTagSelf,tp,0) )
-								throw new CompilerException(pos,"Name "+self+" unresolved in "+cl);
-							obj = new StaticFieldAccessExpr(obj.getPos(),cl,(Field)self);
-						}
-						if( path == List.Nil )
-							return new CallAccessExpr(pos,parent,obj,(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
-						else
-							return new CallAccessExpr(pos,parent,Method.getAccessExpr(path,obj),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
-					}
-*/					throw new CompilerException(pos,"Static call to non-static method");
-				}
+				if( !m.isStatic() )
+					throw new CompilerException(pos,"Static call to non-static method");
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
 			}
 			else if( o instanceof Expr) {
@@ -142,10 +129,11 @@ public class ASTCallAccessExpression extends Expr {
 				if( tp.isReference() ) {
 			retry_resolving:;
 					cl = (Struct)tp.clazz;
-					if( !PassInfo.resolveBestMethodR(cl,m,path,func,args,ret,tp,0) ) {
+					if( !PassInfo.resolveBestMethodR(cl,m,info,func,args,ret,tp,0) ) {
 						// May be a closure
 						PVar<ASTNode> closure = new PVar<ASTNode>();
-						if( !cl.resolveNameR(closure,null,func,tp,0) ) {
+						info = new ResInfo();
+						if( !cl.resolveNameR(closure,info,func,tp,0) ) {
 							if( o instanceof Expr && snitps != null ) {
 								if( snitps_index < snitps.length ) {
 									tp = snitps[snitps_index++];
@@ -161,10 +149,10 @@ public class ASTCallAccessExpression extends Expr {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 							) {
-								if( path.length() == 0 )
+								if( info.path.length() == 0 )
 									return new ClosureCallExpr(pos,parent,(Expr)o,closure,args).resolve(reqType);
 								else {
-									return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path,(Expr)o),closure,args).resolve(reqType);
+									return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info,(Expr)o),closure,args).resolve(reqType);
 								}
 							}
 						} catch(Exception eee) {
@@ -203,7 +191,7 @@ public class ASTCallAccessExpression extends Expr {
 						if( m.isStatic() )
 							return new CallExpr(pos,parent,(Method)m,args).resolve(reqType);
 						else
-							return new CallAccessExpr(pos,parent,Method.getAccessExpr(path,obj),
+							return new CallAccessExpr(pos,parent,Method.getAccessExpr(info,obj),
 								(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 					}
 				} else {

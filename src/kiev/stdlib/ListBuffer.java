@@ -2,7 +2,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev library.
- 
+
  The Kiev library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public License as
  published by the Free Software Foundation.
@@ -17,14 +17,14 @@
  write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.stdlib;
 
 /**
  * This Class is a growable buffer for lists, modelled after class
  * java.lang.StringBuffer. It is mainly used
- * to create Lists. 
- * 
+ * to create Lists.
+ *
  * Note that the method toList() does not create a copy of the
  * internal buffer.  Instead the buffer is marked as shared. Any
  * further changes to the buffer will cause a copy to be made. <p>
@@ -35,7 +35,7 @@ package kiev.stdlib;
  */
 
 import kiev.stdlib.List.*;
- 
+
 public final class ListBuffer<A>
 	$generate <int>,<long>,<float>,<double>
 {
@@ -197,7 +197,7 @@ public final class ListBuffer<A>
 	/**
 	 * updates an element in the buffer.
 	 * @param offset	the offset at which to update
-	 * @param elem	the new element 
+	 * @param elem	the new element
 	 * @return 		the ListBuffer itself, NOT a new one.
 	 * @exception	IndexOutOfBoundsException If the offset is invalid.
 	 */
@@ -225,5 +225,15 @@ public final class ListBuffer<A>
 	public List<A> toList() {
 		shared = true;
 		return elems;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append('{');
+		foreach (A e; elems) {
+			sb.append(e).append(',');
+		}
+		sb.append('}');
+		return sb.toString();
 	}
 }

@@ -501,10 +501,10 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 						flags |= ACC_PUBLIC;
 					}
 					Type type = ((ASTType)fields.type).pass2();
-					if( (flags & ACC_PROLOGVAR) != 0 ) {
-            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-					}
+//					if( (flags & ACC_PROLOGVAR) != 0 ) {
+//            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
+//						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
+//					}
 					ASTPack pack = fields.pack;
 					if( pack != null ) {
 						if( !type.isIntegerInCode() ) {
@@ -568,16 +568,16 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							abstr_fields = abstr_fields.concat(f);
 						}
 						if (fdecl.init == null && fdecl.dim==0) {
-							if( (flags & ACC_PROLOGVAR) != 0) {
-								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
-								f.setInitWrapper(true);
-							}
-							else if(type.clazz.isWrapper()) {
+//							if( (flags & ACC_PROLOGVAR) != 0) {
+//								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
+//								f.setInitWrapper(true);
+//							} else
+							if(type.clazz.isWrapper()) {
 								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
 								f.setInitWrapper(true);
 							}
 						} else {
-							if( (flags & ACC_PROLOGVAR) != 0 || type.clazz.isWrapper()) {
+							if( /*(flags & ACC_PROLOGVAR) != 0 ||*/ type.clazz.isWrapper()) {
 								if (fdecl.of_wrapper)
 									f.init = fdecl.init;
 								else

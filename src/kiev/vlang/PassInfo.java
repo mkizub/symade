@@ -90,9 +90,9 @@ public class PassInfo {
 //			if( node instanceof Statement )
 //				Code.pushStackPos();
 //		}
-		if( node instanceof ScopeOfNames ) {
+		if( node instanceof Scope ) {
 			trace(Kiev.debugAST,"AST enetred scope '"+node+"'"+debugAt());
-			enterScope((ScopeOfNames)node);
+			enterScope((Scope)node);
 		}
 	}
 
@@ -135,9 +135,9 @@ public class PassInfo {
 //			if( node instanceof Statement )
 //				code.popStackPos();
 //		}
-		if( node instanceof ScopeOfNames ) {
+		if( node instanceof Scope ) {
 			trace(Kiev.debugAST,"AST leaved scope '"+node+"'"+debugAt());
-			leaveScope((ScopeOfNames)node);
+			leaveScope((Scope)node);
 		}
 	}
 
@@ -160,77 +160,17 @@ public class PassInfo {
 		return new String(msg,0,from,to-from);
 	}
 
-	public static class NameAndPath {
-		public KString			name;
-		public ASTNode			node;
-		public List<ASTNode>	path;
-
-		public NameAndPath(KString name, ASTNode node, List<ASTNode> path) {
-			this.name = name;
-			this.node = node;
-			this.path = path;
-		}
-
-		public String toString() {
-			String s = "";
-			foreach(ASTNode n; path)
-				s = s + ((Named)n).getName() + '.';
-			return s + node;
-		}
-	}
-
-	public static List<ScopeOfNames>			scopes_of_symbols = List.Nil;
-	public static List<ListBuffer<NameAndPath>>	scope_symbols = List.Nil;
-	public static Symtable						symbols = new Symtable();
-
-	public static void enterScope(ScopeOfNames sc) {
-		scope_symbols = new List.Cons<ListBuffer<NameAndPath>>(new ListBuffer<NameAndPath>(), scope_symbols);
-		scopes_of_symbols = new List.Cons<ScopeOfNames>(sc,scopes_of_symbols);
+	public static void enterScope(Scope sc) {
 		trace(Kiev.debugResolve,"Entered into scope "+sc);
 	}
 
-	public static void leaveScope(ScopeOfNames scope) {
-		if( scopes_of_symbols.head() != scope )
-			throw new RuntimeException("Enter/leave scopes missmatch - "+scope_symbols.head()+" != "+scope);
-		for(List<NameAndPath> sc = scope_symbols.head().toList(); sc != List.Nil; sc = sc.tail() ) {
-			trace(Kiev.debugResolve,"removing resolved symbol "+sc.head()+" for scope "+scope);
-			if( symbols.remove(sc.head().name) == null )
-				throw new RuntimeException("Symbol "+sc.head()+" was not removed from table in scope "+scope);
-		}
+	public static void leaveScope(Scope scope) {
 		trace(Kiev.debugResolve,"Leave scope "+scope);
-		scopes_of_symbols = scopes_of_symbols.tail();
-		scope_symbols = scope_symbols.tail();
-	}
-
-	public static void addResolvedNode(KString name, ASTNode node, ScopeOfNames scope) {
-		addResolvedNode(name,node,(List<ASTNode>)List.Nil,scope);
-	}
-
-	public static void addResolvedNode(KString name, ASTNode node, ResPath path, ScopeOfNames scope) {
-		if (path == null)
-			addResolvedNode(name,node,(List<ASTNode>)List.Nil,scope);
-		else
-			addResolvedNode(name,node,path.toList(),scope);
-	}
-
-	public static void addResolvedNode(KString name, ASTNode node, List<ASTNode> np, ScopeOfNames scope) {
-		trace(Kiev.debugResolve,"add resolved symbol "+node+" in scope "+scope);
-		List<ListBuffer<NameAndPath> > l = scope_symbols;
-		List<ScopeOfNames> sl = scopes_of_symbols;
-		for(; l != List.Nil; l = l.tail(), sl = sl.tail() ) {
-			if( sl.head() == scope ) {
-				NameAndPath nap = new NameAndPath(name,node,np);
-				l.head().prepend(nap);
-				symbols.put(name,nap);
-				return;
-			}
-		}
-		throw new RuntimeException("Scope not found: "+scope+"\n\tin list: "+scopes_of_symbols);
 	}
 
 	public static boolean checkClassName(KString qname) {
 		PVar<ASTNode> node = new PVar<ASTNode>();
-		return resolveNameR(node,new ResPath(),qname,null,0)
+		return resolveNameR(node,new ResInfo(),qname,null,0)
 			&& ((node instanceof Struct && !node.isPackage()) || node instanceof Type);
 	}
 
@@ -238,11 +178,11 @@ public class PassInfo {
 	{
 		KStringTokenizer sigt = new KStringTokenizer(name,'.');
 		PVar<ASTNode> cl = new PVar<ASTNode>();
-		if( !resolveNameR(cl,new ResPath(),sigt.nextToken(),null,resfl) || !(cl instanceof Struct ))
+		if( !resolveNameR(cl,new ResInfo(),sigt.nextToken(),null,resfl) || !(cl instanceof Struct ))
 			return false;
 		while( cl instanceof Struct
 			&& sigt.hasMoreTokens()
-			&& ((Struct)cl).resolveNameR(cl, new ResPath(), sigt.nextToken(), ((Struct)cl).type, resfl & ResolveFlags.Unique)
+			&& ((Struct)cl).resolveNameR(cl, new ResInfo(), sigt.nextToken(), ((Struct)cl).type, resfl & ResolveFlags.Unique)
 			);
 		if( !(cl instanceof Struct) ) return false;
 		((Struct)cl).checkResolved();
@@ -265,23 +205,6 @@ public class PassInfo {
 		return true;
 	}
 
-	static boolean checkSymbolInHash(ASTNode@ node, ResPath path, KString name, int resfl) {
-		NameAndPath sym = symbols.get(name);
-		if( sym != null ) {
-			if (path == null && sym.path != List.Nil) {
-				node = null;
-				return false;
-			}
-			trace(Kiev.debugResolve,"Name "+name+" resolved from hash as "+sym);
-			node = (ASTNode)sym.node;
-			foreach (Field f; sym.path) path.append(f);
-			return true;
-		} else {
-			node = null;
-			return false;
-		}
-	}
-
 	rule public static resolveOperatorR(ASTNode@ op)
 		ASTNode@ p;
 	{
@@ -290,7 +213,7 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	rule public static resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public static resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -304,32 +227,18 @@ public class PassInfo {
 		p instanceof Struct,
 		((Struct)p).resolveNameR(node, path, qname_tail, tp, resfl)
 	;
-		checkSymbolInHash(node,path,name,resfl), $cut
-	;
-		p @= new PathEnumerator(), p instanceof ScopeOfNames,
+		p @= new PathEnumerator(), p instanceof Scope,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
-		((ScopeOfNames)p).resolveNameR(node,path,name,tp,resfl),
-		checkResolvedPathForName(node,path), $cut,
-		addResolvedNode(name,node,path,(ScopeOfNames)p)
+		((Scope)p).resolveNameR(node,path,name,tp,resfl)
 	}
 
-	static boolean checkResolvedPathForName(ASTNode node, List<ASTNode>@ p) {
-		if (p == null)
-			return checkResolvedPathForName(node, new ResPath());
-		ResPath path = new ResPath();
-		foreach (ASTNode n; p) path.append((Field)n);
-		boolean res = checkResolvedPathForName(node,path);
-		if (res) p = path.toList();
-		return res;
-	}
-
-	static boolean checkResolvedPathForName(ASTNode node, ResPath path) {
+	static boolean checkResolvedPathForName(ASTNode node, ResInfo info) {
 		assert(node != null);
 		// Vars will be auto-wrapped in Ref<...> if needed
 		if( node instanceof Var ) return true;
 		// Structures/types/typedefs do not need path
 		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
-			if (path != null) path.setLength(0);
+			info.path.setLength(0);
 			return true;
 		}
 		// Check field
@@ -337,24 +246,23 @@ public class PassInfo {
 			trace( Kiev.debugResolve, "check path for "+node+" to access from "+PassInfo.clazz+" to "+node.parent);
 			assert( node.parent instanceof Struct );
 			if( node.isStatic() ) {
-				if (path != null) path.setLength(0);
+				info.path.setLength(0);
 				trace( Kiev.debugResolve, "path for static "+node+" trunkated");
 				return true;
 			}
 			if( PassInfo.clazz.instanceOf((Struct)node.parent) ) {
-				assert( path == null || path.length() == 0 );
+				assert( info.path.length() == 0 );
 				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
 				return true;
 			}
 			if( node instanceof Field && node.isVirtual() ) {
-				assert( path == null || path.length() == 0 );
+				assert( info.path.length() == 0 );
 				trace( Kiev.debugResolve, "virtual field "+node+" does not requare path");
 				return true;
 			}
 			Struct s = PassInfo.clazz;
 			// Check that path != List.Nil
-			if (path == null) return false;
-			if( path.length() == 0 ) {
+			if( info.path.length() == 0 ) {
 				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
 				// If inner clazz is static - fail
 				if( PassInfo.clazz.isStatic() ) {
@@ -364,7 +272,7 @@ public class PassInfo {
 				}
 				s = PassInfo.clazz;
 			} else {
-				s = path.getAt(0).getType().clazz;
+				s = info.path.getAt(0).getType().clazz;
 				if( s.instanceOf((Struct)node.parent) ) {
 					trace( Kiev.debugResolve, "valid path - "+path);
 					return true;
@@ -376,7 +284,7 @@ public class PassInfo {
 			for(;;) {
 				foreach(Field f; s.fields; f.name.name.startsWith(Constants.nameThisDollar) ) {
 					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
-					path.prepend(f);
+					info.path.prepend(f);
 					// Check we've finished
 					if( f.type.clazz.instanceOf((Struct)node.parent)) return true;
 					s = f.type.clazz;
@@ -390,28 +298,28 @@ public class PassInfo {
 	}
 
 	public static boolean resolveBestMethodR(
-		ScopeOfMethods sc,
+		Scope sc,
 		ASTNode@ node,
-		ResPath path,
+		ResInfo info,
 		KString name,
 		Expr[] args,
 		Type ret,
 		Type type,
 		int resfl)
 	{
-		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,args)+" in "+sc+" for base type "+type+" with path "+path);
+		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,args)+" in "+sc+" for base type "+type+" with path "+info.path);
 		List<Method> lm = List.Nil;
-		List<ResPath> lp = List.Nil;
+		List<ResInfo> lp = List.Nil;
 		if( name.equals(Constants.nameInit) || name.equals(Constants.nameClassInit) )
 			resfl |= ResolveFlags.NoForwards | ResolveFlags.NoSuper;
 		if( sc == Type.tpPrologVar.clazz )
 			resfl |= ResolveFlags.NoSuper;
-		foreach( sc.resolveMethodR(node,path,name,args,ret,type,resfl) ) {
-			trace(Kiev.debugResolve,"Candidate method "+node+" found...");
+		foreach( sc.resolveMethodR(node,info,name,args,ret,type,resfl) ) {
+			trace(Kiev.debugResolve,"Candidate method "+node+" with path/transform "+info.path+"/"+info.transforms+" found...");
 			if (node.isPrivate() && clazz != (Struct)node.parent)
 				continue;
 			lm = lm.concat((Method)node);
-			lp = lp.concat(path);
+			lp = lp.concat(info.copy());
 		}
 		if( lm == List.Nil ) {
 			trace(Kiev.debugResolve,"Nothing found...");
@@ -419,23 +327,23 @@ public class PassInfo {
 		}
 		if( lm.tail() == List.Nil ) {
 			node = lm.head();
-			path = lp.head();
+			info.set(lp.head());
 			return true;
 		}
 		List<Method> lm1 = lm;
-		List<ResPath> lp1 = lp;
+		List<ResInfo> lp1 = lp;
 	next_method:
 		for(; lm1 != List.Nil; lm1 = lm1.tail(), lp1 = lp1.tail()) {
 			Method m1 = lm1.head();
-			ResPath p1 = lp1.head();
+			ResInfo p1 = lp1.head();
 
 			List<Method> lm2 = lm;
-			List<ResPath> lp2 = lp;
+			List<ResInfo> lp2 = lp;
 
 			for(; lm2 != List.Nil; lm2 = lm2.tail(), lp2 = lp2.tail()) {
 				Method m2 = lm2.head();
 				if( m1 == m2 ) continue;
-				ResPath p2 = lp2.head();
+				ResInfo p2 = lp2.head();
 
 				boolean m1_is_better = true;
 				boolean m2_is_better = true;
@@ -469,8 +377,8 @@ public class PassInfo {
 						if( m2.parent == sc ) continue next_method;
 						if( ((Struct)m1.parent).instanceOf((Struct)m2.parent) ) continue;
 					}
-					if( (p1 == null || p1.length() == 0) && (p2 != null && p2.length()  > 0) ) continue;
-					if( (p1 != null && p1.length()  > 0) && (p2 == null || p2.length() == 0) ) continue next_method;
+					if( p1.transforms < p2.transforms ) continue;
+					if( p1.transforms > p2.transforms ) continue next_method;
 					continue next_method; // Totally equals
 				}
 				else if( m1_is_better && !m2_is_better ) continue;
@@ -478,14 +386,14 @@ public class PassInfo {
 			}
 			// Is better than all in list
 			node = m1;
-			path = p1;
+			info.set(p1);
 			return true;
 		}
 		// Check that all methods in list are multimethods
 		// and all path-es are the same
 		boolean all_multi = true;
 		Method m_multi = lm.head();
-		ResPath p_multi = lp.head();
+		ResInfo p_multi = lp.head();
 		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
 			if( !lm.head().isMultiMethod() ) { all_multi=false; break; }
 			if( !lp.head().equals(p_multi) ) { all_multi=false; break; }
@@ -496,34 +404,36 @@ public class PassInfo {
 		}
 		if( all_multi ) {
 			node = m_multi;
-			path = p_multi;
+			info.set(p_multi);
 			return true;
 		}
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
 			msg.append("\t").append(lm.head().parent).append('.');
-			foreach(ASTNode n; lp.head();) msg.append(n).append('.');
+			foreach(ASTNode n; lp.head().path.toList();) msg.append(n).append('.');
 			msg.append(lm.head()).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(name,args,ret));
 		throw new RuntimeException(msg.toString());
 	}
 
-	rule public static resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public static resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
 	{
-		name.indexOf('.') > 0,
+		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
 		resolveNameR(p,null,qname_head,type,resfl),
 		p instanceof Struct,
-		((Struct)p).resolveMethodR(node, path, qname_tail, args, ret, type, resfl)
+		((Struct)p).resolveMethodR(node, info, qname_tail, args, ret, type, resfl)
 	;
-		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
-		resolveBestMethodR((ScopeOfMethods)p,node,path,name,args,ret,type,resfl),
-		checkResolvedPathForName(node,path)
+		p @= new PathEnumerator(), p instanceof Scope,
+		resolveBestMethodR((Scope)p,node,info,name,args,ret,type,resfl),
+		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+info.path+"/"+info.transforms+" found..."),
+		$cut
+		//,checkResolvedPathForName(node,path)
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */

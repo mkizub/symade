@@ -83,12 +83,12 @@ public class ASTFormalParameter extends ASTNode {
 			if (mm_type != null)
 				mm_type = Type.newArrayType(mm_type);
 		}
-		if( (flags & ACC_PROLOGVAR) != 0 ) {
-			Kiev.reportWarning(pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-			type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-			if (mm_type != null)
-				throw new CompilerException(this.mm_type.getPos(),"You can't specify 'actual' type for prolog parameter");
-		}
+//		if( (flags & ACC_PROLOGVAR) != 0 ) {
+//			Kiev.reportWarning(pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
+//			type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
+//			if (mm_type != null)
+//				throw new CompilerException(this.mm_type.getPos(),"You can't specify 'actual' type for prolog parameter");
+//		}
 		resolved_type = type;
 		resolved_jtype = (mm_type!=null) ? mm_type : null;
 		return new Var(pos,name,type,flags);

@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
 	public ASTNode[]			syntax = ASTNode.emptyArray;
@@ -133,7 +133,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		ASTNode@ syn;
 	{
 		syn @= syntax,
@@ -160,7 +160,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ syn;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)

@@ -76,7 +76,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -94,19 +94,19 @@ public class RuleMethod extends Method {
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					PassInfo.addResolvedNode(params[i].getName().name,params[i],this);
 					NodeInfoPass.setNodeType(params[i],params[i].type);
 					NodeInfoPass.setNodeInitialized(params[i],true);
 				}
 			}
+			Var penv = isStatic() ? params[0] : params[1];
+			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			for(int i=0; i < localvars.length; i++) {
-				PassInfo.addResolvedNode(localvars[i].getName().name,localvars[i],this);
 				NodeInfoPass.setNodeType(localvars[i],localvars[i].type);
 //				NodeInfoPass.setNodeInitialized(localvars[i],true);
 			}
-			max_vars = 0;
-			for( int i=0; i < localvars.length; i++)
-				if( !localvars[i].isLocalPrologForVar() ) max_vars++;
+//			max_vars = 0;
+//			for( int i=0; i < localvars.length; i++)
+//				if( !localvars[i].isLocalPrologForVar() ) max_vars++;
 			if( body != null ) {
 				body.parent = this;
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
@@ -307,14 +307,14 @@ public abstract class ASTRuleNode extends ASTNode {
 	}
 
 	public String createTextVarAccess(Var v) {
-		if( !v.isLocalPrologVar() ) return v.name.toString();
+		if( !v.isLocalRuleVar() ) return v.name.toString();
 		return "$env."+v;
 	}
 
 }
 
 
-public final class RuleBlock extends ASTNode implements ScopeOfNames {
+public final class RuleBlock extends ASTNode implements Scope {
 
 	public ASTRuleNode	node;
 	public ASTNode[]	stats;
@@ -414,7 +414,7 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ stat;
 	{
 		stat @= stats,
@@ -422,6 +422,12 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 		((DeclStat)stat).var.name.equals(name),
 		node ?= ((DeclStat)stat).var
 	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	{
+		false
+	}
+
 }
 
 

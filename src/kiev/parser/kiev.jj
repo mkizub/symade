@@ -440,9 +440,9 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 //| < MULTIMETHOD: "multimethod" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < VIRTUAL: "virtual" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < VARARGS: "..." >
-| < FORWARD: "forward" > { if(Kiev.javaMode || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
+| < FORWARD: "forward" > { if(Kiev.javaMode /*|| !kiev020.declMode*/) matchedToken.kind=IDENTIFIER; }
 | < RULE: "rule" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < PVAR: "pvar" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
+//| < PVAR: "pvar" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < PCUT: "$cut" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < CAST: "$cast" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < REINTERP: "$reinterp" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
@@ -1432,7 +1432,7 @@ void Modifier() :
 	//| t="multimethod"
 	| t="virtual"
 	| t="forward"
-	| t="pvar"
+//	| t="pvar"
 
 	| t="$wrapper"
 
@@ -2473,7 +2473,7 @@ void RuleDeclaration() :
   ASTRuleDeclaration jjtn000 = new ASTRuleDeclaration(JJTRULEDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ ASTBlock bl; ASTFormalParameter lv; }
+/*@egen*/ ASTBlock bl; /*ASTFormalParameter lv;*/ }
 {/*@bgen(jjtree) RuleDeclaration */
         try {
 /*@egen*/
@@ -2495,8 +2495,8 @@ void RuleDeclaration() :
 		Alias()
 	)*
 	(
-		lv=FormalParameter() { lv.setLocalPrologVar(true); lv = null; }
-		";"
+		//lv=FormalParameter() { lv.setLocalPrologVar(true); lv = null; }
+		VarDecls()
 	)*
 	try {
 		(
@@ -4242,16 +4242,17 @@ void BlockStatement()       :
 { boolean old_declMode; }
 {
 	(
-		LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
-		VarDecls() //#DeclStatement
-	|	LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
+		LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
 		{ old_declMode = declMode; declMode = false; }
 		try {
 			TypeDeclaration()
 		} finally {
 			declMode = old_declMode;
 		}
-	|
+	//|	LOOKAHEAD( ( Modifier() )* Type() Identifier() ("[" "]")* ("=" | ":=" | "," | ";") )
+	|	LOOKAHEAD( ( Modifier() )* Type() Identifier() )
+		VarDecls() //#DeclStatement
+	|	LOOKAHEAD(0)
 		Statement()
 	)
 }

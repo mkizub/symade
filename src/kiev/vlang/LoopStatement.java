@@ -235,7 +235,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-public class ForInit extends ASTNode implements ScopeOfNames {
+public class ForInit extends ASTNode implements Scope {
 
 	public Type	type;
 	public Var[]	vars;
@@ -260,9 +260,25 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+		ASTNode@ n;
 	{
-		node @= vars, ((Var)node).name.equals(name)
+		n @= vars,
+		{
+			((Var)n).name.equals(name), node ?= n
+		;	n.isForward(),
+			info.enterForward(n) : info.leaveForward(n),
+			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+		}
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		ASTNode@ n;
+	{
+		n @= vars,
+		n.isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -278,7 +294,7 @@ public class ForInit extends ASTNode implements ScopeOfNames {
 	}
 }
 
-public class ForStat extends LoopStat implements ScopeOfNames {
+public class ForStat extends LoopStat implements Scope {
 
 	public ASTNode		init;
 	public BooleanExpr	cond;
@@ -347,9 +363,12 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
 							vars[j] = new Var(vdecl.pos,this,vname,tp,flags);
+							if (((ASTVarDecls)init).hasFinal()) vars[j].setFinal(true);
+							if (((ASTVarDecls)init).hasForward()) vars[j].setForward(true);
 							if( vdecl.init != null )
 								inits[j] = vdecl.init.resolveExpr(vars[j].type);
-							PassInfo.addResolvedNode(vars[j].getName().name,vars[j],this);
+							else if (vars[j].isFinal())
+								Kiev.reportError(vars[j].pos,"Final variable "+vars[j]+" must have initializer");
 						}
 						init = new ForInit(init.pos,type,vars,inits);
 					}
@@ -396,9 +415,17 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
-		init instanceof ForInit, ((ForInit)init).resolveNameR(node,path,name,tp,resfl)
+		init instanceof ForInit,
+		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		ASTNode@ n;
+	{
+		init instanceof ForInit,
+		((ForInit)init).resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public void generate(Type reqType) {
@@ -489,7 +516,7 @@ public class ForStat extends LoopStat implements ScopeOfNames {
 	}
 }
 
-public class ForEachStat extends LoopStat implements ScopeOfNames {
+public class ForEachStat extends LoopStat implements Scope {
 
 	public Var			var;
 	public Var			iter;
@@ -602,7 +629,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itype = ctype;
 				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,null,nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new ResInfo(),nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
 				itype = Type.getRealType(ctype,elems.type.ret);
 				mode = ELEMS;
 			} else if( ctype == Type.tpRule &&
@@ -704,7 +731,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			case JENUM:
 			case ELEMS:
 				/* iter.hasMoreElements() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,null,
+				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,new ResInfo(),
 					nameHasMoreElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new BooleanWrapperExpr(iter.pos,
@@ -743,7 +770,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 			case JENUM:
 			case ELEMS:
 				/* var = iter.nextElement() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,null,
+				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,new ResInfo(),
 					nameNextElement,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 					var_init = new CallAccessExpr(iter.pos,
@@ -805,11 +832,22 @@ public class ForEachStat extends LoopStat implements ScopeOfNames {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
+	}
+
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Var@ n;
+	{
+		{	n ?= var
+		;	n ?= iter
+		},
+		n.isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public void generate(Type reqType) {

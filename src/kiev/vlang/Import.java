@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public class Import extends ASTNode implements Constants, Scope {
 	public static final Import[] emptyArray = new Import[0];
 
 	public static final int	IMPORT_CLASS   = 0;
@@ -71,7 +71,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public void generate() {}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		Struct@ s;
 		Struct@ sub;
 		ASTNode@ tmp;
@@ -121,7 +121,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		mode == IMPORT_STATIC && !star && this.node instanceof Method,
 		((Method)this.node).equalsByCast(name,args,ret,type,resfl),

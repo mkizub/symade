@@ -235,17 +235,20 @@ public abstract class ASTNode implements Constants {
 	// Var specific
 	public boolean isNeedProxy()	{ return (flags & ACC_NEED_PROXY) != 0; }
 	public boolean isNeedRefProxy()	{ return (flags & ACC_NEED_REFPROXY) != 0; }
-	public boolean isPrologVar()	{ return (flags & ACC_PROLOGVAR) != 0; }
-	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
-	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
+//	public boolean isPrologVar()	{ return (flags & ACC_PROLOGVAR) != 0; }
+//	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
+	public boolean isLocalRuleVar()	{ return (flags & ACC_LOCALRULEVAR) != 0; }
+//	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
 	public boolean isClosureProxy()	{ return (flags & ACC_CLOSURE_PROXY) != 0; }
 	public boolean isInitWrapper()	{ return (flags & ACC_INIT_WRAPPER) != 0; }
 
 	// Field specific
 	public boolean isVirtual()		{ return (flags & ACC_VIRTUAL) != 0; }
-	public boolean isForward()		{ return (flags & ACC_FORWARD) != 0; }
 	public boolean isPackerField()	{ return (flags & ACC_PACKER_FIELD) != 0; }
 	public boolean isPackedField()	{ return (flags & ACC_PACKED_FIELD) != 0; }
+
+	// Var/field
+	public boolean isForward()		{ return (flags & ACC_FORWARD) != 0; }
 
 	// Expr specific
 	public boolean isUseNoProxy()	{ return (flags & ACC_USE_NOPROXY) != 0; }
@@ -497,24 +500,30 @@ public abstract class ASTNode implements Constants {
 		if( on ) flags |= ACC_NEED_PROXY | ACC_NEED_REFPROXY;
 		else flags &= ~ACC_NEED_REFPROXY;
 	}
-	public void setPrologVar(boolean on) {
+//	public void setPrologVar(boolean on) {
+//		assert(this instanceof Var,"For node "+this.getClass());
+//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROLOGVAR set to "+on+" from "+((flags & ACC_PROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
+//		if( on ) flags |= ACC_PROLOGVAR;
+//		else flags &= ~ACC_PROLOGVAR;
+//	}
+//	public void setLocalPrologVar(boolean on) {
+//		assert(this instanceof Var || this instanceof kiev.parser.ASTFormalParameter,"For node "+this.getClass());
+//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
+//		if( on ) flags |= ACC_LOCALPROLOGVAR;
+//		else flags &= ~ACC_LOCALPROLOGVAR;
+//	}
+	public void setLocalRuleVar(boolean on) {
 		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROLOGVAR set to "+on+" from "+((flags & ACC_PROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PROLOGVAR;
-		else flags &= ~ACC_PROLOGVAR;
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALRULEVAR set to "+on+" from "+((flags & ACC_LOCALRULEVAR)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_LOCALRULEVAR;
+		else flags &= ~ACC_LOCALRULEVAR;
 	}
-	public void setLocalPrologVar(boolean on) {
-		assert(this instanceof Var || this instanceof kiev.parser.ASTFormalParameter,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_LOCALPROLOGVAR;
-		else flags &= ~ACC_LOCALPROLOGVAR;
-	}
-	public void setLocalPrologForVar(boolean on) {
-		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGFORVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGFORVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_LOCALPROLOGFORVAR;
-		else flags &= ~ACC_LOCALPROLOGFORVAR;
-	}
+//	public void setLocalPrologForVar(boolean on) {
+//		assert(this instanceof Var,"For node "+this.getClass());
+//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGFORVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGFORVAR)!=0)+", now 0x"+Integer.toHexString(flags));
+//		if( on ) flags |= ACC_LOCALPROLOGFORVAR;
+//		else flags &= ~ACC_LOCALPROLOGFORVAR;
+//	}
 	public void setClosureProxy(boolean on) {
 		assert(this instanceof Var,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CLOSURE_PROXY set to "+on+" from "+((flags & ACC_CLOSURE_PROXY)!=0)+", now 0x"+Integer.toHexString(flags));
@@ -538,12 +547,6 @@ public abstract class ASTNode implements Constants {
 		if( on ) flags |= ACC_VIRTUAL;
 		else flags &= ~ACC_VIRTUAL;
 	}
-	public void setForward(boolean on) {
-		assert(this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FORWARD set to "+on+" from "+((flags & ACC_FORWARD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_FORWARD;
-		else flags &= ~ACC_FORWARD;
-	}
 	public void setPackerField(boolean on) {
 		assert(this instanceof Field,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PACKER_FIELD set to "+on+" from "+((flags & ACC_PACKER_FIELD)!=0)+", now 0x"+Integer.toHexString(flags));
@@ -555,6 +558,14 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PACKED_FIELD set to "+on+" from "+((flags & ACC_PACKED_FIELD)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_PACKED_FIELD;
 		else flags &= ~ACC_PACKED_FIELD;
+	}
+
+	// Var/field
+	public void setForward(boolean on) {
+		assert(this instanceof Field || this instanceof Var,"For node "+this.getClass());
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FORWARD set to "+on+" from "+((flags & ACC_FORWARD)!=0)+", now 0x"+Integer.toHexString(flags));
+		if( on ) flags |= ACC_FORWARD;
+		else flags &= ~ACC_FORWARD;
 	}
 
 	// Expr specific

@@ -687,16 +687,7 @@ public class ClosureCallExpr extends Expr {
 		try {
 			if( expr != null )
 				expr = (Expr)expr.resolve(null);
-			ASTNode v;
-			if( func instanceof Expr )
-				v = func;
-			else {
-//				PVar<ASTNode> f = new PVar<ASTNode>();
-//				if( !PassInfo.resolveNameR(f,new PVar<List<ASTNode>>(List.Nil),((Named)func).getName().name,null,0) )
-//					throw new RuntimeException("Unresolved method "+Method.toString(((Named)func).getName().name,args));
-//				else
-					v = func; //f;
-			}
+			ASTNode v = func;
 			Type tp1 = expr==null?null:expr.getType();
 			Type tp;
 			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof MethodType )
@@ -745,7 +736,7 @@ public class ClosureCallExpr extends Expr {
 			else
 				call_it_name = KString.from("call_"+((MethodType)tp).ret);
 			PVar<ASTNode> callIt = new PVar<ASTNode>();
-			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,null,call_it_name,Expr.emptyArray,null,reqType,0) ) {
+			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,new ResInfo(),call_it_name,Expr.emptyArray,null,reqType,ResolveFlags.NoForwards) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
 			} else {
 				call_it = (Method)callIt;

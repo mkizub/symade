@@ -71,11 +71,10 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         	pos = n.getPos();
 		}
     	else if( n instanceof ASTFormalParameter ) {
-    		if( n.isLocalPrologVar() ) {
-	        	localvars = (ASTNode[])Arrays.append(localvars,n);
-    		} else {
-	        	params = (ASTNode[])Arrays.append(params,n);
-	        }
+        	params = (ASTNode[])Arrays.append(params,n);
+        }
+    	else if( n instanceof ASTVarDecls ) {
+        	localvars = (ASTNode[])Arrays.append(localvars,n);
         }
     	else if( n instanceof ASTAlias ) {
         	aliases = (ASTAlias[])Arrays.append(aliases,n);
@@ -128,6 +127,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		Type type = Type.tpRule;
 		Var[] vars = new Var[params.length + 1];
 		vars[0] = new Var(pos,this,namePEnv,Type.tpRule,0);
+		vars[0].setForward(true);
 		Type[] margs = new Type[] {Type.tpRule};
 		Type[] mfargs = Type.emptyArray;
 		for(int i=0; i < params.length; i++) {
@@ -135,11 +135,31 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			vars[i+1] = fdecl.pass3();
 			margs = (Type[])Arrays.append(margs,vars[i+1].type);
 		}
-		Var[] lvars = new Var[localvars.length];
+		Var[] lvars = Var.emptyArray;
 		for(int i=0; i < localvars.length; i++) {
-			ASTFormalParameter fdecl = (ASTFormalParameter)localvars[i];
-			lvars[i] = fdecl.pass3();
-			lvars[i].setLocalPrologVar(true);
+			ASTVarDecls vdecls = (ASTVarDecls)localvars[i];
+			int flags = 0;
+			Type type = ((ASTType)vdecls.type).pass2();
+			int dim = 0;
+			while( type.isArray() ) { dim++; type = type.args[0]; }
+			Var[] vars = new Var[vdecls.vars.length];
+			Expr[] inits = new Expr[vdecls.vars.length];
+			for(int j=0; j < vdecls.vars.length; j++) {
+				ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
+				KString vname = vdecl.name;
+				Type tp = type;
+				for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
+				for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
+				vars[j] = new Var(vdecl.pos,this,vname,tp,flags);
+				if (vdecls.hasFinal()) vars[j].setFinal(true);
+				if (vdecls.hasForward()) vars[j].setForward(true);
+				vars[j].setLocalRuleVar(true);
+				if( vdecl.init != null )
+					inits[j] = vdecl.init.resolveExpr(vars[j].type);
+				else if (vars[j].isFinal())
+					Kiev.reportError(vars[j].pos,"Final variable "+vars[j]+" must have initializer");
+				lvars = (Var[])Arrays.append(lvars,vars[j]);
+			}
 		}
 //		if( isVarArgs() ) {
 //			vars[vars.length-1] = new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0);

@@ -70,8 +70,8 @@ public class ASTCallExpression extends Expr {
 //			}
         }
 		// method of current class or first-order function
-		PVar<ASTNode> m = new PVar<ASTNode>();
-		ResPath path = new ResPath();
+		PVar<ASTNode> m;
+		ResInfo info = new ResInfo();
 		Type tp = PassInfo.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -85,12 +85,12 @@ public class ASTCallExpression extends Expr {
 					args = (Expr[])Arrays.insert(args,
 						PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
 			}
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,path,PassInfo.method.name.name,args,ret,tp,0) )
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,info,PassInfo.method.name.name,args,ret,tp,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path.length() == 0 )
+            if( info.path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),false).resolve(ret);
 			else
-				return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
+				return new CallAccessExpr(pos,parent,Method.getAccessExpr(info),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
 		}
 		else if( func.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
@@ -113,9 +113,9 @@ public class ASTCallExpression extends Expr {
 				args = (Expr[])Arrays.insert(args,new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
 			}
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,
-					m,path,PassInfo.method.name.name,args,ret,PassInfo.clazz.super_clazz,0) )
+					m,info,PassInfo.method.name.name,args,ret,PassInfo.clazz.super_clazz,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
-            if( path.length() == 0 )
+            if( info.path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
@@ -126,11 +126,11 @@ public class ASTCallExpression extends Expr {
 					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,reqType.args[i],0)));
 				}
 			}
-			if( !PassInfo.resolveMethodR(m,path,func,args1,ret,tp,0) ) {
+			if( !PassInfo.resolveMethodR(m,info,func,args1,ret,tp,0) ) {
 				// May be a closure
 				PVar<ASTNode> closure = new PVar<ASTNode>();
-				ResPath path = new ResPath();
-				if( !PassInfo.resolveNameR(closure,path,func,tp,0) ) {
+				ResInfo info = new ResInfo();
+				if( !PassInfo.resolveNameR(closure,info,func,tp,0) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args,ret));
 				}
@@ -138,10 +138,10 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
-						if( path.length()  == 0 )
+						if( info.path.length()  == 0 )
 							return new ClosureCallExpr(pos,parent,closure,args).resolve(ret);
 						else {
-							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(path),closure,args).resolve(ret);
+							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args).resolve(ret);
 						}
 					}
 				} catch(Exception eee) {
@@ -180,11 +180,11 @@ public class ASTCallExpression extends Expr {
 				}
 			} else {
 				if( m.isStatic() )
-					path.setLength(0);
-	            if( path.length() == 0 )
+					info.path.setLength(0);
+	            if( info.path.length() == 0 )
 					return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 				else
-					return new CallAccessExpr(pos,parent,Method.getAccessExpr(path),(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
+					return new CallAccessExpr(pos,parent,Method.getAccessExpr(info),(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
 			}
 		}
 	}

@@ -99,31 +99,42 @@ public class ASTAccessExpression extends Expr {
 			if( o instanceof Struct && name.equals(nameThis) ) {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
-			List<ASTNode> res = List.Nil;
+			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
 			ASTNode@ v;
-			ResPath path;
+			ResInfo info;
+			int min_transforms = 8096;
 			if( o instanceof Expr && snitps != null && snitps.length > 1) {
 				snitps_index = 0;
 				while (snitps_index < snitps.length) {
 					v.$unbind();
-					path = new ResPath();
+					info = new ResInfo();
 					tp = snitps[snitps_index++];
 					cl = (Struct)tp.clazz;
-					foreach(cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
-						ASTNode e = makeExpr(v,path,o,cl);
-						res = new List.Cons<ASTNode>(e,res);
+					foreach(cl.resolveNameR(v,info,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+						if (info.transforms > min_transforms)
+							continue;
+						ASTNode e = makeExpr(v,info,o,cl);
+						if (info.transforms < min_transforms) {
+							res.setLength(0);
+						}
+						res.append(e);
 					}
 				}
 			} else {
 					v.$unbind();
-					path = new ResPath();
-					foreach(cl.resolveNameR(v,path,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
-						ASTNode e = makeExpr(v,path,o,cl);
-						res = new List.Cons<ASTNode>(e,res);
+					info = new ResInfo();
+					foreach(cl.resolveNameR(v,info,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+						if (info.transforms > min_transforms)
+							continue;
+						ASTNode e = makeExpr(v,info,o,cl);
+						if (info.transforms < min_transforms) {
+							res.setLength(0);
+						}
+						res.append(e);
 					}
 			}
-			if (res == List.Nil) {
-				resolve(reqType);
+			if (res.length() == 0) {
+				//resolve(reqType);
 				throw new CompilerException(pos,"Unresolved identifier "+name+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 			}
@@ -132,26 +143,26 @@ public class ASTAccessExpression extends Expr {
 					+(snitps==null?tp.toString():Arrays.toString(snitps));
 				Dumper dmp = new Dumper(false);
 				dmp.newLine(1);
-				foreach (ASTNode r; res) r.toJava(dmp).newLine();
+				foreach (ASTNode r; res.toList()) r.toJava(dmp).newLine();
 				dmp.newLine(-1);
 				throw new CompilerException(pos,msg+dmp);
 			}
-			ASTNode n = res.head();
+			ASTNode n = res.getAt(0);
 			if (n instanceof Expr)	return ((Expr)n).resolve(reqType);
 			return n;
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode makeExpr(ASTNode v, ResPath path, ASTNode o, Struct cl) {
+	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, Struct cl) {
 		if( v instanceof Field ) {
 			if( v.isStatic() )
 				return new StaticFieldAccessExpr(pos,cl,(Field)v);
-			if( path.length() == 0 ) {
+			if( info.path.length() == 0 ) {
 				if( o instanceof Struct )
 					throw new CompilerException(pos,"Static access to non-static field "+v);
 				return new AccessExpr(pos,(Expr)o,(Field)v);
 			} else {
-				List<ASTNode> acc = path.toList();
+				List<ASTNode> acc = info.path.toList();
 				if( o instanceof Struct && acc.head().isStatic() )
 					throw new CompilerException(pos,"Static access to non-static field "+v);
 
@@ -170,12 +181,12 @@ public class ASTAccessExpression extends Expr {
 		else if( v instanceof Method ) {
 			if( v.isStatic() )
 				return new CallExpr(pos,parent,(Method)v,Expr.emptyArray);
-			if( path.length() == 0 ) {
+			if( info.path.length() == 0 ) {
 				if( o instanceof Struct )
 					throw new CompilerException(pos,"Static access to non-static method "+v);
 				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray);
 			} else {
-				List<ASTNode> acc = path.toList();
+				List<ASTNode> acc = info.path.toList();
 				if( o instanceof Struct && acc.head().isStatic() )
 					throw new CompilerException(pos,"Static access to non-static method "+v);
 
@@ -183,7 +194,7 @@ public class ASTAccessExpression extends Expr {
 				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
 				expr.parent = parent;
 				acc = acc.tail();
-				foreach(ASTNode f; path)
+				foreach(ASTNode f; info.path)
 					expr = new AccessExpr(pos,expr,(Field)f);
 				return new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			}

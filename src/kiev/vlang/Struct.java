@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -218,7 +218,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			else
 				return dmp.append(super_clazz);
 		} else {
-			return dmp.append(name);
+			if (isLocal())
+				return dmp.append(name.short_name);
+			else
+				return dmp.append(name);
 		}
 	}
 
@@ -317,7 +320,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Boolean@ resolved;
 	{
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
@@ -325,27 +328,27 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Struct: resolving in "+this),
-			resolveNameR_1(node,path,name,tp,resfl),	// resolve in this class
+			resolveNameR_1(node,info,name,tp,resfl),	// resolve in this class
 			resolved = Boolean.TRUE
 		;	!resolved.booleanValue(),
 			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
 			(resfl & ResolveFlags.NoImports) == 0,
-			resolveNameR_2(node,path,name,tp,resfl),	// resolve in imports
+			resolveNameR_2(node,info,name,tp,resfl),	// resolve in imports
 			resolved = Boolean.TRUE
 		;	!resolved.booleanValue(),
 			this.name.short_name.equals(nameIdefault),
 			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
-			package_clazz.resolveNameR(node,path,name,tp,resfl),
+			package_clazz.resolveNameR(node,info,name,tp,resfl),
 			resolved = Boolean.TRUE
 		;	!resolved.booleanValue(),
 			(resfl & ResolveFlags.NoSuper) == 0,
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
-			resolveNameR_3(node,path,name,tp,resfl),	// resolve in super-classes
+			resolveNameR_3(node,info,name,tp,resfl),	// resolve in super-classes
 			resolved = Boolean.TRUE
 		;	!resolved.booleanValue(),
-			path != null && (resfl & ResolveFlags.NoForwards) == 0,
+			(resfl & ResolveFlags.NoForwards) == 0,
 			trace(Kiev.debugResolve,"Struct: resolving in forwards of "+this),
-			resolveNameR_4(node,path,name,tp,resfl),	// resolve in forwards
+			resolveNameR_4(node,info,name,tp,resfl),	// resolve in forwards
 			resolved = Boolean.TRUE
 		;	!resolved.booleanValue(),
 			this.isPackage(),
@@ -357,7 +360,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			tryAbstractField(node,name,resfl)
 		}
 	}
-	rule public resolveNameR_1(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Struct@ sub;
 		Type@ arg;
 	{
@@ -371,28 +374,32 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			sub.name.short_name.equals(name),
 			node ?= sub.$var
 	}
-	rule public resolveNameR_2(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 	{
 			node @= imported,
 			{	node instanceof Field && ((Field)node).name.equals(name)
 			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 	}
-	rule public resolveNameR_3(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ sup;
 	{
-			{	sup ?= super_clazz, sup.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
-			;	sup @= interfaces, sup.clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
+			{	sup ?= super_clazz,
+				info.enterSuper() : info.leaveSuper(),
+				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			;	sup @= interfaces,
+				info.enterSuper() : info.leaveSuper(),
+				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 			}
 	}
 
-	rule public resolveNameR_4(ASTNode@ node, ResPath path, KString name, Type tp, int resfl)
+	rule public resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Field@ forw;
 	{
 			forw @= fields,
 			forw.isForward(),
-			path.append(forw) : path.setLength(path.length()-1),
-			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,path,name,tp,resfl | ResolveFlags.NoImports)
+			info.enterForward(forw) : info.leaveForward(forw),
+			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 	}
 
 	public boolean tryLoad(ASTNode@ node, KString name, int resfl) {
@@ -453,13 +460,13 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	 	return false;
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResPath path, KString name, Expr[] args, Type ret, Type tp, int resfl)
+	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
 		Type@ sup;
 		Struct@ defaults;
 		Field@ forw;
 	{
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(path.length()==0?"":" in forward path "+path)),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(info.path.length()==0?"":" in forward path "+info.path)),
 		{
 			node @= methods,
 			((Method)node).equalsByCast(name,args,ret,tp,resfl),
@@ -472,20 +479,20 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			((Method)node).equalsByCast(name,args,ret,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			sup ?= super_clazz,
-			sup.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	isInterface(),
 			defaults @= sub_clazz,
 			defaults.isClazz() && defaults.name.short_name.equals(nameIdefault),
-			defaults.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
+			defaults.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			isInterface(),
 			sup @= interfaces,
-			sup.clazz.resolveMethodR(node,path,name,args,ret,tp,resfl | ResolveFlags.NoImports)
-		;	path != null && (resfl & ResolveFlags.NoForwards) == 0,
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+		;	(resfl & ResolveFlags.NoForwards) == 0,
 			forw @= fields,
 			forw.isForward(),
-			path.append(forw) : path.setLength(path.length()-1),
-			Type.getRealType(tp,forw.type).clazz.resolveMethodR(node,path,name,args,Type.getRealType(tp,ret),Type.getRealType(tp,forw.type),resfl | ResolveFlags.NoImports)
+			info.enterForward(forw) : info.leaveForward(forw),
+			Type.getRealType(tp,forw.type).clazz.resolveMethodR(node,info,name,args,Type.getRealType(tp,ret),Type.getRealType(tp,forw.type),resfl | ResolveFlags.NoImports)
 		}
 	}
 

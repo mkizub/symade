@@ -71,7 +71,7 @@ public class NewExpr extends Expr {
 		return type;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -114,10 +114,10 @@ public class NewExpr extends Expr {
 			}
 			// Don't try to find constructor of argument type
 			if( !type.clazz.isArgument() ) {
-				PVar<Method> m = new PVar<Method>();
+				PVar<Method> m;
 				// First try overloaded 'new', than real 'new'
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp))
-				 &&	type.clazz.resolveMethodR(m,null,nameNewOp,outer_args,
+				 &&	type.clazz.resolveMethodR(m,new ResInfo(),nameNewOp,outer_args,
 			 		type,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
 				 	ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
@@ -125,7 +125,7 @@ public class NewExpr extends Expr {
 				 	n.setResolved(true);
 				 	return n;
 				}
-				else if( !type.clazz.resolveMethodR(m,null,nameInit,outer_args,
+				else if( !type.clazz.resolveMethodR(m,new ResInfo(),nameInit,outer_args,
 					Type.tpVoid,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
 					throw new RuntimeException("Can't find apropriative initializer for "
@@ -532,7 +532,7 @@ public class NewClosure extends Expr {
 					if( func.params[i].isClosureProxy() ) {
 						KString name = func.params[i].name.name;
 						PVar<ASTNode> v = new PVar<ASTNode>();
-						if( !PassInfo.resolveNameR(v,null,name,null,0) ) {
+						if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
 							Kiev.reportError(pos,"Internal error: can't find var "+name);
 						}
 						Expr vae = new VarAccessExpr(pos,this,(Var)v)

@@ -61,7 +61,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 	public ASTNode pass1_1() {
 		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
 		PVar<ASTNode> v = new PVar<ASTNode>();
-		if( !PassInfo.resolveNameR(v,null,name,null,0) )
+		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) )
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		ASTNode n = v;
 		if (mode == IMPORT_CLASS && !(n instanceof Struct))
