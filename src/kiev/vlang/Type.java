@@ -100,7 +100,7 @@ public class Type extends ASTNode implements AccessFlags {
 	public static Struct tpClosureClazz;
 	public static Struct tpMethodClazz;
 
-	public static Type tpCell;
+/*	public static Type tpCell;
 	public static Type tpCellObject;
 	public static Type tpCellBoolean;
 	public static Type tpCellByte;
@@ -110,8 +110,8 @@ public class Type extends ASTNode implements AccessFlags {
 	public static Type tpCellLong;
 	public static Type tpCellFloat;
 	public static Type tpCellDouble;
-
-	public static Type tpPrologEnv;
+*/
+//	public static Type tpPrologEnv;
 	public static Type tpPrologVar;
 	public static Type tpRefProxy;
 
@@ -454,11 +454,11 @@ public class Type extends ASTNode implements AccessFlags {
 		Type tpClosure			= new Type(tpClosureClazz);
 		tpClosureClazz.type		= tpClosure;
 
-		Struct tpCellClazz	= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell;")),kiev_stdlib,ACC_PUBLIC);
+/*		Struct tpCellClazz	= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell;")),kiev_stdlib,ACC_PUBLIC);
 		tpCell				= new Type(tpCellClazz);
 		tpCellClazz.type	= tpCell;
 		typeHash.put(tpCell);
-
+*/
 		Struct tpJavaEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/util/Enumeration;")),java_util,ACC_PUBLIC);
 		tpJavaEnumeration	= new Type(tpJavaEnumerationClazz);
 		tpJavaEnumerationClazz.type	= tpJavaEnumeration;
@@ -471,7 +471,7 @@ public class Type extends ASTNode implements AccessFlags {
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
 		typeHash.put(tpKievEnumeration);
 
-		Struct tpCellObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_Object;")),kiev_stdlib,ACC_PUBLIC);
+/*		Struct tpCellObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_Object;")),kiev_stdlib,ACC_PUBLIC);
 		tpCellObject			= new Type(tpCellObjectClazz);
 		tpCellObjectClazz.type	= tpCellObject;
 		typeHash.put(tpCellObject);
@@ -515,7 +515,7 @@ public class Type extends ASTNode implements AccessFlags {
 		tpCellDouble			= new Type(tpCellDoubleClazz);
 		tpCellDoubleClazz.type	= tpCellDouble;
 		typeHash.put(tpCellDouble);
-
+*/
 //		Struct tpPrologEnvClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PEnv;")),kiev_stdlib,ACC_PUBLIC);
 //		tpPrologEnv				= new Type(tpPrologEnvClazz);
 //		tpPrologEnvClazz.type	= tpPrologEnv;
@@ -825,7 +825,8 @@ public class Type extends ASTNode implements AccessFlags {
 		return false;
 	}
 
-	public boolean isAutoCastableTo(Type t) {
+	public boolean isAutoCastableTo(Type t)
+	{
 		if( t == Type.tpVoid ) return true;
 		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
@@ -1023,17 +1024,17 @@ public class Type extends ASTNode implements AccessFlags {
 	}
 
 
-	public boolean isReference()		{ return (flags & flReference)		!= 0 ; }
-	public boolean isArray()			{ return (flags & flArray)			!= 0 ; }
-	public boolean isIntegerInCode()	{ return (flags & flIntegerInCode)	!= 0 ; }
-	public boolean isInteger()			{ return (flags & flInteger)		!= 0 ; }
-	public boolean isFloatInCode()		{ return (flags & flFloatInCode)	!= 0 ; }
-	public boolean isFloat()			{ return (flags & flFloat)			!= 0 ; }
-	public boolean isNumber()			{ return (flags & flNumber)			!= 0 ; }
-	public boolean isDoubleSize()		{ return (flags & flDoubleSize)		!= 0 ; }
-	public boolean isResolved()			{ return (flags & flResolved)		!= 0 ; }
-	public boolean isBoolean()			{ return (flags & flBoolean)		!= 0 ; }
-	public boolean isArgumented()		{ return (flags & flArgumented)		!= 0 ; }
+	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
+	public final boolean isArray()			{ return (flags & flArray)			!= 0 ; }
+	public final boolean isIntegerInCode()	{ return (flags & flIntegerInCode)	!= 0 ; }
+	public final boolean isInteger()		{ return (flags & flInteger)		!= 0 ; }
+	public final boolean isFloatInCode()	{ return (flags & flFloatInCode)	!= 0 ; }
+	public final boolean isFloat()			{ return (flags & flFloat)			!= 0 ; }
+	public final boolean isNumber()			{ return (flags & flNumber)			!= 0 ; }
+	public final boolean isDoubleSize()		{ return (flags & flDoubleSize)		!= 0 ; }
+	public final boolean isResolved()		{ return (flags & flResolved)		!= 0 ; }
+	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
+	public final boolean isArgumented()		{ return (flags & flArgumented)		!= 0 ; }
 
 	public Type getJavaType() {
 		if( !isReference() ) {
@@ -1169,16 +1170,17 @@ public class Type extends ASTNode implements AccessFlags {
 	}
 
 	public static Type getProxyType(Type tp) {
-		if( tp.isReference() )			return Type.tpCellObject;
-		else if( tp == Type.tpBoolean )	return Type.tpCellBoolean;
-		else if( tp == Type.tpByte )	return Type.tpCellByte;
-		else if( tp == Type.tpChar )	return Type.tpCellChar;
-		else if( tp == Type.tpShort)	return Type.tpCellShort;
-		else if( tp == Type.tpInt  )	return Type.tpCellInt ;
-		else if( tp == Type.tpLong )	return Type.tpCellLong;
-		else if( tp == Type.tpFloat)	return Type.tpCellFloat;
-		else if( tp == Type.tpDouble)	return Type.tpCellDouble;
-		return tp;
+		return newRefType(Type.tpRefProxy.clazz,new Type[]{tp});
+//		if( tp.isReference() )			return Type.tpCellObject;
+//		else if( tp == Type.tpBoolean )	return Type.tpCellBoolean;
+//		else if( tp == Type.tpByte )	return Type.tpCellByte;
+//		else if( tp == Type.tpChar )	return Type.tpCellChar;
+//		else if( tp == Type.tpShort)	return Type.tpCellShort;
+//		else if( tp == Type.tpInt  )	return Type.tpCellInt ;
+//		else if( tp == Type.tpLong )	return Type.tpCellLong;
+//		else if( tp == Type.tpFloat)	return Type.tpCellFloat;
+//		else if( tp == Type.tpDouble)	return Type.tpCellDouble;
+//		return tp;
 	}
 
 	public Dumper toJava(Dumper dmp) {

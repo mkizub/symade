@@ -116,6 +116,32 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 		return true;
 	}
 
+	private static boolean labledStatementLA() {
+		for(int idx=1; ;idx+=2) {
+			if (getToken(idx).kind != IDENTIFIER || getToken(idx+1).kind != COLON)
+				return false;
+			switch(getToken(idx+2).kind) {
+			case LBRACE:
+			case SEMICOLON:
+			case SWITCH:
+			case IF:
+			case WHILE:
+			case DO:
+			case FOR:
+			case FOREACH:
+			case BREAK:
+			case CONTINUE:
+			case RETURN:
+			case THROW:
+			case SYNCHRONIZED:
+			case TRY:
+			case GOTO:
+			case REPARSE_STATEMENT:
+				return true;
+			}
+		}
+	}
+
 	private static boolean operatorLA(int tk) {
 		switch( getToken(tk).kind ) {
 		case ASSIGN:
@@ -3864,11 +3890,10 @@ void Statement()       :
 {
 	try {
 	(
-	  LOOKAHEAD(2)
+	  LOOKAHEAD({labledStatementLA()})
 	  LabeledStatement()
 	| Block()
 	| EmptyStatement()
-	| StatementExpression()
 	| SwitchStatement()
 	| IfStatement()
 	| WhileStatement()
@@ -3883,6 +3908,7 @@ void Statement()       :
 	| TryStatement()
 	| GotoStatement()
 	| ReparseStatement()
+	| StatementExpression()
 	)
 	}
 	catch(ParseError e) { rpe("Bad statement",e); }
@@ -4436,6 +4462,7 @@ void IfStatement() :
         try {
 /*@egen*/
 	t="if" { jjtn000.setPos(t.getPos()); }
+	[ "!" { jjtn000.not = true; } ]
     "(" ExpressionNT(null) ")"
 	Statement()
 	[	LOOKAHEAD(1)
@@ -4474,7 +4501,9 @@ void WhileStatement() :
         try {
 /*@egen*/
 	t="while" { jjtn000.setPos(t.getPos()); }
-    "(" ExpressionNT(null) ")" Statement()/*@bgen(jjtree)*/
+	[ "!" { jjtn000.not = true; } ]
+    "(" ExpressionNT(null) ")"
+    Statement()/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -4507,7 +4536,10 @@ void DoStatement() :
         try {
 /*@egen*/
 	t="do" { jjtn000.setPos(t.getPos()); }
-    Statement() "while" "(" ExpressionNT(null) ")" ";"/*@bgen(jjtree)*/
+    Statement()
+    "while"
+	[ "!" { jjtn000.not = true; } ]
+    "(" ExpressionNT(null) ")" ";"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

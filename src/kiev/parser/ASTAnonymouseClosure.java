@@ -172,15 +172,15 @@ public class ASTAnonymouseClosure extends Expr {
 					new ConstExpr(v.getPos(),new Integer(i)));
 				DeclStat dc = new DeclStat(v.getPos(),body,v);
 				if( !v.type.isReference() ) {
-					Type celltp = null;
-					if( v.type == Type.tpBoolean )		celltp = Type.tpCellBoolean;
-					else if( v.type == Type.tpByte )	celltp = Type.tpCellByte;
-					else if( v.type == Type.tpChar )	celltp = Type.tpCellChar;
-					else if( v.type == Type.tpShort )	celltp = Type.tpCellShort;
-					else if( v.type == Type.tpInt )		celltp = Type.tpCellInt;
-					else if( v.type == Type.tpLong )	celltp = Type.tpCellLong;
-					else if( v.type == Type.tpFloat )	celltp = Type.tpCellFloat;
-					else if( v.type == Type.tpDouble )	celltp = Type.tpCellDouble;
+					Type celltp = Type.getProxyType(v.type);
+//					if( v.type == Type.tpBoolean )		celltp = Type.tpCellBoolean;
+//					else if( v.type == Type.tpByte )	celltp = Type.tpCellByte;
+//					else if( v.type == Type.tpChar )	celltp = Type.tpCellChar;
+//					else if( v.type == Type.tpShort )	celltp = Type.tpCellShort;
+//					else if( v.type == Type.tpInt )		celltp = Type.tpCellInt;
+//					else if( v.type == Type.tpLong )	celltp = Type.tpCellLong;
+//					else if( v.type == Type.tpFloat )	celltp = Type.tpCellFloat;
+//					else if( v.type == Type.tpDouble )	celltp = Type.tpCellDouble;
 					val = new AccessExpr(v.getPos(),dc,
 							new CastExpr(v.getPos(),celltp,val,true),
 							(Field)celltp.clazz.resolveName(nameCellVal)

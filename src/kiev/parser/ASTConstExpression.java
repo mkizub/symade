@@ -62,11 +62,11 @@ public class ASTConstExpression extends Expr implements kiev020Constants {
 			}
 			Number n;
 			int ii = (int)i;
-			if( ii >= Byte.MIN_VALUE && ii <= Byte.MAX_VALUE )
-				val = Kiev.newByte(ii);
-			else if( ii >= Short.MIN_VALUE && ii <= Short.MAX_VALUE )
-				val = Kiev.newShort(ii);
-			else
+			//if( ii >= Byte.MIN_VALUE && ii <= Byte.MAX_VALUE )
+			//	val = Kiev.newByte(ii);
+			//else if( ii >= Short.MIN_VALUE && ii <= Short.MAX_VALUE )
+			//	val = Kiev.newShort(ii);
+			//else
 				val = Kiev.newInteger(ii);
 			return;
 		}

@@ -301,7 +301,7 @@ public class PassInfo {
 
 	static boolean checkResolvedPathForName(ASTNode node, PVar<List<ASTNode>> path) {
 		assert(node != null);
-		// Vars will be auto-wrapped in Cell if needed
+		// Vars will be auto-wrapped in Ref<...> if needed
 		if( node instanceof Var ) return true;
 		// Structures/types/typedefs do not need path
 		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {

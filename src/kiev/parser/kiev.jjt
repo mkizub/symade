@@ -114,6 +114,32 @@ public class kiev020 {
 		return true;
 	}
 
+	private static boolean labledStatementLA() {
+		for(int idx=1; ;idx+=2) {
+			if (getToken(idx).kind != IDENTIFIER || getToken(idx+1).kind != COLON)
+				return false;
+			switch(getToken(idx+2).kind) {
+			case LBRACE:
+			case SEMICOLON:
+			case SWITCH:
+			case IF:
+			case WHILE:
+			case DO:
+			case FOR:
+			case FOREACH:
+			case BREAK:
+			case CONTINUE:
+			case RETURN:
+			case THROW:
+			case SYNCHRONIZED:
+			case TRY:
+			case GOTO:
+			case REPARSE_STATEMENT:
+				return true;
+			}
+		}
+	}
+
 	private static boolean operatorLA(int tk) {
 		switch( getToken(tk).kind ) {
 		case ASSIGN:
@@ -2243,11 +2269,10 @@ void Statement() #void :
 {
 	try {
 	(
-	  LOOKAHEAD(2)
+	  LOOKAHEAD({labledStatementLA()})
 	  LabeledStatement()
 	| Block()
 	| EmptyStatement()
-	| StatementExpression()
 	| SwitchStatement()
 	| IfStatement()
 	| WhileStatement()
@@ -2262,6 +2287,7 @@ void Statement() #void :
 	| TryStatement()
 	| GotoStatement()
 	| ReparseStatement()
+	| StatementExpression()
 	)
 	}
 	catch(ParseError e) { rpe("Bad statement",e); }
@@ -2531,6 +2557,7 @@ void IfStatement() :
 { Token t; }
 {
 	t="if" { jjtThis.setPos(t.getPos()); }
+	[ "!" { jjtThis.not = true; } ]
     "(" ExpressionNT(null) ")"
 	Statement()
 	[	LOOKAHEAD(1)
@@ -2543,14 +2570,19 @@ void WhileStatement() :
 { Token t; }
 {
 	t="while" { jjtThis.setPos(t.getPos()); }
-    "(" ExpressionNT(null) ")" Statement()
+	[ "!" { jjtThis.not = true; } ]
+    "(" ExpressionNT(null) ")"
+    Statement()
 }
 
 void DoStatement() :
 { Token t; }
 {
 	t="do" { jjtThis.setPos(t.getPos()); }
-    Statement() "while" "(" ExpressionNT(null) ")" ";"
+    Statement()
+    "while"
+	[ "!" { jjtThis.not = true; } ]
+    "(" ExpressionNT(null) ")" ";"
 }
 
 void ForStatement() :

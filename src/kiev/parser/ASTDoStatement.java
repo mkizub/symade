@@ -4,7 +4,7 @@
  Copyright (C) 1997-1998, Forestro, http://forestro.com
 
  This file is part of the Kiev compiler.
- 
+
  The Kiev compiler is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License as
  published by the Free Software Foundation.
@@ -19,7 +19,7 @@
  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  Boston, MA 02111-1307, USA.
 */
-  
+
 package kiev.parser;
 
 import kiev.Kiev;
@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 public class ASTDoStatement extends Statement {
+    public boolean		not;
 	public Expr			cond;
     public Statement	body;
 
@@ -50,6 +51,13 @@ public class ASTDoStatement extends Statement {
     }
 
 	public ASTNode resolve(Type reqType) {
+		if (not) {
+			ASTOperator op = new ASTOperator(0);
+			op.image = KString.from("!");
+			List<ASTNode> expr_list = new ListBuffer<ASTNode>().append(op).append(cond).toList();
+			cond = new ASTExpression(cond.pos,expr_list);
+			not = false;
+		}
 		if( !(cond instanceof BooleanExpr) )
 			return new DoWhileStat(pos,parent,new BooleanWrapperExpr(cond.getPos(),cond),body).resolve(Type.tpVoid);
 		return new DoWhileStat(pos,parent,(BooleanExpr)cond,body).resolve(Type.tpVoid);

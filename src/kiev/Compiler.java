@@ -757,7 +757,7 @@ public class Compiler {
 		}
 
 
-stop:
+stop:;
 		Env.dumpProjectFile();
 		if( Kiev.verbose || Kiev.errCount > 0 )
 			Kiev.reportTotals();

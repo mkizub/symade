@@ -31,30 +31,23 @@ public final $wrapper class Ref<A>
 	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
-	forward public A			$ref;
+	forward public A			$val;
 
 	public Ref() {}
 
-	public Ref(A ref) {
-		this.$ref = ref;
+	public Ref(A value) {
+		this.$val = value;
 	}
 
 	public String toString() {
-		return "ref "+$ref;
+		return String.valueOf($val);
 	}
 
 	public boolean equals(A value) {
-		A r = $ref;
+		A r = $val;
 		if( A instanceof Object )
 			return (r==null && value==null) || r.equals(value);
 		else
 			return r.equals(value);
 	}
-
-	public A getValue()
-//		alias operator(210,fy,$cast)
-	{
-		return $ref;
-	}
-
 }

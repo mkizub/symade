@@ -138,7 +138,7 @@ public class ASTCallAccessExpression extends Expr {
 				}
 				if( reqType instanceof MethodType ) ret = null;
 				if( tp.isReference() ) {
-			retry_resolving:
+			retry_resolving:;
 					cl = (Struct)tp.clazz;
 					if( !PassInfo.resolveBestMethodR(cl,m,path,func,args,ret,tp,0) ) {
 						// May be a closure

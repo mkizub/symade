@@ -604,7 +604,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 	public void createText(StringBuffer sb) {
 		sb.append(
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				createTextUnification(var)+
 
 			// Unbound
@@ -620,7 +620,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 				createTextBacktrack(true)+						// backtrack, bt$ needs to be loaded
 
 			// Already bound
-			"bound$"+idx+":\n"+
+			"bound$"+idx+":;\n"+
 				"if( !"+createTextVarAccess(var)+".equals(#e"+expr.parserAddr()+") ) {\n"+	// check
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
@@ -777,7 +777,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void createText(StringBuffer sb) {
 		sb.append(
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				createTextUnification()+
 
 			// Bind here
@@ -793,7 +793,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				"}\n"+
 
 			// Already binded
-			"bound$"+idx+":\n"+
+			"bound$"+idx+":;\n"+
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+(base+1)+";\n"+						// set new backtrack state to point itself
 				"if( "+createTextContaince(0)+" ) {\n"+			// check
@@ -819,7 +819,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	public void createText(StringBuffer sb) {
 		sb.append(
 			// No unification need
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				"bt$ = 0;\n"+								// backtracking, always fail state, state 0 is 'return null'
 				createTextMoreCheck(false)
 		);
@@ -1108,7 +1108,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public void createText(StringBuffer sb) {
 		sb.append(
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
@@ -1186,7 +1186,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	public void createText(StringBuffer sb) {
 		sb.append(
 			// No unification need
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
@@ -1218,7 +1218,7 @@ public final class RuleExpr extends RuleExprBase {
 	public void createText(StringBuffer sb) {
 		sb.append(
 			// No unification need
-			"enter$"+idx+":\n"+
+			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
 					"if ( ! #e"+expr.parserAddr()+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
