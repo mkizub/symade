@@ -1155,9 +1155,8 @@ public abstract class RuleExprBase extends ASTRuleNode {
 			Type tp = e.getType();
 			if( tp == Type.tpRule || (tp instanceof MethodType && ((MethodType)tp).ret == Type.tpRule && tp.args.length == 0) )
 				return new RuleCallExpr(e).resolve(reqType);
-			else
-				System.out.println("ClosureCall "+e+" returns "+e.getType());
 		}
+
 		return this;
 	}
 }
@@ -1200,19 +1199,53 @@ public final class RuleWhileExpr extends RuleExprBase {
 
 public final class RuleExpr extends RuleExprBase {
 
+	public Expr		bt_expr;
+
 	public RuleExpr(Expr expr) {
 		super(expr);
 	}
 
+	public RuleExpr(Expr expr, Expr bt_expr) {
+		super(expr);
+		if (bt_expr != null) {
+			this.bt_expr = bt_expr;
+			bt_expr.parent = this;
+		}
+	}
+
+	public void cleanup() {
+		if (bt_expr != null) {
+			bt_expr.cleanup();
+			bt_expr = null;
+		}
+		super.cleanup();
+	}
+
 	public ASTNode resolve(Type reqType) {
 		ASTNode n = super.resolve(reqType);
-		if (n != this) return n;
+		if (n != this) {
+			if (bt_expr != null)
+				throw new CompilerException(bt_expr.pos,"Backtrace expression ignored for rule-call");
+			return n;
+		}
+		if (bt_expr != null && expr.getType().equals(Type.tpBoolean))
+			throw new CompilerException(bt_expr.pos,"Backtrace expression in boolean rule");
+		if (bt_expr != null) {
+			bt_expr.parent = this;
+			bt_expr = (Expr)bt_expr.resolve(null);
+			bt_expr.parent = this;
+		}
+
 		return this;
 	}
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 		idx = ++((RuleMethod)PassInfo.method).index;
+		if (bt_expr != null) {
+			base = ((RuleMethod)PassInfo.method).allocNewBase(1);
+			depth = ((RuleMethod)PassInfo.method).push();
+		}
 	}
 
 	public void createText(StringBuffer sb) {
@@ -1224,9 +1257,17 @@ public final class RuleExpr extends RuleExprBase {
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
-				:
+				: bt_expr == null ?
 					"#e"+expr.parserAddr()+";\n"+
 					createTextMoreCheck(false)
+				:
+					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
+					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
+					"#e"+expr.parserAddr()+";\n"+
+					createTextMoreCheck(true)+
+			"case "+base+":\n"+
+					"#e"+bt_expr.parserAddr()+";\n"+
+					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
 				)
 		);
 	}
