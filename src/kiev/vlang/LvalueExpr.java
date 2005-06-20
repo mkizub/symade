@@ -614,42 +614,6 @@ public class VarAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			// Check if we try to access this var from local inner/anonymouse class
-			if( Kiev.kaffe && PassInfo.method!=null && PassInfo.method.isLocalMethod()) {
-				ASTNode p = var.parent;
-				while( !(p instanceof Method) ) p = p.parent;
-				if( p != PassInfo.method && p.parent == PassInfo.clazz ) {
-					// Check if we already have proxyed this var
-					boolean already_prox = false;
-					for(int i=0; i < PassInfo.method.params.length; i++) {
-						if(PassInfo.method.params[i].isClosureProxy() &&
-							PassInfo.method.params[i].name.name.equals(var.name.name)
-						) {
-							var = PassInfo.method.params[i];
-							already_prox = true;
-							break;
-						}
-					}
-					if( !already_prox ) {
-						Type[] types = (Type[])Arrays.insert(PassInfo.method.type.args,var.type,0);
-						PassInfo.method.type = MethodType.newMethodType(
-							PassInfo.method.type.clazz,
-							PassInfo.method.type.fargs,
-							types,
-							PassInfo.method.type.ret
-							);
-						Var v = new Var(PassInfo.method.pos,var.name.name,var.type,0);
-						v.parent = PassInfo.method;
-						v.setClosureProxy(true);
-						if( PassInfo.method.isStatic() )
-							PassInfo.method.params = (Var[])Arrays.insert(
-								PassInfo.method.params,v,0);
-						else
-							PassInfo.method.params = (Var[])Arrays.insert(
-								PassInfo.method.params,v,1);
-						var = v;
-					}
-				}
-			}
 			if( PassInfo.clazz.isLocal() ) {
 				ASTNode p = var.parent;
 				while( !(p instanceof Struct) ) p = p.parent;

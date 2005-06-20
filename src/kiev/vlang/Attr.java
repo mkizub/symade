@@ -44,26 +44,6 @@ public class Attr implements Constants {
 
 	protected Attr(KString name) {
 		this.name = name;
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = ASTNode.classes.get(cl);
-			if( ii == null ) {
-				ii = new Integer(ASTNode.max_classes++);
-				ASTNode.classes.put(cl,ii);
-			}
-			int i = ii.intValue();
-			ASTNode.total_instances[i]++;
-			int ci = ++ASTNode.curr_instances[i];
-			if( ci > ASTNode.max_instances[i] ) ASTNode.max_instances[i] = ci;
-		}
-	}
-	public void finalize() {
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = ASTNode.classes.get(cl);
-			int i = ii.intValue();
-			ASTNode.curr_instances[i]--;
-		}
 	}
 
 	public kiev.bytecode.Attribute write() {

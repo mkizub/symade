@@ -632,42 +632,29 @@ public class Code implements Constants {
 		}
 		KString sign;
 		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp,((Struct)m.parent).type));
-		if( !Kiev.kaffe ) {
-			if( ttt.clazz.generated_from != null ) {
-				Struct ss = (Struct)m.parent;
-				for(int j=0; j < ss.methods.length; j++) {
-					if( ss.methods[j] == m ) {
-						m = ttt.clazz.methods[j];
-						m.type.checkJavaSignature();
-						m.jtype.checkJavaSignature();
-						break;
-					}
+		if( ttt.clazz.generated_from != null ) {
+			Struct ss = (Struct)m.parent;
+			for(int j=0; j < ss.methods.length; j++) {
+				if( ss.methods[j] == m ) {
+					m = ttt.clazz.methods[j];
+					m.type.checkJavaSignature();
+					m.jtype.checkJavaSignature();
+					break;
 				}
 			}
-//			sign = m.type.java_signature;
-			sign = m.jtype.java_signature;
-		} else {
-			sign = mtype.signature;
 		}
+//		sign = m.type.java_signature;
+		sign = m.jtype.java_signature;
 		CP cpm;
-		if( !Kiev.kaffe) {
-			if( ((Struct)m.parent).isInterface() )
-				cpm = ConstPool.addInterfaceMethodCP(ttt.java_signature,
-					m.name.name,sign);
-			else if( ((Struct)m.parent).isPrimitiveEnum() )
-				cpm = ConstPool.addMethodCP(ttt.signature,
-					m.name.name,sign);
-			else
-				cpm = ConstPool.addMethodCP(ttt.java_signature,
-					m.name.name,sign);
-		} else {
-			if( ((Struct)m.parent).isInterface() )
-				cpm = ConstPool.addInterfaceMethodCP(ttt.signature,
-					m.name.name,sign);
-			else
-				cpm = ConstPool.addMethodCP(ttt.signature,
-					m.name.name,sign);
-		}
+		if( ((Struct)m.parent).isInterface() )
+			cpm = ConstPool.addInterfaceMethodCP(ttt.java_signature,
+				m.name.name,sign);
+		else if( ((Struct)m.parent).isPrimitiveEnum() )
+			cpm = ConstPool.addMethodCP(ttt.signature,
+				m.name.name,sign);
+		else
+			cpm = ConstPool.addMethodCP(ttt.java_signature,
+				m.name.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
@@ -938,9 +925,7 @@ public class Code implements Constants {
             throw new RuntimeException("Instanceof operation on primitive type: "+pt1);
 		if( !pt2.isReference() )
             throw new RuntimeException("Type of instanceof operation is primtive type: "+pt2);
-		CP cpi = !Kiev.kaffe ?
-			ConstPool.addClazzCP(type.java_signature) :
-			ConstPool.addClazzCP(type.signature);
+		CP cpi = ConstPool.addClazzCP(type.java_signature);
 		add_opcode_and_CP(opc_instanceof,cpi);
 	}
 
@@ -1037,9 +1022,7 @@ public class Code implements Constants {
 		else if( type == Type.tpFloat )		add_opcode_and_byte(opc_newarray,6);
 		else if( type == Type.tpDouble )	add_opcode_and_byte(opc_newarray,7);
 		else if( type.isReference() ) {
-			ClazzCP cpc = !Kiev.kaffe ?
-				ConstPool.addClazzCP(type.java_signature) :
-				ConstPool.addClazzCP(type.signature);
+			ClazzCP cpc = ConstPool.addClazzCP(type.java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
 		stack_push(Type.newArrayType(type));
@@ -1052,9 +1035,7 @@ public class Code implements Constants {
 			if( !stack_at(i).isIntegerInCode() )
 				throw new RuntimeException("Array dimention must be of integer type, but "
 					+stack_at(i)+" found at "+(dim-i)+" dimension of multidimension array");
-		ClazzCP cpc = !Kiev.kaffe ?
-			ConstPool.addClazzCP(arrtype.java_signature) :
-			ConstPool.addClazzCP(arrtype.signature);
+		ClazzCP cpc = ConstPool.addClazzCP(arrtype.java_signature);
 		add_opcode_and_CP(opc_multianewarray,cpc);
 		add_code_byte(dim);
 		for(int i=0; i < dim; i++ ) stack_pop();
@@ -1378,11 +1359,9 @@ public class Code implements Constants {
 		tp = Type.getRealType(Kiev.argtype,tp);
 		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp.clazz.type,((Struct)f.parent).type));
 //		Type ttt = ((Struct)f.parent).type;
-		KString struct_sig = !Kiev.kaffe ? ttt.java_signature : ttt.signature;
-		KString field_sig = !Kiev.kaffe ?
-//			Type.getRealType(Kiev.argtype,Type.getRealType(tp.clazz.type,f.type)).java_signature :
-			Type.getRealType(Kiev.argtype,Type.getRealType(((Struct)f.parent).type,f.type)).java_signature :
-			Type.getRealType(tp,f.type).signature;
+		KString struct_sig = ttt.java_signature;
+		KString field_sig = 
+			Type.getRealType(Kiev.argtype,Type.getRealType(((Struct)f.parent).type,f.type)).java_signature;
 		FieldCP cpf = ConstPool.addFieldCP(struct_sig,f.name.name,field_sig);
 	    switch(i) {
         case op_getstatic:
@@ -1427,7 +1406,7 @@ public class Code implements Constants {
 			if( type.clazz.super_clazz != null && type.clazz.super_clazz.clazz == Type.tpClosureClazz )
 				add_opcode_and_CP(opc_new,ConstPool.getClazzCP(type.clazz.name.signature()));
 			else
-				add_opcode_and_CP(opc_new,ConstPool.getClazzCP(Kiev.kaffe? type.signature:type.java_signature));
+				add_opcode_and_CP(opc_new,ConstPool.getClazzCP(type.java_signature));
 			stack_push(type);
 			break;
 		case op_newarray:
@@ -1440,8 +1419,6 @@ public class Code implements Constants {
 			if( !type.isReference() )
 				break;
 			add_opcode_and_CP(opc_checkcast,ConstPool.addClazzCP(
-				Kiev.kaffe?
-					type.signature:
 					type.java_signature));
 			stack_push(type);
 			break;
@@ -1467,41 +1444,11 @@ public class Code implements Constants {
 			break;
 		case op_call:
 			trace(Kiev.debugInstrGen,"\t\tgenerating call to closure ref: "+type);
-			Debug.assert(Kiev.kaffe,"opc_invokemethodref in non-kaffe mode");
-			Debug.assert(type instanceof MethodType,"opc_invokemethodref with non MethodType argument");
-			Debug.assert(dim == type.args.length,"opc_invokemethodref of type "+type+" requires "+type.args.length+" arguments, but only "+dim+" specified");
-			add_opcode_and_CP(
-				opc_invokemethodref,
-				ConstPool.addClazzCP(type.signature)
-				);
-			for(int i=0; i < type.args.length; i++)
-				stack_pop();
-			stack_pop();
-			if( ((MethodType)type).ret != Type.tpVoid )
-				stack_push(((MethodType)type).ret);
+			Debug.assert(false,"opc_invokemethodref in non-kaffe mode");
 			break;
 		case op_addargs:
 			trace(Kiev.debugInstrGen,"\t\tgenerating addargs to closure ref: "+type);
-			Debug.assert(Kiev.kaffe,"opc_addargs in non-kaffe mode");
-			Debug.assert(type instanceof MethodType,"opc_addargs with non MethodType argument");
-			Debug.assert(dim <= type.args.length,"opc_addargs of type "+type+" allows "+type.args.length+" arguments, but "+dim+" specified");
-			add_opcode_and_CP(
-				opc_addargs,
-				ConstPool.addClazzCP(type.signature)
-				);
-			int argslen = 0;
-			for(int i=0; i < dim; i++) {
-				if( type.args[i].isDoubleSize() ) argslen+=2;
-				else argslen++;
-				stack_pop();
-			}
-			add_code_byte(argslen);
-			stack_pop();
-			Type[] targs = new Type[type.args.length-dim];
-			for(int i=0; i < targs.length; i++)
-				targs[i] = type.args[dim+i];
-			type = MethodType.newMethodType(Type.tpClosureClazz,null,targs,((MethodType)type).ret);
-			stack_push(type);
+			Debug.assert(false,"opc_addargs in non-kaffe mode");
 			break;
 		default:
         	throw new RuntimeException("Bad type-use instruction");
@@ -1547,19 +1494,7 @@ public class Code implements Constants {
 				Type.getRealType(tp,((Struct)method.parent).type).signature,
 				method.name.name,
 				Type.getRealType(tp,method.type).signature);
-			assert(Kiev.kaffe,"opc_newmethodref in non-kaffe mode");
-			add_opcode_and_CP(opc_newmethodref,cpm);
-			int argslen = 0;
-			if( !method.isStatic() && nargs > 0 )
-				argslen = 1;
-			for(int i=0, n=nargs-argslen; i < n; i++) {
-				if( method.type.args[i].isDoubleSize() ) argslen+=2;
-				else argslen++;
-			}
-			add_code_byte(argslen);
-			for(int i=0;i < nargs; i++) stack_pop();
-			type = MethodType.newMethodType(Type.tpClosureClazz,null,method.type.args,method.type.ret);
-			stack_push(Type.getRealType(tp,type));
+			assert(false,"opc_newmethodref in non-kaffe mode");
 			break;
 		default:
         	throw new RuntimeException("Bad call-use instruction");

@@ -150,9 +150,9 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				for(int i=0; i < argument.length; i++) {
 					Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
 		            if( outer_args == null || outer_args.length <= i
-					|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
+					|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).ident.name) )
 						throw new CompilerException(argument[i].getPos(),"Inner class arguments must match outer class argument,"
-							+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
+							+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).ident.name
 							+" and have to be "+outer_args[i].clazz.name.short_name);
 				}
 				/* Create type for class's arguments, if any */
@@ -162,7 +162,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 			} else {
 				for(int i=0; i < argument.length; i++) {
 					Struct arg =
-						Env.newArgument(((ASTArgumentDeclaration)argument[i]).name,me);
+						Env.newArgument(((ASTArgumentDeclaration)argument[i]).ident.name,me);
 					arg.type = Type.newRefType(arg);
 					targs = (Type[])Arrays.append(targs,arg.type);
 				}
@@ -229,8 +229,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							gtypes[l][m] = ((ASTPrimitiveType)ag.children[k]).type;
 						} else { // ASTIdentifier
 							KString a = ((ASTIdentifier)ag.children[k]).name;
-							if( a != ((ASTArgumentDeclaration)argument[m]).name ) {
-								Kiev.reportError(pos,"Generation argument "+name+" do not match argument "+((ASTArgumentDeclaration)argument[m]).name);
+							if( a != ((ASTArgumentDeclaration)argument[m]).ident.name ) {
+								Kiev.reportError(pos,"Generation argument "+name+" do not match argument "+((ASTArgumentDeclaration)argument[m]).ident.name);
 							}
 							gtypes[l][m] = me.type.args[m];
 						}
@@ -347,7 +347,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				}
 				me.interfaces = timpl;
 			}
-			if( !Kiev.kaffe && !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
+			if( !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
 				me.interfaces = (Type[])Arrays.append(me.interfaces,Type.tpTypeInfoInterface);
 			}
 			if( me.interfaces.length > 0 && me.gens != null ) {

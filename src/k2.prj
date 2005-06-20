@@ -122,7 +122,6 @@ kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTL
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
 kiev.parser.ASTMacroDecl kiev/parser/ASTMacroDecl kiev\parser\ASTMacroDecl.java
 kiev.parser.ASTMacroFormalParameter kiev/parser/ASTMacroFormalParameter kiev\parser\ASTMacroFormalParameter.java
-kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java
 kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
@@ -134,7 +133,6 @@ kiev.parser.ASTNormalCase kiev/parser/ASTNormalCase kiev\parser\ASTNormalCase.ja
 kiev.parser.ASTOpdef kiev/parser/ASTOpdef kiev\parser\ASTOpdef.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
-kiev.parser.ASTOptionBinding kiev/parser/ASTOptionBinding kiev\parser\ASTOptionBinding.java
 kiev.parser.ASTOptionSpec kiev/parser/ASTOptionSpec kiev\parser\ASTOptionSpec.java
 kiev.parser.ASTPack kiev/parser/ASTPack kiev\parser\ASTPack.java
 kiev.parser.ASTPackage kiev/parser/ASTPackage kiev\parser\ASTPackage.java
@@ -173,6 +171,8 @@ kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
 kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
 kiev.parser.ASTWhileStatement kiev/parser/ASTWhileStatement kiev\parser\ASTWhileStatement.java
 kiev.parser.ASTWithStatement kiev/parser/ASTWithStatement kiev\parser\ASTWithStatement.java
+kiev.parser.ExportFromAST kiev/parser/ExportFromAST kiev\parser\ExportFromAST.java
+kiev.parser.ExportFromAST.ExportASTCreateInfo kiev/parser/ExportFromAST$ExportASTCreateInfo kiev\parser\ExportFromAST.java
 kiev.parser.JJTkiev020State kiev/parser/JJTkiev020State kiev\parser\JJTkiev020State.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
 kiev.parser.KToken kiev/parser/KToken kiev\parser\KToken.java
@@ -182,6 +182,7 @@ kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException
 kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java
 kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java
 kiev.parser.SimpleNode kiev/parser/SimpleNode kiev\parser\SimpleNode.java
+kiev.parser.SourceCodeCreateInfo kiev/parser/SourceCodeCreateInfo kiev\parser\SourceCodeCreateInfo.java
 kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
@@ -253,6 +254,19 @@ kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\Type
 kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
+kiev.tree.BinaryExpr kiev/tree/BinaryExpr kiev\tree\Expr.java
+kiev.tree.BlockSt kiev/tree/BlockSt kiev\tree\Stats.java
+kiev.tree.BreakSt kiev/tree/BreakSt kiev\tree\Stats.java
+kiev.tree.CallExpr kiev/tree/CallExpr kiev\tree\Expr.java
+kiev.tree.CastExpr kiev/tree/CastExpr kiev\tree\Expr.java
+kiev.tree.Catch kiev/tree/Catch kiev\tree\Try.java
+kiev.tree.Closure kiev/tree/Closure kiev\tree\Expr.java
+kiev.tree.CreateInfo kiev/tree/CreateInfo kiev\tree\Node.java
+kiev.tree.Identifier kiev/tree/Identifier kiev\tree\Identifier.java
+kiev.tree.Node kiev/tree/Node kiev\tree\Node.java
+kiev.tree.NodeImpl kiev/tree/NodeImpl kiev\tree\Node.java
+kiev.tree.VNode kiev/tree/VNode kiev\tree\Node.java
+kiev.tree.VersionBranch kiev/tree/VersionBranch kiev\tree\Node.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java

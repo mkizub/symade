@@ -37,9 +37,9 @@ import syntax kiev.Syntax;
  */
 
 public class ASTCallAccessExpression extends Expr {
-	public Expr		obj;
-	public KString	func;
-    public Expr[]	args = Expr.emptyArray;
+	public Expr				obj;
+	public ASTIdentifier	ident;
+    public Expr[]			args = Expr.emptyArray;
 	public boolean  in_wrapper;
 
 	public ASTCallAccessExpression(int id) {
@@ -50,13 +50,14 @@ public class ASTCallAccessExpression extends Expr {
     	if(i==0) {
         	obj = (Expr)n;
 		} else {
-        	func = ((ASTCallExpression)n).func;
+        	ident = ((ASTCallExpression)n).ident;
 			args = ((ASTCallExpression)n).args;
             pos = n.getPos();
         }
     }
 
 	public ASTNode resolve(Type reqType) {
+		KString func = ident.name;
 		for(int i=0; i < args.length; i++) {
 			args[i] = (Expr)args[i].resolveExpr(null);
 		}
@@ -206,6 +207,7 @@ public class ASTCallAccessExpression extends Expr {
 	public int		getPriority() { return Constants.opCallPriority; }
 
 	public String toString() {
+		KString func = ident.name;
 		StringBuffer sb = new StringBuffer();
     	sb.append(obj).append('.').append(func).append('(');
 		for(int i=0; i < args.length; i++) {
@@ -217,6 +219,7 @@ public class ASTCallAccessExpression extends Expr {
 	}
 
 	public Dumper toJava(Dumper dmp) {
+		KString func = ident.name;
     	dmp.append(obj).append('.').append(func).append('(');
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);

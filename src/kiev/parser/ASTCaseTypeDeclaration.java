@@ -116,9 +116,9 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 		for(int i=0; i < argument.length; i++) {
 			Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
             if( outer_args == null || outer_args.length <= i
-			|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
+			|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).ident.name) )
 				throw new CompilerException(argument[i].getPos(),"Case argument must match outer class argument,"
-					+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
+					+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).ident.name
 					+" and have to be "+outer_args[i].clazz.name.short_name);
 		}
 

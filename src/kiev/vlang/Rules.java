@@ -623,7 +623,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 				createTextUnification(var)+
 
 			// Unbound
-				createTextVarAccess(var)+".$bind(#e"+expr.parserAddr()+");\n"+
+				createTextVarAccess(var)+".$bind(#e"+Kiev.parserAddr(expr)+");\n"+
 				"if( !"+createTextVarAccess(var)+".$is_bound ) {\n"+
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
@@ -636,7 +636,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 			// Already bound
 			"bound$"+idx+":;\n"+
-				"if( !"+createTextVarAccess(var)+".equals(#e"+expr.parserAddr()+") ) {\n"+	// check
+				"if( !"+createTextVarAccess(var)+".equals(#e"+Kiev.parserAddr(expr)+") ) {\n"+	// check
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
 				createTextMoreCheck(false)							// check next
@@ -738,13 +738,13 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextNewIterator(int i) {
 		switch( modes[i] ) {
 		case ARRAY:
-			return "new "+itypes[i]+"(#e"+exprs[i].parserAddr()+")";
+			return "new "+itypes[i]+"(#e"+Kiev.parserAddr(exprs[i])+")";
 		case KENUM:
-			return "#e"+exprs[i].parserAddr();
+			return "#e"+Kiev.parserAddr(exprs[i]);
 		case JENUM:
-			return "#e"+exprs[i].parserAddr();
+			return "#e"+Kiev.parserAddr(exprs[i]);
 		case ELEMS:
-			return "(#e"+exprs[i].parserAddr()+").elements()";
+			return "(#e"+Kiev.parserAddr(exprs[i])+").elements()";
 		default:
 			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
 		}
@@ -778,13 +778,13 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextContaince(int i) {
 		switch( modes[i] ) {
 		case ARRAY:
-			return "kiev.stdlib.ArrayEnumerator.contains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.ArrayEnumerator.contains(#e"+Kiev.parserAddr(exprs[i])+","+vars[i].name+".$var)";
 		case KENUM:
-			return "kiev.stdlib.PEnv.contains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.contains(#e"+Kiev.parserAddr(exprs[i])+","+vars[i].name+".$var)";
 		case JENUM:
-			return "kiev.stdlib.PEnv.jcontains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.jcontains(#e"+Kiev.parserAddr(exprs[i])+","+vars[i].name+".$var)";
 		case ELEMS:
-			return "#e"+exprs[i].parserAddr()+".contains("+vars[i].name+".$var)";
+			return "#e"+Kiev.parserAddr(exprs[i])+".contains("+vars[i].name+".$var)";
 		default:
 			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
 		}
@@ -1110,11 +1110,11 @@ public final class RuleCallExpr extends ASTRuleNode {
 	private String createTextCall() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("($env.$rc$frame$").append(env_var).append("=");
-		if( obj != null ) sb.append("#e").append(obj.parserAddr()).append('.');
+		if( obj != null ) sb.append("#e").append(Kiev.parserAddr(obj)).append('.');
 		sb.append(func.getName()).append('(');
 		for(int i=1; i < args.length; i++) {
-			sb.append("#e"+args[i].parserAddr());
-			trace(Kiev.debugRules,"#e"+args[i].parserAddr()+" is "+args[i]);
+			sb.append("#e"+Kiev.parserAddr(args[i]));
+			trace(Kiev.debugRules,"#e"+Kiev.parserAddr(args[i])+" is "+args[i]);
 			if( i < args.length-1) sb.append(',');
 		}
 		sb.append("))");
@@ -1204,7 +1204,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
-				"if ( !#e"+expr.parserAddr()+" ) {\n"+
+				"if ( !#e"+Kiev.parserAddr(expr)+" ) {\n"+
 					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
 				"}\n"+
 				createTextMoreCheck(false)
@@ -1268,20 +1268,20 @@ public final class RuleExpr extends RuleExprBase {
 			// No unification need
 			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-					"if ( ! #e"+expr.parserAddr()+" ) {\n"+
+					"if ( ! #e"+Kiev.parserAddr(expr)+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
 				: bt_expr == null ?
-					"#e"+expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(expr)+";\n"+
 					createTextMoreCheck(false)
 				:
 					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-					"#e"+expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(expr)+";\n"+
 					createTextMoreCheck(true)+
 			"case "+base+":\n"+
-					"#e"+bt_expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(bt_expr)+";\n"+
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
 				)
 		);

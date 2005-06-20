@@ -22,6 +22,10 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.VNode;
+import kiev.tree.NodeImpl;
+import kiev.tree.VersionBranch;
+import kiev.parser.SourceCodeCreateInfo;
 
 import static kiev.stdlib.Debug.*;
 
@@ -68,49 +72,25 @@ public enum TopLevelPass /*extends int*/ {
 };
 
 
-public abstract class ASTNode implements Constants {
+public abstract class ASTNode extends NodeImpl implements VNode, Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
-	public static Hashtable<Class,Integer> classes = new Hashtable/*<Class,Integer>*/();
-	public static int		max_classes;
-	public static int[]		max_instances = new int[1024];
-	public static int[]		curr_instances = new int[1024];
-	public static int[]		total_instances = new int[1024];
-	private static int		parserAddrIdx;
-
 	public int			pos;
-    public ASTNode		parent;
+	public ASTNode      parent;
 	public int			flags;
+	private NodeImpl[]  impls = new NodeImpl[2];
 
     public ASTNode(int pos) {
+    	super(new SourceCodeCreateInfo(Kiev.curFile, pos));
 		this.pos = pos;
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			if( ii == null ) {
-				ii = new Integer(max_classes++);
-				classes.put(cl,ii);
-			}
-			int i = ii.intValue();
-			total_instances[i]++;
-			int ci = ++curr_instances[i];
-			if( ci > max_instances[i] ) max_instances[i] = ci;
-		}
+		vnode = this;
 	}
 
 	public /*abstract*/ void cleanup() {
+		super.cleanup();
 		parent = null;
 	};
-
-	public void finalize() {
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			int i = ii.intValue();
-			curr_instances[i]--;
-		}
-	}
 
 	public ASTNode(int pos, int fl) {
 		this(pos);
@@ -122,19 +102,34 @@ public abstract class ASTNode implements Constants {
 		this.parent = parent;
 	}
 
-	public String parserAddr() {
-		String addr = Integer.toHexString(++parserAddrIdx);
-		while( addr.length() < 8 ) {
-			addr = '0'+addr;
-		}
-		Kiev.parserAddresses.put(addr,this);
-		return addr;
+	public final NodeImpl getImpl(VersionBranch branch) {
+		if (branch == VersionBranch.Src)
+			return this;
+		while (impls.length >= branch.id || impls[branch.id] == null)
+			branch = branch.parent;
+		return impls[branch.id];
+	}
+	
+	private void expandImpls(int sz) {
+		NodeImpl[] tmp = new NodeImpl[sz];
+		System.arraycopy(impls, 0, tmp, 0, impls.length);
+		impls = tmp;
+	}
+	
+	public final void setImpl(VersionBranch branch, NodeImpl impl) {
+		if (branch == VersionBranch.Src)
+			throw new RuntimeException();
+		if (impls.length >= branch.id)
+			expandImpls(branch.id+1);
+		impl.branch = branch;
+		impl.vnode = this;
+		impls[branch.id] = impl;
 	}
 
 	public void jjtSetParent(ASTNode n) { parent = n; }
 	public ASTNode jjtGetParent() { return parent; }
 	public void setParent(ASTNode n) { parent = n; }
-	public ASTNode getParent() { return parent; }
+	public ASTNode getParent() { return (ASTNode)parent; }
 	public void jjtAddChild(ASTNode n, int i) {
 		Kiev.reportError(pos,"jjtAddChild not implemented for this class: "+getClass());
 	}
@@ -712,8 +707,8 @@ public abstract class Expr extends ASTNode {
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		Expr expr = null;
 		if( e instanceof Expr ) expr = (Expr)e;
-		if( e instanceof Struct ) expr = toExpr((Struct)e,reqType,pos,parent);
-		if( e instanceof WrapedExpr ) expr = toExpr((Struct)((WrapedExpr)e).expr,reqType,pos,parent);
+		if( e instanceof Struct ) expr = toExpr((Struct)e,reqType,pos,getParent());
+		if( e instanceof WrapedExpr ) expr = toExpr((Struct)((WrapedExpr)e).expr,reqType,pos,getParent());
 		if( expr == null )
 			throw new CompilerException(e.pos,"Is not an expression");
 		else if( reqType == null || reqType == Type.tpVoid )

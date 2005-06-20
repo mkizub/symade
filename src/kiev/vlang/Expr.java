@@ -488,39 +488,6 @@ public class AssignExpr extends LvalueExpr {
 					vf.type = Type.getProxyType(var.type);
 				}
 			}
-			if( Kiev.kaffe &&
-				(lv instanceof VarAccessExpr) &&
-				((VarAccessExpr)lv).var.isClosureProxy() &&
-				!((VarAccessExpr)lv).var.isNeedRefProxy()
-			) {
-				// Check that we in local closure, thus var need RefProxy
-				Var var = ((VarAccessExpr)lv).var;
-				ASTNode p = var.parent;
-				while( !(p instanceof Method) ) p = p.parent;
-				if( p == PassInfo.method && p.isLocalMethod() ) {
-					var.setNeedRefProxy(true);
-					// Change type of closure method
-					Type[] types = (Type[])PassInfo.method.type.args.clone();
-					int i=0;
-					for(; i < PassInfo.method.params.length; i++)
-						if(PassInfo.method.params[i].name.equals(var.name))
-							break;
-					Debug.assert(i < PassInfo.method.params.length,"Can't find method parameter "+var);
-					if( !PassInfo.method.isStatic() )
-						i--;
-					types[i] = Type.getProxyType(var.type);
-					PassInfo.method.type = MethodType.newMethodType(
-						null,null,types,PassInfo.method.type.ret);
-					// Need to resolve initial var and mark it as RefProxy
-					KString name = var.name.name;
-					PVar<ASTNode> v = new PVar<ASTNode>();
-					if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
-						Kiev.reportError(pos,"Internal error: can't find var "+name);
-					}
-					Var pv = (Var)v;
-					pv.setNeedRefProxy(true);
-				}
-			}
 			lval = (Expr)lv;
 			Type t1 = lval.getType();
 			if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
@@ -1538,39 +1505,6 @@ public class IncrementExpr extends LvalueExpr {
 				var.setNeedRefProxy(true);
 				Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
 				vf.type = Type.getProxyType(var.type);
-			}
-		}
-		if( Kiev.kaffe &&
-			(lval instanceof VarAccessExpr) &&
-			((VarAccessExpr)lval).var.isClosureProxy() &&
-			!((VarAccessExpr)lval).var.isNeedRefProxy()
-		) {
-			// Check that we in local closure, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var;
-			ASTNode p = var.parent;
-			while( !(p instanceof Method) ) p = p.parent;
-			if( p == PassInfo.method && p.isLocalMethod() ) {
-				var.setNeedRefProxy(true);
-				// Change type of closure method
-				Type[] types = (Type[])PassInfo.method.type.args.clone();
-				int i=0;
-				for(; i < PassInfo.method.params.length; i++)
-					if(PassInfo.method.params[i].name.equals(var.name))
-						break;
-				Debug.assert(i < PassInfo.method.params.length,"Can't find method parameter "+var);
-				if( !PassInfo.method.isStatic() )
-					i--;
-				types[i] = Type.getProxyType(var.type);
-				PassInfo.method.type = MethodType.newMethodType(
-					null,null,types,PassInfo.method.type.ret);
-				// Need to resolve initial var and mark it as RefProxy
-				KString name = var.name.name;
-				PVar<ASTNode> v = new PVar<ASTNode>();
-				if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
-					Kiev.reportError(pos,"Internal error: can't find var "+name);
-				}
-				Var pv = (Var)v;
-				pv.setNeedRefProxy(true);
 			}
 		}
 		setResolved(true);

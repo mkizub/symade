@@ -38,24 +38,24 @@ import syntax kiev.Syntax;
 
 public class ASTAccessExpression extends Expr {
 	public Expr		obj;
-	public KString	name;
+	public ASTIdentifier	ident;
 	public boolean  in_wrapper;
 
 	public ASTAccessExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
-	public ASTAccessExpression(int pos,Expr obj, KString name) {
+	public ASTAccessExpression(int pos, Expr obj, KString name) {
 		super(pos);
 		this.obj = obj;
-		this.name = name;
+		this.ident = new ASTIdentifier(pos, name);
 		this.obj.parent = this;
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0:	obj = (Expr)n; break;
-		case 1:	name = ((ASTIdentifier)n).name; break;
+		case 1:	ident = (ASTIdentifier)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
@@ -65,6 +65,7 @@ public class ASTAccessExpression extends Expr {
 		try {
 			ASTNode o = obj.resolve(null);
 			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
+			KString name = ident.name;
 			Struct cl;
 			Type tp = null;
 			Type[] snitps = null;
@@ -199,18 +200,18 @@ public class ASTAccessExpression extends Expr {
 				return new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			}
 		} else {
-			throw new CompilerException(pos,"Identifier "+name+" must be a class's field");
+			throw new CompilerException(pos,"Identifier "+ident.name+" must be a class's field");
 		}
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public String toString() {
-    	return obj+"."+name;
+    	return obj+"."+ident.name;
 	}
 
 	public Dumper toJava(Dumper dmp) {
-    	dmp.append(obj).append('.').append(name);
+    	dmp.append(obj).append('.').append(ident.name);
 		return dmp;
 	}
 }

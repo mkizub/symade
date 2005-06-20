@@ -184,9 +184,9 @@ public class ConstPool {
 		foreach(CP cp; poolHash; cp instanceof NodeCP ) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 			NodeCP ncp = (NodeCP)cp;
-			if( !Kiev.kaffe && !ncp.clazz_cp.sig.equals(Signature.getJavaSignature(ncp.clazz_cp.sig)) )
+			if( !ncp.clazz_cp.sig.equals(Signature.getJavaSignature(ncp.clazz_cp.sig)) )
 				continue;
-			if( !Kiev.kaffe && !ncp.nt_cp.type_cp.value.equals(Signature.getJavaSignature(ncp.nt_cp.type_cp.value)) )
+			if( !ncp.nt_cp.type_cp.value.equals(Signature.getJavaSignature(ncp.nt_cp.type_cp.value)) )
 				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
@@ -194,7 +194,7 @@ public class ConstPool {
 		foreach(CP cp; poolHash; cp instanceof ClazzCP) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 			ClazzCP cl_cp = (ClazzCP)cp;
-			if( !Kiev.kaffe && !cl_cp.sig.equals(Signature.getJavaSignature(cl_cp.sig)) )
+			if( !cl_cp.sig.equals(Signature.getJavaSignature(cl_cp.sig)) )
 				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
@@ -202,7 +202,7 @@ public class ConstPool {
 		foreach(CP cp; poolHash; cp instanceof NameTypeCP ) {
 			if( hwm >= pool.length ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 			NameTypeCP nt_cp = (NameTypeCP)cp;
-			if( !Kiev.kaffe && !nt_cp.type_cp.value.equals(Signature.getJavaSignature(nt_cp.type_cp.value)) )
+			if( !nt_cp.type_cp.value.equals(Signature.getJavaSignature(nt_cp.type_cp.value)) )
 				continue;
 			pool[hwm] = cp;
 			cp.pos = hwm++;
@@ -358,7 +358,7 @@ public class ClazzCP extends CP {
 			return (cl instanceof ClazzCP) && ((ClazzCP)cl).sig.equals(sig);
 		});
 		if( old != null ) return old;
-		if( sig.charAt(0) == 'L' || (Kiev.kaffe && sig.charAt(0) == 'A'));
+		if( sig.charAt(0) == 'L' );
 		else if( sig.charAt(0) == '[' );
 		else if( sig.charAt(0) == '&' );
 		else if( sig.len == 1 );
@@ -378,7 +378,7 @@ public class ClazzCP extends CP {
 	}
 	public ClazzCP(KString sig) {
 		this.sig = sig;
-		if( sig.charAt(0) == 'L' || (Kiev.kaffe && sig.charAt(0) == 'A')) {
+		if( sig.charAt(0) == 'L' ) {
 			KStringBuffer ksb = new KStringBuffer(sig.len-2);
 			KString.KStringScanner ksc = new KString.KStringScanner(sig);
 			ksc.nextChar(); // skip 'L'/'A'

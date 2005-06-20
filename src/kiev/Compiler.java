@@ -252,10 +252,6 @@ public class Compiler {
 						System.out.println("\tAST tree");
 						Kiev.debugAST		= onoff;
 					}
-					if( dbg.indexOf("profile",0) >= 0 ) {
-						System.out.println("\tProfile counts");
-						Kiev.debugProfile	= onoff;
-					}
 					if( dbg.indexOf("methodtrace",0) >= 0 ) {
 						System.out.println("\tMethod tracing");
 						Kiev.debugMethodTrace	= onoff;
@@ -296,10 +292,6 @@ public class Compiler {
 				else if( args[a].equals("-verify") ) {
 					Kiev.verify = onoff;
 					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-safe") ) {
@@ -373,15 +365,6 @@ public class Compiler {
 					if( onoff )
 						Kiev.make_project = true;
 					args[a] = null;
-					continue;
-				}
-				else if( args[a].equals("-kaffe")) {
-					Kiev.kaffe = onoff;
-					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-javacerrors")) {
@@ -803,7 +786,6 @@ stop:;
 +"    member   members attaching (AST generation)\n"
 +"    create   members creation\n"
 +"    ast      AST tree\n"
-+"    profile  profile counts\n"
 +"    types    var/field types\n"
 +"\n"
 +" -v or -verbose         Verbose operation.\n"

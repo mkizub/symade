@@ -148,7 +148,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		Type[] mfargs = new Type[ftypes.length];
 		for(int i=0; i < ftypes.length; i++)
-			mfargs[i] = Env.newMethodArgument(((ASTArgumentDeclaration)ftypes[i]).name,clazz).type;
+			mfargs[i] = Env.newMethodArgument(((ASTArgumentDeclaration)ftypes[i]).ident.name,clazz).type;
 		ftypes = mfargs;	// become scope of names
 
 		Type[] margs = Type.emptyArray;

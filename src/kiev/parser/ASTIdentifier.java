@@ -86,33 +86,29 @@ public class ASTIdentifier extends Expr {
 				}
 				if( PassInfo.resolveMethodR(v,null,name,args,((MethodType)reqType).ret,null,0) ) {
 //					System.out.println("First-order function "+v);
-					if( Kiev.kaffe ) {
-						return new NewClosure(pos,(Method)v).resolve(reqType);
+					ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
+					ac.pos = pos;
+					ac.parent = parent;
+					ac.type = ((MethodType)reqType).ret;
+					ac.params = new ASTNode[args.length];
+					for(int i=0; i < ac.params.length; i++)
+						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
+					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+					Expr[] cargs = new Expr[ac.params.length];
+					for(int i=0; i < cargs.length; i++)
+						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
+					args = cargs;
+					ASTCallExpression ace = new ASTCallExpression(0);
+					ace.ident = new ASTIdentifier(pos,name);
+					ace.args = cargs;
+					if( ac.type == Type.tpVoid ) {
+						bs.addStatement(new ExprStat(pos,bs,ace));
+						bs.addStatement(new ReturnStat(pos,bs,null));
 					} else {
-						ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
-						ac.pos = pos;
-						ac.parent = parent;
-						ac.type = ((MethodType)reqType).ret;
-						ac.params = new ASTNode[args.length];
-						for(int i=0; i < ac.params.length; i++)
-							ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
-						BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-						Expr[] cargs = new Expr[ac.params.length];
-						for(int i=0; i < cargs.length; i++)
-							cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-						args = cargs;
-						ASTCallExpression ace = new ASTCallExpression(0);
-						ace.func = name;
-						ace.args = cargs;
-						if( ac.type == Type.tpVoid ) {
-							bs.addStatement(new ExprStat(pos,bs,ace));
-							bs.addStatement(new ReturnStat(pos,bs,null));
-						} else {
-							bs.addStatement(new ReturnStat(pos,bs,ace));
-						}
-						ac.body = bs;
-						return ac.resolve(reqType);
+						bs.addStatement(new ReturnStat(pos,bs,ace));
 					}
+					ac.body = bs;
+					return ac.resolve(reqType);
 				}
 			}
 			if( name.startsWith(Constants.nameDEF) ) {

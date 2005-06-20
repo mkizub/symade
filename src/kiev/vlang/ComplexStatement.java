@@ -321,7 +321,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression(0);
 						cae.pos = pos;
 						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
-						cae.func = nameGetCaseTag;
+						cae.ident = new ASTIdentifier(pos,nameGetCaseTag);
 						cae.parent = sel.parent;
 						sel = cae;
 					} else {
