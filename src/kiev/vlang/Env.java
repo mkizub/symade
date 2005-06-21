@@ -382,6 +382,18 @@ public class Env extends Struct {
 		}
 	}
 
+	public static boolean existsStruct(KString name) throws RuntimeException {
+		if( name.equals(KString.Empty) ) return true;
+		// Check class is already loaded
+		if( classHashOfFails.get(name) != null ) return false;
+		Struct cl = classHash.get(name);
+		if (classHash.get(name) != null)
+			return true;
+		// Check if not loaded
+		ClazzName clname = ClazzName.fromToplevelName(name,false);
+		return existsClazz(clname);
+	}
+
 	public static Struct getStruct(KString name) throws RuntimeException {
 		if( name.equals(KString.Empty) ) return Env.root;
 		// Check class is already loaded
@@ -420,6 +432,11 @@ public class Env extends Struct {
 //			throw new RuntimeException("Class "+name+" not found");
 		}
 		return cl;
+	}
+
+	public static boolean existsClazz(ClazzName name) {
+		if( stdClassLoader==null ) InitializeEnv();
+		return stdClassLoader.existsClazz(name.bytecode_name.toString());
 	}
 
 	/** Actually load class from specified file and dir */

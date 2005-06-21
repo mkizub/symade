@@ -69,6 +69,10 @@ public class StandardClassLoader extends ClassLoader {
 		}
 	}
 
+	public synchronized boolean existsClazz(String name) {
+		return classpath.exists(name);
+	}
+
 	protected synchronized byte[] loadClazzData(String name, boolean force) {
 		byte data[] = classpath.read(name);
 		if( force && (data == null || data.length == 0) ) {

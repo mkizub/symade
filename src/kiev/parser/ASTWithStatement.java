@@ -35,7 +35,7 @@ import kiev.vlang.*;
  */
 
 public class ASTWithStatement extends Statement {
-	public ASTIdentifier	arg;
+	public Expr				arg;
     public Statement		body;
 
 	public ASTWithStatement(int id) {
@@ -44,7 +44,7 @@ public class ASTWithStatement extends Statement {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: arg=(ASTIdentifier)n; break;
+        case 0: arg=(Expr)n; break;
         case 1: body=(Statement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }

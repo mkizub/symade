@@ -202,8 +202,7 @@ public class ClazzName implements Constants {
 			char ch = sc.nextChar();
 			if( ch == '$' ) {
 				KString tmp = str.substr(0,sc.pos-1);
-				Struct s = Env.getStruct(tmp);
-				byte b = (byte)(s==null?'$':'.');
+				byte b = (byte)(Env.existsStruct(tmp)?'.':'$');
 				sb.append_fast(b);
 			} else {
 				sb.append(ch);

@@ -1061,12 +1061,14 @@ public class WithStat extends Statement {
 		try {
 			try {
 				expr = (Expr)expr.resolve(null);
-				switch (expr) {
-				case VarAccessExpr:				var_or_field = ((VarAccessExpr)expr).var;				break;
-				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)expr).var;	break;
-				case AccessExpr:				var_or_field = ((AccessExpr)expr).var;					break;
-				case FieldAccessExpr:			var_or_field = ((FieldAccessExpr)expr).var;				break;
-				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)expr).var;		break;
+				Expr e = expr;
+				switch (e) {
+				case VarAccessExpr:				var_or_field = ((VarAccessExpr)e).var;				break;
+				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)e).var;	break;
+				case AccessExpr:				var_or_field = ((AccessExpr)e).var;					break;
+				case FieldAccessExpr:			var_or_field = ((FieldAccessExpr)e).var;			break;
+				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)e).var;		break;
+				case AssignExpr:                e = ((AssignExpr)e).lval;                           goto case e;
 				}
 				if (var_or_field == null) {
 					Kiev.reportError(pos,"With statement needs variable or field argument");
@@ -1099,6 +1101,8 @@ public class WithStat extends Statement {
 		try {
 			end_label = Code.newLabel();
 			try {
+				if (expr instanceof AssignExpr)
+					expr.generate(Type.tpVoid);
 				if( isAutoReturnable() )
 					body.setAutoReturnable(true);
 				body.generate(Type.tpVoid);

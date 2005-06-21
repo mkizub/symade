@@ -1033,7 +1033,29 @@ void SyntaxDeclaration() :
 /*@egen*/
 }
 
-
+/*
+void AccessDeclaration() :
+{ Token t=null; }
+{
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("access") })
+	<IDENTIFIER>	// "access"
+	Identifier()
+	"{"
+	(
+		(
+			"public"
+		|	"default"
+		|	"protected"
+		|	"private"
+		|	<IDENTIFIER>
+		)
+		<IDENTIFIER>	// r,ro,w,wo,rw,n,no
+		[ "," | ";" ]
+	)*
+	//(	MacroDecl()	)*
+	"}"
+}
+*/
 
 void TypeDeclaration() :
 {/*@bgen(jjtree) TypeDeclaration */
@@ -4738,7 +4760,7 @@ void WithStatement() :
         try {
 /*@egen*/
 	t="with" { jjtn000.setPos(t.getPos()); }
-  "(" Identifier() ")" Block()/*@bgen(jjtree)*/
+  "(" ExpressionNT(null) ")" Block()/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

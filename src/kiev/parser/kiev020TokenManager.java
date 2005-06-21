@@ -4269,7 +4269,7 @@ static public void SwitchTo(int lexState)
 static private final Token jjFillToken()
 {
    Token t = Token.newToken(jjmatchedKind);
-   t.kind = jjmatchedKind;
+   if( t.kind == 0 ) t.kind = jjmatchedKind;
    String im = jjstrLiteralImages[jjmatchedKind];
    t.image = (im == null) ? input_stream.GetImage() : im;
    t.beginLine = input_stream.getBeginLine();

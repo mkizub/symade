@@ -75,6 +75,14 @@ public class Classpath implements BytecodeFileConstants {
 		return null;
 	}
 
+	public boolean exists(String clazz_name) {
+		foreach(ClasspathEntry cpe; entries; cpe != null) {
+			if ( cpe.exists(clazz_name) )
+				return true;
+		}
+		return false;
+	}
+
 	public byte[]	read(String clazz_name) {
 		return read(KString.from( clazz_name.replace('.','/') ));
 	}
@@ -119,6 +127,7 @@ public class Classpath implements BytecodeFileConstants {
 }
 
 public interface ClasspathEntry {
+	public boolean	exists(String clazz_name);
 	public byte[]	read(KString clazz_name);
 	public File		findSourceFile(String name);
 }
@@ -150,6 +159,24 @@ public class DirClasspathEntry implements ClasspathEntry {
 		)
 			return f;
 		return null;
+	}
+
+	public boolean exists(String clazz_name) {
+		String name = clazz_name;
+		if( File.separatorChar != '/' )
+			name = name.replace('/',File.separatorChar);
+		File f;
+		if( (f=new File(dir,name)).exists() && f.canRead() && f.isDirectory()
+		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name) )
+		) {
+			return true;
+		}
+		else if( (f=new File(dir,name+".class")).exists() && f.canRead() && f.isFile()
+		 && ( (File.separatorChar!='/'||true) && f.getCanonicalPath().endsWith(name+".class") )
+		) {
+			return true;
+		}
+		return false;
 	}
 
 	public byte[] read(KString clazz_name) {
@@ -192,6 +219,18 @@ public class ZipClasspathEntry implements ClasspathEntry {
 
 	public File findSourceFile(String name) {
 		return null;
+	}
+
+	public boolean exists(String clazz_name) {
+		String name = clazz_name;
+		ZipEntry f;
+		if( (f=zipfile.getEntry(name+"/")) != null ) {
+			return true;
+		}
+		else if( (f=zipfile.getEntry(name+".class")) != null ) {
+			return true;
+		}
+		return false;
 	}
 
 	public byte[] read(KString clazz_name) {

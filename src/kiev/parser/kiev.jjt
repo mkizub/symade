@@ -844,7 +844,29 @@ void SyntaxDeclaration() :
 	"}"
 }
 
-
+/*
+void AccessDeclaration() :
+{ Token t=null; }
+{
+	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("access") })
+	<IDENTIFIER>	// "access"
+	Identifier()
+	"{"
+	(
+		(
+			"public"
+		|	"default"
+		|	"protected"
+		|	"private"
+		|	<IDENTIFIER>
+		)
+		<IDENTIFIER>	// r,ro,w,wo,rw,n,no
+		[ "," | ";" ]
+	)*
+	//(	MacroDecl()	)*
+	"}"
+}
+*/
 
 void TypeDeclaration() :
 { Token t=null; }
@@ -2491,7 +2513,7 @@ void WithStatement() :
 { Token t; }
 {
 	t="with" { jjtThis.setPos(t.getPos()); }
-  "(" Identifier() ")" Block()
+  "(" ExpressionNT(null) ")" Block()
 }
 
 void TryStatement() :
