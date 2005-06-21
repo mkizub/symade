@@ -3243,7 +3243,7 @@ void AccessExpression()       :
 		LOOKAHEAD("new" NonArrayType() "[" )
 		NewArrayExpression()
 	|
-		LOOKAHEAD("new" QName() ( "(" | "<" | "/*<" ) )
+		LOOKAHEAD("new" NonArrayType() ( "(" ) )
 		NewExpression()
 	|
 		ReparseExpression()
@@ -3370,7 +3370,7 @@ void AccessExpression()       :
         }
 /*@egen*/
 	|
-		LOOKAHEAD("." "new" QName() ( "(" | "<" | "/*<") )
+		LOOKAHEAD("." "new" NonArrayType() ( "(" ) )
 		"."/*@bgen(jjtree) #NewAccessExpression( 2) */
                 {
                   ASTNewAccessExpression jjtn007 = new ASTNewAccessExpression(JJTNEWACCESSEXPRESSION);

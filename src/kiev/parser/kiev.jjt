@@ -1908,7 +1908,7 @@ void AccessExpression() #void :
 		LOOKAHEAD("new" NonArrayType() "[" )
 		NewArrayExpression()
 	|
-		LOOKAHEAD("new" QName() ( "(" | "<" | "/*<" ) )
+		LOOKAHEAD("new" NonArrayType() ( "(" ) )
 		NewExpression()
 	|
 		ReparseExpression()
@@ -1936,7 +1936,7 @@ void AccessExpression() #void :
 		t="[" ExpressionNT(null) "]"
         { jjtThis.setPos(t.getPos()); }	#ArrayElementAccessExpression(2)
 	|
-		LOOKAHEAD("." "new" QName() ( "(" | "<" | "/*<") )
+		LOOKAHEAD("." "new" NonArrayType() ( "(" ) )
 		"."
 		NewExpression()			#NewAccessExpression(2)
 	)*

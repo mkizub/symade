@@ -252,7 +252,7 @@ public final class JavaCharStream
 
         if (++bufpos == bufsize)
            bufpos = 0;
-
+		//System.out.println("reading char: "+buffer[bufpos]);
         return buffer[bufpos];
      }
 
@@ -332,6 +332,7 @@ public final class JavaCharStream
      else
      {
         UpdateLineColumn(c);
+		//System.out.println("reading char: "+c);
         return (c);
      }
   }

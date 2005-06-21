@@ -142,7 +142,7 @@ public final class Kiev {
 				int colno = pos & 0x3FF;
 				String ln = null;
 				try {
-					LineNumberReader rd = new LineNumberReader(new FileReader(cf.toString()));
+					LineNumberReader rd = new LineNumberReader(new InputStreamReader(new FileInputStream(cf.toString()), "UTF-8"));
 					while( rd.getLineNumber() != lineno ) ln = rd.readLine();
 					rd.close();
 //					ln = ln.replace('\t',' ');
@@ -457,19 +457,32 @@ public final class Kiev {
 	}
 
 	public static void parseFile(FileUnit f) {
-		RandomAccessFile file_input_stream;
-		byte[] file_bytes;
+		InputStreamReader file_reader = null;
+		char[] file_chars = new char[8196];
+		int file_sz = 0;
 		curFile = f.filename;
 		try {
-			file_input_stream = new RandomAccessFile(curFile.toString(),"r");
-			file_input_stream.readFully(file_bytes = new byte[(int)file_input_stream.length()]);
+			file_reader = new InputStreamReader(new FileInputStream(curFile.toString()), "UTF-8");
+			for (;;) {
+				int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
+				if (r < 0)
+					break;
+				file_sz += r;
+				if (file_sz >= file_chars.length) {
+					char[] tmp = new char[file_chars.length + 8196];
+					System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
+					file_chars = tmp;
+				}
+			}
 		} catch( Exception e ) {
 			reportError(0,e);
 			return;
+		} finally {
+			file_reader.close();
 		}
 		kiev020.interface_only = false;
 		try {
-			ByteArrayInputStream bis = new ByteArrayInputStream(file_bytes);
+			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
 			Kiev.k.ReInit(bis);
 			foreach(PrescannedBody b; f.bodies; b != null ) {
 				// callect parents of this block
@@ -510,7 +523,6 @@ public final class Kiev {
 			}
 		} finally {
 			Kiev.k.reset();
-			file_input_stream.close();
 			f.bodies = PrescannedBody.emptyArray;
 		}
 	}

@@ -71,8 +71,9 @@ public class TokenMgrError extends Error
               continue;
            default:
               if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
-                 String s = "0000" + Integer.toString(ch, 16);
-                 retval.append("\\u" + s.substring(s.length() - 4, s.length()));
+                 String s = Integer.toString(ch, 16);
+                 while (s.length() < 4) s = '0'+s;
+                 retval.append("\\u" + s);
               } else {
                  retval.append(ch);
               }

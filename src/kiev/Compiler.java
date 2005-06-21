@@ -122,7 +122,6 @@ public class Compiler {
 		Kiev.programm_start = Kiev.programm_end = System.currentTimeMillis();
 		long curr_time = 0L, diff_time = 0L;
 		boolean delayed_stop = false;
-		java.io.InputStream file_input_stream;
 		int a = 0;
 		if( args==null ) args = new String[0];
 		int alen = args.length;
@@ -477,27 +476,38 @@ public class Compiler {
 			for(int i=0; i < args.length; i++) {
 				try {
 					Kiev.curFile = KString.from(args[i]);
+					java.io.InputStreamReader file_reader = null;
+					char[] file_chars = new char[8196];
+					int file_sz = 0;
 					try {
-						file_input_stream = new FileInputStream(args[i]);
-					} catch( java.io.FileNotFoundException e ) {
-						System.gc();
-						System.runFinalization();
-						System.gc();
-						System.runFinalization();
-						file_input_stream = new FileInputStream(args[i]);
+						file_reader = new InputStreamReader(new FileInputStream(args[i]), "UTF-8");
+						for (;;) {
+							int r = file_reader.read(file_chars, file_sz, file_chars.length-file_sz);
+							if (r < 0)
+								break;
+							file_sz += r;
+							if (file_sz >= file_chars.length) {
+								char[] tmp = new char[file_chars.length + 8196];
+								System.arraycopy(file_chars, 0, tmp, 0, file_chars.length);
+								file_chars = tmp;
+							}
+						}
+					} finally {
+						file_reader.close();
 					}
+					java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
 					kiev020.interface_only = true;
 					runGC();
 					diff_time = curr_time = System.currentTimeMillis();
 					if( Kiev.k == null )
-						Kiev.k = new kiev020(file_input_stream);
+						Kiev.k = new kiev020(bis);
 					else
-						Kiev.k.ReInit(file_input_stream);
+						Kiev.k.ReInit(bis);
 					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);
 					diff_time = System.currentTimeMillis() - curr_time;
 					Kiev.file_unit[i].pass1();
 					runGC();
-					file_input_stream.close();
+					bis.close();
 					Kiev.curFile = KString.Empty;
 					if( Kiev.verbose )
 						Kiev.reportInfo("Scanned file   "+args[i],diff_time);
