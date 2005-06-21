@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTCaseTypeDeclaration.java,v 1.3.2.1.2.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -34,11 +37,11 @@ import kiev.vlang.*;
  */
 
 public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public Node∏		modifier;
 	public ASTAccess	acc;
 	public KString		name;
-	public ASTNode[]	argument = ASTNode.emptyArray;
-	public ASTNode[]	casefields = ASTNode.emptyArray;
+	public Node∏		argument;
+	public Node∏		casefields;
 	public Statement	body;
 	public virtual PrescannedBody pbody;
 
@@ -48,6 +51,9 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 
 	public ASTCaseTypeDeclaration(int id) {
 		super(0);
+		modifier   = new Node∏(this);
+		argument   = new Node∏(this);
+		casefields = new Node∏(this);
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }

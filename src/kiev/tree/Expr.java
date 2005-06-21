@@ -7,13 +7,18 @@ public class BinaryExpr extends NodeImpl {
 	public VNode				expr1;
 	public VNode				expr2;
 
-	public BinaryExpr(CreateInfo src, BinaryOperator op, VNode expr1, VNode expr2) {
+	public BinaryExpr(CreateInfo src) {
 		super(src);
-		this.op = op;
-		this.expr1 = expr1;
-		this.expr2 = expr2;
 	}
-	
+
+	void set$expr1(VNode e)	{
+		expr1 = e;
+		if (e != null) e.pnode = this;
+	}
+	void set$expr2(VNode e)	{
+		expr2 = e;
+		if (e != null) e.pnode = this;
+	}
 }
 
 public class Closure extends NodeImpl {
@@ -21,13 +26,18 @@ public class Closure extends NodeImpl {
     public VNode	rtype;
     public VNode	body;
 
-	public Closure(CreateInfo src, VNode[] params, VNode rtype, VNode body) {
+	public Closure(CreateInfo src) {
 		super(src);
-		this.params = params;
-		this.rtype  = rtype;
-		this.body   = body;
 	}
-	
+
+	void set$rtype(VNode t)	{
+		rtype = t;
+		if (t != null) t.pnode = this;
+	}
+	void set$body(VNode b)	{
+		body = b;
+		if (b != null) b.pnode = this;
+	}
 }
 
 public class CallExpr extends NodeImpl {
@@ -35,24 +45,35 @@ public class CallExpr extends NodeImpl {
 	public VNode    func;
     public VNode[]	args = VNode.emptyArray;
 
-	public CallExpr(CreateInfo src, VNode expr, VNode func, VNode[] args) {
+	public CallExpr(CreateInfo src) {
 		super(src);
-		this.expr = expr;
-		this.func = func;
-		this.args = args;
 	}
 	
+	void set$expr(VNode e)	{
+		expr = e;
+		if (e != null) e.pnode = this;
+	}
+	void set$func(VNode f)	{
+		func = f;
+		if (f != null) f.pnode = this;
+	}
 }
 
 public class CastExpr extends NodeImpl {
 	public VNode	type;
 	public VNode	expr;
 
-	public CastExpr(CreateInfo src, VNode type, VNode expr) {
+	public CastExpr(CreateInfo src) {
 		super(src);
-		this.type = type;
-		this.expr = expr;
 	}
 	
+	void set$type(VNode t)	{
+		type = t;
+		if (t != null) t.pnode = this;
+	}
+	void set$expr(VNode e)	{
+		expr = e;
+		if (e != null) e.pnode = this;
+	}
 }
 

@@ -4,82 +4,170 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
-public final class VersionBranch {
-	private static int id_counter;
+public final $wrapper class VNode<N extends Node> {
+
+	private forward access:ro,rw N $node;
 	
-	public static final VersionBranch Src   = new VersionBranch(null);
-	
-	public final VersionBranch parent;
-	public final int id;
-	
-	private VersionBranch(VersionBranch parent) {
-		this.parent = parent;
-		this.id = id_counter++;
+	public VNode() {
 	}
 	
+	public VNode(N node) {
+		this.$node = node;
+	}
+	
+	public final N getNode()
+		alias operator(210,fy,$cast)
+	{
+		return this.$node;
+	}
+	
+	public final void setNode(N node) {
+		assert(impl.vnode == null);
+		node.vnode = this;
+		this.$node = node;
+	}
+}
+
+public final class VNodeArray<N extends Node> {
+
+    private VNode<Node> $parent := null;
+	private VNode<Node>[]  $nodes;
+	
+	public VNodeArray(Node# parent) {
+		this.$parent := parent;
+		this.$nodes = new VNide<Node>[0];
+	}
+	
+	public VNodeArray(int size, Node# parent) {
+		this.$parent := parent;
+		this.$nodes = new VNide<Node>[size];
+	}
+	
+	public void set$parent(Node# p) {
+		assert(parent == null);
+		parent := p;
+	}
+
+	public /*abstract*/ void cleanup() {
+		$parent := null;
+		$nodes = null;
+	};
+	
+	public final VNode<N> get(int idx)
+		alias at
+		alias operator(210,xfy,[])
+	{
+		return $nodes[idx];
+	}
+	
+	public VNode<N> set(int idx, VNode<N> node)
+		alias operator(210,lfy,[])
+	{
+		$nodes[idx] = node;
+		return node;
+	}
+
+	public VNode<N> add(VNode<N> node)
+	{
+		int sz = $nodes.length;
+		VNode<N>[] tmp = new VNide<N>[sz+1];
+		int i;
+		for (i=0; i < sz; i++)
+			tmp[i] = $nodes[i];
+		$nodes = tmp;
+		$nodes[sz] = node;
+		return node;
+	}
+
+	public VNode<N> insert(int idx, VNode<N> node)
+	{
+		int sz = $nodes.length;
+		VNode<N>[] tmp = new VNide<N>[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i+1] = $nodes[i];
+		tmp[idx] = node;
+		$nodes = tmp;
+		return node;
+	}
+
+	public VNode<N> del(int idx)
+	{
+		int sz = $nodes.length;
+		VNode<N>[] tmp = new VNide<N>[sz-1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i-1] = $nodes[i];
+		VNode<N> ret = $nodes[idx];
+		$nodes = tmp;
+		return ret;
+	}
+
+}
+
+public final $wrapper class VNodeRef<R extends Node> {
+
+	private forward access:ro,rw VNode<R> $ref := null;
+	
+	public VNodeRef() {
+	}
+	
+	public VNodeRef(VNode<R> ref) {
+		this.$ref = ref;
+	}
+	
+	public final VNode<R> getRef()
+		alias operator(210,fy,$cast)
+	{
+		return this.$ref;
+	}
+	
+	public final void setRef(VNode<R> ref) {
+		this.$ref = ref;
+	}
 }
 
 public abstract class CreateInfo {
 }
 
-// versioned node
-public interface VNode {
-
-	public static final VNode[] emptyArray = new VNode[0];
-
-	public NodeImpl getImpl(VersionBranch branch);
-	
-	public void setImpl(VersionBranch branch, NodeImpl impl);
-}
-
-public abstract class Node implements VNode {
-
-	public static final Node[] emptyArray = new Node[0];
-
-	private NodeImpl[] impls = new NodeImpl[2];
-	
-	public final NodeImpl getImpl(VersionBranch branch) {
-		while (impls.length >= branch.id || impls[branch.id] == null)
-			branch = branch.parent;
-		return impls[branch.id];
-	}
-	
-	private void expandImpls(int sz) {
-		NodeImpl[] tmp = new NodeImpl[sz];
-		System.arraycopy(impls, 0, tmp, 0, impls.length);
-		impls = tmp;
-	}
-	
-	public final void setImpl(VersionBranch branch, NodeImpl impl) {
-		if (impls.length >= branch.id)
-			expandImpls(branch.id+1);
-		impl.branch = branch;
-		impl.vnode = this;
-		impls[branch.id] = impl;
-	}
-}
-
-public abstract class NodeImpl {
-
-	// the branch (revision) this node implementation belongs to
-	public VersionBranch branch;
+public abstract class Node {
 	// the node which encapsulates this implementation (version)
-    public VNode		vnode;
+    public VNode<Node>		vnode;
+	// the reason of creating and other information about this node
+	public CreateInfo		src_info;
     // the parent node in the tree
-    public VNode		pnode;
-    // the source code position or the node this one was generated from
-	public CreateInfo	src_info;
+    public VNode<Node>		parent;
 	// node flags
-	public int			flags;
+	public int				flags;
 
-	public NodeImpl(CreateInfo src) {
-		this.src_info = src;
+	public Node(Node# parent) {
+		this.parent = parent;
+		new VNode<Node>(this);
+	}
+	
+	public Node() {
+		this(null);
+	}
+	
+	public final Node# getVNode()
+		alias operator(210,fy,$cast)
+	{
+		return this.vnode;
+	}
+	
+	public void set$parent(Node# p) {
+		assert(parent == null);
+		parent = p;
 	}
 
 	public /*abstract*/ void cleanup() {
-		vnode = null;
-		pnode = null;
+		parent = null;
 		src_info = null;
 	};
 	

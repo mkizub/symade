@@ -23,11 +23,11 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.tree.VNode;
-import kiev.tree.NodeImpl;
-import kiev.tree.VersionBranch;
-import kiev.parser.SourceCodeCreateInfo;
+import kiev.tree.VNodeRef;
+import kiev.tree.Node;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/AST.java,v 1.6.2.1.2.3 1999/05/29 21:03:11 max Exp $
@@ -72,59 +72,30 @@ public enum TopLevelPass /*extends int*/ {
 };
 
 
-public abstract class ASTNode extends NodeImpl implements VNode, Constants {
-
-	public static ASTNode[] emptyArray = new ASTNode[0];
+public abstract class ASTNode extends Node implements Constants {
 
 	public int			pos;
-	public ASTNode      parent;
-	public int			flags;
-	private NodeImpl[]  impls = new NodeImpl[2];
 
-    public ASTNode(int pos) {
-    	super(new SourceCodeCreateInfo(Kiev.curFile, pos));
-		this.pos = pos;
-		vnode = this;
+    public ASTNode() {
+		this(0,null);
 	}
 
-	public /*abstract*/ void cleanup() {
-		super.cleanup();
-		parent = null;
-	};
+    public ASTNode(int pos) {
+		this(pos,null);
+	}
 
-	public ASTNode(int pos, int fl) {
-		this(pos);
-		flags = fl;
+    public ASTNode(Node# parent) {
+		this(0,parent);
 	}
 
 	public ASTNode(int pos, ASTNode parent) {
-		this(pos);
-		this.parent = parent;
+		super(parent);
+		this.pos = pos;
 	}
 
-	public final NodeImpl getImpl(VersionBranch branch) {
-		if (branch == VersionBranch.Src)
-			return this;
-		while (impls.length >= branch.id || impls[branch.id] == null)
-			branch = branch.parent;
-		return impls[branch.id];
-	}
-	
-	private void expandImpls(int sz) {
-		NodeImpl[] tmp = new NodeImpl[sz];
-		System.arraycopy(impls, 0, tmp, 0, impls.length);
-		impls = tmp;
-	}
-	
-	public final void setImpl(VersionBranch branch, NodeImpl impl) {
-		if (branch == VersionBranch.Src)
-			throw new RuntimeException();
-		if (impls.length >= branch.id)
-			expandImpls(branch.id+1);
-		impl.branch = branch;
-		impl.vnode = this;
-		impls[branch.id] = impl;
-	}
+	public void cleanup() {
+		super.cleanup();
+	};
 
 	public void jjtSetParent(ASTNode n) { parent = n; }
 	public ASTNode jjtGetParent() { return parent; }

@@ -230,7 +230,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public Expr			sel;
 	public Var			tmpvar;
 	public Field		typehash;
-	public ASTNode[]	cases = ASTNode.emptyArray;
+	public Node∏		cases;
 	public ASTNode		defCase;
 
 	public CodeSwitch	cosw;
@@ -246,6 +246,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
 		super(pos, parent);
+		cases = new Node∏(his);
 		this.sel = sel;
 		this.sel.parent = this;
 		this.cases = cases;
@@ -774,13 +775,14 @@ public class FinallyInfo extends CatchInfo {
 public class TryStat extends Statement/*defaults*/ {
 
 	public Statement	body;
-	public ASTNode[]	catchers = ASTNode.emptyArray;
+	public Node∏		catchers;
 	public ASTNode		finally_catcher;
 
 	public CodeLabel	end_label;
 
 	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
 		super(pos, parent);
+		catchers = new Node∏(this);
 		this.body = body;
 		this.body.parent = this;
 		this.catchers = catchers;

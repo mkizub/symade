@@ -142,12 +142,15 @@ public class BlockStat extends Statement implements Scope {
 
 	public ASTNode[]	stats = Statement.emptyArray;
 	public Var[]		vars = Var.emptyArray;
-	public ASTNode[]	members = ASTNode.emptyArray;
+	public Node∏		members;
 	public Statement[]	addstats = Statement.emptyArray;
 
 	protected CodeLabel	break_label = null;
 
-	public BlockStat(int pos, ASTNode parent) { super(pos, parent); }
+	public BlockStat(int pos, ASTNode parent) {
+		super(pos, parent);
+		members = new Node∏(this);
+	}
 
 	public BlockStat(int pos, ASTNode parent, ASTNode[] stats) {
 		super(pos,parent);
