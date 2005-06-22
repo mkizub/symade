@@ -89,7 +89,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
         }
     }
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		int flags = 0;
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
@@ -142,7 +142,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 		return me;
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 
 		Struct parnt;
 		if( parent instanceof Struct )

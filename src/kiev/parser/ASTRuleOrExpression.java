@@ -49,7 +49,7 @@ public class ASTRuleOrExpression extends ASTRuleNode {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	return new RuleOrExpr(getPos(),exprs).resolve(null);
     }
     

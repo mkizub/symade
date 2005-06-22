@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -34,18 +35,18 @@ import syntax kiev.Syntax;
  *
  */
 
-public class CaseLabel extends ASTNode {
+public class CaseLabel extends Node {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
-	public ASTNode		val;
+	public Node		val;
 	public Type			type;
 	public Var[]		pattern;
 	public BlockStat	stats;
 
 	public CodeLabel	case_label;
 
-	public CaseLabel(int pos, ASTNode parent, ASTNode val, ASTNode[] stats) {
+	public CaseLabel(int pos, Node parent, Node val, Node[] stats) {
 		super(pos,parent);
 		this.val = val;
 		if( val != null && val instanceof Expr )
@@ -53,7 +54,7 @@ public class CaseLabel extends ASTNode {
 		this.stats = new BlockStat(pos,this,stats);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -74,7 +75,7 @@ public class CaseLabel extends ASTNode {
 
 	public Statement addStatement(int i, Statement st) {
 		if( st == null ) return null;
-		stats.stats = (ASTNode[])Arrays.insert(stats.stats,st,i);
+		stats.stats = (Node[])Arrays.insert(stats.stats,st,i);
 		return st;
 	}
 
@@ -88,14 +89,14 @@ public class CaseLabel extends ASTNode {
 		stats = null;
 	}
 
-	public ASTNode resolve(Type tpVoid) throws RuntimeException {
+	public Node resolve(Type tpVoid) throws RuntimeException {
 		boolean pizza_case = false;
 		PassInfo.push(this);
 		try {
 			SwitchStat sw = (SwitchStat)parent;
 			try {
 				if( val != null ) {
-					ASTNode v;
+					Node v;
 					if( val instanceof Expr ) v = ((Expr)val).resolve(null);
 					else v = val;
 					if( v instanceof WrapedExpr && ((WrapedExpr)v).expr instanceof Struct )
@@ -231,7 +232,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public Var			tmpvar;
 	public Field		typehash;
 	public Node∏		cases;
-	public ASTNode		defCase;
+	public Node		defCase;
 
 	public CodeSwitch	cosw;
 	protected CodeLabel	break_label = null;
@@ -244,9 +245,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public int mode = NORMAL_SWITCH;
 
-	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
+	public SwitchStat(int pos, Node parent, Expr sel, Node[] cases) {
 		super(pos, parent);
-		cases = new Node∏(his);
+		cases = new Node∏(this);
 		this.sel = sel;
 		this.sel.parent = this;
 		this.cases = cases;
@@ -270,7 +271,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		sel = null;
 		tmpvar = null;
 		typehash = null;
-		foreach(ASTNode n; cases; n!=null) n.cleanup();
+		foreach(Node n; cases; n!=null) n.cleanup();
 		cases = null;
 		if( defCase != null ) {
 			defCase.cleanup();
@@ -278,7 +279,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( cases.length == 0 ) return new ExprStat(pos,parent,sel).resolve(Type.tpVoid);
 		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
@@ -287,7 +288,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			st.setBreakTarget(true);
 			st = (BlockStat)st;
 			if( ((CaseLabel)cas).val == null ) {
-				st.stats = (ASTNode[])Arrays.insert(st.stats,new ExprStat(sel.pos,st,sel),0);
+				st.stats = (Node[])Arrays.insert(st.stats,new ExprStat(sel.pos,st,sel),0);
 				return st.resolve(reqType);
 			} else {
 				return new IfElseStat(pos,parent,
@@ -506,8 +507,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 			if( isMethodAbrupted() && defCase==null ) {
 				Statement thrErr = new ThrowStat(pos,this,new NewExpr(pos,Type.tpError,Expr.emptyArray));
-				CaseLabel dc = new CaseLabel(pos,this,null,new ASTNode[]{thrErr});
-				cases = (ASTNode[])Arrays.insert(cases,dc,0);
+				CaseLabel dc = new CaseLabel(pos,this,null,new Node[]{thrErr});
+				cases = (Node[])Arrays.insert(cases,dc,0);
 				dc.resolve(Type.tpVoid);
 			}
 			if( mode == ENUM_SWITCH ) {
@@ -638,7 +639,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	}
 }
 
-public class CatchInfo extends ASTNode implements Scope {
+public class CatchInfo extends Node implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
@@ -656,7 +657,7 @@ public class CatchInfo extends ASTNode implements Scope {
 		this.body.parent = this;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -671,17 +672,17 @@ public class CatchInfo extends ASTNode implements Scope {
 		body = null;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
 		try {
@@ -776,11 +777,11 @@ public class TryStat extends Statement/*defaults*/ {
 
 	public Statement	body;
 	public Node∏		catchers;
-	public ASTNode		finally_catcher;
+	public Node		finally_catcher;
 
 	public CodeLabel	end_label;
 
-	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
+	public TryStat(int pos, Node parent, Statement body, Node[] catchers, Node finally_catcher) {
 		super(pos, parent);
 		catchers = new Node∏(this);
 		this.body = body;
@@ -797,7 +798,7 @@ public class TryStat extends Statement/*defaults*/ {
 		parent=null;
 		body.cleanup();
 		body = null;
-		foreach(ASTNode n; catchers; n!=null) n.cleanup();
+		foreach(Node n; catchers; n!=null) n.cleanup();
 		catchers = null;
 		if( finally_catcher != null ) {
 			finally_catcher.cleanup();
@@ -805,7 +806,7 @@ public class TryStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		ScopeNodeInfoVector finally_state = null;
 		for(int i=0; i < catchers.length; i++) {
 			try {
@@ -949,7 +950,7 @@ public class SynchronizedStat extends Statement {
 	public CodeCatchInfo	code_catcher;
 	public CodeLabel	end_label;
 
-	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
+	public SynchronizedStat(int pos, Node parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -966,7 +967,7 @@ public class SynchronizedStat extends Statement {
 		expr_var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
 			try {
@@ -1038,10 +1039,10 @@ public class WithStat extends Statement {
 
 	public Statement	body;
 	public Expr			expr;
-	public ASTNode		var_or_field;
+	public Node		var_or_field;
 	public CodeLabel	end_label;
 
-	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
+	public WithStat(int pos, Node parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -1058,7 +1059,7 @@ public class WithStat extends Statement {
 		var_or_field = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
 			try {

@@ -25,6 +25,10 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.tree.*;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTTryStatement.java,v 1.3 1998/10/26 23:47:05 max Exp $
@@ -33,27 +37,28 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTTryStatement extends Statement {
-	public Statement	body;
-    public ASTNode[]	catchers = ASTNode.emptyArray;
-    public ASTNode		finally_catcher;
+public class ASTTryStatement extends ASTNode {
+	public ASTStatement		body;
+    public ASTCatchInfo∏	catchers;
+    public ASTFinallyInfo	finally_catcher;
     
 	public ASTTryStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
+		catchers = new ASTCatchInfo∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-			body=(Statement)n;
+			body=(ASTStatement)n;
 		} else {
         	if( n instanceof ASTCatchInfo )
-	        	catchers = (ASTNode[])Arrays.append(catchers,n);
+	        	catchers.append((ASTCatchInfo)n);
             else if( n instanceof ASTFinallyInfo )
-            	finally_catcher = n;
+            	finally_catcher = (ASTFinallyInfo)n;
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 //		PassInfo.push(this);
 //        try {
 //			try {

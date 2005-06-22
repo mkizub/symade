@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.vlang.OpTypes.*;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;
@@ -41,7 +42,7 @@ public class OpTypes {
 
 	public OpTypes() {}
 
-	public static Type getExprType(ASTNode n, Type tp) {
+	public static Type getExprType(Node n, Type tp) {
 		Type t = null;
 		switch(n) {
 		case Expr:
@@ -74,7 +75,7 @@ public class OpTypes {
 		boolean auto_cast;
 		public TypeRule() { auto_cast = true; }
 		public TypeRule(boolean auto_cast) { this.auto_cast = auto_cast; }
-		public abstract rule resolve(Type[] types, ASTNode[] nodes);
+		public abstract rule resolve(Type[] types, Node[] nodes);
 	}
 
 	public class rtAny extends TypeRule {
@@ -82,7 +83,7 @@ public class OpTypes {
 
 		public rtAny(boolean auto ) { super(auto); }
 
-		public rule resolve(Type[] types, ASTNode[] nodes)
+		public rule resolve(Type[] types, Node[] nodes)
 		{
 			trace( Kiev.debugOperators,"check "+(position==0?"ret":"arg"+position)+" ("+nodes[position]+") to be "+this),
 			{
@@ -126,7 +127,7 @@ public class OpTypes {
 
 		public rtType( Type type, boolean auto ) { super(auto); this.type = type; }
 
-		public rule resolve(Type[] types, ASTNode[] nodes)
+		public rule resolve(Type[] types, Node[] nodes)
 		{
 			trace( Kiev.debugOperators,"check "+(position==0?"ret":"arg"+position)+" ("+nodes[position]+") to be "+this),
 			{
@@ -189,7 +190,7 @@ public class OpTypes {
 		}
 	}
 
-	rule resolveRef(TypeRule tr, int ref, Type[] types, ASTNode[] nodes)
+	rule resolveRef(TypeRule tr, int ref, Type[] types, Node[] nodes)
 		TypeRule@ at;
 	{
 		trace( Kiev.debugOperators,"need to find out "+(ref==0?"ret":"arg"+ref)+" ("+nodes[ref]+") referred by "+tr),
@@ -216,7 +217,7 @@ public class OpTypes {
 		public int		ref;
 
 		public rtSame(int ref) { this.ref = ref; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
+		public rule resolve(Type[] types, Node[] nodes)
 		{
 			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be Same("+ref+")"),
 			// Resolve reference, if need
@@ -255,7 +256,7 @@ public class OpTypes {
 		public int		ref2;
 
 		public rtUpperCastNumber(int ref1, int ref2) { this.ref1 = ref1; this.ref2 = ref2; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
+		public rule resolve(Type[] types, Node[] nodes)
 			Type@ tp;
 		{
 			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be UpperCastNumber("+ref1+","+ref2+")"),
@@ -298,7 +299,7 @@ public class OpTypes {
 		public int		ref2;
 
 		public rtDownCast(int ref1, int ref2) { this.ref1 = ref1; this.ref2 = ref2; }
-		public rule resolve(Type[] types, ASTNode[] nodes)
+		public rule resolve(Type[] types, Node[] nodes)
 		{
 			trace( Kiev.debugOperators,"opt_check "+position+": "+nodes[position]+" to be DownCast("+ref1+","+ref2+")"),
 			{
@@ -321,7 +322,7 @@ public class OpTypes {
 		public String toString() { return "<downcast "+ref1+","+ref2+">"; }
 	}
 
-	public boolean match(Type[] ts, ASTNode[] nodes) {
+	public boolean match(Type[] ts, Node[] nodes) {
 		trace( Kiev.debugOperators,"Resolving "+Arrays.toString(nodes)+" to match "+Arrays.toString(ts));
 		if( method != null ) {
 			if( method.isStatic() ) {
@@ -354,7 +355,7 @@ public class OpTypes {
 		return true;
 	}
 
-	public boolean match(ASTNode[] nodes) {
+	public boolean match(Node[] nodes) {
 		Type[] ts = new Type[trtypes.length];
 		return match(ts,nodes);
 	}
@@ -364,7 +365,7 @@ public class OpTypes {
 }
 
 
-public abstract class Operator extends ASTNode implements Constants {
+public abstract class Operator extends Node implements Constants {
 
 	// Assign orders
 	public static final int LFY			= 0;

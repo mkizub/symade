@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -86,7 +87,7 @@ public class Access implements Constants {
 		return sb.toString();
 	}
 
-	public void verifyAccessDecl(ASTNode n) {
+	public void verifyAccessDecl(Node n) {
 
 		if( flags == 0 ) {
 			if( n.isPublic() ) flags = 0xFF;
@@ -167,22 +168,22 @@ public class Access implements Constants {
 		}
 	}
 
-	public void verifyReadAccess(ASTNode n) { verifyAccess(n,2); }
-	public void verifyWriteAccess(ASTNode n) { verifyAccess(n,1); }
-	public void verifyReadWriteAccess(ASTNode n) { verifyAccess(n,3); }
+	public void verifyReadAccess(Node n) { verifyAccess(n,2); }
+	public void verifyWriteAccess(Node n) { verifyAccess(n,1); }
+	public void verifyReadWriteAccess(Node n) { verifyAccess(n,3); }
 
-	private Struct getStructOf(ASTNode n) {
+	private Struct getStructOf(Node n) {
 		if( n instanceof Struct ) return (Struct)n;
 		return (Struct)n.parent;
 	}
 
-	private Struct getPackageOf(ASTNode n) {
+	private Struct getPackageOf(Node n) {
 		Struct pkg = getStructOf(n);
 		while( !pkg.isPackage() ) pkg = pkg.package_clazz;
 		return pkg;
 	}
 
-	public void verifyAccess(ASTNode n, int acc) {
+	public void verifyAccess(Node n, int acc) {
 		assert( n instanceof Accessable && ((Accessable)n).acc == this );
 
 		// Quick check for public access
@@ -227,7 +228,7 @@ public class Access implements Constants {
 		throwAccessError(n,acc,"public");
 	}
 
-	private void throwAccessError(ASTNode n, int acc, String astr) {
+	private void throwAccessError(Node n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');
 		if( acc == 2 ) sb.append("read");

@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNormalCase.java,v 1.3 1998/10/26 23:47:04 max Exp $
  * @author Maxim Kizub
@@ -35,20 +38,21 @@ import kiev.vlang.*;
 
 public class ASTNormalCase extends ASTNode {
 	public ASTNode		val;
-	public ASTNode[]	stats = ASTNode.emptyArray;
+	public Node∏		stats;
 
 	public ASTNormalCase(int id) {
 		super(0);
+		stats = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 && n instanceof Expr )
+    	if( i==0 && n instanceof ASTExpr )
 			val = n;
         else
-			stats = (ASTNode[])Arrays.append(stats,n);
+			stats.append(n);
     }
     
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
 //    	try {
 //    		if( val != null )
 //		    	val = val.resolve(Type.tpInt);

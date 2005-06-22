@@ -33,8 +33,8 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTInstanceofExpr extends Expr {
-	public Expr expr1;
+public class ASTInstanceofExpr extends ASTNode {
+	public ASTExpr expr1;
 	public ASTNode expr2;
 	public KString op;
 
@@ -44,7 +44,7 @@ public class ASTInstanceofExpr extends Expr {
   
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: expr1=(Expr)n; break;
+        case 0: expr1=(ASTExpr)n; break;
         case 1: expr2=n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
@@ -55,7 +55,7 @@ public class ASTInstanceofExpr extends Expr {
         pos = t.getPos();
 	}
   
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( expr2 instanceof ASTType )
 			expr2 = ((ASTType)expr2).pass2();
 		return new InstanceofExpr(pos,expr1,(Type)expr2).resolve(reqType);

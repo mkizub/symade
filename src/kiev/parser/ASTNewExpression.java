@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNewExpression.java,v 1.4.2.1.2.2 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -33,14 +36,16 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTNewExpression extends Expr {
-	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
-    public ASTNode	members[] = ASTNode.emptyArray;
+public class ASTNewExpression extends ASTNode {
+	public ASTNode		type;
+    public ASTExpr∏		args;
+    public Node∏		members;
     public boolean	anonymouse;
 
 	public ASTNewExpression(int id) {
 		super(0);
+		args = new ASTExpr∏(this);
+		members = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -48,15 +53,15 @@ public class ASTNewExpression extends Expr {
 			type=n;
 			pos = n.getPos();
 		}
-		else if( n instanceof Expr ) {
-			args = (Expr[])Arrays.append(args,n);
+		else if( n instanceof ASTExpr ) {
+			args.append((ASTExpr)n);
         }
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = ((ASTNonArrayType)type).pass2();
 		Struct s = tp.clazz;
@@ -130,7 +135,7 @@ public class ASTNewExpression extends Expr {
 
 		if( sup.clazz.instanceOf(Type.tpClosureClazz) ) {
 			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
-			members = ASTNode.emptyArray;
+			members = new Node∏(this);
 			me.type = Type.newRefType(me,Type.emptyArray);
 			Method m = md.pass3();
 			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);

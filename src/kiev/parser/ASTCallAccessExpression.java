@@ -36,10 +36,10 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTCallAccessExpression extends Expr {
-	public Expr				obj;
+public class ASTCallAccessExpression extends ASTNode {
+	public ASTExpr			obj;
 	public ASTIdentifier	ident;
-    public Expr[]			args = Expr.emptyArray;
+    public ASTExpr[]		args = ASTExpr.emptyArray;
 	public boolean  in_wrapper;
 
 	public ASTCallAccessExpression(int id) {
@@ -48,7 +48,7 @@ public class ASTCallAccessExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-        	obj = (Expr)n;
+        	obj = (ASTExpr)n;
 		} else {
         	ident = ((ASTCallExpression)n).ident;
 			args = ((ASTCallExpression)n).args;
@@ -56,7 +56,7 @@ public class ASTCallAccessExpression extends Expr {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		KString func = ident.name;
 		for(int i=0; i < args.length; i++) {
 			args[i] = (Expr)args[i].resolveExpr(null);
@@ -66,7 +66,7 @@ public class ASTCallAccessExpression extends Expr {
 		Type tp = null;
 		Type ret = reqType;
 	retry_with_null_ret:;
-		ASTNode@ m;
+		Node@ m;
 		ResInfo info = new ResInfo();
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
@@ -170,7 +170,7 @@ public class ASTCallAccessExpression extends Expr {
 						ac.params = new ASTNode[((Method)m).type.args.length];
 						for(int i=0; i < ac.params.length; i++)
 							ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0);
-						BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+						BlockStat bs = new BlockStat(pos,ac);
 						Expr[] oldargs = args;
 						Expr[] cargs = new Expr[ac.params.length];
 						for(int i=0; i < cargs.length; i++)

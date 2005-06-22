@@ -48,7 +48,7 @@ public class CallExpr extends Expr {
 		foreach(Expr e; args; e!=null) e.parent = this;
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, Expr[] args) {
+	public CallExpr(int pos, Node par, Method func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
 		this.args = args;
@@ -62,7 +62,7 @@ public class CallExpr extends Expr {
 		super_flag = sf;
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, Expr[] args, boolean sf) {
+	public CallExpr(int pos, Node par, Method func, Expr[] args, boolean sf) {
 		super(pos,par);
 		this.func = func;
 		this.args = args;
@@ -90,17 +90,17 @@ public class CallExpr extends Expr {
 	public void cleanup() {
 		parent=null;
 		func = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
+		foreach(Node n; args; args!=null) n.cleanup();
 		args = null;
 	}
 
-	public static Expr[] insertPEnvForRuleCall(Expr[] args,ASTNode me) {
+	public static Expr[] insertPEnvForRuleCall(Expr[] args,Node me) {
 		trace(Kiev.debugResolve,"CallExpr "+me+" is rule call");
 		Var env;
 		if( PassInfo.method.type.ret == Type.tpRule  ) {
 			args = (Expr[])Arrays.insert(args,new ConstExpr(me.pos,null),0);
 		} else {
-//			ASTNode par = me.parent;
+//			Node par = me.parent;
 //			if( par != null && par instanceof ForEachStat ) {
 //				trace(Kiev.debugResolve,"CallExpr parent stat is "+par.getClass()+" - adding VarAccessExpr($env)");
 //				args = (Expr[])Arrays.insert(args,
@@ -113,7 +113,7 @@ public class CallExpr extends Expr {
 		return args;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
@@ -256,7 +256,7 @@ public class CallAccessExpr extends Expr {
 		foreach(Expr e; args; e!=null) e.parent = this;
 	}
 
-	public CallAccessExpr(int pos, ASTNode par, Expr obj, Method func, Expr[] args) {
+	public CallAccessExpr(int pos, Node par, Expr obj, Method func, Expr[] args) {
 		super(pos,par);
 		this.obj = obj;
 		this.obj.parent = this;
@@ -289,11 +289,11 @@ public class CallAccessExpr extends Expr {
 		func = null;
 		obj.cleanup();
 		obj = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
+		foreach(Node n; args; args!=null) n.cleanup();
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( func.isStatic() ) return new CallExpr(pos,parent,func,args).resolve(reqType);
 		obj = (Expr)obj.resolve(null);
@@ -543,7 +543,7 @@ public class CallAccessExpr extends Expr {
 
 public class ClosureCallExpr extends Expr {
 	public Expr		expr;
-	public ASTNode	func;	// Var or Field
+	public Node	func;	// Var or Field
 	public Expr[]	args;
 	public Expr		env_access;		// $env for rule closures
 	public boolean	is_a_call = false;
@@ -553,21 +553,21 @@ public class ClosureCallExpr extends Expr {
 	public Method[]	addArg;
 	public Type		func_tp;
 
-	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, Node func, Expr[] args) {
 		super(pos);
 		this.func = func;
 		this.args = args;
 		foreach(Expr e; args; e!=null) e.parent = this;
 	}
 
-	public ClosureCallExpr(int pos, ASTNode par, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, Node par, Node func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
 		this.args = args;
 		foreach(Expr e; args; e!=null) e.parent = this;
 	}
 
-	public ClosureCallExpr(int pos, Expr expr, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, Expr expr, Node func, Expr[] args) {
 		super(pos);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -576,7 +576,7 @@ public class ClosureCallExpr extends Expr {
 		foreach(Expr e; args; e!=null) e.parent = this;
 	}
 
-	public ClosureCallExpr(int pos, ASTNode par, Expr expr, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, Node par, Expr expr, Node func, Expr[] args) {
 		super(pos,par);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -614,7 +614,7 @@ public class ClosureCallExpr extends Expr {
 			expr = null;
 		}
 		func = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
+		foreach(Node n; args; args!=null) n.cleanup();
 		args = null;
 		if( env_access != null ) {
 			env_access.cleanup();
@@ -622,13 +622,13 @@ public class ClosureCallExpr extends Expr {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
 			if( expr != null )
 				expr = (Expr)expr.resolve(null);
-			ASTNode v = func;
+			Node v = func;
 			Type tp1 = expr==null?null:expr.getType();
 			Type tp;
 			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof MethodType )
@@ -663,8 +663,8 @@ public class ClosureCallExpr extends Expr {
 //					else
 //						args[i] = (Expr)new CastExpr(args[i].getPos(),tp.args[i],args[i]);
 //				}
-//				PVar<ASTNode> addArgM = new PVar<ASTNode>();
-//				if( !PassInfo.resolveBestMethodR(tp.clazz,addArgM,new PVar<List<ASTNode>>(List.Nil),KString.from("addArg"),new Expr[]{args[i]},null,reqType,0) ) {
+//				PVar<Node> addArgM = new PVar<Node>();
+//				if( !PassInfo.resolveBestMethodR(tp.clazz,addArgM,new PVar<List<Node>>(List.Nil),KString.from("addArg"),new Expr[]{args[i]},null,reqType,0) ) {
 //					throw new RuntimeException("Can't resolve method "+Method.toString(KString.from("addArg"),new Expr[]{args[i]})+" in class "+tp.clazz);
 //				} else {
 //					addArg[i] = (Method)addArgM;
@@ -676,7 +676,7 @@ public class ClosureCallExpr extends Expr {
 				call_it_name = KString.from("call_Object");
 			else
 				call_it_name = KString.from("call_"+((MethodType)tp).ret);
-			PVar<ASTNode> callIt = new PVar<ASTNode>();
+			PVar<Node> callIt = new PVar<Node>();
 			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,new ResInfo(),call_it_name,Expr.emptyArray,null,reqType,ResolveFlags.NoForwards) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
 			} else {

@@ -33,8 +33,8 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTCommaExpression extends Expr {
-	public Expr[]	exprs = Expr.emptyArray;
+public class ASTCommaExpression extends ASTNode {
+	public ASTExpr[]	exprs = ASTExpr.emptyArray;
 
 	public ASTCommaExpression(int id) {
 		super(0);
@@ -48,10 +48,10 @@ public class ASTCommaExpression extends Expr {
 			System.arraycopy(exprs, 0, c, 0, exprs.length);
 			exprs = c;
 		}
-		exprs[i] = (Expr)n;
+		exprs[i] = (ASTExpr)n;
 	}
     
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new CommaExpr(pos,exprs).resolve(reqType);
 	}
 

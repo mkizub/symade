@@ -25,8 +25,10 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTSyntaxDeclaration.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
@@ -38,11 +40,12 @@ import static kiev.stdlib.Debug.*;
 public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 
     public KString		name;
-    public ASTNode[]	members = ASTNode.emptyArray;
+    public Node∏		members;
 	public Struct		me;
 
 	public ASTSyntaxDeclaration(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
+		members = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -50,11 +53,11 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 			name = ((ASTIdentifier)n).name;
 			pos = n.getPos();
 		} else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
 		}
 	}
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for synax "+name);
 		boolean isTop = (parent != null && parent instanceof ASTFileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, name, false, !isTop);
@@ -78,21 +81,19 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass1_1() {
+	public Node pass1_1() {
 		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
-       	me.imported = new ASTNode[members.length];
-		for(int i=0; i < members.length; i++) {
-			ASTNode n = members[i];
+		foreach (Node n; members) {
 			try {
 				if (n instanceof ASTTypedef) {
 					n = n.pass1_1();
 					n.parent = me;
-					me.imported[i] = n;
+					me.imported.add(n);
 					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 				}
 				else if (n instanceof ASTOpdef) {
 					n = n.pass1_1();
-					me.imported[i] = n;
+					me.imported.add(n);
 					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 				}
 			} catch(Exception e ) {
@@ -102,7 +103,7 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 		//trace(Kiev.debugResolve,"Pass 2 for syntax "+me);
 		//for(int i=0; i < members.length; i++) {
 		//	ASTNode n = members[i];
@@ -119,7 +120,7 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass2_2() {
+	public Node pass2_2() {
 		trace(Kiev.debugResolve,"Pass 2_2 for syntax "+me);
        	Kiev.packages_scanned.append(me);
 		return me;
@@ -131,17 +132,17 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode autoProxyMethods() {
+	public Node autoProxyMethods() {
 		me.autoProxyMethods();
 		return me;
 	}
 
-	public ASTNode resolveImports() {
+	public Node resolveImports() {
 		me.resolveImports();
 		return me;
 	}
 
-	public ASTNode resolveFinalFields(boolean cleanup) {
+	public Node resolveFinalFields(boolean cleanup) {
 		me.resolveFinalFields(cleanup);
 		return me;
 	}

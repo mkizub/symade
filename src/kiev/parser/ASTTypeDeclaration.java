@@ -27,6 +27,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTTypeDeclaration.java,v 1.4.2.1.2.4 1999/05/29 21:03:06 max Exp $
@@ -36,21 +37,24 @@ import static kiev.stdlib.Debug.*;
  */
 
 public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifier∏	modifier;
 	public ASTAccess	acc;
     public int			kind;
     public KString		name;
-    public ASTNode[]	argument = ASTNode.emptyArray;
+    public ASTArgumentDeclaration∏		argument;
     public ASTNode		ext;
     public ASTNode		impl;
     public ASTNode		gens;
-    public ASTNode[]	members = ASTNode.emptyArray;
+    public Node∏		members;
 
 	public Struct		me;
 	public KString		t;
 
 	ASTTypeDeclaration(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
+		argument = new ASTArgumentDeclaration∏(this);
+		members = new Node∏(this);
 	}
 
   	public void set(Token t) {
@@ -64,7 +68,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
 		else if( n instanceof ASTAccess ) {
 			if( acc != null )
@@ -76,7 +80,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
             pos = n.getPos();
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			argument = (ASTNode[])Arrays.append(argument,n);
+			argument.append((ASTArgumentDeclaration)n);
 		}
         else if( n instanceof ASTExtends ) {
 			ext = n;
@@ -88,18 +92,18 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 			gens = n;
 		}
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for class "+name);
 		int flags = 0;
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
 		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		for(ASTModifier m; modifier)
+			flags |= m.flag();
 		KString short_name = this.name;
 		ClazzName clname = null;
 		if( this.name != null ) {
@@ -191,11 +195,11 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass1_1() {
+	public Node pass1_1() {
 		return me;
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
         PassInfo.push(me);
         try {
@@ -315,7 +319,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass2_2() {
+	public Node pass2_2() {
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
         PassInfo.push(me);
         try {
@@ -665,17 +669,17 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode autoProxyMethods() {
+	public Node autoProxyMethods() {
 		me.autoProxyMethods();
 		return me;
 	}
 
-	public ASTNode resolveImports() {
+	public Node resolveImports() {
 		me.resolveImports();
 		return me;
 	}
 
-	public ASTNode resolveFinalFields(boolean cleanup) {
+	public Node resolveFinalFields(boolean cleanup) {
 		me.resolveFinalFields(cleanup);
 		return me;
 	}

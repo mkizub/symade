@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.vlang.WorkByContractCondition.*;
 import static kiev.stdlib.Debug.*;
@@ -34,7 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable {
+public class Method extends Node implements Named,Typed,Scope,SetBody,Accessable {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -63,7 +64,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 
 	/** Body of the method - ASTBlockStat or BlockStat
 	 */
-	public ASTNode			body;
+	public Node			body;
 
 	/** Array of attributes of this method
 	 */
@@ -81,11 +82,11 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	 */
 	public boolean			inlined_by_dispatcher;
 
-	public Method(ASTNode clazz, KString name, MethodType type, int acc) {
+	public Method(Node clazz, KString name, MethodType type, int acc) {
 		this(clazz,name,type,null,acc);
 	}
 
-	public Method(ASTNode clazz, KString name, MethodType type, MethodType dtype, int acc) {
+	public Method(Node clazz, KString name, MethodType type, MethodType dtype, int acc) {
 		super(0,acc);
 		this.name = new NodeName(name);
 		this.type = type;
@@ -108,7 +109,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		acc.verifyAccessDecl(this);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -312,7 +313,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node).name.equals(name)
@@ -320,7 +321,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	;	node ?= retvar, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		n @= params,
@@ -329,7 +330,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( isResolved() ) return this;
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( PassInfo.clazz == parent );
@@ -359,7 +360,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
 					if( body instanceof BlockStat ) {
-						((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
+						((BlockStat)body).stats = (Node[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
 						body.setAbrupted(true);
 					}
 					else if( body instanceof WorkByContractCondition );
@@ -515,7 +516,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 
 	public static Expr getAccessExpr(ResInfo info) {
 		Expr expr;
-		List<ASTNode> path = info.path.toList();
+		List<Node> path = info.path.toList();
 		if (path.head() instanceof Field) {
 			Field f = (Field)path.head();
 			if (f.isStatic())
@@ -533,15 +534,15 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		else
 			throw new CompilerException(0,"Forward/with access path not with Field or Var");
 		path = path.tail();
-		foreach(ASTNode n; path) {
+		foreach(Node n; path) {
 			expr = new AccessExpr(0,expr,(Field)n);
 		}
 		return expr;
 	}
 
 	public static Expr getAccessExpr(ResInfo info,Expr expr) {
-		List<ASTNode> path = info.path.toList();
-		foreach(ASTNode n; path) {
+		List<Node> path = info.path.toList();
+		foreach(Node n; path) {
 			expr = new AccessExpr(0,expr,(Field)n);
 		}
 		return expr;
@@ -572,7 +573,7 @@ public class WorkByContractCondition extends Statement implements SetBody {
 			body.parent = this;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( code != null ) return this;
 		body = (Statement)body.resolve(Type.tpVoid);
 		return this;

@@ -41,7 +41,7 @@ public class ASTEnsureDeclaration extends ASTCondDeclaration {
 		super(0);
 	}
 
-    public ASTNode pass3() {
+    public Node pass3() {
     	WorkByContractCondition cond = new WorkByContractCondition(pos,CondEnsure,name,body);
 		if( pbody != null ) pbody.setParent(cond);
     	return cond;

@@ -63,7 +63,7 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
         }
     }
 
-	public ASTNode pass1_1() {
+	public Node pass1_1() {
 		if (opdef) {
 			ASTQName qn = (ASTQName)type;
 			PVar<ASTNode> v = new PVar<ASTNode>();
@@ -81,7 +81,7 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 		}
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 		if (td != null) return td;
 		return pass1_1();
 	}

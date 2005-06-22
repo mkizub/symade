@@ -33,12 +33,12 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTReparseStatement extends Statement {
+public class ASTReparseStatement extends ASTNode {
 
 	public String	ref;
 
 	public ASTReparseStatement(int id) {
-		super(0,null);
+		super(0);
 	}
 
   	public void set(Token t) {
@@ -48,7 +48,7 @@ public class ASTReparseStatement extends Statement {
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		ASTNode n = Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");

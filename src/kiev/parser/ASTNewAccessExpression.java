@@ -33,10 +33,10 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTNewAccessExpression extends Expr {
-	public Expr		obj;
-	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+public class ASTNewAccessExpression extends ASTNode {
+	public ASTExpr		obj;
+	public ASTNode		type;
+    public ASTExpr[]	args = ASTExpr.emptyArray;
 
 	public ASTNewAccessExpression(int id) {
 		super(0);
@@ -44,7 +44,7 @@ public class ASTNewAccessExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-			obj=(Expr)n;
+			obj=(ASTExpr)n;
 		} else {
 			type = ((ASTNewExpression)n).type;
 			args = ((ASTNewExpression)n).args;
@@ -52,7 +52,7 @@ public class ASTNewAccessExpression extends Expr {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {
             	args[i] = (Expr)args[i].resolve(null);

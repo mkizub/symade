@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.parser.PrescannedBody;
 import kiev.stdlib.*;
+import kiev.tree.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
@@ -35,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Import extends ASTNode implements Constants, Scope {
+public class Import extends Node implements Constants, Scope {
 	public static final Import[] emptyArray = new Import[0];
 
 	public static final int	IMPORT_CLASS   = 0;
@@ -45,9 +46,9 @@ public class Import extends ASTNode implements Constants, Scope {
 
 	public int			mode = IMPORT_CLASS;
     public boolean		star = false;
-    public ASTNode		node;
+    public Node		node;
 
-	public Import(int pos, FileUnit fu, ASTNode node, int mode, boolean star) {
+	public Import(int pos, FileUnit fu, Node node, int mode, boolean star) {
 		super(pos, fu);
 		this.node = node;
 		this.mode = mode;
@@ -65,16 +66,16 @@ public class Import extends ASTNode implements Constants, Scope {
 		return str.toString();
 	}
 
-	public ASTNode resolve() throws RuntimeException {
+	public Node resolve() throws RuntimeException {
 		return this;
 	}
 
 	public void generate() {}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 		Struct@ s;
 		Struct@ sub;
-		ASTNode@ tmp;
+		Node@ tmp;
 	{
 		this.node instanceof Method, $cut, false
 	;
@@ -121,7 +122,7 @@ public class Import extends ASTNode implements Constants, Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		mode == IMPORT_STATIC && !star && this.node instanceof Method,
 		((Method)this.node).equalsByCast(name,args,ret,type,resfl),

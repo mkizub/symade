@@ -71,7 +71,7 @@ public class NewExpr extends Expr {
 		return type;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -120,7 +120,7 @@ public class NewExpr extends Expr {
 				 &&	type.clazz.resolveMethodR(m,new ResInfo(),nameNewOp,outer_args,
 			 		type,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
 				) {
-				 	ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
+				 	Node n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
 					n.type_of_static = type;
 				 	n.setResolved(true);
 				 	return n;
@@ -206,7 +206,7 @@ public class NewExpr extends Expr {
 	public void cleanup() {
 		parent=null;
 		type = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
+		foreach(Node n; args; n!=null) n.cleanup();
 		args = null;
 		if( outer != null ) {
 			outer.cleanup();
@@ -286,7 +286,7 @@ public class NewArrayExpr extends Expr {
 
 	public Type getType() { return arrtype; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -352,7 +352,7 @@ public class NewArrayExpr extends Expr {
 		parent=null;
 		type = null;
 		arrtype = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
+		foreach(Node n; args; n!=null) n.cleanup();
 		args = null;
 	}
 
@@ -408,7 +408,7 @@ public class NewInitializedArrayExpr extends Expr {
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -457,7 +457,7 @@ public class NewInitializedArrayExpr extends Expr {
 		parent=null;
 		type = null;
 		arrtype = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
+		foreach(Node n; args; n!=null) n.cleanup();
 		args = null;
 	}
 
@@ -514,7 +514,7 @@ public class NewClosure extends Expr {
 
 	public Type getType() { return type; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return this;
 		PassInfo.push(this);

@@ -35,8 +35,8 @@ import kiev.vlang.*;
 
 public class ASTRuleExpression extends ASTRuleNode {
 
-	public Expr		expr;
-	public Expr		bt_expr;
+	public ASTExpr		expr;
+	public ASTExpr		bt_expr;
 	boolean			while_mode;
 
 	public ASTRuleExpression(int id) {
@@ -44,19 +44,19 @@ public class ASTRuleExpression extends ASTRuleNode {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( i==0 && n instanceof Expr ) {
+		if( i==0 && n instanceof ASTExpr ) {
 			pos = n.getPos();
-			expr=(Expr)n;
+			expr=(ASTExpr)n;
 		}
-		else if( i==1 && n instanceof Expr ) {
+		else if( i==1 && n instanceof ASTExpr ) {
 			pos = n.getPos();
-			bt_expr=(Expr)n;
+			bt_expr=(ASTExpr)n;
 		} else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	expr = (Expr)expr.resolve(null);
     	if (bt_expr != null) bt_expr = (Expr)bt_expr.resolve(null);
     	if (while_mode)

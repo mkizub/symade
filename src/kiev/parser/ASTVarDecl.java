@@ -36,7 +36,7 @@ import kiev.vlang.*;
 public class ASTVarDecl extends ASTNode {
 	public int		dim;
     public KString	name;
-    public Expr		init;
+    public ASTExpr	init;
     public boolean	of_wrapper;
 
 	ASTVarDecl(int id) {
@@ -46,12 +46,12 @@ public class ASTVarDecl extends ASTNode {
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=((ASTIdentifier)n).name; pos=n.getPos(); break;
-        case 1: init=(Expr)n; break;
+        case 1: init=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return null;
 	}
 

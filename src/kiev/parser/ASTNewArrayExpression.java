@@ -33,7 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTNewArrayExpression extends Expr {
+public class ASTNewArrayExpression extends ASTNode {
 	public ASTNode	type;
     public Expr[]	args = Expr.emptyArray;
 	public int dim;
@@ -50,7 +50,7 @@ public class ASTNewArrayExpression extends Expr {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {
             	args[i] = args[i].resolveExpr(Type.tpInt);

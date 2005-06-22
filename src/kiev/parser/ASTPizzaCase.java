@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTPizzaCase.java,v 1.3 1998/10/26 23:47:04 max Exp $
  * @author Maxim Kizub
@@ -34,25 +37,27 @@ import kiev.vlang.*;
  */
 
 public class ASTPizzaCase extends ASTNode {
-	public ASTNode		val;
-	public ASTNode[]	params = ASTNode.emptyArray;
-	public ASTNode[]	stats = ASTNode.emptyArray;
+	public ASTNode				val;
+	public ASTFormalParameter∏	params;
+	public ASTStatement∏		stats;
 
 	public ASTPizzaCase(int id) {
 		super(0);
+		params = new ASTFormalParameter∏(this);
+		stats  = new ASTStatement∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 )
 			val = n;
 		else if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
+			params.append((ASTFormalParameter)n);
 		}
         else
-			stats = (ASTNode[])Arrays.append(stats,n);
+			stats.append((ASTStatement)n);
     }
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	Var[] pattern = new Var[params.length];
     	try {
 	    	KString n = ((ASTQName)val).toKString();

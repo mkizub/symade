@@ -53,7 +53,7 @@ public class BooleanWrapperExpr extends BooleanExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr.parent = this;
 		if( isResolved() ) return this;
 		PassInfo.push(this);
@@ -171,7 +171,7 @@ public class ConstBooleanExpr extends BooleanExpr {
 		parent=null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		setResolved(true);
 		return this;
 	}
@@ -246,7 +246,7 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 
 	public int getPriority() { return opBooleanOrPriority; }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr1.parent = this;
 		this.expr2.parent = this;
 //		if( isResolved() ) return this;
@@ -345,7 +345,7 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr1.parent = this;
 		this.expr2.parent = this;
 //		if( isResolved() ) return this;
@@ -476,7 +476,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+			Node[] argsarr = new Node[]{null,expr1,expr2};
 			if( opt.match(tps,argsarr) ) {
 				Expr e;
 				if( opt.method.isStatic() )
@@ -497,7 +497,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 			return false;
 		expr1 = ast1;
 
-		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
+		Node ast2 = ((Expr)expr2).tryResolve(null);
 		if( ast2 instanceof WrapedExpr )
 			ast2 = ((Expr)ast2).resolve(null);
 		if( ast2 instanceof Struct )
@@ -531,7 +531,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 		return ex;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr1.parent = this;
 		this.expr2.parent = this;
 		if( isResolved() ) return this;
@@ -728,15 +728,15 @@ public class InstanceofExpr extends BooleanExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr.parent = this;
 		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
 		PassInfo.push(this);
 		try {
-			ASTNode e = expr.resolve(null);
+			Node e = expr.resolve(null);
 			if( e instanceof Struct ) {
 				if( Code.generation||Kiev.gen_resolve ) {
-					ASTNode e = e.resolve(null);
+					Node e = e.resolve(null);
 					Struct s = (Struct)e;
 					if( s.isArgument() ) {
 						s = Type.getRealType(Kiev.argtype,s.type).clazz;
@@ -773,7 +773,7 @@ public class InstanceofExpr extends BooleanExpr {
 	}
 
 	public void setNodeTypeInfo() {
-		ASTNode n;
+		Node n;
 		switch(expr) {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
 		case FieldAccessExpr:		n = ((FieldAccessExpr)expr).var;	break;
@@ -835,7 +835,7 @@ public class BooleanNotExpr extends BooleanExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		this.expr.parent = this;
 		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
 		PassInfo.push(this);

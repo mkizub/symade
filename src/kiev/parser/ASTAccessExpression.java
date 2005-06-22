@@ -36,8 +36,8 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTAccessExpression extends Expr {
-	public Expr		obj;
+public class ASTAccessExpression extends ASTNode {
+	public ASTExpr			obj;
 	public ASTIdentifier	ident;
 	public boolean  in_wrapper;
 
@@ -54,13 +54,13 @@ public class ASTAccessExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0:	obj = (Expr)n; break;
+        case 0:	obj = (ASTExpr)n; break;
 		case 1:	ident = (ASTIdentifier)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) throws CompilerException {
+	public Node resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
 			ASTNode o = obj.resolve(null);
@@ -100,8 +100,8 @@ public class ASTAccessExpression extends Expr {
 			if( o instanceof Struct && name.equals(nameThis) ) {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
-			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
-			ASTNode@ v;
+			ListBuffer<Node> res = new ListBuffer<Node>();
+			Node@ v;
 			ResInfo info;
 			int min_transforms = 8096;
 			if( o instanceof Expr && snitps != null && snitps.length > 1) {

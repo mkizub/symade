@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTDoStatement.java,v 1.3 1998/10/26 23:47:02 max Exp $
@@ -33,24 +34,24 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTDoStatement extends Statement {
+public class ASTDoStatement extends ASTNode {
     public boolean		not;
-	public Expr			cond;
-    public Statement	body;
+	public ASTExpr		cond;
+    public ASTStatement	body;
 
 	public ASTDoStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: body=(Statement)n; break;
-        case 1: cond=(Expr)n; break;
+        case 0: body=(ASTStatement)n; break;
+        case 1: cond=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if (not) {
 			ASTOperator op = new ASTOperator(0);
 			op.image = KString.from("!");

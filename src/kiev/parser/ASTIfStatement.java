@@ -33,26 +33,26 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTIfStatement extends Statement {
+public class ASTIfStatement extends ASTNode {
     public boolean		not;
-	public Expr			cond;
-    public Statement	thenSt;
-    public Statement	elseSt;
+	public ASTExpr		cond;
+    public ASTStatement	thenSt;
+    public ASTStatement	elseSt;
 
 	public ASTIfStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: cond=(Expr)n; break;
-        case 1: thenSt=(Statement)n; break;
-        case 2: elseSt=(Statement)n; break;
+        case 0: cond=(ASTExpr)n; break;
+        case 1: thenSt=(ASTStatement)n; break;
+        case 2: elseSt=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if (not) {
 			ASTOperator op = new ASTOperator(0);
 			op.image = KString.from("!");

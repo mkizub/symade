@@ -33,9 +33,9 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTNewInitializedArrayExpression extends Expr {
-	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+public class ASTNewInitializedArrayExpression extends ASTNode {
+	public ASTNode		type;
+    public ASTExpr[]	args = ASTExpr.emptyArray;
 	public int dim;
   
 	ASTNewInitializedArrayExpression(int id) {
@@ -50,7 +50,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( type == null ) type = reqType;
 		else if( type instanceof Type );
 		else {

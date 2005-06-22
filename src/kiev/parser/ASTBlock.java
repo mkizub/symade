@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTBlock.java,v 1.3 1998/10/26 23:47:02 max Exp $
  * @author Maxim Kizub
@@ -33,19 +36,20 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTBlock extends Statement {
-	public ASTNode[] stats = ASTNode.emptyArray;
+public class ASTBlock extends ASTStatement {
+	public Node∏	 stats;
 
 	public ASTBlock(int id) {
 		super(0,null);
+		stats = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)
 	{
-		stats = (ASTNode[])Arrays.append(stats,n);
+		stats.append(n);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		BlockStat bs = new BlockStat(pos,parent,stats);
 		if( parent instanceof Method )
 			((Method)parent).body = bs;

@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.Node;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
@@ -50,11 +51,11 @@ public interface Named {
 	public NodeName	getName();
 }
 
-public class PathEnumerator implements Enumeration<ASTNode> {
+public class PathEnumerator implements Enumeration<Node> {
 	public int i;
 	public PathEnumerator() { i = PassInfo.pathTop; }
 	public boolean hasMoreElements() { return i > 0; }
-	public ASTNode nextElement() { return PassInfo.path[--i]; }
+	public Node nextElement() { return PassInfo.path[--i]; }
 }
 
 public class PassInfo {
@@ -66,11 +67,11 @@ public class PassInfo {
 	public static FileUnit			file_unit;
 	public static Struct			clazz;
 	public static Method			method;
-	public static ASTNode[]			path	= new ASTNode[1024];
+	public static Node[]			path	= new Node[1024];
 	public static int				pathTop = 0;
 
 
-	public static void push(ASTNode node) {
+	public static void push(Node node) {
 		trace(Kiev.debugAST,"AST "+pathTop+" push '"+node+"'"+debugAt());
         path[pathTop++] = node;
 		if( node instanceof FileUnit ) {
@@ -96,7 +97,7 @@ public class PassInfo {
 		}
 	}
 
-	public static void pop(ASTNode n) {
+	public static void pop(Node n) {
 		trace(Kiev.debugAST,"AST "+pathTop+" pop  '"+n+"'"+debugAt());
     	if( n != path[pathTop-1] ) {
     		if( n == path[pathTop-2] )
@@ -104,7 +105,7 @@ public class PassInfo {
     		else
 	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
     	}
-    	ASTNode node = path[--pathTop];
+    	Node node = path[--pathTop];
     	if( n!=node )
     		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
         path[pathTop] = null;
@@ -169,7 +170,7 @@ public class PassInfo {
 	}
 
 	public static boolean checkClassName(KString qname) {
-		PVar<ASTNode> node = new PVar<ASTNode>();
+		PVar<Node> node = new PVar<Node>();
 		return resolveNameR(node,new ResInfo(),qname,null,0)
 			&& ((node instanceof Struct && !node.isPackage()) || node instanceof Type);
 	}
@@ -177,7 +178,7 @@ public class PassInfo {
 	public static boolean resolveQualifiedPrefix(Struct@ qstruct, KString@ qname, KString name, int resfl)
 	{
 		KStringTokenizer sigt = new KStringTokenizer(name,'.');
-		PVar<ASTNode> cl = new PVar<ASTNode>();
+		PVar<Node> cl = new PVar<Node>();
 		if( !resolveNameR(cl,new ResInfo(),sigt.nextToken(),null,resfl) || !(cl instanceof Struct ))
 			return false;
 		while( cl instanceof Struct
@@ -205,18 +206,18 @@ public class PassInfo {
 		return true;
 	}
 
-	rule public static resolveOperatorR(ASTNode@ op)
-		ASTNode@ p;
+	rule public static resolveOperatorR(Node@ op)
+		Node@ p;
 	{
 		p @= new PathEnumerator(),
 		p instanceof ScopeOfOperators,
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	rule public static resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public static resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
-		ASTNode@ p;
+		Node@ p;
 	{
 		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
 		name.indexOf('.') > 0, $cut,
@@ -232,7 +233,7 @@ public class PassInfo {
 		((Scope)p).resolveNameR(node,path,name,tp,resfl)
 	}
 
-	static boolean checkResolvedPathForName(ASTNode node, ResInfo info) {
+	static boolean checkResolvedPathForName(Node node, ResInfo info) {
 		assert(node != null);
 		// Vars will be auto-wrapped in Ref<...> if needed
 		if( node instanceof Var ) return true;
@@ -299,7 +300,7 @@ public class PassInfo {
 
 	public static boolean resolveBestMethodR(
 		Scope sc,
-		ASTNode@ node,
+		Node@ node,
 		ResInfo info,
 		KString name,
 		Expr[] args,
@@ -410,17 +411,17 @@ public class PassInfo {
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
 			msg.append("\t").append(lm.head().parent).append('.');
-			foreach(ASTNode n; lp.head().path.toList();) msg.append(n).append('.');
+			foreach(Node n; lp.head().path.toList();) msg.append(n).append('.');
 			msg.append(lm.head()).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(name,args,ret));
 		throw new RuntimeException(msg.toString());
 	}
 
-	rule public static resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public static resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
-		ASTNode@ p;
+		Node@ p;
 	{
 		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),

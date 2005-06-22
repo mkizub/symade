@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTReparseExpression extends Expr {
+public class ASTReparseExpression extends ASTNode {
 
 	public String	ref;
 
@@ -48,7 +48,7 @@ public class ASTReparseExpression extends Expr {
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		ASTNode n = Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");

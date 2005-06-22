@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTFormalParameter.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -35,7 +38,7 @@ import kiev.vlang.*;
 
 public class ASTFormalParameter extends ASTNode {
 	public int			dim;
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifier∏	modifier;
 	public ASTNode		type;
 	public ASTNode		mm_type;
     public KString		name;
@@ -44,6 +47,7 @@ public class ASTFormalParameter extends ASTNode {
 
 	ASTFormalParameter(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
 	}
 
 	public void set(Token t) {
@@ -53,7 +57,7 @@ public class ASTFormalParameter extends ASTNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
         else if( n instanceof ASTType ) {
         	if (type == null)

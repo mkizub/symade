@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.*;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -32,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class Var extends ASTNode implements Named, Typed {
+public class Var extends Node implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];
 
@@ -40,7 +41,7 @@ public class Var extends ASTNode implements Named, Typed {
 	public Type			type;
 	private int			bcpos = -1;
 
-	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {
+	public Var(int pos,Node parent,KString name, Type type, int flags) {
 		super(pos,parent);
 		this.name = new NodeName(name);
 		this.type = type;
@@ -52,7 +53,7 @@ public class Var extends ASTNode implements Named, Typed {
 		this.type = type;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -68,7 +69,7 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		return this;
 	}
 
@@ -152,7 +153,7 @@ public class NodeInfoPass {
 		states = init_states.pop();
 	}
 
-	public static ScopeNodeInfo getNodeInThisScope(ASTNode v) {
+	public static ScopeNodeInfo getNodeInThisScope(Node v) {
 		ScopeNodeInfoVector state = states.peek();
 		ScopeNodeInfo sni = getNodeInfo(v);
 		if( sni != null ) {
@@ -172,11 +173,11 @@ public class NodeInfoPass {
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeType(ASTNode v, Type type) {
+	public static ScopeNodeInfo setNodeType(Node v, Type type) {
 		return setNodeTypes(v,new Type[]{type});
 	}
 
-	public static ScopeNodeInfo setNodeTypes(ASTNode v, Type[] types) {
+	public static ScopeNodeInfo setNodeTypes(Node v, Type[] types) {
 		ScopeNodeInfoVector state = states.peek();
 		ScopeNodeInfo sni = getNodeInThisScope(v);
 
@@ -185,7 +186,7 @@ public class NodeInfoPass {
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeValue(ASTNode v, Expr expr) {
+	public static ScopeNodeInfo setNodeValue(Node v, Expr expr) {
 		Type tp = expr.getType();
 		ScopeNodeInfo sni = getNodeInThisScope(v);
 
@@ -200,7 +201,7 @@ public class NodeInfoPass {
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeInitialized(ASTNode v, boolean initialized) {
+	public static ScopeNodeInfo setNodeInitialized(Node v, boolean initialized) {
 		ScopeNodeInfo sni = getNodeInThisScope(v);
 
 		trace( Kiev.debugNodeTypes, "types: set initialized = "+initialized+" for node "+sni.var);
@@ -237,7 +238,7 @@ public class NodeInfoPass {
 		return states.pop();
 	}
 
-	public static ScopeNodeInfo getNodeInfo(ASTNode v) {
+	public static ScopeNodeInfo getNodeInfo(Node v) {
 		int i = states.length();
 		boolean guarded = false;
 		foreach(ScopeNodeInfoVector state; states) {
@@ -343,7 +344,7 @@ public class NodeInfoPass {
 		return nip_state;
 	}
 
-	public static Type getDeclType(ASTNode n) {
+	public static Type getDeclType(Node n) {
 		switch(n) {
 		case Var: return ((Var)n).type;
 		case Field: return ((Field)n).type;
@@ -356,13 +357,13 @@ public class NodeInfoPass {
 public class ScopeNodeInfo implements Cloneable {
 
 	/** Var or Field */
-	public ASTNode					var;
+	public Node					var;
 	public ScopeNodeInfoVector		state;
 	public Type[]					types;
 	public boolean					initialized;
 	public ConstExpr				value;
 
-	public ScopeNodeInfo(ASTNode var, ScopeNodeInfoVector state ) {
+	public ScopeNodeInfo(Node var, ScopeNodeInfoVector state ) {
 		this.var = var;
 		this.state = state;
 	}

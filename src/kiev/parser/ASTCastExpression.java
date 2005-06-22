@@ -24,6 +24,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.tree.*;
 import kiev.stdlib.*;
 
 /**
@@ -33,9 +34,9 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTCastExpression extends Expr {
+public class ASTCastExpression extends ASTExpr {
 	public ASTNode	type;
-    public Expr		expr;
+    public ASTExpr	expr;
 
 	public ASTCastExpression(int id) {
 		super(0);
@@ -44,12 +45,12 @@ public class ASTCastExpression extends Expr {
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: type=n; break;
-        case 1: expr=(Expr)n; break;
+        case 1: expr=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		Type tp = ((ASTType)type).pass2();
 		return new CastExpr(pos,tp,expr,true).resolve(reqType);
 	}

@@ -27,6 +27,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 import static kiev.vlang.WorkByContractCondition.*;
 
 /**
@@ -37,23 +38,24 @@ import static kiev.vlang.WorkByContractCondition.*;
  */
 
 public class ASTInvariantDeclaration extends ASTCondDeclaration {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifier∏	modifier;
 	public KString		name;
 
 	public ASTInvariantDeclaration(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
+        	modifier.append((ASTModifier)n);
         }
     	else if( n instanceof ASTIdentifier ) {
         	name = ((ASTIdentifier)n).name;
         	pos = n.getPos();
 		}
 		else if( n instanceof ASTBlock ) {
-			body = (Statement)n;
+			body = (ASTStatement)n;
 			if( pos == 0 ) pos = n.pos;
 			if( name == null ) name = KString.from("inv$"+Integer.toHexString(this.hashCode()));
         }
@@ -62,11 +64,11 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
         }
     }
 
-    public ASTNode pass3() {
+    public Node pass3() {
     	int flags = 0;
 		// TODO: check flags for fields
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		foreach (ASTModifier m; modifier)
+			flags |= m.flag();
 		MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
     	Method m = new Method(PassInfo.clazz,name,mt,flags);
     	m.setInvariantMethod(true);

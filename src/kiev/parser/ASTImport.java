@@ -58,7 +58,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		}
     }
 
-	public ASTNode pass1_1() {
+	public Node pass1_1() {
 		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
 		PVar<ASTNode> v = new PVar<ASTNode>();
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) )
@@ -75,7 +75,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		return new Import(pos,PassInfo.file_unit,n,mode,star);
 	}
 
-	public ASTNode resolveImports() {
+	public Node resolveImports() {
 		if (args == null || (mode==IMPORT_STATIC && star)) return null;
 		PVar<ASTNode> v = new PVar<ASTNode>();
 		int i = 0;

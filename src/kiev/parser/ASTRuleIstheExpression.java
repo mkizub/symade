@@ -36,7 +36,7 @@ import kiev.vlang.*;
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
 	public ASTIdentifier	name;
-	public Expr				expr;
+	public ASTExpr			expr;
 
 	public ASTRuleIstheExpression(int id) {
 		super(0);
@@ -45,12 +45,12 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=(ASTIdentifier)n; setPos(name.getPos()); break;
-        case 1: expr=(Expr)n; break;
+        case 1: expr=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
 		PVar<ASTNode> v = new PVar<ASTNode>();
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name.name,null,0) )
 			throw new CompilerException(pos,"Unresolved identifier "+name.name);

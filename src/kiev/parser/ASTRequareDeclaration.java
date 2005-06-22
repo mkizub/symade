@@ -38,7 +38,7 @@ import static kiev.vlang.WorkByContractCondition.*;
 
 public abstract class ASTCondDeclaration extends ASTNode implements PreScanneable {
 	public KString		name;
-    public Statement	body;
+    public ASTStatement	body;
 	public virtual PrescannedBody pbody;
 
 	public ASTCondDeclaration(int id) {
@@ -54,7 +54,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
         	pos = n.getPos();
 		}
 		else if( n instanceof ASTBlock ) {
-			body = (Statement)n;
+			body = (ASTStatement)n;
 			if( pos == 0 ) pos = n.pos;
         }
         else {
@@ -62,7 +62,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
         }
     }
 
-    public abstract ASTNode pass3();
+    public abstract Node pass3();
 
 }
 
@@ -71,7 +71,7 @@ public class ASTRequareDeclaration extends ASTCondDeclaration {
 		super(0);
 	}
 
-    public ASTNode pass3() {
+    public Node pass3() {
 		WorkByContractCondition cond = new WorkByContractCondition(pos,CondRequire,name,body);
 		if( pbody != null ) pbody.setParent(cond);
 		return cond;

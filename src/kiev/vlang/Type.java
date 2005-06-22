@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -32,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class Type extends ASTNode implements AccessFlags {
+public class Type extends Node implements AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
 	public static final int flReference			= 1;
@@ -745,7 +746,7 @@ public class Type extends ASTNode implements AccessFlags {
 		return str.toString();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 

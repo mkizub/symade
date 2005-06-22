@@ -36,15 +36,15 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTCallExpression extends Expr {
+public class ASTCallExpression extends ASTExpr {
 	public ASTIdentifier	ident;
-    public Expr[]			args = Expr.emptyArray;
+    public ASTExpr[]		args = ASTExpr.emptyArray;
 
 	public ASTCallExpression(int id) {
 		super(0);
 	}
 
-	public ASTCallExpression(int pos, KString func, Expr[] args) {
+	public ASTCallExpression(int pos, KString func, ASTExpr[] args) {
 		super(pos);
 		this.ident = new ASTIdentifier(pos, func);
 		this.args = args;
@@ -61,7 +61,7 @@ public class ASTCallExpression extends Expr {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
 //			try {
 				args[i] = (Expr)args[i].resolve(null);
@@ -158,7 +158,7 @@ public class ASTCallExpression extends Expr {
 				ac.params = new ASTNode[((Method)m).type.args.length];
 				for(int i=0; i < ac.params.length; i++)
 					ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0);
-				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+				BlockStat bs = new BlockStat(pos,ac);
 				Expr[] oldargs = args;
 				Expr[] cargs = new Expr[ac.params.length];
 				for(int i=0; i < cargs.length; i++)

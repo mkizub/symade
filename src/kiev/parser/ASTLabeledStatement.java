@@ -33,12 +33,12 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTLabeledStatement extends Statement {
+public class ASTLabeledStatement extends ASTNode {
 	public KString		name;
-    public Statement	stat;
+    public ASTStatement	stat;
 
 	public ASTLabeledStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -49,7 +49,7 @@ public class ASTLabeledStatement extends Statement {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new LabeledStat(pos,parent,name,stat).resolve(Type.tpVoid);
 	}
 

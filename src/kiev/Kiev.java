@@ -24,6 +24,7 @@ import kiev.stdlib.*;
 import java.io.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/Kiev.java,v 1.5.2.1.2.2 1999/05/29 21:03:05 max Exp $
@@ -402,11 +403,11 @@ public final class Kiev {
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
 	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
-	public static Vector<ASTNode>		files_scanned = new Vector<ASTNode>();
+	public static Vector<Node>		files_scanned = new Vector<Node>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 	public static Type					argtype = null;
 
-	public static Hashtable<String,ASTNode> parserAddresses = new Hashtable<String,ASTNode>();
+	public static Hashtable<String,Node> parserAddresses = new Hashtable<String,Node>();
 	private static int						parserAddrIdx;
 	
 	public static boolean passLessThen(TopLevelPass p) {
@@ -416,7 +417,7 @@ public final class Kiev {
 		return ((int)pass_no) >= ((int)p);
 	}
 
-	public static String parserAddr(ASTNode node) {
+	public static String parserAddr(Node node) {
 		String addr = Integer.toHexString(++parserAddrIdx);
 		while( addr.length() < 8 ) {
 			addr = '0'+addr;
@@ -425,7 +426,7 @@ public final class Kiev {
 		return addr;
 	}
 
-	public static ASTNode parseBlock(StringBuffer sb, int begLine, int begCol) {
+	public static Node parseBlock(StringBuffer sb, int begLine, int begCol) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
 		k.ReInit(is);
 		k.reparse_body = true;
@@ -454,17 +455,17 @@ public final class Kiev {
 			Kiev.k.ReInit(bis);
 			foreach(PrescannedBody b; f.bodies; b != null ) {
 				// callect parents of this block
-				List<ASTNode> pl = List.Nil;
-				ASTNode n = (ASTNode)b.sb;
+				List<Node> pl = List.Nil;
+				Node n = (Node)b.sb;
 				while( n != null ) {
-					pl = new List.Cons<ASTNode>(n,pl);
-					n = n.parent;
+					pl = new List.Cons<Node>(n,pl);
+					n = (Node)n.parent;
 				}
 				if( pl.head() != f ) {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
 					continue;
 				}
-				foreach(ASTNode nn; pl) {
+				foreach(Node nn; pl) {
 					PassInfo.push(nn);
 				}
 				ASTBlock bl;
@@ -485,7 +486,7 @@ public final class Kiev {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body does not math");
 				}
 				pl = pl.reverse();
-				foreach(ASTNode nn; pl) {
+				foreach(Node nn; pl) {
 					PassInfo.pop(nn);
 				}
 			}

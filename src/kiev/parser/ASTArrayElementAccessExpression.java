@@ -33,9 +33,9 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTArrayElementAccessExpression extends Expr {
-	public Expr		obj;
-	public Expr		index;
+public class ASTArrayElementAccessExpression extends ASTNode {
+	public ASTExpr		obj;
+	public ASTExpr		index;
 
 	public ASTArrayElementAccessExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
@@ -43,13 +43,13 @@ public class ASTArrayElementAccessExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0:	obj = (Expr)n; break;
-		case 1:	index = (Expr)n; break;
+        case 0:	obj = (ASTExpr)n; break;
+		case 1:	index = (ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new ContainerAccessExpr(pos,obj,index).resolve(reqType);
 	}
     

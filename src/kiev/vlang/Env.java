@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 import kiev.parser.kiev020;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
@@ -41,7 +42,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ProjectFile extends ASTNode {
+public class ProjectFile extends Node {
 	public ClazzName	name;
 	public File			file;
 	public boolean		bad = true;
@@ -60,7 +61,7 @@ public class ProjectFile extends ASTNode {
 		this(clname, new File( f.toString() ));
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {}
+	public void jjtAddChild(Node n, int i) {}
     public Dumper toJava(Dumper dmp) { return dmp; }
 
 }
@@ -143,7 +144,7 @@ public class Env extends Struct {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
 				cl.methods = Method.emptyArray;
-				cl.imported = ASTNode.emptyArray;
+				cl.imported = new Node∏(cl);
 				cl.attrs = Attr.emptyArray;
 			}
 			if( !cl.isArgument() )

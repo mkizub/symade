@@ -33,21 +33,21 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTReturnStatement extends Statement {
-	public Expr expr;
+public class ASTReturnStatement extends ASTNode {
+	public ASTExpr expr;
 
 	public ASTReturnStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: expr=(Expr)n; break;
+        case 0: expr=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new ReturnStat(pos,parent,expr).resolve(Type.tpVoid);
 	}
 

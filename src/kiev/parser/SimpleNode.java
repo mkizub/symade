@@ -14,9 +14,6 @@ public abstract class SimpleNode extends ASTNode {
 	super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
   }
 
-  public void jjtSetParent(ASTNode n) { parent = n; }
-  public ASTNode jjtGetParent() { return parent; }
-
   public void jjtAddChild(ASTNode n, int i)
   {
     if (children == null) {

@@ -23,6 +23,7 @@ package kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 import java.io.*;
 import java.net.*;
@@ -653,7 +654,7 @@ public class Compiler {
 			foreach(ASTFileUnit fu; Kiev.file_unit; fu != null)
 				Kiev.files.append(fu.file_unit);
 			if (Kiev.safe)
-				foreach(ASTNode fu; Kiev.files_scanned; fu != null)
+				foreach(Node fu; Kiev.files_scanned; fu != null)
 					Kiev.files.append(((ASTFileUnit)fu).file_unit);
 
 

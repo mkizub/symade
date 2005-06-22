@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -160,11 +161,11 @@ public class Bytecoder implements Constants {
 						Type type = ((TypedefAttr)at).type;
 						KString name = ((TypedefAttr)at).type_name;
 						Typedef td = new Typedef(0,cl,name,type);
-						cl.imported = (ASTNode[])Arrays.append(cl.imported,td);
+						cl.imported.append(td);
 					}
 					else if( at.name.equals(attrOperator) ) {
 						Operator op = ((OperatorAttr)at).op;
-						cl.imported = (ASTNode[])Arrays.append(cl.imported,op);
+						cl.imported.append(op);
 					}
 				}
 			}
@@ -615,11 +616,11 @@ public class Bytecoder implements Constants {
 					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));
 					imp.args = mt.args;
 				}
-				cl.imported = (ASTNode[])Arrays.append(cl.imported,imp);
+				cl.imported.append(imp);
 				if( this.cl.isPackage() )
 		        	Kiev.packages_scanned.append(this.cl);
 			} else {
-				ASTNode node;
+				Node node;
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
 					node = s.resolveName(kia.getNodeName(clazz));
 				} else {
@@ -628,7 +629,7 @@ public class Bytecoder implements Constants {
 				if( node == null )
 					Kiev.reportWarning(0,"Package bytecode imports unknown method / field "+
 						kia.getNodeName(clazz)+" "+kia.getSignature(clazz)+" from class "+s);
-				cl.imported = (ASTNode[])Arrays.append(cl.imported,node);
+				cl.imported.append(node);
 			}
 			a = null;
 		}

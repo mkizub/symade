@@ -33,23 +33,23 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTSynchronizedStatement extends Statement {
-	public Expr			arg;
-    public Statement	body;
+public class ASTSynchronizedStatement extends ASTNode {
+	public ASTExpr		arg;
+    public ASTStatement	body;
 
 	public ASTSynchronizedStatement(int id) {
-		super(id,null);
+		super(id);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: arg=(Expr)n; break;
-        case 1: body=(Statement)n; break;
+        case 0: arg=(ASTExpr)n; break;
+        case 1: body=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new SynchronizedStat(pos,parent,arg,body).resolve(Type.tpVoid);
 	}
 

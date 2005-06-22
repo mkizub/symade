@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTSwitchStatement.java,v 1.3 1998/10/26 23:47:05 max Exp $
  * @author Maxim Kizub
@@ -33,22 +36,23 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTSwitchStatement extends Statement {
-	public Expr			sel;
-	public ASTNode[]	cases = ASTNode.emptyArray;
+public class ASTSwitchStatement extends ASTNode {
+	public ASTExpr		sel;
+	public Node∏		cases;
 
     public ASTSwitchStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
+		cases = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 ) sel = (Expr)n;
+    	if( i==0 ) sel = (ASTExpr)n;
         else {
-        	cases = (ASTNode[])Arrays.append(cases,n);
+        	cases.append(n);
         }
     }
     
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
 		return new SwitchStat(pos,parent,sel,cases).resolve(Type.tpVoid);
     }
 

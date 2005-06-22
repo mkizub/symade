@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import java.io.*;
 
@@ -605,12 +606,12 @@ public class OperatorAttr extends Attr {
 
 public class ImportAttr extends Attr {
 
-	public ASTNode	node;
+	public Node	node;
 
 	public boolean get$isKiev() { return true; }
 
 	/** Constructor for bytecode reader and raw field creation */
-	public ImportAttr(ASTNode node) {
+	public ImportAttr(Node node) {
 		super(attrImport);
 		this.node = node;
 	}

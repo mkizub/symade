@@ -33,26 +33,26 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTCondStatement extends Statement {
+public class ASTCondStatement extends ASTNode {
 	
-	public Expr		cond;
-	public Expr		message;
+	public ASTExpr		cond;
+	public ASTExpr		message;
 	
 	public ASTCondStatement(int id) {
-		super(0,null);
+		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)
 	{
 		if( i==0 && n instanceof ASTExpression )
 			cond = (ASTExpression)n;
-		else if( i==1 && n instanceof Expr )
-			message = (Expr)n;
+		else if( i==1 && n instanceof ASTExpr )
+			message = (ASTExpr)n;
 		else
 			throw new CompilerException(pos,"Bad child node "+n.getClass());
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( cond instanceof BooleanExpr )
 			return new CondStat(pos,parent,(BooleanExpr)cond,message).resolve(Type.tpVoid);
 		else

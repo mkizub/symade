@@ -27,6 +27,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTRuleDeclaration.java,v 1.3.2.1.2.1 1999/05/29 21:03:06 max Exp $
@@ -37,13 +38,13 @@ import static kiev.stdlib.Debug.*;
 
 public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
-    public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
-    public KString		name;
-    public ASTNode[]	params = ASTNode.emptyArray;
-    public ASTAlias[]	aliases = ASTAlias.emptyArray;
-    public ASTNode[]	localvars = ASTNode.emptyArray;
-    public Statement	body;
+    public ASTModifier∏				modifier;
+	public ASTAccess				acc;
+    public KString					name;
+    public ASTFormalParameter∏		params;
+    public ASTAlias[]				aliases = ASTAlias.emptyArray;
+    public ASTVarDecls∏				localvars;
+    public ASTStatement				body;
 	public virtual PrescannedBody pbody;
 	public ASTRequareDeclaration[]	req;
 	public ASTEnsureDeclaration[]	ens;
@@ -52,6 +53,9 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
 	public ASTRuleDeclaration(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
+		params = new ASTFormalParameter∏(this);
+		localvars = new ASTVarDecls∏(this);
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -59,7 +63,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
+        	modifier.append((ASTModifier)n);
         }
 		else if( n instanceof ASTAccess ) {
 			if( acc != null )
@@ -71,10 +75,10 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         	pos = n.getPos();
 		}
     	else if( n instanceof ASTFormalParameter ) {
-        	params = (ASTNode[])Arrays.append(params,n);
+        	params.append((ASTFormalParameter)n);
         }
     	else if( n instanceof ASTVarDecls ) {
-        	localvars = (ASTNode[])Arrays.append(localvars,n);
+        	localvars.append((ASTVarDecls)n);
         }
     	else if( n instanceof ASTAlias ) {
         	aliases = (ASTAlias[])Arrays.append(aliases,n);

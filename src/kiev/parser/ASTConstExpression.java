@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTConstExpression extends Expr implements kiev020Constants {
+public class ASTConstExpression extends ASTExpr implements kiev020Constants {
 	public Object	val;
 
 	ASTConstExpression(int id) {
@@ -250,7 +250,7 @@ public class ASTConstExpression extends Expr implements kiev020Constants {
     }
 
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( val instanceof Boolean )
 			return new ConstBooleanExpr(pos,((Boolean)val).booleanValue()).resolve(reqType);
 		return new ConstExpr(pos,val);

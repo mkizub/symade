@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Main;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Dumper.java,v 1.3.2.1 1999/02/12 18:47:07 max Exp $
@@ -66,7 +67,7 @@ public class Dumper {
 		return this;
 	}
 
-	public Dumper append(ASTNode o) {
+	public Dumper append(Node o) {
 		if( o == null ) return this;
 		try {
 			o.toJava(this);

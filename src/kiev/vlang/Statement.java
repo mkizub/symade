@@ -46,7 +46,7 @@ public class InlineMethodStat extends Statement implements Scope {
 	public Method		method;
 	public ParamRedir[]	params_redir;
 
-	public InlineMethodStat(int pos, ASTNode parent, Method m, Method in) {
+	public InlineMethodStat(int pos, Node parent, Method m, Method in) {
 		super(pos, parent);
 		method = m;
 		method.inlined_by_dispatcher = true;
@@ -57,7 +57,7 @@ public class InlineMethodStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -66,12 +66,12 @@ public class InlineMethodStat extends Statement implements Scope {
 		node ?= redir.new_var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
@@ -140,26 +140,26 @@ public class InlineMethodStat extends Statement implements Scope {
 
 public class BlockStat extends Statement implements Scope {
 
-	public ASTNode[]	stats = Statement.emptyArray;
+	public Node[]	stats = Statement.emptyArray;
 	public Var[]		vars = Var.emptyArray;
 	public Node∏		members;
 	public Statement[]	addstats = Statement.emptyArray;
 
 	protected CodeLabel	break_label = null;
 
-	public BlockStat(int pos, ASTNode parent) {
+	public BlockStat(int pos, Node parent) {
 		super(pos, parent);
 		members = new Node∏(this);
 	}
 
-	public BlockStat(int pos, ASTNode parent, ASTNode[] stats) {
+	public BlockStat(int pos, Node parent, Node[] stats) {
 		super(pos,parent);
 		this.stats = stats;
 		for(int i=0; i < stats.length; i++) stats[i].parent = this;
 	}
 
 	public Statement addStatement(Statement st) {
-		stats = (ASTNode[])Arrays.append(stats,st);
+		stats = (Node[])Arrays.append(stats,st);
 		st.parent = this;
 		return st;
 	}
@@ -172,8 +172,8 @@ public class BlockStat extends Statement implements Scope {
 		return var;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		ASTNode@ n;
+	rule public resolveNameR(Node@ node, ResInfo info, KString name, Type tp, int resfl)
+		Node@ n;
 	{
 		n @= vars,
 		{
@@ -193,7 +193,7 @@ public class BlockStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		n @= vars,
@@ -202,14 +202,14 @@ public class BlockStat extends Statement implements Scope {
 		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
 			resolveBlockStats();
 			if( addstats.length > 0 ) {
 				for(int i=0; i < addstats.length; i++) {
-					stats = (ASTNode[])Arrays.insert(stats,addstats[i],i);
+					stats = (Node[])Arrays.insert(stats,addstats[i],i);
 					trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
 				}
 				addstats = Statement.emptyArray;
@@ -254,7 +254,7 @@ public class BlockStat extends Statement implements Scope {
 //            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
 //						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
 //					}
-					ASTNode[] vstats = ASTNode.emptyArray;
+					Node[] vstats = new Node[0];
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 						KString vname = vdecl.name;
@@ -280,19 +280,19 @@ public class BlockStat extends Statement implements Scope {
 							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags));
 						vstat.parent = this;
 						vstat = (DeclStat)vstat.resolve(Type.tpVoid);
-						vstats = (ASTNode[])Arrays.append(vstats,vstat);
+						vstats = (Node[])Arrays.append(vstats,vstat);
 //						vars = (Var[])Arrays.append(vars,vstat.var);
 					}
 					stats[i] = vstats[0];
 					for(int j=1; j < vstats.length; j++, i++) {
-						stats = (ASTNode[])Arrays.insert(stats,vstats[j],i+1);
+						stats = (Node[])Arrays.insert(stats,vstats[j],i+1);
 					}
 				}
 				else if( stats[i] instanceof ASTTypeDeclaration ) {
 					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
 					Struct cl;
 					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.modifier = (ASTNode[])Arrays.append(decl.modifier,ASTModifier.modSTATIC);
+						decl.modifier = (Node[])Arrays.append(decl.modifier,ASTModifier.modSTATIC);
 					cl = (Struct)decl.pass1();
 					cl.setLocal(true);
 					cl = (Struct)decl.pass2();
@@ -301,7 +301,7 @@ public class BlockStat extends Statement implements Scope {
 					cl.autoProxyMethods();
 					cl.resolveFinalFields(false);
 					stats[i] = new TypeDeclStat(decl.pos,this,cl).resolve(null);
-					members = (ASTNode[])Arrays.append(members,cl);
+					members = (Node[])Arrays.append(members,cl);
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -342,11 +342,11 @@ public class BlockStat extends Statement implements Scope {
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; stats; n!=null) n.cleanup();
+		foreach(Node n; stats; n!=null) n.cleanup();
 		stats = null;
-		foreach(ASTNode n; vars; n!=null) n.cleanup();
+		foreach(Node n; vars; n!=null) n.cleanup();
 		vars = null;
-		foreach(ASTNode n; addstats; n!=null) n.cleanup();
+		foreach(Node n; addstats; n!=null) n.cleanup();
 		addstats = null;
 	}
 
@@ -362,9 +362,9 @@ public class BlockStat extends Statement implements Scope {
 
 public class EmptyStat extends Statement {
 
-	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
+	public EmptyStat(int pos, Node parent) { super(pos, parent); }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		PassInfo.pop(this);
 		return this;
@@ -389,7 +389,7 @@ public class ExprStat extends Statement {
 
 	public Expr		expr;
 
-	public ExprStat(int pos, ASTNode parent, Expr expr) {
+	public ExprStat(int pos, Node parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -399,7 +399,7 @@ public class ExprStat extends Statement {
 		return "stat "+expr;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			expr = expr.resolveExpr(Type.tpVoid);
@@ -438,19 +438,19 @@ public class DeclStat extends Statement {
 	public Var		var;
 	public Expr		init;
 
-	public DeclStat(int pos, ASTNode parent, Var var) {
+	public DeclStat(int pos, Node parent, Var var) {
 		super(pos, parent);
 		this.var = var;
 		this.var.parent = this;
 	}
 
-	public DeclStat(int pos, ASTNode parent, Var var, Expr init) {
+	public DeclStat(int pos, Node parent, Var var, Expr init) {
 		this(pos,parent,var);
 		this.init = init;
 		init.parent = this;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -467,7 +467,7 @@ public class DeclStat extends Statement {
 					Kiev.reportError(pos,e);
 				}
 			}
-			ASTNode p = parent;
+			Node p = parent;
 			while( p != null && !(p instanceof BlockStat) ) p = p.parent;
 			if( p != null ) {
 				((BlockStat)p).addVar(var);
@@ -538,13 +538,13 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 
 	public Struct		struct;
 
-	public TypeDeclStat(int pos, ASTNode parent, Struct struct) {
+	public TypeDeclStat(int pos, Node parent, Struct struct) {
 		super(pos, parent);
 		this.struct = struct;
 		this.struct.parent = this;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
 			try {
@@ -582,7 +582,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 	public Expr		expr;
 
-	public ReturnStat(int pos, ASTNode parent, Expr expr) {
+	public ReturnStat(int pos, Node parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
 		if( expr != null)
@@ -594,7 +594,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 		this(pos,null,expr);
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
 			if( expr != null ) {
@@ -690,7 +690,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 
 	public Expr		expr;
 
-	public ThrowStat(int pos, ASTNode parent, Expr expr) {
+	public ThrowStat(int pos, Node parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
 		this.expr.parent = this;
@@ -701,7 +701,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 		this(pos,null,expr);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			try {
@@ -744,7 +744,7 @@ public class IfElseStat extends Statement {
 	public Statement	thenSt;
 	public Statement	elseSt;
 
-	public IfElseStat(int pos, ASTNode parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
+	public IfElseStat(int pos, Node parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
 		this.cond = cond;
 		this.cond.parent = this;
@@ -760,7 +760,7 @@ public class IfElseStat extends Statement {
 		this(pos,null,cond,thenSt,elseSt);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		ScopeNodeInfoVector result_state = null;
@@ -918,7 +918,7 @@ public class CondStat extends Statement {
 	public BooleanExpr	cond;
 	public Expr			message;
 
-	public CondStat(int pos, ASTNode parent, BooleanExpr cond, Expr message) {
+	public CondStat(int pos, Node parent, BooleanExpr cond, Expr message) {
 		super(pos,parent);
 		this.cond = cond;
 		this.cond.parent = this;
@@ -930,7 +930,7 @@ public class CondStat extends Statement {
 		this(pos,null,cond,message);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
@@ -1046,7 +1046,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	protected CodeLabel	tag_label = null;
 
-	public LabeledStat(int pos, ASTNode parent, KString name, Statement stat) {
+	public LabeledStat(int pos, Node parent, KString name, Statement stat) {
 		super(pos, parent);
 		this.name = name;
 		this.stat = stat;
@@ -1055,7 +1055,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public NodeName getName() { return new NodeName(name); }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			stat = (Statement)stat.resolve(Type.tpVoid);
@@ -1098,14 +1098,14 @@ public class BreakStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
-	public BreakStat(int pos, ASTNode parent, KString name) {
+	public BreakStat(int pos, Node parent, KString name) {
 		super(pos, parent);
 		this.name = name;
 		setAbrupted(true);
 	}
 
-	public ASTNode resolve(Type reqType) {
-		ASTNode p;
+	public Node resolve(Type reqType) {
+		Node p;
 		if( name == null ) {
 			for(p=parent; !(
 				p instanceof BreakTarget
@@ -1119,7 +1119,7 @@ public class BreakStat extends Statement/*defaults*/ {
 					((LabeledStat)p).getName().equals(name) )
 					throw new RuntimeException("Label "+name+" does not refer to break target");
 				if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
-				ASTNode pp = p;
+				Node pp = p;
 				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
 					if( ((LabeledStat)p).getName().equals(name) ) {
 						p = pp;
@@ -1176,13 +1176,13 @@ public class ContinueStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
-	public ContinueStat(int pos, ASTNode parent, KString name) {
+	public ContinueStat(int pos, Node parent, KString name) {
 		super(pos, parent);
 		this.name = name;
 		setAbrupted(true);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		// TODO: check label or loop statement available
 		return this;
 	}
@@ -1225,13 +1225,13 @@ public class GotoStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
-	public GotoStat(int pos, ASTNode parent, KString name) {
+	public GotoStat(int pos, Node parent, KString name) {
 		super(pos, parent);
 		this.name = name;
 		setAbrupted(true);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return this;
 	}
 
@@ -1324,7 +1324,7 @@ public class GotoStat extends Statement/*defaults*/ {
 	public Object[] resolveLabelStat(LabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];
 		Object[] cl2 = new CodeLabel[0];
-		ASTNode st = stat;
+		Node st = stat;
 		while( !(st instanceof Method) ) {
 			if( st instanceof FinallyInfo ) {
 				st = st.parent.parent;
@@ -1409,7 +1409,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	public Expr			expr;
 	public SwitchStat	sw;
 
-	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
+	public GotoCaseStat(int pos, Node parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
 		if( expr != null )
@@ -1417,7 +1417,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		setAbrupted(true);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
 			if( PassInfo.path[i] instanceof SwitchStat ) {
 				sw = (SwitchStat)PassInfo.path[i];
@@ -1487,7 +1487,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				lb = sw.getContinueLabel();
 			else {
 				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
-				foreach(ASTNode an; sw.cases) {
+				foreach(Node an; sw.cases) {
 					CaseLabel cl = (CaseLabel)an;
 					int case_value = ((Number)((ConstExpr)cl.val).getConstValue()).intValue();
 					if( goto_value == case_value ) {

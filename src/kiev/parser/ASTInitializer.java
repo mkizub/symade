@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTInitializer.java,v 1.3 1998/10/26 23:47:03 max Exp $
  * @author Maxim Kizub
@@ -34,8 +37,8 @@ import kiev.vlang.*;
  */
 
 public class ASTInitializer extends ASTNode implements PreScanneable {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
-	public Statement	body;
+	public Node∏		modifier;
+	public ASTStatement	body;
 	public virtual PrescannedBody pbody;
     
 	public PrescannedBody get$pbody() { return pbody; }
@@ -43,14 +46,15 @@ public class ASTInitializer extends ASTNode implements PreScanneable {
 	
 	public ASTInitializer(int id) {
 		super(0);
+		modifier = new Node∏(this);
 	}
     
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
-        else if( n instanceof Statement ) {
-			body = (Statement)n;
+        else if( n instanceof ASTStatement ) {
+			body = (ASTStatement)n;
             pos = n.getPos();
 		}
         else {

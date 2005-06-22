@@ -33,32 +33,32 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTForEachStatement extends Statement {
+public class ASTForEachStatement extends ASTStatement {
 	public ASTFormalParameter	var;
-	public Expr					container;
-	public Expr					cond;
-	public Statement			body;
+	public ASTExpr				container;
+	public ASTExpr				cond;
+	public ASTStatement			body;
 
 	public ASTForEachStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTFormalParameter ) {
 			var=(ASTFormalParameter)n;
 		}
-		else if( n instanceof Expr ) {
-			if( container == null ) container = (Expr)n;
-			else cond = (Expr)n;
+		else if( n instanceof ASTExpr ) {
+			if( container == null ) container = (ASTExpr)n;
+			else cond = (ASTExpr)n;
 		}
-		else if( n instanceof Statement ) {
-			body=(Statement)n;
+		else if( n instanceof ASTStatement ) {
+			body=(ASTStatement)n;
 		}
 		else
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		Var v = null;
 		if( var != null )
 			v = var.pass3();

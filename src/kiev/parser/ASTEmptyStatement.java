@@ -33,16 +33,16 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTEmptyStatement extends Statement {
+public class ASTEmptyStatement extends ASTStatement {
 	public ASTEmptyStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
     	return new EmptyStat(pos,parent).resolve(reqType);
 	}
     

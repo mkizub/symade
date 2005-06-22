@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 import java.io.*;
 
@@ -41,7 +42,7 @@ public class Grammar {
 
 }
 
-public class TokenDecl extends ASTNode {
+public class TokenDecl extends Node {
 
 	public KString		name;
 	public KString		value;

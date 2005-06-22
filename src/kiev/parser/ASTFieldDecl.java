@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/Attic/ASTFieldDecl.java,v 1.1.2.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -35,20 +38,22 @@ import kiev.vlang.*;
 
 public class ASTFieldDecl extends ASTNode {
 
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifier∏	modifier;
 	public ASTPack		pack;
 	public ASTAccess	acc;
 	public ASTNode		type;
-	public ASTNode[]	vars = ASTNode.emptyArray;
+	public ASTVarDecl∏	vars;
 
 	public ASTFieldDecl(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
+		vars = new ASTVarDecl∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		switch( n ) {
 		case ASTModifier:
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 			break;
 		case ASTPack:
 			if( pack != null )
@@ -65,14 +70,14 @@ public class ASTFieldDecl extends ASTNode {
 			break;
 		case ASTVarDecl:
 			if( vars.length == 0 ) pos = n.pos;
-			vars = (ASTNode[])Arrays.append(vars,n);
+			vars.append((ASTVarDecl)n);
 			break;
         default:
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return null;
 	}
     

@@ -50,7 +50,7 @@ public class AccessExpr extends LvalueExpr {
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var) {
+	public AccessExpr(int pos, Node par, Expr obj, Field var) {
 		super(pos,par);
 		this.obj = obj;
 		this.obj.parent = this;
@@ -67,7 +67,7 @@ public class AccessExpr extends LvalueExpr {
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var, int flags) {
+	public AccessExpr(int pos, Node par, Expr obj, Field var, int flags) {
 		super(pos,par);
 		this.obj = obj;
 		this.obj.parent = this;
@@ -98,7 +98,7 @@ public class AccessExpr extends LvalueExpr {
 		fget = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 
 		PassInfo.push(this);
@@ -381,7 +381,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			}
 			else {
 				// Resolve overloaded access method
-				PVar<ASTNode> v;
+				PVar<Node> v;
 				Struct s = t.clazz;
 				if (s.generated_from != null) s = s.generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
@@ -423,7 +423,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 		index = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -460,7 +460,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_load);
 			} else {
 				// Resolve overloaded access method
-				PVar<ASTNode> v;
+				PVar<Node> v;
 				if( !PassInfo.resolveBestMethodR(obj.getType().clazz,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,obj.getType(),ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
 				obj.generate(null);
@@ -510,7 +510,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_store);
 			} else {
 				// Resolve overloaded set method
-				PVar<ASTNode> v;
+				PVar<Node> v;
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
@@ -534,7 +534,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_store);
 			} else {
 				// Resolve overloaded set method
-				PVar<ASTNode> v;
+				PVar<Node> v;
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
@@ -578,7 +578,7 @@ public class VarAccessExpr extends LvalueExpr {
 			throw new RuntimeException("Null var");
 		this.var = var;
 	}
-	public VarAccessExpr(int pos, ASTNode par, Var var) {
+	public VarAccessExpr(int pos, Node par, Var var) {
 		super(pos,par);
 		if( var == null )
 			throw new RuntimeException("Null var");
@@ -609,13 +609,13 @@ public class VarAccessExpr extends LvalueExpr {
 		var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
 			// Check if we try to access this var from local inner/anonymouse class
 			if( PassInfo.clazz.isLocal() ) {
-				ASTNode p = var.parent;
+				Node p = var.parent;
 				while( !(p instanceof Struct) ) p = p.parent;
 				if( p != PassInfo.clazz ) {
 					var.setNeedProxy(true);
@@ -881,7 +881,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	public Var		var;
 
-	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
+	public LocalPrologVarAccessExpr(int pos, Node par, Var var) {
 		super(pos,par);
 		this.var = var;
 		RuleMethod rm = (RuleMethod)PassInfo.method;
@@ -911,7 +911,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 		var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1063,7 +1063,7 @@ public class FieldAccessExpr extends LvalueExpr {
 		fset = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1360,7 +1360,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		fset = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1506,7 +1506,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		outer_refs = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1614,7 +1614,7 @@ public class SelfAccessExpr extends LvalueExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		expr = (LvalueExpr)expr.resolve(reqType);
 		setResolved(true);
 		// Thanks to AccessExpr, that resolved all things for us

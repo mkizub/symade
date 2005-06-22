@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTAnonymouseClosure.java,v 1.5 1999/01/29 01:22:21 max Exp $
  * @author Maxim Kizub
@@ -33,14 +36,15 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTAnonymouseClosure extends Expr {
-    public ASTNode[]	params = ASTNode.emptyArray;
+public class ASTAnonymouseClosure extends ASTNode {
+    public Node∏		params;
     public ASTNode		type;
-    public Statement	body;
+    public ASTStatement	body;
 	public Expr			new_closure;
 
 	public ASTAnonymouseClosure(int id) {
 		super(0);
+		params = new Node∏(this);
 	}
 
   	public void set(Token t) {
@@ -49,20 +53,20 @@ public class ASTAnonymouseClosure extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
+			params.append(n);
 		}
 		else if( n instanceof ASTType ) {
 			type = n;
 		}
 		else if( n instanceof Statement ) {
-			body = (Statement)n;
+			body = (ASTStatement)n;
 		}
 		else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
 		}
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( isResolved() ) return new_closure;
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)

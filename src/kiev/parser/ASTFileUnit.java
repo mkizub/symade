@@ -28,6 +28,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTFileUnit.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
@@ -42,14 +43,16 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
     public ASTNode			pkg;
-    public ASTNode[]		syntax = ASTNode.emptyArray;
-    public ASTNode[]		decls  = ASTNode.emptyArray;
+    public Node∏			syntax;
+    public Node∏			decls;
 	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
 	
 	private boolean[]		disabled_extensions;
 
 	ASTFileUnit(int id) {
 		super(0);
+		syntax = new Node∏(this);
+		decls = new Node∏(this);
 		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
@@ -66,7 +69,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			pkg = n;
 		}
         else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
-			syntax = (ASTNode[])Arrays.append(syntax,n);
+			syntax.append(n);
 			// Check disabled extensions very early
 			if (n instanceof ASTPragma) {
 				foreach (ASTConstExpression e; ((ASTPragma)n).options)
@@ -74,7 +77,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			}
 		}
         else {
-			decls = (ASTNode[])Arrays.append(decls,n);
+			decls.append(n);
 		}
     }
 
@@ -92,7 +95,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		disabled_extensions[i] = !enabled;
 	}
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -119,7 +122,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
 
-	public ASTNode pass1_1() {
+	public Node pass1_1() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -167,7 +170,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		return file_unit;
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -194,7 +197,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		return file_unit;
 	}
 
-	public ASTNode pass2_2() {
+	public Node pass2_2() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -210,7 +213,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	}
 
 
-	public ASTNode pass3() {
+	public Node pass3() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -244,7 +247,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		return file_unit;
 	}
 
-	public ASTNode autoProxyMethods() {
+	public Node autoProxyMethods() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -259,7 +262,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		return file_unit;
 	}
 
-	public ASTNode resolveImports() {
+	public Node resolveImports() {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -290,7 +293,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		return file_unit;
 	}
 
-	public ASTNode resolveFinalFields(boolean cleanup) {
+	public Node resolveFinalFields(boolean cleanup) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);

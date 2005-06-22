@@ -33,11 +33,11 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTBreakStatement extends Statement {
+public class ASTBreakStatement extends ASTNode {
 	ASTIdentifier	ident;
     
 	public ASTBreakStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -47,7 +47,7 @@ public class ASTBreakStatement extends Statement {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new BreakStat(pos,parent,ident.name).resolve(Type.tpVoid);
 	}
 

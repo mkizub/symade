@@ -25,6 +25,10 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.tree.*;
+
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTVarDecls.java,v 1.3.4.1 1999/02/17 21:38:29 max Exp $
@@ -34,24 +38,26 @@ import kiev.vlang.*;
  */
 
 public class ASTVarDecls extends ASTNode {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifier∏	modifier;
 	public ASTNode		type;
-	public ASTNode[]	vars = ASTNode.emptyArray;
+	public ASTVarDecl∏	vars;
 
 	public ASTVarDecls(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
+		vars = new ASTVarDecl∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
         else if( n instanceof ASTType ) {
 			type = n;
 		}
         else if( n instanceof ASTVarDecl ) {
 			if( vars.length == 0 ) pos = n.pos;
-			vars = (ASTNode[])Arrays.append(vars,n);
+			vars.append((ASTVarDecl)n);
 		}
         else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -59,20 +65,20 @@ public class ASTVarDecls extends ASTNode {
     }
 
     public boolean hasFinal() {
-    	foreach (ASTNode m; modifier)
-    		if (((ASTModifier)m).flag() == ACC_FINAL) return true;
+    	foreach (ASTModifier m; modifier)
+    		if (m.flag() == ACC_FINAL) return true;
     	return false;
     }
 
     public boolean hasForward() {
-    	foreach (ASTNode m; modifier)
-    		if (((ASTModifier)m).flag() == ACC_FORWARD) return true;
+    	foreach (ASTModifier m; modifier)
+    		if (m.flag() == ACC_FORWARD) return true;
     	return false;
     }
 
 	public Dumper toJava(Dumper dmp) {
-    	for(int i=0; i < modifier.length; i++)
-        	modifier[i].toJava(dmp);
+    	foreach (ASTModifier m; modifier)
+        	m.toJava(dmp);
 		type.toJava(dmp).space();
     	for(int i=0; i < vars.length; i++) {
         	vars[i].toJava(dmp);

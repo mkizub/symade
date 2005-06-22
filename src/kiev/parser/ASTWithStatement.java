@@ -34,7 +34,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTWithStatement extends Statement {
+public class ASTWithStatement extends ASTNode {
 	public ASTIdentifier	arg;
     public Statement		body;
 
@@ -50,7 +50,7 @@ public class ASTWithStatement extends Statement {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		Kiev.check(pos,Ext.With);
 		return new WithStat(pos,parent,arg,body).resolve(Type.tpVoid);
 	}

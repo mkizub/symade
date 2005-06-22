@@ -43,7 +43,7 @@ public class ASTRuleCutExpression extends ASTRuleNode {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
     
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
 		return new RuleCutExpr(pos);
     }
     

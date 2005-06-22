@@ -49,7 +49,7 @@ public class ASTRuleBlock extends ASTBlock {
 			throw new CompilerException(pos,"Bad child node "+n.getClass());
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		RuleBlock rb = new RuleBlock(pos,parent,expr,stats);
 		return rb.resolve(reqType);
 	}

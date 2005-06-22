@@ -57,7 +57,7 @@ public class StatExpr extends Expr implements SetBody {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( isResolved() ) return this;
 		if( stat != null )
 			this.stat.parent = this;
@@ -130,7 +130,7 @@ public class ConstExpr extends Expr {
 	public Object getConstValue() { return value; }
 	public int		getPriority() { return 255; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( value instanceof Boolean ) {
 			ConstBooleanExpr cbe = new ConstBooleanExpr(pos, ((Boolean)value).booleanValue() );
@@ -312,7 +312,7 @@ public class ArrayLengthAccessExpr extends Expr {
 		array = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		setResolved(true);
 		// Thanks to AccessExpr, that resolved all things for us
 		return this;
@@ -437,7 +437,7 @@ public class AssignExpr extends LvalueExpr {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
+			Node[] argsarr = new Node[]{null,lval,value};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				Expr e;
 				e = new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{value}).tryResolve(reqType);
@@ -462,7 +462,7 @@ public class AssignExpr extends LvalueExpr {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			setNodeTypes();
 			return this;
@@ -474,13 +474,13 @@ public class AssignExpr extends LvalueExpr {
 		}
 		PassInfo.push(this);
 		try {
-			ASTNode lv = lval.resolve(null);
+			Node lv = lval.resolve(null);
 			if( !(lv instanceof LvalueExpr) )
 				throw new RuntimeException("Can't assign to "+lv+": lvalue requared");
 			if( (lv instanceof VarAccessExpr) && ((VarAccessExpr)lv).var.isNeedProxy() ) {
 				// Check that we in local/anonymouse class, thus var need RefProxy
 				Var var = ((VarAccessExpr)lv).var;
-				ASTNode p = var.parent;
+				Node p = var.parent;
 				while( !(p instanceof Struct) ) p = p.parent;
 				if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
 					var.setNeedRefProxy(true);
@@ -857,7 +857,7 @@ public class BinaryExpr extends Expr {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+			Node[] argsarr = new Node[]{null,expr1,expr2};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				Expr e;
 				if( opt.method.isStatic() )
@@ -883,7 +883,7 @@ public class BinaryExpr extends Expr {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( !isTryResolved() ) {
 			Expr e = tryResolve(reqType);
@@ -1115,11 +1115,11 @@ public class StringConcatExpr extends Expr {
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
+		foreach(Node n; args; args!=null) n.cleanup();
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		// Resolving of args done by BinaryExpr +
 		// just add items to clazz's CP
@@ -1236,11 +1236,11 @@ public class CommaExpr extends Expr {
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; exprs; exprs!=null) n.cleanup();
+		foreach(Node n; exprs; exprs!=null) n.cleanup();
 		exprs = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1315,7 +1315,7 @@ public class UnaryExpr extends Expr {
 
 	public Expr tryResolve(Type reqType) {
 		setTryResolved(true);
-		ASTNode ast = expr.tryResolve(reqType);
+		Node ast = expr.tryResolve(reqType);
 		if( ast == null )
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		expr = (Expr)ast;
@@ -1355,7 +1355,7 @@ public class UnaryExpr extends Expr {
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
-			ASTNode[] argsarr = new ASTNode[]{null,expr};
+			Node[] argsarr = new Node[]{null,expr};
 			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 				Expr e;
 				if ( opt.method.isStatic() || opt.method.type.args.length == 1)
@@ -1373,7 +1373,7 @@ public class UnaryExpr extends Expr {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1494,12 +1494,12 @@ public class IncrementExpr extends LvalueExpr {
 		lval = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
 			Var var = ((VarAccessExpr)lval).var;
-			ASTNode p = var.parent;
+			Node p = var.parent;
 			while( !(p instanceof Struct) ) p = p.parent;
 			if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
 				var.setNeedRefProxy(true);
@@ -1687,9 +1687,9 @@ public class IncrementExpr extends LvalueExpr {
 
 public class MultiExpr extends Expr {
 	public MultiOperator	op;
-	public List<ASTNode>	exprs;
+	public List<Node>	exprs;
 
-	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
+	public MultiExpr(int pos, MultiOperator op, List<Node> exprs) {
 		super(pos);
 		this.op = op;
 		this.exprs = exprs;
@@ -1698,7 +1698,7 @@ public class MultiExpr extends Expr {
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; exprs; n!=null) n.cleanup();
+		foreach(Node n; exprs; n!=null) n.cleanup();
 		exprs = null;
 	}
 
@@ -1771,7 +1771,7 @@ public class ConditionalExpr extends Expr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
@@ -1934,7 +1934,7 @@ public class CastExpr extends Expr {
 	}
 
 	public Expr tryOverloadedCast(Type et) {
-		ASTNode@ v;
+		Node@ v;
 		ResInfo info = new ResInfo();
 		Struct cl = et.clazz;
 		v.$unbind();
@@ -1959,14 +1959,14 @@ public class CastExpr extends Expr {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) {
 			setNodeCastType();
 			return this;
 		}
 		PassInfo.push(this);
 		try {
-			ASTNode e = expr.resolve(type);
+			Node e = expr.resolve(type);
 			if( e instanceof Struct )
 				expr = Expr.toExpr((Struct)e,reqType,pos,parent);
 			else
@@ -2080,7 +2080,7 @@ public class CastExpr extends Expr {
 	}
 
 	public void setNodeCastType() {
-		ASTNode n;
+		Node n;
 		if (type == Type.tpVoid) return;
 		switch(expr) {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;

@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -39,7 +40,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 	protected	CodeLabel	continue_label = null;
 	protected	CodeLabel	break_label = null;
 
-	protected LoopStat(int pos, ASTNode parent) {
+	protected LoopStat(int pos, Node parent) {
 		super(pos, parent);
 		setBreakTarget(true);
 	}
@@ -63,7 +64,7 @@ public class WhileStat extends LoopStat {
 	public BooleanExpr	cond;
 	public Statement	body;
 
-	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
+	public WhileStat(int pos, Node parent, BooleanExpr cond, Statement body) {
 		super(pos, parent);
 		this.cond = cond;
 		this.cond.parent = this;
@@ -79,7 +80,7 @@ public class WhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -151,7 +152,7 @@ public class DoWhileStat extends LoopStat {
 	public BooleanExpr	cond;
 	public Statement	body;
 
-	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
+	public DoWhileStat(int pos, Node parent, BooleanExpr cond, Statement body) {
 		super(pos,parent);
 		this.cond = cond;
 		this.cond.parent = this;
@@ -167,7 +168,7 @@ public class DoWhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -235,7 +236,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-public class ForInit extends ASTNode implements Scope {
+public class ForInit extends Node implements Scope {
 
 	public Type	type;
 	public Var[]	vars;
@@ -252,16 +253,16 @@ public class ForInit extends ASTNode implements Scope {
 		parent=null;
 		type = null;
 		vars = null;
-		foreach(ASTNode n; inits; n!=null) n.cleanup();
+		foreach(Node n; inits; n!=null) n.cleanup();
 		inits = null;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		ASTNode@ n;
+	rule public resolveNameR(Node@ node, ResInfo info, KString name, Type tp, int resfl)
+		Node@ n;
 	{
 		n @= vars,
 		{
@@ -272,8 +273,8 @@ public class ForInit extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
-		ASTNode@ n;
+	rule public resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Node@ n;
 	{
 		n @= vars,
 		n.isForward(),
@@ -296,12 +297,12 @@ public class ForInit extends ASTNode implements Scope {
 
 public class ForStat extends LoopStat implements Scope {
 
-	public ASTNode		init;
+	public Node		init;
 	public BooleanExpr	cond;
 	public Expr			iter;
 	public Statement	body;
 
-	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
+	public ForStat(int pos, Node parent, Node init, BooleanExpr cond, Expr iter, Statement body) {
 		super(pos, parent);
 		if( init != null ) {
 			this.init = init;
@@ -337,7 +338,7 @@ public class ForStat extends LoopStat implements Scope {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -415,14 +416,14 @@ public class ForStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
-		ASTNode@ n;
+	rule public resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Node@ n;
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
@@ -536,7 +537,7 @@ public class ForEachStat extends LoopStat implements Scope {
 
 	public int			mode;
 
-	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
+	public ForEachStat(int pos, Node parent, Var var, Expr container, BooleanExpr cond, Statement body) {
 		super(pos, parent);
 		this.var = var;
 		if( this.var != null )
@@ -583,7 +584,7 @@ public class ForEachStat extends LoopStat implements Scope {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -832,14 +833,14 @@ public class ForEachStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		{	n ?= var

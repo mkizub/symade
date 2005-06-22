@@ -21,6 +21,7 @@
 package kiev.vlang;
 
 import kiev.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -52,14 +53,16 @@ public interface ResolveFlags {
 }
 
 public class MatchNode implements ResolveFlags {
-	public ASTNode	path[] = ASTNode.emptyArray;
-	public ASTNode	node;
+	public Node∏	path;
+	public Node	node;
 
 	public MatchNode() {
+		path = new Node∏(this);
 	}
 
-	public MatchNode(ASTNode node) {
+	public MatchNode(Node node) {
 		this.node = node;
+		path = new Node∏(this);
 	}
 
 	public static void checkFlags(List<MatchNode> objs, int resfl) {
@@ -77,19 +80,19 @@ public class MatchNode implements ResolveFlags {
 
 public class ResInfo {
 	public int					transforms;
-	public ListBuffer<ASTNode>	path = new ListBuffer<ASTNode>();
+	public ListBuffer<Node>	path = new ListBuffer<Node>();
 
 	public ResInfo() {
 	}
-	public ResInfo(ASTNode through) {
+	public ResInfo(Node through) {
 		enterForward(through);
 	}
 
-	public void enterForward(ASTNode node) {
+	public void enterForward(Node node) {
 		path.append(node);
 		transforms++;
 	}
-	public void leaveForward(ASTNode node) {
+	public void leaveForward(Node node) {
 		assert(path.length() > 0 && path.getAt(path.length()-1) == node);
 		path.setLength(path.length()-1);
 		transforms--;
@@ -104,7 +107,7 @@ public class ResInfo {
 	public ResInfo copy() {
 		ResInfo ri = new ResInfo();
 		ri.transforms = transforms;
-		foreach (ASTNode n; path.toList()) ri.path.append(n);
+		foreach (Node n; path.toList()) ri.path.append(n);
 		return ri;
 	}
 
@@ -113,17 +116,17 @@ public class ResInfo {
 		if (this == info) return;
 		this.transforms = info.transforms;
 		this.path.setLength(0);
-		foreach (ASTNode n; info.path.toList()) this.path.append(n);
+		foreach (Node n; info.path.toList()) this.path.append(n);
 	}
 };
 
 public interface Scope {
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type type, int resfl);
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type type, int resfl);
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 
 public interface ScopeOfOperators {
-	rule public resolveOperatorR(ASTNode@ op);
+	rule public resolveOperatorR(Node@ op);
 }
 
 

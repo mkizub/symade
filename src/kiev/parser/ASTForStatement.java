@@ -33,24 +33,24 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTForStatement extends Statement {
-	public ASTNode	init;
-	public Expr		cond;
-	public Expr		iter;
-	public Statement	body;
+public class ASTForStatement extends ASTNode {
+	public ASTNode		init;
+	public ASTExpr		cond;
+	public ASTExpr		iter;
+	public ASTStatement	body;
 
 	public ASTForStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: body=(Statement)n; break;
+        case 0: body=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( cond != null && !(cond instanceof BooleanExpr) )
 			return new ForStat(pos,parent,init,new BooleanWrapperExpr(cond.getPos(),cond),iter,body)
 				.resolve(Type.tpVoid);

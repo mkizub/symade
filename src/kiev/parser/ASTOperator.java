@@ -41,7 +41,7 @@ public class ASTOperator extends ASTNode {
 		super(0);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		throw new RuntimeException();
 	}
 

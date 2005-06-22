@@ -45,7 +45,7 @@ public class ASTPackage extends ASTNode {
         pos = n.getPos();
     }
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		return Env.newPackage(ClazzName.fromToplevelName(name,false));
 	}
 

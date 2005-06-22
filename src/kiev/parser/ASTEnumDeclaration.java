@@ -42,7 +42,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
 		else if( n instanceof ASTAccess ) {
 			if( acc != null )
@@ -54,21 +54,21 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 				name = ((ASTIdentifier)n).name;
 				pos = n.getPos();
 			} else {
-				members = (ASTNode[])Arrays.append(members,n);
+				members.append(n);
 			}
 		}
         else if( n instanceof ASTExtends ) {
 			ext = n;
 		}
         else if( n instanceof ASTConstExpression ) {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
 		}
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public ASTNode pass1() {
+	public Node pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for enum "+name);
 		int flags = 0;
 		Struct sup = null;
@@ -110,7 +110,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 		return me;
 	}
 
-	public ASTNode pass2() {
+	public Node pass2() {
 		trace(Kiev.debugResolve,"Pass 2 for enum "+me);
         PassInfo.push(me);
         try {
@@ -119,7 +119,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 		return me;
 	}
 
-	public ASTNode pass2_2() {
+	public Node pass2_2() {
 		trace(Kiev.debugResolve,"Pass 2_2 for enum "+me);
         PassInfo.push(me);
         try {

@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTIdentifier extends Expr {
+public class ASTIdentifier extends ASTNode {
 	public KString name;
 
 	public ASTIdentifier(int id) {
@@ -58,7 +58,7 @@ public class ASTIdentifier extends Expr {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( name == Constants.nameFILE )
 			return new ConstExpr(pos,Kiev.curFile);
 		else if( name == Constants.nameLINENO )
@@ -93,7 +93,7 @@ public class ASTIdentifier extends Expr {
 					ac.params = new ASTNode[args.length];
 					for(int i=0; i < ac.params.length; i++)
 						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
-					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+					BlockStat bs = new BlockStat(pos,ac);
 					Expr[] cargs = new Expr[ac.params.length];
 					for(int i=0; i < cargs.length; i++)
 						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);

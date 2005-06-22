@@ -29,12 +29,12 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
-public class ASTGotoStatement extends Statement {
+public class ASTGotoStatement extends ASTNode {
 	ASTNode	expr;
 	boolean casemode = false;
     
 	public ASTGotoStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -44,7 +44,7 @@ public class ASTGotoStatement extends Statement {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		if( !casemode ) {
 			Kiev.check(pos,Ext.Goto);
 			return new GotoStat(pos,parent,((ASTIdentifier)expr).name).resolve(Type.tpVoid);

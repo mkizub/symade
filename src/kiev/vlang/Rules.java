@@ -24,6 +24,7 @@ import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -44,7 +45,7 @@ public class RuleMethod extends Method {
 	public int		max_vars;
 	public int		index;		// index counter for RuleNode.idx
 
-	public RuleMethod(ASTNode clazz, KString name, MethodType type, int acc) {
+	public RuleMethod(Node clazz, KString name, MethodType type, int acc) {
 		super(clazz,name,type,acc | ACC_RULEMETHOD);
 	}
 
@@ -77,7 +78,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -85,7 +86,7 @@ public class RuleMethod extends Method {
 //		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		PassInfo.push(this);
 		try {
@@ -133,7 +134,7 @@ public class RuleMethod extends Method {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
-					((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
+					((BlockStat)body).stats = (Node[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
 					body.setAbrupted(true);
 				} else {
 					Kiev.reportError(pos,"Return requared");
@@ -218,12 +219,12 @@ public class RuleMethod extends Method {
 
 public /*immutable*/ class JumpNodes implements Cloneable {
 	public /*final*/ boolean		more_check;
-	public /*final*/ ASTRuleNode	next_check;
+	public /*final*/ RuleNode		next_check;
 	public /*final*/ boolean		more_back;
-	public /*final*/ ASTRuleNode	next_back;
+	public /*final*/ RuleNode		next_back;
 	public /*final*/ boolean		jump_to_back;
 
-	public JumpNodes(boolean mu, ASTRuleNode nu, boolean mbt, ASTRuleNode nbt, boolean jtb) {
+	public JumpNodes(boolean mu, RuleNode nu, boolean mbt, RuleNode nbt, boolean jtb) {
 		more_check = mu;
 		next_check = nu;
 		more_back = mbt;
@@ -256,8 +257,8 @@ d) if rule is successive, it returns it's own frame
 object, if fails - returns null.
 */
 
-public abstract class ASTRuleNode extends ASTNode {
-	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
+public abstract class RuleNode extends Node {
+	public static RuleNode[]	emptyArray = new RuleNode[0];
 
 	public JumpNodes		jn;
 
@@ -267,7 +268,7 @@ public abstract class ASTRuleNode extends ASTNode {
 	public virtual int		idx;
 	public int				depth = -1;
 
-	public ASTRuleNode(int pos) {
+	public RuleNode(int pos) {
 		super(pos);
 	}
 
@@ -282,8 +283,8 @@ public abstract class ASTRuleNode extends ASTNode {
 	public int get$idx() { return idx; }
 	public void set$idx(int i) { idx = i; }
 
-	public ASTNode resolve(Type tp) {
-		throw new CompilerException(pos,"Resolving of ASTRuleNode");
+	public Node resolve(Type tp) {
+		throw new CompilerException(pos,"Resolving of RuleNode");
 	}
 
 	public String createTextUnification(Var var) {
@@ -322,20 +323,20 @@ public abstract class ASTRuleNode extends ASTNode {
 }
 
 
-public final class RuleBlock extends ASTNode implements Scope {
+public final class RuleBlock extends Node implements Scope {
 
-	public ASTRuleNode	node;
-	public ASTNode[]	stats;
+	public RuleNode		node;
+	public Node∏		stats;
 	public StringBuffer	fields_buf;
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
+	public RuleBlock(int pos, Node parent, RuleNode n) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
-		stats = ASTNode.emptyArray;
+		stats = new Node∏(this);
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, ASTNode[] stats) {
+	public RuleBlock(int pos, Node parent, RuleNode n, Node[] stats) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
@@ -345,17 +346,17 @@ public final class RuleBlock extends ASTNode implements Scope {
 	public void cleanup() {
 		node.cleanup();
 		node = null;
-		foreach(ASTNode n; stats; n!=null) n.cleanup();
+		foreach(Node n; stats; n!=null) n.cleanup();
 		stats = null;
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type tp) {
+	public Node resolve(Type tp) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
 			node.parent = this;
-			node = (ASTRuleNode)node.resolve(Type.tpVoid);
+			node = (RuleNode)node.resolve(Type.tpVoid);
 			fields_buf = new StringBuffer();
 			node.parent = this;
 			node.resolve1(new JumpNodes(false,null,false,null,false));
@@ -408,7 +409,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 			trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 			PassInfo.method.body = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
 			if( stats != null && stats.length > 0 ) {
-				ASTNode[] bstats = new ASTNode[stats.length+((ASTBlock)PassInfo.method.body).stats.length];
+				Node[] bstats = new Node[stats.length+((ASTBlock)PassInfo.method.body).stats.length];
 				int i=0;
 				for(; i < stats.length; i++) { bstats[i] = stats[i]; bstats[i].parent = PassInfo.method.body; }
 				for(int j=0; i < bstats.length; i++, j++) bstats[i] = ((ASTBlock)PassInfo.method.body).stats[j];
@@ -422,8 +423,8 @@ public final class RuleBlock extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		ASTNode@ stat;
+	rule public resolveNameR(Node@ node, ResInfo info, KString name, Type tp, int resfl)
+		Node@ stat;
 	{
 		stat @= stats,
 		stat instanceof DeclStat,
@@ -431,7 +432,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 		node ?= ((DeclStat)stat).var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -439,9 +440,9 @@ public final class RuleBlock extends ASTNode implements Scope {
 }
 
 
-public final class RuleOrExpr extends ASTRuleNode {
+public final class RuleOrExpr extends RuleNode {
 
-	public ASTRuleNode[]	rules;
+	public RuleNode[]	rules;
 
 	public int get$base() {	return rules[0].get$base(); }
 	public void set$base(int b) {}
@@ -449,26 +450,26 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public int get$idx() {	return rules[0].get$idx(); }
 	public void set$idx(int i) {}
 
-	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
+	public RuleOrExpr(int pos, RuleNode[] rules) {
 		super(pos);
 		this.rules = rules;
 	}
 
 	public void cleanup() {
-		foreach(ASTNode n; rules; n!=null) n.cleanup();
+		foreach(Node n; rules; n!=null) n.cleanup();
 		rules = null;
 		super.cleanup();
 	}
 
 	public void createText(StringBuffer sb) {
-		foreach( ASTRuleNode n; rules )
+		foreach( RuleNode n; rules )
 			n.createText(sb);
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
 			rules[i].parent = this;
-    		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
+    		rules[i] = (RuleNode)rules[i].resolve(reqType);
 			rules[i].parent = this;
     	}
     	return this;
@@ -495,9 +496,9 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 }
 
-public final class RuleAndExpr extends ASTRuleNode {
+public final class RuleAndExpr extends RuleNode {
 
-	public ASTRuleNode[]	rules;
+	public RuleNode[]	rules;
 
 	public int get$base() {	return rules[0].get$base();	}
 	public void set$base(int b) {}
@@ -505,32 +506,32 @@ public final class RuleAndExpr extends ASTRuleNode {
 	public int get$idx() {	return rules[0].get$idx(); }
 	public void set$idx(int i) {}
 
-	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
+	public RuleAndExpr(int pos, RuleNode[] rules) {
 		super(pos);
 		this.rules = rules;
 	}
 
 	public void cleanup() {
-		foreach(ASTNode n; rules; n!=null) n.cleanup();
+		foreach(Node n; rules; n!=null) n.cleanup();
 		rules = null;
 		super.cleanup();
 	}
 
 	public void createText(StringBuffer sb) {
-		foreach( ASTRuleNode n; rules )
+		foreach( RuleNode n; rules )
 			n.createText(sb);
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
 			rules[i].parent = this;
-    		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
+    		rules[i] = (RuleNode)rules[i].resolve(reqType);
 			rules[i].parent = this;
     	}
     	// combine simple boolean expressions
     	for(int i=0; i < (rules.length-1); i++) {
-    		ASTRuleNode r1 = rules[i];
-    		ASTRuleNode r2 = rules[i+1];
+    		RuleNode r1 = rules[i];
+    		RuleNode r2 = rules[i+1];
     		if (!(r1 instanceof RuleExpr)) continue;
     		if (!(r2 instanceof RuleExpr)) continue;
     		RuleExpr e1 = (RuleExpr)r1;
@@ -548,7 +549,7 @@ public final class RuleAndExpr extends ASTRuleNode {
           		b2 = (BooleanExpr)e2.expr;
     		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,b1,b2));
     		rules[i] = e;
-    		ASTRuleNode[] arr = new ASTRuleNode[rules.length-1];
+    		RuleNode[] arr = new RuleNode[rules.length-1];
     		for (int k=0; k < i; k++) arr[k] = rules[k];
     		arr[i] = e;
     		for (int k=i+2; k < rules.length; k++) arr[k-1] = rules[k];
@@ -564,7 +565,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 		this.jn = jn;
 		JumpNodes j;
 		boolean more_back = jn.more_back;
-		ASTRuleNode next_back = jn.next_back;
+		RuleNode next_back = jn.next_back;
 		boolean jump_to_back = jn.jump_to_back;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
@@ -591,7 +592,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
-public final class RuleIstheExpr extends ASTRuleNode {
+public final class RuleIstheExpr extends RuleNode {
 
 	public Var		var;		// variable of type PVar<...>
 	public Expr		expr;		// expression to check/unify
@@ -644,7 +645,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 }
 
-public final class RuleIsoneofExpr extends ASTRuleNode {
+public final class RuleIsoneofExpr extends RuleNode {
 
 	public Var[]	vars;		// variable of type PVar<...>
 	public Expr[]	exprs;		// expression to check/unify
@@ -666,7 +667,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 
 	public void cleanup() {
-		foreach(ASTNode n; exprs; n!=null) n.cleanup();
+		foreach(Node n; exprs; n!=null) n.cleanup();
 		exprs = null;
 		vars = null;
 		super.cleanup();
@@ -703,7 +704,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 			}
 			iter_vars[i] = ((RuleMethod)PassInfo.method).add_iterator_var();
-			ASTNode rb = this.parent;
+			Node rb = this.parent;
 			while( rb!=null && !(rb instanceof RuleBlock)) {
 				Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
 				rb = rb.parent;
@@ -820,7 +821,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 }
 
-public final class RuleCutExpr extends ASTRuleNode {
+public final class RuleCutExpr extends RuleNode {
 
 	public RuleCutExpr(int pos) {
 		super(pos);
@@ -841,13 +842,13 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 }
 /*
-public final class RuleIfExpr extends ASTRuleNode {
+public final class RuleIfExpr extends RuleNode {
 
 	public Expr			cond;
-    public ASTRuleNode	thenSt;
-    public ASTRuleNode	elseSt;
+    public RuleNode	thenSt;
+    public RuleNode	elseSt;
 
-	public RuleIfExpr(int pos, Expr cond, ASTRuleNode thenSt, ASTRuleNode elseSt) {
+	public RuleIfExpr(int pos, Expr cond, RuleNode thenSt, RuleNode elseSt) {
 		super(pos);
 		this.cond = cond;
 		this.thenSt = thenSt;
@@ -866,16 +867,16 @@ public final class RuleIfExpr extends ASTRuleNode {
 		super.cleanup();
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
 		cond.parent = this;
     	cond = (Expr)cond.resolve(Type.tpBoolean);
 		cond.parent = this;
 		thenSt.parent = this;
-    	thenSt = (ASTRuleNode)thenSt.resolve(reqType);
+    	thenSt = (RuleNode)thenSt.resolve(reqType);
 		thenSt.parent = this;
     	if( elseSt != null ) {
 			elseSt.parent = this;
-	    	elseSt = (ASTRuleNode)elseSt.resolve(reqType);
+	    	elseSt = (RuleNode)elseSt.resolve(reqType);
 			elseSt.parent = this;
 		}
     	return this;
@@ -933,15 +934,15 @@ public final class RuleIfExpr extends ASTRuleNode {
 }
 
 
-public final class RuleForExpr extends ASTRuleNode {
+public final class RuleForExpr extends RuleNode {
 
-	public ASTNode		init;
+	public Node		init;
 	public DeclStat		initstats[] = new DeclStat[0];
 	public Expr			cond;
 	public Expr			iter;
-	public ASTRuleNode	body;
+	public RuleNode	body;
 
-	public RuleForExpr(int pos, ASTNode init, Expr cond, Expr iter, ASTRuleNode body) {
+	public RuleForExpr(int pos, Node init, Expr cond, Expr iter, RuleNode body) {
 		super(pos);
 		this.init = init;
 		this.cond = cond;
@@ -949,7 +950,7 @@ public final class RuleForExpr extends ASTRuleNode {
 		this.body = body;
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	Var v = null;
 		initstats = (DeclStat[])Arrays.append(initstats,
 			(Statement)new DeclStat(pos,PassInfo.method,
@@ -984,7 +985,7 @@ public final class RuleForExpr extends ASTRuleNode {
 				(Var[])Arrays.append(((RuleMethod)PassInfo.method).localvars,initstats[i].var);
 		cond = (Expr)cond.resolve(Type.tpBoolean);
 		iter = (Expr)iter.resolve(Type.tpVoid);
-		body = (ASTRuleNode)body.resolve(reqType);
+		body = (RuleNode)body.resolve(reqType);
     	return this;
     }
 
@@ -1033,7 +1034,7 @@ public final class RuleForExpr extends ASTRuleNode {
 }
 */
 
-public final class RuleCallExpr extends ASTRuleNode {
+public final class RuleCallExpr extends RuleNode {
 
 	public Expr		obj;
 	public Named	func;
@@ -1081,12 +1082,12 @@ public final class RuleCallExpr extends ASTRuleNode {
 			obj = null;
 		}
 		func = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
+		foreach(Node n; args; n!=null) n.cleanup();
 		args = null;
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return this;
 	}
 
@@ -1096,7 +1097,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
 		depth = ((RuleMethod)PassInfo.method).push();
 		env_var = ((RuleMethod)PassInfo.method).add_iterator_var();
-		ASTNode rb = this.parent;
+		Node rb = this.parent;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
 			rb = rb.parent;
@@ -1135,7 +1136,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 }
 
-public abstract class RuleExprBase extends ASTRuleNode {
+public abstract class RuleExprBase extends RuleNode {
 	public Expr		expr;
 
 	public RuleExprBase(Expr expr) {
@@ -1150,7 +1151,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		expr.parent = this;
 		expr = (Expr)expr.resolve(null);
 		expr.parent = this;
@@ -1182,8 +1183,8 @@ public final class RuleWhileExpr extends RuleExprBase {
 		super(expr);
 	}
 
-	public ASTNode resolve(Type reqType) {
-		ASTNode n = super.resolve(reqType);
+	public Node resolve(Type reqType) {
+		Node n = super.resolve(reqType);
 		if (n != this) return n;
 		if (!expr.getType().equals(Type.tpBoolean))
 			throw new CompilerException(expr.pos,"Boolean expression is requared");
@@ -1236,8 +1237,8 @@ public final class RuleExpr extends RuleExprBase {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
-		ASTNode n = super.resolve(reqType);
+	public Node resolve(Type reqType) {
+		Node n = super.resolve(reqType);
 		if (n != this) {
 			if (bt_expr != null)
 				throw new CompilerException(bt_expr.pos,"Backtrace expression ignored for rule-call");

@@ -26,6 +26,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTClosureType.java,v 1.3 1998/10/26 23:47:02 max Exp $
  * @author Maxim Kizub
@@ -34,16 +37,17 @@ import kiev.vlang.*;
  */
 
 public class ASTClosureType extends ASTNode {
-    public ASTNode[]	types = ASTNode.emptyArray;
+    public ASTType∏	types;
 //    public ASTNode		throwns;
 
 	public ASTClosureType(int id) {
 		super(0);
+		types = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTType ) {
-        	types = (ASTNode[])Arrays.append(types,n);
+        	types.append((ASTType)n);
         }
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);

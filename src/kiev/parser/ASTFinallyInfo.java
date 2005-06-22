@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 public class ASTFinallyInfo extends SimpleNode {
-    public Statement			body;
+    public ASTStatement			body;
 
 	public ASTFinallyInfo(int id) {
 		super(0);
@@ -42,12 +42,12 @@ public class ASTFinallyInfo extends SimpleNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: body=(Statement)n; break;
+        case 0: body=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		FinallyInfo fi = new FinallyInfo(pos,body);
 		fi.parent = parent;
 		return fi.resolve(Type.tpVoid);

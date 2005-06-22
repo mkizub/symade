@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTTypeClassExpression extends Expr {
+public class ASTTypeClassExpression extends ASTNode {
 	
 	public ASTNode		type;
 	
@@ -50,7 +50,7 @@ public class ASTTypeClassExpression extends Expr {
     
     public Type getType() { return Type.tpClass; }
 
-	public ASTNode resolve(Type reqType) throws CompilerException {
+	public Node resolve(Type reqType) throws CompilerException {
 		if( type instanceof ASTType )
 			type = ((ASTType)type).pass2();
 		if( !(type instanceof Type) )

@@ -36,7 +36,7 @@ import kiev.vlang.*;
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	public ASTIdentifier[]	names = new ASTIdentifier[0];
-	public Expr[]			exprs = Expr.emptyArray;
+	public ASTExpr[]		exprs = ASTExpr.emptyArray;
 
 	public ASTRuleIsoneofExpression(int id) {
 		super(0);
@@ -52,15 +52,15 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	        }
 	        throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         case 1:
-        	if( n instanceof Expr ) {
-	        	exprs = (Expr[])Arrays.append(exprs,n);
+        	if( n instanceof ASTExpr ) {
+	        	exprs = (ASTExpr[])Arrays.append(exprs,n);
 	        	break;
 	        }
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
 		}
     }
 
-    public ASTNode resolve(Type reqType) {
+    public Node resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
 			PVar<ASTNode> v = new PVar<ASTNode>();

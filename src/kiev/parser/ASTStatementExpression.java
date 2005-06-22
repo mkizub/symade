@@ -33,14 +33,14 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTStatementExpression extends Statement {
-	public Expr	expr;
+public class ASTStatementExpression extends ASTNode {
+	public ASTExpr	expr;
     
 	public ASTStatementExpression(int id) {
 		super(id,null);
 	}
 
-	public ASTStatementExpression(Expr e) {
+	public ASTStatementExpression(ASTExpr e) {
 		super(0,null);
 		expr = e;
 		this.pos = e.getPos();
@@ -48,12 +48,12 @@ public class ASTStatementExpression extends Statement {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: expr=(Expr)n; pos = n.getPos(); break;
+        case 0: expr=(ASTExpr)n; pos = n.getPos(); break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new ExprStat(pos,parent,expr).resolve(Type.tpVoid);
 	}
 

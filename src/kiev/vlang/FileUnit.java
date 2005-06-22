@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.parser.PrescannedBody;
 import kiev.stdlib.*;
+import kiev.tree.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
@@ -35,10 +36,10 @@ import syntax kiev.Syntax;
  *
  */
 
-public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
+public class FileUnit extends Node implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public ASTNode[]			syntax = ASTNode.emptyArray;
+	public Node∏				syntax;
 	public Struct[]				members = Struct.emptyArray;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
@@ -49,12 +50,13 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	}
 	public FileUnit(KString name, Struct pkg, Struct[] members) {
     	super(0);
+		syntax = new Node∏(this);
 		this.filename = name;
 		this.pkg = pkg;
 		this.members = members;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -66,7 +68,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 
 	public String toString() { return /*getClass()+":="+*/filename.toString(); }
 
-	public ASTNode resolve() throws RuntimeException {
+	public Node resolve() throws RuntimeException {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
 		PassInfo.push(this);
 		KString curr_file = Kiev.curFile;
@@ -126,8 +128,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		return true;
 	}
 
-	rule public resolveOperatorR(ASTNode@ op)
-		ASTNode@ syn;
+	rule public resolveOperatorR(Node@ op)
+		Node@ syn;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
 		{
@@ -139,8 +141,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
-		ASTNode@ syn;
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
+		Node@ syn;
 	{
 		syn @= syntax,
 		{
@@ -166,8 +168,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
-		ASTNode@ syn;
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Node@ syn;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
 	;	syn @= syntax,
@@ -190,9 +192,9 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		Kiev.k.reset();
 		for(int i=0; i < members.length; i++)
 			members[i].cleanup();
-		foreach(ASTNode n; syntax) n.cleanup();
+		foreach(Node n; syntax) n.cleanup();
 		syntax = null;
-		foreach(ASTNode n; members) n.cleanup();
+		foreach(Node n; members) n.cleanup();
 		members = null;
 		foreach(PrescannedBody n; bodies) n.sb = null;
 		bodies = null;
@@ -393,14 +395,14 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 }
 
 
-public class Typedef extends ASTNode implements Named {
+public class Typedef extends Node implements Named {
 
 	public static Typedef[]	emptyArray = new Typedef[0];
 
 	public KString		name;
 	public Type			type;
 
-	public Typedef(int pos, ASTNode par, KString name, Type type) {
+	public Typedef(int pos, Node par, KString name, Type type) {
 		super(pos,par);
 		this.name = name;
 		this.type = type;

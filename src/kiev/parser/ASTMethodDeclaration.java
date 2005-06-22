@@ -38,15 +38,15 @@ import syntax kiev.Syntax;
 
 public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scope {
 	public int			dim;
-    public ASTNode[]	modifier = ASTNode.emptyArray;
+    public ASTModifier∏	modifier;
 	public ASTAccess	acc;
     public KString		name;
-    public ASTNode[]	params = ASTNode.emptyArray;
+    public ASTFormalParameter∏		params;
     public ASTNode		type;
-    public ASTNode[]	ftypes = ASTNode.emptyArray;
+    public Node∏		ftypes;
     public ASTAlias[]	aliases = ASTAlias.emptyArray;
     public ASTNode		throwns;
-    public Statement	body;
+    public ASTStatement	body;
 	public virtual PrescannedBody pbody;
 	public ASTRequareDeclaration[]	req;
 	public ASTEnsureDeclaration[]	ens;
@@ -58,11 +58,14 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 	ASTMethodDeclaration(int id) {
 		super(0);
+		modifier = new ASTModifier∏(this);
+		params = new ASTFormalParameter∏(this);
+		ftypes = new Node∏(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
+        	modifier.append((ASTModifier)n);
         }
 		else if( n instanceof ASTAccess ) {
 			if( acc != null )
@@ -70,7 +73,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			acc = (ASTAccess)n;
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			ftypes = (ASTNode[])Arrays.append(ftypes,n);
+			ftypes.append(n);
 		}
         else if( n instanceof ASTType ) {
         	type = n;
@@ -80,7 +83,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         	pos = n.getPos();
 		}
     	else if( n instanceof ASTFormalParameter ) {
-        	params = (ASTNode[])Arrays.append(params,n);
+        	params.append((ASTFormalParameter)n);
         }
     	else if( n instanceof ASTAlias ) {
         	aliases = (ASTAlias[])Arrays.append(aliases,n);
@@ -100,22 +103,22 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			else
 				ens = (ASTEnsureDeclaration[])Arrays.append(ens,(ASTEnsureDeclaration)n);
         }
-        else if( n instanceof Statement ) {
-			body = (Statement)n;
+        else if( n instanceof ASTStatement ) {
+			body = (ASTStatement)n;
         }
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	rule public resolveNameR(Node@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
-		ftypes instanceof Type[] && ftypes.length > 0,
-		node @= ((Type[])ftypes),
+		node @= ftypes,
+		node instanceof Type,
 		((Type)node).clazz.name.short_name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	rule public resolveMethodR(Node@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}

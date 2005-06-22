@@ -33,11 +33,11 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTContinueStatement extends Statement {
+public class ASTContinueStatement extends ASTNode {
 	KString	name;
     
 	public ASTContinueStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -47,7 +47,7 @@ public class ASTContinueStatement extends Statement {
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new ContinueStat(pos,parent,name).resolve(Type.tpVoid);
 	}
 

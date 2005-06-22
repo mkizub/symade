@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -32,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class Field extends ASTNode implements Named, Typed, Accessable {
+public class Field extends Node implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
@@ -97,7 +98,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(ASTNode clazz, KString name, Type type, int acc) {
+	public Field(Node clazz, KString name, Type type, int acc) {
 		super(0,acc);
 		this.name = new NodeName(name);
 		this.type = type;
@@ -117,7 +118,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 		acc.verifyAccessDecl(this);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
+	public void jjtAddChild(Node n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
@@ -158,7 +159,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public Node resolve(Type reqType) throws RuntimeException {
 //		type = type.resolve();
 		if( name.equals(KString.Empty) ) return this;
 		if( init != null )

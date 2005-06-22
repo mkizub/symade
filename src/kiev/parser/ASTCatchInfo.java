@@ -35,7 +35,7 @@ import kiev.vlang.*;
 
 public class ASTCatchInfo extends SimpleNode {
 	public ASTFormalParameter	par;
-    public Statement			body;
+    public ASTStatement			body;
 
 	public ASTCatchInfo(int id) {
 		super(0);
@@ -44,12 +44,12 @@ public class ASTCatchInfo extends SimpleNode {
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: par=(ASTFormalParameter)n; break;
-        case 1: body=(Statement)n; break;
+        case 1: body=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		CatchInfo ci = new CatchInfo(pos,par.pass3(),body);
 		ci.parent = parent;
 		return ci.resolve(Type.tpVoid);

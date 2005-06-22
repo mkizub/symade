@@ -33,10 +33,10 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTConditionalExpression extends Expr {
-	public Expr	cond;
-    public Expr expr1;
-    public Expr expr2;
+public class ASTConditionalExpression extends ASTNode {
+	public ASTExpr	cond;
+    public ASTExpr expr1;
+    public ASTExpr expr2;
     
 	public ASTConditionalExpression(int id) {
 		super(0);
@@ -44,14 +44,14 @@ public class ASTConditionalExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: cond=(Expr)n; break;
-        case 1: expr1=(Expr)n; break;
-        case 2: expr2=(Expr)n; break;
+        case 0: cond=(ASTExpr)n; break;
+        case 1: expr1=(ASTExpr)n; break;
+        case 2: expr2=(ASTExpr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	public ASTNode resolve(Type reqType) {
+	public Node resolve(Type reqType) {
 		return new ConditionalExpr(pos,cond,expr1,expr2).resolve(reqType);
 	}
     
