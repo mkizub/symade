@@ -39,7 +39,7 @@ public class ArrayEnumerator<A> implements Enumeration<A>, Cloneable
 	}
 	
 	public boolean	hasMoreElements() {
-		return top < arr.length;
+		return arr != null && top < arr.length;
 	}
 	public A		nextElement() {
 		return arr[top++];
