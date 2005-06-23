@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTNewExpression extends ASTNode {
+public class ASTNewExpression extends ASTExpr {
 	public ASTNode		type;
     public ASTExpr∏		args;
     public Node∏		members;

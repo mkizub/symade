@@ -41,7 +41,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 	public KString		name;
 	public int			mode = IMPORT_CLASS;
     public boolean		star = false;
-    public ASTNode[]	args = null;
+    public Node[]		args;
 
 	public ASTImport(int id) {
 		super(0);
@@ -54,16 +54,16 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		}
 		else if( n instanceof ASTType ) {
 			if( args == null ) args = new ASTType[0];
-			args = (ASTNode[])Arrays.append(args,n);
+			args = (Node[])Arrays.append(args,n);
 		}
     }
 
 	public Node pass1_1() {
 		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
-		PVar<ASTNode> v = new PVar<ASTNode>();
+		Node@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) )
 			throw new CompilerException(pos,"Unresolved identifier "+name);
-		ASTNode n = v;
+		Node n = v;
 		if (mode == IMPORT_CLASS && !(n instanceof Struct))
 			throw new CompilerException(pos,"Identifier "+name+" is not a class or package");
 		else if (mode == IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
@@ -77,7 +77,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 
 	public Node resolveImports() {
 		if (args == null || (mode==IMPORT_STATIC && star)) return null;
-		PVar<ASTNode> v = new PVar<ASTNode>();
+		Node@ v;
 		int i = 0;
 		Expr[] exprs;
 		if( args.length > 0 && args[0]==Type.tpRule) {

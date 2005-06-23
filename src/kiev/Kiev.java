@@ -399,10 +399,12 @@ public final class Kiev {
 
 	// Scanning & parsing
 	public static kiev020				k;
+
+	public static Tree                  astTree = new Tree();
+	public static Tree					mainTree = new Tree();
+
 	public static ASTFileUnit			curASTFileUnit;
-	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
-	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
 	public static Vector<Node>		files_scanned = new Vector<Node>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 	public static Type					argtype = null;

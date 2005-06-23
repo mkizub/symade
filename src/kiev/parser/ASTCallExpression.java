@@ -57,20 +57,21 @@ public class ASTCallExpression extends ASTExpr {
 			ident = (ASTIdentifier)n;
             pos   = n.getPos();
 		} else {
-			args = (Expr[])Arrays.append(args,n);
+			args = (ASTExpr[])Arrays.append(args,n);
         }
     }
 
 	public Node resolve(Type reqType) {
-    	for(int i=0; i < args.length; i++) {
+		Expr∏ args = new Expr∏(null);
+    	for(int i=0; i < this.args.length; i++) {
 //			try {
-				args[i] = (Expr)args[i].resolve(null);
+				args.add(this.args[i].resolve(null));
 //			} catch(Exception e) {
 //				Kiev.reportError(args[i].getPos(),e);
 //			}
         }
 		// method of current class or first-order function
-		PVar<ASTNode> m;
+		Node@ m;
 		KString func = ident.name;
 		ResInfo info = new ResInfo();
 		Type tp = PassInfo.clazz.type;

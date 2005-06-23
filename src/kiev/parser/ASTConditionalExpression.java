@@ -33,7 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTConditionalExpression extends ASTNode {
+public class ASTConditionalExpression extends ASTExpr {
 	public ASTExpr	cond;
     public ASTExpr expr1;
     public ASTExpr expr2;

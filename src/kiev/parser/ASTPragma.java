@@ -40,7 +40,6 @@ public class ASTPragma extends SimpleNode implements TopLevelDecl {
 		options = (ASTConstExpression[])Arrays.append(options,opt);
     }
 
-	public Node pass1()   { return this; }
 	public Node pass1_1() { return this; }
 	public Node pass2()   { return this; }
 	public Node pass2_2() { return this; }

@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTLabeledStatement extends ASTNode {
+public class ASTLabeledStatement extends ASTStatement {
 	public KString		name;
     public ASTStatement	stat;
 

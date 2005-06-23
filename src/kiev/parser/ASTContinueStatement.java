@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTContinueStatement extends ASTNode {
+public class ASTContinueStatement extends ASTStatement {
 	KString	name;
     
 	public ASTContinueStatement(int id) {

@@ -38,7 +38,7 @@ typedef kiev.stdlib.List.Cons<kiev.tree.Node>	ConsAN;
  *
  */
 
-public class ASTExpression extends ASTNode {
+public class ASTExpression extends ASTExpr {
 	public List<ASTNode>		nodes = List.Nil;
 
 

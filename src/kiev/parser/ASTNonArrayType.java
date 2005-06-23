@@ -56,7 +56,7 @@ public class ASTNonArrayType extends SimpleNode {
 			tp = ((ASTPrimitiveType)children[0]).type;
 		} else {
     		ASTQName qn = (ASTQName)children[0];
-	    	PVar<ASTNode> v = new PVar<ASTNode>();
+	    	Node@ v;
 		    if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
 			    throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
     		if( v instanceof Type ) {
@@ -72,7 +72,7 @@ public class ASTNonArrayType extends SimpleNode {
 		    }
 		}
 		for (int i=0; i < ops.length; i++) {
-			PVar<ASTNode> v = new PVar<ASTNode>();
+			Node@ v;
 			if (!PassInfo.resolveNameR(v,new ResInfo(),ops[i],null,0)) {
 				if (ops[i] == KString.from("@"))
 					v = Type.tpPrologVar;

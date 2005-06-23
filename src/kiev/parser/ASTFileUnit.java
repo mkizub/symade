@@ -42,17 +42,18 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public FileUnit	file_unit;
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
-    public ASTNode			pkg;
+    public ASTPackage#		pkg;
     public Node∏			syntax;
-    public Node∏			decls;
+    public ASTNode∏			decls;
 	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
 	
 	private boolean[]		disabled_extensions;
 
 	ASTFileUnit(int id) {
 		super(0);
+		pkg = new ASTPackage(0);
 		syntax = new Node∏(this);
-		decls = new Node∏(this);
+		decls = new ASTNode∏(this);
 		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
@@ -93,33 +94,6 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		if (enabled && Kiev.getCmdLineExtSet()[i])
 			Kiev.reportError(pos,"Extension '"+s+"' was disabled from command line");
 		disabled_extensions[i] = !enabled;
-	}
-
-	public Node pass1() {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			int i = 0;
-			if( pkg != null ) {
-				pkg = (Struct)((ASTPackage)pkg).pass1();
-			} else {
-    	    	pkg = Env.root;
-        	}
-	        Struct[] members = Struct.emptyArray;
-			PassInfo.push(pkg);
-			try {
-				for(i=0; i < decls.length; i++) {
-					decls[i].parent = this;
-					members = (Struct[])Arrays.append(members,((TopLevelDecl)decls[i]).pass1());
-				}
-			} finally { PassInfo.pop(pkg); }
-			file_unit = new FileUnit(filename,(Struct)pkg,members);
-			file_unit.disabled_extensions = disabled_extensions;
-			file_unit.bodies = bodies;
-			return file_unit;
-		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
 
 	public Node pass1_1() {

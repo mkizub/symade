@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTSynchronizedStatement extends ASTNode {
+public class ASTSynchronizedStatement extends ASTStatement {
 	public ASTExpr		arg;
     public ASTStatement	body;
 

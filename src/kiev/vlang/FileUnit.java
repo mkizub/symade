@@ -38,9 +38,9 @@ import syntax kiev.Syntax;
 
 public class FileUnit extends Node implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
-	public Struct				pkg;
+	public Struct&				pkg;
 	public Node∏				syntax;
-	public Struct[]				members = Struct.emptyArray;
+	public Struct∏				members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
 	public boolean[]			disabled_extensions;
@@ -48,9 +48,10 @@ public class FileUnit extends Node implements Constants, Scope, ScopeOfOperators
 	public FileUnit() {
 		this(KString.Empty,Env.root,Struct.emptyArray);
 	}
-	public FileUnit(KString name, Struct pkg, Struct[] members) {
-    	super(0);
+	public FileUnit(Node# parent, KString name) {
+    	super(parent);
 		syntax = new Node∏(this);
+		members = new Struct∏(this);
 		this.filename = name;
 		this.pkg = pkg;
 		this.members = members;

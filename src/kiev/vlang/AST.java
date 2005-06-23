@@ -36,8 +36,6 @@ import syntax kiev.Syntax;
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 public interface TopLevelDecl {
-	// create top-level, inner named, argument Struct-s
-	public Node pass1() { return (Node)this; }
 	// resolve some imports, remember typedef's names, remember
 	// operator declarations, remember names/operators for type macroses
 	public Node pass1_1() { return (Node)this; }

@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTIdentifier extends ASTNode {
+public class ASTIdentifier extends ASTExpr {
 	public KString name;
 
 	public ASTIdentifier(int id) {

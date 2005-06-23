@@ -33,16 +33,6 @@ import kiev.vlang.*;
  *
  */
 
-public abstract class ASTAlias extends ASTNode {
-	public static ASTAlias[]	emptyArray = new ASTAlias[0];
-	
-	public ASTAlias(int id) {
-		super(0);
-	}
-
-	public abstract void attach(ASTNode n);
-}
-
 public class ASTIdentifierAlias extends ASTAlias {
 
 	ASTIdentifier	name;
@@ -59,7 +49,7 @@ public class ASTIdentifierAlias extends ASTAlias {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public void attach(ASTNode n) {
+	public void attach(Node n) {
 		switch(n) {
 		case Method:
 			((Method)n).name.addAlias(name.name);

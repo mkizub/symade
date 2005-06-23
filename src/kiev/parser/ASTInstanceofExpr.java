@@ -33,7 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTInstanceofExpr extends ASTNode {
+public class ASTInstanceofExpr extends ASTExpr {
 	public ASTExpr expr1;
 	public ASTNode expr2;
 	public KString op;

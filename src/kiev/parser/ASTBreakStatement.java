@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTBreakStatement extends ASTNode {
+public class ASTBreakStatement extends ASTStatement {
 	ASTIdentifier	ident;
     
 	public ASTBreakStatement(int id) {

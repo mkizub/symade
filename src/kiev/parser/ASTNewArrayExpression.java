@@ -33,9 +33,9 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTNewArrayExpression extends ASTNode {
+public class ASTNewArrayExpression extends ASTExpr {
 	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+    public ASTExpr[]	args = ASTExpr.emptyArray;
 	public int dim;
   
 	ASTNewArrayExpression(int id) {
@@ -46,7 +46,7 @@ public class ASTNewArrayExpression extends ASTNode {
     	if(i==0) {
 			type=n;
 		} else {
-			args = (Expr[])Arrays.append(args,n);
+			args = (ASTExpr[])Arrays.append(args,n);
         }
     }
 

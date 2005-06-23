@@ -38,11 +38,11 @@ import syntax kiev.Syntax;
 public class ASTNode extends Node {
 
     public ASTNode() {
-		super(0,null);
+		super(0);
 	}
 
     public ASTNode(int pos) {
-		super(pos,null);
+		super(pos);
 	}
 
     public ASTNode(Node# parent) {
@@ -67,11 +67,72 @@ public class ASTNode extends Node {
 
 public class ASTExpr extends ASTNode {
 	public static final ASTExpr[] emptyArray = new ASTExpr[0];
+    public ASTExpr() {
+		super(0);
+	}
+
+    public ASTExpr(int pos) {
+		super(pos);
+	}
+
+    public ASTExpr(Node# parent) {
+		super(0,parent);
+	}
+
+	public ASTExpr(int pos, Node# parent) {
+		super(pos,parent);
+	}
+
+	public ASTExpr(int pos, Node parent) {
+		super(pos,parent.vnode);
+	}
 }
+
 public class ASTStatement extends ASTNode {
 	public static final ASTStatement[] emptyArray = new ASTStatement[0];
+	
+    public ASTStatement() {
+		super(0);
+	}
+
+    public ASTStatement(int pos) {
+		super(pos);
+	}
+
+    public ASTStatement(Node# parent) {
+		super(0,parent);
+	}
+
+	public ASTStatement(int pos, Node# parent) {
+		super(pos,parent);
+	}
+
+	public ASTStatement(int pos, Node parent) {
+		super(pos,parent.vnode);
+	}
 }
+
 public class ASTRuleNode extends ASTNode {
 	public static final ASTRuleNode[] emptyArray = new ASTRuleNode[0];
+	
+    public ASTRuleNode() {
+		super(0);
+	}
+
+    public ASTRuleNode(int pos) {
+		super(pos);
+	}
+
+    public ASTRuleNode(Node# parent) {
+		super(0,parent);
+	}
+
+	public ASTRuleNode(int pos, Node# parent) {
+		super(pos,parent);
+	}
+
+	public ASTRuleNode(int pos, Node parent) {
+		super(pos,parent.vnode);
+	}
 }
 

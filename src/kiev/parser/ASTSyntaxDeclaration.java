@@ -57,30 +57,6 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		}
 	}
 
-	public Node pass1() {
-		trace(Kiev.debugResolve,"Pass 1 for synax "+name);
-		boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, name, false, !isTop);
-		me = Env.newStruct(clname,PassInfo.clazz,ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX,true);
-		me.setResolved(true);
-		me.setMembersGenerated(true);
-		me.setStatementsGenerated(true);
-
-		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		}
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-
-        PassInfo.push(me);
-        try {
-			/* Generate type for this structure */
-			me.type = Type.newJavaRefType(me);
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
 	public Node pass1_1() {
 		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
 		foreach (Node n; members) {

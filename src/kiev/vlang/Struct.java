@@ -37,6 +37,24 @@ import syntax kiev.Syntax;
  *
  */
 
+public class Package extends Struct {
+	protected Package(ClazzName name, Package outer, int access) {
+		super(name, outer, access | ACC_PACKAGE);
+	}
+}
+ 
+public class Syntax extends Struct {
+	protected Package(ClazzName name, Struct outer, int access) {
+		super(name, outer, access | ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX);
+		me.setResolved(true);
+		me.setMembersGenerated(true);
+		me.setStatementsGenerated(true);
+		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
+		me.addAttr(sfa);
+
+	}
+}
+ 
 public class Struct extends Node implements Named, Scope, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];

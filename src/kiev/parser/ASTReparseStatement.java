@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTReparseStatement extends ASTNode {
+public class ASTReparseStatement extends ASTStatement {
 
 	public String	ref;
 

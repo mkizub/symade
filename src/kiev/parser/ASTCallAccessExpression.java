@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTCallAccessExpression extends ASTNode {
+public class ASTCallAccessExpression extends ASTExpr {
 	public ASTExpr			obj;
 	public ASTIdentifier	ident;
     public ASTExpr[]		args = ASTExpr.emptyArray;
@@ -59,7 +59,7 @@ public class ASTCallAccessExpression extends ASTNode {
 	public Node resolve(Type reqType) {
 		KString func = ident.name;
 		for(int i=0; i < args.length; i++) {
-			args[i] = (Expr)args[i].resolveExpr(null);
+			args[i] = (ASTExpr)args[i].resolveExpr(null);
 		}
 		ASTNode o;
 		Struct cl;

@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTSwitchStatement extends ASTNode {
+public class ASTSwitchStatement extends ASTStatement {
 	public ASTExpr		sel;
 	public Node∏		cases;
 

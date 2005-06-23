@@ -38,16 +38,13 @@ public class ASTPackage extends ASTNode {
 
 	ASTPackage(int id) {
 		super(0);
+		name = KString.Empty;
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	name = ((ASTQName)n).toKString();
         pos = n.getPos();
     }
-
-	public Node pass1() {
-		return Env.newPackage(ClazzName.fromToplevelName(name,false));
-	}
 
 	public Dumper toJava(Dumper dmp) {
     	return dmp.append("package").space().append(name).append(';').newLine();

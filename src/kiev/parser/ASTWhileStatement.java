@@ -33,7 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTWhileStatement extends ASTNode {
+public class ASTWhileStatement extends ASTStatement {
     public boolean		not;
 	public ASTExpr		cond;
     public ASTStatement	body;

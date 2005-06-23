@@ -152,7 +152,10 @@ public class Env extends Struct {
 			return cl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated bytecode name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer,access);
+		if ((access & ACC_PACKAGE) != null)
+			cl = new Package(name,outer,access);
+		else
+			cl = new Struct(name,outer,access);
 		classHash.put(cl.name.name,cl);
 		classHashDbg.put(cl.name.bytecode_name,cl);
 		if( outer == null ) {
@@ -194,7 +197,7 @@ public class Env extends Struct {
 	}
 
 	public static Struct newPackage(ClazzName name,Struct outer) {
-		Struct cl = newStruct(name,outer,0);
+		Package cl = newStruct(name,outer,ACC_PACKAGE);
 		cl.setPackage(true);
 		cl.type = Type.newJavaRefType(cl);
 		return cl;
@@ -245,6 +248,13 @@ public class Env extends Struct {
 		classHash.put(cl.name.name,cl);
 		classHash.put(cl.name.bytecode_name,cl);
 		return cl;
+	}
+
+	public static Syntax newSyntax(ClazzName name,Struct outer,int access, boolean cleanup) {
+		Syntax syn = (Syntax)newStruct(name,outer,ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX,cleanup);
+		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
+			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
+		}
 	}
 
 	/** Default environment initialization */

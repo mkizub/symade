@@ -36,16 +36,16 @@ import kiev.vlang.*;
 
 public class ASTWithStatement extends ASTNode {
 	public ASTIdentifier	arg;
-    public Statement		body;
+    public ASTStatement		body;
 
 	public ASTWithStatement(int id) {
-		super(id,null);
+		super(id);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: arg=(ASTIdentifier)n; break;
-        case 1: body=(Statement)n; break;
+        case 1: body=(ASTStatement)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }

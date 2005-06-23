@@ -450,12 +450,10 @@ public class Compiler {
 
 		try {
 //			if( Kiev.verbose ) System.out.println(Kiev.version);
-
-
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
-			Kiev.file_unit.cleanup();
-			Kiev.file_unit.length = args.length;
+			Kiev.astTree.members.delAll();
 
+			ExportFromAST exporter = new ExportFromAST(Kiev.astTree, Kiev.mainTree); 
 
 			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
 			for(int i=0; i < args.length; i++) {
@@ -477,7 +475,7 @@ public class Compiler {
 						Kiev.k = new kiev020(file_input_stream);
 					else
 						Kiev.k.ReInit(file_input_stream);
-					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);
+					Kiev.astTree.add(Kiev.k.FileUnit(args[i]));
 					diff_time = System.currentTimeMillis() - curr_time;
 					Kiev.file_unit[i].pass1();
 					runGC();
@@ -491,6 +489,7 @@ public class Compiler {
 					Kiev.reportParserError(0,e);
 				}
 			}
+			exporter.pass(Kiev.pass_no);
 			if( Kiev.errCount > 0 ) {
 				goto stop;
 			}

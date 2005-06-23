@@ -37,12 +37,12 @@ import syntax kiev.Syntax;
  */
 
 public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
-	public Node∏		modifier;
+	public ASTModifier∏	modifier;
 	public ASTAccess	acc;
 	public KString		name;
 	public Node∏		argument;
 	public Node∏		casefields;
-	public Statement	body;
+	public ASTStatement	body;
 	public virtual PrescannedBody pbody;
 
 	public Struct		me;
@@ -51,7 +51,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 
 	public ASTCaseTypeDeclaration(int id) {
 		super(0);
-		modifier   = new Node∏(this);
+		modifier   = new ASTModifier∏(this);
 		argument   = new Node∏(this);
 		casefields = new Node∏(this);
 	}
@@ -64,7 +64,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
 		else if( n instanceof ASTAccess ) {
 			if( acc != null )
@@ -76,13 +76,13 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
             pos = n.getPos();
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			argument = (ASTNode[])Arrays.append(argument,n);
+			argument.append(n);
 		}
         else if( n instanceof ASTFormalParameter ) {
-			casefields = (ASTNode[])Arrays.append(casefields,n);
+			casefields.append(n);
 		}
-        else if( n instanceof Statement ) {
-			body = (Statement)n;
+        else if( n instanceof ASTStatement ) {
+			body = (ASTStatement)n;
 		}
         else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -94,8 +94,8 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
 		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		for(ASTModifier m;  modifier)
+			flags |= m.flag();
 		KString short_name = this.name;
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,true);
 

@@ -34,7 +34,7 @@ import kiev.tree.*;
  *
  */
 
-public class ASTDoStatement extends ASTNode {
+public class ASTDoStatement extends ASTStatement {
     public boolean		not;
 	public ASTExpr		cond;
     public ASTStatement	body;

@@ -33,7 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
-public class ASTReturnStatement extends ASTNode {
+public class ASTReturnStatement extends ASTStatement {
 	public ASTExpr expr;
 
 	public ASTReturnStatement(int id) {

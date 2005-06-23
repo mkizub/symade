@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class ASTTryStatement extends ASTNode {
+public class ASTTryStatement extends ASTStatement {
 	public ASTStatement		body;
     public ASTCatchInfo∏	catchers;
     public ASTFinallyInfo	finally_catcher;

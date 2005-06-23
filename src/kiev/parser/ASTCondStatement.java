@@ -33,7 +33,7 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTCondStatement extends ASTNode {
+public class ASTCondStatement extends ASTStatement {
 	
 	public ASTExpr		cond;
 	public ASTExpr		message;

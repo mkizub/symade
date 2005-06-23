@@ -63,7 +63,7 @@ public class ASTAccessExpression extends ASTNode {
 	public Node resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
-			ASTNode o = obj.resolve(null);
+			Node o = obj.resolve(null);
 			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 			KString name = ident.name;
 			Struct cl;
@@ -114,7 +114,7 @@ public class ASTAccessExpression extends ASTNode {
 					foreach(cl.resolveNameR(v,info,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
 						if (info.transforms > min_transforms)
 							continue;
-						ASTNode e = makeExpr(v,info,o,cl);
+						Node e = makeExpr(v,info,o,cl);
 						if (info.transforms < min_transforms) {
 							res.setLength(0);
 						}
@@ -154,7 +154,7 @@ public class ASTAccessExpression extends ASTNode {
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, Struct cl) {
+	private Node makeExpr(Node v, ResInfo info, Node o, Struct cl) {
 		if( v instanceof Field ) {
 			if( v.isStatic() )
 				return new StaticFieldAccessExpr(pos,cl,(Field)v);

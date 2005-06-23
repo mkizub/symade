@@ -83,6 +83,9 @@ public final class VNodeArray<N extends Node> {
 
 	public /*abstract*/ void cleanup() {
 		$parent = null;
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++)
+			$nodes[i].cleanup();
 		$nodes = null;
 	};
 	
@@ -147,6 +150,12 @@ public final class VNodeArray<N extends Node> {
 		return ret;
 	}
 
+	public void delAll() {
+		if (this.$nodes.length == 0)
+			return;
+		this.$nodes = new VNode<Node>[0];
+	};
+	
 	public boolean contains(N node) {
 		for (int i=0; i < $nodes.length; i++) {
 			if ($nodes[i].equals(node))
@@ -194,26 +203,32 @@ public abstract class CreateInfo {
 }
 
 public abstract class Node implements Constants {
-	public int			pos;
+	public int				pos;
 	// the node which encapsulates this implementation (version)
     public VNode<Node>		vnode;
 	// the reason of creating and other information about this node
-	public CreateInfo		src_info;
+	public CreateInfo		info;
     // the parent node in the tree
     public VNode<Node>		parent;
 	// node flags
 	public int				flags;
 
 	public Node() {
-		this(0, (Node#)null);
+		this.pos = 0;
+		this.parent = null;
+		new VNode<Node>(this);
 	}
 	
 	public Node(int pos) {
-		this(pos, (Node#)null);
+		this.pos = pos;
+		this.parent = null;
+		new VNode<Node>(this);
 	}
 	
 	public Node(Node# parent) {
-		this(0, parent);
+		this.pos = 0;
+		this.parent = parent;
+		new VNode<Node>(this);
 	}
 	
 	public Node(int pos, Node# parent) {
@@ -241,7 +256,7 @@ public abstract class Node implements Constants {
 	
 	public /*abstract*/ void cleanup() {
 		parent = null;
-		src_info = null;
+		info = null;
 	};
 	
     public final int getPos() { return pos; }
@@ -257,7 +272,6 @@ public abstract class Node implements Constants {
     	return dmp;
     }
 
-	public Node pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public Node pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public Node pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public Node pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }

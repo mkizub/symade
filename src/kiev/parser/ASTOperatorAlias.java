@@ -116,7 +116,7 @@ public class ASTOperatorAlias extends ASTAlias {
     	//Kiev.reportWarning(0,"Static public method "+m+" with operator alias must be imported by package");
     }
 
-	public void attach(ASTNode n) {
+	public void attach(Node n) {
 		if( !(n instanceof Method) )
 			throw new CompilerException(pos,"Node of type "+n.getClass()+" cannot be aliased with operator");
 		Method m = (Method)n;

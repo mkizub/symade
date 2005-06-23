@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.tree.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
