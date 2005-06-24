@@ -168,6 +168,7 @@ public final class ExportJavaTop implements Constants {
 		setSourceFile(me, astn);
 		astnp.me.addCase(me);
 		me.super_clazz = astnp.me.type;
+		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setupStructType(me, astn, true);
 
 		return me;
@@ -184,6 +185,7 @@ public final class ExportJavaTop implements Constants {
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
 		me.parent = pn;
+		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, false);
 
@@ -201,6 +203,7 @@ public final class ExportJavaTop implements Constants {
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
 		me.parent = pn;
+		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, false);
 
@@ -236,6 +239,7 @@ public final class ExportJavaTop implements Constants {
 
 		Struct me = astn.me;
 		me.parent = pn;
+		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, true);
 
@@ -490,6 +494,319 @@ public final class ExportJavaTop implements Constants {
 		}
 	}
 
+
+
+
+
+
+	/////////////////////////////////////////////////////
+	//                                                 //
+	//     PASS 2 - struct args inheritance            //
+	//                                                 //
+	/////////////////////////////////////////////////////
+
+
+	public boolean pass2() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no; 
+		Kiev.pass_no = TopLevelPass.passArgumentInheritance;
+		try
+		{
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				ASTFileUnit fu = Kiev.file_unit[i]; 
+				if( fu == null ) continue;
+				try { pass2(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				if( fu == null ) continue;
+				try { pass2(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	public ASTNode pass2(ASTNode:ASTNode astn, ASTNode pn) {
+		return astn;
+	}
+
+	public ASTNode pass2(ASTFileUnit:ASTNode astn, ASTNode pn) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = astn.filename;
+		PassInfo.push(astn.file_unit);
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(astn.disabled_extensions);
+			// Process members - pass2()
+			foreach (ASTNode n; astn.decls)
+				pass2(n, astn.file_unit);
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
+		return astn.file_unit;
+	}
+
+	public ASTNode pass2(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
+		return astn.me;
+	}
+	
+	public ASTNode pass2(ASTTypeDeclaration:ASTNode astn, ASTNode pn) {
+		Struct me = astn.me;
+		int pos = astn.pos;
+		trace(Kiev.debugResolve,"Pass 2 for class "+me);
+        PassInfo.push(me);
+        try {
+			/* Process inheritance of class's arguments, if any */
+			Type[] targs = me.type.args;
+	        for(int i=0; i < astn.argument.length; i++) {
+				ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
+				if( arg.type != null ) {
+					ASTNonArrayType at = (ASTNonArrayType)arg.type;
+					Type sup = at.getType();
+					if( !sup.isReference() )
+						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
+					else
+						targs[i].clazz.super_clazz = sup;
+					targs[i].checkJavaSignature();
+				} else {
+					targs[i].clazz.super_clazz = Type.tpObject;
+				}
+			}
+			// Process ASTGenerete
+			if( astn.gens != null ) {
+				ASTGenerate ag = (ASTGenerate)astn.gens;
+				Type[][] gtypes = new Type[ag.children.length/me.type.args.length][me.type.args.length];
+				for(int l=0; l < gtypes.length; l++) {
+					for(int m=0; m < me.type.args.length; m++) {
+						int k = l*me.type.args.length+m;
+						if( ag.children[k] instanceof ASTPrimitiveType) {
+							if( ((ASTArgumentDeclaration)astn.argument[m]).type != null ) {
+								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
+							}
+							gtypes[l][m] = ((ASTPrimitiveType)ag.children[k]).type;
+						} else { // ASTIdentifier
+							KString a = ((ASTIdentifier)ag.children[k]).name;
+							if( a != ((ASTArgumentDeclaration)astn.argument[m]).name ) {
+								Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+((ASTArgumentDeclaration)astn.argument[m]).name);
+							}
+							gtypes[l][m] = me.type.args[m];
+						}
+					}
+				}
+				// Clone 'me' for generated types
+				me.gens = new Type[gtypes.length];
+				for(int k=0; k < gtypes.length; k++) {
+					KStringBuffer ksb;
+					ksb = new KStringBuffer(
+						me.name.bytecode_name.length()
+						+3+me.type.args.length);
+					ksb.append_fast(me.name.bytecode_name)
+						.append_fast((byte)'_').append_fast((byte)'_');
+					for(int l=0; l < me.type.args.length; l++) {
+						if( gtypes[k][l].isReference() )
+							ksb.append_fast((byte)'A');
+						else
+							ksb.append_fast(gtypes[k][l].signature.byteAt(0));
+					}
+					ksb.append_fast((byte)'_');
+					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
+					Struct s = Env.newStruct(cn,true);
+					s.flags = me.flags;
+					s.acc = me.acc;
+					Type gtype = Type.newRefType(me,gtypes[k]);
+					gtype.java_signature = cn.signature();
+					gtype.clazz = s;
+					me.gens[k] = gtype;
+					s.type = gtype;
+					s.generated_from = me;
+					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
+					// Add generation for inner parametriezed classes
+					for(int l=0; l < me.sub_clazz.length; l++) {
+						Struct sc = me.sub_clazz[l];
+						if( sc.type.args.length == 0 ) continue;
+						if( sc.gens == null )
+							sc.gens = new Type[gtypes.length];
+						ksb = new KStringBuffer(
+							s.name.bytecode_name.length()
+							+sc.name.short_name.length()
+							+4+sc.type.args.length);
+						ksb.append_fast(s.name.bytecode_name)
+							.append_fast((byte)'$')
+							.append_fast(sc.name.short_name)
+							.append_fast((byte)'_').append_fast((byte)'_');
+						for(int m=0; m < sc.type.args.length; m++) {
+							if( Type.getRealType(gtype,sc.type.args[m]).isReference() )
+								ksb.append_fast((byte)'A');
+							else
+								ksb.append_fast(Type.getRealType(gtype,sc.type.args[m]).signature.byteAt(0));
+						}
+						ksb.append_fast((byte)'_');
+						cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
+						Struct scg = Env.newStruct(cn,true);
+						scg.flags = sc.flags;
+						Type scgt = Type.getRealType(gtype,sc.type);
+						scgt.java_signature = cn.signature();
+						scgt.clazz = scg;
+						sc.gens[k] = scgt;
+						scg.type = scgt;
+						scg.generated_from = sc;
+						scg.super_clazz = Type.getRealType(scg.type,sc.super_clazz);
+					}
+				}
+			}
+
+	        // Process inner classes and cases
+        	if( !me.isPackage() ) {
+				foreach (ASTNode m; astn.members)
+					pass2(m, me);
+			}
+		} finally { PassInfo.pop(me); }
+
+		return me;
+	}
+
+
+
+
+
+
+
+	/////////////////////////////////////////////////////
+	//                                                 //
+	//     PASS 2_2 - struct inheritance               //
+	//                                                 //
+	/////////////////////////////////////////////////////
+
+
+	public boolean pass2_2() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no; 
+		Kiev.pass_no = TopLevelPass.passStructInheritance;
+		try
+		{
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				ASTFileUnit fu = Kiev.file_unit[i]; 
+				if( fu == null ) continue;
+				try { pass2_2(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				if( fu == null ) continue;
+				try { pass2_2(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	public void pass2_2(ASTNode:ASTNode astn, ASTNode pn) {
+	}
+
+	public void pass2_2(ASTFileUnit:ASTNode astn, ASTNode pn) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = astn.filename;
+		PassInfo.push(astn.file_unit);
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(astn.disabled_extensions);
+			// Process members - pass2()
+			foreach (ASTNode n; astn.decls)
+				pass2_2(n, astn.file_unit);
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
+	}
+
+	public void pass2_2(ASTEnumDeclaration:ASTNode astn, ASTNode pn) {
+		int pos = astn.pos;
+		Struct me = astn.me;
+		trace(Kiev.debugResolve,"Pass 2_2 for enum "+me);
+        PassInfo.push(me);
+        try {
+			/* Now, process 'extends' and 'implements' clauses */
+			ASTNonArrayType at;
+			if( astn.ext != null ) {
+				ASTExtends exts = (ASTExtends)astn.ext;
+				at = (ASTNonArrayType)exts.children[0];
+				me.super_clazz = at.getType();
+			}
+			if( me.super_clazz == null ) {
+				me.super_clazz = Type.tpEnum;
+			}
+
+			if( !me.super_clazz.isReference() ) {
+				me.setPrimitiveEnum(true);
+				me.type.setMeAsPrimitiveEnum();
+			}
+		} finally { PassInfo.pop(me); }
+	}
+	
+	public void pass2_2(ASTSyntaxDeclaration:ASTNode astn, ASTNode pn) {
+		if (!Kiev.packages_scanned.contains(astn.me))
+			Kiev.packages_scanned.append(astn.me);
+	}
+
+	public void pass2_2(ASTTypeDeclaration:ASTNode astn, ASTNode pn) {
+		int pos = astn.pos;
+		Struct me = astn.me;
+		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
+        PassInfo.push(me);
+        try {
+			Type[] timpl = Type.emptyArray;
+			/* Now, process 'extends' and 'implements' clauses */
+			ASTNonArrayType at;
+			if( astn.ext != null ) {
+				ASTExtends exts = (ASTExtends)astn.ext;
+				if( me.isInterface() ) {
+					me.super_clazz = Type.tpObject;
+					for(int j=0; j < exts.children.length; j++) {
+						at = (ASTNonArrayType)exts.children[j];
+						timpl = (Type[])Arrays.append(timpl,at.getType());
+					}
+					me.interfaces = timpl;
+				} else {
+					at = (ASTNonArrayType)exts.children[0];
+					me.super_clazz = at.getType();
+				}
+			}
+			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
+				me.super_clazz = Type.tpObject;
+			}
+			if( astn.impl != null ) {
+				ASTImplements impls = (ASTImplements)astn.impl;
+				for(int j=0; j < impls.children.length; j++) {
+					at = (ASTNonArrayType)impls.children[j];
+					timpl = (Type[])Arrays.append(timpl,at.getType());
+				}
+				me.interfaces = timpl;
+			}
+			if( !Kiev.kaffe && !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
+				me.interfaces = (Type[])Arrays.append(me.interfaces,Type.tpTypeInfoInterface);
+			}
+			if( me.interfaces.length > 0 && me.gens != null ) {
+				for(int g=0; g < me.gens.length; g++) {
+					me.gens[g].clazz.interfaces = new Type[me.interfaces.length];
+					for(int l=0; l < me.interfaces.length; l++) {
+						me.gens[g].clazz.interfaces[l] = Type.getRealType(me.gens[g],me.interfaces[l]);
+					}
+				}
+			}
+
+	        // Process inner classes and cases
+        	if( !me.isPackage() ) {
+				foreach (ASTNode m; astn.members)
+					pass2_2(m, me);
+			}
+		} finally { PassInfo.pop(me); }
+
+	}
 }
 
 

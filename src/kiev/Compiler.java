@@ -532,45 +532,14 @@ public class Compiler {
 
 
 			Kiev.pass_no = TopLevelPass.passProcessSyntax;
-			delayed_stop = exporter.pass1_1();
-			runGC();
-
-
+			delayed_stop |= exporter.pass1_1();
 			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2(null);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2(null);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
-			runGC();
-
-
+			delayed_stop |= exporter.pass2();
 			Kiev.pass_no = TopLevelPass.passStructInheritance;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2_2(null);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2_2(null);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
+			delayed_stop |= exporter.pass2_2();
+			
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's arguments declarations passed",diff_time);
+			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
 			if( Kiev.errCount > 0 || delayed_stop ) {
 				goto stop;
 			}

@@ -109,14 +109,14 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 //		return me;
 //	}
 
-	public ASTNode pass2(ASTNode pn) {
-		trace(Kiev.debugResolve,"Pass 2 for enum "+me);
-        PassInfo.push(me);
-        try {
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
+//	public ASTNode pass2(ASTNode pn) {
+//		trace(Kiev.debugResolve,"Pass 2 for enum "+me);
+//		PassInfo.push(me);
+//		try {
+//		} finally { PassInfo.pop(me); }
+//
+//		return me;
+//	}
 
 	public ASTNode pass2_2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2_2 for enum "+me);
@@ -197,39 +197,39 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 
 	public void resolveFinalFields(boolean cleanup) {
    	    // Process inner classes and cases
-		for(int i=0; i < members.length; i++) {
-			if( !(members[i] instanceof ASTImport) ) continue;
-			ASTNode imp = ((ASTImport)members[i]).pass2(me);
-			if( imp == null )
-				Kiev.reportError(members[i].getPos(),"Imported member "+imp+" not found");
-			else if( imp instanceof Field ) {
-				if( !imp.isStatic() ) {
-					Kiev.reportError(members[i].getPos(),"Imported field "+imp+" must be static");
-				} else {
-					me.imported.add(imp);
-				}
-			}
-			else if( imp instanceof Method ) {
-				if( !imp.isStatic() ) {
-					Kiev.reportError(members[i].getPos(),"Imported method "+imp+" must be static");
-				} else {
-					me.imported.add(imp);
-				}
-			}
-			else if( imp instanceof Struct ) {
-				Struct is = (Struct)imp;
-				for(int j=0; j < is.fields.length; j++) {
-					if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
-						me.imported.add(is.fields[j]);
-				}
-				for(int j=0; j < is.methods.length; j++) {
-					if( is.methods[j].isStatic() )
-						me.imported.add(is.methods[j]);
-				}
-			}
-			else
-				throw new CompilerException(members[i].getPos(),"Unknown type if imported member: "+imp);
-		}
+		//for(int i=0; i < members.length; i++) {
+		//	if( !(members[i] instanceof ASTImport) ) continue;
+		//	ASTNode imp = ((ASTImport)members[i]).pass2(me);
+		//	if( imp == null )
+		//		Kiev.reportError(members[i].getPos(),"Imported member "+imp+" not found");
+		//	else if( imp instanceof Field ) {
+		//		if( !imp.isStatic() ) {
+		//			Kiev.reportError(members[i].getPos(),"Imported field "+imp+" must be static");
+		//		} else {
+		//			me.imported.add(imp);
+		//		}
+		//	}
+		//	else if( imp instanceof Method ) {
+		//		if( !imp.isStatic() ) {
+		//			Kiev.reportError(members[i].getPos(),"Imported method "+imp+" must be static");
+		//		} else {
+		//			me.imported.add(imp);
+		//		}
+		//	}
+		//	else if( imp instanceof Struct ) {
+		//		Struct is = (Struct)imp;
+		//		for(int j=0; j < is.fields.length; j++) {
+		//			if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
+		//				me.imported.add(is.fields[j]);
+		//		}
+		//		for(int j=0; j < is.methods.length; j++) {
+		//			if( is.methods[j].isStatic() )
+		//				me.imported.add(is.methods[j]);
+		//		}
+		//	}
+		//	else
+		//		throw new CompilerException(members[i].getPos(),"Unknown type if imported member: "+imp);
+		//}
 		// Resolve final values of class's fields
 		me.resolveFinalFields(cleanup);
 	}

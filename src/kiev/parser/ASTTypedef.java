@@ -81,11 +81,6 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 //		}
 //	}
 
-//	public ASTNode pass2(ASTNode pn) {
-//		if (td != null) return td;
-//		return pass1_1(pn);
-//	}
-
 	public String toString() {
 		if (opdef)
 			return "typedef type"+name+" "+type+"<type>;";

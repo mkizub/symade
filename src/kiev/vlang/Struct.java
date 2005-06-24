@@ -2905,59 +2905,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	public void resolveImports() {
-/*		PassInfo.push(this);
-		try {
-			ASTNode[] old_imported = imported;
-			imported = ASTNode.emptyArray;
-			for(int i=0; i < old_imported.length; i++) {
-				ASTNode imp = old_imported[i];
-				if( imp instanceof ASTImport )
-					imp = ((ASTImport)imp).pass2();
-				if( imp instanceof Import) imp = ((Import)imp).node;
-				if( imp == null )
-					Kiev.reportWarning(pos,"Imported member "+imported[i]+" not found");
-				else if( imp instanceof Field ) {
-					if( !imp.isStatic() ) {
-						Kiev.reportError(imp.pos,"Imported field "+imp+" must be static");
-					} else {
-						imported = (ASTNode[])Arrays.append(imported,imp);
-					}
-				}
-				else if( imp instanceof Method ) {
-					if( !imp.isStatic() ) {
-						Kiev.reportError(imp.pos,"Imported method "+imp+" must be static");
-					} else {
-						imported = (ASTNode[])Arrays.append(imported,imp);
-					}
-				}
-				else if( imp instanceof Struct ) {
-					Struct is = (Struct)imp;
-					is.checkResolved();
-					for(int j=0; j < is.fields.length; j++) {
-						if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
-							imported = (ASTNode[])Arrays.append(imported,is.fields[j]);
-					}
-					for(int j=0; j < is.methods.length; j++) {
-						if( is.methods[j].isStatic() )
-							imported = (ASTNode[])Arrays.append(imported,is.methods[j]);
-					}
-				}
-				else
-					throw new CompilerException(imp.pos,"Unknown type if imported member: "+imp);
-			}
-			try {
-				if( !isPackage() ) {
-					for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-						if( !sub_clazz[i].isAnonymouse()) //&& !sub_clazz[i].isPassed_2()
-							sub_clazz[i].resolveImports();
-					}
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-		} finally { PassInfo.pop(this); }
-*/	}
-
+	}
+	
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isGenerated() ) return this;
 		long curr_time;

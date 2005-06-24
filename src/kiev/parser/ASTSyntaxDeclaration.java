@@ -96,32 +96,16 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 //		return me;
 //	}
 
-	public ASTNode pass2(ASTNode pn) {
-		//trace(Kiev.debugResolve,"Pass 2 for syntax "+me);
-		//for(int i=0; i < members.length; i++) {
-		//	ASTNode n = members[i];
-		//	try {
-		//		if (n instanceof ASTTypedef) {
-		//			n = n.pass2();
-		//			n.parent = me;
-		//			me.imported[i] = n;
-		//		}
-		//	} catch(Exception e ) {
-		//		Kiev.reportError/*Warning*/(n.getPos(),e);
-		//	}
-		//}
-		return me;
-	}
-
-	public ASTNode pass2_2(ASTNode pn) {
-		trace(Kiev.debugResolve,"Pass 2_2 for syntax "+me);
-       	Kiev.packages_scanned.append(me);
-		return me;
-	}
+//	public ASTNode pass2_2(ASTNode pn) {
+//		trace(Kiev.debugResolve,"Pass 2_2 for syntax "+me);
+//		Kiev.packages_scanned.append(me);
+//		return me;
+//	}
 
 	public static Struct pass3(Struct me, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for syntax "+me);
-       	Kiev.packages_scanned.append(me);
+		if (!Kiev.packages_scanned.contains(me))
+			Kiev.packages_scanned.append(me);
 		return me;
 	}
 

@@ -41,9 +41,9 @@ public interface TopLevelDecl {
 	//public ASTNode pass1_1(ASTNode pn);
 	// process inheritance for type arguments, create
 	// Struct's for template types
-	public ASTNode pass2(ASTNode pn);
+	//public ASTNode pass2(ASTNode pn);
 	// process Struct's inheritance (extends/implements)
-	public ASTNode pass2_2(ASTNode pn);
+	//public ASTNode pass2_2(ASTNode pn);
 	// process Struct's members (fields, methods)
 	public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
@@ -128,8 +128,8 @@ public abstract class ASTNode implements Constants {
 
 	//public ASTNode pass1(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	//public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass3()             { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }

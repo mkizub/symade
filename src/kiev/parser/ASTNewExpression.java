@@ -164,15 +164,10 @@ public class ASTNewExpression extends Expr {
         try {
 			ExportJavaTop exporter = new ExportJavaTop();
 			for(int i=0; i < members.length; i++) {
-				if( members[i] instanceof ASTTypeDeclaration ) {
-					exporter.pass1(members[i], me);
-					((ASTTypeDeclaration)members[i]).pass2(me);
-					((ASTTypeDeclaration)members[i]).pass2_2(me);
-				}
-				else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-					exporter.pass1(members[i], me);
-					((ASTCaseTypeDeclaration)members[i]).pass2(me);
-				}
+				exporter.pass1(members[i], me);
+				exporter.pass1_1(members[i], me);
+				exporter.pass2(members[i], me);
+				exporter.pass2_2(members[i], me);
 			}
 		} finally { PassInfo.pop(me); }
 		me = ASTTypeDeclaration.pass3(me,members);

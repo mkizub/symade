@@ -126,20 +126,20 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 //		return me;
 //	}
 
-	public ASTNode pass2(ASTNode pn) {
-
-		Struct parnt;
-		if( parent instanceof Struct )
-			parnt = (Struct)parent;
-		else
-			parnt = ((ASTTypeDeclaration)parent).me;
-
-		me.super_clazz = parnt.type;
-
-		if( acc != null ) me.acc = new Access(acc.accflags);
-
-		return me;
-	}
+//	public ASTNode pass2(ASTNode pn) {
+//
+//		Struct parnt;
+//		if( parent instanceof Struct )
+//			parnt = (Struct)parent;
+//		else
+//			parnt = ((ASTTypeDeclaration)parent).me;
+//
+//		me.super_clazz = parnt.type;
+//
+//		if( acc != null ) me.acc = new Access(acc.accflags);
+//
+//		return me;
+//	}
 
 	public Struct pass3() {
 		Struct parnt;

@@ -959,7 +959,7 @@ public final class RuleForExpr extends ASTRuleNode {
 		if( init instanceof ASTVarDecls ) {
 			ASTVarDecls vdecls = (ASTVarDecls)init;
 			int flags = 0;
-			Type type = ((ASTType)vdecls.type).pass2();
+			Type type = ((ASTType)vdecls.type).getType();
 			for(int j=0; j < vdecls.vars.length; j++) {
 				ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 				KString vname = vdecl.name;

@@ -294,8 +294,9 @@ public class BlockStat extends Statement implements Scope {
 					ExportJavaTop exporter = new ExportJavaTop();
 					tds.struct = (Struct) exporter.pass1(decl, tds);
 					tds.struct.setLocal(true);
-					tds.struct = (Struct)decl.pass2(tds);
-					tds.struct = (Struct)decl.pass2_2(tds);
+					exporter.pass1_1(decl, tds);
+					exporter.pass2(decl, tds);
+					exporter.pass2_2(decl, tds);
 					ASTTypeDeclaration.pass3(tds.struct,decl.members);
 					tds.struct.autoProxyMethods();
 					tds.struct.resolveFinalFields(false);
