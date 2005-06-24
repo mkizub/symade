@@ -38,7 +38,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public int				flags;
 	public int				cp_clazz;
 	public int				cp_super_clazz;
-	public int[]			cp_interfaces;
+	public int[]				cp_interfaces;
 	public Field[]			fields;
 	public Method[]			methods;
 	public Attribute[]		attrs;
@@ -113,10 +113,10 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		assert(magic == JAVA_MAGIC ,"Bad JAVA_MAGIC 0x"+Integer.toHexString(magic)+", should be 0x"+Integer.toHexString(JAVA_MAGIC));
 		int minor = cont.readShort();
 		trace(traceRead,cont.offset+": JAVA_MINOR_VERSION = "+minor);
-		assert(minor == JAVA_MINOR_VERSION ,"Bad JAVA_MINOR_VERSION "+minor+", should be "+JAVA_MINOR_VERSION);
+		//assert(minor == JAVA_MINOR_VERSION ,"Bad JAVA_MINOR_VERSION "+minor+", should be "+JAVA_MINOR_VERSION);
 		int magor = cont.readShort();
 		trace(traceRead,cont.offset+": JAVA_VERSION = "+magor);
-		assert(magor == JAVA_VERSION ,"Bad JAVA_VERSION "+magor+", should be "+JAVA_VERSION);
+		//assert(magor == JAVA_VERSION ,"Bad JAVA_VERSION "+magor+", should be "+JAVA_VERSION);
 
 		readConstantPool(cont);
 

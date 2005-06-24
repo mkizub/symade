@@ -52,7 +52,7 @@ public class ASTTypeClassExpression extends Expr {
 
 	public ASTNode resolve(Type reqType) throws CompilerException {
 		if( type instanceof ASTType )
-			type = ((ASTType)type).pass2();
+			type = ((ASTType)type).getType();
 		if( !(type instanceof Type) )
 			throw new CompilerException(pos,"Node is not a type, but "+type.getClass());
 		Type tp = (Type)type;

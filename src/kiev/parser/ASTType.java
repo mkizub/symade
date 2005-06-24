@@ -51,7 +51,7 @@ public class ASTType extends ASTNode {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 ) {
+		if( i==0 ) {
 			type = n;
             pos = n.getPos();
 		}
@@ -60,12 +60,12 @@ public class ASTType extends ASTNode {
         }
     }
     
-	public Type pass2() {
+	public Type getType() {
 		Type tp = Type.tpVoid;
 		if( type instanceof Type ) return (Type)type;
 		else if( type instanceof ASTNonArrayType ) {
 			try {
-				type = tp = ((ASTNonArrayType)type).pass2();
+				type = tp = ((ASTNonArrayType)type).getType();
 				for(int i=0; i < dim; i++)
 					tp = Type.newArrayType(tp);
 			} catch(Exception e ) {
@@ -73,7 +73,7 @@ public class ASTType extends ASTNode {
 			}
 		}
 		else if( type instanceof ASTClosureType ) {
-			type = tp = ((ASTClosureType)type).pass2();
+			type = tp = ((ASTClosureType)type).getType();
 		} else {
 			throw new CompilerException(type.getPos(),"Bad type node "+type);
 		}

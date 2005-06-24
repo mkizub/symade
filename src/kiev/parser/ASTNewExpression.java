@@ -58,7 +58,7 @@ public class ASTNewExpression extends Expr {
 
 	public ASTNode resolve(Type reqType) {
 		// Find out possible constructors
-		Type tp = ((ASTNonArrayType)type).pass2();
+		Type tp = ((ASTNonArrayType)type).getType();
 		Struct s = tp.clazz;
 		s.checkResolved();
 		Type[] targs = Type.emptyArray;
@@ -100,7 +100,7 @@ public class ASTNewExpression extends Expr {
 		// Local anonymouse class
 		Type sup;
 		if( type instanceof Type ) sup = (Type)type;
-		else sup = ((ASTNonArrayType)type).pass2();
+		else sup = ((ASTNonArrayType)type).getType();
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)

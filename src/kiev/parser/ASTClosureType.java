@@ -50,12 +50,12 @@ public class ASTClosureType extends ASTNode {
         }
     }
 
-	public Type pass2() {
+	public Type getType() {
 		Type[] tps = new Type[types.length-1];
         for(int i=0; i < tps.length; i++) {
-			tps[i] = ((ASTType)types[i]).pass2();
+			tps[i] = ((ASTType)types[i]).getType();
 		}
-        Type ret = ((ASTType)types[types.length-1]).pass2();
+        Type ret = ((ASTType)types[types.length-1]).getType();
         return MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
 	}
 

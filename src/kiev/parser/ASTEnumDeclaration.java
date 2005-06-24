@@ -128,7 +128,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			if( ext != null ) {
 				ASTExtends exts = (ASTExtends)ext;
 				at = (ASTNonArrayType)exts.children[0];
-				me.super_clazz = at.pass2();
+				me.super_clazz = at.getType();
 			}
 			if( me.super_clazz == null ) {
 				me.super_clazz = Type.tpEnum;

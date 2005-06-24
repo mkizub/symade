@@ -786,13 +786,13 @@ public class WrapedExpr extends Expr {
 	public Type getType() {
 		if( expr instanceof Type ) return Type.getRealType(base_type,(Type)expr);
 		if( expr instanceof Struct ) return Type.getRealType(base_type,((Struct)expr).type);
-		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).pass2());
+		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
 		if( expr instanceof Type ) return expr;
 		if( expr instanceof Struct ) return expr;
-		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).pass2();
+		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).getType();
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }

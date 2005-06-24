@@ -43,6 +43,7 @@ public class Classpath implements BytecodeFileConstants {
 
 	public Classpath(String classpath) {
 		String vers = (String)System.getProperties().get("java.version");
+//		System.out.println("java.version: "+vers);
 		if( vers!=null && vers.charAt(1)=='.' && ((vers.charAt(0)=='1' && vers.charAt(2)>=2)||(vers.charAt(0)>='2')) ) {
 			String bootpath = (String)System.getProperties().get("sun.boot.class.path");
 			String homepath = (String)System.getProperties().get("java.home");
@@ -211,10 +212,38 @@ public class DirClasspathEntry implements ClasspathEntry {
 }
 
 public class ZipClasspathEntry implements ClasspathEntry {
-	public ZipFile							zipfile;
+	public java.util.Hashtable		direntries;
+	public ZipFile					zipfile;
 
 	public ZipClasspathEntry(File name) {
 		zipfile = new ZipFile(name);
+		direntries = new java.util.Hashtable();
+		java.util.Enumeration e = zipfile.entries();
+		while (e.hasMoreElements()) {
+			ZipEntry ze = (ZipEntry)e.nextElement();
+			String nm = ze.getName();
+			if (nm.length() == 0)
+				continue;
+			if (nm.startsWith("META-INF"))
+				continue;
+			if (nm.charAt(nm.length()-1)=='/') {
+				nm = nm.intern();
+				if (direntries.contains(nm))
+					continue;
+				//System.out.println("DirEntry "+nm);
+				direntries.put(nm,nm);
+				continue;
+			}
+			int p = nm.lastIndexOf('/');
+			if (p < 0)
+				continue;
+			nm = nm.substring(0,p+1);
+			nm = nm.intern();
+			if (direntries.contains(nm))
+				continue;
+			//System.out.println("DirEntry "+nm);
+			direntries.put(nm,nm);
+		}
 	}
 
 	public File findSourceFile(String name) {
@@ -236,7 +265,7 @@ public class ZipClasspathEntry implements ClasspathEntry {
 	public byte[] read(KString clazz_name) {
 		String name = clazz_name.toString();
 		ZipEntry f;
-		if( (f=zipfile.getEntry(name+"/")) != null ) {
+		if( direntries.contains(name+"/") ) { //if (f=zipfile.getEntry(name+"/")) != null ) {
 			if( (f=zipfile.getEntry(name+"/package.class")) != null ) {
 				byte[] data = new byte[(int)f.getSize()];
 				InputStream zis = zipfile.getInputStream(f);
@@ -254,6 +283,7 @@ public class ZipClasspathEntry implements ClasspathEntry {
 			zis.close();
 			return data;
 		}
+		//System.out.println(zipfile.getName()+" has no "+name);
 		return null;
 	}
 }

@@ -64,6 +64,7 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
     }
 
 	public ASTNode pass1_1() {
+		if (td != null) return td;
 		if (opdef) {
 			ASTQName qn = (ASTQName)type;
 			PVar<ASTNode> v = new PVar<ASTNode>();
@@ -76,8 +77,10 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
 			return td = new Typedef(pos,parent,name,s.type);
 		} else {
-			type = ((ASTType)type).pass2();
-			return td = new Typedef(pos,parent,name,(Type)type);
+			ASTNode t = ((ASTType)type).getType();
+			if (!(t instanceof Type))
+				return null;
+			return td = new Typedef(pos,parent,name,(Type)t);
 		}
 	}
 

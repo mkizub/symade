@@ -54,7 +54,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
 		if( type == null ) type = reqType;
 		else if( type instanceof Type );
 		else {
-			type = ((ASTNonArrayType)type).pass2();
+			type = ((ASTNonArrayType)type).getType();
 			while( dim > 0 ) { type = Type.newArrayType((Type)type); dim--; }
 		}
 		if( !((Type)type).isArray() )

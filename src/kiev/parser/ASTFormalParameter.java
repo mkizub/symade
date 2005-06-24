@@ -76,8 +76,8 @@ public class ASTFormalParameter extends ASTNode {
 		// TODO: check flags for fields
 		for(int i=0; i < modifier.length; i++)
 			flags |= ((ASTModifier)modifier[i]).flag();
-		Type type = ((ASTType)this.type).pass2();
-		Type mm_type = (this.mm_type == null) ? null : ((ASTType)this.mm_type).pass2();
+		Type type = ((ASTType)this.type).getType();
+		Type mm_type = (this.mm_type == null) ? null : ((ASTType)this.mm_type).getType();
 		for(int i=0; i < dim; i++) {
 			type = Type.newArrayType(type);
 			if (mm_type != null)

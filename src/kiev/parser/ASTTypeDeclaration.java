@@ -206,7 +206,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 					(ASTArgumentDeclaration)argument[i];
 				if( arg.type != null ) {
 					ASTNonArrayType at = (ASTNonArrayType)arg.type;
-					Type sup = at.pass2();
+					Type sup = at.getType();
 					if( !sup.isReference() )
 						Kiev.reportError(pos,"Argument extends primitive type "+sup);
 					else
@@ -329,12 +329,12 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 					me.super_clazz = Type.tpObject;
 					for(int j=0; j < exts.children.length; j++) {
 						at = (ASTNonArrayType)exts.children[j];
-						timpl = (Type[])Arrays.append(timpl,at.pass2());
+						timpl = (Type[])Arrays.append(timpl,at.getType());
 					}
 					me.interfaces = timpl;
 				} else {
 					at = (ASTNonArrayType)exts.children[0];
-					me.super_clazz = at.pass2();
+					me.super_clazz = at.getType();
 				}
 			}
 			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
@@ -344,7 +344,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				ASTImplements impls = (ASTImplements)impl;
 				for(int j=0; j < impls.children.length; j++) {
 					at = (ASTNonArrayType)impls.children[j];
-					timpl = (Type[])Arrays.append(timpl,at.pass2());
+					timpl = (Type[])Arrays.append(timpl,at.getType());
 				}
 				me.interfaces = timpl;
 			}
@@ -505,7 +505,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 						}
 						flags |= ACC_PUBLIC;
 					}
-					Type type = ((ASTType)fields.type).pass2();
+					Type type = ((ASTType)fields.type).getType();
 //					if( (flags & ACC_PROLOGVAR) != 0 ) {
 //            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
 //						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});

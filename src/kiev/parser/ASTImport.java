@@ -88,7 +88,7 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		}
 		for(int j=0; j < exprs.length; j++,i++)
 			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,
-				(args[i] instanceof ASTType ? ((ASTType)args[i]).pass2() : (kiev.vlang.Type)args[i]),0));
+				(args[i] instanceof ASTType ? ((ASTType)args[i]).getType() : (kiev.vlang.Type)args[i]),0));
 		if( !PassInfo.resolveMethodR(v,null,name,exprs,null,null,0) )
 			throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
 		ASTNode n = v;

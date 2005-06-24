@@ -57,7 +57,7 @@ public class ASTInstanceofExpr extends Expr {
   
 	public ASTNode resolve(Type reqType) {
 		if( expr2 instanceof ASTType )
-			expr2 = ((ASTType)expr2).pass2();
+			expr2 = ((ASTType)expr2).getType();
 		return new InstanceofExpr(pos,expr1,(Type)expr2).resolve(reqType);
 	}
     
