@@ -210,7 +210,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 					if( !sup.isReference() )
 						Kiev.reportError(pos,"Argument extends primitive type "+sup);
 					else
-						targs[i].clazz.super_clazz = at.pass2();
+						targs[i].clazz.super_clazz = sup;
+					targs[i].checkJavaSignature();
 				} else {
 					targs[i].clazz.super_clazz = Type.tpObject;
 				}

@@ -1183,6 +1183,13 @@ public class Type extends ASTNode implements AccessFlags {
 //		return tp;
 	}
 
+	public void checkJavaSignature() {
+		if( clazz.isArgument() ) {
+			Type jt = getJavaType();
+			java_signature = jt.java_signature;
+		}
+	}
+
 	public Dumper toJava(Dumper dmp) {
 		if( isArray() )
 			return dmp.append(args[0]).append("[]");
