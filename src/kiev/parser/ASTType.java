@@ -51,7 +51,7 @@ public class ASTType extends ASTNode {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 ) {
+		if( i==0 ) {
 			type = n;
             pos = n.getPos();
 		}

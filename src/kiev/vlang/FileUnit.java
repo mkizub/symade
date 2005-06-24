@@ -38,11 +38,11 @@ import syntax kiev.Syntax;
 public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public NArr<ASTNode>		syntax;
+	public NArr<ASTNode>			syntax;
 	public NArr<Struct>			members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
-	public boolean[]			disabled_extensions;
+	public boolean[]				disabled_extensions;
 
 	public FileUnit() {
 		this(KString.Empty,Env.root);

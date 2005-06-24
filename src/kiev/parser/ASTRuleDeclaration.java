@@ -99,7 +99,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         }
     }
 
-    public Method pass3() {
+    public ASTNode pass3() {
 		Struct clazz;
 		if( parent instanceof ASTTypeDeclaration )
 			clazz = ((ASTTypeDeclaration)parent).me;

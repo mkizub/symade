@@ -757,8 +757,8 @@ public final class ExportJavaTop implements Constants {
 		int pos = astn.pos;
 		Struct me = astn.me;
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
-        PassInfo.push(me);
-        try {
+		PassInfo.push(me);
+		try {
 			Type[] timpl = Type.emptyArray;
 			/* Now, process 'extends' and 'implements' clauses */
 			ASTNonArrayType at;
@@ -800,7 +800,7 @@ public final class ExportJavaTop implements Constants {
 			}
 
 	        // Process inner classes and cases
-        	if( !me.isPackage() ) {
+			if( !me.isPackage() ) {
 				foreach (ASTNode m; astn.members)
 					pass2_2(m, me);
 			}

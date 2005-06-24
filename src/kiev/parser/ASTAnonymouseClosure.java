@@ -83,7 +83,7 @@ public class ASTAnonymouseClosure extends Expr {
 				md.type = ret;
 				md.body = body;
 				md.parent = PassInfo.clazz;
-				m = md.pass3();
+				m = (Method)md.pass3();
 			} else {
 				ASTRuleDeclaration md = new ASTRuleDeclaration(0);
 				md.name = KString.from("rule_fun$"+this.hashCode());
@@ -94,7 +94,7 @@ public class ASTAnonymouseClosure extends Expr {
 				md.params = params;
 				md.body = body;
 				md.parent = PassInfo.clazz;
-				m = md.pass3();
+				m = (Method)md.pass3();
 			}
 			m.setLocalMethod(true);
 			m.resolve(null);

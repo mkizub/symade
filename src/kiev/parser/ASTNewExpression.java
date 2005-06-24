@@ -133,7 +133,7 @@ public class ASTNewExpression extends Expr {
 			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
 			members = ASTNode.emptyArray;
 			me.type = Type.newRefType(me,Type.emptyArray);
-			Method m = md.pass3();
+			Method m = (Method)md.pass3();
 			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
 		} else {
 			me.type = Type.newRefType(me,Type.emptyArray);

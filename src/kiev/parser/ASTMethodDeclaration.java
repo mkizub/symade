@@ -120,7 +120,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		false
 	}
 
-    public Method pass3() {
+    public ASTNode pass3() {
 		Struct clazz;
 		if( parent instanceof ASTTypeDeclaration )
 			clazz = ((ASTTypeDeclaration)parent).me;
