@@ -26,6 +26,7 @@ import kiev.parser.kiev020;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.parser.ASTFileUnit;
+import kiev.transf.*;
 
 import java.io.*;
 import java.util.Properties;
@@ -529,10 +530,11 @@ public class Env extends Struct {
 			System.gc();
 			try {
 				Kiev.files_scanned.append(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )		fu.pass1();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )	fu.pass2();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2();
+				ExportJavaTop exporter = new ExportJavaTop();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )	exporter.pass1(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1(null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )fu.pass2(null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2(null);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();

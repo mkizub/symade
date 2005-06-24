@@ -38,20 +38,20 @@ import syntax kiev.Syntax;
 public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public ASTNode[]			syntax = ASTNode.emptyArray;
-	public Struct[]				members = Struct.emptyArray;
+	public ASTNode[]				syntax = ASTNode.emptyArray;
+	public NArr<Struct>			members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
 	public boolean[]			disabled_extensions;
 
 	public FileUnit() {
-		this(KString.Empty,Env.root,Struct.emptyArray);
+		this(KString.Empty,Env.root);
 	}
-	public FileUnit(KString name, Struct pkg, Struct[] members) {
-    	super(0);
+	public FileUnit(KString name, Struct pkg) {
+		super(0);
 		this.filename = name;
 		this.pkg = pkg;
-		this.members = members;
+		members = new NArr<Struct>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

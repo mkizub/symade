@@ -24,6 +24,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.transf.*;
 import kiev.stdlib.*;
 
 /**
@@ -161,15 +162,16 @@ public class ASTNewExpression extends Expr {
         // Process inner classes and cases
         PassInfo.push(me);
         try {
+			ExportJavaTop exporter = new ExportJavaTop();
 			for(int i=0; i < members.length; i++) {
 				if( members[i] instanceof ASTTypeDeclaration ) {
-					((ASTTypeDeclaration)members[i]).pass1();
-					((ASTTypeDeclaration)members[i]).pass2();
-					((ASTTypeDeclaration)members[i]).pass2_2();
+					exporter.pass1(members[i], me);
+					((ASTTypeDeclaration)members[i]).pass2(me);
+					((ASTTypeDeclaration)members[i]).pass2_2(me);
 				}
 				else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-					((ASTCaseTypeDeclaration)members[i]).pass1();
-					((ASTCaseTypeDeclaration)members[i]).pass2();
+					exporter.pass1(members[i], me);
+					((ASTCaseTypeDeclaration)members[i]).pass2(me);
 				}
 			}
 		} finally { PassInfo.pop(me); }

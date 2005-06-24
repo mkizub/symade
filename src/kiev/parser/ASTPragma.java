@@ -40,11 +40,6 @@ public class ASTPragma extends SimpleNode implements TopLevelDecl {
 		options = (ASTConstExpression[])Arrays.append(options,opt);
     }
 
-	public ASTNode pass1()   { return this; }
-	public ASTNode pass1_1() { return this; }
-	public ASTNode pass2()   { return this; }
-	public ASTNode pass2_2() { return this; }
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("/* pragma ").append(enable?"enable":"disable").space();
 		foreach (ASTConstExpression e; options)

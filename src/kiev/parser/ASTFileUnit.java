@@ -30,9 +30,7 @@ import kiev.vlang.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTFileUnit.java,v 1.3.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.1 $
  *
  */
 
@@ -42,11 +40,11 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
     public ASTNode			pkg;
-    public ASTNode[]		syntax = ASTNode.emptyArray;
-    public ASTNode[]		decls  = ASTNode.emptyArray;
+    public ASTNode[]			syntax = ASTNode.emptyArray;
+    public TopLevelDecl[]	decls  = new TopLevelDecl[0];
 	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
 	
-	private boolean[]		disabled_extensions;
+	public boolean[]		disabled_extensions;
 
 	ASTFileUnit(int id) {
 		super(0);
@@ -62,10 +60,11 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTPackage) {
+		n.parent = this;
+		if( n instanceof ASTPackage) {
 			pkg = n;
 		}
-        else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
+		else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
 			syntax = (ASTNode[])Arrays.append(syntax,n);
 			// Check disabled extensions very early
 			if (n instanceof ASTPragma) {
@@ -73,8 +72,8 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 					setExtension(e.pos,((ASTPragma)n).enable,((KString)e.val).toString());
 			}
 		}
-        else {
-			decls = (ASTNode[])Arrays.append(decls,n);
+		else {
+			decls = (TopLevelDecl[])Arrays.append(decls,n);
 		}
     }
 
@@ -92,34 +91,35 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 		disabled_extensions[i] = !enabled;
 	}
 
-	public ASTNode pass1() {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			int i = 0;
-			if( pkg != null ) {
-				pkg = (Struct)((ASTPackage)pkg).pass1();
-			} else {
-    	    	pkg = Env.root;
-        	}
-	        Struct[] members = Struct.emptyArray;
-			PassInfo.push(pkg);
-			try {
-				for(i=0; i < decls.length; i++) {
-					decls[i].parent = this;
-					members = (Struct[])Arrays.append(members,((TopLevelDecl)decls[i]).pass1());
-				}
-			} finally { PassInfo.pop(pkg); }
-			file_unit = new FileUnit(filename,(Struct)pkg,members);
-			file_unit.disabled_extensions = disabled_extensions;
-			file_unit.bodies = bodies;
-			return file_unit;
-		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
-	}
+//	public ASTNode pass1(ASTNode pn) {
+//		KString oldfn = Kiev.curFile;
+//		Kiev.curFile = filename;
+//		boolean[] exts = Kiev.getExtSet();
+//		try {
+//			Kiev.setExtSet(disabled_extensions);
+//			if( pkg != null ) {
+//				pkg = (Struct)((ASTPackage)pkg).pass1(null);
+//			} else {
+//				pkg = Env.root;
+//			}
+//			file_unit = new FileUnit(filename,(Struct)pkg);
+//			file_unit.disabled_extensions = disabled_extensions;
+//			file_unit.bodies = bodies;
+//			PassInfo.push(pkg);
+//			try {
+//				for(int i=0; i < decls.length; i++) {
+//					try {
+//						file_unit.members.add((Struct)decls[i].pass1(file_unit));
+//					} catch(Exception e ) {
+//						Kiev.reportError/*Warning*/(((ASTNode)decls[i]).getPos(),e);
+//					}
+//				}
+//			} finally { PassInfo.pop(pkg); }
+//			return file_unit;
+//		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
+//	}
 
-	public ASTNode pass1_1() {
+	public ASTNode pass1_1(ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -140,7 +140,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 					if (n instanceof ASTImport && ((ASTImport)n).mode == ASTImport.IMPORT_STATIC && !((ASTImport)n).star) {
 						continue; // process later
 					}
-					n = ((TopLevelDecl)syntax[i]).pass1_1();
+					n = ((TopLevelDecl)syntax[i]).pass1_1(file_unit);
 					file_unit.syntax[i] = n;
 					if (n instanceof Import) {
 						if( n.mode == Import.IMPORT_CLASS && ((Struct)n.node).name.name.equals(java_lang_name))
@@ -161,40 +161,29 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 
 			// Process members - pass1_1()
 			for(int j=0; j < decls.length; j++) {
-				((TopLevelDecl)decls[j]).pass1_1();
+				decls[j].pass1_1(file_unit);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
 	}
 
-	public ASTNode pass2() {
+	public ASTNode pass2(ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-        	// process typedefs
-			//for(int i=0; i < syntax.length; i++) {
-			//	try {
-			//		ASTNode n = (ASTNode)syntax[i];
-			//		if (!(n instanceof ASTTypedef)) continue;
-			//		n = ((ASTTypedef)n).pass2();
-			//		file_unit.syntax[i] = n;
-			//	} catch(Exception e ) {
-			//		Kiev.reportError/*Warning*/(syntax[i].getPos(),e);
-			//	}
-			//}
 			// Process members - pass2()
 			for(int j=0; j < decls.length; j++) {
-				file_unit.members[j] = (Struct)((TopLevelDecl)decls[j]).pass2();
+				file_unit.members[j] = (Struct)decls[j].pass2(file_unit);
 				file_unit.members[j].parent = file_unit;
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
 	}
 
-	public ASTNode pass2_2() {
+	public ASTNode pass2_2(ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = filename;
 		PassInfo.push(file_unit);
@@ -203,7 +192,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - pass2_2()
 			for(int j=0; j < decls.length; j++) {
-				file_unit.members[j] = (Struct)((TopLevelDecl)decls[j]).pass2_2();
+				file_unit.members[j] = (Struct)decls[j].pass2_2(file_unit);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
@@ -237,7 +226,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 						.pass3(((ASTSyntaxDeclaration)decls[i]).me,((ASTSyntaxDeclaration)decls[i]).members);
 					break;
 				default:
-					throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
+					throw new CompilerException(((ASTNode)decls[i]).pos,"Unknown type of file declaration "+decls[i].getClass());
 				}
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
@@ -253,7 +242,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - pass3()
 			for(int i=0; i < decls.length; i++) {
-				((TopLevelDecl)decls[i]).autoProxyMethods();
+				decls[i].autoProxyMethods();
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
@@ -273,7 +262,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 				try {
 					ASTImport n = (ASTImport)syntax[i];
 					Debug.assert(n.mode == ASTImport.IMPORT_STATIC && !n.star);
-					file_unit.syntax[i] = n.pass2();
+					file_unit.syntax[i] = n.pass2(file_unit);
 					trace(Kiev.debugResolve,"Add "+file_unit.syntax[i]);
 				} catch(Exception e ) {
 					Kiev.reportError/*Warning*/(syntax[i].getPos(),e);
@@ -281,9 +270,9 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			}
 			for(int i=0; i < decls.length; i++) {
 				try {
-					((TopLevelDecl)decls[i]).resolveImports();
+					decls[i].resolveImports();
 				} catch(Exception e ) {
-					Kiev.reportError/*Warning*/(decls[i].getPos(),e);
+					Kiev.reportError/*Warning*/(((ASTNode)decls[i]).getPos(),e);
 				}
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
@@ -299,7 +288,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - resolveFinalFields()
 			for(int i=0; i < decls.length; i++) {
-				((TopLevelDecl)decls[i]).resolveFinalFields(cleanup);
+				decls[i].resolveFinalFields(cleanup);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;

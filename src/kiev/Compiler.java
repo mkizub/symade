@@ -22,6 +22,7 @@ package kiev;
 
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 import kiev.parser.*;
 
 import java.io.*;
@@ -251,10 +252,6 @@ public class Compiler {
 						System.out.println("\tAST tree");
 						Kiev.debugAST		= onoff;
 					}
-					if( dbg.indexOf("profile",0) >= 0 ) {
-						System.out.println("\tProfile counts");
-						Kiev.debugProfile	= onoff;
-					}
 					if( dbg.indexOf("methodtrace",0) >= 0 ) {
 						System.out.println("\tMethod tracing");
 						Kiev.debugMethodTrace	= onoff;
@@ -470,7 +467,8 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
 			Kiev.file_unit.cleanup();
 			Kiev.file_unit.length = args.length;
-
+			
+			ExportJavaTop exporter = new ExportJavaTop();
 
 			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
 			for(int i=0; i < args.length; i++) {
@@ -505,7 +503,6 @@ public class Compiler {
 						Kiev.k.ReInit(bis);
 					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);
 					diff_time = System.currentTimeMillis() - curr_time;
-					Kiev.file_unit[i].pass1();
 					runGC();
 					bis.close();
 					Kiev.curFile = KString.Empty;
@@ -517,6 +514,7 @@ public class Compiler {
 					Kiev.reportParserError(0,e);
 				}
 			}
+			delayed_stop = exporter.pass1();
 			if( Kiev.errCount > 0 ) {
 				goto stop;
 			}
@@ -536,14 +534,14 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passProcessSyntax;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass1_1();
+				try { Kiev.file_unit[i].pass1_1(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass1_1();
+				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass1_1(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
@@ -554,14 +552,14 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2();
+				try { Kiev.file_unit[i].pass2(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2();
+				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
@@ -572,14 +570,14 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passStructInheritance;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2_2();
+				try { Kiev.file_unit[i].pass2_2(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2_2();
+				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2_2(null);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
@@ -813,7 +811,6 @@ stop:;
 +"    member   members attaching (AST generation)\n"
 +"    create   members creation\n"
 +"    ast      AST tree\n"
-+"    profile  profile counts\n"
 +"    types    var/field types\n"
 +"\n"
 +" -v or -verbose         Verbose operation.\n"

@@ -89,7 +89,7 @@ public class ASTOpdef extends ASTNode implements TopLevelDecl {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
-	public ASTNode pass1_1() {
+	public ASTNode pass1_1(ASTNode pn) {
 		switch(opmode) {
 		case Operator.LFY:
 			{

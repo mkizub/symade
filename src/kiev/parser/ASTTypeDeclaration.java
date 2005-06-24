@@ -35,23 +35,28 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
-    public int			kind;
+public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
+	public ASTNode[]		modifier = ASTNode.emptyArray;
+	public ASTAccess		acc;
     public KString		name;
-    public ASTNode[]	argument = ASTNode.emptyArray;
+    public ASTNode[]		argument = ASTNode.emptyArray;
+    public ASTNode[]		members = ASTNode.emptyArray;
+
+	public Struct		me;
+
+	ASTStructDeclaration() {
+		super(0);
+	}
+
+}
+
+public class ASTTypeDeclaration extends ASTStructDeclaration {
+    public int			kind;
     public ASTNode		ext;
     public ASTNode		impl;
     public ASTNode		gens;
-    public ASTNode[]	members = ASTNode.emptyArray;
 
-	public Struct		me;
-	public KString		t;
-
-	ASTTypeDeclaration(int id) {
-		super(0);
-	}
+	ASTTypeDeclaration(int id) {}
 
   	public void set(Token t) {
     	if( t.kind == kiev020Constants.INTERFACE )
@@ -92,110 +97,108 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
         }
     }
 
-	public ASTNode pass1() {
-		trace(Kiev.debugResolve,"Pass 1 for class "+name);
-		int flags = 0;
-		Struct sup = null;
-		Struct[] impls = Struct.emptyArray;
-		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
-		KString short_name = this.name;
-		ClazzName clname = null;
-		if( this.name != null ) {
-			if( PassInfo.method != null ) {
-				// Construct name of local class
-				KString bytecode_name =
-					KString.from(PassInfo.clazz.name.bytecode_name
-						+"$"+PassInfo.clazz.anonymouse_inner_counter
-						+"$"+short_name);
-				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
-				KString name = bytecode_name.replace('/','.');
-				clname = new ClazzName(name,short_name,bytecode_name,false,false);
-			} else {
-				boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-				clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
-			}
-		}
-
-        flags |= kind;
-
-		if( clname != null ) {
-			me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
-		} else {
-			me = PassInfo.clazz;
-			if( !me.isPackage() || me == Env.root )
-				throw new CompilerException(pos,"Package body declaration error");
-		}
-		me.setResolved(true);
-		if( (kind & ACC_INTERFACE) != 0 ) me.setInterface(true);
-		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		}
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-//		if( me.isGrammar() ) {
-//			me.gram = new Grammar();
+//	public ASTNode pass1(ASTNode pn) {
+//		trace(Kiev.debugResolve,"Pass 1 for class "+name);
+//		int flags = 0;
+//		Struct sup = null;
+//		Struct[] impls = Struct.emptyArray;
+//		// TODO: check flags for structures
+//		for(int i=0; i < modifier.length; i++)
+//			flags |= ((ASTModifier)modifier[i]).flag();
+//		KString short_name = this.name;
+//		ClazzName clname = null;
+//		if( this.name != null ) {
+//			if( PassInfo.method != null ) {
+//				// Construct name of local class
+//				KString bytecode_name =
+//					KString.from(PassInfo.clazz.name.bytecode_name
+//						+"$"+PassInfo.clazz.anonymouse_inner_counter
+//						+"$"+short_name);
+//				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
+//				KString name = bytecode_name.replace('/','.');
+//				clname = new ClazzName(name,short_name,bytecode_name,false,false);
+//			} else {
+//				boolean isTop = (parent != null && parent instanceof ASTFileUnit);
+//				clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
+//			}
 //		}
+//
+//		flags |= kind;
+//
+//		if( clname != null ) {
+//			me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
+//			me.parent = pn;
+//		} else {
+//			me = PassInfo.clazz;
+//			if( !me.isPackage() || me == Env.root )
+//				throw new CompilerException(pos,"Package body declaration error");
+//			me.parent = pn;
+//		}
+//		me.setResolved(true);
+//		if( (kind & ACC_INTERFACE) != 0 ) me.setInterface(true);
+//		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
+//			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
+//		}
+//		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
+//		me.addAttr(sfa);
+//
+//		PassInfo.push(me);
+//		try {
+//			/* Then may be class arguments - they are proceed here, but their
+//			   inheritance - at pass2()
+//			*/
+//			Type[]		targs = Type.emptyArray;
+//			if( parent instanceof ASTTypeDeclaration && ((ASTTypeDeclaration)parent).argument.length > 0 ) {
+//				// Inner classes's argumets have to be arguments of outer classes
+//				for(int i=0; i < argument.length; i++) {
+//					Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
+//		            if( outer_args == null || outer_args.length <= i
+//					|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
+//						throw new CompilerException(argument[i].getPos(),"Inner class arguments must match outer class argument,"
+//							+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
+//							+" and have to be "+outer_args[i].clazz.name.short_name);
+//				}
+//				/* Create type for class's arguments, if any */
+//				if( argument.length > 0 ) {
+//					targs = ((ASTTypeDeclaration)parent).me.type.args;
+//				}
+//			} else {
+//				for(int i=0; i < argument.length; i++) {
+//					Struct arg =
+//						Env.newArgument(((ASTArgumentDeclaration)argument[i]).name,me);
+//					arg.type = Type.newRefType(arg);
+//					targs = (Type[])Arrays.append(targs,arg.type);
+//				}
+//			}
+//
+//			/* Generate type for this structure */
+//			me.type = Type.newRefType(me,targs);
+//
+//			// Process inner classes and cases
+//			if( !me.isPackage() ) {
+//				for(int i=0; i < members.length; i++) {
+//					if( members[i] instanceof ASTTypeDeclaration ) {
+//						members[i].parent = this;
+//						((ASTTypeDeclaration)members[i]).pass1(me);
+//						((ASTTypeDeclaration)members[i]).me.parent = me;
+//					}
+//					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
+//						members[i].parent = this;
+//						((ASTCaseTypeDeclaration)members[i]).pass1(me);
+//						((ASTCaseTypeDeclaration)members[i]).me.parent = me;
+//					}
+//				}
+//			}
+//		} finally { PassInfo.pop(me); }
+//
+//		return me;
+//	}
 
-
-        PassInfo.push(me);
-        try {
-			/* Then may be class arguments - they are proceed here, but their
-			   inheritance - at pass2()
-			*/
-			Type[]		targs = Type.emptyArray;
-			if( parent instanceof ASTTypeDeclaration && ((ASTTypeDeclaration)parent).argument.length > 0 ) {
-				// Inner classes's argumets have to be arguments of outer classes
-				for(int i=0; i < argument.length; i++) {
-					Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
-		            if( outer_args == null || outer_args.length <= i
-					|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
-						throw new CompilerException(argument[i].getPos(),"Inner class arguments must match outer class argument,"
-							+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
-							+" and have to be "+outer_args[i].clazz.name.short_name);
-				}
-				/* Create type for class's arguments, if any */
-				if( argument.length > 0 ) {
-					targs = ((ASTTypeDeclaration)parent).me.type.args;
-				}
-			} else {
-				for(int i=0; i < argument.length; i++) {
-					Struct arg =
-						Env.newArgument(((ASTArgumentDeclaration)argument[i]).name,me);
-					arg.type = Type.newRefType(arg);
-					targs = (Type[])Arrays.append(targs,arg.type);
-				}
-			}
-
-			/* Generate type for this structure */
-			me.type = Type.newRefType(me,targs);
-
-        	// Process inner classes and cases
-        	if( !me.isPackage() ) {
-				for(int i=0; i < members.length; i++) {
-					if( members[i] instanceof ASTTypeDeclaration ) {
-						members[i].parent = this;
-						((ASTTypeDeclaration)members[i]).pass1();
-						((ASTTypeDeclaration)members[i]).me.parent = me;
-					}
-					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-						members[i].parent = this;
-						((ASTCaseTypeDeclaration)members[i]).pass1();
-						((ASTCaseTypeDeclaration)members[i]).me.parent = me;
-					}
-				}
-			}
-		} finally { PassInfo.pop(me); }
-
+	public ASTNode pass1_1(ASTNode pn) {
 		return me;
 	}
-
-	public ASTNode pass1_1() {
-		return me;
-	}
-
-	public ASTNode pass2() {
+	
+	public ASTNode pass2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
         PassInfo.push(me);
         try {
@@ -210,7 +213,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 					if( !sup.isReference() )
 						Kiev.reportError(pos,"Argument extends primitive type "+sup);
 					else
-						targs[i].clazz.super_clazz = at.pass2();
+						targs[i].clazz.super_clazz = sup;
+					targs[i].checkJavaSignature();
 				} else {
 					targs[i].clazz.super_clazz = Type.tpObject;
 				}
@@ -303,10 +307,10 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				for(int i=0; i < members.length; i++) {
 					members[i].parent = me;
 					if( members[i] instanceof ASTTypeDeclaration ) {
-						((ASTTypeDeclaration)members[i]).pass2();
+						((ASTTypeDeclaration)members[i]).pass2(me);
 					}
 					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-						((ASTCaseTypeDeclaration)members[i]).pass2();
+						((ASTCaseTypeDeclaration)members[i]).pass2(me);
 					}
 				}
 			}
@@ -315,7 +319,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public ASTNode pass2_2() {
+	public ASTNode pass2_2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
         PassInfo.push(me);
         try {
@@ -366,7 +370,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				for(int i=0; i < members.length; i++) {
 					members[i].parent = me;
 					if( members[i] instanceof ASTTypeDeclaration ) {
-						((ASTTypeDeclaration)members[i]).pass2_2();
+						((ASTTypeDeclaration)members[i]).pass2_2(me);
 					}
 	//				else if( members[i] instanceof ASTCaseTypeDeclaration ) {
 	//					((ASTCaseTypeDeclaration)members[i]).pass2_2();

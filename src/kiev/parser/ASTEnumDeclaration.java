@@ -36,9 +36,8 @@ import static kiev.stdlib.Debug.*;
  */
 
 public class ASTEnumDeclaration extends ASTTypeDeclaration {
-	public ASTEnumDeclaration(int id) {
-		super(0);
-	}
+
+	public ASTEnumDeclaration(int id) { super(id); }
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( n instanceof ASTModifier) {
@@ -68,49 +67,49 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
         }
     }
 
-	public ASTNode pass1() {
-		trace(Kiev.debugResolve,"Pass 1 for enum "+name);
-		int flags = 0;
-		Struct sup = null;
-		Struct[] impls = Struct.emptyArray;
-		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
-		KString short_name = this.name;
-		ClazzName clname = null;
-		if( this.name != null ) {
-			boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-			clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
-		}
+//	public ASTNode pass1(ASTNode pn) {
+//		trace(Kiev.debugResolve,"Pass 1 for enum "+name);
+//		int flags = 0;
+//		Struct sup = null;
+//		Struct[] impls = Struct.emptyArray;
+//		// TODO: check flags for structures
+//		for(int i=0; i < modifier.length; i++)
+//			flags |= ((ASTModifier)modifier[i]).flag();
+//		KString short_name = this.name;
+//		ClazzName clname = null;
+//		if( this.name != null ) {
+//			boolean isTop = (parent != null && parent instanceof ASTFileUnit);
+//			clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
+//		}
+//
+//		flags |= ACC_ENUM;
+//
+//		me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
+//		me.setResolved(true);
+//		if( !(parent instanceof ASTFileUnit) ) me.setStatic(true);
+//		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
+//			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
+//		}
+//		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
+//		me.addAttr(sfa);
+//		me.setEnum(true);
+//
+//		PassInfo.push(me);
+//		try {
+//			/* Then may be class arguments - they are proceed here, but their
+//			   inheritance - at pass2()
+//			*/
+//			// TODO: decide if inner classes's argumets have to be arguments of outer classes
+//			/* Generate type for this structure */
+//			me.type = Type.newJavaRefType(me);
+//
+//		// No inner classes and cases for enum
+//		} finally { PassInfo.pop(me); }
+//
+//		return me;
+//	}
 
-        flags |= ACC_ENUM;
-
-		me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
-		me.setResolved(true);
-		if( !(parent instanceof ASTFileUnit) ) me.setStatic(true);
-		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		}
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-		me.setEnum(true);
-
-        PassInfo.push(me);
-        try {
-			/* Then may be class arguments - they are proceed here, but their
-			   inheritance - at pass2()
-			*/
-			// TODO: decide if inner classes's argumets have to be arguments of outer classes
-			/* Generate type for this structure */
-			me.type = Type.newJavaRefType(me);
-
-        	// No inner classes and cases for enum
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
-	public ASTNode pass2() {
+	public ASTNode pass2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2 for enum "+me);
         PassInfo.push(me);
         try {
@@ -119,7 +118,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 		return me;
 	}
 
-	public ASTNode pass2_2() {
+	public ASTNode pass2_2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2_2 for enum "+me);
         PassInfo.push(me);
         try {
@@ -200,7 +199,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
    	    // Process inner classes and cases
 		for(int i=0; i < members.length; i++) {
 			if( !(members[i] instanceof ASTImport) ) continue;
-			ASTNode imp = ((ASTImport)members[i]).pass2();
+			ASTNode imp = ((ASTImport)members[i]).pass2(me);
 			if( imp == null )
 				Kiev.reportError(members[i].getPos(),"Imported member "+imp+" not found");
 			else if( imp instanceof Field ) {

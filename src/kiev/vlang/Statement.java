@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.transf.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -287,18 +288,20 @@ public class BlockStat extends Statement implements Scope {
 				}
 				else if( stats[i] instanceof ASTTypeDeclaration ) {
 					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
-					Struct cl;
+					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
 						decl.modifier = (ASTNode[])Arrays.append(decl.modifier,ASTModifier.modSTATIC);
-					cl = (Struct)decl.pass1();
-					cl.setLocal(true);
-					cl = (Struct)decl.pass2();
-					cl = (Struct)decl.pass2_2();
-					ASTTypeDeclaration.pass3(cl,decl.members);
-					cl.autoProxyMethods();
-					cl.resolveFinalFields(false);
-					stats[i] = new TypeDeclStat(decl.pos,this,cl).resolve(null);
-					members = (ASTNode[])Arrays.append(members,cl);
+					ExportJavaTop exporter = new ExportJavaTop();
+					tds.struct = (Struct) exporter.pass1(decl, tds);
+					tds.struct.setLocal(true);
+					tds.struct = (Struct)decl.pass2(tds);
+					tds.struct = (Struct)decl.pass2_2(tds);
+					ASTTypeDeclaration.pass3(tds.struct,decl.members);
+					tds.struct.autoProxyMethods();
+					tds.struct.resolveFinalFields(false);
+					stats[i] = tds;
+					stats[i] = tds.resolve(null);
+					members = (ASTNode[])Arrays.append(members,tds.struct);
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -535,9 +538,12 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 
 	public Struct		struct;
 
-	public TypeDeclStat(int pos, ASTNode parent, Struct struct) {
+	public TypeDeclStat(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.struct = struct;
+	}
+	
+	public void set$struct(Struct s) {
+		this.struct = s;
 		this.struct.parent = this;
 	}
 

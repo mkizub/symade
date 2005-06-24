@@ -35,15 +35,15 @@ import static kiev.stdlib.Debug.*;
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 public interface TopLevelDecl {
 	// create top-level, inner named, argument Struct-s
-	public ASTNode pass1() { return (ASTNode)this; }
+	//public ASTNode pass1(ASTNode pn);
 	// resolve some imports, remember typedef's names, remember
 	// operator declarations, remember names/operators for type macroses
-	public ASTNode pass1_1() { return (ASTNode)this; }
+	public ASTNode pass1_1(ASTNode pn);
 	// process inheritance for type arguments, create
 	// Struct's for template types
-	public ASTNode pass2() { return (ASTNode)this; }
+	public ASTNode pass2(ASTNode pn);
 	// process Struct's inheritance (extends/implements)
-	public ASTNode pass2_2() { return (ASTNode)this; }
+	public ASTNode pass2_2(ASTNode pn);
 	// process Struct's members (fields, methods)
 	public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
@@ -72,11 +72,6 @@ public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
-	public static Hashtable<Class,Integer> classes = new Hashtable/*<Class,Integer>*/();
-	public static int		max_classes;
-	public static int[]		max_instances = new int[1024];
-	public static int[]		curr_instances = new int[1024];
-	public static int[]		total_instances = new int[1024];
 	private static int		parserAddrIdx;
 
 	public int			pos;
@@ -85,32 +80,11 @@ public abstract class ASTNode implements Constants {
 
     public ASTNode(int pos) {
 		this.pos = pos;
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			if( ii == null ) {
-				ii = new Integer(max_classes++);
-				classes.put(cl,ii);
-			}
-			int i = ii.intValue();
-			total_instances[i]++;
-			int ci = ++curr_instances[i];
-			if( ci > max_instances[i] ) max_instances[i] = ci;
-		}
 	}
 
 	public /*abstract*/ void cleanup() {
 		parent = null;
 	};
-
-	public void finalize() {
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			int i = ii.intValue();
-			curr_instances[i]--;
-		}
-	}
 
 	public ASTNode(int pos, int fl) {
 		this(pos);
@@ -152,13 +126,13 @@ public abstract class ASTNode implements Constants {
     	return dmp;
     }
 
-	public ASTNode pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass3(Object obj)  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode autoProxyMethods() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode resolveImports()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass1(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass3()             { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 
 	public int setFlags(int fl) {
@@ -878,6 +852,117 @@ public abstract class Statement extends ASTNode {
 	public ASTNode	resolve(Type reqType) { return this; }
 
 }
+public final class NArr<N extends ASTNode> {
+
+    private final N 	$parent;
+	private N[]		$nodes;
+	
+	public NArr(ASTNode parent) {
+		this.$parent = parent;
+		this.$nodes = new N[0];
+	}
+	
+	public NArr(int size, ASTNode parent) {
+		this.$parent = parent;
+		this.$nodes = new N[size];
+	}
+
+	public int size()
+		alias length
+		alias get$size
+		alias get$length
+	{
+		return $nodes.length;
+	}
+
+	public void cleanup() {
+		$parent = null;
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++)
+			$nodes[i].cleanup();
+		$nodes = null;
+	};
+	
+	public final N get(int idx)
+		alias at
+		alias operator(210,xfy,[])
+	{
+		return $nodes[idx];
+	}
+	
+	public N set(int idx, N node)
+		alias operator(210,lfy,[])
+	{
+		$nodes[idx] = node;
+		return node;
+	}
+
+	public N add(N node)
+		alias append
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz+1];
+		int i;
+		for (i=0; i < sz; i++)
+			tmp[i] = $nodes[i];
+		$nodes = tmp;
+		$nodes[sz] = node;
+		return node;
+	}
+
+	public N insert(int idx, N node)
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i+1] = $nodes[i];
+		tmp[idx] = node;
+		$nodes = tmp;
+		return node;
+	}
+
+	public void del(int idx)
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz-1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i-1] = $nodes[i];
+		$nodes = tmp;
+	}
+
+	public void delAll() {
+		if (this.$nodes.length == 0)
+			return;
+		this.$nodes = new N[0];
+	};
+	
+	public boolean contains(N node) {
+		for (int i=0; i < $nodes.length; i++) {
+			if ($nodes[i].equals(node))
+				return true;
+		}
+		return false;
+	}
+
+	public Enumeration<N> elements() {
+		return new Enumeration<N>() {
+			int current;
+			public boolean hasMoreElements() { return current < NArr.this.size(); }
+			public A nextElement() {
+				if ( current < size() ) return NArr.this[current++];
+				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
+			}
+		};
+	}
+
+}
+
 
 public interface SetBody {
 	public boolean setBody(Statement body);

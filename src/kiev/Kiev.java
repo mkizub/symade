@@ -235,34 +235,6 @@ public final class Kiev {
 			System./*err*/out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
 		System./*err*/out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
-		if( debugProfile ) {
-			System.out.println("\nTotal KStrings allocated: "+KString.count+" with buffer size "+KString.bn+"/"+KString.buffer.length);
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			System.runFinalization();
-			System.gc();
-			long old_gc_mem = gc_mem;
-			gc_mem = 0L;
-			Compiler.runGC();
-			gc_mem = old_gc_mem;
-			int[] keys = new int[ASTNode.classes.size()];
-			profInfo[] cls = new profInfo[keys.length];
-			int j = 0;
-			for(Enumeration<Class> e = ASTNode.classes.keys(); e.hasMoreElements(); j++) {
-				Class cl = e.nextElement();
-				Integer ii = ASTNode.classes.get(cl);
-				int i = ii.intValue();
-				keys[j] = ASTNode.curr_instances[i];
-				cls[j] = new profInfo(cl,ASTNode.max_instances[i],ASTNode.curr_instances[i],ASTNode.total_instances[i]);
-			}
-			qsort2(keys,(Object[])cls,0,keys.length-1);
-			System.out.println("Class\t\tcurr\tmax\ttotal");
-			for(j=0; j < cls.length; j++)
-				System.out.println(cls[j].toString());
-		}
 		System.out.println("\007\007");
 	}
 
@@ -306,7 +278,6 @@ public final class Kiev {
 	public static boolean debugMembers		= false;
 	public static boolean debugCreation		= false;
 	public static boolean debugAST			= false;
-	public static boolean debugProfile		= false;
 	public static boolean debugMethodTrace	= false;
 	public static boolean debugRules		= false;
 	public static boolean traceRules		= false;
