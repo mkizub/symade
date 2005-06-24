@@ -60,7 +60,7 @@ public class ASTNewAccessExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		return new NewExpr(pos,((ASTNonArrayType)type).pass2(),args,obj).resolve(reqType);
+		return new NewExpr(pos,((ASTNonArrayType)type).getType(),args,obj).resolve(reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

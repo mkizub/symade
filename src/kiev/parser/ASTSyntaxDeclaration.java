@@ -72,29 +72,29 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 //		return me;
 //	}
 
-	public ASTNode pass1_1(ASTNode pn) {
-		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
-       	me.imported = new ASTNode[members.length];
-		for(int i=0; i < members.length; i++) {
-			ASTNode n = members[i];
-			try {
-				if (n instanceof ASTTypedef) {
-					n = n.pass1_1(pn);
-					n.parent = me;
-					me.imported[i] = n;
-					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-				}
-				else if (n instanceof ASTOpdef) {
-					n = n.pass1_1(pn);
-					me.imported[i] = n;
-					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError/*Warning*/(n.getPos(),e);
-			}
-		}
-		return me;
-	}
+//	public ASTNode pass1_1(ASTNode pn) {
+//		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
+//     	me.imported = new ASTNode[members.length];
+//		for(int i=0; i < members.length; i++) {
+//			ASTNode n = members[i];
+//			try {
+//				if (n instanceof ASTTypedef) {
+//					n = n.pass1_1(pn);
+//					n.parent = me;
+//					me.imported[i] = n;
+//					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
+//				}
+//				else if (n instanceof ASTOpdef) {
+//					n = n.pass1_1(pn);
+//					me.imported[i] = n;
+//					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
+//				}
+//			} catch(Exception e ) {
+//				Kiev.reportError/*Warning*/(n.getPos(),e);
+//			}
+//		}
+//		return me;
+//	}
 
 	public ASTNode pass2(ASTNode pn) {
 		//trace(Kiev.debugResolve,"Pass 2 for syntax "+me);

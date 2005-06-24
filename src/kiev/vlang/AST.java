@@ -38,7 +38,7 @@ public interface TopLevelDecl {
 	//public ASTNode pass1(ASTNode pn);
 	// resolve some imports, remember typedef's names, remember
 	// operator declarations, remember names/operators for type macroses
-	public ASTNode pass1_1(ASTNode pn);
+	//public ASTNode pass1_1(ASTNode pn);
 	// process inheritance for type arguments, create
 	// Struct's for template types
 	public ASTNode pass2(ASTNode pn);
@@ -127,7 +127,7 @@ public abstract class ASTNode implements Constants {
     }
 
 	//public ASTNode pass1(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass3()             { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
@@ -760,13 +760,13 @@ public class WrapedExpr extends Expr {
 	public Type getType() {
 		if( expr instanceof Type ) return Type.getRealType(base_type,(Type)expr);
 		if( expr instanceof Struct ) return Type.getRealType(base_type,((Struct)expr).type);
-		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).pass2());
+		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
 		if( expr instanceof Type ) return expr;
 		if( expr instanceof Struct ) return expr;
-		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).pass2();
+		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).getType();
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }

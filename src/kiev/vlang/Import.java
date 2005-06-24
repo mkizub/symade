@@ -47,8 +47,8 @@ public class Import extends ASTNode implements Constants, Scope {
     public boolean		star = false;
     public ASTNode		node;
 
-	public Import(int pos, FileUnit fu, ASTNode node, int mode, boolean star) {
-		super(pos, fu);
+	public Import(int pos, ASTNode parent, ASTNode node, int mode, boolean star) {
+		super(pos, parent);
 		this.node = node;
 		this.mode = mode;
 		this.star = star;

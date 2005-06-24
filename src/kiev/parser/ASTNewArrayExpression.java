@@ -58,7 +58,7 @@ public class ASTNewArrayExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		return new NewArrayExpr(pos,((ASTNonArrayType)type).pass2(),args,dim).resolve(reqType);
+		return new NewArrayExpr(pos,((ASTNonArrayType)type).getType(),args,dim).resolve(reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

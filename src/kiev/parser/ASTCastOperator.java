@@ -50,7 +50,7 @@ public class ASTCastOperator extends ASTNode {
     }
 
 	public Operator resolveOperator() {
-		Type tp = ((ASTType)type).pass2();
+		Type tp = ((ASTType)type).getType();
 	    return CastOperator.newCastOperator(tp,reinterp);
 	}
 

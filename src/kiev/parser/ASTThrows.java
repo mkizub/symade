@@ -42,7 +42,7 @@ public class ASTThrows extends SimpleNode {
 		Type[] thrs = new Type[children.length];
 		for(int i=0; i < thrs.length; i++) {
 			try {
-				thrs[i] = ((ASTNonArrayType)children[i]).pass2();
+				thrs[i] = ((ASTNonArrayType)children[i]).getType();
 			} catch(Exception e ) {
 				Kiev.reportError(children[i].getPos(),e);
 				thrs[i] = Type.tpRuntimeException;

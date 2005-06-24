@@ -351,7 +351,7 @@ public class ForStat extends LoopStat implements Scope {
 					else if( init instanceof ASTVarDecls ) {
 						ASTVarDecls vdecls = (ASTVarDecls)init;
 						int flags = 0;
-						Type type = ((ASTType)vdecls.type).pass2();
+						Type type = ((ASTType)vdecls.type).getType();
 						int dim = 0;
 						while( type.isArray() ) { dim++; type = type.args[0]; }
 						Var[] vars = new Var[vdecls.vars.length];

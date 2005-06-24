@@ -60,12 +60,13 @@ public class ASTType extends ASTNode {
         }
     }
     
-	public Type pass2() {
+	public Type getType() {
+		if( type instanceof Type )
+			return (Type)type;
 		Type tp = Type.tpVoid;
-		if( type instanceof Type ) return (Type)type;
-		else if( type instanceof ASTNonArrayType ) {
+		if( type instanceof ASTNonArrayType ) {
 			try {
-				type = tp = ((ASTNonArrayType)type).pass2();
+				type = tp = ((ASTNonArrayType)type).getType();
 				for(int i=0; i < dim; i++)
 					tp = Type.newArrayType(tp);
 			} catch(Exception e ) {
@@ -73,13 +74,13 @@ public class ASTType extends ASTNode {
 			}
 		}
 		else if( type instanceof ASTClosureType ) {
-			type = tp = ((ASTClosureType)type).pass2();
+			type = tp = ((ASTClosureType)type).getType();
 		} else {
 			throw new CompilerException(type.getPos(),"Bad type node "+type);
 		}
 		return tp;
 	}
-
+	
 	public String toString() {
 		String s = type.toString();
     	for(int i=0; i < dim; i++) s += "[]";

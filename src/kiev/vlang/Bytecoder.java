@@ -159,12 +159,13 @@ public class Bytecoder implements Constants {
 					else if (at.name.equals(attrTypedef)) {
 						Type type = ((TypedefAttr)at).type;
 						KString name = ((TypedefAttr)at).type_name;
-						Typedef td = new Typedef(0,cl,name,type);
-						cl.imported = (ASTNode[])Arrays.append(cl.imported,td);
+						Typedef td = new Typedef(0,cl,name);
+						td.type = type;
+						cl.imported.add(td);
 					}
 					else if( at.name.equals(attrOperator) ) {
 						Operator op = ((OperatorAttr)at).op;
-						cl.imported = (ASTNode[])Arrays.append(cl.imported,op);
+						cl.imported.add(op);
 					}
 				}
 			}
@@ -615,7 +616,7 @@ public class Bytecoder implements Constants {
 					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));
 					imp.args = mt.args;
 				}
-				cl.imported = (ASTNode[])Arrays.append(cl.imported,imp);
+				cl.imported.add(imp);
 				if( this.cl.isPackage() )
 		        	Kiev.packages_scanned.append(this.cl);
 			} else {
@@ -628,7 +629,7 @@ public class Bytecoder implements Constants {
 				if( node == null )
 					Kiev.reportWarning(0,"Package bytecode imports unknown method / field "+
 						kia.getNodeName(clazz)+" "+kia.getSignature(clazz)+" from class "+s);
-				cl.imported = (ASTNode[])Arrays.append(cl.imported,node);
+				cl.imported.add(node);
 			}
 			a = null;
 		}

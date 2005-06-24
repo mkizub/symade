@@ -144,7 +144,7 @@ public class Env extends Struct {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
 				cl.methods = Method.emptyArray;
-				cl.imported = ASTNode.emptyArray;
+				cl.imported.delAll();
 				cl.attrs = Attr.emptyArray;
 			}
 			if( !cl.isArgument() )
@@ -531,9 +531,9 @@ public class Env extends Struct {
 			try {
 				Kiev.files_scanned.append(fu);
 				ExportJavaTop exporter = new ExportJavaTop();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )	exporter.pass1(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1(null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )fu.pass2(null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )     exporter.pass1(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )       exporter.pass1_1(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) fu.pass2(null);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2(null);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();

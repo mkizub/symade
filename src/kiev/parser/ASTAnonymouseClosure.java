@@ -69,7 +69,7 @@ public class ASTAnonymouseClosure extends Expr {
 			Method m;
 			Type ret;
 			if( type instanceof ASTType )
-				ret = ((ASTType)type).pass2();
+				ret = ((ASTType)type).getType();
 			else
 				ret = (Type)type;
 			if( ret != Type.tpRule ) {
@@ -134,7 +134,7 @@ public class ASTAnonymouseClosure extends Expr {
 			}
 			Type ret;
 			if( type instanceof ASTType )
-				ret = ((ASTType)type).pass2();
+				ret = ((ASTType)type).getType();
 			else
 				ret = (Type)type;
 			me.type = MethodType.newMethodType(me,null,types,ret);

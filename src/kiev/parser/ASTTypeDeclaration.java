@@ -194,10 +194,6 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 //		return me;
 //	}
 
-	public ASTNode pass1_1(ASTNode pn) {
-		return me;
-	}
-	
 	public ASTNode pass2(ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
         PassInfo.push(me);
@@ -209,7 +205,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					(ASTArgumentDeclaration)argument[i];
 				if( arg.type != null ) {
 					ASTNonArrayType at = (ASTNonArrayType)arg.type;
-					Type sup = at.pass2();
+					Type sup = at.getType();
 					if( !sup.isReference() )
 						Kiev.reportError(pos,"Argument extends primitive type "+sup);
 					else
@@ -332,12 +328,12 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					me.super_clazz = Type.tpObject;
 					for(int j=0; j < exts.children.length; j++) {
 						at = (ASTNonArrayType)exts.children[j];
-						timpl = (Type[])Arrays.append(timpl,at.pass2());
+						timpl = (Type[])Arrays.append(timpl,at.getType());
 					}
 					me.interfaces = timpl;
 				} else {
 					at = (ASTNonArrayType)exts.children[0];
-					me.super_clazz = at.pass2();
+					me.super_clazz = at.getType();
 				}
 			}
 			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
@@ -347,7 +343,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 				ASTImplements impls = (ASTImplements)impl;
 				for(int j=0; j < impls.children.length; j++) {
 					at = (ASTNonArrayType)impls.children[j];
-					timpl = (Type[])Arrays.append(timpl,at.pass2());
+					timpl = (Type[])Arrays.append(timpl,at.getType());
 				}
 				me.interfaces = timpl;
 			}
@@ -508,7 +504,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						}
 						flags |= ACC_PUBLIC;
 					}
-					Type type = ((ASTType)fields.type).pass2();
+					Type type = ((ASTType)fields.type).getType();
 //					if( (flags & ACC_PROLOGVAR) != 0 ) {
 //            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
 //						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
@@ -604,7 +600,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 				else if( members[i] instanceof ASTTypeDeclaration );
 				else if( members[i] instanceof ASTCaseTypeDeclaration );
 				else if( members[i] instanceof ASTImport ) {
-					me.imported = (ASTNode[])Arrays.append(me.imported,members[i]);
+					me.imported.add(members[i]);
 				}
 				else {
 					throw new CompilerException(members[i].getPos(),"Unknown type if structure member: "+members[i]);

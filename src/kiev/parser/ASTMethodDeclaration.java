@@ -162,7 +162,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		try {
 			if( this.type != null ) {
 				if( this.type instanceof ASTType )
-					type = ((ASTType)this.type).pass2();
+					type = ((ASTType)this.type).getType();
 				else
 					type = (Type)this.type;
 			} else {

@@ -34,6 +34,13 @@ import static kiev.stdlib.Debug.*;
 
 public final class ExportJavaTop implements Constants {
 	
+	
+	/////////////////////////////////////////////////////
+	//                                                 //
+	//         PASS 1 - create top structures          //
+	//                                                 //
+	/////////////////////////////////////////////////////
+	
 	public boolean pass1() {
 		boolean failed = false;
 		TopLevelPass old_pass = Kiev.pass_no; 
@@ -53,7 +60,7 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass1(ASTNode node, ASTNode pn) {
+	public ASTNode pass1(ASTNode:ASTNode node, ASTNode pn) {
 		return node;
 	}
 	
@@ -248,6 +255,241 @@ public final class ExportJavaTop implements Constants {
 
 		return me;
 	}
+
+
+
+
+
+	/////////////////////////////////////////////////////
+	//                                                 //
+	//     PASS 1_1 - process syntax declarations      //
+	//                                                 //
+	/////////////////////////////////////////////////////
+
+
+	public boolean pass1_1() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no; 
+		Kiev.pass_no = TopLevelPass.passProcessSyntax;
+		try
+		{
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				ASTFileUnit fu = Kiev.file_unit[i]; 
+				if( fu == null ) continue;
+				try { pass1_1(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				if( fu == null ) continue;
+				try { pass1_1(fu,null);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	public ASTNode pass1_1(ASTNode:ASTNode node, ASTNode pn) {
+		return node;
+	}
+
+	public ASTNode pass1_1(ASTFileUnit:ASTNode astn, ASTNode pn) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = astn.filename;
+		PassInfo.push(astn.file_unit);
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(astn.disabled_extensions);
+
+			// Process file imports...
+			boolean java_lang_found = false;
+			KString java_lang_name = KString.from("java.lang");
+			boolean kiev_stdlib_found = false;
+			KString kiev_stdlib_name = KString.from("kiev.stdlib");
+
+			foreach (ASTNode n; astn.syntax) {
+				try {
+					if (n instanceof ASTImport && ((ASTImport)n).mode == ASTImport.IMPORT_STATIC && !((ASTImport)n).star)
+						continue; // process later
+					ASTNode sn = pass1_1(n, astn.file_unit);
+					if (sn == null)
+						continue;
+					astn.file_unit.syntax.add(sn);
+					if (sn instanceof Import) {
+						if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(java_lang_name))
+							java_lang_found = true;
+						else if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(kiev_stdlib_name))
+							kiev_stdlib_found = true;
+					}
+					trace(Kiev.debugResolve,"Add "+sn);
+				} catch(Exception e ) {
+					Kiev.reportError(n.getPos(),e);
+				}
+			}
+			// Add standard imports, if they were not defined
+			if( !Kiev.javaMode && !kiev_stdlib_found )
+				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
+			if( !java_lang_found )
+				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
+
+			// Process members - pass1_1()
+			foreach (ASTNode n; astn.decls) {
+				pass1_1(n, astn.file_unit);
+			}
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
+		return astn.file_unit;
+	}
+
+	public ASTNode pass1_1(ASTImport:ASTNode astn, ASTNode pn) {
+		if (astn.args != null || (astn.mode==ASTImport.IMPORT_STATIC && !astn.star)) return null;
+		KString name = astn.name;
+		ASTNode@ v;
+		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
+			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
+			return null;
+		}
+		ASTNode n = v;
+		if      (astn.mode == ASTImport.IMPORT_CLASS && !(n instanceof Struct)) {
+			Kiev.reportError(astn.pos,"Identifier "+name+" is not a class or package");
+			return null;
+		}
+		else if (astn.mode == ASTImport.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage())) {
+			Kiev.reportError(astn.pos,"Identifier "+name+" is not a package");
+			return null;
+		}
+		else if (astn.mode == ASTImport.IMPORT_STATIC && !(astn.star || (n instanceof Field))) {
+			Kiev.reportError(astn.pos,"Identifier "+name+" is not a field");
+			return null;
+		}
+		else if (astn.mode == ASTImport.IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax())) {
+			Kiev.reportError(astn.pos,"Identifier "+name+" is not a syntax");
+			return null;
+		}
+		return new Import(astn.pos, pn, n, astn.mode, astn.star);
+	}
+
+	public ASTNode pass1_1(ASTTypedef:ASTNode astn, ASTNode pn) {
+		astn.td = new Typedef(astn.pos, pn, astn.name);
+		if (astn.opdef) {
+			ASTQName qn = (ASTQName)astn.type;
+			ASTNode@ v;
+			if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
+				throw new CompilerException(astn.pos,"Unresolved identifier "+qn.toKString());
+			if( !(v instanceof Struct) )
+				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
+			Struct s = (Struct)v;
+			if (s.type.args.length != 1)
+				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
+			astn.td.type = s.type;
+		} else {
+			astn.td.type = astn.type.getType();
+		}
+		return astn.td;
+	}
+
+	public ASTNode pass1_1(ASTSyntaxDeclaration:ASTNode astn, ASTNode pn) {
+		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+astn.me);
+		foreach (ASTNode n; astn.members) {
+			try {
+				if (n instanceof ASTTypedef) {
+					n = pass1_1(n, astn.me);
+					if (n != null) {
+						astn.me.imported.add(n);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+astn.me);
+					}
+				}
+				else if (n instanceof ASTOpdef) {
+					n = pass1_1(n, astn.me);
+					if (n != null) {
+						astn.me.imported.add(n);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+astn.me);
+					}
+				}
+			} catch(Exception e ) {
+				Kiev.reportError(n.getPos(),e);
+			}
+		}
+		return astn.me;
+	}
+
+	public ASTNode pass1_1(ASTOpdef:ASTNode astn, ASTNode pn) {
+		int pos = astn.pos;
+		int prior = astn.prior;
+		int opmode = astn.opmode;
+		KString image = astn.image;
+		switch(opmode) {
+		case Operator.LFY:
+			{
+				AssignOperator op = AssignOperator.getOperator(image);
+				if (op != null) {
+					if (prior != op.priority)
+						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+					if (opmode != op.mode)
+						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
+					return op;
+				}
+				op = AssignOperator.newAssignOperator(image,null,null,false);
+				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
+			}
+		case Operator.XFX:
+		case Operator.YFX:
+		case Operator.XFY:
+		case Operator.YFY:
+			{
+				BinaryOperator op = BinaryOperator.getOperator(image);
+				if (op != null) {
+					if (prior != op.priority)
+						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+					if (opmode != op.mode)
+						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
+					return op;
+				}
+				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
+				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
+			}
+		case Operator.FX:
+		case Operator.FY:
+			{
+				PrefixOperator op = PrefixOperator.getOperator(image);
+				if (op != null) {
+					if (prior != op.priority)
+						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+					if (opmode != op.mode)
+						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
+					return op;
+				}
+				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
+				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
+			}
+		case Operator.XF:
+		case Operator.YF:
+			{
+				PostfixOperator op = PostfixOperator.getOperator(image);
+				if (op != null) {
+					if (prior != op.priority)
+						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
+					if (opmode != op.mode)
+						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
+					return op;
+				}
+				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
+				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
+				return op;
+			}
+		case Operator.XFXFY:
+			throw new CompilerException(pos,"Multioperators are not supported yet");
+		default:
+			throw new CompilerException(pos,"Unknown operator mode "+opmode);
+		}
+	}
+
 }
 
 

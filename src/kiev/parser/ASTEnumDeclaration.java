@@ -127,7 +127,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			if( ext != null ) {
 				ASTExtends exts = (ASTExtends)ext;
 				at = (ASTNonArrayType)exts.children[0];
-				me.super_clazz = at.pass2();
+				me.super_clazz = at.getType();
 			}
 			if( me.super_clazz == null ) {
 				me.super_clazz = Type.tpEnum;
@@ -206,25 +206,25 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 				if( !imp.isStatic() ) {
 					Kiev.reportError(members[i].getPos(),"Imported field "+imp+" must be static");
 				} else {
-					me.imported = (ASTNode[])Arrays.append(me.imported,imp);
+					me.imported.add(imp);
 				}
 			}
 			else if( imp instanceof Method ) {
 				if( !imp.isStatic() ) {
 					Kiev.reportError(members[i].getPos(),"Imported method "+imp+" must be static");
 				} else {
-					me.imported = (ASTNode[])Arrays.append(me.imported,imp);
+					me.imported.add(imp);
 				}
 			}
 			else if( imp instanceof Struct ) {
 				Struct is = (Struct)imp;
 				for(int j=0; j < is.fields.length; j++) {
 					if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
-						me.imported = (ASTNode[])Arrays.append(me.imported,is.fields[j]);
+						me.imported.add(is.fields[j]);
 				}
 				for(int j=0; j < is.methods.length; j++) {
 					if( is.methods[j].isStatic() )
-						me.imported = (ASTNode[])Arrays.append(me.imported,is.methods[j]);
+						me.imported.add(is.methods[j]);
 				}
 			}
 			else

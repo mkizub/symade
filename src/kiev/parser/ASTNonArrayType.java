@@ -50,7 +50,7 @@ public class ASTNonArrayType extends SimpleNode {
     	ops = (KString[])Arrays.append(ops,KString.from(t.image));
     }
 
-	public Type pass2() {
+	public Type getType() {
 	    Type tp= null;
 		if( children[0] instanceof ASTPrimitiveType ) {
 			tp = ((ASTPrimitiveType)children[0]).type;
@@ -66,7 +66,7 @@ public class ASTNonArrayType extends SimpleNode {
 		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
         		Type[] atypes = new Type[children.length-1];
 		        for(int i=0; i < atypes.length; i++) {
-        			atypes[i] = ((ASTType)children[i+1]).pass2();
+        			atypes[i] = ((ASTType)children[i+1]).getType();
 		        }
 		        tp = Type.newRefType((Struct)v,atypes);
 		    }

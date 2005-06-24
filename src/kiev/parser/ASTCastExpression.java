@@ -50,7 +50,7 @@ public class ASTCastExpression extends Expr {
     }
 
 	public ASTNode resolve(Type reqType) {
-		Type tp = ((ASTType)type).pass2();
+		Type tp = ((ASTType)type).getType();
 		return new CastExpr(pos,tp,expr,true).resolve(reqType);
 	}
     

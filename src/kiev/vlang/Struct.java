@@ -96,7 +96,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public Method[]			methods = Method.emptyArray;
 
 	/** Array of imported classes,fields and methods */
-	public ASTNode[]		imported = ASTNode.emptyArray;
+	public NArr<ASTNode>	imported;
 
 	/** Array of declared members */
 	public ASTNode[]		members = ASTNode.emptyArray;
@@ -112,6 +112,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		super(0,0);
 		this.name = name;
 		this.acc = new Access(0);
+		imported = new NArr<ASTNode>(this);
 	}
 
 	public Struct(ClazzName name, Struct outer, int acc) {
@@ -119,6 +120,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		this.name = name;
 		package_clazz = outer;
 		this.acc = new Access(0);
+		imported = new NArr<ASTNode>(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
 	}

@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
 	public Struct				pkg;
-	public ASTNode[]				syntax = ASTNode.emptyArray;
+	public NArr<ASTNode>		syntax;
 	public NArr<Struct>			members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
@@ -51,6 +51,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		super(0);
 		this.filename = name;
 		this.pkg = pkg;
+		syntax  = new NArr<ASTNode>(this);
 		members = new NArr<Struct>(this);
 	}
 
@@ -400,12 +401,12 @@ public class Typedef extends ASTNode implements Named {
 	public KString		name;
 	public Type			type;
 
-	public Typedef(int pos, ASTNode par, KString name, Type type) {
+	public Typedef(int pos, ASTNode par, KString name) {
 		super(pos,par);
 		this.name = name;
-		this.type = type;
+		this.type = Type.tpVoid;
 	}
-
+	
 	public NodeName	getName() {
 		return new NodeName(name);
 	}
