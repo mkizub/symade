@@ -260,7 +260,7 @@ public class ForInit extends ASTNode implements Scope {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -272,7 +272,7 @@ public class ForInit extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -415,13 +415,13 @@ public class ForStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
@@ -832,14 +832,14 @@ public class ForEachStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		{	n ?= var

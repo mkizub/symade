@@ -78,7 +78,7 @@ public class Env extends Struct {
 	public static Hashtable<KString,Struct>	classHashDbg = new Hashtable<KString,Struct>();
 
 	/** Hashtable for project file (class name + file name) */
-	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable/*<KString,ProjectFile>*/();
+	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
 
 	/** Root of package hierarchy */
 	public static Env			root = new Env();

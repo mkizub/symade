@@ -307,7 +307,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return null;
 	}
 
-	rule public resolveOperatorR(ASTNode@ op)
+	public rule resolveOperatorR(ASTNode@ op)
 		ASTNode@ imp;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
@@ -320,7 +320,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 	{
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
 		checkResolved(),
@@ -354,7 +354,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			$cut
 		}
 	}
-	rule public resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Struct@ sub;
 		Type@ arg;
 	{
@@ -368,14 +368,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			sub.name.short_name.equals(name),
 			node ?= sub.$var
 	}
-	rule public resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 	{
 			node @= imported,
 			{	node instanceof Field && ((Field)node).name.equals(name)
 			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 	}
-	rule public resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ sup;
 	{
 			{	sup ?= super_clazz,
@@ -387,7 +387,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 	}
 
-	rule public resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Field@ forw;
 	{
 			forw @= fields,
@@ -454,7 +454,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	 	return false;
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
 		Type@ sup;
 		Struct@ defaults;
 		Field@ forw;

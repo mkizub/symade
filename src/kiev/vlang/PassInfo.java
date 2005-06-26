@@ -205,7 +205,7 @@ public class PassInfo {
 		return true;
 	}
 
-	rule public static resolveOperatorR(ASTNode@ op)
+	public static rule resolveOperatorR(ASTNode@ op)
 		ASTNode@ p;
 	{
 		p @= new PathEnumerator(),
@@ -213,7 +213,7 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	rule public static resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -424,7 +424,7 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	rule public static resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;

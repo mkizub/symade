@@ -35,9 +35,7 @@ import kiev.vlang.*;
 
 public class ASTFieldDecl extends ASTNode {
 
-	public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTPack		pack;
-	public ASTAccess	acc;
+	public ASTModifiers	modifiers;
 	public ASTNode		type;
 	public ASTNode[]	vars = ASTNode.emptyArray;
 
@@ -47,18 +45,8 @@ public class ASTFieldDecl extends ASTNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
 		switch( n ) {
-		case ASTModifier:
-			modifier = (ASTNode[])Arrays.append(modifier,n);
-			break;
-		case ASTPack:
-			if( pack != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'packed' specified");
-			pack = (ASTPack)n;
-			break;
-		case ASTAccess:
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		case ASTModifiers:
+			modifiers = (ASTModifiers)n;
 			break;
 		case ASTType:
 			type = n;
@@ -76,14 +64,13 @@ public class ASTFieldDecl extends ASTNode {
 		return null;
 	}
     
-    public Dumper toJava(Dumper dmp) {
-    	for(int i=0; i < modifier.length; i++)
-        	modifier[i].toJava(dmp);
+	public Dumper toJava(Dumper dmp) {
+		modifiers.toJava(dmp);
 		type.toJava(dmp).space();
-    	for(int i=0; i < vars.length; i++) {
-        	vars[i].toJava(dmp);
-            if( i < vars.length - 1 ) dmp.append(',').space();
-        }
+		for(int i=0; i < vars.length; i++) {
+			vars[i].toJava(dmp);
+			if( i < vars.length - 1 ) dmp.append(',').space();
+		}
 		return dmp;
     }
 }

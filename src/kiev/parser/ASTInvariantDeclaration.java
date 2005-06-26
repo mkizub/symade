@@ -37,7 +37,7 @@ import static kiev.vlang.WorkByContractCondition.*;
  */
 
 public class ASTInvariantDeclaration extends ASTCondDeclaration {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifiers	modifiers;
 	public KString		name;
 
 	public ASTInvariantDeclaration(int id) {
@@ -45,12 +45,12 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
-        }
-    	else if( n instanceof ASTIdentifier ) {
-        	name = ((ASTIdentifier)n).name;
-        	pos = n.getPos();
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
+		}
+    		else if( n instanceof ASTIdentifier ) {
+			name = ((ASTIdentifier)n).name;
+			pos = n.getPos();
 		}
 		else if( n instanceof ASTBlock ) {
 			body = (Statement)n;
@@ -63,23 +63,22 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
     }
 
     public ASTNode pass3() {
-    	int flags = 0;
 		// TODO: check flags for fields
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
-    	Method m = new Method(PassInfo.clazz,name,mt,flags);
-    	m.setInvariantMethod(true);
-    	if( !m.isStatic() ) {
-    		m.params = new Var[]{new Var(pos,m,nameThis,PassInfo.clazz.type,0)};
-    	} else {
-    		m.params = Var.emptyArray;
-    	}
-    	WorkByContractCondition cond = new WorkByContractCondition(pos,CondInvariant,name,body);
+		Method m = new Method(PassInfo.clazz,name,mt,flags);
+		m.setInvariantMethod(true);
+		if( !m.isStatic() ) {
+			m.params = new Var[]{new Var(pos,m,nameThis,PassInfo.clazz.type,0)};
+		} else {
+			m.params = Var.emptyArray;
+		}
+		WorkByContractCondition cond = new WorkByContractCondition(pos,CondInvariant,name,body);
 		if( pbody != null ) pbody.setParent(cond);
-    	m.body = cond;
-    	cond.parent = m;
+		m.body = cond;
+		cond.parent = m;
 		PassInfo.clazz.addMethod(m);
 	  	return m;
     }
 }
+

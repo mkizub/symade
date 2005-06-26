@@ -41,13 +41,8 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
-		}
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
 			if( name == null ) {
@@ -70,12 +65,10 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 
 	public ASTNode pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for enum "+name);
-		int flags = 0;
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
 		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		KString short_name = this.name;
 		ClazzName clname = null;
 		if( this.name != null ) {
@@ -139,7 +132,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 				me.type.setMeAsPrimitiveEnum();
 			}
 
-			if( acc != null ) me.acc = new Access(acc.accflags);
+			if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 		} finally { PassInfo.pop(me); }
 

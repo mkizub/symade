@@ -35,6 +35,8 @@ import kiev.vlang.*;
 
 public class ASTModifier extends ASTNode implements kiev020Constants {
 
+	public static ASTModifier[] emptyArray = new ASTModifier[0];
+	
 	public int 			kind;
 	public String		image;
 

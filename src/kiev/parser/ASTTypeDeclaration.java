@@ -36,8 +36,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
+	public ASTModifiers	modifiers;
     public int			kind;
     public KString		name;
     public ASTNode[]	argument = ASTNode.emptyArray;
@@ -58,18 +57,15 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
         	kind |= ACC_INTERFACE;
     	else if( t.kind == kiev020Constants.CLASS )
     		;
+    	else if( t.kind == kiev020Constants.OPERATOR_AT )
+        	kind |= ACC_INTERFACE | ACC_ANNOTATION;
     	else
     		throw new RuntimeException("Bad kind of class declaration "+t);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
-		}
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
 			name = ((ASTIdentifier)n).name;
@@ -94,12 +90,10 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 
 	public ASTNode pass1() {
 		trace(Kiev.debugResolve,"Pass 1 for class "+name);
-		int flags = 0;
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
 		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		KString short_name = this.name;
 		ClazzName clname = null;
 		if( this.name != null ) {
@@ -129,6 +123,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		}
 		me.setResolved(true);
 		if( (kind & ACC_INTERFACE) != 0 ) me.setInterface(true);
+		if( (kind & ACC_ANNOTATION) != 0 ) me.setAnnotation(true);
 		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
 			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
 		}
@@ -360,7 +355,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				}
 			}
 
-			if( acc != null ) me.acc = new Access(acc.accflags);
+			if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 	        // Process inner classes and cases
         	if( !me.isPackage() ) {
@@ -390,10 +385,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				members[i].parent = me;
 				if( members[i] instanceof ASTInitializer ) {
 					ASTInitializer init = (ASTInitializer)members[i];
-					int flags = 0;
 					// TODO: check flags for initialzer
-					for(int j=0; j < init.modifier.length; j++)
-						flags |= ((ASTModifier)init.modifier[j]).flag();
+					int flags = init.modifiers.getFlags();
 					Field f = me.addField(new Field(me,KString.Empty,Type.tpVoid,flags));
 					f.setPos(init.getPos());
 					f.init = new StatExpr(init.getPos(),init.body);
@@ -492,10 +485,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 				}
 */				else if( members[i] instanceof ASTFieldDecl ) {
 					ASTFieldDecl fields = (ASTFieldDecl)members[i];
-					int flags = 0;
 					// TODO: check flags for fields
-					for(int j=0; j < fields.modifier.length; j++)
-						flags |= ((ASTModifier)fields.modifier[j]).flag();
+					int flags = fields.modifiers.getFlags();
 					if( me.isPackage() ) flags |= ACC_STATIC;
 					if( me.isInterface() ) {
 						if( (flags & ACC_VIRTUAL) != 0 ) flags |= ACC_ABSTRACT;
@@ -510,7 +501,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 //            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
 //						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
 //					}
-					ASTPack pack = fields.pack;
+					ASTPack pack = fields.modifiers.pack;
 					if( pack != null ) {
 						if( !type.isIntegerInCode() ) {
 							if( type.clazz.instanceOf(Type.tpEnum.clazz) ) {
@@ -590,8 +581,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							}
 						}
 
-						if( ((ASTFieldDecl)members[i]).acc != null )
-							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
+						if( ((ASTFieldDecl)members[i]).modifiers.acc != null )
+							f.acc = new Access(((ASTFieldDecl)members[i]).modifiers.acc.accflags);
 					}
 				}
 				else if( members[i] instanceof ASTInvariantDeclaration ) {

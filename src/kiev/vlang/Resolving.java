@@ -118,12 +118,12 @@ public class ResInfo {
 };
 
 public interface Scope {
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type type, int resfl);
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl);
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type type, int resfl);
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl);
 }
 
 public interface ScopeOfOperators {
-	rule public resolveOperatorR(ASTNode@ op);
+	public rule resolveOperatorR(ASTNode@ op);
 }
 
 

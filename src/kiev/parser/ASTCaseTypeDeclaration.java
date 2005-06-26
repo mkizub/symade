@@ -34,8 +34,7 @@ import kiev.vlang.*;
  */
 
 public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
+	public ASTModifiers	modifiers;
 	public KString		name;
 	public ASTNode[]	argument = ASTNode.emptyArray;
 	public ASTNode[]	casefields = ASTNode.emptyArray;
@@ -57,13 +56,8 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
-		}
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
 			name = ((ASTIdentifier)n).name;
@@ -84,12 +78,10 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
     }
 
 	public ASTNode pass1() {
-		int flags = 0;
 		Struct sup = null;
 		Struct[] impls = Struct.emptyArray;
 		// TODO: check flags for structures
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		KString short_name = this.name;
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,true);
 
@@ -146,7 +138,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 
 		me.super_clazz = parnt.type;
 
-		if( acc != null ) me.acc = new Access(acc.accflags);
+		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 		return me;
 	}

@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.ASTNewInitializedArrayExpression;
 
 import static kiev.vlang.WorkByContractCondition.*;
 import static kiev.stdlib.Debug.*;
@@ -312,7 +313,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		inlined_by_dispatcher,$cut,false
 	;	node @= params, ((Var)node).name.equals(name)
@@ -320,7 +321,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	;	node ?= retvar, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		n @= params,
@@ -349,32 +350,71 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				cond.parent = this;
 				cond.resolve(Type.tpVoid);
 			}
-			if( body != null ) {
-				body.parent = this;
-				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				//if( isMultiMethod() )
-				//	((Struct)parent).makeDispatch(this);
-				body = ((Statement)body).resolve(Type.tpVoid);
-			}
-			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret == Type.tpVoid ) {
-					if( body instanceof BlockStat ) {
-						((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
-						body.setAbrupted(true);
+			if (parent.isAnnotation()) {
+				if( body != null ) {
+					if (type.ret.isArray()) {
+						Type t = type.ret.args[0];
+						if (t.isArray())
+							Kiev.reportError(body.pos, "Annotation default value must be one-dimentional array");
+						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
+						if (e instanceof ASTNewInitializedArrayExpression || e instanceof NewInitializedArrayExpr)
+							e = e.resolveExpr(type.ret);
+						else
+							e = e.resolveExpr(t);
+						if (e instanceof NewInitializedArrayExpr) {
+							if (e.getType() != type.ret)
+								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
+							NewInitializedArrayExpr ne = (NewInitializedArrayExpr)e;
+							foreach (Expr ee; ne.args) {
+								if (!ee.isConstantExpr())
+									Kiev.reportError(body.pos, "Annotation default value must be a constant");
+							}
+						} else {
+							if (e.getType() != t)
+								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
+							if (!e.isConstantExpr())
+								Kiev.reportError(body.pos, "Annotation default value must be a constant");
+							e = new NewInitializedArrayExpr(body.pos, t, 1, new Expr[]{e});
+						}
+						((ExprStat)body).expr = e;
+						e.parent = body;
+					} else {
+						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
+						if (!e.isConstantExpr())
+							Kiev.reportError(body.pos, "Annotation default value must be a constant");
+						else if (e.getType() != type.ret)
+							Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
+						else {
+							((ExprStat)body).expr = e;
+							e.parent = body;
+						}
 					}
-					else if( body instanceof WorkByContractCondition );
-					else
+				}
+			} else {
+				if( body != null ) {
+					body.parent = this;
+					if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
+					body = ((Statement)body).resolve(Type.tpVoid);
+				}
+				if( body != null && !body.isMethodAbrupted() ) {
+					if( type.ret == Type.tpVoid ) {
+						if( body instanceof BlockStat ) {
+							((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
+							body.setAbrupted(true);
+						}
+						else if( body instanceof WorkByContractCondition );
+						else
+							Kiev.reportError(pos,"Return requared");
+					} else {
 						Kiev.reportError(pos,"Return requared");
-				} else {
-					Kiev.reportError(pos,"Return requared");
+					}
+				}
+				foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure ) {
+					cond.parent = this;
+					if( type.ret != Type.tpVoid ) getRetVar();
+					cond.resolve(Type.tpVoid);
 				}
 			}
-			foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure ) {
-				cond.parent = this;
-				if( type.ret != Type.tpVoid ) getRetVar();
-				cond.resolve(Type.tpVoid);
-			}
-
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {

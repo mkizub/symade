@@ -126,7 +126,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		return true;
 	}
 
-	rule public resolveOperatorR(ASTNode@ op)
+	public rule resolveOperatorR(ASTNode@ op)
 		ASTNode@ syn;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
@@ -139,7 +139,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		ASTNode@ syn;
 	{
 		syn @= syntax,
@@ -166,7 +166,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		Env.root.resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ syn;
 	{
 		pkg != null, pkg != Env.root, pkg.resolveMethodR(node,path,name,args,ret,type,resfl)

@@ -72,7 +72,7 @@ public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
-	public static Hashtable<Class,Integer> classes = new Hashtable/*<Class,Integer>*/();
+	public static Hashtable<Class,Integer> classes = new Hashtable<Class,Integer>();
 	public static int		max_classes;
 	public static int[]		max_instances = new int[1024];
 	public static int[]		curr_instances = new int[1024];
@@ -94,8 +94,9 @@ public abstract class ASTNode implements Constants {
 	public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
 	public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
 	public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
-	public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
-	public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
+	public virtual packed:1,flags,20 boolean is_struct_annotation; // struct
+	public virtual packed:1,flags,21 boolean is_struct_syntax;     // struct
+	public virtual packed:1,flags,22 boolean is_struct_wrapper;    // struct
 
 	public int			compileflags;
 
@@ -112,7 +113,7 @@ public abstract class ASTNode implements Constants {
 	// Expression flags
 	public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
 	public virtual packed:1,compileflags,17 boolean is_expr_as_field;
-	public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
+	//public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
 	public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
 	public virtual packed:1,compileflags,20 boolean is_expr_gen_resolved;
 	public virtual packed:1,compileflags,21 boolean is_expr_for_wrapper;
@@ -371,6 +372,17 @@ public abstract class ASTNode implements Constants {
 		assert(!on || (!isPackage() && !isInterface() && !isSyntax()));
 		this.is_struct_enum = on;
 	}
+	// kiev annotation
+	public final boolean get$is_struct_annotation()  alias isAnnotation  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_annotation;
+	}
+	public final void set$is_struct_annotation(boolean on) alias setAnnotation {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(!on || (!isPackage() && !isSyntax()));
+		this.is_struct_annotation = on;
+		if (on) this.setInterface(true);
+	}
 	// kiev enum that extends int
 	public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
 		assert(this instanceof Struct,"For node "+this.getClass());
@@ -604,14 +616,14 @@ public abstract class ASTNode implements Constants {
 		this.is_expr_as_field = on;
 	}
 	// constant expression
-	public final boolean get$is_expr_const_expr()  alias isConstExpr  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_const_expr;
-	}
-	public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_const_expr = on;
-	}
+	//public final boolean get$is_expr_const_expr()  alias isConstExpr  {
+	//	assert(this instanceof Expr,"For node "+this.getClass());
+	//	return this.is_expr_const_expr;
+	//}
+	//public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
+	//	assert(this instanceof Expr,"For node "+this.getClass());
+	//	this.is_expr_const_expr = on;
+	//}
 	// tried to be resolved
 	public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
 		assert(this instanceof Expr,"For node "+this.getClass());

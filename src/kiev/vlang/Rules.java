@@ -77,7 +77,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -422,7 +422,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ stat;
 	{
 		stat @= stats,
@@ -431,7 +431,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 		node ?= ((DeclStat)stat).var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}

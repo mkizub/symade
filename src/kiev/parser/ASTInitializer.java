@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 public class ASTInitializer extends ASTNode implements PreScanneable {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifiers	modifiers;
 	public Statement	body;
 	public virtual PrescannedBody pbody;
     
@@ -46,8 +46,8 @@ public class ASTInitializer extends ASTNode implements PreScanneable {
 	}
     
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof Statement ) {
 			body = (Statement)n;
@@ -59,8 +59,7 @@ public class ASTInitializer extends ASTNode implements PreScanneable {
     }
 
 	public Dumper toJava(Dumper dmp) {
-    	for(int i=0; i < modifier.length; i++)
-        	modifier[i].toJava(dmp);
+		modifiers.toJava(dmp);
 		body.toJava(dmp).newLine();
 		return dmp;
 	}

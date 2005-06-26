@@ -57,7 +57,7 @@ public class InlineMethodStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -66,7 +66,7 @@ public class InlineMethodStat extends Statement implements Scope {
 		node ?= redir.new_var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -169,7 +169,7 @@ public class BlockStat extends Statement implements Scope {
 		return var;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -190,7 +190,7 @@ public class BlockStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		n @= vars,
@@ -242,10 +242,8 @@ public class BlockStat extends Statement implements Scope {
 				}
 				else if( stats[i] instanceof ASTVarDecls ) {
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-					int flags = 0;
-					// TODO: check flags for fields
-					for(int j=0; j < vdecls.modifier.length; j++)
-						flags |= ((ASTModifier)vdecls.modifier[j]).flag();
+					// TODO: check flags for vars
+					int flags = vdecls.modifiers.getFlags();
 					Type type = ((ASTType)vdecls.type).getType();
 //					if( (flags & ACC_PROLOGVAR) != 0 ) {
 //            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
@@ -289,7 +287,7 @@ public class BlockStat extends Statement implements Scope {
 					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
 					Struct cl;
 					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.modifier = (ASTNode[])Arrays.append(decl.modifier,ASTModifier.modSTATIC);
+						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
 					cl = (Struct)decl.pass1();
 					cl.setLocal(true);
 					cl = (Struct)decl.pass2();

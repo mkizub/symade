@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 public class ASTVarDecls extends ASTNode {
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifiers	modifiers;
 	public ASTNode		type;
 	public ASTNode[]	vars = ASTNode.emptyArray;
 
@@ -43,8 +43,8 @@ public class ASTVarDecls extends ASTNode {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTType ) {
 			type = n;
@@ -59,23 +59,22 @@ public class ASTVarDecls extends ASTNode {
     }
 
     public boolean hasFinal() {
-    	foreach (ASTNode m; modifier)
-    		if (((ASTModifier)m).flag() == ACC_FINAL) return true;
-    	return false;
+		foreach (ASTModifier m; modifiers.modifier)
+			if (m.flag() == ACC_FINAL) return true;
+		return false;
     }
 
     public boolean hasForward() {
-    	foreach (ASTNode m; modifier)
-    		if (((ASTModifier)m).flag() == ACC_FORWARD) return true;
-    	return false;
+		foreach (ASTModifier m; modifiers.modifier)
+			if (m.flag() == ACC_FORWARD) return true;
+		return false;
     }
 
 	public Dumper toJava(Dumper dmp) {
-    	for(int i=0; i < modifier.length; i++)
-        	modifier[i].toJava(dmp);
+        	modifiers.toJava(dmp);
 		type.toJava(dmp).space();
-    	for(int i=0; i < vars.length; i++) {
-        	vars[i].toJava(dmp);
+		for(int i=0; i < vars.length; i++) {
+			vars[i].toJava(dmp);
             if( i < vars.length - 1 ) dmp.append(',').space();
         }
 		return dmp;

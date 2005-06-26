@@ -118,7 +118,7 @@ public class Type extends ASTNode implements AccessFlags {
 	public static Type tpTypeSwitchHash;
 
 	public static void InitializeTypes() {
-		typeHash = new Hash/*<Type>*/();
+		typeHash = new Hash<Type>();
 
 		Struct tpAnyClazz = Env.newStruct(new ClazzName(
 							KString.from("<any>"),

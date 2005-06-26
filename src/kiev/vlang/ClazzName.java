@@ -240,7 +240,7 @@ public class NodeName {
    since this operation is one of most used.
    These methods are rewritten in pure java.
 
-	rule public equals(NodeName nm)
+	public rule equals(NodeName nm)
 		KString@ n;
 	{
 		{
@@ -250,7 +250,7 @@ public class NodeName {
 		nm.equals(n)
 	}
 
-	rule public equals(KString nm)
+	public rule equals(KString nm)
 		KString@ n;
 	{
 		{

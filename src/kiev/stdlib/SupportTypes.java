@@ -249,7 +249,7 @@ public abstract class closure implements Cloneable {
 	}
 	
 	public void		call_void()		{ throwException("does not returns void"); }
-	rule public 	call_rule()		{ throwException("is not a rule") }
+	public rule		call_rule()		{ throwException("is not a rule") }
 	public boolean	call_boolean()	{ throwException("does not returns boolean"); return false; }
 	public byte		call_byte()		{ throwException("does not returns byte"); return (byte)0; }
 	public char		call_char()		{ throwException("does not returns char"); return '\000'; }
