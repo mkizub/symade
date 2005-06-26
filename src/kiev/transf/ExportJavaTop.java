@@ -159,12 +159,14 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTCaseTypeDeclaration:ASTNode astn, ASTNode pn) {
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,true);
 
-		int flags = makeStructFlags(ACC_PIZZACASE|ACC_STATIC|ACC_RESOLVED, astn.modifier);
+		int flags = makeStructFlags(ACC_STATIC, astn.modifier);
 
 		ASTTypeDeclaration astnp = (ASTTypeDeclaration)astn.parent;
 		astn.me = Env.newStruct(clname,astnp.me,flags,true);
 		Struct me = astn.me;
 		me.parent = pn;
+		me.setPizzaCase(true);
+		me.setResolved(true);
 		setSourceFile(me, astn);
 		astnp.me.addCase(me);
 		me.super_clazz = astnp.me.type;
@@ -179,12 +181,14 @@ public final class ExportJavaTop implements Constants {
 		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
 
-		int flags = makeStructFlags(ACC_ENUM|ACC_RESOLVED, astn.modifier);
+		int flags = makeStructFlags(0, astn.modifier);
 		if( !(astn.parent instanceof ASTFileUnit) ) flags |= ACC_STATIC;
 
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
 		me.parent = pn;
+		me.setEnum(true);
+		me.setResolved(true);
 		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, false);
@@ -197,12 +201,15 @@ public final class ExportJavaTop implements Constants {
 		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, astn.name, false, !isTop);
 
-		int flags = makeStructFlags(ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX|ACC_RESOLVED|
-			ACC_MEMBERS_GENERATED|ACC_STATEMENTS_GENERATED, astn.modifier);
+		int flags = makeStructFlags(ACC_PRIVATE|ACC_ABSTRACT, astn.modifier);
 
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
 		me.parent = pn;
+		me.setSyntax(true);
+		me.setResolved(true);
+		me.setMembersGenerated(true);
+		me.setStatementsGenerated(true);
 		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, false);
@@ -213,7 +220,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTTypeDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for class "+astn.name);
 		Struct piclz = PassInfo.clazz;
-		int flags = makeStructFlags(astn.kind|ACC_RESOLVED, astn.modifier);
+		int flags = makeStructFlags(astn.kind, astn.modifier);
 
 		if( astn.name != null ) {
 			ClazzName clname;
@@ -239,6 +246,7 @@ public final class ExportJavaTop implements Constants {
 
 		Struct me = astn.me;
 		me.parent = pn;
+		me.setResolved(true);
 		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
 		setSourceFile(me, astn);
 		setupStructType(me, astn, true);

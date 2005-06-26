@@ -89,9 +89,12 @@ public class Bytecoder implements Constants {
 		// Clean java flags
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
-		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_LOCAL|ACC_ANONYMOUSE|ACC_HAS_CASES
-				|ACC_VERIFIED|ACC_ENUM|ACC_SYNTAX);
+		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_ENUM|ACC_SYNTAX);
 		fl |= bcclazz.flags;
+		if ((fl & (ACC_PUBLIC | ACC_PRIVATE)) == (ACC_PUBLIC | ACC_PRIVATE)) {
+			fl &= ~ACC_PRIVATE;
+			fl |=  ACC_PACKAGE;
+		}
 		cl.setFlags( fl );
 
 		cl.setResolved(true);
@@ -790,7 +793,6 @@ public class Bytecoder implements Constants {
 	    if( !cl.isInterface() && !cl.isArgument() )
 	    	cl.setSuper(true);
 		bcclazz.flags = cl.getJavaFlags();
-		if( cl.isPackage() ) bcclazz.flags |= ACC_PACKAGE;
 
 		// This class name
 		KString cl_sig;

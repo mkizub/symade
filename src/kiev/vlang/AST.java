@@ -77,6 +77,71 @@ public abstract class ASTNode implements Constants {
 	public int			pos;
     public ASTNode		parent;
 	public int			flags;
+	
+	// Flags temporary used with java flags
+	public virtual packed:1,flags,16 boolean is_forward;         // var/field
+	public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
+	public virtual packed:1,flags,16 boolean is_mth_multimethod; // method
+	public virtual packed:1,flags,17 boolean is_mth_varargs;     // method
+	public virtual packed:1,flags,18 boolean is_mth_rule;        // method
+	public virtual packed:1,flags,19 boolean is_mth_invariant;   // method
+	public virtual packed:1,flags,16 boolean is_struct_package;    // struct
+	public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
+	public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
+	public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
+	public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
+	public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
+
+	public int			compileflags;
+
+	// Structures	
+	public virtual packed:1,compileflags,16 boolean is_struct_local;
+	public virtual packed:1,compileflags,17 boolean is_struct_anomymouse;
+	public virtual packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
+	public virtual packed:1,compileflags,19 boolean is_struct_verified;
+	public virtual packed:1,compileflags,20 boolean is_struct_members_generated;
+	public virtual packed:1,compileflags,21 boolean is_struct_statements_generated;
+	public virtual packed:1,compileflags,22 boolean is_struct_generated;
+	public virtual packed:1,compileflags,23 boolean is_struct_enum_primitive;
+	
+	// Expression flags
+	public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
+	public virtual packed:1,compileflags,17 boolean is_expr_as_field;
+	public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
+	public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
+	public virtual packed:1,compileflags,20 boolean is_expr_gen_resolved;
+	public virtual packed:1,compileflags,21 boolean is_expr_for_wrapper;
+	
+	// Method flags
+	public virtual packed:1,compileflags,17 boolean is_mth_virtual_static;
+	public virtual packed:1,compileflags,20 boolean is_mth_operator;
+	public virtual packed:1,compileflags,21 boolean is_mth_gen_post_cond;
+	public virtual packed:1,compileflags,22 boolean is_mth_need_fields_init;
+	public virtual packed:1,compileflags,24 boolean is_mth_local;
+	
+	// Var/field
+	public virtual packed:1,compileflags,16 boolean is_init_wrapper;
+	public virtual packed:1,compileflags,17 boolean is_need_proxy;
+	// Var specific
+	public virtual packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
+	public virtual packed:1,compileflags,19 boolean is_var_local_rule_var;
+	public virtual packed:1,compileflags,20 boolean is_var_closure_proxy;
+
+	// Field specific
+	public virtual packed:1,compileflags,18 boolean is_fld_packer;
+	public virtual packed:1,compileflags,19 boolean is_fld_packed;
+
+	// Statement flags
+	public virtual packed:1,compileflags,16 boolean is_stat_abrupted;
+	public virtual packed:1,compileflags,17 boolean is_stat_breaked;
+	public virtual packed:1,compileflags,18 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+	public virtual packed:1,compileflags,19 boolean is_stat_auto_returnable;
+	public virtual packed:1,compileflags,20 boolean is_stat_break_target;
+	// General flags
+	public virtual packed:1,compileflags,28 boolean is_accessed_from_inner;
+	public virtual packed:1,compileflags,29 boolean is_resolved;
+	public virtual packed:1,compileflags,30 boolean is_hidden;
+	public virtual packed:1,compileflags,31 boolean is_bad;
 
     public ASTNode(int pos) {
 		this.pos = pos;
@@ -172,76 +237,450 @@ public abstract class ASTNode implements Constants {
 	public boolean isAbstract()		{ return (flags & ACC_ABSTRACT) != 0; }
 	public boolean isSuper()		{ return (flags & ACC_SUPER) != 0; }
 
+	//
 	// Struct specific
-	public boolean isPackage()		{ return (flags & ACC_PACKAGE) != 0; }
-	public boolean isClazz()		{ return (flags & (ACC_PACKAGE|ACC_INTERFACE|ACC_ARGUMENT)) == 0; }
-	public boolean isArgument()		{ return (flags & ACC_ARGUMENT) != 0; }
-	public boolean isPizzaCase()	{ return (flags & ACC_PIZZACASE) != 0; }
-	public boolean isLocal()		{ return (flags & ACC_LOCAL) != 0; }
-	public boolean isAnonymouse()	{ return (flags & ACC_ANONYMOUSE) != 0; }
-	public boolean isHasCases()		{ return (flags & ACC_HAS_CASES) != 0; }
-	public boolean isVerified()		{ return (flags & ACC_VERIFIED) != 0; }
-	public boolean isMembersGenerated()		{ return (flags & ACC_MEMBERS_GENERATED) != 0; }
-	public boolean isStatementsGenerated()	{ return (flags & ACC_STATEMENTS_GENERATED) != 0; }
-	public boolean isGenerated()	{ return (flags & ACC_GENERATED) != 0; }
-	public boolean isEnum()			{ return (flags & ACC_ENUM) != 0; }
-	public boolean isSyntax()		{ return (flags & ACC_SYNTAX) != 0; }
-	public boolean isPrimitiveEnum(){ return (flags & ACC_PRIMITIVE_ENUM) != 0; }
-	public boolean isWrapper()		{ return (flags & ACC_WRAPPER) != 0; }
+	//
+	public boolean isClazz()		{
+		return !isPackage() && !isInterface() && ! isArgument();
+	}
+	
+	// package	
+	public final boolean get$is_struct_package()  alias isPackage  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_package;
+	}
+	public final void set$is_struct_package(boolean on) alias setPackage {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
+		this.is_struct_package = on;
+	}
+	// a class's argument	
+	public final boolean get$is_struct_argument()  alias isArgument  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_argument;
+	}
+	public final void set$is_struct_argument(boolean on) alias setArgument {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_argument = on;
+	}
+	// a class's argument	
+	public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_pizza_case;
+	}
+	public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_pizza_case = on;
+	}
+	// a local (in method) class	
+	public final boolean get$is_struct_local()  alias isLocal  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_local;
+	}
+	public final void set$is_struct_local(boolean on) alias setLocal {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_local = on;
+	}
+	// an anonymouse (unnamed) class	
+	public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_anomymouse;
+	}
+	public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_anomymouse = on;
+	}
+	// has pizza cases
+	public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_has_pizza_cases;
+	}
+	public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_has_pizza_cases = on;
+	}
+	// verified
+	public final boolean get$is_struct_verified()  alias isVerified  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_verified;
+	}
+	public final void set$is_struct_verified(boolean on) alias setVerified {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_verified = on;
+	}
+	// indicates that structure members were generated
+	public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_members_generated;
+	}
+	public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_members_generated = on;
+	}
+	// indicates that statements in code were generated
+	public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_statements_generated;
+	}
+	public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_statements_generated = on;
+	}
+	// indicates that the structrue was generared (from template)
+	public final boolean get$is_struct_generated()  alias isGenerated  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_generated;
+	}
+	public final void set$is_struct_generated(boolean on) alias setGenerated {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_generated = on;
+	}
+	// kiev enum
+	public final boolean get$is_struct_enum()  alias isEnum  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_enum;
+	}
+	public final void set$is_struct_enum(boolean on) alias setEnum {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(!on || (!isPackage() && !isInterface() && !isSyntax()));
+		this.is_struct_enum = on;
+	}
+	// kiev enum that extends int
+	public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_enum_primitive;
+	}
+	public final void set$is_struct_enum_primitive(boolean on) alias setPrimitiveEnum {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_enum_primitive = on;
+	}
+	// kiev syntax
+	public final boolean get$is_struct_syntax()  alias isSyntax  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_syntax;
+	}
+	public final void set$is_struct_syntax(boolean on) alias setSyntax {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(!on || (!isPackage() && ! isEnum()));
+		this.is_struct_syntax = on;
+	}
+	// kiev wrapper class
+	public final boolean get$is_struct_wrapper()  alias isWrapper  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_wrapper;
+	}
+	public final void set$is_struct_wrapper(boolean on) alias setWrapper {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_wrapper = on;
+	}
 
+	//
 	// Method specific
-	public boolean isMultiMethod()	{ return (flags & ACC_MULTIMETHOD) != 0; }
-	public boolean isVirtualStatic(){ return (flags & ACC_VIRTUALSTATIC) != 0; }
-	public boolean isVarArgs()		{ return (flags & ACC_VARARGS) != 0; }
-	public boolean isRuleMethod()	{ return (flags & ACC_RULEMETHOD) != 0; }
-	public boolean isOperatorMethod()	{ return (flags & ACC_OPERATORMETHOD) != 0; }
-	public boolean isGenPostCond()	{ return (flags & ACC_GENPOSTCOND) != 0; }
-	public boolean isNeedFieldInits()	{ return (flags & ACC_NEEDFIELDINITS) != 0; }
-	public boolean isInvariantMethod()	{ return (flags & ACC_INVARIANT_METHOD) != 0; }
-	public boolean isLocalMethod()		{ return (flags & ACC_LOCAL_METHOD) != 0; }
-	public boolean isProduction()	{ return (flags & ACC_PRODUCTION) != 0; }
+	//
+
+	// multimethod	
+	public final boolean get$is_mth_multimethod()  alias isMultiMethod  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_multimethod;
+	}
+	public final void set$is_mth_multimethod(boolean on) alias setMultiMethod {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_multimethod = on;
+	}
+	// virtual static method	
+	public final boolean get$is_mth_virtual_static()  alias isVirtualStatic  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_virtual_static;
+	}
+	public final void set$is_mth_virtual_static(boolean on) alias setVirtualStatic {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_virtual_static = on;
+	}
+	// method with variable number of arguments	
+	public final boolean get$is_mth_varargs()  alias isVarArgs  {
+		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration || this instanceof kiev.parser.ASTRuleDeclaration,"For node "+this.getClass());
+		return this.is_mth_varargs;
+	}
+	public final void set$is_mth_varargs(boolean on) alias setVarArgs {
+		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration || this instanceof kiev.parser.ASTRuleDeclaration,"For node "+this.getClass());
+		this.is_mth_varargs = on;
+	}
+	// logic rule method	
+	public final boolean get$is_mth_rule()  alias isRuleMethod  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_rule;
+	}
+	public final void set$is_mth_rule(boolean on) alias setRuleMethod {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_rule = on;
+	}
+	// method with attached operator	
+	public final boolean get$is_mth_operator()  alias isOperatorMethod  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_operator;
+	}
+	public final void set$is_mth_operator(boolean on) alias setOperatorMethod {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_operator = on;
+	}
+	// needs to call post-condition before return	
+	public final boolean get$is_mth_gen_post_cond()  alias isGenPostCond  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_gen_post_cond;
+	}
+	public final void set$is_mth_gen_post_cond(boolean on) alias setGenPostCond {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_gen_post_cond = on;
+	}
+	// need fields initialization	
+	public final boolean get$is_mth_need_fields_init()  alias isNeedFieldInits  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_need_fields_init;
+	}
+	public final void set$is_mth_need_fields_init(boolean on) alias setNeedFieldInits {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_need_fields_init = on;
+	}
+	// a method generated as invariant	
+	public final boolean get$is_mth_invariant()  alias isInvariantMethod  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_invariant;
+	}
+	public final void set$is_mth_invariant(boolean on) alias setInvariantMethod {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_invariant = on;
+	}
+	// a local method (closure code or inner method)	
+	public final boolean get$is_mth_local()  alias isLocalMethod  {
+		assert(this instanceof Method,"For node "+this.getClass());
+		return this.is_mth_local;
+	}
+	public final void set$is_mth_local(boolean on) alias setLocalMethod {
+		assert(this instanceof Method,"For node "+this.getClass());
+		this.is_mth_local = on;
+	}
+
+	//
+	// Var/field
+	//
+	
+	// use no proxy	
+	public final boolean get$is_forward()  alias isForward  {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		return this.is_forward;
+	}
+	public final void set$is_forward(boolean on) alias setForward {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		this.is_forward = on;
+	}
+	// init wrapper
+	public final boolean get$is_init_wrapper()  alias isInitWrapper  {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		return this.is_init_wrapper;
+	}
+	public final void set$is_init_wrapper(boolean on) alias setInitWrapper {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		this.is_init_wrapper = on;
+	}
+	// need a proxy access 
+	public final boolean get$is_need_proxy()  alias isNeedProxy  {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		return this.is_need_proxy;
+	}
+	public final void set$is_need_proxy(boolean on) alias setNeedProxy {
+		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
+		this.is_need_proxy = on;
+	}
 
 	// Var specific
-	public boolean isNeedProxy()	{ return (flags & ACC_NEED_PROXY) != 0; }
-	public boolean isNeedRefProxy()	{ return (flags & ACC_NEED_REFPROXY) != 0; }
-//	public boolean isPrologVar()	{ return (flags & ACC_PROLOGVAR) != 0; }
-//	public boolean isLocalPrologVar()	{ return (flags & ACC_LOCALPROLOGVAR) != 0; }
-	public boolean isLocalRuleVar()	{ return (flags & ACC_LOCALRULEVAR) != 0; }
-//	public boolean isLocalPrologForVar()	{ return (flags & ACC_LOCALPROLOGFORVAR) != 0; }
-	public boolean isClosureProxy()	{ return (flags & ACC_CLOSURE_PROXY) != 0; }
-	public boolean isInitWrapper()	{ return (flags & ACC_INIT_WRAPPER) != 0; }
+	
+	// need a reference proxy access 
+	public final boolean get$is_var_need_ref_proxy()  alias isNeedRefProxy  {
+		assert(this instanceof Var,"For node "+this.getClass());
+		return this.is_var_need_ref_proxy;
+	}
+	public final void set$is_var_need_ref_proxy(boolean on) alias setNeedRefProxy {
+		assert(this instanceof Var,"For node "+this.getClass());
+		this.is_var_need_ref_proxy = on;
+		if (on) this.is_need_proxy = on;
+	}
+	// is a local var in a rule 
+	public final boolean get$is_var_local_rule_var()  alias isLocalRuleVar  {
+		assert(this instanceof Var,"For node "+this.getClass());
+		return this.is_var_local_rule_var;
+	}
+	public final void set$is_var_local_rule_var(boolean on) alias setLocalRuleVar {
+		assert(this instanceof Var,"For node "+this.getClass());
+		this.is_var_local_rule_var = on;
+	}
+	// closure proxy
+	public final boolean get$is_var_closure_proxy()  alias isClosureProxy  {
+		assert(this instanceof Var,"For node "+this.getClass());
+		return this.is_var_closure_proxy;
+	}
+	public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
+		assert(this instanceof Var,"For node "+this.getClass());
+		this.is_var_closure_proxy = on;
+	}
 
+	//
 	// Field specific
-	public boolean isVirtual()		{ return (flags & ACC_VIRTUAL) != 0; }
-	public boolean isPackerField()	{ return (flags & ACC_PACKER_FIELD) != 0; }
-	public boolean isPackedField()	{ return (flags & ACC_PACKED_FIELD) != 0; }
+	//
 
-	// Var/field
-	public boolean isForward()		{ return (flags & ACC_FORWARD) != 0; }
+	// is a virtual field
+	public final boolean get$is_fld_virtual()  alias isVirtual  {
+		assert(this instanceof Field,"For node "+this.getClass());
+		return this.is_fld_virtual;
+	}
+	public final void set$is_fld_virtual(boolean on) alias setVirtual {
+		assert(this instanceof Field,"For node "+this.getClass());
+		this.is_fld_virtual = on;
+	}
+	// packer field (auto-generated for packed fields)
+	public final boolean get$is_fld_packer()  alias isPackerField  {
+		assert(this instanceof Field,"For node "+this.getClass());
+		return this.is_fld_packer;
+	}
+	public final void set$is_fld_packer(boolean on) alias setPackerField {
+		assert(this instanceof Field,"For node "+this.getClass());
+		this.is_fld_packer = on;
+	}
+	// packed field
+	public final boolean get$is_fld_packed()  alias isPackedField  {
+		assert(this instanceof Field,"For node "+this.getClass());
+		return this.is_fld_packed;
+	}
+	public final void set$is_fld_packed(boolean on) alias setPackedField {
+		assert(this instanceof Field,"For node "+this.getClass());
+		this.is_fld_packed = on;
+	}
 
+	//
 	// Expr specific
-	public boolean isUseNoProxy()	{ return (flags & ACC_USE_NOPROXY) != 0; }
-	public boolean isAsField()		{ return (flags & ACC_AS_FIELD) != 0; }
-	public boolean isConstExpr()	{ return (flags & ACC_CONSTEXPR) != 0; }
-	public boolean isTryResolved()	{ return (flags & ACC_TRYRESOLVED) != 0; }
-	public boolean isGenResolve()	{ return (flags & ACC_GENRESOLVE) != 0; }
-	public boolean isForWrapper()	{ return (flags & ACC_FOR_WRAPPER) != 0; }
+	//
 
-	// Statement specific
-	public boolean isAbrupted()	{ return (flags & ACC_ABRUPTED) != 0; }
-	public boolean isBreaked()	{ return (flags & ACC_BREAKED) != 0; }
-	public boolean isMethodAbrupted()	{ return (flags & ACC_METHODABRUPTED) != 0; }
-	public boolean isAutoReturnable()	{ return (flags & ACC_AUTORETURNABLE) != 0; }
-	public boolean isBreakTarget()	{ return (flags & ACC_BREAK_TARGET) != 0; }
-	public boolean isProductionSome()	{ return (flags & ACC_PRODUCTION_SOME) != 0; }
-	public boolean isProductionAny()	{ return (flags & ACC_PRODUCTION_ANY) != 0; }
-	public boolean isProductionMaybe()	{ return (flags & ACC_PRODUCTION_MAYBE) != 0; }
+	// use no proxy	
+	public final boolean get$is_expr_use_no_proxy()  alias isUseNoProxy  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_use_no_proxy;
+	}
+	public final void set$is_expr_use_no_proxy(boolean on) alias setUseNoProxy {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_use_no_proxy = on;
+	}
+	// use as field (disable setter/getter calls for virtual fields)
+	public final boolean get$is_expr_as_field()  alias isAsField  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_as_field;
+	}
+	public final void set$is_expr_as_field(boolean on) alias setAsField {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_as_field = on;
+	}
+	// constant expression
+	public final boolean get$is_expr_const_expr()  alias isConstExpr  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_const_expr;
+	}
+	public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_const_expr = on;
+	}
+	// tried to be resolved
+	public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_try_resolved;
+	}
+	public final void set$is_expr_try_resolved(boolean on) alias setTryResolved {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_try_resolved = on;
+	}
+	// resolved for generation
+	public final boolean get$is_expr_gen_resolved()  alias isGenResolve  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_gen_resolved;
+	}
+	public final void set$is_expr_gen_resolved(boolean on) alias setGenResolve {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_gen_resolved = on;
+	}
+	// used bt for()
+	public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_for_wrapper;
+	}
+	public final void set$is_expr_for_wrapper(boolean on) alias setForWrapper {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_for_wrapper = on;
+	}
 
-	// General
-	public boolean isAccessedFromInner()	{ return (flags & ACC_FROM_INNER) != 0; }
-	public boolean isResolved()		{ return (flags & ACC_RESOLVED) != 0; }
-	public boolean isHidden()		{ return (flags & ACC_HIDDEN) != 0; }
-	public boolean isBad()			{ return (flags & ACC_BAD) != 0; }
+	//
+	// Statement specific flags
+	//
+	
+	// abrupted
+	public final boolean get$is_stat_abrupted()  alias isAbrupted  {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		return this.is_stat_abrupted;
+	}
+	public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		this.is_stat_abrupted = on;
+	}
+	// breaked
+	public final boolean get$is_stat_breaked()  alias isBreaked  {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		return this.is_stat_breaked;
+	}
+	public final void set$is_stat_breaked(boolean on) alias setBreaked {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		this.is_stat_breaked = on;
+	}
+	// method-abrupted
+	public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		return this.is_stat_method_abrupted;
+	}
+	public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		this.is_stat_method_abrupted = on;
+		if (on) this.is_stat_abrupted = true;
+	}
+	// auto-returnable
+	public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		return this.is_stat_auto_returnable;
+	}
+	public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		this.is_stat_auto_returnable = on;
+	}
+	// break target
+	public final boolean get$is_stat_break_target()  alias isBreakTarget  {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		return this.is_stat_break_target;
+	}
+	public final void set$is_stat_auto_returable(boolean on) alias setBreakTarget {
+		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		this.is_stat_break_target = on;
+	}
+
+	//
+	// General flags
+	//
+
+	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
+	public final boolean get$is_accessed_from_inner()  alias isAccessedFromInner  { return this.is_accessed_from_inner; }
+	public final void set$is_accessed_from_inner(boolean on) alias setAccessedFromInner { this.is_accessed_from_inner = on; }
+	// resolved
+	public final boolean get$is_resolved()  alias isResolved  { return this.is_resolved; }
+	public final void set$is_resolved(boolean on) alias setResolved { this.is_resolved = on; }
+	// hidden
+	public final boolean get$is_hidden()  alias isHidden  { return this.is_hidden; }
+	public final void set$is_hidden(boolean on) alias setHidden { this.is_hidden = on; }
+	// bad
+	public final boolean get$is_bad()  alias isBad  { return this.is_bad; }
+	public final void set$is_bad(boolean on) alias setBad { this.is_bad = on; }
 
 	public void setPublic(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
@@ -304,345 +743,6 @@ public abstract class ASTNode implements Constants {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_SUPER;
 		else flags &= ~ACC_SUPER;
-	}
-
-	// Struct specific
-	public void setPackage(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PACKAGE set to "+on+" from "+((flags & ACC_PACKAGE)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_INTERFACE|ACC_PACKAGE);
-		if( on ) flags |= ACC_PACKAGE;
-	}
-	public void setArgument(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ARGUMENT set to "+on+" from "+((flags & ACC_ARGUMENT)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_ARGUMENT;
-		else flags &= ~ACC_ARGUMENT;
-	}
-	public void setPizzaCase(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PIZZACASE set to "+on+" from "+((flags & ACC_PIZZACASE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PIZZACASE;
-		else flags &= ~ACC_PIZZACASE;
-	}
-	public void setLocal(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCAL set to "+on+" from "+((flags & ACC_RESOLVED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_LOCAL;
-		else flags &= ~ACC_LOCAL;
-	}
-	public void setAnonymouse(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ANONYMOUSE set to "+on+" from "+((flags & ACC_RESOLVED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_ANONYMOUSE;
-		else flags &= ~ACC_ANONYMOUSE;
-	}
-	public void setHasCases(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_HAS_CASES set to "+on+" from "+((flags & ACC_RESOLVED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_HAS_CASES;
-		else flags &= ~ACC_HAS_CASES;
-	}
-	public void setVerified(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VERIFIED set to "+on+" from "+((flags & ACC_VERIFIED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_VERIFIED;
-		else flags &= ~ACC_VERIFIED;
-	}
-	public void setMembersGenerated(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_MEMBERS_GENERATED set to "+on+" from "+((flags & ACC_MEMBERS_GENERATED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_MEMBERS_GENERATED;
-		else flags &= ~ACC_MEMBERS_GENERATED;
-	}
-	public void setStatementsGenerated(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATEMENTS_GENERATED set to "+on+" from "+((flags & ACC_STATEMENTS_GENERATED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_STATEMENTS_GENERATED;
-		else flags &= ~ACC_STATEMENTS_GENERATED;
-	}
-	public void setGenerated(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GENERATED set to "+on+" from "+((flags & ACC_GENERATED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_GENERATED;
-		else flags &= ~ACC_GENERATED;
-	}
-	public void setEnum(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ENUM set to "+on+" from "+((flags & ACC_ENUM)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM);
-		if( on ) flags |= ACC_ENUM;
-	}
-	public void setSyntax(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNTAX set to "+on+" from "+((flags & ACC_SYNTAX)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_INTERFACE|ACC_PACKAGE|ACC_ENUM|ACC_SYNTAX);
-		if( on ) flags |= ACC_SYNTAX;
-	}
-	public void setPrimitiveEnum(boolean on) {
-		assert(this instanceof Struct && this.isEnum(),"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIMITIVE_ENUM set to "+on+" from "+((flags & ACC_PRIMITIVE_ENUM)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~ACC_PRIMITIVE_ENUM;
-		if( on ) flags |= ACC_PRIMITIVE_ENUM;
-	}
-	public void setWrapper(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_WRAPPER set to "+on+" from "+((flags & ACC_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_WRAPPER;
-		else flags &= ~ACC_WRAPPER;
-	}
-
-	// Method specific
-	public void setMultiMethod(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_MULTIMETHOD set to "+on+" from "+((flags & ACC_MULTIMETHOD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_MULTIMETHOD;
-		else flags &= ~ACC_MULTIMETHOD;
-	}
-	public void setVirtualStatic(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VIRTUALSTATIC set to "+on+" from "+((flags & ACC_VIRTUALSTATIC)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_VIRTUALSTATIC;
-		else flags &= ~ACC_VIRTUALSTATIC;
-	}
-	public void setVarArgs(boolean on) {
-		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VARARGS set to "+on+" from "+((flags & ACC_VARARGS)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_VARARGS;
-		else flags &= ~ACC_VARARGS;
-	}
-	public void setRuleMethod(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_RULEMETHOD set to "+on+" from "+((flags & ACC_RULEMETHOD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_RULEMETHOD;
-		else flags &= ~ACC_RULEMETHOD;
-	}
-	public void setOperatorMethod(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_OPERATORMETHOD set to "+on+" from "+((flags & ACC_OPERATORMETHOD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_OPERATORMETHOD;
-		else flags &= ~ACC_OPERATORMETHOD;
-	}
-	public void setGenPostCond(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GENPOSTCOND set to "+on+" from "+((flags & ACC_GENPOSTCOND)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_GENPOSTCOND;
-		else flags &= ~ACC_GENPOSTCOND;
-	}
-	public void setNeedFieldInits(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_NEEDFIELDINITS set to "+on+" from "+((flags & ACC_NEEDFIELDINITS)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_NEEDFIELDINITS;
-		else flags &= ~ACC_NEEDFIELDINITS;
-	}
-	public void setInvariantMethod(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INVARIANT_METHOD set to "+on+" from "+((flags & ACC_INVARIANT_METHOD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_INVARIANT_METHOD;
-		else flags &= ~ACC_INVARIANT_METHOD;
-	}
-	public void setLocalMethod(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCAL_METHOD set to "+on+" from "+((flags & ACC_LOCAL_METHOD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_LOCAL_METHOD;
-		else flags &= ~ACC_LOCAL_METHOD;
-	}
-	public void setProduction(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRODUCTION set to "+on+" from "+((flags & ACC_PRODUCTION)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PRODUCTION;
-		else flags &= ~ACC_PRODUCTION;
-	}
-
-	// Var specific
-	public void setNeedProxy(boolean on) {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_NEED_PROXY set to "+on+" from "+((flags & ACC_NEED_PROXY)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_NEED_PROXY;
-		else flags &= ~ACC_NEED_PROXY;
-	}
-	public void setNeedRefProxy(boolean on) {
-		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_NEED_REFPROXY set to "+on+" from "+((flags & ACC_NEED_REFPROXY)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_NEED_PROXY | ACC_NEED_REFPROXY;
-		else flags &= ~ACC_NEED_REFPROXY;
-	}
-//	public void setPrologVar(boolean on) {
-//		assert(this instanceof Var,"For node "+this.getClass());
-//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROLOGVAR set to "+on+" from "+((flags & ACC_PROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-//		if( on ) flags |= ACC_PROLOGVAR;
-//		else flags &= ~ACC_PROLOGVAR;
-//	}
-//	public void setLocalPrologVar(boolean on) {
-//		assert(this instanceof Var || this instanceof kiev.parser.ASTFormalParameter,"For node "+this.getClass());
-//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-//		if( on ) flags |= ACC_LOCALPROLOGVAR;
-//		else flags &= ~ACC_LOCALPROLOGVAR;
-//	}
-	public void setLocalRuleVar(boolean on) {
-		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALRULEVAR set to "+on+" from "+((flags & ACC_LOCALRULEVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_LOCALRULEVAR;
-		else flags &= ~ACC_LOCALRULEVAR;
-	}
-//	public void setLocalPrologForVar(boolean on) {
-//		assert(this instanceof Var,"For node "+this.getClass());
-//		trace(Kiev.debugFlags,"Member "+this+" flag ACC_LOCALPROLOGFORVAR set to "+on+" from "+((flags & ACC_LOCALPROLOGFORVAR)!=0)+", now 0x"+Integer.toHexString(flags));
-//		if( on ) flags |= ACC_LOCALPROLOGFORVAR;
-//		else flags &= ~ACC_LOCALPROLOGFORVAR;
-//	}
-	public void setClosureProxy(boolean on) {
-		assert(this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CLOSURE_PROXY set to "+on+" from "+((flags & ACC_CLOSURE_PROXY)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_CLOSURE_PROXY;
-		else flags &= ~ACC_CLOSURE_PROXY;
-	}
-
-	// Var/field specific
-	public void setInitWrapper(boolean on) {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INIT_WRAPPER set to "+on+" from "+((flags & ACC_INIT_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_INIT_WRAPPER;
-		else flags &= ~ACC_INIT_WRAPPER;
-	}
-
-
-	// Field specific
-	public void setVirtual(boolean on) {
-		assert(this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VIRTUAL set to "+on+" from "+((flags & ACC_VIRTUAL)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_VIRTUAL;
-		else flags &= ~ACC_VIRTUAL;
-	}
-	public void setPackerField(boolean on) {
-		assert(this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PACKER_FIELD set to "+on+" from "+((flags & ACC_PACKER_FIELD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PACKER_FIELD;
-		else flags &= ~ACC_PACKER_FIELD;
-	}
-	public void setPackedField(boolean on) {
-		assert(this instanceof Field,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PACKED_FIELD set to "+on+" from "+((flags & ACC_PACKED_FIELD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PACKED_FIELD;
-		else flags &= ~ACC_PACKED_FIELD;
-	}
-
-	// Var/field
-	public void setForward(boolean on) {
-		assert(this instanceof Field || this instanceof Var,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FORWARD set to "+on+" from "+((flags & ACC_FORWARD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_FORWARD;
-		else flags &= ~ACC_FORWARD;
-	}
-
-	// Expr specific
-	public void setUseNoProxy(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_USE_NOPROXY set to "+on+" from "+((flags & ACC_USE_NOPROXY)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_USE_NOPROXY;
-		else flags &= ~ACC_USE_NOPROXY;
-	}
-	public void setAsField(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_AS_FIELD set to "+on+" from "+((flags & ACC_AS_FIELD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_AS_FIELD;
-		else flags &= ~ACC_AS_FIELD;
-	}
-	public void setConstExpr(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_CONSTEXPR set to "+on+" from "+((flags & ACC_CONSTEXPR)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_CONSTEXPR;
-		else flags &= ~ACC_CONSTEXPR;
-	}
-	public void setTryResolved(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRYRESOLVED set to "+on+" from "+((flags & ACC_TRYRESOLVED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_TRYRESOLVED;
-		else flags &= ~ACC_TRYRESOLVED;
-	}
-	public void setGenResolve(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_GENRESOLVE set to "+on+" from "+((flags & ACC_GENRESOLVE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_GENRESOLVE;
-		else flags &= ~ACC_GENRESOLVE;
-	}
-	public void setForWrapper(boolean on) {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FOR_WRAPPER set to "+on+" from "+((flags & ACC_FOR_WRAPPER)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_FOR_WRAPPER;
-		else flags &= ~ACC_FOR_WRAPPER;
-	}
-
-	// Statement specific
-	public void setAbrupted(boolean on) {
-		assert(this instanceof Statement || this instanceof CaseLabel || this instanceof CatchInfo,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABRUPTED set to "+on+" from "+((flags & ACC_ABRUPTED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_ABRUPTED;
-		else flags &= ~ACC_ABRUPTED;
-	}
-	public void setBreaked(boolean on) {
-		assert(this instanceof Statement || this instanceof CaseLabel || this instanceof CatchInfo,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_BREAKED set to "+on+" from "+((flags & ACC_BREAKED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_BREAKED;
-		else flags &= ~ACC_BREAKED;
-	}
-	public void setMethodAbrupted(boolean on) {
-		assert(this instanceof Statement || this instanceof CaseLabel || this instanceof CatchInfo,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_METHODABRUPTED set to "+on+" from "+((flags & ACC_METHODABRUPTED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_ABRUPTED | ACC_METHODABRUPTED;
-		else flags &= ~ACC_METHODABRUPTED;
-	}
-	public void setAutoReturnable(boolean on) {
-		assert(this instanceof Statement || this instanceof CaseLabel || this instanceof CatchInfo,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_AUTORETURNABLE set to "+on+" from "+((flags & ACC_AUTORETURNABLE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_AUTORETURNABLE;
-		else flags &= ~ACC_AUTORETURNABLE;
-	}
-	public void setBreakTarget(boolean on) {
-		assert(this instanceof Statement,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_BREAK_TARGET set to "+on+" from "+((flags & ACC_BREAK_TARGET)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_BREAK_TARGET;
-		else flags &= ~ACC_BREAK_TARGET;
-	}
-	public void setProductionSome(boolean on) {
-		assert(this instanceof Statement,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRODUCTION_SOME set to "+on+" from "+((flags & ACC_PRODUCTION_SOME)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PRODUCTION_SOME;
-		else flags &= ~ACC_PRODUCTION_SOME;
-	}
-	public void setProductionAny(boolean on) {
-		assert(this instanceof Statement,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRODUCTION_ANY set to "+on+" from "+((flags & ACC_PRODUCTION_ANY)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PRODUCTION_ANY;
-		else flags &= ~ACC_PRODUCTION_ANY;
-	}
-	public void setProductionMaybe(boolean on) {
-		assert(this instanceof Statement,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRODUCTION_MAYBE set to "+on+" from "+((flags & ACC_PRODUCTION_MAYBE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_PRODUCTION_MAYBE;
-		else flags &= ~ACC_PRODUCTION_MAYBE;
-	}
-
-	// General
-	public void setAccessedFromInner(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FROM_INNER set to "+on+" from "+((flags & ACC_FROM_INNER)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_FROM_INNER;
-		else flags &= ~ACC_FROM_INNER;
-	}
-	public void setResolved(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_RESOLVED set to "+on+" from "+((flags & ACC_RESOLVED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_RESOLVED;
-		else flags &= ~ACC_RESOLVED;
-	}
-	public void setHidden(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_HIDDEN set to "+on+" from "+((flags & ACC_HIDDEN)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_HIDDEN;
-		else flags &= ~ACC_HIDDEN;
-	}
-	public void setBad(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_BAD set to "+on+" from "+((flags & ACC_BAD)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_BAD;
-		else flags &= ~ACC_BAD;
 	}
 
 }

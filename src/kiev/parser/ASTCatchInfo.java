@@ -50,8 +50,7 @@ public class ASTCatchInfo extends SimpleNode {
     }
 
 	public ASTNode resolve(Type reqType) {
-		CatchInfo ci = new CatchInfo(pos,par.pass3(),body);
-		ci.parent = parent;
+		CatchInfo ci = new CatchInfo(pos,parent,par.pass3(),body);
 		return ci.resolve(Type.tpVoid);
 	}
 

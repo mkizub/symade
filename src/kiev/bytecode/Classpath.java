@@ -98,7 +98,7 @@ public class Classpath implements BytecodeFileConstants {
 
 	public static byte[] createPlainPackage(KString clazz_name) {
 		Clazz cl = new Clazz();
-		cl.flags = ACC_PUBLIC | ACC_PACKAGE;
+		cl.flags = ACC_PUBLIC | ACC_PRIVATE;
 		PoolConstant[] pool = new PoolConstant[3];
 		pool[0] = new VoidPoolConstant();
 		pool[1] = new ClazzPoolConstant();

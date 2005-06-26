@@ -54,25 +54,6 @@ public class ASTTryStatement extends Statement {
     }
 
 	public ASTNode resolve(Type reqType) {
-//		PassInfo.push(this);
-//        try {
-//			try {
-//				body = (Statement)body.resolve(Type.tpVoid);
-//			} catch(Exception e ) { Kiev.reportError(body.pos,e); }
-//            for(int i=0; i < catchers.length; i++) {
-//				try {
-//					catchers[i] = ((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
-//				} catch(Exception e ) {
-//					Kiev.reportError(catchers[i].pos,e);
-//				}
-//			}
-//			try {
-//            	if( finally_catcher != null )
-//					finally_catcher = ((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
-//			} catch(Exception e ) {
-//				Kiev.reportError(pos,e);
-//			}
-//		} finally { PassInfo.pop(this); }
 		return new TryStat(pos,parent,body,catchers,finally_catcher).resolve(reqType);
 	}
 
