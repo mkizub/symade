@@ -802,7 +802,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			if( this.type.isInstanceOf(t.clazz.type) )
 				return ti_access;
 
-			if (t.isArgument()) {
+			if (t.clazz.isArgument()) {
 				// Get corresponded type argument
 				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.clazz.name.short_name.length())
 						.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();
@@ -925,8 +925,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				BlockStat body = new BlockStat(f.pos,set_var,ASTNode.emptyArray);
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
-						f.isStatic()? new StaticFieldAccessExpr(f.pos,this,f,ACC_AS_FIELD)
-									: new FieldAccessExpr(f.pos,f,ACC_AS_FIELD),
+						f.isStatic()? new StaticFieldAccessExpr(f.pos,this,f,true)
+									: new FieldAccessExpr(f.pos,f,true),
 						new VarAccessExpr(f.pos,value)
 					)
 				);
@@ -940,7 +940,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			Kiev.reportError(f.pos,"Virtual set$ method for non-writeable field");
 		}
 
-		if (!isVirtual())
+		if (!f.isVirtual())
 			return;		// no need to generate getter
 		if( !get_found && f.acc.readable()) {
 			Method get_var = new Method(this,get_name,
@@ -951,7 +951,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			get_var.params = new Var[]{self};
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
-				Statement st = new ReturnStat(f.pos,body,new FieldAccessExpr(f.pos,f,ACC_AS_FIELD));
+				Statement st = new ReturnStat(f.pos,body,new FieldAccessExpr(f.pos,f,true));
 				body.stats = new ASTNode[]{st};
 				get_var.body = body;
 			}
@@ -1170,11 +1170,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
-			flags |= ACC_PUBLIC | ACC_STATIC | ACC_RESOLVED;
+			flags |= ACC_PUBLIC | ACC_STATIC;
 			typeinfo_clazz = Env.newStruct(
 				ClazzName.fromOuterAndName(this,nameClTypeInfo,false,true),this,flags,true
 				);
 			typeinfo_clazz.setPublic(true);
+			typeinfo_clazz.setResolved(true);
 			if (super_clazz != null && super_clazz.clazz.typeinfo_clazz != null)
 				typeinfo_clazz.super_clazz = super_clazz.clazz.typeinfo_clazz.type;
 			else

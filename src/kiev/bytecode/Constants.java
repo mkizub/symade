@@ -55,18 +55,17 @@ public interface BytecodeFileConstants {
 	/** Class', field's and method's (access) flags */
 	public static final int ACC_PUBLIC					= 1 << 0;
 	public static final int ACC_PRIVATE					= 1 << 1;
-	public static final int ACC_PROTECTED				= 1 << 2;
+	public static final int ACC_PROTECTED					= 1 << 2;
 	public static final int ACC_STATIC					= 1 << 3;
-	public static final int ACC_FINAL					= 1 << 4;
-	public static final int ACC_SYNCHRONIZED			= 1 << 5;
-	public static final int ACC_SUPER					= 1 << 5;
-	public static final int ACC_VOLATILE				= 1 << 6;
-	public static final int ACC_TRANSIENT				= 1 << 7;
+	public static final int ACC_FINAL						= 1 << 4;
+	public static final int ACC_SYNCHRONIZED				= 1 << 5;
+	public static final int ACC_SUPER						= 1 << 5;
+	public static final int ACC_VOLATILE					= 1 << 6;
+	public static final int ACC_TRANSIENT					= 1 << 7;
 	public static final int ACC_NATIVE					= 1 << 8;
-	public static final int ACC_INTERFACE				= 1 << 9;
-	public static final int ACC_ABSTRACT				= 1 << 10;
-	public static final int ACC_PACKAGE					= 1 << 11;
-
+	public static final int ACC_INTERFACE					= 1 << 9;
+	public static final int ACC_ABSTRACT					= 1 << 10;
+	
 }
 
 public interface JavaOpcodes {

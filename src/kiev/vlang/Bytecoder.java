@@ -89,9 +89,12 @@ public class Bytecoder implements Constants {
 		// Clean java flags
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
-		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_LOCAL|ACC_ANONYMOUSE|ACC_HAS_CASES
-				|ACC_VERIFIED|ACC_ENUM|ACC_SYNTAX);
+		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_ENUM|ACC_SYNTAX);
 		fl |= bcclazz.flags;
+		if ((fl & (ACC_PUBLIC | ACC_PRIVATE)) == (ACC_PUBLIC | ACC_PRIVATE)) {
+			fl &= ~ACC_PRIVATE;
+			fl |=  ACC_PACKAGE;
+		}
 		cl.setFlags( fl );
 
 		cl.setResolved(true);
@@ -617,7 +620,7 @@ public class Bytecoder implements Constants {
 				}
 				cl.imported = (ASTNode[])Arrays.append(cl.imported,imp);
 				if( this.cl.isPackage() )
-		        	Kiev.packages_scanned.append(this.cl);
+					Kiev.packages_scanned.append(this.cl);
 			} else {
 				ASTNode node;
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
@@ -789,7 +792,6 @@ public class Bytecoder implements Constants {
 	    if( !cl.isInterface() && !cl.isArgument() )
 	    	cl.setSuper(true);
 		bcclazz.flags = cl.getJavaFlags();
-		if( cl.isPackage() ) bcclazz.flags |= ACC_PACKAGE;
 
 		// This class name
 		KString cl_sig;

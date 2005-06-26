@@ -210,7 +210,8 @@ public class Env extends Struct {
 			throw new RuntimeException("Class "+cl+" is not a class's argument");
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated class argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT|ACC_RESOLVED);
+		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
+		cl.setResolved(true);
 		cl.super_clazz = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);
@@ -238,7 +239,8 @@ public class Env extends Struct {
 			throw new RuntimeException("Class "+cl+" is not a class's argument");
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated method argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT|ACC_RESOLVED);
+		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
+		cl.setResolved(true);
 		cl.super_clazz = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);

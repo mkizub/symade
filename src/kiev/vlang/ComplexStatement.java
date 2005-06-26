@@ -637,7 +637,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	}
 }
 
-public class CatchInfo extends ASTNode implements Scope {
+public class CatchInfo extends Statement implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
@@ -647,8 +647,8 @@ public class CatchInfo extends ASTNode implements Scope {
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
 
-	public CatchInfo(int pos, Var arg, Statement body) {
-		super(pos);
+	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
+		super(pos, parent);
 		this.arg = arg;
 		this.arg.parent = arg;
 		this.body = body;
@@ -731,8 +731,8 @@ public class FinallyInfo extends CatchInfo {
 	public Var	ret_arg;
 	public CodeLabel	subr_label;
 
-	public FinallyInfo(int pos, Statement body) {
-		super(pos,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
+	public FinallyInfo(int pos, ASTNode parent, Statement body) {
+		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
         ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
         ret_arg.parent = this;
 	}

@@ -48,8 +48,7 @@ public class ASTFinallyInfo extends SimpleNode {
     }
 
 	public ASTNode resolve(Type reqType) {
-		FinallyInfo fi = new FinallyInfo(pos,body);
-		fi.parent = parent;
+		FinallyInfo fi = new FinallyInfo(pos,parent,body);
 		return fi.resolve(Type.tpVoid);
 	}
 

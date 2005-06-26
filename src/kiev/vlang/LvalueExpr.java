@@ -1047,10 +1047,10 @@ public class FieldAccessExpr extends LvalueExpr {
 		this.var = var;
 	}
 
-	public FieldAccessExpr(int pos, Field var, int flags) {
+	public FieldAccessExpr(int pos, Field var, boolean direct_access) {
 		super(pos);
 		this.var = var;
-		setFlags(flags);
+		if (direct_access) setAsField(true);
 	}
 
 	public String toString() { return var.toString(); }
@@ -1335,11 +1335,11 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		this.obj = obj;
 	}
 
-	public StaticFieldAccessExpr(int pos, Struct obj, Field var, int flags) {
+	public StaticFieldAccessExpr(int pos, Struct obj, Field var, boolean direct_access) {
 		super(pos);
 		this.var = var;
 		this.obj = obj;
-		setFlags(flags);
+		if (direct_access) setAsField(true);
 	}
 
 	public String toString() { return var.toString(); }
