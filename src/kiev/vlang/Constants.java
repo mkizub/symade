@@ -434,6 +434,12 @@ public interface Constants extends AccessFlags {
 	public final static KString attrPackedFields	= KString.from("kiev.PackedFields");
 	public final static KString attrPackerField		= KString.from("kiev.PackerField");
 
+	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
+	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
+	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
+	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
+	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
+
 	public final static KString nameVoid	= KString.from("void");
 	public final static KString sigVoid		= KString.from("V");
 	public final static KString nameBoolean	= KString.from("boolean");

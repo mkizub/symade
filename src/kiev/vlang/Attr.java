@@ -953,3 +953,163 @@ public class PackerFieldAttr extends Attr {
 		return kea;
 	}
 }
+
+public abstract class MetaAttr extends Attr {
+	
+	public MetaAttr(KString name) {
+		super(name);
+	}
+	
+	protected final void generateValue(ASTNode value) {
+		if (value instanceof ConstExpr) {
+			Object v = ((ConstExpr)value).value;
+			if     ( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
+			else if( v instanceof Short )			ConstPool.addNumberCP((Short)v);
+			else if( v instanceof Integer )			ConstPool.addNumberCP((Integer)v);
+			else if( v instanceof Character )		ConstPool.addNumberCP(new Integer((int)((Character)v).charValue()));
+			else if( v instanceof Long )			ConstPool.addNumberCP((Long)v);
+			else if( v instanceof Float )			ConstPool.addNumberCP((Float)v);
+			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
+			else if( v instanceof KString )			ConstPool.addStringCP((KString)v);
+		}
+		else if (value instanceof Struct) {
+			ConstPool.addClazzCP(((Struct)value).type.java_signature);
+		}
+		else if (value instanceof Meta) {
+			Meta m = (Meta)value;
+			ConstPool.addClazzCP(m.clazz.name.signature());
+			foreach (MetaValue v; m) {
+				ConstPool.addAsciiCP(v.method.name.name);
+				generateValue(v.value);
+			}
+		}
+		else if (value instanceof NewInitializedArrayExpr) {
+			ASTNode[] arr = ((NewInitializedArrayExpr)value).args;
+			foreach (ASTNode n; arr)
+				generateValue(n);
+		}
+	}
+
+	public kiev.bytecode.Annotation.element_value write_value(ASTNode value) {
+		if (value instanceof ConstExpr) {
+			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
+			Object v = ((ConstExpr)value).value;
+			if     ( v instanceof Byte ) {
+				ev.tag = (byte)'B';
+				ev.const_value_index = ConstPool.getNumberCP((Byte)v).pos;
+			}
+			else if( v instanceof Short ) {
+				ev.tag = (byte)'S';
+				ev.const_value_index = ConstPool.getNumberCP((Short)v).pos;
+			}
+			else if( v instanceof Integer ) {
+				ev.tag = (byte)'I';
+				ev.const_value_index = ConstPool.getNumberCP((Integer)v).pos;
+			}
+			else if( v instanceof Character ) {
+				ev.tag = (byte)'C';
+				ev.const_value_index = ConstPool.getNumberCP(new Integer((int)((Character)v).charValue())).pos;
+			}
+			else if( v instanceof Long ) {
+				ev.tag = (byte)'J';
+				ev.const_value_index = ConstPool.getNumberCP((Long)v).pos;
+			}
+			else if( v instanceof Float ) {
+				ev.tag = (byte)'F';
+				ev.const_value_index = ConstPool.getNumberCP((Float)v).pos;
+			}
+			else if( v instanceof Double ) {
+				ev.tag = (byte)'D';
+				ev.const_value_index = ConstPool.getNumberCP((Double)v).pos;
+			}
+			else if( v instanceof KString ) {
+				ev.tag = (byte)'s';
+				ev.const_value_index = ConstPool.getStringCP((KString)v).pos;
+			}
+			return ev;
+		}
+		else if (value instanceof Struct) {
+			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
+			ev.tag = (byte)'c';
+			ev.class_info_index = ConstPool.getClazzCP(((Struct)value).type.java_signature).pos;
+			return ev;
+		}
+		else if (value instanceof Meta) {
+			Meta m = (Meta)value;
+			kiev.bytecode.Annotation.element_value_annotation ev = new kiev.bytecode.Annotation.element_value_annotation(); 
+			ev.tag = (byte)'@';
+			ev.annotation_value = new kiev.bytecode.Annotation.annotation();
+			write_annotation(m, ev.annotation_value);
+			return ev;
+		}
+		else if (value instanceof NewInitializedArrayExpr) {
+			ASTNode[] arr = ((NewInitializedArrayExpr)value).args;
+			kiev.bytecode.Annotation.element_value_array ev = new kiev.bytecode.Annotation.element_value_array();
+			ev.tag = (byte)'[';
+			ev.values = new kiev.bytecode.Annotation.element_value[arr.length];
+			int n = 0;
+			foreach (ASTNode node; arr) {
+				ev.values[n] = write_value(node);
+				n++;
+			}
+		}
+		throw new RuntimeException();
+	}
+
+	public void write_annotation(Meta m, kiev.bytecode.Annotation.annotation a) {
+		a.type_index = ConstPool.getClazzCP(m.clazz.name.signature()).pos;
+		a.names = new int[m.size()];
+		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
+		int n = 0;
+		foreach (MetaValue v; m) {
+			a.names[n] = ConstPool.addAsciiCP(v.method.name.name).pos;
+			a.values[n] = write_value(v);
+			n++;
+		}
+	}
+}
+
+public abstract class RMetaAttr extends MetaAttr {
+	public MetaSet      ms;
+	
+	public RMetaAttr(KString name, MetaSet ms) {
+		super(name);
+		this.ms = ms;
+	}
+
+	public void generate() {
+		ConstPool.addAsciiCP(name);
+		foreach (Meta m; ms) {
+			generateValue(m);
+		}
+	}
+	
+}
+
+public class RVMetaAttr extends RMetaAttr {
+	public RVMetaAttr(MetaSet metas) {
+		super(Constants.attrRVAnnotations, metas);
+	}
+	public kiev.bytecode.Attribute write() {
+		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
+		a.annotations = new kiev.bytecode.Annotation.annotation[ms.size()];
+		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		int n = 0;
+		foreach (Meta m; ms) {
+			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
+			write_annotation(m, a.annotations[n]);
+		}
+		return a;
+	}
+}
+
+public class RIMetaAttr extends RMetaAttr {
+	public RIMetaAttr(MetaSet metas) {
+		super(Constants.attrRIAnnotations, metas);
+	}
+}
+
+
+
+
+

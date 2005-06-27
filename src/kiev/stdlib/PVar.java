@@ -105,7 +105,7 @@ public final $wrapper class PVar<A>
 
 	public void $unbind() {
 		this.$var = null;
-		this.$pvar.$self = null;
+		if (this.$pvar.$self != null) this.$pvar.$self = null;
 	}
 
 	public void $checkIsBinded(String name) {

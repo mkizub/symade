@@ -12,7 +12,7 @@ import kiev.vlang.*;
  */
 
 public class ASTModifiers extends ASTNode {
-	public ASTModifier[]		modifier = ASTModifier.emptyArray;
+	public ASTModifier[]	modifier = ASTModifier.emptyArray;
 	public ASTAccess 		acc;
 	public ASTPack   		pack;
 	public ASTAnnotation[]	annotations = ASTAnnotation.emptyArray;
@@ -52,6 +52,17 @@ public class ASTModifiers extends ASTNode {
 		foreach (ASTModifier m; modifier)
 			flags |= m.flag();
 		return flags;
+	}
+
+	public MetaSet getMetas(MetaSet ms) {
+		foreach (ASTAnnotation a; annotations) {
+			Meta m = new Meta(a.name.name);
+			ms.set(m);
+			foreach (ASTAnnotationValue v; a.values) {
+				m.set(new MetaValue(v.name.name, v.value));
+			}
+		}
+		return ms;
 	}
 
     public Dumper toJava(Dumper dmp) {

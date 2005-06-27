@@ -133,6 +133,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 //			me.gram = new Grammar();
 //		}
 
+		// Attach meta-data to the new structure
+		modifiers.getMetas(me.meta);
 
         PassInfo.push(me);
         try {

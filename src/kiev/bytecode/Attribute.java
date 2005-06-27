@@ -62,8 +62,8 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 
 		attrMap.put(attrRVAnnotations,		Class.forName("kiev.bytecode.RVAnnotations"));
 		attrMap.put(attrRIAnnotations,		Class.forName("kiev.bytecode.RIAnnotations"));
-		attrMap.put(attrRVParAnnotations,		Class.forName("kiev.bytecode.RVRarAnnotations"));
-		attrMap.put(attrRIParAnnotations,		Class.forName("kiev.bytecode.RIParAnnotations"));
+		attrMap.put(attrRVParAnnotations,	Class.forName("kiev.bytecode.RVRarAnnotations"));
+		attrMap.put(attrRIParAnnotations,	Class.forName("kiev.bytecode.RIParAnnotations"));
 		attrMap.put(attrAnnotationDefault,	Class.forName("kiev.bytecode.AnnotationDefault"));
 	}
 
@@ -1053,12 +1053,12 @@ public abstract class Annotation extends Attribute {
 		// 'c' java class
 		// '@' annotation type
 		// '[' array
-		byte tag;
-		abstract int size();
-		abstract void read(ReadContext cont);
-		abstract void write(ReadContext cont);
+		public byte tag;
+		public abstract int size();
+		public abstract void read(ReadContext cont);
+		public abstract void write(ReadContext cont);
 		
-		static element_value Read(ReadContext cont) {
+		public static element_value Read(ReadContext cont) {
 			byte tag  = cont.readByte();
 			element_value v;
 			switch (tag) {
@@ -1080,80 +1080,80 @@ public abstract class Annotation extends Attribute {
 		
 	}
 	public static class element_value_const extends element_value {
-		int  const_value_index;
-		int size() { return 1+2; }
-		void read(ReadContext cont) {
+		public int  const_value_index;
+		public int size() { return 1+2; }
+		public void read(ReadContext cont) {
 			const_value_index = cont.readShort();
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			cont.writeShort(const_value_index);
 		}
 	}
 	public static class element_value_enum_const extends element_value {
-		int  type_name_index;
-		int  const_name_index;
-		int size() { return 1+2+2; }
-		void read(ReadContext cont) {
+		public int  type_name_index;
+		public int  const_name_index;
+		public int size() { return 1+2+2; }
+		public void read(ReadContext cont) {
 			type_name_index = cont.readShort();
 			const_name_index = cont.readShort();
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			cont.writeShort(type_name_index);
 			cont.writeShort(const_name_index);
 		}
 	}
 	public static class element_value_class_info extends element_value {
-		int  class_info_index;
-		int size() { return 1+2; }
-		void read(ReadContext cont) {
+		public int  class_info_index;
+		public int size() { return 1+2; }
+		public void read(ReadContext cont) {
 			class_info_index = cont.readShort();
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			cont.writeShort(class_info_index);
 		}
 	}
 	public static class element_value_annotation extends element_value {
-		annotation annotation_value;
-		int size() { return 1+annotation_value.size(); }
-		void read(ReadContext cont) {
+		public annotation annotation_value;
+		public int size() { return 1+annotation_value.size(); }
+		public void read(ReadContext cont) {
 			annotation_value = new annotation();
 			annotation_value.read(cont);
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			annotation_value.write(cont);
 		}
 	}
 	public static class element_value_array extends element_value {
-		element_value[] values;
-		int size() {
+		public element_value[] values;
+		public int size() {
 			int sz = 1+2;
 			foreach (element_value p; values)
 				sz += p.size(); 
 			return sz;
 		}
-		void read(ReadContext cont) {
+		public void read(ReadContext cont) {
 			int elen = cont.readShort();
 			values = new element_value[elen];
 			for(int i=0; i < elen; i++)
 				values[i] = element_value.Read(cont);
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			cont.writeShort(values.length);
 			for(int i=0; i < values.length; i++)
 				values[i].write(cont);
 		}
 	}
 	public static class annotation {
-		int             type_index;
-		int[]           names;
-		element_value[] values;
-		int size() {
+		public int             type_index;
+		public int[]           names;
+		public element_value[] values;
+		public int size() {
 			int sz = 4;
 			foreach (element_value p; values)
 				sz += 2+p.size(); 
 			return sz;
 		}
-		void read(ReadContext cont) {
+		public void read(ReadContext cont) {
 			type_index = cont.readShort();
 			int elen = cont.readShort();
 			names  = new int[elen];
@@ -1163,7 +1163,7 @@ public abstract class Annotation extends Attribute {
 				values[i] = element_value.Read(cont);
 			}
 		}
-		void write(ReadContext cont) {
+		public void write(ReadContext cont) {
 			cont.writeShort(type_index);
 			cont.writeShort(names.length);
 			for(int i=0; i < names.length; i++) {
@@ -1258,7 +1258,7 @@ public class RIParAnnotations extends ParAnnotations {
 }
 
 public class AnnotationDefault extends Annotation {
-	element_value value;
+	public element_value value;
 
 	public int size() {
 		return 6+value.size();

@@ -103,6 +103,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	/** Array of attributes of this structure */
 	public Attr[]			attrs = Attr.emptyArray;
+	
+	/** Meta-information (annotations) of this structure */
+	public MetaSet			meta;
 
 	virtual abstract int	anonymouse_inner_counter;
 	virtual abstract int	packer_field_counter;
@@ -112,6 +115,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		super(0,0);
 		this.name = name;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 	}
 
 	public Struct(ClazzName name, Struct outer, int acc) {
@@ -119,6 +123,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		this.name = name;
 		package_clazz = outer;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
 	}
@@ -3169,7 +3174,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
 				}
 			}
-
+			
 			if( !isPackage() && sub_clazz!=null && sub_clazz.length > 0 ) {
 				InnerClassesAttr a = new InnerClassesAttr();
 				Struct[] inner = new Struct[sub_clazz.length];
@@ -3227,6 +3232,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
 			}
 
+			if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
+			
 			for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
 			for(int i=0; fields!=null && i < fields.length; i++) {
 				Field f = fields[i];
