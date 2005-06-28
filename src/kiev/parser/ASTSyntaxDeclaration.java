@@ -35,14 +35,10 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
-
-    public KString		name;
-    public ASTNode[]	members = ASTNode.emptyArray;
-	public Struct		me;
+public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 
 	public ASTSyntaxDeclaration(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
+		super();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -125,7 +121,7 @@ public class ASTSyntaxDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public static Struct pass3(Struct me, ASTNode[] members) {
+	public static Struct createMembers(Struct me, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for syntax "+me);
        	Kiev.packages_scanned.append(me);
 		return me;

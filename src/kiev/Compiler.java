@@ -251,10 +251,6 @@ public class Compiler {
 						System.out.println("\tAST tree");
 						Kiev.debugAST		= onoff;
 					}
-					if( dbg.indexOf("profile",0) >= 0 ) {
-						System.out.println("\tProfile counts");
-						Kiev.debugProfile	= onoff;
-					}
 					if( dbg.indexOf("methodtrace",0) >= 0 ) {
 						System.out.println("\tMethod tracing");
 						Kiev.debugMethodTrace	= onoff;
@@ -813,7 +809,6 @@ stop:;
 +"    member   members attaching (AST generation)\n"
 +"    create   members creation\n"
 +"    ast      AST tree\n"
-+"    profile  profile counts\n"
 +"    types    var/field types\n"
 +"\n"
 +" -v or -verbose         Verbose operation.\n"

@@ -1177,7 +1177,7 @@ void EnumDeclaration(ASTModifiers modifiers) :
 }
 
 void EnumBodyDeclaration()       :
-{}
+{ ASTModifiers modifiers; }
 {
 	try {
 		"{"
@@ -1185,19 +1185,82 @@ void EnumBodyDeclaration()       :
 	catch(ParseError e) { rpe("'{' expected",e); }
 	catch(Throwable e) { rperr(e); }
 	try {
-		Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
-		(	LOOKAHEAD(2)
-			"," Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
+		modifiers = Modifiers()
+		EnumFieldDeclaration(modifiers)
+		(	","
+			modifiers = Modifiers()
+			EnumFieldDeclaration(modifiers)
 		)*
-		[ "," ]
 	}
 	catch(ParseError e) { rpe("Enumeration values are expected",e); }
 	catch(Throwable e) { rperr(e); }
+	[
+		";"
+		try {
+			(
+				modifiers = Modifiers()
+				(
+					Initializer(modifiers)
+				|	InvariantDeclaration(modifiers) [ ";" ]
+				|	TypeDeclaration(modifiers) [ ";" ]
+				|	EnumDeclaration(modifiers) [ ";" ]
+				|
+					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+					RuleDeclaration(modifiers)
+				|
+					LOOKAHEAD( [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
+					MethodDeclaration(modifiers)
+				|
+					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+					FieldDecl(modifiers)
+				)
+			)*
+		}
+		catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
+		catch(Throwable e) { rperr(e); }
+	]
 	try {
 		"}"
 	}
 	catch(ParseError e) { rpe("'}' expected",e); }
 	catch(Throwable e) { rperr(e); }
+}
+
+void EnumFieldDeclaration(ASTModifiers modifiers) :
+{/*@bgen(jjtree) EnumFieldDeclaration */
+  ASTEnumFieldDeclaration jjtn000 = new ASTEnumFieldDeclaration(JJTENUMFIELDDECLARATION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) EnumFieldDeclaration */
+        try {
+/*@egen*/
+	{ jjtn000.jjtAddChild(modifiers, -1); }
+	try {
+		Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
+	}
+	catch(ParseError e) { rpe("Enumeration values are expected",e); }
+	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
 }
 
 void CaseTypeDeclaration(ASTModifiers modifiers) :

@@ -2074,8 +2074,8 @@ public class CastExpr extends Expr {
 			if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 				if (et.isIntegerInCode())
 					return this;
-				Field cf = (Field)Type.tpEnum.clazz.resolveName(nameEnumVal);
-				return new AccessExpr(pos,parent,expr,cf).resolve(reqType);
+				Method cf = (Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+				return new CallAccessExpr(pos,parent,expr,cf,Expr.emptyArray).resolve(reqType);
 			}
 			// Try to find $cast method
 			if( !et.isAutoCastableTo(type) ) {

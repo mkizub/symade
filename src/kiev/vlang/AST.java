@@ -55,16 +55,16 @@ public interface TopLevelDecl {
 };
 
 public enum TopLevelPass /*extends int*/ {
-	passStartCleanup		= 0,	// start of compilation or cleanup before next incremental compilation
-	passCreateTopStruct		= 1,	// create top-level Struct
-	passProcessSyntax		= 2,	// process syntax - some import, typedef, operator and macro
-	passArgumentInheritance	= 3,	// inheritance of type arguments
-	passStructInheritance	= 4,	// inheritance of classe/interfaces/structures
-	passCreateMembers		= 5,	// create declared members of structures
-	passAutoProxyMethods	= 6,	// autoProxyMethods()
-	passResolveImports		= 7,	// recolve import static for import of fields and methods
-	passResolveFinalFields	= 8,	// resolve final fields, to find out if they are constants
-	passGenerate			= 9		// resolve, generate and so on - each file separatly
+	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
+	passCreateTopStruct		   ,	// create top-level Struct
+	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
+	passArgumentInheritance	   ,	// inheritance of type arguments
+	passStructInheritance	   ,	// inheritance of classe/interfaces/structures
+	passCreateMembers		   ,	// create declared members of structures
+	passAutoProxyMethods	   ,	// autoProxyMethods()
+	passResolveImports		   ,	// recolve import static for import of fields and methods
+	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
 
@@ -72,11 +72,6 @@ public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
-	public static Hashtable<Class,Integer> classes = new Hashtable<Class,Integer>();
-	public static int		max_classes;
-	public static int[]		max_instances = new int[1024];
-	public static int[]		curr_instances = new int[1024];
-	public static int[]		total_instances = new int[1024];
 	private static int		parserAddrIdx;
 
 	public int			pos;
@@ -84,6 +79,7 @@ public abstract class ASTNode implements Constants {
 	public int			flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
+	public virtual packed:1,flags,14 boolean is_fld_enum;        // field
 	// Flags temporary used with java flags
 	public virtual packed:1,flags,16 boolean is_forward;         // var/field
 	public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
@@ -151,32 +147,11 @@ public abstract class ASTNode implements Constants {
 
     public ASTNode(int pos) {
 		this.pos = pos;
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			if( ii == null ) {
-				ii = new Integer(max_classes++);
-				classes.put(cl,ii);
-			}
-			int i = ii.intValue();
-			total_instances[i]++;
-			int ci = ++curr_instances[i];
-			if( ci > max_instances[i] ) max_instances[i] = ci;
-		}
 	}
 
 	public /*abstract*/ void cleanup() {
 		parent = null;
 	};
-
-	public void finalize() {
-		if( Kiev.debugProfile) {
-			Class cl = getClass();
-			Integer ii = classes.get(cl);
-			int i = ii.intValue();
-			curr_instances[i]--;
-		}
-	}
 
 	public ASTNode(int pos, int fl) {
 		this(pos);
@@ -222,7 +197,7 @@ public abstract class ASTNode implements Constants {
 	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass3(Object obj)  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass3()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode autoProxyMethods() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveImports()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
@@ -573,6 +548,15 @@ public abstract class ASTNode implements Constants {
 	public final void set$is_fld_virtual(boolean on) alias setVirtual {
 		assert(this instanceof Field,"For node "+this.getClass());
 		this.is_fld_virtual = on;
+	}
+	// is a field of enum
+	public final boolean get$is_fld_enum()  alias isEnumField  {
+		assert(this instanceof Field,"For node "+this.getClass());
+		return this.is_fld_enum;
+	}
+	public final void set$is_fld_enum(boolean on) alias setEnumField {
+		assert(this instanceof Field,"For node "+this.getClass());
+		this.is_fld_enum = on;
 	}
 	// packer field (auto-generated for packed fields)
 	public final boolean get$is_fld_packer()  alias isPackerField  {

@@ -1263,57 +1263,37 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 
 		if( isEnum() ) {
-			int enum_index = Integer.MIN_VALUE;
-			if( !isPrimitiveEnum() && super_clazz != Type.tpEnum ) {
-				if( !super_clazz.clazz.isEnum() )
-					throw new CompilerException(pos,"enum type extends not enum type "+super_clazz);
-				int ins_pos = 0;
-				foreach(Field f; super_clazz.clazz.fields) {
-					Field nf = new Field(this,f.name.name,this.type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
-					int val = super_clazz.clazz.getValueForEnumField(f);
-					if( enum_index < val ) enum_index = val;
-					nf.init = new NewExpr(pos, this.type, new Expr[]{new ConstExpr(pos,Kiev.newInteger(val))});
-					fields = (Field[])Arrays.insert(fields,nf,ins_pos++);
-				}
+			int enum_fields = 0;
+			foreach (Field f; fields; f.isEnumField()) {
+				enum_fields++;
 			}
-			for(int i=0; i < fields.length; i++) {
-				Field f = fields[i];
-				if( f.init != null ) continue;
-				int enum_index;
-				if (isPrimitiveEnum()) {
-					if( i==0 )
-						enum_index = 0;
-					else
-						enum_index = 1 + ((Number)((ConstExpr)fields[i-1].init).getConstValue()).intValue();
-					f.init = new ConstExpr(f.pos,Kiev.newInteger(enum_index));
-				} else {
-					if( i==0 )
-						enum_index = 0;
-					else
-						enum_index = 1 + ((Number)((ConstExpr)
-							((NewExpr)fields[i-1].init).args[0]).getConstValue()).intValue();
-					f.init = new NewExpr(f.pos,this.type,
-						new Expr[]{new ConstExpr(f.pos,Kiev.newInteger(enum_index))});
-				}
-			}
-			int len = fields.length;
-			int[] values = new int[len];
-			for(int i=0; i < len; i++) {
+			Field[] eflds = new Field[enum_fields];
+			int[] values = new int[enum_fields];
+			for(int i=0, idx=0; i < fields.length; i++, idx++) {
+				eflds[idx] = fields[i];
 				if (isPrimitiveEnum()) {
 					values[i] = ((Number)((ConstExpr)fields[i].init).getConstValue()).intValue();
 				} else {
-					values[i] = ((Number)((ConstExpr)
-						((NewExpr)fields[i].init).args[0]).getConstValue()).intValue();
+					values[i] = idx;
 				}
 			}
 			if (isPrimitiveEnum()) {
-				PrimitiveEnumAttr ea = new PrimitiveEnumAttr(this.super_clazz,fields,values);
+				PrimitiveEnumAttr ea = new PrimitiveEnumAttr(this.super_clazz,eflds,values);
 				addAttr(ea);
 			} else {
-				EnumAttr ea = new EnumAttr(fields,values);
+				EnumAttr ea = new EnumAttr(eflds,values);
 				addAttr(ea);
 			}
 			this.super_clazz = Type.tpEnum;
+			Field vals = addField(new Field(this, nameEnumValuesFld,
+				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			Expr[] vals_init = new Expr[enum_fields];
+			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, vals_init);
+			vals.init.parent = vals;
+			for(int i=0; i < eflds.length; i++) {
+				vals_init[i] = new StaticFieldAccessExpr(eflds[i].pos,this,eflds[i]);
+				vals_init[i].parent = vals.init;
+			}
 		}
 
 		if( isPizzaCase() ) {
@@ -1439,8 +1419,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						params = (Var[])Arrays.append(params,new Var(pos,init,nameTypeInfo,typeinfo_clazz.type,0));
 					}
 					if( isEnum() ) {
+						targs = (Type[])Arrays.append(targs,Type.tpString);
 						targs = (Type[])Arrays.append(targs,Type.tpInt);
-						params = (Var[])Arrays.append(params,new Var(pos,init,nameEnumVal,Type.tpInt,0));
+						targs = (Type[])Arrays.append(targs,Type.tpString);
+						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("name"),Type.tpString,0));
+						params = (Var[])Arrays.append(params,new Var(pos,init,nameEnumOrdinal,Type.tpInt,0));
+						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("text"),Type.tpString,0));
 						if (isPrimitiveEnum())
 							params[0].type = Type.tpEnum;
 					}
@@ -1505,15 +1489,24 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 		// Generate enum's methods
 		if( isEnum() ) {
+			// values()[]
+			{
+			MethodType valuestp;
+		 	valuestp = MethodType.newMethodType(null,Type.emptyArray,Type.newArrayType(this.type));
+			Method mvals = new Method(this,nameEnumValues,valuestp,ACC_PUBLIC | ACC_STATIC);
+			mvals.pos = pos;
+			mvals.body = new BlockStat(pos,mvals);
+			((BlockStat)mvals.body).addStatement(
+				new ReturnStat(pos,mvals.body,
+					new StaticFieldAccessExpr(pos,this,this.resolveField(nameEnumValuesFld)) ) );
+			addMethod(mvals);
+			}
 			// Cast from int
 			MethodType tomet;
-			//if (isPrimitiveEnum())
-			// 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},getPrimitiveEnumType());
-			//else
-			 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},this.type);
+		 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},this.type);
 			Method tome = new Method(this,nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
-			tome.params = new Var[]{new Var(pos,tome,nameEnumVal,Type.tpInt,0)};
+			tome.params = new Var[]{new Var(pos,tome,nameEnumOrdinal,Type.tpInt,0)};
 			tome.body = new BlockStat(pos,tome);
 			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ASTNode.emptyArray);
 			EnumAttr ea;
@@ -1557,7 +1550,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			tostr.pos = pos;
 			tostr.jtype = jtostrt;
 			if (isPrimitiveEnum()) {
-				tostr.params = new Var[]{new Var(pos,tostr,nameEnumVal,this.type,0)};
+				tostr.params = new Var[]{new Var(pos,tostr,nameEnumOrdinal,this.type,0)};
 			} else {
 				tostr.params = new Var[]{new Var(pos,tostr,nameThis,this.type,0)};
 			}
@@ -1565,7 +1558,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			if (isPrimitiveEnum()) {
 				sw = new SwitchStat(pos,tostr.body,new VarAccessExpr(pos,tostr.params[0]),ASTNode.emptyArray);
 			} else {
-				sw = new SwitchStat(pos,tostr.body,new FieldAccessExpr(pos,(Field)Type.tpEnum.clazz.resolveName(nameEnumVal)),ASTNode.emptyArray);
+				sw = new SwitchStat(pos,tostr.body,
+					new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
+					ASTNode.emptyArray);
 			}
 			cases = new ASTNode[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
@@ -1604,8 +1599,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				jfromstrt= fromstrt;
 				acc_flags = ACC_PUBLIC | ACC_STATIC;
 			}
-			Method fromstr = new Method(this,KString.from("fromString"),fromstrt,acc_flags);
+			Method fromstr = new Method(this,KString.from("valueOf"),fromstrt,acc_flags);
 			fromstr.name.addAlias(nameCastOp);
+			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
 			fromstr.jtype = jfromstrt;
 			fromstr.params = new Var[]{new Var(pos,fromstr,KString.from("val"),Type.tpString,0)};
@@ -1623,10 +1619,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			for(int i=0; i < ea.fields.length; i++) {
 				Field f = ea.fields[i];
 				KString str = f.name.name;
-				if (f.name.aliases != List.Nil) {
-					str = f.name.aliases.head();
-					str = str.substr(1,str.length()-1);
-				}
 				IfElseStat ifst = new IfElseStat(pos,null,
 					new BinaryBooleanExpr(pos,BinaryOperator.Equals,
 						new VarAccessExpr(pos,fromstr.params[0]),
@@ -1635,6 +1627,22 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					null
 					);
 				((BlockStat)fromstr.body).addStatement(ifst);
+				if (f.name.aliases != List.Nil) {
+					str = f.name.aliases.head();
+					if (str.byteAt(0) == (byte)'\"') {
+						str = str.substr(1,str.length()-1);
+						if (str != f.name.name) {
+							ifst = new IfElseStat(pos,null,
+								new BinaryBooleanExpr(pos,BinaryOperator.Equals,
+									new VarAccessExpr(pos,fromstr.params[0]),
+									new ConstExpr(pos,str)),
+									new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,this,f)),
+									null
+									);
+							((BlockStat)fromstr.body).addStatement(ifst);
+						}
+					}
+				}
 			}
 			((BlockStat)fromstr.body).addStatement(
 				new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
@@ -1671,275 +1679,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		return mmret;
 	}
-
-/*	private void makeDispatchMethod(Method m) {
-		Type[] dtypes = new Type[m.type.args.length];
-		for(int i=0; i < dtypes.length; i++) {
-			//if( m.type.args[i].isPizzaCase() )
-			//	dtypes[i] = m.type.args[i].clazz.super_clazz;
-			//else
-			//	dtypes[i] = m.type.args[i].getNonArgsType();
-			if( !m.type.args[i].isReference() )
-				dtypes[i] = m.type.args[i];
-			else
-				dtypes[i] = Type.tpObject;
-		}
-		Method nm;
-		if( m instanceof RuleMethod )
-			nm = new RuleMethod(this,m.name.name,
-				MethodType.newMethodType(null,dtypes,m.type.ret),
-				m.getFlags() | ACC_PUBLIC | ACC_MULTIMETHOD | ACC_RULEMETHOD);
-		else
-			nm = new Method(this,m.name.name,
-				MethodType.newMethodType(null,dtypes,m.type.ret),
-				m.getFlags() | ACC_PUBLIC | ACC_MULTIMETHOD);
-		nm.setStatic(m.isStatic());
-		BlockStat nmbody = new BlockStat(0,nm);
-		nmbody.addStatement(new ThrowStat(pos,nmbody,new NewExpr(pos,Type.tpMessageException,Expr.emptyArray)));
-		Var[] nmvars = new Var[nm.type.args.length+1];
-		if( nm.isStatic() ) {
-			nmvars = new Var[nm.type.args.length];
-			if( nm instanceof RuleMethod ) {
-				nmvars[0] = new Var(0,nm,namePEnv,Type.tpRule,0);
-				for(int k=1; k < nmvars.length; k++)
-					nmvars[k] = new Var(0,nm,KString.from("arg"+k),nm.type.args[k],0);
-			} else {
-				for(int k=0; k < nmvars.length; k++)
-					nmvars[k] = new Var(0,nm,KString.from("arg"+k),nm.type.args[k],0);
-			}
-		} else {
-			nmvars = new Var[nm.type.args.length+1];
-			if( nm instanceof RuleMethod ) {
-				nmvars[0] = new Var(0,nm,nameThis,this.type,0);
-				nmvars[1] = new Var(0,nm,namePEnv,Type.tpRule,0);
-				for(int k=2; k < nmvars.length; k++)
-					nmvars[k] = new Var(0,nm,KString.from("arg"+k),nm.type.args[k-1],0);
-			} else {
-				nmvars[0] = new Var(0,nm,nameThis,this.type,0);
-				for(int k=1; k < nmvars.length; k++)
-					nmvars[k] = new Var(0,nm,KString.from("arg"+k),nm.type.args[k-1],0);
-			}
-		}
-		nm.params = nmvars;
-		nm.body = nmbody;
-
-		addMethod(nm);
-
-		trace(Kiev.debugMultiMethod,"dispatch "+nm.parent+"."+nm+" for "+m+" added");
-		m.setMultiMethod(true);
-		nm.setMultiMethod(true);
-	}
-
-	private String getDispatchableNameSuffix(KString sign) {
-		String s = Integer.toHexString(sign.calcFullIndex());
-		while( s.length() < 8 ) s = "0"+s;
-		return s;
-	}
-
-	public KString getDispatchableName(Method m) {
-		int index;
-		KString dn;
-		if( (index=m.name.name.indexOf('$')) < 0 ) {
-			dn = m.name.name;
-		} else {
-			dn = m.name.name.substr(0,index);
-		}
-		dn = new KStringBuffer(dn.length()+9).append_fast(dn).append_fast((byte)'$')
-			.append(getDispatchableNameSuffix(m.type.signature)).toKString();
-		return dn;
-	}
-
-	public void setDispatchableName(Method m) {
-		KString newname = getDispatchableName(m);
-		m.setPrivate(true);
-		if( m.name.aliases != List.Nil ) {
-			// check it already was renamed
-			foreach(KString n; m.name.aliases; n.equals(newname))
-				return;
-		}
-		m.name.addAlias(m.name.name);
-		m.name.name = newname;
-	}
-
-	void debugMsg(boolean cond, String msg) {
-		if( cond ) System.out.println(msg);
-	}
-
-	rule processDispatchMethods()
-		pvar Method m;	// method we proceed
-	{
-		m @= methods,					// For all methods
-		!m.name.equals(nameInit),
-		debugMsg(Kiev.debugMultiMethod, "Checking if "+m+" needs to be dispatched"),
-		needToBeDispatched(m),		// Check it needs to be dispatched
-		debugMsg(Kiev.debugMultiMethod, "Method "+m+" needs to be dispatched"),
-		{
-			checkIsNotDispatched(m),	// Check it's not already dispatched
-			debugMsg(Kiev.debugMultiMethod, "Method "+m+" has no a dispatch method already"),
-			makeDispatchMethod(m)		// and make a dispatch method
-		;
-			!Kiev.kaffe,
-			setDispatchableName(m)
-		},
-		false							// process next method
-	}
-
-	rule needToBeDispatched(Method m)
-		pvar Type	at;		// argument type
-		pvar Type	ata;	// argument type argument
-		pvar Type	ata1;	// argument type argument of declared parametriezed class
-	{
-		m.isMultiMethod(),
-		!m.type.getMMType().argsClassesEquals(m.type),
-		debugMsg(Kiev.debugMultiMethod, "Needs to be dispatched because it's a multimethod and not the dispatcher"),
-		$cut,true
-	;	at @= m.type.args,
-		{
-			at.clazz.isPizzaCase()
-		;	!at.isArray(), at.args.length > 0, at.checkResolved(),
-			ata @= at.args & ata1 @= at.clazz.type.args,
-			!ata.clazz.isArgument(),
-			!ata.equals(ata1),
-			debugMsg(Kiev.debugMultiMethod, "Needs to be dispatched because of argument "+ata+" != "+ata1)
-		},
-		$cut,true
-	}
-
-	rule checkIsNotDispatched(Method m)
-		pvar Method dm;		// didpatch method
-	{
-		dm @= methods,					// For all methods in this class
-		dm.name.equals(m.name),	// with the same name, args and static flag
-		m.type.args.length==dm.type.args.length && m.isStatic()==dm.isStatic(),
-		debugMsg(Kiev.debugMultiMethod, "Checking if method "+m+" is dispatched by "+dm+" ?.."),
-		m.type.getMMType().argsClassesEquals(dm.type),
-		debugMsg(Kiev.debugMultiMethod, "Method "+m+" is probably dispatched by "+dm+" ?.."),
-		notNeedToBeDispatched(dm),	// and not need to be dispatched
-		debugMsg(Kiev.debugMultiMethod, "Method "+m+" is already dispatched by "+dm),
-		$cut, false
-	;
-		true
-	}
-
-	rule notNeedToBeDispatched(Method m)
-	{
-		needToBeDispatched(m),$cut,false;
-		true
-	}
-
-	rule processMultiMethods()
-		pvar List<Method> all_mm;
-	{
-		true
-	}
-
-	List<Method> collectAllPublicMethods(List<Method> mml) {
-		if( super_clazz != null && !super_clazz.equals(Type.tpObject) && !super_clazz.isInstanceOf(Type.tpDynamic) )
-			mml = super_clazz.clazz.collectAllPublicMethods(mml);
-	l:	for(int i=0; i < methods.length; i++) {
-			Method m = methods[i];
-			if( m.isPublic() && !m.isStatic() && !m.name.equals(nameInit) ) {
-				for(List<Method> ml = mml; ml != List.Nil; ml = ml.tail()) {
-					if( m.name.equals(ml.head().name) && m.type.equals(ml.head().type) ) {
-						((List.Cons<Method>)ml).head = m;
-						continue l;
-					}
-				}
-				mml = mml.concat(m);
-			}
-		}
-		return mml;
-	}
-
-	ListBuffer<Method> collectAllMMmethods(ListBuffer<Method> mml) {
-		if( super_clazz != null )
-			mml = super_clazz.clazz.collectAllMMmethods(mml);
-	l:	for(int i=0; i < methods.length; i++) {
-			Method m = methods[i];
-			if( !m.isMultiMethod() ) {
-				foreach(Type t; m.type.args) {
-					if( t.isPizzaCase() || t.isHasCases() || (!t.isArray() && t.args.length > 0) ) {
-						Kiev.reportWarning(0,"Method "+m+" has to be declared as multimethod");
-						m.setMultiMethod(true);
-					}
-				}
-			}
-			if( m.isMultiMethod() ) {
-				for(int j=0; j < mml.length(); j++) {
-					if( m.name.equals(mml.getAt(j).name) && m.type.equals(mml.getAt(j).type) ) {
-						mml.setAt(j,m);
-						continue l;
-					}
-				}
-				mml = mml.append(m);
-			}
-		}
-		return mml;
-	}
-*/
-
-/*	ListBuffer<Method> collectAllMMmethods(Method mm, ListBuffer<Method> mml) {
-		if( super_clazz != null )
-			mml = super_clazz.clazz.collectAllMMmethods(mm,mml);
-		trace(Kiev.debugMultiMethod,"Collecting MM methods above "+mm+" in class "+this);
-	l:	for(int i=0; i < methods.length; i++) {
-			Method m = methods[i];
-			if( m == mm ) continue;
-			if( mm.isStatic() != m.isStatic() ) continue;
-			if( !m.name.equals(mm.name) ) continue;
-			if( !m.type.greater(mm.type) ) {
-				trace(Kiev.debugMultiMethod,"Method "+m+" is not greater then "+mm);
-				// Check that m is a dispatched by mm method
-				if( mm.type.equals(m.type) && m.name.name.length() > mm.name.name.length() ) {
-					KString newname = getDispatchableName(m);
-					if( m.name.equals(newname) ) // yes, it is
-						trace(Kiev.debugMultiMethod,"Method "+m+" is dispatched by "+mm);
-					else continue;
-				}
-				else continue;
-			}
-			trace(Kiev.debugMultiMethod,"Method "+m+" is greater then "+mm);
-			for(int j=0; j < mml.length(); j++) {
-				if( m.name.equals(mml.getAt(j).name) && m.type.equals(mml.getAt(j).type) ) {
-					mml.setAt(j,m);
-					trace(Kiev.debugMultiMethod,"Method "+m+" aready in the list");
-					continue l;
-				}
-			}
-			mml = mml.append(m);
-//			for(List<Method> ml = mml; ml != List.Nil; ml = ml.tail()) {
-//				if( m.name.name.equals(ml.head().name.name) && m.type.equals(ml.head().type) ) {
-//					((List.Cons<Method>)ml).head = m;
-//					trace(Kiev.debugMultiMethod,"Method "+m+" aready in the list");
-//					continue l;
-//				}
-//			}
-//			trace(Kiev.debugMultiMethod,"Method "+m+" is added to list");
-//			mml = mml.concat(m);
-//		}
-		return mml;
-	}
-
-	List<Method> collectAllMethods(KString nm, int argslen, List<Method> mml) {
-		if( super_clazz != null )
-			mml = super_clazz.clazz.collectAllMethods(nm,argslen,mml);
-		trace(Kiev.debugMultiMethod,"Collecting MM methods above "+nm+" in class "+this);
-	l:	for(int i=0; i < methods.length; i++) {
-			Method m = methods[i];
-			if( !m.name.equals(nm) || m.type.args.length != argslen ) continue;
-			for(List<Method> ml = mml; ml != List.Nil; ml = ml.tail()) {
-				if( m.name.equals(ml.head().name) && m.type.equals(ml.head().type) ) {
-					((List.Cons<Method>)ml).head = m;
-					trace(Kiev.debugMultiMethod,"Method "+m+" aready in the list");
-					continue l;
-				}
-			}
-			trace(Kiev.debugMultiMethod,"Method "+m+" is added to list");
-			mml = mml.concat(m);
-		}
-		return mml;
-	}
-*/
 
 	public void autoGenerateStatements() {
 
@@ -2126,17 +1865,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						}
 					}
 					else if( isEnum() ) {
+						ASTIdentifier name = new ASTIdentifier(0);
 						ASTIdentifier index = new ASTIdentifier(0);
-						index.name = nameEnumVal;
-						call_super.args = new Expr[]{index};
+						ASTIdentifier text = new ASTIdentifier(0);
+						name.name = KString.from("name");
+						index.name = nameEnumOrdinal;
+						text.name = KString.from("text");
+						call_super.args = new Expr[]{name,index,text};
 					}
-					// Insert our-generated typeinfo, or from childs class?
-					/*else if( !Kiev.kaffe && super_clazz.args.length > 0 ) {
-						call_super.args = new Expr[]{
-							new VarAccessExpr(m.pos,m.params[1])
-							};
-					}
-					*/
 					stats = (ASTNode[])Arrays.insert(stats,
 						new ASTStatementExpression(call_super),0);
 				}
@@ -2383,138 +2119,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	}
 
-/*	public void makeDispatch(Method m) {
-			trace(Kiev.debugMultiMethod,"Generating dispatch entry for "+m);
-			List<Method> upper = collectAllMMmethods(m,new ListBuffer<Method>()).toList();
-			if( upper == List.Nil ) {
-				trace(Kiev.debugMultiMethod,"No methods to dispatch for "+m);
-				return;
-			}
-			trace(Kiev.debugMultiMethod,"Methods to dispatch for "+m+" are:\n"+upper);
-			// Now build dispatch tree of methods
-			MMTree mmt = new MMTree(m);
-			for(List<Method> ul = upper; ul != List.Nil; ul = ul.tail())
-				mmt.add(ul.head());
-			trace(Kiev.debugMultiMethod,"Dispatch tree "+m+" is:\n"+mmt);
-			Statement st = makeDispatchStat(m,mmt);
-			if( m.body instanceof ASTBlock )
-				((ASTBlock)m.body).stats = (ASTNode[])Arrays.insert(((ASTBlock)m.body).stats,st,0);
-			else
-				((BlockStat)m.body).stats = (ASTNode[])Arrays.insert(((BlockStat)m.body).stats,st,0);
-	}
-*/
-/*	IfElseStat makeDispatchStat(Method mm, MMTree mmt) {
-		Type.tpNull.checkResolved();
-		int moffs = mm.name.name.startsWith(KString.from("$message$")) ? 2 : 0;
-		int voffs = mm.isStatic()? 0 : 1;
-		int roffs = 0;//(mm instanceof RuleMethod) ? 1 : 0;
-		IfElseStat dsp = null;
-		BooleanExpr cond = null;
-		for(int i=0; i < mmt.uppers.length; i++) {
-			if( mmt.uppers[i] == null ) continue;
-			Method m = mmt.uppers[i].m;
-			for(int j=0; j < m.type.args.length; j++) {
-				Type t = m.type.args[j];
-				if( mmt.m != null && t.equals(mmt.m.type.args[j]) ) continue;
-				BooleanExpr be = null;
-				if( mmt.m != null && !t.clazz.equals(mmt.m.type.args[j].clazz) )
-					be = new InstanceofExpr(pos,
-						new VarAccessExpr(pos,mm.params[j+voffs+moffs]),
-						Type.getRefTypeForPrimitive(t));
-				if( !Kiev.kaffe && t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
-					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
-						accessTypeInfoField(pos,this,t),
-						Type.tpTypeInfo.clazz.resolveMethod(
-							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
-						new Expr[]{
-							new VarAccessExpr(pos,mm.params[j+voffs+moffs]),
-							new AccessExpr(pos,
-								new CastExpr(pos,t,new VarAccessExpr(pos,mm.params[j+voffs+moffs])),
-								t.clazz.resolveField(nameTypeInfo))
-						}));
-					if( be == null )
-						be = tibe;
-					else
-						be = new BinaryBooleanAndExpr(0,be,tibe);
-				}
-				if( cond == null ) cond = be;
-				else cond = new BinaryBooleanAndExpr(0,cond,be);
-			}
-			if( cond == null )
-//				throw new RuntimeException("Null condition in "+mmt.m+" -> "+m+" dispatching");
-				cond = new ConstBooleanExpr(mm.pos,true);
-			IfElseStat br;
-			if( mmt.uppers[i].uppers.length==0 ) {
-				Expr[] vae = new Expr[mm.params.length-voffs-moffs-roffs];
-				for(int k=0; k < vae.length; k++) {
-					if( mm.params[k+voffs+moffs+roffs].type.isReference() && !m.type.args[k+roffs].isReference() )
-						vae[k] = CastExpr.autoCastToPrimitive(new CastExpr(
-							0,Type.getRefTypeForPrimitive(m.type.args[k+roffs]),
-							new VarAccessExpr(0,mm.params[k+voffs+moffs+roffs]), Kiev.verify)
-							);
-					else
-						vae[k] = new CastExpr(0,m.type.args[k+roffs],
-							new VarAccessExpr(0,mm.params[k+voffs+moffs+roffs]), Kiev.verify);
-				}
-				Statement st;
-				if( mm.type.ret != Type.tpVoid ) {
-					if( mmt.uppers[i].m.type.ret == Type.tpVoid )
-						st = new BlockStat(0,dsp,new ASTNode[]{
-							new ExprStat(0,null,new CallExpr(0,mmt.uppers[i].m,vae)),
-							new ReturnStat(0,null,new ConstExpr(mm.pos,null))
-						});
-					else {
-						if( !mmt.uppers[i].m.type.ret.isReference() && mm.type.ret.isReference() )
-							st = new ReturnStat(0,null,CastExpr.autoCastToReference(
-								new CallExpr(0,mmt.uppers[i].m,vae)));
-						else
-							st = new ReturnStat(0,null,new CallExpr(0,mmt.uppers[i].m,vae));
-					}
-				} else {
-					st = new BlockStat(0,dsp,new ASTNode[]{
-						new ExprStat(0,null,new CallExpr(0,mmt.uppers[i].m,vae)),
-						new ReturnStat(0,null,null)
-					});
-				}
-				br = new IfElseStat(0,null,cond,st,null);
-			} else {
-				br = new IfElseStat(0,null,cond,makeDispatchStat(mm,mmt.uppers[i]),null);
-			}
-			cond = null;
-			if( dsp == null ) dsp = br;
-			else {
-				IfElseStat st = dsp;
-				while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
-				st.elseSt = br;
-				br.parent = st;
-			}
-		}
-		if( mmt.m != mm ) {
-			Statement br;
-			if( mmt.m == null )
-				br = new BreakStat(mm.pos,null,null);
-			else {
-				Expr[] vae = new Expr[mm.params.length-voffs-moffs-roffs];
-				for(int k=0; k < vae.length; k++) {
-					vae[k] = new CastExpr(0,mmt.m.type.args[k+roffs],
-						new VarAccessExpr(0,mm.params[k+voffs+moffs+roffs]), Kiev.verify);
-				}
-				if( mm.type.ret != Type.tpVoid ) {
-					br = new ReturnStat(0,null,new CallExpr(0,mmt.m,vae));
-				} else {
-					br = new BlockStat(0,dsp,new ASTNode[]{
-						new ReturnStat(0,null,null)
-					});
-				}
-			}
-			IfElseStat st = dsp;
-			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
-			st.elseSt = br;
-			br.parent = st;
-		}
-		return dsp;
-	}
-*/
 	IfElseStat makeDispatchStatInline(Method mm, MMTree mmt) {
 		Type.tpNull.checkResolved();
 		int voffs = mm.isStatic()? 0 : 1;
@@ -2909,58 +2513,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	public void resolveImports() {
-/*		PassInfo.push(this);
-		try {
-			ASTNode[] old_imported = imported;
-			imported = ASTNode.emptyArray;
-			for(int i=0; i < old_imported.length; i++) {
-				ASTNode imp = old_imported[i];
-				if( imp instanceof ASTImport )
-					imp = ((ASTImport)imp).pass2();
-				if( imp instanceof Import) imp = ((Import)imp).node;
-				if( imp == null )
-					Kiev.reportWarning(pos,"Imported member "+imported[i]+" not found");
-				else if( imp instanceof Field ) {
-					if( !imp.isStatic() ) {
-						Kiev.reportError(imp.pos,"Imported field "+imp+" must be static");
-					} else {
-						imported = (ASTNode[])Arrays.append(imported,imp);
-					}
-				}
-				else if( imp instanceof Method ) {
-					if( !imp.isStatic() ) {
-						Kiev.reportError(imp.pos,"Imported method "+imp+" must be static");
-					} else {
-						imported = (ASTNode[])Arrays.append(imported,imp);
-					}
-				}
-				else if( imp instanceof Struct ) {
-					Struct is = (Struct)imp;
-					is.checkResolved();
-					for(int j=0; j < is.fields.length; j++) {
-						if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
-							imported = (ASTNode[])Arrays.append(imported,is.fields[j]);
-					}
-					for(int j=0; j < is.methods.length; j++) {
-						if( is.methods[j].isStatic() )
-							imported = (ASTNode[])Arrays.append(imported,is.methods[j]);
-					}
-				}
-				else
-					throw new CompilerException(imp.pos,"Unknown type if imported member: "+imp);
-			}
-			try {
-				if( !isPackage() ) {
-					for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-						if( !sub_clazz[i].isAnonymouse()) //&& !sub_clazz[i].isPassed_2()
-							sub_clazz[i].resolveImports();
-					}
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-		} finally { PassInfo.pop(this); }
-*/	}
+	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isGenerated() ) return this;

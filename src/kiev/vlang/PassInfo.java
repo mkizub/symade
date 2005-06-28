@@ -360,22 +360,30 @@ public class PassInfo {
 					if( t_better != t1 )	m1_is_better = false;
 					if( t_better != t2 )	m2_is_better = false;
 				}
-				{
-					Type r = ret;
-					if (r == null) r = Type.tpVoid;
-					Type t = Type.getRealType(type,r);
+				//{
+				//	Type r = ret;
+				//	if (r == null) r = Type.tpVoid;
+				//	Type t = Type.getRealType(type,r);
+				//	Type t1 = Type.getRealType(type,m1.type.ret);
+				//	Type t2 = Type.getRealType(type,m2.type.ret);
+				//	if( t1 != t2 ) {
+				//		Type t_better = t.betterCast(t1,t2);
+				//		trace(Kiev.debugResolve,"better cast for ret "+t+" between "+t1+" and "+t2+" is "+t_better);
+				//		if( r == Type.tpVoid && t_better == null ) {	// Equals
+				//			if( t2.isInstanceOf(t1) ) m2_is_better = false;
+				//			if( t1.isInstanceOf(t1) ) m1_is_better = false;
+				//		} else {
+				//			if( t_better != t1 )	m1_is_better = false;
+				//			if( t_better != t2 )	m2_is_better = false;
+				//		}
+				//	}
+				//}
+				if( m1_is_better && m2_is_better ) {	// Equals
 					Type t1 = Type.getRealType(type,m1.type.ret);
 					Type t2 = Type.getRealType(type,m2.type.ret);
-					if( t1 != t2 ) {
-						Type t_better = t.betterCast(t1,t2);
-						trace(Kiev.debugResolve,"better cast for ret "+t+" between "+t1+" and "+t2+" is "+t_better);
-						if( r == Type.tpVoid && t_better == null ) {	// Equals
-							if( t2.isInstanceOf(t1) ) m1_is_better = false;
-							if( t1.isInstanceOf(t1) ) m2_is_better = false;
-						} else {
-							if( t_better != t1 )	m1_is_better = false;
-							if( t_better != t2 )	m2_is_better = false;
-						}
+					if ( !t1.equals(t2) ) {
+						if (t1.isInstanceOf(t2)) m2_is_better = false;
+						if (t2.isInstanceOf(t1)) m1_is_better = false;
 					}
 				}
 				if( m1_is_better && m2_is_better ) {	// Equals

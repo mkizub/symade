@@ -30,10 +30,12 @@ package kiev.stdlib;
 /** The super class of all enumerations */
 public abstract class Enum {
 	
+	// to be removed
 	public final int $index;
 	
 	protected Enum(int index) {
 		$index = index;
+		$ordinal = index;
 	}
 	
 	public String toString() {
@@ -45,5 +47,36 @@ public abstract class Enum {
 	{
 		return $index;
 	}
+	// end of removed part
+	
+	private final String $name;
+	private final int $ordinal;
+	private final String $text;
+	
+	protected Enum(String name, int ordinal) {
+		this.$name = name.intern();
+		this.$ordinal = ordinal;
+		this.$index = ordinal;
+		this.$text = name;
+	}
+	
+	protected Enum(String name, int ordinal, String text) {
+		this.$name = name.intern();
+		this.$ordinal = ordinal;
+		this.$index = ordinal;
+		this.$text = text.intern();
+	}
+	
+	public final String name() {
+		return $name;
+	}
+	
+	public final int ordinal() {
+		return $ordinal;
+	}
+	
+	//public String toString() {
+	//	return $name;
+	//}
 	
 }

@@ -36,6 +36,10 @@ import static kiev.stdlib.Debug.*;
  */
 
 public class ASTEnumDeclaration extends ASTTypeDeclaration {
+	
+	
+	ASTEnumFieldDeclaration[] enum_fields = new ASTEnumFieldDeclaration[0];
+	
 	public ASTEnumDeclaration(int id) {
 		super(0);
 	}
@@ -45,18 +49,14 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
-			if( name == null ) {
-				name = ((ASTIdentifier)n).name;
-				pos = n.getPos();
-			} else {
-				members = (ASTNode[])Arrays.append(members,n);
-			}
+			name = ((ASTIdentifier)n).name;
+			pos = n.getPos();
 		}
         else if( n instanceof ASTExtends ) {
 			ext = n;
 		}
-        else if( n instanceof ASTConstExpression ) {
-			members = (ASTNode[])Arrays.append(members,n);
+        else if( n instanceof ASTEnumFieldDeclaration ) {
+			enum_fields = (ASTEnumFieldDeclaration[])Arrays.append(enum_fields,n);
 		}
         else {
 			members = (ASTNode[])Arrays.append(members,n);
@@ -139,53 +139,53 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 		return me;
 	}
 
-	public static Struct pass3(Struct me, ASTNode[] members) {
+	public static Struct createMembers(Struct me, ASTEnumFieldDeclaration[] enum_fields, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for enum "+me);
         PassInfo.push(me);
         try {
 			// Process members
-			for(int i=0; i < members.length; i++) {
-				members[i].parent = me;
-				if( members[i] instanceof ASTIdentifier ) {
-					KString fname = ((ASTIdentifier)members[i]).name;
-					Type me_type;
-					//if (me.isPrimitiveEnum())
-					//	me_type = me.super_clazz;
-					//else
-						me_type = me.type;
-					Field f = new Field(me,fname,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
-					members[i] = me.addField(f);
-				}
-				else if( members[i] instanceof ASTConstExpression ) {
-					Object val = ((ASTConstExpression)members[i]).val;
-					if( val instanceof KString ) {
-						int n;
-						if (members[i-1] instanceof Field)
-							n = i-1;
-						else if (members[i-2] instanceof Field)
-							n = i-2;
+			int next_val = 0;
+			for(int i=0; i < enum_fields.length; i++, next_val++) {
+				ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)enum_fields[i];
+				efd.parent = me;
+				Type me_type = me.type;
+				Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
+				f.pos = efd.pos;
+				f.setEnumField(true);
+				f = me.addField(f);
+				f.parent = me;
+				if (me.isPrimitiveEnum()) {
+					if (efd.val != null) {
+						if (efd.val.val instanceof Character)
+							next_val = ((Character)efd.val.val).charValue();
 						else
-							throw new CompilerException(members[i].pos,"Cannot find enum field to attach string");
-						((Field)members[n]).name.addAlias(KString.from("\""+val+"\""));
-						continue;
+							next_val = ((Number)efd.val.val).intValue();
 					}
-					if( !( val instanceof Number || val instanceof Character))
-						throw new CompilerException(members[i].pos,"Not an integer/character value");
-					if (me.isPrimitiveEnum()) {
-						((Field)members[i-1]).init = new ConstExpr(members[i].pos,val);
-					} else {
-						((Field)members[i-1]).init =
-							new NewExpr(me.pos,me.type,new Expr[]{
-									new ConstExpr(members[i].pos,val)});
-					}
+					f.init = new ConstExpr(efd.pos,new Integer(next_val));
+				} else {
+					if (efd.val != null)
+						Kiev.reportError(me.pos,"Enum "+me+" is not a primitive enum");
+					if (efd.text == null)
+						f.init = new NewExpr(f.pos,me.type,new Expr[]{
+									new ConstExpr(efd.name.pos,efd.name.name),
+									new ConstExpr(efd.pos, new Integer(next_val)),
+									new ConstExpr(efd.name.pos,efd.name.name)
+						});
+					else
+						f.init = new NewExpr(f.pos,me.type,new Expr[]{
+									new ConstExpr(efd.name.pos,efd.name.name),
+									new ConstExpr(efd.pos, new Integer(next_val)),
+									new ConstExpr(efd.text.pos, efd.text.val)
+						});
 				}
-				else {
-					throw new CompilerException(members[i].getPos(),"Unknown type if enum member: "+members[i]);
-				}
-				members[i].parent = me;
+				if (efd.text != null)
+					f.name.addAlias(KString.from("\""+efd.text.val+"\""));
+				f.init.parent = f;
 			}
 		} finally { PassInfo.pop(me); }
 
+		ASTTypeDeclaration.createMembers(me, members);
+		
 		return me;
 	}
 

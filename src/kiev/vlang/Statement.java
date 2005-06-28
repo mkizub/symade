@@ -290,9 +290,9 @@ public class BlockStat extends Statement implements Scope {
 						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
 					cl = (Struct)decl.pass1();
 					cl.setLocal(true);
-					cl = (Struct)decl.pass2();
-					cl = (Struct)decl.pass2_2();
-					ASTTypeDeclaration.pass3(cl,decl.members);
+					decl.pass2();
+					decl.pass2_2();
+					decl.pass3();
 					cl.autoProxyMethods();
 					cl.resolveFinalFields(false);
 					stats[i] = new TypeDeclStat(decl.pos,this,cl).resolve(null);

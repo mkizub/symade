@@ -173,7 +173,7 @@ public class ASTNewExpression extends Expr {
 				}
 			}
 		} finally { PassInfo.pop(me); }
-		me = ASTTypeDeclaration.pass3(me,members);
+		me = ASTTypeDeclaration.createMembers(me,members);
 		me.autoProxyMethods();
 		me.resolveFinalFields(false);
 		Expr ne;

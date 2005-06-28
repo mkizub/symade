@@ -377,7 +377,9 @@ public interface Constants extends AccessFlags {
 	public final static KString namePEnv		= KString.from("$env");
 	public final static KString namePlvBase		= KString.from("lvar$base");
 	public final static KString nameCellVal		= KString.from("$val");
-	public final static KString nameEnumVal		= KString.from("$index");
+	public final static KString nameEnumValuesFld	= KString.from("$values");
+	public final static KString nameEnumValues	= KString.from("values");
+	public final static KString nameEnumOrdinal	= KString.from("ordinal");
 	public final static KString nameClosureArgs		= KString.from("$args");
 	public final static KString nameClosureMaxArgs	= KString.from("max$args");
 	public final static KString nameClosureTopArg	= KString.from("top$arg");

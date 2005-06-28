@@ -34,22 +34,44 @@ import static kiev.stdlib.Debug.*;
  * @version $Revision: 1.4.2.1.2.4 $
  *
  */
+ 
+public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
+	public ASTModifiers		modifiers;
+	public ASTAccess		acc;
+    public KString			name;
+    public ASTNode[]		argument = ASTNode.emptyArray;
+    public ASTNode[]		members = ASTNode.emptyArray;
 
-public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTModifiers	modifiers;
+	public Struct			me;
+
+	ASTStructDeclaration() {
+		super(0);
+	}
+	
+	public ASTNode pass3() {
+		switch (this) {
+		case ASTTypeDeclaration:
+			return ASTTypeDeclaration.createMembers(me, members);
+		case ASTEnumDeclaration:
+			return ASTEnumDeclaration.createMembers(me, ((ASTEnumDeclaration)this).enum_fields, members);
+		case ASTSyntaxDeclaration:
+			return ASTSyntaxDeclaration.createMembers(me, members);
+		case ASTCaseTypeDeclaration:
+			return ((ASTCaseTypeDeclaration)this).createMembers();
+		}
+		throw new CompilerException(pos, "Unknown type: "+this.getClass());
+	}
+
+}
+
+public class ASTTypeDeclaration extends ASTStructDeclaration {
     public int			kind;
-    public KString		name;
-    public ASTNode[]	argument = ASTNode.emptyArray;
     public ASTNode		ext;
     public ASTNode		impl;
     public ASTNode		gens;
-    public ASTNode[]	members = ASTNode.emptyArray;
-
-	public Struct		me;
-	public KString		t;
 
 	ASTTypeDeclaration(int id) {
-		super(0);
+		super();
 	}
 
   	public void set(Token t) {
@@ -376,8 +398,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 		return me;
 	}
 
-	public static Struct pass3(Struct me, ASTNode[] members) {
-		if( me.isEnum() ) return ASTEnumDeclaration.pass3(me,members);
+	public static Struct createMembers(Struct me, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
         PassInfo.push(me);
         try {
@@ -428,64 +449,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 							members[i].setAbstract(true);
 					}
 				}
-/*				else if( members[i] instanceof ASTProductionDeclaration ) {
-					ASTProductionDeclaration astmd = (ASTProductionDeclaration)members[i];
-					members[i] = ((ASTProductionDeclaration)members[i]).pass3();
-					if( members[i].isPrivate() ) members[i].setFinal(false);
-					else if( me.isClazz() && me.isFinal() ) members[i].setFinal(true);
-				}
-				else if( members[i] instanceof ASTOptionSpec ) {
-					ASTOptionSpec os = (ASTOptionSpec)members[i];
-					foreach(ASTNode n; os.children) {
-						ASTOptionBinding ob = (ASTOptionBinding)n;
-						if( ob.name == ~"scannername" ) {
-							me.gram.lexer = ((ASTQName)ob.value).toKString().toString();
-						}
-					}
-				}
-				else if( members[i] instanceof ASTTokenDeclaration ) {
-					ASTTokenDeclaration asttd = (ASTTokenDeclaration)members[i];
-					int j = 0;
-					if( asttd.children[0] instanceof ASTLexicalStateList) {
-						j++;
-					}
-					ASTRegularExpressionKind rek = (ASTRegularExpressionKind)asttd.children[j];
-					if( rek.kind != kiev020Constants.MM_TOKEN )
-						continue;
-					j++;
-					for(; j < asttd.children.length; j++) {
-						ASTRegularExpressionSpec res = (ASTRegularExpressionSpec)asttd.children[j];
-						for(int k=0; k < res.children.length; k++) {
-							if( res.children[k] instanceof ASTSimpleRegularExpression ) {
-								ASTSimpleRegularExpression sre = (ASTSimpleRegularExpression)res.children[k];
-								if( sre.children.length == 0 ) ; // eof
-								else if( sre.children[0] instanceof ASTIdentifier )
-									me.gram.tokens.append(
-										new TokenDecl(sre.children[0].getPos(),
-											((ASTIdentifier)sre.children[0]).name)
-										);
-								else
-									Kiev.reportError(sre.getPos(),"Must be in form of <IDENTIFIER>");
-							}
-							else if( res.children[k] instanceof ASTComplexRegularExpression ) {
-								ASTComplexRegularExpression cre = (ASTComplexRegularExpression)res.children[k];
-								ASTIdentifier id = (ASTIdentifier)cre.children[0];
-								ASTComplexRegularExpressionChoices cres = (ASTComplexRegularExpressionChoices)cre.children[1];
-								for(int m=0; m < cres.children.length; m++) {
-									ASTComplexRegularExpressionUnits creus = (ASTComplexRegularExpressionUnits)cres.children[m];
-									for(int l=0; l < creus.children.length; l++) {
-										ASTComplexRegularExpressionUnit creu = (ASTComplexRegularExpressionUnit)creus.children[l];
-										me.gram.tokens.append(
-											new TokenDecl(cre.children[0].getPos(),id.name,
-												(KString)((ASTConstExpression)creu.children[0]).val)
-											);
-									}
-								}
-							}
-						}
-					}
-				}
-*/				else if( members[i] instanceof ASTFieldDecl ) {
+				else if( members[i] instanceof ASTFieldDecl ) {
 					ASTFieldDecl fields = (ASTFieldDecl)members[i];
 					// TODO: check flags for fields
 					int flags = fields.modifiers.getFlags();
@@ -610,15 +574,8 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
     	    // Process inner classes and cases
         	if( !me.isPackage() ) {
 				for(int i=0; i < members.length; i++) {
-					if( members[i] instanceof ASTTypeDeclaration ) {
-						ASTTypeDeclaration.pass3(
-							((ASTTypeDeclaration)members[i]).me,
-							((ASTTypeDeclaration)members[i]).members
-						);
-					}
-					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-						((ASTCaseTypeDeclaration)members[i]).pass3();
-					}
+					if( members[i] instanceof ASTStructDeclaration )
+						members[i].pass3();
 				}
 			}
 			// Process ASTGenerete
@@ -632,27 +589,7 @@ public class ASTTypeDeclaration extends ASTNode implements TopLevelDecl {
 						for(int j=0; j < s.interfaces.length; j++)
 							s.interfaces[j] = Type.getRealType(s.type,me.interfaces[j]);
 					}
-/*					if( me.fields.length != 0 ) {
-						s.fields = (Field[])me.fields.clone();
-						for(int j=0; j < s.fields.length; j++)
-							s.fields[j] = new Field(
-								s,
-								s.fields[j].name.name,
-								Type.getRealType(s.type,s.fields[j].type),
-								s.fields[j].getFlags()
-								);
-					}
-					if( me.methods.length != 0 ) {
-						s.methods = (Method[])me.methods.clone();
-						for(int j=0; j < s.methods.length; j++)
-							s.methods[j] = new Method(
-								s,
-								s.methods[j].name.name,
-								(MethodType)Type.getRealType(s.type,s.methods[j].type),
-								s.methods[j].getFlags()
-								);
-					}
-*/				}
+				}
 			}
 		} finally { PassInfo.pop(me); }
 

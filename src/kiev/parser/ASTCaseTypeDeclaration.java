@@ -33,20 +33,13 @@ import kiev.vlang.*;
  *
  */
 
-public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
-	public ASTModifiers	modifiers;
-	public KString		name;
-	public ASTNode[]	argument = ASTNode.emptyArray;
+public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreScanneable {
 	public ASTNode[]	casefields = ASTNode.emptyArray;
 	public Statement	body;
 	public virtual PrescannedBody pbody;
 
-	public Struct		me;
-//	public Struct[]		args = Struct.emptyArray;
-	public KString		t;
-
 	public ASTCaseTypeDeclaration(int id) {
-		super(0);
+		super();
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -143,7 +136,7 @@ public class ASTCaseTypeDeclaration extends ASTNode implements PreScanneable {
 		return me;
 	}
 
-	public Struct pass3() {
+	public Struct createMembers() {
 		Struct parnt;
 		if( parent instanceof Struct )
 			parnt = (Struct)parent;
