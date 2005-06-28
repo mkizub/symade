@@ -53,7 +53,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].clazz == meta.clazz) {
+			if (metas[i].type == meta.type) {
 				metas[i] = meta;
 				return meta;
 			}
@@ -68,7 +68,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.clazz.name.name);
+		return unset(meta.type.name);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -76,7 +76,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].clazz.name.name == name) {
+			if (metas[i].type.name == name) {
 				Meta m = metas[i];
 				if (sz == 1) {
 					metas = Meta.emptyArray;
@@ -116,17 +116,34 @@ public final class MetaSet extends ASTNode {
 	
 }
 
+public class MetaType {
+	public final KString name;
+	public MetaType(KString name) {
+		this.name = name;
+	}
+	public KString signature() {
+		return KString.from('L'+String.valueOf(name).replace('.','/')+';');
+	}
+}
 
+public class MetaValueType {
+	public KString name;
+	public KString signature;
+	public MetaValue default_value;
+	public MetaValueType(KString name) {
+		this.name = name;
+	}
+}
 
 public class Meta extends ASTNode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
-	public final Struct      clazz;
+	public final MetaType    type;
 	public       MetaValue[] values = MetaValue.emptyArray;
 	
-	public Meta(Struct clazz) {
+	public Meta(MetaType type) {
 		super(0);
-		this.clazz = clazz;
+		this.type = type;
 	}
 
 	public int size() alias length {
@@ -142,7 +159,7 @@ public class Meta extends ASTNode {
 			throw new NullPointerException();
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].method == value.method) {
+			if (values[i].type == value.type) {
 				values[i] = value;
 				return value;
 			}
@@ -157,13 +174,13 @@ public class Meta extends ASTNode {
 
 	public MetaValue unset(MetaValue value) alias del alias operator (5,lfy,-=)
 	{
-		return unset(value.method.name.name);
+		return unset(value.type.name);
 	}
 	public MetaValue unset(KString name) alias del alias operator (5,lfy,-=)
 	{
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].method.name.name == name) {
+			if (values[i].type.name == name) {
 				MetaValue v = values[i];
 				if (sz == 1) {
 					values = MetaValue.emptyArray;
@@ -206,12 +223,12 @@ public class Meta extends ASTNode {
 public class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
-	public final Method  method;
-	public       ASTNode value;
+	public final MetaValueType type;
+	public       ASTNode       value;
 	
-	public MetaValue(Method method, ASTNode value) {
+	public MetaValue(MetaValueType type, ASTNode value) {
 		super(0);
-		this.method = method;
+		this.type  = type;
 		this.value = value;
 	}
 

@@ -977,9 +977,9 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
-			ConstPool.addClazzCP(m.clazz.name.signature());
+			ConstPool.addClazzCP(m.type.signature());
 			foreach (MetaValue v; m) {
-				ConstPool.addAsciiCP(v.method.name.name);
+				ConstPool.addAsciiCP(v.type.name);
 				generateValue(v.value);
 			}
 		}
@@ -1057,12 +1057,12 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(Meta m, kiev.bytecode.Annotation.annotation a) {
-		a.type_index = ConstPool.getClazzCP(m.clazz.name.signature()).pos;
+		a.type_index = ConstPool.getClazzCP(m.type.signature()).pos;
 		a.names = new int[m.size()];
 		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
 		int n = 0;
 		foreach (MetaValue v; m) {
-			a.names[n] = ConstPool.addAsciiCP(v.method.name.name).pos;
+			a.names[n] = ConstPool.addAsciiCP(v.type.name).pos;
 			a.values[n] = write_value(v);
 			n++;
 		}

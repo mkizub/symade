@@ -165,7 +165,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			setVarArgs(false);
 		}
 
-		if (ps.isAnnotation() && body != null || pbody != null) {
+		if (ps.isAnnotation() && (body != null || pbody != null)) {
 			Kiev.reportError(pos, "Annotation methods may not have bodies");
 			body = null;
 			pbody = null;

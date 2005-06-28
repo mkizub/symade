@@ -83,6 +83,7 @@ public abstract class ASTNode implements Constants {
     public ASTNode		parent;
 	public int			flags;
 	
+	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
 	// Flags temporary used with java flags
 	public virtual packed:1,flags,16 boolean is_forward;         // var/field
 	public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
@@ -94,9 +95,8 @@ public abstract class ASTNode implements Constants {
 	public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
 	public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
 	public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
-	public virtual packed:1,flags,20 boolean is_struct_annotation; // struct
-	public virtual packed:1,flags,21 boolean is_struct_syntax;     // struct
-	public virtual packed:1,flags,22 boolean is_struct_wrapper;    // struct
+	public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
+	public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
 
 	public int			compileflags;
 

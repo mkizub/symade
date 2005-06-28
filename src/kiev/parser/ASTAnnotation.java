@@ -25,6 +25,7 @@ public class ASTAnnotation extends ASTNode {
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTIdentifier) {
 			name = (ASTIdentifier)n;
+			this.pos = n.pos;
 		}
 		else if (n instanceof ASTAnnotationValue) {
 			values = (ASTAnnotationValue[])Arrays.append(values,n);

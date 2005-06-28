@@ -62,7 +62,7 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 
 		attrMap.put(attrRVAnnotations,		Class.forName("kiev.bytecode.RVAnnotations"));
 		attrMap.put(attrRIAnnotations,		Class.forName("kiev.bytecode.RIAnnotations"));
-		attrMap.put(attrRVParAnnotations,	Class.forName("kiev.bytecode.RVRarAnnotations"));
+		attrMap.put(attrRVParAnnotations,	Class.forName("kiev.bytecode.RVParAnnotations"));
 		attrMap.put(attrRIParAnnotations,	Class.forName("kiev.bytecode.RIParAnnotations"));
 		attrMap.put(attrAnnotationDefault,	Class.forName("kiev.bytecode.AnnotationDefault"));
 	}
@@ -1071,7 +1071,7 @@ public abstract class Annotation extends Attribute {
 			case '@': v = new element_value_annotation(); break;
 			case '[': v = new element_value_array();      break;
 			default:
-				throw new ClassNotFoundException("unknow annotation value tag: "+(char)tag);
+				throw new ClassFormatError("unknow annotation value tag: "+(char)tag);
 			}
 			v.tag = tag;
 			v.read(cont);

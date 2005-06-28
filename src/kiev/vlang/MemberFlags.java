@@ -49,7 +49,7 @@ public interface AccessFlags {
 	//public static final int ACC_ENUM				= 1 << 14; // enum classes and fields of enum classes
 
 	// Valid for bytecode mask
-	public static final int JAVA_ACC_MASK		= 0x7FF;
+	public static final int JAVA_ACC_MASK		= 0xFFFF;
 
 	// Struct specific
 	//public static final int ACC_PACKAGE			= 1 << 11;
