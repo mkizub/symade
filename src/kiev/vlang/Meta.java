@@ -153,6 +153,36 @@ public class Meta extends ASTNode {
 		return values.length == 0;
 	}
 	
+	public Meta resolve() {
+		Struct s = Env.getStruct(type.name);
+		for (int n=0; n < values.length; n++) {
+			MetaValue v = values[n];
+			Method m = null;
+			for(int i=0; i < s.methods.length; i++) {
+				if( s.methods[i].name.equals(v.type.name)) {
+					m = s.methods[i];
+					break;
+				}
+			}
+			if (m == null)
+				throw new CompilerException(v.pos, "Unresolved method "+v.type.name+" in class "+s);
+			Type tp = m.type.ret;
+			Type t = tp;
+			if (t.isArray()) {
+				if (v instanceof MetaValueScalar)
+					values[n] = v = new MetaValueArray(v.type, new ASTNode[]{((MetaValueScalar)v).value});
+				t = t.args[0];
+			}
+			if (t.isReference()) {
+				t.clazz.checkResolved();
+				if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+					throw new CompilerException(m.pos, "Bad annotation value type "+tp);
+			}
+			v.resolve(t);
+		}
+		return this;
+	}
+	
 	public MetaValue set(MetaValue value) alias add alias operator (5,lfy,+=)
 	{
 		if (value == null)
@@ -220,16 +250,76 @@ public class Meta extends ASTNode {
 
 }
 
-public class MetaValue extends ASTNode {
+public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
 	public final MetaValueType type;
-	public       ASTNode       value;
-	
-	public MetaValue(MetaValueType type, ASTNode value) {
+
+	public MetaValue(MetaValueType type) {
 		super(0);
 		this.type  = type;
+	}
+
+	public abstract void resolve(Type reqType);
+
+	ASTNode resolveValue(Type reqType, ASTNode value) {
+		if (value instanceof Meta) {
+			return ((Meta)value).resolve();
+		}
+		ASTNode v = ((Expr)value).resolve(reqType);
+		if (!(v instanceof Expr)) {
+			if (reqType == Type.tpClass)
+				return v;
+			else
+				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
+		}
+		else if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField())
+			return ((StaticFieldAccessExpr)v).var;
+		else if (!((Expr)v).isConstantExpr())
+			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
+		Type vt = v.getType();
+		if (vt != reqType) {
+			if (!vt.isCastableTo(reqType))
+				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected");
+			v = new CastExpr(v.pos, reqType, (Expr)v).resolve(reqType);
+			if (!((Expr)v).isConstantExpr())
+				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
+			vt = v.getType();
+			if (vt != reqType)
+				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected");
+		}
+		return v;
+	}
+}
+
+public class MetaValueScalar extends MetaValue {
+
+	public       ASTNode       value;
+	
+	public MetaValueScalar(MetaValueType type, ASTNode value) {
+		super(type);
 		this.value = value;
 	}
 
+	public void resolve(Type reqType) {
+		value = resolveValue(reqType, value);
+	}
 }
+
+public class MetaValueArray extends MetaValue {
+
+	public final MetaValueType type;
+	public       ASTNode[]     values;
+	
+	public MetaValueArray(MetaValueType type, ASTNode[] values) {
+		super(type);
+		this.values = values;
+	}
+
+	public void resolve(Type reqType) {
+		for (int i=0; i < values.length; i++)
+			values[i] = resolveValue(reqType, values[i]);
+	}
+}
+
+

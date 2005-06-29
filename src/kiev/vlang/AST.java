@@ -79,6 +79,7 @@ public abstract class ASTNode implements Constants {
 	public int			flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
+	public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
 	public virtual packed:1,flags,14 boolean is_fld_enum;        // field
 	// Flags temporary used with java flags
 	public virtual packed:1,flags,16 boolean is_forward;         // var/field
@@ -357,6 +358,15 @@ public abstract class ASTNode implements Constants {
 		assert(!on || (!isPackage() && !isSyntax()));
 		this.is_struct_annotation = on;
 		if (on) this.setInterface(true);
+	}
+	// java enum
+	public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_java_enum;
+	}
+	public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_java_enum = on;
 	}
 	// kiev enum that extends int
 	public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
@@ -753,7 +763,7 @@ public abstract class ASTNode implements Constants {
 	public void setInterface(boolean on) {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_INTERFACE;
+		if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
 		else flags &= ~ACC_INTERFACE;
 	}
 	public void setAbstract(boolean on) {

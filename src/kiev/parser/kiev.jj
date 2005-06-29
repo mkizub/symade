@@ -1656,7 +1656,7 @@ void Annotation() :
                           jjtree.openNodeScope(jjtn001);
                         }
                         try {
-/*@egen*/	AnnotationValue()/*@bgen(jjtree)*/
+/*@egen*/	AnnotationValueAny()/*@bgen(jjtree)*/
                         } catch (Throwable jjte001) {
                           if (jjtc001) {
                             jjtree.clearNodeScope(jjtn001);
@@ -1714,7 +1714,7 @@ void AnnotationValues()       :
         }
         try {
 /*@egen*/
-	AnnotationValue()/*@bgen(jjtree)*/
+	AnnotationValueAny()/*@bgen(jjtree)*/
         } catch (Throwable jjte001) {
           if (jjtc001) {
             jjtree.clearNodeScope(jjtn001);
@@ -1746,7 +1746,7 @@ void AnnotationValues()       :
                 }
                 try {
 /*@egen*/
-		AnnotationValue()/*@bgen(jjtree)*/
+		AnnotationValueAny()/*@bgen(jjtree)*/
                 } catch (Throwable jjte002) {
                   if (jjtc002) {
                     jjtree.clearNodeScope(jjtn002);
@@ -1770,12 +1770,20 @@ void AnnotationValues()       :
 	)*
 }
 
-void AnnotationValue()       :
+void AnnotationValueAny()       :
 {}
 {
 		LOOKAHEAD( "@" <IDENTIFIER> )
 		Annotation()
 	|	AnnotationValueValueArrayInitializer()
+	|	ExpressionNT(null)
+}
+
+void AnnotationValueScalar()       :
+{}
+{
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		Annotation()
 	|	ExpressionNT(null)
 }
 
@@ -1789,64 +1797,10 @@ void AnnotationValueValueArrayInitializer() :
         try {
 /*@egen*/
 	"{"
-	[/*@bgen(jjtree) #AnnotationValue( 1) */
-                {
-                  ASTAnnotationValue jjtn001 = new ASTAnnotationValue(JJTANNOTATIONVALUE);
-                  boolean jjtc001 = true;
-                  jjtree.openNodeScope(jjtn001);
-                }
-                try {
-/*@egen*/
-		AnnotationValue()/*@bgen(jjtree)*/
-                } catch (Throwable jjte001) {
-                  if (jjtc001) {
-                    jjtree.clearNodeScope(jjtn001);
-                    jjtc001 = false;
-                  } else {
-                    jjtree.popNode();
-                  }
-                  if (jjte001 instanceof RuntimeException) {
-                    throw (RuntimeException)jjte001;
-                  }
-                  if (jjte001 instanceof ParseException) {
-                    throw (ParseException)jjte001;
-                  }
-                  throw (Error)jjte001;
-                } finally {
-                  if (jjtc001) {
-                    jjtree.closeNodeScope(jjtn001,  1);
-                  }
-                }
-/*@egen*/
-		(	","/*@bgen(jjtree) #AnnotationValue( 1) */
-                        {
-                          ASTAnnotationValue jjtn002 = new ASTAnnotationValue(JJTANNOTATIONVALUE);
-                          boolean jjtc002 = true;
-                          jjtree.openNodeScope(jjtn002);
-                        }
-                        try {
-/*@egen*/
-			AnnotationValue()/*@bgen(jjtree)*/
-                        } catch (Throwable jjte002) {
-                          if (jjtc002) {
-                            jjtree.clearNodeScope(jjtn002);
-                            jjtc002 = false;
-                          } else {
-                            jjtree.popNode();
-                          }
-                          if (jjte002 instanceof RuntimeException) {
-                            throw (RuntimeException)jjte002;
-                          }
-                          if (jjte002 instanceof ParseException) {
-                            throw (ParseException)jjte002;
-                          }
-                          throw (Error)jjte002;
-                        } finally {
-                          if (jjtc002) {
-                            jjtree.closeNodeScope(jjtn002,  1);
-                          }
-                        }
-/*@egen*/
+	[
+		AnnotationValueScalar()
+		(	","
+			AnnotationValueScalar()
 		)*
 	]
 	"}"/*@bgen(jjtree)*/

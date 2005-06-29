@@ -13,19 +13,14 @@ import kiev.vlang.*;
 
 public class ASTAnnotationValueValueArrayInitializer extends SimpleNode {
 	
-	public ASTAnnotationValue[] values = ASTAnnotationValue.emptyArray;
+	public ASTNode[] values = ASTNode.emptyArray;
 
 	public ASTAnnotationValueValueArrayInitializer(int id) {
 		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if (n instanceof ASTAnnotationValue) {
-			values = (ASTAnnotationValue[])Arrays.append(values,n);
-		}
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-		}
+		values = (ASTNode[])Arrays.append(values,n);
 	}
 
 }

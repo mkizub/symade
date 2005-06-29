@@ -35,4 +35,44 @@ public class ASTAnnotation extends ASTNode {
 		}
 	}
 
+	public Meta getMeta() {
+		ASTNode n = null;
+		try {
+			n = name.resolve(null);
+		} catch (Exception e) {
+			Kiev.reportError(pos, e);
+		}
+		if (!(n instanceof Struct) || !n.isAnnotation()) {
+			Kiev.reportError(pos, "Annotation name expected");
+			return null;
+		}
+		Struct s = (Struct)n;
+		Meta m = new Meta(new MetaType(s.name.name));
+		foreach (ASTAnnotationValue v; values) {
+			KString name;
+			if (v.name == null)
+				name = KString.from("value");
+			else
+				name = v.name.name;
+			MetaValueType mvt = new MetaValueType(name);
+			if (v.value instanceof ASTAnnotation) {
+				ASTNode value = v.value;
+				value = ((ASTAnnotation)value).getMeta();
+				m.set(new MetaValueScalar(mvt, value));
+			}
+			else if (v.value instanceof ASTAnnotationValueValueArrayInitializer) {
+				ASTNode[] values = ((ASTAnnotationValueValueArrayInitializer)v.value).values;
+				for (int i=0; i < values.length; i++) {
+					if (values[i] instanceof ASTAnnotation)
+						values[i] = ((ASTAnnotation)values[i]).getMeta();
+				}
+				m.set(new MetaValueArray(mvt, values));
+			}
+			else {
+				m.set(new MetaValueScalar(mvt, v.value));
+			}
+		}
+		return m;
+	}
+
 }

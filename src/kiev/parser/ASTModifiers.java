@@ -57,25 +57,7 @@ public class ASTModifiers extends ASTNode {
 	public MetaSet getMetas(MetaSet ms) {
 	next_annotation:
 		foreach (ASTAnnotation a; annotations) {
-			ASTNode n = null;
-			try {
-				n = a.name.resolve(null);
-			} catch (Exception e) {
-				Kiev.reportError(a.pos, e);
-			}
-			if (!(n instanceof Struct) || !n.isAnnotation()) {
-				Kiev.reportError(a.pos, "Annotation name expected");
-				continue;
-			}
-			Struct s = (Struct)n;
-			Meta m = new Meta(new MetaType(s.name.name));
-			foreach (ASTAnnotationValue v; a.values) {
-				KString name = v.name.name;
-				if (name == null)
-					name = KString.from("value");
-				MetaValueType mvt = new MetaValueType(name);
-				m.set(new MetaValue(mvt, v.value));
-			}
+			Meta m = a.getMeta();
 			ms.set(m);
 		}
 		return ms;

@@ -97,6 +97,7 @@ public class Type extends ASTNode implements AccessFlags {
 	public static Type tpApplayable;
 	public static Type tpDynamic;
 	public static Type tpEnum;
+	public static Type tpAnnotation;
 	public static Struct tpClosureClazz;
 	public static Struct tpMethodClazz;
 
@@ -276,6 +277,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Env.root.type = tpVoid;
 
 		Struct java_lang = Env.newPackage(KString.from("java.lang"));
+		Struct java_lang_annotation = Env.newPackage(KString.from("java.lang.annotation"));
 		Struct java_util = Env.newPackage(KString.from("java.util"));
 		Struct kiev_stdlib = Env.newPackage(KString.from("kiev.stdlib"));
 
@@ -393,6 +395,11 @@ public class Type extends ASTNode implements AccessFlags {
 		tpStringClazz.type		= tpString;
 		typeHash.put(tpString);
 
+		Struct tpAnnotationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/annotation/Annotation;")),java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
+		tpAnnotation			= new Type(tpAnnotationClazz);
+		tpAnnotationClazz.type	= tpAnnotation;
+		typeHash.put(tpAnnotation);
+		
 		Struct tpThrowableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Throwable;")),java_lang,ACC_PUBLIC);
 		tpThrowable				= new Type(tpThrowableClazz);
 		tpThrowableClazz.type	= tpThrowable;

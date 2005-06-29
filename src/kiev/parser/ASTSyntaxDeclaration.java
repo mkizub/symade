@@ -95,6 +95,7 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 				Kiev.reportError/*Warning*/(n.getPos(),e);
 			}
 		}
+		super.pass1_1();
 		return me;
 	}
 

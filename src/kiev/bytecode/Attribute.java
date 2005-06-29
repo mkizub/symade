@@ -1139,8 +1139,10 @@ public abstract class Annotation extends Attribute {
 		}
 		public void write(ReadContext cont) {
 			cont.writeShort(values.length);
-			for(int i=0; i < values.length; i++)
+			for(int i=0; i < values.length; i++) {
+				cont.writeByte(values[i].tag);
 				values[i].write(cont);
+			}
 		}
 	}
 	public static class annotation {

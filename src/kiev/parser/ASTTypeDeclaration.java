@@ -48,6 +48,12 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 		super(0);
 	}
 	
+	public ASTNode pass1_1() {
+		// Attach meta-data to the new structure
+		modifiers.getMetas(me.meta);
+		return me;
+	}
+	
 	public ASTNode pass3() {
 		switch (this) {
 		case ASTTypeDeclaration:
@@ -155,9 +161,6 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 //			me.gram = new Grammar();
 //		}
 
-		// Attach meta-data to the new structure
-		modifiers.getMetas(me.meta);
-
         PassInfo.push(me);
         try {
 			/* Then may be class arguments - they are proceed here, but their
@@ -207,10 +210,6 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 			}
 		} finally { PassInfo.pop(me); }
 
-		return me;
-	}
-
-	public ASTNode pass1_1() {
 		return me;
 	}
 
@@ -355,6 +354,11 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					at = (ASTNonArrayType)exts.children[0];
 					me.super_clazz = at.getType();
 				}
+			}
+			if( me.isAnnotation() ) {
+				impl = null;
+				timpl = new Type[]{Type.tpAnnotation};
+				me.interfaces = timpl;
 			}
 			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
 				me.super_clazz = Type.tpObject;

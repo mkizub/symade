@@ -2518,6 +2518,17 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isGenerated() ) return this;
 		long curr_time;
+		{
+			NodeInfoPass.init();
+			ScopeNodeInfoVector state = NodeInfoPass.pushState();
+			state.guarded = true;
+			try {
+				foreach (Meta m; meta)
+					m.resolve();
+			} finally {
+				NodeInfoPass.close();
+			}
+		}
 		PassInfo.push(this);
 		try {
 			autoGenerateStatements();

@@ -1155,7 +1155,7 @@ void Annotation() :
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
 			AnnotationValues()
-		|	AnnotationValue() #AnnotationValue(1)
+		|	AnnotationValueAny() #AnnotationValue(1)
 		]
 		")"
 	]
@@ -1166,16 +1166,16 @@ void AnnotationValues() #void :
 {
 	Identifier()
 	"="
-	AnnotationValue() #AnnotationValue(2)
+	AnnotationValueAny() #AnnotationValue(2)
 	(
 		","
 		Identifier()
 		"="
-		AnnotationValue() #AnnotationValue(2)
+		AnnotationValueAny() #AnnotationValue(2)
 	)*
 }
 
-void AnnotationValue() #void :
+void AnnotationValueAny() #void :
 {}
 {
 		LOOKAHEAD( "@" <IDENTIFIER> )
@@ -1184,14 +1184,22 @@ void AnnotationValue() #void :
 	|	ExpressionNT(null)
 }
 
+void AnnotationValueScalar() #void :
+{}
+{
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		Annotation()
+	|	ExpressionNT(null)
+}
+
 void AnnotationValueValueArrayInitializer() :
 {}
 {
 	"{"
 	[
-		AnnotationValue() #AnnotationValue(1)
+		AnnotationValueScalar()
 		(	","
-			AnnotationValue() #AnnotationValue(1)
+			AnnotationValueScalar()
 		)*
 	]
 	"}"
