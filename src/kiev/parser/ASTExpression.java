@@ -38,6 +38,7 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
  *
  */
 
+@node
 public class ASTExpression extends Expr {
 	public List<ASTNode>		nodes = List.Nil;
 

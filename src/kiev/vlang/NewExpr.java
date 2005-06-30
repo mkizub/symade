@@ -35,6 +35,7 @@ import static kiev.vlang.Instr.*;
  *
  */
 
+@node
 public class NewExpr extends Expr {
 
 	public Type		type;
@@ -259,6 +260,7 @@ public class NewExpr extends Expr {
 	}
 }
 
+@node
 public class NewArrayExpr extends Expr {
 
 	public Type		type;
@@ -376,6 +378,7 @@ public class NewArrayExpr extends Expr {
 	}
 }
 
+@node
 public class NewInitializedArrayExpr extends Expr {
 
 	public Type			type;
@@ -476,6 +479,7 @@ public class NewInitializedArrayExpr extends Expr {
 	}
 }
 
+@node
 public class NewClosure extends Expr {
 
 	public Type		type;

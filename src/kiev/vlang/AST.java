@@ -55,19 +55,19 @@ public interface TopLevelDecl {
 };
 
 public enum TopLevelPass /*extends int*/ {
-	passStartCleanup		= 0,	// start of compilation or cleanup before next incremental compilation
-	passCreateTopStruct		= 1,	// create top-level Struct
-	passProcessSyntax		= 2,	// process syntax - some import, typedef, operator and macro
-	passArgumentInheritance	= 3,	// inheritance of type arguments
-	passStructInheritance	= 4,	// inheritance of classe/interfaces/structures
-	passCreateMembers		= 5,	// create declared members of structures
-	passAutoProxyMethods	= 6,	// autoProxyMethods()
-	passResolveImports		= 7,	// recolve import static for import of fields and methods
-	passResolveFinalFields	= 8,	// resolve final fields, to find out if they are constants
-	passGenerate			= 9		// resolve, generate and so on - each file separatly
+	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
+	passCreateTopStruct		   ,	// create top-level Struct
+	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
+	passArgumentInheritance	   ,	// inheritance of type arguments
+	passStructInheritance	   ,	// inheritance of classe/interfaces/structures
+	passCreateMembers		   ,	// create declared members of structures
+	passAutoProxyMethods	   ,	// autoProxyMethods()
+	passResolveImports		   ,	// recolve import static for import of fields and methods
+	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
-
+@node
 public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
@@ -78,6 +78,9 @@ public abstract class ASTNode implements Constants {
     public ASTNode		parent;
 	public int			flags;
 	
+	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
+	public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
+	public virtual packed:1,flags,14 boolean is_fld_enum;        // field
 	// Flags temporary used with java flags
 	public virtual packed:1,flags,16 boolean is_forward;         // var/field
 	public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
@@ -107,7 +110,7 @@ public abstract class ASTNode implements Constants {
 	// Expression flags
 	public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
 	public virtual packed:1,compileflags,17 boolean is_expr_as_field;
-	public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
+	//public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
 	public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
 	public virtual packed:1,compileflags,20 boolean is_expr_gen_resolved;
 	public virtual packed:1,compileflags,21 boolean is_expr_for_wrapper;
@@ -345,6 +348,26 @@ public abstract class ASTNode implements Constants {
 		assert(!on || (!isPackage() && !isInterface() && !isSyntax()));
 		this.is_struct_enum = on;
 	}
+	// kiev annotation
+	public final boolean get$is_struct_annotation()  alias isAnnotation  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_annotation;
+	}
+	public final void set$is_struct_annotation(boolean on) alias setAnnotation {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(!on || (!isPackage() && !isSyntax()));
+		this.is_struct_annotation = on;
+		if (on) this.setInterface(true);
+	}
+	// java enum
+	public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_java_enum;
+	}
+	public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		this.is_struct_java_enum = on;
+	}
 	// kiev enum that extends int
 	public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
 		assert(this instanceof Struct,"For node "+this.getClass());
@@ -536,6 +559,15 @@ public abstract class ASTNode implements Constants {
 		assert(this instanceof Field,"For node "+this.getClass());
 		this.is_fld_virtual = on;
 	}
+	// is a field of enum
+	public final boolean get$is_fld_enum()  alias isEnumField  {
+		assert(this instanceof Field,"For node "+this.getClass());
+		return this.is_fld_enum;
+	}
+	public final void set$is_fld_enum(boolean on) alias setEnumField {
+		assert(this instanceof Field,"For node "+this.getClass());
+		this.is_fld_enum = on;
+	}
 	// packer field (auto-generated for packed fields)
 	public final boolean get$is_fld_packer()  alias isPackerField  {
 		assert(this instanceof Field,"For node "+this.getClass());
@@ -578,14 +610,14 @@ public abstract class ASTNode implements Constants {
 		this.is_expr_as_field = on;
 	}
 	// constant expression
-	public final boolean get$is_expr_const_expr()  alias isConstExpr  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_const_expr;
-	}
-	public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_const_expr = on;
-	}
+	//public final boolean get$is_expr_const_expr()  alias isConstExpr  {
+	//	assert(this instanceof Expr,"For node "+this.getClass());
+	//	return this.is_expr_const_expr;
+	//}
+	//public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
+	//	assert(this instanceof Expr,"For node "+this.getClass());
+	//	this.is_expr_const_expr = on;
+	//}
 	// tried to be resolved
 	public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
 		assert(this instanceof Expr,"For node "+this.getClass());
@@ -731,7 +763,7 @@ public abstract class ASTNode implements Constants {
 	public void setInterface(boolean on) {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_INTERFACE;
+		if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
 		else flags &= ~ACC_INTERFACE;
 	}
 	public void setAbstract(boolean on) {
@@ -747,6 +779,7 @@ public abstract class ASTNode implements Constants {
 
 }
 
+@node
 public abstract class Expr extends ASTNode {
 
 	public static Expr[] emptyArray = new Expr[0];
@@ -843,6 +876,7 @@ public abstract class Expr extends ASTNode {
 	}
 }
 
+@node
 public class WrapedExpr extends Expr {
 
 	public ASTNode	expr;
@@ -871,6 +905,7 @@ public class WrapedExpr extends Expr {
 	}
 }
 
+@node
 public abstract class BooleanExpr extends Expr {
 
 	public BooleanExpr(int pos) { super(pos); }
@@ -900,6 +935,7 @@ public abstract class BooleanExpr extends Expr {
 	public abstract void generate_iffalse(CodeLabel label);
 }
 
+@node
 public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr(int pos) { super(pos); }
@@ -935,6 +971,7 @@ public abstract class LvalueExpr extends Expr {
 	public abstract void generateStoreDupValue();
 }
 
+@node
 public abstract class Statement extends ASTNode {
 
 	public static Statement[] emptyArray = new Statement[0];
@@ -952,117 +989,6 @@ public abstract class Statement extends ASTNode {
 	public ASTNode	resolve(Type reqType) { return this; }
 
 }
-public final class NArr<N extends ASTNode> {
-
-    private final N 	$parent;
-	private N[]		$nodes;
-	
-	public NArr(ASTNode parent) {
-		this.$parent = parent;
-		this.$nodes = new N[0];
-	}
-	
-	public NArr(int size, ASTNode parent) {
-		this.$parent = parent;
-		this.$nodes = new N[size];
-	}
-
-	public int size()
-		alias length
-		alias get$size
-		alias get$length
-	{
-		return $nodes.length;
-	}
-
-	public void cleanup() {
-		$parent = null;
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++)
-			$nodes[i].cleanup();
-		$nodes = null;
-	};
-	
-	public final N get(int idx)
-		alias at
-		alias operator(210,xfy,[])
-	{
-		return $nodes[idx];
-	}
-	
-	public N set(int idx, N node)
-		alias operator(210,lfy,[])
-	{
-		$nodes[idx] = node;
-		return node;
-	}
-
-	public N add(N node)
-		alias append
-	{
-		int sz = $nodes.length;
-		N[] tmp = new N[sz+1];
-		int i;
-		for (i=0; i < sz; i++)
-			tmp[i] = $nodes[i];
-		$nodes = tmp;
-		$nodes[sz] = node;
-		return node;
-	}
-
-	public N insert(int idx, N node)
-	{
-		int sz = $nodes.length;
-		N[] tmp = new N[sz+1];
-		int i;
-		for (i=0; i < idx; i++)
-			tmp[i] = $nodes[i];
-		for (i++; i < sz; i++)
-			tmp[i+1] = $nodes[i];
-		tmp[idx] = node;
-		$nodes = tmp;
-		return node;
-	}
-
-	public void del(int idx)
-	{
-		int sz = $nodes.length;
-		N[] tmp = new N[sz-1];
-		int i;
-		for (i=0; i < idx; i++)
-			tmp[i] = $nodes[i];
-		for (i++; i < sz; i++)
-			tmp[i-1] = $nodes[i];
-		$nodes = tmp;
-	}
-
-	public void delAll() {
-		if (this.$nodes.length == 0)
-			return;
-		this.$nodes = new N[0];
-	};
-	
-	public boolean contains(N node) {
-		for (int i=0; i < $nodes.length; i++) {
-			if ($nodes[i].equals(node))
-				return true;
-		}
-		return false;
-	}
-
-	public Enumeration<N> elements() {
-		return new Enumeration<N>() {
-			int current;
-			public boolean hasMoreElements() { return current < NArr.this.size(); }
-			public A nextElement() {
-				if ( current < size() ) return NArr.this[current++];
-				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
-			}
-		};
-	}
-
-}
-
 
 public interface SetBody {
 	public boolean setBody(Statement body);

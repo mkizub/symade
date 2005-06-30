@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTArrayElementAccessExpression extends Expr {
 	public Expr		obj;
 	public Expr		index;

@@ -35,6 +35,7 @@ import static kiev.vlang.Instr.*;
  *
  */
 
+@node
 public class CallExpr extends Expr {
 	public Method	func;
 	public Expr[]	args;
@@ -241,6 +242,7 @@ public class CallExpr extends Expr {
 
 }
 
+@node
 public class CallAccessExpr extends Expr {
 	public Expr		obj;
 	public Method	func;
@@ -541,6 +543,7 @@ public class CallAccessExpr extends Expr {
 	}
 }
 
+@node
 public class ClosureCallExpr extends Expr {
 	public Expr		expr;
 	public ASTNode	func;	// Var or Field

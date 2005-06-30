@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTPackage extends ASTNode {
 	public KString	name;
 
@@ -53,3 +54,4 @@ public class ASTPackage extends ASTNode {
     	return dmp.append("package").space().append(name).append(';').newLine();
     }
 }
+

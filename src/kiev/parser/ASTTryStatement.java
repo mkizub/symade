@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTTryStatement extends Statement {
 	public Statement	body;
     public ASTNode[]	catchers = ASTNode.emptyArray;

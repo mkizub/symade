@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTNonArrayType extends SimpleNode {
 	static private KString[] noops = new KString[0];
 	public KString[] ops = noops;

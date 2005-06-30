@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTDoStatement extends Statement {
     public boolean		not;
 	public Expr			cond;

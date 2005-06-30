@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTCondStatement extends Statement {
 	
 	public Expr		cond;

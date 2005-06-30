@@ -36,6 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTCallAccessExpression extends Expr {
 	public Expr		obj;
 	public KString	func;

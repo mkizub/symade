@@ -35,6 +35,7 @@ import static kiev.vlang.Instr.*;
  *
  */
 
+@node
 public class AccessExpr extends LvalueExpr {
 
 	public Expr		obj;
@@ -353,6 +354,7 @@ public class AccessExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class ContainerAccessExpr extends LvalueExpr {
 
 	public Expr		obj;
@@ -568,6 +570,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 }
 
 
+@node
 public class VarAccessExpr extends LvalueExpr {
 
 	public Var		var;
@@ -913,6 +916,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	public Var		var;
@@ -1036,6 +1040,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class FieldAccessExpr extends LvalueExpr {
 
 	public Field		var;
@@ -1322,6 +1327,7 @@ public class FieldAccessExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Struct		obj;
@@ -1511,6 +1517,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 }
 
+@node
 public class OuterThisAccessExpr extends LvalueExpr {
 
 	public Struct		outer;
@@ -1621,6 +1628,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
 }
 
+@node
 public class SelfAccessExpr extends LvalueExpr {
 
 	public LvalueExpr		expr;

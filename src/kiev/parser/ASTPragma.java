@@ -26,6 +26,7 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+@node
 public class ASTPragma extends SimpleNode implements TopLevelDecl {
 
 	public boolean				enable;

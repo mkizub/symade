@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTRuleCutExpression extends ASTRuleNode {
 
 	public ASTRuleCutExpression(int id) {

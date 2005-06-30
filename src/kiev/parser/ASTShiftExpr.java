@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTShiftExpr extends Expr {
 	public Expr expr1;
 	public Expr expr2;

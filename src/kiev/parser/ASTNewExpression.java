@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTNewExpression extends Expr {
 	public ASTNode	type;
     public Expr[]	args = Expr.emptyArray;
@@ -170,7 +171,7 @@ public class ASTNewExpression extends Expr {
 				exporter.pass2_2(members[i], me);
 			}
 		} finally { PassInfo.pop(me); }
-		me = ASTTypeDeclaration.pass3(me,members);
+		me = ASTTypeDeclaration.createMembers(me,members);
 		me.autoProxyMethods();
 		me.resolveFinalFields(false);
 		Expr ne;

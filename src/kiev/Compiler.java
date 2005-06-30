@@ -638,6 +638,10 @@ public class Compiler {
 					Kiev.files.append(((ASTFileUnit)fu).file_unit);
 
 
+			
+			ProcessVNode noder = new ProcessVNode();
+			noder.verify();
+			
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			Kiev.file_unit.cleanup();
 			Kiev.files_scanned.cleanup();

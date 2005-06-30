@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTNewAccessExpression extends Expr {
 	public Expr		obj;
 	public ASTNode	type;

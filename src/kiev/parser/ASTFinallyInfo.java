@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTFinallyInfo extends SimpleNode {
     public Statement			body;
 

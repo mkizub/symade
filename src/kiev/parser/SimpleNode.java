@@ -6,6 +6,7 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+@node
 public abstract class SimpleNode extends ASTNode {
   
   public ASTNode[] children;

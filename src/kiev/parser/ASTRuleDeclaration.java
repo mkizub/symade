@@ -35,10 +35,10 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
-    public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
+	public ASTModifiers	modifiers;
     public KString		name;
     public ASTNode[]	params = ASTNode.emptyArray;
     public ASTAlias[]	aliases = ASTAlias.emptyArray;
@@ -58,26 +58,21 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 	public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
-        }
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
-    	else if( n instanceof ASTIdentifier ) {
-        	name = ((ASTIdentifier)n).name;
-        	pos = n.getPos();
+		else if( n instanceof ASTIdentifier ) {
+			name = ((ASTIdentifier)n).name;
+			pos = n.getPos();
 		}
-    	else if( n instanceof ASTFormalParameter ) {
-        	params = (ASTNode[])Arrays.append(params,n);
-        }
-    	else if( n instanceof ASTVarDecls ) {
-        	localvars = (ASTNode[])Arrays.append(localvars,n);
-        }
-    	else if( n instanceof ASTAlias ) {
-        	aliases = (ASTAlias[])Arrays.append(aliases,n);
+		else if( n instanceof ASTFormalParameter ) {
+			params = (ASTNode[])Arrays.append(params,n);
+		}
+		else if( n instanceof ASTVarDecls ) {
+			localvars = (ASTNode[])Arrays.append(localvars,n);
+		}
+		else if( n instanceof ASTAlias ) {
+			aliases = (ASTAlias[])Arrays.append(aliases,n);
         }
         else if( n instanceof ASTRequareDeclaration ) {
 			if( req == null )
@@ -95,7 +90,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			body = (Statement)n;
         }
         else {
-        	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
@@ -107,10 +102,8 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			clazz = (Struct)parent;
 		else
 			throw new CompilerException(pos,"Method must be declared on class level only");
-		int flags = 0;
 		// TODO: check flags for fields
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		Struct ps;
 		if( parent instanceof ASTTypeDeclaration)
 			ps = ((ASTTypeDeclaration)parent).me;
@@ -195,7 +188,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 //        }
 		if( pbody != null ) pbody.setParent(me);
 
-		if( acc != null ) me.acc = new Access(acc.accflags);
+		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
@@ -214,3 +207,4 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
     }
 
 }
+

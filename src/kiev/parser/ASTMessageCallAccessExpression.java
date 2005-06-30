@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTMessageCallAccessExpression extends Expr {
 	public Expr		obj;
 	public KString	func;

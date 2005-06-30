@@ -55,7 +55,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
 	    throw new IllegalArgumentException("initialCapacity="+initialCapacity+" loadFactor="+loadFactor);
 	}
 	this.loadFactor = loadFactor;
-	table = new HashtableEntry/*<A,B>*/[initialCapacity];
+	table = new HashtableEntry<A,B>[initialCapacity];
 	threshold = (int)(initialCapacity * loadFactor);
     }
 
@@ -97,7 +97,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Enumeration
      */
     public synchronized Enumeration<A> keys() {
-	return new KeyEnumerator/*<A,B>*/(table);
+	return new KeyEnumerator<A,B>(table);
     }
 
     /**
@@ -107,7 +107,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * @see Enumeration
      */
     public synchronized Enumeration<B> elements() {
-	return new ValueEnumerator/*<A,B>*/(table);
+	return new ValueEnumerator<A,B>(table);
     }
 
     /**
@@ -177,7 +177,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
 	HashtableEntry<A,B> oldTable[] = table;
 
 	int newCapacity = oldCapacity * 2 + 1;
-	HashtableEntry<A,B> newTable[] = new HashtableEntry/*<A,B>*/[newCapacity];
+	HashtableEntry<A,B> newTable[] = new HashtableEntry<A,B>[newCapacity];
 
 	threshold = (int)(newCapacity * loadFactor);
 	table = newTable;
@@ -227,7 +227,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
 	}
 
 	// Creates the new entry.
-	tab[index] = new HashtableEntry/*<A,B>*/(key, value, hash, tab[index]);
+	tab[index] = new HashtableEntry<A,B>(key, value, hash, tab[index]);
 	count++;
 	return null;
     }
@@ -272,7 +272,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
      * relatively expensive operation.
      */
     public synchronized Object clone() {
-	Hashtable<A,B> t = new Hashtable/*<A,B>*/(table.length, loadFactor);
+	Hashtable<A,B> t = new Hashtable<A,B>(table.length, loadFactor);
 	for (int i = table.length ; i-- > 0 ; ) {
 	    t.table[i] = (table[i] != null) ? table[i].copy() : null;
 	}
@@ -314,7 +314,7 @@ public static class HashtableEntry<A,B> {
     }
 
     public HashtableEntry<A,B> copy() {
-	return new HashtableEntry/*<A,B>*/(key, value, hash,
+	return new HashtableEntry<A,B>(key, value, hash,
 				  (next != null) ? next.copy() : null);
     }
 }

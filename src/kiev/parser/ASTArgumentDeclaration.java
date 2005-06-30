@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTArgumentDeclaration extends ASTNode {
 	public KString	name;
 	public ASTNode	type;

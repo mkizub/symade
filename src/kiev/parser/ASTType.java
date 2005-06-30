@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTType extends ASTNode {
 
 	public static ASTType[]	emptyArray = new ASTType[0];
@@ -93,3 +94,4 @@ public class ASTType extends ASTNode {
         return dmp.space();
 	}
 }
+

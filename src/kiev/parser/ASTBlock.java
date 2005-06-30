@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTBlock extends Statement {
 	public ASTNode[] stats = ASTNode.emptyArray;
 

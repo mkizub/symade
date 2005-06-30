@@ -31,8 +31,130 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+public @interface node {}
+public @interface att {}
+public @interface ref {}
+
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
+@node
 public class Tree extends ASTNode {
 	public NArr<Struct>			members;
+	
+	public Tree() {
+		super(0);
+	}
 }
+
+public final class NArr<N extends ASTNode> {
+
+    private final N 	$parent;
+	private N[]		$nodes;
+	
+	public NArr(ASTNode parent) {
+		this.$parent = parent;
+		this.$nodes = new N[0];
+	}
+	
+	public NArr(int size, ASTNode parent) {
+		this.$parent = parent;
+		this.$nodes = new N[size];
+	}
+
+	public int size()
+		alias length
+		alias get$size
+		alias get$length
+	{
+		return $nodes.length;
+	}
+
+	public void cleanup() {
+		$parent = null;
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++)
+			$nodes[i].cleanup();
+		$nodes = null;
+	};
+	
+	public final N get(int idx)
+		alias at
+		alias operator(210,xfy,[])
+	{
+		return $nodes[idx];
+	}
+	
+	public N set(int idx, N node)
+		alias operator(210,lfy,[])
+	{
+		$nodes[idx] = node;
+		return node;
+	}
+
+	public N add(N node)
+		alias append
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz+1];
+		int i;
+		for (i=0; i < sz; i++)
+			tmp[i] = $nodes[i];
+		$nodes = tmp;
+		$nodes[sz] = node;
+		return node;
+	}
+
+	public N insert(int idx, N node)
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz+1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i+1] = $nodes[i];
+		tmp[idx] = node;
+		$nodes = tmp;
+		return node;
+	}
+
+	public void del(int idx)
+	{
+		int sz = $nodes.length;
+		N[] tmp = new N[sz-1];
+		int i;
+		for (i=0; i < idx; i++)
+			tmp[i] = $nodes[i];
+		for (i++; i < sz; i++)
+			tmp[i-1] = $nodes[i];
+		$nodes = tmp;
+	}
+
+	public void delAll() {
+		if (this.$nodes.length == 0)
+			return;
+		this.$nodes = new N[0];
+	};
+	
+	public boolean contains(N node) {
+		for (int i=0; i < $nodes.length; i++) {
+			if ($nodes[i].equals(node))
+				return true;
+		}
+		return false;
+	}
+
+	public Enumeration<N> elements() {
+		return new Enumeration<N>() {
+			int current;
+			public boolean hasMoreElements() { return current < NArr.this.size(); }
+			public A nextElement() {
+				if ( current < size() ) return NArr.this[current++];
+				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
+			}
+		};
+	}
+
+}
+
+
 

@@ -32,6 +32,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class Var extends ASTNode implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];

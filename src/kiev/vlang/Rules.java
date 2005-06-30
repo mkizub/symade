@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class RuleMethod extends Method {
 
 	public Var[]	localvars = Var.emptyArray;
@@ -77,7 +78,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node @= localvars, ((Var)node).name.equals(name)
 	;	inlined_by_dispatcher,$cut,false
@@ -256,6 +257,7 @@ d) if rule is successive, it returns it's own frame
 object, if fails - returns null.
 */
 
+@node
 public abstract class ASTRuleNode extends ASTNode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
@@ -322,6 +324,7 @@ public abstract class ASTRuleNode extends ASTNode {
 }
 
 
+@node
 public final class RuleBlock extends ASTNode implements Scope {
 
 	public ASTRuleNode	node;
@@ -422,7 +425,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ stat;
 	{
 		stat @= stats,
@@ -431,7 +434,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 		node ?= ((DeclStat)stat).var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -439,6 +442,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 }
 
 
+@node
 public final class RuleOrExpr extends ASTRuleNode {
 
 	public ASTRuleNode[]	rules;
@@ -495,6 +499,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	}
 }
 
+@node
 public final class RuleAndExpr extends ASTRuleNode {
 
 	public ASTRuleNode[]	rules;
@@ -591,6 +596,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 	}
 }
 
+@node
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	public Var		var;		// variable of type PVar<...>
@@ -644,6 +650,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 }
 
+@node
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public Var[]	vars;		// variable of type PVar<...>
@@ -820,6 +827,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	}
 }
 
+@node
 public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr(int pos) {
@@ -841,6 +849,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 	}
 }
 /*
+@node
 public final class RuleIfExpr extends ASTRuleNode {
 
 	public Expr			cond;
@@ -933,6 +942,7 @@ public final class RuleIfExpr extends ASTRuleNode {
 }
 
 
+@node
 public final class RuleForExpr extends ASTRuleNode {
 
 	public ASTNode		init;
@@ -1033,6 +1043,7 @@ public final class RuleForExpr extends ASTRuleNode {
 }
 */
 
+@node
 public final class RuleCallExpr extends ASTRuleNode {
 
 	public Expr		obj;
@@ -1135,6 +1146,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 }
 
+@node
 public abstract class RuleExprBase extends ASTRuleNode {
 	public Expr		expr;
 
@@ -1176,6 +1188,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 }
 
+@node
 public final class RuleWhileExpr extends RuleExprBase {
 
 	public RuleWhileExpr(Expr expr) {
@@ -1212,6 +1225,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 	}
 }
 
+@node
 public final class RuleExpr extends RuleExprBase {
 
 	public Expr		bt_expr;

@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTCommaExpression extends Expr {
 	public Expr[]	exprs = Expr.emptyArray;
 

@@ -36,6 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTCallExpression extends Expr {
 	public KString	func;
     public Expr[]	args = Expr.emptyArray;

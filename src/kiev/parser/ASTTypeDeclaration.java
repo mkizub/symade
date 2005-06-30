@@ -34,9 +34,10 @@ import static kiev.stdlib.Debug.*;
  * @version $Revision: 1.4.2.1.2.4 $
  *
  */
-
+ 
+@node
 public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTNode[]		modifier = ASTNode.emptyArray;
+	public ASTModifiers		modifiers;
 	public ASTAccess		acc;
     public KString			name;
     public ASTNode[]		argument = ASTNode.emptyArray;
@@ -44,12 +45,31 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 
 	public Struct			me;
 
-	ASTStructDeclaration() {
-		super(0);
+	ASTStructDeclaration() { super(0); }
+
+	public ASTNode pass1_1() {
+		// Attach meta-data to the new structure
+		modifiers.getMetas(me.meta);
+		return me;
+	}
+	
+	public ASTNode pass3() {
+		switch (this) {
+		case ASTTypeDeclaration:
+			return ASTTypeDeclaration.createMembers(me, members);
+		case ASTEnumDeclaration:
+			return ASTEnumDeclaration.createMembers(me, ((ASTEnumDeclaration)this).enum_fields, members);
+		case ASTSyntaxDeclaration:
+			return ASTSyntaxDeclaration.createMembers(me, members);
+		case ASTCaseTypeDeclaration:
+			return ((ASTCaseTypeDeclaration)this).createMembers();
+		}
+		throw new CompilerException(pos, "Unknown type: "+this.getClass());
 	}
 
 }
 
+@node
 public class ASTTypeDeclaration extends ASTStructDeclaration {
     public int			kind;
     public ASTNode		ext;
@@ -63,18 +83,15 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
         	kind |= ACC_INTERFACE;
     	else if( t.kind == kiev020Constants.CLASS )
     		;
+    	else if( t.kind == kiev020Constants.OPERATOR_AT )
+        	kind |= ACC_INTERFACE | ACC_ANNOTATION;
     	else
     		throw new RuntimeException("Bad kind of class declaration "+t);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
-		}
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
 			name = ((ASTIdentifier)n).name;
@@ -97,289 +114,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
         }
     }
 
-//	public ASTNode pass1(ASTNode pn) {
-//		trace(Kiev.debugResolve,"Pass 1 for class "+name);
-//		int flags = 0;
-//		Struct sup = null;
-//		Struct[] impls = Struct.emptyArray;
-//		// TODO: check flags for structures
-//		for(int i=0; i < modifier.length; i++)
-//			flags |= ((ASTModifier)modifier[i]).flag();
-//		KString short_name = this.name;
-//		ClazzName clname = null;
-//		if( this.name != null ) {
-//			if( PassInfo.method != null ) {
-//				// Construct name of local class
-//				KString bytecode_name =
-//					KString.from(PassInfo.clazz.name.bytecode_name
-//						+"$"+PassInfo.clazz.anonymouse_inner_counter
-//						+"$"+short_name);
-//				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
-//				KString name = bytecode_name.replace('/','.');
-//				clname = new ClazzName(name,short_name,bytecode_name,false,false);
-//			} else {
-//				boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-//				clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
-//			}
-//		}
-//
-//		flags |= kind;
-//
-//		if( clname != null ) {
-//			me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
-//			me.parent = pn;
-//		} else {
-//			me = PassInfo.clazz;
-//			if( !me.isPackage() || me == Env.root )
-//				throw new CompilerException(pos,"Package body declaration error");
-//			me.parent = pn;
-//		}
-//		me.setResolved(true);
-//		if( (kind & ACC_INTERFACE) != 0 ) me.setInterface(true);
-//		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-//			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-//		}
-//		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-//		me.addAttr(sfa);
-//
-//		PassInfo.push(me);
-//		try {
-//			/* Then may be class arguments - they are proceed here, but their
-//			   inheritance - at pass2()
-//			*/
-//			Type[]		targs = Type.emptyArray;
-//			if( parent instanceof ASTTypeDeclaration && ((ASTTypeDeclaration)parent).argument.length > 0 ) {
-//				// Inner classes's argumets have to be arguments of outer classes
-//				for(int i=0; i < argument.length; i++) {
-//					Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
-//		            if( outer_args == null || outer_args.length <= i
-//					|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
-//						throw new CompilerException(argument[i].getPos(),"Inner class arguments must match outer class argument,"
-//							+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
-//							+" and have to be "+outer_args[i].clazz.name.short_name);
-//				}
-//				/* Create type for class's arguments, if any */
-//				if( argument.length > 0 ) {
-//					targs = ((ASTTypeDeclaration)parent).me.type.args;
-//				}
-//			} else {
-//				for(int i=0; i < argument.length; i++) {
-//					Struct arg =
-//						Env.newArgument(((ASTArgumentDeclaration)argument[i]).name,me);
-//					arg.type = Type.newRefType(arg);
-//					targs = (Type[])Arrays.append(targs,arg.type);
-//				}
-//			}
-//
-//			/* Generate type for this structure */
-//			me.type = Type.newRefType(me,targs);
-//
-//			// Process inner classes and cases
-//			if( !me.isPackage() ) {
-//				for(int i=0; i < members.length; i++) {
-//					if( members[i] instanceof ASTTypeDeclaration ) {
-//						members[i].parent = this;
-//						((ASTTypeDeclaration)members[i]).pass1(me);
-//						((ASTTypeDeclaration)members[i]).me.parent = me;
-//					}
-//					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-//						members[i].parent = this;
-//						((ASTCaseTypeDeclaration)members[i]).pass1(me);
-//						((ASTCaseTypeDeclaration)members[i]).me.parent = me;
-//					}
-//				}
-//			}
-//		} finally { PassInfo.pop(me); }
-//
-//		return me;
-//	}
-
-//	public ASTNode pass2(ASTNode pn) {
-//		trace(Kiev.debugResolve,"Pass 2 for class "+me);
-//		PassInfo.push(me);
-//		try {
-//			/* Process inheritance of class's arguments, if any */
-//			Type[] targs = me.type.args;
-//	        for(int i=0; i < argument.length; i++) {
-//				ASTArgumentDeclaration arg =
-//					(ASTArgumentDeclaration)argument[i];
-//				if( arg.type != null ) {
-//					ASTNonArrayType at = (ASTNonArrayType)arg.type;
-//					Type sup = at.getType();
-//					if( !sup.isReference() )
-//						Kiev.reportError(pos,"Argument extends primitive type "+sup);
-//					else
-//						targs[i].clazz.super_clazz = sup;
-//					targs[i].checkJavaSignature();
-//				} else {
-//					targs[i].clazz.super_clazz = Type.tpObject;
-//				}
-//			}
-//			// Process ASTGenerete
-//			if( gens != null ) {
-//				ASTGenerate ag = (ASTGenerate)gens;
-//				Type[][] gtypes = new Type[ag.children.length/me.type.args.length][me.type.args.length];
-//				for(int l=0; l < gtypes.length; l++) {
-//					for(int m=0; m < me.type.args.length; m++) {
-//						int k = l*me.type.args.length+m;
-//						if( ag.children[k] instanceof ASTPrimitiveType) {
-//							if( ((ASTArgumentDeclaration)argument[m]).type != null ) {
-//								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
-//							}
-//							gtypes[l][m] = ((ASTPrimitiveType)ag.children[k]).type;
-//						} else { // ASTIdentifier
-//							KString a = ((ASTIdentifier)ag.children[k]).name;
-//							if( a != ((ASTArgumentDeclaration)argument[m]).name ) {
-//								Kiev.reportError(pos,"Generation argument "+name+" do not match argument "+((ASTArgumentDeclaration)argument[m]).name);
-//							}
-//							gtypes[l][m] = me.type.args[m];
-//						}
-//					}
-//				}
-//				// Clone 'me' for generated types
-//				me.gens = new Type[gtypes.length];
-//				for(int k=0; k < gtypes.length; k++) {
-//					KStringBuffer ksb;
-//					ksb = new KStringBuffer(
-//						me.name.bytecode_name.length()
-//						+3+me.type.args.length);
-//					ksb.append_fast(me.name.bytecode_name)
-//						.append_fast((byte)'_').append_fast((byte)'_');
-//					for(int l=0; l < me.type.args.length; l++) {
-//						if( gtypes[k][l].isReference() )
-//							ksb.append_fast((byte)'A');
-//						else
-//							ksb.append_fast(gtypes[k][l].signature.byteAt(0));
-//					}
-//					ksb.append_fast((byte)'_');
-//					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
-//					Struct s = Env.newStruct(cn,true);
-//					s.flags = me.flags;
-//					s.acc = me.acc;
-//					Type gtype = Type.newRefType(me,gtypes[k]);
-//					gtype.java_signature = cn.signature();
-//					gtype.clazz = s;
-//					me.gens[k] = gtype;
-//					s.type = gtype;
-//					s.generated_from = me;
-//					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
-//					// Add generation for inner parametriezed classes
-//					for(int l=0; l < me.sub_clazz.length; l++) {
-//						Struct sc = me.sub_clazz[l];
-//						if( sc.type.args.length == 0 ) continue;
-//						if( sc.gens == null )
-//							sc.gens = new Type[gtypes.length];
-//						ksb = new KStringBuffer(
-//							s.name.bytecode_name.length()
-//							+sc.name.short_name.length()
-//							+4+sc.type.args.length);
-//						ksb.append_fast(s.name.bytecode_name)
-//							.append_fast((byte)'$')
-//							.append_fast(sc.name.short_name)
-//							.append_fast((byte)'_').append_fast((byte)'_');
-//						for(int m=0; m < sc.type.args.length; m++) {
-//							if( Type.getRealType(gtype,sc.type.args[m]).isReference() )
-//								ksb.append_fast((byte)'A');
-//							else
-//								ksb.append_fast(Type.getRealType(gtype,sc.type.args[m]).signature.byteAt(0));
-//						}
-//						ksb.append_fast((byte)'_');
-//						cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
-//						Struct scg = Env.newStruct(cn,true);
-//						scg.flags = sc.flags;
-//						Type scgt = Type.getRealType(gtype,sc.type);
-//						scgt.java_signature = cn.signature();
-//						scgt.clazz = scg;
-//						sc.gens[k] = scgt;
-//						scg.type = scgt;
-//						scg.generated_from = sc;
-//						scg.super_clazz = Type.getRealType(scg.type,sc.super_clazz);
-//					}
-//				}
-//			}
-//
-//	        // Process inner classes and cases
- //       	if( !me.isPackage() ) {
-//				for(int i=0; i < members.length; i++) {
-//					members[i].parent = me;
-//					if( members[i] instanceof ASTTypeDeclaration ) {
-//						((ASTTypeDeclaration)members[i]).pass2(me);
-//					}
-//					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-//						((ASTCaseTypeDeclaration)members[i]).pass2(me);
-//					}
-//				}
-//			}
-//		} finally { PassInfo.pop(me); }
-//
-//		return me;
-//	}
-
-//	public ASTNode pass2_2(ASTNode pn) {
-//		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
-//		PassInfo.push(me);
-//		try {
-//			Type[] timpl = Type.emptyArray;
-//			/* Now, process 'extends' and 'implements' clauses */
-//			ASTNonArrayType at;
-//			if( ext != null ) {
-//				ASTExtends exts = (ASTExtends)ext;
-//				if( me.isInterface() ) {
-//					me.super_clazz = Type.tpObject;
-//					for(int j=0; j < exts.children.length; j++) {
-//						at = (ASTNonArrayType)exts.children[j];
-//						timpl = (Type[])Arrays.append(timpl,at.getType());
-//					}
-//					me.interfaces = timpl;
-//				} else {
-//					at = (ASTNonArrayType)exts.children[0];
-//					me.super_clazz = at.getType();
-//				}
-//			}
-//			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
-//				me.super_clazz = Type.tpObject;
-//			}
-//			if( impl != null ) {
-//				ASTImplements impls = (ASTImplements)impl;
-//				for(int j=0; j < impls.children.length; j++) {
-//					at = (ASTNonArrayType)impls.children[j];
-//					timpl = (Type[])Arrays.append(timpl,at.getType());
-//				}
-//				me.interfaces = timpl;
-//			}
-//			if( !Kiev.kaffe && !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
-//				me.interfaces = (Type[])Arrays.append(me.interfaces,Type.tpTypeInfoInterface);
-//			}
-//			if( me.interfaces.length > 0 && me.gens != null ) {
-//				for(int g=0; g < me.gens.length; g++) {
-//					me.gens[g].clazz.interfaces = new Type[me.interfaces.length];
-//					for(int l=0; l < me.interfaces.length; l++) {
-//						me.gens[g].clazz.interfaces[l] = Type.getRealType(me.gens[g],me.interfaces[l]);
-//					}
-//				}
-//			}
-//
-//			if( acc != null ) me.acc = new Access(acc.accflags);
-//
-//	        // Process inner classes and cases
-//			if( !me.isPackage() ) {
-//				for(int i=0; i < members.length; i++) {
-//					members[i].parent = me;
-//					if( members[i] instanceof ASTTypeDeclaration ) {
-//						((ASTTypeDeclaration)members[i]).pass2_2(me);
-//					}
-//	//				else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-//	//					((ASTCaseTypeDeclaration)members[i]).pass2_2();
-//	//				}
-//				}
-//			}
-//		} finally { PassInfo.pop(me); }
-//
-//		return me;
-//	}
-
-	public static Struct pass3(Struct me, ASTNode[] members) {
-		if( me.isEnum() ) return ASTEnumDeclaration.pass3(me,members);
+	public static Struct createMembers(Struct me, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
         PassInfo.push(me);
         try {
@@ -389,10 +124,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 				members[i].parent = me;
 				if( members[i] instanceof ASTInitializer ) {
 					ASTInitializer init = (ASTInitializer)members[i];
-					int flags = 0;
 					// TODO: check flags for initialzer
-					for(int j=0; j < init.modifier.length; j++)
-						flags |= ((ASTModifier)init.modifier[j]).flag();
+					int flags = init.modifiers.getFlags();
 					Field f = me.addField(new Field(me,KString.Empty,Type.tpVoid,flags));
 					f.setPos(init.getPos());
 					f.init = new StatExpr(init.getPos(),init.body);
@@ -432,69 +165,10 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 							members[i].setAbstract(true);
 					}
 				}
-/*				else if( members[i] instanceof ASTProductionDeclaration ) {
-					ASTProductionDeclaration astmd = (ASTProductionDeclaration)members[i];
-					members[i] = ((ASTProductionDeclaration)members[i]).pass3();
-					if( members[i].isPrivate() ) members[i].setFinal(false);
-					else if( me.isClazz() && me.isFinal() ) members[i].setFinal(true);
-				}
-				else if( members[i] instanceof ASTOptionSpec ) {
-					ASTOptionSpec os = (ASTOptionSpec)members[i];
-					foreach(ASTNode n; os.children) {
-						ASTOptionBinding ob = (ASTOptionBinding)n;
-						if( ob.name == ~"scannername" ) {
-							me.gram.lexer = ((ASTQName)ob.value).toKString().toString();
-						}
-					}
-				}
-				else if( members[i] instanceof ASTTokenDeclaration ) {
-					ASTTokenDeclaration asttd = (ASTTokenDeclaration)members[i];
-					int j = 0;
-					if( asttd.children[0] instanceof ASTLexicalStateList) {
-						j++;
-					}
-					ASTRegularExpressionKind rek = (ASTRegularExpressionKind)asttd.children[j];
-					if( rek.kind != kiev020Constants.MM_TOKEN )
-						continue;
-					j++;
-					for(; j < asttd.children.length; j++) {
-						ASTRegularExpressionSpec res = (ASTRegularExpressionSpec)asttd.children[j];
-						for(int k=0; k < res.children.length; k++) {
-							if( res.children[k] instanceof ASTSimpleRegularExpression ) {
-								ASTSimpleRegularExpression sre = (ASTSimpleRegularExpression)res.children[k];
-								if( sre.children.length == 0 ) ; // eof
-								else if( sre.children[0] instanceof ASTIdentifier )
-									me.gram.tokens.append(
-										new TokenDecl(sre.children[0].getPos(),
-											((ASTIdentifier)sre.children[0]).name)
-										);
-								else
-									Kiev.reportError(sre.getPos(),"Must be in form of <IDENTIFIER>");
-							}
-							else if( res.children[k] instanceof ASTComplexRegularExpression ) {
-								ASTComplexRegularExpression cre = (ASTComplexRegularExpression)res.children[k];
-								ASTIdentifier id = (ASTIdentifier)cre.children[0];
-								ASTComplexRegularExpressionChoices cres = (ASTComplexRegularExpressionChoices)cre.children[1];
-								for(int m=0; m < cres.children.length; m++) {
-									ASTComplexRegularExpressionUnits creus = (ASTComplexRegularExpressionUnits)cres.children[m];
-									for(int l=0; l < creus.children.length; l++) {
-										ASTComplexRegularExpressionUnit creu = (ASTComplexRegularExpressionUnit)creus.children[l];
-										me.gram.tokens.append(
-											new TokenDecl(cre.children[0].getPos(),id.name,
-												(KString)((ASTConstExpression)creu.children[0]).val)
-											);
-									}
-								}
-							}
-						}
-					}
-				}
-*/				else if( members[i] instanceof ASTFieldDecl ) {
+				else if( members[i] instanceof ASTFieldDecl ) {
 					ASTFieldDecl fields = (ASTFieldDecl)members[i];
-					int flags = 0;
 					// TODO: check flags for fields
-					for(int j=0; j < fields.modifier.length; j++)
-						flags |= ((ASTModifier)fields.modifier[j]).flag();
+					int flags = fields.modifiers.getFlags();
 					if( me.isPackage() ) flags |= ACC_STATIC;
 					if( me.isInterface() ) {
 						if( (flags & ACC_VIRTUAL) != 0 ) flags |= ACC_ABSTRACT;
@@ -505,11 +179,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						flags |= ACC_PUBLIC;
 					}
 					Type type = ((ASTType)fields.type).getType();
-//					if( (flags & ACC_PROLOGVAR) != 0 ) {
-//            			Kiev.reportWarning(fields.pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-//						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-//					}
-					ASTPack pack = fields.pack;
+					ASTPack pack = fields.modifiers.pack;
 					if( pack != null ) {
 						if( !type.isIntegerInCode() ) {
 							if( type.clazz.instanceOf(Type.tpEnum.clazz) ) {
@@ -548,6 +218,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						Type tp = type;
 						for(int k=0; k < fdecl.dim; k++) tp = Type.newArrayType(tp);
 						Field f = new Field(me,fname,tp,flags);
+						// Attach meta-data to the new structure
+						fields.modifiers.getMetas(f.meta);
 						if( pack == null )
 							;
 						else if( fdecl.dim > 0 && pack != null )
@@ -589,8 +261,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 							}
 						}
 
-						if( ((ASTFieldDecl)members[i]).acc != null )
-							f.acc = new Access(((ASTFieldDecl)members[i]).acc.accflags);
+						if( ((ASTFieldDecl)members[i]).modifiers.acc != null )
+							f.acc = new Access(((ASTFieldDecl)members[i]).modifiers.acc.accflags);
 					}
 				}
 				else if( members[i] instanceof ASTInvariantDeclaration ) {
@@ -616,15 +288,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     	    // Process inner classes and cases
         	if( !me.isPackage() ) {
 				for(int i=0; i < members.length; i++) {
-					if( members[i] instanceof ASTTypeDeclaration ) {
-						ASTTypeDeclaration.pass3(
-							((ASTTypeDeclaration)members[i]).me,
-							((ASTTypeDeclaration)members[i]).members
-						);
-					}
-					else if( members[i] instanceof ASTCaseTypeDeclaration ) {
-						((ASTCaseTypeDeclaration)members[i]).pass3();
-					}
+					if( members[i] instanceof ASTStructDeclaration )
+						members[i].pass3();
 				}
 			}
 			// Process ASTGenerete
@@ -638,27 +303,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						for(int j=0; j < s.interfaces.length; j++)
 							s.interfaces[j] = Type.getRealType(s.type,me.interfaces[j]);
 					}
-/*					if( me.fields.length != 0 ) {
-						s.fields = (Field[])me.fields.clone();
-						for(int j=0; j < s.fields.length; j++)
-							s.fields[j] = new Field(
-								s,
-								s.fields[j].name.name,
-								Type.getRealType(s.type,s.fields[j].type),
-								s.fields[j].getFlags()
-								);
-					}
-					if( me.methods.length != 0 ) {
-						s.methods = (Method[])me.methods.clone();
-						for(int j=0; j < s.methods.length; j++)
-							s.methods[j] = new Method(
-								s,
-								s.methods[j].name.name,
-								(MethodType)Type.getRealType(s.type,s.methods[j].type),
-								s.methods[j].getFlags()
-								);
-					}
-*/				}
+				}
 			}
 		} finally { PassInfo.pop(me); }
 
@@ -688,3 +333,4 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 		return dmp;
 	}
 }
+

@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTRuleBlock extends ASTBlock {
 
 	ASTRuleNode	expr;

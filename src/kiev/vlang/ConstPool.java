@@ -47,7 +47,7 @@ public class ConstPool {
 	public static int		java_hwm = 1;
 
 	static public void reInit() {
-		poolHash = new Hash/*<CP>*/();
+		poolHash = new Hash<CP>();
 		java_hwm = hwm = 1;
 		pool = new CP[260];
 	}

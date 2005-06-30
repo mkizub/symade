@@ -98,14 +98,6 @@ public final class ExportJavaTop implements Constants {
 		return Env.newPackage(ClazzName.fromToplevelName(astn.name,false));
 	}
 
-	private int makeStructFlags(int flags, ASTNode[] modifiers) {
-		// TODO: check flags for structures
-		int n = modifiers.length;
-		for(int i=0; i < n; i++)
-			flags |= ((ASTModifier)modifiers[i]).flag();
-		return flags;
-	}
-	
 	private void setSourceFile(Struct me, ASTNode astn) {
 		if( astn.parent instanceof ASTFileUnit || astn.parent instanceof ASTTypeDeclaration )
 			Env.setProjectInfo(me.name, Kiev.curFile);
@@ -159,7 +151,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTCaseTypeDeclaration:ASTNode astn, ASTNode pn) {
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,true);
 
-		int flags = makeStructFlags(ACC_STATIC, astn.modifier);
+		int flags = ACC_STATIC | astn.modifiers.getFlags();
 
 		ASTTypeDeclaration astnp = (ASTTypeDeclaration)astn.parent;
 		astn.me = Env.newStruct(clname,astnp.me,flags,true);
@@ -181,7 +173,7 @@ public final class ExportJavaTop implements Constants {
 		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
 
-		int flags = makeStructFlags(0, astn.modifier);
+		int flags = astn.modifiers.getFlags();
 		if( !(astn.parent instanceof ASTFileUnit) ) flags |= ACC_STATIC;
 
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
@@ -201,7 +193,7 @@ public final class ExportJavaTop implements Constants {
 		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, astn.name, false, !isTop);
 
-		int flags = makeStructFlags(ACC_PRIVATE|ACC_ABSTRACT, astn.modifier);
+		int flags = ACC_PRIVATE|ACC_ABSTRACT | astn.modifiers.getFlags();
 
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
@@ -220,7 +212,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTTypeDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for class "+astn.name);
 		Struct piclz = PassInfo.clazz;
-		int flags = makeStructFlags(astn.kind, astn.modifier);
+		int flags = astn.kind | astn.modifiers.getFlags();
 
 		if( astn.name != null ) {
 			ClazzName clname;
@@ -403,6 +395,12 @@ public final class ExportJavaTop implements Constants {
 		return astn.td;
 	}
 
+	public ASTNode pass1_1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
+		// Attach meta-data to the new structure
+		astn.modifiers.getMetas(astn.me.meta);
+		return astn.me;
+	}
+	
 	public ASTNode pass1_1(ASTSyntaxDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+astn.me);
 		foreach (ASTNode n; astn.members) {
@@ -425,6 +423,8 @@ public final class ExportJavaTop implements Constants {
 				Kiev.reportError(n.getPos(),e);
 			}
 		}
+		// Attach meta-data to the new structure
+		astn.modifiers.getMetas(astn.me.meta);
 		return astn.me;
 	}
 
@@ -783,6 +783,11 @@ public final class ExportJavaTop implements Constants {
 					at = (ASTNonArrayType)exts.children[0];
 					me.super_clazz = at.getType();
 				}
+			}
+			if( me.isAnnotation() ) {
+				astn.impl = null;
+				timpl = new Type[]{Type.tpAnnotation};
+				me.interfaces = timpl;
 			}
 			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
 				me.super_clazz = Type.tpObject;

@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
 	public ASTIdentifier	name;

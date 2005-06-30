@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTPrimitiveType extends ASTNode implements kiev020Constants {
 
 	public Type	type;
@@ -66,3 +67,4 @@ public class ASTPrimitiveType extends ASTNode implements kiev020Constants {
     	return dmp.append(type);
     }
 }
+

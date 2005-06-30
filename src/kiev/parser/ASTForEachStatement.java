@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTForEachStatement extends Statement {
 	public ASTFormalParameter	var;
 	public Expr					container;

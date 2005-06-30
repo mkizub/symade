@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTNormalCase extends ASTNode {
 	public ASTNode		val;
 	public ASTNode[]	stats = ASTNode.emptyArray;
@@ -71,3 +72,4 @@ public class ASTNormalCase extends ASTNode {
 		return dmp;
 	}
 }
+

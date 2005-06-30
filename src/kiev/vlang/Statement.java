@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class InlineMethodStat extends Statement implements Scope {
 
 	static class ParamRedir {
@@ -58,7 +59,7 @@ public class InlineMethodStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -67,7 +68,7 @@ public class InlineMethodStat extends Statement implements Scope {
 		node ?= redir.new_var
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -139,6 +140,7 @@ public class InlineMethodStat extends Statement implements Scope {
 	}
 }
 
+@node
 public class BlockStat extends Statement implements Scope {
 
 	public ASTNode[]	stats = Statement.emptyArray;
@@ -170,7 +172,7 @@ public class BlockStat extends Statement implements Scope {
 		return var;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -191,7 +193,7 @@ public class BlockStat extends Statement implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		n @= vars,
@@ -243,10 +245,8 @@ public class BlockStat extends Statement implements Scope {
 				}
 				else if( stats[i] instanceof ASTVarDecls ) {
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-					int flags = 0;
-					// TODO: check flags for fields
-					for(int j=0; j < vdecls.modifier.length; j++)
-						flags |= ((ASTModifier)vdecls.modifier[j]).flag();
+					// TODO: check flags for vars
+					int flags = vdecls.modifiers.getFlags();
 					Type type = ((ASTType)vdecls.type).getType();
 //					if( (flags & ACC_PROLOGVAR) != 0 ) {
 //            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
@@ -290,14 +290,14 @@ public class BlockStat extends Statement implements Scope {
 					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
 					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.modifier = (ASTNode[])Arrays.append(decl.modifier,ASTModifier.modSTATIC);
+						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
 					ExportJavaTop exporter = new ExportJavaTop();
 					tds.struct = (Struct) exporter.pass1(decl, tds);
 					tds.struct.setLocal(true);
 					exporter.pass1_1(decl, tds);
 					exporter.pass2(decl, tds);
 					exporter.pass2_2(decl, tds);
-					ASTTypeDeclaration.pass3(tds.struct,decl.members);
+					decl.pass3();
 					tds.struct.autoProxyMethods();
 					tds.struct.resolveFinalFields(false);
 					stats[i] = tds;
@@ -361,6 +361,7 @@ public class BlockStat extends Statement implements Scope {
 
 }
 
+@node
 public class EmptyStat extends Statement {
 
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
@@ -386,6 +387,7 @@ public class EmptyStat extends Statement {
 	}
 }
 
+@node
 public class ExprStat extends Statement {
 
 	public Expr		expr;
@@ -434,6 +436,7 @@ public class ExprStat extends Statement {
 	}
 }
 
+@node
 public class DeclStat extends Statement {
 
 	public Var		var;
@@ -535,6 +538,7 @@ public class DeclStat extends Statement {
 	}
 }
 
+@node
 public class TypeDeclStat extends Statement/*defaults*/ {
 
 	public Struct		struct;
@@ -582,6 +586,7 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ReturnStat extends Statement/*defaults*/ {
 
 	public Expr		expr;
@@ -690,6 +695,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ThrowStat extends Statement/*defaults*/ {
 
 	public Expr		expr;
@@ -742,6 +748,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class IfElseStat extends Statement {
 
 	public BooleanExpr	cond;
@@ -917,6 +924,7 @@ public class IfElseStat extends Statement {
 	}
 }
 
+@node
 public class CondStat extends Statement {
 
 	public BooleanExpr	cond;
@@ -1041,6 +1049,7 @@ public class CondStat extends Statement {
 	}
 }
 
+@node
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
@@ -1098,6 +1107,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	}
 }
 
+@node
 public class BreakStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1176,6 +1186,7 @@ public class BreakStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ContinueStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1225,6 +1236,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class GotoStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1408,6 +1420,7 @@ public class GotoStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class GotoCaseStat extends Statement/*defaults*/ {
 
 	public Expr			expr;

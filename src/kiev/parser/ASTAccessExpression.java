@@ -36,6 +36,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTAccessExpression extends Expr {
 	public Expr		obj;
 	public KString	name;
@@ -100,7 +101,7 @@ public class ASTAccessExpression extends Expr {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
 			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
-			ASTNode@ v;
+			PVar<ASTNode> v = new PVar<ASTNode>();
 			ResInfo info;
 			int min_transforms = 8096;
 			if( o instanceof Expr && snitps != null && snitps.length > 1) {

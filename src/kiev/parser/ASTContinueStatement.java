@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTContinueStatement extends Statement {
 	KString	name;
     

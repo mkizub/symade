@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTInstanceofExpr extends Expr {
 	public Expr expr1;
 	public ASTNode expr2;

@@ -33,10 +33,10 @@ public interface BytecodeFileConstants {
 	public static final int JAVA_MAGIC = 0xCAFEBABE;
 
 	/** JAVA_VERSION - current magor version of JVM classes */
-	public static final short JAVA_VERSION = (short)45;
+	public static final short JAVA_VERSION = (short)49;
 
 	/** JAVA_MINOR_VERSION - current minor version of JVM classes */
-	public static final short JAVA_MINOR_VERSION = (short)3;
+	public static final short JAVA_MINOR_VERSION = (short)0;
 
 	/** Constant pool types */
 	public static final int CONSTANT_UTF8				= 1;
@@ -54,17 +54,21 @@ public interface BytecodeFileConstants {
 
 	/** Class', field's and method's (access) flags */
 	public static final int ACC_PUBLIC					= 1 << 0;
-	public static final int ACC_PRIVATE					= 1 << 1;
-	public static final int ACC_PROTECTED					= 1 << 2;
+	public static final int ACC_PRIVATE				= 1 << 1;
+	public static final int ACC_PROTECTED				= 1 << 2;
 	public static final int ACC_STATIC					= 1 << 3;
-	public static final int ACC_FINAL						= 1 << 4;
-	public static final int ACC_SYNCHRONIZED				= 1 << 5;
-	public static final int ACC_SUPER						= 1 << 5;
-	public static final int ACC_VOLATILE					= 1 << 6;
-	public static final int ACC_TRANSIENT					= 1 << 7;
+	public static final int ACC_FINAL					= 1 << 4;
+	public static final int ACC_SYNCHRONIZED			= 1 << 5;
+	public static final int ACC_SUPER					= 1 << 5;
+	public static final int ACC_VOLATILE				= 1 << 6;
+	public static final int ACC_TRANSIENT				= 1 << 7;
 	public static final int ACC_NATIVE					= 1 << 8;
-	public static final int ACC_INTERFACE					= 1 << 9;
-	public static final int ACC_ABSTRACT					= 1 << 10;
+	public static final int ACC_INTERFACE				= 1 << 9;
+	public static final int ACC_ABSTRACT				= 1 << 10;
+	public static final int ACC_STRICT					= 1 << 11; // strict math
+	public static final int ACC_SYNTHETIC				= 1 << 12;
+	public static final int ACC_ANNOTATION				= 1 << 13;
+	public static final int ACC_JAVA_ENUM				= 1 << 14; // enum classes and fields of enum classes
 	
 }
 
@@ -367,4 +371,11 @@ public interface BytecodeAttributeNames {
 	public final static KString attrPackedFields	= KString.from("kiev.PackedFields");
 	public final static KString attrPackerField		= KString.from("kiev.PackerField");
 
+	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
+	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
+	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
+	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
+	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
+
 }
+

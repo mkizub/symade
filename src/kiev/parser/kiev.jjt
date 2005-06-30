@@ -82,17 +82,8 @@ public class kiev020 {
 	public void reset() {
 		jjtree.reset();
 	}
-/*
-	public static void ReInit(byte[] buffer, int begLine, int begCol, int offs) {
-		ReInit((CharStream)null);
-		CharStream.ReInit(buffer,begLine,begCol,offs);
-	}
-*/
+
 	private static boolean checkNoSpace(Token t1, Token t2) {
-//		System.out.println("Check space between "+t1+" and "+t2+" => "+t1.endLine+"/"+t2.beginLine+":"+
-//			t1.endColumn+"/"+t2.beginColumn+" => "+
-//			(t1.endLine == t2.beginLine && t1.endColumn+1 == t2.beginColumn)
-//		);
 		return t1.endLine == t2.beginLine && t1.endColumn+1 == t2.beginColumn;
 	}
 
@@ -163,8 +154,6 @@ public class kiev020 {
 		case XOR:
 		case REM:
 		case LSHIFT:
-//		case RSIGNEDSHIFT:
-//		case RUNSIGNEDSHIFT:
 		case PLUSASSIGN:
 		case MINUSASSIGN:
 		case STARASSIGN:
@@ -186,7 +175,6 @@ public class kiev020 {
 		return false;
 	}
 
-//	private static Token	castLAStartToken;
 	private static boolean castLA_Start() {
 		int i = 1;
 		Token t = getToken(i);
@@ -199,7 +187,6 @@ public class kiev020 {
 			switch (getToken(i+1).kind) {
 			case RPAREN:
 			case LT:
-			case LT1:
 			case LBRACKET:
 				break;
 			default:
@@ -207,7 +194,6 @@ public class kiev020 {
 			}
 			try {
 				if( PassInfo.checkClassName(KString.from(qname)) ) {
-//					System.out.println("castLA: "+qname+" is a class/package/interface");
 					return true;
 				}
 			} catch( Exception e ) {}
@@ -223,13 +209,11 @@ public class kiev020 {
 	}
 
 	private static boolean castLA(int offs, int exp_kind1, int exp_kind2) {
-//		System.out.println("castLA "+offs+" "+tokenImage[exp_kind1]+" "+tokenImage[exp_kind2]+" from "+getToken(offs));
 		if( getToken(offs).kind != exp_kind1 ) return false;
 		switch( getToken(offs+1).kind ) {
 		case BOOLEAN: case CHAR: case BYTE:
 		case SHORT: case INT: case LONG: case FLOAT:
 		case DOUBLE: case VOID:
-//			System.out.println("castLA: "+getToken(offs+1)+" is a primitive type");
 			return true;
 		case IDENTIFIER:
 			break;
@@ -245,10 +229,8 @@ public class kiev020 {
 					}
 				}
 				if( getToken(i).kind==ARROW ) {
-//					System.out.println("castLA: "+getToken(offs+1)+getToken(i-1)+getToken(i)+" is a (...)-> type");
 					return true;
 				} else {
-//					System.out.println("castLA: "+getToken(offs+1)+getToken(i-1)+getToken(i)+" is not a (...)-> type");
 					return false;
 				}
 			}
@@ -270,23 +252,16 @@ public class kiev020 {
 				case GT:
 					if( exp_kind2 == GT ) break scan_qname;
 					else return false;
-				case GT1:
-					if( exp_kind2 == GT1 ) break scan_qname;
-					else return false;
 				case LT:
 					if( castLA(i,LT,GT) ) break scan_qname;
 					else return false;
-				case LT1:
-					if( castLA(i,LT1,GT1) ) break scan_qname;
-					else return false;
 				case LBRACKET:
 					if( getToken(i+1).kind == RBRACKET ) {
-//						System.out.println("castLA: "+getToken(i)+getToken(i+1)+" is a []");
 						return true;
 					}
 					else return false;
 				case COMMA:
-					if( exp_kind1 == LT || exp_kind1 == LT1 ) break scan_qname;
+					if( exp_kind1 == LT ) break scan_qname;
 					else return false;
 				default:
 					return false;
@@ -295,7 +270,6 @@ public class kiev020 {
 		}
 		try {
 			if( PassInfo.checkClassName(KString.from(qname)) ) {
-//				System.out.println("castLA: "+qname+" is a class/package/interface");
 				return true;
 			}
 		} catch( Exception e ) {}
@@ -383,7 +357,6 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < CATCH: "catch" >
 | < CHAR: "char" >
 | < CLASS: "class" >
-| < CONST: "const" >
 | < CONTINUE: "continue" >
 | < _DEFAULT: "default" >
 | < DO: "do" >
@@ -636,9 +609,7 @@ TOKEN : /* SEPARATORS */
 TOKEN : /* Special Operators */
 {
   < LT: "<" >
-| < LT1: "/*<" >
 | < GT: ">" >
-| < GT1: ">*/" >
 }
 
 <DEFAULT,IN_CONSTRAINT>
@@ -709,6 +680,7 @@ ASTFileUnit FileUnit(String filename) :
 		jjtThis.setFileName(filename);
 		jjtThis.setPos(0);
 		declMode = true;
+		ASTModifiers modifiers;
 	}
 	[
 		LOOKAHEAD("package" QName() ";")
@@ -720,17 +692,13 @@ ASTFileUnit FileUnit(String filename) :
 	|	Opdef()
 	|	Pragma()
 	)*
-	//(	MacroDecl()	)*
 	(
+		modifiers = Modifiers()
 		try {
-			LOOKAHEAD( (Modifier())* ("class" | "interface") )
-			TypeDeclaration() [ ";" ]
-	|
-			LOOKAHEAD( (Modifier())* "enum" )
-			EnumDeclaration() [ ";" ]
-	|
-			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			SyntaxDeclaration() [ ";" ]
+			TypeDeclaration(modifiers) [ ";" ]
+	|		EnumDeclaration(modifiers) [ ";" ]
+	|		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
+			SyntaxDeclaration(modifiers) [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
@@ -740,6 +708,24 @@ ASTFileUnit FileUnit(String filename) :
 		declMode = true;
 		return jjtThis;
 	}
+}
+
+ASTModifiers Modifiers() :
+{}
+{
+	(	LOOKAHEAD(2)
+		try {
+			(
+				Modifier()
+			|	Pack()
+			|	Access()
+			|	Annotation()
+			)
+		}
+		catch(ParseError e) { rpe("Bad modifiers",e); }
+		catch(Throwable e) { rperr(e); }
+	)*
+	{ jjtree.popNode(); return jjtThis; }
 }
 
 void Package() :
@@ -829,9 +815,10 @@ void Opdef() :
 	";"
 }
 
-void SyntaxDeclaration() :
+void SyntaxDeclaration(ASTModifiers modifiers) :
 { Token t=null; }
 {
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
 	Identifier()
@@ -840,46 +827,18 @@ void SyntaxDeclaration() :
 		Typedef()
 	|	Opdef()
 	)*
-	//(	MacroDecl()	)*
 	"}"
 }
 
-/*
-void AccessDeclaration() :
+void TypeDeclaration(ASTModifiers modifiers) :
 { Token t=null; }
 {
-	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("access") })
-	<IDENTIFIER>	// "access"
-	Identifier()
-	"{"
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	(
-		(
-			"public"
-		|	"default"
-		|	"protected"
-		|	"private"
-		|	<IDENTIFIER>
-		)
-		<IDENTIFIER>	// r,ro,w,wo,rw,n,no
-		[ "," | ";" ]
-	)*
-	//(	MacroDecl()	)*
-	"}"
-}
-*/
-
-void TypeDeclaration() :
-{ Token t=null; }
-{
-	try {
-		( Modifier() )*
-		(
-			t="class"
-		|	t="interface"
-		)
-	}
-	catch(ParseError e) { rpe("Bad start of class declaration",e); }
-	catch(Throwable e) { rperr(e); }
+		t="class"
+	|	t="interface"
+	|	t="@" "interface"
+	)
 	{ jjtThis.set(t); t = null; }
 	try {
 		Identifier()
@@ -894,7 +853,7 @@ void TypeDeclaration() :
 }
 
 void TypeBodyDeclaration() #void :
-{}
+{ ASTModifiers modifiers; }
 {
 	try {
 		"{"
@@ -903,29 +862,23 @@ void TypeBodyDeclaration() #void :
 	catch(Throwable e) { rperr(e); }
 	try {
 		(
-			LOOKAHEAD( ( Modifier() )* "{" )
-			Initializer()
-		|
-			LOOKAHEAD( ( Modifier() )* "invariant" )
-			InvariantDeclaration() [ ";" ]
-		|
-			LOOKAHEAD( ( Modifier() | Access() )* ("class" | "interface") )
-			TypeDeclaration() [ ";" ]
-		|
-			LOOKAHEAD( ( Modifier() | Access() )* "enum" )
-			EnumDeclaration() [ ";" ]
-		|
-			LOOKAHEAD( ( Modifier() | Access() )* "case" )
-			CaseTypeDeclaration()
-		|
-			LOOKAHEAD( ( Modifier() | Access() )* "rule" ( Modifier() )*  <IDENTIFIER> "(")
-			RuleDeclaration()
-		|
-			LOOKAHEAD( ( Modifier() | Access() )* [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
-			MethodDeclaration()
-		|
-			LOOKAHEAD( ( Modifier() | Pack() | Access() )* Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
-			FieldDecl()
+			modifiers = Modifiers()
+			(
+				Initializer(modifiers)
+			|	InvariantDeclaration(modifiers) [ ";" ]
+			|	TypeDeclaration(modifiers) [ ";" ]
+			|	EnumDeclaration(modifiers) [ ";" ]
+			|	CaseTypeDeclaration(modifiers)
+			|
+				LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+				RuleDeclaration(modifiers)
+			|
+				LOOKAHEAD( [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
+				MethodDeclaration(modifiers)
+			|
+				LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+				FieldDecl(modifiers)
+			)
 		)*
 	}
 	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
@@ -937,15 +890,11 @@ void TypeBodyDeclaration() #void :
 	catch(Throwable e) { rperr(e); }
 }
 
-void EnumDeclaration() :
+void EnumDeclaration(ASTModifiers modifiers) :
 {}
 {
-	try {
-		( Modifier() | Access() )*
-		"enum"
-	}
-	catch(ParseError e) { rpe("Bad start of enum declaration",e); }
-	catch(Throwable e) { rperr(e); }
+	{ jjtThis.jjtAddChild(modifiers, -1); }
+	"enum"
 	try {
 		Identifier()
 	}
@@ -956,7 +905,7 @@ void EnumDeclaration() :
 }
 
 void EnumBodyDeclaration() #void :
-{}
+{ ASTModifiers modifiers; }
 {
 	try {
 		"{"
@@ -964,14 +913,40 @@ void EnumBodyDeclaration() #void :
 	catch(ParseError e) { rpe("'{' expected",e); }
 	catch(Throwable e) { rperr(e); }
 	try {
-		Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
-		(	LOOKAHEAD(2)
-			"," Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
+		modifiers = Modifiers()
+		EnumFieldDeclaration(modifiers)
+		(	","
+			modifiers = Modifiers()
+			EnumFieldDeclaration(modifiers)
 		)*
-		[ "," ]
 	}
 	catch(ParseError e) { rpe("Enumeration values are expected",e); }
 	catch(Throwable e) { rperr(e); }
+	[
+		";"
+		try {
+			(
+				modifiers = Modifiers()
+				(
+					Initializer(modifiers)
+				|	InvariantDeclaration(modifiers) [ ";" ]
+				|	TypeDeclaration(modifiers) [ ";" ]
+				|	EnumDeclaration(modifiers) [ ";" ]
+				|
+					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+					RuleDeclaration(modifiers)
+				|
+					LOOKAHEAD( [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
+					MethodDeclaration(modifiers)
+				|
+					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+					FieldDecl(modifiers)
+				)
+			)*
+		}
+		catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
+		catch(Throwable e) { rperr(e); }
+	]
 	try {
 		"}"
 	}
@@ -979,15 +954,22 @@ void EnumBodyDeclaration() #void :
 	catch(Throwable e) { rperr(e); }
 }
 
-void CaseTypeDeclaration() :
+void EnumFieldDeclaration(ASTModifiers modifiers) :
+{}
+{
+	{ jjtThis.jjtAddChild(modifiers, -1); }
+	try {
+		Identifier() ["=" DecimalConstExpression()] [":"  StringConstExpression()]
+	}
+	catch(ParseError e) { rpe("Enumeration values are expected",e); }
+	catch(Throwable e) { rperr(e); }
+}
+
+void CaseTypeDeclaration(ASTModifiers modifiers) :
 { Token t=null; ASTBlock bl; }
 {
-	try {
-		( Modifier() | Access() )*
-		t="case"
-	}
-	catch(ParseError e) { rpe("Bad start of class declaration",e); }
-	catch(Throwable e) { rperr(e); }
+	{ jjtThis.jjtAddChild(modifiers, -1); }
+	t="case"
 	{ jjtThis.set(t); }
 	try {
 		Identifier()
@@ -999,8 +981,13 @@ void CaseTypeDeclaration() :
 		"("
 			try {
 			[
-				FormalParameter()
-				(	","	FormalParameter()	)*
+				modifiers = Modifiers()
+				FormalParameter(modifiers)
+				(
+					","
+					modifiers = Modifiers()
+					FormalParameter(modifiers)
+				)*
 			]
 			}
 			catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
@@ -1023,7 +1010,7 @@ void CaseTypeDeclaration() :
 void ClazzArguments() #void :
 {}
 {
-	("<" | "/*<")
+	"<"
 		try {
 			ArgumentDeclaration()
 			(	","
@@ -1032,7 +1019,7 @@ void ClazzArguments() #void :
 		}
 		catch(ParseError e) { rpe("Class's argument expected",e); }
 		catch(Throwable e) { rperr(e); }
-	(">" | ">*/")
+	">"
 }
 
 void Extends() :
@@ -1121,13 +1108,6 @@ void Modifier() :
 	{ jjtThis.set(t); }
 }
 
-void ModifierConst() #Modifier :
-{ Token t=null; }
-{
-	t="const"
-	{ jjtThis.set(t); }
-}
-
 void Pack() :
 { Token t; int size=-1; int offset=-1; String packer=null; }
 {
@@ -1166,10 +1146,70 @@ int AccessSpec() #void :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
-void FieldDecl() :
+void Annotation() :
+{}
+{
+	"@"
+	Identifier()
+	[
+		"("
+		[	LOOKAHEAD( <IDENTIFIER> "=" )
+			AnnotationValues()
+		|	AnnotationValueAny() #AnnotationValue(1)
+		]
+		")"
+	]
+}
+
+void AnnotationValues() #void :
+{}
+{
+	Identifier()
+	"="
+	AnnotationValueAny() #AnnotationValue(2)
+	(
+		","
+		Identifier()
+		"="
+		AnnotationValueAny() #AnnotationValue(2)
+	)*
+}
+
+void AnnotationValueAny() #void :
+{}
+{
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		Annotation()
+	|	AnnotationValueValueArrayInitializer()
+	|	ExpressionNT(null)
+}
+
+void AnnotationValueScalar() #void :
+{}
+{
+		LOOKAHEAD( "@" <IDENTIFIER> )
+		Annotation()
+	|	ExpressionNT(null)
+}
+
+void AnnotationValueValueArrayInitializer() :
+{}
+{
+	"{"
+	[
+		AnnotationValueScalar()
+		(	","
+			AnnotationValueScalar()
+		)*
+	]
+	"}"
+}
+
+
+void FieldDecl(ASTModifiers modifiers) :
 { boolean old_declMode; }
 {
-	( Modifier() | Pack() | Access() )*
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	try {
 		Type()
 	}
@@ -1186,11 +1226,11 @@ void FieldDecl() :
 	";"
 }
 
-void VarDecls() :
+void VarDecls(ASTModifiers modifiers) :
 {}
 {
+	{ jjtThis.jjtAddChild(modifiers,-1); }
 	try {
-		( Modifier() )*
 		Type()
 	}
 	catch(ParseError e) { rpe("Type expected",e); }
@@ -1238,12 +1278,11 @@ void ArrayInitializer() #NewInitializedArrayExpression :
 	{ jjtThis.setPos(t.getPos()); }
 }
 
-ASTFormalParameter FormalParameter() :
+ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 { Token t; }
 {
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	(
-		( Modifier() )*
-		[ ModifierConst() ]
 		Type()
 		Identifier()
 		( "[" "]" { jjtThis.dim++; } )*
@@ -1253,11 +1292,11 @@ ASTFormalParameter FormalParameter() :
 	{ return jjtThis; }
 }
 
-ASTFormalParameter mmFormalParameter() #FormalParameter :
+ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) #FormalParameter :
 { Token t; }
 {
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	(
-		( Modifier() )*
 		Type()
 		(
 			LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
@@ -1290,17 +1329,6 @@ void Alias() #void :
 	"alias"
 	try {
 		(
-			//LOOKAHEAD({
-			//	getToken(1).kind==IDENTIFIER &&
-			//	(  getToken(1).image.equals("prefix")
-			//	|| getToken(1).image.equals("suffix")
-			//	|| getToken(1).image.equals("postfix")
-			//	|| getToken(1).image.equals("infix")
-			//	|| getToken(1).image.equals("binary")
-			//	)
-			//	||
-			//	getToken(1).kind==OPERATOR_ID
-			//})
 			LOOKAHEAD(2)
 			OperatorAlias()
 		|	IdentifierAlias()
@@ -1333,15 +1361,6 @@ void OperatorAlias() :
 		)
 		")"
 	|
-		//LOOKAHEAD({
-		//	getToken(1).kind==IDENTIFIER &&
-		//	(  getToken(1).image.equals("prefix")
-		//	|| getToken(1).image.equals("suffix")
-		//	|| getToken(1).image.equals("postfix")
-		//	|| getToken(1).image.equals("infix")
-		//	|| getToken(1).image.equals("binary")
-		//	)
-		//})
 		t=<IDENTIFIER> { jjtThis.set(t); }
 		"operator"
 		(
@@ -1389,10 +1408,10 @@ void MaybeSkipBlock() #void :
 	)
 }
 
-void MethodDeclaration() :
+void MethodDeclaration(ASTModifiers modifiers) :
 { Token t; ASTType tp; }
 {
-	( Modifier() | Access() )*
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	[	ClazzArguments()	]
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
@@ -1402,8 +1421,13 @@ void MethodDeclaration() :
 	"("
 		try {
 		[
-			mmFormalParameter()
-			(LOOKAHEAD(2)	","	mmFormalParameter()	)*
+			modifiers = Modifiers()
+			mmFormalParameter(modifiers)
+			(
+				LOOKAHEAD(2) ","
+				modifiers = Modifiers()
+				mmFormalParameter(modifiers)
+			)*
 			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
 				[","]
 				"..."
@@ -1415,7 +1439,6 @@ void MethodDeclaration() :
 		catch(Throwable e) { rperr(e); }
 	")"
 	( "[" "]" { jjtThis.dim++; } )*
-	[ ModifierConst() ]
 	(
 		Alias()
 	)*
@@ -1429,7 +1452,7 @@ void MethodDeclaration() :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	";"
+		|	[ "default" (VariableInitializer()) ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
@@ -1444,12 +1467,10 @@ void RequareDeclaration() :
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
 			"[" Identifier() "]"
-			CondBlock()
 		|	LOOKAHEAD(<IDENTIFIER> "{")
 			Identifier()
-			CondBlock()
-		|	CondBlock()
 		)
+		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'require' declaration",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1464,49 +1485,49 @@ void EnsureDeclaration() :
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
 			"[" Identifier() "]"
-			CondBlock()
 		|	LOOKAHEAD(<IDENTIFIER> "{")
 			Identifier()
-			CondBlock()
-		|	CondBlock()
 		)
+		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'ensure' declaration",e); }
 	catch(Throwable e) { rperr(e); }
 }
 
-void InvariantDeclaration() :
+void InvariantDeclaration(ASTModifiers modifiers) :
 {}
 {
-	( Modifier() )*
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	"invariant"
 	try {
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
 			"[" Identifier() "]"
-			CondBlock()
 		|	LOOKAHEAD(<IDENTIFIER> "{")
 			Identifier()
-			CondBlock()
-		|	CondBlock()
 		)
+		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'invariant' declaration",e); }
 	catch(Throwable e) { rperr(e); }
 }
 
-void RuleDeclaration() :
-{ ASTBlock bl; /*ASTFormalParameter lv;*/ }
+void RuleDeclaration(ASTModifiers modifiers) :
+{ ASTBlock bl; }
 {
-	[ LOOKAHEAD(2) "rule" ]
-	( Modifier() | Access() )*
-	[ "rule" ]
+	{ jjtThis.jjtAddChild(modifiers, -1); }
+	"rule"
 	Identifier()
 	"("
 		try {
 		[
-			FormalParameter()
-			(LOOKAHEAD(2)	","	FormalParameter()	)*
+			modifiers = Modifiers()
+			FormalParameter(modifiers)
+			(
+				","
+				modifiers = Modifiers()
+				FormalParameter(modifiers)
+			)*
 		]
 		}
 		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
@@ -1516,8 +1537,8 @@ void RuleDeclaration() :
 		Alias()
 	)*
 	(
-		//lv=FormalParameter() { lv.setLocalPrologVar(true); lv = null; }
-		VarDecls()
+		modifiers = Modifiers()
+		VarDecls(modifiers)
 	)*
 	try {
 		(
@@ -1531,10 +1552,10 @@ void RuleDeclaration() :
 	catch(Throwable e) { rperr(e); }
 }
 
-void Initializer() :
+void Initializer(ASTModifiers modifiers) :
 {}
 {
-	( Modifier() )*
+	{ jjtThis.jjtAddChild(modifiers, -1); }
 	try {
 		{ presc = jjtThis; }
 		MaybeSkipBlock() [ ";" ]
@@ -1581,11 +1602,11 @@ void NonArrayType() :
 	(
 		PrimitiveType()
 	|	QName()
-		[	LOOKAHEAD(1, ("<" | "/*<"), {Kiev.enabled(Ext.Generics)})
-			("<" | "/*<")
+		[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
+			"<"
 				Type()
 				( "," Type() )*
-			(">" | ">*/")
+			">"
 		]
 	)
 	(	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
@@ -1943,12 +1964,17 @@ void AccessExpression() #void :
 }
 
 void AnonymouseClosure() :
-{ Token t; }
+{ Token t; ASTModifiers modifiers; }
 {
 	t="fun" "("
 	[
-		FormalParameter()
-		( "," FormalParameter() )*
+		modifiers = Modifiers()
+		FormalParameter(modifiers)
+		(
+			","
+			modifiers = Modifiers()
+			FormalParameter(modifiers)
+		)*
 	]
 	")" "->"
     { jjtThis.setPos(t.getPos()); }
@@ -2252,9 +2278,8 @@ ASTBlock PrescannedCondBlock(PrescannedBody b) #void :
 }
 
 ASTBlock CondBlock() :
-{ boolean old_declMode; boolean rbrace_req = false; }
+{ boolean old_declMode;}
 {
-	[ "{" { rbrace_req=true; } ]
 	{
 		jjtThis.setPos(getToken(1).getPos());
 		PassInfo.push(jjtThis);
@@ -2262,33 +2287,34 @@ ASTBlock CondBlock() :
 		declMode = false;
 	}
 	try {
-    	( CondStatement() )+
+		"{"
+				( CondStatement() )+
+		"}" [ <END_CONSTRAINT> ]
+	|
+		( CondStatement() )+
+		<END_CONSTRAINT>
 	} finally {
 		declMode = old_declMode;
 		PassInfo.pop(jjtThis);
 	}
-	(
-		LOOKAHEAD(0,{rbrace_req})
-		"}" [ <END_CONSTRAINT> ]
-	|	<END_CONSTRAINT>
-	)
 	{ return jjtThis; }
 }
 
 void BlockStatement() #void :
-{ boolean old_declMode; }
+{ boolean old_declMode; ASTModifiers modifiers; }
 {
 	(
-		LOOKAHEAD( ( Modifier() )* ("class" | "interface") )
+		LOOKAHEAD( Modifier() ("class" | "interface" | "@" "interface") )
 		{ old_declMode = declMode; declMode = false; }
 		try {
-			TypeDeclaration()
+			modifiers = Modifiers()
+			TypeDeclaration(modifiers)
 		} finally {
 			declMode = old_declMode;
 		}
-	//|	LOOKAHEAD( ( Modifier() )* Type() Identifier() ("[" "]")* ("=" | ":=" | "," | ";") )
-	|	LOOKAHEAD( ( Modifier() )* Type() Identifier() )
-		VarDecls() //#DeclStatement
+	|	LOOKAHEAD( Modifiers() Type() Identifier() )
+		modifiers = Modifiers()
+		VarDecls(modifiers) //#DeclStatement
 	|	LOOKAHEAD(0)
 		Statement()
 	)
@@ -2367,13 +2393,19 @@ void NormalCase() :
 }
 
 void PizzaCase() :
-{ Token t; }
+{ Token t; ASTModifiers modifiers; }
 {
 	t="case" { jjtThis.setPos(t.getPos()); }
     QName()
 	"("
-		[	FormalParameter()
-			( "," FormalParameter() )*
+		[
+			modifiers = Modifiers()
+			FormalParameter(modifiers)
+			(
+				","
+				modifiers = Modifiers()
+				FormalParameter(modifiers)
+			)*
 		]
 	")" ":"
 	(
@@ -2432,12 +2464,13 @@ void ForStatement() :
 }
 
 void ForEachStatement() :
-{ Token t; }
+{ Token t; ASTModifiers modifiers; }
 {
 	t="foreach" { jjtThis.setPos(t.getPos()); }
 	"("
-	[	LOOKAHEAD( FormalParameter() )
-		FormalParameter()
+	[	LOOKAHEAD( Modifiers() FormalParameter() )
+		modifiers = Modifiers()
+		FormalParameter(modifiers)
 		";"
 	]
 	ExpressionNT(null)
@@ -2450,11 +2483,12 @@ void ForEachStatement() :
 }
 
 void ForInit() #void:
-{}
+{ ASTModifiers modifiers; }
 {
 	(
-	LOOKAHEAD( ( Modifier() )* Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
-	VarDecls()
+	LOOKAHEAD( Modifiers() Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
+	modifiers = Modifiers()
+	VarDecls(modifiers)
 |	CommaExpression() ";"
 |	EmptyStatement()
  	)
@@ -2517,17 +2551,23 @@ void WithStatement() :
 }
 
 void TryStatement() :
-{ Token t; }
+{ Token t; ASTModifiers modifiers; }
 {
 	t="try" { jjtThis.setPos(t.getPos()); }
     Block()
-	(	t="catch" "(" FormalParameter() ")" Block()
-    	{ jjtThis.setPos(t.getPos()); }
+	(
+		t="catch"
+		"("
+		modifiers = Modifiers()
+		FormalParameter(modifiers)
+		")"
+		Block()
+		{ jjtThis.setPos(t.getPos()); }
         #CatchInfo(2)
 	)*
 	[	t="finally" Block()
-    	{ jjtThis.setPos(t.getPos()); }
-    	#FinallyInfo(1)
+		{ jjtThis.setPos(t.getPos()); }
+		#FinallyInfo(1)
 	]
 }
 

@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTReturnStatement extends Statement {
 	public Expr expr;
 

@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTIfStatement extends Statement {
     public boolean		not;
 	public Expr			cond;

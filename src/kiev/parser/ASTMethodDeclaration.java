@@ -36,38 +36,39 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scope {
-	public int			dim;
-    public ASTNode[]	modifier = ASTNode.emptyArray;
-	public ASTAccess	acc;
-    public KString		name;
-    public ASTNode[]	params = ASTNode.emptyArray;
-    public ASTNode		type;
-    public ASTNode[]	ftypes = ASTNode.emptyArray;
-    public ASTAlias[]	aliases = ASTAlias.emptyArray;
-    public ASTNode		throwns;
-    public Statement	body;
-	public virtual PrescannedBody pbody;
+	public int						dim;
+	public ASTModifiers				modifiers;
+    public KString					name;
+    public ASTNode[]					params = ASTNode.emptyArray;
+    public ASTNode					type;
+    public ASTNode[]					ftypes = ASTNode.emptyArray;
+    public ASTAlias[]				aliases = ASTAlias.emptyArray;
+    public ASTNode					throwns;
+    public Statement					body;
+	public virtual PrescannedBody 	pbody;
 	public ASTRequareDeclaration[]	req;
-	public ASTEnsureDeclaration[]	ens;
+	public ASTEnsureDeclaration[]		ens;
+    public Expr						annotation_default;
 
 	public Method		me;
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
 
+	ASTMethodDeclaration() {
+		super(0);
+		modifiers = new ASTModifiers();
+	}
+
 	ASTMethodDeclaration(int id) {
 		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier ) {
-        	modifier = (ASTNode[])Arrays.append(modifier,n);
-        }
-		else if( n instanceof ASTAccess ) {
-			if( acc != null )
-				throw new CompilerException(n.getPos(),"Duplicate 'access' specified");
-			acc = (ASTAccess)n;
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
 			ftypes = (ASTNode[])Arrays.append(ftypes,n);
@@ -103,19 +104,22 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         else if( n instanceof Statement ) {
 			body = (Statement)n;
         }
+		else if (n instanceof Expr) {
+			annotation_default = (Expr)n;
+		}
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		ftypes instanceof Type[] && ftypes.length > 0,
 		node @= ((Type[])ftypes),
 		((Type)node).clazz.name.short_name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -128,10 +132,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			clazz = (Struct)parent;
 		else
 			throw new CompilerException(pos,"Method must be declared on class level only");
-		int flags = 0;
-		// TODO: check flags for fields
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		// TODO: check flags for methods
+		int flags = modifiers.getFlags();
 		Struct ps;
 		if( parent instanceof ASTTypeDeclaration)
 			ps = ((ASTTypeDeclaration)parent).me;
@@ -156,6 +158,19 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		Var[] vars = new Var[params.length + (isVarArgs()?1:0)];
 		boolean has_dispatcher = false;
 		Type type;
+		
+		if (ps.isAnnotation() && vars.length > 0) {
+			Kiev.reportError(pos, "Annotation methods may not have arguments");
+			params = ASTNode.emptyArray;
+			vars = new Var[0];
+			setVarArgs(false);
+		}
+
+		if (ps.isAnnotation() && (body != null || pbody != null)) {
+			Kiev.reportError(pos, "Annotation methods may not have bodies");
+			body = null;
+			pbody = null;
+		}
 
 		// push the method, because formal parameters may refer method's type args
 		PassInfo.push(this);
@@ -203,6 +218,9 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		me = new Method(clazz,name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);
 		me.setPos(getPos());
+		if (me.parent.isAnnotation() && annotation_default != null) {
+			body = new ExprStat(annotation_default.pos, me, annotation_default);
+		}
         me.body = body;
         if( me.body != null )
 	        me.body.parent = me;
@@ -224,7 +242,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         }
 		if( pbody != null ) pbody.setParent(me);
 
-		if( acc != null ) me.acc = new Access(acc.accflags);
+		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
@@ -253,3 +271,4 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         return dmp;
 	}
 }
+

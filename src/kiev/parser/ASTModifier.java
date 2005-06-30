@@ -33,8 +33,11 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTModifier extends ASTNode implements kiev020Constants {
 
+	public static ASTModifier[] emptyArray = new ASTModifier[0];
+	
 	public int 			kind;
 	public String		image;
 
@@ -98,3 +101,4 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 		return dmp.space().append(image==null?tokenImage[kind]:image).space();
     }
 }
+

@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTClosureType extends ASTNode {
     public ASTNode[]	types = ASTNode.emptyArray;
 //    public ASTNode		throwns;

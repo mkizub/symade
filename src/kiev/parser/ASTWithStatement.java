@@ -34,6 +34,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTWithStatement extends Statement {
 	public Expr				arg;
     public Statement		body;

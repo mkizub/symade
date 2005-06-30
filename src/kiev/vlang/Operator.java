@@ -364,6 +364,7 @@ public class OpTypes {
 }
 
 
+@node
 public abstract class Operator extends ASTNode implements Constants {
 
 	// Assign orders
@@ -545,6 +546,7 @@ public abstract class Operator extends ASTNode implements Constants {
 
 }
 
+@node
 public class AssignOperator extends Operator {
 
 	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
@@ -640,6 +642,7 @@ public class AssignOperator extends Operator {
 
 }
 
+@node
 public class BinaryOperator extends Operator {
 
 	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
@@ -775,6 +778,7 @@ public class BinaryOperator extends Operator {
 
 }
 
+@node
 public class MultiOperator extends Operator {
 
 	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
@@ -819,6 +823,7 @@ public class MultiOperator extends Operator {
 
 }
 
+@node
 public class PrefixOperator extends Operator {
 
 	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
@@ -878,6 +883,7 @@ public class PrefixOperator extends Operator {
 
 }
 
+@node
 public class PostfixOperator extends Operator {
 
 	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
@@ -920,6 +926,7 @@ public class PostfixOperator extends Operator {
 
 }
 
+@node
 public class CastOperator extends Operator {
 
 	public Type		type;

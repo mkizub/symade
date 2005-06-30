@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTImport extends ASTNode implements TopLevelDecl {
 	public static final int	IMPORT_CLASS   = 0;
 	public static final int	IMPORT_STATIC  = 1;

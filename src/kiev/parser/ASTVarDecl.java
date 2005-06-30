@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTVarDecl extends ASTNode {
 	public int		dim;
     public KString	name;
@@ -64,3 +65,4 @@ public class ASTVarDecl extends ASTNode {
         return dmp;
     }
 }
+

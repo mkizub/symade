@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTAccess extends SimpleNode {
 
 	public static final int ACC_PRIVATE_R	=  0x1;

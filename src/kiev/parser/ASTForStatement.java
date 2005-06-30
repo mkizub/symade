@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTForStatement extends Statement {
 	public ASTNode	init;
 	public Expr		cond;

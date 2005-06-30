@@ -42,6 +42,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
@@ -71,6 +72,7 @@ public class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
+@node
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
@@ -79,7 +81,7 @@ public class Env extends Struct {
 	public static Hashtable<KString,Struct>	classHashDbg = new Hashtable<KString,Struct>();
 
 	/** Hashtable for project file (class name + file name) */
-	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable/*<KString,ProjectFile>*/();
+	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
 
 	/** Root of package hierarchy */
 	public static Env			root = new Env();
@@ -581,3 +583,4 @@ public class Env extends Struct {
 		return dmp;
 	}
 }
+

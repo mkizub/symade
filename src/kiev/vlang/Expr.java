@@ -37,6 +37,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class StatExpr extends Expr implements SetBody {
 	public Statement	stat;
 
@@ -87,6 +88,7 @@ public class StatExpr extends Expr implements SetBody {
 
 }
 
+@node
 public class ConstExpr extends Expr {
 	Object	value;
 
@@ -284,6 +286,7 @@ public class ConstExpr extends Expr {
 
 }
 
+@node
 public class ArrayLengthAccessExpr extends Expr {
 	public Expr		array;
 
@@ -339,6 +342,7 @@ public class ArrayLengthAccessExpr extends Expr {
 	}
 }
 
+@node
 public class AssignExpr extends LvalueExpr {
 	public AssignOperator	op;
 	public Expr				lval;
@@ -709,6 +713,7 @@ public class AssignExpr extends LvalueExpr {
 }
 
 
+@node
 public class InitializeExpr extends AssignExpr {
     public boolean	of_wrapper;
 
@@ -751,6 +756,7 @@ public class InitializeExpr extends AssignExpr {
 
 
 
+@node
 public class BinaryExpr extends Expr {
 	public BinaryOperator		op;
 	public Expr					expr1;
@@ -1105,6 +1111,7 @@ public class BinaryExpr extends Expr {
 	}
 }
 
+@node
 public class StringConcatExpr extends Expr {
 	public Expr[]	args		= new Expr[0];
 
@@ -1242,6 +1249,7 @@ public class StringConcatExpr extends Expr {
 	}
 }
 
+@node
 public class CommaExpr extends Expr {
 	public Expr[]		exprs;
 
@@ -1310,6 +1318,7 @@ public class CommaExpr extends Expr {
 	}
 }
 
+@node
 public class UnaryExpr extends Expr {
 	public Operator				op;
 	public Expr					expr;
@@ -1497,6 +1506,7 @@ public class UnaryExpr extends Expr {
 	}
 }
 
+@node
 public class IncrementExpr extends LvalueExpr {
 	public Operator				op;
 	public Expr					lval;
@@ -1751,6 +1761,7 @@ public class IncrementExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class MultiExpr extends Expr {
 	public MultiOperator	op;
 	public List<ASTNode>	exprs;
@@ -1786,6 +1797,7 @@ public class MultiExpr extends Expr {
 }
 
 
+@node
 public class ConditionalExpr extends Expr {
 	public Expr		cond;
 	public Expr		expr1;
@@ -1913,6 +1925,7 @@ public class ConditionalExpr extends Expr {
 	}
 }
 
+@node
 public class CastExpr extends Expr {
 	public Type					type;
 	public Expr					expr;
@@ -2074,8 +2087,8 @@ public class CastExpr extends Expr {
 			if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 				if (et.isIntegerInCode())
 					return this;
-				Field cf = (Field)Type.tpEnum.clazz.resolveName(nameEnumVal);
-				return new AccessExpr(pos,parent,expr,cf).resolve(reqType);
+				Method cf = (Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+				return new CallAccessExpr(pos,parent,expr,cf,Expr.emptyArray).resolve(reqType);
 			}
 			// Try to find $cast method
 			if( !et.isAutoCastableTo(type) ) {

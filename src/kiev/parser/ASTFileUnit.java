@@ -34,6 +34,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public KString	filename;
 	public FileUnit	file_unit;
@@ -208,26 +209,10 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - pass3()
 			for(int i=0; i < decls.length; i++) {
-				switch(decls[i]) {
-				case ASTTypeDeclaration:
-					file_unit.members[i] = (Struct)((ASTTypeDeclaration)decls[i])
-						.pass3(((ASTTypeDeclaration)decls[i]).me,((ASTTypeDeclaration)decls[i]).members);
-					break;
-				case ASTEnumDeclaration:
-					file_unit.members[i] = (Struct)((ASTEnumDeclaration)decls[i])
-						.pass3(((ASTEnumDeclaration)decls[i]).me,((ASTEnumDeclaration)decls[i]).members);
-					break;
-				//case ASTPackageDeclaration:
-				//	file_unit.members[i] = (Struct)((ASTPackageDeclaration)decls[i])
-				//		.pass3(((ASTPackageDeclaration)decls[i]).me,((ASTPackageDeclaration)decls[i]).members);
-				//	break;
-				case ASTSyntaxDeclaration:
-					file_unit.members[i] = (Struct)((ASTSyntaxDeclaration)decls[i])
-						.pass3(((ASTSyntaxDeclaration)decls[i]).me,((ASTSyntaxDeclaration)decls[i]).members);
-					break;
-				default:
-					throw new CompilerException(((ASTNode)decls[i]).pos,"Unknown type of file declaration "+decls[i].getClass());
-				}
+				if (decls[i] instanceof ASTStructDeclaration)
+					file_unit.members[i] = (Struct)decls[i].pass3();
+				else
+					throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;

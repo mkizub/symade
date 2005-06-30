@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTStatementExpression extends Statement {
 	public Expr	expr;
     

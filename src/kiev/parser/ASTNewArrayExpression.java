@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTNewArrayExpression extends Expr {
 	public ASTNode	type;
     public Expr[]	args = Expr.emptyArray;

@@ -56,13 +56,13 @@ public class Method implements BytecodeElement,BytecodeFileConstants {
 	public void read(ReadContext cont) {
 		flags = cont.readShort();
 		cp_name = cont.readShort();
-		assert(cp_name > 0 && cp_name < cont.clazz.pool.length ,"Field name index "+cp_name+" out of range");
-		assert(cont.clazz.pool[cp_name].constant_type == CONSTANT_UTF8 ,"Field name index dos not points to CONSTANT_UTF8");
-		trace(Clazz.traceRead,cont.offset+": field name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
+		assert(cp_name > 0 && cp_name < cont.clazz.pool.length ,"Method name index "+cp_name+" out of range");
+		assert(cont.clazz.pool[cp_name].constant_type == CONSTANT_UTF8 ,"Method name index dos not points to CONSTANT_UTF8");
+		trace(Clazz.traceRead,cont.offset+": method name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
 		cp_type = cont.readShort();
-		assert(cp_type > 0 && cp_type < cont.clazz.pool.length ,"Field signature index "+cp_type+" out of range");
-		assert(cont.clazz.pool[cp_type].constant_type == CONSTANT_UTF8 ,"Field signature index dos not points to CONSTANT_UTF8");
-		trace(Clazz.traceRead,cont.offset+": field signature "+cp_type+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_type]).value);
+		assert(cp_type > 0 && cp_type < cont.clazz.pool.length ,"Method signature index "+cp_type+" out of range");
+		assert(cont.clazz.pool[cp_type].constant_type == CONSTANT_UTF8 ,"Method signature index dos not points to CONSTANT_UTF8");
+		trace(Clazz.traceRead,cont.offset+": method signature "+cp_type+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_type]).value);
 		attrs = Attribute.readAttributes(cont);
 	}
 	public void write(ReadContext cont) {

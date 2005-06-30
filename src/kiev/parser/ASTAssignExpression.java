@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTAssignExpression extends Expr {
 	public KString	op;
     public Expr		lval;

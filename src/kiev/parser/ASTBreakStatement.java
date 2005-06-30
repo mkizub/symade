@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTBreakStatement extends Statement {
 	KString	name;
     

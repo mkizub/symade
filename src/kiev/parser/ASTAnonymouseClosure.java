@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTAnonymouseClosure extends Expr {
     public ASTNode[]	params = ASTNode.emptyArray;
     public ASTNode		type;
@@ -73,12 +74,12 @@ public class ASTAnonymouseClosure extends Expr {
 			else
 				ret = (Type)type;
 			if( ret != Type.tpRule ) {
-				ASTMethodDeclaration md = new ASTMethodDeclaration(0);
+				ASTMethodDeclaration md = new ASTMethodDeclaration();
 				md.name = KString.from("fun$"+this.hashCode());
 				if( PassInfo.method==null || PassInfo.method.isStatic())
-					md.modifier = new ASTNode[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
+					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
 				else
-					md.modifier = new ASTNode[]{ASTModifier.modPRIVATE};
+					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
 				md.params = params;
 				md.type = ret;
 				md.body = body;
@@ -88,9 +89,9 @@ public class ASTAnonymouseClosure extends Expr {
 				ASTRuleDeclaration md = new ASTRuleDeclaration(0);
 				md.name = KString.from("rule_fun$"+this.hashCode());
 				if( PassInfo.method==null || PassInfo.method.isStatic())
-					md.modifier = new ASTNode[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
+					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
 				else
-					md.modifier = new ASTNode[]{ASTModifier.modPRIVATE};
+					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
 				md.params = params;
 				md.body = body;
 				md.parent = PassInfo.clazz;
@@ -141,11 +142,11 @@ public class ASTAnonymouseClosure extends Expr {
 
 			ASTNode[] members;
 			if( ret != Type.tpRule ) {
-				ASTMethodDeclaration md = new ASTMethodDeclaration(0);
+				ASTMethodDeclaration md = new ASTMethodDeclaration();
 				KString call_name;
 				if( ret.isReference() ) md.name = KString.from("call_Object");
 				else md.name = KString.from("call_"+ret);
-				md.modifier = new ASTNode[]{ASTModifier.modPUBLIC};
+				md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPUBLIC};
 				if( ret.isReference() )
 					md.type = Type.tpObject;
 				else
@@ -199,7 +200,7 @@ public class ASTAnonymouseClosure extends Expr {
 			else
 				((BlockStat)body).stats = stats;
 
-			me = ASTTypeDeclaration.pass3(me,members);
+			me = ASTTypeDeclaration.createMembers(me,members);
 			new_closure = new NewClosure(pos,me.type);
 			new_closure.parent = parent;
 			new_closure = (Expr)new_closure.resolve(reqType);

@@ -377,7 +377,9 @@ public interface Constants extends AccessFlags {
 	public final static KString namePEnv		= KString.from("$env");
 	public final static KString namePlvBase		= KString.from("lvar$base");
 	public final static KString nameCellVal		= KString.from("$val");
-	public final static KString nameEnumVal		= KString.from("$index");
+	public final static KString nameEnumValuesFld	= KString.from("$values");
+	public final static KString nameEnumValues	= KString.from("values");
+	public final static KString nameEnumOrdinal	= KString.from("ordinal");
 	public final static KString nameClosureArgs		= KString.from("$args");
 	public final static KString nameClosureMaxArgs	= KString.from("max$args");
 	public final static KString nameClosureTopArg	= KString.from("top$arg");
@@ -433,6 +435,12 @@ public interface Constants extends AccessFlags {
 	public final static KString attrGenerations		= KString.from("kiev.Generations");
 	public final static KString attrPackedFields	= KString.from("kiev.PackedFields");
 	public final static KString attrPackerField		= KString.from("kiev.PackerField");
+
+	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
+	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
+	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
+	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
+	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
 
 	public final static KString nameVoid	= KString.from("void");
 	public final static KString sigVoid		= KString.from("V");

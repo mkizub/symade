@@ -34,6 +34,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class CaseLabel extends ASTNode {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
@@ -225,6 +226,7 @@ public class CaseLabel extends ASTNode {
 	}
 }
 
+@node
 public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public Expr			sel;
@@ -637,6 +639,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	}
 }
 
+@node
 public class CatchInfo extends Statement implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
@@ -670,12 +673,12 @@ public class CatchInfo extends Statement implements Scope {
 		body = null;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
 		false
 	}
@@ -726,6 +729,7 @@ public class CatchInfo extends Statement implements Scope {
 	}
 }
 
+@node
 public class FinallyInfo extends CatchInfo {
 
 	public Var	ret_arg;
@@ -771,6 +775,7 @@ public class FinallyInfo extends CatchInfo {
 
 }
 
+@node
 public class TryStat extends Statement/*defaults*/ {
 
 	public Statement	body;
@@ -938,6 +943,7 @@ public class TryStat extends Statement/*defaults*/ {
 
 }
 
+@node
 public class SynchronizedStat extends Statement {
 
 	public Statement	body;
@@ -1032,6 +1038,7 @@ public class SynchronizedStat extends Statement {
 
 }
 
+@node
 public class WithStat extends Statement {
 
 	public Statement	body;

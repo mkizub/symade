@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTCondBlock extends ASTBlock {
 	public ASTCondBlock(int id) {
 		super(0);

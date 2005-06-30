@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTTypeClassExpression extends Expr {
 	
 	public ASTNode		type;

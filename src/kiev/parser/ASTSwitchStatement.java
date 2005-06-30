@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTSwitchStatement extends Statement {
 	public Expr			sel;
 	public ASTNode[]	cases = ASTNode.emptyArray;

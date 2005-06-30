@@ -33,9 +33,10 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTFormalParameter extends ASTNode {
 	public int			dim;
-	public ASTNode[]	modifier = ASTNode.emptyArray;
+	public ASTModifiers	modifiers;
 	public ASTNode		type;
 	public ASTNode		mm_type;
     public KString		name;
@@ -52,8 +53,8 @@ public class ASTFormalParameter extends ASTNode {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if( n instanceof ASTModifier) {
-			modifier = (ASTNode[])Arrays.append(modifier,n);
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTType ) {
         	if (type == null)
@@ -71,11 +72,9 @@ public class ASTFormalParameter extends ASTNode {
     }
 
 	public Var pass3() {
-		int flags = 0;
 		if( !Kiev.javaMode && name.len == 1 && name.charAt(0)=='_' ) return null;
 		// TODO: check flags for fields
-		for(int i=0; i < modifier.length; i++)
-			flags |= ((ASTModifier)modifier[i]).flag();
+		int flags = modifiers.getFlags();
 		Type type = ((ASTType)this.type).getType();
 		Type mm_type = (this.mm_type == null) ? null : ((ASTType)this.mm_type).getType();
 		for(int i=0; i < dim; i++) {
@@ -95,7 +94,7 @@ public class ASTFormalParameter extends ASTNode {
 	}
 
     public Dumper toJava(Dumper dmp) {
-    	dmp.space().append(type);
+		dmp.space().append(type);
         for(int i=0; i < dim; i++) dmp.append("[]");
         dmp.space().append(name).space();
         return dmp;

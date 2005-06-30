@@ -34,6 +34,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
 
 	protected	CodeLabel	continue_label = null;
@@ -58,6 +59,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 }
 
 
+@node
 public class WhileStat extends LoopStat {
 
 	public BooleanExpr	cond;
@@ -146,6 +148,7 @@ public class WhileStat extends LoopStat {
 	}
 }
 
+@node
 public class DoWhileStat extends LoopStat {
 
 	public BooleanExpr	cond;
@@ -235,6 +238,7 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
+@node
 public class ForInit extends ASTNode implements Scope {
 
 	public Type	type;
@@ -260,7 +264,7 @@ public class ForInit extends ASTNode implements Scope {
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -272,7 +276,7 @@ public class ForInit extends ASTNode implements Scope {
 		}
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -294,6 +298,7 @@ public class ForInit extends ASTNode implements Scope {
 	}
 }
 
+@node
 public class ForStat extends LoopStat implements Scope {
 
 	public ASTNode		init;
@@ -415,13 +420,13 @@ public class ForStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
@@ -516,6 +521,7 @@ public class ForStat extends LoopStat implements Scope {
 	}
 }
 
+@node
 public class ForEachStat extends LoopStat implements Scope {
 
 	public Var			var;
@@ -832,14 +838,14 @@ public class ForEachStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	rule public resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	rule public resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
 		Var@ n;
 	{
 		{	n ?= var

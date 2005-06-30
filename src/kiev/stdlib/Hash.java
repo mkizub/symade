@@ -71,7 +71,7 @@ class Hash<A extends Object> implements Cloneable {
 	    throw new IllegalArgumentException();
 	}
 	this.loadFactor = loadFactor;
-	table = new HashEntry/*<A>*/[initialCapacity];
+	table = new HashEntry<A>[initialCapacity];
 	threshold = (int)(initialCapacity * loadFactor);
     }
 
@@ -114,7 +114,7 @@ class Hash<A extends Object> implements Cloneable {
      * @see Enumeration
      */
     public Enumeration<A> elements() {
-	return new HashEnumerator/*<A>*/(table);
+	return new HashEnumerator<A>(table);
     }
 
    /**
@@ -177,7 +177,7 @@ class Hash<A extends Object> implements Cloneable {
 	HashEntry<A> oldTable[] = table;
 
 	int newCapacity = oldCapacity * 2 + 1;
-	HashEntry<A> newTable[] = new HashEntry/*<A>*/[newCapacity];
+	HashEntry<A> newTable[] = new HashEntry<A>[newCapacity];
 
 	threshold = (int)(newCapacity * loadFactor);
 	table = newTable;
@@ -217,7 +217,7 @@ class Hash<A extends Object> implements Cloneable {
 	}
 
 	// Creates the new entry.
-	tab[index] = new HashEntry/*<A>*/(elem, hash, tab[index]);
+	tab[index] = new HashEntry<A>(elem, hash, tab[index]);
 	count++;
     }
 
@@ -261,7 +261,7 @@ class Hash<A extends Object> implements Cloneable {
      * relatively expensive operation.
      */
     public Object clone() {
-	Hash<A> t = new Hash/*<A>*/(table.length, loadFactor);
+	Hash<A> t = new Hash<A>(table.length, loadFactor);
 	for (int i = table.length ; i-- > 0 ; ) {
 	    t.table[i] = (table[i] != null) ? table[i].copy() : null;
 	}
@@ -304,7 +304,7 @@ public static class HashEntry<A extends Object> {
     }
 
     public HashEntry<A> copy() {
-	return new HashEntry/*<A>*/(elem, hash,
+	return new HashEntry<A>(elem, hash,
 			    (next != null) ? next.copy() : null);
     }
 }

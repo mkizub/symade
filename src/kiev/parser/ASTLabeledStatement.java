@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTLabeledStatement extends Statement {
 	public KString		name;
     public Statement	stat;

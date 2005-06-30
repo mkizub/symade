@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTRuleOrExpression extends ASTRuleNode {
 	public ASTRuleNode[]	exprs = ASTRuleNode.emptyArray;
 
