@@ -42,7 +42,10 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTIdentifier ) {
+		if( n instanceof ASTModifiers) {
+			modifiers = (ASTModifiers)n;
+		}
+		else if( n instanceof ASTIdentifier ) {
 			name = ((ASTIdentifier)n).name;
 			pos = n.getPos();
 		} else {
