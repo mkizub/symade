@@ -36,9 +36,9 @@ import kiev.stdlib.*;
 @node
 public class ASTIfStatement extends Statement {
     public boolean		not;
-	public Expr			cond;
-    public Statement	thenSt;
-    public Statement	elseSt;
+	@att public Expr		cond;
+    @att public Statement	thenSt;
+    @att public Statement	elseSt;
 
 	public ASTIfStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
@@ -57,8 +57,10 @@ public class ASTIfStatement extends Statement {
 		if (not) {
 			ASTOperator op = new ASTOperator(0);
 			op.image = KString.from("!");
-			List<ASTNode> expr_list = new ListBuffer<ASTNode>().append(op).append(cond).toList();
-			cond = new ASTExpression(cond.pos,expr_list);
+			ASTExpression e = new ASTExpression(cond.pos);
+			e.nodes.append(op);
+			e.nodes.append(cond);
+			cond = e;
 			not = false;
 		}
 		if( cond instanceof BooleanExpr )

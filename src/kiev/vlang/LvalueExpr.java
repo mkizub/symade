@@ -38,10 +38,10 @@ import static kiev.vlang.Instr.*;
 @node
 public class AccessExpr extends LvalueExpr {
 
-	public Expr		obj;
-	public Field	var;
-	public Method	fset;		// for virtual fields
-	public Method	fget;		// for virtual fields
+	@att public Expr		obj;
+	@ref public Field		var;
+	@ref public Method		fset;		// for virtual fields
+	@ref public Method		fget;		// for virtual fields
 
 	public AccessExpr(int pos, Expr obj, Field var) {
 		super(pos);
@@ -357,8 +357,8 @@ public class AccessExpr extends LvalueExpr {
 @node
 public class ContainerAccessExpr extends LvalueExpr {
 
-	public Expr		obj;
-	public Expr		index;
+	@att public Expr		obj;
+	@att public Expr		index;
 
 	public ContainerAccessExpr(int pos, Expr obj, Expr index) {
 		super(pos);
@@ -573,7 +573,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 @node
 public class VarAccessExpr extends LvalueExpr {
 
-	public Var		var;
+	@ref public Var		var;
 
 	public VarAccessExpr(int pos, Var var) {
 		super(pos);
@@ -919,7 +919,7 @@ public class VarAccessExpr extends LvalueExpr {
 @node
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
-	public Var		var;
+	@ref public Var		var;
 
 	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
 		super(pos,par);
@@ -1043,9 +1043,9 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 @node
 public class FieldAccessExpr extends LvalueExpr {
 
-	public Field		var;
-	public Method	fset;		// for virtual fields
-	public Method	fget;		// for virtual fields
+	@ref public Field	var;
+	@ref public Method	fset;		// for virtual fields
+	@ref public Method	fget;		// for virtual fields
 
 	public FieldAccessExpr(int pos, Field var) {
 		super(pos);
@@ -1330,10 +1330,10 @@ public class FieldAccessExpr extends LvalueExpr {
 @node
 public class StaticFieldAccessExpr extends LvalueExpr {
 
-	public Struct		obj;
-	public Field		var;
-	public Method	fset;		// for virtual fields
-	public Method	fget;		// for virtual fields
+	@ref public Struct		obj;
+	@ref public Field		var;
+	@ref public Method		fset;		// for virtual fields
+	@ref public Method		fget;		// for virtual fields
 
 	public StaticFieldAccessExpr(int pos, Struct obj, Field var) {
 		super(pos);
@@ -1520,7 +1520,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 @node
 public class OuterThisAccessExpr extends LvalueExpr {
 
-	public Struct		outer;
+	@ref public Struct		outer;
 	public Field[]		outer_refs = Field.emptyArray;
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
@@ -1631,7 +1631,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 @node
 public class SelfAccessExpr extends LvalueExpr {
 
-	public LvalueExpr		expr;
+	@att public LvalueExpr		expr;
 
 	public SelfAccessExpr(int pos, LvalueExpr expr) {
 		super(pos);

@@ -16,20 +16,21 @@ public class ASTAnnotation extends ASTNode {
 
 	public static ASTAnnotation[] emptyArray = new ASTAnnotation[0];
 
-	public ASTIdentifier        name;	
-	public ASTAnnotationValue[] values = ASTAnnotationValue.emptyArray;
+	@att public ASTIdentifier            ident;	
+	@att public final NArr<ASTAnnotationValue> values;
 	
 	public ASTAnnotation(int id) {
 		super(0);
+		values = new NArr<ASTAnnotationValue>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTIdentifier) {
-			name = (ASTIdentifier)n;
+			ident = (ASTIdentifier)n;
 			this.pos = n.pos;
 		}
 		else if (n instanceof ASTAnnotationValue) {
-			values = (ASTAnnotationValue[])Arrays.append(values,n);
+			values.append((ASTAnnotationValue)n);
 		}
 		else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");
@@ -39,7 +40,7 @@ public class ASTAnnotation extends ASTNode {
 	public Meta getMeta() {
 		ASTNode n = null;
 		try {
-			n = name.resolve(null);
+			n = ident.resolve(null);
 		} catch (Exception e) {
 			Kiev.reportError(pos, e);
 		}
@@ -51,10 +52,10 @@ public class ASTAnnotation extends ASTNode {
 		Meta m = new Meta(new MetaType(s.name.name));
 		foreach (ASTAnnotationValue v; values) {
 			KString name;
-			if (v.name == null)
+			if (v.ident == null)
 				name = KString.from("value");
 			else
-				name = v.name.name;
+				name = v.ident.name;
 			MetaValueType mvt = new MetaValueType(name);
 			if (v.value instanceof ASTAnnotation) {
 				ASTNode value = v.value;
@@ -62,12 +63,14 @@ public class ASTAnnotation extends ASTNode {
 				m.set(new MetaValueScalar(mvt, value));
 			}
 			else if (v.value instanceof ASTAnnotationValueValueArrayInitializer) {
-				ASTNode[] values = ((ASTAnnotationValueValueArrayInitializer)v.value).values;
-				for (int i=0; i < values.length; i++) {
-					if (values[i] instanceof ASTAnnotation)
-						values[i] = ((ASTAnnotation)values[i]).getMeta();
+				MetaValueArray mva = new MetaValueArray(mvt);
+				foreach (ASTNode av; ((ASTAnnotationValueValueArrayInitializer)v.value).values) {
+					if (av instanceof ASTAnnotation)
+						mva.values.add(((ASTAnnotation)av).getMeta());
+					else
+						mva.values.add(av);
 				}
-				m.set(new MetaValueArray(mvt, values));
+				m.set(mva);
 			}
 			else {
 				m.set(new MetaValueScalar(mvt, v.value));

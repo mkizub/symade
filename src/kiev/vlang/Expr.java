@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 
 @node
 public class StatExpr extends Expr implements SetBody {
-	public Statement	stat;
+	@att public Statement	stat;
 
 	public StatExpr(int pos, Statement stat) {
 		super(pos);
@@ -288,7 +288,7 @@ public class ConstExpr extends Expr {
 
 @node
 public class ArrayLengthAccessExpr extends Expr {
-	public Expr		array;
+	@att public Expr		array;
 
 	public ArrayLengthAccessExpr(int pos, Expr array) {
 		super(pos);
@@ -344,9 +344,9 @@ public class ArrayLengthAccessExpr extends Expr {
 
 @node
 public class AssignExpr extends LvalueExpr {
-	public AssignOperator	op;
-	public Expr				lval;
-	public Expr				value;
+	@ref public AssignOperator	op;
+	@att public Expr			lval;
+	@att public Expr			value;
 
 	public AssignExpr(int pos, AssignOperator op, Expr lval, Expr value) {
 		super(pos);
@@ -758,9 +758,9 @@ public class InitializeExpr extends AssignExpr {
 
 @node
 public class BinaryExpr extends Expr {
-	public BinaryOperator		op;
-	public Expr					expr1;
-	public Expr					expr2;
+	@ref public BinaryOperator		op;
+	@att public Expr				expr1;
+	@att public Expr				expr2;
 
 	public BinaryExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
 		super(pos);
@@ -1115,9 +1115,9 @@ public class BinaryExpr extends Expr {
 public class StringConcatExpr extends Expr {
 	public Expr[]	args		= new Expr[0];
 
-	public static Struct clazzStringBuffer;
-	public static Method clazzStringBufferToString;
-	public static Method clazzStringBufferInit;
+	@ref public static Struct clazzStringBuffer;
+	@ref public static Method clazzStringBufferToString;
+	@ref public static Method clazzStringBufferInit;
 
 	static {
 		try {
@@ -1320,8 +1320,8 @@ public class CommaExpr extends Expr {
 
 @node
 public class UnaryExpr extends Expr {
-	public Operator				op;
-	public Expr					expr;
+	@ref public Operator			op;
+	@att public Expr				expr;
 
 	public UnaryExpr(int pos, Operator op, Expr expr) {
 		super(pos);
@@ -1508,8 +1508,8 @@ public class UnaryExpr extends Expr {
 
 @node
 public class IncrementExpr extends LvalueExpr {
-	public Operator				op;
-	public Expr					lval;
+	@ref public Operator			op;
+	@att public Expr				lval;
 
 	public IncrementExpr(int pos, Operator op, Expr lval) {
 		super(pos);
@@ -1763,7 +1763,7 @@ public class IncrementExpr extends LvalueExpr {
 
 @node
 public class MultiExpr extends Expr {
-	public MultiOperator	op;
+	@ref public MultiOperator	op;
 	public List<ASTNode>	exprs;
 
 	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
@@ -1799,9 +1799,9 @@ public class MultiExpr extends Expr {
 
 @node
 public class ConditionalExpr extends Expr {
-	public Expr		cond;
-	public Expr		expr1;
-	public Expr		expr2;
+	@att public Expr		cond;
+	@att public Expr		expr1;
+	@att public Expr		expr2;
 
 	public ConditionalExpr(int pos, Expr cond, Expr expr1, Expr expr2) {
 		super(pos);
@@ -1927,8 +1927,8 @@ public class ConditionalExpr extends Expr {
 
 @node
 public class CastExpr extends Expr {
-	public Type					type;
-	public Expr					expr;
+	@ref public Type			type;
+	@att public Expr			expr;
 	public boolean				explicit = false;
 	public boolean				reinterp = false;
 

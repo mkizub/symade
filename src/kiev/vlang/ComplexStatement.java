@@ -39,10 +39,10 @@ public class CaseLabel extends ASTNode {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
-	public ASTNode		val;
-	public Type			type;
+	@att public ASTNode		val;
+	@ref public Type		type;
 	public Var[]		pattern;
-	public BlockStat	stats;
+	@att public BlockStat	stats;
 
 	public CodeLabel	case_label;
 
@@ -75,7 +75,7 @@ public class CaseLabel extends ASTNode {
 
 	public Statement addStatement(int i, Statement st) {
 		if( st == null ) return null;
-		stats.stats = (ASTNode[])Arrays.insert(stats.stats,st,i);
+		stats.stats.insert(st,i);
 		return st;
 	}
 
@@ -229,11 +229,11 @@ public class CaseLabel extends ASTNode {
 @node
 public class SwitchStat extends BlockStat implements BreakTarget {
 
-	public Expr			sel;
-	public Var			tmpvar;
-	public Field		typehash;
+	@att public Expr		sel;
+	@att public Var			tmpvar;
+	@ref public Field		typehash;
 	public ASTNode[]	cases = ASTNode.emptyArray;
-	public ASTNode		defCase;
+	@ref public ASTNode		defCase;
 
 	public CodeSwitch	cosw;
 	protected CodeLabel	break_label = null;
@@ -288,7 +288,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			st.setBreakTarget(true);
 			st = (BlockStat)st;
 			if( ((CaseLabel)cas).val == null ) {
-				st.stats = (ASTNode[])Arrays.insert(st.stats,new ExprStat(sel.pos,st,sel),0);
+				st.stats.insert(new ExprStat(sel.pos,st,sel),0);
 				return st.resolve(reqType);
 			} else {
 				return new IfElseStat(pos,parent,
@@ -323,7 +323,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression(0);
 						cae.pos = pos;
 						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
-						cae.func = nameGetCaseTag;
+						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
 						cae.parent = sel.parent;
 						sel = cae;
 					} else {
@@ -644,8 +644,8 @@ public class CatchInfo extends Statement implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	public Var	arg;
-	public Statement	body;
+	@att public Var	arg;
+	@att public Statement	body;
 
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -732,7 +732,7 @@ public class CatchInfo extends Statement implements Scope {
 @node
 public class FinallyInfo extends CatchInfo {
 
-	public Var	ret_arg;
+	@att public Var	ret_arg;
 	public CodeLabel	subr_label;
 
 	public FinallyInfo(int pos, ASTNode parent, Statement body) {
@@ -778,9 +778,9 @@ public class FinallyInfo extends CatchInfo {
 @node
 public class TryStat extends Statement/*defaults*/ {
 
-	public Statement	body;
+	@att public Statement	body;
 	public ASTNode[]	catchers = ASTNode.emptyArray;
-	public ASTNode		finally_catcher;
+	@att public ASTNode		finally_catcher;
 
 	public CodeLabel	end_label;
 
@@ -946,9 +946,9 @@ public class TryStat extends Statement/*defaults*/ {
 @node
 public class SynchronizedStat extends Statement {
 
-	public Statement	body;
-	public Expr			expr;
-	public Var			expr_var;
+	@att public Statement	body;
+	@att public Expr			expr;
+	@att public Var			expr_var;
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
 	public CodeLabel	end_label;
@@ -1041,9 +1041,9 @@ public class SynchronizedStat extends Statement {
 @node
 public class WithStat extends Statement {
 
-	public Statement	body;
-	public Expr			expr;
-	public ASTNode		var_or_field;
+	@att public Statement	body;
+	@att public Expr		expr;
+	@ref public ASTNode		var_or_field;
 	public CodeLabel	end_label;
 
 	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {

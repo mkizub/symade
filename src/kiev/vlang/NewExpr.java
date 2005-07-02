@@ -38,12 +38,12 @@ import static kiev.vlang.Instr.*;
 @node
 public class NewExpr extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args;
-	public Expr		outer;
-	public Expr		tif_expr;	// TypeInfo field access expression
+	@att public Expr		outer;
+	@att public Expr		tif_expr;	// TypeInfo field access expression
 
-	public Method	func;
+	@ref public Method	func;
 
 	public NewExpr(int pos, Type type, Expr[] args) {
 		super(pos);
@@ -263,11 +263,11 @@ public class NewExpr extends Expr {
 @node
 public class NewArrayExpr extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args;
 	public int		dim;
-	private Type	arrtype;
-	private Expr	create_via_reflection;
+	@ref private Type	arrtype;
+	@att private Expr	create_via_reflection;
 
 	public NewArrayExpr(int pos, Type type, Expr[] args, int dim) {
 		super(pos);
@@ -381,11 +381,11 @@ public class NewArrayExpr extends Expr {
 @node
 public class NewInitializedArrayExpr extends Expr {
 
-	public Type			type;
+	@ref public Type			type;
 	public int			dim;
 	public int[]		dims;
 	public Expr[]		args;
-	private Type		arrtype;
+	@ref private Type		arrtype;
 
 	public NewInitializedArrayExpr(int pos, Type type, int dim, Expr[] args) {
 		super(pos);
@@ -482,10 +482,10 @@ public class NewInitializedArrayExpr extends Expr {
 @node
 public class NewClosure extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args = Expr.emptyArray;
 
-	public Method	func;
+	@ref public Method	func;
 
 	public NewClosure(int pos, Type type) {
 		super(pos);

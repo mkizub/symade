@@ -35,10 +35,10 @@ import kiev.stdlib.*;
 
 @node
 public class ASTForEachStatement extends Statement {
-	public ASTFormalParameter	var;
-	public Expr					container;
-	public Expr					cond;
-	public Statement			body;
+	@att public ASTFormalParameter	var;
+	@att public Expr				container;
+	@att public Expr				cond;
+	@att public Statement			body;
 
 	public ASTForEachStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);

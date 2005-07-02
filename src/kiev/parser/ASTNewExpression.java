@@ -36,7 +36,7 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewExpression extends Expr {
-	public ASTNode	type;
+	@ref public ASTNode	type;
     public Expr[]	args = Expr.emptyArray;
     public ASTNode	members[] = ASTNode.emptyArray;
     public boolean	anonymouse;

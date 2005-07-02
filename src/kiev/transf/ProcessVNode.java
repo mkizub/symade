@@ -61,8 +61,14 @@ public final class ProcessVNode implements Constants {
 	}
 	
 	private void verify(FileUnit:ASTNode fu) {
-		foreach (ASTNode n; fu.members; n instanceof Struct)
-			verify(n);
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = fu.filename;
+		PassInfo.push(fu);
+		try {
+			foreach (ASTNode n; fu.members; n instanceof Struct) {
+				verify(n);
+			}
+		} finally { PassInfo.pop(fu); Kiev.curFile = oldfn; }
 	}
 	
 	private void verify(Struct:ASTNode s) {
@@ -97,8 +103,11 @@ public final class ProcessVNode implements Constants {
 		}
 		if (fmatt != null || fmref != null) {
 			Struct fs = (Struct)f.type.clazz;
-			if (fs.name.name == nameNArr)
+			if (fs.name.name == nameNArr) {
+				if (!f.isFinal())
+					Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
 				fs = f.type.args[0].clazz;
+			}
 			Meta fsm = fs.meta.get(mnNode);
 			if (fsm == null) {
 				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");

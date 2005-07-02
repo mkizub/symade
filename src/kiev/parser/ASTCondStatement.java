@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTCondStatement extends Statement {
 	
-	public Expr		cond;
-	public Expr		message;
+	@att public Expr		cond;
+	@att public Expr		message;
 	
 	public ASTCondStatement(int id) {
 		super(0,null);

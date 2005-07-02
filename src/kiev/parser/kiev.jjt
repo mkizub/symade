@@ -1943,16 +1943,8 @@ void AccessExpression() #void :
 		"." CallExpression()	#CallAccessExpression(2)
 	|
 		LOOKAHEAD(3)
-		"->" CallExpression()
-		{ jjtThis.in_wrapper=true; }	#CallAccessExpression(2)
-	|
-		LOOKAHEAD(3)
 		t="." Identifier()
         { jjtThis.setPos(t.getPos()); }	#AccessExpression(2)
-	|
-		LOOKAHEAD(3)
-		t="->" Identifier()
-        { jjtThis.setPos(t.getPos()); jjtThis.in_wrapper=true; }	#AccessExpression(2)
 	|	LOOKAHEAD(2)
 		t="[" ExpressionNT(null) "]"
         { jjtThis.setPos(t.getPos()); }	#ArrayElementAccessExpression(2)
@@ -2331,7 +2323,7 @@ void CondStatement() :
 	]
 	{
 		if( t != null ) {
-			int pos = t.pos;
+			int pos = t.getPos();
 			StringBuffer sb = new StringBuffer();
 			while( t != null && t != getToken(1) ) {
 				sb.append(t.image).append(' ');

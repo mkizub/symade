@@ -35,7 +35,7 @@ import kiev.vlang.*;
 
 @node
 public class ASTBreakStatement extends Statement {
-	KString	name;
+	@att public ASTIdentifier ident;
     
 	public ASTBreakStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
@@ -43,19 +43,20 @@ public class ASTBreakStatement extends Statement {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: name=((ASTIdentifier)n).name; break;
+        case 0: ident=(ASTIdentifier)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
 	public ASTNode resolve(Type reqType) {
-		return new BreakStat(pos,parent,name).resolve(Type.tpVoid);
+		return new BreakStat(pos,parent,ident==null?null:ident.name).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("break");
-		if( name != null && !name.equals(KString.Empty) )
-			dmp.space().append(name);
+		if( ident != null && !ident.name.equals(KString.Empty) )
+			dmp.space().append(ident);
 		return dmp.append(';');
 	}
 }
+

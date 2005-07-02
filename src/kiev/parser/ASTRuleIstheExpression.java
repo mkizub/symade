@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
-	public ASTIdentifier	name;
-	public Expr				expr;
+	@att public ASTIdentifier	name;
+	@att public Expr			expr;
 
 	public ASTRuleIstheExpression(int id) {
 		super(0);

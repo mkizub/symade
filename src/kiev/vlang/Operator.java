@@ -552,19 +552,19 @@ public class AssignOperator extends Operator {
 	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
 
 	// Assign (binary) operators
-	public static final AssignOperator Assign;
-	public static final AssignOperator Assign2;
-	public static final AssignOperator AssignBitOr;
-	public static final AssignOperator AssignBitXor;
-	public static final AssignOperator AssignBitAnd;
-	public static final AssignOperator AssignLeftShift;
-	public static final AssignOperator AssignRightShift;
-	public static final AssignOperator AssignUnsignedRightShift;
-	public static final AssignOperator AssignAdd;
-	public static final AssignOperator AssignSub;
-	public static final AssignOperator AssignMul;
-	public static final AssignOperator AssignDiv;
-	public static final AssignOperator AssignMod;
+	@ref public static final AssignOperator Assign;
+	@ref public static final AssignOperator Assign2;
+	@ref public static final AssignOperator AssignBitOr;
+	@ref public static final AssignOperator AssignBitXor;
+	@ref public static final AssignOperator AssignBitAnd;
+	@ref public static final AssignOperator AssignLeftShift;
+	@ref public static final AssignOperator AssignRightShift;
+	@ref public static final AssignOperator AssignUnsignedRightShift;
+	@ref public static final AssignOperator AssignAdd;
+	@ref public static final AssignOperator AssignSub;
+	@ref public static final AssignOperator AssignMul;
+	@ref public static final AssignOperator AssignDiv;
+	@ref public static final AssignOperator AssignMod;
 
 	static {
 		Assign = newAssignOperator(KString.from("="), KString.from("opAssign"),null,true);
@@ -648,26 +648,26 @@ public class BinaryOperator extends Operator {
 	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
 
 	// Binary operators
-	public static final BinaryOperator BooleanOr;
-	public static final BinaryOperator BooleanAnd;
-	public static final BinaryOperator BitOr;
-	public static final BinaryOperator BitXor;
-	public static final BinaryOperator BitAnd;
-	public static final BinaryOperator Equals;
-	public static final BinaryOperator NotEquals;
-	public static final BinaryOperator InstanceOf;
-	public static final BinaryOperator LessThen;
-	public static final BinaryOperator LessEquals;
-	public static final BinaryOperator GreaterThen;
-	public static final BinaryOperator GreaterEquals;
-	public static final BinaryOperator LeftShift;
-	public static final BinaryOperator RightShift;
-	public static final BinaryOperator UnsignedRightShift;
-	public static final BinaryOperator Add;
-	public static final BinaryOperator Sub;
-	public static final BinaryOperator Mul;
-	public static final BinaryOperator Div;
-	public static final BinaryOperator Mod;
+	@ref public static final BinaryOperator BooleanOr;
+	@ref public static final BinaryOperator BooleanAnd;
+	@ref public static final BinaryOperator BitOr;
+	@ref public static final BinaryOperator BitXor;
+	@ref public static final BinaryOperator BitAnd;
+	@ref public static final BinaryOperator Equals;
+	@ref public static final BinaryOperator NotEquals;
+	@ref public static final BinaryOperator InstanceOf;
+	@ref public static final BinaryOperator LessThen;
+	@ref public static final BinaryOperator LessEquals;
+	@ref public static final BinaryOperator GreaterThen;
+	@ref public static final BinaryOperator GreaterEquals;
+	@ref public static final BinaryOperator LeftShift;
+	@ref public static final BinaryOperator RightShift;
+	@ref public static final BinaryOperator UnsignedRightShift;
+	@ref public static final BinaryOperator Add;
+	@ref public static final BinaryOperator Sub;
+	@ref public static final BinaryOperator Mul;
+	@ref public static final BinaryOperator Div;
+	@ref public static final BinaryOperator Mod;
 
 	static {
 		BooleanOr = newBinaryOperator(opBooleanOrPriority, KString.from("||"), KString.from("opBooleanOr"),null,orderAndArityNames[YFX],true);
@@ -784,7 +784,7 @@ public class MultiOperator extends Operator {
 	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
 
 	// Binary operators
-	public static final MultiOperator Conditional;
+	@ref public static final MultiOperator Conditional;
 
 	static {
 		Conditional = newMultiOperator(opConditionalPriority, new KString[]{KString.from("?"),KString.from(":")}, KString.from("opChoice"),true);
@@ -829,12 +829,12 @@ public class PrefixOperator extends Operator {
 	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
 
 	// Unary prefix operators
-	public static final PrefixOperator Pos;
-	public static final PrefixOperator Neg;
-	public static final PrefixOperator PreIncr;
-	public static final PrefixOperator PreDecr;
-	public static final PrefixOperator BitNot;
-	public static final PrefixOperator BooleanNot;
+	@ref public static final PrefixOperator Pos;
+	@ref public static final PrefixOperator Neg;
+	@ref public static final PrefixOperator PreIncr;
+	@ref public static final PrefixOperator PreDecr;
+	@ref public static final PrefixOperator BitNot;
+	@ref public static final PrefixOperator BooleanNot;
 
 	static {
 		Pos = newPrefixOperator(opNegPriority, KString.from("+"), KString.from("opPos"),Instr.op_nop,orderAndArityNames[FY],true);
@@ -889,8 +889,8 @@ public class PostfixOperator extends Operator {
 	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
 
 	// Unary postfix operators
-	public static final PostfixOperator PostIncr;
-	public static final PostfixOperator PostDecr;
+	@ref public static final PostfixOperator PostIncr;
+	@ref public static final PostfixOperator PostDecr;
 
 	static {
 		PostIncr = newPostfixOperator(opIncrPriority, KString.from("++"), KString.from("opPostIncr"),null,orderAndArityNames[XF],true);
@@ -929,7 +929,7 @@ public class PostfixOperator extends Operator {
 @node
 public class CastOperator extends Operator {
 
-	public Type		type;
+	@ref public Type		type;
 	public boolean  reinterp;
 
 	public CastOperator(Type tp, boolean r) {

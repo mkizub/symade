@@ -37,9 +37,9 @@ import static kiev.vlang.Instr.*;
 
 @node
 public class CallExpr extends Expr {
-	public Method	func;
+	@ref public Method	func;
 	public Expr[]	args;
-	public Type		type_of_static;
+	@ref public Type		type_of_static;
 	public boolean	super_flag = false;
 
 	public CallExpr(int pos, Method func, Expr[] args) {
@@ -244,8 +244,8 @@ public class CallExpr extends Expr {
 
 @node
 public class CallAccessExpr extends Expr {
-	public Expr		obj;
-	public Method	func;
+	@att public Expr		obj;
+	@ref public Method	func;
 	public Expr[]	args;
 	public boolean	super_flag = false;
 
@@ -545,16 +545,16 @@ public class CallAccessExpr extends Expr {
 
 @node
 public class ClosureCallExpr extends Expr {
-	public Expr		expr;
-	public ASTNode	func;	// Var or Field
-	public Expr[]	args;
-	public Expr		env_access;		// $env for rule closures
+	@att public Expr	expr;
+	@ref public ASTNode	func;	// Var or Field
+	public Expr[]		args;
+	@att public Expr	env_access;		// $env for rule closures
 	public boolean	is_a_call = false;
 
-	public Method	clone_it;
-	public Method	call_it;
+	@ref public Method	clone_it;
+	@ref public Method	call_it;
 	public Method[]	addArg;
-	public Type		func_tp;
+	@ref public Type	func_tp;
 
 	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
 		super(pos);

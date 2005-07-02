@@ -35,9 +35,9 @@ import kiev.vlang.*;
 
 @node
 public class ASTPizzaCase extends ASTNode {
-	public ASTNode		val;
-	public ASTNode[]	params = ASTNode.emptyArray;
-	public ASTNode[]	stats = ASTNode.emptyArray;
+	@att public ASTNode		val;
+	public ASTNode[]		params = ASTNode.emptyArray;
+	public ASTNode[]		stats = ASTNode.emptyArray;
 
 	public ASTPizzaCase(int id) {
 		super(0);

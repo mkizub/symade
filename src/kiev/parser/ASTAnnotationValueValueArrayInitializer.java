@@ -14,14 +14,15 @@ import kiev.vlang.*;
 @node
 public class ASTAnnotationValueValueArrayInitializer extends SimpleNode {
 	
-	public ASTNode[] values = ASTNode.emptyArray;
+	@att public final NArr<ASTNode> values;
 
 	public ASTAnnotationValueValueArrayInitializer(int id) {
 		super(0);
+		values = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		values = (ASTNode[])Arrays.append(values,n);
+		values.append(n);
 	}
 
 }

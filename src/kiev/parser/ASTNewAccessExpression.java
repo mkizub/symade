@@ -35,9 +35,9 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewAccessExpression extends Expr {
-	public Expr		obj;
-	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+	@att public Expr		obj;
+	@ref public ASTNode		type;
+    public Expr[]			args = Expr.emptyArray;
 
 	public ASTNewAccessExpression(int id) {
 		super(0);

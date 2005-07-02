@@ -37,13 +37,13 @@ import static kiev.stdlib.Debug.*;
  
 @node
 public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
-	public ASTModifiers		modifiers;
-	public ASTAccess		acc;
-    public KString			name;
-    public ASTNode[]		argument = ASTNode.emptyArray;
-    public ASTNode[]		members = ASTNode.emptyArray;
+	@att public ASTModifiers	modifiers;
+	@att public ASTAccess		acc;
+    public KString				name;
+    public ASTNode[]			argument = ASTNode.emptyArray;
+    public ASTNode[]			members = ASTNode.emptyArray;
 
-	public Struct			me;
+	@ref public Struct			me;
 
 	ASTStructDeclaration() { super(0); }
 
@@ -71,10 +71,10 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 
 @node
 public class ASTTypeDeclaration extends ASTStructDeclaration {
-    public int			kind;
-    public ASTNode		ext;
-    public ASTNode		impl;
-    public ASTNode		gens;
+    public int				kind;
+    @att public ASTNode		ext;
+    @att public ASTNode		impl;
+    @att public ASTNode		gens;
 
 	ASTTypeDeclaration(int id) {}
 
@@ -218,6 +218,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						Type tp = type;
 						for(int k=0; k < fdecl.dim; k++) tp = Type.newArrayType(tp);
 						Field f = new Field(me,fname,tp,flags);
+						f.setPos(fdecl.pos);
 						// Attach meta-data to the new structure
 						fields.modifiers.getMetas(f.meta);
 						if( pack == null )

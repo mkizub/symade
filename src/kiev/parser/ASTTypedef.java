@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 	public KString	name;
-	public ASTNode	type;
-	public Typedef td;
+	@ref public ASTNode	type;
+	@ref public Typedef td;
 	public boolean opdef = false;
 
 	ASTTypedef(int id) {

@@ -35,9 +35,9 @@ import kiev.vlang.*;
 
 @node
 public class ASTVarDecls extends ASTNode {
-	public ASTModifiers	modifiers;
-	public ASTNode		type;
-	public ASTNode[]	vars = ASTNode.emptyArray;
+	@att public ASTModifiers	modifiers;
+	@ref public ASTNode			type;
+	public ASTNode[]			vars = ASTNode.emptyArray;
 
 	public ASTVarDecls(int id) {
 		super(0);

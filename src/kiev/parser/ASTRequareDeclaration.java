@@ -39,7 +39,7 @@ import static kiev.vlang.WorkByContractCondition.*;
 @node
 public abstract class ASTCondDeclaration extends ASTNode implements PreScanneable {
 	public KString		name;
-    public Statement	body;
+    @att public Statement	body;
 	public virtual PrescannedBody pbody;
 
 	public ASTCondDeclaration(int id) {

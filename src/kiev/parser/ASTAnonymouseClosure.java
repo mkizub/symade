@@ -35,13 +35,19 @@ import kiev.stdlib.*;
 
 @node
 public class ASTAnonymouseClosure extends Expr {
-    public ASTNode[]	params = ASTNode.emptyArray;
-    public ASTNode		type;
-    public Statement	body;
-	public Expr			new_closure;
+    @att public final NArr<ASTNode>		params;
+    @ref public ASTNode						type;
+    @att public Statement					body;
+	@att public Expr						new_closure;
+
+	public ASTAnonymouseClosure() {
+		super(0);
+		params = new NArr<ASTNode>(this);
+	}
 
 	public ASTAnonymouseClosure(int id) {
 		super(0);
+		params = new NArr<ASTNode>(this);
 	}
 
   	public void set(Token t) {
@@ -50,7 +56,7 @@ public class ASTAnonymouseClosure extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
+			params.append((ASTFormalParameter)n);
 		}
 		else if( n instanceof ASTType ) {
 			type = n;
@@ -75,24 +81,26 @@ public class ASTAnonymouseClosure extends Expr {
 				ret = (Type)type;
 			if( ret != Type.tpRule ) {
 				ASTMethodDeclaration md = new ASTMethodDeclaration();
-				md.name = KString.from("fun$"+this.hashCode());
+				md.ident = new ASTIdentifier(pos, KString.from("fun$"+this.hashCode()));
 				if( PassInfo.method==null || PassInfo.method.isStatic())
 					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
 				else
 					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
-				md.params = params;
+				foreach (ASTFormalParameter fp; params)
+					md.params.add(fp);
 				md.type = ret;
 				md.body = body;
 				md.parent = PassInfo.clazz;
 				m = (Method)md.pass3();
 			} else {
-				ASTRuleDeclaration md = new ASTRuleDeclaration(0);
-				md.name = KString.from("rule_fun$"+this.hashCode());
+				ASTRuleDeclaration md = new ASTRuleDeclaration();
+				md.ident = new ASTIdentifier(pos, KString.from("rule_fun$"+this.hashCode()));
 				if( PassInfo.method==null || PassInfo.method.isStatic())
 					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
 				else
 					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
-				md.params = params;
+				foreach (ASTFormalParameter fp; params)
+					md.params.add(fp);
 				md.body = body;
 				md.parent = PassInfo.clazz;
 				m = (Method)md.pass3();
@@ -144,8 +152,8 @@ public class ASTAnonymouseClosure extends Expr {
 			if( ret != Type.tpRule ) {
 				ASTMethodDeclaration md = new ASTMethodDeclaration();
 				KString call_name;
-				if( ret.isReference() ) md.name = KString.from("call_Object");
-				else md.name = KString.from("call_"+ret);
+				if( ret.isReference() ) md.ident = new ASTIdentifier(pos, KString.from("call_Object"));
+				else md.ident = new ASTIdentifier(pos, KString.from("call_"+ret));
 				md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPUBLIC};
 				if( ret.isReference() )
 					md.type = Type.tpObject;
@@ -155,14 +163,14 @@ public class ASTAnonymouseClosure extends Expr {
 				md.parent = me;
 				members = new ASTNode[]{md};
 			} else {
-				ASTRuleDeclaration md = new ASTRuleDeclaration(0);
-				md.name = KString.from("call_rule");
+				ASTRuleDeclaration md = new ASTRuleDeclaration();
+				md.ident = new ASTIdentifier(pos, KString.from("call_rule"));
 				md.body = body;
 				md.parent = me;
 				members = new ASTNode[]{md};
 			}
 
-			ASTNode[] stats;
+			NArr<ASTNode> stats;
 			if( body instanceof ASTBlock )
 				stats = ((ASTBlock)body).stats;
 			else
@@ -192,13 +200,8 @@ public class ASTAnonymouseClosure extends Expr {
 				}
 				dc.init = val;
 				dc.init.parent = dc;
-				stats = (ASTNode[])Arrays.insert(stats,dc,i);
+				stats.insert(dc,i);
 			}
-
-			if( body instanceof ASTBlock )
-				((ASTBlock)body).stats = stats;
-			else
-				((BlockStat)body).stats = stats;
 
 			me = ASTTypeDeclaration.createMembers(me,members);
 			new_closure = new NewClosure(pos,me.type);

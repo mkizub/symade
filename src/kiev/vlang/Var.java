@@ -38,7 +38,7 @@ public class Var extends ASTNode implements Named, Typed {
 	public static Var[]	emptyArray = new Var[0];
 
 	public NodeName		name;
-	public Type			type;
+	@ref public Type	type;
 	private int			bcpos = -1;
 
 	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {

@@ -40,37 +40,33 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 
 @node
 public class ASTExpression extends Expr {
-	public List<ASTNode>		nodes = List.Nil;
+	@att public final NArr<ASTNode>		nodes;
 
 
 	public ASTExpression(int id) {
 		super(0);
-		setPos(0);
-	}
-
-	public ASTExpression(int pos, List<ASTNode> nodes) {
-		super(pos);
-		this.nodes = nodes;
-		pos = nodes.at(0).pos;
+		nodes = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		nodes = nodes.concat(n);
+		nodes.add(n);
 		if( i == 0 || pos == 0 ) setPos(n.getPos());
     }
 
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-	//		nodes = preresolve(nodes);
+			List<ASTNode> lst = List.Nil;
+			for (int i=nodes.length-1; i >=0; i--)
+				lst = new List.Cons<ASTNode>(nodes[i], lst);
 			List<ASTNode> results = List.Nil;
 			ASTNode@ result;
 			List<ASTNode>@ rest;
 			boolean may_be_resolved = false;
-			trace( Kiev.debugOperators, "Expression: "+nodes);
+			trace( Kiev.debugOperators, "Expression: "+lst);
 			NodeInfoPass.pushState();
 			try {
-				foreach( resolveExpr(result,rest,nodes,0) ) {
+				foreach( resolveExpr(result,rest,lst,0) ) {
 					trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
 					Expr res = null;
 					if( (res = ((Expr)result).tryResolve(reqType)) == null ) {

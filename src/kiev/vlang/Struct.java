@@ -42,35 +42,35 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public static Struct[]	emptyArray = new Struct[0];
 
 	/** Class' access */
-	public virtual Access	acc;
+	public virtual Access		acc;
 
 	/** Variouse names of the class */
-	public ClazzName		name;
+	public ClazzName			name;
 
 	/** Type associated with this class */
-	public Type				type;
+	@ref public Type			type;
 
 	/** SuperClass structure, (Type because we must inherit with real types
 		specified for parametriezed super-classes)
 	*/
-	public Type				super_clazz;
+	@ref public Type			super_clazz;
 
 	/** Package structure this structure belongs to */
-	@ref public Struct		package_clazz;
+	@ref public Struct			package_clazz;
 
 	/** Array of SuperInterface structure (interfaces)
 		(Type because we must inherit with real types
 		specified for parametriezed interfaces)
 	*/
-	public Type[]			interfaces = Type.emptyArray;
+	public Type[]				interfaces = Type.emptyArray;
 
 	/** Array of types that are generated for primitive
 		paremeter types of type arguments
 	*/
-	public Type[]			gens = null;
+	public Type[]				gens = null;
 
 	/** Reference of template class for generated one */
-	@ref public Struct		generated_from = null;
+	@ref public Struct			generated_from = null;
 
 	/** Array used for unresolved TypeInfo (accessed via
 	  $typeinfo.related[N]) used at resolving time */
@@ -79,38 +79,38 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
-	@ref public Struct		typeinfo_clazz;
+	@ref public Struct			typeinfo_clazz;
 
 	/** Array of substructures of the structure */
-	public Struct[]			sub_clazz = Struct.emptyArray;
+	public Struct[]				sub_clazz = Struct.emptyArray;
 
 	/** Array of fields defined in this structure */
-	public Field[]			fields = Field.emptyArray;
+	public Field[]				fields = Field.emptyArray;
 
 	/** Array of fields defined in this structure */
-	public Field[]			virtual_fields = Field.emptyArray;
+	public Field[]				virtual_fields = Field.emptyArray;
 
 	/** The field this structure is wrapper of */
-	public Field			wrapped_field = null;
+	@ref public Field			wrapped_field = null;
 
 	/** Array of methods defined in this structure */
-	public Method[]			methods = Method.emptyArray;
+	public Method[]				methods = Method.emptyArray;
 
 	/** Array of imported classes,fields and methods */
-	public NArr<ASTNode>	imported;
+	@ref public final NArr<ASTNode>		imported;
 
 	/** Array of declared members */
-	public ASTNode[]		members = ASTNode.emptyArray;
+	public ASTNode[]			members = ASTNode.emptyArray;
 
 	/** Array of attributes of this structure */
-	public Attr[]			attrs = Attr.emptyArray;
+	public Attr[]				attrs = Attr.emptyArray;
 	
 	/** Meta-information (annotations) of this structure */
-	public MetaSet			meta;
+	@att public MetaSet			meta;
 
-	virtual abstract int	anonymouse_inner_counter;
-	virtual abstract int	packer_field_counter;
-	virtual abstract int	packed_field_counter;
+	virtual abstract int		anonymouse_inner_counter;
+	virtual abstract int		packer_field_counter;
+	virtual abstract int		packed_field_counter;
 
 	protected Struct(ClazzName name) {
 		super(0,0);
@@ -862,16 +862,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			class_init.body = new BlockStat(pos,class_init);
 		}
 		if( PassInfo.method != null && PassInfo.method.name.equals(nameClassInit) ) {
-			((BlockStat)class_init.body).addstats = (Statement[])Arrays.insert(
-				((BlockStat)class_init.body).addstats,
+			((BlockStat)class_init.body).addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),f.init)
 				),0
 			);
 		} else {
-			((BlockStat)class_init.body).stats = (ASTNode[])Arrays.insert(
-				((BlockStat)class_init.body).stats,
+			((BlockStat)class_init.body).stats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),f.init)
@@ -938,7 +936,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						new VarAccessExpr(f.pos,value)
 					)
 				);
-				body.stats = new ASTNode[]{ass_st,new ReturnStat(f.pos,body,null)};
+				body.stats.append(ass_st);
+				body.stats.append(new ReturnStat(f.pos,body,null));
 				set_var.body = body;
 			}
 			this.addMethod(set_var);
@@ -959,8 +958,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			get_var.params = new Var[]{self};
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
-				Statement st = new ReturnStat(f.pos,body,new FieldAccessExpr(f.pos,f,true));
-				body.stats = new ASTNode[]{st};
+				body.stats.add(new ReturnStat(f.pos,body,new FieldAccessExpr(f.pos,f,true)));
 				get_var.body = body;
 			}
 			this.addMethod(get_var);
@@ -1232,7 +1230,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				init.setNeedFieldInits(true);
 				ASTCallExpression call_super = new ASTCallExpression(0);
 				call_super.pos = pos;
-				call_super.func = nameSuper;
+				call_super.func = new ASTIdentifier(pos, nameSuper);
 				Expr[] exprs = new Expr[super_clazz.args.length];
 				for (int arg=0; arg < super_clazz.args.length; arg++) {
 					Type t = super_clazz.args[arg];
@@ -1251,9 +1249,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						exprs[arg] = ce;
 					}
 				}
-				call_super.args = exprs;
-				ti_init_body.stats = (ASTNode[])Arrays.insert(ti_init_body.stats,
-						new ASTStatementExpression(call_super),0);
+				foreach (Expr e; exprs)
+					call_super.args.add(e);
+				ti_init_body.stats.insert(new ASTStatementExpression(call_super),0);
 			}
 
 			// create method to get typeinfo field
@@ -1788,7 +1786,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				if( m.isAbstract() ) continue;
 
 				boolean gen_def_constr = false;
-	            ASTNode[] stats;
+	            NArr<ASTNode> stats;
 	            if( initbody instanceof ASTBlock )
 					stats = ((ASTBlock)initbody).stats;
 				else
@@ -1800,14 +1798,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						ASTStatementExpression es = (ASTStatementExpression)stats[0];
 						ASTNode ce = es.expr;
 						if( es.expr instanceof ASTExpression )
-							ce = ((ASTExpression)es.expr).nodes.head();
+							ce = ((ASTExpression)es.expr).nodes[0];
 						else
 							ce = es.expr;
 						if( ce instanceof ASTCallExpression ) {
-							KString nm = ((ASTCallExpression)ce).func;
-							if( !(nm.equals(nameThis) || nm.equals(nameSuper) ) )
+							ASTIdentifier nm = ((ASTCallExpression)ce).func;
+							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
 								gen_def_constr = true;
-							else if( nm.equals(nameSuper) )
+							else if( nm.name.equals(nameSuper) )
 								m.setNeedFieldInits(true);
 						}
 						else
@@ -1848,11 +1846,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					m.setNeedFieldInits(true);
 					ASTCallExpression call_super = new ASTCallExpression(0);
 					call_super.pos = pos;
-					call_super.func = nameSuper;
+					call_super.func = new ASTIdentifier(pos, nameSuper);
 					if( super_clazz.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier(0);
 						max_args.name = nameClosureMaxArgs;
-						call_super.args = new Expr[]{max_args};
+						call_super.args.add(max_args);
 					}
 					else if( package_clazz.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
@@ -1860,29 +1858,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						if( this.type.args.length > 0 && super_clazz.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
-								call_super.args = (Expr[])Arrays.append(
-									call_super.args,
-									new VarAccessExpr(m.pos,call_super,m.params[i])
-									);
+								call_super.args.append(	new VarAccessExpr(m.pos,call_super,m.params[i]));
 							}
 						}
 					}
 					else if( isEnum() ) {
-						ASTIdentifier name = new ASTIdentifier(0);
-						ASTIdentifier index = new ASTIdentifier(0);
-						ASTIdentifier text = new ASTIdentifier(0);
-						name.name = KString.from("name");
-						index.name = nameEnumOrdinal;
-						text.name = KString.from("text");
-						call_super.args = new Expr[]{name,index,text};
+						call_super.args.add(new ASTIdentifier(pos, KString.from("name")));
+						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
+						call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
-					stats = (ASTNode[])Arrays.insert(stats,
-						new ASTStatementExpression(call_super),0);
+					stats.insert(new ASTStatementExpression(call_super),0);
 				}
 				int p = 1;
 //				MethodParamsAttr pa = (MethodParamsAttr)methods[i].getAttr(attrMethodParams);
 				if( package_clazz.isClazz() && !isStatic() ) {
-					stats = (ASTNode[])Arrays.insert(stats,
+					stats.insert(
 						new ExprStat(pos,null,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new FieldAccessExpr(pos,OuterThisAccessExpr.outerOf(this)),
@@ -1899,7 +1889,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						Field f = resolveField(methods[i].params[j].name.name);
 						if( f == null )
 							throw new RuntimeException("Can't find field "+methods[i].params[j].name.name);
-						stats = (ASTNode[])Arrays.insert(stats,
+						stats.insert(
 							new ExprStat(pos,null,
 								new AssignExpr(pos,AssignOperator.Assign,
 									new FieldAccessExpr(pos,f),
@@ -1920,7 +1910,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						break;
 					}
 					assert(v != null);
-					stats = (ASTNode[])Arrays.insert(stats,
+					stats.insert(
 						new ExprStat(pos,null,
 							new AssignExpr(m.pos,AssignOperator.Assign,
 								new FieldAccessExpr(m.pos,tif),
@@ -1929,12 +1919,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						p++);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					stats = (ASTNode[])Arrays.insert(stats,instance_init,p++);
+					stats.insert(instance_init,p++);
 				}
-	            if( initbody instanceof ASTBlock )
-					((ASTBlock)initbody).stats = stats;
-				else
-					((BlockStat)initbody).stats = stats;
 			}
 		}
 	}
@@ -2613,7 +2599,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							m.params = (Var[])Arrays.append(m.params,
 								new Var(m.pos,m,nm,proxy_fields[j].type,0)
 							);
-							((BlockStat)m.body).stats = (ASTNode[])Arrays.insert(((BlockStat)m.body).stats,
+							((BlockStat)m.body).stats.insert(
 								new ExprStat(m.pos,m.body,
 									new AssignExpr(m.pos,AssignOperator.Assign,
 										new FieldAccessExpr(m.pos,proxy_fields[j]),

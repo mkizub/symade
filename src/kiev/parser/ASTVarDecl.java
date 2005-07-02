@@ -35,10 +35,10 @@ import kiev.vlang.*;
 
 @node
 public class ASTVarDecl extends ASTNode {
-	public int		dim;
-    public KString	name;
-    public Expr		init;
-    public boolean	of_wrapper;
+	public int			dim;
+    public KString		name;
+    @att public Expr	init;
+    public boolean		of_wrapper;
 
 	ASTVarDecl(int id) {
 		super(0);

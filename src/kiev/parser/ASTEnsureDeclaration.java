@@ -48,3 +48,4 @@ public class ASTEnsureDeclaration extends ASTCondDeclaration {
     	return cond;
     }
 }
+

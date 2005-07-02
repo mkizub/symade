@@ -44,9 +44,9 @@ public class Import extends ASTNode implements Constants, Scope {
 	public static final int	IMPORT_PACKAGE = 2;
 	public static final int	IMPORT_SYNTAX  = 3;
 
-	public int			mode = IMPORT_CLASS;
-    public boolean		star = false;
-    public ASTNode		node;
+	public int				mode = IMPORT_CLASS;
+    public boolean			star = false;
+    @ref public ASTNode		node;
 
 	public Import(int pos, ASTNode parent, ASTNode node, int mode, boolean star) {
 		super(pos, parent);

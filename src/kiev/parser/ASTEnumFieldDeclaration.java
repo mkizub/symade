@@ -36,10 +36,10 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTEnumFieldDeclaration extends ASTNode {
 
-	public ASTModifiers modifiers;
-	public ASTIdentifier name;
-	public ASTConstExpression val;
-	public ASTConstExpression text;
+	@att public ASTModifiers modifiers;
+	@att public ASTIdentifier name;
+	@att public ASTConstExpression val;
+	@att public ASTConstExpression text;
 	
 	public ASTEnumFieldDeclaration(int id) {
 		super(0);

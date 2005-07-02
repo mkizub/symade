@@ -35,9 +35,9 @@ import kiev.stdlib.*;
 
 @node
 public class ASTWhileStatement extends Statement {
-    public boolean		not;
-	public Expr			cond;
-    public Statement	body;
+    public boolean			not;
+	@att public Expr		cond;
+    @att public Statement	body;
 
 	public ASTWhileStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
@@ -55,8 +55,10 @@ public class ASTWhileStatement extends Statement {
 		if (not) {
 			ASTOperator op = new ASTOperator(0);
 			op.image = KString.from("!");
-			List<ASTNode> expr_list = new ListBuffer<ASTNode>().append(op).append(cond).toList();
-			cond = new ASTExpression(cond.pos,expr_list);
+			ASTExpression e = new ASTExpression(cond.pos);
+			e.nodes.append(op);
+			e.nodes.append(cond);
+			cond = e;
 			not = false;
 		}
 		if( !(cond instanceof BooleanExpr) )

@@ -38,8 +38,8 @@ public class ASTType extends ASTNode {
 
 	public static ASTType[]	emptyArray = new ASTType[0];
 
-	public int		dim;
-    public ASTNode	type;
+	public int			dim;
+    @ref public ASTNode	type;
 	
 	ASTType(int id) {
 		super(0);

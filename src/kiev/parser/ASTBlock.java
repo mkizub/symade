@@ -35,15 +35,21 @@ import kiev.vlang.*;
 
 @node
 public class ASTBlock extends Statement {
-	public ASTNode[] stats = ASTNode.emptyArray;
+	@att public final NArr<ASTNode> stats;
+
+	public ASTBlock() {
+		super(0,null);
+		stats = new NArr<ASTNode>(this);
+	}
 
 	public ASTBlock(int id) {
 		super(0,null);
+		stats = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)
 	{
-		stats = (ASTNode[])Arrays.append(stats,n);
+		stats.append(n);
 	}
 
 	public ASTNode resolve(Type reqType) {

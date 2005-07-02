@@ -35,8 +35,8 @@ import kiev.stdlib.*;
 
 @node
 public class ASTCastExpression extends Expr {
-	public ASTNode	type;
-    public Expr		expr;
+	@ref public ASTNode	type;
+    @att public Expr	expr;
 
 	public ASTCastExpression(int id) {
 		super(0);

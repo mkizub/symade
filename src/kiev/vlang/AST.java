@@ -74,9 +74,9 @@ public abstract class ASTNode implements Constants {
 
 	private static int		parserAddrIdx;
 
-	public int			pos;
-    public ASTNode		parent;
-	public int			flags;
+	public int				pos;
+    @ref public ASTNode		parent;
+	public int				flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
 	public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
@@ -879,8 +879,8 @@ public abstract class Expr extends ASTNode {
 @node
 public class WrapedExpr extends Expr {
 
-	public ASTNode	expr;
-	public Type		base_type;
+	@att public ASTNode		expr;
+	@ref public Type		base_type;
 	public WrapedExpr(int pos, ASTNode expr) {
 		super(pos);
 		this.expr = expr;

@@ -69,7 +69,7 @@ public final class ExportJavaTop implements Constants {
 		Kiev.curFile = astn.filename;
 		boolean[] exts = Kiev.getExtSet();
 		try {
-        		Kiev.setExtSet(astn.disabled_extensions);
+        	Kiev.setExtSet(astn.disabled_extensions);
 			if( astn.pkg != null ) {
 				astn.pkg = (Struct) pass1((ASTPackage)astn.pkg, null);
 			} else {
@@ -124,9 +124,9 @@ public final class ExportJavaTop implements Constants {
 					ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
 					Type[] outer_args = astnp.me.type.args;
 		            if( outer_args == null || outer_args.length <= i
-					|| !outer_args[i].clazz.name.short_name.equals(arg.name) )
+					|| !outer_args[i].clazz.name.short_name.equals(arg.ident.name) )
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class argument,"
-							+" but arg["+i+"] is "+arg.name
+							+" but arg["+i+"] is "+arg.ident
 							+" and have to be "+outer_args[i].clazz.name.short_name);
 				}
 				/* Create type for class's arguments, if any */
@@ -136,7 +136,7 @@ public final class ExportJavaTop implements Constants {
 			} else {
 				for(int i=0; i < astn.argument.length; i++) {
 					Struct arg =
-						Env.newArgument(((ASTArgumentDeclaration)astn.argument[i]).name,me);
+						Env.newArgument(((ASTArgumentDeclaration)astn.argument[i]).ident.name,me);
 					arg.type = Type.newRefType(arg);
 					targs = (Type[])Arrays.append(targs,arg.type);
 				}
@@ -598,8 +598,9 @@ public final class ExportJavaTop implements Constants {
 							gtypes[l][m] = ((ASTPrimitiveType)ag.children[k]).type;
 						} else { // ASTIdentifier
 							KString a = ((ASTIdentifier)ag.children[k]).name;
-							if( a != ((ASTArgumentDeclaration)astn.argument[m]).name ) {
-								Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+((ASTArgumentDeclaration)astn.argument[m]).name);
+							ASTArgumentDeclaration ad = (ASTArgumentDeclaration)astn.argument[m]; 
+							if( a != ad.ident.name ) {
+								Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+ad.ident);
 							}
 							gtypes[l][m] = me.type.args[m];
 						}

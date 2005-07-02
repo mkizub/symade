@@ -36,7 +36,7 @@ import static kiev.vlang.Instr.*;
 
 @node
 public class BooleanWrapperExpr extends BooleanExpr {
-	public Expr		expr;
+	@att public Expr		expr;
 
 	public BooleanWrapperExpr(int pos, Expr expr) {
 		super(pos);
@@ -214,8 +214,8 @@ public class ConstBooleanExpr extends BooleanExpr {
 
 @node
 public class BinaryBooleanOrExpr extends BooleanExpr {
-	public BooleanExpr			expr1;
-	public BooleanExpr			expr2;
+	@att public BooleanExpr			expr1;
+	@att public BooleanExpr			expr2;
 
 	public BinaryBooleanOrExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
@@ -314,8 +314,8 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 
 @node
 public class BinaryBooleanAndExpr extends BooleanExpr {
-	public BooleanExpr			expr1;
-	public BooleanExpr			expr2;
+	@att public BooleanExpr			expr1;
+	@att public BooleanExpr			expr2;
 
 	public BinaryBooleanAndExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
@@ -407,9 +407,9 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 
 @node
 public class BinaryBooleanExpr extends BooleanExpr {
-	public BinaryOperator		op;
-	public Expr					expr1;
-	public Expr					expr2;
+	@ref public BinaryOperator		op;
+	@att public Expr				expr1;
+	@att public Expr				expr2;
 
 	public BinaryBooleanExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
 		super(pos);
@@ -712,8 +712,8 @@ public class BinaryBooleanExpr extends BooleanExpr {
 
 @node
 public class InstanceofExpr extends BooleanExpr {
-	public Expr		expr;
-	public Type		type;
+	@att public Expr		expr;
+	@ref public Type		type;
 
 	public InstanceofExpr(int pos, Expr expr, Type type) {
 		super(pos);
@@ -819,7 +819,7 @@ public class InstanceofExpr extends BooleanExpr {
 
 @node
 public class BooleanNotExpr extends BooleanExpr {
-	public BooleanExpr				expr;
+	@att public BooleanExpr				expr;
 
 	public BooleanNotExpr(int pos, BooleanExpr expr) {
 		super(pos);

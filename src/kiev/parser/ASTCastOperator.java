@@ -36,7 +36,7 @@ import kiev.stdlib.*;
 @node
 public class ASTCastOperator extends ASTNode {
 
-	public ASTNode	type;
+	@ref public ASTNode	type;
 	public boolean  reinterp;
 
 	public ASTCastOperator(int id) {

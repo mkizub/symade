@@ -38,7 +38,7 @@ public @interface ref {}
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 @node
 public class Tree extends ASTNode {
-	public NArr<Struct>			members;
+	@att public final NArr<Struct>	members;
 	
 	public Tree() {
 		super(0);
@@ -55,11 +55,6 @@ public final class NArr<N extends ASTNode> {
 		this.$nodes = new N[0];
 	}
 	
-	public NArr(int size, ASTNode parent) {
-		this.$parent = parent;
-		this.$nodes = new N[size];
-	}
-
 	public int size()
 		alias length
 		alias get$size
@@ -86,6 +81,8 @@ public final class NArr<N extends ASTNode> {
 	public N set(int idx, N node)
 		alias operator(210,lfy,[])
 	{
+		if (node == null)
+			throw new NullPointerException();
 		$nodes[idx] = node;
 		return node;
 	}
@@ -93,6 +90,8 @@ public final class NArr<N extends ASTNode> {
 	public N add(N node)
 		alias append
 	{
+		if (node == null)
+			throw new NullPointerException();
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -103,16 +102,23 @@ public final class NArr<N extends ASTNode> {
 		return node;
 	}
 
+	public N insert(N node, int idx)
+	{
+		return insert(idx, node);
+	}
+	
 	public N insert(int idx, N node)
 	{
+		if (node == null)
+			throw new NullPointerException();
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
-		for (i++; i < sz; i++)
-			tmp[i+1] = $nodes[i];
 		tmp[idx] = node;
+		for (; i < sz; i++)
+			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
 		return node;
 	}
@@ -135,12 +141,20 @@ public final class NArr<N extends ASTNode> {
 		this.$nodes = new N[0];
 	};
 	
-	public boolean contains(N node) {
+	public boolean contains(ASTNode node) {
 		for (int i=0; i < $nodes.length; i++) {
 			if ($nodes[i].equals(node))
 				return true;
 		}
 		return false;
+	}
+	
+	public N[] toArray() {
+		int sz = $nodes.length;
+		N[] arr = new N[sz];
+		for (int i=0; i < sz; i++)
+			arr[i] = $nodes[i];
+		return arr;
 	}
 
 	public Enumeration<N> elements() {

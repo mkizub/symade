@@ -84,7 +84,7 @@ public class Env extends Struct {
 	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
 
 	/** Root of package hierarchy */
-	public static Env			root = new Env();
+	@ref public static Env			root = new Env();
 
 	/** StandardClassLoader */
 	public static kiev.bytecode.StandardClassLoader		stdClassLoader;

@@ -35,25 +35,21 @@ import kiev.stdlib.*;
 
 @node
 public class ASTCommaExpression extends Expr {
-	public Expr[]	exprs = Expr.emptyArray;
+	@att public final NArr<Expr>	exprs;
 
 	public ASTCommaExpression(int id) {
 		super(0);
+		exprs = new NArr<Expr>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)
 	{
     	if( i==0 ) pos = n.getPos();
-		if (i >= exprs.length) {
-			Expr c[] = new Expr[i + 1];
-			System.arraycopy(exprs, 0, c, 0, exprs.length);
-			exprs = c;
-		}
-		exprs[i] = (Expr)n;
+		exprs.add((Expr)n);
 	}
     
 	public ASTNode resolve(Type reqType) {
-		return new CommaExpr(pos,exprs).resolve(reqType);
+		return new CommaExpr(pos,exprs.toArray()).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

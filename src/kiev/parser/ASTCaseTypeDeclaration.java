@@ -35,11 +35,13 @@ import kiev.vlang.*;
 
 @node
 public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreScanneable {
-	public ASTNode[]	casefields = ASTNode.emptyArray;
-	public Statement	body;
+	@att public final NArr<ASTNode>		casefields;
+	@att public Statement				body;
 	public virtual PrescannedBody pbody;
 
-	public ASTCaseTypeDeclaration(int id) {}
+	public ASTCaseTypeDeclaration(int id) {
+		casefields = new NArr<ASTNode>(this);
+	}
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
@@ -59,7 +61,7 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 			argument = (ASTNode[])Arrays.append(argument,n);
 		}
         else if( n instanceof ASTFormalParameter ) {
-			casefields = (ASTNode[])Arrays.append(casefields,n);
+			casefields.append(n);
 		}
         else if( n instanceof Statement ) {
 			body = (Statement)n;

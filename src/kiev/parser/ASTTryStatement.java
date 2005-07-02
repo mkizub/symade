@@ -35,9 +35,9 @@ import kiev.stdlib.*;
 
 @node
 public class ASTTryStatement extends Statement {
-	public Statement	body;
+	@att public Statement	body;
     public ASTNode[]	catchers = ASTNode.emptyArray;
-    public ASTNode		finally_catcher;
+    @att public ASTNode		finally_catcher;
     
 	public ASTTryStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);

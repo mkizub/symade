@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTRuleBlock extends ASTBlock {
 
-	ASTRuleNode	expr;
+	@att ASTRuleNode	expr;
 
 	public ASTRuleBlock(int id) {
 		super(0);

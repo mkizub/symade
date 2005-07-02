@@ -38,20 +38,27 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
-	public ASTModifiers	modifiers;
-    public KString		name;
-    public ASTNode[]	params = ASTNode.emptyArray;
+	@att public ASTModifiers			modifiers;
+    @att public ASTIdentifier			ident;
+    @att public final NArr<ASTNode>	params;
     public ASTAlias[]	aliases = ASTAlias.emptyArray;
     public ASTNode[]	localvars = ASTNode.emptyArray;
-    public Statement	body;
+    @att public Statement	body;
 	public virtual PrescannedBody pbody;
 	public ASTRequareDeclaration[]	req;
 	public ASTEnsureDeclaration[]	ens;
 
-	public RuleMethod	me;
+	@ref public RuleMethod	me;
+
+	public ASTRuleDeclaration() {
+		super(0);
+		modifiers = new ASTModifiers();
+		params = new NArr<ASTFormalParameter>(this);
+	}
 
 	public ASTRuleDeclaration(int id) {
 		super(0);
+		params = new NArr<ASTFormalParameter>(this);
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -62,11 +69,11 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			modifiers = (ASTModifiers)n;
 		}
 		else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
+			ident = (ASTIdentifier)n;
 			pos = n.getPos();
 		}
 		else if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
+			params.append(n);
 		}
 		else if( n instanceof ASTVarDecls ) {
 			localvars = (ASTNode[])Arrays.append(localvars,n);
@@ -159,7 +166,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 //			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 //		}
 		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
-		me = new RuleMethod(clazz,name,mtype,flags | ACC_MULTIMETHOD);
+		me = new RuleMethod(clazz,ident.name,mtype,flags | ACC_MULTIMETHOD);
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());
         me.body = body;

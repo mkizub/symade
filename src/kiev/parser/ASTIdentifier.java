@@ -51,8 +51,8 @@ public class ASTIdentifier extends Expr {
 	}
 
 	public void set(Token t) {
-		this.name = new KToken(t).image;
-		pos = t.getPos();
+		this.name = KString.from(t.image);
+        pos = t.getPos();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -90,11 +90,10 @@ public class ASTIdentifier extends Expr {
 					if( Kiev.kaffe ) {
 						return new NewClosure(pos,(Method)v).resolve(reqType);
 					} else {
-						ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
+						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 						ac.pos = pos;
 						ac.parent = parent;
 						ac.type = ((MethodType)reqType).ret;
-						ac.params = new ASTNode[args.length];
 						for(int i=0; i < ac.params.length; i++)
 							ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
 						BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
@@ -102,9 +101,10 @@ public class ASTIdentifier extends Expr {
 						for(int i=0; i < cargs.length; i++)
 							cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
 						args = cargs;
-						ASTCallExpression ace = new ASTCallExpression(0);
-						ace.func = name;
-						ace.args = cargs;
+						ASTCallExpression ace = new ASTCallExpression();
+						ace.func = new ASTIdentifier(pos,name);
+						foreach (Expr e; cargs)
+							ace.args.add(e);
 						if( ac.type == Type.tpVoid ) {
 							bs.addStatement(new ExprStat(pos,bs,ace));
 							bs.addStatement(new ReturnStat(pos,bs,null));
@@ -195,3 +195,4 @@ public class ASTIdentifier extends Expr {
 		return dmp.space().append(name).space();
 	}
 }
+

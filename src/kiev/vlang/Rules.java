@@ -134,7 +134,7 @@ public class RuleMethod extends Method {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
-					((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
+					((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
 					body.setAbrupted(true);
 				} else {
 					Kiev.reportError(pos,"Return requared");
@@ -327,22 +327,27 @@ public abstract class ASTRuleNode extends ASTNode {
 @node
 public final class RuleBlock extends ASTNode implements Scope {
 
-	public ASTRuleNode	node;
-	public ASTNode[]	stats;
+	@att public ASTRuleNode	node;
+	@att public final NArr<ASTNode>		stats;
 	public StringBuffer	fields_buf;
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
-		stats = ASTNode.emptyArray;
+		stats = new NArr<ASTNode>(this);
+	}
+
+	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ASTNode> stats) {
+		this(pos,parent,n);
+		foreach (ASTNode st; stats)
+			this.stats.add(st);
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, ASTNode[] stats) {
-		super(pos,parent);
-		node = n;
-		node.parent = this;
-		this.stats = stats;
+		this(pos,parent,n);
+		foreach (ASTNode st; stats)
+			this.stats.add(st);
 	}
 
 	public void cleanup() {
@@ -409,13 +414,13 @@ public final class RuleBlock extends ASTNode implements Scope {
 				sb.append("}\nreturn null;\n");
 			sb.append("}\n");
 			trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-			PassInfo.method.body = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
+			ASTBlock mbody = (ASTBlock)Kiev.parseBlock(sb,getPosLine(),getPosColumn());
+			PassInfo.method.body = mbody;
 			if( stats != null && stats.length > 0 ) {
-				ASTNode[] bstats = new ASTNode[stats.length+((ASTBlock)PassInfo.method.body).stats.length];
-				int i=0;
-				for(; i < stats.length; i++) { bstats[i] = stats[i]; bstats[i].parent = PassInfo.method.body; }
-				for(int j=0; i < bstats.length; i++, j++) bstats[i] = ((ASTBlock)PassInfo.method.body).stats[j];
-				((ASTBlock)PassInfo.method.body).stats = bstats;
+				for(int i=0; i < stats.length; i++) {
+					mbody.stats.insert(stats[i], i);
+					stats[i].parent = mbody;
+				}
 			}
 			//PassInfo.clazz.makeDispatch(PassInfo.method);
 			return PassInfo.method.body;
@@ -599,8 +604,8 @@ public final class RuleAndExpr extends ASTRuleNode {
 @node
 public final class RuleIstheExpr extends ASTRuleNode {
 
-	public Var		var;		// variable of type PVar<...>
-	public Expr		expr;		// expression to check/unify
+	@att public Var		var;		// variable of type PVar<...>
+	@att public Expr	expr;		// expression to check/unify
 
 	public RuleIstheExpr(int pos, Var var, Expr expr) {
 		super(pos);
@@ -1046,11 +1051,11 @@ public final class RuleForExpr extends ASTRuleNode {
 @node
 public final class RuleCallExpr extends ASTRuleNode {
 
-	public Expr		obj;
-	public Named	func;
-	public Expr[]	args;
-	public boolean	super_flag = false;
-	public int		env_var;
+	@att public Expr	obj;
+	public Named		func;
+	public Expr[]		args;
+	public boolean		super_flag = false;
+	public int			env_var;
 
 	public RuleCallExpr(CallExpr expr) {
 		super(expr.pos);
@@ -1148,7 +1153,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 @node
 public abstract class RuleExprBase extends ASTRuleNode {
-	public Expr		expr;
+	@att public Expr		expr;
 
 	public RuleExprBase(Expr expr) {
 		super(expr.pos);
@@ -1228,7 +1233,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 @node
 public final class RuleExpr extends RuleExprBase {
 
-	public Expr		bt_expr;
+	@att public Expr		bt_expr;
 
 	public RuleExpr(Expr expr) {
 		super(expr);

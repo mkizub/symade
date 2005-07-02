@@ -38,9 +38,12 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	
-	ASTEnumFieldDeclaration[] enum_fields = new ASTEnumFieldDeclaration[0];
+	@att public final NArr<ASTEnumFieldDeclaration> enum_fields;
 	
-	public ASTEnumDeclaration(int id) { super(0); }
+	public ASTEnumDeclaration(int id) {
+		super(0);
+		enum_fields = new NArr<ASTEnumFieldDeclaration>(this);
+	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
@@ -54,21 +57,20 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			ext = n;
 		}
         else if( n instanceof ASTEnumFieldDeclaration ) {
-			enum_fields = (ASTEnumFieldDeclaration[])Arrays.append(enum_fields,n);
+			enum_fields.append((ASTEnumFieldDeclaration)n);
 		}
         else {
 			members = (ASTNode[])Arrays.append(members,n);
         }
     }
 
-	public static Struct createMembers(Struct me, ASTEnumFieldDeclaration[] enum_fields, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTEnumFieldDeclaration> enum_fields, ASTNode[] members) {
 		trace(Kiev.debugResolve,"Pass 3 for enum "+me);
         PassInfo.push(me);
         try {
 			// Process members
 			int next_val = 0;
-			for(int i=0; i < enum_fields.length; i++, next_val++) {
-				ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)enum_fields[i];
+			foreach (ASTEnumFieldDeclaration efd; enum_fields) {
 				efd.parent = me;
 				Type me_type = me.type;
 				Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
@@ -100,6 +102,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 									new ConstExpr(efd.text.pos, efd.text.val)
 						});
 				}
+				next_val++;
 				if (efd.text != null)
 					f.name.addAlias(KString.from("\""+efd.text.val+"\""));
 				f.init.parent = f;

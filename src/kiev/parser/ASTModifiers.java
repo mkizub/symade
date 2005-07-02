@@ -14,8 +14,8 @@ import kiev.vlang.*;
 @node
 public class ASTModifiers extends ASTNode {
 	public ASTModifier[]	modifier = ASTModifier.emptyArray;
-	public ASTAccess 		acc;
-	public ASTPack   		pack;
+	@att public ASTAccess 		acc;
+	@att public ASTPack   		pack;
 	public ASTAnnotation[]	annotations = ASTAnnotation.emptyArray;
 	
 	public ASTModifiers() {

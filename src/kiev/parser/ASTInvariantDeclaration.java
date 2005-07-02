@@ -38,8 +38,8 @@ import static kiev.vlang.WorkByContractCondition.*;
 
 @node
 public class ASTInvariantDeclaration extends ASTCondDeclaration {
-	public ASTModifiers	modifiers;
-	public KString		name;
+	@att public ASTModifiers	modifiers;
+	public KString				name;
 
 	public ASTInvariantDeclaration(int id) {
 		super(0);

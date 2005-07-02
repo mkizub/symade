@@ -16,8 +16,8 @@ public class ASTAnnotationValue extends SimpleNode {
 
 	public static ASTAnnotationValue[] emptyArray = new ASTAnnotationValue[0];
 
-	public ASTIdentifier name;
-	public ASTNode       value;
+	@att public ASTIdentifier ident;
+	@att public ASTNode       value;
 	
 	public ASTAnnotationValue(int id) {
 		super(0);
@@ -25,8 +25,8 @@ public class ASTAnnotationValue extends SimpleNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTIdentifier) {
-			name = (ASTIdentifier)n;
-			this.pos = name.pos;
+			ident = (ASTIdentifier)n;
+			this.pos = ident.pos;
 		}
 		else if (n instanceof ASTAnnotation) {
 			value = n;

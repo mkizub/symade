@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTTypeClassExpression extends Expr {
 	
-	public ASTNode		type;
+	@ref public ASTNode		type;
 	
 	public ASTTypeClassExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());

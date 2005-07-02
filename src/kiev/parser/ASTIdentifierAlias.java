@@ -47,7 +47,7 @@ public abstract class ASTAlias extends ASTNode {
 @node
 public class ASTIdentifierAlias extends ASTAlias {
 
-	ASTIdentifier	name;
+	@att ASTIdentifier	name;
 
 	public ASTIdentifierAlias(int id) {
 		super(id);

@@ -37,12 +37,12 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public KString	filename;
-	public FileUnit	file_unit;
+	@ref public FileUnit	file_unit;
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
-    public ASTNode			pkg;
-    public ASTNode[]		syntax = ASTNode.emptyArray;
-    public ASTNode[]		decls  = new ASTNode[0];
+    @ref public ASTNode					pkg;
+    @att public final NArr<ASTNode>	syntax;
+    @att public final NArr<ASTNode>	decls;
 	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
 	
 	public boolean[]		disabled_extensions;
@@ -50,6 +50,8 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	ASTFileUnit(int id) {
 		super(0);
 		disabled_extensions = Kiev.getCmdLineExtSet();
+		syntax = new NArr<ASTNode>(this);
+		decls = new NArr<ASTNode>(this);
 	}
 
 	public void setFileName(String fn) {
@@ -66,7 +68,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			pkg = n;
 		}
 		else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
-			syntax = (ASTNode[])Arrays.append(syntax,n);
+			syntax.append(n);
 			// Check disabled extensions very early
 			if (n instanceof ASTPragma) {
 				foreach (ASTConstExpression e; ((ASTPragma)n).options)
@@ -74,7 +76,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			}
 		}
 		else {
-			decls = (ASTNode[])Arrays.append(decls,n);
+			decls.append(n);
 		}
     }
 
@@ -91,114 +93,6 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			Kiev.reportError(pos,"Extension '"+s+"' was disabled from command line");
 		disabled_extensions[i] = !enabled;
 	}
-
-//	public ASTNode pass1(ASTNode pn) {
-//		KString oldfn = Kiev.curFile;
-//		Kiev.curFile = filename;
-//		boolean[] exts = Kiev.getExtSet();
-//		try {
-//			Kiev.setExtSet(disabled_extensions);
-//			if( pkg != null ) {
-//				pkg = (Struct)((ASTPackage)pkg).pass1(null);
-//			} else {
-//				pkg = Env.root;
-//			}
-//			file_unit = new FileUnit(filename,(Struct)pkg);
-//			file_unit.disabled_extensions = disabled_extensions;
-//			file_unit.bodies = bodies;
-//			PassInfo.push(pkg);
-//			try {
-//				for(int i=0; i < decls.length; i++) {
-//					try {
-//						file_unit.members.add((Struct)decls[i].pass1(file_unit));
-//					} catch(Exception e ) {
-//						Kiev.reportError/*Warning*/(((ASTNode)decls[i]).getPos(),e);
-//					}
-//				}
-//			} finally { PassInfo.pop(pkg); }
-//			return file_unit;
-//		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
-//	}
-
-//	public ASTNode pass1_1(ASTNode pn) {
-//		KString oldfn = Kiev.curFile;
-//		Kiev.curFile = filename;
-//		PassInfo.push(file_unit);
-//		boolean[] exts = Kiev.getExtSet();
-//		try {
-//        	Kiev.setExtSet(disabled_extensions);
-//        	if (syntax.length > 0) file_unit.syntax = new ASTNode[syntax.length];
-//
-//			// Process file imports...
-//			boolean java_lang_found = false;
-//			KString java_lang_name = KString.from("java.lang");
-//			boolean kiev_stdlib_found = false;
-//			KString kiev_stdlib_name = KString.from("kiev.stdlib");
-//
-//			for(int i=0; i < syntax.length; i++) {
-//				try {
-//					ASTNode n = (ASTNode)syntax[i];
-//					if (n instanceof ASTImport && ((ASTImport)n).mode == ASTImport.IMPORT_STATIC && !((ASTImport)n).star) {
-//						continue; // process later
-//					}
-//					n = ((TopLevelDecl)syntax[i]).pass1_1(file_unit);
-//					file_unit.syntax[i] = n;
-//					if (n instanceof Import) {
-//						if( n.mode == Import.IMPORT_CLASS && ((Struct)n.node).name.name.equals(java_lang_name))
-//							java_lang_found = true;
-//						else if( n.mode == Import.IMPORT_CLASS && ((Struct)n.node).name.name.equals(kiev_stdlib_name))
-//							kiev_stdlib_found = true;
-//					}
-//					trace(Kiev.debugResolve,"Add "+n);
-//				} catch(Exception e ) {
-//					Kiev.reportError/*Warning*/(syntax[i].getPos(),e);
-//				}
-//			}
-//			// Add standard imports, if they were not defined
-//			if( !Kiev.javaMode && !kiev_stdlib_found )
-//				file_unit.syntax = (ASTNode[])Arrays.append(file_unit.syntax,new Import(0,file_unit,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
-//			if( !java_lang_found )
-//				file_unit.syntax = (ASTNode[])Arrays.append(file_unit.syntax,new Import(0,file_unit,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
-//
-//			// Process members - pass1_1()
-//			for(int j=0; j < decls.length; j++) {
-//				decls[j].pass1_1(file_unit);
-//			}
-//		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
-//		return file_unit;
-//	}
-
-//	public ASTNode pass2(ASTNode pn) {
-//		KString oldfn = Kiev.curFile;
-//		Kiev.curFile = filename;
-//		PassInfo.push(file_unit);
-//		boolean[] exts = Kiev.getExtSet();
-//		try {
-//			Kiev.setExtSet(disabled_extensions);
-//			// Process members - pass2()
-//			for(int j=0; j < decls.length; j++) {
-//				file_unit.members[j] = (Struct)decls[j].pass2(file_unit);
-//				file_unit.members[j].parent = file_unit;
-//			}
-//		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
-//		return file_unit;
-//	}
-
-//	public ASTNode pass2_2(ASTNode pn) {
-//		KString oldfn = Kiev.curFile;
-//		Kiev.curFile = filename;
-//		PassInfo.push(file_unit);
-//		boolean[] exts = Kiev.getExtSet();
-//		try {
-//			Kiev.setExtSet(disabled_extensions);
-//			// Process members - pass2_2()
-//			for(int j=0; j < decls.length; j++) {
-//				file_unit.members[j] = (Struct)decls[j].pass2_2(file_unit);
-//			}
-//		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
-//		return file_unit;
-//	}
-
 
 	public ASTNode pass3() {
 		KString oldfn = Kiev.curFile;
