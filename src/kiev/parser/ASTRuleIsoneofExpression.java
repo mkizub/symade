@@ -36,25 +36,27 @@ import kiev.vlang.*;
 @node
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
-	public ASTIdentifier[]	names = new ASTIdentifier[0];
-	public Expr[]			exprs = Expr.emptyArray;
+	@att public final NArr<ASTIdentifier>	names;
+	@att public final NArr<Expr>			exprs;
 
 	public ASTRuleIsoneofExpression(int id) {
 		super(0);
+		names = new NArr<ASTIdentifier>(this);
+		exprs = new NArr<Expr>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i % 2) {
         case 0:
         	if( n instanceof ASTIdentifier ) {
-	        	names = (ASTIdentifier[])Arrays.append(names,n);
+	        	names.append((ASTIdentifier)n);
 	        	if( i == 0 ) setPos(n.getPos());
 	        	break;
 	        }
 	        throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         case 1:
         	if( n instanceof Expr ) {
-	        	exprs = (Expr[])Arrays.append(exprs,n);
+	        	exprs.append((Expr)n);
 	        	break;
 	        }
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -64,7 +66,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
     public ASTNode resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
-			PVar<ASTNode> v = new PVar<ASTNode>();
+			ASTNode@ v;
 			if( !PassInfo.resolveNameR(v,new ResInfo(),names[i].name,null,0) )
 				throw new CompilerException(pos,"Unresolved identifier "+names[i].name);
 			if( !(v instanceof Var) )
@@ -72,7 +74,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 			vars[i] = (Var)v;
 			exprs[i] = (Expr)exprs[i].resolve(null);
 		}
-    	return new RuleIsoneofExpr(getPos(),vars,exprs);
+    	return new RuleIsoneofExpr(getPos(),vars,exprs.toArray());
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }

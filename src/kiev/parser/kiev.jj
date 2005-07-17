@@ -1927,7 +1927,7 @@ void VarDecl() :
         try {
 /*@egen*/
 	Identifier()
-	( "[" "]" { jjtn000.dim++; } )*
+	( "[" "]" { jjtn000.dim += 1; } )*
 	[ ("=" | ":=" { jjtn000.of_wrapper=true; }) VariableInitializer() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -2013,15 +2013,15 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
   ASTFormalParameter jjtn000 = new ASTFormalParameter(JJTFORMALPARAMETER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
+/*@egen*/ Token t; ASTType tp; }
 {/*@bgen(jjtree) FormalParameter */
         try {
 /*@egen*/
 	{ jjtn000.jjtAddChild(modifiers, -1); }
 	(
-		Type()
+		tp = Type()
 		Identifier()
-		( "[" "]" { jjtn000.dim++; } )*
+		( "[" "]" { tp.dim += 1; } )*
 	|
 		t="_" { jjtn000.set(t); }
 	)/*@bgen(jjtree)*/
@@ -2058,19 +2058,19 @@ ASTFormalParameter mmFormalParameter(ASTModifiers modifiers)                  :
   ASTFormalParameter jjtn000 = new ASTFormalParameter(JJTFORMALPARAMETER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
+/*@egen*/ Token t; ASTType tp; ASTType mmtp = null; }
 {/*@bgen(jjtree) FormalParameter */
         try {
 /*@egen*/
 	{ jjtn000.jjtAddChild(modifiers, -1); }
 	(
-		Type()
+		tp = Type()
 		(
 			LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
-			(":") Type()
+			(":") mmtp = Type()
 		)?
 		Identifier()
-		( "[" "]" { jjtn000.dim++; } )*
+		( "[" "]" { tp.dim += 1; if (mmtp != null) mmtp.dim += 1; } )*
 	|
 		t="_" { jjtn000.set(t); }
 	)/*@bgen(jjtree)*/
@@ -2298,7 +2298,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
   ASTMethodDeclaration jjtn000 = new ASTMethodDeclaration(JJTMETHODDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; ASTType tp; }
+/*@egen*/ Token t; ASTType tp=null; }
 {/*@bgen(jjtree) MethodDeclaration */
         try {
 /*@egen*/
@@ -2306,7 +2306,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 	[	ClazzArguments()	]
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
-		Type()
+		tp = Type()
 	]
 	Identifier()
 	"("
@@ -2329,7 +2329,15 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
 		catch(Throwable e) { rperr(e); }
 	")"
-	( "[" "]" { jjtn000.dim++; } )*
+	(
+		t="[" "]"
+		{
+			if (tp != null)
+				tp.dim += 1;
+			else
+				Kiev.reportParserError(t.getPos(), "Array return in constructor?");
+		}
+	)*
 	(
 		Alias()
 	)*
@@ -2622,7 +2630,7 @@ ASTType Type() :
 /*@egen*/
 	(	NonArrayType()
 		(	LOOKAHEAD(2)
-			"[" "]" { jjtn000.dim++; }
+			"[" "]" { jjtn000.dim += 1; }
 		)*
 	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
 		ClosureType()
@@ -3838,8 +3846,8 @@ void NewArrayExpression() :
         try {
 /*@egen*/
 	t="new" NonArrayType()
-	( LOOKAHEAD(2) "[" ExpressionNT(null) "]" { dim++; } )+
-	( LOOKAHEAD(2) "[" "]" { dim++; } )*/*@bgen(jjtree)*/
+	( LOOKAHEAD(2) "[" ExpressionNT(null) "]" { dim += 1; } )+
+	( LOOKAHEAD(2) "[" "]" { dim += 1; } )*/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
@@ -3878,7 +3886,7 @@ void NewInitializedArrayExpression() :
         try {
 /*@egen*/
 	t="new" NonArrayType()
-	( "[" "]" { dim++; } )+
+	( "[" "]" { dim += 1; } )+
 	"{"
 	[
 		VariableInitializer()

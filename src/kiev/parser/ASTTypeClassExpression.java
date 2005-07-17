@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTTypeClassExpression extends Expr {
 	
-	@ref public ASTNode		type;
+	@att public ASTType		type;
 	
 	public ASTTypeClassExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
@@ -44,7 +44,7 @@ public class ASTTypeClassExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0:	type = n; break;
+        case 0:	type = (ASTType)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
@@ -52,11 +52,7 @@ public class ASTTypeClassExpression extends Expr {
     public Type getType() { return Type.tpClass; }
 
 	public ASTNode resolve(Type reqType) throws CompilerException {
-		if( type instanceof ASTType )
-			type = ((ASTType)type).getType();
-		if( !(type instanceof Type) )
-			throw new CompilerException(pos,"Node is not a type, but "+type.getClass());
-		Type tp = (Type)type;
+		Type tp = type.getType();
 		if( !tp.isReference() ) {
 			Type rt = Type.getRefTypeForPrimitive(tp);
 			Field f = (Field)rt.clazz.resolveName(KString.from("TYPE"));

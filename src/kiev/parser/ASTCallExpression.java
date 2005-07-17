@@ -99,7 +99,7 @@ public class ASTCallExpression extends Expr {
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
 			Method mmm = PassInfo.method;
-			if( !Kiev.kaffe && mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
+			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
@@ -115,7 +115,7 @@ public class ASTCallExpression extends Expr {
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
-			if( !Kiev.kaffe && mmm.name.equals(nameInit) && PassInfo.clazz.super_clazz.args.length > 0 ) {
+			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_clazz.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
@@ -170,35 +170,31 @@ public class ASTCallExpression extends Expr {
 				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
 			}
 			if( reqType instanceof MethodType ) {
-				if( Kiev.kaffe ) {
-					return new NewClosure(pos,(Method)m,args.toArray()).resolve(reqType);
+				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
+				ac.pos = pos;
+				ac.parent = parent;
+				ac.rettype = new ASTType(pos, ((MethodType)reqType).ret);
+				for (int i=0; i < ac.params.length; i++)
+					ac.params.append(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
+				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+				Expr[] oldargs = args.toArray();
+				Expr[] cargs = new Expr[ac.params.length];
+				for(int i=0; i < cargs.length; i++)
+					cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
+				args.delAll();
+				foreach (Expr e; cargs)
+					args.add(e);
+				if( ac.rettype.getType() == Type.tpVoid ) {
+					bs.addStatement(new ExprStat(pos,bs,this));
+					bs.addStatement(new ReturnStat(pos,bs,null));
 				} else {
-					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-					ac.pos = pos;
-					ac.parent = parent;
-					ac.type = ((MethodType)reqType).ret;
-					for (int i=0; i < ac.params.length; i++)
-						ac.params.append(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
-					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-					Expr[] oldargs = args.toArray();
-					Expr[] cargs = new Expr[ac.params.length];
-					for(int i=0; i < cargs.length; i++)
-						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-					args.delAll();
-					foreach (Expr e; cargs)
-						args.add(e);
-					if( ac.type == Type.tpVoid ) {
-						bs.addStatement(new ExprStat(pos,bs,this));
-						bs.addStatement(new ReturnStat(pos,bs,null));
-					} else {
-						bs.addStatement(new ReturnStat(pos,bs,this));
-					}
-					ac.body = bs;
-					if( oldargs.length > 0 )
-						return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
-					else
-						return ac.resolve(reqType);
+					bs.addStatement(new ReturnStat(pos,bs,this));
 				}
+				ac.body = bs;
+				if( oldargs.length > 0 )
+					return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
+				else
+					return ac.resolve(reqType);
 			} else {
 				if( m.isStatic() )
 					info.path.setLength(0);

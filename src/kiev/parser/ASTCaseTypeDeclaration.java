@@ -58,7 +58,7 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
             pos = n.getPos();
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			argument = (ASTNode[])Arrays.append(argument,n);
+			argument.append(n);
 		}
         else if( n instanceof ASTFormalParameter ) {
 			casefields.append(n);

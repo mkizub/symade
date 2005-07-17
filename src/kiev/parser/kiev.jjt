@@ -1248,7 +1248,7 @@ void VarDecl() :
 {}
 {
 	Identifier()
-	( "[" "]" { jjtThis.dim++; } )*
+	( "[" "]" { jjtThis.dim += 1; } )*
 	[ ("=" | ":=" { jjtThis.of_wrapper=true; }) VariableInitializer() ]
 }
 
@@ -1279,13 +1279,13 @@ void ArrayInitializer() #NewInitializedArrayExpression :
 }
 
 ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
-{ Token t; }
+{ Token t; ASTType tp; }
 {
 	{ jjtThis.jjtAddChild(modifiers, -1); }
 	(
-		Type()
+		tp = Type()
 		Identifier()
-		( "[" "]" { jjtThis.dim++; } )*
+		( "[" "]" { tp.dim += 1; } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1293,17 +1293,17 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 }
 
 ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) #FormalParameter :
-{ Token t; }
+{ Token t; ASTType tp; ASTType mmtp = null; }
 {
 	{ jjtThis.jjtAddChild(modifiers, -1); }
 	(
-		Type()
+		tp = Type()
 		(
 			LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
-			(":") Type()
+			(":") mmtp = Type()
 		)?
 		Identifier()
-		( "[" "]" { jjtThis.dim++; } )*
+		( "[" "]" { tp.dim += 1; if (mmtp != null) mmtp.dim += 1; } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1409,13 +1409,13 @@ void MaybeSkipBlock() #void :
 }
 
 void MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; ASTType tp; }
+{ Token t; ASTType tp=null; }
 {
 	{ jjtThis.jjtAddChild(modifiers, -1); }
 	[	ClazzArguments()	]
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
-		Type()
+		tp = Type()
 	]
 	Identifier()
 	"("
@@ -1438,7 +1438,15 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
 		catch(Throwable e) { rperr(e); }
 	")"
-	( "[" "]" { jjtThis.dim++; } )*
+	(
+		t="[" "]"
+		{
+			if (tp != null)
+				tp.dim += 1;
+			else
+				Kiev.reportParserError(t.getPos(), "Array return in constructor?");
+		}
+	)*
 	(
 		Alias()
 	)*
@@ -1575,7 +1583,7 @@ ASTType Type() :
 {
 	(	NonArrayType()
 		(	LOOKAHEAD(2)
-			"[" "]" { jjtThis.dim++; }
+			"[" "]" { jjtThis.dim += 1; }
 		)*
 	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
 		ClosureType()
@@ -2080,8 +2088,8 @@ void NewArrayExpression() :
 { Token t; int dim=0; }
 {
 	t="new" NonArrayType()
-	( LOOKAHEAD(2) "[" ExpressionNT(null) "]" { dim++; } )+
-	( LOOKAHEAD(2) "[" "]" { dim++; } )*
+	( LOOKAHEAD(2) "[" ExpressionNT(null) "]" { dim += 1; } )+
+	( LOOKAHEAD(2) "[" "]" { dim += 1; } )*
         { jjtThis.dim = dim; jjtThis.setPos(t.getPos()); }
 }
 
@@ -2089,7 +2097,7 @@ void NewInitializedArrayExpression() :
 { Token t; int dim=0; }
 {
 	t="new" NonArrayType()
-	( "[" "]" { dim++; } )+
+	( "[" "]" { dim += 1; } )+
 	"{"
 	[
 		VariableInitializer()

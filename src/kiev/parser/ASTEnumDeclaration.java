@@ -60,11 +60,11 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			enum_fields.append((ASTEnumFieldDeclaration)n);
 		}
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public static Struct createMembers(Struct me, NArr<ASTEnumFieldDeclaration> enum_fields, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTEnumFieldDeclaration> enum_fields, NArr<ASTNode> members) {
 		trace(Kiev.debugResolve,"Pass 3 for enum "+me);
         PassInfo.push(me);
         try {

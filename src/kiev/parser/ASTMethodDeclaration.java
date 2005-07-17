@@ -38,21 +38,21 @@ import syntax kiev.Syntax;
 
 @node
 public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scope {
-	public int								dim;
-	@att public ASTModifiers				modifiers;
-    @att public ASTIdentifier				ident;
-    @att public final NArr<ASTFormalParameter>	params;
-    @ref public ASTNode						type;
-    public ASTNode[]						ftypes = ASTNode.emptyArray;
-    public ASTAlias[]						aliases = ASTAlias.emptyArray;
-    @att public ASTNode						throwns;
-    @att public Statement					body;
-	public virtual PrescannedBody 			pbody;
-	public ASTRequareDeclaration[]			req;
-	public ASTEnsureDeclaration[]			ens;
-    @att public Expr						annotation_default;
+	@att public ASTModifiers							modifiers;
+    @att public ASTIdentifier							ident;
+    @att public final NArr<ASTFormalParameter>			params;
+    @att public ASTType									rettype;
+    @att public final NArr<ASTArgumentDeclaration>		argtypes;
+    @att public final NArr<ASTAlias>					aliases;
+    @att public ASTNode									throwns;
+    @att public Statement								body;
+	public virtual PrescannedBody 						pbody;
+	@att public final NArr<ASTRequareDeclaration>		req;
+	@att public final NArr<ASTEnsureDeclaration>		ens;
+    @att public Expr									annotation_default;
 
-	@ref public Method		me;
+	@ref public Method									me;
+	@ref public final NArr<Type>						ftypes;
 
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
@@ -61,11 +61,15 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		super(0);
 		modifiers = new ASTModifiers();
 		params = new NArr<ASTFormalParameter>(this);
+		argtypes = new NArr<ASTArgumentDeclaration>(this);
+		aliases = new NArr<ASTAlias>(this);
+		req = new NArr<ASTRequareDeclaration>(this);
+		ens = new NArr<ASTEnsureDeclaration>(this);
+		ftypes = new NArr<Type>(this);
 	}
 
 	ASTMethodDeclaration(int id) {
-		super(0);
-		params = new NArr<ASTFormalParameter>(this);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -73,10 +77,10 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			ftypes = (ASTNode[])Arrays.append(ftypes,n);
+			argtypes.append((ASTArgumentDeclaration)n);
 		}
         else if( n instanceof ASTType ) {
-        	type = n;
+        	rettype = (ASTType)n;
         }
     	else if( n instanceof ASTIdentifier ) {
         	ident = (ASTIdentifier)n;
@@ -86,22 +90,16 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         	params.append((ASTFormalParameter)n);
         }
     	else if( n instanceof ASTAlias ) {
-        	aliases = (ASTAlias[])Arrays.append(aliases,n);
+        	aliases.append((ASTAlias)n);
         }
         else if( n instanceof ASTThrows ) {
         	throwns = n;
         }
         else if( n instanceof ASTRequareDeclaration ) {
-			if( req == null )
-				req = new ASTRequareDeclaration[]{(ASTRequareDeclaration)n};
-			else
-				req = (ASTRequareDeclaration[])Arrays.append(req,(ASTRequareDeclaration)n);
+			req.append((ASTRequareDeclaration)n);
         }
         else if( n instanceof ASTEnsureDeclaration ) {
-			if( ens == null )
-				ens = new ASTEnsureDeclaration[]{(ASTEnsureDeclaration)n};
-			else
-				ens = (ASTEnsureDeclaration[])Arrays.append(ens,(ASTEnsureDeclaration)n);
+			ens.append((ASTEnsureDeclaration)n);
         }
         else if( n instanceof Statement ) {
 			body = (Statement)n;
@@ -116,8 +114,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
-		ftypes instanceof Type[] && ftypes.length > 0,
-		node @= ((Type[])ftypes),
+		node @= ftypes,
 		((Type)node).clazz.name.short_name.equals(name)
 	}
 
@@ -150,10 +147,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 
-		Type[] mfargs = new Type[ftypes.length];
-		for(int i=0; i < ftypes.length; i++)
-			mfargs[i] = Env.newMethodArgument(((ASTArgumentDeclaration)ftypes[i]).ident.name,clazz).type;
-		ftypes = mfargs;	// become scope of names
+		foreach (ASTArgumentDeclaration ad; argtypes)
+			ftypes.append( Env.newMethodArgument(ad.ident.name,clazz).type );
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
@@ -177,30 +172,26 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		// push the method, because formal parameters may refer method's type args
 		PassInfo.push(this);
 		try {
-			if( this.type != null ) {
-				if( this.type instanceof ASTType )
-					type = ((ASTType)this.type).getType();
-				else
-					type = (Type)this.type;
+			if( this.rettype != null ) {
+				type = this.rettype.getType();
 			} else {
 				type = Type.tpVoid;
 				if( !ident.name.equals(clazz.name.short_name) )
 					throw new CompilerException(pos,"Return type missed or bad constructor name "+ident);
 				ident.name = Constants.nameInit;
 			}
-			for(int i=0; i < dim; i++) type = Type.newArrayType(type);
 			for(int i=0; i < params.length; i++) {
 				ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
 				vars[i] = fdecl.pass3();
-				margs = (Type[])Arrays.append(margs,fdecl.resolved_type);
-				if (fdecl.resolved_jtype != null) {
-					mjargs = (Type[])Arrays.append(mjargs,fdecl.resolved_jtype);
+				margs = (Type[])Arrays.append(margs,fdecl.type.getType());
+				if (fdecl.mm_type != null) {
+					mjargs = (Type[])Arrays.append(mjargs,fdecl.mm_type.getType());
 					has_dispatcher = true;
 				}
-				else if (fdecl.resolved_type.clazz.isPizzaCase()) {
+				else if (fdecl.type.getType().clazz.isPizzaCase()) {
 					mjargs = (Type[])Arrays.append(mjargs,
 						Type.getRealType(PassInfo.clazz.type,
-							fdecl.resolved_type.clazz.super_clazz));
+							fdecl.type.getType().clazz.super_clazz));
 					has_dispatcher = true;
 				}
 				else if (has_dispatcher) {
@@ -215,7 +206,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 		}
-		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
+		MethodType mtype = MethodType.newMethodType(null,ftypes.toArray(),margs,type);
 		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,null,mjargs,type) : null;
 		me = new Method(clazz,ident.name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);

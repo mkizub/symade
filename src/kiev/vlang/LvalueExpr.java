@@ -617,42 +617,6 @@ public class VarAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			// Check if we try to access this var from local inner/anonymouse class
-			if( Kiev.kaffe && PassInfo.method!=null && PassInfo.method.isLocalMethod()) {
-				ASTNode p = var.parent;
-				while( !(p instanceof Method) ) p = p.parent;
-				if( p != PassInfo.method && p.parent == PassInfo.clazz ) {
-					// Check if we already have proxyed this var
-					boolean already_prox = false;
-					for(int i=0; i < PassInfo.method.params.length; i++) {
-						if(PassInfo.method.params[i].isClosureProxy() &&
-							PassInfo.method.params[i].name.name.equals(var.name.name)
-						) {
-							var = PassInfo.method.params[i];
-							already_prox = true;
-							break;
-						}
-					}
-					if( !already_prox ) {
-						Type[] types = (Type[])Arrays.insert(PassInfo.method.type.args,var.type,0);
-						PassInfo.method.type = MethodType.newMethodType(
-							PassInfo.method.type.clazz,
-							PassInfo.method.type.fargs,
-							types,
-							PassInfo.method.type.ret
-							);
-						Var v = new Var(PassInfo.method.pos,var.name.name,var.type,0);
-						v.parent = PassInfo.method;
-						v.setClosureProxy(true);
-						if( PassInfo.method.isStatic() )
-							PassInfo.method.params = (Var[])Arrays.insert(
-								PassInfo.method.params,v,0);
-						else
-							PassInfo.method.params = (Var[])Arrays.insert(
-								PassInfo.method.params,v,1);
-						var = v;
-					}
-				}
-			}
 			if( PassInfo.clazz.isLocal() ) {
 				ASTNode p = var.parent;
 				while( !(p instanceof Struct) ) p = p.parent;
@@ -670,38 +634,6 @@ public class VarAccessExpr extends LvalueExpr {
 					}
 				}
 			}
-/*
-			// Check it needs to be initialized
-			if( parent instanceof AssignExpr && ((AssignExpr)parent).lval == this );
-			else if( parent instanceof kiev.parser.ASTIdentifier
-			 && parent.parent instanceof AssignExpr
-			 && ((AssignExpr)parent.parent).lval == parent );
-			else {
-				ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-				if( !sni.initialized ) {
-					assert( !(var.parent instanceof Method), "Uninitialized method parametr" );
-					if( var.parent instanceof DeclStat ) {
-						Kiev.reportWarning(pos,"Access to possibly unitialized variable "+var);
-						if( ((DeclStat)var.parent).init == null ) {
-							if( var.type.isBoolean() )
-								((DeclStat)var.parent).init = new ConstBooleanExpr(var.pos,false);
-							else if( var.type.isIntegerInCode() )
-								((DeclStat)var.parent).init = new ConstExpr(var.pos,Kiev.newInteger(0));
-							else if( var.type == Type.tpLong )
-								((DeclStat)var.parent).init = new ConstExpr(var.pos,Kiev.newLong(0));
-							else if( var.type == Type.tpFloat )
-								((DeclStat)var.parent).init = new ConstExpr(var.pos,Kiev.newFloat(0.f));
-							else if( var.type == Type.tpDouble )
-								((DeclStat)var.parent).init = new ConstExpr(var.pos,Kiev.newDouble(0.d));
-							else
-								((DeclStat)var.parent).init = new ConstExpr(var.pos,null);
-						}
-					} else {
-						Kiev.reportError(pos,"Access to possibly unitialized variable "+var);
-					}
-				}
-			}
-*/
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;

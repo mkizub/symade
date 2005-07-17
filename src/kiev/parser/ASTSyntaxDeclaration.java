@@ -48,11 +48,11 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 			name = ((ASTIdentifier)n).name;
 			pos = n.getPos();
 		} else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
 		}
 	}
 
-	public static Struct createMembers(Struct me, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTNode> members) {
 		trace(Kiev.debugResolve,"Pass 3 for syntax "+me);
 		if (!Kiev.packages_scanned.contains(me))
 			Kiev.packages_scanned.append(me);

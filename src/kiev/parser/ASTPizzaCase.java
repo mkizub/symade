@@ -36,21 +36,22 @@ import kiev.vlang.*;
 @node
 public class ASTPizzaCase extends ASTNode {
 	@att public ASTNode		val;
-	public ASTNode[]		params = ASTNode.emptyArray;
-	public ASTNode[]		stats = ASTNode.emptyArray;
+	@att public final NArr<ASTNode>		params;
+	@att public final NArr<ASTNode>		stats;
 
 	public ASTPizzaCase(int id) {
 		super(0);
+		params = new NArr<ASTNode>(this);
+		stats = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 )
 			val = n;
-		else if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
-		}
+		else if( n instanceof ASTFormalParameter )
+			params.append(n);
         else
-			stats = (ASTNode[])Arrays.append(stats,n);
+			stats.append(n);
     }
 
     public ASTNode resolve(Type reqType) {
@@ -64,12 +65,12 @@ public class ASTPizzaCase extends ASTNode {
 	    	if( !(val instanceof Struct) || !((Struct)val).isPizzaCase() )
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
 	    	for(int i=0; i < params.length; i++) {
-    			params[i] = pattern[i] = ((ASTFormalParameter)params[i]).pass3();
+    			pattern[i] = ((ASTFormalParameter)params[i]).pass3();
 	    	}
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
 	    }
-    	CaseLabel cl = new CaseLabel(pos,parent,val,stats);
+    	CaseLabel cl = new CaseLabel(pos,parent,val,stats.toArray());
     	cl.parent = parent;
     	cl.pattern = pattern;
     	return cl.resolve(Type.tpVoid);

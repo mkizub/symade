@@ -37,15 +37,19 @@ import static kiev.stdlib.Debug.*;
  
 @node
 public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
-	@att public ASTModifiers	modifiers;
-	@att public ASTAccess		acc;
-    public KString				name;
-    public ASTNode[]			argument = ASTNode.emptyArray;
-    public ASTNode[]			members = ASTNode.emptyArray;
+	@att public ASTModifiers			modifiers;
+	@att public ASTAccess				acc;
+	public KString						name;
+	@att public final NArr<ASTNode>		argument;
+	@att public final NArr<ASTNode>		members;
 
 	@ref public Struct			me;
 
-	ASTStructDeclaration() { super(0); }
+	ASTStructDeclaration() {
+		super(0);
+		argument = new NArr<ASTNode>(this);
+		members = new NArr<ASTNode>(this);
+	}
 
 	public ASTNode pass1_1() {
 		// Attach meta-data to the new structure
@@ -98,7 +102,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
             pos = n.getPos();
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			argument = (ASTNode[])Arrays.append(argument,n);
+			argument.append(n);
 		}
         else if( n instanceof ASTExtends ) {
 			ext = n;
@@ -110,11 +114,11 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 			gens = n;
 		}
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public static Struct createMembers(Struct me, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTNode> members) {
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
         PassInfo.push(me);
         try {

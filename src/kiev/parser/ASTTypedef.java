@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 	public KString	name;
-	@ref public ASTNode	type;
+	@att public ASTNode	type;
 	@ref public Typedef td;
 	public boolean opdef = false;
 
@@ -63,24 +63,6 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
-
-//	public ASTNode pass1_1(ASTNode pn) {
-//		if (opdef) {
-//			ASTQName qn = (ASTQName)type;
-//			PVar<ASTNode> v = new PVar<ASTNode>();
-//			if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
-//				throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
-//			if( !(v instanceof Struct) )
-//				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
-//			Struct s = (Struct)v;
-//			if (s.type.args.length != 1)
-//				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
-//			return td = new Typedef(pos,parent,name,s.type);
-//		} else {
-//			type = ((ASTType)type).pass2();
-//			return td = new Typedef(pos,parent,name,(Type)type);
-//		}
-//	}
 
 	public String toString() {
 		if (opdef)

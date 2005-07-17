@@ -501,7 +501,6 @@ public final class Kiev {
 
 	// Extensions settings
 	public static boolean javaMode			= false;
-	public static boolean kaffe				= false;
 		//System.getProperties().get("java.ext.version") != null;
 	static public enum Ext {
 		JavaOnly				: "java only"		,

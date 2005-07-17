@@ -171,7 +171,7 @@ public class ASTCallAccessExpression extends Expr {
 						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 						ac.pos = pos;
 						ac.parent = parent;
-						ac.type = ((MethodType)reqType).ret;
+						ac.rettype = new ASTType(pos, ((MethodType)reqType).ret);
 						Method meth = (Method)m;
 						for(int i=0; i < meth.type.args.length; i++) {
 							ac.params.add(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
@@ -184,7 +184,7 @@ public class ASTCallAccessExpression extends Expr {
 						args.delAll();
 						foreach (Expr e; cargs)
 							args.add(e);
-						if( ac.type == Type.tpVoid ) {
+						if( ac.rettype.getType() == Type.tpVoid ) {
 							bs.addStatement(new ExprStat(pos,bs,this));
 							bs.addStatement(new ReturnStat(pos,bs,null));
 						} else {

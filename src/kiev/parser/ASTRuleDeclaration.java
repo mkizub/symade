@@ -41,24 +41,27 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 	@att public ASTModifiers			modifiers;
     @att public ASTIdentifier			ident;
     @att public final NArr<ASTNode>	params;
-    public ASTAlias[]	aliases = ASTAlias.emptyArray;
-    public ASTNode[]	localvars = ASTNode.emptyArray;
+    @att public final NArr<ASTAlias>	aliases;
+    @att public final NArr<ASTNode>	localvars;
     @att public Statement	body;
 	public virtual PrescannedBody pbody;
-	public ASTRequareDeclaration[]	req;
-	public ASTEnsureDeclaration[]	ens;
+	@att public final NArr<ASTRequareDeclaration>	req;
+	@att public final NArr<ASTEnsureDeclaration>	ens;
 
 	@ref public RuleMethod	me;
 
 	public ASTRuleDeclaration() {
 		super(0);
 		modifiers = new ASTModifiers();
-		params = new NArr<ASTFormalParameter>(this);
+		params = new NArr<ASTNode>(this);
+		aliases = new NArr<ASTAlias>(this);
+		localvars = new NArr<ASTNode>(this);
+		req = new NArr<ASTRequareDeclaration>(this);
+		ens = new NArr<ASTEnsureDeclaration>(this);
 	}
 
 	public ASTRuleDeclaration(int id) {
-		super(0);
-		params = new NArr<ASTFormalParameter>(this);
+		this();
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -76,22 +79,16 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			params.append(n);
 		}
 		else if( n instanceof ASTVarDecls ) {
-			localvars = (ASTNode[])Arrays.append(localvars,n);
+			localvars.append(n);
 		}
 		else if( n instanceof ASTAlias ) {
-			aliases = (ASTAlias[])Arrays.append(aliases,n);
+			aliases.append((ASTAlias)n);
         }
         else if( n instanceof ASTRequareDeclaration ) {
-			if( req == null )
-				req = new ASTRequareDeclaration[]{(ASTRequareDeclaration)n};
-			else
-				req = (ASTRequareDeclaration[])Arrays.append(req,(ASTRequareDeclaration)n);
+			req.append((ASTRequareDeclaration)n);
         }
         else if( n instanceof ASTEnsureDeclaration ) {
-			if( ens == null )
-				ens = new ASTEnsureDeclaration[]{(ASTEnsureDeclaration)n};
-			else
-				ens = (ASTEnsureDeclaration[])Arrays.append(ens,(ASTEnsureDeclaration)n);
+			ens.append((ASTEnsureDeclaration)n);
         }
         else if( n instanceof ASTRuleBlock ) {
 			body = (Statement)n;

@@ -35,7 +35,7 @@ import kiev.stdlib.*;
 
 @node
 public class ASTCastExpression extends Expr {
-	@ref public ASTNode	type;
+	@att public ASTType	type;
     @att public Expr	expr;
 
 	public ASTCastExpression(int id) {
@@ -44,14 +44,14 @@ public class ASTCastExpression extends Expr {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: type=n; break;
+        case 0: type=(ASTType)n; break;
         case 1: expr=(Expr)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
 	public ASTNode resolve(Type reqType) {
-		Type tp = ((ASTType)type).getType();
+		Type tp = type.getType();
 		return new CastExpr(pos,tp,expr,true).resolve(reqType);
 	}
     

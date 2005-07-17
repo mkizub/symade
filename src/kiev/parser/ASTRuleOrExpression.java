@@ -35,23 +35,24 @@ import kiev.vlang.*;
 
 @node
 public class ASTRuleOrExpression extends ASTRuleNode {
-	public ASTRuleNode[]	exprs = ASTRuleNode.emptyArray;
+	@att public final NArr<ASTRuleNode>	exprs;
 
 	public ASTRuleOrExpression(int id) {
 		super(0);
+		exprs = new NArr<ASTRuleNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)
 	{
     	if( i==0 ) pos = n.getPos();
     	if( n instanceof ASTRuleNode )
-			exprs = (ASTRuleNode[])Arrays.append(exprs,n);
+			exprs.append((ASTRuleNode)n);
 		else
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
 	}
 
     public ASTNode resolve(Type reqType) {
-    	return new RuleOrExpr(getPos(),exprs).resolve(null);
+    	return new RuleOrExpr(getPos(),exprs.toArray()).resolve(null);
     }
     
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

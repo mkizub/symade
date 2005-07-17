@@ -35,12 +35,13 @@ import kiev.stdlib.*;
 
 @node
 public class ASTTryStatement extends Statement {
-	@att public Statement	body;
-    public ASTNode[]	catchers = ASTNode.emptyArray;
-    @att public ASTNode		finally_catcher;
+	@att public Statement				body;
+    @att public final NArr<ASTNode>	catchers;
+    @att public ASTNode					finally_catcher;
     
 	public ASTTryStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		catchers = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -48,14 +49,14 @@ public class ASTTryStatement extends Statement {
 			body=(Statement)n;
 		} else {
         	if( n instanceof ASTCatchInfo )
-	        	catchers = (ASTNode[])Arrays.append(catchers,n);
+	        	catchers.append(n);
             else if( n instanceof ASTFinallyInfo )
             	finally_catcher = n;
         }
     }
 
 	public ASTNode resolve(Type reqType) {
-		return new TryStat(pos,parent,body,catchers,finally_catcher).resolve(reqType);
+		return new TryStat(pos,parent,body,catchers.toArray(),finally_catcher).resolve(reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {

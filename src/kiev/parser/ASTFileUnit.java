@@ -38,9 +38,10 @@ import static kiev.stdlib.Debug.*;
 public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public KString	filename;
 	@ref public FileUnit	file_unit;
+	@ref public Struct		file_pkg;
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
-    @ref public ASTNode					pkg;
+    @att public ASTPackage				pkg;
     @att public final NArr<ASTNode>	syntax;
     @att public final NArr<ASTNode>	decls;
 	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
@@ -65,7 +66,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	public void jjtAddChild(ASTNode n, int i) {
 		n.parent = this;
 		if( n instanceof ASTPackage) {
-			pkg = n;
+			pkg = (ASTPackage)n;
 		}
 		else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
 			syntax.append(n);

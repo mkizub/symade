@@ -36,31 +36,33 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewExpression extends Expr {
-	@ref public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
-    public ASTNode	members[] = ASTNode.emptyArray;
+	@att public ASTNonArrayType			type;
+	@att public final NArr<Expr>		args;
+    @att public final NArr<ASTNode>	members;
     public boolean	anonymouse;
 
 	public ASTNewExpression(int id) {
 		super(0);
+		args = new NArr<Expr>(this);
+		members = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-			type=n;
+			type = (ASTNonArrayType)n;
 			pos = n.getPos();
 		}
 		else if( n instanceof Expr ) {
-			args = (Expr[])Arrays.append(args,n);
+			args.append((Expr)n);
         }
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append((ASTNode)n);
         }
     }
 
 	public ASTNode resolve(Type reqType) {
 		// Find out possible constructors
-		Type tp = ((ASTNonArrayType)type).getType();
+		Type tp = type.getType();
 		Struct s = tp.clazz;
 		s.checkResolved();
 		Type[] targs = Type.emptyArray;
@@ -98,11 +100,9 @@ public class ASTNewExpression extends Expr {
 			}
 		}
 		if( members.length == 0 && !anonymouse )
-			return new NewExpr(pos,tp,args).resolve(reqType);
+			return new NewExpr(pos,tp,args.toArray()).resolve(reqType);
 		// Local anonymouse class
-		Type sup;
-		if( type instanceof Type ) sup = (Type)type;
-		else sup = ((ASTNonArrayType)type).getType();
+		Type sup  = tp;
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)
@@ -132,7 +132,7 @@ public class ASTNewExpression extends Expr {
 
 		if( sup.clazz.instanceOf(Type.tpClosureClazz) ) {
 			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
-			members = ASTNode.emptyArray;
+			members.delAll();
 			me.type = Type.newRefType(me,Type.emptyArray);
 			Method m = (Method)md.pass3();
 			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
@@ -178,7 +178,7 @@ public class ASTNewExpression extends Expr {
 		if( sup.clazz.instanceOf(Type.tpClosureClazz) ) {
 			ne = new NewClosure(pos,me.type);
 		} else {
-			ne = new NewExpr(pos,me.type,args);
+			ne = new NewExpr(pos,me.type,args.toArray());
 		}
 		me.parent = ne;
 		ne.parent = parent;

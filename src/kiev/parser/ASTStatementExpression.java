@@ -37,8 +37,8 @@ import kiev.stdlib.*;
 public class ASTStatementExpression extends Statement {
 	@att public Expr	expr;
     
-	public ASTStatementExpression(int id) {
-		super(id,null);
+	public ASTStatementExpression(int pos) {
+		super(pos,null);
 	}
 
 	public ASTStatementExpression(Expr e) {

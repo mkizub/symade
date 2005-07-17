@@ -71,15 +71,15 @@ public final class ExportJavaTop implements Constants {
 		try {
         	Kiev.setExtSet(astn.disabled_extensions);
 			if( astn.pkg != null ) {
-				astn.pkg = (Struct) pass1((ASTPackage)astn.pkg, null);
+				astn.file_pkg = (Struct) pass1((ASTPackage)astn.pkg, null);
 			} else {
-				astn.pkg = Env.root;
+				astn.file_pkg = Env.root;
 			}
-			FileUnit fu = new FileUnit(astn.filename,(Struct)astn.pkg);
+			FileUnit fu = new FileUnit(astn.filename,astn.file_pkg);
 			astn.file_unit = fu;
 			fu.disabled_extensions = astn.disabled_extensions;
 			fu.bodies = astn.bodies;
-			PassInfo.push(astn.pkg);
+			PassInfo.push(astn.file_pkg);
 			try {
 				for(int i=0; i < astn.decls.length; i++) {
 					try {
@@ -89,7 +89,7 @@ public final class ExportJavaTop implements Constants {
 						Kiev.reportError/*Warning*/(((ASTNode)astn.decls[i]).getPos(),e);
 					}
 				}
-			} finally { PassInfo.pop(astn.pkg); }
+			} finally { PassInfo.pop(astn.file_pkg); }
 			return astn.file_unit;
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
@@ -573,7 +573,7 @@ public final class ExportJavaTop implements Constants {
 	        for(int i=0; i < astn.argument.length; i++) {
 				ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
 				if( arg.type != null ) {
-					ASTNonArrayType at = (ASTNonArrayType)arg.type;
+					ASTNonArrayType at = arg.type;
 					Type sup = at.getType();
 					if( !sup.isReference() )
 						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
@@ -801,7 +801,7 @@ public final class ExportJavaTop implements Constants {
 				}
 				me.interfaces = timpl;
 			}
-			if( !Kiev.kaffe && !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
+			if( !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
 				me.interfaces = (Type[])Arrays.append(me.interfaces,Type.tpTypeInfoInterface);
 			}
 			if( me.interfaces.length > 0 && me.gens != null ) {

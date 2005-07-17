@@ -36,7 +36,7 @@ import kiev.stdlib.*;
 @node
 public class ASTAnonymouseClosure extends Expr {
     @att public final NArr<ASTNode>		params;
-    @ref public ASTNode						type;
+    @att public ASTType						rettype;
     @att public Statement					body;
 	@att public Expr						new_closure;
 
@@ -59,7 +59,7 @@ public class ASTAnonymouseClosure extends Expr {
 			params.append((ASTFormalParameter)n);
 		}
 		else if( n instanceof ASTType ) {
-			type = n;
+			rettype = (ASTType)n;
 		}
 		else if( n instanceof Statement ) {
 			body = (Statement)n;
@@ -71,143 +71,89 @@ public class ASTAnonymouseClosure extends Expr {
 
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return new_closure;
-		if (Kiev.kaffe) {
-			/* Create private method */
-			Method m;
-			Type ret;
-			if( type instanceof ASTType )
-				ret = ((ASTType)type).getType();
+		ClazzName clname = ClazzName.fromBytecodeName(
+			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
+				.append_fast(PassInfo.clazz.name.bytecode_name)
+				.append_fast((byte)'$')
+				.append(PassInfo.clazz.anonymouse_inner_counter)
+				.toKString(),
+			false
+		);
+		Struct me = Env.newStruct(clname,PassInfo.clazz,flags,true);
+		me.setResolved(true);
+		me.setLocal(true);
+		me.setAnonymouse(true);
+		if( PassInfo.method==null || PassInfo.method.isStatic() ) me.setStatic(true);
+		me.parent = parent;
+		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
+		me.addAttr(sfa);
+		if( Env.getStruct(Type.tpClosureClazz.name) == null )
+			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+		me.super_clazz = Type.tpClosureClazz.type;
+
+		Type[] types = new Type[params.length];
+		Var[] vars = new Var[params.length];
+		for(int i=0; i < types.length; i++) {
+			if( params[i] instanceof Var )
+				vars[i] = (Var)params[i];
 			else
-				ret = (Type)type;
-			if( ret != Type.tpRule ) {
-				ASTMethodDeclaration md = new ASTMethodDeclaration();
-				md.ident = new ASTIdentifier(pos, KString.from("fun$"+this.hashCode()));
-				if( PassInfo.method==null || PassInfo.method.isStatic())
-					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
-				else
-					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
-				foreach (ASTFormalParameter fp; params)
-					md.params.add(fp);
-				md.type = ret;
-				md.body = body;
-				md.parent = PassInfo.clazz;
-				m = (Method)md.pass3();
-			} else {
-				ASTRuleDeclaration md = new ASTRuleDeclaration();
-				md.ident = new ASTIdentifier(pos, KString.from("rule_fun$"+this.hashCode()));
-				if( PassInfo.method==null || PassInfo.method.isStatic())
-					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE,ASTModifier.modSTATIC};
-				else
-					md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPRIVATE};
-				foreach (ASTFormalParameter fp; params)
-					md.params.add(fp);
-				md.body = body;
-				md.parent = PassInfo.clazz;
-				m = (Method)md.pass3();
-			}
-			m.setLocalMethod(true);
-			m.resolve(null);
-			new_closure = new NewClosure(pos,m);
-			new_closure.parent = parent;
-			new_closure = (Expr)new_closure.resolve(reqType);
-		} else {
-			ClazzName clname = ClazzName.fromBytecodeName(
-				new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
-					.append_fast(PassInfo.clazz.name.bytecode_name)
-					.append_fast((byte)'$')
-					.append(PassInfo.clazz.anonymouse_inner_counter)
-					.toKString(),
-				false
-			);
-			Struct me = Env.newStruct(clname,PassInfo.clazz,flags,true);
-			me.setResolved(true);
-			me.setLocal(true);
-			me.setAnonymouse(true);
-			if( PassInfo.method==null || PassInfo.method.isStatic() ) me.setStatic(true);
-//			else System.out.println("Nonstatic fun "+this+" in method "+PassInfo.method);
-			me.parent = parent;
-			SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-			me.addAttr(sfa);
-			if( Env.getStruct(Type.tpClosureClazz.name) == null )
-				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-			me.super_clazz = Type.tpClosureClazz.type;
-
-			Type[] types = new Type[params.length];
-			Var[] vars = new Var[params.length];
-			for(int i=0; i < types.length; i++) {
-				if( params[i] instanceof Var )
-					vars[i] = (Var)params[i];
-				else
-					vars[i] = ((ASTFormalParameter)params[i]).pass3();
-				types[i] = vars[i].type;
-			}
-			Type ret;
-			if( type instanceof ASTType )
-				ret = ((ASTType)type).getType();
-			else
-				ret = (Type)type;
-			me.type = MethodType.newMethodType(me,null,types,ret);
-
-			ASTNode[] members;
-			if( ret != Type.tpRule ) {
-				ASTMethodDeclaration md = new ASTMethodDeclaration();
-				KString call_name;
-				if( ret.isReference() ) md.ident = new ASTIdentifier(pos, KString.from("call_Object"));
-				else md.ident = new ASTIdentifier(pos, KString.from("call_"+ret));
-				md.modifiers.modifier = new ASTModifier[]{ASTModifier.modPUBLIC};
-				if( ret.isReference() )
-					md.type = Type.tpObject;
-				else
-					md.type = type;
-				md.body = body;
-				md.parent = me;
-				members = new ASTNode[]{md};
-			} else {
-				ASTRuleDeclaration md = new ASTRuleDeclaration();
-				md.ident = new ASTIdentifier(pos, KString.from("call_rule"));
-				md.body = body;
-				md.parent = me;
-				members = new ASTNode[]{md};
-			}
-
-			NArr<ASTNode> stats;
-			if( body instanceof ASTBlock )
-				stats = ((ASTBlock)body).stats;
-			else
-				stats = ((BlockStat)body).stats;
-			for(int i=0; i < vars.length; i++) {
-				Var v = vars[i];
-				Expr val = new ContainerAccessExpr(pos,
-					new FieldAccessExpr(pos,(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
-					new ConstExpr(v.getPos(),new Integer(i)));
-				DeclStat dc = new DeclStat(v.getPos(),body,v);
-				if( !v.type.isReference() ) {
-					Type celltp = Type.getProxyType(v.type);
-//					if( v.type == Type.tpBoolean )		celltp = Type.tpCellBoolean;
-//					else if( v.type == Type.tpByte )	celltp = Type.tpCellByte;
-//					else if( v.type == Type.tpChar )	celltp = Type.tpCellChar;
-//					else if( v.type == Type.tpShort )	celltp = Type.tpCellShort;
-//					else if( v.type == Type.tpInt )		celltp = Type.tpCellInt;
-//					else if( v.type == Type.tpLong )	celltp = Type.tpCellLong;
-//					else if( v.type == Type.tpFloat )	celltp = Type.tpCellFloat;
-//					else if( v.type == Type.tpDouble )	celltp = Type.tpCellDouble;
-					val = new AccessExpr(v.getPos(),dc,
-							new CastExpr(v.getPos(),celltp,val,true),
-							(Field)celltp.clazz.resolveName(nameCellVal)
-						);
-				} else {
-					val = new CastExpr(v.getPos(),v.type,val,true);
-				}
-				dc.init = val;
-				dc.init.parent = dc;
-				stats.insert(dc,i);
-			}
-
-			me = ASTTypeDeclaration.createMembers(me,members);
-			new_closure = new NewClosure(pos,me.type);
-			new_closure.parent = parent;
-			new_closure = (Expr)new_closure.resolve(reqType);
+				vars[i] = ((ASTFormalParameter)params[i]).pass3();
+			types[i] = vars[i].type;
 		}
+		Type ret = rettype.getType();
+		me.type = MethodType.newMethodType(me,null,types,ret);
+
+		NArr<ASTNode> members = new NArr<ASTNode>(this);
+		if( ret != Type.tpRule ) {
+			ASTMethodDeclaration md = new ASTMethodDeclaration();
+			KString call_name;
+			if( ret.isReference() ) md.ident = new ASTIdentifier(pos, KString.from("call_Object"));
+			else md.ident = new ASTIdentifier(pos, KString.from("call_"+ret));
+			md.modifiers.modifier.add(ASTModifier.modPUBLIC);
+			if( ret.isReference() )
+				md.rettype = new ASTType(pos, Type.tpObject);
+			else
+				md.rettype = new ASTType(pos, ret);
+			md.body = body;
+			md.parent = me;
+			members.add(md);
+		} else {
+			ASTRuleDeclaration md = new ASTRuleDeclaration();
+			md.ident = new ASTIdentifier(pos, KString.from("call_rule"));
+			md.body = body;
+			md.parent = me;
+			members.add(md);
+		}
+
+		NArr<ASTNode> stats;
+		if( body instanceof ASTBlock )
+			stats = ((ASTBlock)body).stats;
+		else
+			stats = ((BlockStat)body).stats;
+		for(int i=0; i < vars.length; i++) {
+			Var v = vars[i];
+			Expr val = new ContainerAccessExpr(pos,
+				new FieldAccessExpr(pos,(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
+				new ConstExpr(v.getPos(),new Integer(i)));
+			DeclStat dc = new DeclStat(v.getPos(),body,v);
+			if( !v.type.isReference() ) {
+				Type celltp = Type.getProxyType(v.type);
+				val = new AccessExpr(v.getPos(),dc,
+						new CastExpr(v.getPos(),celltp,val,true),
+						(Field)celltp.clazz.resolveName(nameCellVal)
+					);
+			} else {
+				val = new CastExpr(v.getPos(),v.type,val,true);
+			}
+			dc.init = val;
+			dc.init.parent = dc;
+			stats.insert(dc,i);
+		}
+
+		me = ASTTypeDeclaration.createMembers(me,members);
+		new_closure = new NewClosure(pos,me.type);
+		new_closure.parent = parent;
+		new_closure = (Expr)new_closure.resolve(reqType);
 		setResolved(true);
 		return new_closure;
 	}

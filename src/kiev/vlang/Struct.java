@@ -789,7 +789,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	public Expr accessTypeInfoField(int pos, ASTNode parent, Type t) {
-		assert(!Kiev.kaffe,"create type info in kaffe mode");
 		if( t.isArgumented() ) {
 			Expr ti_access;
 			if( PassInfo.method == null || PassInfo.method.isStatic()) {
@@ -1172,7 +1171,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 		}
 
-		if( !Kiev.kaffe && !isInterface() && type.args.length > 0 && !(type instanceof MethodType) ) {
+		if( !isInterface() && type.args.length > 0 && !(type instanceof MethodType) ) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -1363,7 +1362,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameThisDollar,targs[0],0),1);
 					retype = true;
 				}
-				if( !Kiev.kaffe && !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
+				if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 					targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 					if( m.isStatic() )
 						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
@@ -1415,7 +1414,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						targs = (Type[])Arrays.append(targs,package_clazz.type);
 						params = (Var[])Arrays.append(params,new Var(pos,init,nameThisDollar,package_clazz.type,0));
 					}
-					if( !Kiev.kaffe && !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
+					if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 						params = (Var[])Arrays.append(params,new Var(pos,init,nameTypeInfo,typeinfo_clazz.type,0));
 					}
@@ -1821,7 +1820,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 								if( nm.equals(nameSuper) || (nm.equals(nameInit) && ((CallExpr)es.expr).super_flag) )
 									m.setNeedFieldInits(true);
 								// autoinsert typeinfo if super class needs
-								if( !Kiev.kaffe && super_clazz.args.length > 0 ) {
+								if( super_clazz.args.length > 0 ) {
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) )
@@ -1899,7 +1898,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						);
 					}
 				}
-				if( !Kiev.kaffe && type.args.length > 0
+				if( type.args.length > 0
 				 && !(this.type instanceof MethodType)
 				 && m.isNeedFieldInits()
 				) {
@@ -2124,7 +2123,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					be = new InstanceofExpr(pos,
 						new VarAccessExpr(pos,mm.params[j+voffs]),
 						Type.getRefTypeForPrimitive(t));
-				if( !Kiev.kaffe && t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
+				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
 					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -2709,26 +2708,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	        ConstPool.reInit();
 			ConstPool.addClazzCP(jthis.type.signature);
 			ConstPool.addClazzCP(jthis.type.java_signature);
-			if( !Kiev.kaffe || type instanceof MethodType)
-				ConstPool.addClazzCP(jthis.type.java_signature);
 			if( super_clazz != null ) {
 				super_clazz.clazz.checkResolved();
 				ConstPool.addClazzCP(jthis.super_clazz.signature);
-				if( !Kiev.kaffe || super_clazz instanceof MethodType)
-					ConstPool.addClazzCP(jthis.super_clazz.java_signature);
+				ConstPool.addClazzCP(jthis.super_clazz.java_signature);
 			}
 			for(int i=0; interfaces!=null && i < interfaces.length; i++) {
 				interfaces[i].clazz.checkResolved();
 				ConstPool.addClazzCP(jthis.interfaces[i].signature);
-				if( !Kiev.kaffe )
-					ConstPool.addClazzCP(jthis.interfaces[i].java_signature);
+				ConstPool.addClazzCP(jthis.interfaces[i].java_signature);
 			}
 			if( !isPackage() ) {
 				for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
 					jthis.sub_clazz[i].checkResolved();
 					ConstPool.addClazzCP(jthis.sub_clazz[i].type.signature);
-					if( !Kiev.kaffe )
-						ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
+					ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
 				}
 			}
 			
@@ -2796,8 +2790,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				Field f = fields[i];
 				ConstPool.addAsciiCP(f.name.name);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).signature);
-				if( !Kiev.kaffe )
-					ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).java_signature);
+				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).java_signature);
 
 				int flags = 0;
 				if( f.isVirtual() ) flags |= 2;
@@ -2825,9 +2818,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					jthis.methods[i].type.checkJavaSignature();
 				ConstPool.addAsciiCP(m.name.name);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature);
-				if( !Kiev.kaffe )
-					ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).java_signature);
-				if( !Kiev.kaffe && m.jtype != null )
+				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).java_signature);
+				if( m.jtype != null )
 					ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.jtype).java_signature);
 
 				try {

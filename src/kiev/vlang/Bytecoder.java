@@ -798,7 +798,7 @@ public class Bytecoder implements Constants {
 		KString cl_sig;
 		if (cl.isPrimitiveEnum())
 			cl_sig = cl.type.signature;
-		else if (kievmode || (Kiev.kaffe && !(cl.type instanceof MethodType)))
+		else if (kievmode)
 			cl_sig = jcl.type.signature;
 		else
 			cl_sig = jcl.type.java_signature;
@@ -806,8 +806,7 @@ public class Bytecoder implements Constants {
 		bcclazz.cp_clazz = ConstPool.getClazzCP(cl_sig).pos;
 	    // This class's superclass name
 	    if( cl.super_clazz != null ) {
-		    KString sup_sig =
-				kievmode || (Kiev.kaffe && !(cl.super_clazz instanceof MethodType))?
+		    KString sup_sig = kievmode ?
 					jcl.super_clazz.signature
 				  : jcl.super_clazz.java_signature;
 		    bcclazz.cp_super_clazz = ConstPool.getClazzCP(sup_sig).pos;
@@ -817,7 +816,7 @@ public class Bytecoder implements Constants {
 
 	    bcclazz.cp_interfaces = new int[cl.interfaces.length];
 		for(int i=0; i < cl.interfaces.length; i++) {
-		    KString interf_sig = kievmode || Kiev.kaffe?
+		    KString interf_sig = kievmode ?
 				jcl.interfaces[i].signature
 			  : jcl.interfaces[i].java_signature;
 			bcclazz.cp_interfaces[i] = ConstPool.getClazzCP(interf_sig).pos;
@@ -939,7 +938,7 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = ConstPool.getAsciiCP(f.name.name).pos;
-		if( !kievmode && !Kiev.kaffe ) {
+		if( !kievmode ) {
 			Type tp = Type.getRealType(Kiev.argtype,f.type);
 			bcf.cp_type = ConstPool.getAsciiCP(tp.java_signature).pos;
 		}
@@ -968,7 +967,7 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = ConstPool.getAsciiCP(m.name.name).pos;
-		if( !kievmode && !Kiev.kaffe )
+		if( !kievmode )
 			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,jcl.methods[i].jtype).java_signature).pos;
 		else
 			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature).pos;

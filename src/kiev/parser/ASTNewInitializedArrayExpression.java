@@ -35,42 +35,43 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewInitializedArrayExpression extends Expr {
-	@ref public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+	@att public ASTNonArrayType			type;
+	@att public final NArr<Expr>		args;
 	public int dim;
-  
+	
 	ASTNewInitializedArrayExpression(int id) {
 		super(0);
+		args = new NArr<Expr>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0 && n instanceof ASTNonArrayType ) {
-			type=n;
+			type = (ASTNonArrayType)n;
 		} else {
-			args = (Expr[])Arrays.append(args,n);
+			args.append((Expr)n);
         }
     }
 
 	public ASTNode resolve(Type reqType) {
-		if( type == null ) type = reqType;
-		else if( type instanceof Type );
-		else {
-			type = ((ASTNonArrayType)type).getType();
-			while( dim > 0 ) { type = Type.newArrayType((Type)type); dim--; }
+		Type tp;
+		if( type == null ) {
+			tp = reqType;
+		} else {
+			tp = type.getType();
+			while( dim > 0 ) { tp = Type.newArrayType(tp); dim--; }
 		}
-		if( !((Type)type).isArray() )
+		if( !tp.isArray() )
 			throw new CompilerException(pos,"Type "+type+" is not an array type");
     	for(int i=0; i < args.length; i++) {
         	try {
-				args[i] = args[i].resolveExpr(((Type)type).args[0]);
+				args[i] = args[i].resolveExpr(tp.args[0]);
             } catch(Exception e) {
             	Kiev.reportError(pos,e);
             }
         }
-        Type tp = (Type)type;
-        dim = 0;
+        int dim = 0;
         while( tp.isArray() ) { dim++; tp = tp.args[0]; }
-		return new NewInitializedArrayExpr(pos,tp,dim,args).resolve(reqType);
+		return new NewInitializedArrayExpr(pos,tp,dim,args.toArray()).resolve(reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

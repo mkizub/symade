@@ -292,10 +292,6 @@ public class Compiler {
 				else if( args[a].equals("-verify") ) {
 					Kiev.verify = onoff;
 					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-safe") ) {
@@ -369,15 +365,6 @@ public class Compiler {
 					if( onoff )
 						Kiev.make_project = true;
 					args[a] = null;
-					continue;
-				}
-				else if( args[a].equals("-kaffe")) {
-					Kiev.kaffe = onoff;
-					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-javacerrors")) {

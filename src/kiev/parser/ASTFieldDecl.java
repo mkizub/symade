@@ -37,7 +37,7 @@ import kiev.vlang.*;
 public class ASTFieldDecl extends ASTNode {
 
 	@att public ASTModifiers			modifiers;
-	@ref public ASTNode					type;
+	@att public ASTType					type;
 	@att public final NArr<ASTNode>		vars;
 
 	public ASTFieldDecl(int id) {
@@ -51,7 +51,7 @@ public class ASTFieldDecl extends ASTNode {
 			modifiers = (ASTModifiers)n;
 			break;
 		case ASTType:
-			type = n;
+			type = (ASTType)n;
 			break;
 		case ASTVarDecl:
 			if( vars.length == 0 ) pos = n.pos;

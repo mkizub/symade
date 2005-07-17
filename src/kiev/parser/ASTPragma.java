@@ -30,15 +30,16 @@ import kiev.stdlib.*;
 public class ASTPragma extends SimpleNode implements TopLevelDecl {
 
 	public boolean				enable;
-	public ASTConstExpression[]	options = new ASTConstExpression[0];
+	@att public final NArr<ASTConstExpression>	options;
 
 	public ASTPragma(int id) {
 		super(0);
+		options = new NArr<ASTConstExpression>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		ASTConstExpression opt = (ASTConstExpression)n;
-		options = (ASTConstExpression[])Arrays.append(options,opt);
+		options.append(opt);
     }
 
 	public Dumper toJava(Dumper dmp) {

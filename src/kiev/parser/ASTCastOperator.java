@@ -36,7 +36,7 @@ import kiev.stdlib.*;
 @node
 public class ASTCastOperator extends ASTNode {
 
-	@ref public ASTNode	type;
+	@att public ASTType	type;
 	public boolean  reinterp;
 
 	public ASTCastOperator(int id) {
@@ -45,13 +45,13 @@ public class ASTCastOperator extends ASTNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-        case 0: type=n; break;
+        case 0: type=(ASTType)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
 	public Operator resolveOperator() {
-		Type tp = ((ASTType)type).getType();
+		Type tp = type.getType();
 	    return CastOperator.newCastOperator(tp,reinterp);
 	}
 
