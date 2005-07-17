@@ -294,6 +294,8 @@ kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
+kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
+kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
@@ -374,7 +376,6 @@ kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
 kiev.vlang.GenerationsAttr kiev/vlang/GenerationsAttr kiev\vlang\Attr.java
 kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
-kiev.vlang.Grammar kiev/vlang/Grammar kiev\vlang\Grammar.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
@@ -409,6 +410,7 @@ kiev.vlang.MethodCP kiev/vlang/MethodCP kiev\vlang\ConstPool.java
 kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
 kiev.vlang.MultiExpr kiev/vlang/MultiExpr kiev\vlang\Expr.java
 kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
+kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
 kiev.vlang.NameTypeCP kiev/vlang/NameTypeCP kiev\vlang\ConstPool.java
 kiev.vlang.Named kiev/vlang/Named kiev\vlang\PassInfo.java
 kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
@@ -481,9 +483,9 @@ kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
-kiev.vlang.TokenDecl kiev/vlang/TokenDecl kiev\vlang\Grammar.java
 kiev.vlang.TopLevelDecl kiev/vlang/TopLevelDecl kiev\vlang\AST.java
 kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
+kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeDeclStat kiev/vlang/TypeDeclStat kiev\vlang\Statement.java
@@ -491,9 +493,13 @@ kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\FileUnit.java
 kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
+kiev.vlang.VNode kiev/vlang/VNode kiev\vlang\Tree.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WorkByContractCondition kiev/vlang/WorkByContractCondition kiev\vlang\Method.java
 kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java
+kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
+kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
+kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java
