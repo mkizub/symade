@@ -11,23 +11,26 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTModifiers extends ASTNode {
-	public ASTModifier[]	modifier = ASTModifier.emptyArray;
-	public ASTAccess 		acc;
-	public ASTPack   		pack;
-	public ASTAnnotation[]	annotations = ASTAnnotation.emptyArray;
+	@att public final NArr<ASTModifier>	modifier;
+	@att public ASTAccess 					acc;
+	@att public ASTPack   					pack;
+	@att public final NArr<ASTAnnotation>	annotations;
 	
 	public ASTModifiers() {
 		super(0);
+		modifier = new NArr<ASTModifier>(this);
+		annotations = new NArr<ASTAnnotation>(this);
 	}
 
 	public ASTModifiers(int id) {
-		super(0);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTModifier) {
-			modifier = (ASTModifier[])Arrays.append(modifier,n);
+			modifier.append((ASTModifier)n);
 		}
 		else if (n instanceof ASTAccess) {
 			if (acc != null)
@@ -40,7 +43,7 @@ public class ASTModifiers extends ASTNode {
 			pack = (ASTPack)n;
 		}
 		else if (n instanceof ASTAnnotation) {
-			annotations = (ASTAnnotation[])Arrays.append(annotations,n);
+			annotations.append((ASTAnnotation)n);
 		}
 		else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");

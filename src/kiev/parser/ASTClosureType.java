@@ -33,17 +33,18 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTClosureType extends ASTNode {
-    public ASTNode[]	types = ASTNode.emptyArray;
-//    public ASTNode		throwns;
+    @att public final NArr<ASTType>	types;
 
 	public ASTClosureType(int id) {
 		super(0);
+		types = new NArr<ASTType>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTType ) {
-        	types = (ASTNode[])Arrays.append(types,n);
+        	types.append((ASTType)n);
         }
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -53,9 +54,9 @@ public class ASTClosureType extends ASTNode {
 	public Type getType() {
 		Type[] tps = new Type[types.length-1];
         for(int i=0; i < tps.length; i++) {
-			tps[i] = ((ASTType)types[i]).getType();
+			tps[i] = types[i].getType();
 		}
-        Type ret = ((ASTType)types[types.length-1]).getType();
+        Type ret = types[types.length-1].getType();
         return MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
 	}
 

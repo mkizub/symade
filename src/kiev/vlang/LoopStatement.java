@@ -34,6 +34,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
 
 	protected	CodeLabel	continue_label = null;
@@ -58,10 +59,11 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 }
 
 
+@node
 public class WhileStat extends LoopStat {
 
-	public BooleanExpr	cond;
-	public Statement	body;
+	@att public BooleanExpr	cond;
+	@att public Statement	body;
 
 	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos, parent);
@@ -146,10 +148,11 @@ public class WhileStat extends LoopStat {
 	}
 }
 
+@node
 public class DoWhileStat extends LoopStat {
 
-	public BooleanExpr	cond;
-	public Statement	body;
+	@att public BooleanExpr	cond;
+	@att public Statement	body;
 
 	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos,parent);
@@ -235,9 +238,10 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
+@node
 public class ForInit extends ASTNode implements Scope {
 
-	public Type	type;
+	@ref public Type	type;
 	public Var[]	vars;
 	public Expr[]	inits;
 
@@ -294,12 +298,13 @@ public class ForInit extends ASTNode implements Scope {
 	}
 }
 
+@node
 public class ForStat extends LoopStat implements Scope {
 
-	public ASTNode		init;
-	public BooleanExpr	cond;
-	public Expr			iter;
-	public Statement	body;
+	@att public ASTNode		init;
+	@att public BooleanExpr	cond;
+	@att public Expr		iter;
+	@att public Statement	body;
 
 	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
 		super(pos, parent);
@@ -516,17 +521,18 @@ public class ForStat extends LoopStat implements Scope {
 	}
 }
 
+@node
 public class ForEachStat extends LoopStat implements Scope {
 
-	public Var			var;
-	public Var			iter;
-	public Expr			iter_init;
-	public BooleanExpr	iter_cond;
-	public Expr			iter_incr;
-	public Expr			var_init;
-	public Expr			container;
-	public BooleanExpr	cond;
-	public Statement	body;
+	@att public Var			var;
+	@att public Var			iter;
+	@att public Expr		iter_init;
+	@att public BooleanExpr	iter_cond;
+	@att public Expr		iter_incr;
+	@att public Expr		var_init;
+	@att public Expr		container;
+	@att public BooleanExpr	cond;
+	@att public Statement	body;
 
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;

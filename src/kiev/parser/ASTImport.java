@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTImport extends ASTNode implements TopLevelDecl {
 	public static final int	IMPORT_CLASS   = 0;
 	public static final int	IMPORT_STATIC  = 1;
@@ -58,22 +59,22 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
 		}
     }
 
-	public ASTNode pass1_1() {
-		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
-		PVar<ASTNode> v = new PVar<ASTNode>();
-		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) )
-			throw new CompilerException(pos,"Unresolved identifier "+name);
-		ASTNode n = v;
-		if (mode == IMPORT_CLASS && !(n instanceof Struct))
-			throw new CompilerException(pos,"Identifier "+name+" is not a class or package");
-		else if (mode == IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
-			throw new CompilerException(pos,"Identifier "+name+" is not a package");
-		else if (mode == IMPORT_STATIC && !(star || (n instanceof Field)))
-			throw new CompilerException(pos,"Identifier "+name+" is not a field");
-		else if (mode == IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax()))
-			throw new CompilerException(pos,"Identifier "+name+" is not a syntax");
-		return new Import(pos,PassInfo.file_unit,n,mode,star);
-	}
+//	public ASTNode pass1_1(ASTNode pn) {
+//		if (args != null || (mode==IMPORT_STATIC && !star)) return null;
+//		PVar<ASTNode> v = new PVar<ASTNode>();
+//		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) )
+//			throw new CompilerException(pos,"Unresolved identifier "+name);
+//		ASTNode n = v;
+//		if (mode == IMPORT_CLASS && !(n instanceof Struct))
+//			throw new CompilerException(pos,"Identifier "+name+" is not a class or package");
+//		else if (mode == IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
+//			throw new CompilerException(pos,"Identifier "+name+" is not a package");
+//		else if (mode == IMPORT_STATIC && !(star || (n instanceof Field)))
+//			throw new CompilerException(pos,"Identifier "+name+" is not a field");
+//		else if (mode == IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax()))
+//			throw new CompilerException(pos,"Identifier "+name+" is not a syntax");
+//		return new Import(pos,PassInfo.file_unit,n,mode,star);
+//	}
 
 	public ASTNode resolveImports() {
 		if (args == null || (mode==IMPORT_STATIC && star)) return null;

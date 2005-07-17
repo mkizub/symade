@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
@@ -43,9 +44,10 @@ public abstract class ASTAlias extends ASTNode {
 	public abstract void attach(ASTNode n);
 }
 
+@node
 public class ASTIdentifierAlias extends ASTAlias {
 
-	ASTIdentifier	name;
+	@att ASTIdentifier	name;
 
 	public ASTIdentifierAlias(int id) {
 		super(id);
@@ -81,3 +83,4 @@ public class ASTIdentifierAlias extends ASTAlias {
 	}
 
 }
+

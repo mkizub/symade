@@ -35,11 +35,10 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 
-	public ASTSyntaxDeclaration(int id) {
-		super();
-	}
+	public ASTSyntaxDeclaration(int id) {}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
@@ -49,85 +48,14 @@ public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 			name = ((ASTIdentifier)n).name;
 			pos = n.getPos();
 		} else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
 		}
 	}
 
-	public ASTNode pass1() {
-		trace(Kiev.debugResolve,"Pass 1 for synax "+name);
-		boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, name, false, !isTop);
-		me = Env.newStruct(clname,PassInfo.clazz,ACC_PRIVATE|ACC_ABSTRACT|ACC_SYNTAX,true);
-		me.setResolved(true);
-		me.setMembersGenerated(true);
-		me.setStatementsGenerated(true);
-
-		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		}
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-
-        PassInfo.push(me);
-        try {
-			/* Generate type for this structure */
-			me.type = Type.newJavaRefType(me);
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
-	public ASTNode pass1_1() {
-		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
-       	me.imported = new ASTNode[members.length];
-		for(int i=0; i < members.length; i++) {
-			ASTNode n = members[i];
-			try {
-				if (n instanceof ASTTypedef) {
-					n = n.pass1_1();
-					n.parent = me;
-					me.imported[i] = n;
-					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-				}
-				else if (n instanceof ASTOpdef) {
-					n = n.pass1_1();
-					me.imported[i] = n;
-					trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError/*Warning*/(n.getPos(),e);
-			}
-		}
-		super.pass1_1();
-		return me;
-	}
-
-	public ASTNode pass2() {
-		//trace(Kiev.debugResolve,"Pass 2 for syntax "+me);
-		//for(int i=0; i < members.length; i++) {
-		//	ASTNode n = members[i];
-		//	try {
-		//		if (n instanceof ASTTypedef) {
-		//			n = n.pass2();
-		//			n.parent = me;
-		//			me.imported[i] = n;
-		//		}
-		//	} catch(Exception e ) {
-		//		Kiev.reportError/*Warning*/(n.getPos(),e);
-		//	}
-		//}
-		return me;
-	}
-
-	public ASTNode pass2_2() {
-		trace(Kiev.debugResolve,"Pass 2_2 for syntax "+me);
-       	Kiev.packages_scanned.append(me);
-		return me;
-	}
-
-	public static Struct createMembers(Struct me, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTNode> members) {
 		trace(Kiev.debugResolve,"Pass 3 for syntax "+me);
-       	Kiev.packages_scanned.append(me);
+		if (!Kiev.packages_scanned.contains(me))
+			Kiev.packages_scanned.append(me);
 		return me;
 	}
 

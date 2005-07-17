@@ -29,8 +29,9 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
+@node
 public class ASTGotoStatement extends Statement {
-	ASTNode	expr;
+	@att ASTNode	expr;
 	boolean casemode = false;
     
 	public ASTGotoStatement(int id) {

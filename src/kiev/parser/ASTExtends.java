@@ -22,6 +22,8 @@
   
 package kiev.parser;
 
+import kiev.vlang.*;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTExtends.java,v 1.3 1998/10/26 23:47:03 max Exp $
  * @author Maxim Kizub
@@ -29,6 +31,7 @@ package kiev.parser;
  *
  */
 
+@node
 public class ASTExtends extends SimpleNode {
   public ASTExtends(int id) {
     super(0);

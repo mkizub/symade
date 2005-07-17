@@ -35,13 +35,14 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	
-	
-	ASTEnumFieldDeclaration[] enum_fields = new ASTEnumFieldDeclaration[0];
+	@att public final NArr<ASTEnumFieldDeclaration> enum_fields;
 	
 	public ASTEnumDeclaration(int id) {
 		super(0);
+		enum_fields = new NArr<ASTEnumFieldDeclaration>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -56,97 +57,20 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			ext = n;
 		}
         else if( n instanceof ASTEnumFieldDeclaration ) {
-			enum_fields = (ASTEnumFieldDeclaration[])Arrays.append(enum_fields,n);
+			enum_fields.append((ASTEnumFieldDeclaration)n);
 		}
         else {
-			members = (ASTNode[])Arrays.append(members,n);
+			members.append(n);
         }
     }
 
-	public ASTNode pass1() {
-		trace(Kiev.debugResolve,"Pass 1 for enum "+name);
-		Struct sup = null;
-		Struct[] impls = Struct.emptyArray;
-		// TODO: check flags for structures
-		int flags = modifiers.getFlags();
-		KString short_name = this.name;
-		ClazzName clname = null;
-		if( this.name != null ) {
-			boolean isTop = (parent != null && parent instanceof ASTFileUnit);
-			clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,!isTop);
-		}
-
-        flags |= ACC_ENUM;
-
-		me = Env.newStruct(clname,PassInfo.clazz/*,sup*/,flags,true);
-		me.setResolved(true);
-		if( !(parent instanceof ASTFileUnit) ) me.setStatic(true);
-		if( parent instanceof ASTFileUnit || parent instanceof ASTTypeDeclaration ) {
-			Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		}
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-		me.setEnum(true);
-
-        PassInfo.push(me);
-        try {
-			/* Then may be class arguments - they are proceed here, but their
-			   inheritance - at pass2()
-			*/
-			// TODO: decide if inner classes's argumets have to be arguments of outer classes
-			/* Generate type for this structure */
-			me.type = Type.newJavaRefType(me);
-
-        	// No inner classes and cases for enum
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
-	public ASTNode pass2() {
-		trace(Kiev.debugResolve,"Pass 2 for enum "+me);
-        PassInfo.push(me);
-        try {
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
-	public ASTNode pass2_2() {
-		trace(Kiev.debugResolve,"Pass 2_2 for enum "+me);
-        PassInfo.push(me);
-        try {
-			/* Now, process 'extends' and 'implements' clauses */
-			ASTNonArrayType at;
-			if( ext != null ) {
-				ASTExtends exts = (ASTExtends)ext;
-				at = (ASTNonArrayType)exts.children[0];
-				me.super_clazz = at.getType();
-			}
-			if( me.super_clazz == null ) {
-				me.super_clazz = Type.tpEnum;
-			}
-
-			if( !me.super_clazz.isReference() ) {
-				me.setPrimitiveEnum(true);
-				me.type.setMeAsPrimitiveEnum();
-			}
-
-			if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
-
-		} finally { PassInfo.pop(me); }
-
-		return me;
-	}
-
-	public static Struct createMembers(Struct me, ASTEnumFieldDeclaration[] enum_fields, ASTNode[] members) {
+	public static Struct createMembers(Struct me, NArr<ASTEnumFieldDeclaration> enum_fields, NArr<ASTNode> members) {
 		trace(Kiev.debugResolve,"Pass 3 for enum "+me);
         PassInfo.push(me);
         try {
 			// Process members
 			int next_val = 0;
-			for(int i=0; i < enum_fields.length; i++, next_val++) {
-				ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)enum_fields[i];
+			foreach (ASTEnumFieldDeclaration efd; enum_fields) {
 				efd.parent = me;
 				Type me_type = me.type;
 				Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
@@ -178,6 +102,7 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 									new ConstExpr(efd.text.pos, efd.text.val)
 						});
 				}
+				next_val++;
 				if (efd.text != null)
 					f.name.addAlias(KString.from("\""+efd.text.val+"\""));
 				f.init.parent = f;
@@ -190,40 +115,6 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	}
 
 	public void resolveFinalFields(boolean cleanup) {
-   	    // Process inner classes and cases
-		for(int i=0; i < members.length; i++) {
-			if( !(members[i] instanceof ASTImport) ) continue;
-			ASTNode imp = ((ASTImport)members[i]).pass2();
-			if( imp == null )
-				Kiev.reportError(members[i].getPos(),"Imported member "+imp+" not found");
-			else if( imp instanceof Field ) {
-				if( !imp.isStatic() ) {
-					Kiev.reportError(members[i].getPos(),"Imported field "+imp+" must be static");
-				} else {
-					me.imported = (ASTNode[])Arrays.append(me.imported,imp);
-				}
-			}
-			else if( imp instanceof Method ) {
-				if( !imp.isStatic() ) {
-					Kiev.reportError(members[i].getPos(),"Imported method "+imp+" must be static");
-				} else {
-					me.imported = (ASTNode[])Arrays.append(me.imported,imp);
-				}
-			}
-			else if( imp instanceof Struct ) {
-				Struct is = (Struct)imp;
-				for(int j=0; j < is.fields.length; j++) {
-					if( is.fields[j].isStatic() && !is.fields[j].name.equals(KString.Empty) )
-						me.imported = (ASTNode[])Arrays.append(me.imported,is.fields[j]);
-				}
-				for(int j=0; j < is.methods.length; j++) {
-					if( is.methods[j].isStatic() )
-						me.imported = (ASTNode[])Arrays.append(me.imported,is.methods[j]);
-				}
-			}
-			else
-				throw new CompilerException(members[i].getPos(),"Unknown type if imported member: "+imp);
-		}
 		// Resolve final values of class's fields
 		me.resolveFinalFields(cleanup);
 	}

@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable {
 	public static Method[]	emptyArray = new Method[0];
 
@@ -45,13 +46,13 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public NodeName			name;
 
 	/** Return type of the method and signature (argument's types) */
-	public MethodType		type;
+	@ref public MethodType		type;
 
 	/** The java type of the method (if method overrides parametriezed method) */
-	public MethodType		jtype;
+	@ref public MethodType		jtype;
 
 	/** The type of the dispatcher method (if method is a multimethod) */
-	public MethodType		dtype;
+	@ref public MethodType		dtype;
 
 	/** Signatures of thrown types (structures) */
 //	public Type[]			throwns = Type.emptyArray;
@@ -60,11 +61,11 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public Var[]			params = Var.emptyArray;
 
 	/** Return value of this method */
-	public Var				retvar;
+	@att public Var			retvar;
 
 	/** Body of the method - ASTBlockStat or BlockStat
 	 */
-	public ASTNode			body;
+	@att public ASTNode			body;
 
 	/** Array of attributes of this method
 	 */
@@ -133,10 +134,18 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return sb.toString();
 	}
 
+	public static String toString(KString nm, NArr<Expr> args) {
+		return toString(nm,args.toArray(),null);
+	}
+
 	public static String toString(KString nm, Expr[] args) {
 		return toString(nm,args,null);
 	}
 
+	public static String toString(KString nm, NArr<Expr> args, Type ret) {
+		return toString(nm,args.toArray(),ret);
+	}
+	
 	public static String toString(KString nm, Expr[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
@@ -173,6 +182,9 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp.append(name);
 	}
 
+	public Expr[] makeArgs(NArr<Expr> args, Type t) {
+		return makeArgs(args.toArray(), t);
+	}
 	public Expr[] makeArgs(Expr[] args, Type t) {
 		if( isVarArgs() ) {
 			Expr[] varargs = new Expr[type.args.length];
@@ -399,7 +411,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				if( body != null && !body.isMethodAbrupted() ) {
 					if( type.ret == Type.tpVoid ) {
 						if( body instanceof BlockStat ) {
-							((BlockStat)body).stats = (ASTNode[])Arrays.append(((BlockStat)body).stats,new ReturnStat(pos,body,null));
+							((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
 							body.setAbrupted(true);
 						}
 						else if( body instanceof WorkByContractCondition );
@@ -589,6 +601,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 
 }
 
+@node
 public class WorkByContractCondition extends Statement implements SetBody {
 
 	public static WorkByContractCondition[]	emptyArray = new WorkByContractCondition[0];
@@ -597,11 +610,11 @@ public class WorkByContractCondition extends Statement implements SetBody {
 	public static final int CondEnsure 		= 2;
 	public static final int CondInvariant	= 3;
 
-	public int			cond;
-	public KString		name;
-	public Statement	body;
-	public CodeAttr		code;
-	public Method		definer;
+	public int				cond;
+	public KString			name;
+	@att public Statement	body;
+	public CodeAttr			code;
+	@ref public Method		definer;
 
 	public WorkByContractCondition(int pos, int cond, KString name, Statement body) {
 		super(pos,null);
@@ -658,3 +671,4 @@ public class WorkByContractCondition extends Statement implements SetBody {
 		return dmp.append(body);
 	}
 }
+

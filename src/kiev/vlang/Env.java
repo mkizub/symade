@@ -26,6 +26,7 @@ import kiev.parser.kiev020;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.parser.ASTFileUnit;
+import kiev.transf.*;
 
 import java.io.*;
 import java.util.Properties;
@@ -41,6 +42,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
@@ -70,6 +72,7 @@ public class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
+@node
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
@@ -81,7 +84,7 @@ public class Env extends Struct {
 	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
 
 	/** Root of package hierarchy */
-	public static Env			root = new Env();
+	@ref public static Env			root = new Env();
 
 	/** StandardClassLoader */
 	public static kiev.bytecode.StandardClassLoader		stdClassLoader;
@@ -143,7 +146,7 @@ public class Env extends Struct {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
 				cl.methods = Method.emptyArray;
-				cl.imported = ASTNode.emptyArray;
+				cl.imported.delAll();
 				cl.attrs = Attr.emptyArray;
 			}
 			if( !cl.isArgument() )
@@ -531,10 +534,11 @@ public class Env extends Struct {
 			System.gc();
 			try {
 				Kiev.files_scanned.append(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )		fu.pass1();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )		fu.pass1_1();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )	fu.pass2();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	fu.pass2_2();
+				ExportJavaTop exporter = new ExportJavaTop();
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )     exporter.pass1(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )       exporter.pass1_1(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) exporter.pass2(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	exporter.pass2_2(fu, null);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();
@@ -579,3 +583,4 @@ public class Env extends Struct {
 		return dmp;
 	}
 }
+

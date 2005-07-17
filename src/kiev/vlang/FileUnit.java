@@ -35,23 +35,25 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	public KString				filename = KString.Empty;
-	public Struct				pkg;
-	public ASTNode[]			syntax = ASTNode.emptyArray;
-	public Struct[]				members = Struct.emptyArray;
+	@ref public Struct			pkg;
+	@att public final NArr<ASTNode>		syntax;
+	@ref public final NArr<Struct>		members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
-	public boolean[]			disabled_extensions;
+	public boolean[]				disabled_extensions;
 
 	public FileUnit() {
-		this(KString.Empty,Env.root,Struct.emptyArray);
+		this(KString.Empty,Env.root);
 	}
-	public FileUnit(KString name, Struct pkg, Struct[] members) {
-    	super(0);
+	public FileUnit(KString name, Struct pkg) {
+		super(0);
 		this.filename = name;
 		this.pkg = pkg;
-		this.members = members;
+		syntax  = new NArr<ASTNode>(this);
+		members = new NArr<Struct>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -393,19 +395,20 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 }
 
 
+@node
 public class Typedef extends ASTNode implements Named {
 
 	public static Typedef[]	emptyArray = new Typedef[0];
 
 	public KString		name;
-	public Type			type;
+	@ref public Type	type;
 
-	public Typedef(int pos, ASTNode par, KString name, Type type) {
+	public Typedef(int pos, ASTNode par, KString name) {
 		super(pos,par);
 		this.name = name;
-		this.type = type;
+		this.type = Type.tpVoid;
 	}
-
+	
 	public NodeName	getName() {
 		return new NodeName(name);
 	}

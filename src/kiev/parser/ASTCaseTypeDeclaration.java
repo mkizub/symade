@@ -33,13 +33,14 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreScanneable {
-	public ASTNode[]	casefields = ASTNode.emptyArray;
-	public Statement	body;
+	@att public final NArr<ASTNode>		casefields;
+	@att public Statement				body;
 	public virtual PrescannedBody pbody;
 
 	public ASTCaseTypeDeclaration(int id) {
-		super();
+		casefields = new NArr<ASTNode>(this);
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -57,10 +58,10 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
             pos = n.getPos();
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
-			argument = (ASTNode[])Arrays.append(argument,n);
+			argument.append(n);
 		}
         else if( n instanceof ASTFormalParameter ) {
-			casefields = (ASTNode[])Arrays.append(casefields,n);
+			casefields.append(n);
 		}
         else if( n instanceof Statement ) {
 			body = (Statement)n;
@@ -69,72 +70,6 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
-
-	public ASTNode pass1() {
-		Struct sup = null;
-		Struct[] impls = Struct.emptyArray;
-		// TODO: check flags for structures
-		int flags = modifiers.getFlags();
-		KString short_name = this.name;
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,short_name,false,true);
-
-		flags |= AccessFlags.ACC_PIZZACASE;
-
-		Struct parnt;
-		if( parent instanceof Struct )
-			parnt = (Struct)parent;
-		else
-			parnt = ((ASTTypeDeclaration)parent).me;
-		me = Env.newStruct(clname,parnt,flags,true);
-		me.setResolved(true);
-		me.setStatic(true);
-		me.setPizzaCase(true);
-		Env.setProjectInfo(me.name,((ASTFileUnit)Kiev.k.getJJTree().rootNode()).filename);
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
-		parnt.addCase(me);
-
-		/* Then may be class arguments - they are proceed here, but their
-		   inheritance - at pass2()
-		*/
-		// Case argumets have to be arguments of outer classes
-		for(int i=0; i < argument.length; i++) {
-			Type[] outer_args = ((ASTTypeDeclaration)parent).me.type.args;
-            if( outer_args == null || outer_args.length <= i
-			|| !outer_args[i].clazz.name.short_name.equals(((ASTArgumentDeclaration)argument[i]).name) )
-				throw new CompilerException(argument[i].getPos(),"Case argument must match outer class argument,"
-					+" but arg["+i+"] is "+((ASTArgumentDeclaration)argument[i]).name
-					+" and have to be "+outer_args[i].clazz.name.short_name);
-		}
-
-		/* Create type for class's arguments, if any */
-		Type[] targs = Type.emptyArray;
-		if( argument.length > 0 ) {
-			targs = ((ASTTypeDeclaration)parent).me.type.args;
-		}
-
-		/* Generate type for this structure */
-		me.type = Type.newRefType(me,targs);
-
-		me.super_clazz = ((ASTTypeDeclaration)parent).me.type;
-
-		return me;
-	}
-
-	public ASTNode pass2() {
-
-		Struct parnt;
-		if( parent instanceof Struct )
-			parnt = (Struct)parent;
-		else
-			parnt = ((ASTTypeDeclaration)parent).me;
-
-		me.super_clazz = parnt.type;
-
-		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
-
-		return me;
-	}
 
 	public Struct createMembers() {
 		Struct parnt;
@@ -186,3 +121,4 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 	}
 
 }
+

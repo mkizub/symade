@@ -22,6 +22,7 @@ package kiev;
 
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 import kiev.parser.*;
 
 import java.io.*;
@@ -291,10 +292,6 @@ public class Compiler {
 				else if( args[a].equals("-verify") ) {
 					Kiev.verify = onoff;
 					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-safe") ) {
@@ -368,15 +365,6 @@ public class Compiler {
 					if( onoff )
 						Kiev.make_project = true;
 					args[a] = null;
-					continue;
-				}
-				else if( args[a].equals("-kaffe")) {
-					Kiev.kaffe = onoff;
-					args[a] = null;
-					if( Kiev.kaffe && Kiev.verify ) {
-						System.out.println("-verify ignored because of -kaffe option");
-						Kiev.verify = false;
-					}
 					continue;
 				}
 				else if( args[a].equals("-javacerrors")) {
@@ -466,7 +454,8 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
 			Kiev.file_unit.cleanup();
 			Kiev.file_unit.length = args.length;
-
+			
+			ExportJavaTop exporter = new ExportJavaTop();
 
 			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
 			for(int i=0; i < args.length; i++) {
@@ -501,7 +490,6 @@ public class Compiler {
 						Kiev.k.ReInit(bis);
 					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);
 					diff_time = System.currentTimeMillis() - curr_time;
-					Kiev.file_unit[i].pass1();
 					runGC();
 					bis.close();
 					Kiev.curFile = KString.Empty;
@@ -513,6 +501,7 @@ public class Compiler {
 					Kiev.reportParserError(0,e);
 				}
 			}
+			delayed_stop = exporter.pass1();
 			if( Kiev.errCount > 0 ) {
 				goto stop;
 			}
@@ -530,58 +519,14 @@ public class Compiler {
 
 
 			Kiev.pass_no = TopLevelPass.passProcessSyntax;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass1_1();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass1_1();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
-			runGC();
-
-
+			delayed_stop |= exporter.pass1_1();
 			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
-			runGC();
-
-
+			delayed_stop |= exporter.pass2();
 			Kiev.pass_no = TopLevelPass.passStructInheritance;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass2_2();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).pass2_2();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
+			delayed_stop |= exporter.pass2_2();
+			
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's arguments declarations passed",diff_time);
+			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
 			if( Kiev.errCount > 0 || delayed_stop ) {
 				goto stop;
 			}
@@ -680,6 +625,10 @@ public class Compiler {
 					Kiev.files.append(((ASTFileUnit)fu).file_unit);
 
 
+			
+			ProcessVNode noder = new ProcessVNode();
+			noder.verify();
+			
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			Kiev.file_unit.cleanup();
 			Kiev.files_scanned.cleanup();

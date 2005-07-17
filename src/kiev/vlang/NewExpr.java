@@ -35,14 +35,15 @@ import static kiev.vlang.Instr.*;
  *
  */
 
+@node
 public class NewExpr extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args;
-	public Expr		outer;
-	public Expr		tif_expr;	// TypeInfo field access expression
+	@att public Expr		outer;
+	@att public Expr		tif_expr;	// TypeInfo field access expression
 
-	public Method	func;
+	@ref public Method	func;
 
 	public NewExpr(int pos, Type type, Expr[] args) {
 		super(pos);
@@ -106,7 +107,7 @@ public class NewExpr extends Expr {
 					outer_args = (Expr[])Arrays.append(outer_args,new FieldAccessExpr(pos,cl.fields[i]));
 				}
 			}
-			if( !Kiev.kaffe && type.args.length > 0 ) {
+			if( type.args.length > 0 ) {
 				// Create static field for this type typeinfo
 				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type);
 				args = (Expr[])Arrays.insert(args,tif_expr,0);
@@ -197,10 +198,7 @@ public class NewExpr extends Expr {
 					Code.addInstr(Instr.op_load,v);
 				}
 			}
-			if( Kiev.kaffe )
-				Code.addInstr(op_call,func,false,type);
-			else
-				Code.addInstr(op_call,func,false,type);
+			Code.addInstr(op_call,func,false,type);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -259,13 +257,14 @@ public class NewExpr extends Expr {
 	}
 }
 
+@node
 public class NewArrayExpr extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args;
 	public int		dim;
-	private Type	arrtype;
-	private Expr	create_via_reflection;
+	@ref private Type	arrtype;
+	@att private Expr	create_via_reflection;
 
 	public NewArrayExpr(int pos, Type type, Expr[] args, int dim) {
 		super(pos);
@@ -296,7 +295,7 @@ public class NewArrayExpr extends Expr {
 			for(int i=0; i < args.length; i++)
 				if( args[i] != null )
 					args[i] = args[i].resolveExpr(Type.tpInt);
-			if( !Kiev.kaffe && type.clazz.isArgument() ) {
+			if( type.clazz.isArgument() ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"Access to argument "+type+" from static method");
 				int i;
@@ -376,13 +375,14 @@ public class NewArrayExpr extends Expr {
 	}
 }
 
+@node
 public class NewInitializedArrayExpr extends Expr {
 
-	public Type			type;
+	@ref public Type			type;
 	public int			dim;
 	public int[]		dims;
 	public Expr[]		args;
-	private Type		arrtype;
+	@ref private Type		arrtype;
 
 	public NewInitializedArrayExpr(int pos, Type type, int dim, Expr[] args) {
 		super(pos);
@@ -476,12 +476,13 @@ public class NewInitializedArrayExpr extends Expr {
 	}
 }
 
+@node
 public class NewClosure extends Expr {
 
-	public Type		type;
+	@ref public Type		type;
 	public Expr[]	args = Expr.emptyArray;
 
-	public Method	func;
+	@ref public Method	func;
 
 	public NewClosure(int pos, Type type) {
 		super(pos);
@@ -522,52 +523,24 @@ public class NewClosure extends Expr {
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return this;
 		PassInfo.push(this);
 		try {
-			if( Kiev.kaffe ) {
-				if( (PassInfo.method==null || PassInfo.method.isStatic()) && !func.isStatic())
-					throw new CompilerException(pos,"Non-static method reference in static method");
-				for(int i=0; i < args.length; i++)
-					args[i] = args[i].resolveExpr(func.type.args[i]);
-				boolean updated = false;
-				for(int i=0; i < func.params.length; i++) {
-					if( func.params[i].isClosureProxy() ) {
-						KString name = func.params[i].name.name;
-						PVar<ASTNode> v = new PVar<ASTNode>();
-						if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
-							Kiev.reportError(pos,"Internal error: can't find var "+name);
-						}
-						Expr vae = new VarAccessExpr(pos,this,(Var)v)
-							.resolveExpr(func.params[i].type);
-						vae.setUseNoProxy(true);
-						args = (Expr[])Arrays.insert(args,vae,func.isStatic()?i:i-1);
-						updated = true;
-					}
-				}
-				if(updated) {
-					Type[] targs = new Type[func.type.args.length-args.length];
-					for(int i=args.length, j=0; i < func.type.args.length; i++, j++)
-						targs[j] = func.type.args[i];
-					this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
-				}
-			} else {
-				if( Env.getStruct(Type.tpClosureClazz.name) == null )
-					throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-				type.clazz.autoProxyMethods();
-				type.clazz.resolve(null);
-				Struct cl = type.clazz;
-				KStringBuffer sign = new KStringBuffer().append('(');
-				if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
-					sign.append(((Struct)PassInfo.method.parent).type.signature);
-				}
-				sign.append('I');
-				for(int i=0; i < cl.fields.length; i++) {
-					if( !cl.fields[i].isNeedProxy() ) continue;
-					sign.append(cl.fields[i].type.signature);
-				}
-				sign.append(")V");
-				func = type.clazz.resolveMethod(nameInit,sign.toKString());
-				if( !((Struct)func.parent).equals(type.clazz) )
-					throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type.clazz);
+			if( Env.getStruct(Type.tpClosureClazz.name) == null )
+				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+			type.clazz.autoProxyMethods();
+			type.clazz.resolve(null);
+			Struct cl = type.clazz;
+			KStringBuffer sign = new KStringBuffer().append('(');
+			if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
+				sign.append(((Struct)PassInfo.method.parent).type.signature);
 			}
+			sign.append('I');
+			for(int i=0; i < cl.fields.length; i++) {
+				if( !cl.fields[i].isNeedProxy() ) continue;
+				sign.append(cl.fields[i].type.signature);
+			}
+			sign.append(")V");
+			func = type.clazz.resolveMethod(nameInit,sign.toKString());
+			if( !((Struct)func.parent).equals(type.clazz) )
+				throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type.clazz);
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;
@@ -577,41 +550,25 @@ public class NewClosure extends Expr {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
 		PassInfo.push(this);
 		try {
-			if( !Kiev.kaffe ) {
-				Code.addInstr(op_new,type);
-				// First arg ('this' pointer) is generated by 'op_dup'
-				if( reqType != Type.tpVoid && !Kiev.kaffe
-//				|| (
-//			 		PassInfo.method.isHasProxy()
-////				 && !type.equals(PassInfo.method.frame_proxy_var.type)
-//				   )
-				)
+			Code.addInstr(op_new,type);
+			// First arg ('this' pointer) is generated by 'op_dup'
+			if( reqType != Type.tpVoid )
 				Code.addInstr(op_dup);
-				// Constructor call args (first args 'this' skipped)
-				if( PassInfo.method!=null && !PassInfo.method.isStatic() )
-					Code.addInstr(Instr.op_load,PassInfo.method.params[0]);
-				if( type.args == null )
-					Code.addConst(0);
-				else
-					Code.addConst(type.args.length);
-				// Now, fill proxyed fields (vars)
-				Struct cl = type.clazz;
-				for(int i=0; i < cl.fields.length; i++) {
-					if( !cl.fields[i].isNeedProxy() ) continue;
-					Var v = ((VarAccessExpr)cl.fields[i].init).var;
-					Code.addInstr(Instr.op_load,v);
-				}
-				Code.addInstr(op_call,func,false);
-			} else {
-				int nargs = args.length;
-				if (!func.isStatic()) {
-					Code.addInstr(Instr.op_load,PassInfo.method.params[0]);
-					nargs++;
-				}
-				for(int i=0; i < args.length; i++)
-					args[i].generate(func.type.args[i]);
-				Code.addInstr(op_new,func,nargs,type);
+			// Constructor call args (first args 'this' skipped)
+			if( PassInfo.method!=null && !PassInfo.method.isStatic() )
+				Code.addInstr(Instr.op_load,PassInfo.method.params[0]);
+			if( type.args == null )
+				Code.addConst(0);
+			else
+				Code.addConst(type.args.length);
+			// Now, fill proxyed fields (vars)
+			Struct cl = type.clazz;
+			for(int i=0; i < cl.fields.length; i++) {
+				if( !cl.fields[i].isNeedProxy() ) continue;
+				Var v = ((VarAccessExpr)cl.fields[i].init).var;
+				Code.addInstr(Instr.op_load,v);
 			}
+			Code.addInstr(op_call,func,false);
 		} finally { PassInfo.pop(this); }
 	}
 

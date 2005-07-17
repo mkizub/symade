@@ -33,11 +33,12 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTRuleExpression extends ASTRuleNode {
 
-	public Expr		expr;
-	public Expr		bt_expr;
-	boolean			while_mode;
+	@att public Expr	expr;
+	@att public Expr	bt_expr;
+	boolean				while_mode;
 
 	public ASTRuleExpression(int id) {
 		super(0);

@@ -33,36 +33,37 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTFormalParameter extends ASTNode {
-	public int			dim;
-	public ASTModifiers	modifiers;
-	public ASTNode		type;
-	public ASTNode		mm_type;
-    public KString		name;
-	public Type			resolved_type;
-	public Type			resolved_jtype;
+	@att public ASTModifiers		modifiers;
+	@att public ASTType				type;
+	@att public ASTType				mm_type;
+    @att public ASTIdentifier		ident;
+
+	ASTFormalParameter() {
+		super(0);
+	}
 
 	ASTFormalParameter(int id) {
 		super(0);
 	}
 
 	public void set(Token t) {
-		this.name = new KToken(t).image;
-        pos = t.getPos();
+		this.ident = new ASTIdentifier(t.getPos(), KString.from(t.image));
 	}
-
+	
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
 			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTType ) {
         	if (type == null)
-				type = n;
+				type = (ASTType)n;
 			else
-				mm_type = n;
+				mm_type = (ASTType)n;
 		}
         else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
+			ident = (ASTIdentifier)n;
             pos = n.getPos();
 		}
         else {
@@ -71,31 +72,16 @@ public class ASTFormalParameter extends ASTNode {
     }
 
 	public Var pass3() {
-		if( !Kiev.javaMode && name.len == 1 && name.charAt(0)=='_' ) return null;
+		if( !Kiev.javaMode && ident.name.len == 1 && ident.name.charAt(0)=='_' ) return null;
 		// TODO: check flags for fields
 		int flags = modifiers.getFlags();
-		Type type = ((ASTType)this.type).getType();
-		Type mm_type = (this.mm_type == null) ? null : ((ASTType)this.mm_type).getType();
-		for(int i=0; i < dim; i++) {
-			type = Type.newArrayType(type);
-			if (mm_type != null)
-				mm_type = Type.newArrayType(mm_type);
-		}
-//		if( (flags & ACC_PROLOGVAR) != 0 ) {
-//			Kiev.reportWarning(pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-//			type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-//			if (mm_type != null)
-//				throw new CompilerException(this.mm_type.getPos(),"You can't specify 'actual' type for prolog parameter");
-//		}
-		resolved_type = type;
-		resolved_jtype = (mm_type!=null) ? mm_type : null;
-		return new Var(pos,name,type,flags);
+		Type type = this.type.getType();
+		Type mm_type = (this.mm_type == null) ? null : this.mm_type.getType();
+		return new Var(pos,ident.name,type,flags);
 	}
 
     public Dumper toJava(Dumper dmp) {
-		dmp.space().append(type);
-        for(int i=0; i < dim; i++) dmp.append("[]");
-        dmp.space().append(name).space();
+		dmp.space().append(type).space().append(ident).space();
         return dmp;
     }
 }

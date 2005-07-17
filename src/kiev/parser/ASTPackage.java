@@ -33,8 +33,9 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTPackage extends ASTNode {
-	KString	name;
+	public KString	name;
 
 	ASTPackage(int id) {
 		super(0);
@@ -45,11 +46,12 @@ public class ASTPackage extends ASTNode {
         pos = n.getPos();
     }
 
-	public ASTNode pass1() {
-		return Env.newPackage(ClazzName.fromToplevelName(name,false));
-	}
+//	public ASTNode pass1(ASTNode pn) {
+//		return Env.newPackage(ClazzName.fromToplevelName(name,false));
+//	}
 
 	public Dumper toJava(Dumper dmp) {
     	return dmp.append("package").space().append(name).append(';').newLine();
     }
 }
+

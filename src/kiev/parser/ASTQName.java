@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTQName extends SimpleNode {
 	ASTQName(int id) {
 		super(0);

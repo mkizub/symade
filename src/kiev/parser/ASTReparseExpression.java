@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTReparseExpression extends Expr {
 
 	public String	ref;

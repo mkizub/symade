@@ -35,22 +35,33 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
-	public ASTModifiers	modifiers;
-    public KString		name;
-    public ASTNode[]	params = ASTNode.emptyArray;
-    public ASTAlias[]	aliases = ASTAlias.emptyArray;
-    public ASTNode[]	localvars = ASTNode.emptyArray;
-    public Statement	body;
+	@att public ASTModifiers			modifiers;
+    @att public ASTIdentifier			ident;
+    @att public final NArr<ASTNode>	params;
+    @att public final NArr<ASTAlias>	aliases;
+    @att public final NArr<ASTNode>	localvars;
+    @att public Statement	body;
 	public virtual PrescannedBody pbody;
-	public ASTRequareDeclaration[]	req;
-	public ASTEnsureDeclaration[]	ens;
+	@att public final NArr<ASTRequareDeclaration>	req;
+	@att public final NArr<ASTEnsureDeclaration>	ens;
 
-	public RuleMethod	me;
+	@ref public RuleMethod	me;
+
+	public ASTRuleDeclaration() {
+		super(0);
+		modifiers = new ASTModifiers();
+		params = new NArr<ASTNode>(this);
+		aliases = new NArr<ASTAlias>(this);
+		localvars = new NArr<ASTNode>(this);
+		req = new NArr<ASTRequareDeclaration>(this);
+		ens = new NArr<ASTEnsureDeclaration>(this);
+	}
 
 	public ASTRuleDeclaration(int id) {
-		super(0);
+		this();
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -61,29 +72,23 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			modifiers = (ASTModifiers)n;
 		}
 		else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
+			ident = (ASTIdentifier)n;
 			pos = n.getPos();
 		}
 		else if( n instanceof ASTFormalParameter ) {
-			params = (ASTNode[])Arrays.append(params,n);
+			params.append(n);
 		}
 		else if( n instanceof ASTVarDecls ) {
-			localvars = (ASTNode[])Arrays.append(localvars,n);
+			localvars.append(n);
 		}
 		else if( n instanceof ASTAlias ) {
-			aliases = (ASTAlias[])Arrays.append(aliases,n);
+			aliases.append((ASTAlias)n);
         }
         else if( n instanceof ASTRequareDeclaration ) {
-			if( req == null )
-				req = new ASTRequareDeclaration[]{(ASTRequareDeclaration)n};
-			else
-				req = (ASTRequareDeclaration[])Arrays.append(req,(ASTRequareDeclaration)n);
+			req.append((ASTRequareDeclaration)n);
         }
         else if( n instanceof ASTEnsureDeclaration ) {
-			if( ens == null )
-				ens = new ASTEnsureDeclaration[]{(ASTEnsureDeclaration)n};
-			else
-				ens = (ASTEnsureDeclaration[])Arrays.append(ens,(ASTEnsureDeclaration)n);
+			ens.append((ASTEnsureDeclaration)n);
         }
         else if( n instanceof ASTRuleBlock ) {
 			body = (Statement)n;
@@ -93,7 +98,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         }
     }
 
-    public Method pass3() {
+    public ASTNode pass3() {
 		Struct clazz;
 		if( parent instanceof ASTTypeDeclaration )
 			clazz = ((ASTTypeDeclaration)parent).me;
@@ -158,7 +163,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 //			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 //		}
 		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
-		me = new RuleMethod(clazz,name,mtype,flags | ACC_MULTIMETHOD);
+		me = new RuleMethod(clazz,ident.name,mtype,flags | ACC_MULTIMETHOD);
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());
         me.body = body;
@@ -206,3 +211,4 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
     }
 
 }
+

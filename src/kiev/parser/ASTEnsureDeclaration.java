@@ -36,6 +36,7 @@ import static kiev.vlang.WorkByContractCondition.*;
  *
  */
 
+@node
 public class ASTEnsureDeclaration extends ASTCondDeclaration {
 	public ASTEnsureDeclaration(int id) {
 		super(0);
@@ -47,3 +48,4 @@ public class ASTEnsureDeclaration extends ASTCondDeclaration {
     	return cond;
     }
 }
+

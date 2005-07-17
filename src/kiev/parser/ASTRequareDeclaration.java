@@ -36,9 +36,10 @@ import static kiev.vlang.WorkByContractCondition.*;
  *
  */
 
+@node
 public abstract class ASTCondDeclaration extends ASTNode implements PreScanneable {
 	public KString		name;
-    public Statement	body;
+    @att public Statement	body;
 	public virtual PrescannedBody pbody;
 
 	public ASTCondDeclaration(int id) {
@@ -66,6 +67,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 
 }
 
+@node
 public class ASTRequareDeclaration extends ASTCondDeclaration {
 	public ASTRequareDeclaration(int id) {
 		super(0);
@@ -77,3 +79,4 @@ public class ASTRequareDeclaration extends ASTCondDeclaration {
 		return cond;
     }
 }
+

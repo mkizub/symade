@@ -33,6 +33,7 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTModifier extends ASTNode implements kiev020Constants {
 
 	public static ASTModifier[] emptyArray = new ASTModifier[0];
@@ -40,17 +41,17 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 	public int 			kind;
 	public String		image;
 
-	public static final ASTModifier modPUBLIC		= new ASTModifier(PUBLIC,"public");
-	public static final ASTModifier modPRIVATE		= new ASTModifier(PRIVATE,"private");
-	public static final ASTModifier modPROTECTED	= new ASTModifier(PROTECTED,"protected");
-	public static final ASTModifier modFINAL		= new ASTModifier(FINAL,"final");
-	public static final ASTModifier modSTATIC		= new ASTModifier(STATIC,"static");
-	public static final ASTModifier modABSTRACT		= new ASTModifier(ABSTRACT,"abstract");
-	public static final ASTModifier modNATIVE		= new ASTModifier(NATIVE,"native");
-	public static final ASTModifier modSYNCHRONIZED	= new ASTModifier(SYNCHRONIZED,"synchronized");
-	public static final ASTModifier modVOLATILE		= new ASTModifier(VOLATILE,"volatile");
-	public static final ASTModifier modTRANSIENT	= new ASTModifier(TRANSIENT,"transient");
-	public static final ASTModifier modWRAPPER		= new ASTModifier(WRAPPER,"$wrapper");
+	@ref public static final ASTModifier modPUBLIC		= new ASTModifier(PUBLIC,"public");
+	@ref public static final ASTModifier modPRIVATE		= new ASTModifier(PRIVATE,"private");
+	@ref public static final ASTModifier modPROTECTED	= new ASTModifier(PROTECTED,"protected");
+	@ref public static final ASTModifier modFINAL		= new ASTModifier(FINAL,"final");
+	@ref public static final ASTModifier modSTATIC		= new ASTModifier(STATIC,"static");
+	@ref public static final ASTModifier modABSTRACT		= new ASTModifier(ABSTRACT,"abstract");
+	@ref public static final ASTModifier modNATIVE		= new ASTModifier(NATIVE,"native");
+	@ref public static final ASTModifier modSYNCHRONIZED	= new ASTModifier(SYNCHRONIZED,"synchronized");
+	@ref public static final ASTModifier modVOLATILE		= new ASTModifier(VOLATILE,"volatile");
+	@ref public static final ASTModifier modTRANSIENT	= new ASTModifier(TRANSIENT,"transient");
+	@ref public static final ASTModifier modWRAPPER		= new ASTModifier(WRAPPER,"$wrapper");
 
 	ASTModifier(int id) {
 		super(0);
@@ -100,3 +101,4 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 		return dmp.space().append(image==null?tokenImage[kind]:image).space();
     }
 }
+

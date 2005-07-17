@@ -33,11 +33,12 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTForStatement extends Statement {
-	public ASTNode	init;
-	public Expr		cond;
-	public Expr		iter;
-	public Statement	body;
+	@att public ASTNode	init;
+	@att public Expr		cond;
+	@att public Expr		iter;
+	@att public Statement	body;
 
 	public ASTForStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);

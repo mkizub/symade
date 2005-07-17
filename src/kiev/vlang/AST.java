@@ -35,15 +35,15 @@ import static kiev.stdlib.Debug.*;
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 public interface TopLevelDecl {
 	// create top-level, inner named, argument Struct-s
-	public ASTNode pass1() { return (ASTNode)this; }
+	//public ASTNode pass1(ASTNode pn);
 	// resolve some imports, remember typedef's names, remember
 	// operator declarations, remember names/operators for type macroses
-	public ASTNode pass1_1() { return (ASTNode)this; }
+	//public ASTNode pass1_1(ASTNode pn);
 	// process inheritance for type arguments, create
 	// Struct's for template types
-	public ASTNode pass2() { return (ASTNode)this; }
+	//public ASTNode pass2(ASTNode pn);
 	// process Struct's inheritance (extends/implements)
-	public ASTNode pass2_2() { return (ASTNode)this; }
+	//public ASTNode pass2_2(ASTNode pn);
 	// process Struct's members (fields, methods)
 	public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
@@ -67,16 +67,16 @@ public enum TopLevelPass /*extends int*/ {
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
-
+@node
 public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
 	private static int		parserAddrIdx;
 
-	public int			pos;
-    public ASTNode		parent;
-	public int			flags;
+	public int				pos;
+    @ref public ASTNode		parent;
+	public int				flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
 	public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
@@ -194,13 +194,13 @@ public abstract class ASTNode implements Constants {
     	return dmp;
     }
 
-	public ASTNode pass1()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass1_1() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass2_2() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass3()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode autoProxyMethods() { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode resolveImports()   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass1(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	//public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode pass3()             { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 
 	public int setFlags(int fl) {
@@ -779,6 +779,7 @@ public abstract class ASTNode implements Constants {
 
 }
 
+@node
 public abstract class Expr extends ASTNode {
 
 	public static Expr[] emptyArray = new Expr[0];
@@ -875,10 +876,11 @@ public abstract class Expr extends ASTNode {
 	}
 }
 
+@node
 public class WrapedExpr extends Expr {
 
-	public ASTNode	expr;
-	public Type		base_type;
+	@att public ASTNode		expr;
+	@ref public Type		base_type;
 	public WrapedExpr(int pos, ASTNode expr) {
 		super(pos);
 		this.expr = expr;
@@ -903,6 +905,7 @@ public class WrapedExpr extends Expr {
 	}
 }
 
+@node
 public abstract class BooleanExpr extends Expr {
 
 	public BooleanExpr(int pos) { super(pos); }
@@ -932,6 +935,7 @@ public abstract class BooleanExpr extends Expr {
 	public abstract void generate_iffalse(CodeLabel label);
 }
 
+@node
 public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr(int pos) { super(pos); }
@@ -967,6 +971,7 @@ public abstract class LvalueExpr extends Expr {
 	public abstract void generateStoreDupValue();
 }
 
+@node
 public abstract class Statement extends ASTNode {
 
 	public static Statement[] emptyArray = new Statement[0];

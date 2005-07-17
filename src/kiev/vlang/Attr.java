@@ -1061,10 +1061,12 @@ public abstract class MetaAttr extends Attr {
 		int n = 0;
 		foreach (MetaValue v; m) {
 			a.names[n] = ConstPool.addAsciiCP(v.type.name).pos;
-			if (v instanceof MetaValueScalar)
+			if (v instanceof MetaValueScalar) {
 				a.values[n] = write_value(((MetaValueScalar)v).value);
-			else
-				a.values[n] = write_values(((MetaValueArray)v).values);
+			} else {
+				MetaValueArray mva = (MetaValueArray)v;
+				a.values[n] = write_values(mva.values.toArray());
+			}
 			n++;
 		}
 	}

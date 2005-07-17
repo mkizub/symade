@@ -33,9 +33,10 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTArgumentDeclaration extends ASTNode {
-	public KString	name;
-	public ASTNode	type;
+	@att public ASTIdentifier		ident;
+	@att public ASTNonArrayType		type;
 
 	public ASTArgumentDeclaration(int id) {
 		super(0);
@@ -43,14 +44,14 @@ public class ASTArgumentDeclaration extends ASTNode {
 
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
-		case 0:	name = ((ASTIdentifier)n).name; pos = n.getPos(); break;
-		case 1:	type = n; break;
+		case 0:	ident = (ASTIdentifier)n; pos = n.getPos(); break;
+		case 1:	type = (ASTNonArrayType)n; break;
 		default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.append(name);
+		dmp.append(ident);
         if( type != null ) {
 			dmp.space().append("extends").space();
 			type.toJava(dmp);

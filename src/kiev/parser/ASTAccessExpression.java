@@ -36,26 +36,19 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTAccessExpression extends Expr {
-	public Expr		obj;
-	public KString	name;
-	public boolean  in_wrapper;
+	@att public Expr			obj;
+	@att public ASTIdentifier	ident;
 
 	public ASTAccessExpression(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
 	}
 
-	public ASTAccessExpression(int pos,Expr obj, KString name) {
-		super(pos);
-		this.obj = obj;
-		this.name = name;
-		this.obj.parent = this;
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0:	obj = (Expr)n; break;
-		case 1:	name = ((ASTIdentifier)n).name; break;
+		case 1:	ident = (ASTIdentifier)n; break;
         default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
@@ -76,27 +69,23 @@ public class ASTAccessExpression extends Expr {
 				obj = (Expr)o;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
-				if (in_wrapper) {
-					if (!tp.clazz.isWrapper())
-						throw new CompilerException(obj.getPos(),"Class "+tp+" is not a wrapper");
-				}
-				else if (tp.clazz.isWrapper() && name.byteAt(0) != '$') {
+				if (tp.clazz.isWrapper() && ident.name.byteAt(0) != '$') {
 					o = (Expr)new AccessExpr(obj.pos,obj,tp.clazz.wrapped_field).resolve(null);
 					tp = o.getType();
 				}
 				if( tp.isArray() ) {
-					if( name.equals("length") ) {
+					if( ident.name.equals("length") ) {
 						return new ArrayLengthAccessExpr(pos,(Expr)o).resolve(reqType);
 					}
 					else throw new CompilerException(obj.getPos(),"Arrays "+tp+" has only one member 'length'");
 				}
-				else if( name.equals("$self") && tp.isReference()/*.clazz.equals(Type.tpPrologVar.clazz)*/ )
+				else if( ident.name.equals("$self") && tp.isReference()/*.clazz.equals(Type.tpPrologVar.clazz)*/ )
 					return new SelfAccessExpr(pos,(LvalueExpr)o).resolve(reqType);
 				else if( tp.isReference() ) cl = (Struct)tp.clazz;
 				else
 					throw new CompilerException(obj.getPos(),"Resolved object "+o+" of type "+tp+" is not a scope");
 			}
-			if( o instanceof Struct && name.equals(nameThis) ) {
+			if( o instanceof Struct && ident.name.equals(nameThis) ) {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
 			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
@@ -110,7 +99,7 @@ public class ASTAccessExpression extends Expr {
 					info = new ResInfo();
 					tp = snitps[snitps_index++];
 					cl = (Struct)tp.clazz;
-					foreach(cl.resolveNameR(v,info,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+					foreach(cl.resolveNameR(v,info,ident.name,tp, 0) ) {
 						if (info.transforms > min_transforms)
 							continue;
 						ASTNode e = makeExpr(v,info,o,cl);
@@ -123,7 +112,7 @@ public class ASTAccessExpression extends Expr {
 			} else {
 					v.$unbind();
 					info = new ResInfo();
-					foreach(cl.resolveNameR(v,info,name,tp, in_wrapper? ResolveFlags.NoForwards : 0) ) {
+					foreach(cl.resolveNameR(v,info,ident.name,tp, 0) ) {
 						if (info.transforms > min_transforms)
 							continue;
 						ASTNode e = makeExpr(v,info,o,cl);
@@ -135,11 +124,11 @@ public class ASTAccessExpression extends Expr {
 			}
 			if (res.length() == 0) {
 				//resolve(reqType);
-				throw new CompilerException(pos,"Unresolved identifier "+name+" in class "+cl+" for type(s) "
+				throw new CompilerException(pos,"Unresolved identifier "+ident+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 			}
 			if (res.length() > 1) {
-				String msg = "Umbigous identifier "+name+" in class "+cl+" for type(s) "
+				String msg = "Umbigous identifier "+ident+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps));
 				Dumper dmp = new Dumper();
 				dmp.newLine(1);
@@ -199,18 +188,18 @@ public class ASTAccessExpression extends Expr {
 				return new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			}
 		} else {
-			throw new CompilerException(pos,"Identifier "+name+" must be a class's field");
+			throw new CompilerException(pos,"Identifier "+ident+" must be a class's field");
 		}
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public String toString() {
-    	return obj+"."+name;
+    	return obj+"."+ident;
 	}
 
 	public Dumper toJava(Dumper dmp) {
-    	dmp.append(obj).append('.').append(name);
+    	dmp.append(obj).append('.').append(ident.name);
 		return dmp;
 	}
 }

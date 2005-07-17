@@ -33,19 +33,21 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTNormalCase extends ASTNode {
-	public ASTNode		val;
-	public ASTNode[]	stats = ASTNode.emptyArray;
+	@att public ASTNode		val;
+	@att public final NArr<ASTNode>		stats;
 
 	public ASTNormalCase(int id) {
 		super(0);
+		stats = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 && n instanceof Expr )
 			val = n;
         else
-			stats = (ASTNode[])Arrays.append(stats,n);
+			stats.append(n);
     }
     
     public ASTNode resolve(Type reqType) {
@@ -55,7 +57,7 @@ public class ASTNormalCase extends ASTNode {
 //	    } catch(Exception e ) {
 //	    	Kiev.reportError(val.getPos(),e);
 //	    }
-    	CaseLabel cl = new CaseLabel(pos,parent,val,stats);
+    	CaseLabel cl = new CaseLabel(pos,parent,val,stats.toArray());
     	cl.parent = parent;
     	return cl.resolve(Type.tpVoid);
     }
@@ -71,3 +73,4 @@ public class ASTNormalCase extends ASTNode {
 		return dmp;
 	}
 }
+

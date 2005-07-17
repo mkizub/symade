@@ -27,7 +27,6 @@ public class Token implements kiev020Constants {
    * last character of this token.
    */
   public int beginLine, beginColumn, endLine, endColumn;
-	public int pos;
 
   /**
    * The string image of the token.
@@ -100,7 +99,7 @@ public class Token implements kiev020Constants {
     	if( kiev.Kiev.k.reparse_body )
     		return kiev.Kiev.k.reparse_pos;
     	else
-	    	return /*pos; */(beginLine <<11) | (beginColumn & 0x3FF);
+	    	return (beginLine <<11) | (beginColumn & 0x3FF);
     }
     public static int getPos(int beginLine, int beginColumn) {
     	return (beginLine <<11) | (beginColumn & 0x3FF);
@@ -109,12 +108,12 @@ public class Token implements kiev020Constants {
     	if( kiev.Kiev.k.reparse_body )
     		return kiev.Kiev.k.reparse_pos >>> 11;
     	else
-	    	return /*pos >>> 11*/ beginLine;
+	    	return beginLine;
     }
     public int getColumnPos() {
     	if( kiev.Kiev.k.reparse_body )
     		return kiev.Kiev.k.reparse_pos & 0x3FF;
     	else
-	    	return /*pos & 0x3FF*/ beginColumn;
+	    	return beginColumn;
     }
 }

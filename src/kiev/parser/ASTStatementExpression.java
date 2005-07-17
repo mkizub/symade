@@ -33,11 +33,12 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTStatementExpression extends Statement {
-	public Expr	expr;
+	@att public Expr	expr;
     
-	public ASTStatementExpression(int id) {
-		super(id,null);
+	public ASTStatementExpression(int pos) {
+		super(pos,null);
 	}
 
 	public ASTStatementExpression(Expr e) {

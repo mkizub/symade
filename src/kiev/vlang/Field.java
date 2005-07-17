@@ -32,6 +32,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class Field extends ASTNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
@@ -42,23 +43,26 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	public NodeName			name;
 
 	/** Type of the field */
-	public Type				type;
+	@ref public Type		type;
 
 	/** Pack size/offset */
 	public PackInfo			pack;
 
 	/** Initial value of this field */
-	public Expr				init = null;
+	@att public Expr		init = null;
 
 	/** Array of attributes of this field */
 	public Attr[]			attrs = Attr.emptyArray;
+
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet		meta;
 
 	/** Array of invariant methods, that check this field */
 	public Method[]			invs = Method.emptyArray;
 
 	/** Getter/setter methods for this field */
-	public Method			getter = null;
-	public Method			setter = null;
+	@ref public Method		getter = null;
+	@ref public Method		setter = null;
 
 	public static class PackInfo {
 		public int		size;
@@ -104,6 +108,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
         // Parent node is always a class this field was declared in
 		this.parent = clazz;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New field created: "+name
 			+" with type "+type);
 	}

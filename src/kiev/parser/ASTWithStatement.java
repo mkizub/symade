@@ -34,9 +34,10 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTWithStatement extends Statement {
-	public Expr				arg;
-    public Statement		body;
+	@att public Expr			arg;
+    @att public Statement		body;
 
 	public ASTWithStatement(int id) {
 		super(id,null);

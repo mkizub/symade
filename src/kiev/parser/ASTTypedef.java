@@ -33,11 +33,12 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTTypedef extends SimpleNode implements TopLevelDecl {
-	KString	name;
-	ASTNode	type;
-	Typedef td;
-	boolean opdef = false;
+	public KString	name;
+	@att public ASTNode	type;
+	@ref public Typedef td;
+	public boolean opdef = false;
 
 	ASTTypedef(int id) {
 		super(0);
@@ -62,32 +63,6 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
-
-	public ASTNode pass1_1() {
-		if (td != null) return td;
-		if (opdef) {
-			ASTQName qn = (ASTQName)type;
-			PVar<ASTNode> v = new PVar<ASTNode>();
-			if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
-				throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
-			if( !(v instanceof Struct) )
-				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
-			Struct s = (Struct)v;
-			if (s.type.args.length != 1)
-				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
-			return td = new Typedef(pos,parent,name,s.type);
-		} else {
-			ASTNode t = ((ASTType)type).getType();
-			if (!(t instanceof Type))
-				return null;
-			return td = new Typedef(pos,parent,name,(Type)t);
-		}
-	}
-
-	public ASTNode pass2() {
-		if (td != null) return td;
-		return pass1_1();
-	}
 
 	public String toString() {
 		if (opdef)

@@ -32,6 +32,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
+@node
 public class Type extends ASTNode implements AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
@@ -49,57 +50,57 @@ public class Type extends ASTNode implements AccessFlags {
 
 	public static Hash<Type>	typeHash;
 
-	public Struct			clazz;
+	@ref public Struct			clazz;
 	public Type[]			args = Type.emptyArray;
 	public KString			signature;
 	public KString			java_signature;
 	public int				flags;
 
-	public static Type tpAny;
-	public static Type tpVoid;
-	public static Type tpRule;
-	public static Type tpBoolean;
-	public static Type tpByte;
-	public static Type tpChar;
-	public static Type tpShort;
-	public static Type tpInt;
-	public static Type tpLong;
-	public static Type tpFloat;
-	public static Type tpDouble;
-	public static Type tpBooleanRef;
-	public static Type tpByteRef;
-	public static Type tpCharRef;
-	public static Type tpNumberRef;
-	public static Type tpShortRef;
-	public static Type tpIntRef;
-	public static Type tpLongRef;
-	public static Type tpFloatRef;
-	public static Type tpDoubleRef;
-	public static Type tpVoidRef;
-	public static Type tpNull;
-	public static Type tpObject;
-	public static Type tpClass;
-	public static Type tpDebug;
-	public static Type tpTypeInfo;
-	public static Type tpTypeInfoInterface;
-	public static Type tpArray;
-	public static Type tpCloneable;
-	public static Type tpString;
-	public static Type tpThrowable;
-	public static Type tpError;
-	public static Type tpException;
-	public static Type tpCastException;
-	public static Type tpJavaEnumeration;
-	public static Type tpKievEnumeration;
-	public static Type tpRuntimeException;
-	public static Type tpAssertException;
-	public static Type tpMessageException;
-	public static Type tpApplayable;
-	public static Type tpDynamic;
-	public static Type tpEnum;
-	public static Type tpAnnotation;
-	public static Struct tpClosureClazz;
-	public static Struct tpMethodClazz;
+	@ref public static Type tpAny;
+	@ref public static Type tpVoid;
+	@ref public static Type tpRule;
+	@ref public static Type tpBoolean;
+	@ref public static Type tpByte;
+	@ref public static Type tpChar;
+	@ref public static Type tpShort;
+	@ref public static Type tpInt;
+	@ref public static Type tpLong;
+	@ref public static Type tpFloat;
+	@ref public static Type tpDouble;
+	@ref public static Type tpBooleanRef;
+	@ref public static Type tpByteRef;
+	@ref public static Type tpCharRef;
+	@ref public static Type tpNumberRef;
+	@ref public static Type tpShortRef;
+	@ref public static Type tpIntRef;
+	@ref public static Type tpLongRef;
+	@ref public static Type tpFloatRef;
+	@ref public static Type tpDoubleRef;
+	@ref public static Type tpVoidRef;
+	@ref public static Type tpNull;
+	@ref public static Type tpObject;
+	@ref public static Type tpClass;
+	@ref public static Type tpDebug;
+	@ref public static Type tpTypeInfo;
+	@ref public static Type tpTypeInfoInterface;
+	@ref public static Type tpArray;
+	@ref public static Type tpCloneable;
+	@ref public static Type tpString;
+	@ref public static Type tpThrowable;
+	@ref public static Type tpError;
+	@ref public static Type tpException;
+	@ref public static Type tpCastException;
+	@ref public static Type tpJavaEnumeration;
+	@ref public static Type tpKievEnumeration;
+	@ref public static Type tpRuntimeException;
+	@ref public static Type tpAssertException;
+	@ref public static Type tpMessageException;
+	@ref public static Type tpApplayable;
+	@ref public static Type tpDynamic;
+	@ref public static Type tpEnum;
+	@ref public static Type tpAnnotation;
+	@ref public static Struct tpClosureClazz;
+	@ref public static Struct tpMethodClazz;
 
 /*	public static Type tpCell;
 	public static Type tpCellObject;
@@ -113,10 +114,10 @@ public class Type extends ASTNode implements AccessFlags {
 	public static Type tpCellDouble;
 */
 //	public static Type tpPrologEnv;
-	public static Type tpPrologVar;
-	public static Type tpRefProxy;
+	@ref public static Type tpPrologVar;
+	@ref public static Type tpRefProxy;
 
-	public static Type tpTypeSwitchHash;
+	@ref public static Type tpTypeSwitchHash;
 
 	public static void InitializeTypes() {
 		typeHash = new Hash<Type>();
@@ -1207,8 +1208,9 @@ public class Type extends ASTNode implements AccessFlags {
 }
 
 
+@node
 public class MethodType extends Type {
-	public Type		ret;
+	@ref public Type		ret;
 	public Type[]	fargs;	// formal arguments for parametriezed methods
 
 	private MethodType(Struct clazz, Type ret, Type[] args, Type[] fargs) {

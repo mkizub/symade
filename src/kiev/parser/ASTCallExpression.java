@@ -36,29 +36,51 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class ASTCallExpression extends Expr {
-	public KString	func;
-    public Expr[]	args = Expr.emptyArray;
+	@att public ASTIdentifier			func;
+    @att public final NArr<Expr>		args;
+
+	public ASTCallExpression() {
+		super(0);
+		args = new NArr<Expr>(this);
+	}
 
 	public ASTCallExpression(int id) {
 		super(0);
+		args = new NArr<Expr>(this);
 	}
 
 	public ASTCallExpression(int pos, KString func, Expr[] args) {
 		super(pos);
-		this.func = func;
+		this.func = new ASTIdentifier(pos, func);
+		foreach (Expr e; args) {
+			this.args.append(e);
+			e.parent = this;
+		}
+	}
+
+	public ASTCallExpression(int pos, KString func, NArr<Expr> args) {
+		super(pos);
+		this.func = new ASTIdentifier(pos, func);
 		this.args = args;
-		for (int i=0; i < args.length; i++)
-			args[i].parent = this;
+		foreach (Expr e; args) {
+			this.args.append(e);
+			e.parent = this;
+		}
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-			func=((ASTIdentifier)n).name;
+			func=(ASTIdentifier)n;
             pos = n.getPos();
-		} else {
-			args = (Expr[])Arrays.append(args,n);
+		}
+		else if (n instanceof Expr) {
+			args.append((Expr)n);
         }
+		else {
+			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+		}
     }
 
 	public ASTNode resolve(Type reqType) {
@@ -75,34 +97,32 @@ public class ASTCallExpression extends Expr {
 		Type tp = PassInfo.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
-		if( func.equals(nameThis) ) {
+		if( func.name.equals(nameThis) ) {
 			Method mmm = PassInfo.method;
-			if( !Kiev.kaffe && mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
+			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args = (Expr[])Arrays.insert(args,new VarAccessExpr(pos,this,mmm.params[1]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
 				else
-					args = (Expr[])Arrays.insert(args,
-						PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
+					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
 			}
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,info,PassInfo.method.name.name,args,ret,tp,0) )
-				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,info,PassInfo.method.name.name,args.toArray(),ret,tp,0) )
+				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),false).resolve(ret);
 			else
 				return new CallAccessExpr(pos,parent,Method.getAccessExpr(info),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
 		}
-		else if( func.equals(nameSuper) ) {
+		else if( func.name.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
-			if( !Kiev.kaffe && mmm.name.equals(nameInit) && PassInfo.clazz.super_clazz.args.length > 0 ) {
+			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_clazz.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args = (Expr[])Arrays.insert(args,new VarAccessExpr(pos,this,mmm.params[1]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args = (Expr[])Arrays.insert(args,new VarAccessExpr(pos,this,mmm.params[2]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[2]),0);
 				else
-					args = (Expr[])Arrays.insert(args,
-						PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_clazz),0);
+					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_clazz),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
 			if( PassInfo.clazz.super_clazz.clazz.package_clazz.isClazz()
@@ -110,74 +130,71 @@ public class ASTCallExpression extends Expr {
 			) {
 				if( PassInfo.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
-				args = (Expr[])Arrays.insert(args,new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
+				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
 			}
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,
-					m,info,PassInfo.method.name.name,args,ret,PassInfo.clazz.super_clazz,0) )
-				throw new CompilerException(pos,"Method "+Method.toString(func,args)+" unresolved");
+					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_clazz,0) )
+				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.path.length() == 0 )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
 		} else {
-			Expr[] args1 = args;
+			Expr[] args1 = args.toArray();
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
 				for(int i=0; i < reqType.args.length; i++) {
 					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,reqType.args[i],0)));
 				}
 			}
-			if( !PassInfo.resolveMethodR(m,info,func,args1,ret,tp,0) ) {
+			if( !PassInfo.resolveMethodR(m,info,func.name,args1,ret,tp,0) ) {
 				// May be a closure
 				PVar<ASTNode> closure = new PVar<ASTNode>();
 				ResInfo info = new ResInfo();
-				if( !PassInfo.resolveNameR(closure,info,func,tp,0) ) {
+				if( !PassInfo.resolveNameR(closure,info,func.name,tp,0) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args,ret));
+					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
 				try {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
 						if( info.path.length()  == 0 )
-							return new ClosureCallExpr(pos,parent,closure,args).resolve(ret);
+							return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
 						else {
-							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args).resolve(ret);
+							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args.toArray()).resolve(ret);
 						}
 					}
 				} catch(Exception eee) {
 					Kiev.reportError(pos,eee);
 				}
-				throw new CompilerException(pos,"Unresolved method "+Method.toString(func,args));
+				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
 			}
 			if( reqType instanceof MethodType ) {
-				if( Kiev.kaffe ) {
-					return new NewClosure(pos,(Method)m,args).resolve(reqType);
+				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
+				ac.pos = pos;
+				ac.parent = parent;
+				ac.rettype = new ASTType(pos, ((MethodType)reqType).ret);
+				for (int i=0; i < ac.params.length; i++)
+					ac.params.append(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
+				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+				Expr[] oldargs = args.toArray();
+				Expr[] cargs = new Expr[ac.params.length];
+				for(int i=0; i < cargs.length; i++)
+					cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
+				args.delAll();
+				foreach (Expr e; cargs)
+					args.add(e);
+				if( ac.rettype.getType() == Type.tpVoid ) {
+					bs.addStatement(new ExprStat(pos,bs,this));
+					bs.addStatement(new ReturnStat(pos,bs,null));
 				} else {
-					ASTAnonymouseClosure ac = new ASTAnonymouseClosure(kiev020TreeConstants.JJTANONYMOUSECLOSURE);
-					ac.pos = pos;
-					ac.parent = parent;
-					ac.type = ((MethodType)reqType).ret;
-					ac.params = new ASTNode[((Method)m).type.args.length];
-					for(int i=0; i < ac.params.length; i++)
-						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0);
-					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-					Expr[] oldargs = args;
-					Expr[] cargs = new Expr[ac.params.length];
-					for(int i=0; i < cargs.length; i++)
-						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-					args = cargs;
-					if( ac.type == Type.tpVoid ) {
-						bs.addStatement(new ExprStat(pos,bs,this));
-						bs.addStatement(new ReturnStat(pos,bs,null));
-					} else {
-						bs.addStatement(new ReturnStat(pos,bs,this));
-					}
-					ac.body = bs;
-					if( oldargs.length > 0 )
-						return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
-					else
-						return ac.resolve(reqType);
+					bs.addStatement(new ReturnStat(pos,bs,this));
 				}
+				ac.body = bs;
+				if( oldargs.length > 0 )
+					return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
+				else
+					return ac.resolve(reqType);
 			} else {
 				if( m.isStatic() )
 					info.path.setLength(0);

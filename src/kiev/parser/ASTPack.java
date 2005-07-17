@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTPack extends ASTNode {
 
 	public int		size;
@@ -55,3 +56,4 @@ public class ASTPack extends ASTNode {
 	}
 	
 }
+

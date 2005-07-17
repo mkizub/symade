@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class Import extends ASTNode implements Constants, Scope {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -43,12 +44,12 @@ public class Import extends ASTNode implements Constants, Scope {
 	public static final int	IMPORT_PACKAGE = 2;
 	public static final int	IMPORT_SYNTAX  = 3;
 
-	public int			mode = IMPORT_CLASS;
-    public boolean		star = false;
-    public ASTNode		node;
+	public int				mode = IMPORT_CLASS;
+    public boolean			star = false;
+    @ref public ASTNode		node;
 
-	public Import(int pos, FileUnit fu, ASTNode node, int mode, boolean star) {
-		super(pos, fu);
+	public Import(int pos, ASTNode parent, ASTNode node, int mode, boolean star) {
+		super(pos, parent);
 		this.node = node;
 		this.mode = mode;
 		this.star = star;

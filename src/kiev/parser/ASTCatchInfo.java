@@ -33,9 +33,10 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTCatchInfo extends SimpleNode {
-	public ASTFormalParameter	par;
-    public Statement			body;
+	@att public ASTFormalParameter	par;
+    @att public Statement			body;
 
 	public ASTCatchInfo(int id) {
 		super(0);

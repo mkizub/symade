@@ -26,24 +26,21 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
+@node
 public class ASTPragma extends SimpleNode implements TopLevelDecl {
 
 	public boolean				enable;
-	public ASTConstExpression[]	options = new ASTConstExpression[0];
+	@att public final NArr<ASTConstExpression>	options;
 
 	public ASTPragma(int id) {
 		super(0);
+		options = new NArr<ASTConstExpression>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
 		ASTConstExpression opt = (ASTConstExpression)n;
-		options = (ASTConstExpression[])Arrays.append(options,opt);
+		options.append(opt);
     }
-
-	public ASTNode pass1()   { return this; }
-	public ASTNode pass1_1() { return this; }
-	public ASTNode pass2()   { return this; }
-	public ASTNode pass2_2() { return this; }
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("/* pragma ").append(enable?"enable":"disable").space();

@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.transf.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
@@ -34,6 +35,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class InlineMethodStat extends Statement implements Scope {
 
 	static class ParamRedir {
@@ -43,7 +45,7 @@ public class InlineMethodStat extends Statement implements Scope {
 	};
 
 
-	public Method		method;
+	@ref public Method		method;
 	public ParamRedir[]	params_redir;
 
 	public InlineMethodStat(int pos, ASTNode parent, Method m, Method in) {
@@ -138,25 +140,50 @@ public class InlineMethodStat extends Statement implements Scope {
 	}
 }
 
+@node
 public class BlockStat extends Statement implements Scope {
 
-	public ASTNode[]	stats = Statement.emptyArray;
-	public Var[]		vars = Var.emptyArray;
-	public ASTNode[]	members = ASTNode.emptyArray;
-	public Statement[]	addstats = Statement.emptyArray;
+	@att public final NArr<ASTNode>		stats;
+	@att public final NArr<Var>			vars;
+	@att public final NArr<ASTNode>		members;
+	@att public final NArr<Statement>	addstats;
 
 	protected CodeLabel	break_label = null;
 
-	public BlockStat(int pos, ASTNode parent) { super(pos, parent); }
+	public BlockStat(int pos, ASTNode parent) {
+		super(pos, parent);
+		this.stats = new NArr<ASTNode>(this);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+		this.addstats = new NArr<Statement>(this);
+	}
 
-	public BlockStat(int pos, ASTNode parent, ASTNode[] stats) {
-		super(pos,parent);
-		this.stats = stats;
-		for(int i=0; i < stats.length; i++) stats[i].parent = this;
+	public BlockStat(int pos, ASTNode parent, NArr<ASTNode> sts) {
+		super(pos, parent);
+		this.stats = new NArr<ASTNode>(this);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+		this.addstats = new NArr<Statement>(this);
+		foreach (ASTNode st; sts) {
+			this.stats.append(st);
+			st.parent = this;
+		}
+	}
+
+	public BlockStat(int pos, ASTNode parent, ASTNode[] sts) {
+		super(pos, parent);
+		this.stats = new NArr<ASTNode>(this);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+		this.addstats = new NArr<Statement>(this);
+		foreach (ASTNode st; sts) {
+			this.stats.append(st);
+			st.parent = this;
+		}
 	}
 
 	public Statement addStatement(Statement st) {
-		stats = (ASTNode[])Arrays.append(stats,st);
+		stats.append(st);
 		st.parent = this;
 		return st;
 	}
@@ -165,7 +192,7 @@ public class BlockStat extends Statement implements Scope {
 		foreach(Var v; vars; v.name.equals(var.name) ) {
 			Kiev.reportWarning(pos,"Variable "+var.name+" already declared in this scope");
 		}
-		vars = (Var[])Arrays.append(vars,var);
+		vars.append(var);
 		return var;
 	}
 
@@ -206,14 +233,14 @@ public class BlockStat extends Statement implements Scope {
 			resolveBlockStats();
 			if( addstats.length > 0 ) {
 				for(int i=0; i < addstats.length; i++) {
-					stats = (ASTNode[])Arrays.insert(stats,addstats[i],i);
+					stats.insert(addstats[i],i);
 					trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
 				}
-				addstats = Statement.emptyArray;
+				addstats.delAll();
 			}
 		} finally {
 			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
-			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars);
+			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
 			NodeInfoPass.addInfo(nip_state);
 			PassInfo.pop(this);
 		}
@@ -280,23 +307,26 @@ public class BlockStat extends Statement implements Scope {
 					}
 					stats[i] = vstats[0];
 					for(int j=1; j < vstats.length; j++, i++) {
-						stats = (ASTNode[])Arrays.insert(stats,vstats[j],i+1);
+						stats.insert(vstats[j],i+1);
 					}
 				}
 				else if( stats[i] instanceof ASTTypeDeclaration ) {
 					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
-					Struct cl;
+					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
 						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
-					cl = (Struct)decl.pass1();
-					cl.setLocal(true);
-					decl.pass2();
-					decl.pass2_2();
+					ExportJavaTop exporter = new ExportJavaTop();
+					tds.struct = (Struct) exporter.pass1(decl, tds);
+					tds.struct.setLocal(true);
+					exporter.pass1_1(decl, tds);
+					exporter.pass2(decl, tds);
+					exporter.pass2_2(decl, tds);
 					decl.pass3();
-					cl.autoProxyMethods();
-					cl.resolveFinalFields(false);
-					stats[i] = new TypeDeclStat(decl.pos,this,cl).resolve(null);
-					members = (ASTNode[])Arrays.append(members,cl);
+					tds.struct.autoProxyMethods();
+					tds.struct.resolveFinalFields(false);
+					stats[i] = tds;
+					stats[i] = tds.resolve(null);
+					members.append(tds.struct);
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -320,7 +350,7 @@ public class BlockStat extends Statement implements Scope {
 					Kiev.reportError(stats[i].getPos(),e);
 				}
 			}
-			Code.removeVars(vars);
+			Code.removeVars(vars.toArray());
 			if( parent instanceof Method && Kiev.debugOutputC
 			 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
 				Code.stack_push(((Method)parent).type.ret);
@@ -355,6 +385,7 @@ public class BlockStat extends Statement implements Scope {
 
 }
 
+@node
 public class EmptyStat extends Statement {
 
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
@@ -380,9 +411,10 @@ public class EmptyStat extends Statement {
 	}
 }
 
+@node
 public class ExprStat extends Statement {
 
-	public Expr		expr;
+	@att public Expr		expr;
 
 	public ExprStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
@@ -428,10 +460,11 @@ public class ExprStat extends Statement {
 	}
 }
 
+@node
 public class DeclStat extends Statement {
 
-	public Var		var;
-	public Expr		init;
+	@att public Var		var;
+	@att public Expr		init;
 
 	public DeclStat(int pos, ASTNode parent, Var var) {
 		super(pos, parent);
@@ -529,13 +562,17 @@ public class DeclStat extends Statement {
 	}
 }
 
+@node
 public class TypeDeclStat extends Statement/*defaults*/ {
 
-	public Struct		struct;
+	@ref public Struct		struct;
 
-	public TypeDeclStat(int pos, ASTNode parent, Struct struct) {
+	public TypeDeclStat(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.struct = struct;
+	}
+	
+	public void set$struct(Struct s) {
+		this.struct = s;
 		this.struct.parent = this;
 	}
 
@@ -573,9 +610,10 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ReturnStat extends Statement/*defaults*/ {
 
-	public Expr		expr;
+	@att public Expr		expr;
 
 	public ReturnStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
@@ -681,9 +719,10 @@ public class ReturnStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ThrowStat extends Statement/*defaults*/ {
 
-	public Expr		expr;
+	@att public Expr		expr;
 
 	public ThrowStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
@@ -733,11 +772,12 @@ public class ThrowStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class IfElseStat extends Statement {
 
-	public BooleanExpr	cond;
-	public Statement	thenSt;
-	public Statement	elseSt;
+	@att public BooleanExpr	cond;
+	@att public Statement	thenSt;
+	@att public Statement	elseSt;
 
 	public IfElseStat(int pos, ASTNode parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
@@ -908,10 +948,11 @@ public class IfElseStat extends Statement {
 	}
 }
 
+@node
 public class CondStat extends Statement {
 
-	public BooleanExpr	cond;
-	public Expr			message;
+	@att public BooleanExpr		cond;
+	@att public Expr			message;
 
 	public CondStat(int pos, ASTNode parent, BooleanExpr cond, Expr message) {
 		super(pos,parent);
@@ -1032,12 +1073,13 @@ public class CondStat extends Statement {
 	}
 }
 
+@node
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	public KString		name;
-	public Statement	stat;
+	@att public Statement	stat;
 
 	protected CodeLabel	tag_label = null;
 
@@ -1089,6 +1131,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	}
 }
 
+@node
 public class BreakStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1167,6 +1210,7 @@ public class BreakStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class ContinueStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1216,6 +1260,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class GotoStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1399,10 +1444,11 @@ public class GotoStat extends Statement/*defaults*/ {
 	}
 }
 
+@node
 public class GotoCaseStat extends Statement/*defaults*/ {
 
-	public Expr			expr;
-	public SwitchStat	sw;
+	@att public Expr		expr;
+	@ref public SwitchStat	sw;
 
 	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);

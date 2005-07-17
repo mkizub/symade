@@ -6,27 +6,19 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+@node
 public abstract class SimpleNode extends ASTNode {
   
-  public ASTNode[] children;
+  @att public final NArr<ASTNode> children;
 
   public SimpleNode(int i) {
 	super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
+	children = new NArr<ASTNode>(this);
   }
-
-  public void jjtSetParent(ASTNode n) { parent = n; }
-  public ASTNode jjtGetParent() { return parent; }
 
   public void jjtAddChild(ASTNode n, int i)
   {
-    if (children == null) {
-      children = new ASTNode[i + 1];
-    } else if (i >= children.length) {
-      ASTNode c[] = new ASTNode[i + 1];
-      System.arraycopy(children, 0, c, 0, children.length);
-      children = c;
-    }
-    children[i] = n;
+	  children.append(n);
   }
 
   public ASTNode jjtGetChild(int i) {

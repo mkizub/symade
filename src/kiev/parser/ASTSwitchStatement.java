@@ -33,23 +33,25 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTSwitchStatement extends Statement {
-	public Expr			sel;
-	public ASTNode[]	cases = ASTNode.emptyArray;
+	@att public Expr					sel;
+	@att public final NArr<ASTNode>		cases;
 
     public ASTSwitchStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
+		cases = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 ) sel = (Expr)n;
         else {
-        	cases = (ASTNode[])Arrays.append(cases,n);
+        	cases.append(n);
         }
     }
     
     public ASTNode resolve(Type reqType) {
-		return new SwitchStat(pos,parent,sel,cases).resolve(Type.tpVoid);
+		return new SwitchStat(pos,parent,sel,cases.toArray()).resolve(Type.tpVoid);
     }
 
 	public Dumper toJava(Dumper dmp) {

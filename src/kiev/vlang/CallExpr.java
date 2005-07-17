@@ -35,10 +35,11 @@ import static kiev.vlang.Instr.*;
  *
  */
 
+@node
 public class CallExpr extends Expr {
-	public Method	func;
+	@ref public Method	func;
 	public Expr[]	args;
-	public Type		type_of_static;
+	@ref public Type		type_of_static;
 	public boolean	super_flag = false;
 
 	public CallExpr(int pos, Method func, Expr[] args) {
@@ -241,9 +242,10 @@ public class CallExpr extends Expr {
 
 }
 
+@node
 public class CallAccessExpr extends Expr {
-	public Expr		obj;
-	public Method	func;
+	@att public Expr		obj;
+	@ref public Method	func;
 	public Expr[]	args;
 	public boolean	super_flag = false;
 
@@ -541,17 +543,18 @@ public class CallAccessExpr extends Expr {
 	}
 }
 
+@node
 public class ClosureCallExpr extends Expr {
-	public Expr		expr;
-	public ASTNode	func;	// Var or Field
-	public Expr[]	args;
-	public Expr		env_access;		// $env for rule closures
+	@att public Expr	expr;
+	@ref public ASTNode	func;	// Var or Field
+	public Expr[]		args;
+	@att public Expr	env_access;		// $env for rule closures
 	public boolean	is_a_call = false;
 
-	public Method	clone_it;
-	public Method	call_it;
+	@ref public Method	clone_it;
+	@ref public Method	call_it;
 	public Method[]	addArg;
-	public Type		func_tp;
+	@ref public Type	func_tp;
 
 	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
 		super(pos);
@@ -733,35 +736,22 @@ public class ClosureCallExpr extends Expr {
 				expr.generate(null);
 			// Load ref to closure
 			((Expr)func).generate(null);
-			if( Kiev.kaffe ) {
-				for(int i=0; i < args.length; i++)
+			// Clone it
+			if( args.length > 0 ) {
+				Code.addInstr(op_call,clone_it,false);
+				if( Kiev.verify )
+					Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
+				// Add arguments
+				for(int i=0; i < args.length; i++) {
 					args[i].generate(null);
-			} else {
-				// Clone it
-				if( args.length > 0 ) {
-					Code.addInstr(op_call,clone_it,false);
-					if( Kiev.verify )
-						Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
-					// Add arguments
-					for(int i=0; i < args.length; i++) {
-						args[i].generate(null);
-//						Code.addInstr(op_call,addArg[i],false);
-						Code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
-//						Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
-					}
+					Code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
 				}
 			}
 			// Check if we need to call
 			if( is_a_call ) {
 				if( env_access != null )
 					env_access.generate(null);
-				if( Kiev.kaffe )
-					Code.addInstr(op_call,((Expr)func).getType(),args.length);
-				else
-					Code.addInstr(op_call,call_it,false);
-			} else {
-				if( Kiev.kaffe )
-					Code.addInstr(op_addargs,((Expr)func).getType(),args.length);
+				Code.addInstr(op_call,call_it,false);
 			}
 			if( call_it.type.ret != Type.tpVoid ) {
 				if( reqType==Type.tpVoid )

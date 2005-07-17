@@ -402,7 +402,7 @@ public final class Kiev {
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
 	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
-	public static Vector<ASTNode>		files_scanned = new Vector<ASTNode>();
+	public static Vector<ASTFileUnit>	files_scanned = new Vector<ASTFileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 	public static Hashtable<String,ASTNode> parserAddresses =
 		new Hashtable<String,ASTNode>();
@@ -501,7 +501,6 @@ public final class Kiev {
 
 	// Extensions settings
 	public static boolean javaMode			= false;
-	public static boolean kaffe				= false;
 		//System.getProperties().get("java.ext.version") != null;
 	static public enum Ext {
 		JavaOnly				: "java only"		,

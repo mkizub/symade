@@ -37,8 +37,9 @@ import syntax kiev.Syntax;
  *
  */
 
+@node
 public class StatExpr extends Expr implements SetBody {
-	public Statement	stat;
+	@att public Statement	stat;
 
 	public StatExpr(int pos, Statement stat) {
 		super(pos);
@@ -87,6 +88,7 @@ public class StatExpr extends Expr implements SetBody {
 
 }
 
+@node
 public class ConstExpr extends Expr {
 	Object	value;
 
@@ -284,8 +286,9 @@ public class ConstExpr extends Expr {
 
 }
 
+@node
 public class ArrayLengthAccessExpr extends Expr {
-	public Expr		array;
+	@att public Expr		array;
 
 	public ArrayLengthAccessExpr(int pos, Expr array) {
 		super(pos);
@@ -339,10 +342,11 @@ public class ArrayLengthAccessExpr extends Expr {
 	}
 }
 
+@node
 public class AssignExpr extends LvalueExpr {
-	public AssignOperator	op;
-	public Expr				lval;
-	public Expr				value;
+	@ref public AssignOperator	op;
+	@att public Expr			lval;
+	@att public Expr			value;
 
 	public AssignExpr(int pos, AssignOperator op, Expr lval, Expr value) {
 		super(pos);
@@ -486,39 +490,6 @@ public class AssignExpr extends LvalueExpr {
 					var.setNeedRefProxy(true);
 					Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
 					vf.type = Type.getProxyType(var.type);
-				}
-			}
-			if( Kiev.kaffe &&
-				(lv instanceof VarAccessExpr) &&
-				((VarAccessExpr)lv).var.isClosureProxy() &&
-				!((VarAccessExpr)lv).var.isNeedRefProxy()
-			) {
-				// Check that we in local closure, thus var need RefProxy
-				Var var = ((VarAccessExpr)lv).var;
-				ASTNode p = var.parent;
-				while( !(p instanceof Method) ) p = p.parent;
-				if( p == PassInfo.method && p.isLocalMethod() ) {
-					var.setNeedRefProxy(true);
-					// Change type of closure method
-					Type[] types = (Type[])PassInfo.method.type.args.clone();
-					int i=0;
-					for(; i < PassInfo.method.params.length; i++)
-						if(PassInfo.method.params[i].name.equals(var.name))
-							break;
-					Debug.assert(i < PassInfo.method.params.length,"Can't find method parameter "+var);
-					if( !PassInfo.method.isStatic() )
-						i--;
-					types[i] = Type.getProxyType(var.type);
-					PassInfo.method.type = MethodType.newMethodType(
-						null,null,types,PassInfo.method.type.ret);
-					// Need to resolve initial var and mark it as RefProxy
-					KString name = var.name.name;
-					PVar<ASTNode> v = new PVar<ASTNode>();
-					if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
-						Kiev.reportError(pos,"Internal error: can't find var "+name);
-					}
-					Var pv = (Var)v;
-					pv.setNeedRefProxy(true);
 				}
 			}
 			lval = (Expr)lv;
@@ -709,6 +680,7 @@ public class AssignExpr extends LvalueExpr {
 }
 
 
+@node
 public class InitializeExpr extends AssignExpr {
     public boolean	of_wrapper;
 
@@ -751,10 +723,11 @@ public class InitializeExpr extends AssignExpr {
 
 
 
+@node
 public class BinaryExpr extends Expr {
-	public BinaryOperator		op;
-	public Expr					expr1;
-	public Expr					expr2;
+	@ref public BinaryOperator		op;
+	@att public Expr				expr1;
+	@att public Expr				expr2;
 
 	public BinaryExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
 		super(pos);
@@ -1105,12 +1078,13 @@ public class BinaryExpr extends Expr {
 	}
 }
 
+@node
 public class StringConcatExpr extends Expr {
 	public Expr[]	args		= new Expr[0];
 
-	public static Struct clazzStringBuffer;
-	public static Method clazzStringBufferToString;
-	public static Method clazzStringBufferInit;
+	@ref public static Struct clazzStringBuffer;
+	@ref public static Method clazzStringBufferToString;
+	@ref public static Method clazzStringBufferInit;
 
 	static {
 		try {
@@ -1242,6 +1216,7 @@ public class StringConcatExpr extends Expr {
 	}
 }
 
+@node
 public class CommaExpr extends Expr {
 	public Expr[]		exprs;
 
@@ -1310,9 +1285,10 @@ public class CommaExpr extends Expr {
 	}
 }
 
+@node
 public class UnaryExpr extends Expr {
-	public Operator				op;
-	public Expr					expr;
+	@ref public Operator			op;
+	@att public Expr				expr;
 
 	public UnaryExpr(int pos, Operator op, Expr expr) {
 		super(pos);
@@ -1497,9 +1473,10 @@ public class UnaryExpr extends Expr {
 	}
 }
 
+@node
 public class IncrementExpr extends LvalueExpr {
-	public Operator				op;
-	public Expr					lval;
+	@ref public Operator			op;
+	@att public Expr				lval;
 
 	public IncrementExpr(int pos, Operator op, Expr lval) {
 		super(pos);
@@ -1538,39 +1515,6 @@ public class IncrementExpr extends LvalueExpr {
 				var.setNeedRefProxy(true);
 				Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
 				vf.type = Type.getProxyType(var.type);
-			}
-		}
-		if( Kiev.kaffe &&
-			(lval instanceof VarAccessExpr) &&
-			((VarAccessExpr)lval).var.isClosureProxy() &&
-			!((VarAccessExpr)lval).var.isNeedRefProxy()
-		) {
-			// Check that we in local closure, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var;
-			ASTNode p = var.parent;
-			while( !(p instanceof Method) ) p = p.parent;
-			if( p == PassInfo.method && p.isLocalMethod() ) {
-				var.setNeedRefProxy(true);
-				// Change type of closure method
-				Type[] types = (Type[])PassInfo.method.type.args.clone();
-				int i=0;
-				for(; i < PassInfo.method.params.length; i++)
-					if(PassInfo.method.params[i].name.equals(var.name))
-						break;
-				Debug.assert(i < PassInfo.method.params.length,"Can't find method parameter "+var);
-				if( !PassInfo.method.isStatic() )
-					i--;
-				types[i] = Type.getProxyType(var.type);
-				PassInfo.method.type = MethodType.newMethodType(
-					null,null,types,PassInfo.method.type.ret);
-				// Need to resolve initial var and mark it as RefProxy
-				KString name = var.name.name;
-				PVar<ASTNode> v = new PVar<ASTNode>();
-				if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
-					Kiev.reportError(pos,"Internal error: can't find var "+name);
-				}
-				Var pv = (Var)v;
-				pv.setNeedRefProxy(true);
 			}
 		}
 		setResolved(true);
@@ -1751,8 +1695,9 @@ public class IncrementExpr extends LvalueExpr {
 	}
 }
 
+@node
 public class MultiExpr extends Expr {
-	public MultiOperator	op;
+	@ref public MultiOperator	op;
 	public List<ASTNode>	exprs;
 
 	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
@@ -1786,10 +1731,11 @@ public class MultiExpr extends Expr {
 }
 
 
+@node
 public class ConditionalExpr extends Expr {
-	public Expr		cond;
-	public Expr		expr1;
-	public Expr		expr2;
+	@att public Expr		cond;
+	@att public Expr		expr1;
+	@att public Expr		expr2;
 
 	public ConditionalExpr(int pos, Expr cond, Expr expr1, Expr expr2) {
 		super(pos);
@@ -1913,9 +1859,10 @@ public class ConditionalExpr extends Expr {
 	}
 }
 
+@node
 public class CastExpr extends Expr {
-	public Type					type;
-	public Expr					expr;
+	@ref public Type			type;
+	@att public Expr			expr;
 	public boolean				explicit = false;
 	public boolean				reinterp = false;
 

@@ -33,9 +33,10 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTSynchronizedStatement extends Statement {
-	public Expr			arg;
-    public Statement	body;
+	@att public Expr		arg;
+    @att public Statement	body;
 
 	public ASTSynchronizedStatement(int id) {
 		super(id,null);

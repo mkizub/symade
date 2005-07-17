@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTOperator extends ASTNode {
 
 	public KString		image;
@@ -54,3 +55,4 @@ public class ASTOperator extends ASTNode {
         return dmp;
     }
 }
+

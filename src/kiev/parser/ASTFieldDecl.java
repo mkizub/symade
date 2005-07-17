@@ -33,14 +33,16 @@ import kiev.vlang.*;
  *
  */
 
+@node
 public class ASTFieldDecl extends ASTNode {
 
-	public ASTModifiers	modifiers;
-	public ASTNode		type;
-	public ASTNode[]	vars = ASTNode.emptyArray;
+	@att public ASTModifiers			modifiers;
+	@att public ASTType					type;
+	@att public final NArr<ASTNode>		vars;
 
 	public ASTFieldDecl(int id) {
 		super(0);
+		vars = new NArr<ASTNode>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -49,11 +51,11 @@ public class ASTFieldDecl extends ASTNode {
 			modifiers = (ASTModifiers)n;
 			break;
 		case ASTType:
-			type = n;
+			type = (ASTType)n;
 			break;
 		case ASTVarDecl:
 			if( vars.length == 0 ) pos = n.pos;
-			vars = (ASTNode[])Arrays.append(vars,n);
+			vars.append(n);
 			break;
         default:
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);

@@ -31,8 +31,9 @@ import static kiev.stdlib.Debug.*;
  */
 
 // Meta information about a node
+@node
 public final class MetaSet extends ASTNode {
-	private final ASTNode owner;
+	@ref private final ASTNode owner;
 	private Meta[] metas = Meta.emptyArray;
 	
 	public MetaSet(ASTNode owner) {
@@ -45,6 +46,15 @@ public final class MetaSet extends ASTNode {
 	}
 	public boolean isEmpty() {
 		return metas.length == 0;
+	}
+	
+	public Meta get(KString name) {
+		int sz = metas.length;
+		for (int i=0; i < sz; i++) {
+			if (metas[i].type.name == name)
+				return metas[i];
+		}
+		return null;
 	}
 	
 	public Meta set(Meta meta) alias add alias operator (5,lfy,+=)
@@ -135,6 +145,7 @@ public class MetaValueType {
 	}
 }
 
+@node
 public class Meta extends ASTNode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
@@ -169,8 +180,13 @@ public class Meta extends ASTNode {
 			Type tp = m.type.ret;
 			Type t = tp;
 			if (t.isArray()) {
-				if (v instanceof MetaValueScalar)
-					values[n] = v = new MetaValueArray(v.type, new ASTNode[]{((MetaValueScalar)v).value});
+				if (v instanceof MetaValueScalar) {
+					ASTNode val = ((MetaValueScalar)v).value;
+					MetaValueArray mva = new MetaValueArray(v.type); 
+					values[n] = v = mva;
+					mva.values.add(val);
+				}
+				
 				t = t.args[0];
 			}
 			if (t.isReference()) {
@@ -250,6 +266,7 @@ public class Meta extends ASTNode {
 
 }
 
+@node
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
@@ -292,10 +309,15 @@ public abstract class MetaValue extends ASTNode {
 	}
 }
 
+@node
 public class MetaValueScalar extends MetaValue {
 
-	public       ASTNode       value;
+	@att public       ASTNode       value;
 	
+	public MetaValueScalar(MetaValueType type) {
+		super(type);
+	}
+
 	public MetaValueScalar(MetaValueType type, ASTNode value) {
 		super(type);
 		this.value = value;
@@ -306,14 +328,14 @@ public class MetaValueScalar extends MetaValue {
 	}
 }
 
+@node
 public class MetaValueArray extends MetaValue {
 
-	public final MetaValueType type;
-	public       ASTNode[]     values;
+	@att public final NArr<ASTNode>      values;
 	
-	public MetaValueArray(MetaValueType type, ASTNode[] values) {
+	public MetaValueArray(MetaValueType type) {
 		super(type);
-		this.values = values;
+		values = new NArr<ASTNode>(this); 
 	}
 
 	public void resolve(Type reqType) {

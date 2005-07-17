@@ -33,20 +33,23 @@ import kiev.stdlib.*;
  *
  */
 
+@node
 public class ASTNewArrayExpression extends Expr {
-	public ASTNode	type;
-    public Expr[]	args = Expr.emptyArray;
+	@att public ASTNonArrayType			type;
+	@att public final NArr<Expr>		args;
 	public int dim;
   
 	ASTNewArrayExpression(int id) {
 		super(0);
+		args = new NArr<Expr>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
-			type=n;
+			type = (ASTNonArrayType)n;
+			pos = n.getPos();
 		} else {
-			args = (Expr[])Arrays.append(args,n);
+			args.append((Expr)n);
         }
     }
 
@@ -58,7 +61,7 @@ public class ASTNewArrayExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		return new NewArrayExpr(pos,((ASTNonArrayType)type).getType(),args,dim).resolve(reqType);
+		return new NewArrayExpr(pos,type.getType(),args.toArray(),dim).resolve(reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
