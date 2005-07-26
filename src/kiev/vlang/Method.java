@@ -77,6 +77,12 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	 *  for invariant method
 	 */
 	public Field[]			violated_fields = Field.emptyArray;
+	
+	/** Default meta-value for annotation methods */
+	public MetaValue		annotation_default;
+
+	/** Meta-information (annotations) of this structure */
+	public MetaSet			meta;
 
 	/** Indicates that this method is inlined by dispatcher method
 	 */
@@ -98,6 +104,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
         // Parent is always the class this method belongs to
 		this.parent = clazz;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 	}
 
 	public Access get$acc() {
@@ -340,10 +347,34 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				NodeInfoPass.init();
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
+			
+			foreach (Meta m; meta)
+				m.resolve();
+			if (annotation_default != null) {
+				Type tp = this.type.ret;
+				Type t = tp;
+				if (t.isArray()) {
+					if (annotation_default instanceof MetaValueScalar)
+						annotation_default = new MetaValueArray(annotation_default.type, new ASTNode[]{((MetaValueScalar)annotation_default).value});
+					t = t.args[0];
+				}
+				if (t.isReference()) {
+					t.clazz.checkResolved();
+					if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+						throw new CompilerException(pos, "Bad annotation value type "+tp);
+				}
+				annotation_default.resolve(t);
+			}
+			
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					NodeInfoPass.setNodeType(params[i],params[i].type);
-					NodeInfoPass.setNodeInitialized(params[i],true);
+					Var p = params[i];
+					if (p.meta != null) {
+						foreach (Meta m; p.meta)
+							m.resolve();
+					}
+					NodeInfoPass.setNodeType(p,p.type);
+					NodeInfoPass.setNodeInitialized(p,true);
 				}
 			}
 			foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire ) {

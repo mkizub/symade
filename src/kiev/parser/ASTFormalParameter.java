@@ -89,7 +89,12 @@ public class ASTFormalParameter extends ASTNode {
 //		}
 		resolved_type = type;
 		resolved_jtype = (mm_type!=null) ? mm_type : null;
-		return new Var(pos,name,type,flags);
+		Var v = new Var(pos,name,type,flags);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet(v);
+			modifiers.getMetas(v.meta);
+		}
+		return v;
 	}
 
     public Dumper toJava(Dumper dmp) {

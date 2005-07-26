@@ -49,30 +49,34 @@ public class ASTAnnotation extends ASTNode {
 		Struct s = (Struct)n;
 		Meta m = new Meta(new MetaType(s.name.name));
 		foreach (ASTAnnotationValue v; values) {
-			KString name;
-			if (v.name == null)
-				name = KString.from("value");
-			else
-				name = v.name.name;
-			MetaValueType mvt = new MetaValueType(name);
-			if (v.value instanceof ASTAnnotation) {
-				ASTNode value = v.value;
-				value = ((ASTAnnotation)value).getMeta();
-				m.set(new MetaValueScalar(mvt, value));
-			}
-			else if (v.value instanceof ASTAnnotationValueValueArrayInitializer) {
-				ASTNode[] values = ((ASTAnnotationValueValueArrayInitializer)v.value).values;
-				for (int i=0; i < values.length; i++) {
-					if (values[i] instanceof ASTAnnotation)
-						values[i] = ((ASTAnnotation)values[i]).getMeta();
-				}
-				m.set(new MetaValueArray(mvt, values));
-			}
-			else {
-				m.set(new MetaValueScalar(mvt, v.value));
-			}
+			m.set(makeValue(v));
 		}
 		return m;
+	}
+	
+	public static MetaValue makeValue(ASTAnnotationValue v) {
+		KString name;
+		if (v.name == null)
+			name = KString.from("value");
+		else
+			name = v.name.name;
+		MetaValueType mvt = new MetaValueType(name);
+		if (v.value instanceof ASTAnnotation) {
+			ASTNode value = v.value;
+			value = ((ASTAnnotation)value).getMeta();
+			return new MetaValueScalar(mvt, value);
+		}
+		else if (v.value instanceof ASTAnnotationValueValueArrayInitializer) {
+			ASTNode[] values = ((ASTAnnotationValueValueArrayInitializer)v.value).values;
+			for (int i=0; i < values.length; i++) {
+				if (values[i] instanceof ASTAnnotation)
+					values[i] = ((ASTAnnotation)values[i]).getMeta();
+			}
+			return new MetaValueArray(mvt, values);
+		}
+		else {
+			return new MetaValueScalar(mvt, v.value);
+		}
 	}
 
 }

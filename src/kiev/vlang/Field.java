@@ -50,6 +50,9 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	/** Initial value of this field */
 	public Expr				init = null;
 
+	/** Meta-information (annotations) of this structure */
+	public MetaSet			meta;
+
 	/** Array of attributes of this field */
 	public Attr[]			attrs = Attr.emptyArray;
 
@@ -104,6 +107,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
         // Parent node is always a class this field was declared in
 		this.parent = clazz;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New field created: "+name
 			+" with type "+type);
 	}
@@ -159,29 +163,15 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
-//		type = type.resolve();
+		foreach (Meta m; meta)
+			m.resolve();
 		if( name.equals(KString.Empty) ) return this;
-		if( init != null )
+		if( init != null ) {
 			if( init instanceof Expr )
 				init = ((Expr)init).resolveExpr(type);
-//			else
-//				init = ((Statament)init).resolve(Type.tpVoid);
+		}
 		return this;
 	}
-
-//	public void generate(boolean retReq) {
-//		if( !isStatic() ) {
-////			System.out.println("\t\tgenerating Field: "+this);
-//			if( !PassInfo.method.isStatic() )
-//				PassInfo.code.addInstr(new Instr.op_load(new CodeVar(PassInfo.method.params[0])));
-//			else
-//				throw new RuntimeException("Can't access non-static field "+this+" in static method "+PassInfo.method);
-//			PassInfo.code.addInstr(new Instr.op_getfield(this));
-//		} else {
-////			System.out.println("\t\tgenerating static Field: "+this);
-//			PassInfo.code.addInstr(new Instr.op_getstatic(this));
-//		}
-//	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());

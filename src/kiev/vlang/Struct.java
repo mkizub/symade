@@ -2525,6 +2525,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			try {
 				foreach (Meta m; meta)
 					m.resolve();
+				foreach(Field f; fields) {
+					foreach (Meta m; f.meta)
+						m.resolve();
+				}
 			} finally {
 				NodeInfoPass.close();
 			}
@@ -2822,6 +2826,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
 				if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
 
+				if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+				
 				for(int j=0; f.attrs != null && j < f.attrs.length; j++)
 					f.attrs[j].generate();
 			}
@@ -2862,6 +2868,28 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							m.addAttr(m.conditions[j].code);
 						}
 					}
+					
+					if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
+					boolean has_pmeta = false; 
+					foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
+						has_pmeta = true;
+					}
+					if (has_pmeta) {
+						MetaSet[] mss;
+						if (m.isStatic()) {
+							mss = new MetaSet[m.params.length];
+							for (int i=0; i < mss.length; i++)
+								mss[i] = m.params[i].meta;
+						} else {
+							mss = new MetaSet[m.params.length-1];
+							for (int i=0; i < mss.length; i++)
+								mss[i] = m.params[i+1].meta;
+						}
+						m.addAttr(new RVParMetaAttr(mss));
+					}
+					if (m.annotation_default != null)
+						m.addAttr(new DefaultMetaAttr(m.annotation_default));
+				
 					for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
 						m.attrs[j].generate();
 					}

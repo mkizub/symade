@@ -40,16 +40,16 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	public int						dim;
 	public ASTModifiers				modifiers;
     public KString					name;
-    public ASTNode[]					params = ASTNode.emptyArray;
+    public ASTNode[]				params = ASTNode.emptyArray;
     public ASTNode					type;
-    public ASTNode[]					ftypes = ASTNode.emptyArray;
+    public ASTNode[]				ftypes = ASTNode.emptyArray;
     public ASTAlias[]				aliases = ASTAlias.emptyArray;
     public ASTNode					throwns;
-    public Statement					body;
+    public Statement				body;
 	public virtual PrescannedBody 	pbody;
 	public ASTRequareDeclaration[]	req;
-	public ASTEnsureDeclaration[]		ens;
-    public Expr						annotation_default;
+	public ASTEnsureDeclaration[]	ens;
+    public ASTAnnotationValue		annotation_default;
 
 	public Method		me;
 
@@ -103,8 +103,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         else if( n instanceof Statement ) {
 			body = (Statement)n;
         }
-		else if (n instanceof Expr) {
-			annotation_default = (Expr)n;
+		else if (n instanceof ASTAnnotationValue) {
+			annotation_default = (ASTAnnotationValue)n;
 		}
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -122,7 +122,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	{
 		false
 	}
-
+	
     public Method pass3() {
 		Struct clazz;
 		if( parent instanceof ASTTypeDeclaration )
@@ -217,8 +217,9 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		me = new Method(clazz,name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);
 		me.setPos(getPos());
+		modifiers.getMetas(me.meta);
 		if (me.parent.isAnnotation() && annotation_default != null) {
-			body = new ExprStat(annotation_default.pos, me, annotation_default);
+			me.annotation_default = ASTAnnotation.makeValue(annotation_default);
 		}
         me.body = body;
         if( me.body != null )

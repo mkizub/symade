@@ -1274,6 +1274,7 @@ public class AnnotationDefault extends Annotation {
 	public void write(ReadContext cont) {
 		cont.writeShort(cp_name);
 		cont.writeInt(size()-6);
+		cont.writeByte(value.tag);
 		value.write(cont);
 	}
 }

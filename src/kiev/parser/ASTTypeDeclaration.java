@@ -510,6 +510,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						Type tp = type;
 						for(int k=0; k < fdecl.dim; k++) tp = Type.newArrayType(tp);
 						Field f = new Field(me,fname,tp,flags);
+						fields.modifiers.getMetas(f.meta);
 						if( pack == null )
 							;
 						else if( fdecl.dim > 0 && pack != null )

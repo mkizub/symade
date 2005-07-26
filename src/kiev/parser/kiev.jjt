@@ -1452,7 +1452,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default" (VariableInitializer()) ] ";"
+		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }

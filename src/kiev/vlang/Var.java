@@ -38,6 +38,7 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public NodeName		name;
 	public Type			type;
+	public MetaSet		meta;
 	private int			bcpos = -1;
 
 	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {
