@@ -37,8 +37,9 @@ import kiev.vlang.*;
 public class ASTFinallyInfo extends SimpleNode {
     @att public Statement		body;
 
+	public ASTFinallyInfo() {
+	}
 	public ASTFinallyInfo(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

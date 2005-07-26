@@ -38,8 +38,11 @@ public class ASTCatchInfo extends SimpleNode {
 	@att public ASTFormalParameter	par;
     @att public Statement			body;
 
+	public ASTCatchInfo() {
+	}
+
 	public ASTCatchInfo(int id) {
-		super(0);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

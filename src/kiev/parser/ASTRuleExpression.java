@@ -40,8 +40,10 @@ public class ASTRuleExpression extends ASTRuleNode {
 	@att public Expr	bt_expr;
 	boolean				while_mode;
 
+	public ASTRuleExpression() {
+	}
+
 	public ASTRuleExpression(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

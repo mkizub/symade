@@ -42,8 +42,10 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
     @att public Statement	body;
 	public virtual PrescannedBody pbody;
 
+	public ASTCondDeclaration() {
+	}
+
 	public ASTCondDeclaration(int id) {
-		super(0);
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }
@@ -69,8 +71,11 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 
 @node
 public class ASTRequareDeclaration extends ASTCondDeclaration {
+
+	public ASTRequareDeclaration() {
+	}
+
 	public ASTRequareDeclaration(int id) {
-		super(0);
 	}
 
     public ASTNode pass3() {

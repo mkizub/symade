@@ -110,7 +110,7 @@ public abstract class ASTNode implements Constants {
 	// Expression flags
 	public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
 	public virtual packed:1,compileflags,17 boolean is_expr_as_field;
-	//public virtual packed:1,compileflags,18 boolean is_expr_const_expr;
+	public virtual packed:1,compileflags,18 boolean is_expr_gen_void;
 	public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
 	public virtual packed:1,compileflags,20 boolean is_expr_gen_resolved;
 	public virtual packed:1,compileflags,21 boolean is_expr_for_wrapper;
@@ -146,12 +146,19 @@ public abstract class ASTNode implements Constants {
 	public virtual packed:1,compileflags,30 boolean is_hidden;
 	public virtual packed:1,compileflags,31 boolean is_bad;
 
+    public ASTNode() {
+	}
+
     public ASTNode(int pos) {
 		this.pos = pos;
 	}
 
 	public /*abstract*/ void cleanup() {
 		parent = null;
+	};
+	
+	public /*abstract*/ Object copy() {
+		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
 	};
 
 	public ASTNode(int pos, int fl) {
@@ -169,7 +176,7 @@ public abstract class ASTNode implements Constants {
 		while( addr.length() < 8 ) {
 			addr = '0'+addr;
 		}
-		Kiev.parserAddresses.put(addr,this);
+		Kiev.parserAddresses.put(addr,(ASTNode)this.copy());
 		return addr;
 	}
 
@@ -609,15 +616,15 @@ public abstract class ASTNode implements Constants {
 		assert(this instanceof Expr,"For node "+this.getClass());
 		this.is_expr_as_field = on;
 	}
-	// constant expression
-	//public final boolean get$is_expr_const_expr()  alias isConstExpr  {
-	//	assert(this instanceof Expr,"For node "+this.getClass());
-	//	return this.is_expr_const_expr;
-	//}
-	//public final void set$is_expr_const_expr(boolean on) alias setConstExpr {
-	//	assert(this instanceof Expr,"For node "+this.getClass());
-	//	this.is_expr_const_expr = on;
-	//}
+	// expression will generate void value
+	public final boolean get$is_expr_gen_void()  alias isGenVoidExpr  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_gen_void;
+	}
+	public final void set$is_expr_gen_void(boolean on) alias setGenVoidExpr {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		this.is_expr_gen_void = on;
+	}
 	// tried to be resolved
 	public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
 		assert(this instanceof Expr,"For node "+this.getClass());
@@ -784,6 +791,8 @@ public abstract class Expr extends ASTNode {
 
 	public static Expr[] emptyArray = new Expr[0];
 
+	public Expr() {}
+
 	public Expr(int pos) { super(pos); }
 
 	public Expr(int pos, ASTNode parent) { super(pos,parent); }
@@ -881,6 +890,9 @@ public class WrapedExpr extends Expr {
 
 	@att public ASTNode		expr;
 	@ref public Type		base_type;
+	
+	public WrapedExpr() {
+	}
 	public WrapedExpr(int pos, ASTNode expr) {
 		super(pos);
 		this.expr = expr;
@@ -907,6 +919,8 @@ public class WrapedExpr extends Expr {
 
 @node
 public abstract class BooleanExpr extends Expr {
+
+	public BooleanExpr() {}
 
 	public BooleanExpr(int pos) { super(pos); }
 
@@ -937,6 +951,8 @@ public abstract class BooleanExpr extends Expr {
 
 @node
 public abstract class LvalueExpr extends Expr {
+
+	public LvalueExpr() {}
 
 	public LvalueExpr(int pos) { super(pos); }
 
@@ -975,6 +991,8 @@ public abstract class LvalueExpr extends Expr {
 public abstract class Statement extends ASTNode {
 
 	public static Statement[] emptyArray = new Statement[0];
+
+	public Statement() {}
 
 	public Statement(int pos, ASTNode parent) { super(pos, parent); }
 

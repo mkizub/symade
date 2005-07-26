@@ -38,8 +38,10 @@ public class ASTOperator extends ASTNode {
 
 	public KString		image;
 
+	public ASTOperator() {
+	}
+
 	public ASTOperator(int id) {
-		super(0);
 	}
 
 	public ASTNode resolve(Type reqType) {

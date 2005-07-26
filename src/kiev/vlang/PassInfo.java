@@ -255,11 +255,6 @@ public class PassInfo {
 				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
 				return true;
 			}
-			if( node instanceof Field && node.isVirtual() ) {
-				assert( info.path.length() == 0 );
-				trace( Kiev.debugResolve, "virtual field "+node+" does not requare path");
-				return true;
-			}
 			Struct s = PassInfo.clazz;
 			// Check that path != List.Nil
 			if( info.path.length() == 0 ) {

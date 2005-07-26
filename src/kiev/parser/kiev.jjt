@@ -1460,7 +1460,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default" (VariableInitializer()) ] ";"
+		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
@@ -2304,11 +2304,12 @@ void BlockStatement() #void :
 { boolean old_declMode; ASTModifiers modifiers; }
 {
 	(
-		LOOKAHEAD( Modifier() ("class" | "interface" | "@" "interface") )
-		{ old_declMode = declMode; declMode = false; }
+		LOOKAHEAD( Modifiers() ("class" | "interface" | "@" "interface") )
+		{ old_declMode = declMode; declMode = true; }
 		try {
 			modifiers = Modifiers()
 			TypeDeclaration(modifiers)
+			[ ";" ]
 		} finally {
 			declMode = old_declMode;
 		}

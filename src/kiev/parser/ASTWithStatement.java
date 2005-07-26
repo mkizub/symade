@@ -39,8 +39,10 @@ public class ASTWithStatement extends Statement {
 	@att public Expr			arg;
     @att public Statement		body;
 
+	public ASTWithStatement() {
+	}
+
 	public ASTWithStatement(int id) {
-		super(id,null);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

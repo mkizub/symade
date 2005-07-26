@@ -41,11 +41,9 @@ public class ASTFormalParameter extends ASTNode {
     @att public ASTIdentifier		ident;
 
 	ASTFormalParameter() {
-		super(0);
 	}
 
 	ASTFormalParameter(int id) {
-		super(0);
 	}
 
 	public void set(Token t) {
@@ -77,7 +75,12 @@ public class ASTFormalParameter extends ASTNode {
 		int flags = modifiers.getFlags();
 		Type type = this.type.getType();
 		Type mm_type = (this.mm_type == null) ? null : this.mm_type.getType();
-		return new Var(pos,ident.name,type,flags);
+		Var v = new Var(pos,ident.name,type,flags);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet(v);
+			modifiers.getMetas(v.meta);
+		}
+		return v;
 	}
 
     public Dumper toJava(Dumper dmp) {

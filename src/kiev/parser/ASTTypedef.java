@@ -40,8 +40,10 @@ public class ASTTypedef extends SimpleNode implements TopLevelDecl {
 	@ref public Typedef td;
 	public boolean opdef = false;
 
+	ASTTypedef() {
+	}
+
 	ASTTypedef(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

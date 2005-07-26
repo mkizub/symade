@@ -40,8 +40,10 @@ public class ASTVarDecl extends ASTNode {
     @att public Expr	init;
     public boolean		of_wrapper;
 
+	ASTVarDecl() {
+	}
+
 	ASTVarDecl(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

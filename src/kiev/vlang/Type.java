@@ -337,7 +337,7 @@ public class Type extends ASTNode implements AccessFlags {
 		tpArray.flags			|= flResolved;
 		tpArrayClazz.setResolved(true);
 		tpArray.flags			= flReference | flArray;
-		tpArrayClazz.interfaces = new Type[]{tpCloneable};
+		tpArrayClazz.interfaces.add(tpCloneable);
 //		tpArrayClazz.fields = new Field[]{new Field(tpArrayClazz,KString.from("length"),tpInt,(short)(Constants.ACC_FINAL|Constants.ACC_PUBLIC))};
 		typeHash.put(tpArray);
 
@@ -619,6 +619,10 @@ public class Type extends ASTNode implements AccessFlags {
 	protected Type(ClazzName name, Type[] args) {
 		this(Env.newStruct(name),args);
 	}
+
+	public Object copy() {
+		throw new CompilerException(getPos(),"Type node cannot be copied");
+	};
 
 	public static Type newJavaRefType(Struct clazz) {
 		Type[] args = Type.emptyArray;
@@ -1250,6 +1254,10 @@ public class MethodType extends Type {
 		t = new MethodType(clazz,ret,args,fargs);
 		return t;
 	}
+
+	public Object copy() {
+		throw new CompilerException(getPos(),"MethodType node cannot be copied");
+	};
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();

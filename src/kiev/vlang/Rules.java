@@ -45,6 +45,9 @@ public class RuleMethod extends Method {
 	public int		max_vars;
 	public int		index;		// index counter for RuleNode.idx
 
+	public RuleMethod() {
+	}
+
 	public RuleMethod(ASTNode clazz, KString name, MethodType type, int acc) {
 		super(clazz,name,type,acc | ACC_RULEMETHOD);
 	}
@@ -269,6 +272,9 @@ public abstract class ASTRuleNode extends ASTNode {
 	public virtual int		idx;
 	public int				depth = -1;
 
+	public ASTRuleNode() {
+	}
+
 	public ASTRuleNode(int pos) {
 		super(pos);
 	}
@@ -331,11 +337,15 @@ public final class RuleBlock extends ASTNode implements Scope {
 	@att public final NArr<ASTNode>		stats;
 	public StringBuffer	fields_buf;
 
+	public RuleBlock() {
+		stats = new NArr<ASTNode>(this, true);
+	}
+
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
-		stats = new NArr<ASTNode>(this);
+		stats = new NArr<ASTNode>(this, true);
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ASTNode> stats) {
@@ -458,6 +468,9 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public int get$idx() {	return rules[0].get$idx(); }
 	public void set$idx(int i) {}
 
+	public RuleOrExpr() {
+	}
+
 	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
 		this.rules = rules;
@@ -514,6 +527,9 @@ public final class RuleAndExpr extends ASTRuleNode {
 
 	public int get$idx() {	return rules[0].get$idx(); }
 	public void set$idx(int i) {}
+
+	public RuleAndExpr() {
+	}
 
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
@@ -607,6 +623,9 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	@att public Var		var;		// variable of type PVar<...>
 	@att public Expr	expr;		// expression to check/unify
 
+	public RuleIstheExpr() {
+	}
+
 	public RuleIstheExpr(int pos, Var var, Expr expr) {
 		super(pos);
 		this.var = var;
@@ -669,6 +688,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public Type[]		itypes;
 	public int[]		modes;
+
+	public RuleIsoneofExpr() {
+	}
 
 	public RuleIsoneofExpr(int pos, Var[] vars, Expr[] exprs) {
 		super(pos);
@@ -834,6 +856,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 @node
 public final class RuleCutExpr extends ASTRuleNode {
+
+	public RuleCutExpr() {
+	}
 
 	public RuleCutExpr(int pos) {
 		super(pos);
@@ -1051,18 +1076,21 @@ public final class RuleForExpr extends ASTRuleNode {
 @node
 public final class RuleCallExpr extends ASTRuleNode {
 
-	@att public Expr	obj;
-	public Named		func;
-	public Expr[]		args;
-	public boolean		super_flag = false;
-	public int			env_var;
+	@att public Expr				obj;
+	public Named					func;
+	@att public final NArr<Expr>	args;
+	public boolean					super_flag;
+	public int						env_var;
+
+	public RuleCallExpr() {
+	}
 
 	public RuleCallExpr(CallExpr expr) {
 		super(expr.pos);
 		this.obj = null;
 		this.func = expr.func;
-		this.args = expr.args;
-		foreach(Expr e; args) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
 	public RuleCallExpr(CallAccessExpr expr) {
@@ -1070,8 +1098,8 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = expr.obj;
 		this.obj.parent = this;
 		this.func = expr.func;
-		this.args = expr.args;
-		foreach(Expr e; args) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
@@ -1079,16 +1107,15 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = expr.expr;
 		if( expr.func instanceof VarAccessExpr )
 			this.func = ((VarAccessExpr)expr.func).var;
-		else if( expr.func instanceof FieldAccessExpr )
-			this.func = ((FieldAccessExpr)expr.func).var;
 		else if( expr.func instanceof StaticFieldAccessExpr )
 			this.func = ((StaticFieldAccessExpr)expr.func).var;
 		else if( expr.func instanceof AccessExpr ) {
 			this.func = ((AccessExpr)expr.func).var;
 			this.obj = ((AccessExpr)expr.func).obj;
 		}
-		this.args = (Expr[])Arrays.insert(expr.args,expr.env_access,0);
-		foreach(Expr e; args) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; expr.args) this.args.append(e);
+		this.args.insert(0,expr.env_access);
 	}
 
 	public void cleanup() {
@@ -1155,6 +1182,9 @@ public final class RuleCallExpr extends ASTRuleNode {
 public abstract class RuleExprBase extends ASTRuleNode {
 	@att public Expr		expr;
 
+	public RuleExprBase() {
+	}
+
 	public RuleExprBase(Expr expr) {
 		super(expr.pos);
 		this.expr = expr;
@@ -1196,6 +1226,9 @@ public abstract class RuleExprBase extends ASTRuleNode {
 @node
 public final class RuleWhileExpr extends RuleExprBase {
 
+	public RuleWhileExpr() {
+	}
+
 	public RuleWhileExpr(Expr expr) {
 		super(expr);
 	}
@@ -1234,6 +1267,9 @@ public final class RuleWhileExpr extends RuleExprBase {
 public final class RuleExpr extends RuleExprBase {
 
 	@att public Expr		bt_expr;
+
+	public RuleExpr() {
+	}
 
 	public RuleExpr(Expr expr) {
 		super(expr);

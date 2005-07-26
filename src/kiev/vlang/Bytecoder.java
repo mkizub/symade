@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -103,7 +104,6 @@ public class Bytecoder implements Constants {
 
 		// Read interfaces
 		KString[] interfs = kaclazz==null? bcclazz.getInterfaceNames() : kaclazz.getInterfaceNames();
-		cl.interfaces = interfs.length==0 ? Type.emptyArray : new Type[interfs.length];
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			Type interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
@@ -111,17 +111,17 @@ public class Bytecoder implements Constants {
 				throw new RuntimeException("Class "+interf.clazz.name+" not found");
 			if( !interf.clazz.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
-			cl.interfaces[i] = interf;
+			cl.interfaces.append(interf);
 		}
 
-		cl.fields = bcclazz.fields.length==0 ? Field.emptyArray : new Field[bcclazz.fields.length];
-		for(int i=0; i < cl.fields.length; i++) {
-			cl.fields[i] = readField(cl.fields[i],i);
+		cl.fields.delAll();
+		for(int i=0; i < bcclazz.fields.length; i++) {
+			cl.fields.append(readField(null,i));
 		}
 
-		cl.methods = bcclazz.methods.length==0 ? Method.emptyArray : new Method[bcclazz.methods.length];
-		for(int i=0; i < cl.methods.length; i++) {
-			cl.methods[i] = readMethod(cl.methods[i],i);
+		cl.methods.delAll();
+		for(int i=0; i < bcclazz.methods.length; i++) {
+			cl.methods.append(readMethod(null,i));
 		}
 
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
@@ -129,17 +129,6 @@ public class Bytecoder implements Constants {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
 			if( at != null ) {
 				cl.addAttr(at);
-				//if( at.name.equals(attrFlags) ) {
-				//	int flags = ((FlagsAttr)at).flags;
-				//	if ((flags & 1) == 1) {
-				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
-				//		cl.setWrapper(true);
-				//	}
-				//	else if ((flags & 2) == 2) {
-				//		if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
-				//		cl.setSyntax(true);
-				//	}
-				//}
 			}
 		}
 		if( kaclazz != null ) {
@@ -174,7 +163,7 @@ public class Bytecoder implements Constants {
 			}
 		}
 
-		cl.addAbstractFields();
+		new ProcessVirtFld().addAbstractFields(cl);
 		cl.setupWrappedField();
 		return cl;
 	}
@@ -489,7 +478,7 @@ public class Bytecoder implements Constants {
 				if( ea.getFieldName(i,clazz) != cl.fields[i].name.name )
 					throw new RuntimeException("Invalid entry "+i+" in "+attrEnum+" attribute");
 			}
-			a = new EnumAttr(cl.fields,ea.values);
+			a = new EnumAttr(cl.fields.toArray(),ea.values);
 		}
 		else if( name.equals(attrPrimitiveEnum) ) {
 			cl.setEnum(true);
@@ -504,7 +493,7 @@ public class Bytecoder implements Constants {
 			Type tp = Type.fromSignature(sign);
 			if (tp.isReference() || !tp.isIntegerInCode())
 				throw new RuntimeException("Invalid signature '"+sign+"' in "+attrPrimitiveEnum+" attribute");
-			a = new PrimitiveEnumAttr(tp,cl.fields,ea.values);
+			a = new PrimitiveEnumAttr(tp,cl.fields.toArray(),ea.values);
 			cl.addAttr(a);
 			cl.type.setMeAsPrimitiveEnum();
 			a = null;
@@ -781,7 +770,7 @@ public class Bytecoder implements Constants {
 		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
 		if( kievmode ) {
 		    bcclazz = new kiev.bytecode.KievAttributeClazz(null);
-		    bcclazz.pool_offset = ConstPool.java_hwm;
+		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = ConstPool.java_hwm;
 		} else {
 		    bcclazz = new kiev.bytecode.Clazz();
 		}
@@ -822,9 +811,13 @@ public class Bytecoder implements Constants {
 			bcclazz.cp_interfaces[i] = ConstPool.getClazzCP(interf_sig).pos;
 		}
 
-	    bcclazz.fields = new kiev.bytecode.Field[cl.fields.length-cl.packed_field_counter];
+		if (kievmode)
+			bcclazz.fields = new kiev.bytecode.Field[cl.fields.length-cl.packed_field_counter];
+		else
+			bcclazz.fields = new kiev.bytecode.Field[cl.fields.length-cl.packed_field_counter-cl.abstract_field_counter];
 		for(int i=0, j=0; i < cl.fields.length; i++) {
 			if( cl.fields[i].isPackedField() ) continue;
+			if (!kievmode && cl.fields[i].isAbstract()) continue;
 			bcclazz.fields[j++] = writeField(i);
 		}
 

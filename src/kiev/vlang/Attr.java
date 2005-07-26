@@ -943,7 +943,8 @@ public abstract class MetaAttr extends Attr {
 	protected final void generateValue(ASTNode value) {
 		if (value instanceof ConstExpr) {
 			Object v = ((ConstExpr)value).value;
-			if     ( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
+			if     ( v instanceof Boolean )			ConstPool.addNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0));
+			else if( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
 			else if( v instanceof Short )			ConstPool.addNumberCP((Short)v);
 			else if( v instanceof Integer )			ConstPool.addNumberCP((Integer)v);
 			else if( v instanceof Character )		ConstPool.addNumberCP(new Integer((int)((Character)v).charValue()));
@@ -994,7 +995,11 @@ public abstract class MetaAttr extends Attr {
 		if (value instanceof ConstExpr) {
 			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
 			Object v = ((ConstExpr)value).value;
-			if     ( v instanceof Byte ) {
+			if     ( v instanceof Boolean ) {
+				ev.tag = (byte)'Z';
+				ev.const_value_index = ConstPool.getNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0)).pos;
+			}
+			else if( v instanceof Byte ) {
 				ev.tag = (byte)'B';
 				ev.const_value_index = ConstPool.getNumberCP((Byte)v).pos;
 			}
@@ -1113,6 +1118,80 @@ public class RIMetaAttr extends RMetaAttr {
 	}
 }
 
+
+public abstract class ParMetaAttr extends MetaAttr {
+	public MetaSet[]      mss;
+	
+	public ParMetaAttr(KString name, MetaSet[] mss) {
+		super(name);
+		this.mss = mss;
+	}
+
+	public void generate() {
+		ConstPool.addAsciiCP(name);
+		foreach (MetaSet ms; mss; ms != null) {
+			foreach (Meta m; ms) {
+				generateValue(m);
+			}
+		}
+	}
+
+}
+
+public class RVParMetaAttr extends ParMetaAttr {
+	public RVParMetaAttr(MetaSet[] metas) {
+		super(Constants.attrRVParAnnotations, metas);
+	}
+	public kiev.bytecode.Attribute write() {
+		kiev.bytecode.RVParAnnotations a = new kiev.bytecode.RVParAnnotations();
+		a.annotations = new kiev.bytecode.Annotation.annotation[mss.length][];
+		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		for (int i=0; i < mss.length; i++) {
+			MetaSet ms = mss[i];
+			if (ms != null) {
+				int n = 0;
+				a.annotations[i] = new kiev.bytecode.Annotation.annotation[ms.size()];
+				foreach (Meta m; ms) {
+					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
+					write_annotation(m, a.annotations[i][n]);
+					n++;
+				}
+			}
+		}
+		return a;
+	}
+}
+
+
+public class DefaultMetaAttr extends MetaAttr {
+	public MetaValue      mv;
+	
+	public DefaultMetaAttr(MetaValue mv) {
+		super(attrAnnotationDefault);
+		this.mv = mv;
+	}
+
+	public void generate() {
+		ConstPool.addAsciiCP(name);
+		if (mv instanceof MetaValueScalar) {
+			generateValue(((MetaValueScalar)mv).value);
+		} else {
+			MetaValueArray va = (MetaValueArray)mv; 
+			foreach (ASTNode n; va.values)
+				generateValue(n);
+		}
+	}
+	
+	public kiev.bytecode.Attribute write() {
+		kiev.bytecode.AnnotationDefault a = new kiev.bytecode.AnnotationDefault();
+		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		if (mv instanceof MetaValueScalar)
+			a.value = write_value(((MetaValueScalar)mv).value);
+		else
+			a.value = write_values(((MetaValueArray)mv).values.toArray());
+		return a;
+	}
+}
 
 
 

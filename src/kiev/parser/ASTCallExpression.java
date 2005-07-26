@@ -42,12 +42,10 @@ public class ASTCallExpression extends Expr {
     @att public final NArr<Expr>		args;
 
 	public ASTCallExpression() {
-		super(0);
 		args = new NArr<Expr>(this);
 	}
 
 	public ASTCallExpression(int id) {
-		super(0);
 		args = new NArr<Expr>(this);
 	}
 

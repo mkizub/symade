@@ -36,6 +36,37 @@ import syntax kiev.Syntax;
  */
 
 @node
+public class ShadowStat extends Statement {
+	@ref public Statement stat;
+	
+	public ShadowStat() {
+	}
+	public ShadowStat(Statement stat) {
+		super(0,null);
+		this.stat = stat;
+	}
+	public Type getType() { return stat.getType(); }
+	public void cleanup() {
+		parent = null;
+		stat   = null;
+	}
+	public ASTNode resolve(Type reqType) {
+		stat = (Statement)stat.resolve(reqType);
+		setResolved(true);
+		return this;
+	}
+
+	public void generate(Type reqType) {
+		stat.generate(reqType);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return stat.toJava(dmp);
+	}
+
+}
+
+@node
 public class InlineMethodStat extends Statement implements Scope {
 
 	static class ParamRedir {
@@ -45,8 +76,11 @@ public class InlineMethodStat extends Statement implements Scope {
 	};
 
 
-	@ref public Method		method;
+	@att public Method		method;
 	public ParamRedir[]	params_redir;
+
+	public InlineMethodStat() {
+	}
 
 	public InlineMethodStat(int pos, ASTNode parent, Method m, Method in) {
 		super(pos, parent);
@@ -144,26 +178,33 @@ public class InlineMethodStat extends Statement implements Scope {
 public class BlockStat extends Statement implements Scope {
 
 	@att public final NArr<ASTNode>		stats;
-	@att public final NArr<Var>			vars;
-	@att public final NArr<ASTNode>		members;
+	@ref public final NArr<Var>			vars;
+	@ref public final NArr<ASTNode>		members;
 	@att public final NArr<Statement>	addstats;
 
 	protected CodeLabel	break_label = null;
 
-	public BlockStat(int pos, ASTNode parent) {
-		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this);
+	public BlockStat() {
+		this.stats = new NArr<ASTNode>(this,true);
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this);
+		this.addstats = new NArr<Statement>(this,true);
+	}
+
+	public BlockStat(int pos, ASTNode parent) {
+		super(pos, parent);
+		this.stats = new NArr<ASTNode>(this,true);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+		this.addstats = new NArr<Statement>(this,true);
 	}
 
 	public BlockStat(int pos, ASTNode parent, NArr<ASTNode> sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this);
+		this.stats = new NArr<ASTNode>(this,true);
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this);
+		this.addstats = new NArr<Statement>(this,true);
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
 			st.parent = this;
@@ -172,10 +213,10 @@ public class BlockStat extends Statement implements Scope {
 
 	public BlockStat(int pos, ASTNode parent, ASTNode[] sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this);
+		this.stats = new NArr<ASTNode>(this,true);
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this);
+		this.addstats = new NArr<Statement>(this,true);
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
 			st.parent = this;
@@ -388,6 +429,8 @@ public class BlockStat extends Statement implements Scope {
 @node
 public class EmptyStat extends Statement {
 
+	public EmptyStat() {}
+
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
 
 	public ASTNode resolve(Type reqType) {
@@ -416,6 +459,9 @@ public class ExprStat extends Statement {
 
 	@att public Expr		expr;
 
+	public ExprStat() {
+	}
+
 	public ExprStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
@@ -430,6 +476,8 @@ public class ExprStat extends Statement {
 		PassInfo.push(this);
 		try {
 			expr = expr.resolveExpr(Type.tpVoid);
+			expr.parent = this;
+			expr.setGenVoidExpr(true);
 		} catch(Exception e ) {
 			Kiev.reportError(expr.getPos(),e);
 		} finally { PassInfo.pop(this); }
@@ -464,7 +512,10 @@ public class ExprStat extends Statement {
 public class DeclStat extends Statement {
 
 	@att public Var		var;
-	@att public Expr		init;
+	@att public Expr	init;
+
+	public DeclStat() {
+	}
 
 	public DeclStat(int pos, ASTNode parent, Var var) {
 		super(pos, parent);
@@ -496,9 +547,12 @@ public class DeclStat extends Statement {
 				}
 			}
 			ASTNode p = parent;
-			while( p != null && !(p instanceof BlockStat) ) p = p.parent;
+			while( p != null && !(p instanceof BlockStat || p instanceof BlockExpr) ) p = p.parent;
 			if( p != null ) {
-				((BlockStat)p).addVar(var);
+				if (p instanceof BlockStat)
+					((BlockStat)p).addVar(var);
+				else
+					((BlockExpr)p).addVar(var);
 				NodeInfoPass.setNodeType(var,var.type);
 				if( init != null )
 					NodeInfoPass.setNodeValue(var,init);
@@ -567,6 +621,9 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 
 	@ref public Struct		struct;
 
+	public TypeDeclStat() {
+	}
+	
 	public TypeDeclStat(int pos, ASTNode parent) {
 		super(pos, parent);
 	}
@@ -615,6 +672,9 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 	@att public Expr		expr;
 
+	public ReturnStat() {
+	}
+
 	public ReturnStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
@@ -633,6 +693,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 			if( expr != null ) {
 				try {
 					expr = expr.resolveExpr(PassInfo.method.type.ret);
+					expr.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(expr.pos,e);
 				}
@@ -724,6 +785,9 @@ public class ThrowStat extends Statement/*defaults*/ {
 
 	@att public Expr		expr;
 
+	public ThrowStat() {
+	}
+
 	public ThrowStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
@@ -779,6 +843,9 @@ public class IfElseStat extends Statement {
 	@att public Statement	thenSt;
 	@att public Statement	elseSt;
 
+	public IfElseStat() {
+	}
+	
 	public IfElseStat(int pos, ASTNode parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
 		this.cond = cond;
@@ -802,6 +869,7 @@ public class IfElseStat extends Statement {
 		try {
 			try {
 				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond.parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -814,6 +882,7 @@ public class IfElseStat extends Statement {
 			}
 			try {
 				thenSt = (Statement)thenSt.resolve(Type.tpVoid);
+				thenSt.parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(thenSt.pos,e);
 			}
@@ -832,6 +901,7 @@ public class IfElseStat extends Statement {
 			if( elseSt != null ) {
 				try {
 					elseSt = (Statement)elseSt.resolve(Type.tpVoid);
+					elseSt.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(elseSt.pos,e);
 				}
@@ -953,6 +1023,9 @@ public class CondStat extends Statement {
 
 	@att public BooleanExpr		cond;
 	@att public Expr			message;
+
+	public CondStat() {
+	}
 
 	public CondStat(int pos, ASTNode parent, BooleanExpr cond, Expr message) {
 		super(pos,parent);
@@ -1083,6 +1156,9 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	protected CodeLabel	tag_label = null;
 
+	public LabeledStat() {
+	}
+	
 	public LabeledStat(int pos, ASTNode parent, KString name, Statement stat) {
 		super(pos, parent);
 		this.name = name;
@@ -1136,6 +1212,9 @@ public class BreakStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
+	public BreakStat() {
+	}
+	
 	public BreakStat(int pos, ASTNode parent, KString name) {
 		super(pos, parent);
 		this.name = name;
@@ -1215,6 +1294,9 @@ public class ContinueStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
+	public ContinueStat() {
+	}
+	
 	public ContinueStat(int pos, ASTNode parent, KString name) {
 		super(pos, parent);
 		this.name = name;
@@ -1265,6 +1347,9 @@ public class GotoStat extends Statement/*defaults*/ {
 
 	public KString		name;
 
+	public GotoStat() {
+	}
+	
 	public GotoStat(int pos, ASTNode parent, KString name) {
 		super(pos, parent);
 		this.name = name;
@@ -1450,6 +1535,9 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	@att public Expr		expr;
 	@ref public SwitchStat	sw;
 
+	public GotoCaseStat() {
+	}
+	
 	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
@@ -1472,9 +1560,11 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = (Expr)new AssignExpr(pos,AssignOperator.Assign,
 					new VarAccessExpr(pos,sw.tmpvar),expr).resolve(Type.tpVoid);
+				expr.setGenVoidExpr(true);
 			} else {
 				expr = expr.resolveExpr(sw.sel.getType());
 			}
+			expr.parent = this;
 		}
 		return this;
 	}

@@ -657,6 +657,17 @@ public class Compiler {
 					Kiev.reportError(0,rte);
 				}
 				runGC();
+				try {
+					new ProcessFixParent().fixup(Kiev.files[i], null);
+				} catch (Exception rte) {
+					Kiev.reportError(0,rte);
+				}
+				try {
+					new ProcessVirtFld().rewrite(Kiev.files[i], null);
+				} catch (Exception rte) {
+					Kiev.reportError(0,rte);
+				}
+				runGC();
 				if( Kiev.source_only ) {
 					if( Kiev.output_dir == null )
 						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+args[i]);

@@ -19,6 +19,8 @@ public class ASTAnnotationValue extends SimpleNode {
 	@att public ASTIdentifier ident;
 	@att public ASTNode       value;
 	
+	public ASTAnnotationValue() {}
+
 	public ASTAnnotationValue(int id) {
 		super(0);
 	}

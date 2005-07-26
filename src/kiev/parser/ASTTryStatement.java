@@ -39,9 +39,13 @@ public class ASTTryStatement extends Statement {
     @att public final NArr<ASTNode>	catchers;
     @att public ASTNode					finally_catcher;
     
+	public ASTTryStatement() {
+		catchers = new NArr<ASTNode>(this, true);
+	}
+
 	public ASTTryStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
-		catchers = new NArr<ASTNode>(this);
+		catchers = new NArr<ASTNode>(this, true);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

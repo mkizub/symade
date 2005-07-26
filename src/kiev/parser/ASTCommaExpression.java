@@ -37,9 +37,12 @@ import kiev.stdlib.*;
 public class ASTCommaExpression extends Expr {
 	@att public final NArr<Expr>	exprs;
 
-	public ASTCommaExpression(int id) {
-		super(0);
+	public ASTCommaExpression() {
 		exprs = new NArr<Expr>(this);
+	}
+
+	public ASTCommaExpression(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

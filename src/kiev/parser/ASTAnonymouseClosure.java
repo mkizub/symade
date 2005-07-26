@@ -41,12 +41,10 @@ public class ASTAnonymouseClosure extends Expr {
 	@att public Expr						new_closure;
 
 	public ASTAnonymouseClosure() {
-		super(0);
 		params = new NArr<ASTNode>(this);
 	}
 
 	public ASTAnonymouseClosure(int id) {
-		super(0);
 		params = new NArr<ASTNode>(this);
 	}
 
@@ -133,7 +131,7 @@ public class ASTAnonymouseClosure extends Expr {
 		for(int i=0; i < vars.length; i++) {
 			Var v = vars[i];
 			Expr val = new ContainerAccessExpr(pos,
-				new FieldAccessExpr(pos,(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
+				new AccessExpr(pos,new ThisExpr(pos),(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
 				new ConstExpr(v.getPos(),new Integer(i)));
 			DeclStat dc = new DeclStat(v.getPos(),body,v);
 			if( !v.type.isReference() ) {

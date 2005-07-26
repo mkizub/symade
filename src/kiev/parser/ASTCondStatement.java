@@ -39,8 +39,11 @@ public class ASTCondStatement extends Statement {
 	@att public Expr		cond;
 	@att public Expr		message;
 	
+	public ASTCondStatement() {
+	}
+
 	public ASTCondStatement(int id) {
-		super(0,null);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

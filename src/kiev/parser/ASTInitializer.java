@@ -42,8 +42,10 @@ public class ASTInitializer extends ASTNode implements PreScanneable {
 	public PrescannedBody get$pbody() { return pbody; }
 	public void set$pbody(PrescannedBody p) { pbody = p; }
 	
+	public ASTInitializer() {
+	}
+    
 	public ASTInitializer(int id) {
-		super(0);
 	}
     
 	public void jjtAddChild(ASTNode n, int i) {

@@ -53,6 +53,9 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 	@ref public static final ASTModifier modTRANSIENT	= new ASTModifier(TRANSIENT,"transient");
 	@ref public static final ASTModifier modWRAPPER		= new ASTModifier(WRAPPER,"$wrapper");
 
+	ASTModifier() {
+	}
+
 	ASTModifier(int id) {
 		super(0);
 	}

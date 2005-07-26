@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -46,7 +47,6 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 	@ref public Struct			me;
 
 	ASTStructDeclaration() {
-		super(0);
 		argument = new NArr<ASTNode>(this);
 		members = new NArr<ASTNode>(this);
 	}
@@ -80,6 +80,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     @att public ASTNode		impl;
     @att public ASTNode		gens;
 
+	ASTTypeDeclaration() {}
 	ASTTypeDeclaration(int id) {}
 
   	public void set(Token t) {
@@ -122,7 +123,6 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
         PassInfo.push(me);
         try {
-        	List<Field> abstr_fields = List.Nil;
 			// Process members
 			for(int i=0; i < members.length; i++) {
 				members[i].parent = me;
@@ -244,10 +244,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 							}
 							f.setPublic(true);
 						}
-						if( !f.isAbstract() ) me.addField(f);
-						if( f.isVirtual() ) {
-							abstr_fields = abstr_fields.concat(f);
-						}
+						me.addField(f);
 						if (fdecl.init == null && fdecl.dim==0) {
 							if(type.clazz.isWrapper()) {
 								f.init = new NewExpr(fdecl.pos,type,Expr.emptyArray);
@@ -285,9 +282,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
        	    	members[i].parent = me;
 			}
 
-			foreach(Field f; abstr_fields)
-				me.addMethodsForVirtualField(f);
-			me.addAbstractFields();
+			new ProcessVirtFld().createMembers(me);
 			me.setupWrappedField();
 
     	    // Process inner classes and cases
@@ -304,9 +299,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
 					s.package_clazz = me.package_clazz;
 					if( me.interfaces.length != 0 ) {
-						s.interfaces = (Type[])me.interfaces.clone();
-						for(int j=0; j < s.interfaces.length; j++)
-							s.interfaces[j] = Type.getRealType(s.type,me.interfaces[j]);
+						for(int j=0; j < me.interfaces.length; j++)
+							s.interfaces.add(Type.getRealType(s.type,me.interfaces[j]));
 					}
 				}
 			}

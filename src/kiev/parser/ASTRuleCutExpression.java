@@ -36,8 +36,10 @@ import kiev.vlang.*;
 @node
 public class ASTRuleCutExpression extends ASTRuleNode {
 
+	public ASTRuleCutExpression() {
+	}
+
 	public ASTRuleCutExpression(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

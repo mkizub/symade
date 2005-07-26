@@ -62,6 +62,10 @@ public class ProjectFile extends ASTNode {
 		this(clname, new File( f.toString() ));
 	}
 
+	public Object copy() {
+		throw new CompilerException(getPos(),"ProjectFile node cannot be copied");
+	};
+
 	public void jjtAddChild(ASTNode n, int i) {}
     public Dumper toJava(Dumper dmp) { return dmp; }
 
@@ -102,6 +106,10 @@ public class Env extends Struct {
 		type = Type.tpVoid;
 	}
 
+	public Object copy() {
+		throw new CompilerException(getPos(),"Env node cannot be copied");
+	};
+
 	public static void setProperty(String prop, String value) {
 		props.put(prop,value);
 	}
@@ -137,15 +145,14 @@ public class Env extends Struct {
 				cl.flags = access;
 				cl.package_clazz = outer;
 				cl.super_clazz = null;
-				cl.interfaces = Type.emptyArray;
-				cl.sub_clazz = Struct.emptyArray;
-				cl.fields = Field.emptyArray;
-				cl.virtual_fields = Field.emptyArray;
+				cl.interfaces.delAll();
+				cl.sub_clazz.delAll();
+				cl.fields.delAll();
 				cl.wrapped_field = null;
 				if( cl.methods != null ) {
 					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
 				}
-				cl.methods = Method.emptyArray;
+				cl.methods.delAll();
 				cl.imported.delAll();
 				cl.attrs = Attr.emptyArray;
 			}

@@ -40,8 +40,10 @@ import syntax kiev.Syntax;
 public class ASTIdentifier extends Expr {
 	public KString name;
 
+	public ASTIdentifier() {
+	}
+
 	public ASTIdentifier(int id) {
-		super(0);
 	}
 
 	public ASTIdentifier(int pos, KString name) {
@@ -146,11 +148,11 @@ public class ASTIdentifier extends Expr {
 			Field f = (Field)v;
 			if( f.isStatic() ) return new StaticFieldAccessExpr(pos,PassInfo.clazz,f).resolve(reqType);
 			if( info.path.length() == 0 )
-				e = new FieldAccessExpr(pos,f);
+				e = new AccessExpr(pos,new ThisExpr(pos),f);
 			else {
 				List<ASTNode> acc = info.path.toList();
 				if (acc.head() instanceof Field)
-					e = new FieldAccessExpr(pos,(Field)acc.head());
+					e = new AccessExpr(pos,new ThisExpr(pos),(Field)acc.head());
 				else if (acc.head() instanceof Var)
 					e = new VarAccessExpr(pos,(Var)acc.head());
 				acc = acc.tail();

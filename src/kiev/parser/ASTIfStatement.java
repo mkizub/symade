@@ -40,6 +40,9 @@ public class ASTIfStatement extends Statement {
     @att public Statement	thenSt;
     @att public Statement	elseSt;
 
+	public ASTIfStatement() {
+	}
+
 	public ASTIfStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
 	}

@@ -40,6 +40,9 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 	protected	CodeLabel	continue_label = null;
 	protected	CodeLabel	break_label = null;
 
+	protected LoopStat() {
+	}
+
 	protected LoopStat(int pos, ASTNode parent) {
 		super(pos, parent);
 		setBreakTarget(true);
@@ -64,6 +67,9 @@ public class WhileStat extends LoopStat {
 
 	@att public BooleanExpr	cond;
 	@att public Statement	body;
+
+	public WhileStat() {
+	}
 
 	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos, parent);
@@ -154,6 +160,9 @@ public class DoWhileStat extends LoopStat {
 	@att public BooleanExpr	cond;
 	@att public Statement	body;
 
+	public DoWhileStat() {
+	}
+
 	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos,parent);
 		this.cond = cond;
@@ -241,23 +250,20 @@ public class DoWhileStat extends LoopStat {
 @node
 public class ForInit extends ASTNode implements Scope {
 
-	@ref public Type	type;
-	public Var[]	vars;
-	public Expr[]	inits;
+	@att public final NArr<DeclStat>	decls;
 
-	public ForInit(int pos, Type type, Var[] vars, Expr[] inits) {
+	public ForInit() {
+		this.decls = new NArr<DeclStat>(this, true);
+	}
+
+	public ForInit(int pos) {
 		super(pos);
-		this.type = type;
-		this.vars = vars;
-		this.inits = inits;
+		this.decls = new NArr<DeclStat>(this, true);
 	}
 
 	public void cleanup() {
 		parent=null;
-		type = null;
-		vars = null;
-		foreach(ASTNode n; inits; n!=null) n.cleanup();
-		inits = null;
+		decls.cleanup();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -265,34 +271,30 @@ public class ForInit extends ASTNode implements Scope {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		ASTNode@ n;
+		DeclStat@ n;
 	{
-		n @= vars,
+		n @= decls,
 		{
-			((Var)n).name.equals(name), node ?= n
-		;	n.isForward(),
-			info.enterForward(n) : info.leaveForward(n),
-			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			n.var.name.equals(name), node ?= n.var
+		;	n.var.isForward(),
+			info.enterForward(n.var) : info.leaveForward(n.var),
+			Type.getRealType(tp,n.var.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 		}
 	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
-		ASTNode@ n;
+		DeclStat@ n;
 	{
-		n @= vars,
-		n.isForward(),
-		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		n @= decls,
+		n.var.isForward(),
+		info.enterForward(n.var) : info.leaveForward(n.var),
+		Type.getRealType(type,n.var.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.append(type).space();
-		for(int i=0; i < vars.length; i++) {
-			dmp.append(vars[i].name);
-			for(Type tp=vars[i].type; tp.isArray(); tp = tp.args[0])
-				dmp.append("[]");
-			if( inits[i] != null ) dmp.space().append('=').space().append(inits[i]);
-			if( i < vars.length-1 ) dmp.append(',').space();
+		for(int i=0; i < decls.length; i++) {
+			decls[i].toJava(dmp);
+			if( i < decls.length-1 ) dmp.append(',').space();
 		}
 		return dmp;
 	}
@@ -306,6 +308,9 @@ public class ForStat extends LoopStat implements Scope {
 	@att public Expr		iter;
 	@att public Statement	body;
 
+	public ForStat() {
+	}
+	
 	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
 		super(pos, parent);
 		if( init != null ) {
@@ -359,26 +364,32 @@ public class ForStat extends LoopStat implements Scope {
 						Type type = ((ASTType)vdecls.type).getType();
 						int dim = 0;
 						while( type.isArray() ) { dim++; type = type.args[0]; }
-						Var[] vars = new Var[vdecls.vars.length];
-						Expr[] inits = new Expr[vdecls.vars.length];
+						DeclStat[] decls = new DeclStat[vdecls.vars.length];
+						this.init = new ForInit(init.pos);
 						for(int j=0; j < vdecls.vars.length; j++) {
 							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 							KString vname = vdecl.name;
 							Type tp = type;
 							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-							vars[j] = new Var(vdecl.pos,this,vname,tp,flags);
-							if (((ASTVarDecls)init).hasFinal()) vars[j].setFinal(true);
-							if (((ASTVarDecls)init).hasForward()) vars[j].setForward(true);
-							if( vdecl.init != null )
-								inits[j] = vdecl.init.resolveExpr(vars[j].type);
-							else if (vars[j].isFinal())
-								Kiev.reportError(vars[j].pos,"Final variable "+vars[j]+" must have initializer");
+							DeclStat ds = new DeclStat(vdecl.pos, init, new Var(vdecl.pos,this,vname,tp,flags));
+							((ForInit)init).decls.append(ds);
+							if (vdecls.hasFinal()) ds.var.setFinal(true);
+							if (vdecls.hasForward()) ds.var.setForward(true);
+							if( vdecl.init != null ) {
+								ds.init = vdecl.init.resolveExpr(ds.var.type);
+								ds.init.parent = ds;
+							}
+							else if (ds.var.isFinal())
+								Kiev.reportError(ds.var.pos,"Final variable "+ds.var+" must have initializer");
 						}
-						init = new ForInit(init.pos,type,vars,inits);
 					}
 					else
 						throw new RuntimeException("Unknown type of for-init node "+init);
+					if (init instanceof Expr)
+						init.setGenVoidExpr(true);
+					if (init != null)
+						init.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(init.pos,e);
 				}
@@ -392,6 +403,7 @@ public class ForStat extends LoopStat implements Scope {
 			if( cond != null ) {
 				try {
 					cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+					cond.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(cond.pos,e);
 				}
@@ -401,7 +413,10 @@ public class ForStat extends LoopStat implements Scope {
 				Kiev.reportError(body.pos,e);
 			}
 			if( iter != null ) {
-				try {	iter = (Expr)iter.resolve(Type.tpVoid);
+				try {
+					iter = (Expr)iter.resolve(Type.tpVoid);
+					iter.parent = this;
+					iter.setGenVoidExpr(true);
 				} catch(Exception e ) {
 					Kiev.reportError(iter.pos,e);
 				}
@@ -449,12 +464,8 @@ public class ForStat extends LoopStat implements Scope {
 					((Expr)init).generate(Type.tpVoid);
 				else if( init instanceof ForInit ) {
 					ForInit fi = (ForInit)init;
-					for(int i=0; i < fi.vars.length; i++) {
-						Code.addVar(fi.vars[i]);
-						if( fi.inits[i] != null ) {
-							fi.inits[i].generate(fi.vars[i].type);
-							Code.addInstr(Instr.op_store,fi.vars[i]);
-						}
+					foreach (DeclStat ds; fi.decls) {
+						ds.generate(Type.tpVoid);
 					}
 				}
 			}
@@ -485,8 +496,8 @@ public class ForStat extends LoopStat implements Scope {
 
 			if( init != null && init instanceof ForInit ) {
 				ForInit fi = (ForInit)init;
-				for(int i=fi.vars.length-1; i >= 0; i--) {
-					Code.removeVar(fi.vars[i]);
+				for(int i=fi.decls.length-1; i >= 0; i--) {
+					Code.removeVar(fi.decls[i].var);
 				}
 			}
 		} catch(Exception e ) {
@@ -526,6 +537,7 @@ public class ForEachStat extends LoopStat implements Scope {
 
 	@att public Var			var;
 	@att public Var			iter;
+	@att public Var			iter_array;
 	@att public Expr		iter_init;
 	@att public BooleanExpr	iter_cond;
 	@att public Expr		iter_incr;
@@ -542,6 +554,9 @@ public class ForEachStat extends LoopStat implements Scope {
 
 	public int			mode;
 
+	public ForEachStat() {
+	}
+	
 	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
 		super(pos, parent);
 		this.var = var;
@@ -561,6 +576,7 @@ public class ForEachStat extends LoopStat implements Scope {
 		parent=null;
 		var = null;
 		iter = null;
+		iter_array = null;
 		if( iter_init != null ) {
 			iter_init.cleanup();
 			iter_init = null;
@@ -602,8 +618,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			//		...
 			//	}
 			//	or if container is an array:
-			//	for(int x$iter=0; x$iter < container.length; x$iter++) {
-			//		type x = container[ x$iter ];
+			//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
+			//		type x = x$arr[ x$iter ];
 			//
 			//		if( !cond ) continue;
 			//		...
@@ -656,6 +672,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			}
 			else if( var != null ) {
 				iter = new Var(var.pos,this,KString.from(var.name.name+"$iter"),itype,0);
+				if (mode == ARRAY)
+					iter_array = new Var(container.pos,this,KString.from(var.name.name+"$arr"),container.getType(),0);
 			}
 			else {
 				iter = null;
@@ -664,18 +682,24 @@ public class ForEachStat extends LoopStat implements Scope {
 			// Initialize iterator
 			switch( mode ) {
 			case ARRAY:
-				/* iter = 0; */
-				iter_init = new AssignExpr(iter.pos,AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter),
-						new ConstExpr(iter.pos,Kiev.newInteger(0))
-					);
+				/* iter = 0; arr = container;*/
+				iter_init = new CommaExpr(0, new Expr[]{
+					new AssignExpr(iter.pos,AssignOperator.Assign,
+						new VarAccessExpr(container.pos,iter_array),
+							new ShadowExpr(container)
+						),
+					new AssignExpr(iter.pos,AssignOperator.Assign,
+						new VarAccessExpr(iter.pos,iter),
+							new ConstExpr(iter.pos,Kiev.newInteger(0))
+						)
+				});
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(Type.tpInt);
 				break;
 			case KENUM:
 				/* iter = container; */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter),	container
+					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
@@ -683,7 +707,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			case JENUM:
 				/* iter = container; */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter),	container
+					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
@@ -692,7 +716,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				/* iter = container.elements(); */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter),
-					new CallAccessExpr(container.pos,container,elems,Expr.emptyArray)
+					new CallAccessExpr(container.pos,new ShadowExpr(container),elems,Expr.emptyArray)
 					);
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
@@ -706,7 +730,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(Type.tpVoid);
 				// Also, patch the rule argument
-				Expr[] args = null;
+				NArr<Expr> args = null;
 				if( container instanceof CallExpr ) {
 					args = ((CallExpr)container).args;
 				}
@@ -722,6 +746,8 @@ public class ForEachStat extends LoopStat implements Scope {
 				}
 				break;
 			}
+			iter_init.parent = this;
+			iter_init.setGenVoidExpr(true);
 
 			// Check iterator condition
 
@@ -730,7 +756,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				/* iter < container.length */
 				iter_cond = new BinaryBooleanExpr(iter.pos,BinaryOperator.LessThen,
 					new VarAccessExpr(iter.pos,iter),
-					new ArrayLengthAccessExpr(iter.pos,container)
+					new ArrayLengthAccessExpr(iter.pos,new VarAccessExpr(0,iter_array))
 					);
 				break;
 			case KENUM:
@@ -753,7 +779,7 @@ public class ForEachStat extends LoopStat implements Scope {
 					BinaryOperator.NotEquals,
 					new AssignExpr(container.pos,AssignOperator.Assign,
 						new VarAccessExpr(container.pos,iter),
-						container),
+						new ShadowExpr(container)),
 					new ConstExpr(container.pos,null)
 					);
 				break;
@@ -769,7 +795,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				/* var = container[iter] */
 				var_init = new AssignExpr(var.pos,AssignOperator.Assign,
 					new VarAccessExpr(var.pos,var),
-					new ContainerAccessExpr(container.pos,container,new VarAccessExpr(iter.pos,iter))
+					new ContainerAccessExpr(container.pos,new VarAccessExpr(0,iter_array),new VarAccessExpr(iter.pos,iter))
 					);
 				break;
 			case KENUM:
@@ -799,6 +825,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			if( var_init != null ) {
 				var_init.parent = this;
 				var_init = (Expr)var_init.resolve(var.getType());
+				var_init.parent = this;
+				var_init.setGenVoidExpr(true);
 			}
 
 			// Check condition, if any
@@ -827,6 +855,8 @@ public class ForEachStat extends LoopStat implements Scope {
 					);
 				iter_incr.parent = this;
 				iter_incr = (Expr)iter_incr.resolve(Type.tpVoid);
+				iter_incr.parent = this;
+				iter_incr.setGenVoidExpr(true);
 			} else {
 				iter_incr = null;
 			}
@@ -869,6 +899,8 @@ public class ForEachStat extends LoopStat implements Scope {
 				Code.addVar(iter);
 			if( var != null )
 				Code.addVar(var);
+			if( iter_array != null )
+				Code.addVar(iter_array);
 
 			// Init iterator
 			iter_init.generate(Type.tpVoid);
@@ -896,6 +928,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			if( iter_cond != null )
 				iter_cond.generate_iftrue(body_label);
 
+			if( iter_array != null )
+				Code.removeVar(iter_array);
 			if( var != null )
 				Code.removeVar(var);
 			if( iter != null )
@@ -922,7 +956,7 @@ public class ForEachStat extends LoopStat implements Scope {
 		if( var_init != null )
 			dmp.append(var_init).newLine();
 		if( cond != null )
-			dmp.append("if(").append(cond).append(") break;").newLine();
+			dmp.append("if !(").append(cond).append(") continue;").newLine();
 
 		dmp.append(body);
 		if( body instanceof ExprStat || body instanceof BlockStat ) dmp.newLine();

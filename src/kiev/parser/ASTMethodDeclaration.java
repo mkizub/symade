@@ -49,7 +49,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	public virtual PrescannedBody 						pbody;
 	@att public final NArr<ASTRequareDeclaration>		req;
 	@att public final NArr<ASTEnsureDeclaration>		ens;
-    @att public Expr									annotation_default;
+    @att public ASTAnnotationValue						annotation_default;
 
 	@ref public Method									me;
 	@ref public final NArr<Type>						ftypes;
@@ -104,8 +104,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         else if( n instanceof Statement ) {
 			body = (Statement)n;
         }
-		else if (n instanceof Expr) {
-			annotation_default = (Expr)n;
+		else if (n instanceof ASTAnnotationValue) {
+			annotation_default = (ASTAnnotationValue)n;
 		}
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
@@ -211,8 +211,9 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		me = new Method(clazz,ident.name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);
 		me.setPos(getPos());
+		modifiers.getMetas(me.meta);
 		if (me.parent.isAnnotation() && annotation_default != null) {
-			body = new ExprStat(annotation_default.pos, me, annotation_default);
+			me.annotation_default = ASTAnnotation.makeValue(annotation_default);
 		}
         me.body = body;
         if( me.body != null )

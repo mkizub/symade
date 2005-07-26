@@ -40,9 +40,12 @@ public class ASTFieldDecl extends ASTNode {
 	@att public ASTType					type;
 	@att public final NArr<ASTNode>		vars;
 
-	public ASTFieldDecl(int id) {
-		super(0);
+	public ASTFieldDecl() {
 		vars = new NArr<ASTNode>(this);
+	}
+
+	public ASTFieldDecl(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

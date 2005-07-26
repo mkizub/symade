@@ -38,10 +38,23 @@ import static kiev.vlang.Instr.*;
 @node
 public class AccessExpr extends LvalueExpr {
 
+	public static final int[] masks =
+		{	0,
+			0x1       ,0x3       ,0x7       ,0xF       ,
+			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
+			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
+			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
+			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
+			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
+			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
+			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
+		};
+
 	@att public Expr		obj;
 	@ref public Field		var;
-	@ref public Method		fset;		// for virtual fields
-	@ref public Method		fget;		// for virtual fields
+
+	public AccessExpr() {
+	}
 
 	public AccessExpr(int pos, Expr obj, Field var) {
 		super(pos);
@@ -49,6 +62,15 @@ public class AccessExpr extends LvalueExpr {
 		this.obj.parent = this;
 		this.var = var;
 		assert(obj != null && var != null);
+	}
+
+	public AccessExpr(int pos, Expr obj, Field var, boolean direct_access) {
+		super(pos);
+		this.obj = obj;
+		this.obj.parent = this;
+		this.var = var;
+		assert(obj != null && var != null);
+		if (direct_access) setAsField(true);
 	}
 
 	public AccessExpr(int pos, ASTNode par, Expr obj, Field var) {
@@ -95,8 +117,6 @@ public class AccessExpr extends LvalueExpr {
 		obj.cleanup();
 		obj = null;
 		var = null;
-		fset = null;
-		fget = null;
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
@@ -105,25 +125,6 @@ public class AccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			obj = (Expr)obj.resolve(null);
-			if( var.isVirtual() && !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),ResolveFlags.NoForwards);
-					fset = fsg;
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),obj.getType(),ResolveFlags.NoForwards);
-					fget = fsg;
-				}
-			}
 
 			// Set violation of the field
 			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
@@ -151,24 +152,21 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load only: "+this);
 		PassInfo.push(this);
 		try {
+			if( var.isVirtual() && !isAsField() )
+				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
 			Field f = (Field)var;
 			var.acc.verifyReadAccess(var);
 			obj.generate(null);
 			generateCheckCastIfNeeded();
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,obj.getType());
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				else
-					Code.addInstr(op_getfield,f,obj.getType());
-			}
+			if( var.isPackedField() )
+				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
+			else
+				Code.addInstr(op_getfield,f,obj.getType());
 			if( Kiev.verify && f.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
 			if( var.isPackedField() ) {
-				int mask = FieldAccessExpr.masks[var.pack.size];
+				int mask = AccessExpr.masks[var.pack.size];
 				mask <<= var.pack.offset;
 				Code.addConst(mask);
 				Code.addInstr(op_and);
@@ -188,25 +186,22 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load & dup: "+this);
 		PassInfo.push(this);
 		try {
+			if( var.isVirtual() && !isAsField() )
+				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
 			Field f = (Field)var;
 			var.acc.verifyReadAccess(var);
 			obj.generate(null);
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,obj.getType());
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				else
-					Code.addInstr(op_getfield,f,obj.getType());
-			}
+			if( var.isPackedField() )
+				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
+			else
+				Code.addInstr(op_getfield,f,obj.getType());
 			if( Kiev.verify && f.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
 			if( var.isPackedField() ) {
-				int mask = FieldAccessExpr.masks[var.pack.size];
+				int mask = AccessExpr.masks[var.pack.size];
 				mask <<= var.pack.offset;
 				Code.addConst(mask);
 				Code.addInstr(op_and);
@@ -226,6 +221,8 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - access only: "+this);
 		PassInfo.push(this);
 		try {
+			if( var.isVirtual() && !isAsField() )
+				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
 			obj.generate(null);
 			generateCheckCastIfNeeded();
 		} finally { PassInfo.pop(this); }
@@ -235,40 +232,37 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store only: "+this);
 		PassInfo.push(this);
 		try {
+			if( var.isVirtual() && !isAsField() )
+				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
 			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,obj.getType());
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = FieldAccessExpr.masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-					// Clear var's position
-					mask = FieldAccessExpr.masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-				} else {
-					Code.addInstr(op_putfield,var,obj.getType());
+			if( var.isPackedField() ) {
+				// Correct value
+				int mask = AccessExpr.masks[var.pack.size];
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+				if(var.pack.offset > 0) {
+					Code.addConst(var.pack.offset);
+					Code.addInstr(op_shl);
 				}
+
+				// Load old value of packer field
+				Code.addInstr(op_swap);
+				Code.addInstr(op_dup_x);
+				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
+				// Clear var's position
+				mask = AccessExpr.masks[var.pack.size];
+				mask <<= var.pack.offset;
+				mask = ~mask;
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+
+				// Fill with var's value
+				Code.addInstr(op_or);
+
+				// Store packer field
+				Code.addInstr(op_putfield,var.pack.packer,obj.getType());
+			} else {
+				Code.addInstr(op_putfield,var,obj.getType());
 			}
 		} finally { PassInfo.pop(this); }
 	}
@@ -277,41 +271,38 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store & dup: "+this);
 		PassInfo.push(this);
 		try {
+			if( var.isVirtual() && !isAsField() )
+				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup_x);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,obj.getType());
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = FieldAccessExpr.masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-					// Clear var's position
-					mask = FieldAccessExpr.masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-				} else {
-					Code.addInstr(op_putfield,var,obj.getType());
+			if( var.isPackedField() ) {
+				// Correct value
+				int mask = AccessExpr.masks[var.pack.size];
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+				if(var.pack.offset > 0) {
+					Code.addConst(var.pack.offset);
+					Code.addInstr(op_shl);
 				}
+
+				// Load old value of packer field
+				Code.addInstr(op_swap);
+				Code.addInstr(op_dup_x);
+				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
+				// Clear var's position
+				mask = AccessExpr.masks[var.pack.size];
+				mask <<= var.pack.offset;
+				mask = ~mask;
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+
+				// Fill with var's value
+				Code.addInstr(op_or);
+
+				// Store packer field
+				Code.addInstr(op_putfield,var.pack.packer,obj.getType());
+			} else {
+				Code.addInstr(op_putfield,var,obj.getType());
 			}
 		} finally { PassInfo.pop(this); }
 	}
@@ -345,12 +336,7 @@ public class AccessExpr extends LvalueExpr {
 		} else {
 			dmp.append(obj).append('.');
 		}
-		if( isAsField() ) {
-			return dmp.space().append(var.name).space();
-		} else {
-			dmp.append(var.name);
-		}
-		return dmp;
+		return dmp.append(var.name).space();
 	}
 }
 
@@ -359,6 +345,9 @@ public class ContainerAccessExpr extends LvalueExpr {
 
 	@att public Expr		obj;
 	@att public Expr		index;
+
+	public ContainerAccessExpr() {
+	}
 
 	public ContainerAccessExpr(int pos, Expr obj, Expr index) {
 		super(pos);
@@ -569,12 +558,117 @@ public class ContainerAccessExpr extends LvalueExpr {
 	}
 }
 
+@node
+public class ThisExpr extends LvalueExpr {
+
+	public ThisExpr() {
+	}
+	public ThisExpr(int pos) {
+		super(pos);
+	}
+	public ThisExpr(int pos, ASTNode par) {
+		super(pos,par);
+	}
+
+
+	public String toString() { return "this"; }
+
+	private Var getVar() {
+		if (PassInfo.method == null)
+			return null;
+		if (PassInfo.method.isStatic())
+			return null;
+		return PassInfo.method.params[0];
+	}
+	
+	public Type getType() {
+		try {
+			if (PassInfo.clazz == null)
+				return Type.tpVoid;
+			return PassInfo.clazz.type;
+		} catch(Exception e) {
+			Kiev.reportError(pos,e);
+			return Type.tpVoid;
+		}
+	}
+
+	public Type[] getAccessTypes() {
+		Var var = getVar();
+		if (var == null)
+			return new Type[]{getType()};
+		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
+		if( sni == null || sni.types == null )
+			return new Type[]{var.type};
+		return sni.types;
+	}
+
+	public void cleanup() {
+		parent=null;
+	}
+
+	public ASTNode resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return this;
+		PassInfo.push(this);
+		try {
+			if (PassInfo.method != null && PassInfo.method.isStatic())
+				Kiev.reportError(pos,"Access 'this' in static context");
+		} finally { PassInfo.pop(this); }
+		setResolved(true);
+		return this;
+	}
+
+	public void generateLoad() {
+		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
+		PassInfo.push(this);
+		try {
+			Code.addInstr(op_load,PassInfo.method.params[0]);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void generateLoadDup() {
+		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
+		PassInfo.push(this);
+		try {
+			Code.addInstr(op_load,PassInfo.method.params[0]);
+			Code.addInstr(op_dup);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void generateAccess() {
+		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - access only: "+this);
+	}
+
+	public void generateStore() {
+		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
+		PassInfo.push(this);
+		try {
+			Code.addInstr(op_store,PassInfo.method.params[0]);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void generateStoreDupValue() {
+		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
+		PassInfo.push(this);
+		try {
+			Code.addInstr(op_dup);
+			Code.addInstr(op_store,PassInfo.method.params[0]);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public int getPriority() { return opAccessPriority; }
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.space().append("this").space();
+	}
+}
 
 @node
 public class VarAccessExpr extends LvalueExpr {
 
 	@ref public Var		var;
 
+	public VarAccessExpr() {
+	}
 	public VarAccessExpr(int pos, Var var) {
 		super(pos);
 		if( var == null )
@@ -630,7 +724,7 @@ public class VarAccessExpr extends LvalueExpr {
 						// Add field
 						vf = PassInfo.clazz.addField(new Field(PassInfo.clazz,var.name.name,var.type,ACC_PUBLIC));
 						vf.setNeedProxy(true);
-						vf.init = this;
+						vf.init = (Expr)this.copy();
 					}
 				}
 			}
@@ -748,7 +842,7 @@ public class VarAccessExpr extends LvalueExpr {
 					Code.addInstr(op_dup);
 				}
 				if( var.isNeedRefProxy() ) {
-					Code.addInstr(op_getfield,resolveVarVal(),PassInfo.clazz.type);
+					Code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar().getType());
 				}
 			}
 			generateVerifyCheckCast();
@@ -853,6 +947,9 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	@ref public Var		var;
 
+	public LocalPrologVarAccessExpr() {
+	}
+	
 	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
 		super(pos,par);
 		this.var = var;
@@ -971,13 +1068,14 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 		return dmp.space();
 	}
 }
-
+/*
 @node
 public class FieldAccessExpr extends LvalueExpr {
 
 	@ref public Field	var;
-	@ref public Method	fset;		// for virtual fields
-	@ref public Method	fget;		// for virtual fields
+
+	public FieldAccessExpr() {
+	}
 
 	public FieldAccessExpr(int pos, Field var) {
 		super(pos);
@@ -1032,39 +1130,18 @@ public class FieldAccessExpr extends LvalueExpr {
 	public void cleanup() {
 		parent=null;
 		var = null;
-		fget = null;
-		fset = null;
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if( var.isVirtual() && !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,null,ResolveFlags.NoForwards);
-					fset = fsg;
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),null,ResolveFlags.NoForwards);
-					fget = fsg;
-				}
-			}
 			if( PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() ) {
 				throw new RuntimeException("Access to non-static field "+var+" in static method "+PassInfo.method);
 			}
 
 			// Set violation of the field
-			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/ )
+			if( PassInfo.method != null ) //&& PassInfo.method.isInvariantMethod() 
 				PassInfo.method.addViolatedField(var);
 
 		} finally { PassInfo.pop(this); }
@@ -1090,15 +1167,10 @@ public class FieldAccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyReadAccess(var);
 			Code.addInstr(op_load,PassInfo.method.params[0]);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				else
-					Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			}
+			if( var.isPackedField() )
+				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
+			else
+				Code.addInstr(op_getfield,var,PassInfo.clazz.type);
 			if( Kiev.verify && var.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
@@ -1126,15 +1198,10 @@ public class FieldAccessExpr extends LvalueExpr {
 			var.acc.verifyReadAccess(var);
 			Code.addInstr(op_load,PassInfo.method.params[0]);
 			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				else
-					Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			}
+			if( var.isPackedField() )
+				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
+			else
+				Code.addInstr(op_getfield,var,PassInfo.clazz.type);
 			if( Kiev.verify && var.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
@@ -1168,39 +1235,34 @@ public class FieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-					// Clear var's position
-					mask = masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-				} else {
-					Code.addInstr(op_putfield,var,PassInfo.clazz.type);
+			if( var.isPackedField() ) {
+				// Correct value
+				int mask = masks[var.pack.size];
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+				if(var.pack.offset > 0) {
+					Code.addConst(var.pack.offset);
+					Code.addInstr(op_shl);
 				}
+
+				// Load old value of packer field
+				Code.addInstr(op_swap);
+				Code.addInstr(op_dup_x);
+				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
+				// Clear var's position
+				mask = masks[var.pack.size];
+				mask <<= var.pack.offset;
+				mask = ~mask;
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+
+				// Fill with var's value
+				Code.addInstr(op_or);
+
+				// Store packer field
+				Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
+			} else {
+				Code.addInstr(op_putfield,var,PassInfo.clazz.type);
 			}
 		} finally { PassInfo.pop(this); }
 	}
@@ -1211,39 +1273,34 @@ public class FieldAccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup_x);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-					// Clear var's position
-					mask = masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-				} else {
-					Code.addInstr(op_putfield,var,PassInfo.clazz.type);
+			if( var.isPackedField() ) {
+				// Correct value
+				int mask = masks[var.pack.size];
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+				if(var.pack.offset > 0) {
+					Code.addConst(var.pack.offset);
+					Code.addInstr(op_shl);
 				}
+
+				// Load old value of packer field
+				Code.addInstr(op_swap);
+				Code.addInstr(op_dup_x);
+				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
+				// Clear var's position
+				mask = masks[var.pack.size];
+				mask <<= var.pack.offset;
+				mask = ~mask;
+				Code.addConst(mask);
+				Code.addInstr(op_and);
+
+				// Fill with var's value
+				Code.addInstr(op_or);
+
+				// Store packer field
+				Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
+			} else {
+				Code.addInstr(op_putfield,var,PassInfo.clazz.type);
 			}
 		} finally { PassInfo.pop(this); }
 	}
@@ -1258,14 +1315,16 @@ public class FieldAccessExpr extends LvalueExpr {
 		}
 	}
 }
+*/
 
 @node
 public class StaticFieldAccessExpr extends LvalueExpr {
 
 	@ref public Struct		obj;
 	@ref public Field		var;
-	@ref public Method		fset;		// for virtual fields
-	@ref public Method		fget;		// for virtual fields
+
+	public StaticFieldAccessExpr() {
+	}
 
 	public StaticFieldAccessExpr(int pos, Struct obj, Field var) {
 		super(pos);
@@ -1330,38 +1389,15 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		parent=null;
 		var = null;
 		obj = null;
-		fget = null;
-		fset = null;
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if( var.isVirtual()&& !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,null,ResolveFlags.NoForwards);
-					fset = fsg;
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),null,ResolveFlags.NoForwards);
-					fget = fsg;
-				}
-			}
-
 			// Set violation of the field
 			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/ )
 				PassInfo.method.addViolatedField(var);
-
 		} finally { PassInfo.pop(this); }
 
 		setResolved(true);
@@ -1373,11 +1409,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyReadAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			}
-			else if (var.parent.isPrimitiveEnum()) {
+			if (var.parent.isPrimitiveEnum()) {
 				Code.addConst(((Integer)((ConstExpr)var.init).getConstValue()).intValue());
 			}
 			else {
@@ -1391,12 +1423,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyReadAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
-			}
+			Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -1409,12 +1436,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
-			}
+			Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -1424,12 +1446,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		try {
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
-			}
+			Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -1438,13 +1455,8 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
 		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
-		if( isAsField() ) {
-			return dmp.space().append(cl.name)
-				.append('.').append(var.name).space();
-		} else {
-			return dmp.space().append(cl.name)
-				.append('.').append(var).space();
-		}
+		return dmp.space().append(cl.name)
+			.append('.').append(var.name).space();
 	}
 
 }
@@ -1454,6 +1466,9 @@ public class OuterThisAccessExpr extends LvalueExpr {
 
 	@ref public Struct		outer;
 	public Field[]		outer_refs = Field.emptyArray;
+
+	public OuterThisAccessExpr() {
+	}
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		super(pos);
@@ -1564,6 +1579,9 @@ public class OuterThisAccessExpr extends LvalueExpr {
 public class SelfAccessExpr extends LvalueExpr {
 
 	@att public LvalueExpr		expr;
+
+	public SelfAccessExpr() {
+	}
 
 	public SelfAccessExpr(int pos, LvalueExpr expr) {
 		super(pos);

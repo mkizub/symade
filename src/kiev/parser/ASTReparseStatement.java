@@ -38,8 +38,10 @@ public class ASTReparseStatement extends Statement {
 
 	public String	ref;
 
+	public ASTReparseStatement() {
+	}
+
 	public ASTReparseStatement(int id) {
-		super(0,null);
 	}
 
   	public void set(Token t) {

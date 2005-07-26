@@ -38,8 +38,10 @@ public class ASTNonArrayType extends SimpleNode {
 	static private KString[] noops = new KString[0];
 	public KString[] ops = noops;
 
+	public ASTNonArrayType() {
+	}
+
 	public ASTNonArrayType(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

@@ -150,7 +150,7 @@ kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTL
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
 kiev.parser.ASTMacroDecl kiev/parser/ASTMacroDecl kiev\parser\ASTMacroDecl.java
 kiev.parser.ASTMacroFormalParameter kiev/parser/ASTMacroFormalParameter kiev\parser\ASTMacroFormalParameter.java
-kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java
+kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java bad
 kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
@@ -207,7 +207,7 @@ kiev.parser.ASTWhileStatement kiev/parser/ASTWhileStatement kiev\parser\ASTWhile
 kiev.parser.ASTWithStatement kiev/parser/ASTWithStatement kiev\parser\ASTWithStatement.java
 kiev.parser.JJTkiev020State kiev/parser/JJTkiev020State kiev\parser\JJTkiev020State.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
-kiev.parser.KToken kiev/parser/KToken kiev\parser\KToken.java
+kiev.parser.KToken kiev/parser/KToken kiev\parser\KToken.java bad
 kiev.parser.Node kiev/parser/Node kiev\parser\Node.java
 kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
 kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java
@@ -297,7 +297,9 @@ kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\std
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
+kiev.transf.ProcessFixParent kiev/transf/ProcessFixParent kiev\transf\ProcessFixParent.java
 kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
+kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java
@@ -315,6 +317,7 @@ kiev.vlang.BinaryBooleanExpr kiev/vlang/BinaryBooleanExpr kiev\vlang\BooleanExpr
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
 kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
+kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java
 kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java
 kiev.vlang.BooleanExpr kiev/vlang/BooleanExpr kiev\vlang\AST.java
 kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
@@ -356,6 +359,7 @@ kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
 kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DeclStat kiev/vlang/DeclStat kiev\vlang\Statement.java
+kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
 kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java
@@ -443,6 +447,7 @@ kiev.vlang.OperatorAttr kiev/vlang/OperatorAttr kiev\vlang\Attr.java
 kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.PackedFieldsAttr kiev/vlang/PackedFieldsAttr kiev\vlang\Attr.java
 kiev.vlang.PackerFieldAttr kiev/vlang/PackerFieldAttr kiev\vlang\Attr.java
+kiev.vlang.ParMetaAttr kiev/vlang/ParMetaAttr kiev\vlang\Attr.java
 kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PathEnumerator kiev/vlang/PathEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PizzaCaseAttr kiev/vlang/PizzaCaseAttr kiev\vlang\Attr.java
@@ -453,6 +458,7 @@ kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 kiev.vlang.RIMetaAttr kiev/vlang/RIMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RMetaAttr kiev/vlang/RMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RVMetaAttr kiev/vlang/RVMetaAttr kiev\vlang\Attr.java
+kiev.vlang.RVParMetaAttr kiev/vlang/RVParMetaAttr kiev\vlang\Attr.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ResolveFlags kiev/vlang/ResolveFlags kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
@@ -473,6 +479,8 @@ kiev.vlang.ScopeNodeInfoVector kiev/vlang/ScopeNodeInfoVector kiev\vlang\Var.jav
 kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
 kiev.vlang.SelfAccessExpr kiev/vlang/SelfAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
+kiev.vlang.ShadowExpr kiev/vlang/ShadowExpr kiev\vlang\Expr.java
+kiev.vlang.ShadowStat kiev/vlang/ShadowStat kiev\vlang\Statement.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.SourceFileAttr kiev/vlang/SourceFileAttr kiev\vlang\Attr.java
 kiev.vlang.StatExpr kiev/vlang/StatExpr kiev\vlang\Expr.java
@@ -485,6 +493,7 @@ kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
+kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
 kiev.vlang.TokenDecl kiev/vlang/TokenDecl kiev\vlang\Grammar.java
 kiev.vlang.TopLevelDecl kiev/vlang/TopLevelDecl kiev\vlang\AST.java
