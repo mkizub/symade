@@ -32,9 +32,12 @@ public class ASTPragma extends SimpleNode implements TopLevelDecl {
 	public boolean				enable;
 	@att public final NArr<ASTConstExpression>	options;
 
-	public ASTPragma(int id) {
-		super(0);
+	public ASTPragma() {
 		options = new NArr<ASTConstExpression>(this);
+	}
+
+	public ASTPragma(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

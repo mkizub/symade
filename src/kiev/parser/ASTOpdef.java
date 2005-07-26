@@ -43,8 +43,10 @@ public class ASTOpdef extends ASTNode implements TopLevelDecl {
 	public int					opmode;
 	public KString				image;
 
+	public ASTOpdef() {
+	}
+
 	public ASTOpdef(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

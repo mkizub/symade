@@ -39,10 +39,13 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	@att public final NArr<ASTIdentifier>	names;
 	@att public final NArr<Expr>			exprs;
 
-	public ASTRuleIsoneofExpression(int id) {
-		super(0);
+	public ASTRuleIsoneofExpression() {
 		names = new NArr<ASTIdentifier>(this);
 		exprs = new NArr<Expr>(this);
+	}
+
+	public ASTRuleIsoneofExpression(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

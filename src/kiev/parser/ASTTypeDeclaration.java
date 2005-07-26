@@ -46,7 +46,6 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 	@ref public Struct			me;
 
 	ASTStructDeclaration() {
-		super(0);
 		argument = new NArr<ASTNode>(this);
 		members = new NArr<ASTNode>(this);
 	}
@@ -80,6 +79,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     @att public ASTNode		impl;
     @att public ASTNode		gens;
 
+	ASTTypeDeclaration() {}
 	ASTTypeDeclaration(int id) {}
 
   	public void set(Token t) {
@@ -304,9 +304,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
 					s.package_clazz = me.package_clazz;
 					if( me.interfaces.length != 0 ) {
-						s.interfaces = (Type[])me.interfaces.clone();
-						for(int j=0; j < s.interfaces.length; j++)
-							s.interfaces[j] = Type.getRealType(s.type,me.interfaces[j]);
+						for(int j=0; j < me.interfaces.length; j++)
+							s.interfaces.add(Type.getRealType(s.type,me.interfaces[j]));
 					}
 				}
 			}

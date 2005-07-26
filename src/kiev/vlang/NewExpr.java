@@ -38,17 +38,22 @@ import static kiev.vlang.Instr.*;
 @node
 public class NewExpr extends Expr {
 
-	@ref public Type		type;
-	public Expr[]	args;
-	@att public Expr		outer;
-	@att public Expr		tif_expr;	// TypeInfo field access expression
+	@ref public Type				type;
+	@att public final NArr<Expr>	args;
+	@att public Expr				outer;
+	@att public Expr				tif_expr;	// TypeInfo field access expression
 
 	@ref public Method	func;
+
+	public NewExpr() {
+		this.args = new NArr<Expr>(this, true); 
+	}
 
 	public NewExpr(int pos, Type type, Expr[] args) {
 		super(pos);
 		this.type = type;
-		this.args = args;
+		this.args = new NArr<Expr>(this, true); 
+		foreach (Expr e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, Type type, Expr[] args, Expr outer) {
@@ -98,19 +103,19 @@ public class NewExpr extends Expr {
 				outer_args[0] = outer;
 				for(int i=0; i < args.length; i++) outer_args[i+1] = args[i];
 			} else {
-				outer_args = args;
+				outer_args = args.toArray();
 			}
 			if( type.clazz.isLocal() ) {
 				Struct cl = type.clazz;
 				for(int i=0; i < cl.fields.length; i++) {
 					if( !cl.fields[i].isNeedProxy() ) continue;
-					outer_args = (Expr[])Arrays.append(outer_args,new FieldAccessExpr(pos,cl.fields[i]));
+					outer_args = (Expr[])Arrays.append(outer_args,new AccessExpr(pos,new ThisExpr(pos),cl.fields[i]));
 				}
 			}
 			if( type.args.length > 0 ) {
 				// Create static field for this type typeinfo
 				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type);
-				args = (Expr[])Arrays.insert(args,tif_expr,0);
+				args.insert(0,tif_expr);
 				outer_args = (Expr[])Arrays.insert(outer_args,tif_expr,(outer!=null?1:0));
 			}
 			// Don't try to find constructor of argument type
@@ -167,7 +172,7 @@ public class NewExpr extends Expr {
 						if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
 					if( i >= PassInfo.clazz.type.args.length )
 						throw new CompilerException(pos,"Can't create an instance of argument type "+type);
-					Expr tie = new FieldAccessExpr(pos,PassInfo.clazz.resolveField(nameTypeInfo));
+					Expr tie = new AccessExpr(pos,new ThisExpr(pos),PassInfo.clazz.resolveField(nameTypeInfo));
 					e = new CastExpr(pos,type,
 						new CallAccessExpr(pos,parent,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(
@@ -260,16 +265,20 @@ public class NewExpr extends Expr {
 @node
 public class NewArrayExpr extends Expr {
 
-	@ref public Type		type;
-	public Expr[]	args;
-	public int		dim;
-	@ref private Type	arrtype;
-	@att private Expr	create_via_reflection;
+	@ref public Type				type;
+	@att public final NArr<Expr>	args;
+	public int						dim;
+	@ref private Type				arrtype;
+
+	public NewArrayExpr() {
+		this.args = new NArr<Expr>(this, true); 
+	}
 
 	public NewArrayExpr(int pos, Type type, Expr[] args, int dim) {
 		super(pos);
 		this.type = type;
-		this.args = args;
+		this.args = new NArr<Expr>(this, true); 
+		foreach (Expr e; args) this.args.append(e);
 		this.dim = dim;
 		arrtype = Type.newArrayType(type);
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
@@ -303,20 +312,20 @@ public class NewArrayExpr extends Expr {
 					if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
 				if( i >= PassInfo.clazz.type.args.length )
 					throw new CompilerException(pos,"Can't create an array of argument type "+type);
-				Expr tie = new FieldAccessExpr(pos,PassInfo.clazz.resolveField(nameTypeInfo));
+				Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
 				if( dim == 1 ) {
-					create_via_reflection = (Expr)new CastExpr(pos,arrtype,
+					return (Expr)new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,parent,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
 							new Expr[]{new ConstExpr(pos,Kiev.newInteger(i)),args[0]}
 						),true).resolve(reqType);
 				} else {
-					create_via_reflection = (Expr)new CastExpr(pos,arrtype,
+					return (Expr)new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,parent,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
 							new Expr[]{
 								new ConstExpr(pos,Kiev.newInteger(i)),
-								new NewInitializedArrayExpr(pos,Type.tpInt,1,args)
+								new NewInitializedArrayExpr(pos,Type.tpInt,1,args.toArray())
 							}
 						),true).resolve(reqType);
 				}
@@ -330,21 +339,15 @@ public class NewArrayExpr extends Expr {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
 		PassInfo.push(this);
 		try {
-			if( create_via_reflection != null
-			 && Type.getRealType(Kiev.argtype,type).isArgumented()
-			) {
-				create_via_reflection.generate(reqType);
+			if( dim == 1 ) {
+				args[0].generate(null);
+				Code.addInstr(Instr.op_newarray,Type.getRealType(Kiev.argtype,type));
 			} else {
-				if( dim == 1 ) {
-					args[0].generate(null);
-					Code.addInstr(Instr.op_newarray,Type.getRealType(Kiev.argtype,type));
-				} else {
-					for(int i=0; i < args.length; i++)
-						args[i].generate(null);
-					Code.addInstr(Instr.op_multianewarray,Type.getRealType(Kiev.argtype,arrtype),args.length);
-				}
-				if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
+				for(int i=0; i < args.length; i++)
+					args[i].generate(null);
+				Code.addInstr(Instr.op_multianewarray,Type.getRealType(Kiev.argtype,arrtype),args.length);
 			}
+			if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -359,17 +362,11 @@ public class NewArrayExpr extends Expr {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		if( create_via_reflection != null
-		 && Type.getRealType(Kiev.argtype,type).isArgumented()
-		) {
-			create_via_reflection.toJava(dmp);
-		} else {
-			dmp.append("new ").append(Type.getRealType(Kiev.argtype,type));
-			for(int i=0; i < dim; i++) {
-				dmp.append('[');
-				if( i < args.length && args[i] != null ) args[i].toJava(dmp);
-				dmp.append(']');
-			}
+		dmp.append("new ").append(Type.getRealType(Kiev.argtype,type));
+		for(int i=0; i < dim; i++) {
+			dmp.append('[');
+			if( i < args.length && args[i] != null ) args[i].toJava(dmp);
+			dmp.append(']');
 		}
 		return dmp;
 	}
@@ -378,17 +375,22 @@ public class NewArrayExpr extends Expr {
 @node
 public class NewInitializedArrayExpr extends Expr {
 
-	@ref public Type			type;
-	public int			dim;
-	public int[]		dims;
-	public Expr[]		args;
-	@ref private Type		arrtype;
+	@ref public Type				type;
+	public int						dim;
+	public int[]					dims;
+	@att public final NArr<Expr>	args;
+	@ref private Type				arrtype;
+
+	public NewInitializedArrayExpr() {
+		this.args = new NArr<Expr>(this, true); 
+	}
 
 	public NewInitializedArrayExpr(int pos, Type type, int dim, Expr[] args) {
 		super(pos);
 		this.type = type;
 		this.dim = dim;
-		this.args = args;
+		this.args = new NArr<Expr>(this, true); 
+		foreach (Expr e; args) this.args.append(e);
 		arrtype = Type.newArrayType(type);
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
 		dims = new int[dim];
@@ -479,20 +481,26 @@ public class NewInitializedArrayExpr extends Expr {
 @node
 public class NewClosure extends Expr {
 
-	@ref public Type		type;
-	public Expr[]	args = Expr.emptyArray;
+	@ref public Type				type;
+	@att public final NArr<Expr>	args;
 
 	@ref public Method	func;
+
+	public NewClosure() {
+		this.args = new NArr<Expr>(this, true); 
+	}
 
 	public NewClosure(int pos, Type type) {
 		super(pos);
 		this.type = type;
+		this.args = new NArr<Expr>(this, true); 
 	}
 
 	public NewClosure(int pos, Method func) {
 		super(pos);
 		this.func = func;
 		this.type = MethodType.newMethodType(Type.tpClosureClazz,null,func.type.args,func.type.ret);
+		this.args = new NArr<Expr>(this, true); 
 	}
 
 	public NewClosure(int pos, Method func, Expr[] args) {
@@ -506,10 +514,8 @@ public class NewClosure extends Expr {
 				targs[j] = func.type.args[i];
 			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
 		}
-		this.args = args;
-		for(int i=0; i < args.length; i++) {
-			args[i].parent = this;
-		}
+		this.args = new NArr<Expr>(this, true); 
+		foreach (Expr e; args) this.args.append(e);
 	}
 
 	public String toString() {

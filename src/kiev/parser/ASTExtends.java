@@ -33,7 +33,8 @@ import kiev.vlang.*;
 
 @node
 public class ASTExtends extends SimpleNode {
+  public ASTExtends() {
+  }
   public ASTExtends(int id) {
-    super(0);
   }
 }

@@ -40,8 +40,10 @@ public class ASTPack extends ASTNode {
 	public int		offset;
 	public KString	packer;
 
+	public ASTPack() {
+	}
+
 	public ASTPack(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

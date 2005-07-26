@@ -40,7 +40,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	public KString				filename = KString.Empty;
 	@ref public Struct			pkg;
 	@att public final NArr<ASTNode>		syntax;
-	@ref public final NArr<Struct>		members;
+	@att public final NArr<Struct>		members;
 	public PrescannedBody[]		bodies = PrescannedBody.emptyArray;
 
 	public boolean[]				disabled_extensions;
@@ -52,8 +52,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		super(0);
 		this.filename = name;
 		this.pkg = pkg;
-		syntax  = new NArr<ASTNode>(this);
-		members = new NArr<Struct>(this);
+		syntax  = new NArr<ASTNode>(this, true);
+		members = new NArr<Struct>(this, true);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -403,6 +403,9 @@ public class Typedef extends ASTNode implements Named {
 	public KString		name;
 	@ref public Type	type;
 
+	public Typedef() {
+	}
+	
 	public Typedef(int pos, ASTNode par, KString name) {
 		super(pos,par);
 		this.name = name;

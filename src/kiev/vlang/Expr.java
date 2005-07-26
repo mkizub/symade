@@ -22,6 +22,8 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.*;
+import kiev.transf.*;
 
 import kiev.vlang.Instr.*;
 
@@ -37,9 +39,43 @@ import syntax kiev.Syntax;
  *
  */
 
+
+@node
+public class ShadowExpr extends Expr {
+	@ref public Expr expr;
+	
+	public ShadowExpr() {
+	}
+	public ShadowExpr(Expr expr) {
+		this.expr = expr;
+	}
+	public Type getType() { return expr.getType(); }
+	public void cleanup() {
+		parent = null;
+		expr   = null;
+	}
+	public ASTNode resolve(Type reqType) {
+		expr = expr.resolveExpr(reqType);
+		setResolved(true);
+		return this;
+	}
+
+	public void generate(Type reqType) {
+		expr.generate(reqType);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return expr.toJava(dmp);
+	}
+
+}
+
 @node
 public class StatExpr extends Expr implements SetBody {
 	@att public Statement	stat;
+
+	public StatExpr() {
+	}
 
 	public StatExpr(int pos, Statement stat) {
 		super(pos);
@@ -91,6 +127,9 @@ public class StatExpr extends Expr implements SetBody {
 @node
 public class ConstExpr extends Expr {
 	Object	value;
+
+	public ConstExpr() {
+	}
 
 	public ConstExpr(int pos, Object value) {
 		super(pos);
@@ -290,6 +329,9 @@ public class ConstExpr extends Expr {
 public class ArrayLengthAccessExpr extends Expr {
 	@att public Expr		array;
 
+	public ArrayLengthAccessExpr() {
+	}
+
 	public ArrayLengthAccessExpr(int pos, Expr array) {
 		super(pos);
 		this.array = array;
@@ -348,6 +390,9 @@ public class AssignExpr extends LvalueExpr {
 	@att public Expr			lval;
 	@att public Expr			value;
 
+	public AssignExpr() {
+	}
+
 	public AssignExpr(int pos, AssignOperator op, Expr lval, Expr value) {
 		super(pos);
 		this.op = op;
@@ -389,9 +434,11 @@ public class AssignExpr extends LvalueExpr {
 			Expr e = lval.tryResolve(reqType);
 			if( e == null ) return null;
 			lval = e;
+			lval.parent = this;
 			e = value.tryResolve(getType());
 			if( e == null ) return null;
 			value = e;
+			value.parent = this;
 		}
 		Type et1 = lval.getType();
 		Type et2 = value.getType();
@@ -493,24 +540,29 @@ public class AssignExpr extends LvalueExpr {
 				}
 			}
 			lval = (Expr)lv;
+			lval.parent = this;
 			Type t1 = lval.getType();
 			if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
 				op = AssignOperator.Assign;
-				value = new BinaryExpr(pos,BinaryOperator.Add,lval,value);
+				value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
 				value.parent = this;
 			}
 			value = value.resolveExpr(t1);
-			if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum())
+			if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum()) {
 				value = new ConstExpr(value.pos,value.getConstValue()).resolveExpr(t1);
+				value.parent = this;
+			}
 			Type t2 = value.getType();
 			if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
 					value = (Expr)new CastExpr(pos,Type.tpInt,value).resolve(Type.tpInt);
+					value.parent = this;
 				}
 			}
 			else if( !t1.equals(t2) ) {
 				if( t2.isCastableTo(t1) ) {
 					value = (Expr)new CastExpr(pos,t1,value).resolve(t1);
+					value.parent = this;
 				} else {
 					throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
 				}
@@ -550,6 +602,11 @@ public class AssignExpr extends LvalueExpr {
 			break;
 		case FieldAccessExpr:
 			NodeInfoPass.setNodeValue(((FieldAccessExpr)lval).var,value);
+			break;
+		case AccessExpr:
+			if !(((AccessExpr)lval).obj instanceof ThisExpr)
+				break;
+			NodeInfoPass.setNodeValue(((AccessExpr)lval).var,value);
 			break;
 		case StaticFieldAccessExpr:
 			NodeInfoPass.setNodeValue(((StaticFieldAccessExpr)lval).var,value);
@@ -684,6 +741,9 @@ public class AssignExpr extends LvalueExpr {
 public class InitializeExpr extends AssignExpr {
     public boolean	of_wrapper;
 
+	public InitializeExpr() {
+	}
+
 	public InitializeExpr(int pos, AssignOperator op, Expr lval, Expr value, boolean of_wrapper) {
 		super(pos,op,lval,value);
 		this.of_wrapper = of_wrapper;
@@ -728,6 +788,9 @@ public class BinaryExpr extends Expr {
 	@ref public BinaryOperator		op;
 	@att public Expr				expr1;
 	@att public Expr				expr2;
+
+	public BinaryExpr() {
+	}
 
 	public BinaryExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
 		super(pos);
@@ -899,7 +962,9 @@ public class BinaryExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			expr1 = (Expr)expr1.resolve(null);
+			expr1.parent = this;
 			expr2 = (Expr)expr2.resolve(null);
+			expr2.parent = this;
 
 			Type rt = getType();
 			Type t1 = expr1.getType();
@@ -924,13 +989,16 @@ public class BinaryExpr extends Expr {
 			if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
 					expr2 = (Expr)new CastExpr(pos,Type.tpInt,expr2).resolve(Type.tpInt);
+					expr2.parent = this;
 				}
 			} else {
 				if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
 					expr1 = (Expr)new CastExpr(pos,rt,expr1).resolve(null);
+					expr1.parent = this;
 				}
 				if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
 					expr2 = (Expr)new CastExpr(pos,rt,expr2).resolve(null);
+					expr2.parent = this;
 				}
 			}
 
@@ -1080,7 +1148,7 @@ public class BinaryExpr extends Expr {
 
 @node
 public class StringConcatExpr extends Expr {
-	public Expr[]	args		= new Expr[0];
+	@att public final NArr<Expr>	args;
 
 	@ref public static Struct clazzStringBuffer;
 	@ref public static Method clazzStringBufferToString;
@@ -1100,8 +1168,13 @@ public class StringConcatExpr extends Expr {
 		}
 	}
 
+	public StringConcatExpr() {
+		args = new NArr<Expr>(this, true);
+	}
+
 	public StringConcatExpr(int pos) {
 		super(pos);
+		args = new NArr<Expr>(this, true);
 	}
 
 	public String toString() {
@@ -1138,7 +1211,7 @@ public class StringConcatExpr extends Expr {
 
 	public void appendArg(Expr expr) {
 		expr.parent = this;
-		args = (Expr[])Arrays.append(args,expr);
+		args.append(expr);
 	}
 
 	static final KString sigI = KString.from("(I)Ljava/lang/StringBuffer;");
@@ -1220,6 +1293,9 @@ public class StringConcatExpr extends Expr {
 public class CommaExpr extends Expr {
 	public Expr[]		exprs;
 
+	public CommaExpr() {
+	}
+
 	public CommaExpr(int pos, Expr[] exprs) {
 		super(pos);
 		this.exprs = exprs;
@@ -1253,10 +1329,13 @@ public class CommaExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			for(int i=0; i < exprs.length; i++) {
-				if( i < exprs.length-1)
+				if( i < exprs.length-1) {
 					exprs[i] = exprs[i].resolveExpr(Type.tpVoid);
-				else
+					exprs[i].setGenVoidExpr(true);
+				} else {
 					exprs[i] = exprs[i].resolveExpr(reqType);
+				}
+				exprs[i].parent = this;
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
@@ -1286,9 +1365,236 @@ public class CommaExpr extends Expr {
 }
 
 @node
+public class BlockExpr extends Expr implements Scope {
+
+	@att public final NArr<ASTNode>		stats;
+	@ref public final NArr<Var>			vars;
+	@att public final NArr<ASTNode>		members;
+	@att public       Expr				res;
+
+	public BlockExpr() {
+		this.stats = new NArr<ASTNode>(this,true);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+	}
+
+	public BlockExpr(int pos, ASTNode parent) {
+		super(pos, parent);
+		this.stats = new NArr<ASTNode>(this,true);
+		this.vars = new NArr<Var>(this);
+		this.members = new NArr<ASTNode>(this);
+	}
+
+	public Statement addStatement(Statement st) {
+		stats.append(st);
+		st.parent = this;
+		return st;
+	}
+
+	public void setExpr(Expr res) {
+		this.res = res;
+		if (res != null) res.parent = this;
+	}
+
+	public Var addVar(Var var) {
+		foreach(Var v; vars; v.name.equals(var.name) ) {
+			Kiev.reportWarning(pos,"Variable "+var.name+" already declared in this scope");
+		}
+		vars.append(var);
+		return var;
+	}
+	
+	public Type getType() {
+		if (res == null) return Type.tpVoid;
+		return res.getType();
+	}
+
+	public int		getPriority() { return 255; }
+
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+		ASTNode@ n;
+	{
+		n @= vars,
+		{
+			((Var)n).name.equals(name),
+			node ?= n
+		;	n.isForward(),
+			info.enterForward(n) : info.leaveForward(n),
+			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+		}
+	;	n @= members,
+		{	n instanceof Struct,
+			name.equals(((Struct)n).name.short_name),
+			node ?= n
+		;	n instanceof Typedef,
+			name.equals(((Typedef)n).name),
+			node ?= ((Typedef)n).type
+		}
+	}
+
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+		Var@ n;
+	{
+		n @= vars,
+		n.isForward(),
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+	}
+
+	public ASTNode resolve(Type reqType) {
+		PassInfo.push(this);
+		NodeInfoPass.pushState();
+		try {
+			resolveBlockStats();
+			if (res != null) {
+				res = res.resolveExpr(reqType);
+				res.parent = this;
+			}
+		} finally {
+			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
+			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
+			NodeInfoPass.addInfo(nip_state);
+			PassInfo.pop(this);
+		}
+		return this;
+	}
+
+	public void resolveBlockStats() {
+		for(int i=0; i < stats.length; i++) {
+			try {
+				stats[i].parent = this;
+				if( stats[i] instanceof Statement ) {
+					stats[i] = (Statement)((Statement)stats[i]).resolve(Type.tpVoid);
+					if( stats[i].isAbrupted() ) {
+						Kiev.reportError(stats[i].pos,"Abrupted statement in BockExpr");
+					}
+				}
+				else if( stats[i] instanceof ASTVarDecls ) {
+					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
+					// TODO: check flags for vars
+					int flags = vdecls.modifiers.getFlags();
+					Type type = ((ASTType)vdecls.type).getType();
+					ASTNode[] vstats = ASTNode.emptyArray;
+					for(int j=0; j < vdecls.vars.length; j++) {
+						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
+						KString vname = vdecl.name;
+						Type tp = type;
+						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
+						DeclStat vstat;
+						if( vdecl.init != null ) {
+							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
+							else
+								vstat = (Statement)new DeclStat(
+									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),
+									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
+						}
+						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
+							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
+								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
+						else
+							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags));
+						vstat.parent = this;
+						vstat = (DeclStat)vstat.resolve(Type.tpVoid);
+						vstats = (ASTNode[])Arrays.append(vstats,vstat);
+					}
+					stats[i] = vstats[0];
+					for(int j=1; j < vstats.length; j++, i++) {
+						stats.insert(vstats[j],i+1);
+					}
+				}
+				else if( stats[i] instanceof ASTTypeDeclaration ) {
+					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
+					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
+					if( PassInfo.method==null || PassInfo.method.isStatic())
+						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
+					ExportJavaTop exporter = new ExportJavaTop();
+					tds.struct = (Struct) exporter.pass1(decl, tds);
+					tds.struct.setLocal(true);
+					exporter.pass1_1(decl, tds);
+					exporter.pass2(decl, tds);
+					exporter.pass2_2(decl, tds);
+					decl.pass3();
+					tds.struct.autoProxyMethods();
+					tds.struct.resolveFinalFields(false);
+					stats[i] = tds;
+					stats[i] = tds.resolve(null);
+					members.append(tds.struct);
+				}
+				else
+					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
+			} catch(Exception e ) {
+				Kiev.reportError(stats[i].pos,e);
+			}
+		}
+	}
+
+
+	public void generate(Type reqType) {
+		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
+		PassInfo.push(this);
+		try {
+			for(int i=0; i < stats.length; i++) {
+				try {
+					((Statement)stats[i]).generate(Type.tpVoid);
+				} catch(Exception e ) {
+					Kiev.reportError(stats[i].getPos(),e);
+				}
+			}
+			if (res != null) {
+				try {
+					res.generate(reqType);
+				} catch(Exception e ) {
+					Kiev.reportError(res.getPos(),e);
+				}
+			}
+			Code.removeVars(vars.toArray());
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void cleanup() {
+		parent=null;
+		foreach(ASTNode n; stats; n!=null) n.cleanup();
+		stats = null;
+		foreach(ASTNode n; vars; n!=null) n.cleanup();
+		vars = null;
+		if (res != null) {
+			res.cleanup();
+			res = null;
+		}
+	}
+
+	public String toString() {
+		Dumper dmp = new Dumper();
+		dmp.append("({").space();
+		for(int i=0; i < stats.length; i++)
+			stats[i].toJava(dmp).space();
+		if (res != null)
+			res.toJava(dmp);
+		dmp.space().append("})");
+		return dmp.toString();
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		dmp.space().append("({").newLine(1);
+		for(int i=0; i < stats.length; i++)
+			stats[i].toJava(dmp).newLine();
+		if (res != null)
+			res.toJava(dmp);
+		dmp.newLine(-1).append("})");
+		return dmp;
+	}
+
+}
+
+@node
 public class UnaryExpr extends Expr {
 	@ref public Operator			op;
 	@att public Expr				expr;
+
+	public UnaryExpr() {
+	}
 
 	public UnaryExpr(int pos, Operator op, Expr expr) {
 		super(pos);
@@ -1477,6 +1783,9 @@ public class UnaryExpr extends Expr {
 public class IncrementExpr extends LvalueExpr {
 	@ref public Operator			op;
 	@att public Expr				lval;
+
+	public IncrementExpr() {
+	}
 
 	public IncrementExpr(int pos, Operator op, Expr lval) {
 		super(pos);
@@ -1700,6 +2009,9 @@ public class MultiExpr extends Expr {
 	@ref public MultiOperator	op;
 	public List<ASTNode>	exprs;
 
+	public MultiExpr() {
+	}
+
 	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
 		super(pos);
 		this.op = op;
@@ -1736,6 +2048,9 @@ public class ConditionalExpr extends Expr {
 	@att public Expr		cond;
 	@att public Expr		expr1;
 	@att public Expr		expr2;
+
+	public ConditionalExpr() {
+	}
 
 	public ConditionalExpr(int pos, Expr cond, Expr expr1, Expr expr2) {
 		super(pos);
@@ -1865,6 +2180,9 @@ public class CastExpr extends Expr {
 	@att public Expr			expr;
 	public boolean				explicit = false;
 	public boolean				reinterp = false;
+
+	public CastExpr() {
+	}
 
 	public CastExpr(int pos, Type type, Expr expr) {
 		super(pos);
@@ -2099,6 +2417,11 @@ public class CastExpr extends Expr {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
 		case FieldAccessExpr:		n = ((FieldAccessExpr)expr).var;	break;
 		case StaticFieldAccessExpr:	n = ((StaticFieldAccessExpr)expr).var;	break;
+		case AccessExpr:
+			if !(((AccessExpr)expr).obj instanceof ThisExpr)
+				return;
+			n = ((AccessExpr)expr).var;
+			break;
 		default: return;
 		}
 		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type));

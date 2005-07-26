@@ -35,7 +35,8 @@ import kiev.vlang.*;
 
 @node
 public class ASTGenerate extends SimpleNode {
+	public ASTGenerate() {
+	}
 	public ASTGenerate(int id) {
-		super(id);
 	}
 }

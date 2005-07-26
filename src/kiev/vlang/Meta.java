@@ -33,12 +33,15 @@ import static kiev.stdlib.Debug.*;
 // Meta information about a node
 @node
 public final class MetaSet extends ASTNode {
-	@ref private final ASTNode owner;
-	private Meta[] metas = Meta.emptyArray;
+	@att private final NArr<Meta> metas;
+	
+	public MetaSet() {
+		metas = new NArr<Meta>(this, true);
+	}
 	
 	public MetaSet(ASTNode owner) {
 		super(0,owner);
-		this.owner = owner;
+		metas = new NArr<Meta>(this, true);
 	}
 	
 	public int size() alias length {
@@ -68,11 +71,7 @@ public final class MetaSet extends ASTNode {
 				return meta;
 			}
 		}
-		Meta[] tmp = new Meta[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = metas[i];
-		metas = tmp;
-		metas[sz] = meta;
+		metas.append(meta);
 		return meta;
 	}
 
@@ -88,17 +87,7 @@ public final class MetaSet extends ASTNode {
 		for (int i=0; i < sz; i++) {
 			if (metas[i].type.name == name) {
 				Meta m = metas[i];
-				if (sz == 1) {
-					metas = Meta.emptyArray;
-				} else {
-					Meta[] tmp = new Meta[sz-1];
-					int k;
-					for (k=0; k < i; k++)
-						tmp[k] = metas[k];
-					for (k++; k < sz; k++)
-						tmp[k-1] = metas[k];
-					metas = tmp;
-				}
+				metas.del(i);
 				return m;
 			}
 		}
@@ -127,7 +116,7 @@ public final class MetaSet extends ASTNode {
 }
 
 public class MetaType {
-	public final KString name;
+	public /*final*/ KString name;
 	public MetaType(KString name) {
 		this.name = name;
 	}
@@ -149,12 +138,17 @@ public class MetaValueType {
 public class Meta extends ASTNode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
-	public final MetaType    type;
-	public       MetaValue[] values = MetaValue.emptyArray;
+	public /*final*/  MetaType        type;
+	@att public final NArr<MetaValue> values;
 	
+	public Meta() {
+		values = new NArr<MetaValue>(this, true);
+	}
+
 	public Meta(MetaType type) {
 		super(0);
 		this.type = type;
+		values = new NArr<MetaValue>(this, true);
 	}
 
 	public int size() alias length {
@@ -210,11 +204,7 @@ public class Meta extends ASTNode {
 				return value;
 			}
 		}
-		MetaValue[] tmp = new MetaValue[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = values[i];
-		values = tmp;
-		values[sz] = value;
+		values.append(value);
 		return value;
 	}
 
@@ -228,17 +218,7 @@ public class Meta extends ASTNode {
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
 				MetaValue v = values[i];
-				if (sz == 1) {
-					values = MetaValue.emptyArray;
-				} else {
-					MetaValue[] tmp = new MetaValue[sz-1];
-					int k;
-					for (k=0; k < i; k++)
-						tmp[k] = values[k];
-					for (k++; k < sz; k++)
-						tmp[k-1] = values[k];
-					values = tmp;
-				}
+				values.del(i);
 				return v;
 			}
 		}
@@ -270,10 +250,12 @@ public class Meta extends ASTNode {
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
-	public final MetaValueType type;
+	public /*final*/ MetaValueType type;
+
+	public MetaValue() {
+	}
 
 	public MetaValue(MetaValueType type) {
-		super(0);
 		this.type  = type;
 	}
 
@@ -314,6 +296,9 @@ public class MetaValueScalar extends MetaValue {
 
 	@att public       ASTNode       value;
 	
+	public MetaValueScalar() {
+	}
+
 	public MetaValueScalar(MetaValueType type) {
 		super(type);
 	}
@@ -333,9 +318,13 @@ public class MetaValueArray extends MetaValue {
 
 	@att public final NArr<ASTNode>      values;
 	
+	public MetaValueArray() {
+		values = new NArr<ASTNode>(this, true); 
+	}
+
 	public MetaValueArray(MetaValueType type) {
 		super(type);
-		values = new NArr<ASTNode>(this); 
+		values = new NArr<ASTNode>(this, true); 
 	}
 
 	public void resolve(Type reqType) {

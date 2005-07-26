@@ -37,10 +37,14 @@ import kiev.vlang.*;
 public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreScanneable {
 	@att public final NArr<ASTNode>		casefields;
 	@att public Statement				body;
-	public virtual PrescannedBody pbody;
+	public virtual PrescannedBody		pbody;
+
+	public ASTCaseTypeDeclaration() {
+		casefields = new NArr<ASTNode>(this);
+	}
 
 	public ASTCaseTypeDeclaration(int id) {
-		casefields = new NArr<ASTNode>(this);
+		this();
 	}
 
 	public PrescannedBody get$pbody() { return pbody; }

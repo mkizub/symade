@@ -34,6 +34,9 @@ public class ASTGotoStatement extends Statement {
 	@att ASTNode	expr;
 	boolean casemode = false;
     
+	public ASTGotoStatement() {
+	}
+
 	public ASTGotoStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
 	}

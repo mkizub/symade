@@ -38,6 +38,7 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 
+	public ASTSyntaxDeclaration() {}
 	public ASTSyntaxDeclaration(int id) {}
 
 	public void jjtAddChild(ASTNode n, int i) {

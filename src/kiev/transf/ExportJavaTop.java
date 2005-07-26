@@ -768,7 +768,6 @@ public final class ExportJavaTop implements Constants {
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
 		PassInfo.push(me);
 		try {
-			Type[] timpl = Type.emptyArray;
 			/* Now, process 'extends' and 'implements' clauses */
 			ASTNonArrayType at;
 			if( astn.ext != null ) {
@@ -777,9 +776,8 @@ public final class ExportJavaTop implements Constants {
 					me.super_clazz = Type.tpObject;
 					for(int j=0; j < exts.children.length; j++) {
 						at = (ASTNonArrayType)exts.children[j];
-						timpl = (Type[])Arrays.append(timpl,at.getType());
+						me.interfaces.append(at.getType());
 					}
-					me.interfaces = timpl;
 				} else {
 					at = (ASTNonArrayType)exts.children[0];
 					me.super_clazz = at.getType();
@@ -787,8 +785,8 @@ public final class ExportJavaTop implements Constants {
 			}
 			if( me.isAnnotation() ) {
 				astn.impl = null;
-				timpl = new Type[]{Type.tpAnnotation};
-				me.interfaces = timpl;
+				me.interfaces.delAll();
+				me.interfaces.add(Type.tpAnnotation);
 			}
 			if( me.super_clazz == null && !me.name.name.equals(Type.tpObject.clazz.name.name)) {
 				me.super_clazz = Type.tpObject;
@@ -797,18 +795,16 @@ public final class ExportJavaTop implements Constants {
 				ASTImplements impls = (ASTImplements)astn.impl;
 				for(int j=0; j < impls.children.length; j++) {
 					at = (ASTNonArrayType)impls.children[j];
-					timpl = (Type[])Arrays.append(timpl,at.getType());
+					me.interfaces.append(at.getType());
 				}
-				me.interfaces = timpl;
 			}
 			if( !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
-				me.interfaces = (Type[])Arrays.append(me.interfaces,Type.tpTypeInfoInterface);
+				me.interfaces.append(Type.tpTypeInfoInterface);
 			}
 			if( me.interfaces.length > 0 && me.gens != null ) {
 				for(int g=0; g < me.gens.length; g++) {
-					me.gens[g].clazz.interfaces = new Type[me.interfaces.length];
 					for(int l=0; l < me.interfaces.length; l++) {
-						me.gens[g].clazz.interfaces[l] = Type.getRealType(me.gens[g],me.interfaces[l]);
+						me.gens[g].clazz.interfaces.add(Type.getRealType(me.gens[g],me.interfaces[l]));
 					}
 				}
 			}

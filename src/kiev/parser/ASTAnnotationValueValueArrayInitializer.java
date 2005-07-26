@@ -16,6 +16,8 @@ public class ASTAnnotationValueValueArrayInitializer extends SimpleNode {
 	
 	@att public final NArr<ASTNode> values;
 
+	public ASTAnnotationValueValueArrayInitializer() {}
+
 	public ASTAnnotationValueValueArrayInitializer(int id) {
 		super(0);
 		values = new NArr<ASTNode>(this);

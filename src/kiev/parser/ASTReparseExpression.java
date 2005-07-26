@@ -38,8 +38,10 @@ public class ASTReparseExpression extends Expr {
 
 	public String	ref;
 
+	public ASTReparseExpression() {
+	}
+
 	public ASTReparseExpression(int id) {
-		super(0);
 	}
 
   	public void set(Token t) {

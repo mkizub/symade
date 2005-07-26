@@ -44,8 +44,10 @@ public class ASTImport extends ASTNode implements TopLevelDecl {
     public boolean		star = false;
     public ASTNode[]	args = null;
 
+	public ASTImport() {
+	}
+
 	public ASTImport(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

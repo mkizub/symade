@@ -37,36 +37,42 @@ import static kiev.vlang.Instr.*;
 
 @node
 public class CallExpr extends Expr {
-	@ref public Method	func;
-	public Expr[]	args;
-	@ref public Type		type_of_static;
-	public boolean	super_flag = false;
+	@ref public Method				func;
+	@att public final NArr<Expr>	args;
+	@ref public Type				type_of_static;
+	public boolean					super_flag;
+
+	public CallExpr() {
+		this.args = new NArr<Expr>(this, true);
+	}
 
 	public CallExpr(int pos, Method func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, Method func, Expr[] args, boolean sf) {
 		super(pos);
 		this.func = func;
-		this.args = args;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
 
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args, boolean sf) {
 		super(pos,par);
 		this.func = func;
-		this.args = args;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
 
@@ -95,30 +101,11 @@ public class CallExpr extends Expr {
 		args = null;
 	}
 
-	public static Expr[] insertPEnvForRuleCall(Expr[] args,ASTNode me) {
-		trace(Kiev.debugResolve,"CallExpr "+me+" is rule call");
-		Var env;
-		if( PassInfo.method.type.ret == Type.tpRule  ) {
-			args = (Expr[])Arrays.insert(args,new ConstExpr(me.pos,null),0);
-		} else {
-//			ASTNode par = me.parent;
-//			if( par != null && par instanceof ForEachStat ) {
-//				trace(Kiev.debugResolve,"CallExpr parent stat is "+par.getClass()+" - adding VarAccessExpr($env)");
-//				args = (Expr[])Arrays.insert(args,
-//					new VarAccessExpr(me.pos,me,((ForEachStat)par).iter),0);
-//			} else {
-//				trace(Kiev.debugResolve,"CallExpr parent stat is "+par.getClass()+" - adding $env.init()");
-				args = (Expr[])Arrays.insert(args,new ConstExpr(me.pos,null),0);
-//			}
-		}
-		return args;
-	}
-
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args = insertPEnvForRuleCall(args,this);
+				args.insert(0, new ConstExpr(pos,null));
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
@@ -244,18 +231,22 @@ public class CallExpr extends Expr {
 
 @node
 public class CallAccessExpr extends Expr {
-	@att public Expr		obj;
-	@ref public Method	func;
-	public Expr[]	args;
-	public boolean	super_flag = false;
+	@att public Expr				obj;
+	@ref public Method				func;
+	@att public final NArr<Expr>	args;
+	public boolean					super_flag;
+
+	public CallAccessExpr() {
+		this.args = new NArr<Expr>(this, true);
+	}
 
 	public CallAccessExpr(int pos, Expr obj, Method func, Expr[] args) {
 		super(pos);
 		this.obj = obj;
 		this.obj.parent = this;
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallAccessExpr(int pos, ASTNode par, Expr obj, Method func, Expr[] args) {
@@ -263,8 +254,8 @@ public class CallAccessExpr extends Expr {
 		this.obj = obj;
 		this.obj.parent = this;
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public String toString() {
@@ -297,11 +288,11 @@ public class CallAccessExpr extends Expr {
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
-		if( func.isStatic() ) return new CallExpr(pos,parent,func,args).resolve(reqType);
+		if( func.isStatic() ) return new CallExpr(pos,parent,func,args.toArray()).resolve(reqType);
 		obj = (Expr)obj.resolve(null);
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args = CallExpr.insertPEnvForRuleCall(args,this);
+				args.insert(0, new ConstExpr(pos,null));
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
@@ -545,29 +536,33 @@ public class CallAccessExpr extends Expr {
 
 @node
 public class ClosureCallExpr extends Expr {
-	@att public Expr	expr;
-	@ref public ASTNode	func;	// Var or Field
-	public Expr[]		args;
-	@att public Expr	env_access;		// $env for rule closures
-	public boolean	is_a_call = false;
+	@att public Expr					expr;
+	@ref public ASTNode					func;	// Var or Field
+	@att public final NArr<Expr>		args;
+	@att public Expr					env_access;		// $env for rule closures
+	public boolean						is_a_call;
 
 	@ref public Method	clone_it;
 	@ref public Method	call_it;
 	public Method[]	addArg;
 	@ref public Type	func_tp;
 
+	public ClosureCallExpr() {
+		this.args = new NArr<Expr>(this, true);
+	}
+
 	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode par, ASTNode func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, Expr expr, ASTNode func, Expr[] args) {
@@ -575,8 +570,8 @@ public class ClosureCallExpr extends Expr {
 		this.expr = expr;
 		this.expr.parent = this;
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode par, Expr expr, ASTNode func, Expr[] args) {
@@ -584,8 +579,8 @@ public class ClosureCallExpr extends Expr {
 		this.expr = expr;
 		this.expr.parent = this;
 		this.func = func;
-		this.args = args;
-		foreach(Expr e; args; e!=null) e.parent = this;
+		this.args = new NArr<Expr>(this, true);
+		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public String toString() {
@@ -642,7 +637,7 @@ public class ClosureCallExpr extends Expr {
 				if( ((Field)v).isStatic() )
 					func = (Expr)new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v).resolve(null);
 				else if( expr == null )
-					func = (Expr)new FieldAccessExpr(pos,(Field)v).resolve(null);
+					func = (Expr)new AccessExpr(pos,new ThisExpr(pos),(Field)v).resolve(null);
 				else {
 					func = (Expr)new AccessExpr(pos,parent,expr,(Field)v).resolve(null);
 					expr = null;
@@ -685,7 +680,7 @@ public class ClosureCallExpr extends Expr {
 			} else {
 				call_it = (Method)callIt;
 				if( call_it.type.ret == Type.tpRule ) {
-					env_access = CallExpr.insertPEnvForRuleCall(args,this)[0];
+					env_access = new ConstExpr(pos,null);
 				} else {
 					trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 				}

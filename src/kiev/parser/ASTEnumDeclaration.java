@@ -40,9 +40,12 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	
 	@att public final NArr<ASTEnumFieldDeclaration> enum_fields;
 	
-	public ASTEnumDeclaration(int id) {
-		super(0);
+	public ASTEnumDeclaration() {
 		enum_fields = new NArr<ASTEnumFieldDeclaration>(this);
+	}
+
+	public ASTEnumDeclaration(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

@@ -39,9 +39,12 @@ public class ASTNewArrayExpression extends Expr {
 	@att public final NArr<Expr>		args;
 	public int dim;
   
-	ASTNewArrayExpression(int id) {
-		super(0);
+	ASTNewArrayExpression() {
 		args = new NArr<Expr>(this);
+	}
+
+	ASTNewArrayExpression(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

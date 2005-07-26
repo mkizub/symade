@@ -46,6 +46,9 @@ public class CaseLabel extends ASTNode {
 
 	public CodeLabel	case_label;
 
+	public CaseLabel() {
+	}
+
 	public CaseLabel(int pos, ASTNode parent, ASTNode val, ASTNode[] stats) {
 		super(pos,parent);
 		this.val = val;
@@ -229,11 +232,11 @@ public class CaseLabel extends ASTNode {
 @node
 public class SwitchStat extends BlockStat implements BreakTarget {
 
-	@att public Expr		sel;
-	@att public Var			tmpvar;
-	@ref public Field		typehash;
-	public ASTNode[]	cases = ASTNode.emptyArray;
-	@ref public ASTNode		defCase;
+	@att public Expr					sel;
+	@ref public Var						tmpvar;
+	@ref public Field					typehash;
+	@att public final NArr<ASTNode>		cases;
+	@ref public ASTNode					defCase;
 
 	public CodeSwitch	cosw;
 	protected CodeLabel	break_label = null;
@@ -246,12 +249,17 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public int mode = NORMAL_SWITCH;
 
+	public SwitchStat() {
+		this.cases = new NArr<ASTNode>(this, true);
+	}
+
 	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
 		super(pos, parent);
 		this.sel = sel;
 		this.sel.parent = this;
-		this.cases = cases;
-		for(int i=0; i < cases.length; i++) cases[i].parent = this;
+		this.cases = new NArr<ASTNode>(this, true);
+		foreach (ASTNode c; cases)
+			this.cases.add(c);
 		defCase = null;
 		setBreakTarget(true);
 	}
@@ -406,7 +414,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				((BlockStat)clinit.body).addStatement(
 					new ExprStat(typehash.init.getPos(),clinit.body,
 						new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
-							,new StaticFieldAccessExpr(typehash.pos,PassInfo.clazz,typehash),typehash.init)
+							,new StaticFieldAccessExpr(typehash.pos,PassInfo.clazz,typehash),new ShadowExpr(typehash.init))
 					)
 				);
 			}
@@ -508,7 +516,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			if( isMethodAbrupted() && defCase==null ) {
 				Statement thrErr = new ThrowStat(pos,this,new NewExpr(pos,Type.tpError,Expr.emptyArray));
 				CaseLabel dc = new CaseLabel(pos,this,null,new ASTNode[]{thrErr});
-				cases = (ASTNode[])Arrays.insert(cases,dc,0);
+				cases.insert(dc,0);
 				dc.resolve(Type.tpVoid);
 			}
 			if( mode == ENUM_SWITCH ) {
@@ -650,6 +658,9 @@ public class CatchInfo extends Statement implements Scope {
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
 
+	public CatchInfo() {
+	}
+
 	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
 		super(pos, parent);
 		this.arg = arg;
@@ -735,6 +746,9 @@ public class FinallyInfo extends CatchInfo {
 	@att public Var	ret_arg;
 	public CodeLabel	subr_label;
 
+	public FinallyInfo() {
+	}
+
 	public FinallyInfo(int pos, ASTNode parent, Statement body) {
 		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
         ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
@@ -783,6 +797,9 @@ public class TryStat extends Statement/*defaults*/ {
 	@att public ASTNode		finally_catcher;
 
 	public CodeLabel	end_label;
+
+	public TryStat() {
+	}
 
 	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
 		super(pos, parent);
@@ -953,6 +970,9 @@ public class SynchronizedStat extends Statement {
 	public CodeCatchInfo	code_catcher;
 	public CodeLabel	end_label;
 
+	public SynchronizedStat() {
+	}
+
 	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
@@ -1046,6 +1066,9 @@ public class WithStat extends Statement {
 	@ref public ASTNode		var_or_field;
 	public CodeLabel	end_label;
 
+	public WithStat() {
+	}
+
 	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
@@ -1073,7 +1096,6 @@ public class WithStat extends Statement {
 				case VarAccessExpr:				var_or_field = ((VarAccessExpr)e).var;				break;
 				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)e).var;	break;
 				case AccessExpr:				var_or_field = ((AccessExpr)e).var;					break;
-				case FieldAccessExpr:			var_or_field = ((FieldAccessExpr)e).var;			break;
 				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)e).var;		break;
 				case AssignExpr:                e = ((AssignExpr)e).lval;                           goto case e;
 				}

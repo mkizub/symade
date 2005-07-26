@@ -49,8 +49,10 @@ public class ASTOperatorAlias extends ASTAlias {
 	public KString				image;
 	public int					xfix;
 
+	public ASTOperatorAlias() {
+	}
+
 	public ASTOperatorAlias(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

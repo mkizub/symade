@@ -51,11 +51,11 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	/** Initial value of this field */
 	@att public Expr		init = null;
 
-	/** Array of attributes of this field */
-	public Attr[]			attrs = Attr.emptyArray;
-
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet		meta;
+
+	/** Array of attributes of this field */
+	public Attr[]			attrs = Attr.emptyArray;
 
 	/** Array of invariant methods, that check this field */
 	public Method[]			invs = Method.emptyArray;
@@ -97,6 +97,9 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 		}
 	}
 
+	public Field() {
+	}
+	
     /** Constructor for new field
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
@@ -164,29 +167,15 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
-//		type = type.resolve();
+		foreach (Meta m; meta)
+			m.resolve();
 		if( name.equals(KString.Empty) ) return this;
-		if( init != null )
+		if( init != null ) {
 			if( init instanceof Expr )
 				init = ((Expr)init).resolveExpr(type);
-//			else
-//				init = ((Statament)init).resolve(Type.tpVoid);
+		}
 		return this;
 	}
-
-//	public void generate(boolean retReq) {
-//		if( !isStatic() ) {
-////			System.out.println("\t\tgenerating Field: "+this);
-//			if( !PassInfo.method.isStatic() )
-//				PassInfo.code.addInstr(new Instr.op_load(new CodeVar(PassInfo.method.params[0])));
-//			else
-//				throw new RuntimeException("Can't access non-static field "+this+" in static method "+PassInfo.method);
-//			PassInfo.code.addInstr(new Instr.op_getfield(this));
-//		} else {
-////			System.out.println("\t\tgenerating static Field: "+this);
-//			PassInfo.code.addInstr(new Instr.op_getstatic(this));
-//		}
-//	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());

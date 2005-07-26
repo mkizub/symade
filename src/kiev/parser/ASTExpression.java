@@ -43,9 +43,12 @@ public class ASTExpression extends Expr {
 	@att public final NArr<ASTNode>		nodes;
 
 
+	public ASTExpression() {
+		nodes = new NArr<ASTNode>(this, true);
+	}
+
 	public ASTExpression(int id) {
-		super(0);
-		nodes = new NArr<ASTNode>(this);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

@@ -35,8 +35,11 @@ import kiev.stdlib.*;
 
 @node
 public class ASTQName extends SimpleNode {
+
+	ASTQName() {
+	}
+
 	ASTQName(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

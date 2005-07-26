@@ -37,6 +37,8 @@ import kiev.vlang.*;
 public class ASTBreakStatement extends Statement {
 	@att public ASTIdentifier ident;
     
+	public ASTBreakStatement() {}
+		
 	public ASTBreakStatement(int id) {
 		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
 	}

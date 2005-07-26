@@ -38,8 +38,10 @@ public class ASTRuleBlock extends ASTBlock {
 
 	@att ASTRuleNode	expr;
 
+	public ASTRuleBlock() {
+	}
+
 	public ASTRuleBlock(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

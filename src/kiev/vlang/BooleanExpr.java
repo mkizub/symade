@@ -38,6 +38,9 @@ import static kiev.vlang.Instr.*;
 public class BooleanWrapperExpr extends BooleanExpr {
 	@att public Expr		expr;
 
+	public BooleanWrapperExpr() {
+	}
+
 	public BooleanWrapperExpr(int pos, Expr expr) {
 		super(pos);
 		this.expr = expr;
@@ -158,6 +161,9 @@ public class BooleanWrapperExpr extends BooleanExpr {
 public class ConstBooleanExpr extends BooleanExpr {
 	public boolean value;
 
+	public ConstBooleanExpr() {
+	}
+
 	public ConstBooleanExpr(int pos, boolean val) {
 		super(pos);
 		value = val;
@@ -216,6 +222,9 @@ public class ConstBooleanExpr extends BooleanExpr {
 public class BinaryBooleanOrExpr extends BooleanExpr {
 	@att public BooleanExpr			expr1;
 	@att public BooleanExpr			expr2;
+
+	public BinaryBooleanOrExpr() {
+	}
 
 	public BinaryBooleanOrExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
@@ -317,6 +326,9 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 	@att public BooleanExpr			expr1;
 	@att public BooleanExpr			expr2;
 
+	public BinaryBooleanAndExpr() {
+	}
+
 	public BinaryBooleanAndExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
 		this.expr1 = expr1;
@@ -410,6 +422,9 @@ public class BinaryBooleanExpr extends BooleanExpr {
 	@ref public BinaryOperator		op;
 	@att public Expr				expr1;
 	@att public Expr				expr2;
+
+	public BinaryBooleanExpr() {
+	}
 
 	public BinaryBooleanExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
 		super(pos);
@@ -715,6 +730,9 @@ public class InstanceofExpr extends BooleanExpr {
 	@att public Expr		expr;
 	@ref public Type		type;
 
+	public InstanceofExpr() {
+	}
+
 	public InstanceofExpr(int pos, Expr expr, Type type) {
 		super(pos);
 		this.expr = expr;
@@ -782,8 +800,12 @@ public class InstanceofExpr extends BooleanExpr {
 		ASTNode n;
 		switch(expr) {
 		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
-		case FieldAccessExpr:		n = ((FieldAccessExpr)expr).var;	break;
 		case StaticFieldAccessExpr:	n = ((StaticFieldAccessExpr)expr).var;	break;
+		case AccessExpr:
+			if !(((AccessExpr)expr).obj instanceof ThisExpr)
+				return;
+			n = ((AccessExpr)expr).var;
+			break;
 		default: return;
 		}
 		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type));
@@ -820,6 +842,9 @@ public class InstanceofExpr extends BooleanExpr {
 @node
 public class BooleanNotExpr extends BooleanExpr {
 	@att public BooleanExpr				expr;
+
+	public BooleanNotExpr() {
+	}
 
 	public BooleanNotExpr(int pos, BooleanExpr expr) {
 		super(pos);

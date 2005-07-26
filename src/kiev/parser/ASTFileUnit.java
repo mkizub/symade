@@ -48,11 +48,13 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	
 	public boolean[]		disabled_extensions;
 
-	ASTFileUnit(int id) {
-		super(0);
+	ASTFileUnit() {
 		disabled_extensions = Kiev.getCmdLineExtSet();
 		syntax = new NArr<ASTNode>(this);
 		decls = new NArr<ASTNode>(this);
+	}
+	ASTFileUnit(int id) {
+		this();
 	}
 
 	public void setFileName(String fn) {

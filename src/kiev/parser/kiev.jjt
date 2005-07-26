@@ -1460,7 +1460,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default" (VariableInitializer()) ] ";"
+		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
@@ -1472,12 +1472,12 @@ void RequareDeclaration() :
 {
 	"require"
 	try {
-		(
+		[
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
 			"[" Identifier() "]"
 		|	LOOKAHEAD(<IDENTIFIER> "{")
 			Identifier()
-		)
+		]
 		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'require' declaration",e); }
@@ -1490,12 +1490,12 @@ void EnsureDeclaration() :
 {
 	"ensure"
 	try {
-		(
+		[
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
 			"[" Identifier() "]"
 		|	LOOKAHEAD(<IDENTIFIER> "{")
 			Identifier()
-		)
+		]
 		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'ensure' declaration",e); }

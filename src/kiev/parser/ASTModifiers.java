@@ -19,7 +19,6 @@ public class ASTModifiers extends ASTNode {
 	@att public final NArr<ASTAnnotation>	annotations;
 	
 	public ASTModifiers() {
-		super(0);
 		modifier = new NArr<ASTModifier>(this);
 		annotations = new NArr<ASTAnnotation>(this);
 	}

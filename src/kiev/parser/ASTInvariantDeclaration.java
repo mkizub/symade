@@ -41,8 +41,10 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
 	@att public ASTModifiers	modifiers;
 	public KString				name;
 
+	public ASTInvariantDeclaration() {
+	}
+
 	public ASTInvariantDeclaration(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

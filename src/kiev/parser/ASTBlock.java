@@ -43,8 +43,7 @@ public class ASTBlock extends Statement {
 	}
 
 	public ASTBlock(int id) {
-		super(0,null);
-		stats = new NArr<ASTNode>(this);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

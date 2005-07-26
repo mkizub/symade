@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.transf.*;
 
 import java.io.*;
 
@@ -62,51 +63,44 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		(Type because we must inherit with real types
 		specified for parametriezed interfaces)
 	*/
-	public Type[]				interfaces = Type.emptyArray;
+	@ref public final NArr<Type>		interfaces;
 
 	/** Array of types that are generated for primitive
 		paremeter types of type arguments
 	*/
-	public Type[]				gens = null;
+	public Type[]						gens = null;
 
 	/** Reference of template class for generated one */
-	@ref public Struct			generated_from = null;
-
-	/** Array used for unresolved TypeInfo (accessed via
-	  $typeinfo.related[N]) used at resolving time */
-	//public KString[]		typeinfo_related = null;
+	@ref public Struct					generated_from = null;
 
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
-	@ref public Struct			typeinfo_clazz;
+	@att public Struct					typeinfo_clazz;
 
 	/** Array of substructures of the structure */
-	public Struct[]				sub_clazz = Struct.emptyArray;
+	@att public final NArr<Struct>		sub_clazz;
 
 	/** Array of fields defined in this structure */
-	public Field[]				fields = Field.emptyArray;
+	@att public final NArr<Field>		fields;
 
 	/** Array of fields defined in this structure */
-	public Field[]				virtual_fields = Field.emptyArray;
+	@att public final NArr<Field>		virtual_fields;
 
 	/** The field this structure is wrapper of */
-	@ref public Field			wrapped_field = null;
+	@ref public Field					wrapped_field = null;
 
 	/** Array of methods defined in this structure */
-	public Method[]				methods = Method.emptyArray;
+	@att public final NArr<Method>		methods;
 
 	/** Array of imported classes,fields and methods */
 	@ref public final NArr<ASTNode>		imported;
 
-	/** Array of declared members */
-	public ASTNode[]			members = ASTNode.emptyArray;
-
 	/** Array of attributes of this structure */
-	public Attr[]				attrs = Attr.emptyArray;
+	public Attr[]						attrs = Attr.emptyArray;
 	
 	/** Meta-information (annotations) of this structure */
-	@att public MetaSet			meta;
+	@att public MetaSet					meta;
 
 	virtual abstract int		anonymouse_inner_counter;
 	virtual abstract int		packer_field_counter;
@@ -117,6 +111,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		this.name = name;
 		this.acc = new Access(0);
 		imported = new NArr<ASTNode>(this);
+		interfaces = new NArr<Type>(this);
+		sub_clazz = new NArr<Struct>(this);
+		fields = new NArr<Field>(this, true);
+		virtual_fields = new NArr<Field>(this, true);
+		methods = new NArr<Method>(this, true);
 		this.meta = new MetaSet(this);
 	}
 
@@ -126,10 +125,19 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		package_clazz = outer;
 		this.acc = new Access(0);
 		imported = new NArr<ASTNode>(this);
+		interfaces = new NArr<Type>(this);
+		sub_clazz = new NArr<Struct>(this);
+		fields = new NArr<Field>(this, true);
+		virtual_fields = new NArr<Field>(this, true);
+		methods = new NArr<Method>(this, true);
 		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
 	}
+
+	public Object copy() {
+		throw new CompilerException(getPos(),"Struct node cannot be copied");
+	};
 
 	public Access get$acc() {
 		return acc;
@@ -356,10 +364,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
 			tryLoad(node,name,resfl),
 			$cut
-		;	!this.isPackage(),
-			trace(Kiev.debugResolve,"Struct: trying abstract fields of "+this),
-			tryAbstractField(node,name,resfl),
-			$cut
+//		;	!this.isPackage(),
+//			trace(Kiev.debugResolve,"Struct: trying abstract fields of "+this),
+//			tryAbstractField(node,name,resfl),
+//			$cut
 		}
 	}
 	public rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
@@ -435,32 +443,34 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return false;
 	}
 
-	public boolean tryAbstractField(ASTNode@ node, KString name, int resfl) {
-		if( !isPackage() ) {
-			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
-				append_fast(nameSet).append_fast(name).toKString();
-			KString get_name = new KStringBuffer(nameGet.length()+name.length()).
-				append_fast(nameGet).append_fast(name).toKString();
-
-			for(int i=0; i < methods.length; i++) {
-//				if( methods[i].isStatic() ) continue;
-				if( methods[i].name.equals(set_name) ) {
-				 	Field f = new Field(this,name,methods[i].type.args[0],
-				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-				 	node = f;
-				 	return true;
-				 }
-				if( methods[i].name.equals(get_name) ) {
-				 	Field f = new Field(this,name,methods[i].type.ret,
-				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-				 	node = f;
-				 	return true;
-				 }
-			}
-		}
-	 	node = null;
-	 	return false;
-	}
+//	public boolean tryAbstractField(ASTNode@ node, KString name, int resfl) {
+//		if( !isPackage() ) {
+//			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
+//				append_fast(nameSet).append_fast(name).toKString();
+//			KString get_name = new KStringBuffer(nameGet.length()+name.length()).
+//				append_fast(nameGet).append_fast(name).toKString();
+//
+//			for(int i=0; i < methods.length; i++) {
+////				if( methods[i].isStatic() ) continue;
+//				if( methods[i].name.equals(set_name) ) {
+//				 	Field f = new Field(this,name,methods[i].type.args[0],
+//				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
+//					f.setter = methods[i]; 
+//				 	node = f;
+//				 	return true;
+//				 }
+//				if( methods[i].name.equals(get_name) ) {
+//				 	Field f = new Field(this,name,methods[i].type.ret,
+//				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
+//					f.getter = methods[i]; 
+//				 	node = f;
+//				 	return true;
+//				 }
+//			}
+//		}
+//	 	node = null;
+//	 	return false;
+//	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
 		Type@ sup;
@@ -567,7 +577,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		containes
 	 */
 	public Struct addSubStruct(Struct sub) {
-		if( sub_clazz == null ) sub_clazz = new Struct[0];
 		// Check we already have this sub-class
 		for(int i=0; i < sub_clazz.length; i++) {
 			if( sub_clazz[i].equals(sub) ) {
@@ -583,33 +592,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				+sub.package_clazz+" that differs from "+this);
 		}
 
-		sub_clazz = (Struct[])Arrays.append(sub_clazz,sub);
-/*
-		if( gens != null ) {
-			// Clone substructures for generated classes
-			for(int i=0; i < gens.length; i++) {
-				Struct s = gens[i].clazz;
-				KStringBuffer ksb = new KStringBuffer();
-				ksb.append(s.name.bytecode_name)
-					.append((byte)'$').append(sub.name.short_name)
-					.append((byte)'_').append((byte)'_');
-				Type st = Type.getRealType(s.type,sub.type);
-				for(int l=0; l < st.args.length; l++) {
-					if( st.args[l].isReference() )
-						ksb.append((byte)'A');
-					else
-						ksb.append(st.args[l].signature.byteAt(0));
-				}
-				ksb.append((byte)'_');
-				ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString());
-				Struct ss = Env.newStruct(cn,true);
-				st.java_signature = cn.signature();
-				st.clazz = ss;
-				ss.type = st;
-				ss.generated_from = sub;
-			}
-		}
-*/
+		sub_clazz.append(sub);
+
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
 		if (sub.name.short_name == nameClTypeInfo) {
 			typeinfo_clazz = sub;
@@ -626,7 +610,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	/** Add information about new method that belongs to this class */
 	public Method addMethod(Method m) {
-		if( methods == null ) methods = new Method[0];
 		// Check we already have this method
 		for(int i=0; i < methods.length; i++) {
 			if( methods[i].equals(m) )
@@ -634,7 +617,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			if (methods[i].name.equals(m.name) && methods[i].type.equals(m.type))
 				throw new RuntimeException("Method "+m+" already exists in class "+this);
 		}
-		methods = (Method[])Arrays.append(methods,m);
+		methods.append(m);
 		m.parent = this;
 		if( gens != null ) {
 			for(int i=0; i < gens.length; i++) {
@@ -644,7 +627,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					(MethodType)Type.getRealType(s.type,m.type),
 					m.getFlags()
 					);
-				s.methods = (Method[])Arrays.append(s.methods,sm);
+				s.methods.append(sm);
 			}
 		}
 		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
@@ -657,30 +640,23 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		int i = 0;
 		for(i=0; i < methods.length; i++) {
 			if( methods[i].equals(m) ) {
-				break;
+				methods.del(i);
+				trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
+				return;
 			}
 		}
-		if (i >= methods.length)
-			throw new RuntimeException("Method "+m+" do not exists in class "+this);
-		Method[] newmethods = new Method[methods.length-1];
-		for (int m=0, n=0; m < methods.length; m++) {
-			if (m!=i)
-				newmethods[n++] = methods[m];
-		}
-		methods = newmethods;
-		trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
+		throw new RuntimeException("Method "+m+" do not exists in class "+this);
 	}
 
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
-		if( fields == null ) fields = new Field[0];
 		// Check we already have this field
 		for(int i=0; i < fields.length; i++) {
 			if( fields[i].equals(f) ) {
 				throw new RuntimeException("Field "+f+" already exists in class "+this);
 			}
 		}
-		fields = (Field[])Arrays.append(fields,f);
+		fields.append(f);
 		f.parent = this;
 		if( gens != null ) {
 			for(int i=0; i < gens.length; i++) {
@@ -689,7 +665,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					Type.getRealType(s.type,f.type),
 					f.getFlags()
 					);
-				s.fields = (Field[])Arrays.append(s.fields,sf);
+				s.fields.append(sf);
 			}
 		}
 		trace(Kiev.debugMembers,"Field "+f+" added to class "+this);
@@ -803,7 +779,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 			else {
 				Field ti = resolveField(nameTypeInfo);
-				ti_access = new FieldAccessExpr(pos,ti);
+				ti_access = new AccessExpr(pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
 			if( this.type.isInstanceOf(t.clazz.type) )
@@ -838,8 +814,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			return e;
 		}
 		Type ftype = Type.tpTypeInfo;
-		if (t.args.length > 0)
+		if (t.args.length > 0) {
+			if (t.clazz.typeinfo_clazz == null)
+				t.clazz.autoGenerateTypeinfoClazz();
 			ftype = t.clazz.typeinfo_clazz.type;
+		}
 		Field f = new Field(this,KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
 		Expr[] ti_args = new Expr[]{new ConstExpr(pos,ts)};
 		f.init = new CastExpr(pos,ftype,new CallExpr(pos,
@@ -864,14 +843,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			((BlockStat)class_init.body).addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new StaticFieldAccessExpr(f.pos,this,f),f.init)
+						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
 				),0
 			);
 		} else {
 			((BlockStat)class_init.body).stats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new StaticFieldAccessExpr(f.pos,this,f),f.init)
+						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
 				),0
 			);
 		}
@@ -931,7 +910,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,this,f,true)
-									: new FieldAccessExpr(f.pos,f,true),
+									: new AccessExpr(f.pos,new ThisExpr(0),f,true),
 						new VarAccessExpr(f.pos,value)
 					)
 				);
@@ -957,7 +936,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			get_var.params = new Var[]{self};
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
-				body.stats.add(new ReturnStat(f.pos,body,new FieldAccessExpr(f.pos,f,true)));
+				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
 			}
 			this.addMethod(get_var);
@@ -1001,112 +980,99 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		wrapped_field = wf;
 	}
 
-	public void addAbstractFields() {
-		foreach(Method m; methods; m.name.name.startsWith(nameSet) || m.name.name.startsWith(nameGet) ) {
-			Field f = resolveField( m.name.name.substr(nameSet.length()), false );
-			if( f != null ) {
-				trace(Kiev.debugCreation,"method "+m+" has field "+f);
-				if( m.name.name.startsWith(nameSet) ) {
-					if( m.isPublic() ) {
-						f.acc.w_public = true;
-						f.acc.w_protected = true;
-						f.acc.w_default = true;
-						f.acc.w_private = true;
-					}
-					else if( m.isPrivate() ) {
-						f.acc.w_public = false;
-						f.acc.w_protected = false;
-						f.acc.w_default = false;
-						f.acc.w_private = true;
-					}
-					else if( m.isProtected() ) {
-						f.acc.w_public = false;
-						f.acc.w_private = true;
-					}
-					else {
-						f.acc.w_public = false;
-						f.acc.w_default = true;
-						f.acc.w_private = true;
-					}
-				}
-				else if( m.name.name.startsWith(nameGet) ) {
-					if( m.isPublic() ) {
-						f.acc.r_public = true;
-						f.acc.r_protected = true;
-						f.acc.r_default = true;
-						f.acc.r_private = true;
-					}
-					else if( m.isPrivate() ) {
-						f.acc.r_public = false;
-						f.acc.r_protected = false;
-						f.acc.r_default = false;
-						f.acc.r_private = true;
-					}
-					else if( m.isProtected() ) {
-						f.acc.r_public = false;
-						f.acc.r_private = true;
-					}
-					else {
-						f.acc.r_public = false;
-						f.acc.r_default = true;
-						f.acc.r_private = true;
-					}
-				}
-				f.acc.verifyAccessDecl(f);
-				continue;
-			}
+	private void addSetterForAbstractField(KString name, Method m) {
+		Field f = resolveField( name, false );
+		if( f != null ) {
+			trace(Kiev.debugCreation,"method "+m+" has field "+f);
+			if (f.parent != m.parent)
+				return;
+			if (f.setter != null && f.setter != m)
+				return;
+		} else {
+			virtual_fields.append(
+				f=new Field(this,name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
-			if( m.name.name.startsWith(nameSet) ) {
-				virtual_fields = (Field[])Arrays.append(virtual_fields,
-					f=new Field(this,m.name.name.substr(nameSet.length()),m.type.args[0],
-				 		m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
-				if( m.isPublic() ) {
-					f.acc.w_public = true;
-					f.acc.w_protected = true;
-					f.acc.w_default = true;
-					f.acc.w_private = true;
-				}
-				else if( m.isPrivate() ) {
-					f.acc.w_public = false;
-					f.acc.w_protected = false;
-					f.acc.w_default = false;
-					f.acc.w_private = true;
-				}
-				else if( m.isProtected() ) {
-					f.acc.w_public = false;
-					f.acc.w_private = true;
-				}
-				else {
-					f.acc.w_public = false;
-					f.acc.w_default = true;
-					f.acc.w_private = true;
-				}
+		}
+		f.setter = m;
+		if( m.isPublic() ) {
+			f.acc.w_public = true;
+			f.acc.w_protected = true;
+			f.acc.w_default = true;
+			f.acc.w_private = true;
+		}
+		else if( m.isPrivate() ) {
+			f.acc.w_public = false;
+			f.acc.w_protected = false;
+			f.acc.w_default = false;
+			f.acc.w_private = true;
+		}
+		else if( m.isProtected() ) {
+			f.acc.w_public = false;
+			f.acc.w_private = true;
+		}
+		else {
+			f.acc.w_public = false;
+			f.acc.w_default = true;
+			f.acc.w_private = true;
+		}
+		f.acc.verifyAccessDecl(f);
+	}
+	
+	private void addGetterForAbstractField(KString name, Method m) {
+		Field f = resolveField( name, false );
+		if( f != null ) {
+			trace(Kiev.debugCreation,"method "+m+" has field "+f);
+			if (f.parent != m.parent)
+				return;
+			if (f.getter != null && f.getter != m)
+				return;
+		} else {
+			virtual_fields.append(
+				f=new Field(this,name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
+		}
+		f.getter = m;
+		if( m.isPublic() ) {
+			f.acc.r_public = true;
+			f.acc.r_protected = true;
+			f.acc.r_default = true;
+			f.acc.r_private = true;
+		}
+		else if( m.isPrivate() ) {
+			f.acc.r_public = false;
+			f.acc.r_protected = false;
+			f.acc.r_default = false;
+			f.acc.r_private = true;
+		}
+		else if( m.isProtected() ) {
+			f.acc.r_public = false;
+			f.acc.r_private = true;
+		}
+		else {
+			f.acc.r_public = false;
+			f.acc.r_default = true;
+			f.acc.r_private = true;
+		}
+		f.acc.verifyAccessDecl(f);
+	}
+	
+	public void addAbstractFields() {
+		foreach(Method m; methods) {
+			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
+			if (m.name.name.startsWith(nameSet))
+				addSetterForAbstractField(m.name.name.substr(nameSet.length()), m);
+			foreach (KString name; m.name.aliases) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a setter");
+				if (name.startsWith(nameSet))
+					addSetterForAbstractField(name.substr(nameSet.length()), m);
 			}
-			else if( m.name.name.startsWith(nameGet) ) {
-				virtual_fields = (Field[])Arrays.append(virtual_fields,
-					f=new Field(this,m.name.name.substr(nameGet.length()),m.type.ret,
-						m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
-				if( m.isPublic() ) {
-					f.acc.r_public = true;
-					f.acc.r_protected = true;
-					f.acc.r_default = true;
-					f.acc.r_private = true;
-				}
-				else if( m.isPrivate() ) {
-					f.acc.r_public = false;
-					f.acc.r_protected = false;
-					f.acc.r_default = false;
-					f.acc.r_private = true;
-				}
-				else if( m.isProtected() ) {
-					f.acc.r_public = false;
-					f.acc.r_private = true;
-				}
-				else {
-					f.acc.r_public = false;
-					f.acc.r_default = true;
-					f.acc.r_private = true;
-				}
+			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
+			if (m.name.name.startsWith(nameGet))
+				addGetterForAbstractField(m.name.name.substr(nameGet.length()), m);
+			foreach (KString name; m.name.aliases) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a getter");
+				if (name.startsWith(nameGet))
+					addGetterForAbstractField(name.substr(nameGet.length()), m);
 			}
 		}
 	}
@@ -1120,57 +1086,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		(32-f.pack.size) >= size
 	}
 
-	/** Auto-generates <init>()V method if no <init> declared,
-		also, used to generate this$N fields and arguments for
-		inner classes, case$tag field for case classes and so on
-	*/
-	public void autoGenerateMembers() {
-		checkResolved();
-		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
-
-		// Setup packed/packer fields
-		foreach(Field f; fields; f.isPackedField() ) {
-			Field@ packer;
-			// Locate or create nearest packer field that can hold this one
-			if( f.pack.packer == null ) {
-				if( f.pack.packer_name != null ) {
-					Field p = this.resolveField(f.pack.packer_name);
-					if( p == null ) {
-						Kiev.reportError(f.pos,"Packer field "+f.pack.packer_name+" not found");
-						f.pack = null;
-						f.setPackedField(false);
-						continue;
-					}
-					if( p.type != Type.tpInt ) {
-						Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
-						f.pack = null;
-						f.setPackedField(false);
-						continue;
-					}
-					f.pack.packer = p;
-					assert( f.pack.offset >= 0 && f.pack.offset+f.pack.size <= 32 );
-				}
-				else if( locatePackerField(packer,f.pack.size) ) {
-					// Found
-					f.pack.packer = packer;
-					f.pack.packer_name = packer.name.name;
-					f.pack.offset = packer.pack.size;
-					packer.pack.size += f.pack.size;
-				} else {
-					// Create
-					Field p = new Field(this,
-						KString.from("$pack$"+packer_field_counter),Type.tpInt,ACC_PUBLIC);
-					p.pos = this.pos;
-					p.setPackerField(true);
-					p.pack = new Field.PackInfo(f.pack.size,0,null);
-					addField(p);
-					f.pack.packer = p;
-					f.pack.packer_name = p.name.name;
-					f.pack.offset = 0;
-				}
-			}
-		}
-
+	private void autoGenerateTypeinfoClazz() {
+		if (typeinfo_clazz != null)
+			return;
 		if( !isInterface() && type.args.length > 0 && !(type instanceof MethodType) ) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
@@ -1205,7 +1123,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				ti_init_params = (Var[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,null,
 					new AssignExpr(pos,AssignOperator.Assign,
-						new FieldAccessExpr(pos,f),
+						new AccessExpr(pos,new ThisExpr(pos),f),
 						new VarAccessExpr(pos,v)
 					)
 				);
@@ -1257,10 +1175,65 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			MethodType tim_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpTypeInfo);
 			Method tim = addMethod(new Method(this,nameGetTypeInfo,tim_type,ACC_PUBLIC));
 			tim.body = new BlockStat(pos,tim,new ASTNode[]{
-				new ReturnStat(pos,null,new FieldAccessExpr(pos,tif))
+				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
 			tim.params = new Var[]{new Var(pos,tim,nameThis,this.type,0)};
 		}
+
+	}
+	
+	/** Auto-generates <init>()V method if no <init> declared,
+		also, used to generate this$N fields and arguments for
+		inner classes, case$tag field for case classes and so on
+	*/
+	public void autoGenerateMembers() {
+		checkResolved();
+		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
+
+		// Setup packed/packer fields
+		foreach(Field f; fields; f.isPackedField() ) {
+			Field@ packer;
+			// Locate or create nearest packer field that can hold this one
+			if( f.pack.packer == null ) {
+				if( f.pack.packer_name != null ) {
+					Field p = this.resolveField(f.pack.packer_name);
+					if( p == null ) {
+						Kiev.reportError(f.pos,"Packer field "+f.pack.packer_name+" not found");
+						f.pack = null;
+						f.setPackedField(false);
+						continue;
+					}
+					if( p.type != Type.tpInt ) {
+						Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
+						f.pack = null;
+						f.setPackedField(false);
+						continue;
+					}
+					f.pack.packer = p;
+					assert( f.pack.offset >= 0 && f.pack.offset+f.pack.size <= 32 );
+				}
+				else if( locatePackerField(packer,f.pack.size) ) {
+					// Found
+					f.pack.packer = packer;
+					f.pack.packer_name = packer.name.name;
+					f.pack.offset = packer.pack.size;
+					packer.pack.size += f.pack.size;
+				} else {
+					// Create
+					Field p = new Field(this,
+						KString.from("$pack$"+packer_field_counter),Type.tpInt,ACC_PUBLIC);
+					p.pos = this.pos;
+					p.setPackerField(true);
+					p.pack = new Field.PackInfo(f.pack.size,0,null);
+					addField(p);
+					f.pack.packer = p;
+					f.pack.packer_name = p.name.name;
+					f.pack.offset = 0;
+				}
+			}
+		}
+
+		autoGenerateTypeinfoClazz();
 
 		if( isEnum() ) {
 			int enum_fields = 0;
@@ -1287,12 +1260,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			this.super_clazz = Type.tpEnum;
 			Field vals = addField(new Field(this, nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			Expr[] vals_init = new Expr[enum_fields];
-			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, vals_init);
+			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, Expr.emptyArray);
 			vals.init.parent = vals;
 			for(int i=0; i < eflds.length; i++) {
-				vals_init[i] = new StaticFieldAccessExpr(eflds[i].pos,this,eflds[i]);
-				vals_init[i].parent = vals.init;
+				Expr e = new StaticFieldAccessExpr(eflds[i].pos,this,eflds[i]);
+				e.parent = vals.init;
+				((NewInitializedArrayExpr)vals.init).args.append(e);
 			}
 		}
 
@@ -1528,7 +1501,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					new ASTNode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
 					});
-			sw.cases = cases;
+			foreach (ASTNode c; cases)
+				sw.cases.add(c);
 			((BlockStat)tome.body).addStatement(sw);
 			addMethod(tome);
 
@@ -1581,7 +1555,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					new ASTNode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
 					});
-			sw.cases = cases;
+			foreach (ASTNode c; cases)
+				sw.cases.add(c);
 			((BlockStat)tostr.body).addStatement(sw);
 			addMethod(tostr);
 			}
@@ -1650,6 +1625,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			addMethod(fromstr);
 			}
 		}
+		
+		new ProcessVNode().autoGenerateMembers(this);
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
@@ -1722,12 +1699,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					class_init.body = new BlockStat(pos,class_init);
 				}
 				if( f.name.equals(KString.Empty) )
-					((BlockStat)class_init.body).addStatement(((StatExpr)f.init).stat);
+					((BlockStat)class_init.body).addStatement(new ShadowStat(((StatExpr)f.init).stat));
 				else
 					((BlockStat)class_init.body).addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
 							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
-								,new StaticFieldAccessExpr(f.pos,this,f),f.init,f.isInitWrapper())
+								,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init),f.isInitWrapper())
 						)
 					);
 			} else {
@@ -1736,20 +1713,17 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				}
 				Statement init_stat;
 				if( f.name.equals(KString.Empty) ) {
-					init_stat = ((StatExpr)f.init).stat;
+					init_stat = new ShadowStat(((StatExpr)f.init).stat);
 				} else {
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
-						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new FieldAccessExpr(f.pos,f),f.init,f.isInitWrapper())
+						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new AccessExpr(f.pos,new ThisExpr(0),f),new ShadowExpr(f.init),f.isInitWrapper())
 					);
 				}
 				instance_init.addStatement(init_stat);
 				init_stat.setHidden(true);
 			}
 			if( f.name.equals(KString.Empty) ) {
-				Field[] nf = new Field[fields.length-1];
-				for(int n=0,m=0; n < fields.length; n++)
-					if( n!=i ) nf[m++] = fields[n];
-				fields = nf;
+				fields.del(i);
 				i--;
 			}
 		}
@@ -1824,14 +1798,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) )
-										cae.args = (Expr[])Arrays.insert(cae.args,
-											new VarAccessExpr(cae.pos,m.params[1])/*.resolveExpr(typeinfo_clazz.type)*/,0);
+										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[1]));
 									else
 										throw new RuntimeException("Don't know where to get "+typeinfo_clazz.type+" $typeinfo");
-										/*cae.args = (Expr[])Arrays.insert(cae.args,
-											accessTypeInfoField(cae.pos,cae,super_clazz)
-												.resolveExpr(Type.tpTypeInfo)
-											,0);*/
 								}
 							}
 						}
@@ -1874,7 +1843,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					stats.insert(
 						new ExprStat(pos,null,
 							new AssignExpr(pos,AssignOperator.Assign,
-								new FieldAccessExpr(pos,OuterThisAccessExpr.outerOf(this)),
+								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
 								new VarAccessExpr(pos,methods[i].params[1])
 							)
 						),p++
@@ -1891,7 +1860,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						stats.insert(
 							new ExprStat(pos,null,
 								new AssignExpr(pos,AssignOperator.Assign,
-									new FieldAccessExpr(pos,f),
+									new AccessExpr(pos,new ThisExpr(pos),f),
 									new VarAccessExpr(pos,methods[i].params[j])
 								)
 							),p++
@@ -1912,7 +1881,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					stats.insert(
 						new ExprStat(pos,null,
 							new AssignExpr(m.pos,AssignOperator.Assign,
-								new FieldAccessExpr(m.pos,tif),
+								new AccessExpr(m.pos,new ThisExpr(0),tif),
 								new VarAccessExpr(m.pos,v)
 							)),
 						p++);
@@ -2601,7 +2570,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							((BlockStat)m.body).stats.insert(
 								new ExprStat(m.pos,m.body,
 									new AssignExpr(m.pos,AssignOperator.Assign,
-										new FieldAccessExpr(m.pos,proxy_fields[j]),
+										new AccessExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
 										new VarAccessExpr(m.pos,m.params[par])
 									)
 								),1
@@ -2808,6 +2777,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
 				if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
 
+				if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+
 				for(int j=0; f.attrs != null && j < f.attrs.length; j++)
 					f.attrs[j].generate();
 			}
@@ -2847,6 +2818,28 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							m.addAttr(m.conditions[j].code);
 						}
 					}
+
+					if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
+					boolean has_pmeta = false; 
+					foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
+						has_pmeta = true;
+					}
+					if (has_pmeta) {
+						MetaSet[] mss;
+						if (m.isStatic()) {
+							mss = new MetaSet[m.params.length];
+							for (int i=0; i < mss.length; i++)
+								mss[i] = m.params[i].meta;
+						} else {
+							mss = new MetaSet[m.params.length-1];
+							for (int i=0; i < mss.length; i++)
+								mss[i] = m.params[i+1].meta;
+						}
+						m.addAttr(new RVParMetaAttr(mss));
+					}
+					if (m.annotation_default != null)
+						m.addAttr(new DefaultMetaAttr(m.annotation_default));
+
 					for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
 						m.attrs[j].generate();
 					}

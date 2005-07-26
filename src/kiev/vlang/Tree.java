@@ -41,18 +41,33 @@ public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
 	public Tree() {
-		super(0);
+		members = new NArr<Struct>(this, true);
 	}
+
+	public Object copy() {
+		throw new CompilerException(getPos(),"Tree node cannot be copied");
+	};
+
 }
 
 public final class NArr<N extends ASTNode> {
 
-    private final N 	$parent;
-	private N[]		$nodes;
+    private final ASTNode 	$parent;
+	private final boolean	$is_att;
+	private N[]				$nodes;
+	
+	public NArr(ASTNode parent, boolean isAtt) {
+		this.$parent = parent;
+		$is_att = isAtt;
+		this.$nodes = new N[0];
+	}
 	
 	public NArr(ASTNode parent) {
-		this.$parent = parent;
-		this.$nodes = new N[0];
+		this(parent, false);
+	}
+	
+	public ASTNode getParent() {
+		return $parent;
 	}
 	
 	public int size()
@@ -84,6 +99,7 @@ public final class NArr<N extends ASTNode> {
 		if (node == null)
 			throw new NullPointerException();
 		$nodes[idx] = node;
+		if ($is_att) node.parent = $parent;
 		return node;
 	}
 
@@ -99,9 +115,23 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
+		if ($is_att) node.parent = $parent;
 		return node;
 	}
 
+	public void replace(Object old, N node)
+	{
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++) {
+			if ($nodes[i] == old) {
+				$nodes[i] = node;
+				if ($is_att) node.parent = $parent;
+				return;
+			}
+		}
+		throw new RuntimeException("Not found node");
+	}
+	
 	public N insert(N node, int idx)
 	{
 		return insert(idx, node);
@@ -117,6 +147,7 @@ public final class NArr<N extends ASTNode> {
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
+		if ($is_att) node.parent = $parent;
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
@@ -140,6 +171,16 @@ public final class NArr<N extends ASTNode> {
 			return;
 		this.$nodes = new N[0];
 	};
+	
+	public void copyFrom(NArr<N> arr) {
+		if ($is_att) {
+			foreach (N n; arr)
+				append((N)n.copy());
+		} else {
+			foreach (N n; arr)
+				append(n);
+		}
+	}
 	
 	public boolean contains(ASTNode node) {
 		for (int i=0; i < $nodes.length; i++) {

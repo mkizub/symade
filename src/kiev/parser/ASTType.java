@@ -43,8 +43,10 @@ public class ASTType extends ASTNode {
 	
 	@ref private Type		type;
 	
+	ASTType() {
+	}
+
 	ASTType(int id) {
-		super(0);
 	}
 
 	ASTType(int pos, int dim, ASTNode asttype) {
@@ -78,25 +80,32 @@ public class ASTType extends ASTNode {
 				for(int i=0; i < dim; i++)
 					type = tp = Type.newArrayType(tp);
 			} catch(Exception e ) {
-				Kiev.reportError(type.getPos(),e);
+				Kiev.reportError(asttype.getPos(),e);
 			}
 		}
 		else if( asttype instanceof ASTClosureType ) {
 			type = tp = ((ASTClosureType)asttype).getType();
 		} else {
-			throw new CompilerException(type.getPos(),"Bad type node "+asttype);
+			throw new CompilerException(asttype.getPos(),"Bad type node "+asttype);
 		}
 		return tp;
 	}
 	
 	public String toString() {
-		String s = type.toString();
+		String s;
+		if (type != null)
+			s = type.toString();
+		else
+			s = asttype.toString();
     	for(int i=0; i < dim; i++) s += "[]";
         return s;
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		type.toJava(dmp);
+		if (type != null)
+			type.toJava(dmp);
+		else
+			asttype.toJava(dmp);
     	for(int i=0; i < dim; i++) dmp.append("[]");
         return dmp.space();
 	}

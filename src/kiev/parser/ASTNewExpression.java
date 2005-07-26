@@ -41,10 +41,13 @@ public class ASTNewExpression extends Expr {
     @att public final NArr<ASTNode>	members;
     public boolean	anonymouse;
 
-	public ASTNewExpression(int id) {
-		super(0);
+	public ASTNewExpression() {
 		args = new NArr<Expr>(this);
 		members = new NArr<ASTNode>(this);
+	}
+
+	public ASTNewExpression(int id) {
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -120,7 +123,7 @@ public class ASTNewExpression extends Expr {
 		me.addAttr(sfa);
 		if( sup.clazz.isInterface() ) {
 			me.super_clazz = Type.tpObject;
-			me.interfaces = new Type[]{sup};
+			me.interfaces.add(sup);
 		} else {
 			me.super_clazz = sup;
 		}

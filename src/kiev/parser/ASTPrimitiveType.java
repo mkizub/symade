@@ -38,8 +38,10 @@ public class ASTPrimitiveType extends ASTNode implements kiev020Constants {
 
 	@ref public Type	type;
 
+	ASTPrimitiveType() {
+	}
+
 	ASTPrimitiveType(int id) {
-		super(0);
 	}
 
 	public void set(Token t) {

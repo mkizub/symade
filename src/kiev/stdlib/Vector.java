@@ -203,8 +203,8 @@ public class Vector<A> implements Cloneable
 	public synchronized Vector<A> insertElementAt(int index, A obj)
 		alias insert
 	{
-		if (index >= count)
-			throw new ArrayIndexOutOfBoundsException(index+" >= "+count);
+		if (index > count)
+			throw new ArrayIndexOutOfBoundsException(index+" > "+count);
 		ensureCapacity(count + 1);
 		System.arraycopy(data, index, data, index+1, count-index);
 		data[index] = obj;

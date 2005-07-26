@@ -37,8 +37,10 @@ import kiev.vlang.*;
 public class ASTPackage extends ASTNode {
 	public KString	name;
 
+	ASTPackage() {
+	}
+
 	ASTPackage(int id) {
-		super(0);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

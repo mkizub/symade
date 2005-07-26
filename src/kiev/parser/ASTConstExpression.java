@@ -37,8 +37,11 @@ import kiev.vlang.*;
 public class ASTConstExpression extends Expr implements kiev020Constants {
 	public Object	val;
 
+	ASTConstExpression() {
+	}
+
 	ASTConstExpression(int id) {
-		super(0);
+		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

@@ -78,10 +78,19 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	 *  for invariant method
 	 */
 	public Field[]			violated_fields = Field.emptyArray;
+	
+	/** Default meta-value for annotation methods */
+	@att public MetaValue		annotation_default;
+
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet			meta;
 
 	/** Indicates that this method is inlined by dispatcher method
 	 */
 	public boolean			inlined_by_dispatcher;
+
+	public Method() {
+	}
 
 	public Method(ASTNode clazz, KString name, MethodType type, int acc) {
 		this(clazz,name,type,null,acc);
@@ -99,6 +108,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
         // Parent is always the class this method belongs to
 		this.parent = clazz;
 		this.acc = new Access(0);
+		this.meta = new MetaSet(this);
 	}
 
 	public Access get$acc() {
@@ -352,10 +362,37 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				NodeInfoPass.init();
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
+			
+			foreach (Meta m; meta)
+				m.resolve();
+			if (annotation_default != null) {
+				Type tp = this.type.ret;
+				Type t = tp;
+				if (t.isArray()) {
+					if (annotation_default instanceof MetaValueScalar) {
+						MetaValueArray mva = new MetaValueArray(annotation_default.type);
+						mva.values.add(((MetaValueScalar)annotation_default).value);
+						annotation_default = mva;
+					}
+					t = t.args[0];
+				}
+				if (t.isReference()) {
+					t.clazz.checkResolved();
+					if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+						throw new CompilerException(pos, "Bad annotation value type "+tp);
+				}
+				annotation_default.resolve(t);
+			}
+			
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
-					NodeInfoPass.setNodeType(params[i],params[i].type);
-					NodeInfoPass.setNodeInitialized(params[i],true);
+					Var p = params[i];
+					if (p.meta != null) {
+						foreach (Meta m; p.meta)
+							m.resolve();
+					}
+					NodeInfoPass.setNodeType(p,p.type);
+					NodeInfoPass.setNodeInitialized(p,true);
 				}
 			}
 			foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire ) {
@@ -573,7 +610,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			if (f.isStatic())
 				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
 			else
-				expr = new FieldAccessExpr(0,f);
+				expr = new AccessExpr(0,new ThisExpr(0),f);
 		}
 		else if (path.head() instanceof Var) {
 			Var v = (Var)path.head();
@@ -615,6 +652,9 @@ public class WorkByContractCondition extends Statement implements SetBody {
 	@att public Statement	body;
 	public CodeAttr			code;
 	@ref public Method		definer;
+
+	public WorkByContractCondition() {
+	}
 
 	public WorkByContractCondition(int pos, int cond, KString name, Statement body) {
 		super(pos,null);
