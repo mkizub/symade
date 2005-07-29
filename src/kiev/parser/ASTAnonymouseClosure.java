@@ -41,11 +41,9 @@ public class ASTAnonymouseClosure extends Expr {
 	@att public Expr						new_closure;
 
 	public ASTAnonymouseClosure() {
-		params = new NArr<ASTNode>(this);
 	}
 
 	public ASTAnonymouseClosure(int id) {
-		params = new NArr<ASTNode>(this);
 	}
 
   	public void set(Token t) {
@@ -101,7 +99,7 @@ public class ASTAnonymouseClosure extends Expr {
 		Type ret = rettype.getType();
 		me.type = MethodType.newMethodType(me,null,types,ret);
 
-		NArr<ASTNode> members = new NArr<ASTNode>(this);
+		NArr<ASTNode> members = new NArr<ASTNode>(null, false);
 		if( ret != Type.tpRule ) {
 			ASTMethodDeclaration md = new ASTMethodDeclaration();
 			KString call_name;
@@ -144,7 +142,6 @@ public class ASTAnonymouseClosure extends Expr {
 				val = new CastExpr(v.getPos(),v.type,val,true);
 			}
 			dc.init = val;
-			dc.init.parent = dc;
 			stats.insert(dc,i);
 		}
 

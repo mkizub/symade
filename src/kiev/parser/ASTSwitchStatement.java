@@ -39,12 +39,9 @@ public class ASTSwitchStatement extends Statement {
 	@att public final NArr<ASTNode>		cases;
 
     public ASTSwitchStatement() {
-		cases = new NArr<ASTNode>(this, true);
 	}
 
     public ASTSwitchStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
-		cases = new NArr<ASTNode>(this, true);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

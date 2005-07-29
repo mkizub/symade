@@ -34,6 +34,7 @@ import static kiev.stdlib.Debug.*;
 
 public final class ProcessFixParent implements Constants {
 
+	// fix nodes
 	private void fixupNode(ASTNode node) {
 		foreach (String name; node.values()) {
 			Object val = node.getVal(name);
@@ -56,7 +57,37 @@ public final class ProcessFixParent implements Constants {
 		}
 	}
 
-	public void rewrite(Object:Object o, String id) {
+	public void fixup(Object:Object o, String id) {
+		return;
+	}
+
+	
+	
+	// verify after the fix
+	private void verifyNode(ASTNode node) {
+		foreach (String name; node.values()) {
+			Object val = node.getVal(name);
+			if (val instanceof ASTNode) {
+				ASTNode n = (ASTNode)val;
+				n.parent = node;
+			}
+			verify(val, name);
+		}
+	}
+	
+	public void verify(ASTNode:Object node, String id) {
+		verifyNode(node);
+	}
+	
+	public void verify(NArr<ASTNode>:Object arr, String id) {
+		foreach (ASTNode n; arr) {
+			if !(n.parent == arr.getParent())
+				Kiev.reportError(n.pos, "Node in "+arr.getParent()+" attached to multiple @att fields, one is "+n.parent+" and another is "+arr.getParent()+"."+id);
+			verifyNode(n);
+		}
+	}
+
+	public void verify(Object:Object o, String id) {
 		return;
 	}
 

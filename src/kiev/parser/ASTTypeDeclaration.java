@@ -47,8 +47,6 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 	@ref public Struct			me;
 
 	ASTStructDeclaration() {
-		argument = new NArr<ASTNode>(this);
-		members = new NArr<ASTNode>(this);
 	}
 
 	public ASTNode pass1_1() {

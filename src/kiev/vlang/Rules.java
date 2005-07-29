@@ -268,7 +268,9 @@ public abstract class ASTRuleNode extends ASTNode {
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
+	@virtual
 	public virtual int		base;
+	@virtual
 	public virtual int		idx;
 	public int				depth = -1;
 
@@ -284,11 +286,11 @@ public abstract class ASTRuleNode extends ASTNode {
 		jn = null;
 	}
 
-	public int get$base() { return base; }
-	public void set$base(int b) { base = b; }
+	@getter public int get$base() { return base; }
+	@setter public void set$base(int b) { base = b; }
 
-	public int get$idx() { return idx; }
-	public void set$idx(int i) { idx = i; }
+	@getter public int get$idx() { return idx; }
+	@setter public void set$idx(int i) { idx = i; }
 
 	public ASTNode resolve(Type tp) {
 		throw new CompilerException(pos,"Resolving of ASTRuleNode");
@@ -338,14 +340,12 @@ public final class RuleBlock extends ASTNode implements Scope {
 	public StringBuffer	fields_buf;
 
 	public RuleBlock() {
-		stats = new NArr<ASTNode>(this, true);
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
-		stats = new NArr<ASTNode>(this, true);
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ASTNode> stats) {
@@ -1089,7 +1089,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 		super(expr.pos);
 		this.obj = null;
 		this.func = expr.func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
@@ -1098,7 +1097,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = expr.obj;
 		this.obj.parent = this;
 		this.func = expr.func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
@@ -1113,7 +1111,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 			this.func = ((AccessExpr)expr.func).var;
 			this.obj = ((AccessExpr)expr.func).obj;
 		}
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; expr.args) this.args.append(e);
 		this.args.insert(0,expr.env_access);
 	}

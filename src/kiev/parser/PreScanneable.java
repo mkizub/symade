@@ -32,6 +32,7 @@ import kiev.vlang.*;
  */
 
 public interface PreScanneable {
+	@virtual
 	public abstract virtual PrescannedBody pbody;
 }
 

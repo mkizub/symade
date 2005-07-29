@@ -43,6 +43,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public static Struct[]	emptyArray = new Struct[0];
 
 	/** Class' access */
+	@virtual
 	public virtual Access		acc;
 
 	/** Variouse names of the class */
@@ -99,20 +100,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet					meta;
 
-	virtual abstract int		anonymouse_inner_counter;
-	virtual abstract int		packer_field_counter;
-	virtual abstract int		packed_field_counter;
-	virtual abstract int		abstract_field_counter;
+	@virtual virtual abstract int		anonymouse_inner_counter;
+	@virtual virtual abstract int		packer_field_counter;
+	@virtual virtual abstract int		packed_field_counter;
+	@virtual virtual abstract int		abstract_field_counter;
 
 	protected Struct(ClazzName name) {
 		super(0,0);
 		this.name = name;
 		this.acc = new Access(0);
-		imported = new NArr<ASTNode>(this);
-		interfaces = new NArr<Type>(this);
-		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, true);
-		methods = new NArr<Method>(this, true);
 		this.meta = new MetaSet(this);
 	}
 
@@ -121,11 +117,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		this.name = name;
 		package_clazz = outer;
 		this.acc = new Access(0);
-		imported = new NArr<ASTNode>(this);
-		interfaces = new NArr<Type>(this);
-		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, true);
-		methods = new NArr<Method>(this, true);
 		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
@@ -135,11 +126,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		throw new CompilerException(getPos(),"Struct node cannot be copied");
 	};
 
-	public Access get$acc() {
+	@getter public Access get$acc() {
 		return acc;
 	}
 
-	public void set$acc(Access a) {
+	@setter public void set$acc(Access a) {
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}
@@ -148,43 +139,43 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
-	public int get$anonymouse_inner_counter() {
+	@getter public int get$anonymouse_inner_counter() {
 		int i=0;
 		foreach(Struct s; sub_clazz; s.isAnonymouse() || s.isLocal()) i++;
 		return i;
 	}
 
-	public void set$anonymouse_inner_counter(int i) {
+	@setter public void set$anonymouse_inner_counter(int i) {
 		throw new RuntimeException();
 	}
 
-	public int get$packer_field_counter() {
+	@getter public int get$packer_field_counter() {
 		int i=0;
 		foreach(Field f; fields; f.isPackerField()) i++;
 		return i;
 	}
 
-	public void set$packer_field_counter(int i) {
+	@setter public void set$packer_field_counter(int i) {
 		throw new RuntimeException();
 	}
 
-	public int get$packed_field_counter() {
+	@getter public int get$packed_field_counter() {
 		int i=0;
 		foreach(Field f; fields; f.isPackedField()) i++;
 		return i;
 	}
 
-	public void set$packed_field_counter(int i) {
+	@setter public void set$packed_field_counter(int i) {
 		throw new RuntimeException();
 	}
 
-	public int get$abstract_field_counter() {
+	@getter public int get$abstract_field_counter() {
 		int i=0;
 		foreach(Field f; fields; f.isAbstract()) i++;
 		return i;
 	}
 
-	public void set$abstract_field_counter(int i) {
+	@setter public void set$abstract_field_counter(int i) {
 		throw new RuntimeException();
 	}
 
@@ -947,7 +938,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			// create constructor method
 			ti_init = MethodType.newMethodType(null,ti_init_targs,Type.tpVoid);
 			Method init = new Method(typeinfo_clazz,nameInit,ti_init,ACC_PUBLIC);
-			init.params = ti_init_params;
+			init.params.addAll(ti_init_params);
 			typeinfo_clazz.addMethod(init);
 			init.body = ti_init_body;
 			ti_init_body.parent = init;
@@ -988,7 +979,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			tim.body = new BlockStat(pos,tim,new ASTNode[]{
 				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
-			tim.params = new Var[]{new Var(pos,tim,nameThis,this.type,0)};
+			tim.params.add(new Var(pos,tim,nameThis,this.type,0));
 		}
 
 	}
@@ -1141,17 +1132,17 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
 					// Also add formal parameter
 					if( m.isStatic() )
-						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameThisDollar,targs[0],0),0);
+						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],0),0);
 					else
-						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameThisDollar,targs[0],0),1);
+						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],0),1);
 					retype = true;
 				}
 				if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 					targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 					if( m.isStatic() )
-						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
+						m.params.insert(new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
 					else
-						m.params = (Var[])Arrays.insert(m.params,new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?2:1));
+						m.params.insert(new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?2:1));
 					retype = true;
 				}
 				if( retype ) {
@@ -1176,19 +1167,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params = new Var[]{
-								new Var(pos,init,nameThis,this.type,0),
-								thisOuter=new Var(pos,init,nameThisDollar,package_clazz.type,0),
-								maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0),
-							};
+						init.params.append(new Var(pos,init,nameThis,this.type,0));
+						init.params.append(thisOuter=new Var(pos,init,nameThisDollar,package_clazz.type,0));
+						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
 					} else {
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params = new Var[]{
-								new Var(pos,init,nameThis,this.type,0),
-								maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0),
-							};
+						init.params.append(new Var(pos,init,nameThis,this.type,0));
+						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
 					}
 				} else {
 					MethodType mt;
@@ -1214,7 +1201,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					}
 					mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
 					init = new Method(this,nameInit,mt,ACC_PUBLIC);
-					init.params = params;
+					init.params.addAll(params);
 					foreach(Var v; params) v.parent = init;
 				}
 				init.pos = pos;
@@ -1239,7 +1226,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
-					abstr.params = m.params;
+					abstr.params.copyFrom(m.params);
 					abstr.parent = this;
 					methods[i] = abstr;
 
@@ -1290,7 +1277,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},this.type);
 			Method tome = new Method(this,nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
-			tome.params = new Var[]{new Var(pos,tome,nameEnumOrdinal,Type.tpInt,0)};
+			tome.params.append(new Var(pos,tome,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos,tome);
 			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ASTNode.emptyArray);
 			EnumAttr ea;
@@ -1335,9 +1322,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			tostr.pos = pos;
 			tostr.jtype = jtostrt;
 			if (isPrimitiveEnum()) {
-				tostr.params = new Var[]{new Var(pos,tostr,nameEnumOrdinal,this.type,0)};
+				tostr.params.add(new Var(pos,tostr,nameEnumOrdinal,this.type,0));
 			} else {
-				tostr.params = new Var[]{new Var(pos,tostr,nameThis,this.type,0)};
+				tostr.params.add(new Var(pos,tostr,nameThis,this.type,0));
 			}
 			tostr.body = new BlockStat(pos,tostr);
 			if (isPrimitiveEnum()) {
@@ -1390,7 +1377,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
 			fromstr.jtype = jfromstrt;
-			fromstr.params = new Var[]{new Var(pos,fromstr,KString.from("val"),Type.tpString,0)};
+			fromstr.params.add(new Var(pos,fromstr,KString.from("val"),Type.tpString,0));
 			fromstr.body = new BlockStat(pos,fromstr);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
 				new VarAccessExpr(pos,fromstr.params[0]),
@@ -1459,7 +1446,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				mm = methods[i];
 				// Append constraints to m from mm
 				foreach(WorkByContractCondition cond; mm.conditions)
-					m.conditions = (WorkByContractCondition[])Arrays.appendUniq(m.conditions,cond);
+					m.conditions.appendUniq(cond);
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
 			} else {
@@ -1771,13 +1758,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				else
 					mm = new Method(this, m.name.name, type1, m.flags);
 				mm.setStatic(m.isStatic());
-				mm.params = new Var[m.params.length];
 				if (!m.isStatic()) {
-					mm.params[0] = new Var(pos,mm,Constants.nameThis,this.type,0);
+					mm.params.append(new Var(pos,mm,Constants.nameThis,this.type,0));
 					offs = 1;
 				}
 				for (int j=offs; j < mm.params.length; j++) {
-					mm.params[j] = new Var(m.params[j].pos,mm,m.params[j].name.name,mm.type.args[j-offs],m.params[j].flags);
+					mm.params.append(new Var(m.params[j].pos,mm,m.params[j].name.name,mm.type.args[j-offs],m.params[j].flags));
 				}
 			}
 
@@ -2191,7 +2177,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				proxy.setPublic(true);
 				for(int l=0; l < params.length; l++)
 					params[l] = new Var(0,proxy,l==0?nameThis:KString.from("arg"+l),m.type.args[l],0);
-				proxy.params = params;
+				proxy.params.addAll(params);
 				proxy.setStatic(false);
 				proxy.setVirtualStatic(false);
 				BlockStat bs = new BlockStat(0,proxy,ASTNode.emptyArray);
@@ -2376,9 +2362,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							int par = m.params.length;
 							KString nm = new KStringBuffer().append(nameVarProxy)
 								.append(proxy_fields[j].name).toKString();
-							m.params = (Var[])Arrays.append(m.params,
-								new Var(m.pos,m,nm,proxy_fields[j].type,0)
-							);
+							m.params.append(new Var(m.pos,m,nm,proxy_fields[j].type,0));
 							((BlockStat)m.body).stats.insert(
 								new ExprStat(m.pos,m.body,
 									new AssignExpr(m.pos,AssignOperator.Assign,
@@ -2622,7 +2606,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
 
 					if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
-						m.addAttr(new CheckFieldsAttr(m.violated_fields));
+						m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
 					}
 
 					for(int j=0; j < m.conditions.length; j++) {
@@ -2771,7 +2755,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			f.attrs = Attr.emptyArray;
 		}
 		for(int i=0; methods!=null && i < methods.length; i++) {
-			methods[i].params = Var.emptyArray;
+			methods[i].params.delAll();
 			methods[i].body = null;
 			Attr[] ats = methods[i].attrs;
 			methods[i].attrs = Attr.emptyArray;

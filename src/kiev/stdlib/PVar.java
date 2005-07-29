@@ -23,8 +23,10 @@ package kiev.stdlib;
 public final $wrapper class PVar<A>
 {
 
+	@virtual
 	forward public virtual access:ro,rw			A			$var;
 	        private 							PVar<A>		$pvar := null;
+	@virtual
 	        public virtual access:ro abstract 	boolean		$is_bound;
 
 	public PVar() {}
@@ -33,6 +35,7 @@ public final $wrapper class PVar<A>
 		this.$var = var;
 	}
 
+	@getter
 	public A get$$var()
 		alias $get_var
 	{
@@ -42,6 +45,7 @@ public final $wrapper class PVar<A>
 			return $var;
 	}
 
+	@getter
 	public boolean get$$is_bound()
 		alias $get_is_bound
 	{

@@ -40,11 +40,9 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	public int dim;
 	
 	ASTNewInitializedArrayExpression() {
-		args = new NArr<Expr>(this);
 	}
 
 	ASTNewInitializedArrayExpression(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

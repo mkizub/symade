@@ -34,10 +34,10 @@ import static kiev.stdlib.Debug.*;
 
 public final class ProcessVNode implements Constants {
 
-	private static final KString mnNode = KString.from("kiev.vlang.node"); 
-	private static final KString mnAtt  = KString.from("kiev.vlang.att"); 
-	private static final KString mnRef  = KString.from("kiev.vlang.ref"); 
-	private static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
+	public static final KString mnNode = KString.from("kiev.vlang.node"); 
+	public static final KString mnAtt  = KString.from("kiev.vlang.att"); 
+	public static final KString mnRef  = KString.from("kiev.vlang.ref"); 
+	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
 	private static final KString nameNArrReplace  = KString.from("replace"); 
 	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
 	private static final KString nameParent  = KString.from("parent"); 
@@ -112,10 +112,14 @@ public final class ProcessVNode implements Constants {
 		}
 		if (fmatt != null || fmref != null) {
 			Struct fs = (Struct)f.type.clazz;
+			boolean isArr = false;
 			if (fs.name.name == nameNArr) {
-				if (!f.isFinal())
+				if (!f.isFinal()) {
 					Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
+					f.setFinal(true);
+				}
 				fs = f.type.args[0].clazz;
+				isArr = true;
 			}
 			Meta fsm = fs.meta.get(mnNode);
 			if (fsm == null) {
@@ -123,8 +127,24 @@ public final class ProcessVNode implements Constants {
 				fs.meta.unset(mnAtt);
 				fs.meta.unset(mnRef);
 				return;
-			} else {
-				//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
+			}
+			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
+			if (fmatt != null) {
+				if (isArr) {
+					if (f.init != null)
+						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.TRUE)});
+				} else {
+					f.setVirtual(true);
+					ProcessVirtFld.addMethodsForVirtualField((Struct)f.parent, f);
+				}
+			}
+			else if (fmref != null) {
+				if (isArr) {
+					if (f.init != null)
+						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.FALSE)});
+				}
 			}
 		} else {
 			Struct fs = (Struct)f.type.clazz;
@@ -177,10 +197,8 @@ public final class ProcessVNode implements Constants {
 			Type.newArrayType(Type.tpString), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 		Expr[] vals_init = new Expr[aflds.size()];
 		vals.init = new NewInitializedArrayExpr(0, Type.tpString, 1, Expr.emptyArray);
-		vals.init.parent = vals;
 		for(int i=0; i < vals_init.length; i++) {
 			Expr e = new ConstExpr(0,aflds[i].name.name);
-			e.parent = vals.init;
 			((NewInitializedArrayExpr)vals.init).args.append(e);
 		}
 		// String[] values() { return $values; }
@@ -197,10 +215,8 @@ public final class ProcessVNode implements Constants {
 			// Object getVal(String)
 			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);
 			Method getV = new Method(s,KString.from("getVal"),getVt,ACC_PUBLIC);
-			getV.params = new Var[]{
-				new Var(0, getV, nameThis, s.type, 0),
-				new Var(0, getV, KString.from("name"), Type.tpString, 0),
-			};
+			getV.params.add(new Var(0, getV, nameThis, s.type, 0));
+			getV.params.add(new Var(0, getV, KString.from("name"), Type.tpString, 0));
 			getV.body = new BlockStat(0,getV);
 			for(int i=0; i < aflds.length; i++) {
 				((BlockStat)getV.body).addStatement(
@@ -233,9 +249,7 @@ public final class ProcessVNode implements Constants {
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
 			Method copyV = new Method(s,KString.from("copy"),copyVt,ACC_PUBLIC);
-			copyV.params = new Var[]{
-				new Var(0, copyV, nameThis, s.type, 0)
-			};
+			copyV.params.append(new Var(0, copyV, nameThis, s.type, 0));
 			copyV.body = new BlockStat(0,copyV);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,null,KString.from("node"),s.type,0);
@@ -312,11 +326,9 @@ public final class ProcessVNode implements Constants {
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
 			Method setV = new Method(s,KString.from("setVal"),setVt,ACC_PUBLIC);
-			setV.params = new Var[]{
-				new Var(0, setV, nameThis, s.type, 0),
-				new Var(0, setV, KString.from("name"), Type.tpString, 0),
-				new Var(0, setV, KString.from("val"), Type.tpObject, 0),
-			};
+			setV.params.append(new Var(0, setV, nameThis, s.type, 0));
+			setV.params.append(new Var(0, setV, KString.from("name"), Type.tpString, 0));
+			setV.params.append(new Var(0, setV, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
 			for(int i=0; i < aflds.length; i++) {
 				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
@@ -356,12 +368,10 @@ public final class ProcessVNode implements Constants {
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigReplaceVal);
 			Method setV = new Method(s,KString.from("replaceVal"),setVt,ACC_PUBLIC);
-			setV.params = new Var[]{
-				new Var(0, setV, nameThis, s.type, 0),
-				new Var(0, setV, KString.from("name"), Type.tpString, 0),
-				new Var(0, setV, KString.from("old"), Type.tpObject, 0),
-				new Var(0, setV, KString.from("val"), Type.tpObject, 0),
-			};
+			setV.params.append(	new Var(0, setV, nameThis, s.type, 0));
+			setV.params.append(new Var(0, setV, KString.from("name"), Type.tpString, 0));
+			setV.params.append(new Var(0, setV, KString.from("old"), Type.tpObject, 0));
+			setV.params.append(new Var(0, setV, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
 			for(int i=0; i < aflds.length; i++) {
 				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);

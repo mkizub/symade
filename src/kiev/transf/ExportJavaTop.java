@@ -314,6 +314,8 @@ public final class ExportJavaTop implements Constants {
 			KString java_lang_name = KString.from("java.lang");
 			boolean kiev_stdlib_found = false;
 			KString kiev_stdlib_name = KString.from("kiev.stdlib");
+			boolean kiev_stdlib_meta_found = false;
+			KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
 
 			foreach (ASTNode n; astn.syntax) {
 				try {
@@ -328,6 +330,8 @@ public final class ExportJavaTop implements Constants {
 							java_lang_found = true;
 						else if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(kiev_stdlib_name))
 							kiev_stdlib_found = true;
+						else if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(kiev_stdlib_meta_name))
+							kiev_stdlib_meta_found = true;
 					}
 					trace(Kiev.debugResolve,"Add "+sn);
 				} catch(Exception e ) {
@@ -337,6 +341,8 @@ public final class ExportJavaTop implements Constants {
 			// Add standard imports, if they were not defined
 			if( !Kiev.javaMode && !kiev_stdlib_found )
 				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
+			if( !Kiev.javaMode && !kiev_stdlib_meta_found )
+				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.IMPORT_CLASS,true));
 			if( !java_lang_found )
 				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
 

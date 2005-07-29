@@ -185,41 +185,23 @@ public class BlockStat extends Statement implements Scope {
 	protected CodeLabel	break_label = null;
 
 	public BlockStat() {
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
 	}
 
 	public BlockStat(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
 	}
 
 	public BlockStat(int pos, ASTNode parent, NArr<ASTNode> sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
-			st.parent = this;
 		}
 	}
 
 	public BlockStat(int pos, ASTNode parent, ASTNode[] sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
-			st.parent = this;
 		}
 	}
 
@@ -462,6 +444,11 @@ public class ExprStat extends Statement {
 	public ExprStat() {
 	}
 
+	public ExprStat(Expr expr) {
+		this.expr = expr;
+		this.expr.parent = this;
+	}
+
 	public ExprStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
@@ -536,11 +523,13 @@ public class DeclStat extends Statement {
 			if( init != null ) {
 				try {
 					init = init.resolveExpr(var.type);
+					init.parent = this;
 					Type it = init.getType();
 					if( it != var.type ) {
 						init = new CastExpr(init.pos,var.type,init);
 						init.parent = this;
 						init = init.resolveExpr(var.type);
+						init.parent = this;
 					}
 				} catch(Exception e ) {
 					Kiev.reportError(pos,e);

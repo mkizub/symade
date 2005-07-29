@@ -281,6 +281,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Struct java_lang_annotation = Env.newPackage(KString.from("java.lang.annotation"));
 		Struct java_util = Env.newPackage(KString.from("java.util"));
 		Struct kiev_stdlib = Env.newPackage(KString.from("kiev.stdlib"));
+		Struct kiev_stdlib_meta = Env.newPackage(KString.from("kiev.stdlib.meta"));
 
 		Struct tpObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Object;")),java_lang,ACC_PUBLIC);
 		tpObject				= new Type(tpObjectClazz);

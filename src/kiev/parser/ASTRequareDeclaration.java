@@ -40,6 +40,7 @@ import static kiev.vlang.WorkByContractCondition.*;
 public abstract class ASTCondDeclaration extends ASTNode implements PreScanneable {
 	public KString		name;
     @att public Statement	body;
+	@virtual
 	public virtual PrescannedBody pbody;
 
 	public ASTCondDeclaration() {
@@ -48,8 +49,8 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 	public ASTCondDeclaration(int id) {
 	}
 
-	public PrescannedBody get$pbody() { return pbody; }
-	public void set$pbody(PrescannedBody p) { pbody = p; }
+	@getter public PrescannedBody get$pbody() { return pbody; }
+	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTIdentifier ) {

@@ -40,12 +40,9 @@ public class ASTPizzaCase extends ASTNode {
 	@att public final NArr<ASTNode>		stats;
 
 	public ASTPizzaCase() {
-		params = new NArr<ASTNode>(this);
-		stats = new NArr<ASTNode>(this);
 	}
 
 	public ASTPizzaCase(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

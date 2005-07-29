@@ -44,6 +44,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
     @att public final NArr<ASTAlias>	aliases;
     @att public final NArr<ASTNode>	localvars;
     @att public Statement	body;
+	@virtual
 	public virtual PrescannedBody pbody;
 	@att public final NArr<ASTRequareDeclaration>	req;
 	@att public final NArr<ASTEnsureDeclaration>	ens;
@@ -51,21 +52,15 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 	@ref public RuleMethod	me;
 
 	public ASTRuleDeclaration() {
-		super(0);
 		modifiers = new ASTModifiers();
-		params = new NArr<ASTNode>(this);
-		aliases = new NArr<ASTAlias>(this);
-		localvars = new NArr<ASTNode>(this);
-		req = new NArr<ASTRequareDeclaration>(this);
-		ens = new NArr<ASTEnsureDeclaration>(this);
 	}
 
 	public ASTRuleDeclaration(int id) {
 		this();
 	}
 
-	public PrescannedBody get$pbody() { return pbody; }
-	public void set$pbody(PrescannedBody p) { pbody = p; }
+	@getter public PrescannedBody get$pbody() { return pbody; }
+	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
@@ -122,14 +117,14 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 		Type type = Type.tpRule;
-		Var[] vars = new Var[params.length + 1];
-		vars[0] = new Var(pos,this,namePEnv,Type.tpRule,0);
+		NArr<Var> vars = new NArr<Var>(null, false);
+		vars.append(new Var(pos,this,namePEnv,Type.tpRule,0));
 		vars[0].setForward(true);
 		Type[] margs = new Type[] {Type.tpRule};
 		Type[] mfargs = Type.emptyArray;
 		for(int i=0; i < params.length; i++) {
 			ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
-			vars[i+1] = fdecl.pass3();
+			vars.append(fdecl.pass3());
 			margs = (Type[])Arrays.append(margs,vars[i+1].type);
 		}
 		Var[] lvars = Var.emptyArray;
@@ -170,7 +165,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         if( me.body != null )
 	        me.body.parent = me;
 		if( !me.isStatic() )
-			vars = (Var[])Arrays.insert(vars,new Var(pos,me,Constants.nameThis,clazz.type,0),0);
+			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
 		for(int i=0; i < vars.length; i++) {
 			vars[i].parent = me;
 		}
@@ -180,7 +175,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		foreach(ASTAlias al; aliases) al.attach(me);
 //		MethodParamsAttr pa = new MethodParamsAttr(clazz,vars);
 //		me.addAttr(pa);
-		me.params = vars;
+		me.params.addAll(vars);
 		if( lvars.length > 0 )
 			me.localvars = lvars;
         clazz.addMethod(me);
@@ -198,13 +193,13 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
 			cond.parent = me;
 			cond.definer = me;
-			me.conditions = (WorkByContractCondition[])	Arrays.append(me.conditions,cond);
+			me.conditions.append(cond);
 		}
 		for(int i=0; ens!=null && i < ens.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)ens[i].pass3();
 			cond.parent = me;
 			cond.definer = me;
-			me.conditions = (WorkByContractCondition[])	Arrays.append(me.conditions,cond);
+			me.conditions.append(cond);
 		}
 
         return me;

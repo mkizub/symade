@@ -50,8 +50,6 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 
 	ASTFileUnit() {
 		disabled_extensions = Kiev.getCmdLineExtSet();
-		syntax = new NArr<ASTNode>(this);
-		decls = new NArr<ASTNode>(this);
 	}
 	ASTFileUnit(int id) {
 		this();
@@ -66,7 +64,6 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		n.parent = this;
 		if( n instanceof ASTPackage) {
 			pkg = (ASTPackage)n;
 		}

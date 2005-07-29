@@ -42,12 +42,9 @@ public class ASTNewExpression extends Expr {
     public boolean	anonymouse;
 
 	public ASTNewExpression() {
-		args = new NArr<Expr>(this);
-		members = new NArr<ASTNode>(this);
 	}
 
 	public ASTNewExpression(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -145,17 +142,17 @@ public class ASTNewExpression extends Expr {
 			if( args.length > 0 ) {
 				MethodType mt;
 				Type[] targs = Type.emptyArray;
-				Var[] params = new Var[]{new Var(pos,null,nameThis,me.type,0)};
+				NArr<Var> params = new NArr<Var>(null, false);
+				params.append(new Var(pos,null,nameThis,me.type,0));
 				for(int i=0; i < args.length; i++) {
 					args[i] = (Expr)args[i].resolve(null);
 					Type at = args[i].getType();
 					targs = (Type[])Arrays.append(targs,at);
-					params = (Var[])Arrays.append(params,new Var(pos,null,KString.from("arg$"+i),at,0));
+					params.append(new Var(pos,null,KString.from("arg$"+i),at,0));
 				}
 				mt = MethodType.newMethodType(MethodType.tpMethodClazz,null,targs,Type.tpVoid);
 				Method init = new Method(me,nameInit,mt,ACC_PUBLIC);
-				init.params = params;
-				foreach(Var v; params) v.parent = init;
+				init.params.addAll(params);
 				init.pos = pos;
 				init.body = new BlockStat(pos,init);
 				init.setPublic(true);

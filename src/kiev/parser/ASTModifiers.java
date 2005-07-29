@@ -19,8 +19,6 @@ public class ASTModifiers extends ASTNode {
 	@att public final NArr<ASTAnnotation>	annotations;
 	
 	public ASTModifiers() {
-		modifier = new NArr<ASTModifier>(this);
-		annotations = new NArr<ASTAnnotation>(this);
 	}
 
 	public ASTModifiers(int id) {
@@ -60,7 +58,8 @@ public class ASTModifiers extends ASTNode {
 	next_annotation:
 		foreach (ASTAnnotation a; annotations) {
 			Meta m = a.getMeta();
-			ms.set(m);
+			if (m != null)
+				ms.set(m);
 		}
 		return ms;
 	}

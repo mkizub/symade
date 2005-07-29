@@ -42,11 +42,9 @@ public class ASTCallExpression extends Expr {
     @att public final NArr<Expr>		args;
 
 	public ASTCallExpression() {
-		args = new NArr<Expr>(this);
 	}
 
 	public ASTCallExpression(int id) {
-		args = new NArr<Expr>(this);
 	}
 
 	public ASTCallExpression(int pos, KString func, Expr[] args) {
@@ -54,7 +52,6 @@ public class ASTCallExpression extends Expr {
 		this.func = new ASTIdentifier(pos, func);
 		foreach (Expr e; args) {
 			this.args.append(e);
-			e.parent = this;
 		}
 	}
 
@@ -62,10 +59,7 @@ public class ASTCallExpression extends Expr {
 		super(pos);
 		this.func = new ASTIdentifier(pos, func);
 		this.args = args;
-		foreach (Expr e; args) {
-			this.args.append(e);
-			e.parent = this;
-		}
+		foreach (Expr e; args) this.args.append(e);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

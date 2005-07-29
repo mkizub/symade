@@ -296,8 +296,13 @@ kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
+kiev.stdlib.meta kiev/stdlib/meta kiev\stdlib\meta\virtual.java bad
+kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
 kiev.transf.ProcessFixParent kiev/transf/ProcessFixParent kiev\transf\ProcessFixParent.java
+kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java
 kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
 kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java

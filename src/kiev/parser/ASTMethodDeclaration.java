@@ -46,6 +46,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
     @att public final NArr<ASTAlias>					aliases;
     @att public ASTNode									throwns;
     @att public Statement								body;
+	@virtual
 	public virtual PrescannedBody 						pbody;
 	@att public final NArr<ASTRequareDeclaration>		req;
 	@att public final NArr<ASTEnsureDeclaration>		ens;
@@ -54,22 +55,15 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	@ref public Method									me;
 	@ref public final NArr<Type>						ftypes;
 
-	public PrescannedBody get$pbody() { return pbody; }
-	public void set$pbody(PrescannedBody p) { pbody = p; }
+	@getter public PrescannedBody get$pbody() { return pbody; }
+	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	ASTMethodDeclaration() {
 		super(0);
 		modifiers = new ASTModifiers();
-		params = new NArr<ASTFormalParameter>(this);
-		argtypes = new NArr<ASTArgumentDeclaration>(this);
-		aliases = new NArr<ASTAlias>(this);
-		req = new NArr<ASTRequareDeclaration>(this);
-		ens = new NArr<ASTEnsureDeclaration>(this);
-		ftypes = new NArr<Type>(this);
 	}
 
 	ASTMethodDeclaration(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -152,14 +146,14 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
-		Var[] vars = new Var[params.length + (isVarArgs()?1:0)];
+		NArr<Var> vars = new NArr<Var>(null, false);
 		boolean has_dispatcher = false;
 		Type type;
 		
 		if (ps.isAnnotation() && vars.length > 0) {
 			Kiev.reportError(pos, "Annotation methods may not have arguments");
 			params.delAll();
-			vars = new Var[0];
+			vars.delAll();
 			setVarArgs(false);
 		}
 
@@ -182,7 +176,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			}
 			for(int i=0; i < params.length; i++) {
 				ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
-				vars[i] = fdecl.pass3();
+				vars.append(fdecl.pass3());
 				margs = (Type[])Arrays.append(margs,fdecl.type.getType());
 				if (fdecl.mm_type != null) {
 					mjargs = (Type[])Arrays.append(mjargs,fdecl.mm_type.getType());
@@ -202,7 +196,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			PassInfo.pop(this);
 		}
 		if( isVarArgs() ) {
-			vars[vars.length-1] = new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			vars.append(new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0));
 			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 		}
@@ -216,17 +210,10 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			me.annotation_default = ASTAnnotation.makeValue(annotation_default);
 		}
         me.body = body;
-        if( me.body != null )
-	        me.body.parent = me;
 		if( !me.isStatic() )
-			vars = (Var[])Arrays.insert(vars,new Var(pos,me,Constants.nameThis,clazz.type,0),0);
-		for(int i=0; i < vars.length; i++) {
-			vars[i].parent = me;
-		}
+			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
 		foreach(ASTAlias al; aliases) al.attach(me);
-//		MethodParamsAttr pa = new MethodParamsAttr(clazz,vars);
-//		me.addAttr(pa);
-		me.params = vars;
+		me.params.addAll(vars);
         clazz.addMethod(me);
         if( throwns != null ) {
         	Type[] thrs = ((ASTThrows)throwns).pass3();
@@ -240,15 +227,13 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
-			cond.parent = me;
 			cond.definer = me;
-			me.conditions = (WorkByContractCondition[])	Arrays.append(me.conditions,cond);
+			me.conditions.append(cond);
 		}
 		for(int i=0; ens!=null && i < ens.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)ens[i].pass3();
-			cond.parent = me;
 			cond.definer = me;
-			me.conditions = (WorkByContractCondition[])	Arrays.append(me.conditions,cond);
+			me.conditions.append(cond);
 		}
 
         return me;

@@ -39,11 +39,9 @@ public class ASTNormalCase extends ASTNode {
 	@att public final NArr<ASTNode>		stats;
 
 	public ASTNormalCase() {
-		stats = new NArr<ASTNode>(this);
 	}
 
 	public ASTNormalCase(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

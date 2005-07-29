@@ -38,11 +38,9 @@ public class ASTClosureType extends ASTNode {
     @att public final NArr<ASTType>	types;
 
 	public ASTClosureType() {
-		types = new NArr<ASTType>(this);
 	}
 
 	public ASTClosureType(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

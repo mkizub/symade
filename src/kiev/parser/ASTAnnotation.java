@@ -22,8 +22,6 @@ public class ASTAnnotation extends ASTNode {
 	public ASTAnnotation() {}
 
 	public ASTAnnotation(int id) {
-		super(0);
-		values = new NArr<ASTAnnotationValue>(this);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

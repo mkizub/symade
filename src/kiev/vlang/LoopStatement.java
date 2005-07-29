@@ -74,9 +74,7 @@ public class WhileStat extends LoopStat {
 	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos, parent);
 		this.cond = cond;
-		this.cond.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {
@@ -166,9 +164,7 @@ public class DoWhileStat extends LoopStat {
 	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
 		super(pos,parent);
 		this.cond = cond;
-		this.cond.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {
@@ -253,12 +249,10 @@ public class ForInit extends ASTNode implements Scope {
 	@att public final NArr<DeclStat>	decls;
 
 	public ForInit() {
-		this.decls = new NArr<DeclStat>(this, true);
 	}
 
 	public ForInit(int pos) {
 		super(pos);
-		this.decls = new NArr<DeclStat>(this, true);
 	}
 
 	public void cleanup() {
@@ -313,20 +307,10 @@ public class ForStat extends LoopStat implements Scope {
 	
 	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
 		super(pos, parent);
-		if( init != null ) {
-			this.init = init;
-			this.init.parent = this;
-		}
-		if( cond != null ) {
-			this.cond = cond;
-			this.cond.parent = this;
-		}
-		if( iter != null ) {
-			this.iter = iter;
-			this.iter.parent = this;
-		}
+		this.init = init;
+		this.cond = cond;
+		this.iter = iter;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {
@@ -378,7 +362,6 @@ public class ForStat extends LoopStat implements Scope {
 							if (vdecls.hasForward()) ds.var.setForward(true);
 							if( vdecl.init != null ) {
 								ds.init = vdecl.init.resolveExpr(ds.var.type);
-								ds.init.parent = ds;
 							}
 							else if (ds.var.isFinal())
 								Kiev.reportError(ds.var.pos,"Final variable "+ds.var+" must have initializer");
@@ -388,8 +371,6 @@ public class ForStat extends LoopStat implements Scope {
 						throw new RuntimeException("Unknown type of for-init node "+init);
 					if (init instanceof Expr)
 						init.setGenVoidExpr(true);
-					if (init != null)
-						init.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(init.pos,e);
 				}
@@ -403,7 +384,6 @@ public class ForStat extends LoopStat implements Scope {
 			if( cond != null ) {
 				try {
 					cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-					cond.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(cond.pos,e);
 				}
@@ -415,7 +395,6 @@ public class ForStat extends LoopStat implements Scope {
 			if( iter != null ) {
 				try {
 					iter = (Expr)iter.resolve(Type.tpVoid);
-					iter.parent = this;
 					iter.setGenVoidExpr(true);
 				} catch(Exception e ) {
 					Kiev.reportError(iter.pos,e);
@@ -560,16 +539,9 @@ public class ForEachStat extends LoopStat implements Scope {
 	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
 		super(pos, parent);
 		this.var = var;
-		if( this.var != null )
-			this.var.parent = this;
 		this.container = container;
-		this.container.parent = this;
-		if( cond != null ) {
-			this.cond = cond;
-			this.cond.parent = this;
-		}
+		this.cond = cond;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {
@@ -693,7 +665,6 @@ public class ForEachStat extends LoopStat implements Scope {
 							new ConstExpr(iter.pos,Kiev.newInteger(0))
 						)
 				});
-				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(Type.tpInt);
 				break;
 			case KENUM:
@@ -701,7 +672,6 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
-				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
 				break;
 			case JENUM:
@@ -709,16 +679,14 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
-				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
 				break;
 			case ELEMS:
 				/* iter = container.elements(); */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter),
-					new CallAccessExpr(container.pos,new ShadowExpr(container),elems,Expr.emptyArray)
+					new CallAccessExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
 					);
-				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(iter.type);
 				break;
 			case RULE:
@@ -727,7 +695,6 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ConstExpr(iter.pos,null)
 					);
-				iter_init.parent = this;
 				iter_init = (Expr)iter_init.resolve(Type.tpVoid);
 				// Also, patch the rule argument
 				NArr<Expr> args = null;
@@ -746,7 +713,6 @@ public class ForEachStat extends LoopStat implements Scope {
 				}
 				break;
 			}
-			iter_init.parent = this;
 			iter_init.setGenVoidExpr(true);
 
 			// Check iterator condition
@@ -779,13 +745,12 @@ public class ForEachStat extends LoopStat implements Scope {
 					BinaryOperator.NotEquals,
 					new AssignExpr(container.pos,AssignOperator.Assign,
 						new VarAccessExpr(container.pos,iter),
-						new ShadowExpr(container)),
+						(Expr)container.copy()),
 					new ConstExpr(container.pos,null)
 					);
 				break;
 			}
 			if( iter_cond != null ) {
-				iter_cond.parent = this;
 				iter_cond = (BooleanExpr)iter_cond.resolve(Type.tpBoolean);
 			}
 
@@ -823,9 +788,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				break;
 			}
 			if( var_init != null ) {
-				var_init.parent = this;
 				var_init = (Expr)var_init.resolve(var.getType());
-				var_init.parent = this;
 				var_init.setGenVoidExpr(true);
 			}
 
@@ -853,9 +816,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
 					new VarAccessExpr(iter.pos,iter)
 					);
-				iter_incr.parent = this;
 				iter_incr = (Expr)iter_incr.resolve(Type.tpVoid);
-				iter_incr.parent = this;
 				iter_incr.setGenVoidExpr(true);
 			} else {
 				iter_incr = null;

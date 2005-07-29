@@ -46,7 +46,7 @@ public final class ProcessVirtFld implements Constants {
 		}
 	}
 	
-	private void addMethodsForVirtualField(Struct s, Field f) {
+	public static void addMethodsForVirtualField(Struct s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f.pos,"Static fields can't be virtual");
 			f.setVirtual(false);
@@ -83,11 +83,12 @@ public final class ProcessVirtFld implements Constants {
 			if (f.isStatic()) {
 				self = null;
 				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
-				set_var.params = new Var[]{value};
+				set_var.params.add(value);
 			} else {
 				self = new Var(f.pos,set_var,nameThis,s.type,0);
 				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
-				set_var.params = new Var[]{self,value};
+				set_var.params.add(self);
+				set_var.params.add(value);
 			}
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,set_var,ASTNode.emptyArray);
@@ -99,11 +100,31 @@ public final class ProcessVirtFld implements Constants {
 					)
 				);
 				body.stats.append(ass_st);
+				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					Statement p_st = new IfElseStat(0,
+							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+								new VarAccessExpr(0, value),
+								new ConstExpr(0, null)
+							),
+							new ExprStat(0,null,
+								new AssignExpr(0, AssignOperator.Assign,
+									new AccessExpr(0,
+										new VarAccessExpr(0, value),
+										astT.clazz.resolveField(KString.from("parent"))
+									),
+									new ThisExpr()
+								)
+							),
+							null
+						);
+					body.stats.append(p_st);
+				}
 				body.stats.append(new ReturnStat(f.pos,body,null));
 				set_var.body = body;
 			}
 			s.addMethod(set_var);
-			f.setter = set_var;
+			f.set = set_var;
 		}
 		else if( set_found && !f.acc.writeable() ) {
 			Kiev.reportError(f.pos,"Virtual set$ method for non-writeable field");
@@ -117,14 +138,14 @@ public final class ProcessVirtFld implements Constants {
 				f.getJavaFlags()
 			);
 			Var self = new Var(f.pos,get_var,nameThis,s.type,0);
-			get_var.params = new Var[]{self};
+			get_var.params.add(self);
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
 			}
 			s.addMethod(get_var);
-			f.getter = get_var;
+			f.get = get_var;
 		}
 		else if( get_found && !f.acc.readable() ) {
 			Kiev.reportError(f.pos,"Virtual get$ method for non-readable field");
@@ -140,13 +161,13 @@ public final class ProcessVirtFld implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent != m.parent)
 				return;
-			if (f.setter != null && f.setter != m)
+			if (f.set != null && f.set != m)
 				return;
 		} else {
 			s.addField(f=new Field(s,name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
-		f.setter = m;
+		f.set = m;
 		if( m.isPublic() ) {
 			f.acc.w_public = true;
 			f.acc.w_protected = true;
@@ -177,13 +198,13 @@ public final class ProcessVirtFld implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent != m.parent)
 				return;
-			if (f.getter != null && f.getter != m)
+			if (f.get != null && f.get != m)
 				return;
 		} else {
 			s.addField(f=new Field(s,name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
-		f.getter = m;
+		f.get = m;
 		if( m.isPublic() ) {
 			f.acc.r_public = true;
 			f.acc.r_protected = true;
@@ -259,6 +280,17 @@ public final class ProcessVirtFld implements Constants {
 		return;
 	}
 
+	public void rewrite(FileUnit:Object node, String id) {
+		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
+		NodeInfoPass.init();
+		ScopeNodeInfoVector state = NodeInfoPass.pushState();
+		state.guarded = true;
+		PassInfo.push(node);
+		try {
+			rewriteNode(node, id);
+		} finally { NodeInfoPass.close(); PassInfo.pop(node); }
+	}
+	
 	public void rewrite(AccessExpr:Object fa, String id) {
 		//System.out.println("ProcessVirtFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		PassInfo.push(fa);
@@ -277,7 +309,7 @@ public final class ProcessVirtFld implements Constants {
 				return;
 			}
 			// We rewrite by get$ method. set$ method is rewritten by AssignExpr
-			if (f.getter == null) {
+			if (f.get == null) {
 				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				rewriteNode(fa, id);
@@ -288,7 +320,7 @@ public final class ProcessVirtFld implements Constants {
 				rewriteNode(fa, id);
 				return;
 			}
-			Expr ce = new CallAccessExpr(fa.pos, fa.parent, fa.obj, f.getter, Expr.emptyArray);
+			Expr ce = new CallAccessExpr(fa.pos, fa.parent, fa.obj, f.get, Expr.emptyArray);
 			//ce = ce.resolveExpr(fa.getType());
 			fa.parent.replaceVal(id, fa, ce);
 			rewriteNode(ce, id);
@@ -315,13 +347,13 @@ public final class ProcessVirtFld implements Constants {
 					return;
 				}
 				// Rewrite by set$ method
-				if (f.setter == null) {
+				if (f.set == null) {
 					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
 					fa.setAsField(true);
 					rewriteNode(ae, id);
 					return;
 				}
-				if (f.getter == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
+				if (f.get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
 					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 					fa.setAsField(true);
 					rewriteNode(ae, id);
@@ -341,7 +373,7 @@ public final class ProcessVirtFld implements Constants {
 				else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 				Expr expr;
 				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-					expr = new CallAccessExpr(ae.pos, ae.parent, fa.obj, f.setter, new Expr[]{ae.value});
+					expr = new CallAccessExpr(ae.pos, ae.parent, fa.obj, f.set, new Expr[]{ae.value});
 					expr = expr.resolveExpr(Type.tpVoid);
 				}
 				else {
@@ -360,19 +392,19 @@ public final class ProcessVirtFld implements Constants {
 					}
 					Expr g;
 					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
-						g = new CallAccessExpr(0, null, mkAccess(acc), f.getter, Expr.emptyArray);
+						g = new CallAccessExpr(0, null, mkAccess(acc), f.get, Expr.emptyArray);
 						g = new BinaryExpr(ae.pos, op, g, ae.value);
 					} else {
 						g = ae.value;
 					}
-					g = new CallAccessExpr(ae.pos, ae.parent, mkAccess(acc), f.setter, new Expr[]{g});
+					g = new CallAccessExpr(ae.pos, ae.parent, mkAccess(acc), f.set, new Expr[]{g});
 					be.addStatement(new ExprStat(0, null, g));
 					if (!ae.isGenVoidExpr()) {
-						g = new CallAccessExpr(0, null, mkAccess(acc), f.getter, Expr.emptyArray);
+						g = new CallAccessExpr(0, null, mkAccess(acc), f.get, Expr.emptyArray);
 						be.setExpr(g);
 					}
 					expr = be;
-					//expr = expr.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
+					expr = expr.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 				}
 				ae.parent.replaceVal(id, ae, expr);
 				expr.parent = ae.parent;
@@ -406,13 +438,13 @@ public final class ProcessVirtFld implements Constants {
 					return;
 				}
 				// Rewrite by set$ method
-				if (f.setter == null) {
+				if (f.set == null) {
 					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
 					fa.setAsField(true);
 					rewriteNode(ie, id);
 					return;
 				}
-				if (f.getter == null) {
+				if (f.get == null) {
 					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 					fa.setAsField(true);
 					rewriteNode(ie, id);
@@ -454,17 +486,17 @@ public final class ProcessVirtFld implements Constants {
 					else
 						ce = new ConstExpr(0,new Integer(-1));
 					Expr g;
-					g = new CallAccessExpr(0, null, mkAccess(acc), f.getter, Expr.emptyArray);
+					g = new CallAccessExpr(0, null, mkAccess(acc), f.get, Expr.emptyArray);
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
-					g = new CallAccessExpr(ie.pos, ie.parent, mkAccess(acc), f.setter, new Expr[]{g});
+					g = new CallAccessExpr(ie.pos, ie.parent, mkAccess(acc), f.set, new Expr[]{g});
 					be.addStatement(new ExprStat(0, null, g));
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						be.setExpr(mkAccess(res));
 					else
-						be.setExpr(new CallAccessExpr(0, null, mkAccess(acc), f.getter, Expr.emptyArray));
+						be.setExpr(new CallAccessExpr(0, null, mkAccess(acc), f.get, Expr.emptyArray));
 					expr = be;
-					//expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
+					expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}
 				ie.parent.replaceVal(id, ie, expr);
 				expr.parent = ie.parent;

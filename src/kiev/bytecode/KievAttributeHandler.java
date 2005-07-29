@@ -30,10 +30,11 @@ import static kiev.stdlib.Debug.*;
  */
 
 public class KievAttributeHandler implements BytecodeFileConstants,AttributeHandler {
+	@virtual
 	public virtual KString		aname = KString.from("kiev.Kiev");
 
-	public KString get$aname() { return aname; }
-	public void set$aname(KString n) { aname = n; }
+	@getter public KString get$aname() { return aname; }
+	@setter public void set$aname(KString n) { aname = n; }
 
 	public int		getPriority() { return PreprocessStage-2; }
 

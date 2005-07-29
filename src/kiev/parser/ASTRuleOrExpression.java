@@ -38,11 +38,9 @@ public class ASTRuleOrExpression extends ASTRuleNode {
 	@att public final NArr<ASTRuleNode>	exprs;
 
 	public ASTRuleOrExpression() {
-		exprs = new NArr<ASTRuleNode>(this, true);
 	}
 
 	public ASTRuleOrExpression(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

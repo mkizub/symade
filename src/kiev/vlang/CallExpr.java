@@ -43,27 +43,23 @@ public class CallExpr extends Expr {
 	public boolean					super_flag;
 
 	public CallExpr() {
-		this.args = new NArr<Expr>(this, true);
 	}
 
 	public CallExpr(int pos, Method func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, Method func, Expr[] args, boolean sf) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
@@ -71,7 +67,6 @@ public class CallExpr extends Expr {
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args, boolean sf) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
@@ -237,24 +232,19 @@ public class CallAccessExpr extends Expr {
 	public boolean					super_flag;
 
 	public CallAccessExpr() {
-		this.args = new NArr<Expr>(this, true);
 	}
 
 	public CallAccessExpr(int pos, Expr obj, Method func, Expr[] args) {
 		super(pos);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallAccessExpr(int pos, ASTNode par, Expr obj, Method func, Expr[] args) {
 		super(pos,par);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
@@ -548,38 +538,31 @@ public class ClosureCallExpr extends Expr {
 	@ref public Type	func_tp;
 
 	public ClosureCallExpr() {
-		this.args = new NArr<Expr>(this, true);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode par, ASTNode func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, Expr expr, ASTNode func, Expr[] args) {
 		super(pos);
 		this.expr = expr;
-		this.expr.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode par, Expr expr, ASTNode func, Expr[] args) {
 		super(pos,par);
 		this.expr = expr;
-		this.expr.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
 		foreach(Expr e; args) this.args.append(e);
 	}
 

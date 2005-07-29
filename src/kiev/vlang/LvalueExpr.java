@@ -125,6 +125,7 @@ public class AccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			obj = (Expr)obj.resolve(null);
+			obj.parent = this;
 
 			// Set violation of the field
 			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
@@ -154,31 +155,16 @@ public class AccessExpr extends LvalueExpr {
 		try {
 			if( var.isVirtual() && !isAsField() )
 				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			if( var.isPackedField() )
+				Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
 			Field f = (Field)var;
 			var.acc.verifyReadAccess(var);
 			obj.generate(null);
 			generateCheckCastIfNeeded();
-			if( var.isPackedField() )
-				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-			else
-				Code.addInstr(op_getfield,f,obj.getType());
+			Code.addInstr(op_getfield,f,obj.getType());
 			if( Kiev.verify && f.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = AccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-				}
-			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -188,32 +174,17 @@ public class AccessExpr extends LvalueExpr {
 		try {
 			if( var.isVirtual() && !isAsField() )
 				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			if( var.isPackedField() )
+				Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
 			Field f = (Field)var;
 			var.acc.verifyReadAccess(var);
 			obj.generate(null);
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_dup);
-			if( var.isPackedField() )
-				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-			else
-				Code.addInstr(op_getfield,f,obj.getType());
+			Code.addInstr(op_getfield,f,obj.getType());
 			if( Kiev.verify && f.type.clazz.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = AccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -234,36 +205,10 @@ public class AccessExpr extends LvalueExpr {
 		try {
 			if( var.isVirtual() && !isAsField() )
 				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			if( var.isPackedField() )
+				Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
 			var.acc.verifyWriteAccess(var);
-			if( var.isPackedField() ) {
-				// Correct value
-				int mask = AccessExpr.masks[var.pack.size];
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_shl);
-				}
-
-				// Load old value of packer field
-				Code.addInstr(op_swap);
-				Code.addInstr(op_dup_x);
-				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				// Clear var's position
-				mask = AccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				mask = ~mask;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-
-				// Fill with var's value
-				Code.addInstr(op_or);
-
-				// Store packer field
-				Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-			} else {
-				Code.addInstr(op_putfield,var,obj.getType());
-			}
+			Code.addInstr(op_putfield,var,obj.getType());
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -273,37 +218,11 @@ public class AccessExpr extends LvalueExpr {
 		try {
 			if( var.isVirtual() && !isAsField() )
 				Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			if( var.isPackedField() )
+				Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
 			var.acc.verifyWriteAccess(var);
 			Code.addInstr(op_dup_x);
-			if( var.isPackedField() ) {
-				// Correct value
-				int mask = AccessExpr.masks[var.pack.size];
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_shl);
-				}
-
-				// Load old value of packer field
-				Code.addInstr(op_swap);
-				Code.addInstr(op_dup_x);
-				Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				// Clear var's position
-				mask = AccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				mask = ~mask;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-
-				// Fill with var's value
-				Code.addInstr(op_or);
-
-				// Store packer field
-				Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-			} else {
-				Code.addInstr(op_putfield,var,obj.getType());
-			}
+			Code.addInstr(op_putfield,var,obj.getType());
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -1068,254 +987,6 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 		return dmp.space();
 	}
 }
-/*
-@node
-public class FieldAccessExpr extends LvalueExpr {
-
-	@ref public Field	var;
-
-	public FieldAccessExpr() {
-	}
-
-	public FieldAccessExpr(int pos, Field var) {
-		super(pos);
-		this.var = var;
-	}
-
-	public FieldAccessExpr(int pos, Field var, boolean direct_access) {
-		super(pos);
-		this.var = var;
-		if (direct_access) setAsField(true);
-	}
-
-	public String toString() { return var.toString(); }
-
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		var.acc.verifyReadAccess(var);
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.getConstValue();
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public Type getType() {
-		try {
-			Type t = var.getType();
-			return Type.getRealType((Type)PassInfo.method.params[0].type,t);
-		} catch(Exception e) {
-			Kiev.reportError(pos,e);
-			return Type.tpVoid;
-		}
-	}
-
-	public Type[] getAccessTypes() {
-		Type[] types;
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
-			types = new Type[]{var.type};
-		else
-			types = sni.types;
-		for(int i=0; i < types.length; i++) types[i] = Type.getRealType((Type)PassInfo.method.params[0].type,types[i]);
-		return types;
-	}
-
-	public void cleanup() {
-		parent=null;
-		var = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			if( PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() ) {
-				throw new RuntimeException("Access to non-static field "+var+" in static method "+PassInfo.method);
-			}
-
-			// Set violation of the field
-			if( PassInfo.method != null ) //&& PassInfo.method.isInvariantMethod() 
-				PassInfo.method.addViolatedField(var);
-
-		} finally { PassInfo.pop(this); }
-		setResolved(true);
-		return this;
-	}
-
-	public static final int[] masks =
-		{	0,
-			0x1       ,0x3       ,0x7       ,0xF       ,
-			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
-			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
-			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
-			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
-			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
-			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
-			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
-		};
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			if( var.isPackedField() )
-				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-			else
-				Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			if( Kiev.verify && var.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			Code.addInstr(op_dup);
-			if( var.isPackedField() )
-				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-			else
-				Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			if( Kiev.verify && var.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			if( var.isPackedField() ) {
-				// Correct value
-				int mask = masks[var.pack.size];
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_shl);
-				}
-
-				// Load old value of packer field
-				Code.addInstr(op_swap);
-				Code.addInstr(op_dup_x);
-				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				// Clear var's position
-				mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				mask = ~mask;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-
-				// Fill with var's value
-				Code.addInstr(op_or);
-
-				// Store packer field
-				Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putfield,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			Code.addInstr(op_dup_x);
-			if( var.isPackedField() ) {
-				// Correct value
-				int mask = masks[var.pack.size];
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_shl);
-				}
-
-				// Load old value of packer field
-				Code.addInstr(op_swap);
-				Code.addInstr(op_dup_x);
-				Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				// Clear var's position
-				mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				mask = ~mask;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-
-				// Fill with var's value
-				Code.addInstr(op_or);
-
-				// Store packer field
-				Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putfield,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
-
-	public Dumper toJava(Dumper dmp) {
-		if( isAsField() ) {
-			return dmp.space().append("this.").append(var.name).space();
-		} else {
-			return dmp.space().append("this.").append(var).space();
-		}
-	}
-}
-*/
 
 @node
 public class StaticFieldAccessExpr extends LvalueExpr {

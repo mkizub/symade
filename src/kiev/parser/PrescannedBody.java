@@ -42,8 +42,7 @@ public class PrescannedBody {
 	public SetBody		sb;
 	public int			lineno;	
 	public int			columnno;
-//	public int			offset;
-	public /*virtual*/ int			mode;
+	public int			mode;
 	
 	public PrescannedBody(int lineno, int columnno) {
 		this.lineno = lineno;	
@@ -54,9 +53,5 @@ public class PrescannedBody {
 //		System.out.println("PrescannedBody: set body to "+n.getClass()+": "+n);
 		sb = n;
 	}
-	
-//	public void set$mode(int i) {
-//		Debug.trace(true,"Set mode "+i);
-//	}
 }
 

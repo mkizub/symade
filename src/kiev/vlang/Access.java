@@ -33,9 +33,8 @@ import static kiev.stdlib.Debug.*;
  */
 
 public interface Accessable {
+	@virtual
 	public virtual abstract Access	acc;
-	public abstract Access get$acc();
-	public abstract void   set$acc(Access a);
 }
 
 public class Access implements Constants {

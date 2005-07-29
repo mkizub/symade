@@ -37,6 +37,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
+	@virtual
 	public virtual Access	acc;
 
 	/** Name of the field */
@@ -61,8 +62,8 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	public Method[]			invs = Method.emptyArray;
 
 	/** Getter/setter methods for this field */
-	@ref public Method		getter = null;
-	@ref public Method		setter = null;
+	@ref public Method		get = null;
+	@ref public Method		set = null;
 
 	public static class PackInfo {
 		public int		size;
@@ -116,11 +117,11 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 			+" with type "+type);
 	}
 
-	public Access get$acc() {
+	@getter public Access get$acc() {
 		return acc;
 	}
 
-	public void set$acc(Access a) {
+	@setter public void set$acc(Access a) {
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}

@@ -43,11 +43,9 @@ public class ASTCallAccessExpression extends Expr {
     @att public final NArr<Expr>		args;
 
 	public ASTCallAccessExpression() {
-		args = new NArr<Expr>(this);
 	}
 
 	public ASTCallAccessExpression(int id) {
-		args = new NArr<Expr>(this);
 	}
 	
 	public void jjtAddChild(ASTNode n, int i) {
@@ -55,10 +53,8 @@ public class ASTCallAccessExpression extends Expr {
         	obj = (Expr)n;
 		} else {
         	func = ((ASTCallExpression)n).func;
-			func.parent = this;
 			foreach (Expr e; ((ASTCallExpression)n).args) {
 				this.args.append(e);
-				e.parent = this;
 			}
             pos = n.getPos();
         }

@@ -24,6 +24,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.stdlib.meta.*;
 import kiev.vlang.*;
 
 /**
@@ -37,18 +38,17 @@ import kiev.vlang.*;
 public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreScanneable {
 	@att public final NArr<ASTNode>		casefields;
 	@att public Statement				body;
+	@virtual
 	public virtual PrescannedBody		pbody;
 
 	public ASTCaseTypeDeclaration() {
-		casefields = new NArr<ASTNode>(this);
 	}
 
 	public ASTCaseTypeDeclaration(int id) {
-		this();
 	}
 
-	public PrescannedBody get$pbody() { return pbody; }
-	public void set$pbody(PrescannedBody p) { pbody = p; }
+	@getter public PrescannedBody get$pbody() { return pbody; }
+	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
   	public void set(Token t) {
 	}
@@ -100,10 +100,7 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 		MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs,Type.tpVoid);
 		Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 		init.setPos(getPos());
-		init.parent = me;
-		for(int i=0; i < vars.length; i++) vars[i].parent = init;
-//		init.addAttr( new MethodParamsAttr(me,vars) );
-		init.params = vars;
+		init.params.addAll(vars);
 		me.addMethod(init);
 		if( body != null )
 			init.body = body;

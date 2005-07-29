@@ -38,12 +38,9 @@ public class ASTBlock extends Statement {
 	@att public final NArr<ASTNode> stats;
 
 	public ASTBlock() {
-		super(0,null);
-		stats = new NArr<ASTNode>(this);
 	}
 
 	public ASTBlock(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i)

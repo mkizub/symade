@@ -80,8 +80,6 @@ public class StatExpr extends Expr implements SetBody {
 	public StatExpr(int pos, Statement stat) {
 		super(pos);
 		this.stat = stat;
-		if( stat != null )
-			this.stat.parent = this;
 	}
 
 	public Type getType() { return Type.tpVoid; }
@@ -96,9 +94,7 @@ public class StatExpr extends Expr implements SetBody {
 
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
-		if( stat != null )
-			this.stat.parent = this;
-		else
+		if( stat == null )
 			throw new CompilerException(pos,"Missed expression");
 		stat = (Statement)stat.resolve(reqType);
 		setResolved(true);
@@ -118,7 +114,6 @@ public class StatExpr extends Expr implements SetBody {
 
 	public boolean setBody(Statement body) {
 		this.stat = body;
-		this.stat.parent = parent;
 		return true;
 	}
 
@@ -335,7 +330,6 @@ public class ArrayLengthAccessExpr extends Expr {
 	public ArrayLengthAccessExpr(int pos, Expr array) {
 		super(pos);
 		this.array = array;
-		this.array.parent = this;
 	}
 
 	public String toString() {
@@ -397,9 +391,7 @@ public class AssignExpr extends LvalueExpr {
 		super(pos);
 		this.op = op;
 		this.lval = lval;
-		this.lval.parent = this;
 		this.value = value;
-		this.value.parent = this;
 	}
 
 	public String toString() {
@@ -434,11 +426,9 @@ public class AssignExpr extends LvalueExpr {
 			Expr e = lval.tryResolve(reqType);
 			if( e == null ) return null;
 			lval = e;
-			lval.parent = this;
 			e = value.tryResolve(getType());
 			if( e == null ) return null;
 			value = e;
-			value.parent = this;
 		}
 		Type et1 = lval.getType();
 		Type et2 = value.getType();
@@ -540,29 +530,24 @@ public class AssignExpr extends LvalueExpr {
 				}
 			}
 			lval = (Expr)lv;
-			lval.parent = this;
 			Type t1 = lval.getType();
 			if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
 				op = AssignOperator.Assign;
 				value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
-				value.parent = this;
 			}
 			value = value.resolveExpr(t1);
 			if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum()) {
 				value = new ConstExpr(value.pos,value.getConstValue()).resolveExpr(t1);
-				value.parent = this;
 			}
 			Type t2 = value.getType();
 			if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
 					value = (Expr)new CastExpr(pos,Type.tpInt,value).resolve(Type.tpInt);
-					value.parent = this;
 				}
 			}
 			else if( !t1.equals(t2) ) {
 				if( t2.isCastableTo(t1) ) {
 					value = (Expr)new CastExpr(pos,t1,value).resolve(t1);
-					value.parent = this;
 				} else {
 					throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
 				}
@@ -791,9 +776,7 @@ public class BinaryExpr extends Expr {
 		super(pos);
 		this.op = op;
 		this.expr1 = expr1;
-		this.expr1.parent = this;
 		this.expr2 = expr2;
-		this.expr2.parent = this;
 	}
 
 	public String toString() {
@@ -957,9 +940,7 @@ public class BinaryExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			expr1 = (Expr)expr1.resolve(null);
-			expr1.parent = this;
 			expr2 = (Expr)expr2.resolve(null);
-			expr2.parent = this;
 
 			Type rt = getType();
 			Type t1 = expr1.getType();
@@ -984,16 +965,13 @@ public class BinaryExpr extends Expr {
 			if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
 					expr2 = (Expr)new CastExpr(pos,Type.tpInt,expr2).resolve(Type.tpInt);
-					expr2.parent = this;
 				}
 			} else {
 				if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
 					expr1 = (Expr)new CastExpr(pos,rt,expr1).resolve(null);
-					expr1.parent = this;
 				}
 				if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
 					expr2 = (Expr)new CastExpr(pos,rt,expr2).resolve(null);
-					expr2.parent = this;
 				}
 			}
 
@@ -1164,12 +1142,10 @@ public class StringConcatExpr extends Expr {
 	}
 
 	public StringConcatExpr() {
-		args = new NArr<Expr>(this, true);
 	}
 
 	public StringConcatExpr(int pos) {
 		super(pos);
-		args = new NArr<Expr>(this, true);
 	}
 
 	public String toString() {
@@ -1205,7 +1181,6 @@ public class StringConcatExpr extends Expr {
 	}
 
 	public void appendArg(Expr expr) {
-		expr.parent = this;
 		args.append(expr);
 	}
 
@@ -1286,15 +1261,14 @@ public class StringConcatExpr extends Expr {
 
 @node
 public class CommaExpr extends Expr {
-	public Expr[]		exprs;
+	@att public final NArr<Expr>	exprs;
 
 	public CommaExpr() {
 	}
 
 	public CommaExpr(int pos, Expr[] exprs) {
 		super(pos);
-		this.exprs = exprs;
-		foreach(Expr e; exprs; e!=null) e.parent = this;
+		this.exprs.addAll(exprs);
 	}
 
 	public String toString() {
@@ -1315,8 +1289,7 @@ public class CommaExpr extends Expr {
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; exprs; exprs!=null) n.cleanup();
-		exprs = null;
+		exprs.cleanup();
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
@@ -1330,7 +1303,6 @@ public class CommaExpr extends Expr {
 				} else {
 					exprs[i] = exprs[i].resolveExpr(reqType);
 				}
-				exprs[i].parent = this;
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
@@ -1368,27 +1340,19 @@ public class BlockExpr extends Expr implements Scope {
 	@att public       Expr				res;
 
 	public BlockExpr() {
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
 	}
 
 	public BlockExpr(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
-		this.vars = new NArr<Var>(this);
-		this.members = new NArr<ASTNode>(this);
 	}
 
 	public Statement addStatement(Statement st) {
 		stats.append(st);
-		st.parent = this;
 		return st;
 	}
 
 	public void setExpr(Expr res) {
 		this.res = res;
-		if (res != null) res.parent = this;
 	}
 
 	public Var addVar(Var var) {
@@ -1443,7 +1407,6 @@ public class BlockExpr extends Expr implements Scope {
 			resolveBlockStats();
 			if (res != null) {
 				res = res.resolveExpr(reqType);
-				res.parent = this;
 			}
 		} finally {
 			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
@@ -1457,7 +1420,6 @@ public class BlockExpr extends Expr implements Scope {
 	public void resolveBlockStats() {
 		for(int i=0; i < stats.length; i++) {
 			try {
-				stats[i].parent = this;
 				if( stats[i] instanceof Statement ) {
 					stats[i] = (Statement)((Statement)stats[i]).resolve(Type.tpVoid);
 					if( stats[i].isAbrupted() ) {
@@ -1490,7 +1452,6 @@ public class BlockExpr extends Expr implements Scope {
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else
 							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags));
-						vstat.parent = this;
 						vstat = (DeclStat)vstat.resolve(Type.tpVoid);
 						vstats = (ASTNode[])Arrays.append(vstats,vstat);
 					}
@@ -1527,7 +1488,7 @@ public class BlockExpr extends Expr implements Scope {
 
 
 	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
+		trace(Kiev.debugStatGen,"\tgenerating BlockExpr ("+vars.size()+" vars)");
 		PassInfo.push(this);
 		try {
 			for(int i=0; i < stats.length; i++) {
@@ -1595,7 +1556,6 @@ public class UnaryExpr extends Expr {
 		super(pos);
 		this.op = op;
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public String toString() {
@@ -1786,7 +1746,6 @@ public class IncrementExpr extends LvalueExpr {
 		super(pos);
 		this.op = op;
 		this.lval = lval;
-		this.lval.parent = this;
 	}
 
 	public String toString() {
@@ -2001,8 +1960,8 @@ public class IncrementExpr extends LvalueExpr {
 
 @node
 public class MultiExpr extends Expr {
-	@ref public MultiOperator	op;
-	public List<ASTNode>	exprs;
+	@ref public MultiOperator			op;
+	@att public final NArr<ASTNode>		exprs;
 
 	public MultiExpr() {
 	}
@@ -2010,25 +1969,23 @@ public class MultiExpr extends Expr {
 	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
 		super(pos);
 		this.op = op;
-		this.exprs = exprs;
-		foreach(Expr e; exprs; e!=null) e.parent = this;
+		this.exprs.addAll(exprs.toArray());
 	}
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; exprs; n!=null) n.cleanup();
-		exprs = null;
+		exprs.cleanup();
 	}
 
 	public Expr tryResolve(Type reqType) {
 		if( op == MultiOperator.Conditional ) {
-			Expr cond = ((Expr)exprs.head()).tryResolve(Type.tpBoolean);
+			Expr cond = ((Expr)exprs[0]).tryResolve(Type.tpBoolean);
 			if( cond == null )
 				return null;
-			Expr expr1 = ((Expr)exprs.at(1)).tryResolve(reqType);
+			Expr expr1 = ((Expr)exprs[1]).tryResolve(reqType);
 			if( expr1 == null )
 				return null;
-			Expr expr2 = ((Expr)exprs.at(2)).tryResolve(reqType);
+			Expr expr2 = ((Expr)exprs[2]).tryResolve(reqType);
 			if( expr2 == null )
 				return null;
 			return (Expr)new ConditionalExpr(pos,cond,expr1,expr2).resolve(reqType);
@@ -2256,6 +2213,8 @@ public class CastExpr extends Expr {
 		if( extp.isCastableTo(type) ) {
 			return (Expr)this.resolve(type);
 		}
+		if( type == Type.tpInt && extp == Type.tpBoolean && reinterp )	
+			return (Expr)this.resolve(type);
 		throw new CompilerException(pos,"Expression "+ex+" of type "+extp+" is not castable to "+type);
 	}
 
@@ -2348,14 +2307,14 @@ public class CastExpr extends Expr {
 					Kiev.reportWarning(pos,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 				else if (!et.clazz.isEnum())
 					throw new CompilerException(pos,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-			if( /*!explicit &&*/ !et.isCastableTo((Type)type) ) {
+			if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
 				throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
 			}
 			if( Kiev.verify && expr.getType() != et ) {
 				setNodeCastType();
 				return this;
 			}
-			if( /*!explicit &&*/ et.isReference() && et.isInstanceOf((Type)type) ) return expr;
+			if( et.isReference() && et.isInstanceOf((Type)type) ) return expr;
 			if( et.isReference() && type.isReference() && et.clazz.package_clazz.isClazz()
 			 && !et.clazz.isArgument()
 			 && !et.clazz.isStatic() && et.clazz.package_clazz.type.isAutoCastableTo(type)
@@ -2384,6 +2343,16 @@ public class CastExpr extends Expr {
 					else if( type == Type.tpInt ) return new ConstExpr(pos,Kiev.newInteger((int)num)).resolve(null);
 					else if( type == Type.tpShort ) return new ConstExpr(pos,Kiev.newShort((short)num)).resolve(null);
 					else if( type == Type.tpByte ) return new ConstExpr(pos,Kiev.newByte((byte)(int)num)).resolve(null);
+					else if( type == Type.tpChar ) return new ConstExpr(pos,Kiev.newCharacter(num)).resolve(null);
+				}
+				else if( val instanceof Boolean ) {
+					int num = ((Boolean)val).booleanValue() ? 1 : 0;
+					if( type == Type.tpDouble ) return new ConstExpr(pos,Kiev.newDouble((double)num)).resolve(null);
+					else if( type == Type.tpFloat ) return new ConstExpr(pos,Kiev.newFloat((float)num)).resolve(null);
+					else if( type == Type.tpLong ) return new ConstExpr(pos,Kiev.newLong((long)num)).resolve(null);
+					else if( type == Type.tpInt ) return new ConstExpr(pos,Kiev.newInteger(num)).resolve(null);
+					else if( type == Type.tpShort ) return new ConstExpr(pos,Kiev.newShort((short)num)).resolve(null);
+					else if( type == Type.tpByte ) return new ConstExpr(pos,Kiev.newByte((byte)num)).resolve(null);
 					else if( type == Type.tpChar ) return new ConstExpr(pos,Kiev.newCharacter(num)).resolve(null);
 				}
 			}

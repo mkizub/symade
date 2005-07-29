@@ -36,12 +36,10 @@ public final class MetaSet extends ASTNode {
 	@att private final NArr<Meta> metas;
 	
 	public MetaSet() {
-		metas = new NArr<Meta>(this, true);
 	}
 	
 	public MetaSet(ASTNode owner) {
 		super(0,owner);
-		metas = new NArr<Meta>(this, true);
 	}
 	
 	public int size() alias length {
@@ -142,13 +140,10 @@ public class Meta extends ASTNode {
 	@att public final NArr<MetaValue> values;
 	
 	public Meta() {
-		values = new NArr<MetaValue>(this, true);
 	}
 
 	public Meta(MetaType type) {
-		super(0);
 		this.type = type;
-		values = new NArr<MetaValue>(this, true);
 	}
 
 	public int size() alias length {
@@ -268,12 +263,12 @@ public abstract class MetaValue extends ASTNode {
 		ASTNode v = ((Expr)value).resolve(reqType);
 		if (!(v instanceof Expr)) {
 			if (reqType == Type.tpClass)
-				return v;
+				return new WrapedExpr(value.pos, v);
 			else
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		}
 		else if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField())
-			return ((StaticFieldAccessExpr)v).var;
+			return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)v).var);
 		else if (!((Expr)v).isConstantExpr())
 			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = v.getType();
@@ -319,12 +314,10 @@ public class MetaValueArray extends MetaValue {
 	@att public final NArr<ASTNode>      values;
 	
 	public MetaValueArray() {
-		values = new NArr<ASTNode>(this, true); 
 	}
 
 	public MetaValueArray(MetaValueType type) {
 		super(type);
-		values = new NArr<ASTNode>(this, true); 
 	}
 
 	public void resolve(Type reqType) {

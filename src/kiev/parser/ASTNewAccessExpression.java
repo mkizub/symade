@@ -40,11 +40,9 @@ public class ASTNewAccessExpression extends Expr {
 	@att public final NArr<Expr>	args;
 
 	public ASTNewAccessExpression() {
-		args = new NArr<Expr>(this);
 	}
 
 	public ASTNewAccessExpression(int id) {
-		this();
 	}
 	
 	public void jjtAddChild(ASTNode n, int i) {

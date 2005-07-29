@@ -40,6 +40,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
+	@virtual
 	public virtual Access	acc;
 
 	/** Name of the method */
@@ -54,11 +55,8 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	/** The type of the dispatcher method (if method is a multimethod) */
 	@ref public MethodType		dtype;
 
-	/** Signatures of thrown types (structures) */
-//	public Type[]			throwns = Type.emptyArray;
-
 	/** Parameters of this method */
-	public Var[]			params = Var.emptyArray;
+	@att public final NArr<Var>		params;
 
 	/** Return value of this method */
 	@att public Var			retvar;
@@ -72,12 +70,12 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public Attr[]			attrs = Attr.emptyArray;
 
 	/** Require & ensure clauses */
-	public WorkByContractCondition[]	conditions = WorkByContractCondition.emptyArray;
+	@att public final NArr<WorkByContractCondition> conditions;
 
 	/** Violated by method fields for normal methods, and checked fields
 	 *  for invariant method
 	 */
-	public Field[]			violated_fields = Field.emptyArray;
+	@ref public final NArr<Field>		violated_fields;
 	
 	/** Default meta-value for annotation methods */
 	@att public MetaValue		annotation_default;
@@ -111,11 +109,11 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		this.meta = new MetaSet(this);
 	}
 
-	public Access get$acc() {
+	@getter public Access get$acc() {
 		return acc;
 	}
 
-	public void set$acc(Access a) {
+	@setter public void set$acc(Access a) {
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}
@@ -128,9 +126,9 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		if( isInvariantMethod() ) {
 			f.invs = (Method[])Arrays.appendUniq(f.invs,this);
 			if( ((Struct)parent).instanceOf((Struct)f.parent) )
-				violated_fields = (Field[])Arrays.appendUniq(violated_fields,f);
+				violated_fields.addUniq(f);
 		} else {
-			violated_fields = (Field[])Arrays.appendUniq(violated_fields,f);
+			violated_fields.addUniq(f);
 		}
 	}
 
@@ -355,7 +353,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( PassInfo.clazz == parent );
+		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
 		PassInfo.push(this);
 		try {
 			if (!inlined_by_dispatcher)
@@ -399,7 +397,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				cond.parent = this;
 				cond.resolve(Type.tpVoid);
 			}
-			if (parent.isAnnotation()) {
+			if (PassInfo.clazz.isAnnotation()) {
 				if( body != null ) {
 					if (type.ret.isArray()) {
 						Type t = type.ret.args[0];
@@ -481,12 +479,12 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		PassInfo.push(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; ((Struct)parent).instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; ((Struct)parent).instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; PassInfo.clazz.instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; PassInfo.clazz.instanceOf((Struct)inv.parent) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions = (WorkByContractCondition[])Arrays.appendUniq(conditions,inv.body);
+						conditions.addUniq((WorkByContractCondition)inv.body);
 				}
 			}
 		}
@@ -500,7 +498,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			PassInfo.push(this);
 			try {
 				if( !isBad() ) {
-					if( params.length > 0 ) Code.addVars(params);
+					if( params.length > 0 ) Code.addVars(params.toArray());
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck();
 					if( Kiev.debugOutputC ) {
@@ -544,7 +542,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							Code.addInstr(Instr.op_return);
 						}
 					}
-					if( params.length > 0 ) Code.removeVars(params);
+					if( params.length > 0 ) Code.removeVars(params.toArray());
 				} else {
 					Code.addInstr(Instr.op_new,Type.tpError);
 					Code.addInstr(Instr.op_dup);
@@ -683,11 +681,11 @@ public class WorkByContractCondition extends Statement implements SetBody {
 			PassInfo.push(this);
 			Method m = (Method)PassInfo.method;
 			try {
-				if( m.params.length > 0 ) Code.addVars(m.params);
+				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
 				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
 				body.generate(Type.tpVoid);
 				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
-				if( m.params.length > 0 ) Code.removeVars(m.params);
+				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
 				Code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);

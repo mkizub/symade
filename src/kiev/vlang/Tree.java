@@ -41,7 +41,6 @@ public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
 	public Tree() {
-		members = new NArr<Struct>(this, true);
 	}
 
 	public Object copy() {
@@ -60,10 +59,6 @@ public final class NArr<N extends ASTNode> {
 		this.$parent = parent;
 		$is_att = isAtt;
 		this.$nodes = new N[0];
-	}
-	
-	public NArr(ASTNode parent) {
-		this(parent, false);
 	}
 	
 	public ASTNode getParent() {
@@ -117,6 +112,36 @@ public final class NArr<N extends ASTNode> {
 		$nodes[sz] = node;
 		if ($is_att) node.parent = $parent;
 		return node;
+	}
+
+	public void addAll(NArr<N> arr)
+		alias appendAll
+	{
+		foreach(N n; arr) add(n);
+	}
+
+	public void addAll(N[] arr)
+		alias appendAll
+	{
+		foreach(N n; arr) add(n);
+	}
+
+	public void addUniq(N node)
+		alias appendUniq
+	{
+		if (!contains(node)) add(node);
+	}
+
+	public void addUniq(NArr<N> arr)
+		alias appendUniq
+	{
+		foreach(N n; arr; !contains(n)) add(n);
+	}
+
+	public void addUniq(N[] arr)
+		alias appendUniq
+	{
+		foreach(N n; arr; !contains(n)) add(n);
 	}
 
 	public void replace(Object old, N node)

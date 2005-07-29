@@ -659,11 +659,13 @@ public class Compiler {
 				runGC();
 				try {
 					new ProcessFixParent().fixup(Kiev.files[i], null);
+					new ProcessVirtFld().rewrite(Kiev.files[i], null);
 				} catch (Exception rte) {
 					Kiev.reportError(0,rte);
 				}
 				try {
-					new ProcessVirtFld().rewrite(Kiev.files[i], null);
+					new ProcessFixParent().fixup(Kiev.files[i], null);
+					new ProcessPackedFld().rewrite(Kiev.files[i], null);
 				} catch (Exception rte) {
 					Kiev.reportError(0,rte);
 				}

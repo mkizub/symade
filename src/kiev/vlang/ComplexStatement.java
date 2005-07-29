@@ -250,14 +250,12 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public int mode = NORMAL_SWITCH;
 
 	public SwitchStat() {
-		this.cases = new NArr<ASTNode>(this, true);
 	}
 
 	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
 		super(pos, parent);
 		this.sel = sel;
 		this.sel.parent = this;
-		this.cases = new NArr<ASTNode>(this, true);
 		foreach (ASTNode c; cases)
 			this.cases.add(c);
 		defCase = null;
@@ -792,9 +790,9 @@ public class FinallyInfo extends CatchInfo {
 @node
 public class TryStat extends Statement/*defaults*/ {
 
-	@att public Statement	body;
-	public ASTNode[]	catchers = ASTNode.emptyArray;
-	@att public ASTNode		finally_catcher;
+	@att public Statement				body;
+	@att public final NArr<ASTNode>		catchers;
+	@att public ASTNode					finally_catcher;
 
 	public CodeLabel	end_label;
 
@@ -805,8 +803,7 @@ public class TryStat extends Statement/*defaults*/ {
 		super(pos, parent);
 		this.body = body;
 		this.body.parent = this;
-		this.catchers = catchers;
-		for(int i=0; i < catchers.length; i++) catchers[i].parent = this;
+		this.catchers.addAll(catchers);
 		if( finally_catcher != null ) {
 			this.finally_catcher = finally_catcher;
 			this.finally_catcher.parent = this;

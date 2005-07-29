@@ -422,6 +422,7 @@ public abstract class Operator extends ASTNode implements Constants {
     public			int			mode;
     public			boolean		is_standard;
     public			OpTypes[]	types;
+	@virtual
     public virtual abstract KString	smode;
 
 	public Object copy() {
@@ -453,8 +454,8 @@ public abstract class Operator extends ASTNode implements Constants {
 
 	public boolean isStandard() { return is_standard; }
 
-	public void set$smode(KString sm) { throw new RuntimeException(); }
-	public KString get$smode() { return orderAndArityNames[mode]; }
+	@setter public void set$smode(KString sm) { throw new RuntimeException(); }
+	@getter public KString get$smode() { return orderAndArityNames[mode]; }
 
 	public void addTypes(OpTypes.TypeRule rt, ...) {
 		iopt.trtypes = new TypeRule[va_args.length+1];

@@ -159,7 +159,6 @@ public class ASTAccessExpression extends Expr {
 
 				Expr expr;
 				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
-				expr.parent = parent;
 				acc = acc.tail();
 				foreach(ASTNode f; acc)
 					expr = new AccessExpr(pos,expr,(Field)f);
@@ -183,7 +182,6 @@ public class ASTAccessExpression extends Expr {
 
 				Expr expr;
 				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
-				expr.parent = parent;
 				acc = acc.tail();
 				foreach(ASTNode f; info.path)
 					expr = new AccessExpr(pos,expr,(Field)f);

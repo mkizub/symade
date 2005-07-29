@@ -41,11 +41,9 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	@att public final NArr<ASTEnumFieldDeclaration> enum_fields;
 	
 	public ASTEnumDeclaration() {
-		enum_fields = new NArr<ASTEnumFieldDeclaration>(this);
 	}
 
 	public ASTEnumDeclaration(int id) {
-		this();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -74,13 +72,11 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 			// Process members
 			int next_val = 0;
 			foreach (ASTEnumFieldDeclaration efd; enum_fields) {
-				efd.parent = me;
 				Type me_type = me.type;
 				Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL );
 				f.pos = efd.pos;
 				f.setEnumField(true);
 				f = me.addField(f);
-				f.parent = me;
 				if (me.isPrimitiveEnum()) {
 					if (efd.val != null) {
 						if (efd.val.val instanceof Character)
@@ -108,7 +104,6 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 				next_val++;
 				if (efd.text != null)
 					f.name.addAlias(KString.from("\""+efd.text.val+"\""));
-				f.init.parent = f;
 			}
 		} finally { PassInfo.pop(me); }
 

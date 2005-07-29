@@ -270,7 +270,7 @@ public class Bytecoder implements Constants {
 						conditions = (WorkByContractCondition[])Arrays.appendUniq(conditions,wbc);
 				} else {
 					wbc.definer = m;
-					m.conditions = (WorkByContractCondition[])Arrays.appendUniq(m.conditions,wbc);
+					m.conditions.appendUniq(wbc);
 				}
 			}
 		}
@@ -284,7 +284,7 @@ public class Bytecoder implements Constants {
 				m = new Method(cl,m_name,mtype,m_flags);
 			trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 			if( conditions != null ) {
-				m.conditions = conditions;
+				m.conditions.addAll(conditions);
 				for(int i=0; i < conditions.length; i++)
 					m.conditions[i].definer = m;
 			}
