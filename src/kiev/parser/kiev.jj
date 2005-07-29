@@ -550,7 +550,8 @@ TOKEN : /* LITERALS */
 <DEFAULT,IN_CONSTRAINT>
 TOKEN : /* IDENTIFIERS */
 {
-  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+
+  < IDENTIFIER: ( <LETTER> (<LETTER>|<DIGIT>)* | "ID#" <ID_STRING_LITERAL> ) >
 |
   < #LETTER:
       [
@@ -588,6 +589,20 @@ TOKEN : /* IDENTIFIERS */
        "\u0ed0"-"\u0ed9",
        "\u1040"-"\u1049"
       ]
+  >
+ |
+  < #ID_STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            | ["u","U"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+            )
+          )
+      )*
+      "\""
   >
 }
 
@@ -1060,14 +1075,16 @@ void TypeDeclaration(ASTModifiers modifiers) :
         try {
 /*@egen*/
 	{ jjtn000.jjtAddChild(modifiers, -1); }
-	(
-		t="class"
-	|	t="interface"
-	|	t="@" "interface"
-	)
-	{ jjtn000.set(t); t = null; }
 	try {
-		Identifier()
+		(
+			t="class"
+			Identifier()
+		|	t="interface"
+			Identifier()
+		|	t="@" "interface"
+			(Identifier() | KeywordAsIdentifier())
+		)
+		{ jjtn000.set(t); t = null; }
 	}
 	catch(ParseError e) { rpe("Class's name expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1634,6 +1651,19 @@ int AccessSpec()       :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
+void KeywordAsIdentifier()       :
+{ Token t; ASTIdentifier id; }
+{
+	t="virtual"
+	{
+		id = new ASTIdentifier(0);
+		jjtree.openNodeScope(id);
+		id.set(t);
+		jjtree.closeNodeScope(id, true);
+		t = null;
+	}
+}
+
 void Annotation() :
 {/*@bgen(jjtree) Annotation */
   ASTAnnotation jjtn000 = new ASTAnnotation(JJTANNOTATION);
@@ -1644,7 +1674,10 @@ void Annotation() :
         try {
 /*@egen*/
 	"@"
-	Identifier()
+	(
+		Identifier()
+	|	KeywordAsIdentifier()
+	)
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
