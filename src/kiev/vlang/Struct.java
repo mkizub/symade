@@ -915,6 +915,26 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					)
 				);
 				body.stats.append(ass_st);
+				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					Statement p_st = new IfElseStat(0,
+							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+								new VarAccessExpr(0, value),
+								new ConstExpr(0, null)
+							),
+							new ExprStat(0,null,
+								new AssignExpr(0, AssignOperator.Assign,
+									new AccessExpr(0,
+										new VarAccessExpr(0, value),
+										astT.clazz.resolveField(KString.from("parent"))
+									),
+									new ThisExpr()
+								)
+							),
+							null
+						);
+					body.stats.append(p_st);
+				}
 				body.stats.append(new ReturnStat(f.pos,body,null));
 				set_var.body = body;
 			}

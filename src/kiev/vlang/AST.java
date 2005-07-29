@@ -888,7 +888,7 @@ public abstract class Expr extends ASTNode {
 @node
 public class WrapedExpr extends Expr {
 
-	@att public ASTNode		expr;
+	@ref public ASTNode		expr;
 	@ref public Type		base_type;
 	
 	public WrapedExpr() {

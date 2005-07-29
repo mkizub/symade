@@ -268,12 +268,12 @@ public abstract class MetaValue extends ASTNode {
 		ASTNode v = ((Expr)value).resolve(reqType);
 		if (!(v instanceof Expr)) {
 			if (reqType == Type.tpClass)
-				return v;
+				return new WrapedExpr(value.pos, v);
 			else
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		}
 		else if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField())
-			return ((StaticFieldAccessExpr)v).var;
+			return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)v).var);
 		else if (!((Expr)v).isConstantExpr())
 			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = v.getType();

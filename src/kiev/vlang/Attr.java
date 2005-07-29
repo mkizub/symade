@@ -953,28 +953,34 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
 			else if( v instanceof KString )			ConstPool.addAsciiCP((KString)v);
 		}
-		else if (value instanceof Struct) {
-			ConstPool.addClazzCP(((Struct)value).type.java_signature);
-		}
-		else if (value instanceof Field) {
-			Field f = (Field)value;
-			Struct s = (Struct)f.parent;
-			ConstPool.addAsciiCP(s.type.java_signature);
-			ConstPool.addAsciiCP(f.name.name);
+		else if (value instanceof WrapedExpr) {
+			WrapedExpr we = (WrapedExpr)value;
+			if (we.expr instanceof Struct) {
+				ConstPool.addClazzCP(((Struct)we.expr).type.java_signature);
+			}
+			else if (we.expr instanceof Field) {
+				Field f = (Field)we.expr;
+				Struct s = (Struct)f.parent;
+				ConstPool.addAsciiCP(s.type.java_signature);
+				ConstPool.addAsciiCP(f.name.name);
+			}
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
 			ConstPool.addAsciiCP(m.type.signature());
 			foreach (MetaValue v; m) {
-				ConstPool.addAsciiCP(v.type.name);
-				if (v instanceof MetaValueScalar) {
-					generateValue(((MetaValueScalar)v).value);
-				} else {
-					MetaValueArray va = (MetaValueArray)v; 
-					foreach (ASTNode n; va.values)
-						generateValue(n);
-				}
+				generateValue(v);
 			}
+		}
+		else if (value instanceof MetaValueScalar) {
+			ConstPool.addAsciiCP(value.type.name);
+			generateValue(((MetaValueScalar)value).value);
+		}
+		else if (value instanceof MetaValueArray) {
+			ConstPool.addAsciiCP(value.type.name);
+			MetaValueArray va = (MetaValueArray)value; 
+			foreach (ASTNode n; va.values)
+				generateValue(n);
 		}
 	}
 
@@ -1033,20 +1039,24 @@ public abstract class MetaAttr extends Attr {
 			}
 			return ev;
 		}
-		else if (value instanceof Struct) {
-			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
-			ev.tag = (byte)'c';
-			ev.class_info_index = ConstPool.getClazzCP(((Struct)value).type.java_signature).pos;
-			return ev;
-		}
-		else if (value instanceof Field) {
-			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
-			ev.tag = (byte)'e';
-			Field f = (Field)value;
-			Struct s = (Struct)f.parent;
-			ev.type_name_index = ConstPool.getAsciiCP(s.type.java_signature).pos;
-			ev.const_name_index = ConstPool.getAsciiCP(f.name.name).pos;
-			return ev;
+		else if (value instanceof WrapedExpr) {
+			WrapedExpr we = (WrapedExpr)value;
+			if (we.expr instanceof Struct) {
+				kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
+				ev.tag = (byte)'c';
+				ev.class_info_index = ConstPool.getClazzCP(((Struct)we.expr).type.java_signature).pos;
+				return ev;
+			}
+			else if (we.expr instanceof Field) {
+				kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
+				ev.tag = (byte)'e';
+				Field f = (Field)we.expr;
+				Struct s = (Struct)f.parent;
+				ev.type_name_index = ConstPool.getAsciiCP(s.type.java_signature).pos;
+				ev.const_name_index = ConstPool.getAsciiCP(f.name.name).pos;
+				return ev;
+			}
+			throw new RuntimeException("value is: "+(we.expr==null?"null":String.valueOf(we.expr.getClass())));
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
@@ -1173,13 +1183,7 @@ public class DefaultMetaAttr extends MetaAttr {
 
 	public void generate() {
 		ConstPool.addAsciiCP(name);
-		if (mv instanceof MetaValueScalar) {
-			generateValue(((MetaValueScalar)mv).value);
-		} else {
-			MetaValueArray va = (MetaValueArray)mv; 
-			foreach (ASTNode n; va.values)
-				generateValue(n);
-		}
+		generateValue(mv);
 	}
 	
 	public kiev.bytecode.Attribute write() {

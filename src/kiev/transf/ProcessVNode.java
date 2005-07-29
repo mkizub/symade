@@ -34,10 +34,10 @@ import static kiev.stdlib.Debug.*;
 
 public final class ProcessVNode implements Constants {
 
-	private static final KString mnNode = KString.from("kiev.vlang.node"); 
-	private static final KString mnAtt  = KString.from("kiev.vlang.att"); 
-	private static final KString mnRef  = KString.from("kiev.vlang.ref"); 
-	private static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
+	public static final KString mnNode = KString.from("kiev.vlang.node"); 
+	public static final KString mnAtt  = KString.from("kiev.vlang.att"); 
+	public static final KString mnRef  = KString.from("kiev.vlang.ref"); 
+	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
 	private static final KString nameNArrReplace  = KString.from("replace"); 
 	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
 	private static final KString nameParent  = KString.from("parent"); 
@@ -112,10 +112,14 @@ public final class ProcessVNode implements Constants {
 		}
 		if (fmatt != null || fmref != null) {
 			Struct fs = (Struct)f.type.clazz;
+			boolean isArr = false;
 			if (fs.name.name == nameNArr) {
-				if (!f.isFinal())
+				if (!f.isFinal()) {
 					Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
+					f.setFinal(true);
+				}
 				fs = f.type.args[0].clazz;
+				isArr = true;
 			}
 			Meta fsm = fs.meta.get(mnNode);
 			if (fsm == null) {
@@ -123,8 +127,26 @@ public final class ProcessVNode implements Constants {
 				fs.meta.unset(mnAtt);
 				fs.meta.unset(mnRef);
 				return;
-			} else {
-				//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
+			}
+			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
+			if (fmatt != null) {
+				if (isArr) {
+					if (f.init != null)
+						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.TRUE)});
+					f.init.parent = f;
+				} else {
+					f.setVirtual(true);
+					((Struct)f.parent).addMethodsForVirtualField(f);
+				}
+			}
+			else if (fmref != null) {
+				if (isArr) {
+					if (f.init != null)
+						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.FALSE)});
+					f.init.parent = f;
+				}
 			}
 		} else {
 			Struct fs = (Struct)f.type.clazz;
@@ -254,13 +276,17 @@ public final class ProcessVNode implements Constants {
 							if (isArr) {
 								ASTCallAccessExpression cae = new ASTCallAccessExpression();
 								cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);
+								cae.obj.parent = cae;
 								cae.func = new ASTIdentifier(0, KString.from("copyFrom"));
+								cae.func.parent = cae;
 								cae.args.append(new AccessExpr(0,new ThisExpr(),f));
 								stats.insert(p, new ExprStat(0,null,cae));
 							} else {
 								ASTCallAccessExpression cae = new ASTCallAccessExpression();
 								cae.obj = new AccessExpr(0, new ThisExpr(),f);
+								cae.obj.parent = cae;
 								cae.func = new ASTIdentifier(0, copyV.name.name);
+								cae.func.parent = cae;
 								stats.insert(p, 
 									new IfElseStat(0,null,
 										new BinaryBooleanExpr(0, BinaryOperator.NotEquals,

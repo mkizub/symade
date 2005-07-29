@@ -355,7 +355,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( PassInfo.clazz == parent );
+		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
 		PassInfo.push(this);
 		try {
 			if (!inlined_by_dispatcher)
@@ -399,7 +399,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				cond.parent = this;
 				cond.resolve(Type.tpVoid);
 			}
-			if (parent.isAnnotation()) {
+			if (PassInfo.clazz.isAnnotation()) {
 				if( body != null ) {
 					if (type.ret.isArray()) {
 						Type t = type.ret.args[0];
@@ -481,8 +481,8 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		PassInfo.push(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; ((Struct)parent).instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; ((Struct)parent).instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; PassInfo.clazz.instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; PassInfo.clazz.instanceOf((Struct)inv.parent) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )

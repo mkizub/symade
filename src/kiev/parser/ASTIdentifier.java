@@ -53,7 +53,10 @@ public class ASTIdentifier extends Expr {
 	}
 
 	public void set(Token t) {
-		this.name = KString.from(t.image);
+		if (t.image.startsWith("ID#"))
+			this.name = ASTConstExpression.source2ascii(t.image.substring(4,t.image.length()-1));
+		else
+			this.name = KString.from(t.image);
         pos = t.getPos();
 	}
 
