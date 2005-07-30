@@ -399,8 +399,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						new ConstExpr(PassInfo.clazz.pos,Kiev.newInteger(defindex))
 					});
 				Method clinit = null;
-				foreach(Method m; PassInfo.clazz.methods; m.name.equals(nameClassInit)) {
-					clinit = m; break;
+				foreach(ASTNode n; PassInfo.clazz.members; n instanceof Method && ((Method)n).name.equals(nameClassInit)) {
+					clinit = (Method)n;
+					break;
 				}
 				if( clinit == null ) {
 					clinit = new Method(PassInfo.clazz,nameClassInit,

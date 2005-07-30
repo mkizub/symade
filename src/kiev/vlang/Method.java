@@ -86,6 +86,8 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	/** Indicates that this method is inlined by dispatcher method
 	 */
 	public boolean			inlined_by_dispatcher;
+	
+	@ref public Method		generated_from;
 
 	public Method() {
 	}

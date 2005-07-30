@@ -158,9 +158,10 @@ public class Meta extends ASTNode {
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
-			for(int i=0; i < s.methods.length; i++) {
-				if( s.methods[i].name.equals(v.type.name)) {
-					m = s.methods[i];
+			foreach (ASTNode sn; s.members; sn instanceof Method) {
+				Method sm = (Method)sn;
+				if( sm.name.equals(v.type.name)) {
+					m = sm;
 					break;
 				}
 			}

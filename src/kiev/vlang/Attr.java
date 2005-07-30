@@ -873,7 +873,8 @@ public class PackedFieldsAttr extends Attr {
 
 	public void generate() {
 		ConstPool.addAsciiCP(name);
-		foreach(Field f; struct.fields; f.isPackedField() ) {
+		foreach(ASTNode n; struct.members; n instanceof Field && ((Field)n).isPackedField() ) {
+			Field f = (Field)n;
 			ConstPool.addAsciiCP(f.name.name);
 			ConstPool.addAsciiCP(f.pack.packer_name);
 			ConstPool.addAsciiCP(f.type.signature);
@@ -883,14 +884,15 @@ public class PackedFieldsAttr extends Attr {
 	public kiev.bytecode.Attribute write() {
 		kiev.bytecode.KievPackedFieldsAttribute kea = new kiev.bytecode.KievPackedFieldsAttribute();
 		kea.cp_name = ConstPool.getAsciiCP(name).pos;
-		int len = struct.packed_field_counter;
+		int len = struct.countPackedFields();
 		kea.fields = new int[len];
 		kea.signatures = new int[len];
 		kea.packers = new int[len];
 		kea.sizes = new int[len];
 		kea.offsets = new int[len];
-		for(int i=0, j=0; j < len; i++) {
-			Field f = struct.fields[i];
+		int j = 0;
+		foreach(ASTNode n; struct.members; n instanceof Field && ((Field)n).isPackedField() ) {
+			Field f = (Field)n;
 			if( !f.isPackedField() ) continue;
 			kea.fields[j] = ConstPool.getAsciiCP(f.name.name).pos;
 			kea.signatures[j] = ConstPool.getAsciiCP(f.type.signature).pos;

@@ -590,9 +590,10 @@ public class Code implements Constants {
 		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp,((Struct)m.parent).type));
 		if( ttt.clazz.generated_from != null ) {
 			Struct ss = (Struct)m.parent;
-			for(int j=0; j < ss.methods.length; j++) {
-				if( ss.methods[j] == m ) {
-					m = ttt.clazz.methods[j];
+			foreach (ASTNode gn; ss.members; gn instanceof Method) {
+				Method gm = (Method)gn;
+				if (gm.generated_from == m) {
+					m = gm;
 					m.type.checkJavaSignature();
 					m.jtype.checkJavaSignature();
 					break;

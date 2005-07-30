@@ -71,7 +71,7 @@ public class ASTAnonymouseClosure extends Expr {
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)
 				.append_fast((byte)'$')
-				.append(PassInfo.clazz.anonymouse_inner_counter)
+				.append(PassInfo.clazz.countAnonymouseInnerStructs())
 				.toKString(),
 			false
 		);

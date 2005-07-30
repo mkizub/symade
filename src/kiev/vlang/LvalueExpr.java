@@ -313,8 +313,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
-				foreach(Method m; s.methods; m.name.equals(nameArrayOp))
-					return new Type[]{Type.getRealType(t,m.type.ret)};
+				foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
+					return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
 				if( s.super_clazz != null ) {
 					s = s.super_clazz.clazz;
 					continue;
@@ -345,7 +345,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			lookup_op:
 				for(;;) {
 					s.checkResolved();
-					foreach(Method m; s.methods; m.name.equals(nameArrayOp))
+					foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
 						break lookup_op;
 					if( s.super_clazz != null ) {
 						s = s.super_clazz.clazz;
@@ -1153,11 +1153,13 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	}
 
 	public static Field outerOf(Struct clazz) {
-		for(int i=0; i < clazz.fields.length; i++)
-			if( clazz.fields[i].name.name.startsWith(nameThisDollar) ) {
-				trace(Kiev.debugResolve,"Name of field "+clazz.fields[i]+" starts with this$");
-				return clazz.fields[i];
+		foreach (ASTNode n; clazz.members; n instanceof Field) {
+			Field f = (Field)n;
+			if( f.name.name.startsWith(nameThisDollar) ) {
+				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
+				return f;
 			}
+		}
 		return null;
 	}
 

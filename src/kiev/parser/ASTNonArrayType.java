@@ -67,11 +67,12 @@ public class ASTNonArrayType extends SimpleNode {
     		} else {
         		if( !(v instanceof Struct) )
 		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
-        		Type[] atypes = new Type[children.length-1];
-		        for(int i=0; i < atypes.length; i++) {
-        			atypes[i] = ((ASTType)children[i+1]).getType();
-		        }
-		        tp = Type.newRefType((Struct)v,atypes);
+				Struct s = (Struct)v;
+				Type[] atypes = new Type[children.length-1];
+				for(int i=0; i < atypes.length; i++) {
+					atypes[i] = ((ASTType)children[i+1]).getType();
+				}
+				tp = Type.newRefType(s,atypes);
 		    }
 		}
 		for (int i=0; i < ops.length; i++) {

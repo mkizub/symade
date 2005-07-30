@@ -123,8 +123,9 @@ public final class ExportJavaTop implements Constants {
 				for(int i=0; i < astn.argument.length; i++) {
 					ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
 					Type[] outer_args = astnp.me.type.args;
-		            if( outer_args == null || outer_args.length <= i
-					|| !outer_args[i].clazz.name.short_name.equals(arg.ident.name) )
+					if( outer_args == null || outer_args.length <= i)
+						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class arguments");
+					if !(outer_args[i].clazz.name.short_name.equals(arg.ident.name))
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class argument,"
 							+" but arg["+i+"] is "+arg.ident
 							+" and have to be "+outer_args[i].clazz.name.short_name);
@@ -135,8 +136,8 @@ public final class ExportJavaTop implements Constants {
 				}
 			} else {
 				for(int i=0; i < astn.argument.length; i++) {
-					Struct arg =
-						Env.newArgument(((ASTArgumentDeclaration)astn.argument[i]).ident.name,me);
+					ASTNode a = astn.argument[i];
+					Struct arg = Env.newArgument(((ASTArgumentDeclaration)a).ident.name,me);
 					arg.type = Type.newRefType(arg);
 					targs = (Type[])Arrays.append(targs,arg.type);
 				}
@@ -220,7 +221,7 @@ public final class ExportJavaTop implements Constants {
 				// Construct name of local class
 				KString bytecode_name =
 					KString.from(piclz.name.bytecode_name
-						+"$"+piclz.anonymouse_inner_counter
+						+"$"+piclz.countAnonymouseInnerStructs()
 						+"$"+astn.name);
 				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
 				KString name = bytecode_name.replace('/','.');
@@ -251,7 +252,7 @@ public final class ExportJavaTop implements Constants {
 					ASTNode m = astn.members[i];
 					if( m instanceof ASTTypeDeclaration || m instanceof ASTCaseTypeDeclaration) {
 						m.parent = astn;
-						pass1(m,me);
+						me.members.add(pass1(m,me));
 					}
 				}
 			}
@@ -577,17 +578,19 @@ public final class ExportJavaTop implements Constants {
 			/* Process inheritance of class's arguments, if any */
 			Type[] targs = me.type.args;
 	        for(int i=0; i < astn.argument.length; i++) {
-				ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
-				if( arg.type != null ) {
-					ASTNonArrayType at = arg.type;
-					Type sup = at.getType();
-					if( !sup.isReference() )
-						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
-					else
-						targs[i].clazz.super_clazz = sup;
-					targs[i].checkJavaSignature();
-				} else {
-					targs[i].clazz.super_clazz = Type.tpObject;
+				if (astn.argument[i] instanceof ASTArgumentDeclaration) {
+					ASTArgumentDeclaration arg = (ASTArgumentDeclaration)astn.argument[i];
+					if( arg.type != null ) {
+						ASTNonArrayType at = arg.type;
+						Type sup = at.getType();
+						if( !sup.isReference() )
+							Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
+						else
+							targs[i].clazz.super_clazz = sup;
+						targs[i].checkJavaSignature();
+					} else {
+						targs[i].clazz.super_clazz = Type.tpObject;
+					}
 				}
 			}
 			// Process ASTGenerete
@@ -613,7 +616,6 @@ public final class ExportJavaTop implements Constants {
 					}
 				}
 				// Clone 'me' for generated types
-				me.gens = new Type[gtypes.length];
 				for(int k=0; k < gtypes.length; k++) {
 					KStringBuffer ksb;
 					ksb = new KStringBuffer(
@@ -635,7 +637,7 @@ public final class ExportJavaTop implements Constants {
 					Type gtype = Type.newRefType(me,gtypes[k]);
 					gtype.java_signature = cn.signature();
 					gtype.clazz = s;
-					me.gens[k] = gtype;
+					me.gens.append(s);
 					s.type = gtype;
 					s.generated_from = me;
 					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
@@ -643,8 +645,6 @@ public final class ExportJavaTop implements Constants {
 					for(int l=0; l < me.sub_clazz.length; l++) {
 						Struct sc = me.sub_clazz[l];
 						if( sc.type.args.length == 0 ) continue;
-						if( sc.gens == null )
-							sc.gens = new Type[gtypes.length];
 						ksb = new KStringBuffer(
 							s.name.bytecode_name.length()
 							+sc.name.short_name.length()
@@ -666,7 +666,7 @@ public final class ExportJavaTop implements Constants {
 						Type scgt = Type.getRealType(gtype,sc.type);
 						scgt.java_signature = cn.signature();
 						scgt.clazz = scg;
-						sc.gens[k] = scgt;
+						sc.gens.append(scg);
 						scg.type = scgt;
 						scg.generated_from = sc;
 						scg.super_clazz = Type.getRealType(scg.type,sc.super_clazz);
@@ -807,13 +807,13 @@ public final class ExportJavaTop implements Constants {
 			if( !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
 				me.interfaces.append(Type.tpTypeInfoInterface);
 			}
-			if( me.interfaces.length > 0 && me.gens != null ) {
-				for(int g=0; g < me.gens.length; g++) {
-					for(int l=0; l < me.interfaces.length; l++) {
-						me.gens[g].clazz.interfaces.add(Type.getRealType(me.gens[g],me.interfaces[l]));
-					}
-				}
-			}
+//			if( me.interfaces.length > 0 && me.gens != null ) {
+//				for(int g=0; g < me.gens.length; g++) {
+//					for(int l=0; l < me.interfaces.length; l++) {
+//						me.gens[g].clazz.interfaces.add(Type.getRealType(me.gens[g],me.interfaces[l]));
+//					}
+//				}
+//			}
 
 	        // Process inner classes and cases
 			if( !me.isPackage() ) {

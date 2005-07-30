@@ -114,14 +114,14 @@ public class Bytecoder implements Constants {
 			cl.interfaces.append(interf);
 		}
 
-		cl.fields.delAll();
+		cl.members.delAll();
+		
 		for(int i=0; i < bcclazz.fields.length; i++) {
-			cl.fields.append(readField(null,i));
+			cl.members.append(readField(null,i));
 		}
 
-		cl.methods.delAll();
 		for(int i=0; i < bcclazz.methods.length; i++) {
-			cl.methods.append(readMethod(null,i));
+			cl.members.append(readMethod(null,i));
 		}
 
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
@@ -447,9 +447,10 @@ public class Bytecoder implements Constants {
 				kiev.bytecode.NameAndTypePoolConstant nat =
 					(kiev.bytecode.NameAndTypePoolConstant)clazz.pool[kca.cp_casefields[j]];
 				KString f_name = ((kiev.bytecode.Utf8PoolConstant)clazz.pool[nat.ref_name]).value;
-				for(int k=0; k < cl.fields.length; k++) {
-					if( cl.fields[k].name.equals(f_name) ) {
-						casefields[j] = cl.fields[k];
+				foreach (ASTNode n; cl.members; n instanceof Field) {
+					Field f = (Field)n;
+					if( f.name.equals(f_name) ) {
+						casefields[j] = f;
 						break;
 					}
 				}
@@ -473,34 +474,43 @@ public class Bytecoder implements Constants {
 		else if( name.equals(attrEnum) ) {
 			cl.setEnum(true);
 			kiev.bytecode.KievEnumAttribute ea = (kiev.bytecode.KievEnumAttribute)bca;
-			for(int i=0; i < cl.fields.length; i++) {
+			Vector<Field> vf = new Vector<Field>();
+			int i = 0;
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
 				// Values and fields must be in the same order, as fields of struct
-				if( ea.getFieldName(i,clazz) != cl.fields[i].name.name )
+				if( ea.getFieldName(i,clazz) != f.name.name )
 					throw new RuntimeException("Invalid entry "+i+" in "+attrEnum+" attribute");
+				vf.append(f);
+				i++;
 			}
-			a = new EnumAttr(cl.fields.toArray(),ea.values);
+			a = new EnumAttr(vf.copyIntoArray(),ea.values);
 		}
 		else if( name.equals(attrPrimitiveEnum) ) {
 			cl.setEnum(true);
 			cl.setPrimitiveEnum(true);
 			kiev.bytecode.KievPrimitiveEnumAttribute ea = (kiev.bytecode.KievPrimitiveEnumAttribute)bca;
-			for(int i=0; i < cl.fields.length; i++) {
+			Vector<Field> vf = new Vector<Field>();
+			int i = 0;
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
 				// Values and fields must be in the same order, as fields of struct
-				if( ea.getFieldName(i,clazz) != cl.fields[i].name.name )
+				if( ea.getFieldName(i,clazz) != f.name.name )
 					throw new RuntimeException("Invalid entry "+i+" in "+attrPrimitiveEnum+" attribute");
+				vf.append(f);
+				i++;
 			}
 			KString sign = ea.getFieldTypeSignature(clazz);
 			Type tp = Type.fromSignature(sign);
 			if (tp.isReference() || !tp.isIntegerInCode())
 				throw new RuntimeException("Invalid signature '"+sign+"' in "+attrPrimitiveEnum+" attribute");
-			a = new PrimitiveEnumAttr(tp,cl.fields.toArray(),ea.values);
+			a = new PrimitiveEnumAttr(tp,vf.copyIntoArray(),ea.values);
 			cl.addAttr(a);
 			cl.type.setMeAsPrimitiveEnum();
 			a = null;
 		}
 		else if( name.equals(attrGenerations) ) {
 			kiev.bytecode.KievGenerationsAttribute ea = (kiev.bytecode.KievGenerationsAttribute)bca;
-			cl.gens = new Type[ea.gens.length];
 			for(int i=0; i < ea.gens.length; i++) {
 				ClazzName sgcn = ClazzName.fromSignature(ea.getGenName(i,clazz));
 				Struct sg = Env.newStruct(sgcn,true);
@@ -508,8 +518,8 @@ public class Bytecoder implements Constants {
 				sg = Env.getStruct(sgcn);
 				if( sg == null )
 					throw new RuntimeException("Can't find class "+sgcn);
-				cl.gens[i] = sg.type;
-				cl.gens[i].clazz.typeinfo_clazz = cl.typeinfo_clazz;
+				cl.gens.add(sg);
+				cl.gens[i].typeinfo_clazz = cl.typeinfo_clazz;
 			}
 			a = null;
 		}
@@ -811,19 +821,25 @@ public class Bytecoder implements Constants {
 			bcclazz.cp_interfaces[i] = ConstPool.getClazzCP(interf_sig).pos;
 		}
 
-		if (kievmode)
-			bcclazz.fields = new kiev.bytecode.Field[cl.fields.length-cl.packed_field_counter];
-		else
-			bcclazz.fields = new kiev.bytecode.Field[cl.fields.length-cl.packed_field_counter-cl.abstract_field_counter];
-		for(int i=0, j=0; i < cl.fields.length; i++) {
-			if( cl.fields[i].isPackedField() ) continue;
-			if (!kievmode && cl.fields[i].isAbstract()) continue;
-			bcclazz.fields[j++] = writeField(i);
+		{
+			Vector<kiev.bytecode.Field> flds = new Vector<kiev.bytecode.Field>(); 
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
+				if( f.isPackedField() ) continue;
+				if (!kievmode && f.isAbstract()) continue;
+				flds.append(writeField(f));
+			}
+			bcclazz.fields = flds.copyIntoArray();
 		}
 
-	    bcclazz.methods = new kiev.bytecode.Method[cl.methods.length];
-		for(int i=0; i < cl.methods.length; i++)
-			bcclazz.methods[i] = writeMethod(i);
+		{
+			Vector<kiev.bytecode.Method> mthds = new Vector<kiev.bytecode.Method>();
+			foreach (ASTNode n; cl.members; n instanceof Method) {
+				Method m = (Method)n;
+				mthds.append(writeMethod(m));
+			}
+			bcclazz.methods = mthds.copyIntoArray();
+		}
 
 	    // Number of class attributes
 	    if( !kievmode ) {
@@ -926,8 +942,7 @@ public class Bytecoder implements Constants {
 		return bcpool;
 	}
 
-	public kiev.bytecode.Field writeField(int i) {
-		Field f = cl.fields[i];
+	public kiev.bytecode.Field writeField(Field f) {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = ConstPool.getAsciiCP(f.name.name).pos;
@@ -954,14 +969,13 @@ public class Bytecoder implements Constants {
 		return bcf;
 	}
 
-    public kiev.bytecode.Method writeMethod(int i) {
+    public kiev.bytecode.Method writeMethod(Method m) {
 		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
-		Method m = cl.methods[i];
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = ConstPool.getAsciiCP(m.name.name).pos;
 		if( !kievmode )
-			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,jcl.methods[i].jtype).java_signature).pos;
+			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,m.jtype).java_signature).pos;
 		else
 			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature).pos;
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;

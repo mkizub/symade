@@ -277,7 +277,8 @@ public class PassInfo {
 			// Fill path as this$0 if possible
 		fill_path:
 			for(;;) {
-				foreach(Field f; s.fields; f.name.name.startsWith(Constants.nameThisDollar) ) {
+				foreach(ASTNode n; s.members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
+					Field f = (Field)n;
 					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
 					info.path.prepend(f);
 					// Check we've finished

@@ -69,7 +69,10 @@ public class ASTNewExpression extends Expr {
 		if( args.length > 0 ) {
 			targs = new Type[args.length];
 			boolean found = false;
-			foreach(Method m; s.methods; m.name.equals(nameInit) || m.name.equals(nameNewOp)) {
+			foreach(ASTNode n; s.members; n instanceof Method) {
+				Method m = (Method)n;
+				if (!(m.name.equals(nameInit) || m.name.equals(nameNewOp)))
+					continue;
 				Type[] mtargs = m.type.args;
 				int i = 0;
 				if( !s.package_clazz.isPackage() && !s.isStatic() ) i++;
@@ -107,7 +110,7 @@ public class ASTNewExpression extends Expr {
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)
 				.append_fast((byte)'$')
-				.append(PassInfo.clazz.anonymouse_inner_counter)
+				.append(PassInfo.clazz.countAnonymouseInnerStructs())
 				.toKString(),
 				false
 		);

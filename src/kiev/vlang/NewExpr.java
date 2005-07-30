@@ -105,9 +105,10 @@ public class NewExpr extends Expr {
 			}
 			if( type.clazz.isLocal() ) {
 				Struct cl = type.clazz;
-				for(int i=0; i < cl.fields.length; i++) {
-					if( !cl.fields[i].isNeedProxy() ) continue;
-					outer_args = (Expr[])Arrays.append(outer_args,new AccessExpr(pos,new ThisExpr(pos),cl.fields[i]));
+				foreach (ASTNode n; cl.members; n instanceof Field) {
+					Field f = (Field)n;
+					if( !f.isNeedProxy() ) continue;
+					outer_args = (Expr[])Arrays.append(outer_args,new AccessExpr(pos,new ThisExpr(pos),f));
 				}
 			}
 			if( type.args.length > 0 ) {
@@ -195,9 +196,10 @@ public class NewExpr extends Expr {
 			// Now, fill proxyed fields (vars)
 			if( type.clazz.isLocal() ) {
 				Struct cl = type.clazz;
-				for(int i=0; i < cl.fields.length; i++) {
-					if( !cl.fields[i].isNeedProxy() ) continue;
-					Var v = ((VarAccessExpr)cl.fields[i].init).var;
+				foreach (ASTNode n; cl.members; n instanceof Field) {
+					Field f = (Field)n;
+					if( !f.isNeedProxy() ) continue;
+					Var v = ((VarAccessExpr)f.init).var;
 					Code.addInstr(Instr.op_load,v);
 				}
 			}
@@ -242,18 +244,8 @@ public class NewExpr extends Expr {
 		if( tp.clazz.isAnonymouse() ) {
 			Struct cl = type.clazz;
 			dmp.space().append('{').newLine(1);
-			if( cl.isClazz() ) {
-				for(int i=0; cl.sub_clazz!=null && i < cl.sub_clazz.length; i++) {
-					if( cl.sub_clazz[i].isLocal() ) continue;
-					cl.sub_clazz[i].toJavaDecl(dmp).newLine();
-				}
-			}
-			for(int i=0; cl.fields!=null && i < cl.fields.length; i++) {
-				cl.fields[i].toJavaDecl(dmp).newLine();
-			}
-			for(int i=0; cl.methods!=null && i < cl.methods.length; i++) {
-				cl.methods[i].toJavaDecl(dmp).newLine();
-			}
+			foreach (ASTNode n; cl.members)
+				((TopLevelDecl)n).toJavaDecl(dmp).newLine();
 			dmp.newLine(-1).append('}').newLine();
 		}
 		return dmp;
@@ -529,9 +521,10 @@ public class NewClosure extends Expr {
 				sign.append(((Struct)PassInfo.method.parent).type.signature);
 			}
 			sign.append('I');
-			for(int i=0; i < cl.fields.length; i++) {
-				if( !cl.fields[i].isNeedProxy() ) continue;
-				sign.append(cl.fields[i].type.signature);
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
+				if( !f.isNeedProxy() ) continue;
+				sign.append(f.type.signature);
 			}
 			sign.append(")V");
 			func = type.clazz.resolveMethod(nameInit,sign.toKString());
@@ -559,9 +552,10 @@ public class NewClosure extends Expr {
 				Code.addConst(type.args.length);
 			// Now, fill proxyed fields (vars)
 			Struct cl = type.clazz;
-			for(int i=0; i < cl.fields.length; i++) {
-				if( !cl.fields[i].isNeedProxy() ) continue;
-				Var v = ((VarAccessExpr)cl.fields[i].init).var;
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
+				if( !f.isNeedProxy() ) continue;
+				Var v = ((VarAccessExpr)f.init).var;
 				Code.addInstr(Instr.op_load,v);
 			}
 			Code.addInstr(op_call,func,false);
@@ -581,18 +575,8 @@ public class NewClosure extends Expr {
 		dmp.append("new ").append(cl.super_clazz.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);
-		if( cl.isClazz() ) {
-			for(int i=0; cl.sub_clazz!=null && i < cl.sub_clazz.length; i++) {
-				if( cl.sub_clazz[i].isLocal() ) continue;
-				cl.sub_clazz[i].toJavaDecl(dmp).newLine();
-			}
-		}
-		for(int i=0; cl.fields!=null && i < cl.fields.length; i++) {
-			cl.fields[i].toJavaDecl(dmp).newLine();
-		}
-		for(int i=0; cl.methods!=null && i < cl.methods.length; i++) {
-			cl.methods[i].toJavaDecl(dmp).newLine();
-		}
+		foreach (ASTNode n; cl.members)
+			((TopLevelDecl)n).toJavaDecl(dmp).newLine();
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}

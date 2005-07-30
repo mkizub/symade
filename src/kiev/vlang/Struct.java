@@ -30,6 +30,7 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Struct.java,v 1.6.2.1.2.6 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
@@ -69,27 +70,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** Array of types that are generated for primitive
 		paremeter types of type arguments
 	*/
-	public Type[]						gens = null;
+	@att public final NArr<Struct>		gens;
 
 	/** Reference of template class for generated one */
-	@ref public Struct					generated_from = null;
+	@ref public Struct					generated_from;
 
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
-	@att public Struct					typeinfo_clazz;
-
+	@ref public Struct					typeinfo_clazz;
 	/** Array of substructures of the structure */
-	@att public final NArr<Struct>		sub_clazz;
+	@ref public final NArr<Struct>		sub_clazz;
 
-	/** Array of fields defined in this structure */
-	@att public final NArr<Field>		fields;
 
 	/** The field this structure is wrapper of */
-	@ref public Field					wrapped_field = null;
-
-	/** Array of methods defined in this structure */
-	@att public final NArr<Method>		methods;
+	@ref public Field					wrapped_field;
 
 	/** Array of imported classes,fields and methods */
 	@ref public final NArr<ASTNode>		imported;
@@ -97,13 +92,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** Array of attributes of this structure */
 	public Attr[]						attrs = Attr.emptyArray;
 	
+	/** Array of methods defined in this structure */
+	@att public final NArr<ASTNode>		members;
+
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet					meta;
-
-	@virtual virtual abstract int		anonymouse_inner_counter;
-	@virtual virtual abstract int		packer_field_counter;
-	@virtual virtual abstract int		packed_field_counter;
-	@virtual virtual abstract int		abstract_field_counter;
 
 	protected Struct(ClazzName name) {
 		super(0,0);
@@ -137,46 +130,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	public void jjtAddChild(ASTNode n, int i) {
 		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
-	@getter public int get$anonymouse_inner_counter() {
-		int i=0;
-		foreach(Struct s; sub_clazz; s.isAnonymouse() || s.isLocal()) i++;
-		return i;
-	}
-
-	@setter public void set$anonymouse_inner_counter(int i) {
-		throw new RuntimeException();
-	}
-
-	@getter public int get$packer_field_counter() {
-		int i=0;
-		foreach(Field f; fields; f.isPackerField()) i++;
-		return i;
-	}
-
-	@setter public void set$packer_field_counter(int i) {
-		throw new RuntimeException();
-	}
-
-	@getter public int get$packed_field_counter() {
-		int i=0;
-		foreach(Field f; fields; f.isPackedField()) i++;
-		return i;
-	}
-
-	@setter public void set$packed_field_counter(int i) {
-		throw new RuntimeException();
-	}
-
-	@getter public int get$abstract_field_counter() {
-		int i=0;
-		foreach(Field f; fields; f.isAbstract()) i++;
-		return i;
-	}
-
-	@setter public void set$abstract_field_counter(int i) {
-		throw new RuntimeException();
 	}
 
 	public String toString() { return name.name.toString(); }
@@ -237,6 +190,30 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				return dmp.append(name);
 		}
 	}
+	
+	public int countAnonymouseInnerStructs() {
+		int i=0;
+		foreach(Struct s; sub_clazz; s.isAnonymouse() || s.isLocal()) i++;
+		return i;
+	}
+
+	public int countPackerFields() {
+		int i = 0;
+		foreach (ASTNode n; members; n instanceof Field && n.isPackerField()) i++;
+		return i;
+	}
+
+	public int countPackedFields() {
+		int i = 0;
+		foreach (ASTNode n; members; n instanceof Field && n.isPackedField()) i++;
+		return i;
+	}
+
+	public int countAbstractFields() {
+		int i = 0;
+		foreach (ASTNode n; members; n instanceof Field && n.isAbstract()) i++;
+		return i;
+	}
 
 	public boolean instanceOf(Struct cl) {
 		if( cl == null ) return false;
@@ -278,7 +255,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	private Field resolveField(KString name, Struct where, boolean fatal) {
 		checkResolved();
-		foreach(Field f; fields; f.name.equals(name) ) return f;
+		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
 		if( super_clazz != null ) return super_clazz.clazz.resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
@@ -287,9 +264,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	public ASTNode resolveName(KString name) {
 		checkResolved();
-		foreach(Field f; fields; f.name.equals(name) ) return f;
+		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return f;
 		foreach(Type t; type.args; t.clazz.name.short_name.equals(name) ) return t.clazz;
-		foreach(Struct s; sub_clazz; !s.isLocal() && s.name.short_name.equals(name) ) return s;
+		foreach(ASTNode s; members; s instanceof Struct && ((Struct)s).name.short_name.equals(name) ) return s;
+		if (isPackage())
+			foreach(Struct s; sub_clazz; s.name.short_name.equals(name) ) return s;
 		if( this.name.short_name.equals(nameIdefault) ) {
 			ASTNode n = package_clazz.resolveName(name);
 			if( n != null ) return n;
@@ -359,33 +338,31 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
 			tryLoad(node,name,resfl),
 			$cut
-//		;	!this.isPackage(),
-//			trace(Kiev.debugResolve,"Struct: trying abstract fields of "+this),
-//			tryAbstractField(node,name,resfl),
-//			$cut
 		}
 	}
-	public rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		Struct@ sub;
+	private rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ arg;
 	{
 			node ?= this, ((Struct)node).name.short_name.equals(name)
-		;	node @= fields, ((Field)node).name.equals(name)
+		;	node @= members,
+			node instanceof Field && ((Field)node).name.equals(name)
 		;	arg @= type.args,
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
-		;	sub @= sub_clazz,
-			sub.name.short_name.equals(name),
-			node ?= sub.$var
+		;	node @= members,
+			node instanceof Struct && ((Struct)node).name.short_name.equals(name)
+		;	isPackage(),
+			node @= sub_clazz,
+			((Struct)node).name.short_name.equals(name)
 	}
-	public rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	private rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 	{
 			node @= imported,
 			{	node instanceof Field && ((Field)node).name.equals(name)
 			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 	}
-	public rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ sup;
 	{
 			{	sup ?= super_clazz,
@@ -397,13 +374,13 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 	}
 
-	public rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		Field@ forw;
+	private rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+		ASTNode@ forw;
 	{
-			forw @= fields,
-			forw.isForward(),
+			forw @= members,
+			forw instanceof Field && forw.isForward(),
 			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			Type.getRealType(tp,((Field)forw).type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 	}
 
 	public boolean tryLoad(ASTNode@ node, KString name, int resfl) {
@@ -437,45 +414,16 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return false;
 	}
 
-//	public boolean tryAbstractField(ASTNode@ node, KString name, int resfl) {
-//		if( !isPackage() ) {
-//			KString set_name = new KStringBuffer(nameSet.length()+name.length()).
-//				append_fast(nameSet).append_fast(name).toKString();
-//			KString get_name = new KStringBuffer(nameGet.length()+name.length()).
-//				append_fast(nameGet).append_fast(name).toKString();
-//
-//			for(int i=0; i < methods.length; i++) {
-////				if( methods[i].isStatic() ) continue;
-//				if( methods[i].name.equals(set_name) ) {
-//				 	Field f = new Field(this,name,methods[i].type.args[0],
-//				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-//					f.setter = methods[i]; 
-//				 	node = f;
-//				 	return true;
-//				 }
-//				if( methods[i].name.equals(get_name) ) {
-//				 	Field f = new Field(this,name,methods[i].type.ret,
-//				 		methods[i].getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT);
-//					f.getter = methods[i]; 
-//				 	node = f;
-//				 	return true;
-//				 }
-//			}
-//		}
-//	 	node = null;
-//	 	return false;
-//	}
-
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
+		ASTNode@ member;
 		Type@ sup;
-		Struct@ defaults;
 		Field@ forw;
 	{
 		checkResolved(),
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(info.path.length()==0?"":" in forward path "+info.path)),
 		{
-			node @= methods,
-			((Method)node).equalsByCast(name,args,ret,tp,resfl),
+			node @= members,
+			node instanceof Method && ((Method)node).equalsByCast(name,args,ret,tp,resfl),
 			{
 				(resfl & ResolveFlags.Static) == 0
 			;	(resfl & ResolveFlags.Static) != 0, node.isStatic()
@@ -487,18 +435,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			sup ?= super_clazz,
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	isInterface(),
-			defaults @= sub_clazz,
-			defaults.isClazz() && defaults.name.short_name.equals(nameIdefault),
-			defaults.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
+			member @= members,
+			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
+			((Struct)member).resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			isInterface(),
 			sup @= interfaces,
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	(resfl & ResolveFlags.NoForwards) == 0,
-			forw @= fields,
-			forw.isForward(),
-			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(tp,forw.type).clazz.resolveMethodR(node,info,name,args,Type.getRealType(tp,ret),Type.getRealType(tp,forw.type),resfl | ResolveFlags.NoImports)
+			member @= members,
+			member instanceof Field && member.isForward(),
+			info.enterForward(member) : info.leaveForward(member),
+			Type.getRealType(tp,((Field)member).type).clazz.resolveMethodR(
+				node,info,name,args,Type.getRealType(tp,ret),
+				Type.getRealType(tp,((Field)member).type),
+				resfl | ResolveFlags.NoImports)
 		}
 	}
 
@@ -512,19 +463,22 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	private Method resolveMethod(KString name, KString sign, Struct where, boolean fatal) {
 		checkResolved();
-		for(int i=0; i < methods.length; i++) {
-			if( methods[i].name.equals(name) && methods[i].type.signature.equals(sign))
-				return methods[i];
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			if( m.name.equals(name) && m.type.signature.equals(sign))
+				return m;
 		}
 		if( isInterface() ) {
 			Struct defaults = null;
-			foreach(Struct s; sub_clazz; s.isClazz() && s.name.short_name.equals(nameIdefault) ) {
-				defaults = s; break;
+			foreach(ASTNode n; members; n instanceof Struct && n.isClazz() && ((Struct)n).name.short_name.equals(nameIdefault) ) {
+				defaults = (Struct)n;
+				break;
 			}
 			if( defaults != null ) {
-				for(int i=0; i < defaults.methods.length; i++) {
-					if( defaults.methods[i].name.equals(name) && defaults.methods[i].type.signature.equals(sign))
-						return defaults.methods[i];
+				foreach (ASTNode n; defaults.members; n instanceof Method) {
+					Method m = (Method)n;
+					if( m.name.equals(name) && m.type.signature.equals(sign))
+						return m;
 				}
 			}
 		}
@@ -574,7 +528,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		// Check we already have this sub-class
 		for(int i=0; i < sub_clazz.length; i++) {
 			if( sub_clazz[i].equals(sub) ) {
-//				throw new RuntimeException("Subclass "+sub+" already exists in class "+this);
 				// just ok
 				return sub;
 			}
@@ -591,11 +544,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
 		if (sub.name.short_name == nameClTypeInfo) {
 			typeinfo_clazz = sub;
-			if( gens != null ) {
-				for(int i=0; i < gens.length; i++) {
-					gens[i].clazz.typeinfo_clazz = sub;
-					trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+gens[i].clazz);
-				}
+			foreach (Struct gen; gens) {
+				gen.typeinfo_clazz = sub;
+				trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+gen);
 			}
 			trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
 		}
@@ -605,24 +556,22 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** Add information about new method that belongs to this class */
 	public Method addMethod(Method m) {
 		// Check we already have this method
-		for(int i=0; i < methods.length; i++) {
-			if( methods[i].equals(m) )
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method mm = (Method)n;
+			if( mm.equals(m) )
 				throw new RuntimeException("Method "+m+" already exists in class "+this);
-			if (methods[i].name.equals(m.name) && methods[i].type.equals(m.type))
+			if (mm.name.equals(m.name) && mm.type.equals(m.type))
 				throw new RuntimeException("Method "+m+" already exists in class "+this);
 		}
-		methods.append(m);
-		m.parent = this;
-		if( gens != null ) {
-			for(int i=0; i < gens.length; i++) {
-				Struct s = gens[i].clazz;
-				assert(methods.length-1==s.methods.length);
-				Method sm = new Method(s, m.name.name,
-					(MethodType)Type.getRealType(s.type,m.type),
-					m.getFlags()
-					);
-				s.methods.append(sm);
-			}
+		members.append(m);
+		foreach (Struct g; gens) {
+			Struct s = g;
+			Method sm = new Method(s, m.name.name,
+				(MethodType)Type.getRealType(s.type,m.type),
+				m.getFlags()
+				);
+			sm.generated_from = m;
+			s.members.append(sm);
 		}
 		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
 		return m;
@@ -632,9 +581,20 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public void removeMethod(Method m) {
 		// Check we already have this method
 		int i = 0;
-		for(i=0; i < methods.length; i++) {
-			if( methods[i].equals(m) ) {
-				methods.del(i);
+		for(i=0; i < members.length; i++) {
+			if( members[i].equals(m) ) {
+				members.del(i);
+				foreach (Struct g; gens) {
+					for (int j=0; j < g.members.length; j++) {
+						if (g.members[i] instanceof Method) {
+							Method sm = (Method)g.members[j];
+							if (sm.generated_from == m) {
+								g.members.del(j);
+								break;
+							}
+						}
+					}
+				}
 				trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
 				return;
 			}
@@ -645,22 +605,45 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	/** Add information about new field that belongs to this class */
 	public Field addField(Field f) {
 		// Check we already have this field
-		for(int i=0; i < fields.length; i++) {
-			if( fields[i].equals(f) ) {
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field ff = (Field)n;
+			if( ff.equals(f) ) {
 				throw new RuntimeException("Field "+f+" already exists in class "+this);
 			}
 		}
-		fields.append(f);
-		f.parent = this;
-		if( gens != null ) {
-			for(int i=0; i < gens.length; i++) {
-				Struct s = gens[i].clazz;
-				Field sf = (Field)f.copy();
-				s.fields.append(sf);
-			}
+		members.append(f);
+		foreach (Struct g; gens) {
+			Struct s = g;
+			Field sf = (Field)f.copy();
+			sf.generated_from = f;
+			s.members.append(sf);
 		}
 		trace(Kiev.debugMembers,"Field "+f+" added to class "+this);
 		return f;
+	}
+
+	/** Remove information about a field that belongs to this class */
+	public void removeField(Field f) {
+		// Check we already have this method
+		for(int i=0; i < members.length; i++) {
+			if( members[i].equals(f) ) {
+				members.del(i);
+				foreach (Struct g; gens) {
+					for (int j=0; j < g.members.length; j++) {
+						if (g.members[i] instanceof Field) {
+							Field sf = (Field)g.members[j];
+							if (sf.generated_from == f) {
+								g.members.del(j);
+								break;
+							}
+						}
+					}
+				}
+				trace(Kiev.debugMembers,"Field "+f+" removed from class "+this);
+				return;
+			}
+		}
+		throw new RuntimeException("Field "+f+" do not exists in class "+this);
 	}
 
 	/** Add information about new pizza case of this class */
@@ -668,12 +651,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		setHasCases(true);
 		int caseno = 0;
 		PizzaCaseAttr case_attr = null;
-		for(int i=0; i < sub_clazz.length; i++) {
-			if( sub_clazz[i].isPizzaCase() ) {
-				case_attr = (PizzaCaseAttr)sub_clazz[i].getAttr(attrPizzaCase);
-				if( case_attr!=null && case_attr.caseno > caseno )
-					caseno = case_attr.caseno;
-			}
+		foreach (ASTNode n; members; n instanceof Struct && n.isPizzaCase()) {
+			Struct s = (Struct)n;
+			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+			if( case_attr!=null && case_attr.caseno > caseno )
+				caseno = case_attr.caseno;
 		}
 		case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 		if( case_attr == null ) {
@@ -683,16 +665,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		case_attr.caseno = caseno + 1;
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "
 			+this+" as case # "+case_attr.caseno);
-		// Add get$case$tag() method to itself
-//		if( case_attr.caseno == 1 ) {
-//			Method gettag = new Method(this,Constants.nameGetCaseTag,
-//				MethodType.newMethodType(MethodType.tpMethodClazz,Type.emptyArray,Type.tpInt),ACC_PUBLIC);
-//			gettag.body = new BlockStat(gettag.pos,gettag);
-//			((BlockStat)gettag.body).addStatement(
-//				new ReturnStat(gettag.pos,new ConstExpr(gettag.pos,Kiev.newInteger(0)))
-//			);
-//			addMethod(gettag);
-//		}
 		return cas;
 	}
 
@@ -792,11 +764,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		int i = 0;
 		KString ts = KString.from(makeTypeInfoString(t));
 	next_field:
-		foreach(Field f; fields;
-						f.isStatic() &&
-						f.init != null &&
-						f.name.name.startsWith(nameTypeInfo) &&
-						!f.name.name.equals(nameTypeInfo)) {
+		foreach(ASTNode n; members; n instanceof Field && n.isStatic()) {
+			Field f = (Field)n;
+			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
+				continue;
 			i++;
 			KString ti_str = (KString)((ConstExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
@@ -819,8 +790,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				), ti_args));
 		// Add initialization in <clinit>
 		Method class_init = null;
-		foreach(Method m; methods; m.name.equals(nameClassInit) ) {
-			class_init = m;
+		foreach(ASTNode m; members; m instanceof Method && ((Method)m).name.equals(nameClassInit) ) {
+			class_init = (Method)m;
 			break;
 		}
 		if( class_init == null ) {
@@ -867,11 +838,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 		}
 		Field wf = null;
-		foreach(Field f; fields; f.isForward()) {
+		foreach(ASTNode n; members; n instanceof Field && n.isForward()) {
 			if (wf == null)
-				wf = f;
+				wf = (Field)n;
 			else
-				throw new CompilerException(f.pos,"Wrapper class with multiple forward fields");
+				throw new CompilerException(n.pos,"Wrapper class with multiple forward fields");
 		}
 		if ( wf == null )
 			throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
@@ -880,12 +851,16 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	rule locatePackerField(Field@ f, int size)
+		ASTNode@ n;
+		Field ff;
 	{
 		super_clazz != null,
 		super_clazz.clazz.locatePackerField(f,size)
-	;	f @= fields,
-		f.isPackerField(),
-		(32-f.pack.size) >= size
+	;	n @= members,
+		n instanceof Field && n.isPackerField(),
+		ff = (Field)n : ff = null,
+		(32-ff.pack.size) >= size,
+		f ?= ff
 	}
 
 	private void autoGenerateTypeinfoClazz() {
@@ -899,6 +874,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			typeinfo_clazz = Env.newStruct(
 				ClazzName.fromOuterAndName(this,nameClTypeInfo,false,true),this,flags,true
 				);
+			members.add(typeinfo_clazz);
 			typeinfo_clazz.setPublic(true);
 			typeinfo_clazz.setResolved(true);
 			if (super_clazz != null && super_clazz.clazz.typeinfo_clazz != null)
@@ -991,9 +967,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public void autoGenerateMembers() {
 		checkResolved();
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
+		assert(generated_from == null);
 
 		// Setup packed/packer fields
-		foreach(Field f; fields; f.isPackedField() ) {
+		foreach(ASTNode n; members; n instanceof Field && n.isPackedField() ) {
+			Field f = (Field)n;
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
 			if( f.pack.packer == null ) {
@@ -1023,7 +1001,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				} else {
 					// Create
 					Field p = new Field(this,
-						KString.from("$pack$"+packer_field_counter),Type.tpInt,ACC_PUBLIC);
+						KString.from("$pack$"+countPackerFields()),Type.tpInt,ACC_PUBLIC);
 					p.pos = this.pos;
 					p.setPackerField(true);
 					p.pack = new Field.PackInfo(f.pack.size,0,null);
@@ -1039,17 +1017,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 		if( isEnum() ) {
 			int enum_fields = 0;
-			foreach (Field f; fields; f.isEnumField()) {
+			foreach (ASTNode n; members; n instanceof Field && n.isEnumField()) {
 				enum_fields++;
 			}
 			Field[] eflds = new Field[enum_fields];
 			int[] values = new int[enum_fields];
-			for(int i=0, idx=0; i < fields.length; i++, idx++) {
-				eflds[idx] = fields[i];
-				if (isPrimitiveEnum()) {
-					values[i] = ((Number)((ConstExpr)fields[i].init).getConstValue()).intValue();
-				} else {
-					values[i] = idx;
+			{
+				int idx = 0;
+				foreach (ASTNode n; members; n instanceof Field && n.isEnumField()) {
+					Field f = (Field)n;
+					eflds[idx] = f;
+					if (isPrimitiveEnum())
+						values[idx] = ((Number)((ConstExpr)f.init).getConstValue()).intValue();
+					else
+						values[idx] = idx;
+					idx ++;
 				}
 			}
 			if (isPrimitiveEnum()) {
@@ -1118,12 +1100,16 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			// Default <init> method, if no one is declared
 			boolean init_found = false;
 			// Add outer hidden parameter to constructors for inner and non-static classes
-			for(int i=0; i < methods.length; i++) {
-				if( !(methods[i].name.equals(nameInit) || methods[i].name.equals(nameNewOp)) ) continue;
-				if( methods[i].name.equals(nameInit) )
+			int i = -1;
+			foreach (ASTNode n; members; ) {
+				i++;
+				if !(n instanceof Method)
+					continue;
+				Method m = (Method)n;
+				if( !(m.name.equals(nameInit) || m.name.equals(nameNewOp)) ) continue;
+				if( m.name.equals(nameInit) )
 					init_found = true;
 				boolean retype = false;
-				Method m = methods[i];
 				Type[] targs = m.type.args;
 				package_clazz.checkResolved();
 				if( package_clazz.isClazz() && !isStatic() ) {
@@ -1149,10 +1135,13 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					// Make new MethodType for the constructor
 					m.type = MethodType.newMethodType(m.type.clazz,targs,m.type.ret);
 					m.jtype = (MethodType)m.type.getJavaType();
-					if( gens != null ) {
-						for(int g=0; g < gens.length; g++) {
-							gens[g].clazz.methods[i].type = (MethodType)Type.getRealType(gens[g],m.type);
-							gens[g].clazz.methods[i].jtype = (MethodType)Type.getRealType(gens[g],m.type).getJavaType();
+					foreach (Struct g; gens) {
+						foreach (ASTNode gn; g.members; gn instanceof Method) {
+							Method gm = (Method)gn;
+							if (gm.generated_from == m) {
+								gm.type = (MethodType)Type.getRealType(g.type,m.type);
+								gm.jtype = (MethodType)Type.getRealType(g.type,m.type).getJavaType();
+							}
 						}
 					}
 				}
@@ -1215,10 +1204,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		else if( isInterface() ) {
 			Struct defaults = null;
-			for(int i=0; i < methods.length; i++) {
-				methods[i].setPublic(true);
-				if( !methods[i].isAbstract() ) {
-					Method m = methods[i];
+			foreach (ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
+				m.setPublic(true);
+				if( !m.isAbstract() ) {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
@@ -1228,7 +1217,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					abstr.setAbstract(true);
 					abstr.params.copyFrom(m.params);
 					abstr.parent = this;
-					methods[i] = abstr;
+					members.replace(m, abstr);
 
 					// Make inner class name$default
 					if( defaults == null ) {
@@ -1236,7 +1225,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							ClazzName.fromOuterAndName(this,nameIdefault,false,true),
 							this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
 						);
-						defaults.parent = this;
+						members.add(defaults);
 						defaults.setResolved(true);
 						SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 						defaults.addAttr(sfa);
@@ -1252,8 +1241,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					m.parent = defaults;
 					defaults.addMethod(m);
 				}
-				if( isInterface() && !methods[i].isStatic()/*!methods[i].name.equals(nameClassInit)*/ ) {
-					methods[i].setAbstract(true);
+				if( isInterface() && !m.isStatic() ) {
+					m.setAbstract(true);
 				}
 			}
 		}
@@ -1433,24 +1422,25 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		if( super_clazz != null && !isInterface() )
 			mm = super_clazz.clazz.getOverwrittenMethod(base,m);
 		if( mmret == null && mm != null ) mmret = mm;
-		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this+" with "+methods.length+" methods");
-		for(int i=0; i < methods.length; i++) {
-			if( methods[i].isStatic() || methods[i].isPrivate() || methods[i].name.equals(nameInit) ) continue;
-			if( !methods[i].name.equals(m.name) || methods[i].type.args.length != m.type.args.length ) {
+		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method mi = (Method)n;
+			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
+			if( !mi.name.equals(m.name) || mi.type.args.length != m.type.args.length ) {
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
-			MethodType mit = (MethodType)Type.getRealType(base,methods[i].jtype);
+			MethodType mit = (MethodType)Type.getRealType(base,mi.jtype);
 			if( m.jtype.equals(mit) ) {
-				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+methods[i]+" of type "+mit+" in class "+this);
-				mm = methods[i];
+				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
+				mm = mi;
 				// Append constraints to m from mm
 				foreach(WorkByContractCondition cond; mm.conditions)
 					m.conditions.appendUniq(cond);
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
 			} else {
-				trace(Kiev.debugMultiMethod,"Method "+m+" does not overrides "+methods[i]+" of type "+mit+" in class "+this);
+				trace(Kiev.debugMultiMethod,"Method "+m+" does not overrides "+mi+" of type "+mit+" in class "+this);
 			}
 		}
 		return mmret;
@@ -1460,12 +1450,13 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
 		assert( PassInfo.clazz == this );
+		assert(generated_from == null);
 		// <clinit> & common$init, if need
 		Method class_init = null;
 		BlockStat instance_init = null;
 
-		for(int i=0; i < fields.length; i++) {
-			Field f = fields[i];
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field f = (Field)n;
 			if( isInterface() && !f.isAbstract() ) {
 				f.setStatic(true);
 				f.setFinal(true);
@@ -1485,8 +1476,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 			else if( f.isStatic() ) {
 				if( class_init == null ) {
-					foreach(Method m; methods; m.name.equals(nameClassInit) ) {
-						class_init = m;
+					foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) ) {
+						class_init = (Method)n;
 						break;
 					}
 				}
@@ -1521,18 +1512,16 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				instance_init.addStatement(init_stat);
 				init_stat.setHidden(true);
 			}
-			if( f.name.equals(KString.Empty) ) {
-				fields.del(i);
-				i--;
-			}
+			if( f.name.equals(KString.Empty) )
+				f.setAbstract(true);
 		}
 
 		// Generate super(...) constructor calls, if they are not
 		// specified as first statements of a constructor
 		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
-			for(int i=0; i < methods.length; i++) {
-				if( isInterface() && !methods[i].isAbstract() ) {
-					Method m = methods[i];
+			foreach (ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
+				if( isInterface() && !m.isAbstract() ) {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
@@ -1546,12 +1535,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					m.setVirtualStatic(true);
 					this.addMethod(abstr);
 				}
-				if( isInterface() && !methods[i].isStatic()/*!methods[i].name.equals(nameClassInit)*/ ) {
-					methods[i].setAbstract(true);
+				if( isInterface() && !m.isStatic() ) {
+					m.setAbstract(true);
 				}
-				if( !methods[i].name.equals(nameInit) ) continue;
-
-				Method m = methods[i];
+				if( !m.name.equals(nameInit) ) continue;
 
 				ASTNode initbody = m.body;
 
@@ -1637,30 +1624,29 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					stats.insert(new ASTStatementExpression(call_super),0);
 				}
 				int p = 1;
-//				MethodParamsAttr pa = (MethodParamsAttr)methods[i].getAttr(attrMethodParams);
 				if( package_clazz.isClazz() && !isStatic() ) {
 					stats.insert(
 						new ExprStat(pos,null,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
-								new VarAccessExpr(pos,methods[i].params[1])
+								new VarAccessExpr(pos,m.params[1])
 							)
 						),p++
 					);
 				}
 				if( isPizzaCase() ) {
 					for(int j= package_clazz.isClazz() && !isStatic() ? 2 : 1;
-												j < methods[i].params.length; j++ ) {
-						if( methods[i].params[j].name.name == nameTypeInfo )
+												j < m.params.length; j++ ) {
+						if( m.params[j].name.name == nameTypeInfo )
 							continue;
-						Field f = resolveField(methods[i].params[j].name.name);
+						Field f = resolveField(m.params[j].name.name);
 						if( f == null )
-							throw new RuntimeException("Can't find field "+methods[i].params[j].name.name);
+							throw new RuntimeException("Can't find field "+m.params[j].name.name);
 						stats.insert(
 							new ExprStat(pos,null,
 								new AssignExpr(pos,AssignOperator.Assign,
 									new AccessExpr(pos,new ThisExpr(pos),f),
-									new VarAccessExpr(pos,methods[i].params[j])
+									new VarAccessExpr(pos,m.params[j])
 								)
 							),p++
 						);
@@ -1693,8 +1679,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	}
 
 	protected void combineMethods() {
-		for(int i=0; i < methods.length; i++) {
-			Method m = methods[i];
+		for (int cur_m=0; cur_m < members.length; cur_m++) {
+			if !(members[cur_m] instanceof Method)
+				continue;
+			Method m = (Method)members[cur_m];
 			if (m.name.equals(nameClassInit) || m.name.equals(nameInit))
 				continue;
 			if( m.isMultiMethod() ) {
@@ -1708,22 +1696,23 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			Method mm = null;
 			// find all methods with the same java type
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
-			for(int j=i; j < methods.length; j++) {
-				if (m.isRuleMethod() != methods[j].isRuleMethod())
+			foreach (ASTNode nj; members; nj instanceof Method) {
+				Method mj = (Method)nj;
+				if (m.isRuleMethod() != mj.isRuleMethod())
 					continue;
-				if( !methods[j].name.equals(m.name) || methods[j].type.args.length != m.type.args.length )
+				if( !mj.name.equals(m.name) || mj.type.args.length != m.type.args.length )
 					continue;
-				MethodType type2 = methods[j].dtype;
-				if (type2==null) type2 = methods[j].type;
+				MethodType type2 = mj.dtype;
+				if (type2==null) type2 = mj.type;
 				if (type1.isMultimethodSuper(type2)) {
-					trace(Kiev.debugMultiMethod,"added dispatchable method "+methods[j]);
-					if (mm == null && type1.equals(methods[j].type)) {
-						trace(Kiev.debugMultiMethod,"will attach dispatching to this method "+methods[j]);
-						mm = methods[j];
+					trace(Kiev.debugMultiMethod,"added dispatchable method "+mj);
+					if (mm == null && type1.equals(mj.type)) {
+						trace(Kiev.debugMultiMethod,"will attach dispatching to this method "+mj);
+						mm = mj;
 					}
-					mlistb.append(methods[j]);
+					mlistb.append(mj);
 				} else {
-					trace(Kiev.debugMultiMethod,"methods "+methods[j]+" with dispatch type "+type2+" doesn't match...");
+					trace(Kiev.debugMultiMethod,"methods "+mj+" with dispatch type "+type2+" doesn't match...");
 				}
 			}
 			Method overwr = null;
@@ -1846,7 +1835,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					// also, check if we just removed current method,
 					// and correct iterator index
 					if (m == rm)
-						i--;
+						cur_m--;
 				} else {
 					add_mm = false;	// do not add it
 				}
@@ -1856,19 +1845,20 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 
 		// Setup java types for methods
-		for(int i=0; i < methods.length; i++) {
-			if( methods[i].isStatic() || methods[i].isPrivate() || methods[i].name.equals(nameInit) ) continue;
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method mi = (Method)n;
+			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
 			Method m = null;
 			if( super_clazz != null )
-				m = super_clazz.clazz.getOverwrittenMethod(this.type,methods[i]);
+				m = super_clazz.clazz.getOverwrittenMethod(this.type,mi);
 			foreach(Type si; interfaces ) {
-				if( m == null ) m = si.clazz.getOverwrittenMethod(this.type,methods[i]);
-				else si.clazz.getOverwrittenMethod(this.type,methods[i]);
+				if( m == null ) m = si.clazz.getOverwrittenMethod(this.type,mi);
+				else si.clazz.getOverwrittenMethod(this.type,mi);
 			}
 			if( m == null ) {
-				methods[i].jtype = (MethodType)methods[i].type.getJavaType();
+				mi.jtype = (MethodType)mi.type.getJavaType();
 			} else {
-				methods[i].jtype = m.jtype;
+				mi.jtype = m.jtype;
 			}
 		}
 
@@ -2063,35 +2053,18 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 		if( isClazz() ) {
 			boolean make_abstract = false;
-			foreach(Method m; methods; m.isAbstract()) {
-				if( m.isStatic() ) {
-					m.setBad(true);
-					this.setBad(true);
-					Kiev.reportError(m.pos,"Static method cannot be declared abstract");
-				}
-//				if( !isAbstract() ) {
-//					m.setBad(true);
-//					this.setBad(true);
-//					make_abstract = true;
-//					Kiev.reportError(m.pos,"Class "+this+" must be declared abstract because of method "+m);
-//				}
+			foreach(ASTNode n; members; n instanceof Method && n.isAbstract() && n.isStatic()) {
+				Method m = (Method)n;
+				m.setBad(true);
+				this.setBad(true);
+				Kiev.reportError(m.pos,"Static method cannot be declared abstract");
 			}
-//			if( make_abstract ) this.setAbstract(true);
 		}
-
-		//if( !(isInterface() || isPackage()) ) {
-		//	processDispatchMethods();
-		//	processMultiMethods();
-		//}
 
 		// Check all methods
 		if( !isAbstract() && isClazz() ) {
 			List<Method> ms = List.Nil;
 			ms = collectVTmethods(ms);
-//			foreach(Method am; ms; am.isAbstract() ) {
-//				Kiev.reportError(pos,"Class "+this+" must be declared abstract because of method "+am);
-//				setAbstract(true);
-//			}
 		}
 
 		setMembersGenerated(true);
@@ -2104,37 +2077,37 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	// if not and method is VirtualStatic - add proxy method to 'me'
 	public void autoProxyMethods(Struct me) {
 		Struct defaults = null;
-		foreach(Struct s; sub_clazz; s.isClazz() && s.name.short_name.equals(nameIdefault) ) {
-			defaults = s;
-			break;
+		foreach(ASTNode n; members; n instanceof Struct && n.isClazz()) {
+			Struct s = (Struct)n;
+			if (s.name.short_name.equals(nameIdefault) ) {
+				defaults = s;
+				break;
+			}
 		}
-		for(int i=0; i < methods.length; i++) {
-			if( methods[i].isStatic() ) continue;
+		foreach (ASTNode n; members; n instanceof Method && !n.isStatic()) {
+			Method mi = (Method)n;
 			Struct s = me;
 			boolean found = false;
 		scan_class:
 			for(;;) {
-				for(int j=0; j < s.methods.length; j++) {
-					if( !s.methods[j].isStatic()
-					 && s.methods[j].name.equals(methods[i].name)
-					) {
-						if( Type.getRealType(me.type,s.methods[j].type).equals(
-										Type.getRealType(me.type,methods[i].type)) ) {
-							trace(Kiev.debugResolve,"chk: methods "+methods[i].name+
-									Type.getRealType(me.type,s.methods[j].type)+
-									" and "+methods[i].name+
-									Type.getRealType(me.type,methods[i].type)+" equals");
-							if( !s.methods[j].isPublic() ) {
-								Kiev.reportWarning(0,"Method "+s+"."+s.methods[j]+" must be declared public");
-								s.methods[j].setPublic(true);
+				foreach (ASTNode sn; s.members; sn instanceof Method) {
+					Method mj = (Method)sn;
+					if( !mj.isStatic() && mj.name.equals(mi.name) ) {
+						if( Type.getRealType(me.type,mj.type).equals(
+										Type.getRealType(me.type,mi.type)) ) {
+							trace(Kiev.debugResolve,"chk: methods "+mi.name+
+									Type.getRealType(me.type,mj.type)+
+									" and "+mi.name+Type.getRealType(me.type,mi.type)+" equals");
+							if( !mj.isPublic() ) {
+								Kiev.reportWarning(0,"Method "+s+"."+mj+" must be declared public");
+								mj.setPublic(true);
 							}
 						 	found = true;
 						 	break scan_class;
 						 } else {
-							trace(Kiev.debugResolve,"chk: methods "+methods[i].name+
-									Type.getRealType(me.type,s.methods[j].type)+
-									" and "+methods[i].name+
-									Type.getRealType(me.type,methods[i].type)+" not equals");
+							trace(Kiev.debugResolve,"chk: methods "+mi.name+
+									Type.getRealType(me.type,mj.type)+
+									" and "+mi.name+Type.getRealType(me.type,mi.type)+" not equals");
 						 }
 					 }
 				}
@@ -2144,27 +2117,27 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 			if( found ) continue;
 			// Not found, check for VirtualStatic()
-			Method m = methods[i];
+			Method m = mi;
 			// Check this methods was produced from non-abstract method
-			for(int n=0; defaults != null && n < defaults.methods.length; n++) {
-				if( defaults.methods[n].isStatic()
-				 && m.name.equals(methods[n].name)
-				 && m.type.args.length == (defaults.methods[n].type.args.length-1)
-				) {
-					boolean match = true;
-					for(int p=0; p < m.type.args.length; p++) {
-						if( !m.type.args[p].equals(defaults.methods[n].type.args[p+1]) ) {
-							match = false;
+			if (defaults != null) {
+				foreach (ASTNode nn; defaults.members; nn instanceof Method) {
+					Method mn = (Method)nn;
+					if( mn.isStatic() && m.name.equals(mn.name) && m.type.args.length == (mn.type.args.length-1)) {
+						boolean match = true;
+						for(int p=0; p < m.type.args.length; p++) {
+							if( !m.type.args[p].equals(mn.type.args[p+1]) ) {
+								match = false;
+								break;
+							}
+						}
+						if( match ) {
+//							System.out.println(""+m+" "+m.isStatic()+" == "+defaults.methods[n]+" "+defaults.methods[n].isStatic());
+							m = mn;
 							break;
 						}
 					}
-					if( match ) {
-//						System.out.println(""+m+" "+m.isStatic()+" == "+defaults.methods[n]+" "+defaults.methods[n].isStatic());
-						m = defaults.methods[n];
-						break;
-					}
+//					System.out.println(""+m+" "+m.isStatic()+" != "+defaults.methods[n]+" "+defaults.methods[n].isStatic());
 				}
-//				System.out.println(""+m+" "+m.isStatic()+" != "+defaults.methods[n]+" "+defaults.methods[n].isStatic());
 			}
 			if( m.isStatic() && m.isVirtualStatic() ) {
 				Type[] types = new Type[m.type.args.length-1];
@@ -2232,8 +2205,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		state.guarded = true;
 		try {
 			// Resolve final values of class's fields
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				Field f = fields[i];
+			foreach (ASTNode n; members; n instanceof Field) {
+				Field f = (Field)n;
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
 				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
@@ -2280,8 +2253,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			try {
 				foreach (Meta m; meta)
 					m.resolve();
-				foreach(Field f; fields) {
-					foreach (Meta m; f.meta)
+				foreach(ASTNode f; members; f instanceof Field) {
+					foreach (Meta m; ((Field)f).meta)
 						m.resolve();
 				}
 			} finally {
@@ -2294,9 +2267,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		} finally { PassInfo.pop(this); }
 		try {
 			if( !isPackage() ) {
-				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					if( !sub_clazz[i].isAnonymouse() /*&& !sub_clazz[i].isPassed_2()*/)
-						sub_clazz[i].resolve(null);
+				foreach (ASTNode n; members; n instanceof Struct) {
+					Struct ss = (Struct)n;
+					ss.resolve(null);
 				}
 			}
 		} catch(Exception e ) {
@@ -2316,13 +2289,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			PassInfo.push(ps);
 		try {
 			// Verify access
-			foreach(Field f; fields) {
+			foreach(ASTNode n; members; n instanceof Field) {
+				Field f = (Field)n;
 				try {
 					f.type.clazz.checkResolved();
 					f.type.clazz.acc.verifyReadWriteAccess(f.type.clazz);
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
-			foreach(Method m; methods) {
+			foreach(ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
 				try {
 					m.type.ret.clazz.checkResolved();
 					m.type.ret.clazz.acc.verifyReadWriteAccess(m.type.ret.clazz);
@@ -2333,8 +2308,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
 
-			for(int i=0; methods!=null && i < methods.length; i++) {
-				methods[i] = (Method)methods[i].resolve(null);
+			foreach(ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
+				m.resolve(null);
 			}
 			if( type.args != null && type.args.length > 0 && !(type instanceof MethodType) ) {
 				ClassArgumentsAttr a = new ClassArgumentsAttr();
@@ -2349,14 +2325,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {
 				Field[] proxy_fields = Field.emptyArray;
-				for(int i=0; i < fields.length; i++) {
-					if( fields[i].isNeedProxy() )
-						proxy_fields = (Field[])Arrays.append(proxy_fields,fields[i]);
+				foreach(ASTNode n; members; n instanceof Field) {
+					Field f = (Field)n;
+					if( f.isNeedProxy() )
+						proxy_fields = (Field[])Arrays.append(proxy_fields,f);
 				}
 				if( proxy_fields.length > 0 ) {
-					for(int i=0; methods!=null && i < methods.length; i++) {
-						if( !methods[i].name.equals(nameInit) ) continue;
-						Method m = methods[i];
+					foreach(ASTNode n; members; n instanceof Method) {
+						Method m = (Method)n;
+						if( !m.name.equals(nameInit) ) continue;
 						Type[] tps = m.type.args;
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
@@ -2393,7 +2370,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	List<Method> addMethodsToVT(Type tp, List<Method> ms, boolean by_name_name) {
 	next_method:
-		foreach(Method m; methods; !m.isStatic() && !m.name.equals(nameInit) ) {
+		foreach(ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			if (!m.isStatic() && !m.name.equals(nameInit))
+				continue;
 			for(List<Method> msi = ms; msi != List.Nil; msi = msi.tail()) {
 				if( (  (by_name_name && m.name.name.equals(msi.head().name.name))
 					|| (!by_name_name && m.name.equals(msi.head().name)) )
@@ -2444,7 +2424,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	public void generate() {
 		Struct jthis = Kiev.argtype == null? this : Kiev.argtype.clazz;
-//		if( Kiev.verbose ) System.out.println("[ Generating class  "+jthis+"]");
+		if( Kiev.verbose ) System.out.println("[ Generating class  "+jthis+"]");
 		if( Kiev.safe && isBad() ) return;
 		PassInfo.push(this);
 		try {
@@ -2508,7 +2488,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				addAttr(a);
 			}
 
-			if( packed_field_counter > 0 ) {
+			if( countPackedFields() > 0 ) {
 				addAttr(new PackedFieldsAttr(this));
 			}
 
@@ -2526,8 +2506,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				}
 			}
 
-			if( jthis.gens != null ) {
-				jthis.addAttr(new GenerationsAttr(jthis.gens));
+			if( jthis.gens.length > 0 ) {
+				Type[] t = new Type[jthis.gens.length];
+				for (int i=0; i < t.length; i++)
+					t[i] = jthis.gens[i].type;
+				jthis.addAttr(new GenerationsAttr(t));
 			} else {
 				for(int i=0; i < attrs.length; i++) {
 					if( attrs[i].name == attrGenerations ) {
@@ -2551,8 +2534,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
 			
 			for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
-			for(int i=0; fields!=null && i < fields.length; i++) {
-				Field f = fields[i];
+			foreach (ASTNode n; members; n instanceof Field) {
+				Field f = (Field)n;
 				ConstPool.addAsciiCP(f.name.name);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).signature);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).java_signature);
@@ -2578,11 +2561,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				for(int j=0; f.attrs != null && j < f.attrs.length; j++)
 					f.attrs[j].generate();
 			}
-			for(int i=0; methods!=null && i < methods.length; i++) {
-				Method m = methods[i];
-				m.type.checkJavaSignature();
-				if( this != jthis )
-					jthis.methods[i].type.checkJavaSignature();
+			foreach (ASTNode m; members; m instanceof Method)
+				((Method)m).type.checkJavaSignature();
+			foreach (ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
 				ConstPool.addAsciiCP(m.name.name);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature);
 				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).java_signature);
@@ -2649,7 +2631,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				if( Kiev.safe && isBad() ) return;
 			}
 			ConstPool.generate();
-			foreach(Method m; methods) {
+			foreach (ASTNode n; members; n instanceof Method) {
+				Method m = (Method)n;
 				CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 				if( ca != null ) {
 					trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
@@ -2720,19 +2703,20 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		dmp.forsed_space().append('{').newLine(1);
 		if( !isPackage() ) {
-			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-				if( sub_clazz[i].isLocal() ) continue;
-				if( sub_clazz[i].isArgument() ) continue;
-//				if( !(sub_clazz[i] instanceof Struct) ) continue;
-				sub_clazz[i].toJavaDecl(dmp).newLine();
+			foreach (ASTNode n; members; n instanceof Struct) {
+				Struct s = (Struct)n;
+				if( n.isArgument() ) continue;
+				n.toJavaDecl(dmp).newLine();
 			}
 		}
-		for(int i=0; fields!=null && i < fields.length; i++) {
-			fields[i].toJavaDecl(dmp).newLine();
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field f = (Field)n;
+			f.toJavaDecl(dmp).newLine();
 		}
-		for(int i=0; methods!=null && i < methods.length; i++) {
-			if( methods[i].name.equals(nameClassInit) ) continue;
-			methods[i].toJavaDecl(dmp).newLine();
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			if( m.name.equals(nameClassInit) ) continue;
+			m.toJavaDecl(dmp).newLine();
 		}
 		dmp.newLine(-1).append('}').newLine();
 		} finally { PassInfo.pop(this); }
@@ -2746,24 +2730,25 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 		}
 
-		for(int i=0; fields!=null && i < fields.length; i++) {
-			Field f = fields[i];
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field f = (Field)n;
 			if( f.init != null && !f.isFinal() && !f.init.isConstantExpr() )
 				f.init = null;
 			else if( f.init != null )
 				f.init.parent = null;
 			f.attrs = Attr.emptyArray;
 		}
-		for(int i=0; methods!=null && i < methods.length; i++) {
-			methods[i].params.delAll();
-			methods[i].body = null;
-			Attr[] ats = methods[i].attrs;
-			methods[i].attrs = Attr.emptyArray;
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			m.params.delAll();
+			m.body = null;
+			Attr[] ats = m.attrs;
+			m.attrs = Attr.emptyArray;
 			for(int j=0; j < ats.length; j++) {
 				if( ats[j].name.equals(attrExceptions) )
-					methods[i].addAttr(ats[j]);
+					m.addAttr(ats[j]);
 			}
-			methods[i].cleanup();
+			m.cleanup();
 		}
 		Attr[] ats = this.attrs;
 		this.attrs = Attr.emptyArray;
@@ -2782,7 +2767,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	public boolean setBody(Statement body) {
 		if( !isPizzaCase() ) return false;
-		Method init = methods[0];
+		Method init = (Method)members[0];
 		if (init.body != null)
 			((BlockStat)init.body).addStatement(body);
 		else

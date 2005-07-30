@@ -84,7 +84,8 @@ public final class ProcessVNode implements Constants {
 		Meta m = s.meta.get(mnNode);
 		if (m != null) {
 			// Check fields of the @node
-			foreach (Field f; s.fields) {
+			foreach (ASTNode n; s.members; n instanceof Field) {
+				Field f = (Field)n;
 				if (f.parent == null) {
 					Kiev.reportWarning(f.pos,"Field "+f+" has no parent");
 					f.parent = s;
@@ -161,13 +162,16 @@ public final class ProcessVNode implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach(Field f; s.fields; f.name.equals(name) ) return true;
+		foreach (ASTNode n; s.members; n instanceof Field && ((Field)n).name.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name, KString sign) {
 		s.checkResolved();
-		foreach(Method m; s.methods; m.name.equals(name) && m.type.signature.equals(sign) ) return true;
+		foreach (ASTNode n; s.members; n instanceof Method) {
+			Method m = (Method)n;
+			if (m.name.equals(name) && m.type.signature.equals(sign) ) return true;
+		}
 		return false;
 	}
 	
@@ -182,7 +186,8 @@ public final class ProcessVNode implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (Field f; ss.fields; f.meta.get(mnAtt) != null) {
+				foreach (ASTNode n; ss.members; n instanceof Field && ((Field)n).meta.get(mnAtt) != null) {
+					Field f = (Field)n;
 					aflds.insert(p, f);
 					p++;
 				}
@@ -258,7 +263,8 @@ public final class ProcessVNode implements Constants {
 				Struct ss = s;
 				while (ss != null && ss.meta.get(mnNode) != null) {
 					int p = 1;
-					foreach (Field f; ss.fields) {
+					foreach (ASTNode n; ss.members; n instanceof Field) {
+						Field f = (Field)n;
 						if (f.isPackedField() || f.isAbstract() || f.isStatic())
 							continue;
 						if (f.name.equals(nameParent))

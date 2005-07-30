@@ -101,19 +101,18 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					Kiev.reportInfo("Generated clas "+members[i],diff_time);
 				if( members[i] instanceof Struct ) {
 					Struct s = (Struct)members[i];
-					if( s.gens != null ) {
-						foreach(Type t; s.gens) {
-							Type oldargtype = Kiev.argtype;
-							Kiev.argtype = t;
-							try {
-								diff_time = curr_time = System.currentTimeMillis();
-								s.generate();
-								diff_time = System.currentTimeMillis() - curr_time;
-								if( Kiev.verbose )
-									Kiev.reportInfo("Generated clas "+t.clazz,diff_time);
-							} finally {
-								Kiev.argtype = oldargtype;
-							}
+					foreach(Struct gen; s.gens) {
+						Type t = gen.type;
+						Type oldargtype = Kiev.argtype;
+						Kiev.argtype = t;
+						try {
+							diff_time = curr_time = System.currentTimeMillis();
+							s.generate();
+							diff_time = System.currentTimeMillis() - curr_time;
+							if( Kiev.verbose )
+								Kiev.reportInfo("Generated clas "+t.clazz,diff_time);
+						} finally {
+							Kiev.argtype = oldargtype;
 						}
 					}
 				}
@@ -208,15 +207,14 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					toJava(output_dir, members[i]);
 					if( members[i] instanceof Struct ) {
 						Struct s = (Struct)members[i];
-						if( s.gens != null ) {
-							foreach(Type t; s.gens) {
-								Type oldargtype = Kiev.argtype;
-								Kiev.argtype = t;
-								try {
-									toJava(output_dir, members[i]);
-								} finally {
-									Kiev.argtype = oldargtype;
-								}
+						foreach(Struct gen; s.gens) {
+							Type t = gen.type;
+							Type oldargtype = Kiev.argtype;
+							Kiev.argtype = t;
+							try {
+								toJava(output_dir, members[i]);
+							} finally {
+								Kiev.argtype = oldargtype;
 							}
 						}
 					}

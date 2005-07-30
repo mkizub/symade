@@ -121,6 +121,10 @@ public class Env extends Struct {
 	public static String getProperty(String prop) {
 		return props.getProperty(prop);
 	}
+	
+	public String toString() {
+		return "<root>";
+	}
 
 	public static Struct newStruct(ClazzName name, boolean cleanup) {
 		KString package_name = name.package_bytecode_name();
@@ -147,12 +151,10 @@ public class Env extends Struct {
 				cl.super_clazz = null;
 				cl.interfaces.delAll();
 				cl.sub_clazz.delAll();
-				cl.fields.delAll();
 				cl.wrapped_field = null;
-				if( cl.methods != null ) {
-					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
-				}
-				cl.methods.delAll();
+				foreach(ASTNode n; cl.members; n instanceof Method && ((Method)n).isOperatorMethod() )
+					Operator.cleanupMethod((Method)n);
+				cl.members.delAll();
 				cl.imported.delAll();
 				cl.attrs = Attr.emptyArray;
 			}
@@ -236,7 +238,7 @@ public class Env extends Struct {
 			new KStringBuffer(outer.name.bytecode_name.len+8)
 				.append_fast(outer.name.bytecode_name)
 				.append_fast((byte)'$')
-				.append(outer.anonymouse_inner_counter)
+				.append(outer.countAnonymouseInnerStructs())
 				.append((byte)'$')
 				.append(nm)
 				.toKString(),

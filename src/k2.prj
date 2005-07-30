@@ -221,7 +221,6 @@ kiev.parser.kiev020 kiev/parser/kiev020 kiev\parser\kiev020.java
 kiev.parser.kiev020Constants kiev/parser/kiev020Constants kiev\parser\kiev020Constants.java
 kiev.parser.kiev020TokenManager kiev/parser/kiev020TokenManager kiev\parser\kiev020TokenManager.java
 kiev.parser.kiev020TreeConstants kiev/parser/kiev020TreeConstants kiev\parser\kiev020TreeConstants.java
-kiev.stdlib.Applayable kiev/stdlib/Applayable kiev\stdlib\Applayable.java
 kiev.stdlib.Array kiev/stdlib/Array kiev\stdlib\SupportTypes.java
 kiev.stdlib.ArrayEnumerator kiev/stdlib/ArrayEnumerator kiev\stdlib\ArrayEnumerator.java
 kiev.stdlib.Arrays kiev/stdlib/Arrays kiev\stdlib\Arrays.java
@@ -243,11 +242,9 @@ kiev.stdlib.Cell_void kiev/stdlib/Cell_void kiev\stdlib\SupportTypes.java
 kiev.stdlib.Convert kiev/stdlib/Convert kiev\stdlib\KString.java
 kiev.stdlib.Debug kiev/stdlib/Debug kiev\stdlib\Debug.java
 kiev.stdlib.Dictionary kiev/stdlib/Dictionary kiev\stdlib\Dictionary.java
-kiev.stdlib.Dynamic kiev/stdlib/Dynamic kiev\stdlib\Dynamic.java
 kiev.stdlib.EnsureFailedException kiev/stdlib/EnsureFailedException kiev\stdlib\Debug.java
 kiev.stdlib.Enum kiev/stdlib/Enum kiev\stdlib\Enum.java
 kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeration.java
-kiev.stdlib.FirstOrderFunction kiev/stdlib/FirstOrderFunction kiev\stdlib\FirstOrderFunction.java
 kiev.stdlib.Hash kiev/stdlib/Hash kiev\stdlib\Hash.java
 kiev.stdlib.Hash$HashEntry kiev/stdlib/Hash$HashEntry kiev\stdlib\Hash.java
 kiev.stdlib.Hash$HashEnumerator kiev/stdlib/Hash$HashEnumerator kiev\stdlib\Hash.java
@@ -275,7 +272,6 @@ kiev.stdlib.List.ListEnumerator kiev/stdlib/List$ListEnumerator kiev\stdlib\List
 kiev.stdlib.List.Nil kiev/stdlib/List$Nil kiev\stdlib\List.java
 kiev.stdlib.ListBuffer kiev/stdlib/ListBuffer kiev\stdlib\ListBuffer.java
 kiev.stdlib.MatchError kiev/stdlib/MatchError kiev\stdlib\MatchError.java
-kiev.stdlib.MessageNotUnderstoodException kiev/stdlib/MessageNotUnderstoodException kiev\stdlib\MessageNotUnderstoodException.java
 kiev.stdlib.NoSuchElementException kiev/stdlib/NoSuchElementException kiev\stdlib\NoSuchElementException.java
 kiev.stdlib.Null kiev/stdlib/Null kiev\stdlib\SupportTypes.java
 kiev.stdlib.PEnv kiev/stdlib/PEnv kiev\stdlib\PEnv.java
@@ -384,6 +380,7 @@ kiev.vlang.FlagsAttr kiev/vlang/FlagsAttr kiev\vlang\Attr.java
 kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
 kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java
 kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
+kiev.vlang.GenInfo kiev/vlang/GenInfo kiev\vlang\Struct.java
 kiev.vlang.GenerationsAttr kiev/vlang/GenerationsAttr kiev\vlang\Attr.java
 kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
@@ -450,6 +447,7 @@ kiev.vlang.OpTypes.rtUpperCastNumber kiev/vlang/OpTypes$rtUpperCastNumber kiev\v
 kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 kiev.vlang.OperatorAttr kiev/vlang/OperatorAttr kiev\vlang\Attr.java
 kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.OuterThisAccessExpr$SelfAccessExpr kiev/vlang/OuterThisAccessExpr$SelfAccessExpr kiev\vlang\LvalueExpr.java bad
 kiev.vlang.PackedFieldsAttr kiev/vlang/PackedFieldsAttr kiev\vlang\Attr.java
 kiev.vlang.PackerFieldAttr kiev/vlang/PackerFieldAttr kiev\vlang\Attr.java
 kiev.vlang.ParMetaAttr kiev/vlang/ParMetaAttr kiev\vlang\Attr.java
@@ -494,6 +492,7 @@ kiev.vlang.StaticFieldAccessExpr kiev/vlang/StaticFieldAccessExpr kiev\vlang\Lva
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
+kiev.vlang.Struct$GenInfo kiev/vlang/Struct$GenInfo kiev\vlang\Struct.java
 kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java

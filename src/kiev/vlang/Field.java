@@ -62,8 +62,10 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	public Method[]			invs = Method.emptyArray;
 
 	/** Getter/setter methods for this field */
-	@ref public Method		get = null;
-	@ref public Method		set = null;
+	@ref public Method		get;
+	@ref public Method		set;
+	
+	@ref public Field		generated_from;
 
 	public static class PackInfo {
 		public int		size;

@@ -52,6 +52,8 @@ public interface TopLevelDecl {
 	public ASTNode resolveImports() { return (ASTNode)this; }
 	// resolveFinalFields()
 	public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
+	// dump
+	public Dumper  toJavaDecl(Dumper dmp);
 };
 
 public enum TopLevelPass /*extends int*/ {
@@ -806,7 +808,9 @@ public abstract class Expr extends ASTNode {
 	}
 
 	public void		generate(Type reqType) {
-		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation");
+		Dumper dmp = new Dumper();
+		dmp.append(this);
+		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
 	}
 
 	public int		getPriority() { return 0; }
@@ -1002,7 +1006,9 @@ public abstract class Statement extends ASTNode {
 	}
 
 	public void		generate(Type reqType) {
-		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation");
+		Dumper dmp = new Dumper();
+		dmp.append(this);
+		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, stat: "+dmp.toString());
 	}
 
 	public ASTNode	resolve(Type reqType) { return this; }

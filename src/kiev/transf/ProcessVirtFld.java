@@ -35,14 +35,14 @@ import static kiev.stdlib.Debug.*;
 public final class ProcessVirtFld implements Constants {
 	
 	public void createMembers(Struct s) {
-		foreach(Field f; s.fields)
-			addMethodsForVirtualField(s, f);
+		foreach(ASTNode n; s.members; n instanceof Field)
+			addMethodsForVirtualField(s, (Field)n);
 		addAbstractFields(s);
-		foreach (Field f; s.fields) {
-			if (!f.isVirtual())
+		foreach(ASTNode n; s.members; n instanceof Field) {
+			if (!n.isVirtual())
 				continue;
-			if (s.isInterface() && !f.isAbstract())
-				f.setAbstract(true);
+			if (s.isInterface() && !n.isAbstract())
+				n.setAbstract(true);
 		}
 	}
 	
@@ -63,7 +63,8 @@ public final class ProcessVirtFld implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		foreach(Method m; s.methods; m.name.name.byteAt(3) == '$') {
+		foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.name.byteAt(3) == '$') {
+			Method m = (Method)n;
 			if( m.name.equals(set_name) ) {
 				set_found = true;
 				if( get_found ) break;
@@ -230,7 +231,8 @@ public final class ProcessVirtFld implements Constants {
 	}
 	
 	public void addAbstractFields(Struct s) {
-		foreach(Method m; s.methods) {
+		foreach(ASTNode n; s.members; n instanceof Method) {
+			Method m = (Method)n;
 			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
 			if (m.name.name.startsWith(nameSet))
 				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);

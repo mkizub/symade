@@ -94,9 +94,9 @@ public class Type extends ASTNode implements AccessFlags {
 	@ref public static Type tpKievEnumeration;
 	@ref public static Type tpRuntimeException;
 	@ref public static Type tpAssertException;
-	@ref public static Type tpMessageException;
-	@ref public static Type tpApplayable;
-	@ref public static Type tpDynamic;
+	//@ref public static Type tpMessageException;
+	//@ref public static Type tpApplayable;
+	//@ref public static Type tpDynamic;
 	@ref public static Type tpEnum;
 	@ref public static Type tpAnnotation;
 	@ref public static Struct tpClosureClazz;
@@ -432,20 +432,20 @@ public class Type extends ASTNode implements AccessFlags {
 		tpAssertExceptionClazz.type	= tpAssertException;
 		typeHash.put(tpAssertException);
 
-		Struct tpMessageExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/MessageNotUnderstoodException;")),kiev_stdlib,ACC_PUBLIC);
-		tpMessageException				= new Type(tpMessageExceptionClazz);
-		tpMessageExceptionClazz.type	= tpMessageException;
-		typeHash.put(tpMessageException);
+//		Struct tpMessageExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/MessageNotUnderstoodException;")),kiev_stdlib,ACC_PUBLIC);
+//		tpMessageException				= new Type(tpMessageExceptionClazz);
+//		tpMessageExceptionClazz.type	= tpMessageException;
+//		typeHash.put(tpMessageException);
 
-		Struct tpApplayableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Applayable;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
-		tpApplayable				= new Type(tpApplayableClazz);
-		tpApplayableClazz.type		= tpApplayable;
-		typeHash.put(tpApplayable);
+//		Struct tpApplayableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Applayable;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
+//		tpApplayable				= new Type(tpApplayableClazz);
+//		tpApplayableClazz.type		= tpApplayable;
+//		typeHash.put(tpApplayable);
 
-		Struct tpDynamicClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Dynamic;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
-		tpDynamic				= new Type(tpDynamicClazz);
-		tpDynamicClazz.type		= tpDynamic;
-		typeHash.put(tpDynamic);
+//		Struct tpDynamicClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Dynamic;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
+//		tpDynamic				= new Type(tpDynamicClazz);
+//		tpDynamicClazz.type		= tpDynamic;
+//		typeHash.put(tpDynamic);
 
 		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enum;")),kiev_stdlib,ACC_PUBLIC | ACC_ABSTRACT);
 		tpEnum					= new Type(tpEnumClazz);
@@ -572,18 +572,18 @@ public class Type extends ASTNode implements AccessFlags {
 		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
 			this.args = args;
-			if( clazz.gens != null ) {
+			if( clazz.gens.length > 0 ) {
 				boolean best_found = false;
 				int i,j;
 		next_gen:
 				for(i=0; i < clazz.gens.length && clazz.gens[i] != null; i++) {
 					for(j=0; j < args.length; j++) {
-						if( !(clazz.gens[i].args[j].isReference() && args[j].isReference()
-							|| clazz.gens[i].args[j] == args[j]
+						if( !(clazz.gens[i].type.args[j].isReference() && args[j].isReference()
+							|| clazz.gens[i].type.args[j] == args[j]
 						))
 							continue next_gen;
 					}
-					this.clazz = clazz = clazz.gens[i].clazz;
+					this.clazz = clazz = clazz.gens[i];
 					best_found = true;
 					break;
 				}
@@ -591,14 +591,15 @@ public class Type extends ASTNode implements AccessFlags {
 			next_gen1:
 					for(i=0; i < clazz.gens.length && clazz.gens[i] != null; i++) {
 						for(j=0; j < args.length; j++) {
-							if( !(clazz.gens[i].args[j].isReference() && args[j].isReference()
-								|| clazz.gens[i].args[j] == args[j]
-								|| (clazz.gens[i].args[j] == Type.tpInt && args[j].isIntegerInCode())
-								|| (clazz.gens[i].args[j] == Type.tpFloat && args[j] == Type.tpDouble)
+							Type gt = clazz.gens[i].type.args[j];
+							if( !( gt.isReference() && args[j].isReference()
+								|| gt == args[j]
+								|| (gt == Type.tpInt && args[j].isIntegerInCode())
+								|| (gt == Type.tpFloat && args[j] == Type.tpDouble)
 							))
 								continue next_gen1;
 						}
-						this.clazz = clazz = clazz.gens[i].clazz;
+						this.clazz = clazz = clazz.gens[i];
 						break;
 					}
 				}

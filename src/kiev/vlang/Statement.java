@@ -608,7 +608,7 @@ public class DeclStat extends Statement {
 @node
 public class TypeDeclStat extends Statement/*defaults*/ {
 
-	@ref public Struct		struct;
+	@att public Struct		struct;
 
 	public TypeDeclStat() {
 	}

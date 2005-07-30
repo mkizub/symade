@@ -73,10 +73,10 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 
 @node
 public class ASTTypeDeclaration extends ASTStructDeclaration {
-    public int				kind;
-    @att public ASTNode		ext;
-    @att public ASTNode		impl;
-    @att public ASTNode		gens;
+    public int					kind;
+    @att public ASTNode			ext;
+    @att public ASTNode			impl;
+    @att public ASTGenerate		gens;
 
 	ASTTypeDeclaration() {}
 	ASTTypeDeclaration(int id) {}
@@ -110,7 +110,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 			impl = n;
 		}
         else if( n instanceof ASTGenerate ) {
-			gens = n;
+			gens = (ASTGenerate)n;
 		}
         else {
 			members.append(n);
@@ -291,15 +291,13 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 				}
 			}
 			// Process ASTGenerete
-			if( me.gens != null ) {
-				for(int i=0; i < me.gens.length; i++) {
-					Struct s = me.gens[i].clazz;
-					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
-					s.package_clazz = me.package_clazz;
-					if( me.interfaces.length != 0 ) {
-						for(int j=0; j < me.interfaces.length; j++)
-							s.interfaces.add(Type.getRealType(s.type,me.interfaces[j]));
-					}
+			for(int i=0; i < me.gens.length; i++) {
+				Struct s = me.gens[i];
+				s.super_clazz = Type.getRealType(s.type,me.super_clazz);
+				s.package_clazz = me.package_clazz;
+				if( me.interfaces.length != 0 ) {
+					for(int j=0; j < me.interfaces.length; j++)
+						s.interfaces.add(Type.getRealType(s.type,me.interfaces[j]));
 				}
 			}
 		} finally { PassInfo.pop(me); }
