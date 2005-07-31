@@ -250,14 +250,14 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public int mode = NORMAL_SWITCH;
 
 	public SwitchStat() {
-		this.cases = new NArr<ASTNode>(this, true);
+		this.cases = new NArr<ASTNode>(this, "cases");
 	}
 
 	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
 		super(pos, parent);
 		this.sel = sel;
 		this.sel.parent = this;
-		this.cases = new NArr<ASTNode>(this, true);
+		this.cases = new NArr<ASTNode>(this, "cases");
 		foreach (ASTNode c; cases)
 			this.cases.add(c);
 		defCase = null;

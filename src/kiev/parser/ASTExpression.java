@@ -44,7 +44,7 @@ public class ASTExpression extends Expr {
 
 
 	public ASTExpression() {
-		nodes = new NArr<ASTNode>(this, true);
+		nodes = new NArr<ASTNode>(this, "nodes");
 	}
 
 	public ASTExpression(int id) {

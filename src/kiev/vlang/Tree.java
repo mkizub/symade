@@ -41,7 +41,7 @@ public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
 	public Tree() {
-		members = new NArr<Struct>(this, true);
+		members = new NArr<Struct>(this, "members");
 	}
 
 	public Object copy() {
@@ -53,21 +53,26 @@ public class Tree extends ASTNode {
 public final class NArr<N extends ASTNode> {
 
     private final ASTNode 	$parent;
-	private final boolean	$is_att;
+	private final String	$pslot;
 	private N[]				$nodes;
 	
-	public NArr(ASTNode parent, boolean isAtt) {
+	public NArr(ASTNode parent) {
 		this.$parent = parent;
-		$is_att = isAtt;
 		this.$nodes = new N[0];
 	}
 	
-	public NArr(ASTNode parent) {
-		this(parent, false);
+	public NArr(ASTNode parent, String pslot) {
+		this.$parent = parent;
+		this.$pslot = pslot;
+		this.$nodes = new N[0];
 	}
 	
 	public ASTNode getParent() {
 		return $parent;
+	}
+	
+	public String getPSlot() {
+		return $pslot;
 	}
 	
 	public int size()
@@ -79,7 +84,6 @@ public final class NArr<N extends ASTNode> {
 	}
 
 	public void cleanup() {
-		$parent = null;
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++)
 			$nodes[i].cleanup();
@@ -98,8 +102,12 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			$nodes[idx].pslot = null;
+		}
 		$nodes[idx] = node;
-		if ($is_att) node.parent = $parent;
 		return node;
 	}
 
@@ -115,8 +123,41 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
-		if ($is_att) node.parent = $parent;
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+		}
 		return node;
+	}
+
+	public void addAll(NArr<N> arr)
+		alias appendAll
+	{
+		foreach(N n; arr) add(n);
+	}
+
+	public void addAll(N[] arr)
+		alias appendAll
+	{
+		foreach(N n; arr) add(n);
+	}
+
+	public void addUniq(N node)
+		alias appendUniq
+	{
+		if (!contains(node)) add(node);
+	}
+
+	public void addUniq(NArr<N> arr)
+		alias appendUniq
+	{
+		foreach(N n; arr; !contains(n)) add(n);
+	}
+
+	public void addUniq(N[] arr)
+		alias appendUniq
+	{
+		foreach(N n; arr; !contains(n)) add(n);
 	}
 
 	public void replace(Object old, N node)
@@ -124,8 +165,12 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
+				if ($pslot != null) {
+					node.parent = $parent;
+					node.pslot = $pslot;
+					$nodes[i].pslot = null;
+				}
 				$nodes[i] = node;
-				if ($is_att) node.parent = $parent;
 				return;
 			}
 		}
@@ -147,7 +192,10 @@ public final class NArr<N extends ASTNode> {
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
-		if ($is_att) node.parent = $parent;
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+		}
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
@@ -156,24 +204,30 @@ public final class NArr<N extends ASTNode> {
 
 	public void del(int idx)
 	{
-		int sz = $nodes.length;
-		N[] tmp = new N[sz-1];
+		int sz = $nodes.length-1;
+		N[] tmp = new N[sz];
+		if ($pslot != null) {
+			$nodes[idx].pslot = null;
+		}
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
-		for (i++; i < sz; i++)
-			tmp[i-1] = $nodes[i];
+		for (; i < sz; i++)
+			tmp[i] = $nodes[i+1];
 		$nodes = tmp;
 	}
 
 	public void delAll() {
 		if (this.$nodes.length == 0)
 			return;
+		if ($pslot != null) {
+			foreach (N node; $nodes) node.pslot = null;
+		}
 		this.$nodes = new N[0];
 	};
 	
 	public void copyFrom(NArr<N> arr) {
-		if ($is_att) {
+		if ($pslot != null) {
 			foreach (N n; arr)
 				append((N)n.copy());
 		} else {

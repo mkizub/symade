@@ -40,8 +40,8 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	@att public final NArr<Expr>			exprs;
 
 	public ASTRuleIsoneofExpression() {
-		names = new NArr<ASTIdentifier>(this);
-		exprs = new NArr<Expr>(this);
+		names = new NArr<ASTIdentifier>(this, "names");
+		exprs = new NArr<Expr>(this, "exprs");
 	}
 
 	public ASTRuleIsoneofExpression(int id) {

@@ -40,7 +40,7 @@ public class ASTNewAccessExpression extends Expr {
 	@att public final NArr<Expr>	args;
 
 	public ASTNewAccessExpression() {
-		args = new NArr<Expr>(this);
+		args = new NArr<Expr>(this, "args");
 	}
 
 	public ASTNewAccessExpression(int id) {

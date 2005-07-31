@@ -133,7 +133,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.TRUE)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, f.name.name)});
 					f.init.parent = f;
 				} else {
 					f.setVirtual(true);
@@ -144,7 +144,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.FALSE)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
 					f.init.parent = f;
 				}
 			}

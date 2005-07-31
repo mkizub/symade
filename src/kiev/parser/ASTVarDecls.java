@@ -40,7 +40,7 @@ public class ASTVarDecls extends ASTNode {
 	@att public final NArr<ASTVarDecl>	vars;
 
 	public ASTVarDecls() {
-		vars = new NArr<ASTVarDecl>(this);
+		vars = new NArr<ASTVarDecl>(this, "vars");
 	}
 
 	public ASTVarDecls(int id) {

@@ -253,12 +253,12 @@ public class ForInit extends ASTNode implements Scope {
 	@att public final NArr<DeclStat>	decls;
 
 	public ForInit() {
-		this.decls = new NArr<DeclStat>(this, true);
+		this.decls = new NArr<DeclStat>(this, "decls");
 	}
 
 	public ForInit(int pos) {
 		super(pos);
-		this.decls = new NArr<DeclStat>(this, true);
+		this.decls = new NArr<DeclStat>(this, "decls");
 	}
 
 	public void cleanup() {
