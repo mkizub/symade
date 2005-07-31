@@ -917,7 +917,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			init.params.addAll(ti_init_params);
 			typeinfo_clazz.addMethod(init);
 			init.body = ti_init_body;
-			ti_init_body.parent = init;
 			// and add super-constructor call
 			if (typeinfo_clazz.super_clazz == Type.tpTypeInfo) {
 				//do nothing, default constructor may be added later
@@ -1045,10 +1044,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			Field vals = addField(new Field(this, nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, Expr.emptyArray);
-			vals.init.parent = vals;
 			for(int i=0; i < eflds.length; i++) {
 				Expr e = new StaticFieldAccessExpr(eflds[i].pos,this,eflds[i]);
-				e.parent = vals.init;
 				((NewInitializedArrayExpr)vals.init).args.append(e);
 			}
 		}
@@ -1191,7 +1188,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
 					init = new Method(this,nameInit,mt,ACC_PUBLIC);
 					init.params.addAll(params);
-					foreach(Var v; params) v.parent = init;
 				}
 				init.pos = pos;
 				init.body = new BlockStat(pos,init);
@@ -1216,7 +1212,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
 					abstr.params.copyFrom(m.params);
-					abstr.parent = this;
 					members.replace(m, abstr);
 
 					// Make inner class name$default
@@ -1238,7 +1233,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					Type[] types = (Type[])Arrays.insert(m.type.args,this.type,0);
 					m.type = MethodType.newMethodType(null,types,m.type.ret);
 					m.jtype = (MethodType)m.type.getJavaType();
-					m.parent = defaults;
 					defaults.addMethod(m);
 				}
 				if( isInterface() && !m.isStatic() ) {
@@ -1801,7 +1795,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					});
 				}
 				last_st.elseSt = br;
-				br.parent = last_st;
 			}
 			if (st != null) {
 				BlockStat body = new BlockStat(0,mm);
@@ -1931,25 +1924,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				IfElseStat st = dsp;
 				while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 				st.elseSt = br;
-				br.parent = st;
 			}
 		}
 		if( mmt.m != mm && mmt.m != null) {
 			Statement br;
-			/*
-			Expr[] decls = new Expr[mm.params.length-voffs];
-			for(int k=0; k < decls.length; k++) {
-				decls[k] = new AssignExpr(mmt.m.pos,AssignOperator.Assign,
-					new VarAccessExpr(0,mm.params[k+voffs]),
-					new CastExpr(0,mmt.m.type.args[k],
-						new VarAccessExpr(0,mm.params[k+voffs]), Kiev.verify));
-			}
-			*/
 			br = new InlineMethodStat(mmt.m.pos,mm,mmt.m,mm);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 			st.elseSt = br;
-			br.parent = st;
 		}
 		return dsp;
 	}
@@ -2734,8 +2716,6 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			Field f = (Field)n;
 			if( f.init != null && !f.isFinal() && !f.init.isConstantExpr() )
 				f.init = null;
-			else if( f.init != null )
-				f.init.parent = null;
 			f.attrs = Attr.emptyArray;
 		}
 		foreach (ASTNode n; members; n instanceof Method) {

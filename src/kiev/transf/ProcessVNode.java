@@ -85,16 +85,7 @@ public final class ProcessVNode implements Constants {
 		if (m != null) {
 			// Check fields of the @node
 			foreach (ASTNode n; s.members; n instanceof Field) {
-				Field f = (Field)n;
-				if (f.parent == null) {
-					Kiev.reportWarning(f.pos,"Field "+f+" has no parent");
-					f.parent = s;
-				}
-				if (f.parent != s) {
-					Kiev.reportError(f.pos,"Field "+f+" has wrong parent "+f.parent);
-					return;
-				}
-				verify(f);
+				verify(n);
 			}
 		}
 		else if (s.super_clazz != null && s.super_clazz.clazz.meta.get(mnNode) != null) {

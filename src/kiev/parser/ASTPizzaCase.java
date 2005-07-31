@@ -58,22 +58,22 @@ public class ASTPizzaCase extends ASTNode {
     	Var[] pattern = new Var[params.length];
     	try {
 	    	KString n = ((ASTQName)val).toKString();
-			PVar<ASTNode> v = new PVar<ASTNode>();
+			ASTNode@ v;
 			if( !PassInfo.resolveNameR(v,new ResInfo(),n,null,0) )
 				throw new CompilerException(val.pos,"Unresolved class "+n);
-	    	val = v;
-	    	if( !(val instanceof Struct) || !((Struct)val).isPizzaCase() )
+	    	if( !(v instanceof Struct) || !((Struct)v).isPizzaCase() )
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
 	    	for(int i=0; i < params.length; i++) {
     			pattern[i] = ((ASTFormalParameter)params[i]).pass3();
 	    	}
+			CaseLabel cl = new CaseLabel(pos,parent,new WrapedExpr(pos,v),stats.toArray());
+			cl.parent = parent;
+			cl.pattern = pattern;
+			return cl.resolve(Type.tpVoid);
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
+			return this;
 	    }
-    	CaseLabel cl = new CaseLabel(pos,parent,val,stats.toArray());
-    	cl.parent = parent;
-    	cl.pattern = pattern;
-    	return cl.resolve(Type.tpVoid);
     }
 
 	public Dumper toJava(Dumper dmp) {

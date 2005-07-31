@@ -180,10 +180,11 @@ public class ASTNewExpression extends Expr {
 		Expr ne;
 		if( sup.clazz.instanceOf(Type.tpClosureClazz) ) {
 			ne = new NewClosure(pos,me.type);
+			ne.clazz = me;
 		} else {
 			ne = new NewExpr(pos,me.type,args.toArray());
+			ne.clazz = me;
 		}
-		me.parent = ne;
 		ne.parent = parent;
 		return ne.resolve(reqType);
 	}

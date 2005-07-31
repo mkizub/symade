@@ -49,7 +49,6 @@ public final class ProcessPackedFld implements Constants {
 	private void rewriteNode(ASTNode node, String id) {
 		foreach (String name; node.values()) {
 			Object val = node.getVal(name);
-			assert(!(val instanceof ASTNode) || (((ASTNode)val).parent == node), "parent of "+val+" is not "+node+" but "+((ASTNode)val).parent+":\n"+val.toJava(new Dumper()));
 			rewrite(val, name);
 		}
 	}
@@ -65,7 +64,6 @@ public final class ProcessPackedFld implements Constants {
 	public void rewrite(NArr<ASTNode>:Object arr, String id) {
 		//System.out.println("ProcessPackedFld: rewrite "+arr.getClass().getName()+" in "+id);
 		foreach (ASTNode n; arr) {
-			assert(n == null || (((ASTNode)n).parent == arr.getParent()), "parent of "+n+" is not "+arr.getParent()+" but "+n.parent+":\n"+n.toJava(new Dumper()));
 			rewrite(n, id);
 		}
 	}
@@ -100,14 +98,8 @@ public final class ProcessPackedFld implements Constants {
 				rewriteNode(fa, id);
 				return;
 			}
-			if (fa.parent == null) {
-				Kiev.reportError(fa.pos, "Internal error: parent == null");
-				rewriteNode(fa, id);
-				return;
-			}
 			ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[f.pack.size]));
 			AccessExpr ae = (AccessExpr)fa.copy();
-			ae.obj.parent = ae;
 			ae.var = f.pack.packer;
 			Expr expr = ae;
 			if (f.pack.offset > 0) {
@@ -158,7 +150,6 @@ public final class ProcessPackedFld implements Constants {
 			}
 			Var fval = new Var(0,null,KString.from("tmp$fldval"),Type.tpInt,0);
 			DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), f.pack.packer));
-			dsfv.init.parent = dsfv;
 			be.addStatement(dsfv);
 			Var tmp = new Var(0,null,KString.from("tmp$val"),Type.tpInt,0);
 			DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
@@ -175,11 +166,9 @@ public final class ProcessPackedFld implements Constants {
 				else if( f.pack.size == 16 && f.type == Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				ds.init = expr;
-				ds.init.parent = ds;
 				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ae.value)));
 			} else {
 				ds.init = ae.value;
-				ds.init.parent = ds;
 			}
 			
 			{
@@ -203,7 +192,6 @@ public final class ProcessPackedFld implements Constants {
 			Expr expr = be.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 
 			ae.parent.replaceVal(id, ae, expr);
-			expr.parent = ae.parent;
 			rewrite(expr, id);
 		} finally { PassInfo.pop(ae); }
 	}
@@ -248,7 +236,6 @@ public final class ProcessPackedFld implements Constants {
 				}
 				Var fval = new Var(0,null,KString.from("tmp$fldval"),Type.tpInt,0);
 				DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), f.pack.packer));
-				dsfv.init.parent = dsfv;
 				be.addStatement(dsfv);
 				Var tmp = new Var(0,null,KString.from("tmp$val"),Type.tpInt,0);
 				DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
@@ -271,7 +258,6 @@ public final class ProcessPackedFld implements Constants {
 						ds.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstExpr(0,new Integer(1)));
 					else
 						ds.init = expr;
-					ds.init.parent = ds;
 				}
 
 				{
@@ -302,7 +288,6 @@ public final class ProcessPackedFld implements Constants {
 				expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 			}
 			ie.parent.replaceVal(id, ie, expr);
-			expr.parent = ie.parent;
 			rewrite(expr, id);
 		} finally { PassInfo.pop(ie); }
 	}

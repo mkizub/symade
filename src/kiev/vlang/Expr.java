@@ -2007,11 +2007,8 @@ public class ConditionalExpr extends Expr {
 	public ConditionalExpr(int pos, Expr cond, Expr expr1, Expr expr2) {
 		super(pos);
 		this.cond = cond;
-		this.cond.parent = this;
 		this.expr1 = expr1;
-		this.expr1.parent = this;
 		this.expr2 = expr2;
-		this.expr2.parent = this;
 	}
 
 	public String toString() {
@@ -2140,14 +2137,12 @@ public class CastExpr extends Expr {
 		super(pos);
 		this.type = type;
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public CastExpr(int pos, Type type, Expr expr, boolean expl) {
 		super(pos);
 		this.type = type;
 		this.expr = expr;
-		this.expr.parent = this;
 		explicit = expl;
 	}
 
@@ -2155,7 +2150,6 @@ public class CastExpr extends Expr {
 		super(pos);
 		this.type = type;
 		this.expr = expr;
-		this.expr.parent = this;
 		explicit = expl;
 		reinterp = reint;
 	}
@@ -2183,7 +2177,6 @@ public class CastExpr extends Expr {
 	public int getPriority() { return opCastPriority; }
 
 	public Expr tryResolve(Type reqType) {
-		expr.parent = this;
 		Expr ex = (Expr)expr.tryResolve(type);
 		if( ex == null ) return null;
 		expr = ex;

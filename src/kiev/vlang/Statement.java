@@ -207,7 +207,6 @@ public class BlockStat extends Statement implements Scope {
 
 	public Statement addStatement(Statement st) {
 		stats.append(st);
-		st.parent = this;
 		return st;
 	}
 
@@ -275,7 +274,6 @@ public class BlockStat extends Statement implements Scope {
 			try {
 				if( (i == stats.length-1) && isAutoReturnable() )
 					stats[i].setAutoReturnable(true);
-				stats[i].parent = this;
 				if( isAbrupted() &&
 					(stats[i] instanceof LabeledStat || stats[i] instanceof ASTLabeledStatement) ) {
 					setAbrupted(false);
@@ -446,13 +444,11 @@ public class ExprStat extends Statement {
 
 	public ExprStat(Expr expr) {
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public ExprStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public String toString() {
@@ -463,7 +459,6 @@ public class ExprStat extends Statement {
 		PassInfo.push(this);
 		try {
 			expr = expr.resolveExpr(Type.tpVoid);
-			expr.parent = this;
 			expr.setGenVoidExpr(true);
 		} catch(Exception e ) {
 			Kiev.reportError(expr.getPos(),e);
@@ -507,13 +502,11 @@ public class DeclStat extends Statement {
 	public DeclStat(int pos, ASTNode parent, Var var) {
 		super(pos, parent);
 		this.var = var;
-		this.var.parent = this;
 	}
 
 	public DeclStat(int pos, ASTNode parent, Var var, Expr init) {
 		this(pos,parent,var);
 		this.init = init;
-		init.parent = this;
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
@@ -523,13 +516,10 @@ public class DeclStat extends Statement {
 			if( init != null ) {
 				try {
 					init = init.resolveExpr(var.type);
-					init.parent = this;
 					Type it = init.getType();
 					if( it != var.type ) {
 						init = new CastExpr(init.pos,var.type,init);
-						init.parent = this;
 						init = init.resolveExpr(var.type);
-						init.parent = this;
 					}
 				} catch(Exception e ) {
 					Kiev.reportError(pos,e);
@@ -617,11 +607,6 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 		super(pos, parent);
 	}
 	
-	public void set$struct(Struct s) {
-		this.struct = s;
-		this.struct.parent = this;
-	}
-
 	public ASTNode resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
@@ -667,8 +652,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 	public ReturnStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
-		if( expr != null)
-			this.expr.parent = this;
 		setMethodAbrupted(true);
 	}
 
@@ -682,7 +665,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 			if( expr != null ) {
 				try {
 					expr = expr.resolveExpr(PassInfo.method.type.ret);
-					expr.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(expr.pos,e);
 				}
@@ -780,7 +762,6 @@ public class ThrowStat extends Statement/*defaults*/ {
 	public ThrowStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
-		this.expr.parent = this;
 		setMethodAbrupted(true);
 	}
 
@@ -838,13 +819,8 @@ public class IfElseStat extends Statement {
 	public IfElseStat(int pos, ASTNode parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
 		this.cond = cond;
-		this.cond.parent = this;
 		this.thenSt = thenSt;
-		this.thenSt.parent = this;
-		if( elseSt != null ) {
-			this.elseSt = elseSt;
-			this.elseSt.parent = this;
-		}
+		this.elseSt = elseSt;
 	}
 
 	public IfElseStat(int pos, BooleanExpr cond, Statement thenSt, Statement elseSt) {
@@ -858,7 +834,6 @@ public class IfElseStat extends Statement {
 		try {
 			try {
 				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-				cond.parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -871,7 +846,6 @@ public class IfElseStat extends Statement {
 			}
 			try {
 				thenSt = (Statement)thenSt.resolve(Type.tpVoid);
-				thenSt.parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(thenSt.pos,e);
 			}
@@ -890,7 +864,6 @@ public class IfElseStat extends Statement {
 			if( elseSt != null ) {
 				try {
 					elseSt = (Statement)elseSt.resolve(Type.tpVoid);
-					elseSt.parent = this;
 				} catch(Exception e ) {
 					Kiev.reportError(elseSt.pos,e);
 				}
@@ -1019,9 +992,7 @@ public class CondStat extends Statement {
 	public CondStat(int pos, ASTNode parent, BooleanExpr cond, Expr message) {
 		super(pos,parent);
 		this.cond = cond;
-		this.cond.parent = this;
 		this.message = message;
-		this.message.parent = this;
 	}
 
 	public CondStat(int pos, BooleanExpr cond, Expr message) {
@@ -1152,7 +1123,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		super(pos, parent);
 		this.name = name;
 		this.stat = stat;
-		this.stat.parent = this;
 	}
 
 	public NodeName getName() { return new NodeName(name); }
@@ -1530,8 +1500,6 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
 		super(pos, parent);
 		this.expr = expr;
-		if( expr != null )
-			expr.parent = this;
 		setAbrupted(true);
 	}
 
@@ -1553,7 +1521,6 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			} else {
 				expr = expr.resolveExpr(sw.sel.getType());
 			}
-			expr.parent = this;
 		}
 		return this;
 	}

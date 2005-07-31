@@ -181,13 +181,13 @@ public final class NArr<N extends ASTNode> {
 
 	public void del(int idx)
 	{
-		int sz = $nodes.length;
-		N[] tmp = new N[sz-1];
+		int sz = $nodes.length-1;
+		N[] tmp = new N[sz];
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
-		for (i++; i < sz; i++)
-			tmp[i-1] = $nodes[i];
+		for (; i < sz; i++)
+			tmp[i] = $nodes[i+1];
 		$nodes = tmp;
 	}
 

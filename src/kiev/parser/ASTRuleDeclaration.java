@@ -153,51 +153,31 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 				lvars = (Var[])Arrays.append(lvars,vars[j]);
 			}
 		}
-//		if( isVarArgs() ) {
-//			vars[vars.length-1] = new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0);
-//			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
-//		}
 		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
 		me = new RuleMethod(clazz,ident.name,mtype,flags | ACC_MULTIMETHOD);
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());
         me.body = body;
-        if( me.body != null )
-	        me.body.parent = me;
 		if( !me.isStatic() )
 			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
-		for(int i=0; i < vars.length; i++) {
-			vars[i].parent = me;
-		}
 		for(int i=0; i < lvars.length; i++) {
 			lvars[i].parent = me;
 		}
 		foreach(ASTAlias al; aliases) al.attach(me);
-//		MethodParamsAttr pa = new MethodParamsAttr(clazz,vars);
-//		me.addAttr(pa);
 		me.params.addAll(vars);
-		if( lvars.length > 0 )
-			me.localvars = lvars;
+		me.localvars.addAll(lvars);
         clazz.addMethod(me);
-//        if( throwns != null ) {
-//        	Type[] thrs = ((ASTThrows)throwns).pass3();
-//        	ExceptionsAttr athr = new ExceptionsAttr();
-//        	athr.exceptions = thrs;
-//			me.addAttr(athr);
-//        }
 		if( pbody != null ) pbody.setParent(me);
 
 		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
-			cond.parent = me;
 			cond.definer = me;
 			me.conditions.append(cond);
 		}
 		for(int i=0; ens!=null && i < ens.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)ens[i].pass3();
-			cond.parent = me;
 			cond.definer = me;
 			me.conditions.append(cond);
 		}

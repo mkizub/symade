@@ -396,7 +396,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				}
 			}
 			foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire ) {
-				cond.parent = this;
 				cond.resolve(Type.tpVoid);
 			}
 			if (PassInfo.clazz.isAnnotation()) {
@@ -426,7 +425,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							e = new NewInitializedArrayExpr(body.pos, t, 1, new Expr[]{e});
 						}
 						((ExprStat)body).expr = e;
-						e.parent = body;
 					} else {
 						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
 						if (!e.isConstantExpr())
@@ -435,13 +433,11 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
 						else {
 							((ExprStat)body).expr = e;
-							e.parent = body;
 						}
 					}
 				}
 			} else {
 				if( body != null ) {
-					body.parent = this;
 					if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 					body = ((Statement)body).resolve(Type.tpVoid);
 				}
@@ -459,7 +455,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 					}
 				}
 				foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure ) {
-					cond.parent = this;
 					if( type.ret != Type.tpVoid ) getRetVar();
 					cond.resolve(Type.tpVoid);
 				}
@@ -589,7 +584,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
 			this.body = body;
-			this.body.parent = this;
 		}
 		else if (isMultiMethod()){
 			BlockStat b = (BlockStat)this.body;
@@ -661,8 +655,6 @@ public class WorkByContractCondition extends Statement implements SetBody {
 		this.name = name;
 		this.cond = cond;
 		this.body = body;
-		if( body != null )
-			body.parent = this;
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -703,7 +695,6 @@ public class WorkByContractCondition extends Statement implements SetBody {
 
 	public boolean setBody(Statement body) {
 		this.body = body;
-		this.body.parent = this;
 		return true;
 	}
 

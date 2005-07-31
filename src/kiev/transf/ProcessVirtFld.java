@@ -79,6 +79,8 @@ public final class ProcessVirtFld implements Constants {
 				MethodType.newMethodType(null,null,new Type[]{f.type},Type.tpVoid),
 				f.getJavaFlags()
 			);
+			if (f.meta.get(ProcessVNode.mnAtt) != null)
+				set_var.setFinal(true);
 			Var self;
 			Var value;
 			if (f.isStatic()) {
@@ -138,6 +140,8 @@ public final class ProcessVirtFld implements Constants {
 				MethodType.newMethodType(null,Type.emptyArray,f.type),
 				f.getJavaFlags()
 			);
+			if (f.meta.get(ProcessVNode.mnAtt) != null)
+				get_var.setFinal(true);
 			Var self = new Var(f.pos,get_var,nameThis,s.type,0);
 			get_var.params.add(self);
 			if( !f.isAbstract() ) {
@@ -256,7 +260,6 @@ public final class ProcessVirtFld implements Constants {
 	private void rewriteNode(ASTNode node, String id) {
 		foreach (String name; node.values()) {
 			Object val = node.getVal(name);
-			assert(!(val instanceof ASTNode) || (((ASTNode)val).parent == node), "parent of "+val+" is not "+node+" but "+((ASTNode)val).parent+":\n"+val.toJava(new Dumper()));
 			rewrite(val, name);
 		}
 	}
@@ -272,7 +275,6 @@ public final class ProcessVirtFld implements Constants {
 	public void rewrite(NArr<ASTNode>:Object arr, String id) {
 		//System.out.println("ProcessVirtFld: rewrite "+arr.getClass().getName()+" in "+id);
 		foreach (ASTNode n; arr) {
-			assert(n == null || (((ASTNode)n).parent == arr.getParent()), "parent of "+n+" is not "+arr.getParent()+" but "+n.parent+":\n"+n.toJava(new Dumper()));
 			rewrite(n, id);
 		}
 	}
@@ -314,11 +316,6 @@ public final class ProcessVirtFld implements Constants {
 			if (f.get == null) {
 				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
-				rewriteNode(fa, id);
-				return;
-			}
-			if (fa.parent == null) {
-				Kiev.reportError(fa.pos, "Internal error: parent == null");
 				rewriteNode(fa, id);
 				return;
 			}
@@ -409,7 +406,6 @@ public final class ProcessVirtFld implements Constants {
 					expr = expr.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 				}
 				ae.parent.replaceVal(id, ae, expr);
-				expr.parent = ae.parent;
 				rewrite(expr, id);
 			}
 			else {
@@ -501,7 +497,6 @@ public final class ProcessVirtFld implements Constants {
 					expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}
 				ie.parent.replaceVal(id, ie, expr);
-				expr.parent = ie.parent;
 				rewrite(expr, id);
 			}
 			else {

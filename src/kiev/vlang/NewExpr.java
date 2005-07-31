@@ -42,6 +42,7 @@ public class NewExpr extends Expr {
 	@att public final NArr<Expr>	args;
 	@att public Expr				outer;
 	@att public Expr				tif_expr;	// TypeInfo field access expression
+	@att public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
 
@@ -469,6 +470,7 @@ public class NewClosure extends Expr {
 
 	@ref public Type				type;
 	@att public final NArr<Expr>	args;
+	@att public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
 

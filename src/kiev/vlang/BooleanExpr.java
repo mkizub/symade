@@ -44,7 +44,6 @@ public class BooleanWrapperExpr extends BooleanExpr {
 	public BooleanWrapperExpr(int pos, Expr expr) {
 		super(pos);
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public String toString() { return expr.toString(); }
@@ -58,7 +57,6 @@ public class BooleanWrapperExpr extends BooleanExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		this.expr.parent = this;
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -81,7 +79,6 @@ public class BooleanWrapperExpr extends BooleanExpr {
 			}
 			else
 				throw new RuntimeException("Expression "+e+" resolved from "+expr+" must be of boolean type, but found "+e.getType());
-			this.expr.parent = this;
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;
@@ -229,9 +226,7 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 	public BinaryBooleanOrExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
 		this.expr1 = expr1;
-		this.expr1.parent = this;
 		this.expr2 = expr2;
-		this.expr2.parent = this;
 	}
 
 	public void cleanup() {
@@ -259,14 +254,10 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 	public int getPriority() { return opBooleanOrPriority; }
 
 	public ASTNode resolve(Type reqType) {
-		this.expr1.parent = this;
-		this.expr2.parent = this;
 //		if( isResolved() ) return this;
 		PassInfo.push(this);
 		ScopeNodeInfoVector result_state = null;
 		try {
-			this.expr1.parent = this;
-			this.expr2.parent = this;
 			NodeInfoPass.pushState();
 			expr1 = (BooleanExpr)expr1.resolve(Type.tpBoolean);
 			ScopeNodeInfoVector state1 = NodeInfoPass.popState();
@@ -274,8 +265,6 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 			expr2 = (BooleanExpr)expr2.resolve(Type.tpBoolean);
 			ScopeNodeInfoVector state2 = NodeInfoPass.popState();
 			result_state = NodeInfoPass.joinInfo(state1,state2);
-			this.expr1.parent = this;
-			this.expr2.parent = this;
 		} finally {
 			PassInfo.pop(this);
 			if( result_state != null ) NodeInfoPass.addInfo(result_state);
@@ -332,9 +321,7 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 	public BinaryBooleanAndExpr(int pos, BooleanExpr expr1, BooleanExpr expr2) {
 		super(pos);
 		this.expr1 = expr1;
-		this.expr1.parent = this;
 		this.expr2 = expr2;
-		this.expr2.parent = this;
 	}
 
 	public String toString() {
@@ -362,20 +349,14 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		this.expr1.parent = this;
-		this.expr2.parent = this;
 //		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			this.expr1.parent = this;
-			this.expr2.parent = this;
 			NodeInfoPass.pushState();
 			expr1 = (BooleanExpr)expr1.resolve(Type.tpBoolean);
 			if( expr1 instanceof InstanceofExpr ) ((InstanceofExpr)expr1).setNodeTypeInfo();
 			expr2 = (BooleanExpr)expr2.resolve(Type.tpBoolean);
 			NodeInfoPass.popState();
-			this.expr1.parent = this;
-			this.expr2.parent = this;
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;
@@ -430,9 +411,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 		super(pos);
 		this.op = op;
 		this.expr1 = expr1;
-		this.expr1.parent = this;
 		this.expr2 = expr2;
-		this.expr2.parent = this;
 	}
 
 	public String toString() {
@@ -552,8 +531,6 @@ public class BinaryBooleanExpr extends BooleanExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		this.expr1.parent = this;
-		this.expr2.parent = this;
 		if( isResolved() ) return this;
 		if( !isTryResolved() ) {
 			Expr e = tryResolve(reqType);
@@ -598,8 +575,6 @@ public class BinaryBooleanExpr extends BooleanExpr {
 					}
 				}
 			}
-			this.expr1.parent = this;
-			this.expr2.parent = this;
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;
@@ -736,7 +711,6 @@ public class InstanceofExpr extends BooleanExpr {
 	public InstanceofExpr(int pos, Expr expr, Type type) {
 		super(pos);
 		this.expr = expr;
-		this.expr.parent = this;
 		this.type = type;
 	}
 
@@ -753,7 +727,6 @@ public class InstanceofExpr extends BooleanExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		this.expr.parent = this;
 		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
 		PassInfo.push(this);
 		try {
@@ -849,7 +822,6 @@ public class BooleanNotExpr extends BooleanExpr {
 	public BooleanNotExpr(int pos, BooleanExpr expr) {
 		super(pos);
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public String toString() {
@@ -868,7 +840,6 @@ public class BooleanNotExpr extends BooleanExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		this.expr.parent = this;
 		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
 		PassInfo.push(this);
 		try {
@@ -878,7 +849,6 @@ public class BooleanNotExpr extends BooleanExpr {
 			}
 			if( expr.isGenResolve() )
 				setGenResolve(true);
-			this.expr.parent = this;
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;

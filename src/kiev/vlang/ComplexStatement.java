@@ -39,7 +39,7 @@ public class CaseLabel extends ASTNode {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att public ASTNode		val;
+	@att public Expr		val;
 	@ref public Type		type;
 	public Var[]		pattern;
 	@att public BlockStat	stats;
@@ -49,11 +49,9 @@ public class CaseLabel extends ASTNode {
 	public CaseLabel() {
 	}
 
-	public CaseLabel(int pos, ASTNode parent, ASTNode val, ASTNode[] stats) {
+	public CaseLabel(int pos, ASTNode parent, Expr val, ASTNode[] stats) {
 		super(pos,parent);
 		this.val = val;
-		if( val != null && val instanceof Expr )
-			this.val.parent = this;
 		this.stats = new BlockStat(pos,this,stats);
 	}
 
@@ -255,21 +253,12 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
 		super(pos, parent);
 		this.sel = sel;
-		this.sel.parent = this;
-		foreach (ASTNode c; cases)
-			this.cases.add(c);
+		this.cases.addAll(cases);
 		defCase = null;
 		setBreakTarget(true);
 	}
 
 	public String toString() { return "switch("+sel+")"; }
-
-//	public void addCase(CaseLabel c) throws RuntimeException {
-//		if( c.val == null && defCase != null )
-//			throw new RuntimeException("More than one default case in switch statement");
-//		if( c.val == null ) defCase = c;
-//		cases = (CaseLabel[])Arrays.append(cases,c);
-//	}
 
 	public void cleanup() {
 		parent=null;
@@ -330,7 +319,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						cae.pos = pos;
 						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
 						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
-						cae.parent = sel.parent;
 						sel = cae;
 					} else {
 						mode = TYPE_SWITCH;
@@ -663,9 +651,7 @@ public class CatchInfo extends Statement implements Scope {
 	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
 		super(pos, parent);
 		this.arg = arg;
-		this.arg.parent = arg;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -742,7 +728,7 @@ public class CatchInfo extends Statement implements Scope {
 @node
 public class FinallyInfo extends CatchInfo {
 
-	@att public Var	ret_arg;
+	@att public Var		ret_arg;
 	public CodeLabel	subr_label;
 
 	public FinallyInfo() {
@@ -751,7 +737,6 @@ public class FinallyInfo extends CatchInfo {
 	public FinallyInfo(int pos, ASTNode parent, Statement body) {
 		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
         ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
-        ret_arg.parent = this;
 	}
 
 	public String toString() { return "finally"; }
@@ -803,12 +788,8 @@ public class TryStat extends Statement/*defaults*/ {
 	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
 		super(pos, parent);
 		this.body = body;
-		this.body.parent = this;
 		this.catchers.addAll(catchers);
-		if( finally_catcher != null ) {
-			this.finally_catcher = finally_catcher;
-			this.finally_catcher.parent = this;
-		}
+		this.finally_catcher = finally_catcher;
 	}
 
 	public void cleanup() {
@@ -829,7 +810,6 @@ public class TryStat extends Statement/*defaults*/ {
 			try {
 				NodeInfoPass.pushState();
 				catchers[i] = (CatchInfo)((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
-				catchers[i].parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i].pos,e);
 			} finally {
@@ -840,7 +820,6 @@ public class TryStat extends Statement/*defaults*/ {
 			try {
 				NodeInfoPass.pushState();
 				finally_catcher = (FinallyInfo)((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
-				finally_catcher.parent = this;
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher.pos,e);
 			} finally {
@@ -974,9 +953,7 @@ public class SynchronizedStat extends Statement {
 	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
-		this.expr.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {
@@ -1070,9 +1047,7 @@ public class WithStat extends Statement {
 	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
 		super(pos, parent);
 		this.expr = expr;
-		this.expr.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
 	public void cleanup() {

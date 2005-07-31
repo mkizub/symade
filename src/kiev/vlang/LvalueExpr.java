@@ -59,7 +59,6 @@ public class AccessExpr extends LvalueExpr {
 	public AccessExpr(int pos, Expr obj, Field var) {
 		super(pos);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
@@ -67,7 +66,6 @@ public class AccessExpr extends LvalueExpr {
 	public AccessExpr(int pos, Expr obj, Field var, boolean direct_access) {
 		super(pos);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.var = var;
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
@@ -76,7 +74,6 @@ public class AccessExpr extends LvalueExpr {
 	public AccessExpr(int pos, ASTNode par, Expr obj, Field var) {
 		super(pos,par);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
@@ -84,7 +81,6 @@ public class AccessExpr extends LvalueExpr {
 	public AccessExpr(int pos, Expr obj, Field var, int flags) {
 		super(pos);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.var = var;
 		setFlags(flags);
 		assert(obj != null && var != null);
@@ -93,7 +89,6 @@ public class AccessExpr extends LvalueExpr {
 	public AccessExpr(int pos, ASTNode par, Expr obj, Field var, int flags) {
 		super(pos,par);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.var = var;
 		setFlags(flags);
 		assert(obj != null && var != null);
@@ -125,7 +120,6 @@ public class AccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			obj = (Expr)obj.resolve(null);
-			obj.parent = this;
 
 			// Set violation of the field
 			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
@@ -271,9 +265,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 	public ContainerAccessExpr(int pos, Expr obj, Expr index) {
 		super(pos);
 		this.obj = obj;
-		this.obj.parent = this;
 		this.index = index;
-		this.index.parent = this;
 	}
 
 	public String toString() {
@@ -1259,7 +1251,6 @@ public class SelfAccessExpr extends LvalueExpr {
 	public SelfAccessExpr(int pos, LvalueExpr expr) {
 		super(pos);
 		this.expr = expr;
-		this.expr.parent = this;
 	}
 
 	public String toString() {

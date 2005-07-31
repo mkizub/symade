@@ -874,18 +874,7 @@ public abstract class Expr extends ASTNode {
 			// Now, check we need add type arguments
 			Type tp = Type.getRealType(reqType,e.type);
 			return (Expr)new NewExpr(pos,tp,Expr.emptyArray).resolve(reqType);
-/*			if( case_attr != null && case_attr.casefields.length == 0 ) {
-				Field f = (Field)((Struct)e).resolveName(nameTagSelf);
-				if( f != null ) {
-					Expr ex = new StaticFieldAccessExpr(pos,(Struct)e,(Field)f);
-					ex.parent = parent;
-					ex = ex.tryResolve(reqType);
-					return ex;
-				} else {
-					throw new RuntimeException("Field "+nameTagSelf+" not found in cased class "+e);
-				}
-			}
-*/		}
+		}
 		throw new CompilerException(pos,"Expr "+e+" is not a class's case with no fields");
 	}
 }
