@@ -117,7 +117,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 		Type type = Type.tpRule;
-		NArr<Var> vars = new NArr<Var>(null, false);
+		NArr<Var> vars = new NArr<Var>(null, null);
 		vars.append(new Var(pos,this,namePEnv,Type.tpRule,0));
 		vars[0].setForward(true);
 		Type[] margs = new Type[] {Type.tpRule};

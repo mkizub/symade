@@ -52,17 +52,21 @@ public class Tree extends ASTNode {
 public final class NArr<N extends ASTNode> {
 
     private final ASTNode 	$parent;
-	private final boolean	$is_att;
+	private final String	$pslot;
 	private N[]				$nodes;
 	
-	public NArr(ASTNode parent, boolean isAtt) {
+	public NArr(ASTNode parent, String pslot) {
 		this.$parent = parent;
-		$is_att = isAtt;
+		this.$pslot = pslot;
 		this.$nodes = new N[0];
 	}
 	
 	public ASTNode getParent() {
 		return $parent;
+	}
+	
+	public String getPSlot() {
+		return $pslot;
 	}
 	
 	public int size()
@@ -74,7 +78,6 @@ public final class NArr<N extends ASTNode> {
 	}
 
 	public void cleanup() {
-		$parent = null;
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++)
 			$nodes[i].cleanup();
@@ -93,8 +96,12 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			$nodes[idx].pslot = null;
+		}
 		$nodes[idx] = node;
-		if ($is_att) node.parent = $parent;
 		return node;
 	}
 
@@ -110,7 +117,10 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
-		if ($is_att) node.parent = $parent;
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+		}
 		return node;
 	}
 
@@ -149,8 +159,12 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
+				if ($pslot != null) {
+					node.parent = $parent;
+					node.pslot = $pslot;
+					$nodes[i].pslot = null;
+				}
 				$nodes[i] = node;
-				if ($is_att) node.parent = $parent;
 				return;
 			}
 		}
@@ -172,7 +186,10 @@ public final class NArr<N extends ASTNode> {
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
-		if ($is_att) node.parent = $parent;
+		if ($pslot != null) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+		}
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
@@ -183,6 +200,9 @@ public final class NArr<N extends ASTNode> {
 	{
 		int sz = $nodes.length-1;
 		N[] tmp = new N[sz];
+		if ($pslot != null) {
+			$nodes[idx].pslot = null;
+		}
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
@@ -194,11 +214,14 @@ public final class NArr<N extends ASTNode> {
 	public void delAll() {
 		if (this.$nodes.length == 0)
 			return;
+		if ($pslot != null) {
+			foreach (N node; $nodes) node.pslot = null;
+		}
 		this.$nodes = new N[0];
 	};
 	
 	public void copyFrom(NArr<N> arr) {
-		if ($is_att) {
+		if ($pslot != null) {
 			foreach (N n; arr)
 				append((N)n.copy());
 		} else {

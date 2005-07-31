@@ -125,7 +125,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.TRUE)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, f.name.name)});
 				} else {
 					f.setVirtual(true);
 					ProcessVirtFld.addMethodsForVirtualField((Struct)f.parent, f);
@@ -135,7 +135,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.FALSE)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
 				}
 			}
 		} else {

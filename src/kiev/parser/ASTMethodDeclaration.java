@@ -146,7 +146,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
-		NArr<Var> vars = new NArr<Var>(null, false);
+		NArr<Var> vars = new NArr<Var>(null, null);
 		boolean has_dispatcher = false;
 		Type type;
 		

@@ -145,7 +145,7 @@ public class ASTNewExpression extends Expr {
 			if( args.length > 0 ) {
 				MethodType mt;
 				Type[] targs = Type.emptyArray;
-				NArr<Var> params = new NArr<Var>(null, false);
+				NArr<Var> params = new NArr<Var>(null, null);
 				params.append(new Var(pos,null,nameThis,me.type,0));
 				for(int i=0; i < args.length; i++) {
 					args[i] = (Expr)args[i].resolve(null);

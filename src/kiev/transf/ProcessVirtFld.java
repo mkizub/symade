@@ -110,15 +110,26 @@ public final class ProcessVirtFld implements Constants {
 								new VarAccessExpr(0, value),
 								new ConstExpr(0, null)
 							),
-							new ExprStat(0,null,
-								new AssignExpr(0, AssignOperator.Assign,
-									new AccessExpr(0,
-										new VarAccessExpr(0, value),
-										astT.clazz.resolveField(KString.from("parent"))
-									),
-									new ThisExpr()
+							new BlockStat(0,null,new Statement[]{
+								new ExprStat(0,null,
+									new AssignExpr(0, AssignOperator.Assign,
+										new AccessExpr(0,
+											new VarAccessExpr(0, value),
+											astT.clazz.resolveField(KString.from("parent"))
+										),
+										new ThisExpr()
+									)
+								),
+								new ExprStat(0,null,
+									new AssignExpr(0, AssignOperator.Assign,
+										new AccessExpr(0,
+											new VarAccessExpr(0, value),
+											astT.clazz.resolveField(KString.from("pslot"))
+										),
+										new ConstExpr(0,f.name.name)
+									)
 								)
-							),
+							}),
 							null
 						);
 					body.stats.append(p_st);

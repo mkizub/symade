@@ -99,7 +99,7 @@ public class ASTAnonymouseClosure extends Expr {
 		Type ret = rettype.getType();
 		me.type = MethodType.newMethodType(me,null,types,ret);
 
-		NArr<ASTNode> members = new NArr<ASTNode>(null, false);
+		NArr<ASTNode> members = new NArr<ASTNode>(null, null);
 		if( ret != Type.tpRule ) {
 			ASTMethodDeclaration md = new ASTMethodDeclaration();
 			KString call_name;
