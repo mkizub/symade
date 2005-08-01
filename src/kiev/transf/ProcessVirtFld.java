@@ -105,6 +105,8 @@ public final class ProcessVirtFld implements Constants {
 				body.stats.append(ass_st);
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					Field fatt = ((Struct)f.parent).resolveField(fname);
 					Statement p_st = new IfElseStat(0,
 							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, value),
@@ -126,7 +128,7 @@ public final class ProcessVirtFld implements Constants {
 											new VarAccessExpr(0, value),
 											astT.clazz.resolveField(KString.from("pslot"))
 										),
-										new ConstExpr(0,f.name.name)
+										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
 									)
 								)
 							}),
@@ -269,9 +271,9 @@ public final class ProcessVirtFld implements Constants {
 	
 	
 	private void rewriteNode(ASTNode node, String id) {
-		foreach (String name; node.values()) {
-			Object val = node.getVal(name);
-			rewrite(val, name);
+		foreach (AttrSlot attr; node.values(); attr.is_attr) {
+			Object val = node.getVal(attr.name);
+			rewrite(val, attr.name);
 		}
 	}
 	

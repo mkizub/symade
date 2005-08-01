@@ -47,9 +47,9 @@ public final class ProcessPackedFld implements Constants {
 		};
 
 	private void rewriteNode(ASTNode node, String id) {
-		foreach (String name; node.values()) {
-			Object val = node.getVal(name);
-			rewrite(val, name);
+		foreach (AttrSlot attr; node.values(); attr.is_attr) {
+			Object val = node.getVal(attr.name);
+			rewrite(val, attr.name);
 		}
 	}
 	

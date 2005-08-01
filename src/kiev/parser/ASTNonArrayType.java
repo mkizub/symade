@@ -106,4 +106,7 @@ public class ASTNonArrayType extends SimpleNode {
 		}
 		return sb.append('>').toString();
 	}
+	public Dumper toJava(Dumper dmp) {
+		return dmp.append(this.toString());
+	}
 }

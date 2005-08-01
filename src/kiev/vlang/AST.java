@@ -78,7 +78,7 @@ public abstract class ASTNode implements Constants {
 
 	public int				pos;
     @ref public ASTNode		parent;
-	public String			pslot;
+	public AttrSlot			pslot;
 	public int				flags;
 	
 	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct

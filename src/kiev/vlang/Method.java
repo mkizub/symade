@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable {
+public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable,TopLevelDecl {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */

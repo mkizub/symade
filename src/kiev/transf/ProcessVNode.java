@@ -42,7 +42,7 @@ public final class ProcessVNode implements Constants {
 	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
 	private static final KString nameParent  = KString.from("parent"); 
 	
-	private static final KString sigValues = KString.from("()[Ljava/lang/String;");
+	private static final KString sigValues = KString.from("()[Lkiev/vlang/AttrSlot;");
 	private static final KString sigGetVal = KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
 	private static final KString sigSetVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
 	private static final KString sigReplaceVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
@@ -125,7 +125,13 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, f.name.name)});
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					Struct fs = (Struct)f.parent;
+					Field fatt = fs.resolveField(fname);
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
+						new ThisExpr(),
+						new StaticFieldAccessExpr(f.pos, fs, fatt)
+					});
 				} else {
 					f.setVirtual(true);
 					ProcessVirtFld.addMethodsForVirtualField((Struct)f.parent, f);
@@ -177,7 +183,7 @@ public final class ProcessVNode implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (ASTNode n; ss.members; n instanceof Field && ((Field)n).meta.get(mnAtt) != null) {
+				foreach (ASTNode n; ss.members; n instanceof Field && !n.isStatic() && ((Field)n).meta.get(mnAtt) != null) {
 					Field f = (Field)n;
 					aflds.insert(p, f);
 					p++;
@@ -189,15 +195,25 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
 			return;
 		}
-		Field vals = s.addField(new Field(s, nameEnumValuesFld,
-			Type.newArrayType(Type.tpString), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+		Type atp = Type.fromSignature(KString.from("Lkiev/vlang/AttrSlot;"));
 		Expr[] vals_init = new Expr[aflds.size()];
-		vals.init = new NewInitializedArrayExpr(0, Type.tpString, 1, Expr.emptyArray);
 		for(int i=0; i < vals_init.length; i++) {
-			Expr e = new ConstExpr(0,aflds[i].name.name);
-			((NewInitializedArrayExpr)vals.init).args.append(e);
+			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
+			boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+			Expr e = new NewExpr(0, atp, new Expr[]{
+				new ConstExpr(0, aflds[i].name.name),
+				new ConstExpr(0, isAtt ? Boolean.TRUE : Boolean.FALSE),
+				new ConstExpr(0, isArr ? Boolean.TRUE : Boolean.FALSE)
+			});
+			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
+			Field f = s.addField(new Field(s, fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			f.init = e;
+			vals_init[i] = new StaticFieldAccessExpr(f.pos, s, f);
 		}
-		// String[] values() { return $values; }
+		Field vals = s.addField(new Field(s, nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
+		vals.init = new NewInitializedArrayExpr(0, atp, 1, vals_init);
+		vals.init.parent = vals;
+		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues, sigValues)) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {

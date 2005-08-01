@@ -33,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class Field extends ASTNode implements Named, Typed, Accessable {
+public class Field extends ASTNode implements Named, Typed, Accessable, TopLevelDecl {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
