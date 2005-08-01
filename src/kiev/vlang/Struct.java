@@ -113,9 +113,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		imported = new NArr<ASTNode>(this);
 		interfaces = new NArr<Type>(this);
 		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, "fields");
-		virtual_fields = new NArr<Field>(this, "virtual_fields");
-		methods = new NArr<Method>(this, "methods");
+		fields = new NArr<Field>(this, new AttrSlot("fields", true, true));
+		virtual_fields = new NArr<Field>(this, new AttrSlot("virtual_fields", true, true));
+		methods = new NArr<Method>(this, new AttrSlot("methods", true, true));
 		this.meta = new MetaSet(this);
 	}
 
@@ -127,9 +127,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		imported = new NArr<ASTNode>(this);
 		interfaces = new NArr<Type>(this);
 		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, "fields");
-		virtual_fields = new NArr<Field>(this, "virtual_fields");
-		methods = new NArr<Method>(this, "methods");
+		fields = new NArr<Field>(this, new AttrSlot("fields", true, true));
+		virtual_fields = new NArr<Field>(this, new AttrSlot("virtual_fields", true, true));
+		methods = new NArr<Method>(this, new AttrSlot("methods", true, true));
 		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
@@ -917,6 +917,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				body.stats.append(ass_st);
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					Field fatt = this.resolveField(fname);
 					Statement p_st = new IfElseStat(0,
 							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, value),
@@ -938,7 +940,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 											new VarAccessExpr(0, value),
 											astT.clazz.resolveField(KString.from("pslot"))
 										),
-										new ConstExpr(0,f.name.name)
+										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
 									)
 								)
 							}),

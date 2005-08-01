@@ -20,7 +20,7 @@ public class ASTAnnotationValueValueArrayInitializer extends SimpleNode {
 
 	public ASTAnnotationValueValueArrayInitializer(int id) {
 		super(0);
-		values = new NArr<ASTNode>(this, "values");
+		values = new NArr<ASTNode>(this, new AttrSlot("values", true, true));
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

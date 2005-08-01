@@ -52,8 +52,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		super(0);
 		this.filename = name;
 		this.pkg = pkg;
-		syntax  = new NArr<ASTNode>(this, "syntax");
-		members = new NArr<Struct>(this, "members");
+		syntax  = new NArr<ASTNode>(this, new AttrSlot("syntax", true, true));
+		members = new NArr<Struct>(this, new AttrSlot("members", true, true));
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

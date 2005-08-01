@@ -46,13 +46,13 @@ public class NewExpr extends Expr {
 	@ref public Method	func;
 
 	public NewExpr() {
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewExpr(int pos, Type type, Expr[] args) {
 		super(pos);
 		this.type = type;
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 		foreach (Expr e; args) this.args.append(e);
 	}
 
@@ -271,13 +271,13 @@ public class NewArrayExpr extends Expr {
 	@ref private Type				arrtype;
 
 	public NewArrayExpr() {
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewArrayExpr(int pos, Type type, Expr[] args, int dim) {
 		super(pos);
 		this.type = type;
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 		foreach (Expr e; args) this.args.append(e);
 		this.dim = dim;
 		arrtype = Type.newArrayType(type);
@@ -382,14 +382,14 @@ public class NewInitializedArrayExpr extends Expr {
 	@ref private Type				arrtype;
 
 	public NewInitializedArrayExpr() {
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewInitializedArrayExpr(int pos, Type type, int dim, Expr[] args) {
 		super(pos);
 		this.type = type;
 		this.dim = dim;
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 		foreach (Expr e; args) this.args.append(e);
 		arrtype = Type.newArrayType(type);
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
@@ -487,20 +487,20 @@ public class NewClosure extends Expr {
 	@ref public Method	func;
 
 	public NewClosure() {
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewClosure(int pos, Type type) {
 		super(pos);
 		this.type = type;
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewClosure(int pos, Method func) {
 		super(pos);
 		this.func = func;
 		this.type = MethodType.newMethodType(Type.tpClosureClazz,null,func.type.args,func.type.ret);
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 	}
 
 	public NewClosure(int pos, Method func, Expr[] args) {
@@ -514,7 +514,7 @@ public class NewClosure extends Expr {
 				targs[j] = func.type.args[i];
 			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
 		}
-		this.args = new NArr<Expr>(this, "args"); 
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true)); 
 		foreach (Expr e; args) this.args.append(e);
 	}
 

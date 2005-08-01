@@ -41,7 +41,7 @@ public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
 	public Tree() {
-		members = new NArr<Struct>(this, "members");
+		members = new NArr<Struct>(this, new AttrSlot("members", true, true));
 	}
 
 	public Object copy() {
@@ -50,18 +50,34 @@ public class Tree extends ASTNode {
 
 }
 
+public final class AttrSlot {
+	public final String  name; // field (property) name
+	public final boolean is_attr; // @att or @ref
+	public final boolean is_space; // if NArr<Node>
+	
+	public AttrSlot(String name, boolean is_attr, boolean is_space) {
+		this.name = name;
+		this.is_attr = is_attr;
+		this.is_space = is_space;
+	}
+}
+
 public final class NArr<N extends ASTNode> {
 
     private final ASTNode 	$parent;
-	private final String	$pslot;
+	private final AttrSlot	$pslot;
 	private N[]				$nodes;
+	
+	public NArr() {
+		this.$nodes = new N[0];
+	}
 	
 	public NArr(ASTNode parent) {
 		this.$parent = parent;
 		this.$nodes = new N[0];
 	}
 	
-	public NArr(ASTNode parent, String pslot) {
+	public NArr(ASTNode parent, AttrSlot pslot) {
 		this.$parent = parent;
 		this.$pslot = pslot;
 		this.$nodes = new N[0];
@@ -71,7 +87,7 @@ public final class NArr<N extends ASTNode> {
 		return $parent;
 	}
 	
-	public String getPSlot() {
+	public AttrSlot getPSlot() {
 		return $pslot;
 	}
 	
@@ -102,7 +118,7 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
 			$nodes[idx].pslot = null;
@@ -123,7 +139,7 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
 		}
@@ -165,7 +181,7 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
-				if ($pslot != null) {
+				if ($pslot != null && $pslot.is_attr) {
 					node.parent = $parent;
 					node.pslot = $pslot;
 					$nodes[i].pslot = null;
@@ -192,7 +208,7 @@ public final class NArr<N extends ASTNode> {
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
 		}
@@ -206,7 +222,7 @@ public final class NArr<N extends ASTNode> {
 	{
 		int sz = $nodes.length-1;
 		N[] tmp = new N[sz];
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			$nodes[idx].pslot = null;
 		}
 		int i;
@@ -220,14 +236,14 @@ public final class NArr<N extends ASTNode> {
 	public void delAll() {
 		if (this.$nodes.length == 0)
 			return;
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			foreach (N node; $nodes) node.pslot = null;
 		}
 		this.$nodes = new N[0];
 	};
 	
 	public void copyFrom(NArr<N> arr) {
-		if ($pslot != null) {
+		if ($pslot != null && $pslot.is_attr) {
 			foreach (N n; arr)
 				append((N)n.copy());
 		} else {

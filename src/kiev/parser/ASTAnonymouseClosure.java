@@ -41,11 +41,11 @@ public class ASTAnonymouseClosure extends Expr {
 	@att public Expr						new_closure;
 
 	public ASTAnonymouseClosure() {
-		params = new NArr<ASTNode>(this, "params");
+		params = new NArr<ASTNode>(this, new AttrSlot("params", true, true));
 	}
 
 	public ASTAnonymouseClosure(int id) {
-		params = new NArr<ASTNode>(this, "params");
+		params = new NArr<ASTNode>(this, new AttrSlot("params", true, true));
 	}
 
   	public void set(Token t) {

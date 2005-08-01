@@ -12,12 +12,12 @@ public abstract class SimpleNode extends ASTNode {
   @att public final NArr<ASTNode> children;
 
   public SimpleNode() {
-	children = new NArr<ASTNode>(this, "children");
+	children = new NArr<ASTNode>(this, new AttrSlot("children", true, true));
   }
 
   public SimpleNode(int i) {
 	super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos());
-	children = new NArr<ASTNode>(this, "children");
+	children = new NArr<ASTNode>(this, new AttrSlot("children", true, true));
   }
 
   public void jjtAddChild(ASTNode n, int i)

@@ -1169,12 +1169,12 @@ public class StringConcatExpr extends Expr {
 	}
 
 	public StringConcatExpr() {
-		args = new NArr<Expr>(this, "args");
+		args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 	}
 
 	public StringConcatExpr(int pos) {
 		super(pos);
-		args = new NArr<Expr>(this, "args");
+		args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 	}
 
 	public String toString() {
@@ -1373,14 +1373,14 @@ public class BlockExpr extends Expr implements Scope {
 	@att public       Expr				res;
 
 	public BlockExpr() {
-		this.stats = new NArr<ASTNode>(this,"stats");
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
 	}
 
 	public BlockExpr(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,"stats");
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
 	}

@@ -36,12 +36,12 @@ public final class MetaSet extends ASTNode {
 	@att private final NArr<Meta> metas;
 	
 	public MetaSet() {
-		metas = new NArr<Meta>(this, "metas");
+		metas = new NArr<Meta>(this, new AttrSlot("metas", true, true));
 	}
 	
 	public MetaSet(ASTNode owner) {
 		super(0,owner);
-		metas = new NArr<Meta>(this, "metas");
+		metas = new NArr<Meta>(this, new AttrSlot("metas", true, true));
 	}
 	
 	public int size() alias length {
@@ -142,13 +142,13 @@ public class Meta extends ASTNode {
 	@att public final NArr<MetaValue> values;
 	
 	public Meta() {
-		values = new NArr<MetaValue>(this, "values");
+		values = new NArr<MetaValue>(this, new AttrSlot("values", true, true));
 	}
 
 	public Meta(MetaType type) {
 		super(0);
 		this.type = type;
-		values = new NArr<MetaValue>(this, "values");
+		values = new NArr<MetaValue>(this, new AttrSlot("values", true, true));
 	}
 
 	public int size() alias length {
@@ -319,12 +319,12 @@ public class MetaValueArray extends MetaValue {
 	@att public final NArr<ASTNode>      values;
 	
 	public MetaValueArray() {
-		values = new NArr<ASTNode>(this, "values"); 
+		values = new NArr<ASTNode>(this, new AttrSlot("values", true, true)); 
 	}
 
 	public MetaValueArray(MetaValueType type) {
 		super(type);
-		values = new NArr<ASTNode>(this, "values"); 
+		values = new NArr<ASTNode>(this, new AttrSlot("values", true, true)); 
 	}
 
 	public void resolve(Type reqType) {
