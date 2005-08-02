@@ -52,6 +52,8 @@ public interface TopLevelDecl {
 	public ASTNode resolveImports() { return (ASTNode)this; }
 	// resolveFinalFields()
 	public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
+	// just resolve
+	public ASTNode resolve(Type reqType);
 	// dump
 	public Dumper  toJavaDecl(Dumper dmp);
 };
@@ -172,6 +174,11 @@ public abstract class ASTNode implements Constants {
 	public ASTNode(int pos, ASTNode parent) {
 		this(pos);
 		this.parent = parent;
+	}
+	
+	public ASTNode replaceWith(ASTNode node) {
+		parent.replaceVal(pslot.name, this, node);
+		return node;
 	}
 
 	public String parserAddr() {

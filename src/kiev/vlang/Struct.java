@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -2001,10 +2001,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 
 	}
 
-	public void autoProxyMethods() {
+	public ASTNode autoProxyMethods() {
 		checkResolved();
-		if( isMembersGenerated() ) return;
-		if( isPackage() ) return;
+		if( isMembersGenerated() ) return this;
+		if( isPackage() ) return this;
 		if( super_clazz != null && !super_clazz.clazz.isMembersGenerated() ) {
 			if ( super_clazz.clazz.generated_from != null )
 				super_clazz.clazz.generated_from.autoProxyMethods();
@@ -2053,6 +2053,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		foreach(Struct s; sub_clazz)	s.autoProxyMethods();
 
 		combineMethods();
+		return this;
 	}
 
 	// Check that Struct me implements all methods and
@@ -2179,7 +2180,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public void checkIntegrity() {
 	}
 
-	public void resolveFinalFields(boolean cleanup) {
+	public ASTNode resolveFinalFields(boolean cleanup) {
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 		PassInfo.push(this);
 		NodeInfoPass.init();
@@ -2220,12 +2221,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
+		return this;
 	}
 
-	public void resolveImports() {
+	public ASTNode resolveImports() {
+		return this;
 	}
 	
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isGenerated() ) return this;
 		long curr_time;
 		{

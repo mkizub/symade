@@ -3,6 +3,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
+import /*{ syntax }*/ kiev.parser.TypeAliases;
 
 public class kiev020TokenManager implements kiev020Constants
 {

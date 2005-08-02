@@ -130,7 +130,6 @@ kiev.parser.ASTEnumFieldDeclaration kiev/parser/ASTEnumFieldDeclaration kiev\par
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTExtends kiev/parser/ASTExtends kiev\parser\ASTExtends.java
 kiev.parser.ASTFieldDecl kiev/parser/ASTFieldDecl kiev\parser\ASTFieldDecl.java
-kiev.parser.ASTFileUnit kiev/parser/ASTFileUnit kiev\parser\ASTFileUnit.java
 kiev.parser.ASTFinallyInfo kiev/parser/ASTFinallyInfo kiev\parser\ASTFinallyInfo.java
 kiev.parser.ASTForEachStatement kiev/parser/ASTForEachStatement kiev\parser\ASTForEachStatement.java
 kiev.parser.ASTForStatement kiev/parser/ASTForStatement kiev\parser\ASTForStatement.java
@@ -217,6 +216,7 @@ kiev.parser.SimpleNode kiev/parser/SimpleNode kiev\parser\SimpleNode.java
 kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
+kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
 kiev.parser.kiev020 kiev/parser/kiev020 kiev\parser\kiev020.java
 kiev.parser.kiev020Constants kiev/parser/kiev020Constants kiev\parser\kiev020Constants.java
 kiev.parser.kiev020TokenManager kiev/parser/kiev020TokenManager kiev\parser\kiev020TokenManager.java

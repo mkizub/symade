@@ -34,7 +34,6 @@ import static kiev.stdlib.Debug.*;
 
 public final class ExportJavaTop implements Constants {
 	
-	
 	/////////////////////////////////////////////////////
 	//                                                 //
 	//         PASS 1 - create top structures          //
@@ -48,7 +47,7 @@ public final class ExportJavaTop implements Constants {
 		try
 		{
 			for (int i=0; i < Kiev.file_unit.length; i++) {
-				ASTFileUnit fu = Kiev.file_unit[i]; 
+				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
 				try {
 					pass1(fu, null);
@@ -64,42 +63,41 @@ public final class ExportJavaTop implements Constants {
 		return node;
 	}
 	
-	public ASTNode pass1(ASTFileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1(FileUnit:ASTNode astn, ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		boolean[] exts = Kiev.getExtSet();
 		try {
         	Kiev.setExtSet(astn.disabled_extensions);
-			if( astn.pkg != null ) {
-				astn.file_pkg = (Struct) pass1((ASTPackage)astn.pkg, null);
-			} else {
-				astn.file_pkg = Env.root;
-			}
-			FileUnit fu = new FileUnit(astn.filename,astn.file_pkg);
-			astn.file_unit = fu;
+			if( astn.pkg != null )
+				pass1(astn.pkg, astn);
+			else
+				astn.pkg = new ASTPackage(KString.Empty,Env.root);
+			FileUnit fu = astn;
 			fu.disabled_extensions = astn.disabled_extensions;
 			fu.bodies = astn.bodies;
-			PassInfo.push(astn.file_pkg);
+			PassInfo.push(astn.pkg.resolved);
 			try {
-				for(int i=0; i < astn.decls.length; i++) {
+				for(int i=0; i < astn.members.length; i++) {
 					try {
-						Struct s = (Struct) pass1((ASTNode)astn.decls[i], astn.file_unit);
-						fu.members.add( s );
+						Struct s = (Struct) pass1((ASTNode)astn.members[i], astn);
+						s.parent = fu;
 					} catch(Exception e ) {
-						Kiev.reportError/*Warning*/(((ASTNode)astn.decls[i]).getPos(),e);
+						Kiev.reportError/*Warning*/(((ASTNode)astn.members[i]).getPos(),e);
 					}
 				}
-			} finally { PassInfo.pop(astn.file_pkg); }
-			return astn.file_unit;
+			} finally { PassInfo.pop(astn.pkg.resolved); }
+			return astn;
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
 
 	public ASTNode pass1(ASTPackage:ASTNode astn, ASTNode pn) {
-		return Env.newPackage(ClazzName.fromToplevelName(astn.name,false));
+		astn.resolved = Env.newPackage(ClazzName.fromToplevelName(astn.name,false));
+		return astn;
 	}
 
 	private void setSourceFile(Struct me, ASTNode astn) {
-		if( astn.parent instanceof ASTFileUnit || astn.parent instanceof ASTTypeDeclaration )
+		if( astn.parent instanceof FileUnit || astn.parent instanceof ASTTypeDeclaration )
 			Env.setProjectInfo(me.name, Kiev.curFile);
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		me.addAttr(sfa);
@@ -171,11 +169,11 @@ public final class ExportJavaTop implements Constants {
 	
 	public ASTNode pass1(ASTEnumDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for enum "+astn.name);
-		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
+		boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
 
 		int flags = astn.modifiers.getFlags();
-		if( !(astn.parent instanceof ASTFileUnit) ) flags |= ACC_STATIC;
+		if( !(astn.parent instanceof FileUnit) ) flags |= ACC_STATIC;
 
 		astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		Struct me = astn.me;
@@ -191,7 +189,7 @@ public final class ExportJavaTop implements Constants {
 	
 	public ASTNode pass1(ASTSyntaxDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for synax "+astn.name);
-		boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
+		boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
 		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, astn.name, false, !isTop);
 
 		int flags = ACC_PRIVATE|ACC_ABSTRACT | astn.modifiers.getFlags();
@@ -227,7 +225,7 @@ public final class ExportJavaTop implements Constants {
 				KString name = bytecode_name.replace('/','.');
 				clname = new ClazzName(name,astn.name,bytecode_name,false,false);
 			} else {
-				boolean isTop = (astn.parent != null && astn.parent instanceof ASTFileUnit);
+				boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
 				clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
 			}
 			astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
@@ -279,7 +277,7 @@ public final class ExportJavaTop implements Constants {
 		try
 		{
 			for(int i=0; i < Kiev.file_unit.length; i++) {
-				ASTFileUnit fu = Kiev.file_unit[i]; 
+				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
 				try { pass1_1(fu,null);
 				} catch (Exception e) {
@@ -287,7 +285,7 @@ public final class ExportJavaTop implements Constants {
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
 				try { pass1_1(fu,null);
 				} catch (Exception e) {
@@ -302,10 +300,10 @@ public final class ExportJavaTop implements Constants {
 		return node;
 	}
 
-	public ASTNode pass1_1(ASTFileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1_1(FileUnit:ASTNode astn, ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
-		PassInfo.push(astn.file_unit);
+		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(astn.disabled_extensions);
@@ -322,10 +320,9 @@ public final class ExportJavaTop implements Constants {
 				try {
 					if (n instanceof ASTImport && ((ASTImport)n).mode == ASTImport.IMPORT_STATIC && !((ASTImport)n).star)
 						continue; // process later
-					ASTNode sn = pass1_1(n, astn.file_unit);
+					ASTNode sn = pass1_1(n, astn);
 					if (sn == null)
 						continue;
-					astn.file_unit.syntax.add(sn);
 					if (sn instanceof Import) {
 						if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(java_lang_name))
 							java_lang_found = true;
@@ -341,18 +338,18 @@ public final class ExportJavaTop implements Constants {
 			}
 			// Add standard imports, if they were not defined
 			if( !Kiev.javaMode && !kiev_stdlib_found )
-				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
 			if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.IMPORT_CLASS,true));
 			if( !java_lang_found )
-				astn.file_unit.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
 
 			// Process members - pass1_1()
-			foreach (ASTNode n; astn.decls) {
-				pass1_1(n, astn.file_unit);
+			foreach (ASTNode n; astn.members) {
+				pass1_1(n, astn);
 			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
-		return astn.file_unit;
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+		return astn;
 	}
 
 	public ASTNode pass1_1(ASTImport:ASTNode astn, ASTNode pn) {
@@ -380,7 +377,7 @@ public final class ExportJavaTop implements Constants {
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a syntax");
 			return null;
 		}
-		return new Import(astn.pos, pn, n, astn.mode, astn.star);
+		return astn.replaceWith(new Import(astn.pos, pn, n, astn.mode, astn.star));
 	}
 
 	public ASTNode pass1_1(ASTTypedef:ASTNode astn, ASTNode pn) {
@@ -399,7 +396,7 @@ public final class ExportJavaTop implements Constants {
 		} else {
 			astn.td.type = astn.type.getType();
 		}
-		return astn.td;
+		return astn.replaceWith(astn.td);
 	}
 
 	public ASTNode pass1_1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
@@ -449,11 +446,11 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return op;
+					return astn.replaceWith(op);
 				}
 				op = AssignOperator.newAssignOperator(image,null,null,false);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return op;
+				return astn.replaceWith(op);
 			}
 		case Operator.XFX:
 		case Operator.YFX:
@@ -466,11 +463,11 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return op;
+					return astn.replaceWith(op);
 				}
 				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return op;
+				return astn.replaceWith(op);
 			}
 		case Operator.FX:
 		case Operator.FY:
@@ -481,11 +478,11 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return op;
+					return astn.replaceWith(op);
 				}
 				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return op;
+				return astn.replaceWith(op);
 			}
 		case Operator.XF:
 		case Operator.YF:
@@ -496,11 +493,11 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return op;
+					return astn.replaceWith(op);
 				}
 				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return op;
+				return astn.replaceWith(op);
 			}
 		case Operator.XFXFY:
 			throw new CompilerException(pos,"Multioperators are not supported yet");
@@ -528,7 +525,7 @@ public final class ExportJavaTop implements Constants {
 		try
 		{
 			for(int i=0; i < Kiev.file_unit.length; i++) {
-				ASTFileUnit fu = Kiev.file_unit[i]; 
+				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
 				try { pass2(fu,null);
 				} catch (Exception e) {
@@ -536,7 +533,7 @@ public final class ExportJavaTop implements Constants {
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
 				try { pass2(fu,null);
 				} catch (Exception e) {
@@ -551,18 +548,18 @@ public final class ExportJavaTop implements Constants {
 		return astn;
 	}
 
-	public ASTNode pass2(ASTFileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass2(FileUnit:ASTNode astn, ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
-		PassInfo.push(astn.file_unit);
+		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(astn.disabled_extensions);
 			// Process members - pass2()
-			foreach (ASTNode n; astn.decls)
-				pass2(n, astn.file_unit);
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
-		return astn.file_unit;
+			foreach (ASTNode n; astn.members)
+				pass2(n, astn);
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+		return astn;
 	}
 
 	public ASTNode pass2(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
@@ -704,7 +701,7 @@ public final class ExportJavaTop implements Constants {
 		try
 		{
 			for(int i=0; i < Kiev.file_unit.length; i++) {
-				ASTFileUnit fu = Kiev.file_unit[i]; 
+				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
 				try { pass2_2(fu,null);
 				} catch (Exception e) {
@@ -712,7 +709,7 @@ public final class ExportJavaTop implements Constants {
 				}
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				ASTFileUnit fu = Kiev.files_scanned[i]; 
+				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
 				try { pass2_2(fu,null);
 				} catch (Exception e) {
@@ -726,17 +723,17 @@ public final class ExportJavaTop implements Constants {
 	public void pass2_2(ASTNode:ASTNode astn, ASTNode pn) {
 	}
 
-	public void pass2_2(ASTFileUnit:ASTNode astn, ASTNode pn) {
+	public void pass2_2(FileUnit:ASTNode astn, ASTNode pn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
-		PassInfo.push(astn.file_unit);
+		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(astn.disabled_extensions);
 			// Process members - pass2()
-			foreach (ASTNode n; astn.decls)
-				pass2_2(n, astn.file_unit);
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn.file_unit); Kiev.curFile = oldfn; }
+			foreach (ASTNode n; astn.members)
+				pass2_2(n, astn);
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
 	}
 
 	public void pass2_2(ASTEnumDeclaration:ASTNode astn, ASTNode pn) {
@@ -807,13 +804,13 @@ public final class ExportJavaTop implements Constants {
 			if( !me.isInterface() &&  me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
 				me.interfaces.append(Type.tpTypeInfoInterface);
 			}
-//			if( me.interfaces.length > 0 && me.gens != null ) {
-//				for(int g=0; g < me.gens.length; g++) {
-//					for(int l=0; l < me.interfaces.length; l++) {
-//						me.gens[g].clazz.interfaces.add(Type.getRealType(me.gens[g],me.interfaces[l]));
-//					}
-//				}
-//			}
+			if( me.interfaces.length > 0 && me.gens != null ) {
+				for(int g=0; g < me.gens.length; g++) {
+					for(int l=0; l < me.interfaces.length; l++) {
+						me.gens[g].interfaces.add(Type.getRealType(me.gens[g].type,me.interfaces[l]));
+					}
+				}
+			}
 
 	        // Process inner classes and cases
 			if( !me.isPackage() ) {

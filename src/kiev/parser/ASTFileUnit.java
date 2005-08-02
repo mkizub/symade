@@ -36,17 +36,17 @@ import static kiev.stdlib.Debug.*;
 
 @node
 public class ASTFileUnit extends ASTNode implements TopLevelDecl {
-	public KString	filename;
-	@ref public FileUnit	file_unit;
-	@ref public Struct		file_pkg;
-	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
+	public static PrescannedBody[] 		emptyArray = new PrescannedBody[0];
 
+	@att public KString					filename;
     @att public ASTPackage				pkg;
     @att public final NArr<ASTNode>	syntax;
-    @att public final NArr<ASTNode>	decls;
-	public PrescannedBody[]	bodies = PrescannedBody.emptyArray;
-	
-	public boolean[]		disabled_extensions;
+    @att public final NArr<ASTNode>	members;
+
+	@ref public FileUnit				file_unit;
+
+	public PrescannedBody[]				bodies = PrescannedBody.emptyArray;
+	public boolean[]					disabled_extensions;
 
 	ASTFileUnit() {
 		disabled_extensions = Kiev.getCmdLineExtSet();
@@ -76,7 +76,7 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			}
 		}
 		else {
-			decls.append(n);
+			members.append(n);
 		}
     }
 
@@ -102,11 +102,11 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         try {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - pass3()
-			for(int i=0; i < decls.length; i++) {
-				if (decls[i] instanceof ASTStructDeclaration)
-					file_unit.members[i] = (Struct)decls[i].pass3();
+			for(int i=0; i < members.length; i++) {
+				if (members[i] instanceof ASTStructDeclaration)
+					file_unit.members[i] = (Struct)members[i].pass3();
 				else
-					throw new CompilerException(decls[i].pos,"Unknown type of file declaration "+decls[i].getClass());
+					throw new CompilerException(members[i].pos,"Unknown type of file declaration "+members[i].getClass());
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
@@ -120,8 +120,8 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         try {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - pass3()
-			for(int i=0; i < decls.length; i++) {
-				decls[i].autoProxyMethods();
+			for(int i=0; i < members.length; i++) {
+				members[i].autoProxyMethods();
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;
@@ -147,11 +147,11 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
 			//		Kiev.reportError/*Warning*/(syntax[i].getPos(),e);
 			//	}
 			//}
-			for(int i=0; i < decls.length; i++) {
+			for(int i=0; i < members.length; i++) {
 				try {
-					decls[i].resolveImports();
+					members[i].resolveImports();
 				} catch(Exception e ) {
-					Kiev.reportError/*Warning*/(((ASTNode)decls[i]).getPos(),e);
+					Kiev.reportError/*Warning*/(members[i].getPos(),e);
 				}
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
@@ -166,8 +166,8 @@ public class ASTFileUnit extends ASTNode implements TopLevelDecl {
         try {
         	Kiev.setExtSet(disabled_extensions);
 			// Process members - resolveFinalFields()
-			for(int i=0; i < decls.length; i++) {
-				decls[i].resolveFinalFields(cleanup);
+			for(int i=0; i < members.length; i++) {
+				members[i].resolveFinalFields(cleanup);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(file_unit); Kiev.curFile = oldfn; }
 		return file_unit;

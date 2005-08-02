@@ -35,22 +35,24 @@ import kiev.vlang.*;
 
 @node
 public class ASTPackage extends ASTNode {
-	public KString	name;
+	@att public KString		name;
+	@ref public Struct		resolved;
 
-	ASTPackage() {
+	public ASTPackage() {
 	}
 
-	ASTPackage(int id) {
+	public ASTPackage(int id) {
+	}
+
+	public ASTPackage(KString name, Struct pkg) {
+		this.resolved = pkg;
+		this.name = name;
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
     	name = ((ASTQName)n).toKString();
         pos = n.getPos();
     }
-
-//	public ASTNode pass1(ASTNode pn) {
-//		return Env.newPackage(ClazzName.fromToplevelName(name,false));
-//	}
 
 	public Dumper toJava(Dumper dmp) {
     	return dmp.append("package").space().append(name).append(';').newLine();

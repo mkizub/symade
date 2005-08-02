@@ -189,6 +189,18 @@ public class Meta extends ASTNode {
 		return this;
 	}
 	
+	public MetaValue get(KString name)
+	{
+		int sz = values.length;
+		for (int i=0; i < sz; i++) {
+			if (values[i].type.name == name) {
+				MetaValue v = values[i];
+				return v;
+			}
+		}
+		return null;
+	}
+	
 	public MetaValue set(MetaValue value) alias add alias operator (5,lfy,+=)
 	{
 		if (value == null)

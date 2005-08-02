@@ -25,7 +25,6 @@ import kiev.stdlib.*;
 import kiev.parser.kiev020;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
-import kiev.parser.ASTFileUnit;
 import kiev.transf.*;
 
 import java.io.*;
@@ -532,7 +531,7 @@ public class Env extends Struct {
 			kiev020 k = Kiev.k;
 			kiev020.interface_only = true;
 			k.ReInit(fin);
-			ASTFileUnit fu = k.FileUnit(Kiev.curFile.toString());
+			FileUnit fu = k.FileUnit(Kiev.curFile.toString());
 			try {
 				fin.close();
 			} catch (IOException ioe) {
@@ -554,9 +553,9 @@ public class Env extends Struct {
 				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveFinalFields) )	fu.resolveFinalFields(false);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
 					if (Kiev.safe)
-						Kiev.files.append(fu.file_unit);
+						Kiev.files.append(fu);
 					else
-						fu.file_unit.cleanup();
+						fu.cleanup();
 				}
 				fu = null;
 			} catch(Exception e ) {

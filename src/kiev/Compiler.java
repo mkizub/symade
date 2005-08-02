@@ -545,7 +545,7 @@ public class Compiler {
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
 				try {
-					((ASTFileUnit)Kiev.files_scanned[i]).pass3();
+					Kiev.files_scanned[i].pass3();
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
@@ -563,7 +563,7 @@ public class Compiler {
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).autoProxyMethods();
+				try { Kiev.files_scanned[i].autoProxyMethods();
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
@@ -591,7 +591,7 @@ public class Compiler {
 			}
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
-				try { ((ASTFileUnit)Kiev.files_scanned[i]).resolveImports();
+				try { Kiev.files_scanned[i].resolveImports();
 				} catch (Exception e) {
 					Kiev.reportError(0,e); delayed_stop = true;
 				}
@@ -611,18 +611,18 @@ public class Compiler {
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				if( Kiev.files_scanned[i] == null ) continue;
 				try {
-					((ASTFileUnit)Kiev.files_scanned[i]).resolveFinalFields(true);
+					Kiev.files_scanned[i].resolveFinalFields(true);
 					if (!Kiev.safe)
-						((ASTFileUnit)Kiev.files_scanned[i]).file_unit.cleanup();
+						Kiev.files_scanned[i].cleanup();
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
 			}
-			foreach(ASTFileUnit fu; Kiev.file_unit; fu != null)
-				Kiev.files.append(fu.file_unit);
+			foreach(FileUnit fu; Kiev.file_unit; fu != null)
+				Kiev.files.append(fu);
 			if (Kiev.safe)
-				foreach(ASTNode fu; Kiev.files_scanned; fu != null)
-					Kiev.files.append(((ASTFileUnit)fu).file_unit);
+				foreach(FileUnit fu; Kiev.files_scanned; fu != null)
+					Kiev.files.append(fu);
 
 
 			

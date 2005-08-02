@@ -276,8 +276,9 @@ public final class ProcessVNode implements Constants {
 							continue;
 						if (f.name.equals(nameParent))
 							continue;
-						if (f.meta.get(mnAtt) != null) {
-							boolean isArr = (f.getType().clazz.name.name == nameNArr);
+						boolean isNode = (f.getType().clazz.meta.get(mnNode) != null);
+						boolean isArr = (f.getType().clazz.name.name == nameNArr);
+						if (f.meta.get(mnAtt) != null && isNode) {
 							if (isArr) {
 								ASTCallAccessExpression cae = new ASTCallAccessExpression();
 								cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);

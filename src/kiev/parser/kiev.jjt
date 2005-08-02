@@ -29,6 +29,7 @@ options {
   STATIC = true;
   MULTI = true;
   NODE_PACKAGE = "kiev.parser";
+  BUILD_NODE_FILES = false;
   ERROR_REPORTING = false;
   CACHE_TOKENS = true;
 }
@@ -40,6 +41,8 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
+
+import /*{ syntax }*/ kiev.parser.TypeAliases;
 
 public class kiev020 {
 
@@ -690,16 +693,13 @@ ASTFileUnit FileUnit(String filename) :
 {}
 {
 	{
-		Kiev.curASTFileUnit = jjtThis;
-		jjtThis.setFileName(filename);
+		Kiev.curFileUnit = jjtThis;
+		jjtThis.filename = KString.from(filename);
 		jjtThis.setPos(0);
 		declMode = true;
 		ASTModifiers modifiers;
 	}
-	[
-		LOOKAHEAD("package" QName() ";")
-		Package()
-	]
+	[	Package()	]
 	(
 		Import()
 	|	Typedef()
@@ -1165,7 +1165,10 @@ int AccessSpec() #void :
 void KeywordAsIdentifier() #void :
 { Token t; ASTIdentifier id; }
 {
-	t="virtual"
+	(
+		t="virtual"
+	|	t="alias"
+	)
 	{
 		id = new ASTIdentifier(0);
 		jjtree.openNodeScope(id);
@@ -1416,7 +1419,7 @@ void MaybeSkipBlock() #void :
 			{
 			Token tk = getToken(0);
 			PrescannedBody pbody = new PrescannedBody(tk.beginLine,tk.beginColumn);
-			Kiev.curASTFileUnit.addPrescannedBody(pbody);
+			Kiev.curFileUnit.addPrescannedBody(pbody);
 			int depth = 1;
 			do {
 				tk = getNextToken();

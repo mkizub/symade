@@ -27,7 +27,7 @@ options {
   JAVA_UNICODE_ESCAPE = true;
 //  UNICODE_INPUT = true;
 //  USER_CHAR_STREAM = true;
-  STATIC = true;                                                
+  STATIC = true;                                                                            
   ERROR_REPORTING = false;
   CACHE_TOKENS = true;
 }
@@ -39,6 +39,8 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
+
+import /*{ syntax }*/ kiev.parser.TypeAliases;
 
 public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/*@bgen(jjtree)*/
   protected static JJTkiev020State jjtree = new JJTkiev020State();
@@ -698,16 +700,13 @@ ASTFileUnit FileUnit(String filename) :
         try {
 /*@egen*/
 	{
-		Kiev.curASTFileUnit = jjtn000;
-		jjtn000.setFileName(filename);
+		Kiev.curFileUnit = jjtn000;
+		jjtn000.filename = KString.from(filename);
 		jjtn000.setPos(0);
 		declMode = true;
 		ASTModifiers modifiers;
 	}
-	[
-		LOOKAHEAD("package" QName() ";")
-		Package()
-	]
+	[	Package()	]
 	(
 		Import()
 	|	Typedef()
@@ -1653,7 +1652,10 @@ int AccessSpec()       :
 void KeywordAsIdentifier()       :
 { Token t; ASTIdentifier id; }
 {
-	t="virtual"
+	(
+		t="virtual"
+	|	t="alias"
+	)
 	{
 		id = new ASTIdentifier(0);
 		jjtree.openNodeScope(id);
@@ -2301,7 +2303,7 @@ void MaybeSkipBlock()       :
 			{
 			Token tk = getToken(0);
 			PrescannedBody pbody = new PrescannedBody(tk.beginLine,tk.beginColumn);
-			Kiev.curASTFileUnit.addPrescannedBody(pbody);
+			Kiev.curFileUnit.addPrescannedBody(pbody);
 			int depth = 1;
 			do {
 				tk = getNextToken();

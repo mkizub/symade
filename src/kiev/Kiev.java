@@ -398,11 +398,11 @@ public final class Kiev {
 
 	// Scanning & parsing
 	public static kiev020				k;
-	public static ASTFileUnit			curASTFileUnit;
+	public static FileUnit				curFileUnit;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
-	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
-	public static Vector<ASTFileUnit>	files_scanned = new Vector<ASTFileUnit>();
+	public static Vector<FileUnit>		file_unit = new Vector<FileUnit>();
+	public static Vector<FileUnit>		files_scanned = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 	public static Hashtable<String,ASTNode> parserAddresses =
 		new Hashtable<String,ASTNode>();
