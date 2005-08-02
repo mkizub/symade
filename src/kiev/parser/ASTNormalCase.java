@@ -61,7 +61,7 @@ public class ASTNormalCase extends ASTNode {
 			}
 			CaseLabel cl = new CaseLabel(pos,parent,(Expr)n,stats.toArray());
 			cl.parent = parent;
-			return cl.resolve(Type.tpVoid);
+			return cl /*.resolve(Type.tpVoid)*/;
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
 			return this;

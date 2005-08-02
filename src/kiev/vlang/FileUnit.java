@@ -71,7 +71,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		if( n instanceof ASTPackage) {
 			pkg = (ASTPackage)n;
 		}
-		else if( n instanceof ASTImport || n instanceof ASTTypedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
+		else if( n instanceof Import || n instanceof Typedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
 			syntax.append(n);
 			// Check disabled extensions very early
 			if (n instanceof ASTPragma) {
@@ -231,8 +231,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 			op @= syntax,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
 		;	syn @= syntax,
-			syn instanceof Import && ((Import)syn).mode == Import.IMPORT_SYNTAX,
-			((Struct)((Import)syn).node).resolveOperatorR(op)
+			syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,
+			((Struct)((Import)syn).resolved).resolveOperatorR(op)
 		}
 	}
 
@@ -244,7 +244,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 			syn instanceof Typedef,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			name.equals(((Typedef)syn).name),
-			node ?= ((Typedef)syn).type
+			node ?= ((Typedef)syn).type.getType()
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name,tp,resfl)
@@ -269,7 +269,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		pkg != null && pkg.resolved != null && pkg.resolved != Env.root,
 		pkg.resolved.resolveMethodR(node,path,name,args,ret,type,resfl)
 	;	syn @= syntax,
-		syn instanceof Import && ((Import)syn).mode == Import.IMPORT_STATIC,
+		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
 		((Import)syn).resolveMethodR(node,path,name,args,ret,type,resfl)
 	}
@@ -489,34 +489,4 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	}
 }
 
-
-@node
-public class Typedef extends ASTNode implements Named {
-
-	public static Typedef[]	emptyArray = new Typedef[0];
-
-	public KString		name;
-	@ref public Type	type;
-
-	public Typedef() {
-	}
-	
-	public Typedef(int pos, ASTNode par, KString name) {
-		super(pos,par);
-		this.name = name;
-		this.type = Type.tpVoid;
-	}
-	
-	public NodeName	getName() {
-		return new NodeName(name);
-	}
-
-	public String toString() {
-		return "typedef "+type+" "+name;
-	}
-
-	public Dumper toJava(Dumper dmp) {
-    	return dmp.append("/* typedef ").space().append(type).space().append(name).append(" */").newLine();
-    }
-}
 

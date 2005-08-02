@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTPizzaCase.java,v 1.3 1998/10/26 23:47:04 max Exp $
  * @author Maxim Kizub
@@ -69,7 +71,7 @@ public class ASTPizzaCase extends ASTNode {
 			CaseLabel cl = new CaseLabel(pos,parent,new WrapedExpr(pos,v),stats.toArray());
 			cl.parent = parent;
 			cl.pattern = pattern;
-			return cl.resolve(Type.tpVoid);
+			return cl;
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
 			return this;

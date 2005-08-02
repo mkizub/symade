@@ -34,80 +34,28 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTType extends ASTNode {
+public class ASTType extends TypeRef {
 
 	public static ASTType[]	emptyArray = new ASTType[0];
 
-	public int				dim;
-    @att public ASTNode		asttype;
-	
-	@ref private Type		type;
-	
-	ASTType() {
+	public ASTType() {
 	}
 
-	ASTType(int id) {
+	public ASTType(int id) {
 	}
 
-	ASTType(int pos, int dim, ASTNode asttype) {
-		super(pos);
-		this.dim = dim;
-		this.asttype = asttype;
-	}
-
-	ASTType(int pos, Type type) {
+	public ASTType(int pos, Type type) {
 		super(pos);
 		this.type = type;
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( i==0 ) {
-			asttype = n;
-            pos = n.getPos();
-		}
-        else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
+		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
     
-	public Type getType() {
-		if( type != null )
-			return type;
-		Type tp = Type.tpVoid;
-		if( asttype instanceof ASTNonArrayType ) {
-			try {
-				type = tp = ((ASTNonArrayType)asttype).getType();
-				for(int i=0; i < dim; i++)
-					type = tp = Type.newArrayType(tp);
-			} catch(Exception e ) {
-				Kiev.reportError(asttype.getPos(),e);
-			}
-		}
-		else if( asttype instanceof ASTClosureType ) {
-			type = tp = ((ASTClosureType)asttype).getType();
-		} else {
-			throw new CompilerException(asttype.getPos(),"Bad type node "+asttype);
-		}
-		return tp;
-	}
-	
-	public String toString() {
-		String s;
-		if (type != null)
-			s = type.toString();
-		else
-			s = asttype.toString();
-    	for(int i=0; i < dim; i++) s += "[]";
-        return s;
-	}
+    public void addOperation(Token t) {
+		throw new CompilerException(t.getPos(),"Bad operator: "+t);
+    }
 
-	public Dumper toJava(Dumper dmp) {
-		if (type != null)
-			type.toJava(dmp);
-		else
-			asttype.toJava(dmp);
-    	for(int i=0; i < dim; i++) dmp.append("[]");
-        return dmp.space();
-	}
 }
 

@@ -152,7 +152,7 @@ public class Bytecoder implements Constants {
 						Type type = ((TypedefAttr)at).type;
 						KString name = ((TypedefAttr)at).type_name;
 						Typedef td = new Typedef(0,cl,name);
-						td.type = type;
+						td.type = new TypeRef(type);
 						cl.imported.add(td);
 					}
 					else if( at.name.equals(attrOperator) ) {
@@ -609,14 +609,16 @@ public class Bytecoder implements Constants {
 			if( s == null )
 				Kiev.reportWarning(0,"Bytecode imports a member from unknown class "+clname);
 			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
-				kiev.parser.ASTImport imp = new kiev.parser.ASTImport(0);
+				Import imp = new Import();
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
 					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));
 				} else {
 					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));
+					imp.of_method = true;
 					KString sig = kia.getSignature(clazz);
 					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));
-					imp.args = mt.args;
+					foreach (Type t; mt.args)
+						imp.args.append(new TypeRef(t));
 				}
 				cl.imported.add(imp);
 				if( this.cl.isPackage() && !Kiev.packages_scanned.contains(this.cl))

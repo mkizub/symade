@@ -28,6 +28,8 @@ import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Operator.java,v 1.3.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub

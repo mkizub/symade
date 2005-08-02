@@ -770,20 +770,20 @@ void Import() :
 	try {
 		"import"
 		(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			<IDENTIFIER>{ jjtThis.mode = ASTImport.IMPORT_SYNTAX; }
+			<IDENTIFIER>{ jjtThis.mode = Import.ImportMode.IMPORT_SYNTAX; }
 			[ QName() ]
-		|	"package"	{ jjtThis.mode = ASTImport.IMPORT_PACKAGE; }
+		|	"package"	{ jjtThis.mode = Import.ImportMode.IMPORT_PACKAGE; }
 			[ QName() ]
-		|	"static"	{ jjtThis.mode = ASTImport.IMPORT_STATIC; }
+		|	"static"	{ jjtThis.mode = Import.ImportMode.IMPORT_STATIC; }
 			QName()
 			[	"." "*" { jjtThis.star = true; }
-			|	"("		{ jjtThis.args = ASTType.emptyArray; }
+			|	"("		{ jjtThis.of_method = true; }
 				Type() ("," Type())*
 				")"
 			]
 		|	QName()
 			[	"." "*" { jjtThis.star = true; }
-			|	"("		{ jjtThis.args = ASTType.emptyArray; }
+			|	"("		{ jjtThis.of_method = true; }
 				Type() ("," Type())*
 				")"
 			]
@@ -795,18 +795,13 @@ void Import() :
 }
 
 void Typedef() :
-{ Token id1, id2; }
+{}
 {
 	try {
 		"typedef"
 		(
 			LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
-			{ jjtThis.opdef = true; }
-			id1=<IDENTIFIER> Operator() QName() "<" id2=<IDENTIFIER> ">"
-			{
-				if (!id1.image.equals(id2.image))
-					throw new ParseError("Typedef args "+id1+" and "+id2+" do not match");
-			}
+			Identifier() Operator() Type()
 		|	Type() Identifier()
 		) ";"
 	}
@@ -1320,7 +1315,7 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 	(
 		tp = Type()
 		Identifier()
-		( "[" "]" { tp.dim += 1; } )*
+		( t="[" "]" { tp.addOperation(t); } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1338,7 +1333,7 @@ ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) #FormalParameter :
 			(":") mmtp = Type()
 		)?
 		Identifier()
-		( "[" "]" { tp.dim += 1; if (mmtp != null) mmtp.dim += 1; } )*
+		( t="[" "]" { tp.addOperation(t); if (mmtp != null) mmtp.addOperation(t); } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1477,7 +1472,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		t="[" "]"
 		{
 			if (tp != null)
-				tp.dim += 1;
+				tp.addOperation(t);
 			else
 				Kiev.reportParserError(t.getPos(), "Array return in constructor?");
 		}
@@ -1613,20 +1608,27 @@ void Initializer(ASTModifiers modifiers) :
  * Type, name and expression syntax follows.
  */
 
-ASTType Type() :
-{}
+ASTType Type() #void :
+{ ASTType res; Token t; }
 {
-	(	NonArrayType()
-		(	LOOKAHEAD(2)
-			"[" "]" { jjtThis.dim += 1; }
+	(
+		res = NonArrayType()
+		(
+			LOOKAHEAD(2,"[" "]")
+			t="[" "]"
+			{ res.addOperation(t); }
+		|	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
+			t=TypeOperatorChar()
+			{ res.addOperation(t); }
 		)*
-	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
-		ClosureType()
+	|
+		LOOKAHEAD({Kiev.enabled(Ext.With)})
+		res = ClosureType()
 	)
-	{ return jjtThis; }
+	{ return res; }
 }
 
-void ClosureType() :
+ASTType ClosureType() :
 { Token t; }
 {
 	t="(" { jjtThis.setPos(t.getPos()); }
@@ -1635,10 +1637,11 @@ void ClosureType() :
 		( "," Type() )*
 	]
 	")" "->" Type()
+	{ return jjtThis; }
 }
 
 
-void NonArrayType() :
+ASTType NonArrayType() :
 { Token t; }
 {
 	try {
@@ -1652,12 +1655,15 @@ void NonArrayType() :
 			">"
 		]
 	)
-	(	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
-		t=TypeOperatorChar() { jjtThis.addOperation(t); }
+	(
+		LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
+		t=TypeOperatorChar()
+		{ jjtThis.addOperation(t); }
 	)*
 	}
 	catch(ParseError e) { rpe("Bad type specification",e); }
 	catch(Throwable e) { rperr(e); }
+	{ return jjtThis; }
 }
 
 void PrimitiveType() :

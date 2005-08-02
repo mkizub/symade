@@ -305,8 +305,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			op @= imported,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
 		;	imp @= imported,
-			imp instanceof Import && ((Import)imp).mode == Import.IMPORT_SYNTAX,
-			((Struct)((Import)imp).node).resolveOperatorR(op)
+			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
+			((Struct)((Import)imp).resolved).resolveOperatorR(op)
 		}
 	}
 
@@ -1874,6 +1874,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						new VarAccessExpr(pos,mm.params[j+voffs]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
+					if (t.clazz.typeinfo_clazz == null)
+						t.clazz.autoGenerateTypeinfoClazz();
 					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(

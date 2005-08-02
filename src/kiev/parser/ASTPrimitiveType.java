@@ -34,9 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTPrimitiveType extends ASTNode implements kiev020Constants {
-
-	@ref public Type	type;
+public class ASTPrimitiveType extends ASTType implements kiev020Constants {
 
 	ASTPrimitiveType() {
 	}
@@ -61,10 +59,10 @@ public class ASTPrimitiveType extends ASTNode implements kiev020Constants {
 		}
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-
+	public String toString() {
+		return type.toString();
+	}
+	
     public Dumper toJava(Dumper dmp) {
     	return dmp.append(type);
     }

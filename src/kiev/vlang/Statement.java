@@ -235,7 +235,7 @@ public class BlockStat extends Statement implements Scope {
 			node ?= n
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
-			node ?= ((Typedef)n).type
+			node ?= ((Typedef)n).type.getType()
 		}
 	}
 

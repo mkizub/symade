@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 import java.util.zip.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Env.java,v 1.4.2.1.2.2 1999/05/29 21:03:11 max Exp $

@@ -26,6 +26,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNonArrayType.java,v 1.3 1998/10/26 23:47:04 max Exp $
  * @author Maxim Kizub
@@ -34,9 +36,16 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTNonArrayType extends SimpleNode {
+public class ASTNonArrayType extends ASTType {
+	private static KString opArray = KString.from("[");
+	private static KString opPVar  = KString.from("@");
+	private static KString opRef   = KString.from("&");
+	
 	static private KString[] noops = new KString[0];
+	
+	@att public final NArr<ASTNode>		children;
 	public KString[] ops = noops;
+	
 
 	public ASTNonArrayType() {
 	}
@@ -44,9 +53,13 @@ public class ASTNonArrayType extends SimpleNode {
 	public ASTNonArrayType(int id) {
 	}
 
+	public ASTNonArrayType(ASTQName qn) {
+		jjtAddChild(qn, 0);
+	}
+
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 ) pos = n.getPos();
-        super.jjtAddChild(n,i);
+        children.append(n);
     }
 
     public void addOperation(Token t) {
@@ -54,12 +67,14 @@ public class ASTNonArrayType extends SimpleNode {
     }
 
 	public Type getType() {
+		if (this.type != null)
+			return this.type;
 	    Type tp= null;
 		if( children[0] instanceof ASTPrimitiveType ) {
 			tp = ((ASTPrimitiveType)children[0]).type;
 		} else {
     		ASTQName qn = (ASTQName)children[0];
-	    	PVar<ASTNode> v = new PVar<ASTNode>();
+	    	ASTNode@ v;
 		    if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
 			    throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
     		if( v instanceof Type ) {
@@ -70,29 +85,44 @@ public class ASTNonArrayType extends SimpleNode {
 				Struct s = (Struct)v;
 				Type[] atypes = new Type[children.length-1];
 				for(int i=0; i < atypes.length; i++) {
-					atypes[i] = ((ASTType)children[i+1]).getType();
+					ASTNode ct = children[i+1];
+					if (ct instanceof Type)
+						atypes[i] = (Type)ct;
+					else
+						atypes[i] = ((ASTType)ct).getType();
 				}
 				tp = Type.newRefType(s,atypes);
 		    }
 		}
 		for (int i=0; i < ops.length; i++) {
-			PVar<ASTNode> v = new PVar<ASTNode>();
-			if (!PassInfo.resolveNameR(v,new ResInfo(),ops[i],null,0)) {
-				if (ops[i] == KString.from("@"))
-					v = Type.tpPrologVar;
-				else if (ops[i] == KString.from("&"))
-					v = Type.tpRefProxy;
-				else
-					throw new CompilerException(pos,"Typedef for type operator "+ops[i]+" not found");
+			ASTNode@ v;
+			if (ops[i] == opArray) {
+				tp = Type.newArrayType(tp);
+			} else {
+				if (!PassInfo.resolveNameR(v,new ResInfo(),ops[i],null,0)) {
+					if (ops[i] == opPVar) {
+						Kiev.reportWarning(pos, "Typedef for "+ops[i]+" not found, assuming "+Type.tpPrologVar);
+						v = Type.tpPrologVar;
+					}
+					else if (ops[i] == KString.from("&")) {
+						Kiev.reportWarning(pos, "Typedef for "+ops[i]+" not found, assuming "+Type.tpRefProxy);
+						v = Type.tpRefProxy;
+					}
+					else
+						throw new CompilerException(pos,"Typedef for type operator "+ops[i]+" not found");
+				}
+				if (v instanceof TypeRef)
+					v = ((TypeRef)v).getType();
+				if !(v instanceof Type)
+					throw new CompilerException(pos,"Expected to find type for "+ops[i]+", but found "+v);
+				Type t = (Type)v;
+				if (t.args.length != 1)
+					throw new CompilerException(pos,"Type '"+t+"' of type operator "+ops[i]+" must have 1 argument");
+				Env.getStruct(t.clazz.name);
+				tp = Type.newRefType(t.clazz,new Type[]{tp});
 			}
-			if (!(v instanceof Type))
-				throw new CompilerException(pos,"Expected to find type for "+ops[i]+", but found "+v);
-			Type t = (Type)v;
-			if (t.args.length != 1)
-				throw new CompilerException(pos,"Type '"+t+"' of type operator "+ops[i]+" must have 1 argument");
-			Env.getStruct(t.clazz.name);
-			tp = Type.newRefType(t.clazz,new Type[]{tp});
 		}
+		this.type = tp;
 		return tp;
 	}
 

@@ -1012,6 +1012,22 @@ public abstract class Statement extends ASTNode {
 
 }
 
+@node
+public class TypeRef extends ASTNode {
+	@ref public Type		type;
+	
+	public TypeRef() {}
+	public TypeRef(Type tp) {
+		this.type = tp;
+	}
+	public TypeRef(int pos) {
+		super(pos);
+	}
+	public Type getType() {
+		return type;
+	}
+}
+
 public interface SetBody {
 	public boolean setBody(Statement body);
 }

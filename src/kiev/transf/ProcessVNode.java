@@ -114,12 +114,12 @@ public final class ProcessVNode implements Constants {
 				isArr = true;
 			}
 			Meta fsm = fs.meta.get(mnNode);
-			if (fsm == null) {
-				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
-				fs.meta.unset(mnAtt);
-				fs.meta.unset(mnRef);
-				return;
-			}
+//			if (fsm == null) {
+//				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
+//				fs.meta.unset(mnAtt);
+//				fs.meta.unset(mnRef);
+//				return;
+//			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
 				if (isArr) {

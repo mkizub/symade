@@ -283,8 +283,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			st.setBreakTarget(true);
 			st = (BlockStat)st;
 			if( ((CaseLabel)cas).val == null ) {
-				st.stats.insert(new ExprStat(sel.pos,st,sel),0);
-				return st.resolve(reqType);
+				st.stats.insert((Statement)new ExprStat(sel.pos,st,sel).resolve(Type.tpVoid),0);
+				return st.resolve(Type.tpVoid);
 			} else {
 				return new IfElseStat(pos,parent,
 						new BinaryBooleanExpr(sel.pos,BinaryOperator.Equals,sel,
@@ -355,7 +355,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					else if( cases[i] instanceof ASTPizzaCase ) {
 						cases[i] = (CaseLabel)((ASTPizzaCase)cases[i]).resolve(Type.tpVoid);
 					}
-					else if( cases[i] instanceof CaseLabel ) {
+					if( cases[i] instanceof CaseLabel ) {
 						cases[i] = (CaseLabel)((CaseLabel)cases[i]).resolve(Type.tpVoid);
 					}
 					else

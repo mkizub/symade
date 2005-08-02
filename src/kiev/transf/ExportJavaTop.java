@@ -26,6 +26,7 @@ import kiev.vlang.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -318,17 +319,17 @@ public final class ExportJavaTop implements Constants {
 
 			foreach (ASTNode n; astn.syntax) {
 				try {
-					if (n instanceof ASTImport && ((ASTImport)n).mode == ASTImport.IMPORT_STATIC && !((ASTImport)n).star)
+					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
 						continue; // process later
 					ASTNode sn = pass1_1(n, astn);
 					if (sn == null)
 						continue;
 					if (sn instanceof Import) {
-						if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(java_lang_name))
+						if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(java_lang_name))
 							java_lang_found = true;
-						else if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(kiev_stdlib_name))
+						else if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(kiev_stdlib_name))
 							kiev_stdlib_found = true;
-						else if( sn.mode == Import.IMPORT_CLASS && ((Struct)sn.node).name.name.equals(kiev_stdlib_meta_name))
+						else if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(kiev_stdlib_meta_name))
 							kiev_stdlib_meta_found = true;
 					}
 					trace(Kiev.debugResolve,"Add "+sn);
@@ -338,11 +339,11 @@ public final class ExportJavaTop implements Constants {
 			}
 			// Add standard imports, if they were not defined
 			if( !Kiev.javaMode && !kiev_stdlib_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
 			if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
 			if( !java_lang_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
 
 			// Process members - pass1_1()
 			foreach (ASTNode n; astn.members) {
@@ -352,51 +353,35 @@ public final class ExportJavaTop implements Constants {
 		return astn;
 	}
 
-	public ASTNode pass1_1(ASTImport:ASTNode astn, ASTNode pn) {
-		if (astn.args != null || (astn.mode==ASTImport.IMPORT_STATIC && !astn.star)) return null;
+	public ASTNode pass1_1(Import:ASTNode astn, ASTNode pn) {
+		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
 		KString name = astn.name;
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
-			return null;
+			return astn;
 		}
 		ASTNode n = v;
-		if      (astn.mode == ASTImport.IMPORT_CLASS && !(n instanceof Struct)) {
+		if      (astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a class or package");
-			return null;
-		}
-		else if (astn.mode == ASTImport.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage())) {
+		else if (astn.mode == Import.ImportMode.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a package");
-			return null;
-		}
-		else if (astn.mode == ASTImport.IMPORT_STATIC && !(astn.star || (n instanceof Field))) {
+		else if (astn.mode == Import.ImportMode.IMPORT_STATIC && !(astn.star || (n instanceof Field)))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a field");
-			return null;
-		}
-		else if (astn.mode == ASTImport.IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax())) {
+		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax()))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a syntax");
-			return null;
-		}
-		return astn.replaceWith(new Import(astn.pos, pn, n, astn.mode, astn.star));
+		else
+			astn.resolved = n;
+		return astn;
 	}
 
-	public ASTNode pass1_1(ASTTypedef:ASTNode astn, ASTNode pn) {
-		astn.td = new Typedef(astn.pos, pn, astn.name);
-		if (astn.opdef) {
-			ASTQName qn = (ASTQName)astn.type;
-			ASTNode@ v;
-			if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
-				throw new CompilerException(astn.pos,"Unresolved identifier "+qn.toKString());
-			if( !(v instanceof Struct) )
-				throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
-			Struct s = (Struct)v;
-			if (s.type.args.length != 1)
-				throw new CompilerException(qn.getPos(),"Type "+s.type+" must have 1 argument");
-			astn.td.type = s.type;
+	public ASTNode pass1_1(Typedef:ASTNode astn, ASTNode pn) {
+		if (astn.typearg != null) {
+			astn.type = new TypeRef(astn.type.getType().clazz.type);
 		} else {
-			astn.td.type = astn.type.getType();
+			astn.type = new TypeRef(astn.type.getType());
 		}
-		return astn.replaceWith(astn.td);
+		return astn;
 	}
 
 	public ASTNode pass1_1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
@@ -409,7 +394,7 @@ public final class ExportJavaTop implements Constants {
 		trace(Kiev.debugResolve,"Pass 1_1 for syntax "+astn.me);
 		foreach (ASTNode n; astn.members) {
 			try {
-				if (n instanceof ASTTypedef) {
+				if (n instanceof Typedef) {
 					n = pass1_1(n, astn.me);
 					if (n != null) {
 						astn.me.imported.add(n);

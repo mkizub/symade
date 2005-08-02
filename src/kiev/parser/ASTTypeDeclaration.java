@@ -271,7 +271,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     	        // Inner classes and cases after all methods and fields, skip now
 				else if( members[i] instanceof ASTTypeDeclaration );
 				else if( members[i] instanceof ASTCaseTypeDeclaration );
-				else if( members[i] instanceof ASTImport ) {
+				else if( members[i] instanceof Import ) {
 					me.imported.add(members[i]);
 				}
 				else {

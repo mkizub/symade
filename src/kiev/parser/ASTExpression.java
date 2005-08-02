@@ -28,6 +28,8 @@ import kiev.stdlib.*;
 
 import static kiev.stdlib.Debug.*;
 
+import syntax kiev.Syntax;
+
 typedef kiev.stdlib.List<kiev.vlang.ASTNode>		ListAN;
 typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 

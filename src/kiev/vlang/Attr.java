@@ -551,7 +551,7 @@ public class TypedefAttr extends Attr {
 	/** Constructor for bytecode reader and raw field creation */
 	public TypedefAttr(Typedef td) {
 		super(attrTypedef);
-		this.type = td.type;
+		this.type = td.type.getType();
 		this.type_name = td.name;
 	}
 

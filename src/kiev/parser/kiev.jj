@@ -891,20 +891,20 @@ void Import() :
 	try {
 		"import"
 		(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			<IDENTIFIER>{ jjtn000.mode = ASTImport.IMPORT_SYNTAX; }
+			<IDENTIFIER>{ jjtn000.mode = Import.ImportMode.IMPORT_SYNTAX; }
 			[ QName() ]
-		|	"package"	{ jjtn000.mode = ASTImport.IMPORT_PACKAGE; }
+		|	"package"	{ jjtn000.mode = Import.ImportMode.IMPORT_PACKAGE; }
 			[ QName() ]
-		|	"static"	{ jjtn000.mode = ASTImport.IMPORT_STATIC; }
+		|	"static"	{ jjtn000.mode = Import.ImportMode.IMPORT_STATIC; }
 			QName()
 			[	"." "*" { jjtn000.star = true; }
-			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+			|	"("		{ jjtn000.of_method = true; }
 				Type() ("," Type())*
 				")"
 			]
 		|	QName()
 			[	"." "*" { jjtn000.star = true; }
-			|	"("		{ jjtn000.args = ASTType.emptyArray; }
+			|	"("		{ jjtn000.of_method = true; }
 				Type() ("," Type())*
 				")"
 			]
@@ -940,7 +940,7 @@ void Typedef() :
   ASTTypedef jjtn000 = new ASTTypedef(JJTTYPEDEF);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token id1, id2; }
+/*@egen*/}
 {/*@bgen(jjtree) Typedef */
         try {
 /*@egen*/
@@ -948,12 +948,7 @@ void Typedef() :
 		"typedef"
 		(
 			LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
-			{ jjtn000.opdef = true; }
-			id1=<IDENTIFIER> Operator() QName() "<" id2=<IDENTIFIER> ">"
-			{
-				if (!id1.image.equals(id2.image))
-					throw new ParseError("Typedef args "+id1+" and "+id2+" do not match");
-			}
+			Identifier() Operator() Type()
 		|	Type() Identifier()
 		) ";"
 	}
@@ -2055,7 +2050,7 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 	(
 		tp = Type()
 		Identifier()
-		( "[" "]" { tp.dim += 1; } )*
+		( t="[" "]" { tp.addOperation(t); } )*
 	|
 		t="_" { jjtn000.set(t); }
 	)/*@bgen(jjtree)*/
@@ -2104,7 +2099,7 @@ ASTFormalParameter mmFormalParameter(ASTModifiers modifiers)                  :
 			(":") mmtp = Type()
 		)?
 		Identifier()
-		( "[" "]" { tp.dim += 1; if (mmtp != null) mmtp.dim += 1; } )*
+		( t="[" "]" { tp.addOperation(t); if (mmtp != null) mmtp.addOperation(t); } )*
 	|
 		t="_" { jjtn000.set(t); }
 	)/*@bgen(jjtree)*/
@@ -2367,7 +2362,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		t="[" "]"
 		{
 			if (tp != null)
-				tp.dim += 1;
+				tp.addOperation(t);
 			else
 				Kiev.reportParserError(t.getPos(), "Array return in constructor?");
 		}
@@ -2680,22 +2675,41 @@ void Initializer(ASTModifiers modifiers) :
  * Type, name and expression syntax follows.
  */
 
-ASTType Type() :
-{/*@bgen(jjtree) Type */
-  ASTType jjtn000 = new ASTType(JJTTYPE);
+ASTType Type()       :
+{ ASTType res; Token t; }
+{
+	(
+		res = NonArrayType()
+		(
+			LOOKAHEAD(2,"[" "]")
+			t="[" "]"
+			{ res.addOperation(t); }
+		|	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
+			t=TypeOperatorChar()
+			{ res.addOperation(t); }
+		)*
+	|
+		LOOKAHEAD({Kiev.enabled(Ext.With)})
+		res = ClosureType()
+	)
+	{ return res; }
+}
+
+ASTType ClosureType() :
+{/*@bgen(jjtree) ClosureType */
+  ASTClosureType jjtn000 = new ASTClosureType(JJTCLOSURETYPE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Type */
+/*@egen*/ Token t; }
+{/*@bgen(jjtree) ClosureType */
         try {
 /*@egen*/
-	(	NonArrayType()
-		(	LOOKAHEAD(2)
-			"[" "]" { jjtn000.dim += 1; }
-		)*
-	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
-		ClosureType()
-	)/*@bgen(jjtree)*/
+	t="(" { jjtn000.setPos(t.getPos()); }
+	[
+		Type()
+		( "," Type() )*
+	]
+	")" "->" Type()/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
@@ -2724,45 +2738,8 @@ ASTType Type() :
 /*@egen*/
 }
 
-void ClosureType() :
-{/*@bgen(jjtree) ClosureType */
-  ASTClosureType jjtn000 = new ASTClosureType(JJTCLOSURETYPE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ClosureType */
-        try {
-/*@egen*/
-	t="(" { jjtn000.setPos(t.getPos()); }
-	[
-		Type()
-		( "," Type() )*
-	]
-	")" "->" Type()/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
-}
 
-
-void NonArrayType() :
+ASTType NonArrayType() :
 {/*@bgen(jjtree) NonArrayType */
   ASTNonArrayType jjtn000 = new ASTNonArrayType(JJTNONARRAYTYPE);
   boolean jjtc000 = true;
@@ -2782,12 +2759,20 @@ void NonArrayType() :
 			">"
 		]
 	)
-	(	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
-		t=TypeOperatorChar() { jjtn000.addOperation(t); }
+	(
+		LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
+		t=TypeOperatorChar()
+		{ jjtn000.addOperation(t); }
 	)*
 	}
 	catch(ParseError e) { rpe("Bad type specification",e); }
 	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ return jjtn000; }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

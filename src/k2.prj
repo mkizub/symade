@@ -140,7 +140,6 @@ kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.ja
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTIfStatement kiev/parser/ASTIfStatement kiev\parser\ASTIfStatement.java
 kiev.parser.ASTImplements kiev/parser/ASTImplements kiev\parser\ASTImplements.java
-kiev.parser.ASTImport kiev/parser/ASTImport kiev\parser\ASTImport.java
 kiev.parser.ASTInitializer kiev/parser/ASTInitializer kiev\parser\ASTInitializer.java
 kiev.parser.ASTInstanceofExpr kiev/parser/ASTInstanceofExpr kiev\parser\ASTInstanceofExpr.java
 kiev.parser.ASTInvariantDeclaration kiev/parser/ASTInvariantDeclaration kiev\parser\ASTInvariantDeclaration.java
@@ -199,7 +198,6 @@ kiev.parser.ASTTryStatement kiev/parser/ASTTryStatement kiev\parser\ASTTryStatem
 kiev.parser.ASTType kiev/parser/ASTType kiev\parser\ASTType.java
 kiev.parser.ASTTypeClassExpression kiev/parser/ASTTypeClassExpression kiev\parser\ASTTypeClassExpression.java
 kiev.parser.ASTTypeDeclaration kiev/parser/ASTTypeDeclaration kiev\parser\ASTTypeDeclaration.java
-kiev.parser.ASTTypedef kiev/parser/ASTTypedef kiev\parser\ASTTypedef.java
 kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
 kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
 kiev.parser.ASTWhileStatement kiev/parser/ASTWhileStatement kiev\parser\ASTWhileStatement.java
@@ -387,6 +385,7 @@ kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
 kiev.vlang.Grammar kiev/vlang/Grammar kiev\vlang\Grammar.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
+kiev.vlang.Import$ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.InitializeExpr kiev/vlang/InitializeExpr kiev\vlang\Expr.java
@@ -506,8 +505,9 @@ kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeDeclStat kiev/vlang/TypeDeclStat kiev\vlang\Statement.java
+kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
-kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\FileUnit.java
+kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java
 kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.VNode kiev/vlang/VNode kiev\vlang\Tree.java

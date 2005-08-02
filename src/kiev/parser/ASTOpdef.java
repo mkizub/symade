@@ -96,6 +96,14 @@ public class ASTOpdef extends ASTNode implements TopLevelDecl {
 		return image.toString();
 	}
 
+	public ASTNode resolve(Type reqType) {
+		return this;
+	}
+	
+	public Dumper toJavaDecl(Dumper dmp) {
+		return toJava(dmp);
+	}
+	
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("/* alias operator(")
 			.append(Integer.toString(prior)).append(",")

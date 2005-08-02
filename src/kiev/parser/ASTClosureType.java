@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTClosureType extends ASTNode {
+public class ASTClosureType extends ASTType {
     @att public final NArr<ASTType>	types;
 
 	public ASTClosureType() {
@@ -53,12 +53,15 @@ public class ASTClosureType extends ASTNode {
     }
 
 	public Type getType() {
+		if (this.type != null)
+			return this.type;
 		Type[] tps = new Type[types.length-1];
         for(int i=0; i < tps.length; i++) {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        return MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
+        this.type = MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
+		return this.type;
 	}
 
 	public Dumper toJava(Dumper dmp) {

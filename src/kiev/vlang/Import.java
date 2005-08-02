@@ -21,7 +21,7 @@
 package kiev.vlang;
 
 import kiev.Kiev;
-import kiev.parser.PrescannedBody;
+import kiev.parser.*;
 import kiev.stdlib.*;
 import java.io.*;
 
@@ -39,34 +39,76 @@ import syntax kiev.Syntax;
 public class Import extends ASTNode implements Constants, Scope {
 	public static final Import[] emptyArray = new Import[0];
 
-	public static final int	IMPORT_CLASS   = 0;
-	public static final int	IMPORT_STATIC  = 1;
-	public static final int	IMPORT_PACKAGE = 2;
-	public static final int	IMPORT_SYNTAX  = 3;
+	public enum ImportMode {
+		IMPORT_CLASS,
+		IMPORT_STATIC,
+		IMPORT_PACKAGE,
+		IMPORT_SYNTAX;
+	}
 
-	public int				mode = IMPORT_CLASS;
-    public boolean			star = false;
-    @ref public ASTNode		node;
+	@att public KString					name;
+	@att public ImportMode				mode = ImportMode.IMPORT_CLASS;
+         public boolean					star;
+         public boolean					of_method;
+	@att public final NArr<TypeRef>		args;
+
+    @ref public ASTNode		resolved;
 
 	public Import() {
 	}
 
-	public Import(int pos, ASTNode parent, ASTNode node, int mode, boolean star) {
+	public Import(int id) {
+	}
+
+	public Import(int pos, ASTNode parent, ASTNode node, ImportMode mode, boolean star) {
 		super(pos, parent);
-		this.node = node;
+		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
 	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
-		if (mode == IMPORT_STATIC)  str.append("static ");
-		if (mode == IMPORT_PACKAGE) str.append("package ");
-		if (mode == IMPORT_SYNTAX)  str.append("syntax ");
-		if (node instanceof Field)  str.append(node.getType()).append('.');
-		str.append(node);
+		if (mode == ImportMode.IMPORT_STATIC)  str.append("static ");
+		if (mode == ImportMode.IMPORT_PACKAGE) str.append("package ");
+		if (mode == ImportMode.IMPORT_SYNTAX)  str.append("syntax ");
+		if (resolved instanceof Field)  str.append(resolved.getType()).append('.');
+		str.append(resolved);
 		if (star) str.append(".*");
 		return str.toString();
+	}
+
+	public void jjtAddChild(ASTNode n, int i) {
+		if( n instanceof ASTQName ) {
+	    	name = ((ASTQName)n).toKString();
+    	    pos = n.getPos();
+		}
+		else if( n instanceof TypeRef ) {
+			args.append((TypeRef)n);
+			of_method = true;
+		}
+    }
+
+	public ASTNode resolveImports() {
+		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
+		ASTNode@ v;
+		int i = 0;
+		Expr[] exprs;
+		if( args.length > 0 && args[0]==Type.tpRule) {
+			exprs = new Expr[args.length-1];
+			i++;
+		} else {
+			exprs = new Expr[args.length];
+		}
+		for(int j=0; j < exprs.length; j++,i++)
+			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,args[i].getType(),0));
+		if( !PassInfo.resolveMethodR(v,null,name,exprs,null,null,0) )
+			throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
+		ASTNode n = v;
+		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
+			throw new CompilerException(pos,"Identifier "+name+" is not a method");
+		resolved = n;
+		return this;
 	}
 
 	public ASTNode resolve() throws RuntimeException {
@@ -80,20 +122,20 @@ public class Import extends ASTNode implements Constants, Scope {
 		Struct@ sub;
 		ASTNode@ tmp;
 	{
-		this.node instanceof Method, $cut, false
+		this.resolved instanceof Method, $cut, false
 	;
-		mode == IMPORT_CLASS && this.node instanceof Struct && !star,
-		((Struct)this.node).checkResolved(),
-		s ?= ((Struct)this.node),
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star,
+		((Struct)this.resolved).checkResolved(),
+		s ?= ((Struct)this.resolved),
 		!s.isPackage(),
 		{
 			s.name.name.equals(name), node ?= s.$var
 		;	s.name.short_name.equals(name), node ?= s.$var
 		}
 	;
-		mode == IMPORT_CLASS && this.node instanceof Struct && star,
-		((Struct)this.node).checkResolved(),
-		s ?= ((Struct)this.node),
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
+		((Struct)this.resolved).checkResolved(),
+		s ?= ((Struct)this.resolved),
 		{
 			!s.isPackage(),
 			sub @= s.sub_clazz, !sub.isArgument(),
@@ -104,14 +146,14 @@ public class Import extends ASTNode implements Constants, Scope {
 		;	s.isPackage(), s.resolveNameR(node,path,name,tp,resfl)
 		}
 	;
-		mode == IMPORT_STATIC && star && this.node instanceof Struct,
-		((Struct)this.node).checkResolved(),
-		((Struct)this.node).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		((Struct)this.resolved).checkResolved(),
+		((Struct)this.resolved).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
 		node instanceof Field && node.isStatic() && node.isPublic()
 	;
-		mode == IMPORT_SYNTAX,
-		((Struct)this.node).checkResolved(),
-		tmp @= ((Struct)this.node).imported,
+		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
+		((Struct)this.resolved).checkResolved(),
+		tmp @= ((Struct)this.resolved).imported,
 		{
 			tmp instanceof Field,
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
@@ -120,20 +162,20 @@ public class Import extends ASTNode implements Constants, Scope {
 		;	tmp instanceof Typedef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
 			((Typedef)tmp).name.equals(name),
-			node ?= ((Typedef)tmp).type
+			node ?= ((Typedef)tmp).type.getType()
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 	{
-		mode == IMPORT_STATIC && !star && this.node instanceof Method,
-		((Method)this.node).equalsByCast(name,args,ret,type,resfl),
-		node ?= ((Method)this.node)
+		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
+		((Method)this.resolved).equalsByCast(name,args,ret,type,resfl),
+		node ?= ((Method)this.resolved)
 	;
-		mode == IMPORT_STATIC && star && this.node instanceof Struct,
-		((Struct)this.node).checkResolved(),
-		((Struct)this.node).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		((Struct)this.resolved).checkResolved(),
+		((Struct)this.resolved).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 
@@ -144,8 +186,79 @@ public class Import extends ASTNode implements Constants, Scope {
 
 	public void cleanup() {
 		parent=null;
-		node = null;
+		resolved = null;
 	}
 
+}
+
+
+@node
+public class Typedef extends ASTNode implements Named {
+
+	public static Typedef[]	emptyArray = new Typedef[0];
+
+	@att public KString		name;
+	@att public TypeRef		type;
+	@att public Struct		typearg;
+
+	public Typedef() {
+	}
+	
+	public Typedef(int id) {
+	}
+	
+	public Typedef(int pos, ASTNode par, KString name) {
+		super(pos,par);
+		this.name = name;
+	}
+	
+	public NodeName	getName() {
+		return new NodeName(name);
+	}
+
+	public void jjtAddChild(ASTNode n, int i) {
+		if (i == 0) {
+			if (n instanceof ASTIdentifier) {
+				typearg = Env.newMethodArgument(((ASTIdentifier)n).name, Env.root);
+				return;
+			}
+			else if (n instanceof ASTType) {
+				type = (ASTType)n;
+				return;
+			}
+		}
+		else if (i == 1) {
+			if (typearg != null && n instanceof ASTOperator) {
+				name = ((ASTOperator)n).image;
+				return;
+			}
+			else if (n instanceof ASTIdentifier) {
+    			name = ((ASTIdentifier)n).name;
+				return;
+			}
+		}
+		else if (i == 2 && typearg != null && n instanceof ASTNonArrayType) {
+			ASTNonArrayType tp = (ASTNonArrayType)n;
+			ASTType arg = (ASTType)tp.children[1];
+			KString argnm = ((ASTQName)((ASTNonArrayType)arg).children[0]).toKString();
+			//if (!typearg.name.short_name.equals(argnm))
+			//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
+			tp.children[1] = typearg.type;
+			type = tp;
+			return;
+		}
+		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+    }
+
+	public String toString() {
+		if (typearg != null)
+			return "typedef type"+name+" "+type+"<type>;";
+		else
+    		return "typedef "+type+" "+name+";";
+	}
+
+	public Dumper toJava(Dumper dmp) {
+    	return dmp.append("/* ").append(toString()).append(" */").newLine();
+    }
 }
 
