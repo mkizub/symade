@@ -148,7 +148,6 @@ kiev.parser.ASTLexicalStateList kiev/parser/ASTLexicalStateList kiev\parser\ASTL
 kiev.parser.ASTLocalLookahead kiev/parser/ASTLocalLookahead kiev\parser\ASTLocalLookahead.java
 kiev.parser.ASTMacroDecl kiev/parser/ASTMacroDecl kiev\parser\ASTMacroDecl.java
 kiev.parser.ASTMacroFormalParameter kiev/parser/ASTMacroFormalParameter kiev\parser\ASTMacroFormalParameter.java
-kiev.parser.ASTMessageCallAccessExpression kiev/parser/ASTMessageCallAccessExpression kiev\parser\ASTMessageCallAccessExpression.java bad
 kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
@@ -186,8 +185,6 @@ kiev.parser.ASTShiftExpr kiev/parser/ASTShiftExpr kiev\parser\ASTShiftExpr.java
 kiev.parser.ASTSimpleRegularExpression kiev/parser/ASTSimpleRegularExpression kiev\parser\ASTSimpleRegularExpression.java
 kiev.parser.ASTStatementExpression kiev/parser/ASTStatementExpression kiev\parser\ASTStatementExpression.java
 kiev.parser.ASTStructDeclaration kiev/parser/ASTStructDeclaration kiev\parser\ASTTypeDeclaration.java
-kiev.parser.ASTStructDeclaration$ASTStructDeclaration kiev/parser/ASTStructDeclaration$ASTStructDeclaration kiev\parser\ASTTypeDeclaration.java bad
-kiev.parser.ASTStructDeclaration$ASTTypeDeclaration kiev/parser/ASTStructDeclaration$ASTTypeDeclaration kiev\parser\ASTTypeDeclaration.java bad
 kiev.parser.ASTSwitchStatement kiev/parser/ASTSwitchStatement kiev\parser\ASTSwitchStatement.java
 kiev.parser.ASTSynchronizedStatement kiev/parser/ASTSynchronizedStatement kiev\parser\ASTSynchronizedStatement.java
 kiev.parser.ASTSyntaxDeclaration kiev/parser/ASTSyntaxDeclaration kiev\parser\ASTSyntaxDeclaration.java
@@ -203,7 +200,6 @@ kiev.parser.ASTWhileStatement kiev/parser/ASTWhileStatement kiev\parser\ASTWhile
 kiev.parser.ASTWithStatement kiev/parser/ASTWithStatement kiev\parser\ASTWithStatement.java
 kiev.parser.JJTkiev020State kiev/parser/JJTkiev020State kiev\parser\JJTkiev020State.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
-kiev.parser.KToken kiev/parser/KToken kiev\parser\KToken.java bad
 kiev.parser.Node kiev/parser/Node kiev\parser\Node.java
 kiev.parser.Opdef kiev/parser/Opdef kiev\parser\ASTOpdef.java
 kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
@@ -290,7 +286,6 @@ kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
-kiev.stdlib.meta kiev/stdlib/meta kiev\stdlib\meta\packed.java bad
 kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
@@ -373,7 +368,6 @@ kiev.vlang.ExceptionsAttr kiev/vlang/ExceptionsAttr kiev\vlang\Attr.java
 kiev.vlang.Expr kiev/vlang/Expr kiev\vlang\AST.java
 kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
-kiev.vlang.Field$PackInfo kiev/vlang/Field$PackInfo kiev\vlang\Field.java
 kiev.vlang.Field.PackInfo kiev/vlang/Field$PackInfo kiev\vlang\Field.java
 kiev.vlang.FieldAccessExpr kiev/vlang/FieldAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.FieldCP kiev/vlang/FieldCP kiev\vlang\ConstPool.java
@@ -454,7 +448,6 @@ kiev.vlang.OpTypes.rtUpperCastNumber kiev/vlang/OpTypes$rtUpperCastNumber kiev\v
 kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 kiev.vlang.OperatorAttr kiev/vlang/OperatorAttr kiev\vlang\Attr.java
 kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
-kiev.vlang.OuterThisAccessExpr$SelfAccessExpr kiev/vlang/OuterThisAccessExpr$SelfAccessExpr kiev\vlang\LvalueExpr.java bad
 kiev.vlang.PackedFieldsAttr kiev/vlang/PackedFieldsAttr kiev\vlang\Attr.java
 kiev.vlang.PackerFieldAttr kiev/vlang/PackerFieldAttr kiev\vlang\Attr.java
 kiev.vlang.ParMetaAttr kiev/vlang/ParMetaAttr kiev\vlang\Attr.java

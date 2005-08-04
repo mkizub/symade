@@ -60,39 +60,6 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 
 	@ref public Field		generated_from;
 
-	public static class PackInfo {
-		public int		size;
-		public int		offset = -1;
-		public Field	packer;
-		public KString	packer_name;
-		public PackInfo(int size) {
-			this.size = size;
-			this.offset = -1;
-		}
-		public PackInfo(int size,Field packer) {
-			this.size = size;
-			this.packer = packer;
-			if( packer != null )
-				this.packer_name = packer.name.name;
-		}
-		public PackInfo(int size,KString packer) {
-			this.size = size;
-			this.packer_name = packer;
-		}
-		public PackInfo(int size,int offset,Field packer) {
-			this.size = size;
-			this.offset = offset;
-			this.packer = packer;
-			if( packer != null )
-				this.packer_name = packer.name.name;
-		}
-		public PackInfo(int size,int offset,KString packer) {
-			this.size = size;
-			this.offset = offset;
-			this.packer_name = packer;
-		}
-	}
-
 	public Field() {
 	}
 	
