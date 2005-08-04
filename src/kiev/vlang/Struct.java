@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(copyable=false)
 public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];
@@ -2126,6 +2126,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						new VarAccessExpr(pos,mm.params[j+voffs]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
+					if (t.clazz.typeinfo_clazz == null)
+						t.clazz.autoGenerateTypeinfoClazz();
 					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -2505,10 +2507,35 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public void resolveImports() {
 	}
 	
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isGenerated() ) return this;
-		long curr_time;
-		{
+	public void resolveMetaDefaults() {
+		PassInfo.push(this);
+		try {
+			if (isAnnotation()) {
+				NodeInfoPass.init();
+				ScopeNodeInfoVector state = NodeInfoPass.pushState();
+				state.guarded = true;
+				try {
+					for(int i=0; i < methods.length; i++) {
+						try {
+							methods[i].resolveMetaDefaults();
+						} catch(Exception e) {
+							Kiev.reportError(methods[i].pos,e);
+						}
+					}
+				} finally { 	NodeInfoPass.close(); }
+			}
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					if( !sub_clazz[i].isAnonymouse() )
+						sub_clazz[i].resolveMetaDefaults();
+				}
+			}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void resolveMetaValues() {
+		PassInfo.push(this);
+		try {
 			NodeInfoPass.init();
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
@@ -2519,10 +2546,22 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					foreach (Meta m; f.meta)
 						m.resolve();
 				}
-			} finally {
-				NodeInfoPass.close();
+				foreach(Method m; methods) {
+					m.resolveMetaValues();
+				}
+			} finally { 	NodeInfoPass.close(); }
+			
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					sub_clazz[i].resolveMetaValues();
+				}
 			}
-		}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public ASTNode resolve(Type reqType) throws RuntimeException {
+		if( isGenerated() ) return this;
+		long curr_time;
 		PassInfo.push(this);
 		try {
 			autoGenerateStatements();

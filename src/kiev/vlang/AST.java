@@ -64,6 +64,8 @@ public enum TopLevelPass /*extends int*/ {
 	passAutoProxyMethods	   ,	// autoProxyMethods()
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
+	passResolveMetaValues	   ,	// resolve values in meta-data
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
@@ -75,7 +77,9 @@ public abstract class ASTNode implements Constants {
 	private static int		parserAddrIdx;
 
 	public int				pos;
-    @ref public ASTNode		parent;
+    @ref(copyable=false)
+	public ASTNode			parent;
+    @ref(copyable=false)
 	public AttrSlot			pslot;
 	public int				flags;
 	

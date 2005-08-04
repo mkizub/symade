@@ -953,6 +953,10 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
 			else if( v instanceof KString )			ConstPool.addAsciiCP((KString)v);
 		}
+		else if (value instanceof ConstBooleanExpr) {
+			boolean v = ((ConstBooleanExpr)value).value;
+			ConstPool.addNumberCP(new Integer(v ? 1 : 0));
+		}
 		else if (value instanceof WrapedExpr) {
 			WrapedExpr we = (WrapedExpr)value;
 			if (we.expr instanceof Struct) {
@@ -1037,6 +1041,13 @@ public abstract class MetaAttr extends Attr {
 				ev.tag = (byte)'s';
 				ev.const_value_index = ConstPool.getAsciiCP((KString)v).pos;
 			}
+			return ev;
+		}
+		else if (value instanceof ConstBooleanExpr) {
+			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
+			boolean v = ((ConstBooleanExpr)value).value;
+			ev.tag = (byte)'Z';
+			ev.const_value_index = ConstPool.getNumberCP(new Integer(v ? 1 : 0)).pos;
 			return ev;
 		}
 		else if (value instanceof WrapedExpr) {

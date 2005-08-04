@@ -31,12 +31,21 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public @interface node {}
-public @interface att {}
-public @interface ref {}
+// syntax-tree node
+public @interface node {
+	boolean copyable() default true;
+}
+// syntax-tree attribute field
+public @interface att {
+	boolean copyable() default true;
+}
+// syntax-tree reference field
+public @interface ref {
+	boolean copyable() default true;
+}
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
-@node
+@node(copyable=false)
 public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
