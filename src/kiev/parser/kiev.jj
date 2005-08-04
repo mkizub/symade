@@ -1653,7 +1653,11 @@ int AccessSpec()       :
 void KeywordAsIdentifier()       :
 { Token t; ASTIdentifier id; }
 {
-	t="virtual"
+	(
+		t="virtual"
+	|	t="alias"
+	|	t="packed"
+	)
 	{
 		id = new ASTIdentifier(0);
 		jjtree.openNodeScope(id);
