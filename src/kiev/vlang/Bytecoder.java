@@ -176,7 +176,7 @@ public class Bytecoder implements Constants {
 		Attr[] attrs = Attr.emptyArray;
 		Expr f_init = null;
 		NodeName nm = null;
-		Field.PackInfo pack = null;
+		int packer_size = -1;
 		Access acc = null;
 		for(int i=0; i < bcf.attrs.length; i++) {
 			Attr at = readAttr(bcf.attrs[i],bcclazz);
@@ -186,7 +186,7 @@ public class Bytecoder implements Constants {
 				f_init = new ConstExpr(0,a.value);
 			}
 			else if( at.name.equals(attrPackerField) ) {
-				pack = new Field.PackInfo(((PackerFieldAttr)at).size);
+				packer_size = ((PackerFieldAttr)at).size;
 			}
 			else if( at.name.equals(attrAlias) ) {
 				nm = ((AliasAttr)at).nname;
@@ -209,8 +209,10 @@ public class Bytecoder implements Constants {
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
 			f.name.aliases = nm.aliases;
-		if( pack != null ) {
-			f.pack = pack;
+		if( packer_size >= 0 ) {
+			MetaPacker mpr = new MetaPacker();
+			mpr.size = packer_size;
+			f.meta.set(mpr);
 			f.setPackerField(true);
 		}
 		f.init = f_init;
@@ -536,11 +538,12 @@ public class Bytecoder implements Constants {
 					ACC_PUBLIC
 					);
 				cl.addField(f);
-				f.pack = new Field.PackInfo(
-					pf.sizes[i],
-					pf.offsets[i],
-					cl.resolveField(pf.getPackerName(i,clazz))
-					);
+				MetaPacked mp = new MetaPacked();
+				mp.size = pf.sizes[i];
+				mp.offset = pf.offsets[i];
+				mp.packer = cl.resolveField(pf.getPackerName(i,clazz));
+				mp.fld = mp.packer.name.name;
+				f.meta.set(mp);
 				f.setPackedField(true);
 			}
 			a = null;

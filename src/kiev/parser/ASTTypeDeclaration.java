@@ -230,7 +230,11 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						else if( f.isStatic() )
 							Kiev.reportWarning(fdecl.pos,"Packing of static field(s) ignored");
 						else {
-							f.pack = new Field.PackInfo(pack.size,pack.offset,pack.packer);
+							MetaPacked mp = new MetaPacked();
+							mp.size = pack.size;
+							mp.offset = pack.offset;
+							mp.fld = pack.packer;
+							f.meta.set(mp);
 							f.setPackedField(true);
 						}
 						if( me.isInterface() ) {

@@ -46,9 +46,6 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	/** Type of the field */
 	@ref public Type		type;
 
-	/** Pack size/offset */
-	public PackInfo			pack;
-
 	/** Initial value of this field */
 	@att public Expr		init = null;
 
@@ -61,10 +58,6 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	/** Array of invariant methods, that check this field */
 	public Method[]			invs = Method.emptyArray;
 
-	/** Getter/setter methods for this field */
-	@ref public Method		get;
-	@ref public Method		set;
-	
 	@ref public Field		generated_from;
 
 	public static class PackInfo {
@@ -126,6 +119,18 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	@setter public void set$acc(Access a) {
 		acc = a;
 		acc.verifyAccessDecl(this);
+	}
+	
+	public MetaVirtual getMetaVirtual() {
+		return (MetaVirtual)this.meta.get(MetaVirtual.NAME);
+	}
+
+	public MetaPacked getMetaPacked() {
+		return (MetaPacked)this.meta.get(MetaPacked.NAME);
+	}
+
+	public MetaPacker getMetaPacker() {
+		return (MetaPacker)this.meta.get(MetaPacker.NAME);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

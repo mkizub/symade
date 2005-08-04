@@ -32,9 +32,7 @@ import syntax kiev.Syntax;
 
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Struct.java,v 1.6.2.1.2.6 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.6 $
  *
  */
 
@@ -861,7 +859,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	;	n @= members,
 		n instanceof Field && n.isPackerField(),
 		ff = (Field)n : ff = null,
-		(32-ff.pack.size) >= size,
+		(32-ff.getMetaPacked().size) >= size,
 		f ?= ff
 	}
 
@@ -975,41 +973,46 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			Field f = (Field)n;
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
-			if( f.pack.packer == null ) {
-				if( f.pack.packer_name != null ) {
-					Field p = this.resolveField(f.pack.packer_name);
+			MetaPacked mp = f.getMetaPacked();
+			if( mp.packer == null ) {
+				KString mp_in = mp.fld;
+				if( mp_in != null && mp_in.len > 0 ) {
+					Field p = this.resolveField(mp_in);
 					if( p == null ) {
-						Kiev.reportError(f.pos,"Packer field "+f.pack.packer_name+" not found");
-						f.pack = null;
+						Kiev.reportError(f.pos,"Packer field "+mp_in+" not found");
+						f.meta.unset(mp);
 						f.setPackedField(false);
 						continue;
 					}
 					if( p.type != Type.tpInt ) {
 						Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
-						f.pack = null;
+						f.meta.unset(mp);
 						f.setPackedField(false);
 						continue;
 					}
-					f.pack.packer = p;
-					assert( f.pack.offset >= 0 && f.pack.offset+f.pack.size <= 32 );
+					mp.packer = p;
+					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 				}
-				else if( locatePackerField(packer,f.pack.size) ) {
+				else if( locatePackerField(packer,mp.size) ) {
 					// Found
-					f.pack.packer = packer;
-					f.pack.packer_name = packer.name.name;
-					f.pack.offset = packer.pack.size;
-					packer.pack.size += f.pack.size;
+					mp.packer = packer;
+					mp.fld = packer.name.name;
+					MetaPacker mpr = packer.getMetaPacker();
+					mp.offset = mpr.size;
+					mpr.size += mp.size;
 				} else {
 					// Create
 					Field p = new Field(this,
 						KString.from("$pack$"+countPackerFields()),Type.tpInt,ACC_PUBLIC);
 					p.pos = this.pos;
+					MetaPacker mpr = new MetaPacker();
+					p.meta.set(mpr);
 					p.setPackerField(true);
-					p.pack = new Field.PackInfo(f.pack.size,0,null);
 					addField(p);
-					f.pack.packer = p;
-					f.pack.packer_name = p.name.name;
-					f.pack.offset = 0;
+					mp.packer = p;
+					mp.fld = p.name.name;
+					mp.offset = 0;
+					mpr.size += mp.size;
 				}
 			}
 		}

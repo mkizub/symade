@@ -129,6 +129,10 @@ public class MetaValueType {
 	public MetaValueType(KString name) {
 		this.name = name;
 	}
+	public MetaValueType(KString name, KString sign) {
+		this.name = name;
+		this.signature = sign;
+	}
 }
 
 @node
@@ -143,6 +147,18 @@ public class Meta extends ASTNode {
 
 	public Meta(MetaType type) {
 		this.type = type;
+	}
+	
+	public static Meta newMeta(MetaType type)
+		alias operator(210,lfy,new)
+	{
+		if (type.name == MetaVirtual.NAME)
+			return new MetaVirtual(type);
+		if (type.name == MetaPacked.NAME)
+			return new MetaVirtual(type);
+		if (type.name == MetaPacker.NAME)
+			return new MetaVirtual(type);
+		return new Meta(type);
 	}
 
 	public int size() alias length {
@@ -238,19 +254,84 @@ public class Meta extends ASTNode {
 		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a boolean constant, but "+v);
 	}
 	
-	public MetaValue set(MetaValue value) alias add alias operator (5,lfy,+=)
+	public int getI(KString name) {
+		MetaValueScalar mv = (MetaValueScalar)get(name);
+		ASTNode v = mv.value;
+		if (v == null)
+			return 0;
+		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof Integer)
+			return ((Integer)((ConstExpr)v).value).intValue();
+		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not an int constant, but "+v);
+	}
+	
+	public KString getS(KString name) {
+		MetaValueScalar mv = (MetaValueScalar)get(name);
+		ASTNode v = mv.value;
+		if (v == null)
+			return null;
+		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof KString)
+			return (KString)((ConstExpr)v).value;
+		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a String constant, but "+v);
+	}
+	
+	public MetaValue set(MetaValue value)
 	{
 		if (value == null)
 			throw new NullPointerException();
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
-			if (values[i].type == value.type) {
+			if (values[i].type.name == value.type.name) {
 				values[i] = value;
 				return value;
 			}
 		}
 		values.append(value);
 		return value;
+	}
+
+	public MetaValue setZ(KString name, boolean val)
+	{
+		int sz = values.length;
+		for (int i=0; i < sz; i++) {
+			if (values[i].type.name == name) {
+				((MetaValueScalar)values[i]).value = new ConstBooleanExpr(0, val);
+				return values[i];
+			}
+		}
+		MetaValueType mvt = new MetaValueType(name, Type.tpBoolean.signature);
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstBooleanExpr(0, val));
+		values.append(mv);
+		return mv;
+	}
+
+	public MetaValue setI(KString name, int val)
+	{
+		int sz = values.length;
+		for (int i=0; i < sz; i++) {
+			if (values[i].type.name == name) {
+				((MetaValueScalar)values[i]).value = new ConstExpr(0, new Integer(val));
+				return values[i];
+			}
+		}
+		MetaValueType mvt = new MetaValueType(name, Type.tpInt.signature);
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstExpr(0, new Integer(val)));
+		values.append(mv);
+		return mv;
+	}
+
+	public MetaValue setS(KString name, KString val)
+	{
+		int sz = values.length;
+		for (int i=0; i < sz; i++) {
+			if (values[i].type.name == name) {
+				((MetaValueScalar)values[i]).value = new ConstExpr(0, val);
+				return values[i];
+			}
+		}
+		MetaValueType mvt = new MetaValueType(name, Type.tpString.signature);
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstExpr(0, val));
+		values.append(mv);
+		return mv;
 	}
 
 	public MetaValue unset(MetaValue value) alias del alias operator (5,lfy,-=)
@@ -324,13 +405,13 @@ public abstract class MetaValue extends ASTNode {
 		Type vt = v.getType();
 		if (vt != reqType) {
 			if (!vt.isCastableTo(reqType))
-				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected");
+				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 			v = new CastExpr(v.pos, reqType, (Expr)v).resolve(reqType);
 			if (!((Expr)v).isConstantExpr())
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 			vt = v.getType();
 			if (vt != reqType)
-				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected");
+				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		}
 		return v;
 	}

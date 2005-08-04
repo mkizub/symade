@@ -875,8 +875,11 @@ public class PackedFieldsAttr extends Attr {
 		ConstPool.addAsciiCP(name);
 		foreach(ASTNode n; struct.members; n instanceof Field && ((Field)n).isPackedField() ) {
 			Field f = (Field)n;
+			MetaPacked mp = f.getMetaPacked();
+			if (mp == null)
+				continue;
 			ConstPool.addAsciiCP(f.name.name);
-			ConstPool.addAsciiCP(f.pack.packer_name);
+			ConstPool.addAsciiCP(mp.packer.name.name);
 			ConstPool.addAsciiCP(f.type.signature);
 		}
 	}
@@ -893,12 +896,13 @@ public class PackedFieldsAttr extends Attr {
 		int j = 0;
 		foreach(ASTNode n; struct.members; n instanceof Field && ((Field)n).isPackedField() ) {
 			Field f = (Field)n;
-			if( !f.isPackedField() ) continue;
+			MetaPacked mp = f.getMetaPacked();
+			if( !f.isPackedField() || mp == null ) continue;
 			kea.fields[j] = ConstPool.getAsciiCP(f.name.name).pos;
 			kea.signatures[j] = ConstPool.getAsciiCP(f.type.signature).pos;
-			kea.packers[j] = ConstPool.getAsciiCP(f.pack.packer_name).pos;
-			kea.sizes[j] = f.pack.size;
-			kea.offsets[j] = f.pack.offset;
+			kea.packers[j] = ConstPool.getAsciiCP(mp.packer.name.name).pos;
+			kea.sizes[j] = mp.size;
+			kea.offsets[j] = mp.offset;
 			j++;
 		}
 		return kea;
@@ -930,7 +934,7 @@ public class PackerFieldAttr extends Attr {
 		kiev.bytecode.KievPackerFieldAttribute kea = new kiev.bytecode.KievPackerFieldAttribute();
 		kea.cp_name = ConstPool.getAsciiCP(name).pos;
 		if( field != null )
-			kea.size = field.pack.size;
+			kea.size = field.getMetaPacked().size;
 		else
 			kea.size = this.size;
 		return kea;

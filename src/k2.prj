@@ -290,8 +290,10 @@ kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
-kiev.stdlib.meta kiev/stdlib/meta kiev\stdlib\meta\virtual.java bad
+kiev.stdlib.meta kiev/stdlib/meta kiev\stdlib\meta\packed.java bad
 kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
+kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
@@ -410,12 +412,15 @@ kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
 kiev.vlang.MatchNode kiev/vlang/MatchNode kiev\vlang\Resolving.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 kiev.vlang.MetaAttr kiev/vlang/MetaAttr kiev\vlang\Attr.java
+kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
 kiev.vlang.MetaType kiev/vlang/MetaType kiev\vlang\Meta.java
 kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
 kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java
 kiev.vlang.MetaValueType kiev/vlang/MetaValueType kiev\vlang\Meta.java
+kiev.vlang.MetaVirtual kiev/vlang/MetaVirtual kiev\vlang\MetaSpecial.java
 kiev.vlang.Method kiev/vlang/Method kiev\vlang\Method.java
 kiev.vlang.MethodCP kiev/vlang/MethodCP kiev\vlang\ConstPool.java
 kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
