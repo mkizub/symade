@@ -185,26 +185,26 @@ public class BlockStat extends Statement implements Scope {
 	protected CodeLabel	break_label = null;
 
 	public BlockStat() {
-		this.stats = new NArr<ASTNode>(this,true);
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
+		this.addstats = new NArr<Statement>(this,new AttrSlot("addstats", true, true));
 	}
 
 	public BlockStat(int pos, ASTNode parent) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
+		this.addstats = new NArr<Statement>(this,new AttrSlot("addstats", true, true));
 	}
 
 	public BlockStat(int pos, ASTNode parent, NArr<ASTNode> sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
+		this.addstats = new NArr<Statement>(this,new AttrSlot("addstats", true, true));
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
 			st.parent = this;
@@ -213,10 +213,10 @@ public class BlockStat extends Statement implements Scope {
 
 	public BlockStat(int pos, ASTNode parent, ASTNode[] sts) {
 		super(pos, parent);
-		this.stats = new NArr<ASTNode>(this,true);
+		this.stats = new NArr<ASTNode>(this,new AttrSlot("stats", true, true));
 		this.vars = new NArr<Var>(this);
 		this.members = new NArr<ASTNode>(this);
-		this.addstats = new NArr<Statement>(this,true);
+		this.addstats = new NArr<Statement>(this,new AttrSlot("addstats", true, true));
 		foreach (ASTNode st; sts) {
 			this.stats.append(st);
 			st.parent = this;

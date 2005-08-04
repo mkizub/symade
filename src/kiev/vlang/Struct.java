@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(copyable=false)
 public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable {
 
 	public static Struct[]	emptyArray = new Struct[0];
@@ -113,9 +113,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		imported = new NArr<ASTNode>(this);
 		interfaces = new NArr<Type>(this);
 		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, true);
-		virtual_fields = new NArr<Field>(this, true);
-		methods = new NArr<Method>(this, true);
+		fields = new NArr<Field>(this, new AttrSlot("fields", true, true));
+		virtual_fields = new NArr<Field>(this, new AttrSlot("virtual_fields", true, true));
+		methods = new NArr<Method>(this, new AttrSlot("methods", true, true));
 		this.meta = new MetaSet(this);
 	}
 
@@ -127,9 +127,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		imported = new NArr<ASTNode>(this);
 		interfaces = new NArr<Type>(this);
 		sub_clazz = new NArr<Struct>(this);
-		fields = new NArr<Field>(this, true);
-		virtual_fields = new NArr<Field>(this, true);
-		methods = new NArr<Method>(this, true);
+		fields = new NArr<Field>(this, new AttrSlot("fields", true, true));
+		virtual_fields = new NArr<Field>(this, new AttrSlot("virtual_fields", true, true));
+		methods = new NArr<Method>(this, new AttrSlot("methods", true, true));
 		this.meta = new MetaSet(this);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
 			+" as "+name.name+", member of "+outer/*+", child of "+sup*/);
@@ -917,20 +917,33 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				body.stats.append(ass_st);
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					Field fatt = this.resolveField(fname);
 					Statement p_st = new IfElseStat(0,
 							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, value),
 								new ConstExpr(0, null)
 							),
-							new ExprStat(0,null,
-								new AssignExpr(0, AssignOperator.Assign,
-									new AccessExpr(0,
-										new VarAccessExpr(0, value),
-										astT.clazz.resolveField(KString.from("parent"))
-									),
-									new ThisExpr()
+							new BlockStat(0,null,new Statement[]{
+								new ExprStat(0,null,
+									new AssignExpr(0, AssignOperator.Assign,
+										new AccessExpr(0,
+											new VarAccessExpr(0, value),
+											astT.clazz.resolveField(KString.from("parent"))
+										),
+										new ThisExpr()
+									)
+								),
+								new ExprStat(0,null,
+									new AssignExpr(0, AssignOperator.Assign,
+										new AccessExpr(0,
+											new VarAccessExpr(0, value),
+											astT.clazz.resolveField(KString.from("pslot"))
+										),
+										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
+									)
 								)
-							),
+							}),
 							null
 						);
 					body.stats.append(p_st);
@@ -2113,6 +2126,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						new VarAccessExpr(pos,mm.params[j+voffs]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
+					if (t.clazz.typeinfo_clazz == null)
+						t.clazz.autoGenerateTypeinfoClazz();
 					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -2492,10 +2507,35 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	public void resolveImports() {
 	}
 	
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isGenerated() ) return this;
-		long curr_time;
-		{
+	public void resolveMetaDefaults() {
+		PassInfo.push(this);
+		try {
+			if (isAnnotation()) {
+				NodeInfoPass.init();
+				ScopeNodeInfoVector state = NodeInfoPass.pushState();
+				state.guarded = true;
+				try {
+					for(int i=0; i < methods.length; i++) {
+						try {
+							methods[i].resolveMetaDefaults();
+						} catch(Exception e) {
+							Kiev.reportError(methods[i].pos,e);
+						}
+					}
+				} finally { 	NodeInfoPass.close(); }
+			}
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					if( !sub_clazz[i].isAnonymouse() )
+						sub_clazz[i].resolveMetaDefaults();
+				}
+			}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void resolveMetaValues() {
+		PassInfo.push(this);
+		try {
 			NodeInfoPass.init();
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
@@ -2506,10 +2546,22 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					foreach (Meta m; f.meta)
 						m.resolve();
 				}
-			} finally {
-				NodeInfoPass.close();
+				foreach(Method m; methods) {
+					m.resolveMetaValues();
+				}
+			} finally { 	NodeInfoPass.close(); }
+			
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					sub_clazz[i].resolveMetaValues();
+				}
 			}
-		}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public ASTNode resolve(Type reqType) throws RuntimeException {
+		if( isGenerated() ) return this;
+		long curr_time;
 		PassInfo.push(this);
 		try {
 			autoGenerateStatements();

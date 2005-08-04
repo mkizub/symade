@@ -308,6 +308,7 @@ kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
+kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanExpr kiev/vlang/BinaryBooleanExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java

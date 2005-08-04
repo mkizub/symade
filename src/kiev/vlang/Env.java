@@ -42,7 +42,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-@node
+@node(copyable=false)
 public class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
@@ -76,7 +76,7 @@ public class ProjectFile extends ASTNode {
 	static methods and data for kiev compiler
  */
 
-@node
+@node(copyable=false)
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */

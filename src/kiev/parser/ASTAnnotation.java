@@ -23,7 +23,7 @@ public class ASTAnnotation extends ASTNode {
 
 	public ASTAnnotation(int id) {
 		super(0);
-		values = new NArr<ASTAnnotationValue>(this);
+		values = new NArr<ASTAnnotationValue>(this, new AttrSlot("values", true, true));
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

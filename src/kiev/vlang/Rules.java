@@ -338,14 +338,14 @@ public final class RuleBlock extends ASTNode implements Scope {
 	public StringBuffer	fields_buf;
 
 	public RuleBlock() {
-		stats = new NArr<ASTNode>(this, true);
+		stats = new NArr<ASTNode>(this, new AttrSlot("stats", true, true));
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
 		super(pos,parent);
 		node = n;
 		node.parent = this;
-		stats = new NArr<ASTNode>(this, true);
+		stats = new NArr<ASTNode>(this, new AttrSlot("stats", true, true));
 	}
 
 	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ASTNode> stats) {
@@ -1089,7 +1089,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		super(expr.pos);
 		this.obj = null;
 		this.func = expr.func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
@@ -1098,7 +1098,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = expr.obj;
 		this.obj.parent = this;
 		this.func = expr.func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; expr.args) this.args.append(e);
 	}
 
@@ -1115,7 +1115,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 			this.func = ((AccessExpr)expr.func).var;
 			this.obj = ((AccessExpr)expr.func).obj;
 		}
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; expr.args) this.args.append(e);
 		this.args.insert(0,expr.env_access);
 	}

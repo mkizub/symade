@@ -43,27 +43,27 @@ public class CallExpr extends Expr {
 	public boolean					super_flag;
 
 	public CallExpr() {
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 	}
 
 	public CallExpr(int pos, Method func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public CallExpr(int pos, Method func, Expr[] args, boolean sf) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
@@ -71,7 +71,7 @@ public class CallExpr extends Expr {
 	public CallExpr(int pos, ASTNode par, Method func, Expr[] args, boolean sf) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
@@ -237,7 +237,7 @@ public class CallAccessExpr extends Expr {
 	public boolean					super_flag;
 
 	public CallAccessExpr() {
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 	}
 
 	public CallAccessExpr(int pos, Expr obj, Method func, Expr[] args) {
@@ -245,7 +245,7 @@ public class CallAccessExpr extends Expr {
 		this.obj = obj;
 		this.obj.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
@@ -254,7 +254,7 @@ public class CallAccessExpr extends Expr {
 		this.obj = obj;
 		this.obj.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
@@ -548,20 +548,20 @@ public class ClosureCallExpr extends Expr {
 	@ref public Type	func_tp;
 
 	public ClosureCallExpr() {
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 	}
 
 	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
 		super(pos);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
 	public ClosureCallExpr(int pos, ASTNode par, ASTNode func, Expr[] args) {
 		super(pos,par);
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
@@ -570,7 +570,7 @@ public class ClosureCallExpr extends Expr {
 		this.expr = expr;
 		this.expr.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 
@@ -579,7 +579,7 @@ public class ClosureCallExpr extends Expr {
 		this.expr = expr;
 		this.expr.parent = this;
 		this.func = func;
-		this.args = new NArr<Expr>(this, true);
+		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; args) this.args.append(e);
 	}
 

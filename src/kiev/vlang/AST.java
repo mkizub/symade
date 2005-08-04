@@ -64,6 +64,8 @@ public enum TopLevelPass /*extends int*/ {
 	passAutoProxyMethods	   ,	// autoProxyMethods()
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
+	passResolveMetaValues	   ,	// resolve values in meta-data
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
@@ -75,7 +77,10 @@ public abstract class ASTNode implements Constants {
 	private static int		parserAddrIdx;
 
 	public int				pos;
-    @ref public ASTNode		parent;
+    @ref(copyable=false)
+	public ASTNode			parent;
+    @ref(copyable=false)
+	public AttrSlot			pslot;
 	public int				flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
@@ -158,7 +163,24 @@ public abstract class ASTNode implements Constants {
 	};
 	
 	public /*abstract*/ Object copy() {
-		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
+		/* just a hack to be compatible with kiev-0.3 */
+		if (this instanceof ConstBooleanExpr) {
+			ConstBooleanExpr e = new ConstBooleanExpr();
+			e.pos = this.pos;
+			e.flags = this.flags;
+			e.compileflags = this.compileflags;
+			e.value = ((ConstBooleanExpr)this).value;
+			return e;
+		}
+		if (this instanceof ConstExpr) {
+			ConstExpr e = new ConstExpr();
+			e.pos = this.pos;
+			e.flags = this.flags;
+			e.compileflags = this.compileflags;
+			e.value = ((ConstExpr)this).value;
+			return e;
+		}
+		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented for "+getClass());
 	};
 
 	public ASTNode(int pos, int fl) {

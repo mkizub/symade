@@ -41,8 +41,9 @@ public final class ProcessVNode implements Constants {
 	private static final KString nameNArrReplace  = KString.from("replace"); 
 	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
 	private static final KString nameParent  = KString.from("parent"); 
+	private static final KString nameCopyable  = KString.from("copyable"); 
 	
-	private static final KString sigValues = KString.from("()[Ljava/lang/String;");
+	private static final KString sigValues = KString.from("()[Lkiev/vlang/AttrSlot;");
 	private static final KString sigGetVal = KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
 	private static final KString sigSetVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
 	private static final KString sigReplaceVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
@@ -122,18 +123,24 @@ public final class ProcessVNode implements Constants {
 				isArr = true;
 			}
 			Meta fsm = fs.meta.get(mnNode);
-			if (fsm == null) {
-				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
-				fs.meta.unset(mnAtt);
-				fs.meta.unset(mnRef);
-				return;
-			}
+//			if (fsm == null) {
+//				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
+//				fs.meta.unset(mnAtt);
+//				fs.meta.unset(mnRef);
+//				return;
+//			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.TRUE)});
+					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+					Struct fs = (Struct)f.parent;
+					Field fatt = fs.resolveField(fname);
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
+						new ThisExpr(),
+						new StaticFieldAccessExpr(f.pos, fs, fatt)
+					});
 					f.init.parent = f;
 				} else {
 					f.setVirtual(true);
@@ -144,7 +151,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, Boolean.FALSE)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
 					f.init.parent = f;
 				}
 			}
@@ -167,16 +174,17 @@ public final class ProcessVNode implements Constants {
 		return false;
 	}
 	
-	private boolean hasMethod(Struct s, KString name, KString sign) {
+	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach(Method m; s.methods; m.name.equals(name) && m.type.signature.equals(sign) ) return true;
+		foreach(Method m; s.methods; m.name.equals(name) ) return true;
 		return false;
 	}
 	
 	public void autoGenerateMembers(Struct s) {
 		if (!s.isClazz())
 			return;
-		if (s.meta.get(mnNode) == null)
+		Meta mnMeta = s.meta.get(mnNode);
+		if (mnMeta == null)
 			return;
 		// attribute names array
 		Vector<Field> aflds = new Vector<Field>();
@@ -184,7 +192,7 @@ public final class ProcessVNode implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (Field f; ss.fields; f.meta.get(mnAtt) != null) {
+				foreach (Field f; ss.fields; !f.isStatic() && f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null) {
 					aflds.insert(p, f);
 					p++;
 				}
@@ -195,18 +203,26 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
 			return;
 		}
-		Field vals = s.addField(new Field(s, nameEnumValuesFld,
-			Type.newArrayType(Type.tpString), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+		Type atp = Type.fromSignature(KString.from("Lkiev/vlang/AttrSlot;"));
 		Expr[] vals_init = new Expr[aflds.size()];
-		vals.init = new NewInitializedArrayExpr(0, Type.tpString, 1, Expr.emptyArray);
-		vals.init.parent = vals;
 		for(int i=0; i < vals_init.length; i++) {
-			Expr e = new ConstExpr(0,aflds[i].name.name);
-			e.parent = vals.init;
-			((NewInitializedArrayExpr)vals.init).args.append(e);
+			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
+			boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+			Expr e = new NewExpr(0, atp, new Expr[]{
+				new ConstExpr(0, aflds[i].name.name),
+				new ConstExpr(0, isAtt ? Boolean.TRUE : Boolean.FALSE),
+				new ConstExpr(0, isArr ? Boolean.TRUE : Boolean.FALSE)
+			});
+			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
+			Field f = s.addField(new Field(s, fname, atp, ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
+			f.init = e;
+			vals_init[i] = new StaticFieldAccessExpr(f.pos, s, f);
 		}
-		// String[] values() { return $values; }
-		if (hasMethod(s, nameEnumValues, sigValues)) {
+		Field vals = s.addField(new Field(s, nameEnumValuesFld, Type.newArrayType(atp), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+		vals.init = new NewInitializedArrayExpr(0, atp, 1, vals_init);
+		vals.init.parent = vals;
+		// AttrSlot[] values() { return $values; }
+		if (hasMethod(s, nameEnumValues)) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
 			MethodType et = (MethodType)Type.fromSignature(sigValues);
@@ -245,12 +261,12 @@ public final class ProcessVNode implements Constants {
 			);
 			s.addMethod(getV);
 		}
-		// copy
-		if (hasMethod(s, KString.from("copy"), sigCopy)) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
+		// copy()
+		if (!mnMeta.getZ(nameCopyable) || s.isAbstract()) {
+			// node is not copyable
 		}
-		else if (s.isAbstract()) {
-			// no copy() for abstract nodes
+		else if (hasMethod(s, KString.from("copy"))) {
+			Kiev.reportWarning(s.pos,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
@@ -269,10 +285,18 @@ public final class ProcessVNode implements Constants {
 					foreach (Field f; ss.fields) {
 						if (f.isPackedField() || f.isAbstract() || f.isStatic())
 							continue;
+						{	// check if we may not copy the field
+							Meta fmeta = f.meta.get(mnAtt);
+							if (fmeta == null)
+								fmeta = f.meta.get(mnRef);
+							if (fmeta != null && !fmeta.getZ(nameCopyable))
+								continue; // do not copy the field
+						}
 						if (f.name.equals(nameParent))
 							continue;
-						if (f.meta.get(mnAtt) != null) {
-							boolean isArr = (f.getType().clazz.name.name == nameNArr);
+						boolean isNode = (f.getType().clazz.meta.get(mnNode) != null);
+						boolean isArr = (f.getType().clazz.name.name == nameNArr);
+						if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 							if (isArr) {
 								ASTCallAccessExpression cae = new ASTCallAccessExpression();
 								cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);
@@ -304,25 +328,14 @@ public final class ProcessVNode implements Constants {
 								);
 							}
 						} else {
-							if (f.type.isReference()) {
-								stats.insert(p,
-									new ExprStat(0,null,
-										new AssignExpr(0,AssignOperator.Assign,
-											new AccessExpr(0,new VarAccessExpr(0,v),f),
-											new AccessExpr(0,new ThisExpr(),f)
-										)
+							stats.insert(p, 
+								new ExprStat(0,null,
+									new AssignExpr(0,AssignOperator.Assign,
+										new AccessExpr(0,new VarAccessExpr(0,v),f),
+										new AccessExpr(0,new ThisExpr(),f)
 									)
-								);
-							} else {
-								stats.insert(p, 
-									new ExprStat(0,null,
-										new AssignExpr(0,AssignOperator.Assign,
-											new AccessExpr(0,new VarAccessExpr(0,v),f),
-											new AccessExpr(0,new ThisExpr(),f)
-										)
-									)
-								);
-							}
+								)
+							);
 						}
 						p++;
 					}
@@ -333,7 +346,7 @@ public final class ProcessVNode implements Constants {
 			s.addMethod(copyV);
 		}
 		// setVal(String, Object)
-		if (hasMethod(s, KString.from("setVal"), sigSetVal)) {
+		if (hasMethod(s, KString.from("setVal"))) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
@@ -377,7 +390,7 @@ public final class ProcessVNode implements Constants {
 			s.addMethod(setV);
 		}
 		// replaceVal(String name, Object old, Object val)
-		if (hasMethod(s, KString.from("replaceVal"), sigReplaceVal)) {
+		if (hasMethod(s, KString.from("replaceVal"))) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+"replaceVal"+sigReplaceVal+" already exists, @node member is not generated");
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigReplaceVal);
