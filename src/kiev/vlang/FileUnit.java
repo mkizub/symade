@@ -66,6 +66,42 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 
 	public String toString() { return /*getClass()+":="+*/filename.toString(); }
 
+	public void resolveMetaDefaults() {
+		trace(Kiev.debugResolve,"Resolving meta defaults in file "+filename);
+		PassInfo.push(this);
+		KString curr_file = Kiev.curFile;
+		Kiev.curFile = filename;
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
+			for(int i=0; i < members.length; i++) {
+				try {
+					members[i].resolveMetaDefaults();
+				} catch(Exception e) {
+					Kiev.reportError(members[i].pos,e);
+				}
+			}
+		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+	}
+
+	public void resolveMetaValues() {
+		trace(Kiev.debugResolve,"Resolving meta values in file "+filename);
+		PassInfo.push(this);
+		KString curr_file = Kiev.curFile;
+		Kiev.curFile = filename;
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
+			for(int i=0; i < members.length; i++) {
+				try {
+					members[i].resolveMetaValues();
+				} catch(Exception e) {
+					Kiev.reportError(members[i].pos,e);
+				}
+			}
+		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+	}
+
 	public ASTNode resolve() throws RuntimeException {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
 		PassInfo.push(this);

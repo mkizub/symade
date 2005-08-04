@@ -58,7 +58,8 @@ public class ASTModifiers extends ASTNode {
 	next_annotation:
 		foreach (ASTAnnotation a; annotations) {
 			Meta m = a.getMeta();
-			ms.set(m);
+			if (m != null)
+				ms.set(m);
 		}
 		return ms;
 	}

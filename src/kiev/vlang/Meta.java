@@ -117,7 +117,7 @@ public final class MetaSet extends ASTNode {
 }
 
 public class MetaType {
-	public final KString name;
+	public /*final*/ KString name;
 	public MetaType(KString name) {
 		this.name = name;
 	}
@@ -129,7 +129,6 @@ public class MetaType {
 public class MetaValueType {
 	public KString name;
 	public KString signature;
-	public MetaValue default_value;
 	public MetaValueType(KString name) {
 		this.name = name;
 	}
@@ -138,7 +137,7 @@ public class MetaValueType {
 public class Meta extends ASTNode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
-	public final MetaType    type;
+	public /*final*/  MetaType        type;
 	public       MetaValue[] values = MetaValue.emptyArray;
 	
 	public Meta(MetaType type) {
@@ -179,6 +178,29 @@ public class Meta extends ASTNode {
 					throw new CompilerException(m.pos, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);
+		}
+		// check that all non-default values are specified, and add default values
+	next_method:
+		for(int i=0; i < s.methods.length; i++) {
+			Method m = s.methods[i];
+			for(int j=0; j < values.length; j++) {
+				if (values[j].type.name == m.name.name)
+					continue next_method;
+			}
+			// value not specified - does the method has a default meta-value?
+			if (m.annotation_default != null) {
+				MetaValueType mvt = new MetaValueType(m.name.name);
+				mvt.signature = m.type.ret.signature;
+				if (!m.type.ret.isArray()) {
+					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
+					this.set(new MetaValueScalar(mvt, mvs.value));
+				} else {
+					ASTNode[] arr = ((MetaValueArray)m.annotation_default).values;
+					this.set(new MetaValueArray(mvt, arr));
+				}
+				continue;
+			}
+			throw new CompilerException(m.pos, "Annotation value "+m.name.name+" is not specified");
 		}
 		return this;
 	}
@@ -269,12 +291,12 @@ public abstract class MetaValue extends ASTNode {
 		ASTNode v = ((Expr)value).resolve(reqType);
 		if (!(v instanceof Expr)) {
 			if (reqType == Type.tpClass)
-				return v;
+				return new WrapedExpr(value.pos, v);
 			else
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		}
 		else if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField())
-			return ((StaticFieldAccessExpr)v).var;
+			return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)v).var);
 		else if (!((Expr)v).isConstantExpr())
 			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = v.getType();
