@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTReparseStatement extends Statement {
 
 	public String	ref;

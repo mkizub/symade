@@ -36,6 +36,7 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+@cfnode
 public class NewExpr extends Expr {
 
 	@ref public Type				type;
@@ -254,6 +255,7 @@ public class NewExpr extends Expr {
 }
 
 @node
+@cfnode
 public class NewArrayExpr extends Expr {
 
 	@ref public Type				type;
@@ -362,6 +364,7 @@ public class NewArrayExpr extends Expr {
 }
 
 @node
+@cfnode
 public class NewInitializedArrayExpr extends Expr {
 
 	@ref public Type				type;
@@ -466,6 +469,7 @@ public class NewInitializedArrayExpr extends Expr {
 }
 
 @node
+@cfnode
 public class NewClosure extends Expr {
 
 	@ref public Type				type;

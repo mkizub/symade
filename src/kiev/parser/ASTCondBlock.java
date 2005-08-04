@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTCondBlock extends ASTBlock {
 	public ASTCondBlock() {
 	}

@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTBlock extends Statement {
 	@att public final NArr<ASTNode> stats;
 

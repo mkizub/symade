@@ -228,6 +228,7 @@ public class CaseLabel extends ASTNode {
 }
 
 @node
+@cfnode
 public class SwitchStat extends BlockStat implements BreakTarget {
 
 	@att public Expr					sel;
@@ -635,6 +636,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 }
 
 @node
+@cfnode
 public class CatchInfo extends Statement implements Scope {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
@@ -726,6 +728,7 @@ public class CatchInfo extends Statement implements Scope {
 }
 
 @node
+@cfnode
 public class FinallyInfo extends CatchInfo {
 
 	@att public Var		ret_arg;
@@ -774,6 +777,7 @@ public class FinallyInfo extends CatchInfo {
 }
 
 @node
+@cfnode
 public class TryStat extends Statement/*defaults*/ {
 
 	@att public Statement				body;
@@ -938,6 +942,7 @@ public class TryStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class SynchronizedStat extends Statement {
 
 	@att public Statement	body;
@@ -1034,6 +1039,7 @@ public class SynchronizedStat extends Statement {
 }
 
 @node
+@cfnode
 public class WithStat extends Statement {
 
 	@att public Statement	body;

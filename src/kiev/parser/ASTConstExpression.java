@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTConstExpression extends Expr implements kiev020Constants {
 	public Object	val;
 

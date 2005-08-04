@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTReparseExpression extends Expr {
 
 	public String	ref;

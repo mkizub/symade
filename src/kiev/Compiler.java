@@ -552,6 +552,40 @@ public class Compiler {
 			}
 			runGC();
 
+			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].resolveMetaDefaults();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					Kiev.files_scanned[i].resolveMetaDefaults();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
+				}
+			}
+			if( Kiev.errCount > 0 ) goto stop;
+			Kiev.pass_no = TopLevelPass.passResolveMetaValues;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].resolveMetaValues();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					Kiev.files_scanned[i].resolveMetaValues();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
+				}
+			}
+			if( Kiev.errCount > 0 ) goto stop;
 
 			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
 			for(int i=0; i < Kiev.file_unit.length; i++) {
@@ -628,6 +662,8 @@ public class Compiler {
 			
 			ProcessVNode noder = new ProcessVNode();
 			noder.verify();
+			ProcessCFlow cfnoder = new ProcessCFlow();
+			cfnoder.verify();
 			
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			Kiev.file_unit.cleanup();

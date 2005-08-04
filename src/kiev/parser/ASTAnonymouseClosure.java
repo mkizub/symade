@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTAnonymouseClosure extends Expr {
     @att public final NArr<ASTNode>		params;
     @att public ASTType						rettype;

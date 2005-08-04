@@ -36,6 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@cfnode
 public class ShadowStat extends Statement {
 	@ref public Statement stat;
 	
@@ -67,6 +68,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
+@cfnode
 public class InlineMethodStat extends Statement implements Scope {
 
 	static class ParamRedir {
@@ -175,6 +177,7 @@ public class InlineMethodStat extends Statement implements Scope {
 }
 
 @node
+@cfnode
 public class BlockStat extends Statement implements Scope {
 
 	@att public final NArr<ASTNode>		stats;
@@ -407,6 +410,7 @@ public class BlockStat extends Statement implements Scope {
 }
 
 @node
+@cfnode
 public class EmptyStat extends Statement {
 
 	public EmptyStat() {}
@@ -435,6 +439,7 @@ public class EmptyStat extends Statement {
 }
 
 @node
+@cfnode
 public class ExprStat extends Statement {
 
 	@att public Expr		expr;
@@ -491,6 +496,7 @@ public class ExprStat extends Statement {
 }
 
 @node
+@cfnode
 public class DeclStat extends Statement {
 
 	@att public Var		var;
@@ -596,6 +602,7 @@ public class DeclStat extends Statement {
 }
 
 @node
+@cfnode
 public class TypeDeclStat extends Statement/*defaults*/ {
 
 	@att public Struct		struct;
@@ -642,6 +649,7 @@ public class TypeDeclStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class ReturnStat extends Statement/*defaults*/ {
 
 	@att public Expr		expr;
@@ -752,6 +760,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class ThrowStat extends Statement/*defaults*/ {
 
 	@att public Expr		expr;
@@ -807,6 +816,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class IfElseStat extends Statement {
 
 	@att public BooleanExpr	cond;
@@ -981,6 +991,7 @@ public class IfElseStat extends Statement {
 }
 
 @node
+@cfnode
 public class CondStat extends Statement {
 
 	@att public BooleanExpr		cond;
@@ -1107,6 +1118,7 @@ public class CondStat extends Statement {
 }
 
 @node
+@cfnode
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
@@ -1167,6 +1179,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 }
 
 @node
+@cfnode
 public class BreakStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1249,6 +1262,7 @@ public class BreakStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class ContinueStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1302,6 +1316,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class GotoStat extends Statement/*defaults*/ {
 
 	public KString		name;
@@ -1489,6 +1504,7 @@ public class GotoStat extends Statement/*defaults*/ {
 }
 
 @node
+@cfnode
 public class GotoCaseStat extends Statement/*defaults*/ {
 
 	@att public Expr		expr;

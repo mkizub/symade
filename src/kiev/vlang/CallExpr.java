@@ -36,6 +36,7 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+@cfnode
 public class CallExpr extends Expr {
 	@ref public Method				func;
 	@att public final NArr<Expr>	args;
@@ -225,6 +226,7 @@ public class CallExpr extends Expr {
 }
 
 @node
+@cfnode
 public class CallAccessExpr extends Expr {
 	@att public Expr				obj;
 	@ref public Method				func;
@@ -525,6 +527,7 @@ public class CallAccessExpr extends Expr {
 }
 
 @node
+@cfnode
 public class ClosureCallExpr extends Expr {
 	@att public Expr					expr;
 	@ref public ASTNode					func;	// Var or Field

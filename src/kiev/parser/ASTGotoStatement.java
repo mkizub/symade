@@ -30,6 +30,7 @@ import kiev.vlang.*;
 import syntax kiev.Syntax;
 
 @node
+@cfnode
 public class ASTGotoStatement extends Statement {
 	@att ASTNode	expr;
 	boolean casemode = false;

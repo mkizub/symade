@@ -123,7 +123,7 @@ public interface Scope {
 }
 
 public interface ScopeOfOperators {
-	public rule resolveOperatorR(ASTNode@ op);
+	public rule resolveOperatorR(Operator@ op);
 }
 
 

@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTTryStatement extends Statement {
 	@att public Statement				body;
     @att public final NArr<ASTNode>	catchers;

@@ -34,9 +34,14 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTSwitchStatement extends Statement {
-	@att public Expr					sel;
-	@att public final NArr<ASTNode>		cases;
+	@att
+	public Expr						sel;
+	
+	@att
+	@cflist()
+	public final NArr<ASTNode>		cases;
 
     public ASTSwitchStatement() {
 	}

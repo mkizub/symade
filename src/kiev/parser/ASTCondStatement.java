@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTCondStatement extends Statement {
 	
 	@att public Expr		cond;

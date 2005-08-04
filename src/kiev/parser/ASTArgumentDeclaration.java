@@ -37,7 +37,7 @@ import kiev.vlang.*;
 public class ASTArgumentDeclaration extends ASTNode {
 	@att public ASTIdentifier		ident;
 	@att public ASTNonArrayType		type;
-
+	
 	public ASTArgumentDeclaration() {}
 
 	public ASTArgumentDeclaration(int id) {

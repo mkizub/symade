@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@cfnode
 public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
 
 	protected	CodeLabel	continue_label = null;
@@ -63,6 +64,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 
 
 @node
+@cfnode
 public class WhileStat extends LoopStat {
 
 	@att public BooleanExpr	cond;
@@ -153,6 +155,7 @@ public class WhileStat extends LoopStat {
 }
 
 @node
+@cfnode
 public class DoWhileStat extends LoopStat {
 
 	@att public BooleanExpr	cond;
@@ -295,6 +298,7 @@ public class ForInit extends ASTNode implements Scope {
 }
 
 @node
+@cfnode
 public class ForStat extends LoopStat implements Scope {
 
 	@att public ASTNode		init;
@@ -512,6 +516,7 @@ public class ForStat extends LoopStat implements Scope {
 }
 
 @node
+@cfnode
 public class ForEachStat extends LoopStat implements Scope {
 
 	@att public Var			var;

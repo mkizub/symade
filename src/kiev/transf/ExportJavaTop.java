@@ -105,6 +105,7 @@ public final class ExportJavaTop implements Constants {
 	}
 	
 	private void setupStructType(Struct me, ASTStructDeclaration astn, boolean canHaveArgs) {
+		me.pos = astn.pos;
         PassInfo.push(me);
         try {
 			/* Then may be class arguments - they are proceed here, but their
@@ -401,7 +402,7 @@ public final class ExportJavaTop implements Constants {
 						trace(Kiev.debugResolve,"Add "+n+" to syntax "+astn.me);
 					}
 				}
-				else if (n instanceof ASTOpdef) {
+				else if (n instanceof Opdef) {
 					n = pass1_1(n, astn.me);
 					if (n != null) {
 						astn.me.imported.add(n);
@@ -417,7 +418,7 @@ public final class ExportJavaTop implements Constants {
 		return astn.me;
 	}
 
-	public ASTNode pass1_1(ASTOpdef:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1_1(Opdef:ASTNode astn, ASTNode pn) {
 		int pos = astn.pos;
 		int prior = astn.prior;
 		int opmode = astn.opmode;
@@ -431,11 +432,13 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return astn.replaceWith(op);
+					astn.resolved = op;
+					return astn;
 				}
 				op = AssignOperator.newAssignOperator(image,null,null,false);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return astn.replaceWith(op);
+				astn.resolved = op;
+				return astn;
 			}
 		case Operator.XFX:
 		case Operator.YFX:
@@ -448,11 +451,13 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return astn.replaceWith(op);
+					astn.resolved = op;
+					return astn;
 				}
 				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return astn.replaceWith(op);
+				astn.resolved = op;
+				return astn;
 			}
 		case Operator.FX:
 		case Operator.FY:
@@ -463,11 +468,13 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return astn.replaceWith(op);
+					astn.resolved = op;
+					return astn;
 				}
 				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return astn.replaceWith(op);
+				astn.resolved = op;
+				return astn;
 			}
 		case Operator.XF:
 		case Operator.YF:
@@ -478,11 +485,13 @@ public final class ExportJavaTop implements Constants {
 						throw new CompilerException(pos,"Operator declaration conflict: priority "+prior+" and "+op.priority+" are different");
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
-					return astn.replaceWith(op);
+					astn.resolved = op;
+					return astn;
 				}
 				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
-				return astn.replaceWith(op);
+				astn.resolved = op;
+				return astn;
 			}
 		case Operator.XFXFY:
 			throw new CompilerException(pos,"Multioperators are not supported yet");

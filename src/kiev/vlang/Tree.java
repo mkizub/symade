@@ -31,12 +31,48 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public @interface node {}
-public @interface att {}
-public @interface ref {}
+// syntax-tree node
+public @interface node {
+	boolean copyable() default true;
+}
+// syntax-tree attribute field
+public @interface att {
+	boolean copyable() default true;
+}
+// syntax-tree reference field
+public @interface ref {
+	boolean copyable() default true;
+}
+
+// control-flow simple node
+public @interface cfnode {
+}
+// sontrol-flow loop node
+public @interface cfloop {
+	String cont();
+	String brk();	
+}
+// sontrol-flow switch node
+public @interface cfswitch {
+	String brk();	
+}
+// control-flow field in/out links
+public @interface cflink {
+	String in();
+	String out();
+}
+// control-flow fork (boolean) field links
+public @interface cffork {
+	String in();
+	String yes();
+	String no();
+}
+// control-flow field in/out links
+public @interface cflist {
+}
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
-@node
+@node(copyable=false)
 public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
@@ -47,6 +83,11 @@ public class Tree extends ASTNode {
 		throw new CompilerException(getPos(),"Tree node cannot be copied");
 	};
 
+}
+
+@node
+@cfnode
+public class CFLabel extends CFNode {
 }
 
 public final class AttrSlot {

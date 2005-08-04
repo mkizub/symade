@@ -37,6 +37,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@cfnode
 public class ASTCallExpression extends Expr {
 	@att public ASTIdentifier			func;
     @att public final NArr<Expr>		args;

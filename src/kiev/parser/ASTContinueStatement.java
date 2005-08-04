@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTContinueStatement extends Statement {
 	@att public ASTIdentifier	ident;
     

@@ -67,11 +67,47 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 
 	public String toString() { return /*getClass()+":="+*/filename.toString(); }
 
+	public void resolveMetaDefaults() {
+		trace(Kiev.debugResolve,"Resolving meta defaults in file "+filename);
+		PassInfo.push(this);
+		KString curr_file = Kiev.curFile;
+		Kiev.curFile = filename;
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
+			foreach(ASTNode n; members; n instanceof Struct) {
+				try {
+					((Struct)n).resolveMetaDefaults();
+				} catch(Exception e) {
+					Kiev.reportError(n.pos,e);
+				}
+			}
+		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+	}
+
+	public void resolveMetaValues() {
+		trace(Kiev.debugResolve,"Resolving meta values in file "+filename);
+		PassInfo.push(this);
+		KString curr_file = Kiev.curFile;
+		Kiev.curFile = filename;
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(disabled_extensions);
+			foreach(ASTNode n; members; n instanceof Struct) {
+				try {
+					((Struct)n).resolveMetaValues();
+				} catch(Exception e) {
+					Kiev.reportError(n.pos,e);
+				}
+			}
+		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+	}
+
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTPackage) {
 			pkg = (ASTPackage)n;
 		}
-		else if( n instanceof Import || n instanceof Typedef || n instanceof ASTOpdef || n instanceof ASTPragma) {
+		else if( n instanceof Import || n instanceof Typedef || n instanceof Opdef || n instanceof ASTPragma) {
 			syntax.append(n);
 			// Check disabled extensions very early
 			if (n instanceof ASTPragma) {
@@ -223,12 +259,14 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		return true;
 	}
 
-	public rule resolveOperatorR(ASTNode@ op)
+	public rule resolveOperatorR(Operator@ op)
 		ASTNode@ syn;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in file "+this),
 		{
-			op @= syntax,
+			syn @= syntax,
+			syn instanceof Opdef && ((Opdef)syn).resolved != null,
+			op ?= ((Opdef)syn).resolved,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in file "+this)
 		;	syn @= syntax,
 			syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,

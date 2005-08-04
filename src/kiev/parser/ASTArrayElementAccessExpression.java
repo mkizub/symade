@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTArrayElementAccessExpression extends Expr {
 	@att public Expr		obj;
 	@att public Expr		index;

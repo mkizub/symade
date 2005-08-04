@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTTypeClassExpression extends Expr {
 	
 	@att public ASTType		type;

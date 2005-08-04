@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTCastExpression extends Expr {
 	@att public ASTType	type;
     @att public Expr	expr;

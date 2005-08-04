@@ -35,6 +35,7 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+@cfnode
 public class BooleanWrapperExpr extends BooleanExpr {
 	@att public Expr		expr;
 
@@ -155,6 +156,7 @@ public class BooleanWrapperExpr extends BooleanExpr {
 }
 
 @node
+@cfnode
 public class ConstBooleanExpr extends BooleanExpr {
 	public boolean value;
 
@@ -216,6 +218,7 @@ public class ConstBooleanExpr extends BooleanExpr {
 }
 
 @node
+@cfnode
 public class BinaryBooleanOrExpr extends BooleanExpr {
 	@att public BooleanExpr			expr1;
 	@att public BooleanExpr			expr2;
@@ -311,6 +314,7 @@ public class BinaryBooleanOrExpr extends BooleanExpr {
 
 
 @node
+@cfnode
 public class BinaryBooleanAndExpr extends BooleanExpr {
 	@att public BooleanExpr			expr1;
 	@att public BooleanExpr			expr2;
@@ -399,6 +403,7 @@ public class BinaryBooleanAndExpr extends BooleanExpr {
 }
 
 @node
+@cfnode
 public class BinaryBooleanExpr extends BooleanExpr {
 	@ref public BinaryOperator		op;
 	@att public Expr				expr1;
@@ -701,6 +706,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 }
 
 @node
+@cfnode
 public class InstanceofExpr extends BooleanExpr {
 	@att public Expr		expr;
 	@ref public Type		type;
@@ -813,6 +819,7 @@ public class InstanceofExpr extends BooleanExpr {
 }
 
 @node
+@cfnode
 public class BooleanNotExpr extends BooleanExpr {
 	@att public BooleanExpr				expr;
 

@@ -126,7 +126,6 @@ public class MetaType {
 public class MetaValueType {
 	public KString name;
 	public KString signature;
-	public MetaValue default_value;
 	public MetaValueType(KString name) {
 		this.name = name;
 	}
@@ -168,6 +167,7 @@ public class Meta extends ASTNode {
 			if (m == null)
 				throw new CompilerException(v.pos, "Unresolved method "+v.type.name+" in class "+s);
 			Type tp = m.type.ret;
+			v.type.signature = tp.signature;
 			Type t = tp;
 			if (t.isArray()) {
 				if (v instanceof MetaValueScalar) {
@@ -186,11 +186,36 @@ public class Meta extends ASTNode {
 			}
 			v.resolve(t);
 		}
+		// check that all non-default values are specified, and add default values
+	next_method:
+		foreach (ASTNode n; s.members; n instanceof Method) {
+			Method m = (Method)n;
+			for(int j=0; j < values.length; j++) {
+				if (values[j].type.name == m.name.name)
+					continue next_method;
+			}
+			// value not specified - does the method has a default meta-value?
+			if (m.annotation_default != null) {
+				MetaValueType mvt = new MetaValueType(m.name.name);
+				mvt.signature = m.type.ret.signature;
+				if (!m.type.ret.isArray()) {
+					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
+					ASTNode v = (ASTNode)mvs.value.copy();
+					values.append(new MetaValueScalar(mvt, v));
+				} else {
+					ASTNode[] arr = ((MetaValueArray)m.annotation_default).values.toArray();
+					for(int j=0; j < arr.length; j++)
+						arr[j] = (ASTNode)arr[j].copy();
+					values.append(new MetaValueArray(mvt, arr));
+				}
+				continue;
+			}
+			throw new CompilerException(m.pos, "Annotation value "+m.name.name+" is not specified");
+		}
 		return this;
 	}
 	
-	public MetaValue get(KString name)
-	{
+	public MetaValue get(KString name) {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
@@ -198,7 +223,19 @@ public class Meta extends ASTNode {
 				return v;
 			}
 		}
-		return null;
+		throw new RuntimeException("Value "+name+" not found in "+type.name+" annotation");
+	}
+	
+	public boolean getZ(KString name) {
+		MetaValueScalar mv = (MetaValueScalar)get(name);
+		ASTNode v = mv.value;
+		if (v == null)
+			return false;
+		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof Boolean)
+			return ((Boolean)((ConstExpr)v).value).booleanValue();
+		if (v instanceof ConstBooleanExpr)
+			return ((ConstBooleanExpr)v).value;
+		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a boolean constant, but "+v);
 	}
 	
 	public MetaValue set(MetaValue value) alias add alias operator (5,lfy,+=)
@@ -268,7 +305,7 @@ public abstract class MetaValue extends ASTNode {
 	}
 
 	public abstract void resolve(Type reqType);
-
+	
 	ASTNode resolveValue(Type reqType, ASTNode value) {
 		if (value instanceof Meta) {
 			return ((Meta)value).resolve();
@@ -331,6 +368,11 @@ public class MetaValueArray extends MetaValue {
 
 	public MetaValueArray(MetaValueType type) {
 		super(type);
+	}
+
+	public MetaValueArray(MetaValueType type, ASTNode[] values) {
+		super(type);
+		this.values.addAll(values);
 	}
 
 	public void resolve(Type reqType) {

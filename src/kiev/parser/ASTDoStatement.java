@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTDoStatement extends Statement {
     public boolean		not;
 	@att public Expr		cond;

@@ -34,8 +34,10 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTStatementExpression extends Statement {
-	@att public Expr	expr;
+	@att
+	public Expr	expr;
     
 	public ASTStatementExpression() {
 	}

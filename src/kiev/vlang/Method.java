@@ -35,6 +35,20 @@ import syntax kiev.Syntax;
  *
  */
 
+//@node
+//public class MethodRef extends ASTNode {
+//	@att public ASTIdentifier	ident;
+//	@ref public Method			meth;
+//	
+//	public MethodRef() {}
+//	public MethodRef(ASTIdentifier ident, Method meth) {
+//		if (ident != null)
+//			this.pos = ident.pos;
+//		this.ident = ident;
+//		this.meth = meth;
+//	}
+//}
+
 @node
 public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable,TopLevelDecl {
 	public static Method[]	emptyArray = new Method[0];
@@ -352,6 +366,39 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
 	}
 
+	public void resolveMetaDefaults() {
+		if (annotation_default != null) {
+			Type tp = this.type.ret;
+			Type t = tp;
+			if (t.isArray()) {
+				if (annotation_default instanceof MetaValueScalar) {
+					MetaValueArray mva = new MetaValueArray(annotation_default.type);
+					mva.values.add(((MetaValueScalar)annotation_default).value);
+					annotation_default = mva;
+				}
+				t = t.args[0];
+			}
+			if (t.isReference()) {
+				t.clazz.checkResolved();
+				if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+					throw new CompilerException(pos, "Bad annotation value type "+tp);
+			}
+			annotation_default.resolve(t);
+		}
+	}
+	
+	public void resolveMetaValues() {
+		foreach (Meta m; meta)
+			m.resolve();
+		for(int i=0; i < params.length; i++) {
+			Var p = params[i];
+			if (p.meta != null) {
+				foreach (Meta m; p.meta)
+					m.resolve();
+			}
+		}
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		trace(Kiev.debugResolve,"Resolving method "+this);
@@ -363,34 +410,9 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
 			
-			foreach (Meta m; meta)
-				m.resolve();
-			if (annotation_default != null) {
-				Type tp = this.type.ret;
-				Type t = tp;
-				if (t.isArray()) {
-					if (annotation_default instanceof MetaValueScalar) {
-						MetaValueArray mva = new MetaValueArray(annotation_default.type);
-						mva.values.add(((MetaValueScalar)annotation_default).value);
-						annotation_default = mva;
-					}
-					t = t.args[0];
-				}
-				if (t.isReference()) {
-					t.clazz.checkResolved();
-					if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
-						throw new CompilerException(pos, "Bad annotation value type "+tp);
-				}
-				annotation_default.resolve(t);
-			}
-			
 			if (!inlined_by_dispatcher) {
 				for(int i=0; i < params.length; i++) {
 					Var p = params[i];
-					if (p.meta != null) {
-						foreach (Meta m; p.meta)
-							m.resolve();
-					}
 					NodeInfoPass.setNodeType(p,p.type);
 					NodeInfoPass.setNodeInitialized(p,true);
 				}
@@ -633,6 +655,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 }
 
 @node
+@cfnode
 public class WorkByContractCondition extends Statement implements SetBody {
 
 	public static WorkByContractCondition[]	emptyArray = new WorkByContractCondition[0];

@@ -35,10 +35,17 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTNewExpression extends Expr {
-	@att public ASTNonArrayType			type;
-	@att public final NArr<Expr>		args;
-    @att public final NArr<ASTNode>	members;
+	@att
+	public ASTNonArrayType			type;
+	
+	@att
+	public final NArr<Expr>			args;
+	
+    @att
+	public final NArr<ASTNode>		members;
+	
     public boolean	anonymouse;
 
 	public ASTNewExpression() {

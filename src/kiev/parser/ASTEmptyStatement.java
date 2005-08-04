@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTEmptyStatement extends Statement {
 
 	public ASTEmptyStatement() {

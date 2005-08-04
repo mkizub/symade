@@ -68,6 +68,8 @@ public enum TopLevelPass /*extends int*/ {
 	passAutoProxyMethods	   ,	// autoProxyMethods()
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
+	passResolveMetaValues	   ,	// resolve values in meta-data
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
@@ -79,7 +81,9 @@ public abstract class ASTNode implements Constants {
 	private static int		parserAddrIdx;
 
 	public int				pos;
-    @ref public ASTNode		parent;
+    @ref(copyable=false)
+	public ASTNode			parent;
+    @ref(copyable=false)
 	public AttrSlot			pslot;
 	public int				flags;
 	
@@ -797,7 +801,18 @@ public abstract class ASTNode implements Constants {
 }
 
 @node
-public abstract class Expr extends ASTNode {
+@cfnode
+public abstract class CFNode extends ASTNode {
+	@ref(copyable=false) public CFNode cf_in;
+	@ref(copyable=false) public CFNode cf_out;
+	public CFNode() {}
+	public CFNode(int pos) { super(pos); }
+	public CFNode(int pos, ASTNode parent) { super(pos,parent); }
+}
+
+@node
+@cfnode
+public abstract class Expr extends CFNode {
 
 	public static Expr[] emptyArray = new Expr[0];
 
@@ -888,6 +903,7 @@ public abstract class Expr extends ASTNode {
 }
 
 @node
+@cfnode
 public class WrapedExpr extends Expr {
 
 	@ref public ASTNode		expr;
@@ -920,6 +936,7 @@ public class WrapedExpr extends Expr {
 }
 
 @node
+@cfnode
 public abstract class BooleanExpr extends Expr {
 
 	public BooleanExpr() {}
@@ -952,6 +969,7 @@ public abstract class BooleanExpr extends Expr {
 }
 
 @node
+@cfnode
 public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr() {}
@@ -990,7 +1008,8 @@ public abstract class LvalueExpr extends Expr {
 }
 
 @node
-public abstract class Statement extends ASTNode {
+@cfnode
+public abstract class Statement extends CFNode {
 
 	public static Statement[] emptyArray = new Statement[0];
 
@@ -1014,7 +1033,7 @@ public abstract class Statement extends ASTNode {
 
 @node
 public class TypeRef extends ASTNode {
-	@ref public Type		type;
+	@ref public Type			type;
 	
 	public TypeRef() {}
 	public TypeRef(Type tp) {

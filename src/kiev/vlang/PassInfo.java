@@ -205,7 +205,7 @@ public class PassInfo {
 		return true;
 	}
 
-	public static rule resolveOperatorR(ASTNode@ op)
+	public static rule resolveOperatorR(Operator@ op)
 		ASTNode@ p;
 	{
 		p @= new PathEnumerator(),

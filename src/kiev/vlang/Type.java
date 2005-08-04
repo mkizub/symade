@@ -32,7 +32,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-@node
+@node(copyable=false)
 public class Type extends ASTNode implements AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
@@ -1214,7 +1214,7 @@ public class Type extends ASTNode implements AccessFlags {
 }
 
 
-@node
+@node(copyable=false)
 public class MethodType extends Type {
 	@ref public Type		ret;
 	public Type[]	fargs;	// formal arguments for parametriezed methods

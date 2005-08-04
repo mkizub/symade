@@ -38,15 +38,17 @@ import static kiev.vlang.Operator.*;
  */
 
 @node
-public class ASTOpdef extends ASTNode implements TopLevelDecl {
+public class Opdef extends ASTNode implements TopLevelDecl {
 	public int					prior;
 	public int					opmode;
 	public KString				image;
+	
+	@ref public transient Operator		resolved;
 
-	public ASTOpdef() {
+	public Opdef() {
 	}
 
-	public ASTOpdef(int id) {
+	public Opdef(int id) {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
@@ -79,6 +81,7 @@ public class ASTOpdef extends ASTNode implements TopLevelDecl {
 			}
 			break;
 		case 0:
+			this.pos = n.pos;
 			if( n instanceof ASTOperator ) {
 				image = ((ASTOperator)n).image;
 				return;
@@ -105,10 +108,10 @@ public class ASTOpdef extends ASTNode implements TopLevelDecl {
 	}
 	
 	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("/* alias operator(")
-			.append(Integer.toString(prior)).append(",")
-			.append(Operator.orderAndArityNames[opmode]).append(",")
-			.append(image).append(") */").space();
+		return dmp.space().append("/* operator ")
+			.append(Integer.toString(prior)).forsed_space()
+			.append(Operator.orderAndArityNames[opmode]).forsed_space()
+			.append(image).append(" */").space();
 	}
 
 }

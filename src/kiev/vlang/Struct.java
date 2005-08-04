@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
+@node(copyable=false)
 public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
@@ -79,9 +79,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	  classes, that containce type info
 	 */
 	@ref public Struct					typeinfo_clazz;
+	
 	/** Array of substructures of the structure */
 	@ref public final NArr<Struct>		sub_clazz;
-
 
 	/** The field this structure is wrapper of */
 	@ref public Field					wrapped_field;
@@ -297,12 +297,14 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return null;
 	}
 
-	public rule resolveOperatorR(ASTNode@ op)
+	public rule resolveOperatorR(Operator@ op)
 		ASTNode@ imp;
 	{
 		trace( Kiev.debugResolve, "Resolving operator: "+op+" in syntax "+this),
 		{
-			op @= imported,
+			imp @= imported,
+			imp instanceof Opdef && ((Opdef)imp).resolved != null,
+			op ?= ((Opdef)imp).resolved,
 			trace( Kiev.debugResolve, "Resolved operator: "+op+" in syntax "+this)
 		;	imp @= imported,
 			imp instanceof Import && ((Import)imp).mode == Import.ImportMode.IMPORT_SYNTAX,
@@ -2230,24 +2232,63 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return this;
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( isGenerated() ) return this;
-		long curr_time;
-		{
+	public void resolveMetaDefaults() {
+		PassInfo.push(this);
+		try {
+			if (isAnnotation()) {
+				NodeInfoPass.init();
+				ScopeNodeInfoVector state = NodeInfoPass.pushState();
+				state.guarded = true;
+				try {
+					foreach(ASTNode m; members; m instanceof Method) {
+						try {
+							((Method)m).resolveMetaDefaults();
+						} catch(Exception e) {
+							Kiev.reportError(m.pos,e);
+						}
+					}
+				} finally { 	NodeInfoPass.close(); }
+			}
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					if( !sub_clazz[i].isAnonymouse() )
+						sub_clazz[i].resolveMetaDefaults();
+				}
+			}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void resolveMetaValues() {
+		PassInfo.push(this);
+		try {
 			NodeInfoPass.init();
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
 			try {
 				foreach (Meta m; meta)
 					m.resolve();
-				foreach(ASTNode f; members; f instanceof Field) {
-					foreach (Meta m; ((Field)f).meta)
-						m.resolve();
+				foreach(ASTNode n; members) {
+					if (n instanceof Field) {
+						foreach (Meta m; ((Field)n).meta)
+							m.resolve();
+					}
+					else if (n instanceof Method) {
+						((Method)n).resolveMetaValues();
+					}
 				}
-			} finally {
-				NodeInfoPass.close();
+			} finally { 	NodeInfoPass.close(); }
+			
+			if( !isPackage() ) {
+				for(int i=0; i < sub_clazz.length; i++) {
+					sub_clazz[i].resolveMetaValues();
+				}
 			}
-		}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public ASTNode resolve(Type reqType) {
+		if( isGenerated() ) return this;
+		long curr_time;
 		PassInfo.push(this);
 		try {
 			autoGenerateStatements();

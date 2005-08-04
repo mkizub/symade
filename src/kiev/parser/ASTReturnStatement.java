@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTReturnStatement extends Statement {
 	@att public Expr expr;
 

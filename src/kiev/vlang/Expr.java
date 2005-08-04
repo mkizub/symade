@@ -41,6 +41,7 @@ import syntax kiev.Syntax;
 
 
 @node
+@cfnode
 public class ShadowExpr extends Expr {
 	@ref public Expr expr;
 	
@@ -71,6 +72,7 @@ public class ShadowExpr extends Expr {
 }
 
 @node
+@cfnode
 public class StatExpr extends Expr implements SetBody {
 	@att public Statement	stat;
 
@@ -120,6 +122,7 @@ public class StatExpr extends Expr implements SetBody {
 }
 
 @node
+@cfnode
 public class ConstExpr extends Expr {
 	Object	value;
 
@@ -321,6 +324,7 @@ public class ConstExpr extends Expr {
 }
 
 @node
+@cfnode
 public class ArrayLengthAccessExpr extends Expr {
 	@att public Expr		array;
 
@@ -379,6 +383,7 @@ public class ArrayLengthAccessExpr extends Expr {
 }
 
 @node
+@cfnode
 public class AssignExpr extends LvalueExpr {
 	@ref public AssignOperator	op;
 	@att public Expr			lval;
@@ -718,6 +723,7 @@ public class AssignExpr extends LvalueExpr {
 
 
 @node
+@cfnode
 public class InitializeExpr extends AssignExpr {
     public boolean	of_wrapper;
 
@@ -764,6 +770,7 @@ public class InitializeExpr extends AssignExpr {
 
 
 @node
+@cfnode
 public class BinaryExpr extends Expr {
 	@ref public BinaryOperator		op;
 	@att public Expr				expr1;
@@ -1120,6 +1127,7 @@ public class BinaryExpr extends Expr {
 }
 
 @node
+@cfnode
 public class StringConcatExpr extends Expr {
 	@att public final NArr<Expr>	args;
 
@@ -1260,6 +1268,7 @@ public class StringConcatExpr extends Expr {
 }
 
 @node
+@cfnode
 public class CommaExpr extends Expr {
 	@att public final NArr<Expr>	exprs;
 
@@ -1332,6 +1341,7 @@ public class CommaExpr extends Expr {
 }
 
 @node
+@cfnode
 public class BlockExpr extends Expr implements Scope {
 
 	@att public final NArr<ASTNode>		stats;
@@ -1545,6 +1555,7 @@ public class BlockExpr extends Expr implements Scope {
 }
 
 @node
+@cfnode
 public class UnaryExpr extends Expr {
 	@ref public Operator			op;
 	@att public Expr				expr;
@@ -1735,6 +1746,7 @@ public class UnaryExpr extends Expr {
 }
 
 @node
+@cfnode
 public class IncrementExpr extends LvalueExpr {
 	@ref public Operator			op;
 	@att public Expr				lval;
@@ -1959,6 +1971,7 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 @node
+@cfnode
 public class MultiExpr extends Expr {
 	@ref public MultiOperator			op;
 	@att public final NArr<ASTNode>		exprs;
@@ -1996,6 +2009,7 @@ public class MultiExpr extends Expr {
 
 
 @node
+@cfnode
 public class ConditionalExpr extends Expr {
 	@att public Expr		cond;
 	@att public Expr		expr1;
@@ -2124,6 +2138,7 @@ public class ConditionalExpr extends Expr {
 }
 
 @node
+@cfnode
 public class CastExpr extends Expr {
 	@ref public Type			type;
 	@att public Expr			expr;

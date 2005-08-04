@@ -34,6 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTCommaExpression extends Expr {
 	@att public final NArr<Expr>	exprs;
 

@@ -34,11 +34,19 @@ import kiev.stdlib.*;
  */
 
 @node
+@cfnode
 public class ASTForStatement extends Statement {
-	@att public ASTNode	init;
-	@att public Expr		cond;
-	@att public Expr		iter;
-	@att public Statement	body;
+	@att
+	public ASTNode			init;
+	
+	@att
+	public Expr				cond;
+	
+	@att
+	public Expr				iter;
+	
+	@att
+	public Statement		body;
 
 	public ASTForStatement() {
 	}

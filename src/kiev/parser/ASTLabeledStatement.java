@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTLabeledStatement extends Statement {
 	public KString			name;
     @att public Statement	stat;

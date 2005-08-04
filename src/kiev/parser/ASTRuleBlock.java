@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTRuleBlock extends ASTBlock {
 
 	@att ASTRuleNode	expr;

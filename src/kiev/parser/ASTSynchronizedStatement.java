@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTSynchronizedStatement extends Statement {
 	@att public Expr		arg;
     @att public Statement	body;
