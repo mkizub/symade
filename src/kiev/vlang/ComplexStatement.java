@@ -111,9 +111,9 @@ public class CaseLabel extends ASTNode {
 							if( f.var.type != et )
 								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 							if (et.clazz.isPrimitiveEnum())
-								et = et.clazz.getPrimitiveEnumType();
+								et = ((Struct)et.clazz).getPrimitiveEnumType();
 							if (et.clazz.isEnum() && !et.clazz.isPrimitiveEnum())
-								val = new ConstExpr(pos,Kiev.newInteger(et.clazz.getValueForEnumField(f.var)));
+								val = new ConstExpr(pos,Kiev.newInteger(((Struct)et.clazz).getValueForEnumField(f.var)));
 							else
 								val = new ConstExpr(pos,((ConstExpr)f.var.init).value);
 						}
@@ -450,9 +450,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 							Type tp = sel.getType();
 							EnumAttr ea = null;
 							if (tp.clazz.isPrimitiveEnum())
-								ea = (EnumAttr)tp.clazz.getAttr(attrPrimitiveEnum);
+								ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrPrimitiveEnum);
 							else
-								ea = (EnumAttr)tp.clazz.getAttr(attrEnum);
+								ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrEnum);
 							if( ea.fields.length == cases.length )
 								setMethodAbrupted(true);
 						}
@@ -482,9 +482,10 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 								Type tp = tmpvar.getType();
 								PizzaCaseAttr case_attr;
 								int caseno = 0;
-								for(int i=0; i < tp.clazz.sub_clazz.length; i++) {
-									if( tp.clazz.sub_clazz[i].isPizzaCase() ) {
-										case_attr = (PizzaCaseAttr)tp.clazz.sub_clazz[i].getAttr(attrPizzaCase);
+								Struct tpclz = (Struct)tp.clazz;
+								for(int i=0; i < tpclz.sub_clazz.length; i++) {
+									if( tpclz.sub_clazz[i].isPizzaCase() ) {
+										case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);
 										if( case_attr!=null && case_attr.caseno > caseno )
 											caseno = case_attr.caseno;
 									}

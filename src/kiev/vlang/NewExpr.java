@@ -89,7 +89,7 @@ public class NewExpr extends Expr {
 			}
 			if( outer != null ) outer = (Expr)outer.resolve(null);
 			else if( (!type.clazz.isStatic() && type.clazz.isLocal())
-				  || (!type.clazz.isStatic() && !((Struct)type.clazz.package_clazz).isPackage()) ) {
+				  || (!type.clazz.isStatic() && !((Struct)type.clazz).package_clazz.isPackage()) ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
 				Var th = PassInfo.method.params[0];
@@ -106,7 +106,7 @@ public class NewExpr extends Expr {
 				outer_args = args.toArray();
 			}
 			if( type.clazz.isLocal() ) {
-				Struct cl = type.clazz;
+				Struct cl = (Struct)type.clazz;
 				foreach (ASTNode n; cl.members; n instanceof Field) {
 					Field f = (Field)n;
 					if( !f.isNeedProxy() ) continue;
@@ -197,7 +197,7 @@ public class NewExpr extends Expr {
 				args[i].generate(null);
 			// Now, fill proxyed fields (vars)
 			if( type.clazz.isLocal() ) {
-				Struct cl = type.clazz;
+				Struct cl = (Struct)type.clazz;
 				foreach (ASTNode n; cl.members; n instanceof Field) {
 					Field f = (Field)n;
 					if( !f.isNeedProxy() ) continue;
@@ -244,7 +244,7 @@ public class NewExpr extends Expr {
 		}
 		dmp.append(')');
 		if( tp.clazz.isAnonymouse() ) {
-			Struct cl = type.clazz;
+			Struct cl = (Struct)type.clazz;
 			dmp.space().append('{').newLine(1);
 			foreach (ASTNode n; cl.members)
 				((TopLevelDecl)n).toJavaDecl(dmp).newLine();
@@ -521,7 +521,7 @@ public class NewClosure extends Expr {
 				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 			type.clazz.autoProxyMethods();
 			type.clazz.resolve(null);
-			Struct cl = type.clazz;
+			Struct cl = (Struct)type.clazz;
 			KStringBuffer sign = new KStringBuffer().append('(');
 			if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
 				sign.append(((Struct)PassInfo.method.parent).type.signature);
@@ -557,7 +557,7 @@ public class NewClosure extends Expr {
 			else
 				Code.addConst(type.args.length);
 			// Now, fill proxyed fields (vars)
-			Struct cl = type.clazz;
+			Struct cl = (Struct)type.clazz;
 			foreach (ASTNode n; cl.members; n instanceof Field) {
 				Field f = (Field)n;
 				if( !f.isNeedProxy() ) continue;
@@ -577,7 +577,7 @@ public class NewClosure extends Expr {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		Struct cl = type.clazz;
+		Struct cl = (Struct)type.clazz;
 		dmp.append("new ").append(cl.super_clazz.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);

@@ -55,7 +55,7 @@ public class ASTAccessExpression extends Expr {
 		try {
 			ASTNode o = obj.resolve(null);
 			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
-			Struct cl;
+			BaseStruct cl;
 			Type tp = null;
 			Type[] snitps = null;
 			int snitps_index = 0;
@@ -67,7 +67,7 @@ public class ASTAccessExpression extends Expr {
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.clazz.isWrapper() && ident.name.byteAt(0) != '$') {
-					o = (Expr)new AccessExpr(obj.pos,obj,tp.clazz.wrapped_field).resolve(null);
+					o = (Expr)new AccessExpr(obj.pos,obj,((Struct)tp.clazz).wrapped_field).resolve(null);
 					tp = o.getType();
 				}
 				if( tp.isArray() ) {
@@ -78,7 +78,7 @@ public class ASTAccessExpression extends Expr {
 				}
 				else if( ident.name.equals("$self") && tp.isReference()/*.clazz.equals(Type.tpPrologVar.clazz)*/ )
 					return new SelfAccessExpr(pos,(LvalueExpr)o).resolve(reqType);
-				else if( tp.isReference() ) cl = (Struct)tp.clazz;
+				else if( tp.isReference() ) cl = tp.clazz;
 				else
 					throw new CompilerException(obj.getPos(),"Resolved object "+o+" of type "+tp+" is not a scope");
 			}
@@ -95,7 +95,7 @@ public class ASTAccessExpression extends Expr {
 					v.$unbind();
 					info = new ResInfo();
 					tp = snitps[snitps_index++];
-					cl = (Struct)tp.clazz;
+					cl = tp.clazz;
 					foreach(cl.resolveNameR(v,info,ident.name,tp, 0) ) {
 						if (info.transforms > min_transforms)
 							continue;
@@ -139,12 +139,12 @@ public class ASTAccessExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, Struct cl) {
+	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, BaseStruct cl) {
 		if( v instanceof Field ) {
 			if( v.isStatic() )
-				return new StaticFieldAccessExpr(pos,cl,(Field)v);
+				return new StaticFieldAccessExpr(pos,(Struct)cl,(Field)v);
 			if( info.path.length() == 0 ) {
-				if( o instanceof Struct )
+				if( o instanceof BaseStruct )
 					throw new CompilerException(pos,"Static access to non-static field "+v);
 				return new AccessExpr(pos,(Expr)o,(Field)v);
 			} else {
@@ -160,8 +160,8 @@ public class ASTAccessExpression extends Expr {
 				return new AccessExpr(pos,expr,(Field)v);
 			}
 		}
-		else if( v instanceof Struct ) {
-			return (Struct)v;
+		else if( v instanceof BaseStruct ) {
+			return (BaseStruct)v;
 		}
 		else if( v instanceof Method ) {
 			if( v.isStatic() )

@@ -31,12 +31,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public class ClazzName implements Constants {
-
-	/** Full-qualified name of class/package/interface
-		for example - java.lang.Object or kiev.Type.tMethod
-	 */
-	public KString		name;
+public class ClazzName extends NodeName implements Constants {
 
 	/** Unqualified name of class/package/interface
 		for java bytecode example - Object or tMethod
@@ -62,7 +57,7 @@ public class ClazzName implements Constants {
 	}
 
 	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isArg, boolean isInn) {
-		this.name = name;
+		super(name);
 		this.short_name = short_name;
 		this.bytecode_name = bytecode_name;
 		this.isArgument = isArg;

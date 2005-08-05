@@ -50,7 +50,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 	public static Hash<Type>	typeHash;
 
-	@ref public Struct			clazz;
+	@ref public BaseStruct	clazz;
 	public Type[]			args = Type.emptyArray;
 	public KString			signature;
 	public KString			java_signature;
@@ -330,7 +330,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 
 		Struct tpArrayClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;")),kiev_stdlib,ACC_PUBLIC);
-		Struct tpArrayArgClazz = Env.newArgument(KString.from("elem"),tpArrayClazz);
+		BaseStruct tpArrayArgClazz = Env.newArgument(KString.from("elem"),tpArrayClazz);
 		Type tpArrayArg = new Type(tpArrayArgClazz);
 		tpArray				= new Type(tpArrayClazz,new Type[]{tpArrayArg});
 		tpArrayClazz.type		= tpArray;
@@ -474,7 +474,7 @@ public class Type extends ASTNode implements AccessFlags {
 		typeHash.put(tpJavaEnumeration);
 
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
-		Struct tpKievEnumerationArgClazz = Env.newArgument(KString.from("A"),tpKievEnumerationClazz);
+		BaseStruct tpKievEnumerationArgClazz = Env.newArgument(KString.from("A"),tpKievEnumerationClazz);
 		Type tpKievEnumerationArg = new Type(tpKievEnumerationArgClazz);
 		tpKievEnumeration	= new Type(tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
@@ -532,7 +532,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
 		tpPrologVarClazz.setWrapper(true);
-		Struct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
+		BaseStruct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
 		Type tpPrologVarArg = new Type(tpPrologVarArgClazz);
 		tpPrologVar	= new Type(tpPrologVarClazz,new Type[]{tpPrologVarArg});
 		tpPrologVarClazz.type	= tpPrologVar;
@@ -540,7 +540,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
 		tpRefProxyClazz.setWrapper(true);
-		Struct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
+		BaseStruct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
 		Type tpRefProxyArg = new Type(tpRefProxyArgClazz);
 		tpRefProxy	= new Type(tpRefProxyClazz,new Type[]{tpRefProxyArg});
 		tpRefProxyClazz.type	= tpRefProxy;
@@ -555,7 +555,7 @@ public class Type extends ASTNode implements AccessFlags {
 
 	protected Type() { super(0); }
 
-	protected Type(Struct clazz) {
+	protected Type(BaseStruct clazz) {
 		super(0);
 		this.clazz = clazz;
 		signature = Signature.from(clazz, null, null, null);
@@ -566,32 +566,33 @@ public class Type extends ASTNode implements AccessFlags {
 		trace(Kiev.debugCreation,"New type created: "+this+" with signature "+signature);
 	}
 
-	protected Type(Struct clazz, Type[] args) {
+	protected Type(BaseStruct clazz, Type[] args) {
 		super(0);
 		this.clazz = clazz;
 		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
 			this.args = args;
-			if( clazz.gens.length > 0 ) {
+			if( clazz instanceof Struct && ((Struct)clazz).gens.length > 0 ) {
 				boolean best_found = false;
 				int i,j;
+				Struct clz = (Struct)clazz;
 		next_gen:
-				for(i=0; i < clazz.gens.length && clazz.gens[i] != null; i++) {
+				for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 					for(j=0; j < args.length; j++) {
-						if( !(clazz.gens[i].type.args[j].isReference() && args[j].isReference()
-							|| clazz.gens[i].type.args[j] == args[j]
+						if( !(clz.gens[i].type.args[j].isReference() && args[j].isReference()
+							|| clz.gens[i].type.args[j] == args[j]
 						))
 							continue next_gen;
 					}
-					this.clazz = clazz = clazz.gens[i];
+					this.clazz = clz = clz.gens[i];
 					best_found = true;
 					break;
 				}
 				if( !best_found ) {
 			next_gen1:
-					for(i=0; i < clazz.gens.length && clazz.gens[i] != null; i++) {
+					for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 						for(j=0; j < args.length; j++) {
-							Type gt = clazz.gens[i].type.args[j];
+							Type gt = clz.gens[i].type.args[j];
 							if( !( gt.isReference() && args[j].isReference()
 								|| gt == args[j]
 								|| (gt == Type.tpInt && args[j].isIntegerInCode())
@@ -599,7 +600,7 @@ public class Type extends ASTNode implements AccessFlags {
 							))
 								continue next_gen1;
 						}
-						this.clazz = clazz = clazz.gens[i];
+						this.clazz = clz = clz.gens[i];
 						break;
 					}
 				}
@@ -626,7 +627,7 @@ public class Type extends ASTNode implements AccessFlags {
 		throw new CompilerException(getPos(),"Type node cannot be copied");
 	};
 
-	public static Type newJavaRefType(Struct clazz) {
+	public static Type newJavaRefType(BaseStruct clazz) {
 		Type[] args = Type.emptyArray;
 		KString signature = Signature.from(clazz,null,null,null);
 		Type t = typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
@@ -646,10 +647,10 @@ public class Type extends ASTNode implements AccessFlags {
 	public void setMeAsPrimitiveEnum() {
 		flags &= ~flReference;
 		flags |= flIntegerInCode;
-		java_signature = clazz.getPrimitiveEnumType().java_signature;
+		java_signature = ((Struct)clazz).getPrimitiveEnumType().java_signature;
 	}
 
-	public static Type newRefType(Struct clazz) {
+	public static Type newRefType(BaseStruct clazz) {
 		if( clazz != null && clazz.type != null && clazz.type.args.length > 0 )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		Type[] args = Type.emptyArray;
@@ -666,7 +667,7 @@ public class Type extends ASTNode implements AccessFlags {
 		return t;
 	}
 
-	public static Type newRefType(Struct clazz, Type[] args) {
+	public static Type newRefType(BaseStruct clazz, Type[] args) {
 		if( clazz != null && clazz.type != null && clazz.type.args.length != args.length )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		if( clazz != null && clazz.type != null ) {
@@ -743,8 +744,8 @@ public class Type extends ASTNode implements AccessFlags {
 		if( isArray() )
 			return args[0]+"[]";
 		StringBuffer str = new StringBuffer();
-		if( clazz.generated_from != null )
-			str.append(clazz.generated_from.name.toString());
+		if( clazz instanceof Struct && ((Struct)clazz).generated_from != null )
+			str.append(((Struct)clazz).generated_from.name.toString());
 		else
 			str.append(clazz.name.toString());
 		if( args != null && args.length > 0 ) {
@@ -844,9 +845,10 @@ public class Type extends ASTNode implements AccessFlags {
 		if( t == Type.tpVoid ) return true;
 		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
-		if( this.isReference() && t.isReference() && this.clazz.package_clazz.isClazz()
+		if( this.isReference() && t.isReference() && this.clazz instanceof Struct
+		 && ((Struct)this.clazz).package_clazz.isClazz()
 		 && !this.clazz.isArgument()
-		 && !this.clazz.isStatic() && this.clazz.package_clazz.type.isAutoCastableTo(t)
+		 && !this.clazz.isStatic() && ((Struct)this.clazz).package_clazz.type.isAutoCastableTo(t)
 		)
 			return true;
 		if( this == Type.tpRule && t == Type.tpBoolean ) return true;
@@ -857,7 +859,7 @@ public class Type extends ASTNode implements AccessFlags {
 				return true;
 		}
 		if( !this.isReference() && !t.isReference() && !Kiev.javaMode && clazz.isPrimitiveEnum() ) {
-			return clazz.getPrimitiveEnumType().isAutoCastableTo(t);
+			return ((Struct)clazz).getPrimitiveEnumType().isAutoCastableTo(t);
 		}
 		if( this.isReference() && !t.isReference() ) {
 			if( getRefTypeForPrimitive(this) == t ) return true;
@@ -876,7 +878,7 @@ public class Type extends ASTNode implements AccessFlags {
 			return false;
 		}
 		if( this.clazz.isWrapper() ) {
-			if( Type.getRealType(this,this.clazz.wrapped_field.type).isAutoCastableTo(t) ) return true;
+			if( Type.getRealType(this,((Struct)this.clazz).wrapped_field.type).isAutoCastableTo(t) ) return true;
 			return false;
 		}
 		if( this instanceof MethodType
@@ -984,13 +986,14 @@ public class Type extends ASTNode implements AccessFlags {
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.isReference() && t.isReference() && (this.clazz.isInterface() || t.clazz.isInterface()) ) return true;
-		if( this.isReference() && t.isReference() && this.clazz.package_clazz.isClazz()
+		if( this.isReference() && t.isReference() && this.clazz instanceof Struct
+		 && ((Struct)this.clazz).package_clazz.isClazz()
 		 && !this.clazz.isArgument()
-		 && !this.clazz.isStatic() && this.clazz.package_clazz.type.isAutoCastableTo(t)
+		 && !this.clazz.isStatic() && ((Struct)this.clazz).package_clazz.type.isAutoCastableTo(t)
 		)
 			return true;
 		if( t.clazz.isPrimitiveEnum())
-			return this.isCastableTo(t.clazz.getPrimitiveEnumType());
+			return this.isCastableTo(((Struct)t.clazz).getPrimitiveEnumType());
 		if( t.clazz.isEnum())
 			return this.isCastableTo(Type.tpInt);
 		if( t.clazz.isArgument() && isCastableTo(t.clazz.super_clazz) ) return true;
@@ -1021,7 +1024,7 @@ public class Type extends ASTNode implements AccessFlags {
 		else if( tp == Type.tpChar ) return Type.tpCharRef;
 		else if( tp == Type.tpVoid ) return Type.tpVoidRef;
 		else if( tp.clazz.isPrimitiveEnum() )
-			return getRefTypeForPrimitive(tp.clazz.getPrimitiveEnumType());
+			return getRefTypeForPrimitive(((Struct)tp.clazz).getPrimitiveEnumType());
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
 	}
@@ -1075,7 +1078,7 @@ public class Type extends ASTNode implements AccessFlags {
 			return MethodType.newMethodType(null,null,targs,((MethodType)this).ret.getJavaType());
 		}
 		if (clazz.isEnum() && clazz.isPrimitiveEnum())
-			return clazz.getPrimitiveEnumType();
+			return ((Struct)clazz).getPrimitiveEnumType();
 		if( args.length == 0 ) return this;
 		return newJavaRefType(clazz);
 	}
@@ -1109,8 +1112,8 @@ public class Type extends ASTNode implements AccessFlags {
 					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
 					return t1.args[i];
 				}
-				if( t1.clazz.generated_from != null ) {
-					if( t1.clazz.generated_from.type.args[i].string_equals(t2) ) {
+				if( t1.clazz instanceof Struct && ((Struct)t1.clazz).generated_from != null ) {
+					if( ((Struct)t1.clazz).generated_from.type.args[i].string_equals(t2) ) {
 						trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
 						return t1.args[i];
 					}
@@ -1131,7 +1134,7 @@ public class Type extends ASTNode implements AccessFlags {
 */			}
 			// Search in super-class and super-interfaces
 			Type tp;
-			Struct rs = t1.clazz;
+			BaseStruct rs = t1.clazz;
 			if(	rs.super_clazz!=null
 			&&  rs.super_clazz.args != null
 			&&  (tp=getRealType(getRealType(t1,rs.super_clazz),t2))!=t2 )
@@ -1219,7 +1222,7 @@ public class MethodType extends Type {
 	@ref public Type		ret;
 	public Type[]	fargs;	// formal arguments for parametriezed methods
 
-	private MethodType(Struct clazz, Type ret, Type[] args, Type[] fargs) {
+	private MethodType(BaseStruct clazz, Type ret, Type[] args, Type[] fargs) {
 		super(clazz==null?tpMethodClazz:clazz,args);
 		this.ret = ret;
 		this.fargs = fargs;
@@ -1243,10 +1246,10 @@ public class MethodType extends Type {
 		trace(Kiev.debugCreation,"New method type created: "+this+" with signature "+signature+" / "+java_signature);
 	}
 
-	public static MethodType newMethodType(Struct clazz, Type[] args, Type ret) {
+	public static MethodType newMethodType(BaseStruct clazz, Type[] args, Type ret) {
 		return newMethodType(clazz,null,args,ret);
 	}
-	public static MethodType newMethodType(Struct clazz, Type[] fargs, Type[] args, Type ret) {
+	public static MethodType newMethodType(BaseStruct clazz, Type[] fargs, Type[] args, Type ret) {
 		if (clazz == null) clazz = tpMethodClazz;
 		if (fargs == null) fargs = Type.emptyArray;
 		KString sign = Signature.from(clazz,fargs,args,ret);

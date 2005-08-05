@@ -196,7 +196,7 @@ public class Typedef extends ASTNode implements Named {
 
 	@att public KString		name;
 	@att public TypeRef		type;
-	@att public Struct		typearg;
+	@att public BaseStruct	typearg;
 
 	public Typedef() {
 	}

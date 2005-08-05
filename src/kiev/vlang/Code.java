@@ -588,7 +588,7 @@ public class Code implements Constants {
 		}
 		KString sign;
 		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp,((Struct)m.parent).type));
-		if( ttt.clazz.generated_from != null ) {
+		if( ttt.clazz instanceof Struct && ((Struct)ttt.clazz).generated_from != null ) {
 			Struct ss = (Struct)m.parent;
 			foreach (ASTNode gn; ss.members; gn instanceof Method) {
 				Method gm = (Method)gn;

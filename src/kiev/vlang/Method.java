@@ -323,7 +323,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct cl = (Struct)parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
+		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( !name.equals(nameInit) )
 			dmp.space()

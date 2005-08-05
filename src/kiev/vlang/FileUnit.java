@@ -368,7 +368,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 
 		try {
 			File f;
-			Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
+			Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
 			String out_file = jcl.name.bytecode_name.replace('/',File.separatorChar).toString();
 			make_output_dir(output_dir,out_file);
 			f = new File(output_dir,out_file+".java");
@@ -476,7 +476,7 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 
 
 	public static void toBytecode(Struct cl) {
-		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
+		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;

@@ -38,7 +38,7 @@ public class Signature {
 		this.sig = sig;
 	}
 
-	public static KString from(Struct clazz, Type[] fargs, Type[] args, Type ret) {
+	public static KString from(BaseStruct clazz, Type[] fargs, Type[] args, Type ret) {
 		KStringBuffer ksb = new KStringBuffer();
 		if( ret != null ) {
 			// Closure or method.
@@ -86,7 +86,7 @@ public class Signature {
 		return ksb.toKString();
 	}
 
-	public static KString fromToClazzCP(Struct clazz,Type[] args, boolean full) {
+	public static KString fromToClazzCP(BaseStruct clazz,Type[] args, boolean full) {
 		KStringBuffer ksb = new KStringBuffer(128);
 		ksb.append(clazz.name.bytecode_name);
 		if( args != null && args.length > 0 ) {
@@ -117,7 +117,7 @@ public class Signature {
 	//}
 
 	public static Type getType(KString.KStringScanner sc) {
-		Struct clazz;
+		BaseStruct clazz;
 		Type[] args = null;
 		Type ret = null;
 
@@ -321,8 +321,8 @@ public class Signature {
 		int pos = sc.pos;
 		while( sc.nextChar() != ';' );
 		KString kstr = sc.str.substr(pos,sc.pos);
-		Struct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
-		if( struct !=null && (struct.isArgument() /*|| struct.isPrimitiveEnum()*/))
+		BaseStruct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
+		if( struct !=null && struct.isArgument() )
 			kstr = struct.super_clazz.clazz.name.signature();
 		if( sc.peekChar() == '<' ) {
 			int depth = 0;

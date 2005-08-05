@@ -86,7 +86,7 @@ public final class ProcessCFlow implements Constants {
 	
 	private void verify(Field:ASTNode f) {
 		Meta fmlnk = f.meta.get(mnCFLink);
-		Struct fs = (Struct)f.type.clazz;
+		BaseStruct fs = (Struct)f.type.clazz;
 		boolean isArr = false;
 		if (fs.name.name == nameNArr) {
 			fs = f.type.args[0].clazz;

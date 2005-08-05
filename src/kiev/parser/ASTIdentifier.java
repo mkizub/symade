@@ -163,12 +163,13 @@ public class ASTIdentifier extends Expr {
 				e = new AccessExpr(pos,this,e,(Field)f);
 			}
 		}
-		else if( v instanceof Struct ) {
+		else if( v instanceof BaseStruct ) {
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
-				Struct s = (Struct)v;
+				BaseStruct s = (BaseStruct)v;
 				if( s.isPizzaCase() ) {
-					PizzaCaseAttr case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-					if( case_attr == null ) return s;
+					Struct pc = (Struct)s;
+					PizzaCaseAttr case_attr = (PizzaCaseAttr)pc.getAttr(attrPizzaCase);
+					if( case_attr == null ) return pc;
 					return new ConstExpr(pos,Kiev.newInteger(case_attr.caseno)).resolve(reqType);
 				}
 			}

@@ -171,38 +171,7 @@ public class PassInfo {
 	public static boolean checkClassName(KString qname) {
 		PVar<ASTNode> node = new PVar<ASTNode>();
 		return resolveNameR(node,new ResInfo(),qname,null,0)
-			&& ((node instanceof Struct && !node.isPackage()) || node instanceof Type);
-	}
-
-	public static boolean resolveQualifiedPrefix(Struct@ qstruct, KString@ qname, KString name, int resfl)
-	{
-		KStringTokenizer sigt = new KStringTokenizer(name,'.');
-		PVar<ASTNode> cl = new PVar<ASTNode>();
-		if( !resolveNameR(cl,new ResInfo(),sigt.nextToken(),null,resfl) || !(cl instanceof Struct ))
-			return false;
-		while( cl instanceof Struct
-			&& sigt.hasMoreTokens()
-			&& ((Struct)cl).resolveNameR(cl, new ResInfo(), sigt.nextToken(), ((Struct)cl).type, resfl & ResolveFlags.Unique)
-			);
-		if( !(cl instanceof Struct) ) return false;
-		((Struct)cl).checkResolved();
-		if( sigt.hasMoreTokens() ) {
-			KStringBuffer ksb = new KStringBuffer();
-			boolean moretok = false;
-			for(;;) {
-				ksb.append(sigt.nextToken());
-				moretok = sigt.hasMoreTokens();
-				if( moretok )
-					ksb.append((byte)'.');
-				else
-					break;
-			}
-			qname = ksb.toKString();
-		} else {
-			qname = KString.Empty;
-		}
-		qstruct = (Struct)cl;
-		return true;
+			&& ((node instanceof BaseStruct && !node.isPackage()) || node instanceof Type);
 	}
 
 	public static rule resolveOperatorR(Operator@ op)
@@ -255,7 +224,7 @@ public class PassInfo {
 				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
 				return true;
 			}
-			Struct s = PassInfo.clazz;
+			BaseStruct s = PassInfo.clazz;
 			// Check that path != List.Nil
 			if( info.path.length() == 0 ) {
 				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
@@ -277,7 +246,7 @@ public class PassInfo {
 			// Fill path as this$0 if possible
 		fill_path:
 			for(;;) {
-				foreach(ASTNode n; s.members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
+				foreach(ASTNode n; ((Struct)s).members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
 					Field f = (Field)n;
 					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
 					info.path.prepend(f);

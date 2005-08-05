@@ -77,9 +77,9 @@ public class ASTNonArrayType extends ASTType {
     		if( v instanceof Type ) {
     		    tp = (Type)v;
     		} else {
-        		if( !(v instanceof Struct) )
+        		if( !(v instanceof BaseStruct) )
 		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
-				Struct s = (Struct)v;
+				BaseStruct s = (BaseStruct)v;
 				Type[] atypes = new Type[children.length-1];
 				for(int i=0; i < atypes.length; i++) {
 					ASTNode ct = children[i+1];

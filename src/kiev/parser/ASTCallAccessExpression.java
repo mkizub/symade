@@ -60,7 +60,7 @@ public class ASTCallAccessExpression extends Expr {
 			args[i] = (Expr)args[i].resolveExpr(null);
 		}
 		ASTNode o;
-		Struct cl;
+		BaseStruct cl;
 		Type tp = null;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -117,13 +117,13 @@ public class ASTCallAccessExpression extends Expr {
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.clazz.isWrapper() && func.name.byteAt(0) != '$') {
-					o = (Expr)new AccessExpr(o.pos,(Expr)o,tp.clazz.wrapped_field).resolve(null);
+					o = (Expr)new AccessExpr(o.pos,(Expr)o,((Struct)tp.clazz).wrapped_field).resolve(null);
 					tp = o.getType();
 				}
 				if( reqType instanceof MethodType ) ret = null;
 				if( tp.isReference() ) {
 			retry_resolving:;
-					cl = (Struct)tp.clazz;
+					cl = tp.clazz;
 					if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,args.toArray(),ret,tp,0) ) {
 						// May be a closure
 						PVar<ASTNode> closure = new PVar<ASTNode>();

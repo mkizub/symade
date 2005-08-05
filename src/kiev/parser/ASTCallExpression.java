@@ -115,7 +115,7 @@ public class ASTCallExpression extends Expr {
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_clazz),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
-			if( PassInfo.clazz.super_clazz.clazz.package_clazz.isClazz()
+			if( ((Struct)PassInfo.clazz.super_clazz.clazz).package_clazz.isClazz()
 			 && !PassInfo.clazz.super_clazz.clazz.isStatic()
 			) {
 				if( PassInfo.clazz.isStatic() )

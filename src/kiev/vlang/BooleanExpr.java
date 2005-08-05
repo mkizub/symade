@@ -522,7 +522,7 @@ public class BinaryBooleanExpr extends BooleanExpr {
 			ex = (Expr)new ConstExpr(pos,Kiev.newInteger(ca.caseno)).resolve(Type.tpInt);
 			Type tp = expr1.getType();
 			if (tp.clazz.isWrapper()) {
-				expr1 = new AccessExpr(expr1.pos,expr1,tp.clazz.wrapped_field).resolveExpr(null);
+				expr1 = new AccessExpr(expr1.pos,expr1,((Struct)tp.clazz).wrapped_field).resolveExpr(null);
 				tp = expr1.getType();
 			}
 			if( !tp.clazz.isPizzaCase() && !tp.clazz.isHasCases() )
@@ -737,10 +737,10 @@ public class InstanceofExpr extends BooleanExpr {
 		PassInfo.push(this);
 		try {
 			ASTNode e = expr.resolve(null);
-			if( e instanceof Struct ) {
+			if( e instanceof BaseStruct ) {
 				if( Code.generation||Kiev.gen_resolve ) {
 					ASTNode e = e.resolve(null);
-					Struct s = (Struct)e;
+					BaseStruct s = (BaseStruct)e;
 					if( s.isArgument() ) {
 						s = Type.getRealType(Kiev.argtype,s.type).clazz;
 						if( s.isArgument() )
@@ -755,8 +755,9 @@ public class InstanceofExpr extends BooleanExpr {
 				}
 			} else {
 				expr = (Expr)e;
-				if (!expr.isForWrapper() && expr.getType().clazz.isWrapper())
-					expr = new AccessExpr(expr.pos,expr,expr.getType().clazz.wrapped_field).resolveExpr(null);
+				Type et = expr.getType();
+				if (!expr.isForWrapper() && et.clazz.isWrapper())
+					expr = new AccessExpr(expr.pos,expr,((Struct)et.clazz).wrapped_field).resolveExpr(null);
 			}
 			if( !expr.getType().isCastableTo(type) ) {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);

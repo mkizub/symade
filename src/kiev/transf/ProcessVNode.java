@@ -104,17 +104,19 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" marked both @att and @ref");
 		}
 		if (fmatt != null || fmref != null) {
-			Struct fs = (Struct)f.type.clazz;
 			boolean isArr = false;
-			if (fs.name.name == nameNArr) {
-				if (!f.isFinal()) {
-					Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
-					f.setFinal(true);
+			Meta fsm;
+			{
+				BaseStruct fs = f.type.clazz;
+				if (fs.name.name == nameNArr) {
+					if (!f.isFinal()) {
+						Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
+						f.setFinal(true);
+					}
+					isArr = true;
 				}
-				fs = f.type.args[0].clazz;
-				isArr = true;
+				fsm = fs.meta.get(mnNode);
 			}
-			Meta fsm = fs.meta.get(mnNode);
 //			if (fsm == null) {
 //				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
 //				fs.meta.unset(mnAtt);
@@ -146,7 +148,7 @@ public final class ProcessVNode implements Constants {
 				}
 			}
 		} else {
-			Struct fs = (Struct)f.type.clazz;
+			BaseStruct fs = f.type.clazz;
 			if (fs.name.name == nameNArr)
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 			else if (fs.type.clazz.meta.get(mnNode) != null)
@@ -187,7 +189,7 @@ public final class ProcessVNode implements Constants {
 					aflds.insert(p, f);
 					p++;
 				}
-				ss = ss.super_clazz.clazz;
+				ss = (Struct)ss.super_clazz.clazz;
 			}
 		}
 		if (hasField(s, nameEnumValuesFld)) {
@@ -321,7 +323,7 @@ public final class ProcessVNode implements Constants {
 						}
 						p++;
 					}
-					ss = ss.super_clazz.clazz;
+					ss = (Struct)ss.super_clazz.clazz;
 				}
 			}
 			stats.append(new ReturnStat(0,null,new VarAccessExpr(0,null,v)));

@@ -286,8 +286,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				PVar<ASTNode> v;
-				Struct s = t.clazz;
-				if (s.generated_from != null) s = s.generated_from;
+				BaseStruct s = t.clazz;
+				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
@@ -303,12 +303,15 @@ public class ContainerAccessExpr extends LvalueExpr {
 		if( t.isArray() ) {
 			return new Type[]{Type.getRealType(t,t.args[0])};
 		} else {
-			Struct s = t.clazz;
+			BaseStruct s = t.clazz;
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
-				foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-					return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+				if (s instanceof Struct) {
+					Struct ss = (Struct)s;
+					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
+						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+				}
 				if( s.super_clazz != null ) {
 					s = s.super_clazz.clazz;
 					continue;
@@ -334,13 +337,16 @@ public class ContainerAccessExpr extends LvalueExpr {
 			obj = (Expr)obj.resolve(null);
 			if( !obj.getType().isArray() ) {
 				// May be an overloaded '[]' operator, ensure overriding
-				Struct s = obj.getType().clazz;
-				if (s.generated_from != null) s = s.generated_from;
+				BaseStruct s = obj.getType().clazz;
+				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 			lookup_op:
 				for(;;) {
 					s.checkResolved();
-					foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						break lookup_op;
+					if (s instanceof Struct) {
+						Struct ss = (Struct)s;
+						foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
+							break lookup_op;
+					}
 					if( s.super_clazz != null ) {
 						s = s.super_clazz.clazz;
 						continue;
@@ -418,8 +424,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
-				Struct s = objType.clazz;
-				if (s.generated_from != null) s = s.generated_from;
+				BaseStruct s = objType.clazz;
+				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
 				Code.addInstr(Instr.op_call,(Method)v,false,objType);
@@ -444,8 +450,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
 					throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
-				Struct s = obj.getType().clazz;
-				if (s.generated_from != null) s = s.generated_from;
+				BaseStruct s = obj.getType().clazz;
+				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
 				// The method must return the value to duplicate
@@ -1123,7 +1129,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
+		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
 		return dmp.space().append(cl.name)
 			.append('.').append(var.name).space();
 	}
@@ -1180,7 +1186,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 				trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 				outer_refs = (Field[])Arrays.append(outer_refs,ou_ref);
 				if( ou_ref.type.isInstanceOf(outer.type) ) break;
-				ou_ref = outerOf(ou_ref.type.clazz);
+				ou_ref = outerOf((Struct)ou_ref.type.clazz);
 			} while( ou_ref!=null );
 			if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.type) )
 				throw new RuntimeException("Outer class "+outer+" not found for inner class "+PassInfo.clazz);

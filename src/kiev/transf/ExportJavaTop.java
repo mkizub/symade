@@ -137,7 +137,7 @@ public final class ExportJavaTop implements Constants {
 			} else {
 				for(int i=0; i < astn.argument.length; i++) {
 					ASTNode a = astn.argument[i];
-					Struct arg = Env.newArgument(((ASTArgumentDeclaration)a).ident.name,me);
+					BaseStruct arg = Env.newArgument(((ASTArgumentDeclaration)a).ident.name,me);
 					arg.type = Type.newRefType(arg);
 					targs = (Type[])Arrays.append(targs,arg.type);
 				}

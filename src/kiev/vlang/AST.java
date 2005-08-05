@@ -270,7 +270,7 @@ public abstract class ASTNode implements Constants {
 	
 	// package	
 	@getter public final boolean get$is_struct_package()  alias isPackage  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_package;
 	}
 	@setter public final void set$is_struct_package(boolean on) alias setPackage {
@@ -280,16 +280,16 @@ public abstract class ASTNode implements Constants {
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_argument()  alias isArgument  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_argument;
 	}
 	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_argument = on;
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_pizza_case;
 	}
 	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
@@ -298,25 +298,25 @@ public abstract class ASTNode implements Constants {
 	}
 	// a local (in method) class	
 	@getter public final boolean get$is_struct_local()  alias isLocal  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_local;
 	}
 	@setter public final void set$is_struct_local(boolean on) alias setLocal {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_local = on;
 	}
 	// an anonymouse (unnamed) class	
 	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_anomymouse;
 	}
 	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_anomymouse = on;
 	}
 	// has pizza cases
 	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_has_pizza_cases;
 	}
 	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
@@ -325,43 +325,43 @@ public abstract class ASTNode implements Constants {
 	}
 	// verified
 	@getter public final boolean get$is_struct_verified()  alias isVerified  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_verified;
 	}
 	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_verified = on;
 	}
 	// indicates that structure members were generated
 	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_members_generated;
 	}
 	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_members_generated = on;
 	}
 	// indicates that statements in code were generated
 	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_statements_generated;
 	}
 	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_statements_generated = on;
 	}
 	// indicates that the structrue was generared (from template)
 	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_generated;
 	}
 	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		this.is_struct_generated = on;
 	}
 	// kiev enum
 	@getter public final boolean get$is_struct_enum()  alias isEnum  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_enum;
 	}
 	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
@@ -371,7 +371,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev annotation
 	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_annotation;
 	}
 	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
@@ -382,7 +382,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// java enum
 	@getter public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_java_enum;
 	}
 	@setter public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
@@ -391,7 +391,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev enum that extends int
 	@getter public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_enum_primitive;
 	}
 	@setter public final void set$is_struct_enum_primitive(boolean on) alias setPrimitiveEnum {
@@ -400,7 +400,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev syntax
 	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_syntax;
 	}
 	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
@@ -410,7 +410,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev wrapper class
 	@getter public final boolean get$is_struct_wrapper()  alias isWrapper  {
-		assert(this instanceof Struct,"For node "+this.getClass());
+		assert(this instanceof BaseStruct,"For node "+this.getClass());
 		return this.is_struct_wrapper;
 	}
 	@setter public final void set$is_struct_wrapper(boolean on) alias setWrapper {
@@ -855,8 +855,8 @@ public abstract class Expr extends CFNode {
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		Expr expr = null;
 		if( e instanceof Expr ) expr = (Expr)e;
-		if( e instanceof Struct ) expr = toExpr((Struct)e,reqType,pos,parent);
-		if( e instanceof WrapedExpr ) expr = toExpr((Struct)((WrapedExpr)e).expr,reqType,pos,parent);
+		if( e instanceof BaseStruct ) expr = toExpr((BaseStruct)e,reqType,pos,parent);
+		if( e instanceof WrapedExpr ) expr = toExpr((BaseStruct)((WrapedExpr)e).expr,reqType,pos,parent);
 		if( expr == null )
 			throw new CompilerException(e.pos,"Is not an expression");
 		else if( reqType == null || reqType == Type.tpVoid )
@@ -873,21 +873,22 @@ public abstract class Expr extends CFNode {
 		) return new CastExpr(pos,reqType,expr).tryResolve(reqType);
 		throw new CompilerException(e.pos,"Expression "+expr+" is not auto-castable to type "+reqType);
 	}
-	public static Expr toExpr(Struct e, Type reqType, int pos, ASTNode parent) {
-		if( e.isPizzaCase() ) {
+	public static Expr toExpr(BaseStruct bs, Type reqType, int pos, ASTNode parent) {
+		if( bs.isPizzaCase() ) {
+			Struct s = (Struct)bs;
 			// Pizza case may be casted to int or to itself or super-class
 			PizzaCaseAttr case_attr;
-			if( e.generated_from != null )
-				case_attr = (PizzaCaseAttr)(e.generated_from).getAttr(attrPizzaCase);
+			if( s.generated_from != null )
+				case_attr = (PizzaCaseAttr)s.generated_from.getAttr(attrPizzaCase);
 			else
-				case_attr = (PizzaCaseAttr)(e).getAttr(attrPizzaCase);
+				case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
 			if( case_attr == null )
 				throw new RuntimeException("Internal error - can't find case_attr");
-			e = Type.getRealType(reqType,e.type).clazz;
-			if( !(reqType.isInteger() || e.instanceOf(reqType.clazz)) )
-				throw new CompilerException(pos,"Pizza case "+e+" cannot be casted to type "+reqType);
+			s = (Struct)Type.getRealType(reqType,s.type).clazz;
+			if( !(reqType.isInteger() || s.instanceOf(reqType.clazz)) )
+				throw new CompilerException(pos,"Pizza case "+s+" cannot be casted to type "+reqType);
 			if( case_attr.casefields.length != 0 )
-				throw new CompilerException(pos,"Empty constructor for pizza case "+e+" not found");
+				throw new CompilerException(pos,"Empty constructor for pizza case "+s+" not found");
 			if( reqType.isInteger() ) {
 				Expr expr = (Expr)new ConstExpr(pos,Kiev.newInteger(case_attr.caseno)).resolve(reqType);
 				if( reqType != Type.tpInt )
@@ -895,10 +896,10 @@ public abstract class Expr extends CFNode {
 				return expr;
 			}
 			// Now, check we need add type arguments
-			Type tp = Type.getRealType(reqType,e.type);
+			Type tp = Type.getRealType(reqType,s.type);
 			return (Expr)new NewExpr(pos,tp,Expr.emptyArray).resolve(reqType);
 		}
-		throw new CompilerException(pos,"Expr "+e+" is not a class's case with no fields");
+		throw new CompilerException(pos,"Expr "+bs+" is not a class's case with no fields");
 	}
 }
 
@@ -923,13 +924,13 @@ public class WrapedExpr extends Expr {
 	public int		getPriority() { return 256; }
 	public Type getType() {
 		if( expr instanceof Type ) return Type.getRealType(base_type,(Type)expr);
-		if( expr instanceof Struct ) return Type.getRealType(base_type,((Struct)expr).type);
+		if( expr instanceof BaseStruct ) return Type.getRealType(base_type,((BaseStruct)expr).type);
 		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
 		if( expr instanceof Type ) return expr;
-		if( expr instanceof Struct ) return expr;
+		if( expr instanceof BaseStruct ) return expr;
 		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).getType();
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}

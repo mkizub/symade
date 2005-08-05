@@ -782,7 +782,7 @@ public class Bytecoder implements Constants {
 	/** Write class
 	 */
 	public byte[] writeClazz() {
-		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
+		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
 		if( kievmode ) {
 		    bcclazz = new kiev.bytecode.KievAttributeClazz(null);
 		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = ConstPool.java_hwm;
@@ -975,7 +975,7 @@ public class Bytecoder implements Constants {
 	}
 
     public kiev.bytecode.Method writeMethod(Method m) {
-		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.clazz;
+		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = ConstPool.getAsciiCP(m.name.name).pos;

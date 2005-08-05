@@ -64,30 +64,33 @@ public class ASTNewExpression extends Expr {
 	public ASTNode resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = type.getType();
-		Struct s = tp.clazz;
+		BaseStruct s = tp.clazz;
 		s.checkResolved();
 		Type[] targs = Type.emptyArray;
 		if( args.length > 0 ) {
 			targs = new Type[args.length];
 			boolean found = false;
-			foreach(ASTNode n; s.members; n instanceof Method) {
-				Method m = (Method)n;
-				if (!(m.name.equals(nameInit) || m.name.equals(nameNewOp)))
-					continue;
-				Type[] mtargs = m.type.args;
-				int i = 0;
-				if( !s.package_clazz.isPackage() && !s.isStatic() ) i++;
-				if( mtargs.length > i && mtargs[i].isInstanceOf(Type.tpTypeInfo) ) i++;
-				if( mtargs.length-i != args.length )
-					continue;
-				found = true;
-				for(int j=0; i < mtargs.length; i++,j++) {
-					if( targs[j] == null )
-						targs[j] = Type.getRealType(tp,mtargs[i]);
-					else if( targs[j] == Type.tpVoid )
-						;
-					else if( targs[j] != Type.getRealType(tp,mtargs[i]) )
-						targs[j] = Type.tpVoid;
+			if (s instanceof Struct) {
+				Struct ss = (Struct)s;
+				foreach(ASTNode n; ss.members; n instanceof Method) {
+					Method m = (Method)n;
+					if (!(m.name.equals(nameInit) || m.name.equals(nameNewOp)))
+						continue;
+					Type[] mtargs = m.type.args;
+					int i = 0;
+					if( !ss.package_clazz.isPackage() && !ss.isStatic() ) i++;
+					if( mtargs.length > i && mtargs[i].isInstanceOf(Type.tpTypeInfo) ) i++;
+					if( mtargs.length-i != args.length )
+						continue;
+					found = true;
+					for(int j=0; i < mtargs.length; i++,j++) {
+						if( targs[j] == null )
+							targs[j] = Type.getRealType(tp,mtargs[i]);
+						else if( targs[j] == Type.tpVoid )
+							;
+						else if( targs[j] != Type.getRealType(tp,mtargs[i]) )
+							targs[j] = Type.tpVoid;
+					}
 				}
 			}
 			if( !found )
