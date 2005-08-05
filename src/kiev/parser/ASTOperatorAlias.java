@@ -193,7 +193,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					image,m.name.name,null,false
 					);
 				iopt=new OpTypes();
-				op.addTypes(otSame(1),otTheType(oparg1),otType(oparg2));
+				op.addTypes(otTheType(opret),otTheType(oparg1),otType(oparg2));
 				m.addAttr(new OperatorAttr(op));
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
