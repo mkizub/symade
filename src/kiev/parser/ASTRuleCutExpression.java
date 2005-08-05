@@ -36,12 +36,6 @@ import kiev.vlang.*;
 @node
 public class ASTRuleCutExpression extends ASTRuleNode {
 
-	public ASTRuleCutExpression() {
-	}
-
-	public ASTRuleCutExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }

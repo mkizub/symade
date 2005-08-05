@@ -39,13 +39,6 @@ public class ASTLabeledStatement extends Statement {
 	public KString			name;
     @att public Statement	stat;
 
-	public ASTLabeledStatement() {
-	}
-
-	public ASTLabeledStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=((ASTIdentifier)n).name; pos = n.getPos(); break;

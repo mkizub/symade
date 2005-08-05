@@ -37,12 +37,6 @@ import kiev.vlang.*;
 public class ASTClosureType extends ASTType {
     @att public final NArr<ASTType>	types;
 
-	public ASTClosureType() {
-	}
-
-	public ASTClosureType(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTType ) {
         	types.append((ASTType)n);

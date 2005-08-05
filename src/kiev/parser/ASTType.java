@@ -41,9 +41,6 @@ public class ASTType extends TypeRef {
 	public ASTType() {
 	}
 
-	public ASTType(int id) {
-	}
-
 	public ASTType(int pos, Type type) {
 		super(pos);
 		this.type = type;

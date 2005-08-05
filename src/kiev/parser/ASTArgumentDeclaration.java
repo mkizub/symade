@@ -38,11 +38,6 @@ public class ASTArgumentDeclaration extends ASTNode {
 	@att public ASTIdentifier		ident;
 	@att public ASTNonArrayType		type;
 	
-	public ASTArgumentDeclaration() {}
-
-	public ASTArgumentDeclaration(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
 		case 0:	ident = (ASTIdentifier)n; pos = n.getPos(); break;

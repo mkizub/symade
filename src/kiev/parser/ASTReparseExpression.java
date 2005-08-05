@@ -39,12 +39,6 @@ public class ASTReparseExpression extends Expr {
 
 	public String	ref;
 
-	public ASTReparseExpression() {
-	}
-
-	public ASTReparseExpression(int id) {
-	}
-
   	public void set(Token t) {
 		this.ref = t.image;
 		ASTNode n = Kiev.parserAddresses.get(ref.substring(2));

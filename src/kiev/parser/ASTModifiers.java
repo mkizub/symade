@@ -18,13 +18,6 @@ public class ASTModifiers extends ASTNode {
 	@att public ASTPack   					pack;
 	@att public final NArr<ASTAnnotation>	annotations;
 	
-	public ASTModifiers() {
-	}
-
-	public ASTModifiers(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTModifier) {
 			modifier.append((ASTModifier)n);

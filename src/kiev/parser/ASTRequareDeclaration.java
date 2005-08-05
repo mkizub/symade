@@ -43,12 +43,6 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 	@virtual
 	public virtual PrescannedBody pbody;
 
-	public ASTCondDeclaration() {
-	}
-
-	public ASTCondDeclaration(int id) {
-	}
-
 	@getter public PrescannedBody get$pbody() { return pbody; }
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
@@ -72,12 +66,6 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 
 @node
 public class ASTRequareDeclaration extends ASTCondDeclaration {
-
-	public ASTRequareDeclaration() {
-	}
-
-	public ASTRequareDeclaration(int id) {
-	}
 
     public ASTNode pass3() {
 		WorkByContractCondition cond = new WorkByContractCondition(pos,CondRequire,name,body);

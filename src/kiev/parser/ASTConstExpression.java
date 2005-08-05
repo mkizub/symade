@@ -38,13 +38,6 @@ import kiev.vlang.*;
 public class ASTConstExpression extends Expr implements kiev020Constants {
 	public Object	val;
 
-	ASTConstExpression() {
-	}
-
-	ASTConstExpression(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }

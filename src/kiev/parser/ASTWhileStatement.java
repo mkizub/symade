@@ -40,13 +40,6 @@ public class ASTWhileStatement extends Statement {
 	@att public Expr		cond;
     @att public Statement	body;
 
-	public ASTWhileStatement() {
-	}
-
-	public ASTWhileStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: cond=(Expr)n; break;
@@ -57,9 +50,10 @@ public class ASTWhileStatement extends Statement {
 
 	public ASTNode resolve(Type reqType) {
 		if (not) {
-			ASTOperator op = new ASTOperator(0);
+			ASTOperator op = new ASTOperator();
 			op.image = KString.from("!");
-			ASTExpression e = new ASTExpression(cond.pos);
+			ASTExpression e = new ASTExpression();
+			e.pos = cond.pos;
 			e.nodes.append(op);
 			e.nodes.append(cond);
 			cond = e;

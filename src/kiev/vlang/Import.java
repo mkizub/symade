@@ -57,9 +57,6 @@ public class Import extends ASTNode implements Constants, Scope {
 	public Import() {
 	}
 
-	public Import(int id) {
-	}
-
 	public Import(int pos, ASTNode parent, ASTNode node, ImportMode mode, boolean star) {
 		super(pos, parent);
 		this.resolved = node;
@@ -202,9 +199,6 @@ public class Typedef extends ASTNode implements Named {
 	@att public Struct		typearg;
 
 	public Typedef() {
-	}
-	
-	public Typedef(int id) {
 	}
 	
 	public Typedef(int pos, ASTNode par, KString name) {

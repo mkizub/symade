@@ -55,10 +55,6 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		modifiers = new ASTModifiers();
 	}
 
-	public ASTRuleDeclaration(int id) {
-		this();
-	}
-
 	@getter public PrescannedBody get$pbody() { return pbody; }
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 

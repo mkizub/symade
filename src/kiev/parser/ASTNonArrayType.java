@@ -50,9 +50,6 @@ public class ASTNonArrayType extends ASTType {
 	public ASTNonArrayType() {
 	}
 
-	public ASTNonArrayType(int id) {
-	}
-
 	public ASTNonArrayType(ASTQName qn) {
 		jjtAddChild(qn, 0);
 	}

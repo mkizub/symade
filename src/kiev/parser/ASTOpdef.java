@@ -45,12 +45,6 @@ public class Opdef extends ASTNode implements TopLevelDecl {
 	
 	@ref public transient Operator		resolved;
 
-	public Opdef() {
-	}
-
-	public Opdef(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		switch(i) {
 		case 2:

@@ -37,12 +37,6 @@ import kiev.vlang.*;
 public class ASTRuleOrExpression extends ASTRuleNode {
 	@att public final NArr<ASTRuleNode>	exprs;
 
-	public ASTRuleOrExpression() {
-	}
-
-	public ASTRuleOrExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i)
 	{
     	if( i==0 ) pos = n.getPos();

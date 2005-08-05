@@ -33,8 +33,4 @@ import kiev.vlang.*;
 
 @node
 public class ASTImplements extends SimpleNode {
-  public ASTImplements() {
-  }
-  public ASTImplements(int id) {
-  }
 }

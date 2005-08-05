@@ -40,12 +40,6 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	@att public final NArr<Expr>		args;
 	public int dim;
 	
-	ASTNewInitializedArrayExpression() {
-	}
-
-	ASTNewInitializedArrayExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0 && n instanceof ASTNonArrayType ) {
 			type = (ASTNonArrayType)n;

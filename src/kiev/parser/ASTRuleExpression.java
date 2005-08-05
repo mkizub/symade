@@ -40,12 +40,6 @@ public class ASTRuleExpression extends ASTRuleNode {
 	@att public Expr	bt_expr;
 	boolean				while_mode;
 
-	public ASTRuleExpression() {
-	}
-
-	public ASTRuleExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if( i==0 && n instanceof Expr ) {
 			pos = n.getPos();

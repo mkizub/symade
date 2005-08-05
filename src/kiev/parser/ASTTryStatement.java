@@ -40,12 +40,6 @@ public class ASTTryStatement extends Statement {
     @att public final NArr<ASTNode>	catchers;
     @att public ASTNode					finally_catcher;
     
-	public ASTTryStatement() {
-	}
-
-	public ASTTryStatement(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
 			body=(Statement)n;

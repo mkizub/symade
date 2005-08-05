@@ -19,11 +19,6 @@ public class ASTAnnotation extends ASTNode {
 	@att public ASTIdentifier            ident;	
 	@att public final NArr<ASTAnnotationValue> values;
 	
-	public ASTAnnotation() {}
-
-	public ASTAnnotation(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if (n instanceof ASTIdentifier) {
 			ident = (ASTIdentifier)n;

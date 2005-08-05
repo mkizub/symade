@@ -40,13 +40,6 @@ public class ASTCondStatement extends Statement {
 	@att public Expr		cond;
 	@att public Expr		message;
 	
-	public ASTCondStatement() {
-	}
-
-	public ASTCondStatement(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i)
 	{
 		if( i==0 && n instanceof ASTExpression )

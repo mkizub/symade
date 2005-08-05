@@ -29,6 +29,7 @@ options {
   STATIC = true;
   MULTI = true;
   NODE_PACKAGE = "kiev.parser";
+  NODE_USES_DESCRIPTOR_ID = false;
   BUILD_NODE_FILES = false;
   ERROR_REPORTING = false;
   CACHE_TOKENS = true;
@@ -690,21 +691,22 @@ TOKEN : /* OPERATORS */
  */
 
 ASTFileUnit FileUnit(String filename) :
-{}
+{ ASTPragma pr; }
 {
 	{
+		ASTFileUnit n = jjtThis;
 		Kiev.curFileUnit = jjtThis;
 		jjtThis.filename = KString.from(filename);
 		jjtThis.setPos(0);
 		declMode = true;
 		ASTModifiers modifiers;
 	}
-	[	Package()	]
+	[	n.pkg = Package()	]
 	(
-		Import()
-	|	Typedef()
-	|	Opdef()
-	|	Pragma()
+		n.syntax += Import()
+	|	n.syntax += Typedef()
+	|	n.syntax += Opdef()
+	|	pr        = Pragma() { n.setPragma(pr); n.syntax += pr; }
 	)*
 	(
 		modifiers = Modifiers()
@@ -742,7 +744,7 @@ ASTModifiers Modifiers() :
 	{ jjtree.popNode(); return jjtThis; }
 }
 
-void Package() :
+ASTPackage Package() :
 {}
 {
 	try {
@@ -750,9 +752,10 @@ void Package() :
 	}
 	catch(ParseError e) { rpe("Bad package declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return jjtThis; }
 }
 
-void Pragma() :
+ASTPragma Pragma() :
 {}
 {
 	"pragma"
@@ -762,9 +765,10 @@ void Pragma() :
 	)
 	( StringConstExpression() )+
 	";"
+	{ jjtree.popNode(); return jjtThis; }
 }
 
-void Import() :
+ASTImport Import() :
 {}
 {
 	try {
@@ -792,9 +796,10 @@ void Import() :
 	}
 	catch(ParseError e) { rpe("Bad import declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return jjtThis; }
 }
 
-void Typedef() :
+ASTTypedef Typedef() :
 {}
 {
 	try {
@@ -807,9 +812,10 @@ void Typedef() :
 	}
 	catch(ParseError e) { rpe("Bad typedef declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return jjtThis; }
 }
 
-void Opdef() :
+ASTOpdef Opdef() :
 {}
 {
 	"operator"
@@ -822,19 +828,23 @@ void Opdef() :
 	","
 	DecimalConstExpression()
 	";"
+	{ jjtree.popNode(); return jjtThis; }
 }
 
 void SyntaxDeclaration(ASTModifiers modifiers) :
 { Token t=null; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTSyntaxDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
-	Identifier()
+	n.name = Name() { n.pos = n.name.pos; }
 	"{"
 	(
-		Typedef()
-	|	Opdef()
+		n.members += Typedef()
+	|	n.members += Opdef()
 	)*
 	"}"
 }
@@ -842,17 +852,22 @@ void SyntaxDeclaration(ASTModifiers modifiers) :
 void TypeDeclaration(ASTModifiers modifiers) :
 { Token t=null; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTTypeDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
 	try {
 		(
 			t="class"
-			Identifier()
+			n.name = Name()
 		|	t="interface"
-			Identifier()
+			n.name = Name()
 		|	t="@" "interface"
-			(Identifier() | KeywordAsIdentifier())
+			(	n.name = Name()
+			|	n.name = KeywordAsName()
+			)
 		)
-		{ jjtThis.set(t); t = null; }
+		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
 	}
 	catch(ParseError e) { rpe("Class's name expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -904,13 +919,12 @@ void TypeBodyDeclaration() #void :
 void EnumDeclaration(ASTModifiers modifiers) :
 {}
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
-	"enum"
-	try {
-		Identifier()
+	{
+		ASTEnumDeclaration n = jjtThis;
+		n.modifiers = modifiers;
 	}
-	catch(ParseError e) { rpe("enum's name expected",e); }
-	catch(Throwable e) { rperr(e); }
+	"enum"
+	n.name = Name() { n.pos = n.name.pos; }
 	[	Extends()			]
 	EnumBodyDeclaration()
 }
@@ -979,14 +993,13 @@ void EnumFieldDeclaration(ASTModifiers modifiers) :
 void CaseTypeDeclaration(ASTModifiers modifiers) :
 { Token t=null; ASTBlock bl; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTCaseTypeDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
 	t="case"
 	{ jjtThis.set(t); }
-	try {
-		Identifier()
-	}
-	catch(ParseError e) { rpe("Class's case name expected",e); }
-	catch(Throwable e) { rperr(e); }
+	n.name = Name() { n.pos = n.name.pos; }
 	[	ClazzArguments()	]
 	[
 		"("
@@ -1157,7 +1170,7 @@ int AccessSpec() #void :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
-void KeywordAsIdentifier() #void :
+ASTIdentifier KeywordAsName() #void :
 { Token t; ASTIdentifier id; }
 {
 	(
@@ -1166,11 +1179,31 @@ void KeywordAsIdentifier() #void :
 	|	t="packed"
 	)
 	{
-		id = new ASTIdentifier(0);
+		id = new ASTIdentifier();
 		jjtree.openNodeScope(id);
 		id.set(t);
 		jjtree.closeNodeScope(id, true);
 		t = null;
+		jjtree.popNode();
+		return id;
+	}
+}
+
+ASTIdentifier KeywordAsIdentifier() #void :
+{ Token t; ASTIdentifier id; }
+{
+	(
+		t="virtual"
+	|	t="alias"
+	|	t="packed"
+	)
+	{
+		id = new ASTIdentifier();
+		jjtree.openNodeScope(id);
+		id.set(t);
+		jjtree.closeNodeScope(id, true);
+		t = null;
+		return id;
 	}
 }
 
@@ -1685,11 +1718,18 @@ void PrimitiveType() :
 	{ jjtThis.set(t); }
 }
 
-void Identifier() :
+ASTIdentifier Identifier() :
 { Token t; }
 {
 	t=<IDENTIFIER>
-	{ jjtThis.set(t); }
+	{ jjtThis.set(t); return jjtThis; }
+}
+
+ASTIdentifier Name() #void :
+{ ASTIdentifier id; }
+{
+	id = Identifier()
+	{ jjtree.popNode(); return id; }
 }
 
 void QName() :
@@ -2380,7 +2420,7 @@ void CondStatement() :
 				sb.append(t.image).append(' ');
 				t = t.next;
 			}
-			ASTConstExpression e = new ASTConstExpression(0);
+			ASTConstExpression e = new ASTConstExpression();
 			e.pos = pos;
 			e.val = KString.from(sb.toString());
 			jjtThis.jjtAddChild(e,1);

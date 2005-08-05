@@ -43,12 +43,6 @@ public class ASTCallAccessExpression extends Expr {
 	@att public ASTIdentifier			func;
     @att public final NArr<Expr>		args;
 
-	public ASTCallAccessExpression() {
-	}
-
-	public ASTCallAccessExpression(int id) {
-	}
-	
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
         	obj = (Expr)n;

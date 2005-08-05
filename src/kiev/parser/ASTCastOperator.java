@@ -39,13 +39,6 @@ public class ASTCastOperator extends ASTNode {
 	@att public ASTType	type;
 	public boolean  reinterp;
 
-	public ASTCastOperator() {
-	}
-
-	public ASTCastOperator(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: type=(ASTType)n; break;

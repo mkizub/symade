@@ -150,7 +150,7 @@ public final class ExportJavaTop implements Constants {
 	}
 	
 	public ASTNode pass1(ASTCaseTypeDeclaration:ASTNode astn, ASTNode pn) {
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,true);
+		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name.name,false,true);
 
 		int flags = ACC_STATIC | astn.modifiers.getFlags();
 
@@ -172,7 +172,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTEnumDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for enum "+astn.name);
 		boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
+		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name.name, false, !isTop);
 
 		int flags = astn.modifiers.getFlags();
 		if( !(astn.parent instanceof FileUnit) ) flags |= ACC_STATIC;
@@ -192,7 +192,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1(ASTSyntaxDeclaration:ASTNode astn, ASTNode pn) {
 		trace(Kiev.debugResolve,"Pass 1 for synax "+astn.name);
 		boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
-		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, astn.name, false, !isTop);
+		ClazzName clname = ClazzName.fromOuterAndName(PassInfo.clazz, astn.name.name, false, !isTop);
 
 		int flags = ACC_PRIVATE|ACC_ABSTRACT | astn.modifiers.getFlags();
 
@@ -225,10 +225,10 @@ public final class ExportJavaTop implements Constants {
 						+"$"+astn.name);
 				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
 				KString name = bytecode_name.replace('/','.');
-				clname = new ClazzName(name,astn.name,bytecode_name,false,false);
+				clname = new ClazzName(name,astn.name.name,bytecode_name,false,false);
 			} else {
 				boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
-				clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name,false,!isTop);
+				clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name.name,false,!isTop);
 			}
 			astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		} else {

@@ -40,12 +40,6 @@ public class ASTVarDecl extends ASTNode {
     @att public Expr	init;
     public boolean		of_wrapper;
 
-	ASTVarDecl() {
-	}
-
-	ASTVarDecl(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=((ASTIdentifier)n).name; pos=n.getPos(); break;

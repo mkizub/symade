@@ -40,12 +40,6 @@ public class ASTPack extends ASTNode {
 	public int		offset;
 	public KString	packer;
 
-	public ASTPack() {
-	}
-
-	public ASTPack(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
        	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }

@@ -41,12 +41,6 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 	@virtual
 	public virtual PrescannedBody		pbody;
 
-	public ASTCaseTypeDeclaration() {
-	}
-
-	public ASTCaseTypeDeclaration(int id) {
-	}
-
 	@getter public PrescannedBody get$pbody() { return pbody; }
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
@@ -54,14 +48,7 @@ public class ASTCaseTypeDeclaration extends ASTStructDeclaration implements PreS
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
-            pos = n.getPos();
-		}
-        else if( n instanceof ASTArgumentDeclaration ) {
+        if( n instanceof ASTArgumentDeclaration ) {
 			argument.append((ASTArgumentDeclaration)n);
 		}
         else if( n instanceof ASTFormalParameter ) {

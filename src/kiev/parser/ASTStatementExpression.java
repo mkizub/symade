@@ -42,9 +42,6 @@ public class ASTStatementExpression extends Statement {
 	public ASTStatementExpression() {
 	}
 
-	public ASTStatementExpression(int id) {
-	}
-
 	public ASTStatementExpression(Expr e) {
 		super(0,null);
 		expr = e;

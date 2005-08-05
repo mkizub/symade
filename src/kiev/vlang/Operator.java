@@ -330,15 +330,15 @@ public class OpTypes {
 				// Check we've imported the method
 			} else {
 				// Check method is of nodes[1]'s class
-				if( method.type.args.length == 0 && nodes[1] != null
+				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
 					&& getExprType(nodes[1],ts[1]).clazz.instanceOf((Struct)method.parent)
 				)
 					;
 				// Check method arg of nodes[1]'s class
-				else if( method.type.args.length == 1 && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).isInstanceOf(method.type.args[0])
-				)
-					;
+				//else if( method.type.args.length == 1 && nodes[1] != null
+				//	&& getExprType(nodes[1],ts[1]).isInstanceOf(method.type.args[0])
+				//)
+				//	;
 				else
 					return false;
 			}

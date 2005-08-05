@@ -316,7 +316,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 //					}
 					if( tp.clazz.isHasCases() ) {
 						mode = PIZZA_SWITCH;
-						ASTCallAccessExpression cae = new ASTCallAccessExpression(0);
+						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.pos = pos;
 						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
 						cae.func = new ASTIdentifier(pos, nameGetCaseTag);

@@ -40,12 +40,6 @@ public class ASTNewAccessExpression extends Expr {
 	@att public ASTNonArrayType		type;
 	@att public final NArr<Expr>	args;
 
-	public ASTNewAccessExpression() {
-	}
-
-	public ASTNewAccessExpression(int id) {
-	}
-	
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
 			obj=(Expr)n;

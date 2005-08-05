@@ -39,12 +39,6 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	@att public ASTIdentifier	name;
 	@att public Expr			expr;
 
-	public ASTRuleIstheExpression() {
-	}
-
-	public ASTRuleIstheExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: name=(ASTIdentifier)n; setPos(name.getPos()); break;

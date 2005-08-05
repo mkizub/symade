@@ -49,9 +49,6 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	public FileUnit() {
 		this(KString.Empty,new ASTPackage(KString.Empty,Env.root));
 	}
-	public FileUnit(int id) {
-		this();
-	}
 	public FileUnit(KString name, ASTPackage pkg) {
 		super(0);
 		this.filename = name;
@@ -104,21 +101,13 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTPackage) {
-			pkg = (ASTPackage)n;
-		}
-		else if( n instanceof Import || n instanceof Typedef || n instanceof Opdef || n instanceof ASTPragma) {
-			syntax.append(n);
-			// Check disabled extensions very early
-			if (n instanceof ASTPragma) {
-				foreach (ASTConstExpression e; ((ASTPragma)n).options)
-					setExtension(e.pos,((ASTPragma)n).enable,((KString)e.val).toString());
-			}
-		}
-		else {
-			members.append(n);
-		}
+		members.append(n);
     }
+	
+	public void setPragma(ASTPragma pr) {
+		foreach (ASTConstExpression e; pr.options)
+			setExtension(e.pos,pr.enable,((KString)e.val).toString());
+	}
 
 	private void setExtension(int pos, boolean enabled, String s) {
 		Ext ext;

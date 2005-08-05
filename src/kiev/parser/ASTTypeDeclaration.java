@@ -40,14 +40,11 @@ import static kiev.stdlib.Debug.*;
 public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
 	@att public ASTModifiers			modifiers;
 	@att public ASTAccess				acc;
-	public KString						name;
+	@att public ASTIdentifier			name;
 	@att public final NArr<ASTNode>		argument;
 	@att public final NArr<ASTNode>		members;
 
 	@ref public Struct			me;
-
-	ASTStructDeclaration() {
-	}
 
 	public ASTNode pass1_1() {
 		// Attach meta-data to the new structure
@@ -78,9 +75,6 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     @att public ASTNode			impl;
     @att public ASTGenerate		gens;
 
-	ASTTypeDeclaration() {}
-	ASTTypeDeclaration(int id) {}
-
   	public void set(Token t) {
     	if( t.kind == kiev020Constants.INTERFACE )
         	kind |= ACC_INTERFACE;
@@ -93,14 +87,7 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
-            pos = n.getPos();
-		}
-        else if( n instanceof ASTArgumentDeclaration ) {
+        if( n instanceof ASTArgumentDeclaration ) {
 			argument.append(n);
 		}
         else if( n instanceof ASTExtends ) {

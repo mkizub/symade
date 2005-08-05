@@ -56,12 +56,7 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
 	ASTModifier() {
 	}
 
-	ASTModifier(int id) {
-		super(0);
-	}
-
 	private ASTModifier(int kind, String image) {
-		super(0);
 		this.kind = kind;
 		this.image = image;
 	}

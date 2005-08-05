@@ -40,12 +40,6 @@ public class ASTFieldDecl extends ASTNode {
 	@att public ASTType					type;
 	@att public final NArr<ASTNode>		vars;
 
-	public ASTFieldDecl() {
-	}
-
-	public ASTFieldDecl(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		switch( n ) {
 		case ASTModifiers:

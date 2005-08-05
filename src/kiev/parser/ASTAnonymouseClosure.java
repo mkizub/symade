@@ -41,12 +41,6 @@ public class ASTAnonymouseClosure extends Expr {
     @att public Statement					body;
 	@att public Expr						new_closure;
 
-	public ASTAnonymouseClosure() {
-	}
-
-	public ASTAnonymouseClosure(int id) {
-	}
-
   	public void set(Token t) {
     	pos = t.getPos();
 	}

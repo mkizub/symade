@@ -40,21 +40,8 @@ public class ASTEnumDeclaration extends ASTTypeDeclaration {
 	
 	@att public final NArr<ASTEnumFieldDeclaration> enum_fields;
 	
-	public ASTEnumDeclaration() {
-	}
-
-	public ASTEnumDeclaration(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
-			pos = n.getPos();
-		}
-        else if( n instanceof ASTExtends ) {
+        if( n instanceof ASTExtends ) {
 			ext = n;
 		}
         else if( n instanceof ASTEnumFieldDeclaration ) {

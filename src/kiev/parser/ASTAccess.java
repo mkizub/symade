@@ -48,12 +48,6 @@ public class ASTAccess extends SimpleNode {
 	public int		accflags;
 	private int		offset = 6;
 
-	public ASTAccess() {}
-
-	public ASTAccess(int id) {
-		super(0);
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
        	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }

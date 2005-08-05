@@ -38,19 +38,8 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTSyntaxDeclaration extends ASTStructDeclaration {
 
-	public ASTSyntaxDeclaration() {}
-	public ASTSyntaxDeclaration(int id) {}
-
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-		else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
-			pos = n.getPos();
-		} else {
-			members.append(n);
-		}
+		members.append(n);
 	}
 
 	public static Struct createMembers(Struct me, NArr<ASTNode> members) {

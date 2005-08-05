@@ -40,12 +40,6 @@ public class ASTWithStatement extends Statement {
 	@att public Expr			arg;
     @att public Statement		body;
 
-	public ASTWithStatement() {
-	}
-
-	public ASTWithStatement(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: arg=(Expr)n; break;

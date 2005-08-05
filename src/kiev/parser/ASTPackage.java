@@ -40,10 +40,7 @@ public class ASTPackage extends ASTNode {
 
 	public ASTPackage() {
 	}
-
-	public ASTPackage(int id) {
-	}
-
+	
 	public ASTPackage(KString name, Struct pkg) {
 		this.resolved = pkg;
 		this.name = name;

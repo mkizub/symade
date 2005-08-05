@@ -922,7 +922,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				//do nothing, default constructor may be added later
 			} else {
 				init.setNeedFieldInits(true);
-				ASTCallExpression call_super = new ASTCallExpression(0);
+				ASTCallExpression call_super = new ASTCallExpression();
 				call_super.pos = pos;
 				call_super.func = new ASTIdentifier(pos, nameSuper);
 				Expr[] exprs = new Expr[super_clazz.args.length];
@@ -1597,11 +1597,11 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				}
 				if( gen_def_constr ) {
 					m.setNeedFieldInits(true);
-					ASTCallExpression call_super = new ASTCallExpression(0);
+					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
 					call_super.func = new ASTIdentifier(pos, nameSuper);
 					if( super_clazz.clazz == Type.tpClosureClazz ) {
-						ASTIdentifier max_args = new ASTIdentifier(0);
+						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
 						call_super.args.add(max_args);
 					}

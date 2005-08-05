@@ -44,9 +44,6 @@ public class ASTIdentifier extends Expr {
 	public ASTIdentifier() {
 	}
 
-	public ASTIdentifier(int id) {
-	}
-
 	public ASTIdentifier(int pos, KString name) {
 		super(0);
 		this.pos = pos;

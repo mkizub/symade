@@ -41,13 +41,6 @@ public class ASTEnumFieldDeclaration extends ASTNode {
 	@att public ASTConstExpression val;
 	@att public ASTConstExpression text;
 	
-	public ASTEnumFieldDeclaration() {
-	}
-
-	public ASTEnumFieldDeclaration(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
 			modifiers = (ASTModifiers)n;

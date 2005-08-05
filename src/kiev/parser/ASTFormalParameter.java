@@ -40,12 +40,6 @@ public class ASTFormalParameter extends ASTNode {
 	@att public ASTType				mm_type;
     @att public ASTIdentifier		ident;
 
-	ASTFormalParameter() {
-	}
-
-	ASTFormalParameter(int id) {
-	}
-
 	public void set(Token t) {
 		this.ident = new ASTIdentifier(t.getPos(), KString.from(t.image));
 	}

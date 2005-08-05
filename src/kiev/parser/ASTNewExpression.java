@@ -48,12 +48,6 @@ public class ASTNewExpression extends Expr {
 	
     public boolean	anonymouse;
 
-	public ASTNewExpression() {
-	}
-
-	public ASTNewExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
 			type = (ASTNonArrayType)n;

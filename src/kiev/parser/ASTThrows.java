@@ -36,12 +36,6 @@ import kiev.vlang.*;
 @node
 public class ASTThrows extends SimpleNode {
 
-	public ASTThrows() {
-	}
-	
-	public ASTThrows(int id) {
-	}
-	
 	public Type[] pass3() {
 		Type[] thrs = new Type[children.length];
 		for(int i=0; i < thrs.length; i++) {

@@ -59,11 +59,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	ASTMethodDeclaration() {
-		super(0);
 		modifiers = new ASTModifiers();
-	}
-
-	ASTMethodDeclaration(int id) {
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

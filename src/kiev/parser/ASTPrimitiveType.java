@@ -36,12 +36,6 @@ import kiev.vlang.*;
 @node
 public class ASTPrimitiveType extends ASTType implements kiev020Constants {
 
-	ASTPrimitiveType() {
-	}
-
-	ASTPrimitiveType(int id) {
-	}
-
 	public void set(Token t) {
     	pos = t.getPos();
   		switch(t.kind) {

@@ -164,6 +164,7 @@ public final class NArr<N extends ASTNode> {
 
 	public N add(N node)
 		alias append
+		alias operator(5, lfy, +=)
 	{
 		if (node == null)
 			throw new NullPointerException();

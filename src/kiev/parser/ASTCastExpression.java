@@ -39,13 +39,6 @@ public class ASTCastExpression extends Expr {
 	@att public ASTType	type;
     @att public Expr	expr;
 
-	public ASTCastExpression() {
-	}
-
-	public ASTCastExpression(int id) {
-		this();
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: type=(ASTType)n; break;

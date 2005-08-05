@@ -212,6 +212,7 @@ kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
 kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
 kiev.parser.kiev020 kiev/parser/kiev020 kiev\parser\kiev020.java
+kiev.parser.kiev020$LookaheadSuccess kiev/parser/kiev020$LookaheadSuccess kiev\parser\kiev020.java
 kiev.parser.kiev020Constants kiev/parser/kiev020Constants kiev\parser\kiev020Constants.java
 kiev.parser.kiev020TokenManager kiev/parser/kiev020TokenManager kiev\parser\kiev020TokenManager.java
 kiev.parser.kiev020TreeConstants kiev/parser/kiev020TreeConstants kiev\parser\kiev020TreeConstants.java

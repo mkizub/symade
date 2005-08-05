@@ -48,13 +48,6 @@ public class ASTForStatement extends Statement {
 	@att
 	public Statement		body;
 
-	public ASTForStatement() {
-	}
-
-	public ASTForStatement(int id) {
-		super(kiev.Kiev.k.getToken(0)==null?0:kiev.Kiev.k.getToken(0).getPos(),null);
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: body=(Statement)n; break;

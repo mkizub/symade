@@ -44,12 +44,6 @@ public class ASTNewArrayExpression extends Expr {
 	
 	public int dim;
   
-	ASTNewArrayExpression() {
-	}
-
-	ASTNewArrayExpression(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
 			type = (ASTNonArrayType)n;

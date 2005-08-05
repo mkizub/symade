@@ -38,12 +38,6 @@ public class ASTNormalCase extends ASTNode {
 	@att public Expr					val;
 	@att public final NArr<ASTNode>		stats;
 
-	public ASTNormalCase() {
-	}
-
-	public ASTNormalCase(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 && n instanceof Expr )
 			val = (Expr)n;

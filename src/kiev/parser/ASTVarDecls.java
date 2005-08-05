@@ -39,12 +39,6 @@ public class ASTVarDecls extends ASTNode {
 	@att public ASTType					type;
 	@att public final NArr<ASTVarDecl>	vars;
 
-	public ASTVarDecls() {
-	}
-
-	public ASTVarDecls(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
 			modifiers = (ASTModifiers)n;

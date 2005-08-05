@@ -39,12 +39,6 @@ public class ASTSynchronizedStatement extends Statement {
 	@att public Expr		arg;
     @att public Statement	body;
 
-	public ASTSynchronizedStatement() {
-	}
-
-	public ASTSynchronizedStatement(int id) {
-	}
-
 	public void jjtAddChild(ASTNode n, int i) {
     	switch(i) {
         case 0: arg=(Expr)n; break;
