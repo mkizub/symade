@@ -78,12 +78,8 @@ kiev.bytecode.UnicodePoolConstant kiev/bytecode/UnicodePoolConstant kiev\bytecod
 kiev.bytecode.Utf8PoolConstant kiev/bytecode/Utf8PoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.VoidPoolConstant kiev/bytecode/VoidPoolConstant kiev\bytecode\PoolConstant.java
 kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Classpath.java
-kiev.parser.ASTAccess kiev/parser/ASTAccess kiev\parser\ASTAccess.java
 kiev.parser.ASTAccessExpression kiev/parser/ASTAccessExpression kiev\parser\ASTAccessExpression.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
-kiev.parser.ASTAnnotation kiev/parser/ASTAnnotation kiev\parser\ASTAnnotation.java
-kiev.parser.ASTAnnotationValue kiev/parser/ASTAnnotationValue kiev\parser\ASTAnnotationValue.java
-kiev.parser.ASTAnnotationValueValueArrayInitializer kiev/parser/ASTAnnotationValueValueArrayInitializer kiev\parser\ASTAnnotationValueValueArrayInitializer.java
 kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java
 kiev.parser.ASTArgumentDeclaration kiev/parser/ASTArgumentDeclaration kiev\parser\ASTArgumentDeclaration.java
 kiev.parser.ASTArrayElementAccessExpression kiev/parser/ASTArrayElementAccessExpression kiev\parser\ASTArrayElementAccessExpression.java
@@ -129,7 +125,6 @@ kiev.parser.ASTNonArrayType kiev/parser/ASTNonArrayType kiev\parser\ASTNonArrayT
 kiev.parser.ASTNormalCase kiev/parser/ASTNormalCase kiev\parser\ASTNormalCase.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
-kiev.parser.ASTPack kiev/parser/ASTPack kiev\parser\ASTPack.java
 kiev.parser.ASTPackage kiev/parser/ASTPackage kiev\parser\ASTPackage.java
 kiev.parser.ASTPizzaCase kiev/parser/ASTPizzaCase kiev\parser\ASTPizzaCase.java
 kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
@@ -358,7 +353,6 @@ kiev.vlang.MetaAttr kiev/vlang/MetaAttr kiev\vlang\Attr.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
-kiev.vlang.MetaType kiev/vlang/MetaType kiev\vlang\Meta.java
 kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
 kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java

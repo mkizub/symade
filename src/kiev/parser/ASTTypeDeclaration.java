@@ -40,7 +40,6 @@ import static kiev.stdlib.Debug.*;
 public final class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
     public int											kind;
 	@att public ASTModifiers							modifiers;
-	@att public ASTAccess								acc;
 	@att public ASTIdentifier							name;
 	@att public final NArr<ASTArgumentDeclaration>		args;
     @att public final ASTType							ext;
@@ -152,39 +151,6 @@ public final class ASTStructDeclaration extends ASTNode implements TopLevelDecl 
 						flags |= ACC_PUBLIC;
 					}
 					Type type = ((ASTType)fields.type).getType();
-					ASTPack pack = fields.modifiers.pack;
-					if( pack != null ) {
-						if( !type.isIntegerInCode() ) {
-							if( type.clazz.instanceOf(Type.tpEnum.clazz) ) {
-								Kiev.reportError(fields.pos,"Packing of enum is not implemented yet");
-							} else {
-								Kiev.reportError(fields.pos,"Packing of reference type is not allowed");
-							}
-							pack = null;
-						} else {
-							int max_pack_size = 32;
-							if( type == Type.tpShort || type == Type.tpChar ) {
-								max_pack_size = 16;
-								if( pack.size <= 0 ) pack.size = 16;
-							}
-							else if( type == Type.tpByte ) {
-								max_pack_size = 8;
-								if( pack.size <= 0 ) pack.size = 8;
-							}
-							else if( type == Type.tpBoolean) {
-								max_pack_size = 1;
-								if( pack.size <= 0 ) pack.size = 1;
-							}
-							if( pack.size < 0 || pack.size > max_pack_size ) {
-								Kiev.reportError(fields.pos,"Bad size "+pack.size+" of packed field");
-								pack = null;
-							}
-							else if( pack.offset >= 0 && pack.size+pack.offset > 32) {
-								Kiev.reportError(fields.pos,"Size+offset "+(pack.size+pack.offset)+" do not fit in 32 bit boundary");
-								pack = null;
-							}
-						}
-					}
 					for(int j=0; j < fields.vars.length; j++) {
 						ASTVarDecl fdecl = (ASTVarDecl)fields.vars[j];
 						KString fname = fdecl.name;
@@ -194,20 +160,45 @@ public final class ASTStructDeclaration extends ASTNode implements TopLevelDecl 
 						f.setPos(fdecl.pos);
 						// Attach meta-data to the new structure
 						fields.modifiers.getMetas(f.meta);
-						if( pack == null )
-							;
-						else if( fdecl.dim > 0 && pack != null )
-							Kiev.reportError(fdecl.pos,"Packing of reference type is not allowed");
-						else if( f.isStatic() )
-							Kiev.reportWarning(fdecl.pos,"Packing of static field(s) ignored");
-						else {
-							MetaPacked mp = new MetaPacked();
-							mp.size = pack.size;
-							mp.offset = pack.offset;
-							mp.fld = pack.packer;
-							f.meta.set(mp);
-							f.setPackedField(true);
+						MetaPacked pack = f.getMetaPacked();
+						if( pack != null ) {
+							if( f.isStatic() ) {
+								Kiev.reportWarning(fdecl.pos,"Packing of static field(s) ignored");
+								f.meta.unset(pack);
+							}
+							else if( !tp.isIntegerInCode() ) {
+								if( type.clazz.instanceOf(Type.tpEnum.clazz) ) {
+									Kiev.reportError(fields.pos,"Packing of enum is not implemented yet");
+								} else {
+									Kiev.reportError(fields.pos,"Packing of reference type is not allowed");
+								}
+								f.meta.unset(pack);
+							} else {
+								int max_pack_size = 32;
+								if( tp == Type.tpShort || tp == Type.tpChar ) {
+									max_pack_size = 16;
+									if( pack.size <= 0 ) pack.size = 16;
+								}
+								else if( tp == Type.tpByte ) {
+									max_pack_size = 8;
+									if( pack.size <= 0 ) pack.size = 8;
+								}
+								else if( tp == Type.tpBoolean) {
+									max_pack_size = 1;
+									if( pack.size <= 0 ) pack.size = 1;
+								}
+								if( pack.size < 0 || pack.size > max_pack_size ) {
+									Kiev.reportError(fields.pos,"Bad size "+pack.size+" of packed field");
+									f.meta.unset(pack);
+								}
+								else if( pack.offset >= 0 && pack.size+pack.offset > 32) {
+									Kiev.reportError(fields.pos,"Size+offset "+(pack.size+pack.offset)+" do not fit in 32 bit boundary");
+									f.meta.unset(pack);
+								}
+							}
 						}
+						if( f.getMetaPacked() != null )
+							f.setPackedField(true);
 						if( me.isInterface() ) {
 							if( f.isVirtual() )
 								f.setAbstract(true);
@@ -237,7 +228,7 @@ public final class ASTStructDeclaration extends ASTNode implements TopLevelDecl 
 						}
 
 						if( ((ASTFieldDecl)members[i]).modifiers.acc != null )
-							f.acc = new Access(((ASTFieldDecl)members[i]).modifiers.acc.accflags);
+							f.acc = ((ASTFieldDecl)members[i]).modifiers.acc;
 					}
 				}
 				else if (members[i] instanceof ASTEnumFieldDeclaration) {

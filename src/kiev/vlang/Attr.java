@@ -978,7 +978,7 @@ public abstract class MetaAttr extends Attr {
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
-			ConstPool.addAsciiCP(m.type.signature());
+			ConstPool.addAsciiCP(m.type.getType().java_signature);
 			foreach (MetaValue v; m) {
 				generateValue(v);
 			}
@@ -1088,7 +1088,7 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(Meta m, kiev.bytecode.Annotation.annotation a) {
-		a.type_index = ConstPool.getAsciiCP(m.type.signature()).pos;
+		a.type_index = ConstPool.getAsciiCP(m.type.getType().java_signature).pos;
 		a.names = new int[m.size()];
 		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
 		int n = 0;

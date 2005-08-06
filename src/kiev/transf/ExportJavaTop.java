@@ -188,7 +188,7 @@ public final class ExportJavaTop implements Constants {
 		Struct me = astn.me;
 		me.parent = pn;
 		me.setResolved(true);
-		if( astn.acc != null ) me.acc = new Access(astn.acc.accflags);
+		if( astn.modifiers.acc != null ) me.acc = astn.modifiers.acc;
 		if (me.isEnum() && !(astn.parent instanceof FileUnit))
 			me.setStatic(true);
 		if (me.isPizzaCase()) {

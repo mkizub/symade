@@ -738,10 +738,10 @@ ASTModifiers Modifiers() :
 	(	LOOKAHEAD(2)
 		try {
 			(
-				Modifier()
-			|	Pack()
-			|	Access()
-			|	Annotation()
+				jjtThis.annotations += Annotation()
+			|	                       Modifier()
+			|	jjtThis.annotations += Pack()
+			|	jjtThis.acc          = Access()
 			)
 		}
 		catch(ParseError e) { rpe("Bad modifiers",e); }
@@ -1091,7 +1091,7 @@ void Modifier() :
 	{ jjtThis.set(t); }
 }
 
-void Pack() :
+Meta Pack() #void :
 { Token t; int size=-1; int offset=-1; String packer=null; }
 {
 	"packed"
@@ -1105,19 +1105,26 @@ void Pack() :
 		t=<INTEGER_LITERAL> { offset = Integer.parseInt(t.image); t = null; }
 		]
 	]
-	{ jjtThis.set(size,packer,offset); }
+	{
+		MetaPacked mp = new MetaPacked();
+		mp.size       = size;
+		mp.offset     = offset;
+		mp.fld        = KString.from(packer);
+		return mp;
+	}
 }
 
-void Access() :
-{ int acc; }
+Access Access() #void :
+{ int acc; 	int accflags = 0; int offset = 6; }
 {
 	LOOKAHEAD({Kiev.enabled(Ext.Access)})
 	"access:"
-	acc = AccessSpec() { jjtThis.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtThis.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtThis.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtThis.set(acc); }
+	acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
 	]]]
+	{ return new Access(accflags); }
 }
 
 int AccessSpec() #void :
@@ -1166,66 +1173,83 @@ ASTIdentifier KeywordAsIdentifier() #void :
 	}
 }
 
-void Annotation() :
-{}
+ASTMeta Annotation() #Meta :
+{ ASTIdentifier id; MetaValue v; }
 {
+	{ ASTMeta n = jjtThis; }
 	"@"
 	(
-		Identifier()
-	|	KeywordAsIdentifier()
+		id = Name()
+	|	id = KeywordAsName()
 	)
+	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id);	}
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
-			AnnotationValues()
-		|	AnnotationValueAny() #AnnotationValue(1)
+			AnnotationValues(n)
+		|	v = AnnotationValueAny() { n.set(v); }
 		]
 		")"
 	]
+	{ jjtree.popNode(); return n; }
 }
 
-void AnnotationValues() #void :
-{}
+void AnnotationValues(ASTMeta m) #void :
+{ ASTIdentifier id; MetaValue v; }
 {
-	Identifier()
+	id = Name()
 	"="
-	AnnotationValueAny() #AnnotationValue(2)
+	v = AnnotationValueAny()
+	{ v.type = new MetaValueType(id.name); m.set(v); }
 	(
 		","
-		Identifier()
+		id = Name()
 		"="
-		AnnotationValueAny() #AnnotationValue(2)
+		v = AnnotationValueAny()
+		{ v.type = new MetaValueType(id.name); m.set(v); }
 	)*
 }
 
-void AnnotationValueAny() #void :
-{}
+MetaValue AnnotationValueAny() #void :
+{ ASTNode n; MetaValue v; }
 {
+	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
-		Annotation()
-	|	AnnotationValueValueArrayInitializer()
+		n = Annotation()
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+	|	v = AnnotationValueValueArrayInitializer()
 	|	ExpressionNT(null)
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = (ASTNode)jjtree.popNode(); }
+	)
+	{ return v; }
 }
 
-void AnnotationValueScalar() #void :
-{}
+MetaValueScalar AnnotationValueScalar() #void :
+{ ASTNode n; MetaValueScalar v; }
 {
+	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
-		Annotation()
+		n = Annotation()
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
 	|	ExpressionNT(null)
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = (ASTNode)jjtree.popNode(); }
+	)
+	{ return v; }
 }
 
-void AnnotationValueValueArrayInitializer() :
-{}
+MetaValueArray AnnotationValueValueArrayInitializer() #void :
+{ MetaValueScalar n; MetaValueArray v; }
 {
+	{ v = new MetaValueArray(); }
 	"{"
 	[
-		AnnotationValueScalar()
+		n = AnnotationValueScalar() { v.values.add(n.value); }
 		(	","
-			AnnotationValueScalar()
+			n = AnnotationValueScalar() { v.values.add(n.value); }
 		)*
 	]
 	"}"
+	{ return v; }
 }
 
 
@@ -1479,7 +1503,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
+		|	[ "default" n.annotation_default = AnnotationValueAny() ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
@@ -1527,7 +1551,7 @@ void ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
+		|	";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }

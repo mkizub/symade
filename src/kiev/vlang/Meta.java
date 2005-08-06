@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.ASTNonArrayType;
 
 import static kiev.stdlib.Debug.*;
 
@@ -52,7 +53,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.name == name)
+			if (metas[i].type.getType().clazz.name.name == name)
 				return metas[i];
 		}
 		return null;
@@ -75,7 +76,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.name);
+		return unset(meta.type.getType().clazz.name.name);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -83,7 +84,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.name == name) {
+			if (metas[i].type.getType().clazz.name.name == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;
@@ -113,16 +114,6 @@ public final class MetaSet extends ASTNode {
 	
 }
 
-public class MetaType {
-	public /*final*/ KString name;
-	public MetaType(KString name) {
-		this.name = name;
-	}
-	public KString signature() {
-		return KString.from('L'+String.valueOf(name).replace('.','/')+';');
-	}
-}
-
 public class MetaValueType {
 	public KString name;
 	public KString signature;
@@ -139,26 +130,26 @@ public class MetaValueType {
 public class Meta extends ASTNode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
-	public /*final*/  MetaType        type;
-	@att public final NArr<MetaValue> values;
+	@att public TypeRef					type;
+	@att public final NArr<MetaValue>	values;
 	
 	public Meta() {
 	}
 
-	public Meta(MetaType type) {
+	public Meta(TypeRef type) {
 		this.type = type;
 	}
 	
-	public static Meta newMeta(MetaType type)
+	public static Meta newMeta(KString name)
 		alias operator(210,lfy,new)
 	{
-		if (type.name == MetaVirtual.NAME)
-			return new MetaVirtual(type);
-		if (type.name == MetaPacked.NAME)
-			return new MetaVirtual(type);
-		if (type.name == MetaPacker.NAME)
-			return new MetaVirtual(type);
-		return new Meta(type);
+		if (name == MetaVirtual.NAME)
+			return new MetaVirtual(new ASTNonArrayType(name));
+		if (name == MetaPacked.NAME)
+			return new MetaPacked(new ASTNonArrayType(name));
+		if (name == MetaPacker.NAME)
+			return new MetaPacker(new ASTNonArrayType(name));
+		return new Meta(new ASTNonArrayType(name));
 	}
 
 	public int size() alias length {
@@ -168,8 +159,36 @@ public class Meta extends ASTNode {
 		return values.length == 0;
 	}
 	
+	public Meta verify() {
+		Type mt = type.getType();
+		if (mt == null || !mt.clazz.isAnnotation()) {
+			throw new CompilerException(pos, "Annotation name expected");
+		}
+		Meta m = this;
+		if (mt.clazz.name.name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
+			m = new MetaVirtual(new TypeRef(mt));
+		if (mt.clazz.name.name == MetaPacked.NAME && !(this instanceof MetaPacked))
+			m = new MetaPacked(new TypeRef(mt));
+		if (mt.clazz.name.name == MetaPacker.NAME && !(this instanceof MetaPacker))
+			m = new MetaPacker(new TypeRef(mt));
+		if (m != this) {
+			m.pos          = this.pos;
+			m.flags        = this.flags;
+			m.compileflags = this.compileflags;
+			m.type         = this.type;
+		}
+		for (int i=0; i < values.length; i++) {
+			MetaValue v1 = values[i];
+			MetaValue v2 = v1.verify();
+			if (v1 != v2)
+				values[i] = v2;
+		}
+		return m;
+	}
+	
 	public Meta resolve() {
-		Struct s = Env.getStruct(type.name);
+		Struct s = (Struct)type.getType().clazz;
+		s.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
 			Method m = null;
@@ -239,7 +258,7 @@ public class Meta extends ASTNode {
 				return v;
 			}
 		}
-		throw new RuntimeException("Value "+name+" not found in "+type.name+" annotation");
+		throw new RuntimeException("Value "+name+" not found in "+type+" annotation");
 	}
 	
 	public boolean getZ(KString name) {
@@ -251,7 +270,7 @@ public class Meta extends ASTNode {
 			return ((Boolean)((ConstExpr)v).value).booleanValue();
 		if (v instanceof ConstBooleanExpr)
 			return ((ConstBooleanExpr)v).value;
-		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a boolean constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a boolean constant, but "+v);
 	}
 	
 	public int getI(KString name) {
@@ -261,7 +280,7 @@ public class Meta extends ASTNode {
 			return 0;
 		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof Integer)
 			return ((Integer)((ConstExpr)v).value).intValue();
-		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not an int constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+type+" is not an int constant, but "+v);
 	}
 	
 	public KString getS(KString name) {
@@ -271,7 +290,7 @@ public class Meta extends ASTNode {
 			return null;
 		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof KString)
 			return (KString)((ConstExpr)v).value;
-		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a String constant, but "+v);
+		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a String constant, but "+v);
 	}
 	
 	public MetaValue set(MetaValue value)
@@ -387,6 +406,12 @@ public abstract class MetaValue extends ASTNode {
 
 	public abstract void resolve(Type reqType);
 	
+	public MetaValue verify() {
+		if (type == null)
+			type = new MetaValueType(KString.from("value"));
+		return this;
+	}
+	
 	ASTNode resolveValue(Type reqType, ASTNode value) {
 		if (value instanceof Meta) {
 			return ((Meta)value).resolve();
@@ -434,6 +459,13 @@ public class MetaValueScalar extends MetaValue {
 		this.value = value;
 	}
 
+	public MetaValue verify() {
+		super.verify();
+		if (value instanceof Meta)
+			value = ((Meta)value).verify();
+		return this;
+	}
+	
 	public void resolve(Type reqType) {
 		value = resolveValue(reqType, value);
 	}
@@ -456,6 +488,15 @@ public class MetaValueArray extends MetaValue {
 		this.values.addAll(values);
 	}
 
+	public MetaValue verify() {
+		super.verify();
+		for (int i=0; i < values.length; i++) {
+			if (values[i] instanceof Meta)
+				values[i] = ((Meta)values[i]).verify();
+		}
+		return this;
+	}
+	
 	public void resolve(Type reqType) {
 		for (int i=0; i < values.length; i++)
 			values[i] = resolveValue(reqType, values[i]);

@@ -776,10 +776,10 @@ ASTModifiers Modifiers() :
 	(	LOOKAHEAD(2)
 		try {
 			(
-				Modifier()
-			|	Pack()
-			|	Access()
-			|	Annotation()
+				jjtn000.annotations += Annotation()
+			|	                       Modifier()
+			|	jjtn000.annotations += Pack()
+			|	jjtn000.acc          = Access()
 			)
 		}
 		catch(ParseError e) { rpe("Bad modifiers",e); }
@@ -1461,15 +1461,9 @@ void Modifier() :
 /*@egen*/
 }
 
-void Pack() :
-{/*@bgen(jjtree) Pack */
-  ASTPack jjtn000 = new ASTPack();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; int size=-1; int offset=-1; String packer=null; }
-{/*@bgen(jjtree) Pack */
-        try {
-/*@egen*/
+Meta Pack()       :
+{ Token t; int size=-1; int offset=-1; String packer=null; }
+{
 	"packed"
 	[
 		":"
@@ -1480,57 +1474,27 @@ void Pack() :
 		","
 		t=<INTEGER_LITERAL> { offset = Integer.parseInt(t.image); t = null; }
 		]
-	]/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(size,packer,offset); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	]
+	{
+		MetaPacked mp = new MetaPacked();
+		mp.size       = size;
+		mp.offset     = offset;
+		mp.fld        = KString.from(packer);
+		return mp;
+	}
 }
 
-void Access() :
-{/*@bgen(jjtree) Access */
-  ASTAccess jjtn000 = new ASTAccess();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ int acc; }
-{/*@bgen(jjtree) Access */
-        try {
-/*@egen*/
+Access Access()       :
+{ int acc; 	int accflags = 0; int offset = 6; }
+{
 	LOOKAHEAD({Kiev.enabled(Ext.Access)})
 	"access:"
-	acc = AccessSpec() { jjtn000.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtn000.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtn000.set(acc); }
-	[ <COMMA1> acc = AccessSpec() { jjtn000.set(acc); }
-	]]]/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+	]]]
+	{ return new Access(accflags); }
 }
 
 int AccessSpec()       :
@@ -1579,55 +1543,36 @@ ASTIdentifier KeywordAsIdentifier()       :
 	}
 }
 
-void Annotation() :
-{/*@bgen(jjtree) Annotation */
-  ASTAnnotation jjtn000 = new ASTAnnotation();
+ASTMeta Annotation()       :
+{/*@bgen(jjtree) Meta */
+  ASTMeta jjtn000 = new ASTMeta();
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Annotation */
+/*@egen*/ ASTIdentifier id; MetaValue v; }
+{/*@bgen(jjtree) Meta */
         try {
 /*@egen*/
+	{ ASTMeta n = jjtn000; }
 	"@"
 	(
-		Identifier()
-	|	KeywordAsIdentifier()
+		id = Name()
+	|	id = KeywordAsName()
 	)
+	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id);	}
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
-			AnnotationValues()
-		|/*@bgen(jjtree) #AnnotationValue( 1) */
-                        {
-                          ASTAnnotationValue jjtn001 = new ASTAnnotationValue();
-                          boolean jjtc001 = true;
-                          jjtree.openNodeScope(jjtn001);
-                        }
-                        try {
-/*@egen*/	AnnotationValueAny()/*@bgen(jjtree)*/
-                        } catch (Throwable jjte001) {
-                          if (jjtc001) {
-                            jjtree.clearNodeScope(jjtn001);
-                            jjtc001 = false;
-                          } else {
-                            jjtree.popNode();
-                          }
-                          if (jjte001 instanceof RuntimeException) {
-                            throw (RuntimeException)jjte001;
-                          }
-                          if (jjte001 instanceof ParseException) {
-                            throw (ParseException)jjte001;
-                          }
-                          throw (Error)jjte001;
-                        } finally {
-                          if (jjtc001) {
-                            jjtree.closeNodeScope(jjtn001,  1);
-                          }
-                        }
-/*@egen*/
+			AnnotationValues(n)
+		|	v = AnnotationValueAny() { n.set(v); }
 		]
 		")"
 	]/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ jjtree.popNode(); return n; }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1650,128 +1595,62 @@ void Annotation() :
 /*@egen*/
 }
 
-void AnnotationValues()       :
-{}
+void AnnotationValues(ASTMeta m)       :
+{ ASTIdentifier id; MetaValue v; }
 {
-	Identifier()
-	"="/*@bgen(jjtree) #AnnotationValue( 2) */
-        {
-          ASTAnnotationValue jjtn001 = new ASTAnnotationValue();
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
-        }
-        try {
-/*@egen*/
-	AnnotationValueAny()/*@bgen(jjtree)*/
-        } catch (Throwable jjte001) {
-          if (jjtc001) {
-            jjtree.clearNodeScope(jjtn001);
-            jjtc001 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte001 instanceof RuntimeException) {
-            throw (RuntimeException)jjte001;
-          }
-          if (jjte001 instanceof ParseException) {
-            throw (ParseException)jjte001;
-          }
-          throw (Error)jjte001;
-        } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001,  2);
-          }
-        }
-/*@egen*/
+	id = Name()
+	"="
+	v = AnnotationValueAny()
+	{ v.type = new MetaValueType(id.name); m.set(v); }
 	(
 		","
-		Identifier()
-		"="/*@bgen(jjtree) #AnnotationValue( 2) */
-                {
-                  ASTAnnotationValue jjtn002 = new ASTAnnotationValue();
-                  boolean jjtc002 = true;
-                  jjtree.openNodeScope(jjtn002);
-                }
-                try {
-/*@egen*/
-		AnnotationValueAny()/*@bgen(jjtree)*/
-                } catch (Throwable jjte002) {
-                  if (jjtc002) {
-                    jjtree.clearNodeScope(jjtn002);
-                    jjtc002 = false;
-                  } else {
-                    jjtree.popNode();
-                  }
-                  if (jjte002 instanceof RuntimeException) {
-                    throw (RuntimeException)jjte002;
-                  }
-                  if (jjte002 instanceof ParseException) {
-                    throw (ParseException)jjte002;
-                  }
-                  throw (Error)jjte002;
-                } finally {
-                  if (jjtc002) {
-                    jjtree.closeNodeScope(jjtn002,  2);
-                  }
-                }
-/*@egen*/
+		id = Name()
+		"="
+		v = AnnotationValueAny()
+		{ v.type = new MetaValueType(id.name); m.set(v); }
 	)*
 }
 
-void AnnotationValueAny()       :
-{}
+MetaValue AnnotationValueAny()       :
+{ ASTNode n; MetaValue v; }
 {
+	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
-		Annotation()
-	|	AnnotationValueValueArrayInitializer()
+		n = Annotation()
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
+	|	v = AnnotationValueValueArrayInitializer()
 	|	ExpressionNT(null)
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = (ASTNode)jjtree.popNode(); }
+	)
+	{ return v; }
 }
 
-void AnnotationValueScalar()       :
-{}
+MetaValueScalar AnnotationValueScalar()       :
+{ ASTNode n; MetaValueScalar v; }
 {
+	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
-		Annotation()
+		n = Annotation()
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = n; }
 	|	ExpressionNT(null)
+		{ v = new MetaValueScalar(); ((MetaValueScalar)v).value = (ASTNode)jjtree.popNode(); }
+	)
+	{ return v; }
 }
 
-void AnnotationValueValueArrayInitializer() :
-{/*@bgen(jjtree) AnnotationValueValueArrayInitializer */
-  ASTAnnotationValueValueArrayInitializer jjtn000 = new ASTAnnotationValueValueArrayInitializer();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) AnnotationValueValueArrayInitializer */
-        try {
-/*@egen*/
+MetaValueArray AnnotationValueValueArrayInitializer()       :
+{ MetaValueScalar n; MetaValueArray v; }
+{
+	{ v = new MetaValueArray(); }
 	"{"
 	[
-		AnnotationValueScalar()
+		n = AnnotationValueScalar() { v.values.add(n.value); }
 		(	","
-			AnnotationValueScalar()
+			n = AnnotationValueScalar() { v.values.add(n.value); }
 		)*
 	]
-	"}"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	"}"
+	{ return v; }
 }
 
 
@@ -2295,34 +2174,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 			LOOKAHEAD("{")
 			{ presc = jjtn000; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default"/*@bgen(jjtree) #AnnotationValue( 1) */
-                                    {
-                                      ASTAnnotationValue jjtn001 = new ASTAnnotationValue();
-                                      boolean jjtc001 = true;
-                                      jjtree.openNodeScope(jjtn001);
-                                    }
-                                    try {
-/*@egen*/ AnnotationValueAny()/*@bgen(jjtree)*/
-                                    } catch (Throwable jjte001) {
-                                      if (jjtc001) {
-                                        jjtree.clearNodeScope(jjtn001);
-                                        jjtc001 = false;
-                                      } else {
-                                        jjtree.popNode();
-                                      }
-                                      if (jjte001 instanceof RuntimeException) {
-                                        throw (RuntimeException)jjte001;
-                                      }
-                                      if (jjte001 instanceof ParseException) {
-                                        throw (ParseException)jjte001;
-                                      }
-                                      throw (Error)jjte001;
-                                    } finally {
-                                      if (jjtc001) {
-                                        jjtree.closeNodeScope(jjtn001,  1);
-                                      }
-                                    }
-/*@egen*/ ] ";"
+		|	[ "default" n.annotation_default = AnnotationValueAny() ] ";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
@@ -2396,34 +2248,7 @@ void ConstructorDeclaration(ASTModifiers modifiers)                    :
 			LOOKAHEAD("{")
 			{ presc = jjtn000; }
 			MaybeSkipBlock() [ ";" ]
-		|	[ "default"/*@bgen(jjtree) #AnnotationValue( 1) */
-                                    {
-                                      ASTAnnotationValue jjtn001 = new ASTAnnotationValue();
-                                      boolean jjtc001 = true;
-                                      jjtree.openNodeScope(jjtn001);
-                                    }
-                                    try {
-/*@egen*/ AnnotationValueAny()/*@bgen(jjtree)*/
-                                    } catch (Throwable jjte001) {
-                                      if (jjtc001) {
-                                        jjtree.clearNodeScope(jjtn001);
-                                        jjtc001 = false;
-                                      } else {
-                                        jjtree.popNode();
-                                      }
-                                      if (jjte001 instanceof RuntimeException) {
-                                        throw (RuntimeException)jjte001;
-                                      }
-                                      if (jjte001 instanceof ParseException) {
-                                        throw (ParseException)jjte001;
-                                      }
-                                      throw (Error)jjte001;
-                                    } finally {
-                                      if (jjtc001) {
-                                        jjtree.closeNodeScope(jjtn001,  1);
-                                      }
-                                    }
-/*@egen*/ ] ";"
+		|	";"
 		)
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }

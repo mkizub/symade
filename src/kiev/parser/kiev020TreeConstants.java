@@ -16,77 +16,73 @@ public interface kiev020TreeConstants
   public int JJTENUMFIELDDECLARATION = 9;
   public int JJTARGUMENTDECLARATION = 10;
   public int JJTMODIFIER = 11;
-  public int JJTPACK = 12;
-  public int JJTACCESS = 13;
-  public int JJTANNOTATION = 14;
-  public int JJTANNOTATIONVALUE = 15;
-  public int JJTANNOTATIONVALUEVALUEARRAYINITIALIZER = 16;
-  public int JJTFIELDDECL = 17;
-  public int JJTVARDECLS = 18;
-  public int JJTVARDECL = 19;
-  public int JJTNEWINITIALIZEDARRAYEXPRESSION = 20;
-  public int JJTFORMALPARAMETER = 21;
-  public int JJTTHROWS = 22;
-  public int JJTIDENTIFIERALIAS = 23;
-  public int JJTOPERATORALIAS = 24;
-  public int JJTMETHODDECLARATION = 25;
-  public int JJTREQUAREDECLARATION = 26;
-  public int JJTENSUREDECLARATION = 27;
-  public int JJTINVARIANTDECLARATION = 28;
-  public int JJTRULEDECLARATION = 29;
-  public int JJTINITIALIZER = 30;
-  public int JJTCLOSURETYPE = 31;
-  public int JJTNONARRAYTYPE = 32;
-  public int JJTPRIMITIVETYPE = 33;
-  public int JJTIDENTIFIER = 34;
-  public int JJTQNAME = 35;
-  public int JJTCOMMAEXPRESSION = 36;
-  public int JJTRULEOREXPRESSION = 37;
-  public int JJTRULEANDEXPRESSION = 38;
-  public int JJTRULEEXPRESSION = 39;
-  public int JJTRULEISTHEEXPRESSION = 40;
-  public int JJTRULEISONEOFEXPRESSION = 41;
-  public int JJTRULECUTEXPRESSION = 42;
-  public int JJTOPERATOR = 43;
-  public int JJTCASTOPERATOR = 44;
-  public int JJTEXPRESSION = 45;
-  public int JJTREPARSEEXPRESSION = 46;
-  public int JJTCALLEXPRESSION = 47;
-  public int JJTTYPECLASSEXPRESSION = 48;
-  public int JJTCALLACCESSEXPRESSION = 49;
-  public int JJTACCESSEXPRESSION = 50;
-  public int JJTARRAYELEMENTACCESSEXPRESSION = 51;
-  public int JJTNEWACCESSEXPRESSION = 52;
-  public int JJTANONYMOUSECLOSURE = 53;
-  public int JJTCONSTEXPRESSION = 54;
-  public int JJTNEWEXPRESSION = 55;
-  public int JJTNEWARRAYEXPRESSION = 56;
-  public int JJTREPARSESTATEMENT = 57;
-  public int JJTLABELEDSTATEMENT = 58;
-  public int JJTBLOCK = 59;
-  public int JJTRULEBLOCK = 60;
-  public int JJTCONDBLOCK = 61;
-  public int JJTCONDSTATEMENT = 62;
-  public int JJTEMPTYSTATEMENT = 63;
-  public int JJTSTATEMENTEXPRESSION = 64;
-  public int JJTSWITCHSTATEMENT = 65;
-  public int JJTNORMALCASE = 66;
-  public int JJTPIZZACASE = 67;
-  public int JJTIFSTATEMENT = 68;
-  public int JJTWHILESTATEMENT = 69;
-  public int JJTDOSTATEMENT = 70;
-  public int JJTFORSTATEMENT = 71;
-  public int JJTFOREACHSTATEMENT = 72;
-  public int JJTGOTOSTATEMENT = 73;
-  public int JJTBREAKSTATEMENT = 74;
-  public int JJTCONTINUESTATEMENT = 75;
-  public int JJTRETURNSTATEMENT = 76;
-  public int JJTTHROWSTATEMENT = 77;
-  public int JJTSYNCHRONIZEDSTATEMENT = 78;
-  public int JJTWITHSTATEMENT = 79;
-  public int JJTTRYSTATEMENT = 80;
-  public int JJTCATCHINFO = 81;
-  public int JJTFINALLYINFO = 82;
+  public int JJTMETA = 12;
+  public int JJTFIELDDECL = 13;
+  public int JJTVARDECLS = 14;
+  public int JJTVARDECL = 15;
+  public int JJTNEWINITIALIZEDARRAYEXPRESSION = 16;
+  public int JJTFORMALPARAMETER = 17;
+  public int JJTTHROWS = 18;
+  public int JJTIDENTIFIERALIAS = 19;
+  public int JJTOPERATORALIAS = 20;
+  public int JJTMETHODDECLARATION = 21;
+  public int JJTREQUAREDECLARATION = 22;
+  public int JJTENSUREDECLARATION = 23;
+  public int JJTINVARIANTDECLARATION = 24;
+  public int JJTRULEDECLARATION = 25;
+  public int JJTINITIALIZER = 26;
+  public int JJTCLOSURETYPE = 27;
+  public int JJTNONARRAYTYPE = 28;
+  public int JJTPRIMITIVETYPE = 29;
+  public int JJTIDENTIFIER = 30;
+  public int JJTQNAME = 31;
+  public int JJTCOMMAEXPRESSION = 32;
+  public int JJTRULEOREXPRESSION = 33;
+  public int JJTRULEANDEXPRESSION = 34;
+  public int JJTRULEEXPRESSION = 35;
+  public int JJTRULEISTHEEXPRESSION = 36;
+  public int JJTRULEISONEOFEXPRESSION = 37;
+  public int JJTRULECUTEXPRESSION = 38;
+  public int JJTOPERATOR = 39;
+  public int JJTCASTOPERATOR = 40;
+  public int JJTEXPRESSION = 41;
+  public int JJTREPARSEEXPRESSION = 42;
+  public int JJTCALLEXPRESSION = 43;
+  public int JJTTYPECLASSEXPRESSION = 44;
+  public int JJTCALLACCESSEXPRESSION = 45;
+  public int JJTACCESSEXPRESSION = 46;
+  public int JJTARRAYELEMENTACCESSEXPRESSION = 47;
+  public int JJTNEWACCESSEXPRESSION = 48;
+  public int JJTANONYMOUSECLOSURE = 49;
+  public int JJTCONSTEXPRESSION = 50;
+  public int JJTNEWEXPRESSION = 51;
+  public int JJTNEWARRAYEXPRESSION = 52;
+  public int JJTREPARSESTATEMENT = 53;
+  public int JJTLABELEDSTATEMENT = 54;
+  public int JJTBLOCK = 55;
+  public int JJTRULEBLOCK = 56;
+  public int JJTCONDBLOCK = 57;
+  public int JJTCONDSTATEMENT = 58;
+  public int JJTEMPTYSTATEMENT = 59;
+  public int JJTSTATEMENTEXPRESSION = 60;
+  public int JJTSWITCHSTATEMENT = 61;
+  public int JJTNORMALCASE = 62;
+  public int JJTPIZZACASE = 63;
+  public int JJTIFSTATEMENT = 64;
+  public int JJTWHILESTATEMENT = 65;
+  public int JJTDOSTATEMENT = 66;
+  public int JJTFORSTATEMENT = 67;
+  public int JJTFOREACHSTATEMENT = 68;
+  public int JJTGOTOSTATEMENT = 69;
+  public int JJTBREAKSTATEMENT = 70;
+  public int JJTCONTINUESTATEMENT = 71;
+  public int JJTRETURNSTATEMENT = 72;
+  public int JJTTHROWSTATEMENT = 73;
+  public int JJTSYNCHRONIZEDSTATEMENT = 74;
+  public int JJTWITHSTATEMENT = 75;
+  public int JJTTRYSTATEMENT = 76;
+  public int JJTCATCHINFO = 77;
+  public int JJTFINALLYINFO = 78;
 
 
   public String[] jjtNodeName = {
@@ -102,11 +98,7 @@ public interface kiev020TreeConstants
     "EnumFieldDeclaration",
     "ArgumentDeclaration",
     "Modifier",
-    "Pack",
-    "Access",
-    "Annotation",
-    "AnnotationValue",
-    "AnnotationValueValueArrayInitializer",
+    "Meta",
     "FieldDecl",
     "VarDecls",
     "VarDecl",

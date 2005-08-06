@@ -50,7 +50,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	public virtual PrescannedBody 						pbody;
 	@att public final NArr<ASTRequareDeclaration>		req;
 	@att public final NArr<ASTEnsureDeclaration>		ens;
-    @att public ASTAnnotationValue						annotation_default;
+    @att public MetaValue								annotation_default;
 
 	@ref public Method									me;
 	@ref public final NArr<Type>						ftypes;
@@ -94,9 +94,6 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         else if( n instanceof Statement ) {
 			body = (Statement)n;
         }
-		else if (n instanceof ASTAnnotationValue) {
-			annotation_default = (ASTAnnotationValue)n;
-		}
         else {
         	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
@@ -203,7 +200,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		me.setPos(getPos());
 		modifiers.getMetas(me.meta);
 		if (me.parent.isAnnotation() && annotation_default != null) {
-			me.annotation_default = ASTAnnotation.makeValue(annotation_default);
+			//me.annotation_default = ASTAnnotation.makeValue(annotation_default);
+			me.annotation_default = annotation_default.verify();
 		}
         me.body = body;
 		if( !me.isStatic() )
@@ -219,7 +217,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         }
 		if( pbody != null ) pbody.setParent(me);
 
-		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
+		if( modifiers.acc != null ) me.acc = modifiers.acc;
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();

@@ -165,7 +165,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         clazz.addMethod(me);
 		if( pbody != null ) pbody.setParent(me);
 
-		if( modifiers.acc != null ) me.acc = new Access(modifiers.acc.accflags);
+		if( modifiers.acc != null ) me.acc = modifiers.acc;
 
 		for(int i=0; req!=null && i < req.length; i++) {
 			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();

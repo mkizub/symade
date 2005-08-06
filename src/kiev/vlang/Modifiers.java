@@ -32,4 +32,6 @@ import static kiev.stdlib.Debug.*;
 
 @node
 public Modifiers extends ASTNode {
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet					meta;
 }

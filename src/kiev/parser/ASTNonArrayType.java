@@ -50,6 +50,14 @@ public class ASTNonArrayType extends ASTType {
 	public ASTNonArrayType() {
 	}
 
+	public ASTNonArrayType(KString nm) {
+		jjtAddChild(new ASTQName(nm), 0);
+	}
+
+	public ASTNonArrayType(ASTIdentifier id) {
+		jjtAddChild(new ASTQName(id), 0);
+	}
+
 	public ASTNonArrayType(ASTQName qn) {
 		jjtAddChild(qn, 0);
 	}

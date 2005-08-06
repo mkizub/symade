@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.ASTNonArrayType;
 
 import static kiev.stdlib.Debug.*;
 
@@ -39,10 +40,10 @@ public class MetaVirtual extends Meta {
 	@ref public Method		set;
 
 	public MetaVirtual() {
-		super(new MetaType(NAME));
+		super(new ASTNonArrayType(NAME));
 	}
 
-	public MetaVirtual(MetaType type) {
+	public MetaVirtual(TypeRef type) {
 		super(type);
 	}
 	
@@ -66,10 +67,10 @@ public class MetaPacked extends Meta {
 	public virtual abstract int in;
 
 	public MetaPacked() {
-		super(new MetaType(NAME));
+		super(new ASTNonArrayType(NAME));
 	}
 
-	public MetaPacked(MetaType type) {
+	public MetaPacked(TypeRef type) {
 		super(type);
 	}
 	
@@ -90,10 +91,10 @@ public class MetaPacker extends Meta {
 	public virtual abstract int size;
 
 	public MetaPacker() {
-		super(new MetaType(NAME));
+		super(new ASTNonArrayType(NAME));
 	}
 
-	public MetaPacker(MetaType type) {
+	public MetaPacker(TypeRef type) {
 		super(type);
 	}
 	
