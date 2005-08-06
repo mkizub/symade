@@ -334,8 +334,8 @@ public class BlockStat extends Statement implements Scope {
 						stats.insert(vstats[j],i+1);
 					}
 				}
-				else if( stats[i] instanceof ASTTypeDeclaration ) {
-					ASTTypeDeclaration decl = (ASTTypeDeclaration)stats[i];
+				else if( stats[i] instanceof ASTStructDeclaration ) {
+					ASTStructDeclaration decl = (ASTStructDeclaration)stats[i];
 					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
 						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);

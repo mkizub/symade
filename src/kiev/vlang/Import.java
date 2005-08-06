@@ -210,39 +210,24 @@ public class Typedef extends ASTNode implements Named {
 		return new NodeName(name);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if (i == 0) {
-			if (n instanceof ASTIdentifier) {
-				typearg = Env.newMethodArgument(((ASTIdentifier)n).name, Env.root);
-				return;
-			}
-			else if (n instanceof ASTType) {
-				type = (ASTType)n;
-				return;
-			}
-		}
-		else if (i == 1) {
-			if (typearg != null && n instanceof ASTOperator) {
-				name = ((ASTOperator)n).image;
-				return;
-			}
-			else if (n instanceof ASTIdentifier) {
-    			name = ((ASTIdentifier)n).name;
-				return;
-			}
-		}
-		else if (i == 2 && typearg != null && n instanceof ASTNonArrayType) {
-			ASTNonArrayType tp = (ASTNonArrayType)n;
-			ASTType arg = (ASTType)tp.children[1];
-			KString argnm = ((ASTQName)((ASTNonArrayType)arg).children[0]).toKString();
-			//if (!typearg.name.short_name.equals(argnm))
-			//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
-			tp.children[1] = typearg.type;
-			type = tp;
-			return;
-		}
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
+	public void set(ASTIdentifier id, ASTOperator op, ASTType tp) {
+		typearg = Env.newMethodArgument(id.name, Env.root);
+		name = op.image;
+
+		ASTNonArrayType natp = (ASTNonArrayType)tp;
+		ASTType arg = (ASTType)natp.children[1];
+		KString argnm = ((ASTQName)((ASTNonArrayType)arg).children[0]).toKString();
+		//if (!typearg.name.short_name.equals(argnm))
+		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
+		natp.children[1] = typearg.type;
+		type = natp;
+		return;
+	}
+	
+	public void set(ASTType tp, ASTIdentifier id) {
+		type = tp;
+		name = id.name;
+	}
 
 	public String toString() {
 		if (typearg != null)

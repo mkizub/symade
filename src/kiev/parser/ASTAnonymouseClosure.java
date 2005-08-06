@@ -140,7 +140,7 @@ public class ASTAnonymouseClosure extends Expr {
 			stats.insert(dc,i);
 		}
 
-		me = ASTTypeDeclaration.createMembers(me,members);
+		me = ASTStructDeclaration.createMembers(me,members);
 		new_closure = new NewClosure(pos,me.type);
 		new_closure.parent = parent;
 		new_closure = (Expr)new_closure.resolve(reqType);

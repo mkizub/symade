@@ -30,6 +30,11 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+/**
+ * @author Maxim Kizub
+ *
+ */
+
 
 @node(copyable=false)
 public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
@@ -228,16 +233,21 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	public ASTNode resolve(Type reqType) { return this; }
 }
 
-/**
- * @author Maxim Kizub
- *
- */
+@node(copyable=false)
+public class ArgStruct extends BaseStruct {
+	protected ArgStruct(ClazzName name) {
+		super(name);
+	}
+}
 
 @node(copyable=false)
 public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
+	/** Class' type arguments */
+	@att public final NArr<BaseStruct>	args;
+	
 	/** Class' access */
 	@virtual
 	public virtual Access		acc;

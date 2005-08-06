@@ -37,7 +37,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTNewAccessExpression extends Expr {
 	@att public Expr				obj;
-	@att public ASTNonArrayType		type;
+	@att public ASTType				type;
 	@att public final NArr<Expr>	args;
 
 	public void jjtAddChild(ASTNode n, int i) {

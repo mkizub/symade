@@ -35,23 +35,17 @@ import kiev.vlang.*;
 
 @node
 public class ASTArgumentDeclaration extends ASTNode {
-	@att public ASTIdentifier		ident;
-	@att public ASTNonArrayType		type;
+	@att public ASTModifiers			modifiers;
+	@att public ASTIdentifier			ident;
+    @att public ASTType					ext;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-		case 0:	ident = (ASTIdentifier)n; pos = n.getPos(); break;
-		case 1:	type = (ASTNonArrayType)n; break;
-		default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append(ident);
-        if( type != null ) {
+        if( ext != null ) {
 			dmp.space().append("extends").space();
-			type.toJava(dmp);
+			ext.toJava(dmp);
 		}
 		return dmp;
 	}
 }
+

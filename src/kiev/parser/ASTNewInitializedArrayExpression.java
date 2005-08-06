@@ -36,16 +36,12 @@ import kiev.stdlib.*;
 @node
 @cfnode
 public class ASTNewInitializedArrayExpression extends Expr {
-	@att public ASTNonArrayType			type;
+	@att public ASTType					type;
 	@att public final NArr<Expr>		args;
 	public int dim;
 	
 	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0 && n instanceof ASTNonArrayType ) {
-			type = (ASTNonArrayType)n;
-		} else {
-			args.append((Expr)n);
-        }
+		args.append((Expr)n);
     }
 
 	public ASTNode resolve(Type reqType) {

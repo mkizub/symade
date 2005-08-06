@@ -1,3 +1,2 @@
-call C:\Java\Javacc3.2\bin\jjtree.bat kiev.jjt
-call C:\Java\Javacc3.2\bin\javacc.bat kiev.jj
-rem C:\Cygwin\bin\patch.exe < kiev020TokenManager.diff
+java -classpath "..\..\..\bin\javacc.jar" jjtree kiev.jjt
+java -classpath "..\..\..\bin\javacc.jar" javacc kiev.jj

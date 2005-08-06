@@ -38,7 +38,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTNewExpression extends Expr {
 	@att
-	public ASTNonArrayType			type;
+	public ASTType					type;
 	
 	@att
 	public final NArr<Expr>			args;
@@ -49,11 +49,7 @@ public class ASTNewExpression extends Expr {
     public boolean	anonymouse;
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-			type = (ASTNonArrayType)n;
-			pos = n.getPos();
-		}
-		else if( n instanceof Expr ) {
+		if( n instanceof Expr ) {
 			args.append((Expr)n);
         }
         else {
@@ -178,7 +174,7 @@ public class ASTNewExpression extends Expr {
 				exporter.pass2_2(members[i], me);
 			}
 		} finally { PassInfo.pop(me); }
-		me = ASTTypeDeclaration.createMembers(me,members);
+		me = ASTStructDeclaration.createMembers(me,members);
 		me.autoProxyMethods();
 		me.resolveFinalFields(false);
 		Expr ne;

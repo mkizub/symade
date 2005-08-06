@@ -54,6 +54,10 @@ public class ASTNonArrayType extends ASTType {
 		jjtAddChild(qn, 0);
 	}
 
+	public ASTNonArrayType(ASTPrimitiveType tp) {
+		jjtAddChild(tp, 0);
+	}
+
 	public void jjtAddChild(ASTNode n, int i) {
     	if( i==0 ) pos = n.getPos();
         children.append(n);
@@ -70,15 +74,19 @@ public class ASTNonArrayType extends ASTType {
 		if( children[0] instanceof ASTPrimitiveType ) {
 			tp = ((ASTPrimitiveType)children[0]).type;
 		} else {
-    		ASTQName qn = (ASTQName)children[0];
+    		KString nm;
+			if (children[0] instanceof ASTQName)
+				nm = ((ASTQName)children[0]).toKString();
+			else
+				nm = ((ASTIdentifier)children[0]).name;
 	    	ASTNode@ v;
-		    if( !PassInfo.resolveNameR(v,new ResInfo(),qn.toKString(),null,0) )
-			    throw new CompilerException(pos,"Unresolved identifier "+qn.toKString());
+		    if( !PassInfo.resolveNameR(v,new ResInfo(),nm,null,0) )
+			    throw new CompilerException(pos,"Unresolved identifier "+nm);
     		if( v instanceof Type ) {
     		    tp = (Type)v;
     		} else {
         		if( !(v instanceof BaseStruct) )
-		        	throw new CompilerException(qn.getPos(),"Type name "+qn.toKString()+" is not a structure, but "+v);
+		        	throw new CompilerException(pos,"Type name "+nm+" is not a structure, but "+v);
 				BaseStruct s = (BaseStruct)v;
 				Type[] atypes = new Type[children.length-1];
 				for(int i=0; i < atypes.length; i++) {

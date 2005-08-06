@@ -37,7 +37,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTNewArrayExpression extends Expr {
 	@att
-	public ASTNonArrayType			type;
+	public ASTType					type;
 	
 	@att
 	public final NArr<Expr>			args;
@@ -45,12 +45,7 @@ public class ASTNewArrayExpression extends Expr {
 	public int dim;
   
 	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-			type = (ASTNonArrayType)n;
-			pos = n.getPos();
-		} else {
-			args.append((Expr)n);
-        }
+		args.append((Expr)n);
     }
 
 	public ASTNode resolve(Type reqType) {

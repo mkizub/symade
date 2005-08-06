@@ -91,8 +91,8 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
     public ASTNode pass3() {
 		Struct clazz;
-		if( parent instanceof ASTTypeDeclaration )
-			clazz = ((ASTTypeDeclaration)parent).me;
+		if( parent instanceof ASTStructDeclaration )
+			clazz = ((ASTStructDeclaration)parent).me;
 		else if( parent instanceof Struct )
 			clazz = (Struct)parent;
 		else
@@ -100,8 +100,8 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		// TODO: check flags for fields
 		int flags = modifiers.getFlags();
 		Struct ps;
-		if( parent instanceof ASTTypeDeclaration)
-			ps = ((ASTTypeDeclaration)parent).me;
+		if( parent instanceof ASTStructDeclaration)
+			ps = ((ASTStructDeclaration)parent).me;
 		else
 			ps = (Struct)parent;
 		if( ps.isPackage() ) flags |= ACC_STATIC;

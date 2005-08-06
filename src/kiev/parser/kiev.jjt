@@ -43,7 +43,14 @@ import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
 
-import /*{ syntax }*/ kiev.parser.TypeAliases;
+/*{
+
+import syntax kiev.parser.TypeAliases;
+
+typedef NArr<ASTArgumentDeclaration> NArrArgDecls;
+typedef NArr<ASTType> NArrTypes;
+
+}*/ 
 
 public class kiev020 {
 
@@ -712,7 +719,6 @@ ASTFileUnit FileUnit(String filename) :
 		modifiers = Modifiers()
 		try {
 			TypeDeclaration(modifiers) [ ";" ]
-	|		EnumDeclaration(modifiers) [ ";" ]
 	|		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 			SyntaxDeclaration(modifiers) [ ";" ]
 		}
@@ -782,13 +788,13 @@ ASTImport Import() :
 			QName()
 			[	"." "*" { jjtThis.star = true; }
 			|	"("		{ jjtThis.of_method = true; }
-				Type() ("," Type())*
+				jjtThis.args += Type() ( "," jjtThis.args += Type())*
 				")"
 			]
 		|	QName()
 			[	"." "*" { jjtThis.star = true; }
 			|	"("		{ jjtThis.of_method = true; }
-				Type() ("," Type())*
+				jjtThis.args += Type() ("," jjtThis.args += Type())*
 				")"
 			]
 		)
@@ -800,14 +806,21 @@ ASTImport Import() :
 }
 
 ASTTypedef Typedef() :
-{}
+{ ASTIdentifier id; ASTOperator op; ASTType tp; }
 {
+	{ ASTTypedef n = jjtThis; }
 	try {
 		"typedef"
 		(
 			LOOKAHEAD(3, <IDENTIFIER> TypeOperatorChar() <IDENTIFIER>, {checkNoSpace(getToken(1),getToken(2))})
-			Identifier() Operator() Type()
-		|	Type() Identifier()
+			id = Name()
+			     Operator() { op = (ASTOperator)jjtree.popNode(); }
+			tp = Type()
+			{ n.set(id, op, tp); }
+		|
+			tp = Type()
+			id = Name()
+			{ n.set(tp, id); }
 		) ";"
 	}
 	catch(ParseError e) { rpe("Bad typedef declaration",e); }
@@ -831,16 +844,17 @@ ASTOpdef Opdef() :
 	{ jjtree.popNode(); return jjtThis; }
 }
 
-void SyntaxDeclaration(ASTModifiers modifiers) :
+void SyntaxDeclaration(ASTModifiers modifiers) #StructDeclaration :
 { Token t=null; }
 {
 	{
-		ASTSyntaxDeclaration n = jjtThis;
+		ASTStructDeclaration n = jjtThis;
 		n.modifiers = modifiers;
 	}
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-	<IDENTIFIER>	// "syntax"
-	n.name = Name() { n.pos = n.name.pos; }
+	t=<IDENTIFIER>	// "syntax"
+	n.name = Name()
+	{ n.set(t); t = null; n.pos = n.name.pos; }
 	"{"
 	(
 		n.members += Typedef()
@@ -849,36 +863,59 @@ void SyntaxDeclaration(ASTModifiers modifiers) :
 	"}"
 }
 
-void TypeDeclaration(ASTModifiers modifiers) :
+void TypeDeclaration(ASTModifiers modifiers) #StructDeclaration :
 { Token t=null; }
 {
 	{
-		ASTTypeDeclaration n = jjtThis;
+		ASTStructDeclaration n = jjtThis;
 		n.modifiers = modifiers;
 	}
-	try {
-		(
-			t="class"
-			n.name = Name()
-		|	t="interface"
-			n.name = Name()
-		|	t="@" "interface"
-			(	n.name = Name()
-			|	n.name = KeywordAsName()
+	(
+		t="class"
+		n.name = Name()
+		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
+		ClazzArguments(n.args)
+		[
+			"extends"
+			(
+				LOOKAHEAD("rule")
+				n.ext = PrimitiveType()
+			|	n.ext = NonArrayType()
 			)
+		]
+		[
+			"implements"
+			n.impl += NonArrayType()
+			( "," n.impl += NonArrayType()	)*
+		]
+		[	Generate(n.gens)	]
+	|	t="interface"
+		n.name = Name()
+		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
+		ClazzArguments(n.args)
+		[
+			"extends"
+			n.impl += NonArrayType()
+			( "," n.impl += NonArrayType()	)*
+		]
+		[	Generate(n.gens)	]
+	|	t="@" "interface"
+		(	n.name = Name()
+		|	n.name = KeywordAsName()
 		)
 		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
-	}
-	catch(ParseError e) { rpe("Class's name expected",e); }
-	catch(Throwable e) { rperr(e); }
-	[	ClazzArguments()	]
-	[	Extends()			]
-	[	Implements()		]
-	[	Generate()			]
-	TypeBodyDeclaration()
+	|	t="enum"
+		n.name = Name()
+		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
+		[
+			"extends"
+			n.ext = PrimitiveType()	
+		]
+	)
+	TypeBodyDeclaration(n.kind)
 }
 
-void TypeBodyDeclaration() #void :
+void TypeBodyDeclaration(int kind) #void :
 { ASTModifiers modifiers; }
 {
 	try {
@@ -888,18 +925,34 @@ void TypeBodyDeclaration() #void :
 	catch(Throwable e) { rperr(e); }
 	try {
 		(
+			LOOKAHEAD({kind == AccessFlags.ACC_ENUM})
+			modifiers = Modifiers()
+			EnumFieldDeclaration(modifiers)
+			(	","
+				modifiers = Modifiers()
+				EnumFieldDeclaration(modifiers)
+			)*
+			[ ";" ]
+		)?
+	}
+	catch(ParseError e) { rpe("Enumeration values are expected",e); }
+	catch(Throwable e) { rperr(e); }
+	try {
+		(
 			modifiers = Modifiers()
 			(
 				Initializer(modifiers)
 			|	InvariantDeclaration(modifiers) [ ";" ]
 			|	TypeDeclaration(modifiers) [ ";" ]
-			|	EnumDeclaration(modifiers) [ ";" ]
-			|	CaseTypeDeclaration(modifiers)
+			|	CaseTypeDeclaration(modifiers) ";"
 			|
 				LOOKAHEAD( "rule" <IDENTIFIER> "(" )
 				RuleDeclaration(modifiers)
 			|
-				LOOKAHEAD( [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
+				LOOKAHEAD( <IDENTIFIER> "(" )
+				ConstructorDeclaration(modifiers)
+			|
+				LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
 				MethodDeclaration(modifiers)
 			|
 				LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
@@ -909,69 +962,6 @@ void TypeBodyDeclaration() #void :
 	}
 	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
 	catch(Throwable e) { rperr(e); }
-	try {
-		"}"
-	}
-	catch(ParseError e) { rpe("'}' expected",e); }
-	catch(Throwable e) { rperr(e); }
-}
-
-void EnumDeclaration(ASTModifiers modifiers) :
-{}
-{
-	{
-		ASTEnumDeclaration n = jjtThis;
-		n.modifiers = modifiers;
-	}
-	"enum"
-	n.name = Name() { n.pos = n.name.pos; }
-	[	Extends()			]
-	EnumBodyDeclaration()
-}
-
-void EnumBodyDeclaration() #void :
-{ ASTModifiers modifiers; }
-{
-	try {
-		"{"
-	}
-	catch(ParseError e) { rpe("'{' expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		modifiers = Modifiers()
-		EnumFieldDeclaration(modifiers)
-		(	","
-			modifiers = Modifiers()
-			EnumFieldDeclaration(modifiers)
-		)*
-	}
-	catch(ParseError e) { rpe("Enumeration values are expected",e); }
-	catch(Throwable e) { rperr(e); }
-	[
-		";"
-		try {
-			(
-				modifiers = Modifiers()
-				(
-					Initializer(modifiers)
-				|	InvariantDeclaration(modifiers) [ ";" ]
-				|	TypeDeclaration(modifiers) [ ";" ]
-				|	EnumDeclaration(modifiers) [ ";" ]
-				|
-					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
-					RuleDeclaration(modifiers)
-				|
-					LOOKAHEAD( [ClazzArguments()] [ Type() ] [ <IDENTIFIER> ] "(" )
-					MethodDeclaration(modifiers)
-				|
-					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
-					FieldDecl(modifiers)
-				)
-			)*
-		}
-		catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
-		catch(Throwable e) { rperr(e); }
-	]
 	try {
 		"}"
 	}
@@ -990,17 +980,17 @@ void EnumFieldDeclaration(ASTModifiers modifiers) :
 	catch(Throwable e) { rperr(e); }
 }
 
-void CaseTypeDeclaration(ASTModifiers modifiers) :
-{ Token t=null; ASTBlock bl; }
+void CaseTypeDeclaration(ASTModifiers modifiers) #StructDeclaration :
+{ Token t=null; }
 {
 	{
-		ASTCaseTypeDeclaration n = jjtThis;
+		ASTStructDeclaration n = jjtThis;
 		n.modifiers = modifiers;
 	}
 	t="case"
-	{ jjtThis.set(t); }
-	n.name = Name() { n.pos = n.name.pos; }
-	[	ClazzArguments()	]
+	n.name = Name()
+	{ n.set(t); t = null; n.pos = n.name.pos; }
+	ClazzArguments(n.args)
 	[
 		"("
 			try {
@@ -1018,95 +1008,64 @@ void CaseTypeDeclaration(ASTModifiers modifiers) :
 			catch(Throwable e) { rperr(e); }
 		")"
 	]
-	try {
-		(
-			LOOKAHEAD("{")
-			{ presc = jjtThis; }
-			MaybeSkipBlock() [ ";" ]
-		|	";"
-		)
-	}
-	catch(ParseError e) { rpe("Class's case constructor body expected",e); }
-	catch(Throwable e) { rperr(e); }
 }
 
 
-void ClazzArguments() #void :
+void ClazzArguments(NArrArgDecls args) #void :
 {}
 {
+	[
 	"<"
 		try {
-			ArgumentDeclaration()
+			args += ArgumentDeclaration()
 			(	","
-				ArgumentDeclaration()
+				args += ArgumentDeclaration()
 			)*
 		}
 		catch(ParseError e) { rpe("Class's argument expected",e); }
 		catch(Throwable e) { rperr(e); }
 	">"
+	]
 }
 
-void Extends() :
-{ Token t; }
-{
-	t="extends" { jjtThis.setPos(t.getPos()); }
-	try {
-	    NonArrayType()
-		( "," NonArrayType() )*
-	}
-	catch(ParseError e) { rpe("Super class name expected",e); }
-	catch(Throwable e) { rperr(e); }
-}
-
-void Implements() :
-{ Token t; }
-{
-	t="implements" { jjtThis.setPos(t.getPos()); }
-	try {
-	    NonArrayType()
-		( "," NonArrayType() )*
-	}
-	catch(ParseError e) { rpe("Interface name expected",e); }
-	catch(Throwable e) { rperr(e); }
-}
-
-void Generate() :
-{ Token t; int i=0; }
+void Generate(NArrTypes types) #void :
+{ Token t; ASTNonArrayType tp; }
 {
 	"$generate"
 	try {
+		{ tp = new ASTNonArrayType(new ASTQName()); }
 		"<"
-			(PrimitiveType() | Identifier()) { i++; }
-			( "," (PrimitiveType() | Identifier()) { i++; } )*
+			( tp.children += PrimitiveType() | tp.children += Name())
+			( "," (tp.children += PrimitiveType() | tp.children += Name()) )*
 		">"
-//		{
-//		if( i != ((ASTTypeDeclaration)jjtThis.jjtGetParent()).argument.length )
-//			throw new ParseException("Number of arguments of type and in '$generate' missmatch");
-//		}
+		{ types += tp; }
 		(
-			"," { i = 0; }
+			","
+			{ tp = new ASTNonArrayType(new ASTQName()); }
 			"<"
-				(PrimitiveType() | Identifier()) { i++; }
-				( "," (PrimitiveType() | Identifier()) { i++; } )*
+				( tp.children += PrimitiveType() | tp.children += Name())
+				( "," (tp.children += PrimitiveType() | tp.children += Name()) )*
 			">"
-//			{
-//			if( i != ((ASTTypeDeclaration)jjtThis.jjtGetParent()).argument.length )
-//				throw new ParseException("Number of arguments of type and in '$generate' missmatch");
-//			}
+			{ types += tp; }
 		)*
 	}
 	catch(ParseError e) { rpe("Bad $generate directive",e); }
 	catch(Throwable e) { rperr(e); }
 }
 
-void ArgumentDeclaration() :
+ASTArgumentDeclaration ArgumentDeclaration() :
 {}
 {
-	Identifier()
+	{
+		ASTArgumentDeclaration n = jjtThis;
+	}
+	n.modifiers = Modifiers()
+	n.ident     = Name()
 	[
-		"extends" NonArrayType()
-	|	"implements" NonArrayType()
+		"extends"
+		n.ext = NonArrayType()
 	]
+	{ jjtree.popNode(); return n; }
 }
 
 void Modifier() :
@@ -1275,7 +1234,7 @@ void FieldDecl(ASTModifiers modifiers) :
 {
 	{ jjtThis.jjtAddChild(modifiers, -1); }
 	try {
-		Type()
+		jjtThis.type = Type()
 	}
 	catch(ParseError e) { rpe("Type expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1295,7 +1254,7 @@ void VarDecls(ASTModifiers modifiers) :
 {
 	{ jjtThis.jjtAddChild(modifiers,-1); }
 	try {
-		Type()
+		jjtThis.type = Type()
 	}
 	catch(ParseError e) { rpe("Type expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1343,13 +1302,13 @@ void ArrayInitializer() #NewInitializedArrayExpression :
 }
 
 ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
-{ Token t; ASTType tp; }
+{ Token t; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{ jjtThis.modifiers = modifiers; }
 	(
-		tp = Type()
+		jjtThis.type = Type()
 		Identifier()
-		( t="[" "]" { tp.addOperation(t); } )*
+		( t="[" "]" { jjtThis.type.addOperation(t); } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1357,17 +1316,17 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 }
 
 ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) #FormalParameter :
-{ Token t; ASTType tp; ASTType mmtp = null; }
+{ Token t; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{ jjtThis.modifiers = modifiers; }
 	(
-		tp = Type()
+		jjtThis.type = Type()
 		(
 			LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
-			(":") mmtp = Type()
+			(":") jjtThis.mm_type = Type()
 		)?
 		Identifier()
-		( t="[" "]" { tp.addOperation(t); if (mmtp != null) mmtp.addOperation(t); } )*
+		( t="[" "]" { jjtThis.type.addOperation(t); if (jjtThis.mm_type != null) jjtThis.mm_type.addOperation(t); } )*
 	|
 		t="_" { jjtThis.set(t); }
 	)
@@ -1377,10 +1336,11 @@ ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) #FormalParameter :
 void Throws() :
 { Token t; }
 {
-	t="throws" { jjtThis.setPos(t.getPos()); }
+	{ ASTThrows n = jjtThis; }
+	t="throws" { n.setPos(t.getPos()); }
 	try {
-		NonArrayType()
-		(	"," NonArrayType()	)*
+		n.children += NonArrayType()
+		(	"," n.children += NonArrayType()	)*
 	}
 	catch(ParseError e) { rpe("Throwable class name expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1473,13 +1433,16 @@ void MaybeSkipBlock() #void :
 }
 
 void MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; ASTType tp=null; }
+{ Token t; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
-	[	ClazzArguments()	]
+	{
+		ASTMethodDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
+	ClazzArguments(n.argtypes)
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
-		tp = Type()
+		n.rettype = Type()
 	]
 	Identifier()
 	"("
@@ -1502,15 +1465,55 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
 		catch(Throwable e) { rperr(e); }
 	")"
+	(	t="[" "]" { n.rettype.addOperation(t); } )*
 	(
-		t="[" "]"
-		{
-			if (tp != null)
-				tp.addOperation(t);
-			else
-				Kiev.reportParserError(t.getPos(), "Array return in constructor?");
-		}
+		Alias()
 	)*
+	[	Throws()	]
+	try {
+		(
+			RequareDeclaration()
+		|	EnsureDeclaration()
+		)*
+		(
+			LOOKAHEAD("{")
+			{ presc = jjtThis; }
+			MaybeSkipBlock() [ ";" ]
+		|	[ "default" AnnotationValueAny() #AnnotationValue(1) ] ";"
+		)
+	}
+	catch(ParseError e) { rpe("Method's body expected",e); }
+	catch(Throwable e) { rperr(e); }
+}
+
+void ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
+{ Token t; }
+{
+	{
+		ASTMethodDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
+	Identifier()
+	"("
+		try {
+		[
+			modifiers = Modifiers()
+			mmFormalParameter(modifiers)
+			(
+				LOOKAHEAD(2) ","
+				modifiers = Modifiers()
+				mmFormalParameter(modifiers)
+			)*
+			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
+				[","]
+				"..."
+				{ jjtThis.setVarArgs(true); }
+			]
+		]
+		}
+		catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
+		catch(Throwable e) { rperr(e); }
+	")"
 	(
 		Alias()
 	)*
@@ -1646,7 +1649,7 @@ ASTType Type() #void :
 { ASTType res; Token t; }
 {
 	(
-		res = NonArrayType()
+		res = SimpleType()
 		(
 			LOOKAHEAD(2,"[" "]")
 			t="[" "]"
@@ -1665,42 +1668,50 @@ ASTType Type() #void :
 ASTType ClosureType() :
 { Token t; }
 {
-	t="(" { jjtThis.setPos(t.getPos()); }
+	{ ASTClosureType n = jjtThis; }
+	t="(" { n.setPos(t.getPos()); }
 	[
-		Type()
-		( "," Type() )*
+		n.types += Type()
+		( "," n.types += Type() )*
 	]
-	")" "->" Type()
-	{ return jjtThis; }
+	")" "->" n.types += Type()
+	{ jjtree.popNode(); return n; }
 }
 
+
+ASTType SimpleType() #void :
+{ ASTType tp; }
+{
+		tp = PrimitiveType()
+		{ return new ASTNonArrayType((ASTPrimitiveType)tp); }
+	|	tp = NonArrayType()
+		{ return tp; }
+}
 
 ASTType NonArrayType() :
 { Token t; }
 {
+	{ ASTNonArrayType n = jjtThis; }
 	try {
-	(
-		PrimitiveType()
-	|	QName()
+		QName() { n.children += jjtree.popNode(); }
 		[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
 			"<"
-				Type()
-				( "," Type() )*
+				n.children += Type()
+				( "," n.children += Type() )*
 			">"
 		]
-	)
-	(
-		LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
-		t=TypeOperatorChar()
-		{ jjtThis.addOperation(t); }
-	)*
+		(
+			LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
+			t=TypeOperatorChar()
+			{ n.addOperation(t); }
+		)*
 	}
 	catch(ParseError e) { rpe("Bad type specification",e); }
 	catch(Throwable e) { rperr(e); }
-	{ return jjtThis; }
+	{ jjtree.popNode(); return n; }
 }
 
-void PrimitiveType() :
+ASTType PrimitiveType() :
 { Token t; }
 {
 	 (
@@ -1715,7 +1726,7 @@ void PrimitiveType() :
 	| t="void"
 	| t="rule"
 	  )
-	{ jjtThis.set(t); }
+	{ jjtThis.set(t); jjtree.popNode(); return jjtThis; }
 }
 
 ASTIdentifier Identifier() :
@@ -1946,7 +1957,7 @@ void CastOperatorLA() #void :
 void CastOperator() :
 { Token t; }
 {
-	t="(" { jjtThis.setPos(t.getPos()); } [ <CAST> | <REINTERP> {jjtThis.reinterp=true;} ] Type() ")"
+	t="(" { jjtThis.setPos(t.getPos()); } [ <CAST> | <REINTERP> {jjtThis.reinterp=true;} ] jjtThis.type = Type() ")"
 }
 
 void ExpressionNT(int[] nt_new) #void :
@@ -1958,12 +1969,12 @@ void ExpressionNT(int[] nt_new) #void :
 }
 
 void Expression() :
-{}
+{ ASTType tp; }
 {
 	try {
 		(
 			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
-			Identifier() Type()
+			Identifier() tp = Type() { jjtree.pushNode(tp); }
 		|	LOOKAHEAD({ operatorLA(1) })
 			Operator()
 //		|	LOOKAHEAD({ castLA() })
@@ -1997,12 +2008,18 @@ void CallExpression() :
 		")"
 }
 
+void TypeClassExpression() :
+{}
+{
+	jjtThis.type = Type() "." "class"
+}
+
 void AccessExpression() #void :
 { Token t; }
 {
 	(
 		LOOKAHEAD( Type() "." "class" )
-		Type() "." "class"			#TypeClassExpression(1)
+		TypeClassExpression()
 	|
 		LOOKAHEAD(2)
 		ConstExpression()
@@ -2013,10 +2030,10 @@ void AccessExpression() #void :
 		LOOKAHEAD(2)
 		Identifier()
 	|
-		LOOKAHEAD("new" NonArrayType() ("[" "]")+ "{" )
+		LOOKAHEAD("new" SimpleType() ("[" "]")+ "{" )
 		NewInitializedArrayExpression()
 	|
-		LOOKAHEAD("new" NonArrayType() "[" )
+		LOOKAHEAD("new" SimpleType() "[" )
 		NewArrayExpression()
 	|
 		LOOKAHEAD("new" NonArrayType() ( "(" ) )
@@ -2062,8 +2079,8 @@ void AnonymouseClosure() :
     { jjtThis.setPos(t.getPos()); }
     (
 		LOOKAHEAD( { getToken(1).kind == RULE } )
-		Type() RuleBlock()
-	|	Type() Block()
+		jjtThis.rettype = Type() RuleBlock()
+	|	jjtThis.rettype = Type() Block()
 	)
 }
 
@@ -2150,7 +2167,7 @@ void NewExpression() :
 }
 {
 	t="new" { jjtThis.setPos(t.getPos()); }
-    NonArrayType() "("
+    jjtThis.type = NonArrayType() "("
 	[	ExpressionNT(null)
 		(	"," ExpressionNT(null)	)*
 	]
@@ -2159,7 +2176,7 @@ void NewExpression() :
 		LOOKAHEAD("{")
 		{ old_mode = interface_only; interface_only = false; jjtThis.anonymouse = true; }
 		try {
-			TypeBodyDeclaration()
+			TypeBodyDeclaration(0)
 		} finally {
 		{ interface_only = old_mode; }
 		}
@@ -2169,7 +2186,7 @@ void NewExpression() :
 void NewArrayExpression() :
 { Token t; int dim=0; }
 {
-	t="new" NonArrayType()
+	t="new" jjtThis.type = SimpleType()
 	( LOOKAHEAD(2) "[" ExpressionNT(null) "]" { dim += 1; } )+
 	( LOOKAHEAD(2) "[" "]" { dim += 1; } )*
         { jjtThis.dim = dim; jjtThis.setPos(t.getPos()); }
@@ -2178,7 +2195,7 @@ void NewArrayExpression() :
 void NewInitializedArrayExpression() :
 { Token t; int dim=0; }
 {
-	t="new" NonArrayType()
+	t="new" jjtThis.type = SimpleType()
 	( "[" "]" { dim += 1; } )+
 	"{"
 	[

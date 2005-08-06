@@ -37,14 +37,40 @@ import static kiev.stdlib.Debug.*;
  */
  
 @node
-public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
-	@att public ASTModifiers			modifiers;
-	@att public ASTAccess				acc;
-	@att public ASTIdentifier			name;
-	@att public final NArr<ASTNode>		argument;
-	@att public final NArr<ASTNode>		members;
+public final class ASTStructDeclaration extends ASTNode implements TopLevelDecl {
+    public int											kind;
+	@att public ASTModifiers							modifiers;
+	@att public ASTAccess								acc;
+	@att public ASTIdentifier							name;
+	@att public final NArr<ASTArgumentDeclaration>		args;
+    @att public final ASTType							ext;
+    @att public final NArr<ASTType>					impl;
+    @att public final NArr<ASTType>					gens;
+	
+	@att public final NArr<ASTNode>						members;
 
 	@ref public Struct			me;
+
+  	public void set(Token t) {
+    	if( t.kind == kiev020Constants.INTERFACE )
+        	kind = ACC_INTERFACE;
+    	else if( t.kind == kiev020Constants.CLASS )
+    		;
+    	else if( t.kind == kiev020Constants.OPERATOR_AT )
+        	kind = ACC_INTERFACE | ACC_ANNOTATION;
+    	else if( t.kind == kiev020Constants.ENUM )
+        	kind = ACC_ENUM;
+    	else if( t.kind == kiev020Constants.IDENTIFIER && "syntax".equals(t.image) )
+        	kind = ACC_SYNTAX;
+    	else if( t.kind == kiev020Constants.CASE )
+        	kind = ACC_PIZZACASE;
+    	else
+    		throw new RuntimeException("Bad kind of class declaration "+t);
+	}
+
+	public void jjtAddChild(ASTNode n, int i) {
+		members.append(n);
+    }
 
 	public ASTNode pass1_1() {
 		// Attach meta-data to the new structure
@@ -53,59 +79,17 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 	}
 	
 	public ASTNode pass3() {
-		switch (this) {
-		case ASTTypeDeclaration:
-			return ASTTypeDeclaration.createMembers(me, members);
-		case ASTEnumDeclaration:
-			return ASTEnumDeclaration.createMembers(me, ((ASTEnumDeclaration)this).enum_fields, members);
-		case ASTSyntaxDeclaration:
-			return ASTSyntaxDeclaration.createMembers(me, members);
-		case ASTCaseTypeDeclaration:
-			return ((ASTCaseTypeDeclaration)this).createMembers();
-		}
-		throw new CompilerException(pos, "Unknown type: "+this.getClass());
+		return ASTStructDeclaration.createMembers(me, members);
 	}
-
-}
-
-@node
-public class ASTTypeDeclaration extends ASTStructDeclaration {
-    public int					kind;
-    @att public ASTNode			ext;
-    @att public ASTNode			impl;
-    @att public ASTGenerate		gens;
-
-  	public void set(Token t) {
-    	if( t.kind == kiev020Constants.INTERFACE )
-        	kind |= ACC_INTERFACE;
-    	else if( t.kind == kiev020Constants.CLASS )
-    		;
-    	else if( t.kind == kiev020Constants.OPERATOR_AT )
-        	kind |= ACC_INTERFACE | ACC_ANNOTATION;
-    	else
-    		throw new RuntimeException("Bad kind of class declaration "+t);
-	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-        if( n instanceof ASTArgumentDeclaration ) {
-			argument.append(n);
-		}
-        else if( n instanceof ASTExtends ) {
-			ext = n;
-		}
-        else if( n instanceof ASTImplements ) {
-			impl = n;
-		}
-        else if( n instanceof ASTGenerate ) {
-			gens = (ASTGenerate)n;
-		}
-        else {
-			members.append(n);
-        }
-    }
 
 	public static Struct createMembers(Struct me, NArr<ASTNode> members) {
+		int next_enum_val = 0;
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
+		if (me.isSyntax()) {
+			if (!Kiev.packages_scanned.contains(me))
+				Kiev.packages_scanned.append(me);
+			return me;
+		}
         PassInfo.push(me);
         try {
 			// Process members
@@ -256,12 +240,52 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 							f.acc = new Access(((ASTFieldDecl)members[i]).modifiers.acc.accflags);
 					}
 				}
+				else if (members[i] instanceof ASTEnumFieldDeclaration) {
+					ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)members[i];
+					Type me_type = me.type;
+					Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_ENUM);
+					f.pos = efd.pos;
+					f.setEnumField(true);
+					f = me.addField(f);
+					if (me.isPrimitiveEnum()) {
+						if (efd.val != null) {
+							if (efd.val.val instanceof Character)
+								next_enum_val = ((Character)efd.val.val).charValue();
+							else
+								next_enum_val = ((Number)efd.val.val).intValue();
+						}
+						f.init = new ConstExpr(efd.pos,new Integer(next_enum_val));
+					} else {
+						if (efd.val != null)
+							Kiev.reportError(me.pos,"Enum "+me+" is not a primitive enum");
+						if (efd.text == null)
+							f.init = new NewExpr(f.pos,me.type,new Expr[]{
+										new ConstExpr(efd.name.pos,efd.name.name),
+										new ConstExpr(efd.pos, new Integer(next_enum_val)),
+										new ConstExpr(efd.name.pos,efd.name.name)
+							});
+						else
+							f.init = new NewExpr(f.pos,me.type,new Expr[]{
+										new ConstExpr(efd.name.pos,efd.name.name),
+										new ConstExpr(efd.pos, new Integer(next_enum_val)),
+										new ConstExpr(efd.text.pos, efd.text.val)
+							});
+					}
+					next_enum_val++;
+					if (efd.text != null)
+						f.name.addAlias(KString.from("\""+efd.text.val+"\""));
+				}
+				else if( members[i] instanceof ASTFormalParameter) {
+					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
+					Var v = ((ASTFormalParameter)members[i]).pass3();
+					Field f = me.addField(new Field(me,v.name.name,v.type,ACC_PUBLIC));
+					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
+				}
 				else if( members[i] instanceof ASTInvariantDeclaration ) {
 					members[i] = ((ASTInvariantDeclaration)members[i]).pass3();
 				}
     	        // Inner classes and cases after all methods and fields, skip now
-				else if( members[i] instanceof ASTTypeDeclaration );
-				else if( members[i] instanceof ASTCaseTypeDeclaration );
+				else if( members[i] instanceof ASTStructDeclaration );
 				else if( members[i] instanceof Import ) {
 					me.imported.add(members[i]);
 				}
@@ -273,6 +297,22 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 
 			new ProcessVirtFld().createMembers(me);
 			me.setupWrappedField();
+			
+			// Create constructor for pizza case
+			if( me.isPizzaCase() ) {
+				PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
+				NArr<Type> targs = new NArr<Type>();
+				foreach (Field f; case_attr.casefields)
+					targs.add(f.type);
+				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
+				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
+				init.pos = me.pos;
+				init.params.add(new Var(me.pos,Constants.nameThis,me.type,0));
+				foreach (Field f; case_attr.casefields)
+					init.params.add(new Var(f.pos,f.name.name,f.type,0));
+				me.addMethod(init);
+				init.body = new BlockStat(me.pos,init);
+			}
 
     	    // Process inner classes and cases
         	if( !me.isPackage() ) {
