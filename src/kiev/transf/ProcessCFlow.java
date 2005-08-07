@@ -78,8 +78,8 @@ public final class ProcessCFlow implements Constants {
 			//	verify(n);
 			//}
 		}
-		else if (s.super_clazz != null && s.super_clazz.clazz.meta.get(mnCFNode) != null) {
-			Kiev.reportError(s.pos,"Class "+s+" must be marked with @cfnode: it extends @cfnode "+s.super_clazz);
+		else if (s.super_type != null && s.super_type.clazz.meta.get(mnCFNode) != null) {
+			Kiev.reportError(s.pos,"Class "+s+" must be marked with @cfnode: it extends @cfnode "+s.super_type);
 			return;
 		}
 	}

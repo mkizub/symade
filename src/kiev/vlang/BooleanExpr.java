@@ -500,16 +500,19 @@ public class BinaryBooleanExpr extends BooleanExpr {
 		if (ast1 == null)
 			return false;
 		expr1 = ast1;
+		if (!expr1.isForWrapper() && expr1.getType().clazz.isWrapper())
+			expr1 = new AccessExpr(expr1.pos,expr1,((Struct)expr1.getType().clazz).wrapped_field).resolveExpr(null);
 
 		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
 		if( ast2 instanceof WrapedExpr )
 			ast2 = ((Expr)ast2).resolve(null);
 		if( ast2 instanceof Struct )
 			ast2 = getExprByStruct((Struct)ast2);
-		if( ast2 instanceof Expr )
-			expr2 = (Expr)((Expr)ast2).resolve(null);
-		else
+		if !( ast2 instanceof Expr )
 			return false;
+		expr2 = (Expr)((Expr)ast2).resolve(null);
+		if (!expr2.isForWrapper() && expr2.getType().clazz.isWrapper())
+			expr2 = new AccessExpr(expr2.pos,expr2,((Struct)expr2.getType().clazz).wrapped_field).resolveExpr(null);
 		return true;
 	}
 
@@ -744,7 +747,7 @@ public class InstanceofExpr extends BooleanExpr {
 					if( s.isArgument() ) {
 						s = Type.getRealType(Kiev.argtype,s.type).clazz;
 						if( s.isArgument() )
-							s = s.super_clazz.clazz;
+							s = s.super_type.clazz;
 					}
 					return new ConstBooleanExpr(pos,s.instanceOf(type.clazz));
 				} else {

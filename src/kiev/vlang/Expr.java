@@ -71,6 +71,7 @@ public class ShadowExpr extends Expr {
 
 }
 
+/*
 @node
 @cfnode
 public class StatExpr extends Expr implements SetBody {
@@ -120,6 +121,7 @@ public class StatExpr extends Expr implements SetBody {
 	}
 
 }
+*/
 
 @node
 @cfnode
@@ -1478,18 +1480,19 @@ public class BlockExpr extends Expr implements Scope {
 						stats.insert(vstats[j],i+1);
 					}
 				}
-				else if( stats[i] instanceof ASTStructDeclaration ) {
-					ASTStructDeclaration decl = (ASTStructDeclaration)stats[i];
+				else if( stats[i] instanceof Struct ) {
+					Struct decl = (Struct)stats[i];
 					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
+						decl.setStatic(true);
 					ExportJavaTop exporter = new ExportJavaTop();
-					tds.struct = (Struct) exporter.pass1(decl, tds);
-					tds.struct.setLocal(true);
-					exporter.pass1_1(decl, tds);
-					exporter.pass2(decl, tds);
-					exporter.pass2_2(decl, tds);
-					decl.pass3();
+					decl.setLocal(true);
+					tds.struct = decl;
+					exporter.pass1(decl);
+					exporter.pass1_1(decl);
+					exporter.pass2(decl);
+					exporter.pass2_2(decl);
+					exporter.pass3(decl);
 					tds.struct.autoProxyMethods();
 					tds.struct.resolveFinalFields(false);
 					stats[i] = tds;

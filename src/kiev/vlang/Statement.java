@@ -183,7 +183,6 @@ public class BlockStat extends Statement implements Scope {
 	@att public final NArr<ASTNode>		stats;
 	@ref public final NArr<Var>			vars;
 	@ref public final NArr<ASTNode>		members;
-	@att public final NArr<Statement>	addstats;
 
 	protected CodeLabel	break_label = null;
 
@@ -256,13 +255,6 @@ public class BlockStat extends Statement implements Scope {
 		NodeInfoPass.pushState();
 		try {
 			resolveBlockStats();
-			if( addstats.length > 0 ) {
-				for(int i=0; i < addstats.length; i++) {
-					stats.insert(addstats[i],i);
-					trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
-				}
-				addstats.delAll();
-			}
 		} finally {
 			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
 			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
@@ -334,18 +326,19 @@ public class BlockStat extends Statement implements Scope {
 						stats.insert(vstats[j],i+1);
 					}
 				}
-				else if( stats[i] instanceof ASTStructDeclaration ) {
-					ASTStructDeclaration decl = (ASTStructDeclaration)stats[i];
+				else if( stats[i] instanceof Struct ) {
+					Struct decl = (Struct)stats[i];
 					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.modifiers.addChild(ASTModifier.modSTATIC,-1);
+						decl.setStatic(true);
 					ExportJavaTop exporter = new ExportJavaTop();
-					tds.struct = (Struct) exporter.pass1(decl, tds);
-					tds.struct.setLocal(true);
-					exporter.pass1_1(decl, tds);
-					exporter.pass2(decl, tds);
-					exporter.pass2_2(decl, tds);
-					decl.pass3();
+					decl.setLocal(true);
+					tds.struct = decl;
+					exporter.pass1(decl);
+					exporter.pass1_1(decl);
+					exporter.pass2(decl);
+					exporter.pass2_2(decl);
+					exporter.pass3(decl);
 					tds.struct.autoProxyMethods();
 					tds.struct.resolveFinalFields(false);
 					stats[i] = tds;
@@ -395,8 +388,6 @@ public class BlockStat extends Statement implements Scope {
 		stats = null;
 		foreach(ASTNode n; vars; n!=null) n.cleanup();
 		vars = null;
-		foreach(ASTNode n; addstats; n!=null) n.cleanup();
-		addstats = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -405,6 +396,51 @@ public class BlockStat extends Statement implements Scope {
 			stats[i].toJava(dmp).newLine();
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
+	}
+
+}
+
+@node
+@cfnode
+public class Initializer extends BlockStat implements SetBody {
+	/** Meta-information (annotations) of this initializer */
+	@att public MetaSet					meta;
+	@att public PrescannedBody 			pbody;
+	@att public final NArr<Statement>	addstats;
+
+	public Initializer() {
+	}
+
+	public Initializer(int pos, int flags) {
+		super(pos, null);
+		setFlags(flags);
+	}
+
+	public ASTNode resolve(Type reqType) {
+		super.resolve(reqType);
+		for(int i=0; i < addstats.length; i++) {
+			stats.insert(addstats[i],i);
+			trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
+		}
+		addstats.delAll();
+		return this;
+	}
+
+	public boolean setBody(Statement body) {
+		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
+		if (this.stats.length == 0) {
+			this.addStatement(body);
+		}
+		else {
+			throw new RuntimeException("Added body to initializer "+this+" which already have statements");
+		}
+		return true;
+	}
+
+	public void cleanup() {
+		super.cleanup();
+		addstats.cleanup();
+		addstats = null;
 	}
 
 }

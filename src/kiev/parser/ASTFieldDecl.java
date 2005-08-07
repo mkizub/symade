@@ -38,22 +38,16 @@ public class ASTFieldDecl extends ASTNode {
 
 	@att public ASTModifiers			modifiers;
 	@att public ASTType					type;
-	@att public final NArr<ASTNode>		vars;
+    @att public KString					name;
+    @att public Expr					init;
+	public int							dim;
+    public boolean						of_wrapper;
 
 	public void jjtAddChild(ASTNode n, int i) {
-		switch( n ) {
-		case ASTModifiers:
-			modifiers = (ASTModifiers)n;
-			break;
-		case ASTType:
-			type = (ASTType)n;
-			break;
-		case ASTVarDecl:
-			if( vars.length == 0 ) pos = n.pos;
-			vars.append(n);
-			break;
-        default:
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+    	switch(i) {
+        case 0: name=((ASTIdentifier)n).name; pos=n.getPos(); break;
+        case 1: init=(Expr)n; break;
+        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
         }
     }
 
@@ -64,10 +58,11 @@ public class ASTFieldDecl extends ASTNode {
 	public Dumper toJava(Dumper dmp) {
 		modifiers.toJava(dmp);
 		type.toJava(dmp).space();
-		for(int i=0; i < vars.length; i++) {
-			vars[i].toJava(dmp);
-			if( i < vars.length - 1 ) dmp.append(',').space();
-		}
-		return dmp;
+    	dmp.append(name);
+        for(int i=0; i < dim; i++) dmp.append("[]");
+        if( init != null ) {
+        	dmp.space().append('=').space().append(init);
+        }
+        return dmp;
     }
 }

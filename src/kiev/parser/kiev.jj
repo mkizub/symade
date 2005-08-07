@@ -44,9 +44,10 @@ import kiev.vlang.*;
 /*{
 
 import syntax kiev.parser.TypeAliases;
+import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<ASTArgumentDeclaration> NArrArgDecls;
-typedef NArr<ASTType> NArrTypes;
+typedef NArr<TypeRef> NArrTypeRefs;
 
 }*/ 
 
@@ -287,6 +288,67 @@ public class kiev020/*@bgen(jjtree)*/implements kiev020TreeConstants/*@egen*/ {/
 		} catch( Exception e ) {}
 		return false;
 	}
+	
+	/*{
+	private static Struct mkStruct(ASTIdentifier name, int flags, ASTModifiers modifiers, ASTNode parent) {
+		ClazzName clname;
+		if (parent instanceof FileUnit) {
+			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
+		}
+		else if (parent instanceof Struct) {
+			clname = ClazzName.fromOuterAndName(PassInfo.clazz,name.name,false,true);
+		}
+		else if (name != null) {
+			// Construct name of local class
+			KString bytecode_name =
+				KString.from(PassInfo.clazz.name.bytecode_name
+					+"$"+PassInfo.clazz.countAnonymouseInnerStructs()
+					+"$"+name.name);
+			KString fixname = bytecode_name.replace('/','.');
+			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
+		}
+		else {
+			// Local anonymouse class
+			KString bytecode_name =
+				KString.from(PassInfo.clazz.name.bytecode_name
+					+"$"+PassInfo.clazz.countAnonymouseInnerStructs());
+			clname = ClazzName.fromBytecodeName(bytecode_name, false);
+		}
+		Struct clazz = Env.newStruct(clname,PassInfo.clazz,flags|modifiers.getFlags(),true);
+		if (name != null)
+			clazz.pos  = name.pos;
+		else
+			clazz.pos  = parent.pos;
+		if (modifiers.acc != null)
+			clazz.acc  = modifiers.acc;
+		if      (parent instanceof FileUnit)
+			clazz.setLocal(false);
+		else if (parent instanceof Struct)
+			clazz.setLocal(parent.isLocal());
+		else
+			clazz.setLocal(true);
+		foreach (Meta m; modifiers.annotations)
+			clazz.meta.set(m);
+		return clazz;
+	}
+
+	private static BaseStruct mkStructArg(ASTIdentifier name, ASTModifiers modifiers, ASTNode parent) {
+		BaseStruct arg;
+		if (parent instanceof Struct) {
+			Struct s = (Struct)parent;
+			arg = Env.newArgument(name.name, s);
+			s.args += arg;
+		} else {
+			ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
+			arg = Env.newMethodArgument(name.name, PassInfo.clazz);
+			m.argtypes += arg;
+		}
+		arg.pos  = name.pos;
+		foreach (Meta m; modifiers.annotations)
+			arg.meta.set(m);
+		return arg;
+	}
+	}*/
 
 }
 
@@ -716,6 +778,8 @@ ASTFileUnit FileUnit(String filename) :
 		ASTModifiers modifiers;
 	}
 	[	n.pkg = Package()	]
+	{ PassInfo.push(n.pkg.clazz); }
+	try {
 	(
 		n.syntax += Import()
 	|	n.syntax += Typedef()
@@ -725,13 +789,14 @@ ASTFileUnit FileUnit(String filename) :
 	(
 		modifiers = Modifiers()
 		try {
-			TypeDeclaration(modifiers) [ ";" ]
+			n.members += TypeDeclaration(modifiers, n) [ ";" ]
 	|		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			SyntaxDeclaration(modifiers) [ ";" ]
+			n.members += SyntaxDeclaration(modifiers, n) [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
 	)*
+	} finally { {PassInfo.pop(n.pkg.clazz); } }
 	<EOF>/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
@@ -813,46 +878,21 @@ ASTModifiers Modifiers() :
 /*@egen*/
 }
 
-ASTPackage Package() :
-{/*@bgen(jjtree) Package */
-  ASTPackage jjtn000 = new ASTPackage();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Package */
-        try {
-/*@egen*/
+StructRef Package()       :
+{}
+{
 	try {
 		"package" QName() ";"
 	}
 	catch(ParseError e) { rpe("Bad package declaration",e); }
-	catch(Throwable e) { rperr(e); }/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtree.popNode(); return jjtn000; }/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	catch(Throwable e) { rperr(e); }
+	{
+		ASTQName qn = (ASTQName)jjtree.popNode();
+		Struct pkg = Env.newPackage(qn.toKString());
+		StructRef r = new StructRef(pkg);
+		r.pos = qn.pos;
+		return r;
+	}
 }
 
 ASTPragma Pragma() :
@@ -1062,181 +1102,142 @@ ASTOpdef Opdef() :
 /*@egen*/
 }
 
-void SyntaxDeclaration(ASTModifiers modifiers)                    :
-{/*@bgen(jjtree) StructDeclaration */
-  ASTStructDeclaration jjtn000 = new ASTStructDeclaration();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t=null; }
-{/*@bgen(jjtree) StructDeclaration */
-        try {
-/*@egen*/
-	{
-		ASTStructDeclaration n = jjtn000;
-		n.modifiers = modifiers;
-	}
+Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent)       :
+{ Struct clazz; ASTIdentifier name; }
+{
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-	t=<IDENTIFIER>	// "syntax"
-	n.name = Name()
-	{ n.set(t); t = null; n.pos = n.name.pos; }
-	"{"
-	(
-		n.members += Typedef()
-	|	n.members += Opdef()
-	)*
-	"}"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	<IDENTIFIER>	// "syntax"
+	name = Name()
+	{
+		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+	}
+	{ PassInfo.push(clazz); }
+	try {
+		"{"
+		(
+			clazz.members += Typedef()
+		|	clazz.members += Opdef()
+		)*
+		"}"
+	} finally { PassInfo.pop(clazz); }
+	{ return clazz; }
 }
 
-void TypeDeclaration(ASTModifiers modifiers)                    :
-{/*@bgen(jjtree) StructDeclaration */
-  ASTStructDeclaration jjtn000 = new ASTStructDeclaration();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t=null; }
-{/*@bgen(jjtree) StructDeclaration */
-        try {
-/*@egen*/
-	{
-		ASTStructDeclaration n = jjtn000;
-		n.modifiers = modifiers;
-	}
+Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent)       :
+{ Struct clazz; ASTIdentifier name; }
+{
 	(
-		t="class"
-		n.name = Name()
-		{ jjtn000.set(t); t = null; n.pos = n.name.pos; }
-		ClazzArguments(n.args)
+		"class"
+		name = Name()
+		{
+			clazz = mkStruct(name, 0, modifiers, parent);
+		}
+		ClazzArguments(clazz)
 		[
 			"extends"
 			(
 				LOOKAHEAD("rule")
-				n.ext = PrimitiveType()
-			|	n.ext = NonArrayType()
+				clazz.super_bound = PrimitiveType()
+			|	clazz.super_bound = NonArrayType()
 			)
 		]
 		[
 			"implements"
-			n.impl += NonArrayType()
-			( "," n.impl += NonArrayType()	)*
+			clazz.interfaces += NonArrayType()
+			( "," clazz.interfaces += NonArrayType()	)*
 		]
-		[	Generate(n.gens)	]
-	|	t="interface"
-		n.name = Name()
-		{ jjtn000.set(t); t = null; n.pos = n.name.pos; }
-		ClazzArguments(n.args)
+		[	Generate(clazz.gens)	]
+	|	"interface"
+		name = Name()
+		{
+			clazz = mkStruct(name, ACC_INTERFACE, modifiers, parent);
+		}
+		ClazzArguments(clazz)
 		[
 			"extends"
-			n.impl += NonArrayType()
-			( "," n.impl += NonArrayType()	)*
+			clazz.interfaces += NonArrayType()
+			( "," clazz.interfaces += NonArrayType()	)*
 		]
-		[	Generate(n.gens)	]
-	|	t="@" "interface"
-		(	n.name = Name()
-		|	n.name = KeywordAsName()
+		[	Generate(clazz.gens)	]
+	|	"@" "interface"
+		(	name = Name()
+		|	name = KeywordAsName()
 		)
-		{ jjtn000.set(t); t = null; n.pos = n.name.pos; }
-	|	t="enum"
-		n.name = Name()
-		{ jjtn000.set(t); t = null; n.pos = n.name.pos; }
+		{
+			clazz = mkStruct(name, ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
+		}
+	|	"enum"
+		name = Name()
+		{
+			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
+		}
 		[
 			"extends"
-			n.ext = PrimitiveType()	
+			clazz.super_bound = PrimitiveType()	
 		]
 	)
-	TypeBodyDeclaration(n.kind)/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	{ PassInfo.push(clazz); }
+	try {
+		TypeBodyDeclaration(clazz)
+	} finally { PassInfo.pop(clazz); }
+	{ return clazz; }
 }
 
-void TypeBodyDeclaration(int kind)       :
+void TypeBodyDeclaration(Struct clazz)       :
 { ASTModifiers modifiers; }
 {
+	{ jjtree.openNodeScope(clazz); }
 	try {
-		"{"
-	}
-	catch(ParseError e) { rpe("'{' expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		(
-			LOOKAHEAD({kind == AccessFlags.ACC_ENUM})
-			modifiers = Modifiers()
-			EnumFieldDeclaration(modifiers)
-			(	","
+		try {
+			"{"
+		}
+		catch(ParseError e) { rpe("'{' expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
+			(
+				LOOKAHEAD({ clazz.isEnum() })
 				modifiers = Modifiers()
 				EnumFieldDeclaration(modifiers)
-			)*
-			[ ";" ]
-		)?
-	}
-	catch(ParseError e) { rpe("Enumeration values are expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		(
-			modifiers = Modifiers()
+				(	","
+					modifiers = Modifiers()
+					EnumFieldDeclaration(modifiers)
+				)*
+				[ ";" ]
+			)?
+		}
+		catch(ParseError e) { rpe("Enumeration values are expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
 			(
-				Initializer(modifiers)
-			|	InvariantDeclaration(modifiers) [ ";" ]
-			|	TypeDeclaration(modifiers) [ ";" ]
-			|	CaseTypeDeclaration(modifiers) ";"
-			|
-				LOOKAHEAD( "rule" <IDENTIFIER> "(" )
-				RuleDeclaration(modifiers)
-			|
-				LOOKAHEAD( <IDENTIFIER> "(" )
-				ConstructorDeclaration(modifiers)
-			|
-				LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
-				MethodDeclaration(modifiers)
-			|
-				LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
-				FieldDecl(modifiers)
-			)
-		)*
-	}
-	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		"}"
-	}
-	catch(ParseError e) { rpe("'}' expected",e); }
-	catch(Throwable e) { rperr(e); }
+				modifiers = Modifiers()
+				(
+					Initializer(modifiers)
+				|	InvariantDeclaration(modifiers) [ ";" ]
+				|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
+				|	clazz.members += CaseTypeDeclaration(modifiers, clazz) ";"
+				|
+					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+					RuleDeclaration(modifiers)
+				|
+					LOOKAHEAD( <IDENTIFIER> "(" )
+					ConstructorDeclaration(modifiers)
+				|
+					LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
+					MethodDeclaration(modifiers)
+				|
+					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+					FieldDecls(modifiers)
+				)
+			)*
+		}
+		catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
+			"}"
+		}
+		catch(ParseError e) { rpe("'}' expected",e); }
+		catch(Throwable e) { rperr(e); }
+	} finally { {jjtree.closeNodeScope(clazz, true); ASTNode n = jjtree.popNode(); Debug.assert(clazz==n); } }
 }
 
 void EnumFieldDeclaration(ASTModifiers modifiers) :
@@ -1276,24 +1277,19 @@ void EnumFieldDeclaration(ASTModifiers modifiers) :
 /*@egen*/
 }
 
-void CaseTypeDeclaration(ASTModifiers modifiers)                    :
-{/*@bgen(jjtree) StructDeclaration */
-  ASTStructDeclaration jjtn000 = new ASTStructDeclaration();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t=null; }
-{/*@bgen(jjtree) StructDeclaration */
-        try {
-/*@egen*/
+Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent)       :
+{ ASTIdentifier name; Struct clazz; }
+{
+	"case"
+	name = Name()
 	{
-		ASTStructDeclaration n = jjtn000;
-		n.modifiers = modifiers;
+		clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC, modifiers, parent);
+		clazz.super_type = parent.type;
 	}
-	t="case"
-	n.name = Name()
-	{ n.set(t); t = null; n.pos = n.name.pos; }
-	ClazzArguments(n.args)
-	[
+	ClazzArguments(clazz)
+	{ jjtree.openNodeScope(clazz); }
+	try {
+		[
 		"("
 			try {
 			[
@@ -1309,39 +1305,21 @@ void CaseTypeDeclaration(ASTModifiers modifiers)                    :
 			catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
 			catch(Throwable e) { rperr(e); }
 		")"
-	]/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+		]
+	} finally { {jjtree.closeNodeScope(clazz, true); ASTNode n = jjtree.popNode(); Debug.assert(clazz==n); } }
+	{ return clazz; }
 }
 
 
-void ClazzArguments(NArrArgDecls args)       :
+void ClazzArguments(ASTNode parent)       :
 {}
 {
 	[
 	"<"
 		try {
-			args += ArgumentDeclaration()
+			 ArgumentDeclaration(parent)
 			(	","
-				args += ArgumentDeclaration()
+				ArgumentDeclaration(parent)
 			)*
 		}
 		catch(ParseError e) { rpe("Class's argument expected",e); }
@@ -1350,7 +1328,7 @@ void ClazzArguments(NArrArgDecls args)       :
 	]
 }
 
-void Generate(NArrTypes types)       :
+void Generate(NArrTypeRefs types)       :
 { Token t; ASTNonArrayType tp; }
 {
 	"$generate"
@@ -1375,50 +1353,17 @@ void Generate(NArrTypes types)       :
 	catch(Throwable e) { rperr(e); }
 }
 
-ASTArgumentDeclaration ArgumentDeclaration() :
-{/*@bgen(jjtree) ArgumentDeclaration */
-  ASTArgumentDeclaration jjtn000 = new ASTArgumentDeclaration();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) ArgumentDeclaration */
-        try {
-/*@egen*/
-	{
-		ASTArgumentDeclaration n = jjtn000;
-	}
-	n.modifiers = Modifiers()
-	n.ident     = Name()
+BaseStruct ArgumentDeclaration(ASTNode parent)       :
+{ ASTModifiers modifiers; ASTIdentifier name; BaseStruct arg; }
+{
+	modifiers = Modifiers()
+	name      = Name()
+	{ arg = mkStructArg(name, modifiers, parent); }
 	[
 		"extends"
-		n.ext = NonArrayType()
-	]/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtree.popNode(); return n; }/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+		arg.super_bound = NonArrayType()
+	]
+	{ return arg; }
 }
 
 void Modifier() :
@@ -1558,7 +1503,7 @@ ASTMeta Annotation()       :
 		id = Name()
 	|	id = KeywordAsName()
 	)
-	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id);	}
+	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id); }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
@@ -1654,30 +1599,42 @@ MetaValueArray AnnotationValueValueArrayInitializer()       :
 }
 
 
-void FieldDecl(ASTModifiers modifiers) :
-{/*@bgen(jjtree) FieldDecl */
-  ASTFieldDecl jjtn000 = new ASTFieldDecl();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ boolean old_declMode; }
-{/*@bgen(jjtree) FieldDecl */
-        try {
-/*@egen*/
-	{ jjtn000.jjtAddChild(modifiers, -1); }
-	try {
-		jjtn000.type = Type()
-	}
-	catch(ParseError e) { rpe("Type expected",e); }
-	catch(Throwable e) { rperr(e); }
+void FieldDecls(ASTModifiers modifiers)       :
+{ boolean old_declMode; ASTType type; }
+{
 	{ old_declMode = declMode; declMode = false; }
 	try {
-		VarDecl()
-		(	","	VarDecl() )*
+		type = Type()
+		FieldDecl(modifiers, type, true)
+		(	","	FieldDecl(modifiers, type, false) )*
 	}
 	catch(ParseError e) { rpe("Field declaration expected",e); }
 	catch(Throwable e) { rperr(e); }
 	finally { declMode = old_declMode; }
-	";"/*@bgen(jjtree)*/
+	";"
+}
+
+void FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
+{/*@bgen(jjtree) FieldDecl */
+  ASTFieldDecl jjtn000 = new ASTFieldDecl();
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) FieldDecl */
+        try {
+/*@egen*/
+	{
+		if (first) {
+			jjtn000.modifiers = modifiers;
+			jjtn000.type = type;
+		} else {
+			jjtn000.modifiers = (ASTModifiers)modifiers.copy();
+			jjtn000.type = (ASTType)type.copy();
+		}
+	}
+	Identifier()
+	( "[" "]" { jjtn000.dim += 1; } )*
+	[ ("=" | ":=" { jjtn000.of_wrapper=true; }) VariableInitializer() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2134,7 +2091,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		ASTMethodDeclaration n = jjtn000;
 		n.modifiers = modifiers;
 	}
-	ClazzArguments(n.argtypes)
+	ClazzArguments(n)
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
 		n.rettype = Type()
@@ -3716,6 +3673,7 @@ void NewExpression() :
 /*@egen*/
 	Token t;
 	boolean old_mode;
+	Struct clazz;
 }
 {/*@bgen(jjtree) NewExpression */
         try {
@@ -3728,11 +3686,16 @@ void NewExpression() :
 	")"
 	[
 		LOOKAHEAD("{")
-		{ old_mode = interface_only; interface_only = false; jjtn000.anonymouse = true; }
+		{
+			old_mode = interface_only;
+			interface_only = false;
+			jjtn000.clazz = clazz = mkStruct(null, 0, new ASTModifiers(), jjtn000);
+			PassInfo.push(clazz);
+		}
 		try {
-			TypeBodyDeclaration(0)
+			TypeBodyDeclaration(clazz)
 		} finally {
-		{ interface_only = old_mode; }
+			{ interface_only = old_mode; PassInfo.pop(clazz); }
 		}
 	]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
@@ -3979,7 +3942,7 @@ ASTBlock Block() :
 		declMode = false;
 	}
 	try {
-    	( BlockStatement() )*
+    	( BlockStatement(jjtn000) )*
 	} finally { declMode = old_declMode; PassInfo.pop(jjtn000); }
     "}"/*@bgen(jjtree)*/
         {
@@ -4166,16 +4129,17 @@ ASTBlock CondBlock() :
 /*@egen*/
 }
 
-void BlockStatement()       :
-{ boolean old_declMode; ASTModifiers modifiers; }
+void BlockStatement(ASTNode parent)       :
+{ boolean old_declMode; ASTModifiers modifiers; Struct clazz; }
 {
 	(
 		LOOKAHEAD( Modifiers() ("class" | "interface" | "@" "interface") )
 		{ old_declMode = declMode; declMode = true; }
 		try {
 			modifiers = Modifiers()
-			TypeDeclaration(modifiers)
+			clazz = TypeDeclaration(modifiers, parent)
 			[ ";" ]
+			{ jjtree.pushNode(clazz); }
 		} finally {
 			declMode = old_declMode;
 		}
@@ -4356,7 +4320,7 @@ void NormalCase() :
 	)
     { jjtn000.setPos(t.getPos()); }
 	(
-		BlockStatement()
+		BlockStatement(jjtn000)
 	)*/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -4403,7 +4367,7 @@ void PizzaCase() :
 		]
 	")" ":"
 	(
-		BlockStatement()
+		BlockStatement(jjtn000)
 	)*/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {

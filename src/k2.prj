@@ -143,7 +143,6 @@ kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\p
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
 kiev.parser.ASTRuleOrExpression kiev/parser/ASTRuleOrExpression kiev\parser\ASTRuleOrExpression.java
 kiev.parser.ASTStatementExpression kiev/parser/ASTStatementExpression kiev\parser\ASTStatementExpression.java
-kiev.parser.ASTStructDeclaration kiev/parser/ASTStructDeclaration kiev\parser\ASTTypeDeclaration.java
 kiev.parser.ASTSwitchStatement kiev/parser/ASTSwitchStatement kiev\parser\ASTSwitchStatement.java
 kiev.parser.ASTSynchronizedStatement kiev/parser/ASTSynchronizedStatement kiev\parser\ASTSynchronizedStatement.java
 kiev.parser.ASTThrowStatement kiev/parser/ASTThrowStatement kiev\parser\ASTThrowStatement.java
@@ -333,6 +332,7 @@ kiev.vlang.Import$ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.InitializeExpr kiev/vlang/InitializeExpr kiev\vlang\Expr.java
+kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat$ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
@@ -399,6 +399,7 @@ kiev.vlang.RIMetaAttr kiev/vlang/RIMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RMetaAttr kiev/vlang/RMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RVMetaAttr kiev/vlang/RVMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RVParMetaAttr kiev/vlang/RVParMetaAttr kiev\vlang\Attr.java
+kiev.vlang.RefNode kiev/vlang/RefNode kiev\vlang\AST.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
 kiev.vlang.ResolveFlags kiev/vlang/ResolveFlags kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
@@ -423,13 +424,13 @@ kiev.vlang.ShadowExpr kiev/vlang/ShadowExpr kiev\vlang\Expr.java
 kiev.vlang.ShadowStat kiev/vlang/ShadowStat kiev\vlang\Statement.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.SourceFileAttr kiev/vlang/SourceFileAttr kiev\vlang\Attr.java
-kiev.vlang.StatExpr kiev/vlang/StatExpr kiev\vlang\Expr.java
 kiev.vlang.Statement kiev/vlang/Statement kiev\vlang\AST.java
 kiev.vlang.StaticFieldAccessExpr kiev/vlang/StaticFieldAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
+kiev.vlang.StructRef kiev/vlang/StructRef kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java

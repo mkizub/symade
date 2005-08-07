@@ -36,9 +36,9 @@ import syntax kiev.Syntax;
 public final class ExportJavaTop implements Constants {
 	
 	/////////////////////////////////////////////////////
-	//                                                 //
-	//         PASS 1 - create top structures          //
-	//                                                 //
+	//												   //
+	//		   PASS 1 - create top structures		   //
+	//												   //
 	/////////////////////////////////////////////////////
 	
 	public boolean pass1() {
@@ -51,7 +51,7 @@ public final class ExportJavaTop implements Constants {
 				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
 				try {
-					pass1(fu, null);
+					pass1(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
 				}
@@ -60,89 +60,71 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass1(ASTNode:ASTNode node, ASTNode pn) {
+	public ASTNode pass1(ASTNode:ASTNode node) {
 		return node;
 	}
 	
-	public ASTNode pass1(FileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		boolean[] exts = Kiev.getExtSet();
 		try {
-        	Kiev.setExtSet(astn.disabled_extensions);
-			if( astn.pkg != null )
-				pass1(astn.pkg, astn);
-			else
-				astn.pkg = new ASTPackage(KString.Empty,Env.root);
+			Kiev.setExtSet(astn.disabled_extensions);
 			FileUnit fu = astn;
 			fu.disabled_extensions = astn.disabled_extensions;
 			fu.bodies = astn.bodies;
-			PassInfo.push(astn.pkg.resolved);
+			PassInfo.push(astn.pkg);
 			try {
-				for(int i=0; i < astn.members.length; i++) {
+				foreach (ASTNode n; astn.members) {
 					try {
-						Struct s = (Struct) pass1((ASTNode)astn.members[i], astn);
-						s.parent = fu;
-					} catch(Exception e ) {
-						Kiev.reportError/*Warning*/(((ASTNode)astn.members[i]).getPos(),e);
-					}
+						pass1(n);
+					} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
 				}
-			} finally { PassInfo.pop(astn.pkg.resolved); }
+			} finally { PassInfo.pop(astn.pkg); }
 			return astn;
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
 
-	public ASTNode pass1(ASTPackage:ASTNode astn, ASTNode pn) {
-		astn.resolved = Env.newPackage(ClazzName.fromToplevelName(astn.name,false));
-		return astn;
-	}
-
-	private void setSourceFile(Struct me, ASTNode astn) {
-		if( astn.parent instanceof FileUnit || astn.parent instanceof ASTStructDeclaration )
+	private void setSourceFile(Struct me) {
+		if( !me.isLocal() )
 			Env.setProjectInfo(me.name, Kiev.curFile);
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		me.addAttr(sfa);
 	}
 	
-	private void setupStructType(Struct me, ASTStructDeclaration astn, boolean canHaveArgs) {
-		me.pos = astn.pos;
-        PassInfo.push(me);
-        try {
+	private void setupStructType(Struct me, boolean canHaveArgs) {
+		PassInfo.push(me);
+		try {
 			/* Then may be class arguments - they are proceed here, but their
 			   inheritance - at pass2()
 			*/
 			Type[] targs = Type.emptyArray;
-			NArr<ASTArgumentDeclaration> args = astn.args;
 			if (!canHaveArgs) {
-				if( args != null && args.length > 0 ) {
-					Kiev.reportError(astn.getPos(),"Type parameters are not allowed for "+astn.name);
-					args.delAll();
+				if( me.args.length > 0 ) {
+					Kiev.reportError(me.pos,"Type parameters are not allowed for "+me);
+					me.args.delAll();
 				}
 			}
-			else if( astn.parent instanceof ASTStructDeclaration && ((ASTStructDeclaration)astn.parent).args.length > 0 ) {
-				ASTStructDeclaration astnp = (ASTStructDeclaration)astn.parent;
+			else if( me.parent instanceof Struct && ((Struct)me.parent).args.length > 0 ) {
+				Struct astnp = (Struct)me.parent;
 				// Inner classes's argumets have to be arguments of outer classes
-				for(int i=0; i < args.length; i++) {
-					ASTArgumentDeclaration arg = args[i];
-					Type[] outer_args = astnp.me.type.args;
+				for(int i=0; i < me.args.length; i++) {
+					BaseStruct arg = me.args[i];
+					Type[] outer_args = astnp.type.args;
 					if( outer_args == null || outer_args.length <= i)
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class arguments");
-					if !(outer_args[i].clazz.name.short_name.equals(arg.ident.name))
+					if !(outer_args[i].clazz.name.short_name.equals(arg.name.short_name))
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class argument,"
-							+" but arg["+i+"] is "+arg.ident
+							+" but arg["+i+"] is "+arg
 							+" and have to be "+outer_args[i].clazz.name.short_name);
 				}
 				/* Create type for class's arguments, if any */
-				if( args.length > 0 ) {
-					targs = astnp.me.type.args;
+				if( me.args.length > 0 ) {
+					targs = astnp.type.args;
 				}
 			} else {
-				for(int i=0; i < args.length; i++) {
-					ASTArgumentDeclaration a = args[i];
-					BaseStruct arg = Env.newArgument(a.ident.name,me);
-					arg.type = Type.newRefType(arg);
-					targs = (Type[])Arrays.append(targs,arg.type);
-				}
+				for(int i=0; i < me.args.length; i++)
+					targs = (Type[])Arrays.append(targs,me.args[i].type);
 			}
 
 			/* Generate type for this structure */
@@ -150,72 +132,42 @@ public final class ExportJavaTop implements Constants {
 		} finally { PassInfo.pop(me); }
 
 	}
-	
-	public ASTNode pass1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
-		trace(Kiev.debugResolve,"Pass 1 for "+
-			((astn.kind==ACC_ENUM)?"enum":
-			 ((astn.kind&ACC_ANNOTATION)!=0)?"annonation":
-			 (astn.kind==ACC_INTERFACE)?"interface":
-			 (astn.kind==ACC_SYNTAX)?"syntax":
-			 (astn.kind==ACC_PIZZACASE)?"class case":
-			 "class"
-			)+" "+astn.name);
+
+	public ASTNode pass1(Struct:ASTNode astn) {
+		trace(Kiev.debugResolve,"Pass 1 for struct "+astn);
+
 		Struct piclz = PassInfo.clazz;
-		int flags = astn.kind | astn.modifiers.getFlags();
-
-		if( astn.name != null ) {
-			ClazzName clname;
-			if( PassInfo.method != null ) {
-				// Construct name of local class
-				KString bytecode_name =
-					KString.from(piclz.name.bytecode_name
-						+"$"+piclz.countAnonymouseInnerStructs()
-						+"$"+astn.name);
-				//KString name = kiev.vlang.ClazzName.fixName(bytecode_name.replace('/','.'));
-				KString name = bytecode_name.replace('/','.');
-				clname = new ClazzName(name,astn.name.name,bytecode_name,false,false);
-			} else {
-				boolean isTop = (astn.parent != null && astn.parent instanceof FileUnit);
-				clname = ClazzName.fromOuterAndName(PassInfo.clazz,astn.name.name,false,!isTop);
-			}
-			astn.me = Env.newStruct(clname,PassInfo.clazz,flags,true);
-		} else {
-			astn.me = piclz;
-			if( !astn.me.isPackage() || astn.me == Env.root )
-				throw new CompilerException(astn.pos,"Package body declaration error");
-		}
-
-		Struct me = astn.me;
-		me.parent = pn;
+		Struct me = astn;
 		me.setResolved(true);
-		if( astn.modifiers.acc != null ) me.acc = astn.modifiers.acc;
-		if (me.isEnum() && !(astn.parent instanceof FileUnit))
-			me.setStatic(true);
-		if (me.isPizzaCase()) {
-			me.setStatic(true);
-			Struct p = ((ASTStructDeclaration)astn.parent).me;
-			p.addCase(me);
-			me.super_clazz = p.type;
+		setSourceFile(me);
+		if (me.isEnum()) {
+			if !(astn.parent instanceof FileUnit)
+				me.setStatic(true);
+			setupStructType(me, false);
 		}
-		if (me.isSyntax()) {
+		else if (me.isPizzaCase()) {
+			me.setStatic(true);
+			Struct p = (Struct)me.parent;
+			p.addCase(me);
+			me.super_type = p.type;
+			setupStructType(me, true);
+		}
+		else if (me.isSyntax()) {
 			me.setPrivate(true);
 			me.setAbstract(true);
 			me.setMembersGenerated(true);
 			me.setStatementsGenerated(true);
+			setupStructType(me, false);
 		}
-		setSourceFile(me, astn);
-		setupStructType(me, astn, true);
+		else
+			setupStructType(me, true);
 
-        PassInfo.push(me);
-        try {
+		PassInfo.push(me);
+		try {
 			// Process inner classes and cases
 			if( !me.isPackage() ) {
-				for(int i=0; i < astn.members.length; i++) {
-					ASTNode m = astn.members[i];
-					if( m instanceof ASTStructDeclaration) {
-						m.parent = astn;
-						me.members.add(pass1(m,me));
-					}
+				foreach (ASTNode n; me.members) {
+					pass1(n);
 				}
 			}
 		} finally { PassInfo.pop(me); }
@@ -228,9 +180,9 @@ public final class ExportJavaTop implements Constants {
 
 
 	/////////////////////////////////////////////////////
-	//                                                 //
-	//     PASS 1_1 - process syntax declarations      //
-	//                                                 //
+	//												   //
+	//	   PASS 1_1 - process syntax declarations	   //
+	//												   //
 	/////////////////////////////////////////////////////
 
 
@@ -243,7 +195,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
-				try { pass1_1(fu,null);
+				try { pass1_1(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
 				}
@@ -251,7 +203,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
-				try { pass1_1(fu,null);
+				try { pass1_1(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
 				}
@@ -260,17 +212,17 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass1_1(ASTNode:ASTNode node, ASTNode pn) {
+	public ASTNode pass1_1(ASTNode:ASTNode node) {
 		return node;
 	}
 
-	public ASTNode pass1_1(FileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1_1(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(astn.disabled_extensions);
+		try {
+			Kiev.setExtSet(astn.disabled_extensions);
 
 			// Process file imports...
 			boolean java_lang_found = false;
@@ -284,9 +236,7 @@ public final class ExportJavaTop implements Constants {
 				try {
 					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
 						continue; // process later
-					ASTNode sn = pass1_1(n, astn);
-					if (sn == null)
-						continue;
+					ASTNode sn = pass1_1(n);
 					if (sn instanceof Import) {
 						if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(java_lang_name))
 							java_lang_found = true;
@@ -302,21 +252,21 @@ public final class ExportJavaTop implements Constants {
 			}
 			// Add standard imports, if they were not defined
 			if( !Kiev.javaMode && !kiev_stdlib_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
 			if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
 			if( !java_lang_found )
-				astn.syntax.add(new Import(0,pn,Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
+				astn.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
 
 			// Process members - pass1_1()
 			foreach (ASTNode n; astn.members) {
-				pass1_1(n, astn);
+				pass1_1(n);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
 		return astn;
 	}
 
-	public ASTNode pass1_1(Import:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1_1(Import:ASTNode astn) {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
 		KString name = astn.name;
 		ASTNode@ v;
@@ -325,7 +275,7 @@ public final class ExportJavaTop implements Constants {
 			return astn;
 		}
 		ASTNode n = v;
-		if      (astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
+		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a class or package");
 		else if (astn.mode == Import.ImportMode.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a package");
@@ -338,35 +288,38 @@ public final class ExportJavaTop implements Constants {
 		return astn;
 	}
 
-	public ASTNode pass1_1(Typedef:ASTNode astn, ASTNode pn) {
-		if (astn.typearg != null) {
-			astn.type = new TypeRef(astn.type.getType().clazz.type);
-		} else {
-			astn.type = new TypeRef(astn.type.getType());
-		}
+	public ASTNode pass1_1(Typedef:ASTNode astn) {
+		try {
+			if (astn.typearg != null) {
+				astn.type = new TypeRef(astn.type.getType().clazz.type);
+			} else {
+				astn.type = new TypeRef(astn.type.getType());
+			}
+		} catch (RuntimeException e) { /* ignore */ }
 		return astn;
 	}
 
-	public ASTNode pass1_1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
-		// Attach meta-data to the new structure
-		astn.modifiers.getMetas(astn.me.meta);
+	public ASTNode pass1_1(Struct:ASTNode astn) {
+		// Verify meta-data to the new structure
+		Struct me = astn;
+		me.meta.verify();
 		
-		if (astn.me.isSyntax()) {
-			trace(Kiev.debugResolve,"Pass 1_1 for syntax "+astn.me);
-			foreach (ASTNode n; astn.members) {
+		if (me.isSyntax()) {
+			trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
+			foreach (ASTNode n; me.members) {
 				try {
 					if (n instanceof Typedef) {
-						n = pass1_1(n, astn.me);
+						n = pass1_1(n);
 						if (n != null) {
-							astn.me.imported.add(n);
-							trace(Kiev.debugResolve,"Add "+n+" to syntax "+astn.me);
+							me.imported.add(n);
+							trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 						}
 					}
 					else if (n instanceof Opdef) {
-						n = pass1_1(n, astn.me);
+						n = pass1_1(n);
 						if (n != null) {
-							astn.me.imported.add(n);
-							trace(Kiev.debugResolve,"Add "+n+" to syntax "+astn.me);
+							me.imported.add(n);
+							trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 						}
 					}
 				} catch(Exception e ) {
@@ -375,10 +328,10 @@ public final class ExportJavaTop implements Constants {
 			}
 		}
 		
-		return astn.me;
+		return me;
 	}
 	
-	public ASTNode pass1_1(Opdef:ASTNode astn, ASTNode pn) {
+	public ASTNode pass1_1(Opdef:ASTNode astn) {
 		int pos = astn.pos;
 		int prior = astn.prior;
 		int opmode = astn.opmode;
@@ -466,9 +419,9 @@ public final class ExportJavaTop implements Constants {
 
 
 	/////////////////////////////////////////////////////
-	//                                                 //
-	//     PASS 2 - struct args inheritance            //
-	//                                                 //
+	//													//
+	//	   PASS 2 - struct args inheritance			//
+	//													//
 	/////////////////////////////////////////////////////
 
 
@@ -481,7 +434,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
-				try { pass2(fu,null);
+				try { pass2(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
 				}
@@ -489,7 +442,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
-				try { pass2(fu,null);
+				try { pass2(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
 				}
@@ -498,63 +451,69 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass2(ASTNode:ASTNode astn, ASTNode pn) {
+	public ASTNode pass2(ASTNode:ASTNode astn) {
 		return astn;
 	}
 
-	public ASTNode pass2(FileUnit:ASTNode astn, ASTNode pn) {
+	public ASTNode pass2(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(astn.disabled_extensions);
+		try {
+			Kiev.setExtSet(astn.disabled_extensions);
 			// Process members - pass2()
 			foreach (ASTNode n; astn.members)
-				pass2(n, astn);
+				pass2(n);
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
 		return astn;
 	}
 
-	public ASTNode pass2(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
-		Struct me = astn.me;
+	public ASTNode pass2(Struct:ASTNode astn) {
+		Struct me = astn;
 		int pos = astn.pos;
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
-        PassInfo.push(me);
-        try {
+		PassInfo.push(me);
+		try {
 			/* Process inheritance of class's arguments, if any */
 			Type[] targs = me.type.args;
-	        for(int i=0; i < astn.args.length; i++) {
-				ASTArgumentDeclaration arg = astn.args[i];
-				if( arg.ext != null ) {
-					Type sup = arg.ext.getType();
+			for(int i=0; i < astn.args.length; i++) {
+				BaseStruct arg = astn.args[i];
+				if( arg.super_bound.isBound() ) {
+					Type sup = arg.super_bound.getType();
 					if( !sup.isReference() )
 						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
 					else
-						targs[i].clazz.super_clazz = sup;
+						targs[i].clazz.super_type = sup;
 					targs[i].checkJavaSignature();
 				} else {
-					targs[i].clazz.super_clazz = Type.tpObject;
+					targs[i].clazz.super_type = Type.tpObject;
 				}
 			}
 			// Process ASTGenerete
-			if( astn.gens != null ) {
+			if( astn.gens.length > 0 ) {
 				Type[][] gtypes = new Type[astn.gens.length][me.type.args.length];
 				for(int l=0; l < gtypes.length; l++) {
-					ASTNonArrayType ag = (ASTNonArrayType)astn.gens[l];
-					for(int m=0; m < me.type.args.length; m++) {
-						if( ag.children[m+1] instanceof ASTPrimitiveType) {
-							if( astn.args[m].ext != null ) {
-								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
+					if !(me.gens[l] instanceof ASTNonArrayType) {
+						for(int m=0; m < me.type.args.length; m++) {
+							gtypes[l][m] = me.gens[l].getType().args[m];
+						}
+					} else {
+						ASTNonArrayType ag = (ASTNonArrayType)me.gens[l];
+						for(int m=0; m < me.type.args.length; m++) {
+							if( ag.children[m+1] instanceof ASTPrimitiveType) {
+								if( astn.args[m].super_type != Type.tpObject ) {
+									Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
+								}
+								gtypes[l][m] = ag.children[m+1].getType();
+							} else { // ASTIdentifier
+								KString a = ((ASTIdentifier)ag.children[m+1]).name;
+								Type ad = me.type.args[m]; 
+								if( a != ad.clazz.name.short_name ) {
+									Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+ad);
+								}
+								gtypes[l][m] = me.type.args[m];
 							}
-							gtypes[l][m] = ((ASTPrimitiveType)ag.children[m+1]).type;
-						} else { // ASTIdentifier
-							KString a = ((ASTIdentifier)ag.children[m+1]).name;
-							ASTArgumentDeclaration ad = astn.args[m]; 
-							if( a != ad.ident.name ) {
-								Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+ad.ident);
-							}
-							gtypes[l][m] = me.type.args[m];
 						}
 					}
 				}
@@ -580,10 +539,10 @@ public final class ExportJavaTop implements Constants {
 					Type gtype = Type.newRefType(me,gtypes[k]);
 					gtype.java_signature = cn.signature();
 					gtype.clazz = s;
-					me.gens.append(s);
+					me.gens[k] = new TypeRef(gtype);
 					s.type = gtype;
 					s.generated_from = me;
-					s.super_clazz = Type.getRealType(s.type,me.super_clazz);
+					s.super_type = Type.getRealType(s.type,me.super_type);
 					// Add generation for inner parametriezed classes
 					for(int l=0; l < me.sub_clazz.length; l++) {
 						Struct sc = me.sub_clazz[l];
@@ -609,18 +568,18 @@ public final class ExportJavaTop implements Constants {
 						Type scgt = Type.getRealType(gtype,sc.type);
 						scgt.java_signature = cn.signature();
 						scgt.clazz = scg;
-						sc.gens.append(scg);
+						sc.gens.append(new TypeRef(scgt));
 						scg.type = scgt;
 						scg.generated_from = sc;
-						scg.super_clazz = Type.getRealType(scg.type,sc.super_clazz);
+						scg.super_type = Type.getRealType(scg.type,sc.super_type);
 					}
 				}
 			}
 
-	        // Process inner classes and cases
-        	if( !me.isPackage() ) {
+			// Process inner classes and cases
+			if( !me.isPackage() ) {
 				foreach (ASTNode m; astn.members)
-					pass2(m, me);
+					pass2(m);
 			}
 		} finally { PassInfo.pop(me); }
 
@@ -634,9 +593,9 @@ public final class ExportJavaTop implements Constants {
 
 
 	/////////////////////////////////////////////////////
-	//                                                 //
-	//     PASS 2_2 - struct inheritance               //
-	//                                                 //
+	//												   //
+	//	   PASS 2_2 - struct inheritance			   //
+	//												   //
 	/////////////////////////////////////////////////////
 
 
@@ -649,7 +608,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.file_unit.length; i++) {
 				FileUnit fu = Kiev.file_unit[i]; 
 				if( fu == null ) continue;
-				try { pass2_2(fu,null);
+				try { pass2_2(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
 				}
@@ -657,7 +616,7 @@ public final class ExportJavaTop implements Constants {
 			for(int i=0; i < Kiev.files_scanned.length; i++) {
 				FileUnit fu = Kiev.files_scanned[i]; 
 				if( fu == null ) continue;
-				try { pass2_2(fu,null);
+				try { pass2_2(fu);
 				} catch (Exception e) {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
 				}
@@ -666,86 +625,401 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public void pass2_2(ASTNode:ASTNode astn, ASTNode pn) {
+	public void pass2_2(ASTNode:ASTNode astn) {
 	}
 
-	public void pass2_2(FileUnit:ASTNode astn, ASTNode pn) {
+	public void pass2_2(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		PassInfo.push(astn);
 		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(astn.disabled_extensions);
+		try {
+			Kiev.setExtSet(astn.disabled_extensions);
 			// Process members - pass2()
+			foreach (ASTNode n; astn.syntax) {
+				try {
+					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
+						continue; // process later
+					pass2_2(n);
+				} catch(Exception e ) {
+					Kiev.reportError(n.getPos(),e);
+				}
+			}
 			foreach (ASTNode n; astn.members)
-				pass2_2(n, astn);
+				pass2_2(n);
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
 	}
 
-	public void pass2_2(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
+	public void pass2_2(Typedef:ASTNode astn) {
+		if (astn.type == null) {
+			if (astn.typearg != null) {
+				astn.type = new TypeRef(astn.type.getType().clazz.type);
+			} else {
+				astn.type = new TypeRef(astn.type.getType());
+			}
+		}
+	}
+
+	public void pass2_2(Struct:ASTNode astn) {
 		int pos = astn.pos;
-		Struct me = astn.me;
+		Struct me = astn;
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
 		PassInfo.push(me);
 		try {
 			/* Now, process 'extends' and 'implements' clauses */
 			if( me.isAnnotation() ) {
-				me.super_clazz = Type.tpObject;
-				me.interfaces.add(Type.tpAnnotation);
+				me.super_type = Type.tpObject;
+				me.interfaces.add(new TypeRef(Type.tpAnnotation));
 			}
 			else if( me.isInterface() ) {
-				me.super_clazz = Type.tpObject;
-				foreach(ASTType at; astn.impl)
-					me.interfaces.append(at.getType());
+				me.super_type = Type.tpObject;
+				foreach(TypeRef tr; me.interfaces)
+					tr.getType();
 			}
 			else if( me.isEnum() ) {
-				if( astn.ext != null ) {
-					me.super_clazz = astn.ext.getType();
-					if( !me.super_clazz.isReference() ) {
+				if( astn.super_type != null ) {
+					me.super_type.getType();
+					if( !me.super_type.isReference() ) {
 						me.setPrimitiveEnum(true);
 						me.type.setMeAsPrimitiveEnum();
 					}
 				} else {
-					me.super_clazz = Type.tpEnum;
+					me.super_type = Type.tpEnum;
 				}
 			}
 			else if( me.isSyntax() ) {
-				me.super_clazz = null;
-				if (!Kiev.packages_scanned.contains(astn.me))
-					Kiev.packages_scanned.append(astn.me);
+				me.super_type = null;
+				if (!Kiev.packages_scanned.contains(me))
+					Kiev.packages_scanned.append(me);
 			}
 			else if( me.isPizzaCase() ) {
 				// already set
 				//me.super_clazz = ((Struct)me.parent).type;
-				assert (me.super_clazz == ((Struct)me.parent).type);
+				assert (me.super_type == ((Struct)me.parent).type);
 			}
 			else {
-				if (astn.ext != null)
-					me.super_clazz = astn.ext.getType();
-				else if( !me.name.name.equals(Type.tpObject.clazz.name.name))
-					me.super_clazz = Type.tpObject;
-				foreach(ASTType at; astn.impl)
-					me.interfaces.append(at.getType());
+				Type sup = me.super_bound.getType();
+				if (sup == null && !me.name.name.equals(Type.tpObject.clazz.name.name))
+					me.super_type = Type.tpObject;
+				foreach(TypeRef tr; me.interfaces)
+					tr.getType();
 				if( me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
-					me.interfaces.append(Type.tpTypeInfoInterface);
+					me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 				}
 			}
 			if( me.interfaces.length > 0 && me.gens != null ) {
 				for(int g=0; g < me.gens.length; g++) {
 					for(int l=0; l < me.interfaces.length; l++) {
-						me.gens[g].interfaces.add(Type.getRealType(me.gens[g].type,me.interfaces[l]));
+						Struct s = (Struct)me.gens[g].clazz;
+						s.interfaces.add(new TypeRef(Type.getRealType(me.gens[g],me.interfaces[l])));
 					}
 				}
 			}
 
-	        // Process inner classes and cases
+			// Process inner classes and cases
 			if( !me.isPackage() ) {
 				foreach (ASTNode m; astn.members)
-					pass2_2(m, me);
+					pass2_2(m);
 			}
 		} finally { PassInfo.pop(me); }
 
 	}
+
+
+
+
+
+
+	////////////////////////////////////////////////////
+	//												   //
+	//	   PASS 3- struct members					   //
+	//												   //
+	////////////////////////////////////////////////////
+
+
+	public boolean pass3() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no; 
+		Kiev.pass_no = TopLevelPass.passStructInheritance;
+		try
+		{
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				FileUnit fu = Kiev.file_unit[i]; 
+				if( fu == null ) continue;
+				try { pass3(fu);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				FileUnit fu = Kiev.files_scanned[i]; 
+				if( fu == null ) continue;
+				try { pass3(fu);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	public void pass3(ASTNode:ASTNode astn) {
+	}
+
+	public void pass3(FileUnit:ASTNode astn) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = astn.filename;
+		PassInfo.push(astn);
+		boolean[] exts = Kiev.getExtSet();
+		try {
+			Kiev.setExtSet(astn.disabled_extensions);
+			// Process members - pass3()
+			foreach (ASTNode n; astn.members)
+				pass3(n);
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+	}
+
+
+	public void pass3(Struct:ASTNode astn) {
+		int pos = astn.pos;
+		Struct me = astn;
+		int next_enum_val = 0;
+		trace(Kiev.debugResolve,"Pass 3 for class "+me);
+		if (me.isSyntax()) {
+			if (!Kiev.packages_scanned.contains(me))
+				Kiev.packages_scanned.append(me);
+			return;
+		}
+		PassInfo.push(me);
+		try {
+			// Process members
+			ASTNode[] members = astn.members.toArray();
+			for(int i=0; i < members.length; i++) {
+				if( members[i] instanceof ASTInitializer ) {
+					ASTInitializer init = (ASTInitializer)members[i];
+					// TODO: check flags for initialzer
+					Initializer in = new Initializer(init.pos, init.modifiers.getFlags());
+					if (init.body != null)
+						in.addStatement(init.body);
+					else
+						in.pbody = init.pbody;
+					if( me.isPackage() ) in.setStatic(true);
+					init.replaceWith(in);
+				}
+				else if( members[i] instanceof ASTMethodDeclaration ) {
+					ASTMethodDeclaration astmd = (ASTMethodDeclaration)members[i];
+					Method m = (Method)((ASTMethodDeclaration)members[i]).pass3();
+					if( me.isPackage() ) m.setStatic(true);
+					if( m.isPrivate() ) m.setFinal(false);
+					else if( me.isClazz() && me.isFinal() ) m.setFinal(true);
+					else if( me.isInterface() ) {
+						m.setPublic(true);
+						if( astmd.pbody == null )
+							m.setAbstract(true);
+					}
+					if( m.name.equals(nameInit) ) {
+						m.setNative(false);
+						m.setAbstract(false);
+						m.setSynchronized(false);
+						m.setFinal(false);
+					}
+				}
+				else if( members[i] instanceof ASTRuleDeclaration ) {
+					ASTRuleDeclaration astmd = (ASTRuleDeclaration)members[i];
+					Method m = (Method)((ASTRuleDeclaration)members[i]).pass3();
+					if( me.isPackage() ) m.setStatic(true);
+					if( m.isPrivate() ) m.setFinal(true);
+					if( me.isClazz() && me.isFinal() ) m.setFinal(true);
+					else if( me.isInterface() ) {
+						m.setPublic(true);
+						if( astmd.pbody == null )
+							m.setAbstract(true);
+					}
+				}
+				else if( members[i] instanceof ASTFieldDecl ) {
+					ASTFieldDecl fdecl = (ASTFieldDecl)members[i];
+					// TODO: check flags for fields
+					int flags = fdecl.modifiers.getFlags();
+					if( me.isPackage() ) flags |= ACC_STATIC;
+					if( me.isInterface() ) {
+						if( (flags & ACC_VIRTUAL) != 0 ) flags |= ACC_ABSTRACT;
+						else {
+							flags |= ACC_STATIC;
+							flags |= ACC_FINAL;
+						}
+						flags |= ACC_PUBLIC;
+					}
+					Type ftype = fdecl.type.getType();
+					KString fname = fdecl.name;
+					for(int k=0; k < fdecl.dim; k++) ftype = Type.newArrayType(ftype);
+					Field f = new Field(me,fname,ftype,flags);
+					f.setPos(fdecl.pos);
+					// Attach meta-data to the new structure
+					fdecl.modifiers.getMetas(f.meta);
+					MetaPacked pack = f.getMetaPacked();
+					if( pack != null ) {
+						if( f.isStatic() ) {
+							Kiev.reportWarning(fdecl.pos,"Packing of static field(s) ignored");
+							f.meta.unset(pack);
+						}
+						else if( !ftype.isIntegerInCode() ) {
+							if( ftype.clazz.instanceOf(Type.tpEnum.clazz) ) {
+								Kiev.reportError(fdecl.pos,"Packing of enum is not implemented yet");
+							} else {
+								Kiev.reportError(fdecl.pos,"Packing of reference type is not allowed");
+							}
+							f.meta.unset(pack);
+						} else {
+							int max_pack_size = 32;
+							if( ftype == Type.tpShort || ftype == Type.tpChar ) {
+								max_pack_size = 16;
+								if( pack.size <= 0 ) pack.size = 16;
+							}
+							else if( ftype == Type.tpByte ) {
+								max_pack_size = 8;
+								if( pack.size <= 0 ) pack.size = 8;
+							}
+							else if( ftype == Type.tpBoolean) {
+								max_pack_size = 1;
+								if( pack.size <= 0 ) pack.size = 1;
+							}
+							if( pack.size < 0 || pack.size > max_pack_size ) {
+								Kiev.reportError(fdecl.pos,"Bad size "+pack.size+" of packed field");
+								f.meta.unset(pack);
+							}
+							else if( pack.offset >= 0 && pack.size+pack.offset > 32) {
+								Kiev.reportError(fdecl.pos,"Size+offset "+(pack.size+pack.offset)+" do not fit in 32 bit boundary");
+								f.meta.unset(pack);
+							}
+						}
+					}
+					if( f.getMetaPacked() != null )
+						f.setPackedField(true);
+					if( me.isInterface() ) {
+						if( f.isVirtual() )
+							f.setAbstract(true);
+						else {
+							f.setStatic(true);
+							f.setFinal(true);
+						}
+						f.setPublic(true);
+					}
+					fdecl.replaceWith(f);
+					if (fdecl.init == null && fdecl.dim==0) {
+						if(ftype.clazz.isWrapper()) {
+							f.init = new NewExpr(fdecl.pos,ftype,Expr.emptyArray);
+							f.setInitWrapper(true);
+						}
+					} else {
+						if( ftype.clazz.isWrapper()) {
+							if (fdecl.of_wrapper)
+								f.init = fdecl.init;
+							else
+								f.init = new NewExpr(fdecl.pos,ftype, (fdecl.init==null)? Expr.emptyArray : new Expr[]{fdecl.init});
+							f.setInitWrapper(true);
+						} else {
+							f.init = fdecl.init;
+							f.setInitWrapper(false);
+						}
+					}
+					if( ((ASTFieldDecl)members[i]).modifiers.acc != null )
+						f.acc = ((ASTFieldDecl)members[i]).modifiers.acc;
+				}
+				else if (members[i] instanceof ASTEnumFieldDeclaration) {
+					ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)members[i];
+					Type me_type = me.type;
+					Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_ENUM);
+					f.pos = efd.pos;
+					f.setEnumField(true);
+					efd.replaceWith(f);
+					if (me.isPrimitiveEnum()) {
+						if (efd.val != null) {
+							if (efd.val.val instanceof Character)
+								next_enum_val = ((Character)efd.val.val).charValue();
+							else
+								next_enum_val = ((Number)efd.val.val).intValue();
+						}
+						f.init = new ConstExpr(efd.pos,new Integer(next_enum_val));
+					} else {
+						if (efd.val != null)
+							Kiev.reportError(me.pos,"Enum "+me+" is not a primitive enum");
+						if (efd.text == null)
+							f.init = new NewExpr(f.pos,me.type,new Expr[]{
+										new ConstExpr(efd.name.pos,efd.name.name),
+										new ConstExpr(efd.pos, new Integer(next_enum_val)),
+										new ConstExpr(efd.name.pos,efd.name.name)
+							});
+						else
+							f.init = new NewExpr(f.pos,me.type,new Expr[]{
+										new ConstExpr(efd.name.pos,efd.name.name),
+										new ConstExpr(efd.pos, new Integer(next_enum_val)),
+										new ConstExpr(efd.text.pos, efd.text.val)
+							});
+					}
+					next_enum_val++;
+					if (efd.text != null)
+						f.name.addAlias(KString.from("\""+efd.text.val+"\""));
+				}
+				else if( members[i] instanceof ASTFormalParameter) {
+					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
+					Var v = ((ASTFormalParameter)members[i]).pass3();
+					Field f = new Field(me,v.name.name,v.type,ACC_PUBLIC);
+					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
+					members[i].replaceWith(f);
+				}
+				else if( members[i] instanceof ASTInvariantDeclaration ) {
+					((ASTInvariantDeclaration)members[i]).pass3();
+				}
+				// Inner classes and cases after all methods and fields, skip now
+				else if( members[i] instanceof Struct );
+				else if( members[i] instanceof Method );
+				else if( members[i] instanceof Field );
+				else if( members[i] instanceof Import ) {
+					me.imported.add(members[i]);
+				}
+				else {
+					throw new CompilerException(members[i].getPos(),"Unknown type if structure member: "+members[i]);
+				}
+			}
+
+			new ProcessVirtFld().createMembers(me);
+			me.setupWrappedField();
+			
+			// Create constructor for pizza case
+			if( me.isPizzaCase() ) {
+				PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
+				NArr<Type> targs = new NArr<Type>();
+				foreach (Field f; case_attr.casefields)
+					targs.add(f.type);
+				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
+				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
+				init.pos = me.pos;
+				init.params.add(new Var(me.pos,Constants.nameThis,me.type,0));
+				foreach (Field f; case_attr.casefields)
+					init.params.add(new Var(f.pos,f.name.name,f.type,0));
+				me.addMethod(init);
+				init.body = new BlockStat(me.pos,init);
+			}
+
+			// Process inner classes and cases
+			if( !me.isPackage() ) {
+				foreach (ASTNode n; me.members; n instanceof Struct)
+					pass3(n);
+			}
+			// Process ASTGenerete
+			for(int i=0; i < me.gens.length; i++) {
+				TypeRef g = me.gens[i];
+				Struct s = (Struct)g.clazz;
+				s.super_type = Type.getRealType(g,me.super_type);
+				s.package_clazz = me.package_clazz;
+				if( me.interfaces.length != 0 ) {
+					for(int j=0; j < me.interfaces.length; j++)
+						s.interfaces.add(new TypeRef(Type.getRealType(s.type,me.interfaces[j])));
+				}
+			}
+		} finally { PassInfo.pop(me); }
+	}
+
 }
 
 

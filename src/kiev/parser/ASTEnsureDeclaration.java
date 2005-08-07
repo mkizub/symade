@@ -40,8 +40,7 @@ import static kiev.vlang.WorkByContractCondition.*;
 public class ASTEnsureDeclaration extends ASTCondDeclaration {
 
     public ASTNode pass3() {
-    	WorkByContractCondition cond = new WorkByContractCondition(pos,CondEnsure,name,body);
-		if( pbody != null ) pbody.setParent(cond);
+    	WorkByContractCondition cond = new WorkByContractCondition(pos,CondEnsure,name,body,pbody);
     	return cond;
     }
 }

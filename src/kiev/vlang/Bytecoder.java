@@ -81,9 +81,9 @@ public class Bytecoder implements Constants {
 		if( bcclazz.getSuperClazzName() != null ) {
 			KString cl_super_name = kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_clazz = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(cl.super_clazz.clazz.name) == null )
-				throw new RuntimeException("Class "+cl.super_clazz.clazz.name+" not found");
+		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+			if( Env.getStruct(cl.super_type.clazz.name) == null )
+				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
 		}
 
 		int fl = cl.getFlags();
@@ -111,7 +111,7 @@ public class Bytecoder implements Constants {
 				throw new RuntimeException("Class "+interf.clazz.name+" not found");
 			if( !interf.clazz.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
-			cl.interfaces.append(interf);
+			cl.interfaces.append(new TypeRef(interf));
 		}
 
 		cl.members.delAll();
@@ -263,7 +263,7 @@ public class Bytecoder implements Constants {
 					(at.name.equals(attrRequire) ?
 						WorkByContractCondition.CondRequire
 					  : WorkByContractCondition.CondEnsure
-					), null, null);
+					), null, null, null);
 				wbc.code = (ContractAttr)at;
 				if( m == null ) {
 					if( conditions == null )
@@ -458,7 +458,7 @@ public class Bytecoder implements Constants {
 				}
 			}
 			cl.setPizzaCase(true);
-			cl.super_clazz.clazz.setHasCases(true);
+			cl.super_type.clazz.setHasCases(true);
 			a = new PizzaCaseAttr();
 			((PizzaCaseAttr)a).caseno = caseno;
 			((PizzaCaseAttr)a).casefields = casefields;
@@ -520,8 +520,8 @@ public class Bytecoder implements Constants {
 				sg = Env.getStruct(sgcn);
 				if( sg == null )
 					throw new RuntimeException("Can't find class "+sgcn);
-				cl.gens.add(sg);
-				cl.gens[i].typeinfo_clazz = cl.typeinfo_clazz;
+				cl.gens.add(new TypeRef(sg.type));
+				((Struct)cl.gens[i].clazz).typeinfo_clazz = cl.typeinfo_clazz;
 			}
 			a = null;
 		}
@@ -809,10 +809,10 @@ public class Bytecoder implements Constants {
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = ConstPool.getClazzCP(cl_sig).pos;
 	    // This class's superclass name
-	    if( cl.super_clazz != null ) {
+	    if( cl.super_type != null ) {
 		    KString sup_sig = kievmode ?
-					jcl.super_clazz.signature
-				  : jcl.super_clazz.java_signature;
+					jcl.super_type.signature
+				  : jcl.super_type.java_signature;
 		    bcclazz.cp_super_clazz = ConstPool.getClazzCP(sup_sig).pos;
 		} else {
 			bcclazz.cp_super_clazz = 0;

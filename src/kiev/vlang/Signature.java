@@ -95,7 +95,7 @@ public class Signature {
 				ksb.append(args[i].signature);
 				if( full && args[i].isArgument() ) {
 					ksb.append('<');
-					ksb.append(args[i].clazz.super_clazz.signature);
+					ksb.append(args[i].clazz.super_type.signature);
 					ksb.append('>');
 				}
 			}
@@ -210,11 +210,11 @@ public class Signature {
 				if( args.length == 0 )
 					return Type.newRefType(clazz);
 				else if( args.length == 1 ) {
-					if( clazz.super_clazz==null )
-						clazz.super_clazz = args[0];
-					else if( !args[0].equals(clazz.super_clazz) )
+					if( clazz.super_type==null )
+						clazz.super_type = args[0];
+					else if( !args[0].equals(clazz.super_type) )
 						throw new RuntimeException("Is class argument signature "+sc
-							+" type of argument super-class "+args[0]+" does not match "+clazz.super_clazz);
+							+" type of argument super-class "+args[0]+" does not match "+clazz.super_type);
 					return Type.newRefType(clazz);
 				} else
 					throw new RuntimeException("Signature of class's argument "+clazz+" specifies more than one super-class: "+args);
@@ -323,7 +323,7 @@ public class Signature {
 		KString kstr = sc.str.substr(pos,sc.pos);
 		BaseStruct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
 		if( struct !=null && struct.isArgument() )
-			kstr = struct.super_clazz.clazz.name.signature();
+			kstr = struct.super_type.clazz.name.signature();
 		if( sc.peekChar() == '<' ) {
 			int depth = 0;
 			while( sc.hasMoreChars() ) {

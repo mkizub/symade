@@ -69,7 +69,7 @@ public class ASTCallAccessExpression extends Expr {
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
 		&& !PassInfo.method.isStatic() ) {
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,m,info,func.name,args.toArray(),ret,tp,0) ) {
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type.clazz,m,info,func.name,args.toArray(),ret,tp,0) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
 			}

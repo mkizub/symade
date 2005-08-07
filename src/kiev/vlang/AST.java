@@ -194,7 +194,7 @@ public abstract class ASTNode implements Constants {
 		return addr;
 	}
 
-	public void jjtSetParent(ASTNode n) { parent = n; }
+	public final void jjtSetParent(ASTNode n) {}
 	public ASTNode jjtGetParent() { return parent; }
 	public void setParent(ASTNode n) { parent = n; }
 	public ASTNode getParent() { return parent; }
@@ -1033,18 +1033,72 @@ public abstract class Statement extends CFNode {
 }
 
 @node
+public class RefNode<N extends ASTNode> extends ASTNode {
+	@att KString					name;
+	@ref public virtual forward N	lnk;
+	
+	public RefNode() {}
+	
+	public RefNode(N n) {
+		this.lnk = n;
+	}
+	public RefNode(int pos) {
+		super(pos);
+	}
+	public RefNode(int pos, N n) {
+		super(pos);
+		this.lnk = n;
+	}
+	public N get$lnk()
+		alias operator(210,fy,$cast)
+	{
+		return lnk;
+	}
+	public void set$lnk(N n) {
+		this.lnk = n;
+	}
+	
+}
+
+@node
 public class TypeRef extends ASTNode {
-	@ref public Type			type;
+	//@att KString						name;
+	@ref public virtual forward Type	lnk;
 	
 	public TypeRef() {}
+	
 	public TypeRef(Type tp) {
-		this.type = tp;
+		this.lnk = tp;
 	}
 	public TypeRef(int pos) {
 		super(pos);
 	}
+	public TypeRef(int pos, Type tp) {
+		super(pos);
+		this.lnk = tp;
+	}
+	
+	public boolean isBound() {
+		return lnk != null;
+	}
+
 	public Type getType() {
-		return type;
+		return lnk;
+	}
+	
+	public Type get$lnk()
+		alias operator(210,fy,$cast)
+	{
+		return lnk;
+	}
+	public void set$lnk(Type n) {
+		this.lnk = n;
+	}
+	
+	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {
+		NArr<Type> tmp = new NArr<Type>();
+		foreach (TypeRef tr; arr) { if (tr.lnk != null) tmp.add(tr.lnk); }
+		return tmp.elements();
 	}
 }
 

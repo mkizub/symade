@@ -42,12 +42,12 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
     @att public ASTIdentifier							ident;
     @att public final NArr<ASTFormalParameter>			params;
     @att public ASTType									rettype;
-    @att public final NArr<ASTArgumentDeclaration>		argtypes;
+    @att public final NArr<BaseStruct>					argtypes;
     @att public final NArr<ASTAlias>					aliases;
     @att public ASTNode									throwns;
     @att public Statement								body;
 	@virtual
-	public virtual PrescannedBody 						pbody;
+	@att public virtual PrescannedBody 				pbody;
 	@att public final NArr<ASTRequareDeclaration>		req;
 	@att public final NArr<ASTEnsureDeclaration>		ens;
     @att public MetaValue								annotation_default;
@@ -65,9 +65,6 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
 			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTArgumentDeclaration ) {
-			argtypes.append((ASTArgumentDeclaration)n);
 		}
         else if( n instanceof ASTType ) {
         	rettype = (ASTType)n;
@@ -111,31 +108,22 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	}
 
     public ASTNode pass3() {
-		Struct clazz;
-		if( parent instanceof ASTStructDeclaration )
-			clazz = ((ASTStructDeclaration)parent).me;
-		else if( parent instanceof Struct )
-			clazz = (Struct)parent;
-		else
+		if !( parent instanceof Struct )
 			throw new CompilerException(pos,"Method must be declared on class level only");
+		Struct clazz = (Struct)parent;
 		// TODO: check flags for methods
 		int flags = modifiers.getFlags();
-		Struct ps;
-		if( parent instanceof ASTStructDeclaration)
-			ps = ((ASTStructDeclaration)parent).me;
-		else
-			ps = (Struct)parent;
-		if( ps.isPackage() ) flags |= ACC_STATIC;
+		if( clazz.isPackage() ) flags |= ACC_STATIC;
 		if( (flags & ACC_PRIVATE) != 0 ) flags &= ~ACC_FINAL;
-		else if( ps.isClazz() && ps.isFinal() ) flags |= ACC_FINAL;
-		else if( ps.isInterface() ) {
+		else if( clazz.isClazz() && clazz.isFinal() ) flags |= ACC_FINAL;
+		else if( clazz.isInterface() ) {
 			flags |= ACC_PUBLIC;
 			if( pbody == null ) flags |= ACC_ABSTRACT;
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 
-		foreach (ASTArgumentDeclaration ad; argtypes)
-			ftypes.append( Env.newMethodArgument(ad.ident.name,clazz).type );
+		foreach (BaseStruct ad; argtypes)
+			ftypes.append( ad.type );
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
@@ -143,14 +131,14 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		boolean has_dispatcher = false;
 		Type type;
 		
-		if (ps.isAnnotation() && vars.length > 0) {
+		if (clazz.isAnnotation() && vars.length > 0) {
 			Kiev.reportError(pos, "Annotation methods may not have arguments");
 			params.delAll();
 			vars.delAll();
 			setVarArgs(false);
 		}
 
-		if (ps.isAnnotation() && (body != null || pbody != null)) {
+		if (clazz.isAnnotation() && (body != null || pbody != null)) {
 			Kiev.reportError(pos, "Annotation methods may not have bodies");
 			body = null;
 			pbody = null;
@@ -178,7 +166,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 				else if (fdecl.type.getType().clazz.isPizzaCase()) {
 					mjargs = (Type[])Arrays.append(mjargs,
 						Type.getRealType(PassInfo.clazz.type,
-							fdecl.type.getType().clazz.super_clazz));
+							fdecl.type.getType().clazz.super_type));
 					has_dispatcher = true;
 				}
 				else if (has_dispatcher) {
@@ -204,18 +192,18 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			me.annotation_default = annotation_default.verify();
 		}
         me.body = body;
+		me.pbody = pbody;
 		if( !me.isStatic() )
 			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
 		foreach(ASTAlias al; aliases) al.attach(me);
 		me.params.addAll(vars);
-        clazz.addMethod(me);
+        this.replaceWith(me);
         if( throwns != null ) {
         	Type[] thrs = ((ASTThrows)throwns).pass3();
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			me.addAttr(athr);
         }
-		if( pbody != null ) pbody.setParent(me);
 
 		if( modifiers.acc != null ) me.acc = modifiers.acc;
 

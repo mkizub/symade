@@ -151,7 +151,7 @@ public class Env extends Struct {
 			if( cleanup ) {
 				cl.flags = access;
 				cl.package_clazz = outer;
-				cl.super_clazz = null;
+				cl.super_bound = new TypeRef();
 				cl.interfaces.delAll();
 				cl.sub_clazz.delAll();
 				cl.wrapped_field = null;
@@ -231,7 +231,7 @@ public class Env extends Struct {
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated class argument name "+name.bytecode_name+" of "+name.name);
 		cl = new BaseStruct(name,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
 		cl.setResolved(true);
-		cl.super_clazz = Type.tpObject;
+		cl.super_type = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);
 		classHashDbg.put(cl.name.bytecode_name,cl);
@@ -260,7 +260,7 @@ public class Env extends Struct {
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated method argument name "+name.bytecode_name+" of "+name.name);
 		cl = new BaseStruct(name,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
 		cl.setResolved(true);
-		cl.super_clazz = Type.tpObject;
+		cl.super_type = Type.tpObject;
 		cl.type = Type.newRefType(cl);
 		classHash.put(cl.name.name,cl);
 		classHash.put(cl.name.bytecode_name,cl);
@@ -553,10 +553,10 @@ public class Env extends Struct {
 			try {
 				Kiev.files_scanned.append(fu);
 				ExportJavaTop exporter = new ExportJavaTop();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )     exporter.pass1(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )       exporter.pass1_1(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) exporter.pass2(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	exporter.pass2_2(fu, null);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )     exporter.pass1(fu);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )       exporter.pass1_1(fu);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) exporter.pass2(fu);
+				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	exporter.pass2_2(fu);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
 				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();

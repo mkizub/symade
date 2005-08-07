@@ -89,8 +89,8 @@ public final class ProcessVNode implements Constants {
 				verify(n);
 			}
 		}
-		else if (s.super_clazz != null && s.super_clazz.clazz.meta.get(mnNode) != null) {
-			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_clazz);
+		else if (s.super_type != null && s.super_type.clazz.meta.get(mnNode) != null) {
+			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
 		}
 	}
@@ -189,7 +189,7 @@ public final class ProcessVNode implements Constants {
 					aflds.insert(p, f);
 					p++;
 				}
-				ss = (Struct)ss.super_clazz.clazz;
+				ss = (Struct)ss.super_type.clazz;
 			}
 		}
 		if (hasField(s, nameEnumValuesFld)) {
@@ -323,7 +323,7 @@ public final class ProcessVNode implements Constants {
 						}
 						p++;
 					}
-					ss = (Struct)ss.super_clazz.clazz;
+					ss = (Struct)ss.super_type.clazz;
 				}
 			}
 			stats.append(new ReturnStat(0,null,new VarAccessExpr(0,null,v)));

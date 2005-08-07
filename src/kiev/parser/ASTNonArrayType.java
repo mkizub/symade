@@ -75,12 +75,16 @@ public class ASTNonArrayType extends ASTType {
     	ops = (KString[])Arrays.append(ops,KString.from(t.image));
     }
 
+	public boolean isBound() {
+		return true;
+	}
+
 	public Type getType() {
-		if (this.type != null)
-			return this.type;
-	    Type tp= null;
+		if (this.lnk != null)
+			return this.lnk;
+	    Type tp = null;
 		if( children[0] instanceof ASTPrimitiveType ) {
-			tp = ((ASTPrimitiveType)children[0]).type;
+			tp = (Type)(ASTPrimitiveType)children[0];
 		} else {
     		KString nm;
 			if (children[0] instanceof ASTQName)
@@ -99,10 +103,7 @@ public class ASTNonArrayType extends ASTType {
 				Type[] atypes = new Type[children.length-1];
 				for(int i=0; i < atypes.length; i++) {
 					ASTNode ct = children[i+1];
-					if (ct instanceof Type)
-						atypes[i] = (Type)ct;
-					else
-						atypes[i] = ((ASTType)ct).getType();
+					atypes[i] = ct.getType();
 				}
 				tp = Type.newRefType(s,atypes);
 		    }
@@ -135,7 +136,7 @@ public class ASTNonArrayType extends ASTType {
 				tp = Type.newRefType(t.clazz,new Type[]{tp});
 			}
 		}
-		this.type = tp;
+		this.lnk = tp;
 		return tp;
 	}
 

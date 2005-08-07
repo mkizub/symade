@@ -31,7 +31,8 @@ import kiev.stdlib.*;
  *
  */
 
-public class PrescannedBody {
+@node
+public class PrescannedBody extends ASTNode {
 	
 	public static final int BlockMode		= 0;
 	public static final int RuleBlockMode	= 1;
@@ -39,19 +40,15 @@ public class PrescannedBody {
 
 	public static PrescannedBody[] emptyArray = new PrescannedBody[0];
 
-	public SetBody		sb;
 	public int			lineno;	
 	public int			columnno;
 	public int			mode;
 	
+	public PrescannedBody() {}
+	
 	public PrescannedBody(int lineno, int columnno) {
 		this.lineno = lineno;	
 		this.columnno = columnno;
-	}
-	
-	public void setParent(SetBody n) {
-//		System.out.println("PrescannedBody: set body to "+n.getClass()+": "+n);
-		sb = n;
 	}
 }
 

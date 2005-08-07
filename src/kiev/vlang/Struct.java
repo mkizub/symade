@@ -36,19 +36,55 @@ import syntax kiev.Syntax;
  */
 
 
+@node
+public final class StructRef extends ASTNode {
+	@att public KString						name;
+	@ref public virtual forward Struct		clazz;
+	
+	public StructRef() {}
+	
+	public StructRef(Struct s) {
+		this.clazz = s;
+	}
+	
+	public StructRef(int pos, KString name) {
+		super(pos);
+		this.name = name;
+	}
+	
+	@getter public final Struct get$clazz() {
+		if (clazz != null || name == null)
+			return clazz;
+		clazz = Env.getStruct(name);
+		return clazz;
+	}
+	
+	@setter public final void set$clazz(Struct clazz) {
+		this.clazz = clazz;
+		if (clazz != null)
+			name = clazz.name.name;
+	}
+}
+
 @node(copyable=false)
 public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
+	
+	private static Access dummyAccess = new Access(0xFF);
+	
 	/** Variouse names of the class */
 	public ClazzName					name;
 
 	/** Type associated with this class */
 	@ref public Type					type;
 
-	/** SuperClass type */
-	@ref public Type					super_clazz;
+	/** Bound super-class for class arguments */
+	@att public TypeRef					super_bound;
+
+	/** Bound super-class for class arguments */
+	@ref public virtual abstract Type	super_type;
 
 	/** SuperInterface types */
-	@ref public final NArr<Type>		interfaces;
+	@att public final NArr<TypeRef>		interfaces;
 
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet					meta;
@@ -56,14 +92,18 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	protected BaseStruct(ClazzName name) {
 		super(0,0);
 		this.name = name;
+		this.super_bound = new TypeRef();
 		this.meta = new MetaSet(this);
 	}
 
 	public BaseStruct(ClazzName name, int acc) {
 		super(0,acc);
 		this.name = name;
+		this.super_bound = new TypeRef();
 		this.meta = new MetaSet(this);
 	}
+
+	public String toString() { return name.name.toString(); }
 
 	public Object copy() {
 		throw new CompilerException(getPos(),"Struct node cannot be copied");
@@ -74,13 +114,19 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	}
 	
 	@getter public Access get$acc() {
-		if (super_clazz == null)
-			return new Access(0xFF);
-		return super_clazz.clazz.get$acc();
+		return dummyAccess;
 	}
 
 	@setter public void set$acc(Access a) {
 		throw new RuntimeException("Cannot set access of "+this);
+	}
+
+	@getter public Type get$super_type() {
+		return super_bound.lnk;
+	}
+
+	@setter public void set$super_type(Type tp) {
+		super_bound = new TypeRef(super_bound.pos, tp);
 	}
 
 	public NodeName	getName() { return name; }
@@ -110,10 +156,10 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ sup;
 	{
-		{	sup ?= super_clazz,
+		{	sup ?= super_bound.lnk,
 			info.enterSuper() : info.leaveSuper(),
 			sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
-		;	sup @= interfaces,
+		;	sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
 			sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 		}
@@ -128,10 +174,10 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(info.path.length()==0?"":" in forward path "+info.path)),
 		{
 			(resfl & ResolveFlags.NoSuper) == 0,
-			sup ?= super_clazz,
+			sup ?= super_bound.lnk,
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
-			sup @= interfaces,
+			sup @= TypeRef.linked_elements(interfaces),
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		}
 	}
@@ -139,7 +185,7 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	public boolean instanceOf(BaseStruct cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( super_clazz!= null && super_clazz.clazz.instanceOf(cl) )
+		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
 		 	return true;
 		if( cl.isInterface() ) {
 			for(int i=0; i < interfaces.length; i++) {
@@ -159,8 +205,8 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 
 	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
 		checkResolved();
-		if( super_clazz != null )
-			return super_clazz.clazz.resolveField(name,where,fatal);
+		if( super_bound.lnk != null )
+			return super_bound.lnk.clazz.resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;
@@ -184,8 +230,8 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 		checkResolved();
 		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
 		Method m = null;
-		if( super_clazz!= null )
-			m = super_clazz.clazz.resolveMethod(name,sign,where,fatal);
+		if( super_bound.lnk != null )
+			m = super_bound.lnk.clazz.resolveMethod(name,sign,where,fatal);
 		if( m != null ) return m;
 		foreach(Type interf; interfaces) {
 			m = interf.clazz.resolveMethod(name,sign,where,fatal);
@@ -198,17 +244,17 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 
 	public Method getOverwrittenMethod(Type base, Method m) {
 		Method mm = null, mmret = null;
-		if( super_clazz != null && !isInterface() )
-			mm = super_clazz.clazz.getOverwrittenMethod(base,m);
+		if( super_bound.lnk != null && !isInterface() )
+			mm = super_bound.lnk.clazz.getOverwrittenMethod(base,m);
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
 		return mmret;
 	}
 
 	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
-		if( super_clazz != null ) {
-			ms = super_clazz.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,super_clazz),ms);
+		if( super_type != null ) {
+			ms = super_type.clazz.collectVTinterfaceMethods(
+				Type.getRealType(tp,super_type),ms);
 		}
 		foreach(Type i; interfaces) {
 			ms = i.clazz.collectVTinterfaceMethods(
@@ -219,8 +265,8 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 
 	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
 	{
-		if( super_clazz != null )
-			ms = super_clazz.clazz.collectVTvirtualMethods(tp,ms);
+		if( super_type != null )
+			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
 		return ms;
 	}
 
@@ -250,7 +296,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	
 	/** Class' access */
 	@virtual
-	public virtual Access		acc;
+	public virtual Access				acc;
 
 	/** Package structure this structure belongs to */
 	@ref public Struct			package_clazz;
@@ -258,7 +304,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	/** Array of types that are generated for primitive
 		paremeter types of type arguments
 	*/
-	@att public final NArr<Struct>		gens;
+	@att public final NArr<TypeRef>		gens;
 
 	/** Reference of template class for generated one */
 	@ref public Struct					generated_from;
@@ -308,12 +354,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}
-
+	
 	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
+		members.append(n);
 	}
-
-	public String toString() { return name.name.toString(); }
 
 	/** hashCode of structure is a hash code
 		of it's name, which must be unique for each structure
@@ -345,8 +389,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	public Type getPrimitiveEnumType() {
 		if( !isEnum() || !isPrimitiveEnum() )
 			throw new RuntimeException("Request for primitive enum super-type in non-primitive-enum structure "+this);
-		if (!super_clazz.isReference())
-			return super_clazz;
+		if (!super_type.isReference())
+			return super_type;
 		PrimitiveEnumAttr ea = (PrimitiveEnumAttr)getAttr(attrPrimitiveEnum);
 		if( ea == null )
 			throw new RuntimeException("enum structure "+this+" without "+attrPrimitiveEnum+" attribute");
@@ -361,7 +405,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			if( interfaces.length > 0 )
 				return dmp.append(interfaces[0]);
 			else
-				return dmp.append(super_clazz);
+				return dmp.append(super_type);
 		} else {
 			if (isLocal())
 				return dmp.append(name.short_name);
@@ -413,7 +457,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
 		checkResolved();
 		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
-		if( super_clazz != null ) return super_clazz.clazz.resolveField(name,where,fatal);
+		if( super_type != null ) return super_type.clazz.resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;
@@ -524,10 +568,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		Type@ sup;
 	{
-			{	sup ?= super_clazz,
+			{	sup ?= super_type,
 				info.enterSuper() : info.leaveSuper(),
 				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
-			;	sup @= interfaces,
+			;	sup @= TypeRef.linked_elements(interfaces),
 				info.enterSuper() : info.leaveSuper(),
 				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 			}
@@ -591,7 +635,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			node @= imported, node instanceof Method,
 			((Method)node).equalsByCast(name,args,ret,tp,resfl)
 		;	(resfl & ResolveFlags.NoSuper) == 0,
-			sup ?= super_clazz,
+			sup ?= super_type,
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	isInterface(),
 			member @= members,
@@ -599,7 +643,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			((Struct)member).resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
 		;	(resfl & ResolveFlags.NoSuper) == 0,
 			isInterface(),
-			sup @= interfaces,
+			sup @= TypeRef.linked_elements(interfaces),
 			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
 		;	(resfl & ResolveFlags.NoForwards) == 0,
 			member @= members,
@@ -636,8 +680,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		trace(Kiev.debugResolve,"Method "+name+" with signature "
 			+sign+" unresolved in class "+this);
 		Method m = null;
-		if( super_clazz!= null )
-			m = super_clazz.clazz.resolveMethod(name,sign,where,fatal);
+		if( super_type != null )
+			m = super_type.clazz.resolveMethod(name,sign,where,fatal);
 		if( m != null ) return m;
 		foreach(Type interf; interfaces) {
 			m = interf.clazz.resolveMethod(name,sign,where,fatal);
@@ -695,8 +739,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
 		if (sub.name.short_name == nameClTypeInfo) {
 			typeinfo_clazz = sub;
-			foreach (Struct gen; gens) {
-				gen.typeinfo_clazz = sub;
+			foreach (TypeRef gen; gens) {
+				((Struct)gen.clazz).typeinfo_clazz = sub;
 				trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+gen);
 			}
 			trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
@@ -715,8 +759,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				throw new RuntimeException("Method "+m+" already exists in class "+this);
 		}
 		members.append(m);
-		foreach (Struct g; gens) {
-			Struct s = g;
+		foreach (TypeRef g; gens) {
+			Struct s = (Struct)g.clazz;
 			Method sm = new Method(s, m.name.name,
 				(MethodType)Type.getRealType(s.type,m.type),
 				m.getFlags()
@@ -735,12 +779,13 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		for(i=0; i < members.length; i++) {
 			if( members[i].equals(m) ) {
 				members.del(i);
-				foreach (Struct g; gens) {
-					for (int j=0; j < g.members.length; j++) {
-						if (g.members[i] instanceof Method) {
-							Method sm = (Method)g.members[j];
+				foreach (TypeRef g; gens) {
+					Struct s = (Struct)g.clazz;
+					for (int j=0; j < s.members.length; j++) {
+						if (s.members[i] instanceof Method) {
+							Method sm = (Method)s.members[j];
 							if (sm.generated_from == m) {
-								g.members.del(j);
+								s.members.del(j);
 								break;
 							}
 						}
@@ -763,8 +808,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			}
 		}
 		members.append(f);
-		foreach (Struct g; gens) {
-			Struct s = g;
+		foreach (TypeRef g; gens) {
+			Struct s = (Struct)g.clazz;
 			Field sf = (Field)f.copy();
 			sf.generated_from = f;
 			s.members.append(sf);
@@ -779,12 +824,13 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		for(int i=0; i < members.length; i++) {
 			if( members[i].equals(f) ) {
 				members.del(i);
-				foreach (Struct g; gens) {
-					for (int j=0; j < g.members.length; j++) {
-						if (g.members[i] instanceof Field) {
-							Field sf = (Field)g.members[j];
+				foreach (TypeRef g; gens) {
+					Struct s = (Struct)g.clazz;
+					for (int j=0; j < s.members.length; j++) {
+						if (s.members[i] instanceof Field) {
+							Field sf = (Field)s.members[j];
 							if (sf.generated_from == f) {
-								g.members.del(j);
+								s.members.del(j);
 								break;
 							}
 						}
@@ -940,27 +986,16 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 				), ti_args));
 		// Add initialization in <clinit>
-		Method class_init = null;
-		foreach(ASTNode m; members; m instanceof Method && ((Method)m).name.equals(nameClassInit) ) {
-			class_init = (Method)m;
-			break;
-		}
-		if( class_init == null ) {
-			class_init = new Method(this,nameClassInit,
-				MethodType.newMethodType(null,null,null,Type.tpVoid),ACC_STATIC);
-			class_init.pos = pos;
-			addMethod(class_init);
-			class_init.body = new BlockStat(pos,class_init);
-		}
+		Method class_init = getClazzInitMethod();
 		if( PassInfo.method != null && PassInfo.method.name.equals(nameClassInit) ) {
-			((BlockStat)class_init.body).addstats.insert(
+			((Initializer)class_init.body).addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
 				),0
 			);
 		} else {
-			((BlockStat)class_init.body).stats.insert(
+			((Initializer)class_init.body).stats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
@@ -981,8 +1016,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		}
 		if (wrapped_field != null)
 			return;
-		if (super_clazz != null && super_clazz.clazz instanceof Struct) {
-			Struct ss = (Struct)super_clazz.clazz;
+		if (super_type != null && super_type.clazz instanceof Struct) {
+			Struct ss = (Struct)super_type.clazz;
 			ss.setupWrappedField();
 			if(ss.wrapped_field != null) {
 				wrapped_field = ss.wrapped_field;
@@ -1006,8 +1041,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		ASTNode@ n;
 		Field ff;
 	{
-		super_clazz != null && super_clazz.clazz instanceof Struct,
-		((Struct)super_clazz.clazz).locatePackerField(f,size)
+		super_type != null && super_type.clazz instanceof Struct,
+		((Struct)super_type.clazz).locatePackerField(f,size)
 	;	n @= members,
 		n instanceof Field && n.isPackerField(),
 		ff = (Field)n : ff = null,
@@ -1029,10 +1064,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			members.add(typeinfo_clazz);
 			typeinfo_clazz.setPublic(true);
 			typeinfo_clazz.setResolved(true);
-			if (super_clazz != null && ((Struct)super_clazz.clazz).typeinfo_clazz != null)
-				typeinfo_clazz.super_clazz = ((Struct)super_clazz.clazz).typeinfo_clazz.type;
+			if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
+				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
 			else
-				typeinfo_clazz.super_clazz = Type.tpTypeInfo;
+				typeinfo_clazz.super_type = Type.tpTypeInfo;
 			typeinfo_clazz.type = Type.newJavaRefType(typeinfo_clazz);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
@@ -1070,16 +1105,16 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			typeinfo_clazz.addMethod(init);
 			init.body = ti_init_body;
 			// and add super-constructor call
-			if (typeinfo_clazz.super_clazz == Type.tpTypeInfo) {
+			if (typeinfo_clazz.super_type == Type.tpTypeInfo) {
 				//do nothing, default constructor may be added later
 			} else {
 				init.setNeedFieldInits(true);
 				ASTCallExpression call_super = new ASTCallExpression();
 				call_super.pos = pos;
 				call_super.func = new ASTIdentifier(pos, nameSuper);
-				Expr[] exprs = new Expr[super_clazz.args.length];
-				for (int arg=0; arg < super_clazz.args.length; arg++) {
-					Type t = super_clazz.args[arg];
+				Expr[] exprs = new Expr[super_type.args.length];
+				for (int arg=0; arg < super_type.args.length; arg++) {
+					Type t = super_type.args[arg];
 					t = Type.getRealType(this.type,t);
 					if (t.isArgumented()) {
 						exprs[arg] = new ASTIdentifier(pos,t.clazz.name.short_name);
@@ -1191,13 +1226,13 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				}
 			}
 			if (isPrimitiveEnum()) {
-				PrimitiveEnumAttr ea = new PrimitiveEnumAttr(this.super_clazz,eflds,values);
+				PrimitiveEnumAttr ea = new PrimitiveEnumAttr(this.super_type,eflds,values);
 				addAttr(ea);
 			} else {
 				EnumAttr ea = new EnumAttr(eflds,values);
 				addAttr(ea);
 			}
-			this.super_clazz = Type.tpEnum;
+			this.super_type = Type.tpEnum;
 			Field vals = addField(new Field(this, nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, Expr.emptyArray);
@@ -1289,12 +1324,12 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					// Make new MethodType for the constructor
 					m.type = MethodType.newMethodType(m.type.clazz,targs,m.type.ret);
 					m.jtype = (MethodType)m.type.getJavaType();
-					foreach (Struct g; gens) {
-						foreach (ASTNode gn; g.members; gn instanceof Method) {
+					foreach (TypeRef g; gens) {
+						foreach (ASTNode gn; ((Struct)g.clazz).members; gn instanceof Method) {
 							Method gm = (Method)gn;
 							if (gm.generated_from == m) {
-								gm.type = (MethodType)Type.getRealType(g.type,m.type);
-								gm.jtype = (MethodType)Type.getRealType(g.type,m.type).getJavaType();
+								gm.type = (MethodType)Type.getRealType(g,m.type);
+								gm.jtype = (MethodType)Type.getRealType(g,m.type).getJavaType();
 							}
 						}
 					}
@@ -1303,7 +1338,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			if( !init_found ) {
 				trace(Kiev.debugResolve,nameInit+" not found in class "+this);
 				Method init = null;
-				if( super_clazz != null && super_clazz.clazz == Type.tpClosureClazz ) {
+				if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 					MethodType mt;
 					Var thisOuter, maxArgs;
 					if( !isStatic() ) {
@@ -1382,7 +1417,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 						defaults.addAttr(sfa);
 						defaults.type = Type.newRefType(defaults);
-						defaults.super_clazz = Type.tpObject;
+						defaults.super_type = Type.tpObject;
 // jtype?						defaults.interfaces = (Type[])Arrays.append(defaults.interfaces,this.type);
 					}
 					m.setStatic(true);
@@ -1570,8 +1605,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 
 	public Method getOverwrittenMethod(Type base, Method m) {
 		Method mm = null, mmret = null;
-		if( super_clazz != null && !isInterface() )
-			mm = super_clazz.clazz.getOverwrittenMethod(base,m);
+		if( super_type != null && !isInterface() )
+			mm = super_type.clazz.getOverwrittenMethod(base,m);
 		if( mmret == null && mm != null ) mmret = mm;
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
 		foreach (ASTNode n; members; n instanceof Method) {
@@ -1596,6 +1631,17 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		}
 		return mmret;
 	}
+	
+	public Method getClazzInitMethod() {
+		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
+			return (Method)n;
+		Method class_init = new Method(this,nameClassInit,
+			MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
+		class_init.pos = pos;
+		addMethod(class_init);
+		class_init.body = new Initializer(pos,ACC_STATIC);
+		return class_init;
+	}
 
 	public void autoGenerateStatements() {
 
@@ -1606,65 +1652,63 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		Method class_init = null;
 		BlockStat instance_init = null;
 
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
-			if( isInterface() && !f.isAbstract() ) {
-				f.setStatic(true);
-				f.setFinal(true);
+		foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer) {
+			if( isInterface() && !n.isAbstract() ) {
+				n.setStatic(true);
+				n.setFinal(true);
 			}
-			if( f.init == null ) continue;
-			if( f.init.isConstantExpr() && f.init.getConstValue() == null ) continue;
-			else if( f.isStatic() && f.init.isConstantExpr() && !f.name.equals(KString.Empty) ) {
-				// Attribute may already be assigned (see resolveFinalFields)
-				if( f.getAttr(attrConstantValue) == null ) {
-					ConstantValueAttr a;
-					if( f.init instanceof ConstExpr )
-						a = new ConstantValueAttr((ConstExpr)f.init);
-					else
-						a = new ConstantValueAttr(new ConstExpr(f.init.pos,f.init.getConstValue()));
-					f.addAttr(a);
-				}
-			}
-			else if( f.isStatic() ) {
-				if( class_init == null ) {
-					foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) ) {
-						class_init = (Method)n;
-						break;
+			if( n instanceof Field ) {
+				Field f = (Field)n;
+				if (f.init == null)
+					continue;
+				if( f.init.isConstantExpr() && f.init.getConstValue() == null )
+					continue;
+				if( f.isStatic() && f.init.isConstantExpr() ) {
+					// Attribute may already be assigned (see resolveFinalFields)
+					if( f.getAttr(attrConstantValue) == null ) {
+						ConstantValueAttr a;
+						if( f.init instanceof ConstExpr )
+							a = new ConstantValueAttr((ConstExpr)f.init);
+						else
+							a = new ConstantValueAttr(new ConstExpr(f.init.pos,f.init.getConstValue()));
+						f.addAttr(a);
 					}
+					continue;
 				}
-				if( class_init == null ) {
-					class_init = new Method(this,nameClassInit,
-						MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
-					class_init.pos = pos;
-					addMethod(class_init);
-					class_init.body = new BlockStat(pos,class_init);
-				}
-				if( f.name.equals(KString.Empty) )
-					((BlockStat)class_init.body).addStatement(new ShadowStat(((StatExpr)f.init).stat));
-				else
-					((BlockStat)class_init.body).addStatement(
+				if( f.isStatic() ) {
+					if( class_init == null )
+						class_init = getClazzInitMethod();
+					((Initializer)class_init.body).addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
 							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
 								,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init),f.isInitWrapper())
 						)
 					);
-			} else {
-				if( instance_init == null ) {
-					instance_init = new BlockStat(pos,instance_init);
-				}
-				Statement init_stat;
-				if( f.name.equals(KString.Empty) ) {
-					init_stat = new ShadowStat(((StatExpr)f.init).stat);
 				} else {
+					if( instance_init == null ) {
+						instance_init = new BlockStat(pos,instance_init);
+					}
+					Statement init_stat;
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
 						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new AccessExpr(f.pos,new ThisExpr(0),f),new ShadowExpr(f.init),f.isInitWrapper())
 					);
+					instance_init.addStatement(init_stat);
+					init_stat.setHidden(true);
 				}
-				instance_init.addStatement(init_stat);
-				init_stat.setHidden(true);
+			} else {
+				Initializer init = (Initializer)n;
+				if (init.isStatic()) {
+					if( class_init == null )
+						class_init = getClazzInitMethod();
+					((Initializer)class_init.body).addStatement(init);
+				} else {
+					if( instance_init == null )
+						instance_init = new BlockStat(pos,instance_init);
+					Statement init_stat = new ShadowStat(init);
+					instance_init.addStatement(init_stat);
+					init_stat.setHidden(true);
+				}
 			}
-			if( f.name.equals(KString.Empty) )
-				f.setAbstract(true);
 		}
 
 		// Generate super(...) constructor calls, if they are not
@@ -1731,7 +1775,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 								if( nm.equals(nameSuper) || (nm.equals(nameInit) && ((CallExpr)es.expr).super_flag) )
 									m.setNeedFieldInits(true);
 								// autoinsert typeinfo if super class needs
-								if( super_clazz.args.length > 0 ) {
+								if( super_type.args.length > 0 ) {
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) )
@@ -1752,7 +1796,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
 					call_super.func = new ASTIdentifier(pos, nameSuper);
-					if( super_clazz.clazz == Type.tpClosureClazz ) {
+					if( super_type.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
 						call_super.args.add(max_args);
@@ -1760,7 +1804,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					else if( package_clazz.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
-						if( this.type.args.length > 0 && super_clazz.args.length == 0 ) skip_args++;
+						if( this.type.args.length > 0 && super_type.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
 								call_super.args.append(	new VarAccessExpr(m.pos,call_super,m.params[i]));
@@ -1868,8 +1912,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			}
 			Method overwr = null;
 
-			if (super_clazz != null )
-				overwr = super_clazz.clazz.getOverwrittenMethod(this.type,m);
+			if (super_type != null )
+				overwr = super_type.clazz.getOverwrittenMethod(this.type,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -1970,7 +2014,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						Method nm = new Method(this,rm.name.name,rm.type,rm.flags);
 						nm.pos = rm.pos;
 						nm.name = rm.name;
-						nm.params = rm.params;
+						nm.params.addAll(rm.params);
 						Expr[] vae = new Expr[mm.params.length-offs];
 						for(int k=0; k < vae.length; k++) {
 							vae[k] = new VarAccessExpr(0,mm.params[k+offs]);
@@ -1999,8 +2043,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			Method mi = (Method)n;
 			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
 			Method m = null;
-			if( super_clazz != null )
-				m = super_clazz.clazz.getOverwrittenMethod(this.type,mi);
+			if( super_type != null )
+				m = super_type.clazz.getOverwrittenMethod(this.type,mi);
 			foreach(Type si; interfaces ) {
 				if( m == null ) m = si.clazz.getOverwrittenMethod(this.type,mi);
 				else si.clazz.getOverwrittenMethod(this.type,mi);
@@ -2164,11 +2208,11 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		checkResolved();
 		if( isMembersGenerated() ) return this;
 		if( isPackage() ) return this;
-		if( super_clazz != null && !super_clazz.clazz.isMembersGenerated() ) {
-			if ( ((Struct)super_clazz.clazz).generated_from != null )
-				((Struct)super_clazz.clazz).generated_from.autoProxyMethods();
+		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
+			if ( ((Struct)super_type.clazz).generated_from != null )
+				((Struct)super_type.clazz).generated_from.autoProxyMethods();
 			else
-				super_clazz.clazz.autoProxyMethods();
+				super_type.clazz.autoProxyMethods();
 		}
 		for(int i=0; i < interfaces.length; i++)
 			if( !interfaces[i].clazz.isMembersGenerated() ) {
@@ -2209,7 +2253,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		}
 
 		setMembersGenerated(true);
-		foreach(Struct s; sub_clazz)	s.autoProxyMethods();
+		foreach(Struct s; sub_clazz; s.generated_from == null)
+			s.autoProxyMethods();
 
 		combineMethods();
 		return this;
@@ -2253,8 +2298,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						 }
 					 }
 				}
-				if( s.super_clazz != null )
-					s = (Struct)s.super_clazz.clazz;
+				if( s.super_type != null )
+					s = (Struct)s.super_type.clazz;
 				else break;
 			}
 			if( found ) continue;
@@ -2621,10 +2666,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 	        ConstPool.reInit();
 			ConstPool.addClazzCP(jthis.type.signature);
 			ConstPool.addClazzCP(jthis.type.java_signature);
-			if( super_clazz != null ) {
-				super_clazz.clazz.checkResolved();
-				ConstPool.addClazzCP(jthis.super_clazz.signature);
-				ConstPool.addClazzCP(jthis.super_clazz.java_signature);
+			if( super_type != null ) {
+				super_type.clazz.checkResolved();
+				ConstPool.addClazzCP(jthis.super_type.signature);
+				ConstPool.addClazzCP(jthis.super_type.java_signature);
 			}
 			for(int i=0; interfaces!=null && i < interfaces.length; i++) {
 				interfaces[i].clazz.checkResolved();
@@ -2677,7 +2722,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			if( jthis.gens.length > 0 ) {
 				Type[] t = new Type[jthis.gens.length];
 				for (int i=0; i < t.length; i++)
-					t[i] = jthis.gens[i].type;
+					t[i] = jthis.gens[i].lnk;
 				jthis.addAttr(new GenerationsAttr(t));
 			} else {
 				for(int i=0; i < attrs.length; i++) {
@@ -2859,8 +2904,8 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				dmp.append("> */");
 			}
 			dmp.forsed_space();
-			if( super_clazz != null && !super_clazz.equals(Type.tpObject) && super_clazz.isReference())
-				dmp.append("extends").forsed_space().append(jthis.super_clazz.clazz).forsed_space();
+			if( super_type != null && !super_type.equals(Type.tpObject) && super_type.isReference())
+				dmp.append("extends").forsed_space().append(jthis.super_type.clazz).forsed_space();
 			if( interfaces!=null && interfaces.length > 0 ) {
 				dmp.space().append("implements").forsed_space();
 				for(int i=0; i < interfaces.length; i++) {

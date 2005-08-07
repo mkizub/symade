@@ -317,7 +317,7 @@ public class Type extends ASTNode implements AccessFlags {
 		tpNull					= new Type(tpNullClazz);
 		tpNullClazz.type		= tpNull;
 		tpNull.flags			= flResolved | flReference;
-		tpNull.clazz.super_clazz= tpObject;
+		tpNull.clazz.super_type = tpObject;
 		tpNull.clazz.setResolved(true);
 		typeHash.put(tpNull);
 
@@ -334,11 +334,11 @@ public class Type extends ASTNode implements AccessFlags {
 		Type tpArrayArg = new Type(tpArrayArgClazz);
 		tpArray				= new Type(tpArrayClazz,new Type[]{tpArrayArg});
 		tpArrayClazz.type		= tpArray;
-		tpArrayClazz.super_clazz = tpObject;
+		tpArrayClazz.super_type = tpObject;
 		tpArray.flags			|= flResolved;
 		tpArrayClazz.setResolved(true);
 		tpArray.flags			= flReference | flArray;
-		tpArrayClazz.interfaces.add(tpCloneable);
+		tpArrayClazz.interfaces.add(new TypeRef(tpCloneable));
 //		tpArrayClazz.fields = new Field[]{new Field(tpArrayClazz,KString.from("length"),tpInt,(short)(Constants.ACC_FINAL|Constants.ACC_PUBLIC))};
 		typeHash.put(tpArray);
 
@@ -572,19 +572,19 @@ public class Type extends ASTNode implements AccessFlags {
 		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
 			this.args = args;
-			if( clazz instanceof Struct && ((Struct)clazz).gens.length > 0 ) {
+			if( Kiev.pass_no.ordinal() >= TopLevelPass.passStructInheritance.ordinal() && clazz instanceof Struct && ((Struct)clazz).gens.length > 0 ) {
 				boolean best_found = false;
 				int i,j;
 				Struct clz = (Struct)clazz;
 		next_gen:
 				for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 					for(j=0; j < args.length; j++) {
-						if( !(clz.gens[i].type.args[j].isReference() && args[j].isReference()
-							|| clz.gens[i].type.args[j] == args[j]
+						if( !(clz.gens[i].args[j].isReference() && args[j].isReference()
+							|| clz.gens[i].args[j] == args[j]
 						))
 							continue next_gen;
 					}
-					this.clazz = clz = clz.gens[i];
+					this.clazz = clz = (Struct)clz.gens[i].clazz;
 					best_found = true;
 					break;
 				}
@@ -592,7 +592,7 @@ public class Type extends ASTNode implements AccessFlags {
 			next_gen1:
 					for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 						for(j=0; j < args.length; j++) {
-							Type gt = clz.gens[i].type.args[j];
+							Type gt = clz.gens[i].args[j];
 							if( !( gt.isReference() && args[j].isReference()
 								|| gt == args[j]
 								|| (gt == Type.tpInt && args[j].isIntegerInCode())
@@ -600,7 +600,7 @@ public class Type extends ASTNode implements AccessFlags {
 							))
 								continue next_gen1;
 						}
-						this.clazz = clz = clz.gens[i];
+						this.clazz = clz = (Struct)clz.gens[i].clazz;
 						break;
 					}
 				}
@@ -673,7 +673,7 @@ public class Type extends ASTNode implements AccessFlags {
 		if( clazz != null && clazz.type != null ) {
 			for(int i=0; i < args.length; i++) {
 				if( !args[i].isInstanceOf(clazz.type.args[i]) ) {
-					if( clazz.type.args[i].clazz.super_clazz == Type.tpObject && !args[i].isReference())
+					if( clazz.type.args[i].clazz.super_type == Type.tpObject && !args[i].isReference())
 						;
 					else
 						throw new RuntimeException("Type "+args[i]+" must be an instance of "+clazz.type.args[i]);
@@ -775,10 +775,12 @@ public class Type extends ASTNode implements AccessFlags {
 
 	public boolean equals(Type to) {
 		if( signature.equals( ((Type)to).signature ) ) return true;
-		else if( this.isBoolean() && to.isBoolean() ) return true;
-		else if( clazz.isArgument() ) return clazz.super_clazz.equals(to);
-		else if( ((Type)to).clazz.isArgument() ) return this.equals(((Type)to).clazz.super_clazz);
-		else return false;
+		else if (this.isBoolean() && to.isBoolean() ) return true;
+		else if (clazz.isArgument() && clazz.super_type != null)
+			return clazz.super_type.equals(to);
+		else if (to.clazz.isArgument() && to.clazz.super_type != null)
+			return this.equals(to.clazz.super_type);
+		return false;
 	}
 
 	public boolean checkResolved() {
@@ -826,10 +828,10 @@ public class Type extends ASTNode implements AccessFlags {
 				if( !isInstanceOf(t1.args[i],t2.args[i]) ) return false;
 			return true;
 		}
-		if( t1.clazz.super_clazz != null
-		 && isInstanceOf(Type.getRealType(t1,t1.clazz.super_clazz),t2) ) return true;
+		if( t1.clazz.super_type != null
+		 && isInstanceOf(Type.getRealType(t1,t1.clazz.super_type),t2) ) return true;
 		for(int i=0; t1.clazz.interfaces!=null && i < t1.clazz.interfaces.length; i++)
-			if( isInstanceOf(t1.clazz.interfaces[i],t2) ) return true;
+			if( isInstanceOf(t1.clazz.interfaces[i].lnk,t2) ) return true;
 		return false;
 	}
 
@@ -944,7 +946,7 @@ public class Type extends ASTNode implements AccessFlags {
 				else return t1;
 			}
 			else if( isInstanceOf(t2) ) return t2;
-			if( t1.clazz.instanceOf(Type.tpPrologVar.clazz) && t1.clazz.instanceOf(Type.tpPrologVar.clazz) ) {
+			if( t1.clazz.instanceOf(Type.tpPrologVar.clazz) && t2.clazz.instanceOf(Type.tpPrologVar.clazz) ) {
 				Type tp1 = t1.args[0];
 				Type tp2 = t2.args[0];
 				Type tp_better = betterCast(tp1,tp2);
@@ -962,7 +964,7 @@ public class Type extends ASTNode implements AccessFlags {
 		Type tp = tp1;
 		while( tp != null ) {
 			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) ) return tp;
-			tp = tp.clazz.super_clazz;
+			tp = tp.clazz.super_type;
 		}
 		return tp;
 	}
@@ -996,7 +998,7 @@ public class Type extends ASTNode implements AccessFlags {
 			return this.isCastableTo(((Struct)t.clazz).getPrimitiveEnumType());
 		if( t.clazz.isEnum())
 			return this.isCastableTo(Type.tpInt);
-		if( t.clazz.isArgument() && isCastableTo(t.clazz.super_clazz) ) return true;
+		if( t.clazz.isArgument() && isCastableTo(t.clazz.super_type) ) return true;
 		if( t.clazz.isArgument() && !this.isReference() ) {
 //			Kiev.reportWarning(0,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			return true;
@@ -1030,7 +1032,7 @@ public class Type extends ASTNode implements AccessFlags {
 	}
 
 	public Type getNonArgsType() {
-		if( clazz.isArgument() ) return clazz.super_clazz.getNonArgsType();
+		if( clazz.isArgument() ) return clazz.super_type.getNonArgsType();
 		if( args.length == 0 || isArray() ) return this;
 		Type[] targs = clazz.type.args;
 		Type[] jargs = new Type[targs.length];
@@ -1065,7 +1067,7 @@ public class Type extends ASTNode implements AccessFlags {
 				if( t != this )
 					return t;
 			}
-			return clazz.super_clazz.getJavaType();
+			return clazz.super_type.getJavaType();
 		}
 		if( this instanceof MethodType ) {
 			if( clazz.instanceOf(Type.tpClosureClazz) )
@@ -1085,6 +1087,15 @@ public class Type extends ASTNode implements AccessFlags {
 
 	private static int get_real_type_depth = 0;
 
+	public static Type getRealType(Type t1, TypeRef t2) {
+		return Type.getRealType(t1, t2.lnk);
+	}
+	public static Type getRealType(TypeRef t1, Type t2) {
+		return Type.getRealType(t1.lnk, t2);
+	}
+	public static Type getRealType(TypeRef t1, TypeRef t2) {
+		return Type.getRealType(t1.lnk, t2.lnk);
+	}
 	public static Type getRealType(Type t1, Type t2) {
 		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
 		if( t2 == null ) return null;
@@ -1135,9 +1146,9 @@ public class Type extends ASTNode implements AccessFlags {
 			// Search in super-class and super-interfaces
 			Type tp;
 			BaseStruct rs = t1.clazz;
-			if(	rs.super_clazz!=null
-			&&  rs.super_clazz.args != null
-			&&  (tp=getRealType(getRealType(t1,rs.super_clazz),t2))!=t2 )
+			if(	rs.super_type != null
+			&&  rs.super_type.args != null
+			&&  (tp=getRealType(getRealType(t1,rs.super_type),t2))!=t2 )
 				return tp;
 			for(int i=0; rs.interfaces!=null && i < rs.interfaces.length; i++) {
 				if( rs.interfaces[i].args!=null
@@ -1181,7 +1192,7 @@ public class Type extends ASTNode implements AccessFlags {
 			return tp;
 		}
 		// Nothing was rewritten...
-		if( t1.clazz.super_clazz != null ) return getRealType(t1.clazz.super_clazz,t2);
+		if( t1.clazz.super_type != null ) return getRealType(t1.clazz.super_type,t2);
 		return t2;
 		} finally { get_real_type_depth--; }
 	}

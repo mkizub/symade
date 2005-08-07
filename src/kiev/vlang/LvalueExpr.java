@@ -312,8 +312,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
 						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
 				}
-				if( s.super_clazz != null ) {
-					s = s.super_clazz.clazz;
+				if( s.super_type != null ) {
+					s = s.super_type.clazz;
 					continue;
 				}
 				throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
@@ -347,8 +347,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 						foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
 							break lookup_op;
 					}
-					if( s.super_clazz != null ) {
-						s = s.super_clazz.clazz;
+					if( s.super_type != null ) {
+						s = s.super_type.clazz;
 						continue;
 					}
 					throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");
@@ -1042,7 +1042,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	public Type getType() {
 		try {
 			Type t = var.getType();
-			return Type.getRealType(obj.super_clazz,t);
+			return Type.getRealType(obj.super_type,t);
 		} catch(Exception e) {
 			Kiev.reportError(pos,e);
 			return Type.tpVoid;
@@ -1056,7 +1056,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 			types = new Type[]{var.type};
 		else
 			types = sni.types;
-		for(int i=0; i < types.length; i++) types[i] = Type.getRealType(obj.super_clazz,types[i]);
+		for(int i=0; i < types.length; i++) types[i] = Type.getRealType(obj.super_type,types[i]);
 		return types;
 	}
 

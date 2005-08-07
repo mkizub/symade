@@ -50,6 +50,19 @@ public final class MetaSet extends ASTNode {
 		return metas.length == 0;
 	}
 	
+	public void verify() {
+		foreach (Meta m; metas) {
+			try {
+				Meta n = m.verify();
+				if (n != m)
+					set(n);
+			} catch (CompilerException e) {
+				Kiev.reportError(pos, e);
+				continue;
+			}
+		}
+	}
+	
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {

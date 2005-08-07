@@ -67,10 +67,9 @@ public class ASTInvariantDeclaration extends ASTCondDeclaration {
 		m.setInvariantMethod(true);
 		if( !m.isStatic() )
 			m.params.append(new Var(pos,m,nameThis,PassInfo.clazz.type,0));
-		WorkByContractCondition cond = new WorkByContractCondition(pos,CondInvariant,name,body);
-		if( pbody != null ) pbody.setParent(cond);
+		WorkByContractCondition cond = new WorkByContractCondition(pos,CondInvariant,name,body,pbody);
 		m.body = cond;
-		PassInfo.clazz.addMethod(m);
+		this.replaceWith(m);
 	  	return m;
     }
 }

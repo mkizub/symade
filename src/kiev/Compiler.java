@@ -535,21 +535,7 @@ public class Compiler {
 
 			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].pass3();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; delayed_stop = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					Kiev.files_scanned[i].pass3();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
-				}
-			}
+			delayed_stop |= exporter.pass3();
 			runGC();
 
 			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;

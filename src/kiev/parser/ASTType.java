@@ -42,8 +42,7 @@ public class ASTType extends TypeRef {
 	}
 
 	public ASTType(int pos, Type type) {
-		super(pos);
-		this.type = type;
+		super(pos, type);
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {

@@ -105,28 +105,28 @@ public class ASTCallExpression extends Expr {
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
-			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_clazz.args.length > 0 ) {
+			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,this,mmm.params[2]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_clazz),0);
+					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_type),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
-			if( ((Struct)PassInfo.clazz.super_clazz.clazz).package_clazz.isClazz()
-			 && !PassInfo.clazz.super_clazz.clazz.isStatic()
+			if( ((Struct)PassInfo.clazz.super_type.clazz).package_clazz.isClazz()
+			 && !PassInfo.clazz.super_type.clazz.isStatic()
 			) {
 				if( PassInfo.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
 				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
 			}
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_clazz.clazz,
-					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_clazz,0) )
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type.clazz,
+					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_type,0) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.path.length() == 0 )
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_clazz),true).resolve(ret);
+				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
 		} else {

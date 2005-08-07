@@ -27,6 +27,9 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.stdlib.*;
 
+import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
+
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNewExpression.java,v 1.4.2.1.2.2 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
@@ -44,16 +47,11 @@ public class ASTNewExpression extends Expr {
 	public final NArr<Expr>			args;
 	
     @att
-	public final NArr<ASTNode>		members;
+	public final Struct				clazz;
 	
-    public boolean	anonymouse;
-
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof Expr ) {
 			args.append((Expr)n);
-        }
-        else {
-			members.append((ASTNode)n);
         }
     }
 
@@ -102,43 +100,31 @@ public class ASTNewExpression extends Expr {
 				Kiev.reportError(pos,e);
 			}
 		}
-		if( members.length == 0 && !anonymouse )
+		if( clazz == null )
 			return new NewExpr(pos,tp,args.toArray()).resolve(reqType);
 		// Local anonymouse class
 		Type sup  = tp;
-		ClazzName clname = ClazzName.fromBytecodeName(
-			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
-				.append_fast(PassInfo.clazz.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(PassInfo.clazz.countAnonymouseInnerStructs())
-				.toKString(),
-				false
-		);
-		Struct me = Env.newStruct(clname,PassInfo.clazz,flags,true);
-		me.setResolved(true);
-		me.setLocal(true);
-		me.setAnonymouse(true);
-		me.setStatic(PassInfo.method==null || PassInfo.method.isStatic());
+		Struct me = clazz;
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		clazz.setAnonymouse(true);
+		clazz.setStatic(PassInfo.method==null || PassInfo.method.isStatic());
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
+		clazz.addAttr(sfa);
 		if( sup.clazz.isInterface() ) {
-			me.super_clazz = Type.tpObject;
-			me.interfaces.add(sup);
+			clazz.super_type = Type.tpObject;
+			clazz.interfaces.add(new TypeRef(sup));
 		} else {
-			me.super_clazz = sup;
-		}
-		me.parent = this;
-
-		for(int i=0; i < members.length; i++) {
-			members[i].parent = me;
+			clazz.super_type = sup;
 		}
 
 		if( sup.clazz.instanceOf(Type.tpClosureClazz) ) {
-			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
-			members.delAll();
-			me.type = Type.newRefType(me,Type.emptyArray);
-			Method m = (Method)md.pass3();
-			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
+			assert (false);
+//			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
+//			members.delAll();
+//			me.type = Type.newRefType(me,Type.emptyArray);
+//			Method m = (Method)md.pass3();
+//			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
 		} else {
 			me.type = Type.newRefType(me,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
@@ -164,17 +150,12 @@ public class ASTNewExpression extends Expr {
 		}
 
         // Process inner classes and cases
-        PassInfo.push(me);
-        try {
-			ExportJavaTop exporter = new ExportJavaTop();
-			for(int i=0; i < members.length; i++) {
-				exporter.pass1(members[i], me);
-				exporter.pass1_1(members[i], me);
-				exporter.pass2(members[i], me);
-				exporter.pass2_2(members[i], me);
-			}
-		} finally { PassInfo.pop(me); }
-		me = ASTStructDeclaration.createMembers(me,members);
+		ExportJavaTop exporter = new ExportJavaTop();
+		exporter.pass1(me);
+		exporter.pass1_1(me);
+		exporter.pass2(me);
+		exporter.pass2_2(me);
+		exporter.pass3(me);
 		me.autoProxyMethods();
 		me.resolveFinalFields(false);
 		Expr ne;
@@ -200,7 +181,7 @@ public class ASTNewExpression extends Expr {
 				sb.append(',');
 		}
 		sb.append(')');
-		if( members.length > 0 ) {
+		if( clazz != null ) {
 			sb.append("{ ... }");
 		}
 		return sb.toString();
@@ -214,9 +195,9 @@ public class ASTNewExpression extends Expr {
 				dmp.append(',');
 		}
 		dmp.append(')');
-		if( members.length > 0 ) {
+		if( clazz != null ) {
 			dmp.space().append('{').newLine(1);
-			for(int j=0; j < members.length; j++) dmp.append(members[j]);
+			for(int j=0; j < clazz.members.length; j++) dmp.append(clazz.members[j]);
 			dmp.newLine(-1).append('}').newLine();
 		}
 		return dmp;

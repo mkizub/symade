@@ -458,7 +458,7 @@ public final class Kiev {
 			foreach(PrescannedBody b; f.bodies; b != null ) {
 				// callect parents of this block
 				List<ASTNode> pl = List.Nil;
-				ASTNode n = (ASTNode)b.sb;
+				ASTNode n = (ASTNode)b;
 				while( n != null ) {
 					pl = new List.Cons<ASTNode>(n,pl);
 					n = n.parent;
@@ -484,7 +484,7 @@ public final class Kiev {
 				default:
 					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
 				}
-				if( !b.sb.setBody(bl) ) {
+				if( !((SetBody)b.parent).setBody(bl) ) {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body does not math");
 				}
 				pl = pl.reverse();

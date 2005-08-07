@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.ASTNewInitializedArrayExpression;
+import kiev.parser.PrescannedBody;
 
 import static kiev.vlang.WorkByContractCondition.*;
 import static kiev.stdlib.Debug.*;
@@ -77,7 +78,8 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 
 	/** Body of the method - ASTBlockStat or BlockStat
 	 */
-	@att public ASTNode			body;
+	@att public ASTNode				body;
+	@att public PrescannedBody 		pbody;
 
 	/** Array of attributes of this method
 	 */
@@ -664,20 +666,22 @@ public class WorkByContractCondition extends Statement implements SetBody {
 	public static final int CondEnsure 		= 2;
 	public static final int CondInvariant	= 3;
 
-	public int				cond;
-	public KString			name;
-	@att public Statement	body;
-	public CodeAttr			code;
-	@ref public Method		definer;
+	public int						cond;
+	public KString					name;
+	@att public Statement			body;
+	@att public PrescannedBody 		pbody;
+	public CodeAttr					code;
+	@ref public Method				definer;
 
 	public WorkByContractCondition() {
 	}
 
-	public WorkByContractCondition(int pos, int cond, KString name, Statement body) {
+	public WorkByContractCondition(int pos, int cond, KString name, Statement body, PrescannedBody pbody) {
 		super(pos,null);
 		this.name = name;
 		this.cond = cond;
 		this.body = body;
+		this.pbody = pbody;
 	}
 
 	public ASTNode resolve(Type reqType) {

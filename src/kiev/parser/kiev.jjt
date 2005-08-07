@@ -46,9 +46,10 @@ import kiev.vlang.*;
 /*{
 
 import syntax kiev.parser.TypeAliases;
+import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<ASTArgumentDeclaration> NArrArgDecls;
-typedef NArr<ASTType> NArrTypes;
+typedef NArr<TypeRef> NArrTypeRefs;
 
 }*/ 
 
@@ -286,6 +287,67 @@ public class kiev020 {
 		} catch( Exception e ) {}
 		return false;
 	}
+	
+	/*{
+	private static Struct mkStruct(ASTIdentifier name, int flags, ASTModifiers modifiers, ASTNode parent) {
+		ClazzName clname;
+		if (parent instanceof FileUnit) {
+			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
+		}
+		else if (parent instanceof Struct) {
+			clname = ClazzName.fromOuterAndName(PassInfo.clazz,name.name,false,true);
+		}
+		else if (name != null) {
+			// Construct name of local class
+			KString bytecode_name =
+				KString.from(PassInfo.clazz.name.bytecode_name
+					+"$"+PassInfo.clazz.countAnonymouseInnerStructs()
+					+"$"+name.name);
+			KString fixname = bytecode_name.replace('/','.');
+			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
+		}
+		else {
+			// Local anonymouse class
+			KString bytecode_name =
+				KString.from(PassInfo.clazz.name.bytecode_name
+					+"$"+PassInfo.clazz.countAnonymouseInnerStructs());
+			clname = ClazzName.fromBytecodeName(bytecode_name, false);
+		}
+		Struct clazz = Env.newStruct(clname,PassInfo.clazz,flags|modifiers.getFlags(),true);
+		if (name != null)
+			clazz.pos  = name.pos;
+		else
+			clazz.pos  = parent.pos;
+		if (modifiers.acc != null)
+			clazz.acc  = modifiers.acc;
+		if      (parent instanceof FileUnit)
+			clazz.setLocal(false);
+		else if (parent instanceof Struct)
+			clazz.setLocal(parent.isLocal());
+		else
+			clazz.setLocal(true);
+		foreach (Meta m; modifiers.annotations)
+			clazz.meta.set(m);
+		return clazz;
+	}
+
+	private static BaseStruct mkStructArg(ASTIdentifier name, ASTModifiers modifiers, ASTNode parent) {
+		BaseStruct arg;
+		if (parent instanceof Struct) {
+			Struct s = (Struct)parent;
+			arg = Env.newArgument(name.name, s);
+			s.args += arg;
+		} else {
+			ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
+			arg = Env.newMethodArgument(name.name, PassInfo.clazz);
+			m.argtypes += arg;
+		}
+		arg.pos  = name.pos;
+		foreach (Meta m; modifiers.annotations)
+			arg.meta.set(m);
+		return arg;
+	}
+	}*/
 
 }
 
@@ -709,6 +771,8 @@ ASTFileUnit FileUnit(String filename) :
 		ASTModifiers modifiers;
 	}
 	[	n.pkg = Package()	]
+	{ PassInfo.push(n.pkg.clazz); }
+	try {
 	(
 		n.syntax += Import()
 	|	n.syntax += Typedef()
@@ -718,13 +782,14 @@ ASTFileUnit FileUnit(String filename) :
 	(
 		modifiers = Modifiers()
 		try {
-			TypeDeclaration(modifiers) [ ";" ]
+			n.members += TypeDeclaration(modifiers, n) [ ";" ]
 	|		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-			SyntaxDeclaration(modifiers) [ ";" ]
+			n.members += SyntaxDeclaration(modifiers, n) [ ";" ]
 		}
 		catch(ParseError e) { rpe("Bad class declaration",e); }
 		catch(Throwable e) { rperr(e); }
 	)*
+	} finally { {PassInfo.pop(n.pkg.clazz); } }
 	<EOF>
 	{
 		declMode = true;
@@ -750,7 +815,7 @@ ASTModifiers Modifiers() :
 	{ jjtree.popNode(); return jjtThis; }
 }
 
-ASTPackage Package() :
+StructRef Package() #void :
 {}
 {
 	try {
@@ -758,7 +823,13 @@ ASTPackage Package() :
 	}
 	catch(ParseError e) { rpe("Bad package declaration",e); }
 	catch(Throwable e) { rperr(e); }
-	{ jjtree.popNode(); return jjtThis; }
+	{
+		ASTQName qn = (ASTQName)jjtree.popNode();
+		Struct pkg = Env.newPackage(qn.toKString());
+		StructRef r = new StructRef(pkg);
+		r.pos = qn.pos;
+		return r;
+	}
 }
 
 ASTPragma Pragma() :
@@ -844,129 +915,142 @@ ASTOpdef Opdef() :
 	{ jjtree.popNode(); return jjtThis; }
 }
 
-void SyntaxDeclaration(ASTModifiers modifiers) #StructDeclaration :
-{ Token t=null; }
+Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) #void :
+{ Struct clazz; ASTIdentifier name; }
 {
-	{
-		ASTStructDeclaration n = jjtThis;
-		n.modifiers = modifiers;
-	}
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
-	t=<IDENTIFIER>	// "syntax"
-	n.name = Name()
-	{ n.set(t); t = null; n.pos = n.name.pos; }
-	"{"
-	(
-		n.members += Typedef()
-	|	n.members += Opdef()
-	)*
-	"}"
+	<IDENTIFIER>	// "syntax"
+	name = Name()
+	{
+		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
+	}
+	{ PassInfo.push(clazz); }
+	try {
+		"{"
+		(
+			clazz.members += Typedef()
+		|	clazz.members += Opdef()
+		)*
+		"}"
+	} finally { PassInfo.pop(clazz); }
+	{ return clazz; }
 }
 
-void TypeDeclaration(ASTModifiers modifiers) #StructDeclaration :
-{ Token t=null; }
+Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) #void :
+{ Struct clazz; ASTIdentifier name; }
 {
-	{
-		ASTStructDeclaration n = jjtThis;
-		n.modifiers = modifiers;
-	}
 	(
-		t="class"
-		n.name = Name()
-		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
-		ClazzArguments(n.args)
+		"class"
+		name = Name()
+		{
+			clazz = mkStruct(name, 0, modifiers, parent);
+		}
+		ClazzArguments(clazz)
 		[
 			"extends"
 			(
 				LOOKAHEAD("rule")
-				n.ext = PrimitiveType()
-			|	n.ext = NonArrayType()
+				clazz.super_bound = PrimitiveType()
+			|	clazz.super_bound = NonArrayType()
 			)
 		]
 		[
 			"implements"
-			n.impl += NonArrayType()
-			( "," n.impl += NonArrayType()	)*
+			clazz.interfaces += NonArrayType()
+			( "," clazz.interfaces += NonArrayType()	)*
 		]
-		[	Generate(n.gens)	]
-	|	t="interface"
-		n.name = Name()
-		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
-		ClazzArguments(n.args)
+		[	Generate(clazz.gens)	]
+	|	"interface"
+		name = Name()
+		{
+			clazz = mkStruct(name, ACC_INTERFACE, modifiers, parent);
+		}
+		ClazzArguments(clazz)
 		[
 			"extends"
-			n.impl += NonArrayType()
-			( "," n.impl += NonArrayType()	)*
+			clazz.interfaces += NonArrayType()
+			( "," clazz.interfaces += NonArrayType()	)*
 		]
-		[	Generate(n.gens)	]
-	|	t="@" "interface"
-		(	n.name = Name()
-		|	n.name = KeywordAsName()
+		[	Generate(clazz.gens)	]
+	|	"@" "interface"
+		(	name = Name()
+		|	name = KeywordAsName()
 		)
-		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
-	|	t="enum"
-		n.name = Name()
-		{ jjtThis.set(t); t = null; n.pos = n.name.pos; }
+		{
+			clazz = mkStruct(name, ACC_INTERFACE|ACC_ANNOTATION, modifiers, parent);
+		}
+	|	"enum"
+		name = Name()
+		{
+			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
+		}
 		[
 			"extends"
-			n.ext = PrimitiveType()	
+			clazz.super_bound = PrimitiveType()	
 		]
 	)
-	TypeBodyDeclaration(n.kind)
+	{ PassInfo.push(clazz); }
+	try {
+		TypeBodyDeclaration(clazz)
+	} finally { PassInfo.pop(clazz); }
+	{ return clazz; }
 }
 
-void TypeBodyDeclaration(int kind) #void :
+void TypeBodyDeclaration(Struct clazz) #void :
 { ASTModifiers modifiers; }
 {
+	{ jjtree.openNodeScope(clazz); }
 	try {
-		"{"
-	}
-	catch(ParseError e) { rpe("'{' expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		(
-			LOOKAHEAD({kind == AccessFlags.ACC_ENUM})
-			modifiers = Modifiers()
-			EnumFieldDeclaration(modifiers)
-			(	","
+		try {
+			"{"
+		}
+		catch(ParseError e) { rpe("'{' expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
+			(
+				LOOKAHEAD({ clazz.isEnum() })
 				modifiers = Modifiers()
 				EnumFieldDeclaration(modifiers)
-			)*
-			[ ";" ]
-		)?
-	}
-	catch(ParseError e) { rpe("Enumeration values are expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		(
-			modifiers = Modifiers()
+				(	","
+					modifiers = Modifiers()
+					EnumFieldDeclaration(modifiers)
+				)*
+				[ ";" ]
+			)?
+		}
+		catch(ParseError e) { rpe("Enumeration values are expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
 			(
-				Initializer(modifiers)
-			|	InvariantDeclaration(modifiers) [ ";" ]
-			|	TypeDeclaration(modifiers) [ ";" ]
-			|	CaseTypeDeclaration(modifiers) ";"
-			|
-				LOOKAHEAD( "rule" <IDENTIFIER> "(" )
-				RuleDeclaration(modifiers)
-			|
-				LOOKAHEAD( <IDENTIFIER> "(" )
-				ConstructorDeclaration(modifiers)
-			|
-				LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
-				MethodDeclaration(modifiers)
-			|
-				LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
-				FieldDecl(modifiers)
-			)
-		)*
-	}
-	catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
-	catch(Throwable e) { rperr(e); }
-	try {
-		"}"
-	}
-	catch(ParseError e) { rpe("'}' expected",e); }
-	catch(Throwable e) { rperr(e); }
+				modifiers = Modifiers()
+				(
+					Initializer(modifiers)
+				|	InvariantDeclaration(modifiers) [ ";" ]
+				|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
+				|	clazz.members += CaseTypeDeclaration(modifiers, clazz) ";"
+				|
+					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
+					RuleDeclaration(modifiers)
+				|
+					LOOKAHEAD( <IDENTIFIER> "(" )
+					ConstructorDeclaration(modifiers)
+				|
+					LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
+					MethodDeclaration(modifiers)
+				|
+					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+					FieldDecls(modifiers)
+				)
+			)*
+		}
+		catch(ParseError e) { rpe("Field, method or class declaration expected",e); }
+		catch(Throwable e) { rperr(e); }
+		try {
+			"}"
+		}
+		catch(ParseError e) { rpe("'}' expected",e); }
+		catch(Throwable e) { rperr(e); }
+	} finally { {jjtree.closeNodeScope(clazz, true); ASTNode n = jjtree.popNode(); Debug.assert(clazz==n); } }
 }
 
 void EnumFieldDeclaration(ASTModifiers modifiers) :
@@ -980,18 +1064,19 @@ void EnumFieldDeclaration(ASTModifiers modifiers) :
 	catch(Throwable e) { rperr(e); }
 }
 
-void CaseTypeDeclaration(ASTModifiers modifiers) #StructDeclaration :
-{ Token t=null; }
+Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) #void :
+{ ASTIdentifier name; Struct clazz; }
 {
+	"case"
+	name = Name()
 	{
-		ASTStructDeclaration n = jjtThis;
-		n.modifiers = modifiers;
+		clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC, modifiers, parent);
+		clazz.super_type = parent.type;
 	}
-	t="case"
-	n.name = Name()
-	{ n.set(t); t = null; n.pos = n.name.pos; }
-	ClazzArguments(n.args)
-	[
+	ClazzArguments(clazz)
+	{ jjtree.openNodeScope(clazz); }
+	try {
+		[
 		"("
 			try {
 			[
@@ -1007,19 +1092,21 @@ void CaseTypeDeclaration(ASTModifiers modifiers) #StructDeclaration :
 			catch(ParseError e) { rpe("Formal parameter(s) expected",e); }
 			catch(Throwable e) { rperr(e); }
 		")"
-	]
+		]
+	} finally { {jjtree.closeNodeScope(clazz, true); ASTNode n = jjtree.popNode(); Debug.assert(clazz==n); } }
+	{ return clazz; }
 }
 
 
-void ClazzArguments(NArrArgDecls args) #void :
+void ClazzArguments(ASTNode parent) #void :
 {}
 {
 	[
 	"<"
 		try {
-			args += ArgumentDeclaration()
+			 ArgumentDeclaration(parent)
 			(	","
-				args += ArgumentDeclaration()
+				ArgumentDeclaration(parent)
 			)*
 		}
 		catch(ParseError e) { rpe("Class's argument expected",e); }
@@ -1028,7 +1115,7 @@ void ClazzArguments(NArrArgDecls args) #void :
 	]
 }
 
-void Generate(NArrTypes types) #void :
+void Generate(NArrTypeRefs types) #void :
 { Token t; ASTNonArrayType tp; }
 {
 	"$generate"
@@ -1053,19 +1140,17 @@ void Generate(NArrTypes types) #void :
 	catch(Throwable e) { rperr(e); }
 }
 
-ASTArgumentDeclaration ArgumentDeclaration() :
-{}
+BaseStruct ArgumentDeclaration(ASTNode parent) #void :
+{ ASTModifiers modifiers; ASTIdentifier name; BaseStruct arg; }
 {
-	{
-		ASTArgumentDeclaration n = jjtThis;
-	}
-	n.modifiers = Modifiers()
-	n.ident     = Name()
+	modifiers = Modifiers()
+	name      = Name()
+	{ arg = mkStructArg(name, modifiers, parent); }
 	[
 		"extends"
-		n.ext = NonArrayType()
+		arg.super_bound = NonArrayType()
 	]
-	{ jjtree.popNode(); return n; }
+	{ return arg; }
 }
 
 void Modifier() :
@@ -1182,7 +1267,7 @@ ASTMeta Annotation() #Meta :
 		id = Name()
 	|	id = KeywordAsName()
 	)
-	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id);	}
+	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id); }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
@@ -1253,24 +1338,36 @@ MetaValueArray AnnotationValueValueArrayInitializer() #void :
 }
 
 
-void FieldDecl(ASTModifiers modifiers) :
-{ boolean old_declMode; }
+void FieldDecls(ASTModifiers modifiers) #void :
+{ boolean old_declMode; ASTType type; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
-	try {
-		jjtThis.type = Type()
-	}
-	catch(ParseError e) { rpe("Type expected",e); }
-	catch(Throwable e) { rperr(e); }
 	{ old_declMode = declMode; declMode = false; }
 	try {
-		VarDecl()
-		(	","	VarDecl() )*
+		type = Type()
+		FieldDecl(modifiers, type, true)
+		(	","	FieldDecl(modifiers, type, false) )*
 	}
 	catch(ParseError e) { rpe("Field declaration expected",e); }
 	catch(Throwable e) { rperr(e); }
 	finally { declMode = old_declMode; }
 	";"
+}
+
+void FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
+{}
+{
+	{
+		if (first) {
+			jjtThis.modifiers = modifiers;
+			jjtThis.type = type;
+		} else {
+			jjtThis.modifiers = (ASTModifiers)modifiers.copy();
+			jjtThis.type = (ASTType)type.copy();
+		}
+	}
+	Identifier()
+	( "[" "]" { jjtThis.dim += 1; } )*
+	[ ("=" | ":=" { jjtThis.of_wrapper=true; }) VariableInitializer() ]
 }
 
 void VarDecls(ASTModifiers modifiers) :
@@ -1463,7 +1560,7 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		ASTMethodDeclaration n = jjtThis;
 		n.modifiers = modifiers;
 	}
-	ClazzArguments(n.argtypes)
+	ClazzArguments(n)
 	[
 		LOOKAHEAD( Type() <IDENTIFIER> )
 		n.rettype = Type()
@@ -2188,6 +2285,7 @@ void NewExpression() :
 {
 	Token t;
 	boolean old_mode;
+	Struct clazz;
 }
 {
 	t="new" { jjtThis.setPos(t.getPos()); }
@@ -2198,11 +2296,16 @@ void NewExpression() :
 	")"
 	[
 		LOOKAHEAD("{")
-		{ old_mode = interface_only; interface_only = false; jjtThis.anonymouse = true; }
+		{
+			old_mode = interface_only;
+			interface_only = false;
+			jjtThis.clazz = clazz = mkStruct(null, 0, new ASTModifiers(), jjtThis);
+			PassInfo.push(clazz);
+		}
 		try {
-			TypeBodyDeclaration(0)
+			TypeBodyDeclaration(clazz)
 		} finally {
-		{ interface_only = old_mode; }
+			{ interface_only = old_mode; PassInfo.pop(clazz); }
 		}
 	]
 }
@@ -2323,7 +2426,7 @@ ASTBlock Block() :
 		declMode = false;
 	}
 	try {
-    	( BlockStatement() )*
+    	( BlockStatement(jjtThis) )*
 	} finally { declMode = old_declMode; PassInfo.pop(jjtThis); }
     "}"
 	{ return jjtThis; }
@@ -2423,16 +2526,17 @@ ASTBlock CondBlock() :
 	{ return jjtThis; }
 }
 
-void BlockStatement() #void :
-{ boolean old_declMode; ASTModifiers modifiers; }
+void BlockStatement(ASTNode parent) #void :
+{ boolean old_declMode; ASTModifiers modifiers; Struct clazz; }
 {
 	(
 		LOOKAHEAD( Modifiers() ("class" | "interface" | "@" "interface") )
 		{ old_declMode = declMode; declMode = true; }
 		try {
 			modifiers = Modifiers()
-			TypeDeclaration(modifiers)
+			clazz = TypeDeclaration(modifiers, parent)
 			[ ";" ]
+			{ jjtree.pushNode(clazz); }
 		} finally {
 			declMode = old_declMode;
 		}
@@ -2512,7 +2616,7 @@ void NormalCase() :
 	)
     { jjtThis.setPos(t.getPos()); }
 	(
-		BlockStatement()
+		BlockStatement(jjtThis)
 	)*
 }
 
@@ -2533,7 +2637,7 @@ void PizzaCase() :
 		]
 	")" ":"
 	(
-		BlockStatement()
+		BlockStatement(jjtThis)
 	)*
 }
 

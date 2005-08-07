@@ -46,16 +46,20 @@ public class ASTClosureType extends ASTType {
         }
     }
 
+	public boolean isBound() {
+		return true;
+	}
+
 	public Type getType() {
-		if (this.type != null)
-			return this.type;
+		if (this.lnk != null)
+			return this.lnk;
 		Type[] tps = new Type[types.length-1];
         for(int i=0; i < tps.length; i++) {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        this.type = MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
-		return this.type;
+        this.lnk = MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
+		return this.lnk;
 	}
 
 	public Dumper toJava(Dumper dmp) {

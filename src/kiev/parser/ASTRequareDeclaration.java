@@ -41,7 +41,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 	public KString		name;
     @att public Statement	body;
 	@virtual
-	public virtual PrescannedBody pbody;
+	@att public virtual PrescannedBody pbody;
 
 	@getter public PrescannedBody get$pbody() { return pbody; }
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
@@ -68,8 +68,7 @@ public abstract class ASTCondDeclaration extends ASTNode implements PreScanneabl
 public class ASTRequareDeclaration extends ASTCondDeclaration {
 
     public ASTNode pass3() {
-		WorkByContractCondition cond = new WorkByContractCondition(pos,CondRequire,name,body);
-		if( pbody != null ) pbody.setParent(cond);
+		WorkByContractCondition cond = new WorkByContractCondition(pos,CondRequire,name,body,pbody);
 		return cond;
     }
 }

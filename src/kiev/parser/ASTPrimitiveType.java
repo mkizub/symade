@@ -39,26 +39,34 @@ public class ASTPrimitiveType extends ASTType implements kiev020Constants {
 	public void set(Token t) {
     	pos = t.getPos();
   		switch(t.kind) {
-  		case BOOLEAN: type = Type.tpBoolean; return;
-  		case BYTE: type = Type.tpByte; return;
-  		case CHAR: type = Type.tpChar; return;
-  		case SHORT: type = Type.tpShort; return;
-  		case INT: type = Type.tpInt; return;
-  		case LONG: type = Type.tpLong; return;
-  		case FLOAT: type = Type.tpFloat; return;
-  		case DOUBLE: type = Type.tpDouble; return;
-  		case VOID: type = Type.tpVoid; return;
-  		case RULE: type = Type.tpRule; return;
+  		case BOOLEAN: this.lnk = Type.tpBoolean; return;
+  		case BYTE:    this.lnk = Type.tpByte; return;
+  		case CHAR:    this.lnk = Type.tpChar; return;
+  		case SHORT:   this.lnk = Type.tpShort; return;
+  		case INT:     this.lnk = Type.tpInt; return;
+  		case LONG:    this.lnk = Type.tpLong; return;
+  		case FLOAT:   this.lnk = Type.tpFloat; return;
+  		case DOUBLE:  this.lnk = Type.tpDouble; return;
+  		case VOID:    this.lnk = Type.tpVoid; return;
+  		case RULE:    this.lnk = Type.tpRule; return;
   		default: throw new CompilerException(pos,"Unknown primitive type "+t.image);
 		}
 	}
 
+	public boolean isBound() {
+		return true;
+	}
+
+	public Type getType() {
+		return this.lnk;
+	}
+	
 	public String toString() {
-		return type.toString();
+		return this.lnk.toString();
 	}
 	
     public Dumper toJava(Dumper dmp) {
-    	return dmp.append(type);
+    	return dmp.append(this.lnk);
     }
 }
 

@@ -57,8 +57,7 @@ public class Import extends ASTNode implements Constants, Scope {
 	public Import() {
 	}
 
-	public Import(int pos, ASTNode parent, ASTNode node, ImportMode mode, boolean star) {
-		super(pos, parent);
+	public Import(ASTNode node, ImportMode mode, boolean star) {
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;

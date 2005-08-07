@@ -168,6 +168,8 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		if ($pslot != null && $pslot.is_attr)
+			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -238,6 +240,8 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		if ($pslot != null && $pslot.is_attr)
+			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -316,6 +320,5 @@ public final class NArr<N extends ASTNode> {
 	}
 
 }
-
 
 

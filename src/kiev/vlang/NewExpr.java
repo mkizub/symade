@@ -235,7 +235,7 @@ public class NewExpr extends Expr {
 			if( tp.clazz.interfaces.length > 0 )
 				dmp.append("new ").append(tp.clazz.interfaces[0].clazz.name).append('(');
 			else
-				dmp.append("new ").append(tp.clazz.super_clazz.clazz.name).append('(');
+				dmp.append("new ").append(tp.clazz.super_type.clazz.name).append('(');
 		}
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
@@ -578,7 +578,7 @@ public class NewClosure extends Expr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)type.clazz;
-		dmp.append("new ").append(cl.super_clazz.clazz.name).append('(')
+		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);
 		foreach (ASTNode n; cl.members)

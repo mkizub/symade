@@ -24,6 +24,7 @@ package kiev.parser;
 
 import kiev.Kiev;
 import kiev.vlang.*;
+import kiev.transf.*;
 import kiev.stdlib.*;
 
 /**
@@ -80,7 +81,7 @@ public class ASTAnonymouseClosure extends Expr {
 		me.addAttr(sfa);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		me.super_clazz = Type.tpClosureClazz.type;
+		me.super_type = Type.tpClosureClazz.type;
 
 		Type[] types = new Type[params.length];
 		Var[] vars = new Var[params.length];
@@ -94,7 +95,6 @@ public class ASTAnonymouseClosure extends Expr {
 		Type ret = rettype.getType();
 		me.type = MethodType.newMethodType(me,null,types,ret);
 
-		NArr<ASTNode> members = new NArr<ASTNode>(null, null);
 		if( ret != Type.tpRule ) {
 			ASTMethodDeclaration md = new ASTMethodDeclaration();
 			KString call_name;
@@ -106,14 +106,12 @@ public class ASTAnonymouseClosure extends Expr {
 			else
 				md.rettype = new ASTType(pos, ret);
 			md.body = body;
-			md.parent = me;
-			members.add(md);
+			me.members.add(md);
 		} else {
 			ASTRuleDeclaration md = new ASTRuleDeclaration();
 			md.ident = new ASTIdentifier(pos, KString.from("call_rule"));
 			md.body = body;
-			md.parent = me;
-			members.add(md);
+			me.members.add(md);
 		}
 
 		NArr<ASTNode> stats;
@@ -140,7 +138,14 @@ public class ASTAnonymouseClosure extends Expr {
 			stats.insert(dc,i);
 		}
 
-		me = ASTStructDeclaration.createMembers(me,members);
+		ExportJavaTop exporter = new ExportJavaTop();
+		//exporter.pass1(me);
+		//exporter.pass1_1(me);
+		//exporter.pass2(me);
+		//exporter.pass2_2(me);
+		exporter.pass3(me);
+		//me.autoProxyMethods();
+		//me.resolveFinalFields(false);
 		new_closure = new NewClosure(pos,me.type);
 		new_closure.parent = parent;
 		new_closure = (Expr)new_closure.resolve(reqType);

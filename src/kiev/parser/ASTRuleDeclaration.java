@@ -45,7 +45,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
     @att public final NArr<ASTNode>	localvars;
     @att public Statement	body;
 	@virtual
-	public virtual PrescannedBody pbody;
+	@att public virtual PrescannedBody pbody;
 	@att public final NArr<ASTRequareDeclaration>	req;
 	@att public final NArr<ASTEnsureDeclaration>	ens;
 
@@ -90,24 +90,15 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
     }
 
     public ASTNode pass3() {
-		Struct clazz;
-		if( parent instanceof ASTStructDeclaration )
-			clazz = ((ASTStructDeclaration)parent).me;
-		else if( parent instanceof Struct )
-			clazz = (Struct)parent;
-		else
+		if !( parent instanceof Struct )
 			throw new CompilerException(pos,"Method must be declared on class level only");
+		Struct clazz = (Struct)parent;
 		// TODO: check flags for fields
 		int flags = modifiers.getFlags();
-		Struct ps;
-		if( parent instanceof ASTStructDeclaration)
-			ps = ((ASTStructDeclaration)parent).me;
-		else
-			ps = (Struct)parent;
-		if( ps.isPackage() ) flags |= ACC_STATIC;
+		if( clazz.isPackage() ) flags |= ACC_STATIC;
 		if( (flags & ACC_PRIVATE) != 0 ) flags &= ~ACC_FINAL;
-		else if( ps.isClazz() && ps.isFinal() ) flags |= ACC_FINAL;
-		else if( ps.isInterface() ) {
+		else if( clazz.isClazz() && clazz.isFinal() ) flags |= ACC_FINAL;
+		else if( clazz.isInterface() ) {
 			flags |= ACC_PUBLIC;
 			if( pbody == null ) flags |= ACC_ABSTRACT;
 		}
@@ -154,6 +145,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());
         me.body = body;
+		me.pbody = pbody;
 		if( !me.isStatic() )
 			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
 		for(int i=0; i < lvars.length; i++) {
@@ -162,8 +154,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		foreach(ASTAlias al; aliases) al.attach(me);
 		me.params.addAll(vars);
 		me.localvars.addAll(lvars);
-        clazz.addMethod(me);
-		if( pbody != null ) pbody.setParent(me);
+        this.replaceWith(me);
 
 		if( modifiers.acc != null ) me.acc = modifiers.acc;
 

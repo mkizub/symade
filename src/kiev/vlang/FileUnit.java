@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 @node
 public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperators {
 	@att public KString					filename = KString.Empty;
-	@att public ASTPackage				pkg;
+	@att public StructRef				pkg;
 	@att public final NArr<ASTNode>		syntax;
 	@att public final NArr<ASTNode>		members;
 	
@@ -47,12 +47,12 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	public boolean[]					disabled_extensions;
 
 	public FileUnit() {
-		this(KString.Empty,new ASTPackage(KString.Empty,Env.root));
+		this(KString.Empty, Env.root);
 	}
-	public FileUnit(KString name, ASTPackage pkg) {
+	public FileUnit(KString name, Struct pkg) {
 		super(0);
 		this.filename = name;
-		this.pkg = pkg;
+		this.pkg = new StructRef(pkg);
 		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
@@ -121,24 +121,6 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		if (enabled && Kiev.getCmdLineExtSet()[i])
 			Kiev.reportError(pos,"Extension '"+s+"' was disabled from command line");
 		disabled_extensions[i] = !enabled;
-	}
-
-	public ASTNode pass3() {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		PassInfo.push(this);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			// Process members - pass3()
-			for(int i=0; i < members.length; i++) {
-				if (members[i] instanceof ASTStructDeclaration)
-					this.members[i] = (Struct)members[i].pass3();
-				else
-					throw new CompilerException(members[i].pos,"Unknown type of file declaration "+members[i].getClass());
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
-		return this;
 	}
 
 	public ASTNode autoProxyMethods() {
@@ -224,8 +206,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					Kiev.reportInfo("Generated clas "+members[i],diff_time);
 				if( members[i] instanceof Struct ) {
 					Struct s = (Struct)members[i];
-					foreach(Struct gen; s.gens) {
-						Type t = gen.type;
+					foreach(TypeRef gen; s.gens) {
+						Type t = gen.lnk;
 						Type oldargtype = Kiev.argtype;
 						Kiev.argtype = t;
 						try {
@@ -277,9 +259,9 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 			((Import)syn).resolveNameR(node,path,name,tp,resfl)
 		}
 	;
-		pkg != null && pkg.resolved != null,
+		pkg != null,
 		trace( Kiev.debugResolve, "In file package: "+pkg),
-		pkg.resolved.resolveNameR(node,path,name,tp,resfl)
+		pkg.resolveNameR(node,path,name,tp,resfl)
 	;
 		syn @= syntax,
 		syn instanceof Import && ((Import)syn).star,
@@ -293,8 +275,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
 		ASTNode@ syn;
 	{
-		pkg != null && pkg.resolved != null && pkg.resolved != Env.root,
-		pkg.resolved.resolveMethodR(node,path,name,args,ret,type,resfl)
+		pkg != null && pkg != Env.root,
+		pkg.resolveMethodR(node,path,name,args,ret,type,resfl)
 	;	syn @= syntax,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),
@@ -319,7 +301,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		syntax = null;
 		foreach(ASTNode n; members) n.cleanup();
 		members = null;
-		foreach(PrescannedBody n; bodies) n.sb = null;
+		foreach(PrescannedBody n; bodies)
+			n.replaceWith(null);
 		bodies = null;
 	}
 
@@ -333,8 +316,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 					toJava(output_dir, (Struct)members[i]);
 					if( members[i] instanceof Struct ) {
 						Struct s = (Struct)members[i];
-						foreach(Struct gen; s.gens) {
-							Type t = gen.type;
+						foreach(TypeRef gen; s.gens) {
+							Type t = gen.lnk;
 							Type oldargtype = Kiev.argtype;
 							Kiev.argtype = t;
 							try {
