@@ -4259,15 +4259,13 @@ ASTBlock CondBlock() :
   ASTCondBlock jjtn000 = new ASTCondBlock(JJTCONDBLOCK);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ boolean old_declMode;}
+/*@egen*/}
 {/*@bgen(jjtree) CondBlock */
         try {
 /*@egen*/
 	{
 		jjtn000.setPos(getToken(1).getPos());
 		PassInfo.push(jjtn000);
-		old_declMode = declMode;
-		declMode = false;
 	}
 	try {
 		"{"
@@ -4277,7 +4275,6 @@ ASTBlock CondBlock() :
 		( CondStatement() )+
 		<END_CONSTRAINT>
 	} finally {
-		declMode = old_declMode;
 		PassInfo.pop(jjtn000);
 	}/*@bgen(jjtree)*/
         {

@@ -940,7 +940,7 @@ public class Type extends ASTNode implements AccessFlags {
 				else return t1;
 			}
 			else if( isInstanceOf(t2) ) return t2;
-			if( t1.clazz.instanceOf(Type.tpPrologVar.clazz) && t1.clazz.instanceOf(Type.tpPrologVar.clazz) ) {
+			if( t1.clazz.isWrapper() && t2.clazz.isWrapper() ) {
 				Type tp1 = t1.args[0];
 				Type tp2 = t2.args[0];
 				Type tp_better = betterCast(tp1,tp2);

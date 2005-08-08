@@ -2314,13 +2314,11 @@ ASTBlock PrescannedCondBlock(PrescannedBody b) #void :
 }
 
 ASTBlock CondBlock() :
-{ boolean old_declMode;}
+{}
 {
 	{
 		jjtThis.setPos(getToken(1).getPos());
 		PassInfo.push(jjtThis);
-		old_declMode = declMode;
-		declMode = false;
 	}
 	try {
 		"{"
@@ -2330,7 +2328,6 @@ ASTBlock CondBlock() :
 		( CondStatement() )+
 		<END_CONSTRAINT>
 	} finally {
-		declMode = old_declMode;
 		PassInfo.pop(jjtThis);
 	}
 	{ return jjtThis; }
