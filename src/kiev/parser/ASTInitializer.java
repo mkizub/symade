@@ -35,14 +35,10 @@ import kiev.vlang.*;
 
 @node
 public class ASTInitializer extends ASTNode implements PreScanneable {
-	@att public ASTModifiers	modifiers;
-	@att public Statement	body;
-	@virtual
-	@att public virtual PrescannedBody pbody;
+	@att public ASTModifiers		modifiers;
+	@att public Statement			body;
+	@att public PrescannedBody		pbody;
     
-	@getter public PrescannedBody get$pbody() { return pbody; }
-	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
-	
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
 			modifiers = (ASTModifiers)n;

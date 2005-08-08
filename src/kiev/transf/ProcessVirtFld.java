@@ -186,7 +186,8 @@ public final class ProcessVirtFld implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent != m.parent)
 				return;
-			if (f.getMetaVirtual().set != null && f.getMetaVirtual().set != m)
+			MetaVirtual mv = f.getMetaVirtual();
+			if (mv != null && mv.set != null && mv.set != m)
 				return;
 		} else {
 			s.addField(f=new Field(s,name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
@@ -225,7 +226,8 @@ public final class ProcessVirtFld implements Constants {
 			trace(Kiev.debugCreation,"method "+m+" has field "+f);
 			if (f.parent != m.parent)
 				return;
-			if (f.getMetaVirtual().get != null && f.getMetaVirtual().get != m)
+			MetaVirtual mv = f.getMetaVirtual();
+			if (mv != null && mv.get != null && mv.get != m)
 				return;
 		} else {
 			s.addField(f=new Field(s,name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));

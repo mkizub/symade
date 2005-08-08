@@ -795,16 +795,10 @@ public final class ExportJavaTop implements Constants {
 			// Process members
 			ASTNode[] members = astn.members.toArray();
 			for(int i=0; i < members.length; i++) {
-				if( members[i] instanceof ASTInitializer ) {
-					ASTInitializer init = (ASTInitializer)members[i];
+				if( members[i] instanceof Initializer ) {
+					Initializer init = (Initializer)members[i];
 					// TODO: check flags for initialzer
-					Initializer in = new Initializer(init.pos, init.modifiers.getFlags());
-					if (init.body != null)
-						in.addStatement(init.body);
-					else
-						in.pbody = init.pbody;
-					if( me.isPackage() ) in.setStatic(true);
-					init.replaceWith(in);
+					if( me.isPackage() ) init.setStatic(true);
 				}
 				else if( members[i] instanceof ASTMethodDeclaration ) {
 					ASTMethodDeclaration astmd = (ASTMethodDeclaration)members[i];
@@ -850,7 +844,7 @@ public final class ExportJavaTop implements Constants {
 						flags |= ACC_PUBLIC;
 					}
 					Type ftype = fdecl.type.getType();
-					KString fname = fdecl.name;
+					KString fname = fdecl.name.name;
 					for(int k=0; k < fdecl.dim; k++) ftype = Type.newArrayType(ftype);
 					Field f = new Field(me,fname,ftype,flags);
 					f.setPos(fdecl.pos);
@@ -967,8 +961,17 @@ public final class ExportJavaTop implements Constants {
 					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
 					members[i].replaceWith(f);
 				}
-				else if( members[i] instanceof ASTInvariantDeclaration ) {
-					((ASTInvariantDeclaration)members[i]).pass3();
+				else if( members[i] instanceof WBCCondition ) {
+					WBCCondition inv = (WBCCondition)members[i];
+					assert(inv.cond == WBCType.CondInvariant);
+					// TODO: check flags for fields
+					MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
+					Method m = new Method(astn,inv.name.name,mt,inv.flags);
+					m.setInvariantMethod(true);
+					if( !m.isStatic() )
+						m.params.add(new Var(inv.pos,m,nameThis,astn.type,0));
+					inv.replaceWith(m);
+					m.body = inv;
 				}
 				// Inner classes and cases after all methods and fields, skip now
 				else if( members[i] instanceof Struct );

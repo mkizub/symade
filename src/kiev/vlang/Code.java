@@ -1598,7 +1598,7 @@ public class Code implements Constants {
 		PassInfo.method.addAttr(generateCodeAttr(0));
 	}
 
-	static public void generateCode(WorkByContractCondition wbc) {
+	static public void generateCode(WBCCondition wbc) {
 		wbc.code = generateCodeAttr(wbc.cond);
 	}
 

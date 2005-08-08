@@ -228,7 +228,7 @@ public class Bytecoder implements Constants {
 		Attr[] attrs = Attr.emptyArray;
 		NodeName nm = null;
 		Operator op = null;
-		WorkByContractCondition[] conditions = null;
+		WBCCondition[] conditions = null;
 		for(int i=0; i < bcm.attrs.length; i++) {
 			Attr at = readAttr(bcm.attrs[i],bcclazz);
 			if( at == null ) continue;
@@ -259,17 +259,17 @@ public class Bytecoder implements Constants {
 				}
 			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
-				WorkByContractCondition wbc = new WorkByContractCondition(0,
-					(at.name.equals(attrRequire) ?
-						WorkByContractCondition.CondRequire
-					  : WorkByContractCondition.CondEnsure
-					), null, null, null);
+				WBCCondition wbc = new WBCCondition();
+				if (at.name.equals(attrRequire))
+					wbc.cond = WBCType.CondRequire;
+				else
+					wbc.cond = WBCType.CondEnsure;
 				wbc.code = (ContractAttr)at;
 				if( m == null ) {
 					if( conditions == null )
-						conditions = new WorkByContractCondition[]{wbc};
+						conditions = new WBCCondition[]{wbc};
 					else
-						conditions = (WorkByContractCondition[])Arrays.appendUniq(conditions,wbc);
+						conditions = (WBCCondition[])Arrays.appendUniq(conditions,wbc);
 				} else {
 					wbc.definer = m;
 					m.conditions.appendUniq(wbc);
@@ -656,7 +656,7 @@ public class Bytecoder implements Constants {
 		else if( name.equals(attrRequire) || name.equals(attrEnsure) ) {
 			kiev.bytecode.KievContractAttribute kca = (kiev.bytecode.KievContractAttribute)bca;
 			ContractAttr ca = new ContractAttr(
-				(name.equals(attrEnsure) ? WorkByContractCondition.CondEnsure : WorkByContractCondition.CondRequire ),
+				(name.equals(attrEnsure) ? WBCType.CondEnsure : WBCType.CondRequire ),
 				kca.max_stack, kca.max_locals, kca.code, Attr.emptyArray
 			);
 			// Now, scan the bytecode to findout constants and offsets

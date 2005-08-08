@@ -46,33 +46,21 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
     @att public final NArr<ASTAlias>					aliases;
     @att public ASTNode									throwns;
     @att public Statement								body;
-	@virtual
-	@att public virtual PrescannedBody 				pbody;
-	@att public final NArr<ASTRequareDeclaration>		req;
-	@att public final NArr<ASTEnsureDeclaration>		ens;
+	@att public PrescannedBody 							pbody;
+	@att public final NArr<WBCCondition>				conditions;
     @att public MetaValue								annotation_default;
 
 	@ref public Method									me;
 	@ref public final NArr<Type>						ftypes;
-
-	@getter public PrescannedBody get$pbody() { return pbody; }
-	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	ASTMethodDeclaration() {
 		modifiers = new ASTModifiers();
 	}
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTType ) {
+        if( n instanceof ASTType ) {
         	rettype = (ASTType)n;
         }
-    	else if( n instanceof ASTIdentifier ) {
-        	ident = (ASTIdentifier)n;
-        	pos = n.getPos();
-		}
     	else if( n instanceof ASTFormalParameter ) {
         	params.append((ASTFormalParameter)n);
         }
@@ -81,12 +69,6 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         }
         else if( n instanceof ASTThrows ) {
         	throwns = n;
-        }
-        else if( n instanceof ASTRequareDeclaration ) {
-			req.append((ASTRequareDeclaration)n);
-        }
-        else if( n instanceof ASTEnsureDeclaration ) {
-			ens.append((ASTEnsureDeclaration)n);
         }
         else if( n instanceof Statement ) {
 			body = (Statement)n;
@@ -207,13 +189,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		if( modifiers.acc != null ) me.acc = modifiers.acc;
 
-		for(int i=0; req!=null && i < req.length; i++) {
-			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
-			cond.definer = me;
-			me.conditions.append(cond);
-		}
-		for(int i=0; ens!=null && i < ens.length; i++) {
-			WorkByContractCondition cond = (WorkByContractCondition)ens[i].pass3();
+		foreach(WBCCondition cond; conditions) {
 			cond.definer = me;
 			me.conditions.append(cond);
 		}

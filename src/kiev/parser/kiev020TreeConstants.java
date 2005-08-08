@@ -58,28 +58,27 @@ public interface kiev020TreeConstants
   public int JJTLABELEDSTATEMENT = 51;
   public int JJTBLOCK = 52;
   public int JJTRULEBLOCK = 53;
-  public int JJTCONDBLOCK = 54;
-  public int JJTCONDSTATEMENT = 55;
-  public int JJTEMPTYSTATEMENT = 56;
-  public int JJTSTATEMENTEXPRESSION = 57;
-  public int JJTSWITCHSTATEMENT = 58;
-  public int JJTNORMALCASE = 59;
-  public int JJTPIZZACASE = 60;
-  public int JJTIFSTATEMENT = 61;
-  public int JJTWHILESTATEMENT = 62;
-  public int JJTDOSTATEMENT = 63;
-  public int JJTFORSTATEMENT = 64;
-  public int JJTFOREACHSTATEMENT = 65;
-  public int JJTGOTOSTATEMENT = 66;
-  public int JJTBREAKSTATEMENT = 67;
-  public int JJTCONTINUESTATEMENT = 68;
-  public int JJTRETURNSTATEMENT = 69;
-  public int JJTTHROWSTATEMENT = 70;
-  public int JJTSYNCHRONIZEDSTATEMENT = 71;
-  public int JJTWITHSTATEMENT = 72;
-  public int JJTTRYSTATEMENT = 73;
-  public int JJTCATCHINFO = 74;
-  public int JJTFINALLYINFO = 75;
+  public int JJTCONDSTATEMENT = 54;
+  public int JJTEMPTYSTATEMENT = 55;
+  public int JJTSTATEMENTEXPRESSION = 56;
+  public int JJTSWITCHSTATEMENT = 57;
+  public int JJTNORMALCASE = 58;
+  public int JJTPIZZACASE = 59;
+  public int JJTIFSTATEMENT = 60;
+  public int JJTWHILESTATEMENT = 61;
+  public int JJTDOSTATEMENT = 62;
+  public int JJTFORSTATEMENT = 63;
+  public int JJTFOREACHSTATEMENT = 64;
+  public int JJTGOTOSTATEMENT = 65;
+  public int JJTBREAKSTATEMENT = 66;
+  public int JJTCONTINUESTATEMENT = 67;
+  public int JJTRETURNSTATEMENT = 68;
+  public int JJTTHROWSTATEMENT = 69;
+  public int JJTSYNCHRONIZEDSTATEMENT = 70;
+  public int JJTWITHSTATEMENT = 71;
+  public int JJTTRYSTATEMENT = 72;
+  public int JJTCATCHINFO = 73;
+  public int JJTFINALLYINFO = 74;
 
 
   public String[] jjtNodeName = {
@@ -137,7 +136,6 @@ public interface kiev020TreeConstants
     "LabeledStatement",
     "Block",
     "RuleBlock",
-    "CondBlock",
     "CondStatement",
     "EmptyStatement",
     "StatementExpression",

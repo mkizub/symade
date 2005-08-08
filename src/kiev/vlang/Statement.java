@@ -402,10 +402,10 @@ public class BlockStat extends Statement implements Scope {
 
 @node
 @cfnode
-public class Initializer extends BlockStat implements SetBody {
+public class Initializer extends BlockStat implements SetBody, PreScanneable {
 	/** Meta-information (annotations) of this initializer */
 	@att public MetaSet					meta;
-	@att public PrescannedBody 			pbody;
+	@att public PrescannedBody			pbody;
 	@att public final NArr<Statement>	addstats;
 
 	public Initializer() {
@@ -415,6 +415,11 @@ public class Initializer extends BlockStat implements SetBody {
 		super(pos, null);
 		setFlags(flags);
 	}
+
+	public void jjtAddChild(ASTNode n, int i) {
+		pos = n.getPos();
+		addStatement((Statement)n);
+    }
 
 	public ASTNode resolve(Type reqType) {
 		super.resolve(reqType);
@@ -1084,17 +1089,17 @@ public class CondStat extends Statement {
 	}
 
 	private KString getAssertMethodName() {
-		WorkByContractCondition wbc = (WorkByContractCondition)parent.parent;
+		WBCCondition wbc = (WBCCondition)parent.parent;
 		switch( wbc.cond ) {
-		case WorkByContractCondition.CondRequire:	return nameAssertRequireMethod;
-		case WorkByContractCondition.CondEnsure:	return nameAssertEnsureMethod;
-		case WorkByContractCondition.CondInvariant:	return nameAssertInvariantMethod;
+		case WBCType.CondRequire:	return nameAssertRequireMethod;
+		case WBCType.CondEnsure:	return nameAssertEnsureMethod;
+		case WBCType.CondInvariant:	return nameAssertInvariantMethod;
 		default: return nameAssertMethod;
 		}
 	}
 
 	private KString getAssertMethodSignature() {
-		WorkByContractCondition wbc = (WorkByContractCondition)parent.parent;
+		WBCCondition wbc = (WBCCondition)parent.parent;
 		if( wbc.name == null )
 			return nameAssertSignature;
 		else
@@ -1102,9 +1107,9 @@ public class CondStat extends Statement {
 	}
 
 	private void generateAssertName() {
-		WorkByContractCondition wbc = (WorkByContractCondition)parent.parent;
+		WBCCondition wbc = (WBCCondition)parent.parent;
 		if( wbc.name == null ) return;
-		Code.addConst((KString)wbc.name);
+		Code.addConst((KString)wbc.name.name);
 	}
 
 	public void generate(Type reqType) {

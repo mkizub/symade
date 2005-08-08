@@ -478,9 +478,6 @@ public final class Kiev {
 				case PrescannedBody.RuleBlockMode:
 					bl = Kiev.k.PrescannedRuleBlock(b);
 					break;
-				case PrescannedBody.CondBlockMode:
-					bl = Kiev.k.PrescannedCondBlock(b);
-					break;
 				default:
 					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
 				}

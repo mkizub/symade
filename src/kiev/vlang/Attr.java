@@ -757,8 +757,9 @@ public class ContractAttr extends CodeAttr {
 
 	/** Constructor for bytecode reader and raw field creation */
 	public ContractAttr(int cond, int max_st,int max_locs, byte[] code, Attr[] code_attrs) {
-		super( (cond==WorkByContractCondition.CondRequire ? attrRequire : attrEnsure),
-														max_st,max_locs,code,code_attrs);
+		super( (cond==WBCType.CondRequire ? attrRequire : attrEnsure),
+				max_st,max_locs,code,code_attrs
+			);
 		this.cond = cond;
 	}
 

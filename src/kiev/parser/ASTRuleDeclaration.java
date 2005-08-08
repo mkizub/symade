@@ -38,16 +38,14 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
-	@att public ASTModifiers			modifiers;
-    @att public ASTIdentifier			ident;
-    @att public final NArr<ASTNode>	params;
-    @att public final NArr<ASTAlias>	aliases;
-    @att public final NArr<ASTNode>	localvars;
-    @att public Statement	body;
-	@virtual
-	@att public virtual PrescannedBody pbody;
-	@att public final NArr<ASTRequareDeclaration>	req;
-	@att public final NArr<ASTEnsureDeclaration>	ens;
+	@att public ASTModifiers				modifiers;
+    @att public ASTIdentifier				ident;
+    @att public final NArr<ASTNode>		params;
+    @att public final NArr<ASTAlias>		aliases;
+    @att public final NArr<ASTNode>		localvars;
+    @att public Statement					body;
+	@att public PrescannedBody				pbody;
+	@att public final NArr<WBCCondition>	conditions;
 
 	@ref public RuleMethod	me;
 
@@ -59,14 +57,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
 	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-		else if( n instanceof ASTIdentifier ) {
-			ident = (ASTIdentifier)n;
-			pos = n.getPos();
-		}
-		else if( n instanceof ASTFormalParameter ) {
+		if( n instanceof ASTFormalParameter ) {
 			params.append(n);
 		}
 		else if( n instanceof ASTVarDecls ) {
@@ -74,12 +65,6 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		else if( n instanceof ASTAlias ) {
 			aliases.append((ASTAlias)n);
-        }
-        else if( n instanceof ASTRequareDeclaration ) {
-			req.append((ASTRequareDeclaration)n);
-        }
-        else if( n instanceof ASTEnsureDeclaration ) {
-			ens.append((ASTEnsureDeclaration)n);
         }
         else if( n instanceof ASTRuleBlock ) {
 			body = (Statement)n;
@@ -158,16 +143,11 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
 		if( modifiers.acc != null ) me.acc = modifiers.acc;
 
-		for(int i=0; req!=null && i < req.length; i++) {
-			WorkByContractCondition cond = (WorkByContractCondition)req[i].pass3();
+		foreach(WBCCondition cond; conditions) {
 			cond.definer = me;
 			me.conditions.append(cond);
 		}
-		for(int i=0; ens!=null && i < ens.length; i++) {
-			WorkByContractCondition cond = (WorkByContractCondition)ens[i].pass3();
-			cond.definer = me;
-			me.conditions.append(cond);
-		}
+
 
         return me;
     }

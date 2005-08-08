@@ -22,10 +22,8 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.ASTNewInitializedArrayExpression;
-import kiev.parser.PrescannedBody;
+import kiev.parser.*;
 
-import static kiev.vlang.WorkByContractCondition.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -86,7 +84,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 	public Attr[]			attrs = Attr.emptyArray;
 
 	/** Require & ensure clauses */
-	@att public final NArr<WorkByContractCondition> conditions;
+	@att public final NArr<WBCCondition> conditions;
 
 	/** Violated by method fields for normal methods, and checked fields
 	 *  for invariant method
@@ -343,6 +341,8 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
+		foreach(WBCCondition cond; conditions) 
+			cond.toJava(dmp);
 		if( isAbstract() || body == null ) {
 			dmp.append(';').newLine();
 		} else {
@@ -419,7 +419,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 					NodeInfoPass.setNodeInitialized(p,true);
 				}
 			}
-			foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire ) {
+			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.resolve(Type.tpVoid);
 			}
 			if (PassInfo.clazz.isAnnotation()) {
@@ -471,14 +471,14 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
 							body.setAbrupted(true);
 						}
-						else if( body instanceof WorkByContractCondition );
+						else if( body instanceof WBCCondition );
 						else
 							Kiev.reportError(pos,"Return requared");
 					} else {
 						Kiev.reportError(pos,"Return requared");
 					}
 				}
-				foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure ) {
+				foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
 					if( type.ret != Type.tpVoid ) getRetVar();
 					cond.resolve(Type.tpVoid);
 				}
@@ -505,12 +505,12 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions.addUniq((WorkByContractCondition)inv.body);
+						conditions.addUniq((WBCCondition)inv.body);
 				}
 			}
 		}
 		try {
-			foreach(WorkByContractCondition cond; conditions; cond.cond != CondInvariant )
+			foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 				cond.generate(Type.tpVoid);
 		} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
 		if( !isAbstract() && body != null ) {
@@ -523,9 +523,9 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck();
 					if( Kiev.debugOutputC ) {
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire )
+						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
 							Code.importCode(cond.code);
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondInvariant ) {
+						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
 								if( !cond.parent.isStatic() )
@@ -535,7 +535,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							setGenPostCond(true);
 						}
 						if( !isGenPostCond() ) {
-							foreach(WorkByContractCondition cond; conditions; cond.cond != CondRequire ) {
+							foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondRequire ) {
 								setGenPostCond(true);
 								break;
 							}
@@ -547,13 +547,13 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 							Code.addVar(getRetVar());
 							Code.addInstr(Instr.op_store,getRetVar());
 						}
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondInvariant ) {
+						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !cond.parent.isStatic() )
 								Code.addInstr(Instr.op_load,params[0]);
 							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
 						}
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure )
+						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
 							Code.importCode(cond.code);
 						if( type.ret != Type.tpVoid ) {
 							Code.addInstr(Instr.op_load,getRetVar());
@@ -656,32 +656,32 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 
 }
 
+public enum WBCType {
+	public CondUnknown,
+	public CondRequire,
+	public CondEnsure,
+	public CondInvariant;
+}
+
 @node
 @cfnode
-public class WorkByContractCondition extends Statement implements SetBody {
+public class WBCCondition extends Statement {
 
-	public static WorkByContractCondition[]	emptyArray = new WorkByContractCondition[0];
-
-	public static final int CondRequire		= 1;
-	public static final int CondEnsure 		= 2;
-	public static final int CondInvariant	= 3;
-
-	public int						cond;
-	public KString					name;
+	public WBCType					cond;
+	@att public ASTIdentifier		name;
 	@att public Statement			body;
-	@att public PrescannedBody 		pbody;
 	public CodeAttr					code;
 	@ref public Method				definer;
 
-	public WorkByContractCondition() {
+	public WBCCondition() {
 	}
 
-	public WorkByContractCondition(int pos, int cond, KString name, Statement body, PrescannedBody pbody) {
+	public WBCCondition(int pos, WBCType cond, KString name, Statement body) {
 		super(pos,null);
-		this.name = name;
+		if (name != null)
+			this.name = new ASTIdentifier(pos, name);
 		this.cond = cond;
 		this.body = body;
-		this.pbody = pbody;
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -691,7 +691,7 @@ public class WorkByContractCondition extends Statement implements SetBody {
 	}
 
 	public void generate(Type reqType) {
-		if( cond == CondInvariant ) {
+		if( cond == WBCType.CondInvariant ) {
 			body.generate(Type.tpVoid);
 			Code.addInstr(Instr.op_return);
 		}
@@ -703,9 +703,9 @@ public class WorkByContractCondition extends Statement implements SetBody {
 			Method m = (Method)PassInfo.method;
 			try {
 				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
-				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
 				body.generate(Type.tpVoid);
-				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
 				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
 				Code.generateCode(this);
 			} catch(Exception e) {

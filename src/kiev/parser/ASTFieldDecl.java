@@ -38,17 +38,16 @@ public class ASTFieldDecl extends ASTNode {
 
 	@att public ASTModifiers			modifiers;
 	@att public ASTType					type;
-    @att public KString					name;
+    @att public ASTIdentifier			name;
     @att public Expr					init;
 	public int							dim;
     public boolean						of_wrapper;
 
 	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: name=((ASTIdentifier)n).name; pos=n.getPos(); break;
-        case 1: init=(Expr)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
+		if (init == null)
+			init=(Expr)n;
+		else
+			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
 
 	public ASTNode resolve(Type reqType) {

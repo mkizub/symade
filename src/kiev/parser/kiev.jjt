@@ -359,7 +359,7 @@ TOKEN_MGR_DECLS :
   static int skip_depth = 0;
 }
 
-<DEFAULT,IN_CONSTRAINT,IN_PRAGMA>
+<DEFAULT,IN_PRAGMA>
 SKIP : /* WHITE SPACE */
 {
   " "
@@ -373,18 +373,12 @@ SKIP : /* WHITE SPACE */
 
 /* COMMENTS */
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 SKIP :
 {
   "//" : IN_SINGLE_LINE_COMMENT
 |
   <"/**" ~["/"]> { input_stream.backup(1); } : IN_FORMAL_COMMENT
-|
-  <"/**" ([" ","\t","\n","\r"])* "require" [" ","\t","\n","\r"]> { input_stream.backup(8); } : IN_CONSTRAINT
-|
-  <"/**" ([" ","\t","\n","\r"])* "ensure" [" ","\t","\n","\r"]> { input_stream.backup(7); }: IN_CONSTRAINT
-|
-  <"/**" ([" ","\t","\n","\r"])* "invariant" [" ","\t","\n","\r"]> { input_stream.backup(10); } : IN_CONSTRAINT
 |
   "/*" : IN_MULTI_LINE_COMMENT
 }
@@ -413,13 +407,7 @@ MORE :
   < ~[] >
 }
 
-<IN_CONSTRAINT>
-TOKEN :
-{
-  < END_CONSTRAINT: "**/" > : DEFAULT
-}
-
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
   < ABSTRACT: "abstract" >
@@ -536,7 +524,7 @@ TOKEN :
 }
 
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* LITERALS */
 {
   < INTEGER_LITERAL:
@@ -586,7 +574,7 @@ TOKEN : /* LITERALS */
   >
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* LITERALS */
 {
   < CHARACTER_LITERAL:
@@ -618,7 +606,7 @@ TOKEN : /* LITERALS */
   >
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* IDENTIFIERS */
 {
   < IDENTIFIER: ( <LETTER> (<LETTER>|<DIGIT>)* | "ID#" <ID_STRING_LITERAL> ) >
@@ -676,7 +664,7 @@ TOKEN : /* IDENTIFIERS */
   >
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* SEPARATORS */
 {
   < LPAREN: "(" >
@@ -692,14 +680,14 @@ TOKEN : /* SEPARATORS */
 | < QUESTION: "?" >
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* Special Operators */
 {
   < LT: "<" >
 | < GT: ">" >
 }
 
-<DEFAULT,IN_CONSTRAINT>
+<DEFAULT>
 TOKEN : /* OPERATORS */
 {
   < ASSIGN: "=" >
@@ -1024,22 +1012,22 @@ void TypeBodyDeclaration(Struct clazz) #void :
 			(
 				modifiers = Modifiers()
 				(
-					Initializer(modifiers)
-				|	InvariantDeclaration(modifiers) [ ";" ]
+					clazz.members += Initializer(modifiers)
+				|	clazz.members += InvariantDeclaration(modifiers) [ ";" ]
 				|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
 				|	clazz.members += CaseTypeDeclaration(modifiers, clazz) ";"
 				|
 					LOOKAHEAD( "rule" <IDENTIFIER> "(" )
-					RuleDeclaration(modifiers)
+					clazz.members += RuleDeclaration(modifiers)
 				|
 					LOOKAHEAD( <IDENTIFIER> "(" )
-					ConstructorDeclaration(modifiers)
+					clazz.members += ConstructorDeclaration(modifiers)
 				|
-					LOOKAHEAD( ClazzArguments() [ Type() ] <IDENTIFIER> "(" )
-					MethodDeclaration(modifiers)
+					LOOKAHEAD( ClazzArguments() Type() <IDENTIFIER> "(" )
+					clazz.members += MethodDeclaration(modifiers)
 				|
 					LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
-					FieldDecls(modifiers)
+					FieldDecls(modifiers, clazz)
 				)
 			)*
 		}
@@ -1338,14 +1326,16 @@ MetaValueArray AnnotationValueValueArrayInitializer() #void :
 }
 
 
-void FieldDecls(ASTModifiers modifiers) #void :
+void FieldDecls(ASTModifiers modifiers, Struct clazz) #void :
 { boolean old_declMode; ASTType type; }
 {
 	{ old_declMode = declMode; declMode = false; }
 	try {
 		type = Type()
-		FieldDecl(modifiers, type, true)
-		(	","	FieldDecl(modifiers, type, false) )*
+		clazz.members += FieldDecl(modifiers, type, true)
+		(	","
+			clazz.members += FieldDecl(modifiers, type, false)
+		)*
 	}
 	catch(ParseError e) { rpe("Field declaration expected",e); }
 	catch(Throwable e) { rperr(e); }
@@ -1353,21 +1343,23 @@ void FieldDecls(ASTModifiers modifiers) #void :
 	";"
 }
 
-void FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
+ASTFieldDecl FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
 {}
 {
 	{
+		ASTFieldDecl n = jjtThis;
 		if (first) {
-			jjtThis.modifiers = modifiers;
-			jjtThis.type = type;
+			n.modifiers = modifiers;
+			n.type = type;
 		} else {
-			jjtThis.modifiers = (ASTModifiers)modifiers.copy();
-			jjtThis.type = (ASTType)type.copy();
+			n.modifiers = (ASTModifiers)modifiers.copy();
+			n.type = (ASTType)type.copy();
 		}
 	}
-	Identifier()
-	( "[" "]" { jjtThis.dim += 1; } )*
-	[ ("=" | ":=" { jjtThis.of_wrapper=true; }) VariableInitializer() ]
+	n.name = Name()
+	( "[" "]" { n.dim += 1; } )*
+	[ ("=" | ":=" { n.of_wrapper=true; }) VariableInitializer() ]
+	{ jjtree.popNode(); return n; }
 }
 
 void VarDecls(ASTModifiers modifiers) :
@@ -1537,23 +1529,19 @@ void MaybeSkipBlock() #void :
 				else if( tk.kind == RBRACE ) depth--;
 			} while( depth > 0 );
 			presc.pbody = pbody;
-			if( presc instanceof ASTCondDeclaration )
-				pbody.mode = PrescannedBody.CondBlockMode;
-			else if( presc instanceof ASTRuleDeclaration )
+			if( presc instanceof ASTRuleDeclaration )
 				pbody.mode = PrescannedBody.RuleBlockMode;
 			else
 				pbody.mode = PrescannedBody.BlockMode;
 			}
 //		} finally { declMode = old_declMode; }
-	|	LOOKAHEAD({ presc instanceof ASTCondDeclaration })
-		CondBlock()
 	|	LOOKAHEAD({ presc instanceof ASTRuleDeclaration })
 		RuleBlock()
 	|	Block()
 	)
 }
 
-void MethodDeclaration(ASTModifiers modifiers) :
+ASTMethodDeclaration MethodDeclaration(ASTModifiers modifiers) :
 { Token t; }
 {
 	{
@@ -1561,11 +1549,8 @@ void MethodDeclaration(ASTModifiers modifiers) :
 		n.modifiers = modifiers;
 	}
 	ClazzArguments(n)
-	[
-		LOOKAHEAD( Type() <IDENTIFIER> )
-		n.rettype = Type()
-	]
-	Identifier()
+	n.rettype = Type()
+	n.ident = Name() { n.pos = n.ident.pos; }
 	"("
 		try {
 		[
@@ -1593,8 +1578,8 @@ void MethodDeclaration(ASTModifiers modifiers) :
 	[	Throws()	]
 	try {
 		(
-			RequareDeclaration()
-		|	EnsureDeclaration()
+			n.conditions += RequareDeclaration()
+		|	n.conditions += EnsureDeclaration()
 		)*
 		(
 			LOOKAHEAD("{")
@@ -1605,16 +1590,17 @@ void MethodDeclaration(ASTModifiers modifiers) :
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
-void ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
+ASTMethodDeclaration ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
 { Token t; }
 {
 	{
 		ASTMethodDeclaration n = jjtThis;
 		n.modifiers = modifiers;
 	}
-	Identifier()
+	n.ident = Name() { n.pos = n.ident.pos; }
 	"("
 		try {
 		[
@@ -1641,8 +1627,8 @@ void ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
 	[	Throws()	]
 	try {
 		(
-			RequareDeclaration()
-		|	EnsureDeclaration()
+			n.conditions += RequareDeclaration()
+		|	n.conditions += EnsureDeclaration()
 		)*
 		(
 			LOOKAHEAD("{")
@@ -1653,67 +1639,98 @@ void ConstructorDeclaration(ASTModifiers modifiers) #MethodDeclaration :
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
-void RequareDeclaration() :
+ASTRequareDeclaration RequareDeclaration() :
 {}
 {
+	{
+		ASTRequareDeclaration n = jjtThis;
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondRequire;
+	}
 	"require"
 	try {
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
-			"[" Identifier() "]"
-		|	LOOKAHEAD(<IDENTIFIER> "{")
-			Identifier()
+			"[" n.name = Name() "]"
+			n.body = CondBlock()
+		|
+			LOOKAHEAD(<IDENTIFIER> "{")
+			n.name = Name()
+			n.body = CondBlock()
+		|
+			n.body = CondBlock()
 		)
-		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'require' declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
 
-void EnsureDeclaration() :
+ASTEnsureDeclaration EnsureDeclaration() :
 {}
 {
+	{
+		ASTEnsureDeclaration n = jjtThis;
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondEnsure;
+	}
 	"ensure"
 	try {
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
-			"[" Identifier() "]"
-		|	LOOKAHEAD(<IDENTIFIER> "{")
-			Identifier()
+			"[" n.name = Name() "]"
+			n.body = CondBlock()
+		|
+			LOOKAHEAD(<IDENTIFIER> "{")
+			n.name = Name()
+			n.body = CondBlock()
+		|
+			n.body = CondBlock()
 		)
-		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'ensure' declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
-void InvariantDeclaration(ASTModifiers modifiers) :
+ASTInvariantDeclaration InvariantDeclaration(ASTModifiers modifiers) :
 {}
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTInvariantDeclaration n = jjtThis;
+		//n.modifiers = modifiers;
+		n.cond = WBCType.CondInvariant;
+	}
 	"invariant"
 	try {
 		(
 			LOOKAHEAD("[" <IDENTIFIER> "]" )
-			"[" Identifier() "]"
+			"[" n.name = Name() "]"
+			n.body = CondBlock()
 		|	LOOKAHEAD(<IDENTIFIER> "{")
-			Identifier()
+			n.name = Name()
+			n.body = CondBlock()
 		)
-		CondBlock()
 	}
 	catch(ParseError e) { rpe("Bad 'invariant' declaration",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
+	
 }
 
-void RuleDeclaration(ASTModifiers modifiers) :
+ASTRuleDeclaration RuleDeclaration(ASTModifiers modifiers) :
 { ASTBlock bl; }
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTRuleDeclaration n = jjtThis;
+		n.modifiers = modifiers;
+	}
 	"rule"
-	Identifier()
+	n.ident = Name() { n.pos = n.ident.pos; }
 	"("
 		try {
 		[
@@ -1738,6 +1755,10 @@ void RuleDeclaration(ASTModifiers modifiers) :
 	)*
 	try {
 		(
+			n.conditions += RequareDeclaration()
+		|	n.conditions += EnsureDeclaration()
+		)*
+		(
 			LOOKAHEAD("{")
 			{ presc = jjtThis; }
 			MaybeSkipBlock() [ ";" ]
@@ -1746,18 +1767,27 @@ void RuleDeclaration(ASTModifiers modifiers) :
 	}
 	catch(ParseError e) { rpe("Method's body expected",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
-void Initializer(ASTModifiers modifiers) :
+ASTInitializer Initializer(ASTModifiers modifiers) :
 {}
 {
-	{ jjtThis.jjtAddChild(modifiers, -1); }
+	{
+		ASTInitializer n = jjtThis;
+		n.setFlags(modifiers.getFlags());
+		/*{
+		foreach (Meta m; modifiers.annotations)
+			n.meta.set(m);
+		}*/
+	}
 	try {
 		{ presc = jjtThis; }
 		MaybeSkipBlock() [ ";" ]
 	}
 	catch(ParseError e) { rpe("Initializer's body expected",e); }
 	catch(Throwable e) { rperr(e); }
+	{ jjtree.popNode(); return n; }
 }
 
 
@@ -2479,51 +2509,20 @@ ASTBlock RuleBlock() :
 	{ return jjtThis; }
 }
 
-ASTBlock PrescannedCondBlock(PrescannedBody b) #void :
-{
-	Token t;
-	// Skip to the start of prescanned body
-	Token tk;
-	for(;;) {
-		tk = getToken(1);
-		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
-			break;
-		if( tk.kind == EOF ) {
-			throw new CompilerException(
-				(b.lineno <<11) | (b.columnno & 0x3FF),
-				"Expected to find start of block after scanning. Have you changed the file?"
-			);
-		}
-		getNextToken();
-	}
-	ASTBlock bl;
-}
-{
-	bl=CondBlock()
-	{ return bl; }
-}
-
-ASTBlock CondBlock() :
-{ boolean old_declMode;}
+ASTBlock CondBlock() #Block :
+{}
 {
 	{
 		jjtThis.setPos(getToken(1).getPos());
 		PassInfo.push(jjtThis);
-		old_declMode = declMode;
-		declMode = false;
 	}
 	try {
-		"{"
-				( CondStatement() )+
-		"}" [ <END_CONSTRAINT> ]
-	|
-		( CondStatement() )+
-		<END_CONSTRAINT>
-	} finally {
-		declMode = old_declMode;
-		PassInfo.pop(jjtThis);
-	}
-	{ return jjtThis; }
+	(
+		"{" ( CondStatement() )+ "}"
+	|	CondStatement()
+	)
+	} finally { {PassInfo.pop(jjtThis); } }
+	{ jjtree.popNode(); return jjtThis; }
 }
 
 void BlockStatement(ASTNode parent) #void :

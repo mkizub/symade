@@ -92,14 +92,11 @@ kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOpera
 kiev.parser.ASTCatchInfo kiev/parser/ASTCatchInfo kiev\parser\ASTCatchInfo.java
 kiev.parser.ASTClosureType kiev/parser/ASTClosureType kiev\parser\ASTClosureType.java
 kiev.parser.ASTCommaExpression kiev/parser/ASTCommaExpression kiev\parser\ASTCommaExpression.java
-kiev.parser.ASTCondBlock kiev/parser/ASTCondBlock kiev\parser\ASTCondBlock.java
-kiev.parser.ASTCondDeclaration kiev/parser/ASTCondDeclaration kiev\parser\ASTRequareDeclaration.java
 kiev.parser.ASTCondStatement kiev/parser/ASTCondStatement kiev\parser\ASTCondStatement.java
 kiev.parser.ASTConstExpression kiev/parser/ASTConstExpression kiev\parser\ASTConstExpression.java
 kiev.parser.ASTContinueStatement kiev/parser/ASTContinueStatement kiev\parser\ASTContinueStatement.java
 kiev.parser.ASTDoStatement kiev/parser/ASTDoStatement kiev\parser\ASTDoStatement.java
 kiev.parser.ASTEmptyStatement kiev/parser/ASTEmptyStatement kiev\parser\ASTEmptyStatement.java
-kiev.parser.ASTEnsureDeclaration kiev/parser/ASTEnsureDeclaration kiev\parser\ASTEnsureDeclaration.java
 kiev.parser.ASTEnumFieldDeclaration kiev/parser/ASTEnumFieldDeclaration kiev\parser\ASTEnumFieldDeclaration.java
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTFieldDecl kiev/parser/ASTFieldDecl kiev\parser\ASTFieldDecl.java
@@ -112,7 +109,6 @@ kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.ja
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTIfStatement kiev/parser/ASTIfStatement kiev\parser\ASTIfStatement.java
 kiev.parser.ASTInitializer kiev/parser/ASTInitializer kiev\parser\ASTInitializer.java
-kiev.parser.ASTInvariantDeclaration kiev/parser/ASTInvariantDeclaration kiev\parser\ASTInvariantDeclaration.java
 kiev.parser.ASTLabeledStatement kiev/parser/ASTLabeledStatement kiev\parser\ASTLabeledStatement.java
 kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
@@ -132,7 +128,6 @@ kiev.parser.ASTPrimitiveType kiev/parser/ASTPrimitiveType kiev\parser\ASTPrimiti
 kiev.parser.ASTQName kiev/parser/ASTQName kiev\parser\ASTQName.java
 kiev.parser.ASTReparseExpression kiev/parser/ASTReparseExpression kiev\parser\ASTReparseExpression.java
 kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTReparseStatement.java
-kiev.parser.ASTRequareDeclaration kiev/parser/ASTRequareDeclaration kiev\parser\ASTRequareDeclaration.java
 kiev.parser.ASTReturnStatement kiev/parser/ASTReturnStatement kiev\parser\ASTReturnStatement.java
 kiev.parser.ASTRuleAndExpression kiev/parser/ASTRuleAndExpression kiev\parser\ASTRuleAndExpression.java
 kiev.parser.ASTRuleBlock kiev/parser/ASTRuleBlock kiev\parser\ASTRuleBlock.java
@@ -448,9 +443,10 @@ kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
+kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
-kiev.vlang.WorkByContractCondition kiev/vlang/WorkByContractCondition kiev\vlang\Method.java
 kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.cffork kiev/vlang/cffork kiev\vlang\Tree.java

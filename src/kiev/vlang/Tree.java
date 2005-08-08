@@ -150,9 +150,8 @@ public final class NArr<N extends ASTNode> {
 	
 	public N set(int idx, N node)
 		alias operator(210,lfy,[])
+		require { node != null; }
 	{
-		if (node == null)
-			throw new NullPointerException();
 		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
@@ -165,9 +164,8 @@ public final class NArr<N extends ASTNode> {
 	public N add(N node)
 		alias append
 		alias operator(5, lfy, +=)
+		require { node != null; }
 	{
-		if (node == null)
-			throw new NullPointerException();
 		if ($pslot != null && $pslot.is_attr)
 			assert(!contains(node));
 		int sz = $nodes.length;
@@ -237,9 +235,8 @@ public final class NArr<N extends ASTNode> {
 	}
 	
 	public N insert(int idx, N node)
+		require { node != null; }
 	{
-		if (node == null)
-			throw new NullPointerException();
 		if ($pslot != null && $pslot.is_attr)
 			assert(!contains(node));
 		int sz = $nodes.length;

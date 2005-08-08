@@ -1621,7 +1621,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
 				// Append constraints to m from mm
-				foreach(WorkByContractCondition cond; mm.conditions)
+				foreach(WBCCondition cond; mm.conditions)
 					m.conditions.appendUniq(cond);
 				if( mmret == null && mm != null ) mmret = mm;
 				break;
