@@ -538,16 +538,7 @@ public final class RuleAndExpr extends ASTRuleNode {
     		if (!e2.expr.getType().equals(Type.tpBoolean)) continue;
     		if (e1.bt_expr != null) continue;
     		if (e2.bt_expr != null) continue;
-    		BooleanExpr b1, b2;
-        	if(!(e1.expr instanceof BooleanExpr))
-          		b1=new BooleanWrapperExpr(e1.expr.getPos(),e1.expr);
-          	else
-          		b1 = (BooleanExpr)e1.expr;
-        	if(!(e2.expr instanceof BooleanExpr))
-          		b2=new BooleanWrapperExpr(e2.expr.getPos(),e2.expr);
-          	else
-          		b2 = (BooleanExpr)e2.expr;
-    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,b1,b2));
+    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,e1.expr,e2.expr));
     		rules[i] = e;
 			rules.del(i+1);
     		i--;

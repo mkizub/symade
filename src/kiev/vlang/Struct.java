@@ -966,7 +966,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
 				continue;
 			i++;
-			KString ti_str = (KString)((ConstExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
+			KString ti_str = ((ConstStringExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
 			Expr e = new StaticFieldAccessExpr(pos,this,f);
 			e.parent = parent;
@@ -979,7 +979,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			ftype = ((Struct)t.clazz).typeinfo_clazz.type;
 		}
 		Field f = new Field(this,KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
-		Expr[] ti_args = new Expr[]{new ConstExpr(pos,ts)};
+		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
 		f.init = new CastExpr(pos,ftype,new CallExpr(pos,
 				Type.tpTypeInfo.clazz.resolveMethod(
 					KString.from("newTypeInfo"),
@@ -1124,7 +1124,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 								KString.from("newTypeInfo"),
 								KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 							),
-							new Expr[]{new ConstExpr(pos,KString.from(makeTypeInfoString(t)))}
+							new Expr[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
 						);
 						ce.type_of_static = this.type;
 						exprs[arg] = ce;
@@ -1246,15 +1246,9 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			PizzaCaseAttr case_attr = (PizzaCaseAttr)getAttr(attrPizzaCase);
 			Field ftag = addField(new Field(
 				this,nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
-			ConstExpr ce = new ConstExpr(ftag.pos,Kiev.newInteger(case_attr.caseno));
+			ConstExpr ce = new ConstIntExpr(case_attr.caseno);
 			ftag.init = ce;
 
-/*			if( case_attr.casefields.length == 0 ) {
-				Field selftag = addField(new Field(
-					this,nameTagSelf,this.type,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
-				selftag.init = new NewExpr(selftag.pos,this.type,Expr.emptyArray);
-			}
-*/
 			Method gettag = new Method(this,nameGetCaseTag,
 				MethodType.newMethodType(this,Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
@@ -1269,7 +1263,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				MethodType.newMethodType(MethodType.tpMethodClazz,Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
-				new ReturnStat(gettag.pos,new ConstExpr(gettag.pos,Kiev.newInteger(0)))
+				new ReturnStat(gettag.pos,new ConstIntExpr(0))
 			);
 			addMethod(gettag);
 		}
@@ -1465,7 +1459,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			ASTNode[] cases = new ASTNode[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				cases[i] = new CaseLabel(pos,sw,
-					new ConstExpr(pos,Kiev.newInteger(ea.values[i])),
+					new ConstIntExpr(ea.values[i]),
 					new ASTNode[]{
 						new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,this,ea.fields[i]))
 					});
@@ -1518,10 +1512,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					str = str.substr(1,str.length()-1);
 				}
 				cases[i] = new CaseLabel(pos,sw,
-					!isPrimitiveEnum() ? new ConstExpr(pos,Kiev.newInteger(ea.values[i]))
+					!isPrimitiveEnum() ? new ConstIntExpr(ea.values[i])
 										:new StaticFieldAccessExpr(pos,this,f),
 					new ASTNode[]{
-						new ReturnStat(pos,null,new ConstExpr(pos,str))
+						new ReturnStat(pos,null,new ConstStringExpr(str))
 					});
 			}
 			cases[cases.length-1] = new CaseLabel(pos,sw,null,
@@ -1568,9 +1562,9 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				Field f = ea.fields[i];
 				KString str = f.name.name;
 				IfElseStat ifst = new IfElseStat(pos,null,
-					new BinaryBooleanExpr(pos,BinaryOperator.Equals,
+					new BinaryBoolExpr(pos,BinaryOperator.Equals,
 						new VarAccessExpr(pos,fromstr.params[0]),
-						new ConstExpr(pos,str)),
+						new ConstStringExpr(str)),
 					new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,this,f)),
 					null
 					);
@@ -1581,9 +1575,9 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						str = str.substr(1,str.length()-1);
 						if (str != f.name.name) {
 							ifst = new IfElseStat(pos,null,
-								new BinaryBooleanExpr(pos,BinaryOperator.Equals,
+								new BinaryBoolExpr(pos,BinaryOperator.Equals,
 									new VarAccessExpr(pos,fromstr.params[0]),
-									new ConstExpr(pos,str)),
+									new ConstStringExpr(str)),
 									new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,this,f)),
 									null
 									);
@@ -1670,7 +1664,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						if( f.init instanceof ConstExpr )
 							a = new ConstantValueAttr((ConstExpr)f.init);
 						else
-							a = new ConstantValueAttr(new ConstExpr(f.init.pos,f.init.getConstValue()));
+							a = new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()));
 						f.addAttr(a);
 					}
 					continue;
@@ -1980,7 +1974,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					if( overwr.type.ret == Type.tpVoid )
 						br = new BlockStat(0,last_st,new ASTNode[]{
 							new ExprStat(0,null,new CallExpr(0,overwr,vae,true)),
-							new ReturnStat(0,null,new ConstExpr(mm.pos,null))
+							new ReturnStat(0,null,new ConstNullExpr())
 						});
 					else {
 						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() )
@@ -2062,14 +2056,14 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		Type.tpNull.checkResolved();
 		int voffs = mm.isStatic()? 0 : 1;
 		IfElseStat dsp = null;
-		BooleanExpr cond = null;
+		Expr cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
 			if( mmt.uppers[i] == null ) continue;
 			Method m = mmt.uppers[i].m;
 			for(int j=0; j < m.type.args.length; j++) {
 				Type t = m.type.args[j];
 				if( mmt.m != null && t.equals(mmt.m.type.args[j]) ) continue;
-				BooleanExpr be = null;
+				Expr be = null;
 				if( mmt.m != null && !t.clazz.equals(mmt.m.type.args[j].clazz) )
 					be = new InstanceofExpr(pos,
 						new VarAccessExpr(pos,mm.params[j+voffs]),
@@ -2077,7 +2071,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
-					BooleanExpr tibe = new BooleanWrapperExpr(pos, new CallAccessExpr(pos,
+					Expr tibe = new CallAccessExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
@@ -2086,7 +2080,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 							new AccessExpr(pos,
 								new CastExpr(pos,t,new VarAccessExpr(pos,mm.params[j+voffs])),
 								t.clazz.resolveField(nameTypeInfo))
-						}));
+						});
 					if( be == null )
 						be = tibe;
 					else
@@ -2097,7 +2091,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			}
 			if( cond == null )
 //				throw new RuntimeException("Null condition in "+mmt.m+" -> "+m+" dispatching");
-				cond = new ConstBooleanExpr(mm.pos,true);
+				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
 				/*
@@ -2412,7 +2406,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 				}
 				if( f.isStatic() && f.init!=null && f.init.isConstantExpr() && f.init.getConstValue()!=null ) {
 					if( f.getAttr(attrConstantValue) != null )
-						f.addAttr(new ConstantValueAttr(new ConstExpr(f.init.pos,f.init.getConstValue()) ));
+						f.addAttr(new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()) ));
 				}
 			}
 	   	    // Process inner classes and cases

@@ -123,7 +123,7 @@ public class ASTAnonymouseClosure extends Expr {
 			Var v = vars[i];
 			Expr val = new ContainerAccessExpr(pos,
 				new AccessExpr(pos,new ThisExpr(pos),(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
-				new ConstExpr(v.getPos(),new Integer(i)));
+				new ConstIntExpr(i));
 			DeclStat dc = new DeclStat(v.getPos(),body,v);
 			if( !v.type.isReference() ) {
 				Type celltp = Type.getProxyType(v.type);

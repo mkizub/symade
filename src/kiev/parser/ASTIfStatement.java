@@ -61,10 +61,7 @@ public class ASTIfStatement extends Statement {
 			cond = e;
 			not = false;
 		}
-		if( cond instanceof BooleanExpr )
-			return new IfElseStat(pos,parent,(BooleanExpr)cond,thenSt,elseSt).resolve(Type.tpVoid);
-		else
-			return new IfElseStat(pos,parent,new BooleanWrapperExpr(cond.getPos(),cond),thenSt,elseSt).resolve(Type.tpVoid);
+		return new IfElseStat(pos,parent,cond,thenSt,elseSt).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

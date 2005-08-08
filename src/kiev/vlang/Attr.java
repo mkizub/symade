@@ -341,7 +341,7 @@ public class ConstantValueAttr extends Attr {
 	/** Constructor for bytecode reader and raw field creation */
 	public ConstantValueAttr(ConstExpr val) {
 		super(attrConstantValue);
-		value = val.value;
+		value = val.getConstValue();
 	}
 
 	public void generate() {
@@ -950,7 +950,7 @@ public abstract class MetaAttr extends Attr {
 	
 	protected final void generateValue(ASTNode value) {
 		if (value instanceof ConstExpr) {
-			Object v = ((ConstExpr)value).value;
+			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean )			ConstPool.addNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0));
 			else if( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
 			else if( v instanceof Short )			ConstPool.addNumberCP((Short)v);
@@ -960,10 +960,6 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof Float )			ConstPool.addNumberCP((Float)v);
 			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
 			else if( v instanceof KString )			ConstPool.addAsciiCP((KString)v);
-		}
-		else if (value instanceof ConstBooleanExpr) {
-			boolean v = ((ConstBooleanExpr)value).value;
-			ConstPool.addNumberCP(new Integer(v ? 1 : 0));
 		}
 		else if (value instanceof WrapedExpr) {
 			WrapedExpr we = (WrapedExpr)value;
@@ -1012,7 +1008,7 @@ public abstract class MetaAttr extends Attr {
 	public kiev.bytecode.Annotation.element_value write_value(ASTNode value) {
 		if (value instanceof ConstExpr) {
 			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
-			Object v = ((ConstExpr)value).value;
+			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean ) {
 				ev.tag = (byte)'Z';
 				ev.const_value_index = ConstPool.getNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0)).pos;
@@ -1049,13 +1045,6 @@ public abstract class MetaAttr extends Attr {
 				ev.tag = (byte)'s';
 				ev.const_value_index = ConstPool.getAsciiCP((KString)v).pos;
 			}
-			return ev;
-		}
-		else if (value instanceof ConstBooleanExpr) {
-			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
-			boolean v = ((ConstBooleanExpr)value).value;
-			ev.tag = (byte)'Z';
-			ev.const_value_index = ConstPool.getNumberCP(new Integer(v ? 1 : 0)).pos;
 			return ev;
 		}
 		else if (value instanceof WrapedExpr) {

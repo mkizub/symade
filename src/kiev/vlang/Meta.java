@@ -279,10 +279,8 @@ public class Meta extends ASTNode {
 		ASTNode v = mv.value;
 		if (v == null)
 			return false;
-		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof Boolean)
-			return ((Boolean)((ConstExpr)v).value).booleanValue();
-		if (v instanceof ConstBooleanExpr)
-			return ((ConstBooleanExpr)v).value;
+		if (v instanceof ConstBoolExpr)
+			return ((ConstBoolExpr)v).value;
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a boolean constant, but "+v);
 	}
 	
@@ -291,8 +289,8 @@ public class Meta extends ASTNode {
 		ASTNode v = mv.value;
 		if (v == null)
 			return 0;
-		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof Integer)
-			return ((Integer)((ConstExpr)v).value).intValue();
+		if (v instanceof ConstIntExpr)
+			return ((ConstIntExpr)v).value;
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not an int constant, but "+v);
 	}
 	
@@ -301,8 +299,8 @@ public class Meta extends ASTNode {
 		ASTNode v = mv.value;
 		if (v == null)
 			return null;
-		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof KString)
-			return (KString)((ConstExpr)v).value;
+		if (v instanceof ConstStringExpr)
+			return ((ConstStringExpr)v).value;
 		throw new RuntimeException("Value "+name+" in annotation "+type+" is not a String constant, but "+v);
 	}
 	
@@ -326,12 +324,12 @@ public class Meta extends ASTNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
-				((MetaValueScalar)values[i]).value = new ConstBooleanExpr(0, val);
+				((MetaValueScalar)values[i]).value = new ConstBoolExpr(val);
 				return values[i];
 			}
 		}
 		MetaValueType mvt = new MetaValueType(name, Type.tpBoolean.signature);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstBooleanExpr(0, val));
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstBoolExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -341,12 +339,12 @@ public class Meta extends ASTNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
-				((MetaValueScalar)values[i]).value = new ConstExpr(0, new Integer(val));
+				((MetaValueScalar)values[i]).value = new ConstIntExpr(val);
 				return values[i];
 			}
 		}
 		MetaValueType mvt = new MetaValueType(name, Type.tpInt.signature);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstExpr(0, new Integer(val)));
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstIntExpr(val));
 		values.append(mv);
 		return mv;
 	}
@@ -356,12 +354,12 @@ public class Meta extends ASTNode {
 		int sz = values.length;
 		for (int i=0; i < sz; i++) {
 			if (values[i].type.name == name) {
-				((MetaValueScalar)values[i]).value = new ConstExpr(0, val);
+				((MetaValueScalar)values[i]).value = new ConstStringExpr(val);
 				return values[i];
 			}
 		}
 		MetaValueType mvt = new MetaValueType(name, Type.tpString.signature);
-		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstExpr(0, val));
+		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstStringExpr(val));
 		values.append(mv);
 		return mv;
 	}

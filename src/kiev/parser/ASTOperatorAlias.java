@@ -53,8 +53,8 @@ public class ASTOperatorAlias extends ASTAlias {
 		if (xfix != XFIX_UNKNOWN) i = 2;
 		switch(i) {
 		case 0:
-			if( n instanceof ASTConstExpression ) {
-				Object val = ((ASTConstExpression)n).val;
+			if( n instanceof ConstExpr ) {
+				Object val = ((ConstExpr)n).getConstValue();
 				if( val == null || !( val instanceof Number) )
 					throw new CompilerException(n.getPos(),"Priority must be of int type, but found "+n);
 				prior = ((Number)val).intValue();

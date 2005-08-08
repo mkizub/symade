@@ -220,7 +220,7 @@ public class ASTExpression extends Expr {
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 			{
 				((BinaryOperator)op).is_boolean_op, $cut,
-				result ?= new BinaryBooleanExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
+				result ?= new BinaryBoolExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
 			;	!((BinaryOperator)op).is_boolean_op, $cut,
 				result ?= new BinaryExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
 			}
@@ -360,15 +360,11 @@ public class ASTExpression extends Expr {
 		BinaryOperator bop = (BinaryOperator)op;
 		if( bop.is_boolean_op ) {
 			if( bop == BinaryOperator.BooleanOr ) {
-				if( !(expr1 instanceof BooleanExpr) ) expr1 = new BooleanWrapperExpr(expr1.getPos(),(Expr)expr1);
-				if( !(expr2 instanceof BooleanExpr) ) expr2 = new BooleanWrapperExpr(expr2.getPos(),(Expr)expr2);
-				e = (Expr)new BinaryBooleanOrExpr(pos,(BooleanExpr)expr1,(BooleanExpr)expr2)
+				e = (Expr)new BinaryBooleanOrExpr(pos,(Expr)expr1,(Expr)expr2)
 					.resolve(Type.tpBoolean);
 			}
 			else if( bop == BinaryOperator.BooleanAnd ) {
-				if( !(expr1 instanceof BooleanExpr) ) expr1 = new BooleanWrapperExpr(expr1.getPos(),(Expr)expr1);
-				if( !(expr2 instanceof BooleanExpr) ) expr2 = new BooleanWrapperExpr(expr2.getPos(),(Expr)expr2);
-				e = (Expr)new BinaryBooleanAndExpr(pos,(BooleanExpr)expr1,(BooleanExpr)expr2)
+				e = (Expr)new BinaryBooleanAndExpr(pos,(Expr)expr1,(Expr)expr2)
 					.resolve(Type.tpBoolean);
 			}
 			else {
@@ -378,7 +374,7 @@ public class ASTExpression extends Expr {
 					else
 						e = (Expr)new CallAccessExpr(pos,(Expr)expr1,opt.method,new Expr[]{(Expr)expr2}).resolve(tp);
 				else
-					e = (Expr)new BinaryBooleanExpr(pos,(BinaryOperator)op,getExpr(expr1),getExpr(expr2)).resolve(Type.tpBoolean);
+					e = (Expr)new BinaryBoolExpr(pos,(BinaryOperator)op,getExpr(expr1),getExpr(expr2)).resolve(Type.tpBoolean);
 			}
 		} else {
 			if( expr1 instanceof BaseStruct )

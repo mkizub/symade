@@ -11,4 +11,5 @@ typedef kiev.vlang.Initializer      ASTInitializer;
 typedef kiev.vlang.WBCCondition     ASTInvariantDeclaration;
 typedef kiev.vlang.WBCCondition     ASTRequareDeclaration;
 typedef kiev.vlang.WBCCondition     ASTEnsureDeclaration;
+typedef kiev.vlang.ConstExpr        ASTConstExpression;
 }

@@ -2248,51 +2248,51 @@ void ConstExpression() #void :
 	)
 }
 
-void BooleanConstExpression() #ConstExpression :
+void BooleanConstExpression() #void :
 { Token t; }
 {
 	(
 		t="true"
 	|	t="false"
 	)
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void DecimalConstExpression() #ConstExpression :
+void DecimalConstExpression() #void :
 { Token t; }
 {
 	(
 	 	t=<INTEGER_LITERAL>
 	|	t=<LONG_INTEGER_LITERAL>
 	)
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void FloatConstExpression() #ConstExpression :
+void FloatConstExpression() #void :
 { Token t; }
 {
 	(
 		t=<FLOATING_POINT_LITERAL>
 	|	t=<DOUBLE_POINT_LITERAL>
 	)
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void CharConstExpression() #ConstExpression :
+void CharConstExpression() #void :
 { Token t; }
 {
 	t=<CHARACTER_LITERAL>
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void NullConstExpression() #ConstExpression :
+void NullConstExpression() #void :
 { Token t; }
 {
 	t="null"
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void StringConstExpression() #ConstExpression :
+void StringConstExpression() #void :
 { Token t, t1; }
 {
 	t=<STRING_LITERAL>
@@ -2308,7 +2308,7 @@ void StringConstExpression() #ConstExpression :
 			t.endColumn = t1.endColumn;
 		}
 	)*
-	{ jjtThis.set(t); }
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
 void NewExpression() :
@@ -2564,9 +2564,8 @@ void CondStatement() :
 				sb.append(t.image).append(' ');
 				t = t.next;
 			}
-			ASTConstExpression e = new ASTConstExpression();
+			ConstStringExpr e = new ConstStringExpr(KString.from(sb.toString()));
 			e.pos = pos;
-			e.val = KString.from(sb.toString());
 			jjtThis.jjtAddChild(e,1);
 		}
 	}

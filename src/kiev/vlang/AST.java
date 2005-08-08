@@ -867,7 +867,7 @@ public abstract class Expr extends CFNode {
 			return new CastExpr(0,reqType,expr,false,true).resolveExpr(reqType);
 		if( et.isInstanceOf(reqType) ) return expr;
 		if( et.isReference() && reqType.isBoolean() )
-			return new BinaryBooleanExpr(pos,BinaryOperator.Equals,expr,new ConstExpr(pos,null));
+			return new BinaryBoolExpr(pos,BinaryOperator.Equals,expr,new ConstNullExpr());
 		if( et.isAutoCastableTo(reqType)
 		 || et.isNumber() && reqType.isNumber()
 		) return new CastExpr(pos,reqType,expr).tryResolve(reqType);
@@ -890,7 +890,7 @@ public abstract class Expr extends CFNode {
 			if( case_attr.casefields.length != 0 )
 				throw new CompilerException(pos,"Empty constructor for pizza case "+s+" not found");
 			if( reqType.isInteger() ) {
-				Expr expr = (Expr)new ConstExpr(pos,Kiev.newInteger(case_attr.caseno)).resolve(reqType);
+				Expr expr = (Expr)new ConstIntExpr(case_attr.caseno).resolve(reqType);
 				if( reqType != Type.tpInt )
 					expr = (Expr)new CastExpr(pos,reqType,expr).resolve(reqType);
 				return expr;
@@ -934,39 +934,6 @@ public class WrapedExpr extends Expr {
 		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).getType();
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
-}
-
-@node
-@cfnode
-public abstract class BooleanExpr extends Expr {
-
-	public BooleanExpr() {}
-
-	public BooleanExpr(int pos) { super(pos); }
-
-	public BooleanExpr(int pos, ASTNode parent) { super(pos, parent); }
-
-	public Type getType() { return Type.tpBoolean; }
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanExpr: "+this);
-		PassInfo.push(this);
-		try {
-			CodeLabel label_true = Code.newLabel();
-			CodeLabel label_false = Code.newLabel();
-
-			generate_iftrue(label_true);
-			Code.addConst(0);
-			Code.addInstr(Instr.op_goto,label_false);
-			Code.addInstr(Instr.set_label,label_true);
-			Code.addConst(1);
-			Code.addInstr(Instr.set_label,label_false);
-			if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public abstract void generate_iftrue(CodeLabel label);
-	public abstract void generate_iffalse(CodeLabel label);
 }
 
 @node

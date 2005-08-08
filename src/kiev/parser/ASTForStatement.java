@@ -56,10 +56,7 @@ public class ASTForStatement extends Statement {
     }
 
 	public ASTNode resolve(Type reqType) {
-		if( cond != null && !(cond instanceof BooleanExpr) )
-			return new ForStat(pos,parent,init,new BooleanWrapperExpr(cond.getPos(),cond),iter,body)
-				.resolve(Type.tpVoid);
-		return new ForStat(pos,parent,init,(BooleanExpr)cond,iter,body).resolve(Type.tpVoid);
+		return new ForStat(pos,parent,init,cond,iter,body).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

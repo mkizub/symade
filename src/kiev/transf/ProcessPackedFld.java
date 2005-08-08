@@ -99,12 +99,12 @@ public final class ProcessPackedFld implements Constants {
 				rewriteNode(fa, id);
 				return;
 			}
-			ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[mp.size]));
+			ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 			AccessExpr ae = (AccessExpr)fa.copy();
 			ae.var = mp.packer;
 			Expr expr = ae;
 			if (mp.offset > 0) {
-				ConstExpr sexpr = new ConstExpr(fa.pos, new Integer(mp.offset));
+				ConstExpr sexpr = new ConstIntExpr(mp.offset);
 				expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 			}
 			expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, expr, mexpr);
@@ -157,10 +157,10 @@ public final class ProcessPackedFld implements Constants {
 			DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
 			be.addStatement(ds);
 			if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
-				ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[mp.size]));
+				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
 				if (mp.offset > 0) {
-					ConstExpr sexpr = new ConstExpr(fa.pos, new Integer(mp.offset));
+					ConstExpr sexpr = new ConstIntExpr(mp.offset);
 					expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 				}
 				if( mp.size == 8 && f.type == Type.tpByte )
@@ -174,13 +174,13 @@ public final class ProcessPackedFld implements Constants {
 			}
 			
 			{
-				ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[mp.size]));
+				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 				Expr expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
 				if (mp.offset > 0) {
-					ConstExpr sexpr = new ConstExpr(fa.pos, new Integer(mp.offset));
+					ConstExpr sexpr = new ConstIntExpr(mp.offset);
 					expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
 				}
-				ConstExpr clear = new ConstExpr(fa.pos, new Integer(~(masks[mp.size]<<mp.offset)));
+				ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
 				Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
 				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
@@ -216,9 +216,9 @@ public final class ProcessPackedFld implements Constants {
 			Expr expr;
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstExpr(0,new Integer(1)));
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
 				} else {
-					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstExpr(0,new Integer(-1)));
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 				}
 				expr = expr.resolveExpr(Type.tpVoid);
 				expr.setGenVoidExpr(true);
@@ -244,10 +244,10 @@ public final class ProcessPackedFld implements Constants {
 				DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
 				be.addStatement(ds);
 				{
-					ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[mp.size]));
+					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 					Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
 					if (mp.offset > 0) {
-						ConstExpr sexpr = new ConstExpr(fa.pos, new Integer(mp.offset));
+						ConstExpr sexpr = new ConstIntExpr(mp.offset);
 						expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 					}
 					if( mp.size == 8 && f.type == Type.tpByte )
@@ -256,27 +256,27 @@ public final class ProcessPackedFld implements Constants {
 						expr = new CastExpr(fa.pos, Type.tpShort, expr);
 					ConstExpr ce;
 					if (ie.op == PrefixOperator.PreIncr)
-						ds.init = new BinaryExpr(0, BinaryOperator.Add, expr, new ConstExpr(0,new Integer(1)));
+						ds.init = new BinaryExpr(0, BinaryOperator.Add, expr, new ConstIntExpr(1));
 					else if (ie.op == PrefixOperator.PreDecr)
-						ds.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstExpr(0,new Integer(1)));
+						ds.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstIntExpr(1));
 					else
 						ds.init = expr;
 				}
 
 				{
-					ConstExpr mexpr = new ConstExpr(fa.pos, new Integer(masks[mp.size]));
+					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 					Expr expr_l;
 					if (ie.op == PostfixOperator.PostIncr)
-						expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Add,mkAccess(tmp),new ConstExpr(0,new Integer(1))), mexpr);
+						expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Add,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
 					else if (ie.op == PostfixOperator.PostDecr)
-						expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Sub,mkAccess(tmp),new ConstExpr(0,new Integer(1))), mexpr);
+						expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Sub,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
 					else
 						expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
 					if (mp.offset > 0) {
-						ConstExpr sexpr = new ConstExpr(fa.pos, new Integer(mp.offset));
+						ConstExpr sexpr = new ConstIntExpr(mp.offset);
 						expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
 					}
-					ConstExpr clear = new ConstExpr(fa.pos, new Integer(~(masks[mp.size]<<mp.offset)));
+					ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
 					Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
 					Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 					expr = new AssignExpr(fa.pos, AssignOperator.Assign,

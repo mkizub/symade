@@ -67,7 +67,7 @@ public class ASTTypeClassExpression extends Expr {
 					KString.from("forName"),
 					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
 				),
-				new Expr[]{new ConstExpr(pos,name)}
+				new Expr[]{new ConstStringExpr(name)}
 			).resolve(reqType);
 	}
 

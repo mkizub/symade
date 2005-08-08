@@ -52,7 +52,7 @@ public class ASTIdentifier extends Expr {
 
 	public void set(Token t) {
 		if (t.image.startsWith("ID#"))
-			this.name = ASTConstExpression.source2ascii(t.image.substring(4,t.image.length()-1));
+			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-1));
 		else
 			this.name = KString.from(t.image);
         pos = t.getPos();
@@ -64,22 +64,22 @@ public class ASTIdentifier extends Expr {
 
 	public ASTNode resolve(Type reqType) {
 		if( name == Constants.nameFILE )
-			return new ConstExpr(pos,Kiev.curFile);
+			return new ConstStringExpr(Kiev.curFile);
 		else if( name == Constants.nameLINENO )
-			return new ConstExpr(pos,Kiev.newInteger(pos>>>11));
+			return new ConstIntExpr(pos>>>11);
 		else if( name == Constants.nameMETHOD ) {
 			if( PassInfo.method != null )
-				return new ConstExpr(pos,PassInfo.method.name.name);
+				return new ConstStringExpr(PassInfo.method.name.name);
 			else
-				return new ConstExpr(pos,nameInit);
+				return new ConstStringExpr(nameInit);
 		}
 		else if( name == Constants.nameDEBUG )
-			return new ConstExpr(pos,Kiev.debugOutputA ? Boolean.TRUE : Boolean.FALSE);
+			return new ConstBoolExpr(Kiev.debugOutputA);
 		else if( name == Constants.nameReturnVar ) {
 			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
 			name = Constants.nameResultVar;
 		}
-		PVar<ASTNode> v = new PVar<ASTNode>();
+		ASTNode@ v;
 		ResInfo info = new ResInfo();
 		if( !PassInfo.resolveNameR(v,info,name,null,0) ) {
 			// May be a function
@@ -120,21 +120,21 @@ public class ASTIdentifier extends Expr {
 				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
 				if( val != null ) {
 					if( reqType == null || reqType == Type.tpString)
-						return new ConstExpr(pos,KString.from(val));
+						return new ConstStringExpr(KString.from(val));
 					if( reqType.isBoolean() )
 						if( val == "" )
-							return new ConstExpr(pos,Boolean.TRUE);
+							return new ConstBoolExpr(true);
 						else
-							return new ConstExpr(pos,Boolean.valueOf(val));
+							return new ConstBoolExpr(Boolean.valueOf(val).booleanValue());
 					if( reqType.isInteger() )
-						return new ConstExpr(pos,Integer.valueOf(val));
+						return new ConstIntExpr(Integer.valueOf(val).intValue());
 					if( reqType.isNumber() )
-						return new ConstExpr(pos,Double.valueOf(val));
-					return new ConstExpr(pos,KString.from(val));
+						return new ConstDoubleExpr(Double.valueOf(val).doubleValue());
+					return new ConstStringExpr(KString.from(val));
 				}
 				if( reqType.isBoolean() )
-					return new ConstExpr(pos,Boolean.FALSE);
-				return new ConstExpr(pos,null);
+					return new ConstBoolExpr(false);
+				return new ConstNullExpr();
 			}
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
@@ -170,7 +170,7 @@ public class ASTIdentifier extends Expr {
 					Struct pc = (Struct)s;
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)pc.getAttr(attrPizzaCase);
 					if( case_attr == null ) return pc;
-					return new ConstExpr(pos,Kiev.newInteger(case_attr.caseno)).resolve(reqType);
+					return new ConstIntExpr(case_attr.caseno).resolve(reqType);
 				}
 			}
 			return v;

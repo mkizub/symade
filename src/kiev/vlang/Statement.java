@@ -860,21 +860,21 @@ public class ThrowStat extends Statement/*defaults*/ {
 @cfnode
 public class IfElseStat extends Statement {
 
-	@att public BooleanExpr	cond;
+	@att public Expr		cond;
 	@att public Statement	thenSt;
 	@att public Statement	elseSt;
 
 	public IfElseStat() {
 	}
 	
-	public IfElseStat(int pos, ASTNode parent, BooleanExpr cond, Statement thenSt, Statement elseSt) {
+	public IfElseStat(int pos, ASTNode parent, Expr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
 	}
 
-	public IfElseStat(int pos, BooleanExpr cond, Statement thenSt, Statement elseSt) {
+	public IfElseStat(int pos, Expr cond, Statement thenSt, Statement elseSt) {
 		this(pos,null,cond,thenSt,elseSt);
 	}
 
@@ -884,7 +884,7 @@ public class IfElseStat extends Statement {
 		ScopeNodeInfoVector result_state = null;
 		try {
 			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -932,10 +932,6 @@ public class IfElseStat extends Statement {
 				result_state = then_state;
 			else
 				result_state = NodeInfoPass.joinInfo(then_state,else_state);
-
-			if( !(cond instanceof BooleanExpr) ) {
-				throw new RuntimeException("Condition of if-else statement must be a boolean expression, but type "+cond.getType()+" found");
-			}
 		} finally {
 			PassInfo.pop(this);
 			if( result_state != null ) NodeInfoPass.addInfo(result_state);
@@ -947,9 +943,9 @@ public class IfElseStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
 		PassInfo.push(this);
 		try {
-			BooleanExpr cond = this.cond;
+			Expr cond = this.cond;
 			if( cond.isGenResolve() ) {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond = (Expr)cond.resolve(Type.tpBoolean);
 			}
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
@@ -964,7 +960,7 @@ public class IfElseStat extends Statement {
 				}
 			} else {
 				CodeLabel else_label = Code.newLabel();
-				((BooleanExpr)cond).generate_iffalse(else_label);
+				BoolExpr.gen_iffalse(cond, else_label);
 				thenSt.generate(Type.tpVoid);
 				if( elseSt != null ) {
 					CodeLabel end_label = Code.newLabel();
@@ -1002,7 +998,7 @@ public class IfElseStat extends Statement {
 		if( cond.isGenResolve() ) {
 			Kiev.gen_resolve = true;
 			try {
-				Expr c = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				Expr c = (Expr)cond.resolve(Type.tpBoolean);
 				if( c.isConstantExpr() ) {
 					if( ((Boolean)c.getConstValue()).booleanValue() )
 						dmp.append(thenSt);
@@ -1035,19 +1031,19 @@ public class IfElseStat extends Statement {
 @cfnode
 public class CondStat extends Statement {
 
-	@att public BooleanExpr		cond;
+	@att public Expr			cond;
 	@att public Expr			message;
 
 	public CondStat() {
 	}
 
-	public CondStat(int pos, ASTNode parent, BooleanExpr cond, Expr message) {
+	public CondStat(int pos, ASTNode parent, Expr cond, Expr message) {
 		super(pos,parent);
 		this.cond = cond;
 		this.message = message;
 	}
 
-	public CondStat(int pos, BooleanExpr cond, Expr message) {
+	public CondStat(int pos, Expr cond, Expr message) {
 		this(pos,null,cond,message);
 	}
 
@@ -1056,7 +1052,7 @@ public class CondStat extends Statement {
 		NodeInfoPass.pushState();
 		try {
 			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -1076,10 +1072,6 @@ public class CondStat extends Statement {
 				Kiev.reportError(message.pos,e);
 			}
 			NodeInfoPass.popState();
-
-			if( !(cond instanceof BooleanExpr) ) {
-				throw new RuntimeException("Condition of if-else statement must be a boolean expression, but type "+cond.getType()+" found");
-			}
 		} finally {
 			PassInfo.pop(this);
 			ScopeNodeInfoVector result_state = NodeInfoPass.popState();
@@ -1128,7 +1120,7 @@ public class CondStat extends Statement {
 				}
 			} else {
 				CodeLabel else_label = Code.newLabel();
-				((BooleanExpr)cond).generate_iftrue(else_label);
+				BoolExpr.gen_iftrue(cond, else_label);
 				generateAssertName();
 				message.generate(Type.tpString);
 				Method func = Type.tpDebug.clazz.resolveMethod(
@@ -1164,7 +1156,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
-	public KString		name;
+	public KString			name;
 	@att public Statement	stat;
 
 	protected CodeLabel	tag_label = null;

@@ -927,32 +927,28 @@ public final class ExportJavaTop implements Constants {
 					f.setEnumField(true);
 					efd.replaceWith(f);
 					if (me.isPrimitiveEnum()) {
-						if (efd.val != null) {
-							if (efd.val.val instanceof Character)
-								next_enum_val = ((Character)efd.val.val).charValue();
-							else
-								next_enum_val = ((Number)efd.val.val).intValue();
-						}
-						f.init = new ConstExpr(efd.pos,new Integer(next_enum_val));
+						if (efd.val != null)
+							next_enum_val = ((Number)efd.val.getConstValue()).intValue();
+						f.init = new ConstIntExpr(next_enum_val);
 					} else {
 						if (efd.val != null)
 							Kiev.reportError(me.pos,"Enum "+me+" is not a primitive enum");
 						if (efd.text == null)
 							f.init = new NewExpr(f.pos,me.type,new Expr[]{
-										new ConstExpr(efd.name.pos,efd.name.name),
-										new ConstExpr(efd.pos, new Integer(next_enum_val)),
-										new ConstExpr(efd.name.pos,efd.name.name)
+										new ConstStringExpr(efd.name.name),
+										new ConstIntExpr(next_enum_val),
+										new ConstStringExpr(efd.name.name)
 							});
 						else
 							f.init = new NewExpr(f.pos,me.type,new Expr[]{
-										new ConstExpr(efd.name.pos,efd.name.name),
-										new ConstExpr(efd.pos, new Integer(next_enum_val)),
-										new ConstExpr(efd.text.pos, efd.text.val)
+										new ConstStringExpr(efd.name.name),
+										new ConstIntExpr(next_enum_val),
+										new ConstStringExpr(efd.text.value)
 							});
 					}
 					next_enum_val++;
 					if (efd.text != null)
-						f.name.addAlias(KString.from("\""+efd.text.val+"\""));
+						f.name.addAlias(KString.from("\""+efd.text.value+"\""));
 				}
 				else if( members[i] instanceof ASTFormalParameter) {
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);

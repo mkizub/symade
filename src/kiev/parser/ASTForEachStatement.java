@@ -60,10 +60,7 @@ public class ASTForEachStatement extends Statement {
 		Var v = null;
 		if( var != null )
 			v = var.pass3();
-		if( cond != null && !(cond instanceof BooleanExpr) )
-			return new ForEachStat(pos,parent,v,container,new BooleanWrapperExpr(cond.getPos(),cond),body)
-				.resolve(Type.tpVoid);
-		return new ForEachStat(pos,parent,v,container,(BooleanExpr)cond,body).resolve(Type.tpVoid);
+		return new ForEachStat(pos,parent,v,container,cond,body).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

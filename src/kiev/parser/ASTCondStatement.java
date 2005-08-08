@@ -51,10 +51,7 @@ public class ASTCondStatement extends Statement {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		if( cond instanceof BooleanExpr )
-			return new CondStat(pos,parent,(BooleanExpr)cond,message).resolve(Type.tpVoid);
-		else
-			return new CondStat(pos,parent,new BooleanWrapperExpr(cond.getPos(),cond),message).resolve(Type.tpVoid);
+		return new CondStat(pos,parent,cond,message).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

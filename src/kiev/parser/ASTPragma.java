@@ -29,11 +29,11 @@ import kiev.stdlib.*;
 @node
 public class ASTPragma extends SimpleNode implements TopLevelDecl {
 
-	public boolean				enable;
-	@att public final NArr<ASTConstExpression>	options;
+	public boolean								enable;
+	@att public final NArr<ConstStringExpr>	options;
 
 	public void jjtAddChild(ASTNode n, int i) {
-		ASTConstExpression opt = (ASTConstExpression)n;
+		ConstStringExpr opt = (ConstStringExpr)n;
 		options.append(opt);
     }
 
@@ -47,7 +47,7 @@ public class ASTPragma extends SimpleNode implements TopLevelDecl {
 	
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("/* pragma ").append(enable?"enable":"disable").space();
-		foreach (ASTConstExpression e; options)
+		foreach (ConstStringExpr e; options)
 			dmp.forsed_space().append(e);
 		return dmp.append("; */").newLine();
 	}

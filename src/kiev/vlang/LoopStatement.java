@@ -67,13 +67,13 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 @cfnode
 public class WhileStat extends LoopStat {
 
-	@att public BooleanExpr	cond;
+	@att public Expr		cond;
 	@att public Statement	body;
 
 	public WhileStat() {
 	}
 
-	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
+	public WhileStat(int pos, ASTNode parent, Expr cond, Statement body) {
 		super(pos, parent);
 		this.cond = cond;
 		this.body = body;
@@ -93,7 +93,7 @@ public class WhileStat extends LoopStat {
 		state.guarded = true;
 		try {
 			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
 			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
 			else if( cond instanceof BinaryBooleanAndExpr ) {
@@ -134,7 +134,7 @@ public class WhileStat extends LoopStat {
 					Code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				((BooleanExpr)cond).generate_iftrue(body_label);
+				BoolExpr.gen_iftrue(cond, body_label);
 			}
 			Code.addInstr(Instr.set_label,break_label);
 		} catch(Exception e ) {
@@ -158,13 +158,13 @@ public class WhileStat extends LoopStat {
 @cfnode
 public class DoWhileStat extends LoopStat {
 
-	@att public BooleanExpr	cond;
+	@att public Expr		cond;
 	@att public Statement	body;
 
 	public DoWhileStat() {
 	}
 
-	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
+	public DoWhileStat(int pos, ASTNode parent, Expr cond, Statement body) {
 		super(pos,parent);
 		this.cond = cond;
 		this.body = body;
@@ -188,9 +188,7 @@ public class DoWhileStat extends LoopStat {
 				Kiev.reportError(body.pos,e);
 			}
 			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-				if( !(cond instanceof BooleanExpr) )
-					cond = (BooleanExpr)new BooleanWrapperExpr(cond.pos,cond).resolve(Type.tpBoolean);
+				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -224,7 +222,7 @@ public class DoWhileStat extends LoopStat {
 					Code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				((BooleanExpr)cond).generate_iftrue(body_label);
+				BoolExpr.gen_iftrue(cond, body_label);
 			}
 			Code.addInstr(Instr.set_label,break_label);
 		} catch(Exception e ) {
@@ -302,14 +300,14 @@ public class ForInit extends ASTNode implements Scope {
 public class ForStat extends LoopStat implements Scope {
 
 	@att public ASTNode		init;
-	@att public BooleanExpr	cond;
+	@att public Expr		cond;
 	@att public Expr		iter;
 	@att public Statement	body;
 
 	public ForStat() {
 	}
 	
-	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
+	public ForStat(int pos, ASTNode parent, ASTNode init, Expr cond, Expr iter, Statement body) {
 		super(pos, parent);
 		this.init = init;
 		this.cond = cond;
@@ -387,7 +385,7 @@ public class ForStat extends LoopStat implements Scope {
 			}
 			if( cond != null ) {
 				try {
-					cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+					cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 				} catch(Exception e ) {
 					Kiev.reportError(cond.pos,e);
 				}
@@ -471,7 +469,7 @@ public class ForStat extends LoopStat implements Scope {
 				if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() )
 					Code.addInstr(Instr.op_goto,body_label);
 				else if( cond.isConstantExpr() && !((Boolean)cond.getConstValue()).booleanValue() );
-				else ((BooleanExpr)cond).generate_iftrue(body_label);
+				else BoolExpr.gen_iftrue(cond, body_label);
 			} else {
 				Code.addInstr(Instr.op_goto,body_label);
 			}
@@ -523,11 +521,11 @@ public class ForEachStat extends LoopStat implements Scope {
 	@att public Var			iter;
 	@att public Var			iter_array;
 	@att public Expr		iter_init;
-	@att public BooleanExpr	iter_cond;
+	@att public Expr		iter_cond;
 	@att public Expr		iter_incr;
 	@att public Expr		var_init;
 	@att public Expr		container;
-	@att public BooleanExpr	cond;
+	@att public Expr		cond;
 	@att public Statement	body;
 
 	public static final int	ARRAY = 0;
@@ -541,7 +539,7 @@ public class ForEachStat extends LoopStat implements Scope {
 	public ForEachStat() {
 	}
 	
-	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
+	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, Expr cond, Statement body) {
 		super(pos, parent);
 		this.var = var;
 		this.container = container;
@@ -663,11 +661,11 @@ public class ForEachStat extends LoopStat implements Scope {
 				iter_init = new CommaExpr(0, new Expr[]{
 					new AssignExpr(iter.pos,AssignOperator.Assign,
 						new VarAccessExpr(container.pos,iter_array),
-							new ShadowExpr(container)
+						new ShadowExpr(container)
 						),
 					new AssignExpr(iter.pos,AssignOperator.Assign,
 						new VarAccessExpr(iter.pos,iter),
-							new ConstExpr(iter.pos,Kiev.newInteger(0))
+						new ConstIntExpr(0)
 						)
 				});
 				iter_init = (Expr)iter_init.resolve(Type.tpInt);
@@ -698,7 +696,7 @@ public class ForEachStat extends LoopStat implements Scope {
 				/* iter = rule(iter,...); */
 				{
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ConstExpr(iter.pos,null)
+					new VarAccessExpr(iter.pos,iter), new ConstNullExpr()
 					);
 				iter_init = (Expr)iter_init.resolve(Type.tpVoid);
 				// Also, patch the rule argument
@@ -725,7 +723,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			switch( mode ) {
 			case ARRAY:
 				/* iter < container.length */
-				iter_cond = new BinaryBooleanExpr(iter.pos,BinaryOperator.LessThen,
+				iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
 					new VarAccessExpr(iter.pos,iter),
 					new ArrayLengthAccessExpr(iter.pos,new VarAccessExpr(0,iter_array))
 					);
@@ -737,26 +735,26 @@ public class ForEachStat extends LoopStat implements Scope {
 				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,new ResInfo(),
 					nameHasMoreElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-				iter_cond = new BooleanWrapperExpr(iter.pos,
-					new CallAccessExpr(iter.pos, new VarAccessExpr(iter.pos,this,iter),
+				iter_cond = new CallAccessExpr(	iter.pos,
+						new VarAccessExpr(iter.pos,this,iter),
 						moreelem,
 						Expr.emptyArray
-					));
+					);
 				break;
 			case RULE:
 				/* (iter = rule(iter, ...)) != null */
-				iter_cond = new BinaryBooleanExpr(
+				iter_cond = new BinaryBoolExpr(
 					container.pos,
 					BinaryOperator.NotEquals,
 					new AssignExpr(container.pos,AssignOperator.Assign,
 						new VarAccessExpr(container.pos,iter),
 						(Expr)container.copy()),
-					new ConstExpr(container.pos,null)
+					new ConstNullExpr()
 					);
 				break;
 			}
 			if( iter_cond != null ) {
-				iter_cond = (BooleanExpr)iter_cond.resolve(Type.tpBoolean);
+				iter_cond = BoolExpr.checkBool(iter_cond.resolve(Type.tpBoolean));
 			}
 
 			// Initialize value
@@ -799,7 +797,7 @@ public class ForEachStat extends LoopStat implements Scope {
 
 			// Check condition, if any
 			if( cond != null ) {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
+				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 			}
 
 			if( cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
@@ -880,7 +878,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			if( var_init != null)
 				var_init.generate(Type.tpVoid);
 			if( cond != null )
-				cond.generate_iffalse(continue_label);
+				BoolExpr.gen_iffalse(cond, continue_label);
 
 			body.generate(Type.tpVoid);
 
@@ -892,7 +890,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			// Just check iterator condition
 			Code.addInstr(Instr.set_label,check_label);
 			if( iter_cond != null )
-				iter_cond.generate_iftrue(body_label);
+				BoolExpr.gen_iftrue(iter_cond, body_label);
 
 			if( iter_array != null )
 				Code.removeVar(iter_array);

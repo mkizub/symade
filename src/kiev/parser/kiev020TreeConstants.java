@@ -51,34 +51,33 @@ public interface kiev020TreeConstants
   public int JJTARRAYELEMENTACCESSEXPRESSION = 44;
   public int JJTNEWACCESSEXPRESSION = 45;
   public int JJTANONYMOUSECLOSURE = 46;
-  public int JJTCONSTEXPRESSION = 47;
-  public int JJTNEWEXPRESSION = 48;
-  public int JJTNEWARRAYEXPRESSION = 49;
-  public int JJTREPARSESTATEMENT = 50;
-  public int JJTLABELEDSTATEMENT = 51;
-  public int JJTBLOCK = 52;
-  public int JJTRULEBLOCK = 53;
-  public int JJTCONDSTATEMENT = 54;
-  public int JJTEMPTYSTATEMENT = 55;
-  public int JJTSTATEMENTEXPRESSION = 56;
-  public int JJTSWITCHSTATEMENT = 57;
-  public int JJTNORMALCASE = 58;
-  public int JJTPIZZACASE = 59;
-  public int JJTIFSTATEMENT = 60;
-  public int JJTWHILESTATEMENT = 61;
-  public int JJTDOSTATEMENT = 62;
-  public int JJTFORSTATEMENT = 63;
-  public int JJTFOREACHSTATEMENT = 64;
-  public int JJTGOTOSTATEMENT = 65;
-  public int JJTBREAKSTATEMENT = 66;
-  public int JJTCONTINUESTATEMENT = 67;
-  public int JJTRETURNSTATEMENT = 68;
-  public int JJTTHROWSTATEMENT = 69;
-  public int JJTSYNCHRONIZEDSTATEMENT = 70;
-  public int JJTWITHSTATEMENT = 71;
-  public int JJTTRYSTATEMENT = 72;
-  public int JJTCATCHINFO = 73;
-  public int JJTFINALLYINFO = 74;
+  public int JJTNEWEXPRESSION = 47;
+  public int JJTNEWARRAYEXPRESSION = 48;
+  public int JJTREPARSESTATEMENT = 49;
+  public int JJTLABELEDSTATEMENT = 50;
+  public int JJTBLOCK = 51;
+  public int JJTRULEBLOCK = 52;
+  public int JJTCONDSTATEMENT = 53;
+  public int JJTEMPTYSTATEMENT = 54;
+  public int JJTSTATEMENTEXPRESSION = 55;
+  public int JJTSWITCHSTATEMENT = 56;
+  public int JJTNORMALCASE = 57;
+  public int JJTPIZZACASE = 58;
+  public int JJTIFSTATEMENT = 59;
+  public int JJTWHILESTATEMENT = 60;
+  public int JJTDOSTATEMENT = 61;
+  public int JJTFORSTATEMENT = 62;
+  public int JJTFOREACHSTATEMENT = 63;
+  public int JJTGOTOSTATEMENT = 64;
+  public int JJTBREAKSTATEMENT = 65;
+  public int JJTCONTINUESTATEMENT = 66;
+  public int JJTRETURNSTATEMENT = 67;
+  public int JJTTHROWSTATEMENT = 68;
+  public int JJTSYNCHRONIZEDSTATEMENT = 69;
+  public int JJTWITHSTATEMENT = 70;
+  public int JJTTRYSTATEMENT = 71;
+  public int JJTCATCHINFO = 72;
+  public int JJTFINALLYINFO = 73;
 
 
   public String[] jjtNodeName = {
@@ -129,7 +128,6 @@ public interface kiev020TreeConstants
     "ArrayElementAccessExpression",
     "NewAccessExpression",
     "AnonymouseClosure",
-    "ConstExpression",
     "NewExpression",
     "NewArrayExpression",
     "ReparseStatement",

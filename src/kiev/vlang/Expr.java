@@ -125,208 +125,6 @@ public class StatExpr extends Expr implements SetBody {
 
 @node
 @cfnode
-public class ConstExpr extends Expr {
-	Object	value;
-
-	public ConstExpr() {
-	}
-
-	public ConstExpr(int pos, Object value) {
-		super(pos);
-		this.value = value;
-	}
-
-	public Type getType() {
-		if( value == null )					return Type.tpNull;
-		if( value instanceof Boolean )		return Type.tpBoolean;
-		if( value instanceof Byte )			return Type.tpByte;
-		if( value instanceof Short )		return Type.tpShort;
-		if( value instanceof Integer )		return Type.tpInt;
-		if( value instanceof Long )			return Type.tpLong;
-		if( value instanceof Float )		return Type.tpFloat;
-		if( value instanceof Double )		return Type.tpDouble;
-		if( value instanceof KString )		return Type.tpString;
-		if( value instanceof java.lang.Character )		return Type.tpChar;
-		throw new Error("Internal error: unknown type of constant "+value.getClass());
-	}
-
-	public String toString() {
-		if( value == null )
-			return "null";
-		else if( value instanceof KString )
-			return '\"'+value.toString()+'\"'; //"
-		else if( value instanceof java.lang.Character ) {
-			char ch = ((java.lang.Character)value).charValue();
-			return "'"+Convert.escape(ch)+"'";
-		} else {
-			String val =  value.toString();
-			if( value instanceof Long ) val = val+'L';
-			else if( value instanceof Float ) val = val+'F';
-			else if( value instanceof Double ) val = val+'D';
-			return val;
-		}
-	}
-
-	public boolean isConstantExpr() { return true; }
-	public Object getConstValue() { return value; }
-	public int		getPriority() { return 255; }
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		if( value instanceof Boolean ) {
-			ConstBooleanExpr cbe = new ConstBooleanExpr(pos, ((Boolean)value).booleanValue() );
-			return cbe.resolve(reqType);
-		}
-		setResolved(true);
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
-		PassInfo.push(this);
-		try {
-			if( value == null ) {
-				// Special case for generation of parametriezed
-				// with primitive types classes
-				if( reqType != null && !reqType.isReference() ) {
-					switch(reqType.signature.byteAt(0)) {
-					case 'Z': case 'B': case 'S': case 'I': case 'C':
-						Code.addConst(0);
-						break;
-					case 'J':
-						Code.addConst(0L);
-						break;
-					case 'F':
-						Code.addConst(0.F);
-						break;
-					case 'D':
-						Code.addConst(0.D);
-						break;
-					default:
-						Code.addNullConst();
-						break;
-					}
-				}
-				else
-					Code.addNullConst();
-			}
-			else if( value instanceof Byte ) {
-				Code.addConst(((Byte)value).intValue());
-			}
-			else if( value instanceof Short ) {
-				Code.addConst(((Short)value).intValue());
-			}
-			else if( value instanceof Integer ) {
-				Code.addConst(((Integer)value).intValue());
-			}
-			else if( value instanceof Character ) {
-				Code.addConst((int)((Character)value).charValue());
-			}
-			else if( value instanceof Long ) {
-				Code.addConst(((Long)value).longValue());
-			}
-			else if( value instanceof Float ) {
-				Code.addConst(((Float)value).floatValue());
-			}
-			else if( value instanceof Double ) {
-				Code.addConst(((Double)value).doubleValue());
-			}
-			else if( value instanceof KString ) {
-				Code.addConst((KString)value);
-			}
-			else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public Dumper	toJava(Dumper dmp) {
-		if( value == null ) dmp.space().append("null").space();
-		else if( value instanceof Number ) {
-			if( value instanceof Long ) dmp.append(value).append('L');
-			else if( value instanceof Float ) dmp.append(value).append('F');
-			else if( value instanceof Double ) dmp.append(value).append('D');
-			else dmp.append(value);
-		}
-		else if( value instanceof KString ) {
-			dmp.append('\"');
-			byte[] val = Convert.string2source(value.toString());
-			dmp.append(new String(val,0));
-			dmp.append('\"');
-		}
-		else if( value instanceof java.lang.Boolean )
-			if( ((Boolean)value).booleanValue() )
-				dmp.space().append("true").space();
-			else
-				dmp.space().append("false").space();
-		else if( value instanceof java.lang.Character ) {
-			char ch = ((java.lang.Character)value).charValue();
-			return dmp.append('\'').append(Convert.escape(ch)).append('\'');
-		}
-		else throw new Error("Internal error: unknown type of constant "+value.getClass());
-		return dmp;
-	}
-
-    public static long parseLong(String s, int radix)
-              throws NumberFormatException
-    {
-        if (s == null) {
-            throw new NumberFormatException("null");
-        }
-	long result = 0;
-	boolean negative = false;
-	int i = 0, max = s.length();
-	long limit;
-	long multmin;
-	int digit;
-
-	if (max > 0) {
-	    if (s.charAt(0) == '-') {
-		negative = true;
-		i++;
-	    }
-		limit = Long.MIN_VALUE;
-	    multmin = limit / radix;
-            if (i < max) {
-                digit = Character.digit(s.charAt(i++),radix);
-		if (digit < 0) {
-		    throw new NumberFormatException(s);
-		} else {
-		    result = -digit;
-		}
-	    }
-	    while (i < max) {
-		// Accumulating negatively avoids surprises near MAX_VALUE
-		digit = Character.digit(s.charAt(i++),radix);
-		if (digit < 0) {
-		    throw new NumberFormatException(s);
-		}
-//		if (result < multmin) {
-//		    throw new NumberFormatException(s);
-//		}
-		result *= radix;
-//		if (result < limit + digit) {
-//		    throw new NumberFormatException(s);
-//		}
-		result -= digit;
-	    }
-	} else {
-	    throw new NumberFormatException(s);
-	}
-	if (negative) {
-	    if (i > 1) {
-		return result;
-	    } else {
-		throw new NumberFormatException(s);
-	    }
-	} else {
-	    return -result;
-	}
-    }
-
-}
-
-@node
-@cfnode
 public class ArrayLengthAccessExpr extends Expr {
 	@att public Expr		array;
 
@@ -546,9 +344,9 @@ public class AssignExpr extends LvalueExpr {
 				value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
 			}
 			value = value.resolveExpr(t1);
-			if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum()) {
-				value = new ConstExpr(value.pos,value.getConstValue()).resolveExpr(t1);
-			}
+			//if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum()) {
+			//	value = new ConstExpr(value.pos,value.getConstValue()).resolveExpr(t1);
+			//}
 			Type t2 = value.getType();
 			if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
@@ -998,109 +796,109 @@ public class BinaryExpr extends Expr {
 				Number val2 = (Number)expr2.getConstValue();
 				if( op == BinaryOperator.BitOr ) {
 					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() | val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() | val2.longValue()).resolve(null);
 					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() | val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() | val2.intValue()).resolve(null);
 					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(val1.shortValue() | val2.shortValue())).resolve(null);
+						return new ConstShortExpr(val1.shortValue() | val2.shortValue()).resolve(null);
 					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(val1.byteValue() | val2.byteValue())).resolve(null);
+						return new ConstByteExpr(val1.byteValue() | val2.byteValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.BitXor ) {
 					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() ^ val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() ^ val2.longValue()).resolve(null);
 					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() ^ val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() ^ val2.intValue()).resolve(null);
 					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(val1.shortValue() ^ val2.shortValue())).resolve(null);
+						return new ConstShortExpr(val1.shortValue() ^ val2.shortValue()).resolve(null);
 					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(val1.byteValue() ^ val2.byteValue())).resolve(null);
+						return new ConstByteExpr(val1.byteValue() ^ val2.byteValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.BitAnd ) {
 					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() & val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() & val2.longValue()).resolve(null);
 					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() & val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() & val2.intValue()).resolve(null);
 					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(val1.shortValue() & val2.shortValue())).resolve(null);
+						return new ConstShortExpr(val1.shortValue() & val2.shortValue()).resolve(null);
 					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(val1.byteValue() & val2.byteValue())).resolve(null);
+						return new ConstByteExpr(val1.byteValue() & val2.byteValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.LeftShift ) {
 					if( val1 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() << val2.intValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() << val2.intValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() << val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() << val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.RightShift ) {
 					if( val1 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() >> val2.intValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() >> val2.intValue()).resolve(null);
 					else if( val1 instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() >> val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() >> val2.intValue()).resolve(null);
 					else if( val1 instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(val1.shortValue() >> val2.intValue())).resolve(null);
+						return new ConstShortExpr(val1.shortValue() >> val2.intValue()).resolve(null);
 					else if( val1 instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(val1.byteValue() >> val2.intValue())).resolve(null);
+						return new ConstByteExpr(val1.byteValue() >> val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.UnsignedRightShift ) {
 					if( val1 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() >>> val2.intValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() >>> val2.intValue()).resolve(null);
 					else if( val1 instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() >>> val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() >>> val2.intValue()).resolve(null);
 					else if( val1 instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(val1.shortValue() >>> val2.intValue())).resolve(null);
+						return new ConstShortExpr(val1.shortValue() >>> val2.intValue()).resolve(null);
 					else if( val1 instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(val1.byteValue() >>> val2.intValue())).resolve(null);
+						return new ConstByteExpr(val1.byteValue() >>> val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.Add ) {
 					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(val1.doubleValue() + val2.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(val1.doubleValue() + val2.doubleValue()).resolve(null);
 					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(val1.floatValue() + val2.floatValue())).resolve(null);
+						return new ConstFloatExpr(val1.floatValue() + val2.floatValue()).resolve(null);
 					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() + val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() + val2.longValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() + val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() + val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.Sub ) {
 					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(val1.doubleValue() - val2.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(val1.doubleValue() - val2.doubleValue()).resolve(null);
 					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(val1.floatValue() - val2.floatValue())).resolve(null);
+						return new ConstFloatExpr(val1.floatValue() - val2.floatValue()).resolve(null);
 					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() - val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() - val2.longValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() - val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() - val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.Mul ) {
 					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(val1.doubleValue() * val2.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(val1.doubleValue() * val2.doubleValue()).resolve(null);
 					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(val1.floatValue() * val2.floatValue())).resolve(null);
+						return new ConstFloatExpr(val1.floatValue() * val2.floatValue()).resolve(null);
 					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() * val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() * val2.longValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() * val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() * val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.Div ) {
 					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(val1.doubleValue() / val2.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(val1.doubleValue() / val2.doubleValue()).resolve(null);
 					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(val1.floatValue() / val2.floatValue())).resolve(null);
+						return new ConstFloatExpr(val1.floatValue() / val2.floatValue()).resolve(null);
 					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() / val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() / val2.longValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() / val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() / val2.intValue()).resolve(null);
 				}
 				else if( op == BinaryOperator.Mod ) {
 					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(val1.doubleValue() % val2.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(val1.doubleValue() % val2.doubleValue()).resolve(null);
 					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(val1.floatValue() % val2.floatValue())).resolve(null);
+						return new ConstFloatExpr(val1.floatValue() % val2.floatValue()).resolve(null);
 					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(val1.longValue() % val2.longValue())).resolve(null);
+						return new ConstLongExpr(val1.longValue() % val2.longValue()).resolve(null);
 					else
-						return new ConstExpr(pos,Kiev.newInteger(val1.intValue() % val2.intValue())).resolve(null);
+						return new ConstIntExpr(val1.intValue() % val2.intValue()).resolve(null);
 				}
 			}
 
@@ -1626,9 +1424,7 @@ public class UnaryExpr extends Expr {
 			|| op==PrefixOperator.BooleanNot
 			)
 		) {
-			if( !(expr instanceof BooleanExpr) )
-				expr = (Expr)new BooleanWrapperExpr(expr.pos,expr).tryResolve(Type.tpBoolean);
-			return (Expr)new BooleanNotExpr(pos,(BooleanExpr)expr).tryResolve(Type.tpBoolean);
+			return (Expr)new BooleanNotExpr(pos,expr).tryResolve(Type.tpBoolean);
 		}
 		if( et.isNumber() &&
 			(  op==PrefixOperator.Pos
@@ -1677,40 +1473,38 @@ public class UnaryExpr extends Expr {
 			) {
 				return new IncrementExpr(pos,op,expr).resolve(null);
 			} else if( op==PrefixOperator.BooleanNot ) {
-				if( !(expr instanceof BooleanExpr) )
-					expr = (Expr)new BooleanWrapperExpr(expr.pos,expr).resolve(Type.tpBoolean);
-				return new BooleanNotExpr(pos,(BooleanExpr)expr).resolve(reqType);
+				return new BooleanNotExpr(pos,expr).resolve(reqType);
 			}
 			// Check if expression is constant
 			if( expr.isConstantExpr() ) {
 				Number val = (Number)expr.getConstValue();
 				if( op == PrefixOperator.Pos ) {
 					if( val instanceof Double )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstDoubleExpr(val.doubleValue()).resolve(null);
 					else if( val instanceof Float )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstFloatExpr(val.floatValue()).resolve(null);
 					else if( val instanceof Long )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstLongExpr(val.longValue()).resolve(null);
 					else if( val instanceof Integer )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstIntExpr(val.intValue()).resolve(null);
 					else if( val instanceof Short )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstShortExpr(val.shortValue()).resolve(null);
 					else if( val instanceof Byte )
-						return new ConstExpr(pos,val).resolve(null);
+						return new ConstByteExpr(val.byteValue()).resolve(null);
 				}
 				else if( op == PrefixOperator.Neg ) {
 					if( val instanceof Double )
-						return new ConstExpr(pos,Kiev.newDouble(-val.doubleValue())).resolve(null);
+						return new ConstDoubleExpr(-val.doubleValue()).resolve(null);
 					else if( val instanceof Float )
-						return new ConstExpr(pos,Kiev.newFloat(-val.floatValue())).resolve(null);
+						return new ConstFloatExpr(-val.floatValue()).resolve(null);
 					else if( val instanceof Long )
-						return new ConstExpr(pos,Kiev.newLong(-val.longValue())).resolve(null);
+						return new ConstLongExpr(-val.longValue()).resolve(null);
 					else if( val instanceof Integer )
-						return new ConstExpr(pos,Kiev.newInteger(-val.intValue())).resolve(null);
+						return new ConstIntExpr(-val.intValue()).resolve(null);
 					else if( val instanceof Short )
-						return new ConstExpr(pos,Kiev.newShort(-val.shortValue())).resolve(null);
+						return new ConstShortExpr(-val.shortValue()).resolve(null);
 					else if( val instanceof Byte )
-						return new ConstExpr(pos,Kiev.newByte(-val.byteValue())).resolve(null);
+						return new ConstByteExpr(-val.byteValue()).resolve(null);
 				}
 			}
 		} finally { PassInfo.pop(this); }
@@ -2079,8 +1873,6 @@ public class ConditionalExpr extends Expr {
 		ScopeNodeInfoVector result_state = null;
 		try {
 			cond = cond.resolveExpr(Type.tpBoolean);
-			if( !(cond instanceof BooleanExpr) )
-				cond = (Expr)new BooleanWrapperExpr(cond.pos,cond).resolve(Type.tpBoolean);
 			NodeInfoPass.pushState();
 			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
 			else if( cond instanceof BinaryBooleanAndExpr ) {
@@ -2128,7 +1920,7 @@ public class ConditionalExpr extends Expr {
 			} else {
 				CodeLabel elseLabel = Code.newLabel();
 				CodeLabel endLabel = Code.newLabel();
-				((BooleanExpr)cond).generate_iffalse(elseLabel);
+				BoolExpr.gen_iffalse(cond, elseLabel);
 				expr1.generate(null);
 				Code.addInstr(Instr.op_goto,endLabel);
 				Code.addInstr(Instr.set_label,elseLabel);
@@ -2297,10 +2089,10 @@ public class CastExpr extends Expr {
 						new Expr[]{expr})
 					.resolve(reqType);
 			if( type == Type.tpBoolean && et == Type.tpRule )
-				return new BinaryBooleanExpr(pos,
+				return new BinaryBoolExpr(pos,
 					BinaryOperator.NotEquals,
 					expr,
-					new ConstExpr(expr.pos,null)).resolve(type);
+					new ConstNullExpr()).resolve(type);
 			if( type.isBoolean() && et.isBoolean() ) return expr;
 			if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 				if (type.isIntegerInCode())
@@ -2347,33 +2139,33 @@ public class CastExpr extends Expr {
 				Object val = expr.getConstValue();
 				if( val instanceof Number ) {
 					Number num = (Number)val;
-					if( type == Type.tpDouble ) return new ConstExpr(pos,Kiev.newDouble(num.doubleValue())).resolve(null);
-					else if( type == Type.tpFloat ) return new ConstExpr(pos,Kiev.newFloat(num.floatValue())).resolve(null);
-					else if( type == Type.tpLong ) return new ConstExpr(pos,Kiev.newLong(num.longValue())).resolve(null);
-					else if( type == Type.tpInt ) return new ConstExpr(pos,Kiev.newInteger(num.intValue())).resolve(null);
-					else if( type == Type.tpShort ) return new ConstExpr(pos,Kiev.newShort(num.intValue())).resolve(null);
-					else if( type == Type.tpByte ) return new ConstExpr(pos,Kiev.newByte(num.intValue())).resolve(null);
-					else if( type == Type.tpChar ) return new ConstExpr(pos,Kiev.newCharacter(num.intValue())).resolve(null);
+					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num.doubleValue()).resolve(null);
+					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num.floatValue()).resolve(null);
+					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num.longValue()).resolve(null);
+					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num.intValue()).resolve(null);
+					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num.intValue()).resolve(null);
+					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num.intValue()).resolve(null);
+					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num.intValue()).resolve(null);
 				}
 				else if( val instanceof Character ) {
 					char num = ((Character)val).charValue();
-					if( type == Type.tpDouble ) return new ConstExpr(pos,Kiev.newDouble((double)(int)num)).resolve(null);
-					else if( type == Type.tpFloat ) return new ConstExpr(pos,Kiev.newFloat((float)(int)num)).resolve(null);
-					else if( type == Type.tpLong ) return new ConstExpr(pos,Kiev.newLong((long)(int)num)).resolve(null);
-					else if( type == Type.tpInt ) return new ConstExpr(pos,Kiev.newInteger((int)num)).resolve(null);
-					else if( type == Type.tpShort ) return new ConstExpr(pos,Kiev.newShort((short)num)).resolve(null);
-					else if( type == Type.tpByte ) return new ConstExpr(pos,Kiev.newByte((byte)(int)num)).resolve(null);
-					else if( type == Type.tpChar ) return new ConstExpr(pos,Kiev.newCharacter(num)).resolve(null);
+					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)(int)num).resolve(null);
+					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) (int)num).resolve(null);
+					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  (int)num).resolve(null);
+					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   (int)num).resolve(null);
+					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) (int)num).resolve(null);
+					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  (int)num).resolve(null);
+					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
 				}
 				else if( val instanceof Boolean ) {
 					int num = ((Boolean)val).booleanValue() ? 1 : 0;
-					if( type == Type.tpDouble ) return new ConstExpr(pos,Kiev.newDouble((double)num)).resolve(null);
-					else if( type == Type.tpFloat ) return new ConstExpr(pos,Kiev.newFloat((float)num)).resolve(null);
-					else if( type == Type.tpLong ) return new ConstExpr(pos,Kiev.newLong((long)num)).resolve(null);
-					else if( type == Type.tpInt ) return new ConstExpr(pos,Kiev.newInteger(num)).resolve(null);
-					else if( type == Type.tpShort ) return new ConstExpr(pos,Kiev.newShort((short)num)).resolve(null);
-					else if( type == Type.tpByte ) return new ConstExpr(pos,Kiev.newByte((byte)num)).resolve(null);
-					else if( type == Type.tpChar ) return new ConstExpr(pos,Kiev.newCharacter(num)).resolve(null);
+					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num).resolve(null);
+					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num).resolve(null);
+					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num).resolve(null);
+					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num).resolve(null);
+					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num).resolve(null);
+					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num).resolve(null);
+					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
 				}
 			}
 			if( et.equals(type) ) return expr;

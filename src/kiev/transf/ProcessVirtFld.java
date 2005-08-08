@@ -115,9 +115,9 @@ public final class ProcessVirtFld implements Constants {
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Field fatt = ((Struct)f.parent).resolveField(fname);
 					Statement p_st = new IfElseStat(0,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, value),
-								new ConstExpr(0, null)
+								new ConstNullExpr()
 							),
 							new BlockStat(0,null,new Statement[]{
 								new ExprStat(0,null,
@@ -477,9 +477,9 @@ public final class ProcessVirtFld implements Constants {
 				Expr expr;
 				if (ie.isGenVoidExpr()) {
 					if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstExpr(0,new Integer(1)));
+						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
 					} else {
-						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstExpr(0,new Integer(-1)));
+						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 					}
 					expr = expr.resolveExpr(Type.tpVoid);
 					expr.setGenVoidExpr(true);
@@ -506,9 +506,9 @@ public final class ProcessVirtFld implements Constants {
 					}
 					ConstExpr ce;
 					if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr)
-						ce = new ConstExpr(0,new Integer(1));
+						ce = new ConstIntExpr(1);
 					else
-						ce = new ConstExpr(0,new Integer(-1));
+						ce = new ConstIntExpr(-1);
 					Expr g;
 					g = new CallAccessExpr(0, null, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)

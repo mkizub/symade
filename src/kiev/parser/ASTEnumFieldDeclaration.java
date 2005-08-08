@@ -36,10 +36,10 @@ import static kiev.stdlib.Debug.*;
 @node
 public class ASTEnumFieldDeclaration extends ASTNode {
 
-	@att public ASTModifiers modifiers;
-	@att public ASTIdentifier name;
-	@att public ASTConstExpression val;
-	@att public ASTConstExpression text;
+	@att public ASTModifiers		modifiers;
+	@att public ASTIdentifier		name;
+	@att public ConstIntExpr		val;
+	@att public ConstStringExpr		text;
 	
 	public void jjtAddChild(ASTNode n, int i) {
 		if( n instanceof ASTModifiers) {
@@ -49,14 +49,11 @@ public class ASTEnumFieldDeclaration extends ASTNode {
 			name = (ASTIdentifier)n;
 			pos = n.getPos();
 		}
-        else if( n instanceof ASTConstExpression ) {
-			ASTConstExpression ce = (ASTConstExpression)n;
-			if (n.val instanceof KString) {
-				text = (ASTConstExpression)n;
-			}
-			else {
-				val = (ASTConstExpression)n; 
-			}
+        else if( n instanceof ConstIntExpr ) {
+			val = (ConstIntExpr)n;
+		}
+        else if( n instanceof ConstStringExpr ) {
+			text = (ConstStringExpr)n;
 		}
 		else {
 			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");

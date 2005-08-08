@@ -105,8 +105,8 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
     }
 	
 	public void setPragma(ASTPragma pr) {
-		foreach (ASTConstExpression e; pr.options)
-			setExtension(e.pos,pr.enable,((KString)e.val).toString());
+		foreach (ConstStringExpr e; pr.options)
+			setExtension(e.pos,pr.enable,e.value.toString());
 	}
 
 	private void setExtension(int pos, boolean enabled, String s) {

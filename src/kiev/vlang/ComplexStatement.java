@@ -113,9 +113,9 @@ public class CaseLabel extends ASTNode {
 							if (et.clazz.isPrimitiveEnum())
 								et = ((Struct)et.clazz).getPrimitiveEnumType();
 							if (et.clazz.isEnum() && !et.clazz.isPrimitiveEnum())
-								val = new ConstExpr(pos,Kiev.newInteger(((Struct)et.clazz).getValueForEnumField(f.var)));
+								val = new ConstIntExpr(((Struct)et.clazz).getValueForEnumField(f.var));
 							else
-								val = new ConstExpr(pos,((ConstExpr)f.var.init).value);
+								val = (Expr)f.var.init.copy();
 						}
 						else if( sw.mode != SwitchStat.NORMAL_SWITCH )
 							throw new CompilerException(pos,"Wrong case in normal switch");
@@ -132,7 +132,7 @@ public class CaseLabel extends ASTNode {
 							if( sw.mode != SwitchStat.PIZZA_SWITCH )
 								throw new CompilerException(pos,"Pizza case type in non-pizza switch");
 							PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-							val = new ConstExpr(val.getPos(),Kiev.newInteger(case_attr.caseno));
+							val = new ConstIntExpr(case_attr.caseno);
 							if( pattern != null && pattern.length > 0 ) {
 								if( pattern.length != case_attr.casefields.length )
 									throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
@@ -158,7 +158,7 @@ public class CaseLabel extends ASTNode {
 								val = null;
 								sw.defCase = this;
 							} else {
-								val = new ConstExpr(val.getPos(),Kiev.newInteger(0));
+								val = new ConstIntExpr(0);
 							}
 						}
 					}
@@ -288,7 +288,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				return st.resolve(Type.tpVoid);
 			} else {
 				return new IfElseStat(pos,parent,
-						new BinaryBooleanExpr(sel.pos,BinaryOperator.Equals,sel,
+						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,sel,
 						(Expr)((Expr)((CaseLabel)cas).val).resolve(Type.tpInt)),st,null
 					).resolve(Type.tpVoid);
 			}
@@ -369,7 +369,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						KString name = c.type.clazz.name.name;
 						typenames = (KString[])Arrays.append(typenames,name);
 						if( c.val != null )
-							c.val = new ConstExpr(c.val.getPos(),Kiev.newInteger(i));
+							c.val = new ConstIntExpr(i);
 						else
 							defindex = i;
 					}
@@ -381,11 +381,11 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			if( mode == TYPE_SWITCH ) {
 				ConstExpr[] signs = new ConstExpr[typenames.length];
 				for(int j=0; j < signs.length; j++)
-					signs[j] = new ConstExpr(PassInfo.clazz.pos,typenames[j]);
+					signs[j] = new ConstStringExpr(typenames[j]);
 				if( defindex < 0 ) defindex = signs.length;
 				typehash.init = new NewExpr(PassInfo.clazz.pos,Type.tpTypeSwitchHash,
 					new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,Type.tpString,1,signs),
-						new ConstExpr(PassInfo.clazz.pos,Kiev.newInteger(defindex))
+						new ConstIntExpr(defindex)
 					});
 				Method clinit = PassInfo.clazz.getClazzInitMethod();
 				((Initializer)clinit.body).addStatement(

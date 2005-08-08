@@ -3570,144 +3570,53 @@ void ConstExpression()       :
 	)
 }
 
-void BooleanConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
+void BooleanConstExpression()       :
+{ Token t; }
+{
 	(
 		t="true"
 	|	t="false"
-	)/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	)
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void DecimalConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
+void DecimalConstExpression()       :
+{ Token t; }
+{
 	(
 	 	t=<INTEGER_LITERAL>
 	|	t=<LONG_INTEGER_LITERAL>
-	)/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	)
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void FloatConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
+void FloatConstExpression()       :
+{ Token t; }
+{
 	(
 		t=<FLOATING_POINT_LITERAL>
 	|	t=<DOUBLE_POINT_LITERAL>
-	)/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	)
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void CharConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
-	t=<CHARACTER_LITERAL>/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+void CharConstExpression()       :
+{ Token t; }
+{
+	t=<CHARACTER_LITERAL>
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void NullConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
-	t="null"/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+void NullConstExpression()       :
+{ Token t; }
+{
+	t="null"
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
-void StringConstExpression()                  :
-{/*@bgen(jjtree) ConstExpression */
-  ASTConstExpression jjtn000 = new ASTConstExpression();
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t, t1; }
-{/*@bgen(jjtree) ConstExpression */
-        try {
-/*@egen*/
+void StringConstExpression()       :
+{ Token t, t1; }
+{
 	t=<STRING_LITERAL>
 	(
 		LOOKAHEAD({
@@ -3720,19 +3629,8 @@ void StringConstExpression()                  :
 			t.endLine = t1.endLine;
 			t.endColumn = t1.endColumn;
 		}
-	)*/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.set(t); }/*@bgen(jjtree)*/
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
+	)*
+	{ jjtree.pushNode(ConstExpr.fromSource(t)); }
 }
 
 void NewExpression() :
@@ -4213,9 +4111,8 @@ void CondStatement() :
 				sb.append(t.image).append(' ');
 				t = t.next;
 			}
-			ASTConstExpression e = new ASTConstExpression();
+			ConstStringExpr e = new ConstStringExpr(KString.from(sb.toString()));
 			e.pos = pos;
-			e.val = KString.from(sb.toString());
 			jjtn000.jjtAddChild(e,1);
 		}
 	}

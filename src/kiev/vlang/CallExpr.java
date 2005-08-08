@@ -101,7 +101,7 @@ public class CallExpr extends Expr {
 		if( isResolved() ) return this;
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args.insert(0, new ConstExpr(pos,null));
+				args.insert(0, new ConstNullExpr());
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
@@ -138,9 +138,9 @@ public class CallExpr extends Expr {
 				else if( fname.indexOf("trace") >= 0 ) mode = 2;
 				if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
 					ok_label = Code.newLabel();
-					if( args[0] instanceof BooleanExpr ) {
-						if( mode == 1 ) ((BooleanExpr)args[0]).generate_iftrue(ok_label);
-						else ((BooleanExpr)args[0]).generate_iffalse(ok_label);
+					if( args[0] instanceof IBoolExpr ) {
+						if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
+						else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
 					} else {
 						args[0].generate(null);
 						if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
@@ -284,7 +284,7 @@ public class CallAccessExpr extends Expr {
 		obj = (Expr)obj.resolve(null);
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args.insert(0, new ConstExpr(pos,null));
+				args.insert(0, new ConstNullExpr());
 		} else {
 			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 		}
@@ -666,7 +666,7 @@ public class ClosureCallExpr extends Expr {
 			} else {
 				call_it = (Method)callIt;
 				if( call_it.type.ret == Type.tpRule ) {
-					env_access = new ConstExpr(pos,null);
+					env_access = new ConstNullExpr();
 				} else {
 					trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
 				}

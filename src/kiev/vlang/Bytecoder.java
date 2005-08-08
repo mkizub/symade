@@ -183,7 +183,7 @@ public class Bytecoder implements Constants {
 			if( at == null ) continue;
 			if( at.name.equals(attrConstantValue) && (f_flags & ACC_FINAL)!=0 ) {
 				ConstantValueAttr a = (ConstantValueAttr)at;
-				f_init = new ConstExpr(0,a.value);
+				f_init = ConstExpr.fromConst(a.value);
 			}
 			else if( at.name.equals(attrPackerField) ) {
 				packer_size = ((PackerFieldAttr)at).size;
@@ -645,10 +645,10 @@ public class Bytecoder implements Constants {
 			kiev.bytecode.PoolConstant cav = clazz.pool[ca.cp_value];
 			ConstExpr ce;
 			if( cav instanceof kiev.bytecode.NumberPoolConstant )
-				ce = new ConstExpr(0,cav.getValue());
+				ce = ConstExpr.fromConst(cav.getValue());
 			else if( cav instanceof kiev.bytecode.StringPoolConstant ) {
 				kiev.bytecode.StringPoolConstant sc = (kiev.bytecode.StringPoolConstant)cav;
-				ce = new ConstExpr(0,((kiev.bytecode.Utf8PoolConstant)clazz.pool[sc.ref]).value);
+				ce = new ConstStringExpr(((kiev.bytecode.Utf8PoolConstant)clazz.pool[sc.ref]).value);
 			} else
 				throw new RuntimeException("Bad ConstantValue attribute: "+cav.getClass());
 			a = new ConstantValueAttr(ce);

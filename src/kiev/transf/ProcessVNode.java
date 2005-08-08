@@ -144,7 +144,7 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
+					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstNullExpr()});
 				}
 			}
 		} else {
@@ -202,9 +202,9 @@ public final class ProcessVNode implements Constants {
 			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
 			boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
 			Expr e = new NewExpr(0, atp, new Expr[]{
-				new ConstExpr(0, aflds[i].name.name),
-				new ConstExpr(0, isAtt ? Boolean.TRUE : Boolean.FALSE),
-				new ConstExpr(0, isArr ? Boolean.TRUE : Boolean.FALSE)
+				new ConstStringExpr(aflds[i].name.name),
+				new ConstBoolExpr(isAtt),
+				new ConstBoolExpr(isArr)
 			});
 			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
 			Field f = s.addField(new Field(s, fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
@@ -234,9 +234,9 @@ public final class ProcessVNode implements Constants {
 			for(int i=0; i < aflds.length; i++) {
 				((BlockStat)getV.body).addStatement(
 					new IfElseStat(0,
-						new BinaryBooleanExpr(0, BinaryOperator.Equals,
+						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new VarAccessExpr(0, getV.params[1]),
-							new ConstExpr(0, aflds[i].name.name)
+							new ConstStringExpr(aflds[i].name.name)
 						),
 						new ReturnStat(0,null, new AccessExpr(0,new ThisExpr(0),aflds[i])),
 						null
@@ -244,9 +244,9 @@ public final class ProcessVNode implements Constants {
 				);
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstExpr(0, KString.from("No @att value \"")));
+			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new VarAccessExpr(0, getV.params[1]));
-			msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			((BlockStat)getV.body).addStatement(
 				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
 			);
@@ -297,9 +297,9 @@ public final class ProcessVNode implements Constants {
 								cae.func = new ASTIdentifier(0, copyV.name.name);
 								stats.insert(p, 
 									new IfElseStat(0,null,
-										new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+										new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 											new AccessExpr(0,new ThisExpr(),f),
-											new ConstExpr(0, null)
+											new ConstNullExpr()
 											),
 										new ExprStat(0,null,
 											new AssignExpr(0,AssignOperator.Assign,
@@ -345,9 +345,9 @@ public final class ProcessVNode implements Constants {
 					continue;
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
-						new BinaryBooleanExpr(0, BinaryOperator.Equals,
+						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new VarAccessExpr(0, setV.params[1]),
-							new ConstExpr(0, aflds[i].name.name)
+							new ConstStringExpr(aflds[i].name.name)
 							),
 						new BlockStat(0,null, new Statement[]{
 							new ExprStat(0,null,
@@ -363,9 +363,9 @@ public final class ProcessVNode implements Constants {
 				);
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstExpr(0, KString.from("No @att value \"")));
+			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new VarAccessExpr(0, setV.params[1]));
-			msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			((BlockStat)setV.body).addStatement(
 				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
 			);
@@ -389,9 +389,9 @@ public final class ProcessVNode implements Constants {
 				BlockStat bs;
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
-						new BinaryBooleanExpr(0, BinaryOperator.Equals,
+						new BinaryBoolExpr(0, BinaryOperator.Equals,
 							new VarAccessExpr(0, setV.params[1]),
-							new ConstExpr(0, aflds[i].name.name)
+							new ConstStringExpr(aflds[i].name.name)
 							),
 						bs = new BlockStat(0,null),
 						null
@@ -399,12 +399,12 @@ public final class ProcessVNode implements Constants {
 				);
 				if (!isArr) {
 					StringConcatExpr msg = new StringConcatExpr();
-					msg.appendArg(new ConstExpr(0, KString.from("Missmatch node for \"")));
+					msg.appendArg(new ConstStringExpr(KString.from("Missmatch node for \"")));
 					msg.appendArg(new VarAccessExpr(0, setV.params[1]));
-					msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
+					msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 					bs.addStatement(
 						new IfElseStat(0,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, setV.params[2]),
 								new AccessExpr(0,new ThisExpr(0),aflds[i])
 								),
@@ -437,9 +437,9 @@ public final class ProcessVNode implements Constants {
 				bs.addStatement(new ReturnStat(0,null));
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstExpr(0, KString.from("No @att value \"")));
+			msg.appendArg(new ConstStringExpr(KString.from("No @att value \"")));
 			msg.appendArg(new VarAccessExpr(0, setV.params[1]));
-			msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			((BlockStat)setV.body).addStatement(
 				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
 			);

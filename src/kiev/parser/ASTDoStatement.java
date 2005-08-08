@@ -59,9 +59,7 @@ public class ASTDoStatement extends Statement {
 			cond = e;
 			not = false;
 		}
-		if( !(cond instanceof BooleanExpr) )
-			return new DoWhileStat(pos,parent,new BooleanWrapperExpr(cond.getPos(),cond),body).resolve(Type.tpVoid);
-		return new DoWhileStat(pos,parent,(BooleanExpr)cond,body).resolve(Type.tpVoid);
+		return new DoWhileStat(pos,parent,cond,body).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

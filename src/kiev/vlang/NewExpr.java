@@ -164,7 +164,7 @@ public class NewExpr extends Expr {
 					Type t = Type.getRealType(Kiev.argtype,type);
 					Expr e;
 					if( !t.isReference() ) {
-						e = (Expr)new ConstExpr(pos,null).resolve(null);
+						e = (Expr)new ConstNullExpr().resolve(null);
 						e.generate(t);
 						return;
 					}
@@ -180,7 +180,7 @@ public class NewExpr extends Expr {
 								KString.from("newInstance"),
 								KString.from("(I)Ljava/lang/Object;")
 								),
-								new Expr[]{new ConstExpr(pos,Kiev.newInteger(i))}),
+								new Expr[]{new ConstIntExpr(i)}),
 						true).resolveExpr(reqType);
 					e.generate(t);
 					return;
@@ -308,14 +308,14 @@ public class NewArrayExpr extends Expr {
 					return (Expr)new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,parent,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
-							new Expr[]{new ConstExpr(pos,Kiev.newInteger(i)),args[0]}
+							new Expr[]{new ConstIntExpr(i),args[0]}
 						),true).resolve(reqType);
 				} else {
 					return (Expr)new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,parent,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
 							new Expr[]{
-								new ConstExpr(pos,Kiev.newInteger(i)),
+								new ConstIntExpr(i),
 								new NewInitializedArrayExpr(pos,Type.tpInt,1,args.toArray())
 							}
 						),true).resolve(reqType);

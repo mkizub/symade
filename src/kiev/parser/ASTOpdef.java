@@ -48,8 +48,8 @@ public class Opdef extends ASTNode implements TopLevelDecl {
 	public void jjtAddChild(ASTNode n, int i) {
 		switch(i) {
 		case 2:
-			if( n instanceof ASTConstExpression ) {
-				Object val = ((ASTConstExpression)n).val;
+			if( n instanceof ConstExpr ) {
+				Object val = ((ConstExpr)n).getConstValue();
 				if( val == null || !( val instanceof Number) )
 					throw new CompilerException(n.getPos(),"Priority must be of int type, but found "+n);
 				prior = ((Number)val).intValue();
