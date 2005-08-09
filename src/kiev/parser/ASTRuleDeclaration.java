@@ -56,24 +56,6 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 	@getter public PrescannedBody get$pbody() { return pbody; }
 	@setter public void set$pbody(PrescannedBody p) { pbody = p; }
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTFormalParameter ) {
-			params.append(n);
-		}
-		else if( n instanceof ASTVarDecls ) {
-			localvars.append(n);
-		}
-		else if( n instanceof ASTAlias ) {
-			aliases.append((ASTAlias)n);
-        }
-        else if( n instanceof ASTRuleBlock ) {
-			body = (Statement)n;
-        }
-        else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
     public ASTNode pass3() {
 		if !( parent instanceof Struct )
 			throw new CompilerException(pos,"Method must be declared on class level only");
@@ -110,7 +92,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			Expr[] inits = new Expr[vdecls.vars.length];
 			for(int j=0; j < vdecls.vars.length; j++) {
 				ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-				KString vname = vdecl.name;
+				KString vname = vdecl.name.name;
 				Type tp = type;
 				for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 				for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);

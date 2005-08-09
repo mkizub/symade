@@ -481,11 +481,11 @@ public class Compiler {
 						file_reader.close();
 					}
 					java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-					kiev020.interface_only = true;
+					kiev040.interface_only = true;
 					runGC();
 					diff_time = curr_time = System.currentTimeMillis();
 					if( Kiev.k == null )
-						Kiev.k = new kiev020(bis);
+						Kiev.k = new kiev040(bis);
 					else
 						Kiev.k.ReInit(bis);
 					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);

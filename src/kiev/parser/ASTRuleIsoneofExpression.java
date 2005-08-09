@@ -41,24 +41,6 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	@att public final NArr<ASTIdentifier>	names;
 	@att public final NArr<Expr>			exprs;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i % 2) {
-        case 0:
-        	if( n instanceof ASTIdentifier ) {
-	        	names.append((ASTIdentifier)n);
-	        	if( i == 0 ) setPos(n.getPos());
-	        	break;
-	        }
-	        throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        case 1:
-        	if( n instanceof Expr ) {
-	        	exprs.append((Expr)n);
-	        	break;
-	        }
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-		}
-    }
-
     public ASTNode resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {

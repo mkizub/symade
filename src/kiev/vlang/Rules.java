@@ -939,6 +939,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 @node
 public abstract class RuleExprBase extends ASTRuleNode {
 	@att public Expr		expr;
+	@att public Expr		bt_expr;
 
 	public RuleExprBase() {
 	}
@@ -946,6 +947,12 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	public RuleExprBase(Expr expr) {
 		super(expr.pos);
 		this.expr = expr;
+	}
+
+	public RuleExprBase(Expr expr, Expr bt_expr) {
+		super(expr.pos);
+		this.expr = expr;
+		this.bt_expr = bt_expr;
 	}
 
 	public void cleanup() {
@@ -988,11 +995,17 @@ public final class RuleWhileExpr extends RuleExprBase {
 		super(expr);
 	}
 
+	public RuleWhileExpr(Expr expr, Expr bt_expr) {
+		super(expr, bt_expr);
+	}
+
 	public ASTNode resolve(Type reqType) {
 		ASTNode n = super.resolve(reqType);
 		if (n != this) return n;
 		if (!expr.getType().equals(Type.tpBoolean))
 			throw new CompilerException(expr.pos,"Boolean expression is requared");
+		if (bt_expr != null)
+			bt_expr = (Expr)bt_expr.resolve(null);
 		return this;
 	}
 
@@ -1010,6 +1023,10 @@ public final class RuleWhileExpr extends RuleExprBase {
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+base+";\n"+							// set new backtrack state to point itself
 			"case "+base+":\n"+
+				(bt_expr == null ?
+					""
+				:	"#e"+bt_expr.parserAddr()+";\n"
+				)+
 				"if ( !#e"+expr.parserAddr()+" ) {\n"+
 					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
 				"}\n"+
@@ -1021,8 +1038,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 @node
 public final class RuleExpr extends RuleExprBase {
 
-	@att public Expr		bt_expr;
-
 	public RuleExpr() {
 	}
 
@@ -1031,8 +1046,7 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public RuleExpr(Expr expr, Expr bt_expr) {
-		super(expr);
-		this.bt_expr = bt_expr;
+		super(expr, bt_expr);
 	}
 
 	public void cleanup() {

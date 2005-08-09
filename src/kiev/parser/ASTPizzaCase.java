@@ -37,23 +37,14 @@ import syntax kiev.Syntax;
 
 @node
 public class ASTPizzaCase extends ASTNode {
-	@att public ASTNode		val;
+	@att public ASTIdentifier			val;
 	@att public final NArr<ASTNode>		params;
 	@att public final NArr<ASTNode>		stats;
-
-	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 )
-			val = n;
-		else if( n instanceof ASTFormalParameter )
-			params.append(n);
-        else
-			stats.append(n);
-    }
 
     public ASTNode resolve(Type reqType) {
     	Var[] pattern = new Var[params.length];
     	try {
-	    	KString n = ((ASTQName)val).toKString();
+	    	KString n = val.name;
 			ASTNode@ v;
 			if( !PassInfo.resolveNameR(v,new ResInfo(),n,null,0) )
 				throw new CompilerException(val.pos,"Unresolved class "+n);

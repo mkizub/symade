@@ -55,10 +55,6 @@ public class CaseLabel extends ASTNode {
 		this.stats = new BlockStat(pos,this,stats);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public String toString() {
 		if( val == null ) return "default:";
 		else if(pattern != null) {
@@ -644,10 +640,6 @@ public class CatchInfo extends Statement implements Scope {
 		super(pos, parent);
 		this.arg = arg;
 		this.body = body;
-	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
 	}
 
 	public String toString() {

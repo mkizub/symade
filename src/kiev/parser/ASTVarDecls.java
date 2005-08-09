@@ -39,22 +39,6 @@ public class ASTVarDecls extends ASTNode {
 	@att public ASTType					type;
 	@att public final NArr<ASTVarDecl>	vars;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTType ) {
-			type = (ASTType)n;
-		}
-        else if( n instanceof ASTVarDecl ) {
-			if( vars.length == 0 ) pos = n.pos;
-			vars.append((ASTVarDecl)n);
-		}
-        else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
     public boolean hasFinal() {
 		foreach (ASTModifier m; modifiers.modifier)
 			if (m.flag() == ACC_FINAL) return true;

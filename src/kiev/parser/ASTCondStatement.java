@@ -40,16 +40,6 @@ public class ASTCondStatement extends Statement {
 	@att public Expr		cond;
 	@att public Expr		message;
 	
-	public void jjtAddChild(ASTNode n, int i)
-	{
-		if( i==0 && n instanceof ASTExpression )
-			cond = (ASTExpression)n;
-		else if( i==1 && n instanceof Expr )
-			message = (Expr)n;
-		else
-			throw new CompilerException(pos,"Bad child node "+n.getClass());
-	}
-
 	public ASTNode resolve(Type reqType) {
 		return new CondStat(pos,parent,cond,message).resolve(Type.tpVoid);
 	}

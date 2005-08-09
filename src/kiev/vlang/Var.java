@@ -57,10 +57,6 @@ public class Var extends ASTNode implements Named, Typed {
 		this.type = type;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public String toString() {
 		return name.toString()/*+":="+type*/;
 	}

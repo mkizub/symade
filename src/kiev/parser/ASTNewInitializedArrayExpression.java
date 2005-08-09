@@ -40,10 +40,6 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	@att public final NArr<Expr>		args;
 	public int dim;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		args.append((Expr)n);
-    }
-
 	public ASTNode resolve(Type reqType) {
 		Type tp;
 		if( type == null ) {

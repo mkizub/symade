@@ -38,13 +38,6 @@ import kiev.vlang.*;
 public class ASTBreakStatement extends Statement {
 	@att public ASTIdentifier ident;
     
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: ident=(ASTIdentifier)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new BreakStat(pos,parent,ident==null?null:ident.name).resolve(Type.tpVoid);
 	}

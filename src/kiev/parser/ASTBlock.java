@@ -38,11 +38,6 @@ import kiev.vlang.*;
 public class ASTBlock extends Statement {
 	@att public final NArr<ASTNode> stats;
 
-	public void jjtAddChild(ASTNode n, int i)
-	{
-		stats.append(n);
-	}
-
 	public ASTNode resolve(Type reqType) {
 		BlockStat bs = new BlockStat(pos,parent,stats);
 		if( parent instanceof Method )

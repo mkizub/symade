@@ -39,13 +39,6 @@ public class ASTTypeClassExpression extends Expr {
 	
 	@att public ASTType		type;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0:	type = (ASTType)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-    
     public Type getType() { return Type.tpClass; }
 
 	public ASTNode resolve(Type reqType) throws CompilerException {

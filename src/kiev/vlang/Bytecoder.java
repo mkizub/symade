@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
+import kiev.parser.ASTIdentifier;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -614,9 +615,9 @@ public class Bytecoder implements Constants {
 			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
 				Import imp = new Import();
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
-					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));
+					imp.name = new ASTIdentifier(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
 				} else {
-					imp.name = KString.from(s.name.name+"."+kia.getNodeName(clazz));
+					imp.name = new ASTIdentifier(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
 					imp.of_method = true;
 					KString sig = kia.getSignature(clazz);
 					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));

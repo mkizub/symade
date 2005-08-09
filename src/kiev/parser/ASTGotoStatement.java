@@ -35,13 +35,6 @@ public class ASTGotoStatement extends Statement {
 	@att ASTNode	expr;
 	boolean casemode = false;
     
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: expr=n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		if( !casemode ) {
 			Kiev.check(pos,Ext.Goto);

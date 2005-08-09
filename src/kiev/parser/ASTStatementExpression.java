@@ -48,13 +48,6 @@ public class ASTStatementExpression extends Statement {
 		this.pos = e.getPos();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: expr=(Expr)n; pos = n.getPos(); break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new ExprStat(pos,parent,expr).resolve(Type.tpVoid);
 	}

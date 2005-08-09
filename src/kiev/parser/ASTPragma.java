@@ -27,15 +27,10 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 @node
-public class ASTPragma extends SimpleNode implements TopLevelDecl {
+public class ASTPragma extends ASTNode implements TopLevelDecl {
 
 	public boolean								enable;
 	@att public final NArr<ConstStringExpr>	options;
-
-	public void jjtAddChild(ASTNode n, int i) {
-		ConstStringExpr opt = (ConstStringExpr)n;
-		options.append(opt);
-    }
 
 	public ASTNode resolve(Type reqType) {
 		return this;

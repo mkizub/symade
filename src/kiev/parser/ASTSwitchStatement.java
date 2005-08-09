@@ -43,13 +43,6 @@ public class ASTSwitchStatement extends Statement {
 	@cflist()
 	public final NArr<ASTNode>		cases;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 ) sel = (Expr)n;
-        else {
-        	cases.append(n);
-        }
-    }
-    
     public ASTNode resolve(Type reqType) {
 		return new SwitchStat(pos,parent,sel,cases.toArray()).resolve(Type.tpVoid);
     }

@@ -39,14 +39,6 @@ public class ASTArrayElementAccessExpression extends Expr {
 	@att public Expr		obj;
 	@att public Expr		index;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0:	obj = (Expr)n; break;
-		case 1:	index = (Expr)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new ContainerAccessExpr(pos,obj,index).resolve(reqType);
 	}

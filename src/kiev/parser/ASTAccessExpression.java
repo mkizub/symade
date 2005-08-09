@@ -42,14 +42,6 @@ public class ASTAccessExpression extends Expr {
 	@att public Expr			obj;
 	@att public ASTIdentifier	ident;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0:	obj = (Expr)n; break;
-		case 1:	ident = (ASTIdentifier)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {

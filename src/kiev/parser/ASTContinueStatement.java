@@ -38,13 +38,6 @@ import kiev.vlang.*;
 public class ASTContinueStatement extends Statement {
 	@att public ASTIdentifier	ident;
     
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: ident=(ASTIdentifier)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new ContinueStat(pos,parent,ident==null?null:ident.name).resolve(Type.tpVoid);
 	}

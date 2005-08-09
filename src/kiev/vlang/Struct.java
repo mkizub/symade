@@ -355,10 +355,6 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		acc.verifyAccessDecl(this);
 	}
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		members.append(n);
-	}
-
 	/** hashCode of structure is a hash code
 		of it's name, which must be unique for each structure
 	 */

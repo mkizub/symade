@@ -48,13 +48,6 @@ public class ASTForStatement extends Statement {
 	@att
 	public Statement		body;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: body=(Statement)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new ForStat(pos,parent,init,cond,iter,body).resolve(Type.tpVoid);
 	}

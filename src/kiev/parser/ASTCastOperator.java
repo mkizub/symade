@@ -39,13 +39,6 @@ public class ASTCastOperator extends ASTNode {
 	@att public ASTType	type;
 	public boolean  reinterp;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: type=(ASTType)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public Operator resolveOperator() {
 		Type tp = type.getType();
 	    return CastOperator.newCastOperator(tp,reinterp);

@@ -46,7 +46,7 @@ public class Import extends ASTNode implements Constants, Scope {
 		IMPORT_SYNTAX;
 	}
 
-	@att public KString					name;
+	@att public ASTIdentifier			name;
 	@att public ImportMode				mode = ImportMode.IMPORT_CLASS;
          public boolean					star;
          public boolean					of_method;
@@ -74,17 +74,6 @@ public class Import extends ASTNode implements Constants, Scope {
 		return str.toString();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTQName ) {
-	    	name = ((ASTQName)n).toKString();
-    	    pos = n.getPos();
-		}
-		else if( n instanceof TypeRef ) {
-			args.append((TypeRef)n);
-			of_method = true;
-		}
-    }
-
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
 		ASTNode@ v;
@@ -98,8 +87,8 @@ public class Import extends ASTNode implements Constants, Scope {
 		}
 		for(int j=0; j < exprs.length; j++,i++)
 			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,args[i].getType(),0));
-		if( !PassInfo.resolveMethodR(v,null,name,exprs,null,null,0) )
-			throw new CompilerException(pos,"Unresolved method "+Method.toString(name,exprs));
+		if( !PassInfo.resolveMethodR(v,null,name.name,exprs,null,null,0) )
+			throw new CompilerException(pos,"Unresolved method "+Method.toString(name.name,exprs));
 		ASTNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
 			throw new CompilerException(pos,"Identifier "+name+" is not a method");
@@ -215,7 +204,7 @@ public class Typedef extends ASTNode implements Named {
 
 		ASTNonArrayType natp = (ASTNonArrayType)tp;
 		ASTType arg = (ASTType)natp.children[1];
-		KString argnm = ((ASTQName)((ASTNonArrayType)arg).children[0]).toKString();
+		KString argnm = ((ASTIdentifier)((ASTNonArrayType)arg).children[0]).toKString();
 		//if (!typearg.name.short_name.equals(argnm))
 		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
 		natp.children[1] = typearg.type;

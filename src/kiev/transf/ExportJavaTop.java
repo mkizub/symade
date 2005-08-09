@@ -268,7 +268,7 @@ public final class ExportJavaTop implements Constants {
 
 	public ASTNode pass1_1(Import:ASTNode astn) {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
-		KString name = astn.name;
+		KString name = astn.name.name;
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);

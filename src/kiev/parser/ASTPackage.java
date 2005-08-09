@@ -46,11 +46,6 @@ public class ASTPackage extends ASTNode {
 		this.name = name;
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	name = ((ASTQName)n).toKString();
-        pos = n.getPos();
-    }
-
 	public Dumper toJava(Dumper dmp) {
     	return dmp.append("package").space().append(name).append(';').newLine();
     }

@@ -261,10 +261,6 @@ public class ForInit extends ASTNode implements Scope {
 		decls.cleanup();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
 		DeclStat@ n;
 	{
@@ -354,7 +350,7 @@ public class ForStat extends LoopStat implements Scope {
 						this.init = new ForInit(init.pos);
 						for(int j=0; j < vdecls.vars.length; j++) {
 							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-							KString vname = vdecl.name;
+							KString vname = vdecl.name.name;
 							Type tp = type;
 							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);

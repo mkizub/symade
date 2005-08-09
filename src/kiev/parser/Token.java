@@ -12,7 +12,7 @@ package kiev.parser;
  * Describes the input token stream.
  */
 
-public class Token implements kiev020Constants {
+public class Token implements kiev040Constants {
 
   /**
    * An integer that describes the kind of this token.  This numbering

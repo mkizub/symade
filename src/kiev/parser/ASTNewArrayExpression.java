@@ -44,10 +44,6 @@ public class ASTNewArrayExpression extends Expr {
 	
 	public int dim;
   
-	public void jjtAddChild(ASTNode n, int i) {
-		args.append((Expr)n);
-    }
-
 	public ASTNode resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {

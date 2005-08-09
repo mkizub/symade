@@ -39,14 +39,6 @@ public class ASTRuleBlock extends ASTBlock {
 
 	@att ASTRuleNode	expr;
 
-	public void jjtAddChild(ASTNode n, int i)
-	{
-		if( n instanceof ASTRuleNode )
-			expr = (ASTRuleNode)n;
-		else
-			throw new CompilerException(pos,"Bad child node "+n.getClass());
-	}
-
 	public ASTNode resolve(Type reqType) {
 		RuleBlock rb = new RuleBlock(pos,parent,expr,stats);
 		return rb.resolve(reqType);

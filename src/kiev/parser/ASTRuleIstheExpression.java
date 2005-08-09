@@ -39,14 +39,6 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	@att public ASTIdentifier	name;
 	@att public Expr			expr;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: name=(ASTIdentifier)n; setPos(name.getPos()); break;
-        case 1: expr=(Expr)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
     public ASTNode resolve(Type reqType) {
 		PVar<ASTNode> v = new PVar<ASTNode>();
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name.name,null,0) )

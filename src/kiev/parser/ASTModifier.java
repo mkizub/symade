@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTModifier extends ASTNode implements kiev020Constants {
+public class ASTModifier extends ASTNode implements kiev040Constants {
 
 	public static ASTModifier[] emptyArray = new ASTModifier[0];
 	
@@ -67,10 +67,6 @@ public class ASTModifier extends ASTNode implements kiev020Constants {
         if( t.kind == IDENTIFIER )
         	image = t.image.intern();
 	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
 
     public int flag() {
     	switch( kind ) {

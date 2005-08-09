@@ -100,10 +100,6 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
 		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		members.append(n);
-    }
-	
 	public void setPragma(ASTPragma pr) {
 		foreach (ConstStringExpr e; pr.options)
 			setExtension(e.pos,pr.enable,e.value.toString());
@@ -294,7 +290,6 @@ public class FileUnit extends ASTNode implements Constants, Scope, ScopeOfOperat
         Kiev.parserAddresses.clear();
 		Kiev.curFileUnit = null;
 		Kiev.k.presc = null;
-		Kiev.k.reset();
 		for(int i=0; i < members.length; i++)
 			members[i].cleanup();
 		foreach(ASTNode n; syntax) n.cleanup();

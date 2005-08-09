@@ -46,21 +46,6 @@ public class ASTAnonymouseClosure extends Expr {
     	pos = t.getPos();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTFormalParameter ) {
-			params.append((ASTFormalParameter)n);
-		}
-		else if( n instanceof ASTType ) {
-			rettype = (ASTType)n;
-		}
-		else if( n instanceof Statement ) {
-			body = (Statement)n;
-		}
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-		}
-    }
-
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return new_closure;
 		ClazzName clname = ClazzName.fromBytecodeName(

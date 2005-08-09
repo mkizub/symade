@@ -41,23 +41,4 @@ public class ASTEnumFieldDeclaration extends ASTNode {
 	@att public ConstIntExpr		val;
 	@att public ConstStringExpr		text;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTIdentifier ) {
-			name = (ASTIdentifier)n;
-			pos = n.getPos();
-		}
-        else if( n instanceof ConstIntExpr ) {
-			val = (ConstIntExpr)n;
-		}
-        else if( n instanceof ConstStringExpr ) {
-			text = (ConstStringExpr)n;
-		}
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");
-		}
-    }
-
 }

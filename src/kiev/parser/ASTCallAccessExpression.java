@@ -43,18 +43,6 @@ public class ASTCallAccessExpression extends Expr {
 	@att public ASTIdentifier			func;
     @att public final NArr<Expr>		args;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-        	obj = (Expr)n;
-		} else {
-        	func = ((ASTCallExpression)n).func;
-			foreach (Expr e; ((ASTCallExpression)n).args) {
-				this.args.append(e);
-			}
-            pos = n.getPos();
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		for(int i=0; i < args.length; i++) {
 			args[i] = (Expr)args[i].resolveExpr(null);

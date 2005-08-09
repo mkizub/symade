@@ -39,14 +39,6 @@ public class ASTCastExpression extends Expr {
 	@att public ASTType	type;
     @att public Expr	expr;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: type=(ASTType)n; break;
-        case 1: expr=(Expr)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		Type tp = type.getType();
 		return new CastExpr(pos,tp,expr,true).resolve(reqType);

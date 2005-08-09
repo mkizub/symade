@@ -37,13 +37,11 @@ import kiev.vlang.*;
 public class ASTRuleAndExpression extends ASTRuleNode {
 	@att public final NArr<ASTRuleNode>	exprs;
 
-	public void jjtAddChild(ASTNode n, int i)
-	{
-    	if( i==0 ) pos = n.getPos();
-    	if( n instanceof ASTRuleNode )
-			exprs.append((ASTRuleNode)n);
-		else
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+	public ASTRuleAndExpression() {}
+	
+	public ASTRuleAndExpression(ASTRuleNode n) {
+		pos = n.pos;
+		exprs += n;
 	}
 
     public ASTNode resolve(Type reqType) {

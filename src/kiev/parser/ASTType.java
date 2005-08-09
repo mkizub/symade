@@ -45,10 +45,6 @@ public class ASTType extends TypeRef {
 		super(pos, type);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-    
     public void addOperation(Token t) {
 		throw new CompilerException(t.getPos(),"Bad operator: "+t);
     }

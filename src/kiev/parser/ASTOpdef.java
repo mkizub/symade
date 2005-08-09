@@ -45,50 +45,41 @@ public class Opdef extends ASTNode implements TopLevelDecl {
 	
 	@ref public transient Operator		resolved;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		switch(i) {
-		case 2:
-			if( n instanceof ConstExpr ) {
-				Object val = ((ConstExpr)n).getConstValue();
-				if( val == null || !( val instanceof Number) )
-					throw new CompilerException(n.getPos(),"Priority must be of int type, but found "+n);
-				prior = ((Number)val).intValue();
-				if( prior < 0 || prior > 255 )
-					throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
-				pos = n.getPos();
-				return;
-			}
-			break;
-		case 1:
-			opmode = -1;
-			if( n instanceof ASTIdentifier ) {
-				KString optype = ((ASTIdentifier)n).name;
-				for(int i=0; i < Operator.orderAndArityNames.length; i++) {
-					if( Operator.orderAndArityNames[i].equals(optype) ) {
-						opmode = i;
-						break;
-					}
-				}
-				if( opmode < 0 )
-					throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
-				return;
-			}
-			break;
-		case 0:
-			this.pos = n.pos;
-			if( n instanceof ASTOperator ) {
-				image = ((ASTOperator)n).image;
-				return;
-			}
-			else if( n instanceof ASTIdentifier ) {
-				image = ((ASTIdentifier)n).name;
-				return;
-			}
-			break;
+	public void setImage(ASTNode n) {
+		this.pos = n.pos;
+		if( n instanceof ASTOperator ) {
+			image = ((ASTOperator)n).image;
+			return;
 		}
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
+		else if( n instanceof ASTIdentifier ) {
+			image = ((ASTIdentifier)n).name;
+			return;
+		}
+		throw new CompilerException(n.pos,"Bad operator definition");
 	}
-
+	
+	public void setMode(ASTIdentifier n) {
+		opmode = -1;
+		KString optype = ((ASTIdentifier)n).name;
+		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
+			if( Operator.orderAndArityNames[i].equals(optype) ) {
+				opmode = i;
+				break;
+			}
+		}
+		if( opmode < 0 )
+			throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+		return;
+	}
+	
+	public void setPriority(ConstIntExpr n) {
+		prior = n.value;
+		if( prior < 0 || prior > 255 )
+			throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
+		pos = n.getPos();
+		return;
+	}
+	
 	public String toString() {
 		return image.toString();
 	}

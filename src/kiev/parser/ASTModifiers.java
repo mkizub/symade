@@ -17,15 +17,6 @@ public class ASTModifiers extends ASTNode {
 	@att public Access 						acc;
 	@att public final NArr<Meta>			annotations;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		if (n instanceof ASTModifier) {
-			modifier.append((ASTModifier)n);
-		}
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");
-		}
-	}
-	
 	public int getFlags() {
 		int flags = 0;
 		foreach (ASTModifier m; modifier)

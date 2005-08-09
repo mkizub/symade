@@ -34,15 +34,22 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTThrows extends SimpleNode {
+public class ASTThrows extends ASTNode {
+	
+	@att public final NArr<ASTIdentifier>	names;
 
 	public Type[] pass3() {
-		Type[] thrs = new Type[children.length];
+		Type[] thrs = new Type[names.length];
 		for(int i=0; i < thrs.length; i++) {
 			try {
-				thrs[i] = ((ASTNonArrayType)children[i]).getType();
+				ASTNode n = names[i].resolve(null);
+				if !(n instanceof Struct)
+					throw new CompilerException(names[i].pos, "Class name expected");
+				Struct s = (Struct)n;
+				s.checkResolved();
+				thrs[i] = s.type;
 			} catch(Exception e ) {
-				Kiev.reportError(children[i].getPos(),e);
+				Kiev.reportError(names[i].getPos(),e);
 				thrs[i] = Type.tpRuntimeException;
 			}
 		}

@@ -26,9 +26,7 @@ import kiev.vlang.*;
 import kiev.parser.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/Kiev.java,v 1.5.2.1.2.2 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1.2.2 $
  *
  */
 
@@ -263,7 +261,7 @@ public final class Kiev {
     }
 
 	// Global flags and objects
-	public static String version = "Kiev compiler (v 0.20), (C) Forestro, 1997-2003, http://forestro.com";
+	public static String version = "Kiev compiler (v 0.40), (C) Forestro, 1997-2005, http://forestro.com";
 	//public static int revision = 000;
 
 	public static boolean debug				= false;
@@ -397,7 +395,7 @@ public final class Kiev {
 	}
 
 	// Scanning & parsing
-	public static kiev020				k;
+	public static kiev040				k;
 	public static FileUnit				curFileUnit;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
@@ -451,7 +449,7 @@ public final class Kiev {
 		} finally {
 			file_reader.close();
 		}
-		kiev020.interface_only = false;
+		kiev040.interface_only = false;
 		try {
 			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
 			Kiev.k.ReInit(bis);
@@ -490,7 +488,6 @@ public final class Kiev {
 				}
 			}
 		} finally {
-			Kiev.k.reset();
 			f.bodies = PrescannedBody.emptyArray;
 		}
 	}

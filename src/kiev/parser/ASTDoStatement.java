@@ -40,14 +40,6 @@ public class ASTDoStatement extends Statement {
 	@att public Expr		cond;
     @att public Statement	body;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: body=(Statement)n; break;
-        case 1: cond=(Expr)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		if (not) {
 			ASTOperator op = new ASTOperator();

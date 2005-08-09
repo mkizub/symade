@@ -37,10 +37,6 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTEmptyStatement extends Statement {
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-
 	public ASTNode resolve(Type reqType) {
     	return new EmptyStat(pos,parent).resolve(reqType);
 	}

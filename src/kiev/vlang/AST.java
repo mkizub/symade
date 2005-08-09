@@ -194,14 +194,8 @@ public abstract class ASTNode implements Constants {
 		return addr;
 	}
 
-	public final void jjtSetParent(ASTNode n) {}
-	public ASTNode jjtGetParent() { return parent; }
 	public void setParent(ASTNode n) { parent = n; }
 	public ASTNode getParent() { return parent; }
-	public void jjtAddChild(ASTNode n, int i) {
-		Kiev.reportError(pos,"jjtAddChild not implemented for this class: "+getClass());
-	}
-	public void addChild(ASTNode n, int i) { jjtAddChild(n,i); }
 
     public final int getPos() { return pos; }
     public final int getPosLine() { return pos >>> 11; }
@@ -822,10 +816,6 @@ public abstract class Expr extends CFNode {
 
 	public Expr(int pos, ASTNode parent) { super(pos,parent); }
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public /*abstract*/ Type[] getAccessTypes() {
 		return new Type[]{getType()};
 	}
@@ -984,10 +974,6 @@ public abstract class Statement extends CFNode {
 	public Statement() {}
 
 	public Statement(int pos, ASTNode parent) { super(pos, parent); }
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
 
 	public void		generate(Type reqType) {
 		Dumper dmp = new Dumper();

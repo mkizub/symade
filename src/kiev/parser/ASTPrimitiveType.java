@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTPrimitiveType extends ASTType implements kiev020Constants {
+public class ASTPrimitiveType extends ASTType implements kiev040Constants {
 
 	public void set(Token t) {
     	pos = t.getPos();

@@ -760,10 +760,6 @@ public class Type extends ASTNode implements AccessFlags {
 		return str.toString();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public boolean equals(Object to) {
 		if(to != null && to instanceof Type ) return equals((Type)to);
 		return false;

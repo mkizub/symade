@@ -295,7 +295,7 @@ public class BlockStat extends Statement implements Scope {
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-						KString vname = vdecl.name;
+						KString vname = vdecl.name.name;
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						DeclStat vstat;
@@ -415,11 +415,6 @@ public class Initializer extends BlockStat implements SetBody, PreScanneable {
 		super(pos, null);
 		setFlags(flags);
 	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		pos = n.getPos();
-		addStatement((Statement)n);
-    }
 
 	public ASTNode resolve(Type reqType) {
 		super.resolve(reqType);

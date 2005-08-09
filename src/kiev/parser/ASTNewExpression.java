@@ -49,12 +49,6 @@ public class ASTNewExpression extends Expr {
     @att
 	public final Struct				clazz;
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof Expr ) {
-			args.append((Expr)n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = type.getType();

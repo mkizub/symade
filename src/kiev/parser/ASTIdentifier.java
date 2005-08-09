@@ -44,6 +44,10 @@ public class ASTIdentifier extends Expr {
 	public ASTIdentifier() {
 	}
 
+	public ASTIdentifier(KString name) {
+		this.name = name;
+	}
+
 	public ASTIdentifier(int pos, KString name) {
 		super(0);
 		this.pos = pos;
@@ -57,10 +61,6 @@ public class ASTIdentifier extends Expr {
 			this.name = KString.from(t.image);
         pos = t.getPos();
 	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
 
 	public ASTNode resolve(Type reqType) {
 		if( name == Constants.nameFILE )
@@ -186,6 +186,10 @@ public class ASTIdentifier extends Expr {
 
 	public int		getPriority() { return 256; }
 
+	public KString toKString() {
+		return name;
+	}
+    
 	public String toString() {
 		return name.toString();
 	}

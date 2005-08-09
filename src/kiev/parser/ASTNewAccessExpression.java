@@ -40,18 +40,6 @@ public class ASTNewAccessExpression extends Expr {
 	@att public ASTType				type;
 	@att public final NArr<Expr>	args;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-			obj=(Expr)n;
-		} else {
-			ASTNewExpression ne = (ASTNewExpression)n;
-			type = ne.type;
-			foreach (Expr e; ne.args)
-				args.add(e);
-            pos = n.getPos();
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {

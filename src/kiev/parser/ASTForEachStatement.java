@@ -41,21 +41,6 @@ public class ASTForEachStatement extends Statement {
 	@att public Expr				cond;
 	@att public Statement			body;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTFormalParameter ) {
-			var=(ASTFormalParameter)n;
-		}
-		else if( n instanceof Expr ) {
-			if( container == null ) container = (Expr)n;
-			else cond = (Expr)n;
-		}
-		else if( n instanceof Statement ) {
-			body=(Statement)n;
-		}
-		else
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-
 	public ASTNode resolve(Type reqType) {
 		Var v = null;
 		if( var != null )

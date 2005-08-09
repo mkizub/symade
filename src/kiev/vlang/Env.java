@@ -22,7 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.kiev020;
+import kiev.parser.kiev040;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.transf.*;
@@ -66,7 +66,6 @@ public class ProjectFile extends ASTNode {
 		throw new CompilerException(getPos(),"ProjectFile node cannot be copied");
 	};
 
-	public void jjtAddChild(ASTNode n, int i) {}
     public Dumper toJava(Dumper dmp) { return dmp; }
 
 }
@@ -538,8 +537,8 @@ public class Env extends Struct {
 				System.runFinalization();
 				fin = new FileInputStream(file);
 			}
-			kiev020 k = Kiev.k;
-			kiev020.interface_only = true;
+			kiev040 k = Kiev.k;
+			kiev040.interface_only = true;
 			k.ReInit(fin);
 			FileUnit fu = k.FileUnit(Kiev.curFile.toString());
 			try {
@@ -577,7 +576,7 @@ public class Env extends Struct {
 		} catch ( ParseError e ) {
 			System.out.println("Error while scanning input file:"+filename+":"+e);
 		} finally {
-			kiev020.interface_only = Kiev.interface_only;
+			kiev040.interface_only = Kiev.interface_only;
 			Kiev.curFile = cur_file;
 		}
 		Struct cl = (Struct)classHash.get(name.name);

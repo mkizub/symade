@@ -34,17 +34,9 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTCatchInfo extends SimpleNode {
+public class ASTCatchInfo extends ASTNode {
 	@att public ASTFormalParameter	par;
     @att public Statement			body;
-
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: par=(ASTFormalParameter)n; break;
-        case 1: body=(Statement)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
 
 	public ASTNode resolve(Type reqType) {
 		CatchInfo ci = new CatchInfo(pos,parent,par.pass3(),body);

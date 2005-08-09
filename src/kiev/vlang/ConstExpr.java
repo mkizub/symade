@@ -328,7 +328,7 @@ public abstract class ConstExpr extends Expr {
 		try
 		{
 			switch(t.kind) {
-			case kiev020Constants.INTEGER_LITERAL:
+			case kiev040Constants.INTEGER_LITERAL:
 			{
 				String image;
 				int radix;
@@ -339,7 +339,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstIntExpr((int)i);
 				break;
 			}
-			case kiev020Constants.LONG_INTEGER_LITERAL:
+			case kiev040Constants.LONG_INTEGER_LITERAL:
 			{
 				String image;
 				int radix;
@@ -350,7 +350,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstLongExpr(l);
 				break;
 			}
-			case kiev020Constants.FLOATING_POINT_LITERAL:
+			case kiev040Constants.FLOATING_POINT_LITERAL:
 			{
 				String image;
 				if( t.image.endsWith("f") || t.image.endsWith("F") ) image = t.image.substring(0,t.image.length()-1);
@@ -359,7 +359,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstFloatExpr(f);
 				break;
 			}
-			case kiev020Constants.DOUBLE_POINT_LITERAL:
+			case kiev040Constants.DOUBLE_POINT_LITERAL:
 			{
 				String image;
 				if( t.image.endsWith("d") || t.image.endsWith("D") ) image = t.image.substring(0,t.image.length()-1);
@@ -368,7 +368,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstDoubleExpr(d);
 				break;
 			}
-			case kiev020Constants.CHARACTER_LITERAL:
+			case kiev040Constants.CHARACTER_LITERAL:
 			{
 				char c;
 				if( t.image.length() == 3 )
@@ -378,16 +378,16 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstCharExpr(c);
 				break;
 			}
-			case kiev020Constants.STRING_LITERAL:
+			case kiev040Constants.STRING_LITERAL:
 				ce = new ConstStringExpr(source2ascii(t.image.substring(1,t.image.length()-1)));
 				break;
-			case kiev020Constants.TRUE:
+			case kiev040Constants.TRUE:
 				ce = new ConstBoolExpr(true);
 				break;
-			case kiev020Constants.FALSE:
+			case kiev040Constants.FALSE:
 				ce = new ConstBoolExpr(false);
 				break;
-			case kiev020Constants.NULL:
+			case kiev040Constants.NULL:
 				ce = new ConstNullExpr();
 				break;
 			}

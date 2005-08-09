@@ -43,13 +43,6 @@ public class ASTFieldDecl extends ASTNode {
 	public int							dim;
     public boolean						of_wrapper;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if (init == null)
-			init=(Expr)n;
-		else
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return null;
 	}

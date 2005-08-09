@@ -34,48 +34,17 @@ import kiev.stdlib.*;
  */
 
 @node
-public class ASTQName extends SimpleNode {
+public class ASTQName extends ASTIdentifier {
 
-	private KString text;
-	
 	public ASTQName() {}
 	
 	public ASTQName(KString text) {
-		this.text = text;
+		super(text);
 	}
 	
 	public ASTQName(ASTIdentifier id) {
-        jjtAddChild(id,0);
+		super(id.name);
 	}
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		if( i==0 ) pos = n.getPos();
-        super.jjtAddChild(n,i);
-    }
-
-	public KString toKString() {
-		if (text != null)
-			return text;
-		if( children==null || children.length==0 )
-			return text = KString.Empty;
-		int len = 0;
-		for(int i=0; i < children.length; i++)
-			len += ((ASTIdentifier)children[i]).name.len;
-		KStringBuffer ksb = new KStringBuffer(len+children.length-1);
-		for(int i=0; i < children.length; i++) {
-			ksb.append_fast(((ASTIdentifier)children[i]).name);
-			if( i < children.length-1 )
-				ksb.append_fast((byte)'.');
-		}
-		text = ksb.toKString();
-		return text;
-	}
-    
-	public String toString() {
-		return " "+toKString()+" ";
-	}
-    
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(toKString()).space();
-	}
 }
+

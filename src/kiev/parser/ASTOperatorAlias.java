@@ -49,6 +49,41 @@ public class ASTOperatorAlias extends ASTAlias {
 	public KString				image;
 	public int					xfix;
 
+	public void setImage(ASTNode n) {
+		this.pos = n.pos;
+		if( n instanceof ASTOperator ) {
+			image = ((ASTOperator)n).image;
+			return;
+		}
+		else if( n instanceof ASTIdentifier ) {
+			image = ((ASTIdentifier)n).name;
+			return;
+		}
+		throw new CompilerException(n.pos,"Bad operator definition");
+	}
+	
+	public void setMode(ASTIdentifier n) {
+		opmode = -1;
+		KString optype = ((ASTIdentifier)n).name;
+		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
+			if( Operator.orderAndArityNames[i].equals(optype) ) {
+				opmode = i;
+				break;
+			}
+		}
+		if( opmode < 0 )
+			throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+		return;
+	}
+	
+	public void setPriority(ConstIntExpr n) {
+		prior = n.value;
+		if( prior < 0 || prior > 255 )
+			throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
+		pos = n.getPos();
+		return;
+	}
+/*	
 	public void jjtAddChild(ASTNode n, int i) {
 		if (xfix != XFIX_UNKNOWN) i = 2;
 		switch(i) {
@@ -92,7 +127,7 @@ public class ASTOperatorAlias extends ASTAlias {
 		}
 		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
     }
-
+*/
   	public void set(Token t) {
   		if (t.image.equals("prefix"))		xfix = XFIX_PREFIX;
   		else if (t.image.equals("suffix"))	xfix = XFIX_POSTFIX;

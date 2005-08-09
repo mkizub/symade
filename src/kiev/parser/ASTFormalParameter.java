@@ -44,25 +44,6 @@ public class ASTFormalParameter extends ASTNode {
 		this.ident = new ASTIdentifier(t.getPos(), KString.from(t.image));
 	}
 	
-	public void jjtAddChild(ASTNode n, int i) {
-		if( n instanceof ASTModifiers) {
-			modifiers = (ASTModifiers)n;
-		}
-        else if( n instanceof ASTType ) {
-        	if (type == null)
-				type = (ASTType)n;
-			else
-				mm_type = (ASTType)n;
-		}
-        else if( n instanceof ASTIdentifier ) {
-			ident = (ASTIdentifier)n;
-            pos = n.getPos();
-		}
-        else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public Var pass3() {
 		if( !Kiev.javaMode && ident.name.len == 1 && ident.name.charAt(0)=='_' ) return null;
 		// TODO: check flags for fields

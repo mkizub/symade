@@ -45,14 +45,6 @@ public class ASTIdentifierAlias extends ASTAlias {
 
 	@att ASTIdentifier	name;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if( i==0 && n instanceof ASTIdentifier ) {
-			name = (ASTIdentifier)n;
-		}
-		else
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-
 	public void attach(ASTNode n) {
 		switch(n) {
 		case Method:

@@ -57,27 +57,6 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		modifiers = new ASTModifiers();
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-        if( n instanceof ASTType ) {
-        	rettype = (ASTType)n;
-        }
-    	else if( n instanceof ASTFormalParameter ) {
-        	params.append((ASTFormalParameter)n);
-        }
-    	else if( n instanceof ASTAlias ) {
-        	aliases.append((ASTAlias)n);
-        }
-        else if( n instanceof ASTThrows ) {
-        	throwns = n;
-        }
-        else if( n instanceof Statement ) {
-			body = (Statement)n;
-        }
-        else {
-        	throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
 	{
 		node @= ftypes,

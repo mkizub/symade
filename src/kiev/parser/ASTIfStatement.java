@@ -41,15 +41,6 @@ public class ASTIfStatement extends Statement {
     @att public Statement	thenSt;
     @att public Statement	elseSt;
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: cond=(Expr)n; break;
-        case 1: thenSt=(Statement)n; break;
-        case 2: elseSt=(Statement)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		if (not) {
 			ASTOperator op = new ASTOperator();

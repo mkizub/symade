@@ -1252,7 +1252,7 @@ public class BlockExpr extends Expr implements Scope {
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-						KString vname = vdecl.name;
+						KString vname = vdecl.name.name;
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						DeclStat vstat;

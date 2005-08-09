@@ -51,25 +51,18 @@ public class ASTNonArrayType extends ASTType {
 	}
 
 	public ASTNonArrayType(KString nm) {
-		jjtAddChild(new ASTQName(nm), 0);
+		children.append(new ASTIdentifier(nm));
 	}
 
-	public ASTNonArrayType(ASTIdentifier id) {
-		jjtAddChild(new ASTQName(id), 0);
-	}
-
-	public ASTNonArrayType(ASTQName qn) {
-		jjtAddChild(qn, 0);
+	public ASTNonArrayType(ASTIdentifier nm) {
+		pos = nm.getPos();
+		children.append(nm);
 	}
 
 	public ASTNonArrayType(ASTPrimitiveType tp) {
-		jjtAddChild(tp, 0);
+		pos = tp.getPos();
+		children.append(tp);
 	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-    	if( i==0 ) pos = n.getPos();
-        children.append(n);
-    }
 
     public void addOperation(Token t) {
     	ops = (KString[])Arrays.append(ops,KString.from(t.image));
@@ -87,10 +80,7 @@ public class ASTNonArrayType extends ASTType {
 			tp = (Type)(ASTPrimitiveType)children[0];
 		} else {
     		KString nm;
-			if (children[0] instanceof ASTQName)
-				nm = ((ASTQName)children[0]).toKString();
-			else
-				nm = ((ASTIdentifier)children[0]).name;
+			nm = ((ASTIdentifier)children[0]).name;
 	    	ASTNode@ v;
 		    if( !PassInfo.resolveNameR(v,new ResInfo(),nm,null,0) )
 			    throw new CompilerException(pos,"Unresolved identifier "+nm);

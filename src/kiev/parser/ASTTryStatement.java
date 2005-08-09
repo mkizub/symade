@@ -40,17 +40,6 @@ public class ASTTryStatement extends Statement {
     @att public final NArr<ASTNode>	catchers;
     @att public ASTNode					finally_catcher;
     
-	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-			body=(Statement)n;
-		} else {
-        	if( n instanceof ASTCatchInfo )
-	        	catchers.append(n);
-            else if( n instanceof ASTFinallyInfo )
-            	finally_catcher = n;
-        }
-    }
-
 	public ASTNode resolve(Type reqType) {
 		return new TryStat(pos,parent,body,catchers.toArray(),finally_catcher).resolve(reqType);
 	}

@@ -36,19 +36,11 @@ import kiev.vlang.*;
 @node
 @cfnode
 public class ASTLabeledStatement extends Statement {
-	public KString			name;
-    @att public Statement	stat;
-
-	public void jjtAddChild(ASTNode n, int i) {
-    	switch(i) {
-        case 0: name=((ASTIdentifier)n).name; pos = n.getPos(); break;
-        case 1: stat=(Statement)n; break;
-        default: throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-        }
-    }
+	@att public ASTIdentifier		name;
+    @att public Statement			stat;
 
 	public ASTNode resolve(Type reqType) {
-		return new LabeledStat(pos,parent,name,stat).resolve(Type.tpVoid);
+		return new LabeledStat(pos,parent,name.name,stat).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

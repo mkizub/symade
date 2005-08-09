@@ -45,11 +45,6 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 public class ASTExpression extends Expr {
 	@att public final NArr<ASTNode>		nodes;
 
-	public void jjtAddChild(ASTNode n, int i) {
-		nodes.add(n);
-		if( i == 0 || pos == 0 ) setPos(n.getPos());
-    }
-
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {

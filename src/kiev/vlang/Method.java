@@ -134,10 +134,6 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		acc.verifyAccessDecl(this);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
 			f.invs = (Method[])Arrays.appendUniq(f.invs,this);

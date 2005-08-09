@@ -60,19 +60,6 @@ public class ASTCallExpression extends Expr {
 		foreach (Expr e; args) this.args.append(e);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-    	if(i==0) {
-			func=(ASTIdentifier)n;
-            pos = n.getPos();
-		}
-		else if (n instanceof Expr) {
-			args.append((Expr)n);
-        }
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-		}
-    }
-
 	public ASTNode resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
 //			try {
