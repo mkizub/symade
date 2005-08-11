@@ -596,6 +596,12 @@ public final class RuleAndExpr extends ASTRuleNode {
 			if( i < rules.length-1 ) {
 				j = new JumpNodes(true, rules[i+1], more_back, next_back, jump_to_back);
 				if (rules[i] instanceof RuleExpr) {
+					RuleExpr re = (RuleExpr)rules[i];
+					if (re.bt_expr != null) {
+						more_back = true;
+						next_back = rules[i];
+						jump_to_back = false;
+					}
 				}
 				else if (rules[i] instanceof RuleCutExpr) {
 					more_back = false;
