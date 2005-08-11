@@ -797,9 +797,31 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 		}
 
+		KString ts = KString.from(makeTypeInfoString(t));
+
+		// Special case for interfaces, that cannot have private fields,
+		// but need typeinfo in <clinit>
+		if (PassInfo.method != null &&
+			PassInfo.method.name.name == nameClassInit &&
+			PassInfo.clazz.isInterface()
+		) {
+			Type ftype = Type.tpTypeInfo;
+			if (t.args.length > 0) {
+				if (t.clazz.typeinfo_clazz == null)
+					t.clazz.autoGenerateTypeinfoClazz();
+				ftype = t.clazz.typeinfo_clazz.type;
+			}
+			Expr[] ti_args = new Expr[]{new ConstExpr(pos,ts)};
+			Expr e = new CastExpr(pos,ftype,new CallExpr(pos,
+					Type.tpTypeInfo.clazz.resolveMethod(
+						KString.from("newTypeInfo"),
+						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
+					), ti_args));
+			return e;
+		}
+		
 		// Lookup and create if need as $typeinfo$N
 		int i = 0;
-		KString ts = KString.from(makeTypeInfoString(t));
 	next_field:
 		foreach(Field f; fields;
 						f.isStatic() &&
