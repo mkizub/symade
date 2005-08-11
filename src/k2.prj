@@ -115,14 +115,12 @@ kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parse
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
 kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java
-kiev.parser.ASTNonArrayType kiev/parser/ASTNonArrayType kiev\parser\ASTNonArrayType.java
 kiev.parser.ASTNormalCase kiev/parser/ASTNormalCase kiev\parser\ASTNormalCase.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 kiev.parser.ASTPackage kiev/parser/ASTPackage kiev\parser\ASTPackage.java
 kiev.parser.ASTPizzaCase kiev/parser/ASTPizzaCase kiev\parser\ASTPizzaCase.java
 kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
-kiev.parser.ASTPrimitiveType kiev/parser/ASTPrimitiveType kiev\parser\ASTPrimitiveType.java
 kiev.parser.ASTReparseExpression kiev/parser/ASTReparseExpression kiev\parser\ASTReparseExpression.java
 kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTReparseStatement.java
 kiev.parser.ASTReturnStatement kiev/parser/ASTReturnStatement kiev\parser\ASTReturnStatement.java
@@ -140,7 +138,6 @@ kiev.parser.ASTSynchronizedStatement kiev/parser/ASTSynchronizedStatement kiev\p
 kiev.parser.ASTThrowStatement kiev/parser/ASTThrowStatement kiev\parser\ASTThrowStatement.java
 kiev.parser.ASTThrows kiev/parser/ASTThrows kiev\parser\ASTThrows.java
 kiev.parser.ASTTryStatement kiev/parser/ASTTryStatement kiev\parser\ASTTryStatement.java
-kiev.parser.ASTType kiev/parser/ASTType kiev\parser\ASTType.java
 kiev.parser.ASTTypeClassExpression kiev/parser/ASTTypeClassExpression kiev\parser\ASTTypeClassExpression.java
 kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
 kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
@@ -156,6 +153,9 @@ kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
 kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
+kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
+kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java
+kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java
 kiev.parser.kiev040 kiev/parser/kiev040 kiev\parser\kiev040.java
 kiev.parser.kiev040$LookaheadSuccess kiev/parser/kiev040$LookaheadSuccess kiev\parser\kiev040.java
 kiev.parser.kiev040Constants kiev/parser/kiev040Constants kiev\parser\kiev040Constants.java

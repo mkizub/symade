@@ -37,7 +37,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTNewArrayExpression extends Expr {
 	@att
-	public ASTType					type;
+	public TypeRef					type;
 	
 	@att
 	public final NArr<Expr>			args;

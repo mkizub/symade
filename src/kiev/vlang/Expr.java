@@ -1248,7 +1248,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
 					// TODO: check flags for vars
 					int flags = vdecls.modifiers.getFlags();
-					Type type = ((ASTType)vdecls.type).getType();
+					Type type = ((TypeRef)vdecls.type).getType();
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];

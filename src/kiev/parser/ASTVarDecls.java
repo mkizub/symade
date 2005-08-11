@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTVarDecls extends ASTNode {
 	@att public ASTModifiers			modifiers;
-	@att public ASTType					type;
+	@att public TypeRef					type;
 	@att public final NArr<ASTVarDecl>	vars;
 
     public boolean hasFinal() {

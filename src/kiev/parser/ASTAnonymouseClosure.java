@@ -38,7 +38,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTAnonymouseClosure extends Expr {
     @att public final NArr<ASTNode>		params;
-    @att public ASTType						rettype;
+    @att public TypeRef						rettype;
     @att public Statement					body;
 	@att public Expr						new_closure;
 
@@ -87,9 +87,9 @@ public class ASTAnonymouseClosure extends Expr {
 			else md.ident = new ASTIdentifier(pos, KString.from("call_"+ret));
 			md.modifiers.modifier.add(ASTModifier.modPUBLIC);
 			if( ret.isReference() )
-				md.rettype = new ASTType(pos, Type.tpObject);
+				md.rettype = new TypeRef(pos, Type.tpObject);
 			else
-				md.rettype = new ASTType(pos, ret);
+				md.rettype = new TypeRef(pos, ret);
 			md.body = body;
 			me.members.add(md);
 		} else {

@@ -22,7 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.ASTNonArrayType;
+import kiev.parser.TypeNameRef;
 
 import static kiev.stdlib.Debug.*;
 
@@ -162,12 +162,12 @@ public class Meta extends ASTNode {
 		alias operator(210,lfy,new)
 	{
 		if (name == MetaVirtual.NAME)
-			return new MetaVirtual(new ASTNonArrayType(name));
+			return new MetaVirtual(new TypeNameRef(name));
 		if (name == MetaPacked.NAME)
-			return new MetaPacked(new ASTNonArrayType(name));
+			return new MetaPacked(new TypeNameRef(name));
 		if (name == MetaPacker.NAME)
-			return new MetaPacker(new ASTNonArrayType(name));
-		return new Meta(new ASTNonArrayType(name));
+			return new MetaPacker(new TypeNameRef(name));
+		return new Meta(new TypeNameRef(name));
 	}
 
 	public int size() alias length {

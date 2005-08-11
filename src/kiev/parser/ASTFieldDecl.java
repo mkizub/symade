@@ -37,10 +37,9 @@ import kiev.vlang.*;
 public class ASTFieldDecl extends ASTNode {
 
 	@att public ASTModifiers			modifiers;
-	@att public ASTType					type;
+	@att public TypeRef					type;
     @att public ASTIdentifier			name;
     @att public Expr					init;
-	public int							dim;
     public boolean						of_wrapper;
 
 	public ASTNode resolve(Type reqType) {
@@ -51,7 +50,6 @@ public class ASTFieldDecl extends ASTNode {
 		modifiers.toJava(dmp);
 		type.toJava(dmp).space();
     	dmp.append(name);
-        for(int i=0; i < dim; i++) dmp.append("[]");
         if( init != null ) {
         	dmp.space().append('=').space().append(init);
         }

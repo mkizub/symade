@@ -491,34 +491,24 @@ public final class ExportJavaTop implements Constants {
 				}
 			}
 			// Process ASTGenerete
-			if( astn.gens.length > 0 ) {
-				Type[][] gtypes = new Type[astn.gens.length][me.type.args.length];
-				for(int l=0; l < gtypes.length; l++) {
-					if !(me.gens[l] instanceof ASTNonArrayType) {
-						for(int m=0; m < me.type.args.length; m++) {
-							gtypes[l][m] = me.gens[l].getType().args[m];
-						}
-					} else {
-						ASTNonArrayType ag = (ASTNonArrayType)me.gens[l];
-						for(int m=0; m < me.type.args.length; m++) {
-							if( ag.children[m+1] instanceof ASTPrimitiveType) {
-								if( astn.args[m].super_type != Type.tpObject ) {
-									Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
-								}
-								gtypes[l][m] = ag.children[m+1].getType();
-							} else { // ASTIdentifier
-								KString a = ((ASTIdentifier)ag.children[m+1]).name;
-								Type ad = me.type.args[m]; 
-								if( a != ad.clazz.name.short_name ) {
-									Kiev.reportError(pos,"Generation argument "+astn.name+" do not match argument "+ad);
-								}
-								gtypes[l][m] = me.type.args[m];
-							}
+			if( me.gens.length > 0 ) {
+				for(int l=0; l < me.gens.length; l++) {
+					TypeWithArgsRef ag = me.gens[l];
+					for(int m=0; m < me.type.args.length; m++) {
+						if (ag.args[m].lnk != null && !ag.args[m].isReference()) {
+							if( me.args[m].super_type != Type.tpObject )
+								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
+						} else { // ASTIdentifier
+							KString a = ((TypeNameRef)ag.args[m]).name.name;
+							Type ad = me.type.args[m]; 
+							if( a != ad.clazz.name.short_name )
+								Kiev.reportError(pos,"Generation argument ["+l+":"+m+"] of "+me.name+" do not match argument "+ad+", must be "+a);
+							ag.args[m].lnk = ad.clazz.type;
 						}
 					}
 				}
 				// Clone 'me' for generated types
-				for(int k=0; k < gtypes.length; k++) {
+				for(int k=0; k < me.gens.length; k++) {
 					KStringBuffer ksb;
 					ksb = new KStringBuffer(
 						me.name.bytecode_name.length()
@@ -526,52 +516,45 @@ public final class ExportJavaTop implements Constants {
 					ksb.append_fast(me.name.bytecode_name)
 						.append_fast((byte)'_').append_fast((byte)'_');
 					for(int l=0; l < me.type.args.length; l++) {
-						if( gtypes[k][l].isReference() )
+						if( me.gens[k].args[l].isReference() )
 							ksb.append_fast((byte)'A');
 						else
-							ksb.append_fast(gtypes[k][l].signature.byteAt(0));
+							ksb.append_fast(me.gens[k].args[l].signature.byteAt(0));
 					}
 					ksb.append_fast((byte)'_');
 					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
 					Struct s = Env.newStruct(cn,true);
 					s.flags = me.flags;
 					s.acc = me.acc;
-					Type gtype = Type.newRefType(me,gtypes[k]);
+					Type[] tarr = new Type[me.type.args.length];
+					for (int l=0; l < tarr.length; l++)
+						tarr[l] = me.gens[k].args[l].lnk;
+					Type gtype = Type.newRefType(me,tarr);
 					gtype.java_signature = cn.signature();
 					gtype.clazz = s;
-					me.gens[k] = new TypeRef(gtype);
+					me.gens[k].lnk = gtype;
 					s.type = gtype;
 					s.generated_from = me;
 					s.super_type = Type.getRealType(s.type,me.super_type);
 					// Add generation for inner parametriezed classes
 					for(int l=0; l < me.sub_clazz.length; l++) {
 						Struct sc = me.sub_clazz[l];
+						if (sc.isStatic()) continue;
 						if( sc.type.args.length == 0 ) continue;
-						ksb = new KStringBuffer(
-							s.name.bytecode_name.length()
-							+sc.name.short_name.length()
-							+4+sc.type.args.length);
-						ksb.append_fast(s.name.bytecode_name)
-							.append_fast((byte)'$')
-							.append_fast(sc.name.short_name)
-							.append_fast((byte)'_').append_fast((byte)'_');
+						TypeNameRef tn = new TypeNameRef(sc.name.name);
+						tn.lnk = sc.type;
+						TypeWithArgsRef ta = new TypeWithArgsRef(tn);
 						for(int m=0; m < sc.type.args.length; m++) {
-							if( Type.getRealType(gtype,sc.type.args[m]).isReference() )
-								ksb.append_fast((byte)'A');
-							else
-								ksb.append_fast(Type.getRealType(gtype,sc.type.args[m]).signature.byteAt(0));
+							Type a = Type.getRealType(gtype,sc.type.args[m]);
+							if( a.isReference() ) {
+								TypeNameRef tm = new TypeNameRef(((TypeNameRef)me.gens[k].args[m]).name.name);
+								tm.lnk = me.gens[k].args[m].lnk;
+								ta.args.append(tm);
+							} else {
+								ta.args.append(new TypeRef(a));
+							}
 						}
-						ksb.append_fast((byte)'_');
-						cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
-						Struct scg = Env.newStruct(cn,true);
-						scg.flags = sc.flags;
-						Type scgt = Type.getRealType(gtype,sc.type);
-						scgt.java_signature = cn.signature();
-						scgt.clazz = scg;
-						sc.gens.append(new TypeRef(scgt));
-						scg.type = scgt;
-						scg.generated_from = sc;
-						scg.super_type = Type.getRealType(scg.type,sc.super_type);
+						sc.gens.append(ta);
 					}
 				}
 			}
@@ -845,7 +828,6 @@ public final class ExportJavaTop implements Constants {
 					}
 					Type ftype = fdecl.type.getType();
 					KString fname = fdecl.name.name;
-					for(int k=0; k < fdecl.dim; k++) ftype = Type.newArrayType(ftype);
 					Field f = new Field(me,fname,ftype,flags);
 					f.setPos(fdecl.pos);
 					// Attach meta-data to the new structure
@@ -899,7 +881,7 @@ public final class ExportJavaTop implements Constants {
 						f.setPublic(true);
 					}
 					fdecl.replaceWith(f);
-					if (fdecl.init == null && fdecl.dim==0) {
+					if (fdecl.init == null && !ftype.isArray()) {
 						if(ftype.isWrapper()) {
 							f.init = new NewExpr(fdecl.pos,ftype,Expr.emptyArray);
 							f.setInitWrapper(true);

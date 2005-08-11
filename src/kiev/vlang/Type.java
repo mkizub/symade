@@ -24,11 +24,10 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Type.java,v 1.5.2.1.2.1 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1.2.1 $
  *
  */
 
@@ -75,9 +74,9 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		next_gen:
 				for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 					for(j=0; j < args.length; j++) {
-						if( !(clz.gens[i].args[j].isReference() && args[j].isReference()
-							|| clz.gens[i].args[j] == args[j]
-						))
+						if (clz.gens[i].args[j].isReference() && args[j].isReference())
+							;
+						else if (clz.gens[i].args[j] != args[j])
 							continue next_gen;
 					}
 					this.clazz = clz = (Struct)clz.gens[i].clazz;
@@ -88,7 +87,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 			next_gen1:
 					for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
 						for(j=0; j < args.length; j++) {
-							Type gt = clz.gens[i].args[j];
+							Type gt = (Type)clz.gens[i].args[j];
 							if( !( gt.isReference() && args[j].isReference()
 								|| gt == args[j]
 								|| (gt == Type.tpInt && args[j].isIntegerInCode())

@@ -41,7 +41,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	@att public ASTModifiers							modifiers;
     @att public ASTIdentifier							ident;
     @att public final NArr<ASTFormalParameter>			params;
-    @att public ASTType									rettype;
+    @att public TypeRef									rettype;
     @att public final NArr<BaseStruct>					argtypes;
     @att public final NArr<ASTAlias>					aliases;
     @att public ASTNode									throwns;

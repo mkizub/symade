@@ -24,6 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.ASTIdentifier;
+import kiev.parser.TypeWithArgsRef;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -521,7 +522,10 @@ public class Bytecoder implements Constants {
 				sg = Env.getStruct(sgcn);
 				if( sg == null )
 					throw new RuntimeException("Can't find class "+sgcn);
-				cl.gens.add(new TypeRef(sg.type));
+				TypeWithArgsRef t = new TypeWithArgsRef(new TypeRef(cl.type));
+				foreach (Type a; sg.type.args)
+					t.args += new TypeRef(a);
+				cl.gens.add(t);
 				((Struct)cl.gens[i].clazz).typeinfo_clazz = cl.typeinfo_clazz;
 			}
 			a = null;

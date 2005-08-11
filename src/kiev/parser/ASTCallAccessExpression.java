@@ -154,7 +154,7 @@ public class ASTCallAccessExpression extends Expr {
 						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 						ac.pos = pos;
 						ac.parent = parent;
-						ac.rettype = new ASTType(pos, ((MethodType)reqType).ret);
+						ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
 						Method meth = (Method)m;
 						for(int i=0; i < meth.type.args.length; i++) {
 							ac.params.add(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));

@@ -37,7 +37,7 @@ import kiev.vlang.*;
 public class ASTArgumentDeclaration extends ASTNode {
 	@att public ASTModifiers			modifiers;
 	@att public ASTIdentifier			ident;
-    @att public ASTType					ext;
+    @att public TypeRef					ext;
 	
 	public Dumper toJava(Dumper dmp) {
 		dmp.append(ident);

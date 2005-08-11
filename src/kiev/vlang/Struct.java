@@ -300,42 +300,42 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	public static Struct[]	emptyArray = new Struct[0];
 
 	/** Class' type arguments */
-	@att public final NArr<BaseStruct>	args;
+	@att public final NArr<BaseStruct>				args;
 	
 	/** Class' access */
 	@virtual
-	public virtual Access				acc;
+	public virtual Access							acc;
 
 	/** Package structure this structure belongs to */
-	@ref public Struct			package_clazz;
+	@ref public Struct								package_clazz;
 
 	/** Array of types that are generated for primitive
 		paremeter types of type arguments
 	*/
-	@att public final NArr<TypeRef>		gens;
+	@att public final NArr<TypeWithArgsRef>		gens;
 
 	/** Reference of template class for generated one */
-	@ref public Struct					generated_from;
+	@ref public Struct								generated_from;
 
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
-	@ref public Struct					typeinfo_clazz;
+	@ref public Struct								typeinfo_clazz;
 	
 	/** Array of substructures of the structure */
-	@ref public final NArr<Struct>		sub_clazz;
+	@ref public final NArr<Struct>					sub_clazz;
 
 	/** The field this structure is wrapper of */
-	@ref public Field					wrapped_field;
+	@ref public Field								wrapped_field;
 
 	/** Array of imported classes,fields and methods */
-	@ref public final NArr<ASTNode>		imported;
+	@ref public final NArr<ASTNode>					imported;
 
 	/** Array of attributes of this structure */
-	public Attr[]						attrs = Attr.emptyArray;
+	public Attr[]									attrs = Attr.emptyArray;
 	
 	/** Array of methods defined in this structure */
-	@att public final NArr<ASTNode>		members;
+	@att public final NArr<ASTNode>					members;
 
 	protected Struct(ClazzName name) {
 		super(name,0);

@@ -282,7 +282,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
 					// TODO: check flags for vars
 					int flags = vdecls.modifiers.getFlags();
-					Type type = ((ASTType)vdecls.type).getType();
+					Type type = ((TypeRef)vdecls.type).getType();
 //					if( (flags & ACC_PROLOGVAR) != 0 ) {
 //            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
 //						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});

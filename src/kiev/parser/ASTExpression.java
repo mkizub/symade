@@ -209,8 +209,8 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "trying binary "+op),
 		getPriority(expr.head()) >= op.getArgPriority(0),
 		{
-			op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof ASTType,
-			result ?= new InstanceofExpr(expr.at(1).getPos(),(Expr)expr.head(),((ASTType)expr.at(2)).getType()),
+			op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof TypeRef,
+			result ?= new InstanceofExpr(expr.at(1).getPos(),(Expr)expr.head(),((TypeRef)expr.at(2)).getType()),
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 			{

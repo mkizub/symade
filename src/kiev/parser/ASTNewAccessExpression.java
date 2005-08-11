@@ -37,7 +37,7 @@ import kiev.stdlib.*;
 @cfnode
 public class ASTNewAccessExpression extends Expr {
 	@att public Expr				obj;
-	@att public ASTType				type;
+	@att public TypeRef				type;
 	@att public final NArr<Expr>	args;
 
 	public ASTNode resolve(Type reqType) {

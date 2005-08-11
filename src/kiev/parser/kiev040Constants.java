@@ -149,7 +149,8 @@ public interface kiev040Constants {
   int IS_ONE_OF = 159;
   int OPERATOR_AT = 160;
   int OPERATOR_SHARP = 161;
-  int OPERATOR = 162;
+  int OPERATOR_LRBRACKETS = 162;
+  int OPERATOR = 163;
 
   int DEFAULT = 0;
   int IN_PRAGMA = 1;
@@ -321,6 +322,7 @@ public interface kiev040Constants {
     "\"@=\"",
     "\"@\"",
     "\"#\"",
+    "<OPERATOR_LRBRACKETS>",
     "<OPERATOR>",
   };
 

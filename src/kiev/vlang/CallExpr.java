@@ -28,10 +28,10 @@ import kiev.vlang.Operator.*;
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
 
+import syntax kiev.Syntax;
+
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/CallExpr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.2 $
  *
  */
 

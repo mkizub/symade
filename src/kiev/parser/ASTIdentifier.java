@@ -92,7 +92,7 @@ public class ASTIdentifier extends Expr {
 					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 					ac.pos = pos;
 					ac.parent = parent;
-					ac.rettype = new ASTType(pos, ((MethodType)reqType).ret);
+					ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
 					for(int i=0; i < ac.params.length; i++)
 						ac.params[i] = new Var(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
 					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);

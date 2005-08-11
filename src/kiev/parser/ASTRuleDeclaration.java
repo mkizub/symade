@@ -85,7 +85,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		for(int i=0; i < localvars.length; i++) {
 			ASTVarDecls vdecls = (ASTVarDecls)localvars[i];
 			int flags = 0;
-			Type type = ((ASTType)vdecls.type).getType();
+			Type type = ((TypeRef)vdecls.type).getType();
 			int dim = 0;
 			while( type.isArray() ) { dim++; type = type.args[0]; }
 			Var[] vars = new Var[vdecls.vars.length];

@@ -942,13 +942,13 @@ public class WrapedExpr extends Expr {
 	public Type getType() {
 		if( expr instanceof Type ) return Type.getRealType(base_type,(Type)expr);
 		if( expr instanceof BaseStruct ) return Type.getRealType(base_type,((BaseStruct)expr).type);
-		if( expr instanceof kiev.parser.ASTType ) return Type.getRealType(base_type,((kiev.parser.ASTType)expr).getType());
+		if( expr instanceof TypeRef ) return Type.getRealType(base_type,((TypeRef)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
 		if( expr instanceof Type ) return expr;
 		if( expr instanceof BaseStruct ) return expr;
-		if( expr instanceof kiev.parser.ASTType ) return ((kiev.parser.ASTType)expr).getType();
+		if( expr instanceof TypeRef ) return ((TypeRef)expr).getType();
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }
@@ -1073,6 +1073,10 @@ public class TypeRef extends ASTNode {
 	}
 	public void set$lnk(Type n) {
 		this.lnk = n;
+	}
+	
+	public String toString() {
+		return String.valueOf(lnk);
 	}
 	
 	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {

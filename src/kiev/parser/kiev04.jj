@@ -45,7 +45,7 @@ import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<ASTArgumentDeclaration> NArrArgDecls;
-typedef NArr<TypeRef> NArrTypeRefs;
+typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
 
 }*/ 
 
@@ -189,7 +189,7 @@ public class kiev040 {
 			switch (getToken(i+1).kind) {
 			case RPAREN:
 			case LT:
-			case LBRACKET:
+			case OPERATOR_LRBRACKETS:
 				break;
 			default:
 				return false;
@@ -257,11 +257,8 @@ public class kiev040 {
 				case LT:
 					if( castLA(i,LT,GT) ) break scan_qname;
 					else return false;
-				case LBRACKET:
-					if( getToken(i+1).kind == RBRACKET ) {
-						return true;
-					}
-					else return false;
+				case OPERATOR_LRBRACKETS:
+					return true;
 				case COMMA:
 					if( exp_kind1 == LT ) break scan_qname;
 					else return false;
@@ -724,6 +721,7 @@ TOKEN : /* OPERATORS */
 
 | < OPERATOR_AT:    "@" >
 | < OPERATOR_SHARP:	"#" >
+| < OPERATOR_LRBRACKETS: "[" ( " " )* "]" >
 | < OPERATOR:	    ["\u2200"-"\u22F1"] >
 
 }
@@ -859,7 +857,7 @@ ASTImport Import() :
 }
 
 ASTTypedef Typedef() :
-{ ASTIdentifier id; ASTOperator op; ASTType tp; ASTTypedef n = new ASTTypedef(); }
+{ ASTIdentifier id; ASTOperator op; TypeRef tp; ASTTypedef n = new ASTTypedef(); }
 {
 	"typedef"
 	(
@@ -927,15 +925,15 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			(
 				LOOKAHEAD("rule")
 				clazz.super_bound = PrimitiveType()
-			|	clazz.super_bound = NonArrayType()
+			|	clazz.super_bound = NArrType()
 			)
 		]
 		[
 			"implements"
-			clazz.interfaces += NonArrayType()
-			( "," clazz.interfaces += NonArrayType()	)*
+			clazz.interfaces += NArrType()
+			( "," clazz.interfaces += NArrType()	)*
 		]
-		[	Generate(clazz.gens)	]
+		[	Generate(clazz.name.name, clazz.gens)	]
 	|	"interface"
 		name = Name()
 		{
@@ -944,10 +942,10 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		ClazzArguments(clazz)
 		[
 			"extends"
-			clazz.interfaces += NonArrayType()
-			( "," clazz.interfaces += NonArrayType()	)*
+			clazz.interfaces += NArrType()
+			( "," clazz.interfaces += NArrType()	)*
 		]
-		[	Generate(clazz.gens)	]
+		[	Generate(clazz.name.name, clazz.gens)	]
 	|	"@" "interface"
 		(	name = Name()
 		|	name = KeywordAsName()
@@ -1003,7 +1001,7 @@ void TypeBodyDeclaration(Struct clazz) :
 			LOOKAHEAD( ClazzArguments() Type() <IDENTIFIER> "(" )
 			clazz.members += MethodDeclaration(modifiers)
 		|
-			LOOKAHEAD( Type() <IDENTIFIER> ("[" "]")* ("=" | ":=" | "," | ";") )
+			LOOKAHEAD( Type() <IDENTIFIER> (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
 			FieldDecls(modifiers, clazz)
 		)
 	)*
@@ -1068,28 +1066,29 @@ void ArgumentDeclaration(ASTNode parent) :
 	{ arg = mkStructArg(name, modifiers, parent); }
 	[
 		"extends"
-		arg.super_bound = NonArrayType()
+		arg.super_bound = NArrType()
 	]
 }
 
-void Generate(NArrTypeRefs types) :
-{ Token t; ASTNonArrayType tp; }
+// disabled
+void Generate(KString name, NArrTypeWithArgsRefs types) :
+{ Token t; ASTIdentifier id; TypeWithArgsRef tp; }
 {
 	"$generate"	// TODO: replace with @generate
-	{ tp = new ASTNonArrayType(KString.Empty); }
+	{ tp = new TypeWithArgsRef(new TypeNameRef(name)); }
 	"<"
-		( tp.children += PrimitiveType() | tp.children += Name())
-		( "," (tp.children += PrimitiveType() | tp.children += Name()) )*
+		( tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } )
+		( "," (tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } ) )*
 	">"
-	{ types += tp; }
+	{ /* types += tp; */ }
 	(
 		","
-		{ tp = new ASTNonArrayType(KString.Empty); }
+		{ tp = new TypeWithArgsRef(new TypeNameRef(name)); }
 		"<"
-			( tp.children += PrimitiveType() | tp.children += Name())
-			( "," (tp.children += PrimitiveType() | tp.children += Name()) )*
+			( tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } )
+			( "," (tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } ) )*
 		">"
-		{ types += tp; }
+		{ /* types += tp; */ }
 	)*
 }
 
@@ -1185,7 +1184,7 @@ ASTMeta Annotation() :
 		id = Name()
 	|	id = KeywordAsName()
 	)
-	{	n.pos = id.pos;	n.type = new ASTNonArrayType(id); }
+	{	n.pos = id.pos;	n.type = new TypeNameRef(id); }
 	[
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
@@ -1257,7 +1256,7 @@ MetaValueArray AnnotationValueValueArrayInitializer() :
 
 
 void FieldDecls(ASTModifiers modifiers, Struct clazz) :
-{ boolean old_declMode; ASTType type; }
+{ boolean old_declMode; TypeRef type; }
 {
 	{ old_declMode = declMode; declMode = false; }
 	try {
@@ -1270,8 +1269,8 @@ void FieldDecls(ASTModifiers modifiers, Struct clazz) :
 	";"
 }
 
-ASTFieldDecl FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
-{}
+ASTFieldDecl FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; }
 {
 	{
 		ASTFieldDecl n = new ASTFieldDecl();
@@ -1280,11 +1279,11 @@ ASTFieldDecl FieldDecl(ASTModifiers modifiers, ASTType type, boolean first) :
 			n.type = type;
 		} else {
 			n.modifiers = (ASTModifiers)modifiers.copy();
-			n.type = (ASTType)type.copy();
+			n.type = (TypeRef)type.copy();
 		}
 	}
 	n.name = Name()
-	( "[" "]" { n.dim += 1; } )*
+	( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); } )*
 	[ ("=" | ":=" { n.of_wrapper=true; }) n.init = VariableInitializer() ]
 	{ return n; }
 }
@@ -1304,7 +1303,7 @@ ASTVarDecl VarDecl() :
 { ASTVarDecl v = new ASTVarDecl(); }
 {
 	v.name = Name()
-	( "[" "]" { v.dim += 1; } )*
+	( <OPERATOR_LRBRACKETS> { v.dim += 1; } )*
 	[
 		("=" | ":=" { v.of_wrapper=true; })
 		v.init = VariableInitializer()
@@ -1349,7 +1348,7 @@ ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
 	(
 		n.type  = Type()
 		n.ident = Name()
-		( t="[" "]" { n.type.addOperation(t); } )*
+		( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); } )*
 	|
 		t="_" { n.set(t); }
 	)
@@ -1370,7 +1369,7 @@ ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) :
 			(":") n.mm_type = Type()
 		)?
 		n.ident = Name()
-		( t="[" "]" { n.type.addOperation(t); if (n.mm_type != null) n.mm_type.addOperation(t); } )*
+		( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); if (n.mm_type != null) n.mm_type = new TypeExpr(n.mm_type,t); } )*
 	|
 		t="_" { n.set(t); }
 	)
@@ -1419,7 +1418,7 @@ ASTOperatorAlias OperatorAlias() :
 		(
 			op = Operator()				{ a.setImage(op); }
 		|	id = Name()					{ a.setImage(id); }
-		|	"[" "]"						{ a.image = kiev.vlang.Constants.nameArrayOp; }
+		|	<OPERATOR_LRBRACKETS>		{ a.image = kiev.vlang.Constants.nameArrayOp; }
 		|	"new"						{ a.image = kiev.vlang.Constants.nameNewOp; }
 		|	"$cast"						{ a.image = kiev.vlang.Constants.nameCastOp; }
 		)
@@ -1430,7 +1429,7 @@ ASTOperatorAlias OperatorAlias() :
 		(
 			op = Operator()				{ a.setImage(op); }
 		|	id = Name()					{ a.setImage(id); }
-		|	"[" "]"						{ a.image = kiev.vlang.Constants.nameArrayOp; }
+		|	<OPERATOR_LRBRACKETS>		{ a.image = kiev.vlang.Constants.nameArrayOp; }
 		|	"new"						{ a.image = kiev.vlang.Constants.nameNewOp; }
 		|	"$cast"						{ a.image = kiev.vlang.Constants.nameCastOp; }
 		)
@@ -1495,7 +1494,7 @@ ASTMethodDeclaration MethodDeclaration(ASTModifiers modifiers) :
 			]
 		]
 	")"
-	(	t="[" "]" { n.rettype.addOperation(t); } )*
+	(	t=<OPERATOR_LRBRACKETS> { n.rettype = new TypeExpr(n.rettype,t); } )*
 	(
 		n.aliases += Alias()
 	)*
@@ -1686,18 +1685,77 @@ ASTInitializer Initializer(ASTModifiers modifiers) :
  * Type, name and expression syntax follows.
  */
 
-ASTType Type() :
-{ ASTType res; Token t; }
+
+TypeRef Type() :
+{ TypeRef res; }
+{
+	(
+		res = TypeExpr()
+	|
+		LOOKAHEAD({Kiev.enabled(Ext.With)})
+		res = ClosureType()
+	)
+	{ return res; }
+}
+
+TypeRef TypeExpr() :
+{ TypeRef res; Token t; }
+{
+	(
+		res = PrimitiveType()
+	|	res = TypeWithArgs()
+	)
+	(
+		(	t = TypeOperatorChar()
+		|	t = <OPERATOR_LRBRACKETS>
+		)
+		{ res = new TypeExpr(res,t); }
+	)*
+	{ return res; }
+}
+
+TypeRef TypeWithArgs() :
+{ ASTIdentifier id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
+{
+	id = QName() { res = new TypeNameRef(id); }
+	[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
+		"<"
+			{ res = tra = new TypeWithArgsRef(res); }
+			tra.args += Type()
+			( "," tra.args += Type() )*
+		">"
+	]
+	{ return res; }
+}
+
+TypeRef NArrType() :
+{ TypeRef res; Token t; }
+{
+	(
+		res = PrimitiveType()
+	|	res = TypeWithArgs()
+	)
+	(	LOOKAHEAD(2)
+		(
+			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+		|
+			t = <OPERATOR_LRBRACKETS>		{ res = new TypeExpr(res,t); }
+			t = TypeOperatorChar()			{ res = new TypeExpr(res,t); }
+		)
+		{ res = new TypeExpr(res,t); }
+	)*
+	{ return res; }
+}
+
+/*
+TypeRef Type() :
+{ TypeRef res; Token t; }
 {
 	(
 		res = SimpleType()
 		(
-			LOOKAHEAD(2,"[" "]")
-			t="[" "]"
-			{ res.addOperation(t); }
-		|	LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
 			t=TypeOperatorChar()
-			{ res.addOperation(t); }
+			{ res = new TypeExpr(res,t); }
 		)*
 	|
 		LOOKAHEAD({Kiev.enabled(Ext.With)})
@@ -1706,7 +1764,36 @@ ASTType Type() :
 	{ return res; }
 }
 
-ASTType ClosureType() :
+TypeRef SimpleType() :
+{ TypeRef tp; }
+{
+	(
+		tp = PrimitiveType()
+	|	tp = NonArrayType()
+	)
+	{ return tp; }
+}
+
+TypeRef NonArrayType() :
+{ Token t; ASTIdentifier id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
+{
+	id = QName() { res = new TypeNameRef(id); }
+	[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
+		"<"
+			{ res = tra = new TypeWithArgsRef(res); }
+			tra.args += Type()
+			( "," tra.args += Type() )*
+		">"
+	]
+	(
+		t=TypeOperatorChar()
+		{ res = new TypeExpr(res, t); }
+	)*
+	{ return res; }
+}
+*/
+
+TypeRef ClosureType() :
 { Token t; ASTClosureType n = new ASTClosureType(); }
 {
 	t="(" { n.setPos(t.getPos()); }
@@ -1718,50 +1805,22 @@ ASTType ClosureType() :
 	{ return n; }
 }
 
-
-ASTType SimpleType() :
-{ ASTType tp; }
+TypeRef PrimitiveType() :
+{ Token t; TypeRef tp = new TypeRef(); }
 {
-		tp = PrimitiveType()
-		{ return new ASTNonArrayType((ASTPrimitiveType)tp); }
-	|	tp = NonArrayType()
-		{ return tp; }
-}
-
-ASTType NonArrayType() :
-{ Token t; ASTNonArrayType n = new ASTNonArrayType(); }
-{
-	n.children += QName()
-	[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
-		"<"
-			n.children += Type()
-			( "," n.children += Type() )*
-		">"
-	]
 	(
-		LOOKAHEAD(1,TypeOperatorChar(),{Kiev.enabled(Ext.Typedef)&&checkNoSpace(getToken(0),getToken(1))})
-		t=TypeOperatorChar()
-		{ n.addOperation(t); }
-	)*
-	{ return n; }
-}
-
-ASTType PrimitiveType() :
-{ Token t; }
-{
-	 (
-	  t="boolean"
-	| t="char"
-	| t="byte"
-	| t="short"
-	| t="int"
-	| t="long"
-	| t="float"
-	| t="double"
-	| t="void"
-	| t="rule"
-	  )
-	{ ASTPrimitiveType n = new ASTPrimitiveType(); n.set(t); return n; }
+	  t="boolean"	{ tp.lnk = Type.tpBoolean; }
+	| t="char"		{ tp.lnk = Type.tpChar; }
+	| t="byte"		{ tp.lnk = Type.tpByte; }
+	| t="short"		{ tp.lnk = Type.tpShort; }
+	| t="int"		{ tp.lnk = Type.tpInt; }
+	| t="long"		{ tp.lnk = Type.tpLong; }
+	| t="float"		{ tp.lnk = Type.tpFloat; }
+	| t="double"	{ tp.lnk = Type.tpDouble; }
+	| t="void"		{ tp.lnk = Type.tpVoid; }
+	| t="rule"		{ tp.lnk = Type.tpRule; }
+	)
+	{ tp.pos = t.getPos(); return tp; }
 }
 
 ASTIdentifier Name() :
@@ -2121,13 +2180,13 @@ Expr AccessExpression() :
 		LOOKAHEAD(2)
 		e = Name()
 	|
-		LOOKAHEAD("new" SimpleType() ("[" "]")+ "{" )
+		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
 		e = NewInitializedArrayExpression()
 	|
-		LOOKAHEAD("new" SimpleType() "[" )
+		LOOKAHEAD("new" NArrType() "[" )
 		e = NewArrayExpression()
 	|
-		LOOKAHEAD("new" NonArrayType() ( "(" ) )
+		LOOKAHEAD("new" NArrType() ( "(" ) )
 		e = NewExpression()
 	|
 		e = ReparseExpression()
@@ -2155,7 +2214,7 @@ Expr AccessExpression() :
 		"]"
         { e = ae; }
 	|
-		LOOKAHEAD("." "new" NonArrayType() ( "(" ) )
+		LOOKAHEAD("." "new" NArrType() ( "(" ) )
 		t="."
 		{ ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.setPos(t.getPos()); }
 		e = NewExpression()
@@ -2292,7 +2351,7 @@ ASTNewExpression NewExpression() :
 }
 {
 	t="new" { ne.setPos(t.getPos()); }
-    ne.type = NonArrayType() "("
+    ne.type = NArrType() "("
 	[	ne.args += ExpressionNT(null)
 		(	"," ne.args += ExpressionNT(null)	)*
 	]
@@ -2322,7 +2381,7 @@ ASTNewArrayExpression NewArrayExpression() :
 		ne.setPos(t.getPos());
 		t = null;
 	}
-	ne.type = SimpleType()
+	ne.type = NArrType()
 	(
 		LOOKAHEAD(2)
 		"["
@@ -2331,8 +2390,7 @@ ASTNewArrayExpression NewArrayExpression() :
 		{ dim += 1; }
 	)+
 	(
-		LOOKAHEAD(2)
-		"[" "]"
+		<OPERATOR_LRBRACKETS>
 		{ dim += 1; }
 	)*
 	{
@@ -2349,9 +2407,9 @@ ASTNewInitializedArrayExpression NewInitializedArrayExpression() :
 		ne.setPos(t.getPos());
 		t = null;
 	}
-	ne.type = SimpleType()
+	ne.type = NArrType()
 	(
-		"[" "]" 
+		<OPERATOR_LRBRACKETS> 
 		{ dim += 1; }
 	)+
 	"{"
@@ -2752,7 +2810,7 @@ ASTNode ForInit() :
 { ASTModifiers modifiers; ASTNode n; }
 {
 	(
-		LOOKAHEAD( Modifiers() Type() QName() ("[" "]")* ("=" | ":=" | "," | ";") )
+		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
 		modifiers = Modifiers()
 		n = VarDecls(modifiers)
 	|

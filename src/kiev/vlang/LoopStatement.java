@@ -343,7 +343,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 					else if( init instanceof ASTVarDecls ) {
 						ASTVarDecls vdecls = (ASTVarDecls)init;
 						int flags = 0;
-						Type type = ((ASTType)vdecls.type).getType();
+						Type type = ((TypeRef)vdecls.type).getType();
 						int dim = 0;
 						while( type.isArray() ) { dim++; type = type.args[0]; }
 						DeclStat[] decls = new DeclStat[vdecls.vars.length];

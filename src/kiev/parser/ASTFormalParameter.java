@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTFormalParameter extends ASTNode {
 	@att public ASTModifiers		modifiers;
-	@att public ASTType				type;
-	@att public ASTType				mm_type;
+	@att public TypeRef				type;
+	@att public TypeRef				mm_type;
     @att public ASTIdentifier		ident;
 
 	public void set(Token t) {

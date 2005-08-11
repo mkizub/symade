@@ -41,7 +41,7 @@ import syntax kiev.Syntax;
 @cfnode
 public class ASTNewExpression extends Expr {
 	@att
-	public ASTType					type;
+	public TypeRef					type;
 	
 	@att
 	public final NArr<Expr>			args;

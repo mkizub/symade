@@ -34,8 +34,8 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTClosureType extends ASTType {
-    @att public final NArr<ASTType>	types;
+public class ASTClosureType extends TypeRef {
+    @att public final NArr<TypeRef>	types;
 
 	public boolean isBound() {
 		return true;

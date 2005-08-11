@@ -201,21 +201,21 @@ public class Typedef extends ASTNode implements Named {
 		return new NodeName(name);
 	}
 
-	public void set(ASTIdentifier id, ASTOperator op, ASTType tp) {
+	public void set(ASTIdentifier id, ASTOperator op, TypeRef tp) {
 		typearg = Env.newMethodArgument(id.name, Env.root);
 		name = op.image;
 
-		ASTNonArrayType natp = (ASTNonArrayType)tp;
-		ASTType arg = (ASTType)natp.children[1];
-		KString argnm = ((ASTIdentifier)((ASTNonArrayType)arg).children[0]).toKString();
+		TypeWithArgsRef natp = (TypeWithArgsRef)tp;
+		TypeNameRef arg = (TypeNameRef)natp.args[0];
+		KString argnm = arg.name.name;
 		//if (!typearg.name.short_name.equals(argnm))
 		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
-		natp.children[1] = typearg.type;
+		natp.args[0] = new TypeRef(typearg.type);
 		type = natp;
 		return;
 	}
 	
-	public void set(ASTType tp, ASTIdentifier id) {
+	public void set(TypeRef tp, ASTIdentifier id) {
 		type = tp;
 		name = id.name;
 	}

@@ -37,7 +37,7 @@ import kiev.vlang.*;
 @cfnode
 public class ASTTypeClassExpression extends Expr {
 	
-	@att public ASTType		type;
+	@att public TypeRef		type;
 	
     public Type getType() { return Type.tpClass; }
 
