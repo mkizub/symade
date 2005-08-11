@@ -118,7 +118,12 @@ public final class MetaSet extends ASTNode {
 		return new Enumeration<Meta>() {
 			int current;
 			public boolean hasMoreElements() { return current < MetaSet.this.size(); }
-			public A nextElement() {
+			public Meta nextElement() {
+				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
+				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
+			}
+			/// BUG BUG BUG ///
+			public Object nextElement() {
 				if ( current < MetaSet.this.size() ) return MetaSet.this.metas[current++];
 				throw new NoSuchElementException(Integer.toString(MetaSet.this.size()));
 			}
@@ -393,7 +398,12 @@ public class Meta extends ASTNode {
 		return new Enumeration<MetaValue>() {
 			int current;
 			public boolean hasMoreElements() { return current < Meta.this.size(); }
-			public A nextElement() {
+			public MetaValue nextElement() {
+				if ( current < Meta.this.size() ) return Meta.this.values[current++];
+				throw new NoSuchElementException(Integer.toString(Meta.this.size()));
+			}
+			/// BUG BUG BUG ///
+			public Object nextElement() {
 				if ( current < Meta.this.size() ) return Meta.this.values[current++];
 				throw new NoSuchElementException(Integer.toString(Meta.this.size()));
 			}

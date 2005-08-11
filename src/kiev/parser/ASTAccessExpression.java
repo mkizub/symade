@@ -51,6 +51,7 @@ public class ASTAccessExpression extends Expr {
 			Type tp = null;
 			Type[] snitps = null;
 			int snitps_index = 0;
+		try_static:
 			if( o instanceof Struct ) {
 				cl = (Struct)o;
 				tp = cl.type;
@@ -58,7 +59,7 @@ public class ASTAccessExpression extends Expr {
 				obj = (Expr)o;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
-				if (tp.clazz.isWrapper() && ident.name.byteAt(0) != '$') {
+				if (tp.isWrapper() && ident.name.byteAt(0) != '$') {
 					o = (Expr)new AccessExpr(obj.pos,obj,((Struct)tp.clazz).wrapped_field).resolve(null);
 					tp = o.getType();
 				}
@@ -78,40 +79,60 @@ public class ASTAccessExpression extends Expr {
 				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
 			}
 			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
-			PVar<ASTNode> v = new PVar<ASTNode>();
+			ASTNode@ v;
 			ResInfo info;
 			int min_transforms = 8096;
 			if( o instanceof Expr && snitps != null && snitps.length > 1) {
 				snitps_index = 0;
 				while (snitps_index < snitps.length) {
 					v.$unbind();
-					info = new ResInfo();
+					info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
 					tp = snitps[snitps_index++];
 					cl = tp.clazz;
-					foreach(cl.resolveNameR(v,info,ident.name,tp, 0) ) {
-						if (info.transforms > min_transforms)
+					foreach(tp.resolveNameR(v,info,ident.name) ) {
+						if (info.getTransforms() > min_transforms)
 							continue;
 						ASTNode e = makeExpr(v,info,o,cl);
-						if (info.transforms < min_transforms) {
+						if (info.getTransforms() < min_transforms) {
 							res.setLength(0);
+							min_transforms = info.getTransforms();
 						}
 						res.append(e);
 					}
 				}
 			} else {
 					v.$unbind();
-					info = new ResInfo();
-					foreach(cl.resolveNameR(v,info,ident.name,tp, 0) ) {
-						if (info.transforms > min_transforms)
-							continue;
-						ASTNode e = makeExpr(v,info,o,cl);
-						if (info.transforms < min_transforms) {
-							res.setLength(0);
+					if (o instanceof Expr) {
+						info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
+						foreach(tp.resolveNameR(v,info,ident.name) ) {
+							if (info.getTransforms() > min_transforms)
+								continue;
+							ASTNode e = makeExpr(v,info,o,cl);
+							if (info.getTransforms() < min_transforms) {
+								res.setLength(0);
+								min_transforms = info.getTransforms();
+							}
+							res.append(e);
 						}
-						res.append(e);
+					} else {
+						info = new ResInfo();
+						foreach(cl.resolveNameR(v,info,ident.name,tp) ) {
+							if (info.getTransforms() > min_transforms)
+								continue;
+							ASTNode e = makeExpr(v,info,o,cl);
+							if (info.getTransforms() < min_transforms) {
+								res.setLength(0);
+								min_transforms = info.getTransforms();
+							}
+							res.append(e);
+						}
 					}
 			}
 			if (res.length() == 0) {
+				if (o instanceof Expr) {
+					o = o.getType().clazz;
+					goto try_static;
+				}
 				//resolve(reqType);
 				throw new CompilerException(pos,"Unresolved identifier "+ident+" in class "+cl+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
@@ -133,24 +154,7 @@ public class ASTAccessExpression extends Expr {
 
 	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, BaseStruct cl) {
 		if( v instanceof Field ) {
-			if( v.isStatic() )
-				return new StaticFieldAccessExpr(pos,(Struct)cl,(Field)v);
-			if( info.path.length() == 0 ) {
-				if( o instanceof BaseStruct )
-					throw new CompilerException(pos,"Static access to non-static field "+v);
-				return new AccessExpr(pos,(Expr)o,(Field)v);
-			} else {
-				List<ASTNode> acc = info.path.toList();
-				if( o instanceof Struct && acc.head().isStatic() )
-					throw new CompilerException(pos,"Static access to non-static field "+v);
-
-				Expr expr;
-				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
-				acc = acc.tail();
-				foreach(ASTNode f; acc)
-					expr = new AccessExpr(pos,expr,(Field)f);
-				return new AccessExpr(pos,expr,(Field)v);
-			}
+			return info.buildAccess(pos, o, v);
 		}
 		else if( v instanceof BaseStruct ) {
 			return (BaseStruct)v;
@@ -158,21 +162,13 @@ public class ASTAccessExpression extends Expr {
 		else if( v instanceof Method ) {
 			if( v.isStatic() )
 				return new CallExpr(pos,parent,(Method)v,Expr.emptyArray);
-			if( info.path.length() == 0 ) {
+			if( info.isEmpty() ) {
 				if( o instanceof Struct )
 					throw new CompilerException(pos,"Static access to non-static method "+v);
 				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray);
 			} else {
-				List<ASTNode> acc = info.path.toList();
-				if( o instanceof Struct && acc.head().isStatic() )
-					throw new CompilerException(pos,"Static access to non-static method "+v);
-
-				Expr expr;
-				expr = new AccessExpr(pos,(Expr)o,(Field)acc.head());
-				acc = acc.tail();
-				foreach(ASTNode f; info.path)
-					expr = new AccessExpr(pos,expr,(Field)f);
-				return new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
+				Expr e = info.buildCall(pos, (Expr)o, v, Expr.emptyArray);
+				return e;
 			}
 		} else {
 			throw new CompilerException(pos,"Identifier "+ident+" must be a class's field");

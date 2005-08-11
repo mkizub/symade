@@ -45,7 +45,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
 			ASTNode@ v;
-			if( !PassInfo.resolveNameR(v,new ResInfo(),names[i].name,null,0) )
+			if( !PassInfo.resolveNameR(v,new ResInfo(),names[i].name,null) )
 				throw new CompilerException(pos,"Unresolved identifier "+names[i].name);
 			if( !(v instanceof Var) )
 	    		throw new CompilerException(names[i].getPos(),"Identifier is not a var");

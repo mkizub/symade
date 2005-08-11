@@ -123,27 +123,27 @@ public class NewExpr extends Expr {
 			if( !type.clazz.isArgument() ) {
 				PVar<Method> m;
 				// First try overloaded 'new', than real 'new'
-				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp))
-				 &&	type.clazz.resolveMethodR(m,new ResInfo(),nameNewOp,outer_args,
-			 		type,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
-				) {
-				 	ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
-					n.type_of_static = type;
-				 	n.setResolved(true);
-				 	return n;
+				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
+					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,outer_args,type,type)) {
+						ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
+						n.type_of_static = type;
+						n.setResolved(true);
+						return n;
+					}
 				}
-				else if( !type.clazz.resolveMethodR(m,new ResInfo(),nameInit,outer_args,
-					Type.tpVoid,type,ResolveFlags.NoForwards | ResolveFlags.NoSuper)
-				) {
-					throw new RuntimeException("Can't find apropriative initializer for "
-						+Method.toString(nameInit,outer_args,Type.tpVoid)+" for "+type);
-				} else {
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,outer_args,Type.tpVoid,type) ) {
 					func = m;
 					outer_args = m.makeArgs(outer_args,type);
 					int po = 0;
 					int pa = 0;
 					if( outer != null ) outer = outer_args[po++];
 					while( pa < args.length ) args[pa++] = outer_args[po++];
+				}
+				else {
+					throw new RuntimeException("Can't find apropriative initializer for "+
+						Method.toString(nameInit,outer_args,Type.tpVoid)+" for "+type);
 				}
 			}
 		} finally { PassInfo.pop(this); }

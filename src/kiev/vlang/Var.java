@@ -47,6 +47,7 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {
 		super(pos,parent);
+		this.flags = flags;
 		this.name = new NodeName(name);
 		this.type = type;
 	}

@@ -95,7 +95,7 @@ public final class ProcessVirtFld implements Constants {
 				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
 				set_var.params.add(value);
 			} else {
-				self = new Var(f.pos,set_var,nameThis,s.type,0);
+				self = new Var(f.pos,set_var,nameThis,s.type,ACC_FORWARD);
 				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
 				set_var.params.add(self);
 				set_var.params.add(value);
@@ -162,7 +162,7 @@ public final class ProcessVirtFld implements Constants {
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
-			Var self = new Var(f.pos,get_var,nameThis,s.type,0);
+			Var self = new Var(f.pos,get_var,nameThis,s.type,ACC_FORWARD);
 			get_var.params.add(self);
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
@@ -333,7 +333,7 @@ public final class ProcessVirtFld implements Constants {
 			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 				append_fast(nameGet).append_fast(f.name.name).toKString();
 	
-			if (PassInfo.method.name.equals(get_name)) {
+			if (PassInfo.method != null && PassInfo.method.name.equals(get_name)) {
 				fa.setAsField(true);
 				rewriteNode(fa, id);
 				return;
@@ -366,7 +366,7 @@ public final class ProcessVirtFld implements Constants {
 				KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
 					append_fast(nameSet).append_fast(f.name.name).toKString();
 		
-				if (PassInfo.method.name.equals(set_name)) {
+				if (PassInfo.method != null && PassInfo.method.name.equals(set_name)) {
 					fa.setAsField(true);
 					rewriteNode(ae, id);
 					return;
@@ -456,7 +456,7 @@ public final class ProcessVirtFld implements Constants {
 				KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 					append_fast(nameGet).append_fast(f.name.name).toKString();
 		
-				if (PassInfo.method.name.equals(set_name) || PassInfo.method.name.equals(get_name)) {
+				if (PassInfo.method != null && (PassInfo.method.name.equals(set_name) || PassInfo.method.name.equals(get_name))) {
 					fa.setAsField(true);
 					rewriteNode(ie, id);
 					return;

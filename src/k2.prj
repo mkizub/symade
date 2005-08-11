@@ -344,7 +344,6 @@ kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vla
 kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
-kiev.vlang.MatchNode kiev/vlang/MatchNode kiev\vlang\Resolving.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 kiev.vlang.MetaAttr kiev/vlang/MetaAttr kiev\vlang\Attr.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
@@ -398,7 +397,6 @@ kiev.vlang.RVMetaAttr kiev/vlang/RVMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RVParMetaAttr kiev/vlang/RVParMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RefNode kiev/vlang/RefNode kiev\vlang\AST.java
 kiev.vlang.ResInfo kiev/vlang/ResInfo kiev\vlang\Resolving.java
-kiev.vlang.ResolveFlags kiev/vlang/ResolveFlags kiev\vlang\Resolving.java
 kiev.vlang.ReturnStat kiev/vlang/ReturnStat kiev\vlang\Statement.java
 kiev.vlang.RuleAndExpr kiev/vlang/RuleAndExpr kiev\vlang\Rules.java
 kiev.vlang.RuleBlock kiev/vlang/RuleBlock kiev\vlang\Rules.java
@@ -414,6 +412,8 @@ kiev.vlang.RuleWhileExpr kiev/vlang/RuleWhileExpr kiev\vlang\Rules.java
 kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
 kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java
 kiev.vlang.ScopeNodeInfoVector kiev/vlang/ScopeNodeInfoVector kiev\vlang\Var.java
+kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
+kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
 kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
 kiev.vlang.SelfAccessExpr kiev/vlang/SelfAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.SetBody kiev/vlang/SetBody kiev\vlang\AST.java
@@ -423,6 +423,7 @@ kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.SourceFileAttr kiev/vlang/SourceFileAttr kiev\vlang\Attr.java
 kiev.vlang.Statement kiev/vlang/Statement kiev\vlang\AST.java
 kiev.vlang.StaticFieldAccessExpr kiev/vlang/StaticFieldAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java

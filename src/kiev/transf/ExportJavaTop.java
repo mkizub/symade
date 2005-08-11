@@ -270,7 +270,7 @@ public final class ExportJavaTop implements Constants {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
 		KString name = astn.name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null,0) ) {
+		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
 			return astn;
 		}
@@ -900,12 +900,12 @@ public final class ExportJavaTop implements Constants {
 					}
 					fdecl.replaceWith(f);
 					if (fdecl.init == null && fdecl.dim==0) {
-						if(ftype.clazz.isWrapper()) {
+						if(ftype.isWrapper()) {
 							f.init = new NewExpr(fdecl.pos,ftype,Expr.emptyArray);
 							f.setInitWrapper(true);
 						}
 					} else {
-						if( ftype.clazz.isWrapper()) {
+						if( ftype.isWrapper()) {
 							if (fdecl.of_wrapper)
 								f.init = fdecl.init;
 							else
@@ -965,7 +965,7 @@ public final class ExportJavaTop implements Constants {
 					Method m = new Method(astn,inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
 					if( !m.isStatic() )
-						m.params.add(new Var(inv.pos,m,nameThis,astn.type,0));
+						m.params.add(new Var(inv.pos,m,nameThis,astn.type,ACC_FORWARD));
 					inv.replaceWith(m);
 					m.body = inv;
 				}
@@ -993,7 +993,7 @@ public final class ExportJavaTop implements Constants {
 				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
 				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 				init.pos = me.pos;
-				init.params.add(new Var(me.pos,Constants.nameThis,me.type,0));
+				init.params.add(new Var(me.pos,Constants.nameThis,me.type,ACC_FORWARD));
 				foreach (Field f; case_attr.casefields)
 					init.params.add(new Var(f.pos,f.name.name,f.type,0));
 				me.addMethod(init);

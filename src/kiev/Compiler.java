@@ -438,8 +438,8 @@ public class Compiler {
 			}
 
 			if( !Kiev.initialized ) {
-				Type.InitializeTypes();
-				Kiev.initialized = true;
+				Class force_init = StdTypes.class;
+				Kiev.initialized = (force_init != null);
 			}
 
 		} catch( Exception e) {

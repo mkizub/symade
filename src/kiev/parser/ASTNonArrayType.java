@@ -82,7 +82,7 @@ public class ASTNonArrayType extends ASTType {
     		KString nm;
 			nm = ((ASTIdentifier)children[0]).name;
 	    	ASTNode@ v;
-		    if( !PassInfo.resolveNameR(v,new ResInfo(),nm,null,0) )
+		    if( !PassInfo.resolveNameR(v,new ResInfo(),nm,null) )
 			    throw new CompilerException(pos,"Unresolved identifier "+nm);
     		if( v instanceof Type ) {
     		    tp = (Type)v;
@@ -103,7 +103,7 @@ public class ASTNonArrayType extends ASTType {
 			if (ops[i] == opArray) {
 				tp = Type.newArrayType(tp);
 			} else {
-				if (!PassInfo.resolveNameR(v,new ResInfo(),ops[i],null,0)) {
+				if (!PassInfo.resolveNameR(v,new ResInfo(),ops[i],null)) {
 					if (ops[i] == opPVar) {
 						Kiev.reportWarning(pos, "Typedef for "+ops[i]+" not found, assuming "+Type.tpPrologVar);
 						v = Type.tpPrologVar;

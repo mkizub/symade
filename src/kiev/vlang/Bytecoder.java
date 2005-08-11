@@ -586,6 +586,7 @@ public class Bytecoder implements Constants {
 							inner[i] = Env.getStruct(cn);
 							if( inner[i] == null )
 								throw new RuntimeException("Class "+cn+" not found");
+							cl.members.add(inner[i]);
 						}
 					} else {
 						inner[i] = null;

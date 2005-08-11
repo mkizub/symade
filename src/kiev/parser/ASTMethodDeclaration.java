@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scope {
+public class ASTMethodDeclaration extends ASTNode implements PreScanneable, ScopeOfNames, ScopeOfMethods {
 	@att public ASTModifiers							modifiers;
     @att public ASTIdentifier							ident;
     @att public final NArr<ASTFormalParameter>			params;
@@ -57,13 +57,13 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		modifiers = new ASTModifiers();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 	{
 		node @= ftypes,
 		((Type)node).clazz.name.short_name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type)
 	{
 		false
 	}
@@ -155,7 +155,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         me.body = body;
 		me.pbody = pbody;
 		if( !me.isStatic() )
-			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
+			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,ACC_FORWARD),0);
 		foreach(ASTAlias al; aliases) al.attach(me);
 		me.params.addAll(vars);
         this.replaceWith(me);

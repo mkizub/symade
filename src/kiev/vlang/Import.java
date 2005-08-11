@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Import extends ASTNode implements Constants, Scope {
+public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
 	public enum ImportMode {
@@ -87,7 +87,7 @@ public class Import extends ASTNode implements Constants, Scope {
 		}
 		for(int j=0; j < exprs.length; j++,i++)
 			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,args[i].getType(),0));
-		if( !PassInfo.resolveMethodR(v,null,name.name,exprs,null,null,0) )
+		if( !PassInfo.resolveMethodR(v,null,name.name,exprs,null,null) )
 			throw new CompilerException(pos,"Unresolved method "+Method.toString(name.name,exprs));
 		ASTNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
@@ -102,7 +102,7 @@ public class Import extends ASTNode implements Constants, Scope {
 
 	public void generate() {}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 		Struct@ s;
 		Struct@ sub;
 		ASTNode@ tmp;
@@ -128,12 +128,14 @@ public class Import extends ASTNode implements Constants, Scope {
 				sub.name.name.equals(name), node ?= sub.$var
 			;	sub.name.short_name.equals(name), node ?= sub.$var
 			}
-		;	s.isPackage(), s.resolveNameR(node,path,name,tp,resfl)
+		;	s.isPackage(), s.resolveNameR(node,path,name,tp)
 		}
 	;
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		path.isStaticAllowed(),
 		((Struct)this.resolved).checkResolved(),
-		((Struct)this.resolved).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		((Struct)this.resolved).resolveNameR(node,path,name,tp),
 		node instanceof Field && node.isStatic() && node.isPublic()
 	;
 		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
@@ -152,15 +154,16 @@ public class Import extends ASTNode implements Constants, Scope {
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
-		((Method)this.resolved).equalsByCast(name,args,ret,type,resfl),
+		((Method)this.resolved).equalsByCast(name,args,ret,type),
 		node ?= ((Method)this.resolved)
 	;
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
-		((Struct)this.resolved).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		((Struct)this.resolved).resolveMethodR(node,path,name,args,ret,type),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 

@@ -309,7 +309,12 @@ public final class NArr<N extends ASTNode> {
 		return new Enumeration<N>() {
 			int current;
 			public boolean hasMoreElements() { return current < NArr.this.size(); }
-			public A nextElement() {
+			public N nextElement() {
+				if ( current < size() ) return NArr.this[current++];
+				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
+			}
+			/// BUG BUG BUG ///
+			public Object nextElement() {
 				if ( current < size() ) return NArr.this[current++];
 				throw new NoSuchElementException(Integer.toString(NArr.this.size()));
 			}

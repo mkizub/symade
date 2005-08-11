@@ -81,14 +81,14 @@ public class ASTIdentifier extends Expr {
 		}
 		ASTNode@ v;
 		ResInfo info = new ResInfo();
-		if( !PassInfo.resolveNameR(v,info,name,null,0) ) {
+		if( !PassInfo.resolveNameR(v,info,name,null) ) {
 			// May be a function
 			if( reqType instanceof MethodType ) {
 				Expr[] args = new Expr[reqType.args.length];
 				for(int i=0; i < args.length; i++) {
 					args[i] = new VarAccessExpr(pos,this,new Var(pos,this,KString.from("arg"+1),reqType.args[i],0));
 				}
-				if( PassInfo.resolveMethodR(v,null,name,args,((MethodType)reqType).ret,null,0) ) {
+				if( PassInfo.resolveMethodR(v,null,name,args,((MethodType)reqType).ret,null) ) {
 					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 					ac.pos = pos;
 					ac.parent = parent;
@@ -139,31 +139,7 @@ public class ASTIdentifier extends Expr {
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
 		Expr e = null;
-		if( v instanceof Var ) {
-			if( v.isLocalRuleVar() )
-				e = new LocalPrologVarAccessExpr(pos,this,(Var)v);
-			else
-				e = new VarAccessExpr(pos,this,(Var)v);
-		}
-		else if( v instanceof Field ) {
-			Field f = (Field)v;
-			if( f.isStatic() ) return new StaticFieldAccessExpr(pos,PassInfo.clazz,f).resolve(reqType);
-			if( info.path.length() == 0 )
-				e = new AccessExpr(pos,new ThisExpr(pos),f);
-			else {
-				List<ASTNode> acc = info.path.toList();
-				if (acc.head() instanceof Field)
-					e = new AccessExpr(pos,new ThisExpr(pos),(Field)acc.head());
-				else if (acc.head() instanceof Var)
-					e = new VarAccessExpr(pos,(Var)acc.head());
-				acc = acc.tail();
-				foreach(ASTNode n; acc) {
-					e = new AccessExpr(pos,this,e,(Field)n);
-				}
-				e = new AccessExpr(pos,this,e,(Field)f);
-			}
-		}
-		else if( v instanceof BaseStruct ) {
+		if( v instanceof BaseStruct ) {
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
 				BaseStruct s = (BaseStruct)v;
 				if( s.isPizzaCase() ) {
@@ -177,10 +153,11 @@ public class ASTIdentifier extends Expr {
 		}
 		else if( v instanceof Type ) {
 			return ((Type)v).clazz;
-		} else {
-			throw new CompilerException(pos,"Identifier "+name+" must be local var, class's field or class name");
 		}
-		e.parent = parent;
+		else {
+			e = info.buildAccess(pos, null, v);
+		}
+		this.replaceWith(e);
 		return e.resolve(reqType);
 	}
 

@@ -237,10 +237,10 @@ public class AssignExpr extends LvalueExpr {
 		}
 		Type et1 = lval.getType();
 		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.clazz.isWrapper() && !et2.clazz.isWrapper()) {
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
 			return (Expr)this.resolve(reqType);
 		}
-		else if( op == AssignOperator.Assign2 && et1.clazz.isWrapper() && et2.isInstanceOf(et1)) {
+		else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
 			return (Expr)this.resolve(reqType);
 		}
 		else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
@@ -292,15 +292,15 @@ public class AssignExpr extends LvalueExpr {
 		}
 		// Not a standard and not overloaded, try wrapped classes
 		if (op != AssignOperator.Assign2) {
-			if (et1.clazz.isWrapper()) {
+			if (et1.isWrapper()) {
 				Expr e = new AssignExpr(pos,op,new AccessExpr(lval.pos,lval,((Struct)et1.clazz).wrapped_field),value).tryResolve(reqType);
 				if (e != null) return e;
 			}
-			if (et2.clazz.isWrapper()) {
+			if (et2.isWrapper()) {
 				Expr e = new AssignExpr(pos,op,lval,new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field)).tryResolve(reqType);
 				if (e != null) return e;
 			}
-			if (et1.clazz.isWrapper() && et2.clazz.isWrapper()) {
+			if (et1.isWrapper() && et2.isWrapper()) {
 				Expr e = new AssignExpr(pos,op,
 					new AccessExpr(lval.pos,lval,((Struct)et1.clazz).wrapped_field),
 					new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field)
@@ -552,15 +552,15 @@ public class InitializeExpr extends AssignExpr {
 		}
 		Type et1 = lval.getType();
 		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.clazz.isWrapper() && !et2.clazz.isWrapper()) {
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
 			return (Expr)this.resolve(reqType);
 		}
-		else if((of_wrapper || op == AssignOperator.Assign2) && et1.clazz.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
+		else if((of_wrapper || op == AssignOperator.Assign2) && et1.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
 			return (Expr)this.resolve(reqType);
 		}
 		// Try wrapped classes
 		if (op != AssignOperator.Assign2) {
-			if (et2.clazz.isWrapper()) {
+			if (et2.isWrapper()) {
 				Expr e = new InitializeExpr(pos,op,lval,
 					new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field),of_wrapper
 					).tryResolve(reqType);
@@ -664,24 +664,24 @@ public class BinaryExpr extends Expr {
 		Type et2 = expr2.getType();
 		if( op == BinaryOperator.Add
 			&& ( et1 == Type.tpString || et2 == Type.tpString ||
-			    (et1.clazz.isWrapper() && Type.getRealType(et1,((Struct)et1.clazz).wrapped_field.type) == Type.tpString) ||
-			    (et2.clazz.isWrapper() && Type.getRealType(et2,((Struct)et2.clazz).wrapped_field.type) == Type.tpString)
+			    (et1.isWrapper() && Type.getRealType(et1,((Struct)et1.clazz).wrapped_field.type) == Type.tpString) ||
+			    (et2.isWrapper() && Type.getRealType(et2,((Struct)et2.clazz).wrapped_field.type) == Type.tpString)
 			   )
 		) {
 			if( expr1 instanceof StringConcatExpr ) {
 				StringConcatExpr sce = (StringConcatExpr)expr1;
 				Expr e = (Expr)expr2;
-				if (et2.clazz.isWrapper()) e = new AccessExpr(e.pos,e,((Struct)et2.clazz).wrapped_field);
+				if (et2.isWrapper()) e = new AccessExpr(e.pos,e,((Struct)et2.clazz).wrapped_field);
 				sce.appendArg((Expr)e.resolve(null));
 				trace(Kiev.debugStatGen,"Adding "+e+" to StringConcatExpr, now ="+sce);
 				return (Expr)sce.resolve(Type.tpString);
 			} else {
 				StringConcatExpr sce = new StringConcatExpr(pos);
 				Expr e1 = (Expr)expr1;
-				if (et1.clazz.isWrapper()) e1 = new AccessExpr(e1.pos,e1,((Struct)et1.clazz).wrapped_field);
+				if (et1.isWrapper()) e1 = new AccessExpr(e1.pos,e1,((Struct)et1.clazz).wrapped_field);
 				sce.appendArg((Expr)e1.resolve(null));
 				Expr e2 = (Expr)expr2;
-				if (et2.clazz.isWrapper()) e2 = new AccessExpr(e2.pos,e2,((Struct)et2.clazz).wrapped_field);
+				if (et2.isWrapper()) e2 = new AccessExpr(e2.pos,e2,((Struct)et2.clazz).wrapped_field);
 				sce.appendArg((Expr)e2.resolve(null));
 				trace(Kiev.debugStatGen,"Rewriting "+e1+"+"+e2+" as StringConcatExpr");
 				return (Expr)sce.resolve(Type.tpString);
@@ -727,15 +727,15 @@ public class BinaryExpr extends Expr {
 			}
 		}
 		// Not a standard and not overloaded, try wrapped classes
-		if (et1.clazz.isWrapper()) {
+		if (et1.isWrapper()) {
 			Expr e = new BinaryExpr(pos,op,new AccessExpr(expr1.pos,expr1,((Struct)et1.clazz).wrapped_field),expr2).tryResolve(reqType);
 			if (e != null) return e;
 		}
-		if (et2.clazz.isWrapper()) {
+		if (et2.isWrapper()) {
 			Expr e = new BinaryExpr(pos,op,expr1,new AccessExpr(expr2.pos,expr2,((Struct)et2.clazz).wrapped_field)).tryResolve(reqType);
 			if (e != null) return e;
 		}
-		if (et1.clazz.isWrapper() && et2.clazz.isWrapper()) {
+		if (et1.isWrapper() && et2.isWrapper()) {
 			Expr e = new BinaryExpr(pos,op,
 				new AccessExpr(expr1.pos,expr1,((Struct)et1.clazz).wrapped_field),
 				new AccessExpr(expr2.pos,expr2,((Struct)et2.clazz).wrapped_field)
@@ -1150,7 +1150,7 @@ public class CommaExpr extends Expr {
 
 @node
 @cfnode
-public class BlockExpr extends Expr implements Scope {
+public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<ASTNode>		stats;
 	@ref public final NArr<Var>			vars;
@@ -1188,7 +1188,7 @@ public class BlockExpr extends Expr implements Scope {
 
 	public int		getPriority() { return 255; }
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -1197,7 +1197,7 @@ public class BlockExpr extends Expr implements Scope {
 			node ?= n
 		;	n.isForward(),
 			info.enterForward(n) : info.leaveForward(n),
-			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			Type.getRealType(tp,n.getType()).resolveNameR(node,info,name)
 		}
 	;	n @= members,
 		{	n instanceof Struct,
@@ -1209,13 +1209,13 @@ public class BlockExpr extends Expr implements Scope {
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		Var@ n;
 	{
 		n @= vars,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -1257,7 +1257,7 @@ public class BlockExpr extends Expr implements Scope {
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						DeclStat vstat;
 						if( vdecl.init != null ) {
-							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
+							if (!type.isWrapper() || vdecl.of_wrapper)
 								vstat = (Statement)new DeclStat(
 									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
 							else
@@ -1265,7 +1265,7 @@ public class BlockExpr extends Expr implements Scope {
 									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),
 									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
 						}
-						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
+						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else
@@ -1454,7 +1454,7 @@ public class UnaryExpr extends Expr {
 			}
 		}
 		// Not a standard and not overloaded, try wrapped classes
-		if (et.clazz.isWrapper()) {
+		if (et.isWrapper()) {
 			Expr e = new UnaryExpr(pos,op,new AccessExpr(expr.pos,expr,((Struct)et.clazz).wrapped_field)).tryResolve(reqType);
 			if (e != null) return e;
 		}
@@ -2004,12 +2004,12 @@ public class CastExpr extends Expr {
 		if( !extp.isAutoCastableTo(type) ) {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
-			if (extp.clazz.isWrapper()) {
+			if (extp.isWrapper()) {
 				return new CastExpr(pos,type,
 					new AccessExpr(expr.pos,expr,((Struct)extp.clazz).wrapped_field),explicit,reinterp).tryResolve(reqType);
 			}
 		}
-		else if (extp.clazz.isWrapper() && Type.getRealType(extp,((Struct)extp.clazz).wrapped_field.type).isAutoCastableTo(type)) {
+		else if (extp.isWrapper() && Type.getRealType(extp,((Struct)extp.clazz).wrapped_field.type).isAutoCastableTo(type)) {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
 			return new CastExpr(pos,type,new AccessExpr(expr.pos,expr,((Struct)extp.clazz).wrapped_field),explicit,reinterp).tryResolve(reqType);
@@ -2031,22 +2031,17 @@ public class CastExpr extends Expr {
 
 	public Expr tryOverloadedCast(Type et) {
 		ASTNode@ v;
-		ResInfo info = new ResInfo();
+		ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		BaseStruct cl = et.clazz;
 		v.$unbind();
-		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
-			Expr ce;
-			if( info.path.length() == 0 )
-				ce = new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
-			else {
-				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(info,expr),(Method)v,Expr.emptyArray);
-			}
+		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,Expr.emptyArray,this.type,et) ) {
+			Expr ce = info.buildCall(pos,expr,(Method)v,Expr.emptyArray);
 			expr = ce;
 			return this;
 		}
 		v.$unbind();
-		info = new ResInfo();
-		if( PassInfo.resolveMethodR(v,info,nameCastOp,new Expr[]{expr},this.type,et,ResolveFlags.Static) ) {
+		info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
+		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,new Expr[]{expr},this.type,et) ) {
 			assert(v.isStatic());
 			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
 			expr = ce;
@@ -2073,7 +2068,7 @@ public class CastExpr extends Expr {
 			}
 			Type et = Type.getRealType(type,expr.getType());
 			// Try wrapped field
-			if (et.clazz.isWrapper() && ((Struct)et.clazz).wrapped_field.type.equals(type)) {
+			if (et.isWrapper() && ((Struct)et.clazz).wrapped_field.type.equals(type)) {
 				return new AccessExpr(pos,parent,expr,((Struct)et.clazz).wrapped_field).resolve(reqType);
 			}
 			// try null to something...

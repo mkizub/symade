@@ -53,29 +53,38 @@ public class ASTCallAccessExpression extends Expr {
 		Type ret = reqType;
 	retry_with_null_ret:;
 		ASTNode@ m;
-		ResInfo info = new ResInfo();
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
 		&& !PassInfo.method.isStatic() ) {
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type.clazz,m,info,func.name,args.toArray(),ret,tp,0) ) {
+			ResInfo info = new ResInfo();
+			ThisExpr sup = new ThisExpr();
+			info.enterForward(sup);
+			info.enterSuper();
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,args.toArray(),ret,tp) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
 			}
-			if( info.path.length() == 0 )
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),true).resolve(ret);
-			else
-				throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+			info.leaveSuper();
+			info.leaveForward(sup);
+			if( info.isEmpty() ) {
+				CallAccessExpr cae = new CallAccessExpr(pos,parent,sup,(Method)m,((Method)m).makeArgs(args,tp));
+				cae.super_flag = true;
+				return cae.resolve(ret);
+			}
+			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
 		} else {
 			o = obj.resolve(null);
 			if( o == null )
 				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
+		try_static:
 			if( o instanceof Struct ) {
 				cl = (Struct)o;
-				if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,args.toArray(),ret,tp,0) ) {
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
+				if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,args.toArray(),ret,tp) ) {
 					// May be a closure
-					PVar<ASTNode> closure = new PVar<ASTNode>();
+					ASTNode@ closure;
 					info = new ResInfo();
-					if( !cl.resolveNameR(closure,info,func.name,tp,0) ) {
+					if( !cl.type.resolveNameR(closure,info,func.name) ) {
 						if( ret != null ) { ret = null; goto retry_with_null_ret; }
 						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 					}
@@ -83,11 +92,8 @@ public class ASTCallAccessExpression extends Expr {
 						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 						) {
-							if( info.path.length() == 0 )
-								return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
-							else {
-								return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args.toArray()).resolve(ret);
-							}
+							Expr call = info.buildCall(pos, null, closure, args.toArray());
+							return call.resolve(ret);
 						}
 					} catch(Exception eee) {
 						Kiev.reportError(pos,eee);
@@ -104,7 +110,7 @@ public class ASTCallAccessExpression extends Expr {
 				int snitps_index = 0;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
-				if (tp.clazz.isWrapper() && func.name.byteAt(0) != '$') {
+				if (tp.isWrapper() && func.name.byteAt(0) != '$') {
 					o = (Expr)new AccessExpr(o.pos,(Expr)o,((Struct)tp.clazz).wrapped_field).resolve(null);
 					tp = o.getType();
 				}
@@ -112,11 +118,12 @@ public class ASTCallAccessExpression extends Expr {
 				if( tp.isReference() ) {
 			retry_resolving:;
 					cl = tp.clazz;
-					if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,args.toArray(),ret,tp,0) ) {
+					ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noImports);
+					if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,args.toArray(),ret,tp) ) {
 						// May be a closure
-						PVar<ASTNode> closure = new PVar<ASTNode>();
+						ASTNode@ closure;
 						info = new ResInfo();
-						if( !cl.resolveNameR(closure,info,func.name,tp,0) ) {
+						if( !tp.resolveNameR(closure,info,func.name) ) {
 							if( o instanceof Expr && snitps != null ) {
 								if( snitps_index < snitps.length ) {
 									tp = snitps[snitps_index++];
@@ -125,18 +132,17 @@ public class ASTCallAccessExpression extends Expr {
 								}
 							}
 							if( ret != null ) { ret = null; goto retry_with_null_ret; }
-							throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret)+" in "
-								+(snitps==null?tp.toString():Arrays.toString(snitps)) );
+							o = o.getType().clazz;
+							goto try_static;
+							//throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret)+" in "
+							//	+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 						}
 						try {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 							) {
-								if( info.path.length() == 0 )
-									return new ClosureCallExpr(pos,parent,(Expr)o,closure,args.toArray()).resolve(reqType);
-								else {
-									return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info,(Expr)o),closure,args.toArray()).resolve(reqType);
-								}
+								Expr call = info.buildCall(pos, (Expr)o, closure, args.toArray());
+								return call.resolve(ret);
 							}
 						} catch(Exception eee) {
 							Kiev.reportError(pos,eee);
@@ -174,11 +180,8 @@ public class ASTCallAccessExpression extends Expr {
 							return ac.resolve(reqType);
 					} else {
 						obj = (Expr)o;
-						if( m.isStatic() )
-							return new CallExpr(pos,parent,(Method)m,args.toArray()).resolve(reqType);
-						else
-							return new CallAccessExpr(pos,parent,Method.getAccessExpr(info,obj),
-								(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
+						Expr call = info.buildCall(pos, obj, m, ((Method)m).makeArgs(args,tp));
+						return call.resolve(ret);
 					}
 				} else {
 					throw new CompilerException(obj.getPos(),"Resolved object "+obj+" of type "+tp+" is not a scope");

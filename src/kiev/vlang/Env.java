@@ -100,9 +100,10 @@ public class Env extends Struct {
 	 */
 	private Env() {
 		super(ClazzName.Empty);
+		root = this;
 		setPackage(true);
 		setResolved(true);
-		type = Type.tpVoid;
+		type = Type.tpEnv;
 	}
 
 	public Object copy() {
@@ -174,7 +175,8 @@ public class Env extends Struct {
 			else
 				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 		}
-		outer.addSubStruct((Struct)cl);
+		if( outer != null )
+			outer.addSubStruct((Struct)cl);
 		return cl;
 	}
 

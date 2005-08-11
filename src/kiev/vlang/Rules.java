@@ -81,12 +81,23 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+		Var@ var;
 	{
-		node @= localvars, ((Var)node).name.equals(name)
-	;	inlined_by_dispatcher,$cut,false
-	;	node @= params, ((Var)node).name.equals(name)
-//		trace(Kiev.debugResolve,"Name "+name+" not found in method's parameters in method "+this);
+		var @= localvars,
+		var.name.equals(name),
+		node ?= var
+	;
+		inlined_by_dispatcher,$cut,false
+	;
+		var @= params,
+		var.name.equals(name),
+		node ?= var
+	;
+		var @= params,
+		var.isForward(),
+		path.enterForward(var) : path.leaveForward(var),
+		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -321,7 +332,7 @@ public abstract class ASTRuleNode extends ASTNode {
 
 
 @node
-public final class RuleBlock extends ASTNode implements Scope {
+public final class RuleBlock extends ASTNode implements ScopeOfNames {
 
 	@att public ASTRuleNode	node;
 	@att public final NArr<ASTNode>		stats;
@@ -374,7 +385,7 @@ public final class RuleBlock extends ASTNode implements Scope {
 				sb.append("int bt$").append(i).append(";\n");
 			// Local variables
 			foreach(Var v; rule_method.localvars) {
-				if( v.type.clazz.isWrapper() )
+				if( v.type.isWrapper() )
 					sb.append(v.type).append(' ').append(v.name.name)
 					  .append(" := new ").append(v.type).append("();\n");
 				else
@@ -419,18 +430,13 @@ public final class RuleBlock extends ASTNode implements Scope {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 		ASTNode@ stat;
 	{
 		stat @= stats,
 		stat instanceof DeclStat,
 		((DeclStat)stat).var.name.equals(name),
 		node ?= ((DeclStat)stat).var
-	}
-
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
-	{
-		false
 	}
 
 }
@@ -558,6 +564,12 @@ public final class RuleAndExpr extends ASTRuleNode {
 			if( i < rules.length-1 ) {
 				j = new JumpNodes(true, rules[i+1], more_back, next_back, jump_to_back);
 				if (rules[i] instanceof RuleExpr) {
+					RuleExpr re = (RuleExpr)rules[i];
+					if (re.bt_expr != null) {
+						more_back = true;
+						next_back = rules[i];
+						jump_to_back = false;
+					}
 				}
 				else if (rules[i] instanceof RuleCutExpr) {
 					more_back = false;
@@ -685,7 +697,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itypes[i] = ctype;
 				modes[i] = JENUM;
-			} else if( ctype.clazz.resolveMethodR(elems,null,nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),nameElements,Expr.emptyArray,null,ctype) ) {
 				itypes[i] = Type.getRealType(ctype,elems.type.ret);
 				modes[i] = ELEMS;
 			} else {

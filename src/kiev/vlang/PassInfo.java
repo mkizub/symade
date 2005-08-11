@@ -170,7 +170,7 @@ public class PassInfo {
 
 	public static boolean checkClassName(KString qname) {
 		PVar<ASTNode> node = new PVar<ASTNode>();
-		return resolveNameR(node,new ResInfo(),qname,null,0)
+		return resolveNameR(node,new ResInfo(),qname,null)
 			&& ((node instanceof BaseStruct && !node.isPackage()) || node instanceof Type);
 	}
 
@@ -182,7 +182,7 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -192,95 +192,91 @@ public class PassInfo {
 		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,path,qname_head,tp,resfl),
+		resolveNameR(p,path,qname_head,tp),
 		p instanceof Struct,
-		((Struct)p).resolveNameR(node, path, qname_tail, tp, resfl)
+		((Struct)p).resolveNameR(node,path,qname_tail,tp)
 	;
-		p @= new PathEnumerator(), p instanceof Scope,
+		p @= new PathEnumerator(),
+		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
-		((Scope)p).resolveNameR(node,path,name,tp,resfl)
+		((ScopeOfNames)p).resolveNameR(node,path,name,tp)
 	}
 
-	static boolean checkResolvedPathForName(ASTNode node, ResInfo info) {
-		assert(node != null);
-		// Vars will be auto-wrapped in Ref<...> if needed
-		if( node instanceof Var ) return true;
-		// Structures/types/typedefs do not need path
-		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
-			info.path.setLength(0);
-			return true;
-		}
-		// Check field
-		if( node instanceof Field || node instanceof Method ) {
-			trace( Kiev.debugResolve, "check path for "+node+" to access from "+PassInfo.clazz+" to "+node.parent);
-			assert( node.parent instanceof Struct );
-			if( node.isStatic() ) {
-				info.path.setLength(0);
-				trace( Kiev.debugResolve, "path for static "+node+" trunkated");
-				return true;
-			}
-			if( PassInfo.clazz.instanceOf((Struct)node.parent) ) {
-				assert( info.path.length() == 0 );
-				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
-				return true;
-			}
-			BaseStruct s = PassInfo.clazz;
-			// Check that path != List.Nil
-			if( info.path.length() == 0 ) {
-				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
-				// If inner clazz is static - fail
-				if( PassInfo.clazz.isStatic() ) {
-					trace( Kiev.debugResolve, "filling of path is failed - class "+PassInfo.clazz+" is static");
-//					throw new RuntimeException("Access to non-static "+node+" from staic inner class "+PassInfo.clazz);
-					return false;
-				}
-				s = PassInfo.clazz;
-			} else {
-				s = info.path.getAt(0).getType().clazz;
-				if( s.instanceOf((Struct)node.parent) ) {
-					trace( Kiev.debugResolve, "valid path - "+path);
-					return true;
-				}
-			}
-			assert( s instanceof Struct );
-			// Fill path as this$0 if possible
-		fill_path:
-			for(;;) {
-				foreach(ASTNode n; ((Struct)s).members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
-					Field f = (Field)n;
-					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
-					info.path.prepend(f);
-					// Check we've finished
-					if( f.type.clazz.instanceOf((Struct)node.parent)) return true;
-					s = f.type.clazz;
-					continue fill_path;
-				}
-				trace( Kiev.debugResolve, "Can't find this$N in class "+s+" to fill path");
-				return false;
-			}
-		}
-		throw new RuntimeException("Unknown node of type "+node.getClass());
-	}
+//	static boolean checkResolvedPathForName(ASTNode node, ResInfo info) {
+//		assert(node != null);
+//		// Vars will be auto-wrapped in Ref<...> if needed
+//		if( node instanceof Var ) return true;
+//		// Structures/types/typedefs do not need path
+//		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
+//			assert (info.isEmpty());
+//			return true;
+//		}
+//		// Check field
+//		if( node instanceof Field || node instanceof Method ) {
+//			trace( Kiev.debugResolve, "check path for "+node+" to access from "+PassInfo.clazz+" to "+node.parent);
+//			assert( node.parent instanceof Struct );
+//			if( node.isStatic() ) {
+//				assert (info.isEmpty());
+//				trace( Kiev.debugResolve, "path for static "+node+" trunkated");
+//				return true;
+//			}
+//			if( PassInfo.clazz.instanceOf((Struct)node.parent) ) {
+//				assert (info.isEmpty());
+//				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
+//				return true;
+//			}
+//			BaseStruct s = PassInfo.clazz;
+//			// Check that path != List.Nil
+//			if( info.isEmpty() ) {
+//				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
+//				// If inner clazz is static - fail
+//				if( PassInfo.clazz.isStatic() ) {
+//					trace( Kiev.debugResolve, "filling of path is failed - class "+PassInfo.clazz+" is static");
+////					throw new RuntimeException("Access to non-static "+node+" from staic inner class "+PassInfo.clazz);
+//					return false;
+//				}
+//				s = PassInfo.clazz;
+//			} else {
+//				s = info.path.getAt(0).getType().clazz;
+//				if( s.instanceOf((Struct)node.parent) ) {
+//					trace( Kiev.debugResolve, "valid path - "+path);
+//					return true;
+//				}
+//			}
+//			assert( s instanceof Struct );
+//			// Fill path as this$0 if possible
+//		fill_path:
+//			for(;;) {
+//				foreach(ASTNode n; ((Struct)s).members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
+//					Field f = (Field)n;
+//					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
+//					info.path.prepend(f);
+//					// Check we've finished
+//					if( f.type.clazz.instanceOf((Struct)node.parent)) return true;
+//					s = f.type.clazz;
+//					continue fill_path;
+//				}
+//				trace( Kiev.debugResolve, "Can't find this$N in class "+s+" to fill path");
+//				return false;
+//			}
+//		}
+//		throw new RuntimeException("Unknown node of type "+node.getClass());
+//	}
 
 	public static boolean resolveBestMethodR(
-		Scope sc,
+		ScopeOfMethods sc,
 		ASTNode@ node,
 		ResInfo info,
 		KString name,
 		Expr[] args,
 		Type ret,
-		Type type,
-		int resfl)
+		Type type)
 	{
-		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,args)+" in "+sc+" for base type "+type+" with path "+info.path);
+		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,args)+" in "+sc+" for base type "+type);
 		List<Method> lm = List.Nil;
 		List<ResInfo> lp = List.Nil;
-		if( name.equals(Constants.nameInit) || name.equals(Constants.nameClassInit) )
-			resfl |= ResolveFlags.NoForwards | ResolveFlags.NoSuper;
-		if( sc == Type.tpPrologVar.clazz )
-			resfl |= ResolveFlags.NoSuper;
-		foreach( sc.resolveMethodR(node,info,name,args,ret,type,resfl) ) {
-			trace(Kiev.debugResolve,"Candidate method "+node+" with path/transform "+info.path+"/"+info.transforms+" found...");
+		foreach( sc.resolveMethodR(node,info,name,args,ret,type) ) {
+			trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
 			if (node.isPrivate() && clazz != (Struct)node.parent)
 				continue;
 			lm = lm.concat((Method)node);
@@ -357,8 +353,8 @@ public class PassInfo {
 						if( m2.parent == sc ) continue next_method;
 						if( ((Struct)m1.parent).instanceOf((Struct)m2.parent) ) continue;
 					}
-					if( p1.transforms < p2.transforms ) continue;
-					if( p1.transforms > p2.transforms ) continue next_method;
+					if( p1.getTransforms() < p2.getTransforms() ) continue;
+					if( p1.getTransforms() > p2.getTransforms() ) continue next_method;
 					continue next_method; // Totally equals
 				}
 				else if( m1_is_better && !m2_is_better ) continue;
@@ -390,14 +386,13 @@ public class PassInfo {
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
 			msg.append("\t").append(lm.head().parent).append('.');
-			foreach(ASTNode n; lp.head().path.toList();) msg.append(n).append('.');
-			msg.append(lm.head()).append('\n');
+			msg.append(lp.head()).append(lm.head()).append('\n');
 		}
 		msg.append("while resolving ").append(Method.toString(name,args,ret));
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -405,15 +400,13 @@ public class PassInfo {
 		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,null,qname_head,type,resfl),
+		resolveNameR(p,null,qname_head,type),
 		p instanceof Struct,
-		((Struct)p).resolveMethodR(node, info, qname_tail, args, ret, type, resfl)
+		((Struct)p).resolveMethodR(node, info, qname_tail, args, ret, type)
 	;
-		p @= new PathEnumerator(), p instanceof Scope,
-		resolveBestMethodR((Scope)p,node,info,name,args,ret,type,resfl),
-		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+info.path+"/"+info.transforms+" found..."),
-		$cut
-		//,checkResolvedPathForName(node,path)
+		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
+		resolveBestMethodR((ScopeOfMethods)p,node,info,name,args,ret,type),
+		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+info+" found...")
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */

@@ -69,7 +69,7 @@ public class ShadowStat extends Statement {
 
 @node
 @cfnode
-public class InlineMethodStat extends Statement implements Scope {
+public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
 		Var		old_var;
@@ -95,18 +95,13 @@ public class InlineMethodStat extends Statement implements Scope {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
 		redir.old_var.name.equals(name),
 		$cut,
 		node ?= redir.new_var
-	}
-
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
-	{
-		false
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -178,7 +173,7 @@ public class InlineMethodStat extends Statement implements Scope {
 
 @node
 @cfnode
-public class BlockStat extends Statement implements Scope {
+public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<ASTNode>		stats;
 	@ref public final NArr<Var>			vars;
@@ -220,7 +215,7 @@ public class BlockStat extends Statement implements Scope {
 		return var;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -229,7 +224,7 @@ public class BlockStat extends Statement implements Scope {
 			node ?= n
 		;	n.isForward(),
 			info.enterForward(n) : info.leaveForward(n),
-			Type.getRealType(tp,n.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			Type.getRealType(tp,n.getType()).resolveNameR(node,info,name)
 		}
 	;	n @= members,
 		{	n instanceof Struct,
@@ -241,13 +236,13 @@ public class BlockStat extends Statement implements Scope {
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		Var@ n;
 	{
 		n @= vars,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -300,7 +295,7 @@ public class BlockStat extends Statement implements Scope {
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 						DeclStat vstat;
 						if( vdecl.init != null ) {
-							if (!type.clazz.isWrapper() || vdecl.of_wrapper)
+							if (!type.isWrapper() || vdecl.of_wrapper)
 								vstat = (Statement)new DeclStat(
 									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
 							else
@@ -311,7 +306,7 @@ public class BlockStat extends Statement implements Scope {
 //						else if( (flags & ACC_PROLOGVAR) != 0 && !vdecl.of_wrapper)
 //							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
 //								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
-						else if( vdecl.dim == 0 && type.clazz.isWrapper() && !vdecl.of_wrapper)
+						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper)
 							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
 								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
 						else
@@ -599,9 +594,9 @@ public class DeclStat extends Statement {
 					Code.addInstr(Instr.op_new,prt);
 					Code.addInstr(Instr.op_dup);
 					init.generate(var.type);
-					PVar<Method> in = new PVar<Method>();
-					PassInfo.resolveBestMethodR(prt.clazz,in,new ResInfo(),
-						nameInit,new Expr[]{init},Type.tpVoid,null,ResolveFlags.NoForwards);
+					Method@ in;
+					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),
+						nameInit,new Expr[]{init},Type.tpVoid,null);
 					Code.addInstr(Instr.op_call,in,false);
 					Code.addVar(var);
 					Code.addInstr(Instr.op_store,var);
@@ -916,8 +911,18 @@ public class IfElseStat extends Statement {
 			}
 			ScopeNodeInfoVector else_state = NodeInfoPass.popState();
 
-			if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
-			if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
+			if !(cond.isConstantExpr()) {
+				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
+				if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
+			}
+			else if (((ConstBoolExpr)cond).value) {
+				if( thenSt.isAbrupted() ) setAbrupted(true);
+				if( thenSt.isMethodAbrupted() ) setMethodAbrupted(true);
+			}
+			else if (elseSt != null){
+				if( elseSt.isAbrupted() ) setAbrupted(true);
+				if( elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
+			}
 
 			if( thenSt.isAbrupted() && (elseSt==null || elseSt.isAbrupted()) )
 				result_state = null;

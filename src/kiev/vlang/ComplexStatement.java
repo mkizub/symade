@@ -623,7 +623,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 @node
 @cfnode
-public class CatchInfo extends Statement implements Scope {
+public class CatchInfo extends Statement implements ScopeOfNames {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
@@ -653,14 +653,9 @@ public class CatchInfo extends Statement implements Scope {
 		body = null;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
-	}
-
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
-	{
-		false
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {

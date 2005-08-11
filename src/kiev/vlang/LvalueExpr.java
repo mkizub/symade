@@ -288,7 +288,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 				PVar<ASTNode> v;
 				BaseStruct s = t.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,new Expr[]{index},null,t) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
@@ -371,7 +372,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 			} else {
 				// Resolve overloaded access method
 				PVar<ASTNode> v;
-				if( !PassInfo.resolveBestMethodR(obj.getType().clazz,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,obj.getType(),ResolveFlags.NoForwards) )
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,new Expr[]{index},null,obj.getType()) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
 				obj.generate(null);
 				index.generate(null);
@@ -426,7 +428,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
 				BaseStruct s = objType.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+				if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,new Expr[]{index,o},null,objType) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
 				Code.addInstr(Instr.op_call,(Method)v,false,objType);
 				// Pop return value
@@ -452,7 +455,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
 				BaseStruct s = obj.getType().clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,new Expr[]{index,o},null,obj.getType()) )
 					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
 				// The method must return the value to duplicate
 				Method func = (Method)v;
@@ -505,6 +509,8 @@ public class ThisExpr extends LvalueExpr {
 		try {
 			if (PassInfo.clazz == null)
 				return Type.tpVoid;
+			if (PassInfo.clazz.name.short_name.equals(nameIdefault))
+				return PassInfo.clazz.interfaces[0].lnk;
 			return PassInfo.clazz.type;
 		} catch(Exception e) {
 			Kiev.reportError(pos,e);
@@ -530,7 +536,10 @@ public class ThisExpr extends LvalueExpr {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if (PassInfo.method != null && PassInfo.method.isStatic())
+			if (PassInfo.method != null &&
+				PassInfo.method.isStatic() &&
+				!PassInfo.clazz.name.short_name.equals(nameIdefault)
+			)
 				Kiev.reportError(pos,"Access 'this' in static context");
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
@@ -870,6 +879,10 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	@ref public Var		var;
 
 	public LocalPrologVarAccessExpr() {
+	}
+	
+	public LocalPrologVarAccessExpr(int pos, Var var) {
+		this(pos, null, var);
 	}
 	
 	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {

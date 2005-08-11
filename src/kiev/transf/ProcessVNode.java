@@ -228,7 +228,7 @@ public final class ProcessVNode implements Constants {
 			// Object getVal(String)
 			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);
 			Method getV = new Method(s,KString.from("getVal"),getVt,ACC_PUBLIC);
-			getV.params.add(new Var(0, getV, nameThis, s.type, 0));
+			getV.params.add(new Var(0, getV, nameThis, s.type, ACC_FORWARD));
 			getV.params.add(new Var(0, getV, KString.from("name"), Type.tpString, 0));
 			getV.body = new BlockStat(0,getV);
 			for(int i=0; i < aflds.length; i++) {
@@ -262,7 +262,7 @@ public final class ProcessVNode implements Constants {
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
 			Method copyV = new Method(s,KString.from("copy"),copyVt,ACC_PUBLIC);
-			copyV.params.append(new Var(0, copyV, nameThis, s.type, 0));
+			copyV.params.append(new Var(0, copyV, nameThis, s.type, ACC_FORWARD));
 			copyV.body = new BlockStat(0,copyV);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,null,KString.from("node"),s.type,0);
@@ -335,7 +335,7 @@ public final class ProcessVNode implements Constants {
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
 			Method setV = new Method(s,KString.from("setVal"),setVt,ACC_PUBLIC);
-			setV.params.append(new Var(0, setV, nameThis, s.type, 0));
+			setV.params.append(new Var(0, setV, nameThis, s.type, ACC_FORWARD));
 			setV.params.append(new Var(0, setV, KString.from("name"), Type.tpString, 0));
 			setV.params.append(new Var(0, setV, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
@@ -377,7 +377,7 @@ public final class ProcessVNode implements Constants {
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigReplaceVal);
 			Method setV = new Method(s,KString.from("replaceVal"),setVt,ACC_PUBLIC);
-			setV.params.append(	new Var(0, setV, nameThis, s.type, 0));
+			setV.params.append(	new Var(0, setV, nameThis, s.type, ACC_FORWARD));
 			setV.params.append(new Var(0, setV, KString.from("name"), Type.tpString, 0));
 			setV.params.append(new Var(0, setV, KString.from("old"), Type.tpObject, 0));
 			setV.params.append(new Var(0, setV, KString.from("val"), Type.tpObject, 0));

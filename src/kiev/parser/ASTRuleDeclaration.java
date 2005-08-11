@@ -71,7 +71,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 		Type type = Type.tpRule;
-		NArr<Var> vars = new NArr<Var>(null, null);
+		NArr<Var> vars = new NArr<Var>();
 		vars.append(new Var(pos,this,namePEnv,Type.tpRule,0));
 		vars[0].setForward(true);
 		Type[] margs = new Type[] {Type.tpRule};
@@ -114,7 +114,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
         me.body = body;
 		me.pbody = pbody;
 		if( !me.isStatic() )
-			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,0),0);
+			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,ACC_FORWARD),0);
 		for(int i=0; i < lvars.length; i++) {
 			lvars[i].parent = me;
 		}

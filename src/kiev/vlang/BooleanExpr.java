@@ -576,7 +576,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		if (ast1 == null)
 			return false;
 		expr1 = ast1;
-		if (!expr1.isForWrapper() && expr1.getType().clazz.isWrapper())
+		if (!expr1.isForWrapper() && expr1.getType().isWrapper())
 			expr1 = new AccessExpr(expr1.pos,expr1,((Struct)expr1.getType().clazz).wrapped_field).resolveExpr(null);
 
 		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
@@ -587,7 +587,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		if !( ast2 instanceof Expr )
 			return false;
 		expr2 = (Expr)((Expr)ast2).resolve(null);
-		if (!expr2.isForWrapper() && expr2.getType().clazz.isWrapper())
+		if (!expr2.isForWrapper() && expr2.getType().isWrapper())
 			expr2 = new AccessExpr(expr2.pos,expr2,((Struct)expr2.getType().clazz).wrapped_field).resolveExpr(null);
 		return true;
 	}
@@ -600,7 +600,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 			ex = (Expr)new ConstIntExpr(ca.caseno).resolve(Type.tpInt);
 			Type tp = expr1.getType();
-			if (tp.clazz.isWrapper()) {
+			if (tp.isWrapper()) {
 				expr1 = new AccessExpr(expr1.pos,expr1,((Struct)tp.clazz).wrapped_field).resolveExpr(null);
 				tp = expr1.getType();
 			}
@@ -837,7 +837,7 @@ public class InstanceofExpr extends BoolExpr {
 			} else {
 				expr = (Expr)e;
 				Type et = expr.getType();
-				if (!expr.isForWrapper() && et.clazz.isWrapper())
+				if (!expr.isForWrapper() && et.isWrapper())
 					expr = new AccessExpr(expr.pos,expr,((Struct)et.clazz).wrapped_field).resolveExpr(null);
 			}
 			if( !expr.getType().isCastableTo(type) ) {

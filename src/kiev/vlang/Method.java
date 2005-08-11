@@ -49,7 +49,7 @@ import syntax kiev.Syntax;
 //}
 
 @node
-public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable,TopLevelDecl {
+public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -229,12 +229,12 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		}
 	}
 
-	public boolean equals(KString name, Expr[] args, Type ret, Type type, int resfl) {
+	public boolean equals(KString name, Expr[] args, Type ret, Type type) {
 		if( this.name.equals(name) )
 			return compare(name,args,ret,type,true);
 		return false;
 	}
-	public boolean equalsByCast(KString name, Expr[] args, Type ret, Type type, int resfl) {
+	public boolean equalsByCast(KString name, Expr[] args, Type ret, Type type) {
 		if( this.name.equals(name) )
 			return compare(name,args,ret,type,false);
 		return false;
@@ -347,21 +347,32 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+		Var@ var;
 	{
 		inlined_by_dispatcher,$cut,false
-	;	node @= params, ((Var)node).name.equals(name)
-	;	node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
-	;	node ?= retvar, ((Var)node).name.equals(name)
+	;
+		var @= params,
+		var.name.equals(name),
+		node ?= var
+	;
+		node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
+	;
+		node ?= retvar, ((Var)node).name.equals(name)
+	;
+		var @= params,
+		var.isForward(),
+		path.enterForward(var) : path.leaveForward(var),
+		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		Var@ n;
 	{
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public void resolveMetaDefaults() {
@@ -418,66 +429,26 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.resolve(Type.tpVoid);
 			}
-			if (PassInfo.clazz.isAnnotation()) {
-				if( body != null ) {
-					if (type.ret.isArray()) {
-						Type t = type.ret.args[0];
-						if (t.isArray())
-							Kiev.reportError(body.pos, "Annotation default value must be one-dimentional array");
-						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
-						if (e instanceof ASTNewInitializedArrayExpression || e instanceof NewInitializedArrayExpr)
-							e = e.resolveExpr(type.ret);
-						else
-							e = e.resolveExpr(t);
-						if (e instanceof NewInitializedArrayExpr) {
-							if (e.getType() != type.ret)
-								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-							NewInitializedArrayExpr ne = (NewInitializedArrayExpr)e;
-							foreach (Expr ee; ne.args) {
-								if (!ee.isConstantExpr())
-									Kiev.reportError(body.pos, "Annotation default value must be a constant");
-							}
-						} else {
-							if (e.getType() != t)
-								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-							if (!e.isConstantExpr())
-								Kiev.reportError(body.pos, "Annotation default value must be a constant");
-							e = new NewInitializedArrayExpr(body.pos, t, 1, new Expr[]{e});
-						}
-						((ExprStat)body).expr = e;
-					} else {
-						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
-						if (!e.isConstantExpr())
-							Kiev.reportError(body.pos, "Annotation default value must be a constant");
-						else if (e.getType() != type.ret)
-							Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-						else {
-							((ExprStat)body).expr = e;
-						}
+			if( body != null ) {
+				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
+				body = ((Statement)body).resolve(Type.tpVoid);
+			}
+			if( body != null && !body.isMethodAbrupted() ) {
+				if( type.ret == Type.tpVoid ) {
+					if( body instanceof BlockStat ) {
+						((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
+						body.setAbrupted(true);
 					}
-				}
-			} else {
-				if( body != null ) {
-					if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-					body = ((Statement)body).resolve(Type.tpVoid);
-				}
-				if( body != null && !body.isMethodAbrupted() ) {
-					if( type.ret == Type.tpVoid ) {
-						if( body instanceof BlockStat ) {
-							((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
-							body.setAbrupted(true);
-						}
-						else if( body instanceof WBCCondition );
-						else
-							Kiev.reportError(pos,"Return requared");
-					} else {
+					else if( body instanceof WBCCondition );
+					else
 						Kiev.reportError(pos,"Return requared");
-					}
+				} else {
+					Kiev.reportError(pos,"Return requared");
 				}
-				foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
-					if( type.ret != Type.tpVoid ) getRetVar();
-					cond.resolve(Type.tpVoid);
-				}
+			}
+			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
+				if( type.ret != Type.tpVoid ) getRetVar();
+				cond.resolve(Type.tpVoid);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
@@ -616,39 +587,39 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return true;
 	}
 
-	public static Expr getAccessExpr(ResInfo info) {
-		Expr expr;
-		List<ASTNode> path = info.path.toList();
-		if (path.head() instanceof Field) {
-			Field f = (Field)path.head();
-			if (f.isStatic())
-				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
-			else
-				expr = new AccessExpr(0,new ThisExpr(0),f);
-		}
-		else if (path.head() instanceof Var) {
-			Var v = (Var)path.head();
-			if( v.isLocalRuleVar() )
-				expr = new LocalPrologVarAccessExpr(0,null,v);
-			else
-				expr = new VarAccessExpr(0,v);
-		}
-		else
-			throw new CompilerException(0,"Forward/with access path not with Field or Var");
-		path = path.tail();
-		foreach(ASTNode n; path) {
-			expr = new AccessExpr(0,expr,(Field)n);
-		}
-		return expr;
-	}
-
-	public static Expr getAccessExpr(ResInfo info,Expr expr) {
-		List<ASTNode> path = info.path.toList();
-		foreach(ASTNode n; path) {
-			expr = new AccessExpr(0,expr,(Field)n);
-		}
-		return expr;
-	}
+//	public static Expr getAccessExpr(ResInfo info) {
+//		Expr expr;
+//		List<ASTNode> path = info.path.toList();
+//		if (path.head() instanceof Field) {
+//			Field f = (Field)path.head();
+//			if (f.isStatic())
+//				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
+//			else
+//				expr = new AccessExpr(0,new ThisExpr(0),f);
+//		}
+//		else if (path.head() instanceof Var) {
+//			Var v = (Var)path.head();
+//			if( v.isLocalRuleVar() )
+//				expr = new LocalPrologVarAccessExpr(0,null,v);
+//			else
+//				expr = new VarAccessExpr(0,v);
+//		}
+//		else
+//			throw new CompilerException(0,"Forward/with access path not with Field or Var");
+//		path = path.tail();
+//		foreach(ASTNode n; path) {
+//			expr = new AccessExpr(0,expr,(Field)n);
+//		}
+//		return expr;
+//	}
+//
+//	public static Expr getAccessExpr(ResInfo info,Expr expr) {
+//		List<ASTNode> path = info.path.toList();
+//		foreach(ASTNode n; path) {
+//			expr = new AccessExpr(0,expr,(Field)n);
+//		}
+//		return expr;
+//	}
 
 }
 

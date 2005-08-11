@@ -70,7 +70,6 @@ public class ASTCallExpression extends Expr {
         }
 		// method of current class or first-order function
 		PVar<ASTNode> m;
-		ResInfo info = new ResInfo();
 		Type tp = PassInfo.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -83,12 +82,15 @@ public class ASTCallExpression extends Expr {
 				else
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
 			}
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz,m,info,PassInfo.method.name.name,args.toArray(),ret,tp,0) )
+			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,args.toArray(),ret,tp) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
-            if( info.path.length() == 0 )
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp),false).resolve(ret);
+            if( info.isEmpty() )
+				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),false).resolve(ret);
 			else
-				return new CallAccessExpr(pos,parent,Method.getAccessExpr(info),(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
+				throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
+			//Expr e = info.buildCall(pos,null,m,((Method)m).makeArgs(args,tp));
+			//return e.resolve(ret);
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
@@ -109,13 +111,14 @@ public class ASTCallExpression extends Expr {
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
 				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
 			}
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type.clazz,
-					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_type,0) )
+			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,
+					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_type) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
-            if( info.path.length() == 0 )
+            if( info.isEmpty() )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),true).resolve(ret);
 			else
-				throw new CompilerException(getPos(),"Super-call via forwarding is not allowed");
+				throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
 		} else {
 			Expr[] args1 = args.toArray();
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
@@ -123,11 +126,12 @@ public class ASTCallExpression extends Expr {
 					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,reqType.args[i],0)));
 				}
 			}
-			if( !PassInfo.resolveMethodR(m,info,func.name,args1,ret,tp,0) ) {
+			ResInfo info = new ResInfo();
+			if( !PassInfo.resolveMethodR(m,info,func.name,args1,ret,tp) ) {
 				// May be a closure
 				PVar<ASTNode> closure = new PVar<ASTNode>();
 				ResInfo info = new ResInfo();
-				if( !PassInfo.resolveNameR(closure,info,func.name,tp,0) ) {
+				if( !PassInfo.resolveNameR(closure,info,func.name,tp) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
@@ -135,10 +139,12 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
-						if( info.path.length()  == 0 )
+//						Expr e = info.buildCall(pos,null,m,args.toArray());
+//						return e.resolve(ret);
+						if( info.isEmpty() )
 							return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
 						else {
-							return new ClosureCallExpr(pos,parent,Method.getAccessExpr(info),closure,args.toArray()).resolve(ret);
+							return new ClosureCallExpr(pos,parent,info.buildAccess(pos,null),closure,args.toArray()).resolve(ret);
 						}
 					}
 				} catch(Exception eee) {
@@ -175,11 +181,9 @@ public class ASTCallExpression extends Expr {
 					return ac.resolve(reqType);
 			} else {
 				if( m.isStatic() )
-					info.path.setLength(0);
-	            if( info.path.length() == 0 )
-					return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
-				else
-					return new CallAccessExpr(pos,parent,Method.getAccessExpr(info),(Method)m,((Method)m).makeArgs(args,tp)).resolve(reqType);
+					assert (info.isEmpty());
+				Expr e = info.buildCall(pos,null,m,((Method)m).makeArgs(args,tp));
+				return e.resolve(ret);
 			}
 		}
 	}

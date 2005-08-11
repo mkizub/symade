@@ -138,6 +138,8 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
 	@virtual public virtual packed:1,compileflags,19 boolean is_var_local_rule_var;
 	@virtual public virtual packed:1,compileflags,20 boolean is_var_closure_proxy;
+	@virtual public virtual packed:1,compileflags,21 boolean is_var_this;
+	@virtual public virtual packed:1,compileflags,22 boolean is_var_super;
 
 	// Field specific
 	@virtual public virtual packed:1,compileflags,18 boolean is_fld_packer;
@@ -410,6 +412,13 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_wrapper(boolean on) alias setWrapper {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		this.is_struct_wrapper = on;
+		Struct s = (Struct)this;
+//		if (s.type != null) {
+			if (on)
+				s.type.flags |= StdTypes.flWrapper;
+			else
+				s.type.flags &= ~StdTypes.flWrapper;
+//		}
 	}
 
 	//
@@ -559,6 +568,24 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
 		assert(this instanceof Var,"For node "+this.getClass());
 		this.is_var_closure_proxy = on;
+	}
+	// "this" var
+	@getter public final boolean get$is_var_this()  alias isVarThis  {
+		assert(this instanceof Var,"For node "+this.getClass());
+		return this.is_var_this;
+	}
+	@setter public final void set$is_var_this(boolean on) alias setVarThis {
+		assert(this instanceof Var,"For node "+this.getClass());
+		this.is_var_this = on;
+	}
+	// "super" var
+	@getter public final boolean get$is_var_super()  alias isVarSuper {
+		assert(this instanceof Var,"For node "+this.getClass());
+		return this.is_var_super;
+	}
+	@setter public final void set$is_var_super(boolean on) alias setVarSuper {
+		assert(this instanceof Var,"For node "+this.getClass());
+		this.is_var_super = on;
 	}
 
 	//

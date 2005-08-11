@@ -67,7 +67,7 @@ public final class StructRef extends ASTNode {
 }
 
 @node(copyable=false)
-public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
+public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, Accessable {
 	
 	private static Access dummyAccess = new Access(0xFF);
 	
@@ -81,6 +81,7 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	@att public TypeRef					super_bound;
 
 	/** Bound super-class for class arguments */
+	@virtual
 	@ref public virtual abstract Type	super_type;
 
 	/** SuperInterface types */
@@ -131,21 +132,21 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 
 	public NodeName	getName() { return name; }
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 	{
-		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
+		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this+" for type "+tp),
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"BaseStruct: resolving in "+this),
-			resolveNameR_1(node,info,name,tp,resfl),	// resolve in this class
+			resolveNameR_1(node,info,name,tp),	// resolve in this class
 			$cut
-		;	(resfl & ResolveFlags.NoSuper) == 0,
+		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"BaseStruct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name,tp,resfl),	// resolve in super-classes
+			resolveNameR_3(node,info,name,tp),	// resolve in super-classes
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp)
 		Type@ arg;
 	{
 			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
@@ -153,32 +154,31 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp)
 		Type@ sup;
 	{
 		{	sup ?= super_bound.lnk,
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveNameR(node,info,name,tp)
 		;	sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveNameR(node,info,name,tp)
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
-		ASTNode@ member;
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp)
 		Type@ sup;
-		Field@ forw;
 	{
+		info.isSuperAllowed(),
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(info.path.length()==0?"":" in forward path "+info.path)),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp),
+		info.enterSuper() : info.leaveSuper(),
 		{
-			(resfl & ResolveFlags.NoSuper) == 0,
 			sup ?= super_bound.lnk,
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
-		;	(resfl & ResolveFlags.NoSuper) == 0,
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
+		;
 			sup @= TypeRef.linked_elements(interfaces),
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
 		}
 	}
 
@@ -277,6 +277,14 @@ public class BaseStruct extends ASTNode implements Named, Scope, Accessable {
 	}
 
 	public ASTNode resolve(Type reqType) { return this; }
+
+	public Dumper toJava(Dumper dmp) {
+		if( interfaces.length > 0 )
+			return dmp.append(interfaces[0]);
+		else
+			return dmp.append(super_type);
+	}
+	
 }
 
 @node(copyable=false)
@@ -287,7 +295,7 @@ public class ArgStruct extends BaseStruct {
 }
 
 @node(copyable=false)
-public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
+public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -509,80 +517,69 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 	{
-		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp+" and flags "+resfl),
+		info.isStaticAllowed(),
+		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp),
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Struct: resolving in "+this),
-			resolveNameR_1(node,info,name,tp,resfl),	// resolve in this class
+			resolveNameR_1(node,info,name,tp),	// resolve in this class
 			$cut
-		;	trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
-			(resfl & ResolveFlags.NoImports) == 0,
-			resolveNameR_2(node,info,name,tp,resfl),	// resolve in imports
+		;	info.isImportsAllowed(),
+			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
+			resolveNameR_2(node,info,name,tp),	// resolve in imports
 			$cut
 		;	this.name.short_name.equals(nameIdefault),
 			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
-			package_clazz.resolveNameR(node,info,name,tp,resfl),
+			package_clazz.resolveNameR(node,info,name,tp),
 			$cut
-		;	(resfl & ResolveFlags.NoSuper) == 0,
+		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name,tp,resfl),	// resolve in super-classes
-			$cut
-		;	(resfl & ResolveFlags.NoForwards) == 0,
-			trace(Kiev.debugResolve,"Struct: resolving in forwards of "+this),
-			resolveNameR_4(node,info,name,tp,resfl),	// resolve in forwards
+			resolveNameR_3(node,info,name,tp),	// resolve in super-classes
 			$cut
 		;	this.isPackage(),
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
-			tryLoad(node,name,resfl),
+			tryLoad(node,name),
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp)
 		Type@ arg;
 	{
-			node ?= this, ((Struct)node).name.short_name.equals(name)
-		;	node @= members,
-			node instanceof Field && ((Field)node).name.equals(name)
+			this.name.short_name.equals(name), node ?= this
 		;	arg @= type.args,
+			arg.clazz.isArgument(),
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
+		;	node @= members,
+			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 		;	node @= members,
 			node instanceof Struct && ((Struct)node).name.short_name.equals(name)
 		;	isPackage(),
 			node @= sub_clazz,
 			((Struct)node).name.short_name.equals(name)
 	}
-	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp)
 	{
 			node @= imported,
-			{	node instanceof Field && ((Field)node).name.equals(name)
+			{	node instanceof Field && node.isStatic() && ((Field)node).name.equals(name)
 			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp)
 		Type@ sup;
 	{
 			{	sup ?= super_type,
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+				sup.clazz.resolveNameR(node,info,name,tp)
 			;	sup @= TypeRef.linked_elements(interfaces),
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+				sup.clazz.resolveNameR(node,info,name,tp)
 			}
 	}
 
-	protected rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		ASTNode@ forw;
-	{
-			forw @= members,
-			forw instanceof Field && forw.isForward(),
-			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(tp,((Field)forw).type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
-	}
-
-	public boolean tryLoad(ASTNode@ node, KString name, int resfl) {
+	public boolean tryLoad(ASTNode@ node, KString name) {
         if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
@@ -613,42 +610,36 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 		return false;
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp)
 		ASTNode@ member;
 		Type@ sup;
-		Field@ forw;
 	{
+		info.isStaticAllowed(),
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp+(info.path.length()==0?"":" in forward path "+info.path)),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp),
 		{
 			node @= members,
-			node instanceof Method && ((Method)node).equalsByCast(name,args,ret,tp,resfl),
-			{
-				(resfl & ResolveFlags.Static) == 0
-			;	(resfl & ResolveFlags.Static) != 0, node.isStatic()
-			}
-		;	(resfl & ResolveFlags.NoImports) == 0 || isPackage(),
+			node instanceof Method,
+			((Method)node).name.equals(name),
+			info.check(node),
+			((Method)node).equalsByCast(name,args,ret,tp)
+		;	info.isImportsAllowed() && isPackage(),
 			node @= imported, node instanceof Method,
-			((Method)node).equalsByCast(name,args,ret,tp,resfl)
-		;	(resfl & ResolveFlags.NoSuper) == 0,
+			((Method)node).equalsByCast(name,args,ret,tp)
+		;	info.isSuperAllowed(),
 			sup ?= super_type,
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
+			info.enterSuper() : info.leaveSuper(),
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
 		;	isInterface(),
 			member @= members,
 			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
-			((Struct)member).resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoSuper )
-		;	(resfl & ResolveFlags.NoSuper) == 0,
+			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
+			((Struct)member).resolveMethodR(node,info,name,args,ret,tp)
+		;	info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp,resfl | ResolveFlags.NoImports)
-		;	(resfl & ResolveFlags.NoForwards) == 0,
-			member @= members,
-			member instanceof Field && member.isForward(),
-			info.enterForward(member) : info.leaveForward(member),
-			Type.getRealType(tp,((Field)member).type).clazz.resolveMethodR(
-				node,info,name,args,Type.getRealType(tp,ret),
-				Type.getRealType(tp,((Field)member).type),
-				resfl | ResolveFlags.NoImports)
+			info.enterSuper() : info.leaveSuper(),
+			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
 		}
 	}
 
@@ -953,9 +944,31 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			}
 		}
 
+		KString ts = KString.from(makeTypeInfoString(t));
+
+		// Special case for interfaces, that cannot have private fields,
+		// but need typeinfo in <clinit>
+		if (PassInfo.method != null &&
+			PassInfo.method.name.name == nameClassInit &&
+			PassInfo.clazz.isInterface()
+		) {
+			Type ftype = Type.tpTypeInfo;
+			if (t.args.length > 0) {
+				if (((Struct)t.clazz).typeinfo_clazz == null)
+					((Struct)t.clazz).autoGenerateTypeinfoClazz();
+				ftype = ((Struct)t.clazz).typeinfo_clazz.type;
+			}
+			Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
+			Expr e = new CastExpr(pos,ftype,new CallExpr(pos,
+					Type.tpTypeInfo.clazz.resolveMethod(
+						KString.from("newTypeInfo"),
+						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
+					), ti_args));
+			return e;
+		}
+		
 		// Lookup and create if need as $typeinfo$N
 		int i = 0;
-		KString ts = KString.from(makeTypeInfoString(t));
 	next_field:
 		foreach(ASTNode n; members; n instanceof Field && n.isStatic()) {
 			Field f = (Field)n;
@@ -1071,7 +1084,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			// add in it arguments fields, and prepare for constructor
 			MethodType ti_init;
 			Type[] ti_init_targs = new Type[this.type.args.length];
-			Var[] ti_init_params = new Var[]{new Var(pos,null,nameThis,typeinfo_clazz.type,0)};
+			Var[] ti_init_params = new Var[]{new Var(pos,null,nameThis,typeinfo_clazz.type,ACC_FORWARD)};
 			ASTNode[] stats = new ASTNode[type.args.length];
 			for (int arg=0; arg < type.args.length; arg++) {
 				Type t = type.args[arg];
@@ -1137,7 +1150,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			tim.body = new BlockStat(pos,tim,new ASTNode[]{
 				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
-			tim.params.add(new Var(pos,tim,nameThis,this.type,0));
+			tim.params.add(new Var(pos,tim,nameThis,this.type,ACC_FORWARD));
 		}
 
 	}
@@ -1297,9 +1310,9 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
 					// Also add formal parameter
 					if( m.isStatic() )
-						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],0),0);
+						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],ACC_FORWARD),0);
 					else
-						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],0),1);
+						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],ACC_FORWARD),1);
 					retype = true;
 				}
 				if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
@@ -1335,23 +1348,23 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params.append(new Var(pos,init,nameThis,this.type,0));
-						init.params.append(thisOuter=new Var(pos,init,nameThisDollar,package_clazz.type,0));
+						init.params.append(new Var(pos,init,nameThis,this.type,ACC_FORWARD));
+						init.params.append(thisOuter=new Var(pos,init,nameThisDollar,package_clazz.type,ACC_FORWARD));
 						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
 					} else {
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params.append(new Var(pos,init,nameThis,this.type,0));
+						init.params.append(new Var(pos,init,nameThis,this.type,ACC_FORWARD));
 						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
 					}
 				} else {
 					MethodType mt;
 					Type[] targs = Type.emptyArray;
-					Var[] params = new Var[]{new Var(pos,init,nameThis,this.type,0)};
+					Var[] params = new Var[]{new Var(pos,init,nameThis,this.type,ACC_FORWARD)};
 					if( package_clazz.isClazz() && !isStatic() ) {
 						targs = (Type[])Arrays.append(targs,package_clazz.type);
-						params = (Var[])Arrays.append(params,new Var(pos,init,nameThisDollar,package_clazz.type,0));
+						params = (Var[])Arrays.append(params,new Var(pos,init,nameThisDollar,package_clazz.type,ACC_FORWARD));
 					}
 					if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
@@ -1406,9 +1419,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 						defaults.setResolved(true);
 						SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 						defaults.addAttr(sfa);
-						defaults.type = Type.newRefType(defaults);
+						Type[] tarr = type.args;
+						defaults.type = Type.newRefType(defaults, tarr);
 						defaults.super_type = Type.tpObject;
-// jtype?						defaults.interfaces = (Type[])Arrays.append(defaults.interfaces,this.type);
+						defaults.interfaces.add(new TypeRef(this.type));
 					}
 					m.setStatic(true);
 					m.setVirtualStatic(true);
@@ -1489,7 +1503,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 			if (isPrimitiveEnum()) {
 				tostr.params.add(new Var(pos,tostr,nameEnumOrdinal,this.type,0));
 			} else {
-				tostr.params.add(new Var(pos,tostr,nameThis,this.type,0));
+				tostr.params.add(new Var(pos,tostr,nameThis,this.type,ACC_FORWARD));
 			}
 			tostr.body = new BlockStat(pos,tostr);
 			if (isPrimitiveEnum()) {
@@ -1933,7 +1947,7 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					mm = new Method(this, m.name.name, type1, m.flags);
 				mm.setStatic(m.isStatic());
 				if (!m.isStatic()) {
-					mm.params.append(new Var(pos,mm,Constants.nameThis,this.type,0));
+					mm.params.append(new Var(pos,mm,Constants.nameThis,this.type,ACC_FORWARD));
 					offs = 1;
 				}
 				for (int j=offs; j < mm.params.length; j++) {
@@ -2325,8 +2339,10 @@ public class Struct extends BaseStruct implements Named, Scope, ScopeOfOperators
 					MethodType.newMethodType(null,types,m.type.ret),
 					m.getFlags() | ACC_PUBLIC );
 				proxy.setPublic(true);
-				for(int l=0; l < params.length; l++)
-					params[l] = new Var(0,proxy,l==0?nameThis:KString.from("arg"+l),m.type.args[l],0);
+				params[0] = new Var(0,proxy,nameThis,m.type.args[0],ACC_FORWARD);
+				for(int l=1; l < params.length; l++) {
+					params[l] = new Var(0,proxy,KString.from("arg"+l),m.type.args[l],0);
+				}
 				proxy.params.addAll(params);
 				proxy.setStatic(false);
 				proxy.setVirtualStatic(false);

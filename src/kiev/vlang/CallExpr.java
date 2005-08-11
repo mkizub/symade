@@ -639,29 +639,15 @@ public class ClosureCallExpr extends Expr {
 			func_tp = tp;
 			for(int i=0; i < args.length; i++)
 				args[i] = args[i].resolveExpr(tp.args[i]);
-//			addArg = new Method[args.length];
-//			for(int i=0; i < args.length; i++) {
-//				if( !args[i].getType().equals(tp.args[i]) ) {
-//					if( !args[i].getType().isAutoCastableTo(tp.args[i]) )
-//						throw new RuntimeException("Closure arg "+i+": "+args[i].getType()+" is not auto-castable to "+((Expr)func).getType().args[i]);
-//					else
-//						args[i] = (Expr)new CastExpr(args[i].getPos(),tp.args[i],args[i]);
-//				}
-//				PVar<ASTNode> addArgM = new PVar<ASTNode>();
-//				if( !PassInfo.resolveBestMethodR(tp.clazz,addArgM,new PVar<List<ASTNode>>(List.Nil),KString.from("addArg"),new Expr[]{args[i]},null,reqType,0) ) {
-//					throw new RuntimeException("Can't resolve method "+Method.toString(KString.from("addArg"),new Expr[]{args[i]})+" in class "+tp.clazz);
-//				} else {
-//					addArg[i] = (Method)addArgM;
-//				}
-//			}
 			clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			KString call_it_name;
 			if( ((MethodType)tp).ret.isReference() )
 				call_it_name = KString.from("call_Object");
 			else
 				call_it_name = KString.from("call_"+((MethodType)tp).ret);
-			PVar<ASTNode> callIt = new PVar<ASTNode>();
-			if( !PassInfo.resolveBestMethodR(tp.clazz,callIt,new ResInfo(),call_it_name,Expr.emptyArray,null,reqType,ResolveFlags.NoForwards) ) {
+			ASTNode@ callIt;
+			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,Expr.emptyArray,null,reqType) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
 			} else {
 				call_it = (Method)callIt;

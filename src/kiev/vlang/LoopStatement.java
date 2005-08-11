@@ -245,7 +245,7 @@ public class DoWhileStat extends LoopStat {
 }
 
 @node
-public class ForInit extends ASTNode implements Scope {
+public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<DeclStat>	decls;
 
@@ -261,7 +261,7 @@ public class ForInit extends ASTNode implements Scope {
 		decls.cleanup();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
 		DeclStat@ n;
 	{
 		n @= decls,
@@ -269,17 +269,17 @@ public class ForInit extends ASTNode implements Scope {
 			n.var.name.equals(name), node ?= n.var
 		;	n.var.isForward(),
 			info.enterForward(n.var) : info.leaveForward(n.var),
-			Type.getRealType(tp,n.var.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+			Type.getRealType(tp,n.var.getType()).resolveNameR(node,info,name)
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		DeclStat@ n;
 	{
 		n @= decls,
 		n.var.isForward(),
 		info.enterForward(n.var) : info.leaveForward(n.var),
-		Type.getRealType(type,n.var.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		Type.getRealType(type,n.var.getType()).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -293,7 +293,7 @@ public class ForInit extends ASTNode implements Scope {
 
 @node
 @cfnode
-public class ForStat extends LoopStat implements Scope {
+public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	@att public ASTNode		init;
 	@att public Expr		cond;
@@ -412,17 +412,17 @@ public class ForStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
+		((ForInit)init).resolveNameR(node,path,name,tp)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		((ForInit)init).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public void generate(Type reqType) {
@@ -511,7 +511,7 @@ public class ForStat extends LoopStat implements Scope {
 
 @node
 @cfnode
-public class ForEachStat extends LoopStat implements Scope {
+public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	@att public Var			var;
 	@att public Var			iter;
@@ -609,7 +609,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			PVar<Method> elems = new PVar<Method>();
 			PVar<Method> nextelem = new PVar<Method>();
 			PVar<Method> moreelem = new PVar<Method>();
-			if (ctype.clazz.isWrapper()) {
+			if (ctype.isWrapper()) {
 				container = (Expr)new AccessExpr(container.pos,container,((Struct)ctype.clazz).wrapped_field).resolve(null);
 				ctype = container.getType();
 			}
@@ -622,7 +622,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itype = ctype;
 				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new ResInfo(),nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),nameElements,Expr.emptyArray,null,ctype) ) {
 				itype = Type.getRealType(ctype,elems.type.ret);
 				mode = ELEMS;
 			} else if( ctype == Type.tpRule &&
@@ -728,8 +728,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			case JENUM:
 			case ELEMS:
 				/* iter.hasMoreElements() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,new ResInfo(),
-					nameHasMoreElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+					nameHasMoreElements,Expr.emptyArray,null,ctype) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new CallAccessExpr(	iter.pos,
 						new VarAccessExpr(iter.pos,this,iter),
@@ -766,8 +766,8 @@ public class ForEachStat extends LoopStat implements Scope {
 			case JENUM:
 			case ELEMS:
 				/* var = iter.nextElement() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,new ResInfo(),
-					nameNextElement,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
+				if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+					nameNextElement,Expr.emptyArray,null,ctype) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 					var_init = new CallAccessExpr(iter.pos,
 						new VarAccessExpr(iter.pos,iter),
@@ -828,14 +828,14 @@ public class ForEachStat extends LoopStat implements Scope {
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		Var@ n;
 	{
 		{	n ?= var
@@ -843,7 +843,7 @@ public class ForEachStat extends LoopStat implements Scope {
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
 	}
 
 	public void generate(Type reqType) {
