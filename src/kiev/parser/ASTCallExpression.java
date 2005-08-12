@@ -78,7 +78,7 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[0]),0);
 				else
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
 			}
@@ -97,9 +97,9 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[2]),0);
+					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
 				else
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_type),0);
 			}
@@ -109,7 +109,7 @@ public class ASTCallExpression extends Expr {
 			) {
 				if( PassInfo.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
-				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[1]),0);
+				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[0]),0);
 			}
 			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,
@@ -123,7 +123,7 @@ public class ASTCallExpression extends Expr {
 			Expr[] args1 = args.toArray();
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
 				for(int i=0; i < reqType.args.length; i++) {
-					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,reqType.args[i],0)));
+					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,KString.Empty,reqType.args[i],0)));
 				}
 			}
 			ResInfo info = new ResInfo();

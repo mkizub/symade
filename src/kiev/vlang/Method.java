@@ -69,7 +69,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	@ref public MethodType		dtype;
 
 	/** Parameters of this method */
-	@att public final NArr<Var>		params;
+	@att public final NArr<FormPar>		params;
 
 	/** Return value of this method */
 	@att public Var			retvar;
@@ -102,6 +102,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	public boolean			inlined_by_dispatcher;
 	
 	@ref public Method		generated_from;
+	
+	@att public FormPar		this_par;
 
 	public Method() {
 	}
@@ -123,6 +125,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		this.parent = clazz;
 		this.acc = new Access(0);
 		this.meta = new MetaSet(this);
+		if ((acc & ACC_STATIC) == 0)
+			this_par = new FormPar(pos,Constants.nameThis,((Struct)parent).type,ACC_FORWARD);
 	}
 
 	@getter public Access get$acc() {
@@ -134,6 +138,17 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		acc.verifyAccessDecl(this);
 	}
 
+	public void setStatic(boolean on) {
+		super.setStatic(on);
+		if (on) {
+			if (this_par != null)
+				this_par = null; 
+		} else {
+			if (this_par == null)
+				this_par = new FormPar(pos,Constants.nameThis,((Struct)parent).type,ACC_FORWARD);
+		}
+	}
+	
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
 			f.invs = (Method[])Arrays.appendUniq(f.invs,this);
@@ -185,7 +200,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 	public Var	getRetVar() {
 		if( retvar == null )
-			retvar = new Var(pos,this,nameResultVar,type.ret,ACC_FINAL);
+			retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
 		return retvar;
 	}
 
@@ -281,18 +296,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return match;
 	}
 
-//	public Type addThrown(Type thr) {
-//		throwns = (Type[])Arrays.append(throwns,thr);
-//		return thr;
-//	}
-
-//	public Var addParametr(Var par) {
-//		params = (Var[])Arrays.append(params,par);
-//		if( code == null ) code = new Code(this);
-//		code.addVar(par);
-//		return par;
-//	}
-
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
@@ -328,12 +331,10 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		else
 			dmp.space().append(cl.name.short_name);
 		dmp.append('(');
-		int offset = 0;
-		if( !isStatic() ) offset++;
-		for(int i=offset; i < params.length; i++) {
+		for(int i=0; i < params.length; i++) {
 			if (params[i].isFinal()) dmp.append("final").forsed_space();
 			if (params[i].isForward()) dmp.append("forward").forsed_space();
-			params[i].toJavaDecl(dmp,type.args[i-offset]);
+			params[i].toJavaDecl(dmp,type.args[i]);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
@@ -348,10 +349,14 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
-		Var@ var;
+		FormPar@ var;
 		Type@ t;
 	{
 		inlined_by_dispatcher,$cut,false
+	;
+		!this.isStatic(),
+		name.equals(nameThis),
+		node ?= this_par
 	;
 		var @= params,
 		var.name.equals(name),
@@ -363,6 +368,11 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
 	;
+		!this.isStatic(),
+		var ?= this_par,
+		path.enterForward(var) : path.leaveForward(var),
+		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
+	;
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
@@ -372,6 +382,11 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
 		Var@ n;
 	{
+		!this.isStatic(),
+		n ?= this_par,
+		info.enterForward(n) : info.leaveForward(n),
+		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
@@ -423,6 +438,11 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			state.guarded = true;
 			
 			if (!inlined_by_dispatcher) {
+				if (!isStatic()) {
+					Var p = this_par;
+					NodeInfoPass.setNodeType(p,p.type);
+					NodeInfoPass.setNodeInitialized(p,true);
+				}
 				for(int i=0; i < params.length; i++) {
 					Var p = params[i];
 					NodeInfoPass.setNodeType(p,p.type);
@@ -489,6 +509,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			PassInfo.push(this);
 			try {
 				if( !isBad() ) {
+					if( !isStatic() ) Code.addVar(this_par);
 					if( params.length > 0 ) Code.addVars(params.toArray());
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck();
@@ -499,7 +520,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
 								if( !cond.parent.isStatic() )
-									Code.addInstr(Instr.op_load,params[0]);
+									Code.addInstr(Instr.op_load,this_par);
 								Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							}
 							setGenPostCond(true);
@@ -519,7 +540,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !cond.parent.isStatic() )
-								Code.addInstr(Instr.op_load,params[0]);
+								Code.addInstr(Instr.op_load,this_par);
 							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
 						}
@@ -534,6 +555,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 						}
 					}
 					if( params.length > 0 ) Code.removeVars(params.toArray());
+					if( !isStatic() ) Code.removeVar(this_par);
 				} else {
 					Code.addInstr(Instr.op_new,Type.tpError);
 					Code.addInstr(Instr.op_dup);
@@ -559,15 +581,13 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	public void generateArgumentCheck() {
 //		if( jtype == null ) return;
 		int i=0;
-		int j=0;
-		if( !isStatic() ) j++;
-		for(; i < type.args.length; i++, j++) {
+		for(; i < type.args.length; i++) {
 			Type tp1 = Type.getRealType(Kiev.argtype,jtype.args[i]);
-			Type tp2 = Type.getRealType(Kiev.argtype,params[j].type);
+			Type tp2 = Type.getRealType(Kiev.argtype,params[i].type);
 			if( !tp1.equals(tp2) ) {
-				Code.addInstr(Instr.op_load,params[j]);
+				Code.addInstr(Instr.op_load,params[i]);
 				Code.addInstr(Instr.op_checkcast,type.args[i]);
-				Code.addInstr(Instr.op_store,params[j]);
+				Code.addInstr(Instr.op_store,params[i]);
 			}
 		}
 	}
@@ -587,40 +607,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 		return true;
 	}
-
-//	public static Expr getAccessExpr(ResInfo info) {
-//		Expr expr;
-//		List<ASTNode> path = info.path.toList();
-//		if (path.head() instanceof Field) {
-//			Field f = (Field)path.head();
-//			if (f.isStatic())
-//				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
-//			else
-//				expr = new AccessExpr(0,new ThisExpr(0),f);
-//		}
-//		else if (path.head() instanceof Var) {
-//			Var v = (Var)path.head();
-//			if( v.isLocalRuleVar() )
-//				expr = new LocalPrologVarAccessExpr(0,null,v);
-//			else
-//				expr = new VarAccessExpr(0,v);
-//		}
-//		else
-//			throw new CompilerException(0,"Forward/with access path not with Field or Var");
-//		path = path.tail();
-//		foreach(ASTNode n; path) {
-//			expr = new AccessExpr(0,expr,(Field)n);
-//		}
-//		return expr;
-//	}
-//
-//	public static Expr getAccessExpr(ResInfo info,Expr expr) {
-//		List<ASTNode> path = info.path.toList();
-//		foreach(ASTNode n; path) {
-//			expr = new AccessExpr(0,expr,(Field)n);
-//		}
-//		return expr;
-//	}
 
 }
 
@@ -670,11 +656,13 @@ public class WBCCondition extends Statement {
 			PassInfo.push(this);
 			Method m = (Method)PassInfo.method;
 			try {
+				if( !m.isStatic() ) Code.addVar(m.this_par);
 				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
 				body.generate(Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
 				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
+				if( !m.isStatic() ) Code.removeVar(m.this_par);
 				Code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);

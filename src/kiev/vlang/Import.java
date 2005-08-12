@@ -86,7 +86,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 			exprs = new Expr[args.length];
 		}
 		for(int j=0; j < exprs.length; j++,i++)
-			exprs[j] = new VarAccessExpr(0,new Var(0,null,KString.Empty,args[i].getType(),0));
+			exprs[j] = new VarAccessExpr(0,new Var(0,KString.Empty,args[i].getType(),0));
 		if( !PassInfo.resolveMethodR(v,null,name.name,exprs,null,null) )
 			throw new CompilerException(pos,"Unresolved method "+Method.toString(name.name,exprs));
 		ASTNode n = v;

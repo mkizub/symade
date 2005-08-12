@@ -90,9 +90,18 @@ public class RuleMethod extends Method {
 	;
 		inlined_by_dispatcher,$cut,false
 	;
+		!this.isStatic(),
+		name.equals(nameThis),
+		node ?= this_par
+	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
+	;
+		!this.isStatic(),
+		var ?= this_par,
+		path.enterForward(var) : path.leaveForward(var),
+		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
 	;
 		var @= params,
 		var.isForward(),
@@ -109,12 +118,17 @@ public class RuleMethod extends Method {
 			ScopeNodeInfoVector state = NodeInfoPass.pushState();
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
+				if (!isStatic()) {
+					Var p = this_par;
+					NodeInfoPass.setNodeType(p,p.type);
+					NodeInfoPass.setNodeInitialized(p,true);
+				}
 				for(int i=0; i < params.length; i++) {
 					NodeInfoPass.setNodeType(params[i],params[i].type);
 					NodeInfoPass.setNodeInitialized(params[i],true);
 				}
 			}
-			Var penv = isStatic() ? params[0] : params[1];
+			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			for(int i=0; i < localvars.length; i++) {
 				NodeInfoPass.setNodeType(localvars[i],localvars[i].type);

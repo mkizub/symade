@@ -316,6 +316,7 @@ kiev.vlang.FlagsAttr kiev/vlang/FlagsAttr kiev\vlang\Attr.java
 kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
 kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java
 kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
+kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java
 kiev.vlang.GenerationsAttr kiev/vlang/GenerationsAttr kiev\vlang\Attr.java
 kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java

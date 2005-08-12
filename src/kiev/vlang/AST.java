@@ -229,6 +229,7 @@ public abstract class ASTNode implements Constants {
 		}
 		else if( this instanceof Method ) {
 			Method self = (Method)this;
+			self.setStatic((fl & ACC_STATIC) != 0);
 			self.acc = new Access(0);
 			self.acc.verifyAccessDecl(self);
 		}

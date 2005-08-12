@@ -923,15 +923,12 @@ public final class ExportJavaTop implements Constants {
 					MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
 					Method m = new Method(astn,inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
-					if( !m.isStatic() )
-						m.params.add(new Var(inv.pos,m,nameThis,astn.type,ACC_FORWARD));
 					inv.replaceWith(m);
 					m.body = inv;
 				}
 				// Inner classes and cases after all methods and fields, skip now
 				else if( members[i] instanceof Struct );
 				else if( members[i] instanceof Method );
-				else if( members[i] instanceof Field );
 				else if( members[i] instanceof Import ) {
 					me.imported.add(members[i]);
 				}
@@ -952,9 +949,8 @@ public final class ExportJavaTop implements Constants {
 				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
 				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 				init.pos = me.pos;
-				init.params.add(new Var(me.pos,Constants.nameThis,me.type,ACC_FORWARD));
 				foreach (Field f; case_attr.casefields)
-					init.params.add(new Var(f.pos,f.name.name,f.type,0));
+					init.params.add(new FormPar(f.pos,f.name.name,f.type,0));
 				me.addMethod(init);
 				init.body = new BlockStat(me.pos,init);
 			}

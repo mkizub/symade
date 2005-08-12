@@ -354,7 +354,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 							Type tp = type;
 							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-							DeclStat ds = new DeclStat(vdecl.pos, init, new Var(vdecl.pos,this,vname,tp,flags));
+							DeclStat ds = new DeclStat(vdecl.pos, init, new Var(vdecl.pos,vname,tp,flags));
 							((ForInit)init).decls.append(ds);
 							if (vdecls.hasFinal()) ds.var.setFinal(true);
 							if (vdecls.hasForward()) ds.var.setForward(true);
@@ -639,12 +639,12 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 			}
 			if( itype == Type.tpRule ) {
-				iter = new Var(pos,this,KString.from("$env"),itype,0);
+				iter = new Var(pos,KString.from("$env"),itype,0);
 			}
 			else if( var != null ) {
-				iter = new Var(var.pos,this,KString.from(var.name.name+"$iter"),itype,0);
+				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
 				if (mode == ARRAY)
-					iter_array = new Var(container.pos,this,KString.from(var.name.name+"$arr"),container.getType(),0);
+					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
 			}
 			else {
 				iter = null;

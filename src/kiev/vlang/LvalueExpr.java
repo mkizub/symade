@@ -425,7 +425,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				PVar<ASTNode> v;
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
-				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
+				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				BaseStruct s = objType.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -452,7 +452,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Type t = Code.stack_at(0);
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
 					throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
-				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
+				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				BaseStruct s = obj.getType().clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -502,7 +502,7 @@ public class ThisExpr extends LvalueExpr {
 			return null;
 		if (PassInfo.method.isStatic())
 			return null;
-		return PassInfo.method.params[0];
+		return PassInfo.method.this_par;
 	}
 	
 	public Type getType() {
@@ -550,7 +550,14 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+			if (!PassInfo.method.isStatic())
+				Code.addInstr(op_load,PassInfo.method.this_par);
+			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
+				Code.addInstr(op_load,PassInfo.method.params[0]);
+			else {
+				Kiev.reportError(pos,"Access 'this' in static context");
+				Code.addNullConst();
+			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -558,7 +565,14 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+			if (!PassInfo.method.isStatic())
+				Code.addInstr(op_load,PassInfo.method.this_par);
+			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
+				Code.addInstr(op_load,PassInfo.method.params[0]);
+			else {
+				Kiev.reportError(pos,"Access 'this' in static context");
+				Code.addNullConst();
+			}
 			Code.addInstr(op_dup);
 		} finally { PassInfo.pop(this); }
 	}
@@ -571,7 +585,14 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_store,PassInfo.method.params[0]);
+			if (!PassInfo.method.isStatic())
+				Code.addInstr(op_store,PassInfo.method.this_par);
+			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
+				Code.addInstr(op_store,PassInfo.method.params[0]);
+			else {
+				Kiev.reportError(pos,"Access 'this' in static context");
+				Code.addInstr(op_pop);
+			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -580,7 +601,14 @@ public class ThisExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			Code.addInstr(op_dup);
-			Code.addInstr(op_store,PassInfo.method.params[0]);
+			if (!PassInfo.method.isStatic())
+				Code.addInstr(op_store,PassInfo.method.this_par);
+			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
+				Code.addInstr(op_store,PassInfo.method.params[0]);
+			else {
+				Kiev.reportError(pos,"Access 'this' in static context");
+				Code.addInstr(op_pop);
+			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -705,13 +733,11 @@ public class VarAccessExpr extends LvalueExpr {
 		Type chtp = null;
 		if( var.parent instanceof Method ) {
 			Method m = (Method)var.parent;
-			for(int i=m.isStatic()?0:1; i < m.params.length; i++) {
+			for(int i=0; i < m.params.length; i++) {
 				if( var == m.params[i] ) {
-					// First param is this
 //					if( m.isStatic() ) chtp = m.jtype.args[i];
 //					else chtp = m.jtype.args[i-1];
-					if( m.isStatic() ) chtp = m.type.args[i];
-					else chtp = m.type.args[i-1];
+					chtp = m.type.args[i];
 					break;
 				}
 			}
@@ -735,7 +761,7 @@ public class VarAccessExpr extends LvalueExpr {
 				Code.addInstr(op_load,var);
 			} else {
 				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
+					Code.addInstr(op_load,PassInfo.method.this_par);
 					Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
 				} else {
 					Code.addInstr(op_load,var);
@@ -759,7 +785,7 @@ public class VarAccessExpr extends LvalueExpr {
 				Code.addInstr(op_load,var);
 			} else {
 				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
+					Code.addInstr(op_load,PassInfo.method.this_par);
 					if( var.isNeedRefProxy() ) {
 						Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
 						Code.addInstr(op_dup);
@@ -787,7 +813,7 @@ public class VarAccessExpr extends LvalueExpr {
 			if( !var.isNeedProxy() || isUseNoProxy() ) {
 			} else {
 				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
+					Code.addInstr(op_load,PassInfo.method.this_par);
 					if( var.isNeedRefProxy() ) {
 						Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
 						Code.addInstr(op_dup);
@@ -935,13 +961,8 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	public Var resolveFrameForLocalPrologVar() {
 		RuleMethod rm = (RuleMethod)PassInfo.method;
-		if( rm.isStatic() ) {
-			assert(rm.params[0].type == Type.tpRule);
-			return rm.params[0];
-		} else {
-			assert(rm.params[1].type == Type.tpRule);
-			return rm.params[1];
-		}
+		assert(rm.params[0].type == Type.tpRule);
+		return rm.params[0];
 	}
 
 	public void generateLoad() {
@@ -1216,7 +1237,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+			Code.addInstr(op_load,PassInfo.method.this_par);
 			for(int i=0; i < outer_refs.length; i++)
 				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
 		} finally { PassInfo.pop(this); }
@@ -1226,7 +1247,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+			Code.addInstr(op_load,PassInfo.method.this_par);
 			for(int i=0; i < outer_refs.length; i++) {
 				if( i == outer_refs.length-1 ) Code.addInstr(op_dup);
 				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
@@ -1238,7 +1259,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+			Code.addInstr(op_load,PassInfo.method.this_par);
 			for(int i=0; i < outer_refs.length-1; i++) {
 				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
 			}

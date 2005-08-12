@@ -207,67 +207,6 @@ public class PassInfo {
 		((ScopeOfNames)p).resolveNameR(node,path,name,tp)
 	}
 
-//	static boolean checkResolvedPathForName(ASTNode node, ResInfo info) {
-//		assert(node != null);
-//		// Vars will be auto-wrapped in Ref<...> if needed
-//		if( node instanceof Var ) return true;
-//		// Structures/types/typedefs do not need path
-//		if( node instanceof Struct || node instanceof Type || node instanceof Typedef) {
-//			assert (info.isEmpty());
-//			return true;
-//		}
-//		// Check field
-//		if( node instanceof Field || node instanceof Method ) {
-//			trace( Kiev.debugResolve, "check path for "+node+" to access from "+PassInfo.clazz+" to "+node.parent);
-//			assert( node.parent instanceof Struct );
-//			if( node.isStatic() ) {
-//				assert (info.isEmpty());
-//				trace( Kiev.debugResolve, "path for static "+node+" trunkated");
-//				return true;
-//			}
-//			if( PassInfo.clazz.instanceOf((Struct)node.parent) ) {
-//				assert (info.isEmpty());
-//				trace( Kiev.debugResolve, "node's parent "+node.parent+" is the current class "+PassInfo.clazz);
-//				return true;
-//			}
-//			BaseStruct s = PassInfo.clazz;
-//			// Check that path != List.Nil
-//			if( info.isEmpty() ) {
-//				trace( Kiev.debugResolve, "empty path - need to fill with this$N");
-//				// If inner clazz is static - fail
-//				if( PassInfo.clazz.isStatic() ) {
-//					trace( Kiev.debugResolve, "filling of path is failed - class "+PassInfo.clazz+" is static");
-////					throw new RuntimeException("Access to non-static "+node+" from staic inner class "+PassInfo.clazz);
-//					return false;
-//				}
-//				s = PassInfo.clazz;
-//			} else {
-//				s = info.path.getAt(0).getType().clazz;
-//				if( s.instanceOf((Struct)node.parent) ) {
-//					trace( Kiev.debugResolve, "valid path - "+path);
-//					return true;
-//				}
-//			}
-//			assert( s instanceof Struct );
-//			// Fill path as this$0 if possible
-//		fill_path:
-//			for(;;) {
-//				foreach(ASTNode n; ((Struct)s).members; n instanceof Field && ((Field)n).name.name.startsWith(Constants.nameThisDollar) ) {
-//					Field f = (Field)n;
-//					trace( Kiev.debugResolve, "Add "+f+" to path for node "+node);
-//					info.path.prepend(f);
-//					// Check we've finished
-//					if( f.type.clazz.instanceOf((Struct)node.parent)) return true;
-//					s = f.type.clazz;
-//					continue fill_path;
-//				}
-//				trace( Kiev.debugResolve, "Can't find this$N in class "+s+" to fill path");
-//				return false;
-//			}
-//		}
-//		throw new RuntimeException("Unknown node of type "+node.getClass());
-//	}
-
 	public static boolean resolveBestMethodR(
 		ScopeOfMethods sc,
 		ASTNode@ node,

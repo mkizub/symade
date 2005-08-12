@@ -817,17 +817,20 @@ public class InstanceofExpr extends BoolExpr {
 		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
 		PassInfo.push(this);
 		try {
-			ASTNode e = expr.resolve(null);
-			if( e instanceof BaseStruct ) {
+			Object e = expr.resolve(null);
+			if (e instanceof WrapedExpr)
+				e = ((WrapedExpr)e).getType();
+			if (e instanceof BaseStruct)
+				e = ((BaseStruct)e).type;
+			if( e instanceof TypeRef )
+				e = ((TypeRef)e).getType();
+			if( e instanceof Type ) {
 				if( Code.generation||Kiev.gen_resolve ) {
-					ASTNode e = e.resolve(null);
-					BaseStruct s = (BaseStruct)e;
-					if( s.isArgument() ) {
-						s = Type.getRealType(Kiev.argtype,s.type).clazz;
-						if( s.isArgument() )
-							s = s.super_type.clazz;
-					}
-					return new ConstBoolExpr(s.instanceOf(type.clazz));
+					Type t = (Type)e;
+					t = Type.getRealType(Kiev.argtype,t);
+					if( t.isArgument() )
+						t = t.clazz.super_type;
+					return new ConstBoolExpr(t.isInstanceOf(type));
 				} else {
 					// Resolve at generate phase
 					setGenResolve(true);
@@ -842,6 +845,9 @@ public class InstanceofExpr extends BoolExpr {
 			}
 			if( !expr.getType().isCastableTo(type) ) {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
+			}
+			if (expr.getType().isInstanceOf(type)) {
+				return new BinaryBoolExpr(pos, BinaryOperator.NotEquals,expr,new ConstNullExpr()).resolve(reqType);
 			}
 			if (!type.isArray() && type.args.length > 0) {
 				Expr be = new CallAccessExpr(pos,

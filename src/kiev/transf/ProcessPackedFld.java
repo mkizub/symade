@@ -145,15 +145,15 @@ public final class ProcessPackedFld implements Constants {
 				acc = ((VarAccessExpr)fa.obj).var;
 			}
 			else {
-				acc = new Var(0,null,KString.from("tmp$acc"),fa.obj.getType(),0);
+				acc = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
 				DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
 				be.addStatement(ds);
 			}
-			Var fval = new Var(0,null,KString.from("tmp$fldval"),Type.tpInt,0);
+			Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
 			MetaPacked mp = f.getMetaPacked();
 			DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), mp.packer));
 			be.addStatement(dsfv);
-			Var tmp = new Var(0,null,KString.from("tmp$val"),Type.tpInt,0);
+			Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
 			DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
 			be.addStatement(ds);
 			if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
@@ -233,14 +233,14 @@ public final class ProcessPackedFld implements Constants {
 					acc = ((VarAccessExpr)fa.obj).var;
 				}
 				else {
-					acc = new Var(0,null,KString.from("tmp$acc"),fa.obj.getType(),0);
+					acc = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
 					DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
 					be.addStatement(ds);
 				}
-				Var fval = new Var(0,null,KString.from("tmp$fldval"),Type.tpInt,0);
+				Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
 				DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), mp.packer));
 				be.addStatement(dsfv);
-				Var tmp = new Var(0,null,KString.from("tmp$val"),Type.tpInt,0);
+				Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
 				DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
 				be.addStatement(ds);
 				{

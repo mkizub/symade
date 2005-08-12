@@ -946,7 +946,7 @@ public class SynchronizedStat extends Statement {
 		try {
 			try {
 				expr = (Expr)expr.resolve(null);
-				expr_var = new Var(pos,this,KString.Empty,Type.tpObject,0);
+				expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 			try {
 				body = (Statement)body.resolve(Type.tpVoid);

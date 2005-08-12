@@ -490,23 +490,23 @@ public class Bytecoder implements Constants {
 			}
 			a = new EnumAttr(vf.copyIntoArray(),ea.values);
 		}
-		else if( name.equals(attrGenerations) ) {
-			kiev.bytecode.KievGenerationsAttribute ea = (kiev.bytecode.KievGenerationsAttribute)bca;
-			for(int i=0; i < ea.gens.length; i++) {
-				ClazzName sgcn = ClazzName.fromSignature(ea.getGenName(i,clazz));
-				Struct sg = Env.newStruct(sgcn,true);
-				sg.generated_from = cl;
-				sg = Env.getStruct(sgcn);
-				if( sg == null )
-					throw new RuntimeException("Can't find class "+sgcn);
-				TypeWithArgsRef t = new TypeWithArgsRef(new TypeRef(cl.type));
-				foreach (Type a; sg.type.args)
-					t.args += new TypeRef(a);
-				cl.gens.add(t);
-				((Struct)cl.gens[i].clazz).typeinfo_clazz = cl.typeinfo_clazz;
-			}
-			a = null;
-		}
+//		else if( name.equals(attrGenerations) ) {
+//			kiev.bytecode.KievGenerationsAttribute ea = (kiev.bytecode.KievGenerationsAttribute)bca;
+//			for(int i=0; i < ea.gens.length; i++) {
+//				ClazzName sgcn = ClazzName.fromSignature(ea.getGenName(i,clazz));
+//				Struct sg = Env.newStruct(sgcn,true);
+//				sg.generated_from = cl;
+//				sg = Env.getStruct(sgcn);
+//				if( sg == null )
+//					throw new RuntimeException("Can't find class "+sgcn);
+//				TypeWithArgsRef t = new TypeWithArgsRef(new TypeRef(cl.type));
+//				foreach (Type a; sg.type.args)
+//					t.args += new TypeRef(a);
+//				cl.gens.add(t);
+//				((Struct)cl.gens[i].clazz).typeinfo_clazz = cl.typeinfo_clazz;
+//			}
+//			a = null;
+//		}
 		else if( name.equals(attrPackerField) ) {
 			a = new PackerFieldAttr(((kiev.bytecode.KievPackerFieldAttribute)bca).size);
 		}

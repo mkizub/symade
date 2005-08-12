@@ -71,8 +71,8 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 		Type type = Type.tpRule;
-		NArr<Var> vars = new NArr<Var>();
-		vars.append(new Var(pos,this,namePEnv,Type.tpRule,0));
+		NArr<FormPar> vars = new NArr<FormPar>();
+		vars.append(new FormPar(pos,namePEnv,Type.tpRule,0));
 		vars[0].setForward(true);
 		Type[] margs = new Type[] {Type.tpRule};
 		Type[] mfargs = Type.emptyArray;
@@ -96,7 +96,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 				Type tp = type;
 				for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 				for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-				vars[j] = new Var(vdecl.pos,this,vname,tp,flags);
+				vars[j] = new Var(vdecl.pos,vname,tp,flags);
 				if (vdecls.hasFinal()) vars[j].setFinal(true);
 				if (vdecls.hasForward()) vars[j].setForward(true);
 				vars[j].setLocalRuleVar(true);
@@ -113,8 +113,6 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		me.setPos(getPos());
         me.body = body;
 		me.pbody = pbody;
-		if( !me.isStatic() )
-			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,ACC_FORWARD),0);
 		for(int i=0; i < lvars.length; i++) {
 			lvars[i].parent = me;
 		}

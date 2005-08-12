@@ -40,16 +40,9 @@ public class Var extends ASTNode implements Named, Typed {
 	public NodeName			name;
 	@ref public Type		type;
 	@att public MetaSet		meta;
-	private int				bcpos = -1;
+	     int				bcpos = -1;
 
 	public Var() {
-	}
-
-	public Var(int pos,ASTNode parent,KString name, Type type, int flags) {
-		super(pos,parent);
-		this.flags = flags;
-		this.name = new NodeName(name);
-		this.type = type;
 	}
 
 	public Var(int pos,KString name, Type type, int flags) {
@@ -112,6 +105,17 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public int getBCpos() {
 		return bcpos;
+	}
+
+}
+
+@node
+public class FormPar extends Var {
+	public FormPar() {
+	}
+
+	public FormPar(int pos, KString name, Type type, int flags) {
+		super(pos,name,type,flags);
 	}
 
 }

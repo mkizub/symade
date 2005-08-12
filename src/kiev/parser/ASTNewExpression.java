@@ -125,13 +125,12 @@ public class ASTNewExpression extends Expr {
 			if( args.length > 0 ) {
 				MethodType mt;
 				Type[] targs = Type.emptyArray;
-				NArr<Var> params = new NArr<Var>(null, null);
-				params.append(new Var(pos,null,nameThis,me.type,ACC_FORWARD));
+				NArr<FormPar> params = new NArr<FormPar>(null, null);
 				for(int i=0; i < args.length; i++) {
 					args[i] = (Expr)args[i].resolve(null);
 					Type at = args[i].getType();
 					targs = (Type[])Arrays.append(targs,at);
-					params.append(new Var(pos,null,KString.from("arg$"+i),at,0));
+					params.append(new FormPar(pos,KString.from("arg$"+i),at,0));
 				}
 				mt = MethodType.newMethodType(MethodType.tpMethodClazz,null,targs,Type.tpVoid);
 				Method init = new Method(me,nameInit,mt,ACC_PUBLIC);

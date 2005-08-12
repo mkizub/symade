@@ -10,7 +10,6 @@ import kiev.vlang.*;
 import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
-typedef NArr<ASTArgumentDeclaration> NArrArgDecls;
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
 
 }*/

@@ -88,16 +88,15 @@ public final class ProcessVirtFld implements Constants {
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
-			Var self;
-			Var value;
+			FormPar self;
+			FormPar value;
 			if (f.isStatic()) {
 				self = null;
-				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
+				value = new FormPar(f.pos,KString.from("value"),f.type,0);
 				set_var.params.add(value);
 			} else {
-				self = new Var(f.pos,set_var,nameThis,s.type,ACC_FORWARD);
-				value = new Var(f.pos,set_var,KString.from("value"),f.type,0);
-				set_var.params.add(self);
+				self = set_var.this_par;
+				value = new FormPar(f.pos,KString.from("value"),f.type,0);
 				set_var.params.add(value);
 			}
 			if( !f.isAbstract() ) {
@@ -162,8 +161,7 @@ public final class ProcessVirtFld implements Constants {
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
-			Var self = new Var(f.pos,get_var,nameThis,s.type,ACC_FORWARD);
-			get_var.params.add(self);
+			FormPar self = get_var.this_par;
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
@@ -411,7 +409,7 @@ public final class ProcessVirtFld implements Constants {
 						acc = ((VarAccessExpr)fa.obj).var;
 					}
 					else {
-						acc = new Var(0,null,KString.from("tmp$virt"),fa.obj.getType(),0);
+						acc = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
 						DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
 						be.addStatement(ds);
 					}
@@ -494,13 +492,13 @@ public final class ProcessVirtFld implements Constants {
 						acc = ((VarAccessExpr)fa.obj).var;
 					}
 					else {
-						acc = new Var(0,null,KString.from("tmp$virt"),fa.obj.getType(),0);
+						acc = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
 						DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
 						be.addStatement(ds);
 					}
 					Var res = null;
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr) {
-						res = new Var(0,null,KString.from("tmp$res"),f.getType(),0);
+						res = new Var(0,KString.from("tmp$res"),f.getType(),0);
 						DeclStat ds = new DeclStat(fa.obj.pos, be, res);
 						be.addStatement(ds);
 					}

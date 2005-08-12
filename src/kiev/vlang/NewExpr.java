@@ -92,7 +92,7 @@ public class NewExpr extends Expr {
 				  || (!type.clazz.isStatic() && !((Struct)type.clazz).package_clazz.isPackage()) ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
-				Var th = PassInfo.method.params[0];
+				Var th = PassInfo.method.this_par;
 				outer = (Expr)new VarAccessExpr(pos,this,th).resolve(null);
 			}
 			for(int i=0; i < args.length; i++)
@@ -551,7 +551,7 @@ public class NewClosure extends Expr {
 				Code.addInstr(op_dup);
 			// Constructor call args (first args 'this' skipped)
 			if( PassInfo.method!=null && !PassInfo.method.isStatic() )
-				Code.addInstr(Instr.op_load,PassInfo.method.params[0]);
+				Code.addInstr(Instr.op_load,PassInfo.method.this_par);
 			if( type.args == null )
 				Code.addConst(0);
 			else

@@ -878,6 +878,9 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		if( t instanceof MethodType ) {
 			return "kiev.stdlib.closure";
 		}
+		if( t.isArgument() ) {
+			return makeTypeInfoString(t.clazz.super_type);
+		}
 		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
 			if (t.clazz instanceof Struct && ((Struct)t.clazz).generated_from != null)
@@ -1071,7 +1074,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			// add in it arguments fields, and prepare for constructor
 			MethodType ti_init;
 			Type[] ti_init_targs = new Type[this.type.args.length];
-			Var[] ti_init_params = new Var[]{new Var(pos,null,nameThis,typeinfo_clazz.type,ACC_FORWARD)};
+			FormPar[] ti_init_params = new FormPar[]{};
 			ASTNode[] stats = new ASTNode[type.args.length];
 			for (int arg=0; arg < type.args.length; arg++) {
 				Type t = type.args[arg];
@@ -1080,8 +1083,8 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
-				Var v = new Var(pos,null,t.clazz.name.short_name,Type.tpTypeInfo,0);
-				ti_init_params = (Var[])Arrays.append(ti_init_params,v);
+				FormPar v = new FormPar(pos,t.clazz.name.short_name,Type.tpTypeInfo,0);
+				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,null,
 					new AssignExpr(pos,AssignOperator.Assign,
 						new AccessExpr(pos,new ThisExpr(pos),f),
@@ -1137,7 +1140,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			tim.body = new BlockStat(pos,tim,new ASTNode[]{
 				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
-			tim.params.add(new Var(pos,tim,nameThis,this.type,ACC_FORWARD));
 		}
 
 	}
@@ -1287,18 +1289,12 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					// in signature
 					targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
 					// Also add formal parameter
-					if( m.isStatic() )
-						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],ACC_FORWARD),0);
-					else
-						m.params.insert(new Var(m.pos,m,nameThisDollar,targs[0],ACC_FORWARD),1);
+					m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD),0);
 					retype = true;
 				}
 				if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 					targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
-					if( m.isStatic() )
-						m.params.insert(new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
-					else
-						m.params.insert(new Var(m.pos,m,nameTypeInfo,typeinfo_clazz.type,0),(retype?2:1));
+					m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
 					retype = true;
 				}
 				if( retype ) {
@@ -1321,40 +1317,38 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Method init = null;
 				if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 					MethodType mt;
-					Var thisOuter, maxArgs;
+					FormPar thisOuter, maxArgs;
 					if( !isStatic() ) {
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params.append(new Var(pos,init,nameThis,this.type,ACC_FORWARD));
-						init.params.append(thisOuter=new Var(pos,init,nameThisDollar,package_clazz.type,ACC_FORWARD));
-						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
+						init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					} else {
 						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
 							new Type[]{Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
-						init.params.append(new Var(pos,init,nameThis,this.type,ACC_FORWARD));
-						init.params.append(maxArgs=new Var(pos,init,KString.from("max$args"),Type.tpInt,0));
+						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					}
 				} else {
 					MethodType mt;
 					Type[] targs = Type.emptyArray;
-					Var[] params = new Var[]{new Var(pos,init,nameThis,this.type,ACC_FORWARD)};
+					FormPar[] params = new FormPar[0];
 					if( package_clazz.isClazz() && !isStatic() ) {
 						targs = (Type[])Arrays.append(targs,package_clazz.type);
-						params = (Var[])Arrays.append(params,new Var(pos,init,nameThisDollar,package_clazz.type,ACC_FORWARD));
+						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
 					}
 					if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
 						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
-						params = (Var[])Arrays.append(params,new Var(pos,init,nameTypeInfo,typeinfo_clazz.type,0));
+						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,0));
 					}
 					if( isEnum() ) {
 						targs = (Type[])Arrays.append(targs,Type.tpString);
 						targs = (Type[])Arrays.append(targs,Type.tpInt);
 						targs = (Type[])Arrays.append(targs,Type.tpString);
-						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("name"),Type.tpString,0));
-						params = (Var[])Arrays.append(params,new Var(pos,init,nameEnumOrdinal,Type.tpInt,0));
-						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("text"),Type.tpString,0));
+						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("name"),Type.tpString,0));
+						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
+						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
 					}
 					mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
 					init = new Method(this,nameInit,mt,ACC_PUBLIC);
@@ -1405,6 +1399,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					Type[] types = (Type[])Arrays.insert(m.type.args,this.type,0);
 					m.type = MethodType.newMethodType(null,types,m.type.ret);
 					m.jtype = (MethodType)m.type.getJavaType();
+					m.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,ACC_FORWARD));
 					defaults.addMethod(m);
 				}
 				if( isInterface() && !m.isStatic() ) {
@@ -1432,7 +1427,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},this.type);
 			Method tome = new Method(this,nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
-			tome.params.append(new Var(pos,tome,nameEnumOrdinal,Type.tpInt,0));
+			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos,tome);
 			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ASTNode.emptyArray);
 			EnumAttr ea;
@@ -1467,7 +1462,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
 			tostr.jtype = jtostrt;
-			tostr.params.add(new Var(pos,tostr,nameThis,this.type,ACC_FORWARD));
 			tostr.body = new BlockStat(pos,tostr);
 			sw = new SwitchStat(pos,tostr.body,
 				new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
@@ -1507,7 +1501,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
 			fromstr.jtype = jfromstrt;
-			fromstr.params.add(new Var(pos,fromstr,KString.from("val"),Type.tpString,0));
+			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString,0));
 			fromstr.body = new BlockStat(pos,fromstr);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
 				new VarAccessExpr(pos,fromstr.params[0]),
@@ -1734,7 +1728,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) )
-										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[1]));
+										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[0]));
 									else
 										throw new RuntimeException("Don't know where to get "+typeinfo_clazz.type+" $typeinfo");
 								}
@@ -1779,14 +1773,13 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 						new ExprStat(pos,null,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
-								new VarAccessExpr(pos,m.params[1])
+								new VarAccessExpr(pos,m.params[0])
 							)
 						),p++
 					);
 				}
 				if( isPizzaCase() ) {
-					for(int j= package_clazz.isClazz() && !isStatic() ? 2 : 1;
-												j < m.params.length; j++ ) {
+					for(int j= package_clazz.isClazz() ? 1 : 0; j < m.params.length; j++ ) {
 						if( m.params[j].name.name == nameTypeInfo )
 							continue;
 						Field f = resolveField(m.params[j].name.name);
@@ -1887,7 +1880,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 
 
 			List<Method> mlist = mlistb.toList();
-			int offs = 0;
 
 			// create a new dispatcher method...
 			if (mm == null) {
@@ -1897,12 +1889,8 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				else
 					mm = new Method(this, m.name.name, type1, m.flags);
 				mm.setStatic(m.isStatic());
-				if (!m.isStatic()) {
-					mm.params.append(new Var(pos,mm,Constants.nameThis,this.type,ACC_FORWARD));
-					offs = 1;
-				}
-				for (int j=offs; j < mm.params.length; j++) {
-					mm.params.append(new Var(m.params[j].pos,mm,m.params[j].name.name,mm.type.args[j-offs],m.params[j].flags));
+				for (int j=0; j < m.params.length; j++) {
+					mm.params.add(new FormPar(m.params[j].pos,m.params[j].name.name,mm.type.args[j],m.params[j].flags));
 				}
 			}
 
@@ -1926,10 +1914,10 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Statement br;
 				while (last_st.elseSt != null)
 					last_st = (IfElseStat)last_st.elseSt;
-				Expr[] vae = new Expr[mm.params.length-offs];
+				Expr[] vae = new Expr[mm.params.length];
 				for(int k=0; k < vae.length; k++) {
 					vae[k] = new CastExpr(0,mm.type.args[k],
-						new VarAccessExpr(0,mm.params[k+offs]), Kiev.verify);
+						new VarAccessExpr(0,mm.params[k]), Kiev.verify);
 				}
 				if( m.type.ret != Type.tpVoid ) {
 					if( overwr.type.ret == Type.tpVoid )
@@ -1963,16 +1951,15 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				// remove method, if need...
 				if (mm != rm) {
 					removeMethod(rm);
-					offs = m.isStatic() ? 0 : 1;
 					if (!rm.type.ret.equals(mm.type.ret)) {
 						// insert new method
 						Method nm = new Method(this,rm.name.name,rm.type,rm.flags);
 						nm.pos = rm.pos;
 						nm.name = rm.name;
 						nm.params.addAll(rm.params);
-						Expr[] vae = new Expr[mm.params.length-offs];
+						Expr[] vae = new Expr[mm.params.length];
 						for(int k=0; k < vae.length; k++) {
-							vae[k] = new VarAccessExpr(0,mm.params[k+offs]);
+							vae[k] = new VarAccessExpr(0,mm.params[k]);
 						}
 						nm.body = new BlockStat(0,nm,new ASTNode[]{
 							new ReturnStat(0,null,
@@ -2015,7 +2002,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 
 	IfElseStat makeDispatchStatInline(Method mm, MMTree mmt) {
 		Type.tpNull.checkResolved();
-		int voffs = mm.isStatic()? 0 : 1;
 		IfElseStat dsp = null;
 		Expr cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
@@ -2027,7 +2013,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Expr be = null;
 				if( mmt.m != null && !t.clazz.equals(mmt.m.type.args[j].clazz) )
 					be = new InstanceofExpr(pos,
-						new VarAccessExpr(pos,mm.params[j+voffs]),
+						new VarAccessExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
@@ -2037,9 +2023,9 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
 						new Expr[]{
-							new VarAccessExpr(pos,mm.params[j+voffs]),
+							new VarAccessExpr(pos,mm.params[j]),
 							new AccessExpr(pos,
-								new CastExpr(pos,t,new VarAccessExpr(pos,mm.params[j+voffs])),
+								new CastExpr(pos,t,new VarAccessExpr(pos,mm.params[j])),
 								t.clazz.resolveField(nameTypeInfo))
 						});
 					if( be == null )
@@ -2055,22 +2041,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				/*
-				Expr[] decls = new Expr[mm.params.length-voffs];
-				for(int k=0; k < decls.length; k++) {
-					if( mm.params[k+voffs].type.isReference() && !m.type.args[k].isReference() )
-						decls[k] = new AssignExpr(m.pos,AssignOperator.Assign,
-							new VarAccessExpr(0,mm.params[k+voffs]),
-							CastExpr.autoCastToPrimitive(new CastExpr(
-								0,Type.getRefTypeForPrimitive(m.type.args[k]),
-								new VarAccessExpr(0,mm.params[k+voffs]), Kiev.verify)
-							));
-					else
-						decls[k] = new AssignExpr(m.pos,AssignOperator.Assign,
-							new VarAccessExpr(0,mm.params[k+voffs]),
-							new CastExpr(0,m.type.args[k],new VarAccessExpr(0,mm.params[k+voffs]), Kiev.verify));
-				}
-				*/
 				Statement st = new InlineMethodStat(mmt.uppers[i].m.pos,mm,mmt.uppers[i].m,mm);
 				br = new IfElseStat(0,null,cond,st,null);
 			} else {
@@ -2264,10 +2234,10 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			if (defaults != null) {
 				foreach (ASTNode nn; defaults.members; nn instanceof Method) {
 					Method mn = (Method)nn;
-					if( mn.isStatic() && m.name.equals(mn.name) && m.type.args.length == (mn.type.args.length-1)) {
+					if( mn.isStatic() && m.name.equals(mn.name) && m.type.args.length == mn.type.args.length) {
 						boolean match = true;
 						for(int p=0; p < m.type.args.length; p++) {
-							if( !m.type.args[p].equals(mn.type.args[p+1]) ) {
+							if( !m.type.args[p].equals(mn.type.args[p]) ) {
 								match = false;
 								break;
 							}
@@ -2282,18 +2252,16 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				}
 			}
 			if( m.isStatic() && m.isVirtualStatic() ) {
-				Type[] types = new Type[m.type.args.length-1];
-				Var[] params = new Var[m.type.args.length];
+				Type[] types = new Type[m.type.args.length];
+				FormPar[] params = new FormPar[m.type.args.length];
 				for(int l=0; l < types.length; l++)
-					types[l] = m.type.args[l+1];
+					types[l] = m.type.args[l];
 				Method proxy = new Method(me,m.name.name,
 					MethodType.newMethodType(null,types,m.type.ret),
 					m.getFlags() | ACC_PUBLIC );
 				proxy.setPublic(true);
-				params[0] = new Var(0,proxy,nameThis,m.type.args[0],ACC_FORWARD);
-				for(int l=1; l < params.length; l++) {
-					params[l] = new Var(0,proxy,KString.from("arg"+l),m.type.args[l],0);
-				}
+				for(int l=0; l < params.length; l++)
+					params[l] = new FormPar(0,KString.from("arg"+l),m.type.args[l],0);
 				proxy.params.addAll(params);
 				proxy.setStatic(false);
 				proxy.setVirtualStatic(false);
@@ -2521,7 +2489,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 							int par = m.params.length;
 							KString nm = new KStringBuffer().append(nameVarProxy)
 								.append(proxy_fields[j].name).toKString();
-							m.params.append(new Var(m.pos,m,nm,proxy_fields[j].type,0));
+							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,0));
 							((BlockStat)m.body).stats.insert(
 								new ExprStat(m.pos,m.body,
 									new AssignExpr(m.pos,AssignOperator.Assign,
@@ -2771,15 +2739,9 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					}
 					if (has_pmeta) {
 						MetaSet[] mss;
-						if (m.isStatic()) {
-							mss = new MetaSet[m.params.length];
-							for (int i=0; i < mss.length; i++)
-								mss[i] = m.params[i].meta;
-						} else {
-							mss = new MetaSet[m.params.length-1];
-							for (int i=0; i < mss.length; i++)
-								mss[i] = m.params[i+1].meta;
-						}
+						mss = new MetaSet[m.params.length];
+						for (int i=0; i < mss.length; i++)
+							mss[i] = m.params[i].meta;
 						m.addAttr(new RVParMetaAttr(mss));
 					}
 					if (m.annotation_default != null)

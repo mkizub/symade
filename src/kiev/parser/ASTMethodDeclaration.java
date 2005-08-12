@@ -94,7 +94,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
-		NArr<Var> vars = new NArr<Var>(null, null);
+		NArr<FormPar> vars = new NArr<FormPar>();
 		boolean has_dispatcher = false;
 		Type type;
 		
@@ -144,7 +144,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			PassInfo.pop(this);
 		}
 		if( isVarArgs() ) {
-			vars.append(new Var(pos,null,nameVarArgs,Type.newArrayType(Type.tpObject),0));
+			vars.append(new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0));
 			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 		}
@@ -160,8 +160,6 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		}
         me.body = body;
 		me.pbody = pbody;
-		if( !me.isStatic() )
-			vars.insert(new Var(pos,me,Constants.nameThis,clazz.type,ACC_FORWARD),0);
 		foreach(ASTAlias al; aliases) al.attach(me);
 		me.params.addAll(vars);
         this.replaceWith(me);

@@ -44,13 +44,13 @@ public class ASTFormalParameter extends ASTNode {
 		this.ident = new ASTIdentifier(t.getPos(), KString.from(t.image));
 	}
 	
-	public Var pass3() {
+	public FormPar pass3() {
 		if( !Kiev.javaMode && ident.name.len == 1 && ident.name.charAt(0)=='_' ) return null;
 		// TODO: check flags for fields
 		int flags = modifiers.getFlags();
 		Type type = this.type.getType();
 		Type mm_type = (this.mm_type == null) ? null : this.mm_type.getType();
-		Var v = new Var(pos,ident.name,type,flags);
+		FormPar v = new FormPar(pos,ident.name,type,flags);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet(v);
 			modifiers.getMetas(v.meta);

@@ -86,7 +86,7 @@ public class ASTIdentifier extends Expr {
 			if( reqType instanceof MethodType ) {
 				Expr[] args = new Expr[reqType.args.length];
 				for(int i=0; i < args.length; i++) {
-					args[i] = new VarAccessExpr(pos,this,new Var(pos,this,KString.from("arg"+1),reqType.args[i],0));
+					args[i] = new VarAccessExpr(pos,new Var(pos,KString.from("arg"+1),reqType.args[i],0));
 				}
 				if( PassInfo.resolveMethodR(v,null,name,args,((MethodType)reqType).ret,null) ) {
 					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
