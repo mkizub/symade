@@ -946,9 +946,9 @@ public final class ExportJavaTop implements Constants {
 			// Create constructor for pizza case
 			if( me.isPizzaCase() ) {
 				PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
-				NArr<Type> targs = new NArr<Type>();
+				Vector<Type> targs = new Vector<Type>();
 				foreach (Field f; case_attr.casefields)
-					targs.add(f.type);
+					targs.append(f.type);
 				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
 				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 				init.pos = me.pos;

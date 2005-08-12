@@ -72,20 +72,18 @@ public class TypeExpr extends TypeRef {
 			if (!PassInfo.resolveNameR(v,new ResInfo(),op,null)) {
 				if (op == opPVar) {
 					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming "+Type.tpPrologVar);
-					v = Type.tpPrologVar;
+					v = new TypeRef(Type.tpPrologVar);
 				}
 				else if (op == opRef) {
 					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming "+Type.tpRefProxy);
-					v = Type.tpRefProxy;
+					v = new TypeRef(Type.tpRefProxy);
 				}
 				else
 					throw new CompilerException(pos,"Typedef for type operator "+op+" not found");
 			}
-			if (v instanceof TypeRef)
-				v = ((TypeRef)v).getType();
-			if !(v instanceof Type)
+			if !(v instanceof TypeRef)
 				throw new CompilerException(pos,"Expected to find type for "+op+", but found "+v);
-			Type t = (Type)v;
+			Type t = ((TypeRef)v).getType();
 			if (t.args.length != 1)
 				throw new CompilerException(pos,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			Env.getStruct(t.clazz.name);

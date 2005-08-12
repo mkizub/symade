@@ -80,7 +80,6 @@ kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Cl
 kiev.parser.ASTAccessExpression kiev/parser/ASTAccessExpression kiev\parser\ASTAccessExpression.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java
-kiev.parser.ASTArgumentDeclaration kiev/parser/ASTArgumentDeclaration kiev\parser\ASTArgumentDeclaration.java
 kiev.parser.ASTArrayElementAccessExpression kiev/parser/ASTArrayElementAccessExpression kiev\parser\ASTArrayElementAccessExpression.java
 kiev.parser.ASTBlock kiev/parser/ASTBlock kiev\parser\ASTBlock.java
 kiev.parser.ASTBreakStatement kiev/parser/ASTBreakStatement kiev\parser\ASTBreakStatement.java
@@ -256,7 +255,7 @@ kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java
 kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 kiev.vlang.Bytecoder kiev/vlang/Bytecoder kiev\vlang\Bytecoder.java
 kiev.vlang.CFLabel kiev/vlang/CFLabel kiev\vlang\Tree.java
-kiev.vlang.CFNode kiev/vlang/CFNode kiev\vlang\AST.java
+kiev.vlang.CFlowNode kiev/vlang/CFlowNode kiev\vlang\AST.java
 kiev.vlang.CP kiev/vlang/CP kiev\vlang\ConstPool.java
 kiev.vlang.CallAccessExpr kiev/vlang/CallAccessExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java

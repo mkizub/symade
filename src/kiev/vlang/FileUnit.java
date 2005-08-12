@@ -249,7 +249,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 			syn instanceof Typedef,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			name.equals(((Typedef)syn).name),
-			node ?= ((Typedef)syn).type.getType()
+			node ?= ((Typedef)syn).type
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name,tp)

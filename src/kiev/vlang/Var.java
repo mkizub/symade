@@ -276,8 +276,8 @@ public class NodeInfoPass {
 				newtypes[t2$iter] = t1;
 				continue next_type;
 			}
-			if( t1.clazz.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
-			else if( newtypes[0].clazz.isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
+			if( t1.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
+			else if( newtypes[0].isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
 			else newtypes[0] = t1;
 		}
 		trace( Kiev.debugNodeTypes, "types: add type yeilds "+Arrays.toString(newtypes));
@@ -291,8 +291,8 @@ public class NodeInfoPass {
 	next_type:
 		foreach(Type t1; types) {
 			if( t1.isInstanceOf(type) ) continue;
-			if( t1.clazz.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
-			else if( newtypes.length==0 || newtypes[0].clazz.isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
+			if( t1.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
+			else if( newtypes.length==0 || newtypes[0].isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
 			else newtypes[0] = t1;
 		}
 		if( newtypes.length == 0 )
@@ -329,10 +329,10 @@ public class NodeInfoPass {
 				if( sni1.types != null && sni2.types != null ) {
 					Type[] types = new Type[]{getDeclType(sni1.var)};
 					if( sni1.types.length > 0 && sni2.types.length > 0
-					 && sni1.types[0].clazz.isClazz() && sni2.types[0].clazz.isClazz() ) {
+					 && sni1.types[0].isClazz() && sni2.types[0].isClazz() ) {
 						types = addAccessType(types,Type.leastCommonType(sni1.types[0],sni2.types[0]));
 					}
-					foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull && t1.clazz.isInterface() ) {
+					foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull && t1.isInterface() ) {
 						foreach(Type t2; sni2.types; t2 == t1 )
 							types = addAccessType(types,t1);
 					}

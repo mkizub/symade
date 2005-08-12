@@ -349,6 +349,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
 		Var@ var;
+		Type@ t;
 	{
 		inlined_by_dispatcher,$cut,false
 	;
@@ -356,7 +357,9 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		var.name.equals(name),
 		node ?= var
 	;
-		node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
+		t @= type.fargs,
+		t.clazz.name.short_name.equals(name),
+		node ?= new TypeRef(t)
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
 	;
@@ -389,7 +392,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			}
 			if (t.isReference()) {
 				t.clazz.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
 					throw new CompilerException(pos, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);

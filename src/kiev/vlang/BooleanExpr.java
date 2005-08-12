@@ -543,9 +543,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			(	(et1.isNumber() && et2.isNumber())
 			 || (et1.isReference() && et2.isReference())
 			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
-			 || (et1.clazz.isEnum() && et2.isIntegerInCode())
-			 || (et1.isIntegerInCode() && et2.clazz.isEnum())
-			 || (et1.clazz.isEnum() && et2.clazz.isEnum() && et1 == et2)
+			 || (et1.isEnum() && et2.isIntegerInCode())
+			 || (et1.isIntegerInCode() && et2.isEnum())
+			 || (et1.isEnum() && et2.isEnum() && et1 == et2)
 			) &&
 			(   op==BinaryOperator.Equals
 			||  op==BinaryOperator.NotEquals
@@ -604,7 +604,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
 				tp = expr1.getType();
 			}
-			if( !tp.clazz.isPizzaCase() && !tp.clazz.isHasCases() )
+			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp.clazz+" with class's case "+cas);
 			Method m = tp.clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
 			expr1 = (Expr)new CallAccessExpr(ex.pos,parent,expr1,m,Expr.emptyArray).resolve(Type.tpInt);
@@ -629,11 +629,11 @@ public class BinaryBoolExpr extends BoolExpr {
 			Type t2 = expr2.getType();
 			if( !t1.equals(t2) ) {
 				if( t1.isReference() != t2.isReference()) {
-					if (t1.clazz.isEnum() && !t1.isIntegerInCode()) {
+					if (t1.isEnum() && !t1.isIntegerInCode()) {
 						expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1).resolveExpr(Type.tpInt);
 						t1 = expr1.getType();
 					}
-					if (t2.clazz.isEnum() && !t2.isIntegerInCode()) {
+					if (t2.isEnum() && !t2.isIntegerInCode()) {
 						expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2).resolveExpr(Type.tpInt);
 						t2 = expr2.getType();
 					}

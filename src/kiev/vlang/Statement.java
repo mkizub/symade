@@ -232,7 +232,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			node ?= n
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
-			node ?= ((Typedef)n).type.getType()
+			node ?= ((Typedef)n).type
 		}
 	}
 

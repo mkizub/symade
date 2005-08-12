@@ -157,7 +157,7 @@ public class AccessExpr extends LvalueExpr {
 			obj.generate(null);
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_getfield,f,obj.getType());
-			if( Kiev.verify && f.type.clazz.isArgument()
+			if( Kiev.verify && f.type.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
 		} finally { PassInfo.pop(this); }
@@ -177,7 +177,7 @@ public class AccessExpr extends LvalueExpr {
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_dup);
 			Code.addInstr(op_getfield,f,obj.getType());
-			if( Kiev.verify && f.type.clazz.isArgument()
+			if( Kiev.verify && f.type.isArgument()
 			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
 				Code.addInstr(op_checkcast,getType());
 		} finally { PassInfo.pop(this); }

@@ -151,8 +151,8 @@ public class ASTIdentifier extends Expr {
 			}
 			return v;
 		}
-		else if( v instanceof Type ) {
-			return ((Type)v).clazz;
+		else if( v instanceof TypeRef ) {
+			return ((TypeRef)v).getType().clazz;
 		}
 		else {
 			e = info.buildAccess(pos, null, v);

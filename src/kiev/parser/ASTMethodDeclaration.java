@@ -51,16 +51,19 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
     @att public MetaValue								annotation_default;
 
 	@ref public Method									me;
-	@ref public final NArr<Type>						ftypes;
+	@ref public Type[]									ftypes;
 
 	ASTMethodDeclaration() {
 		modifiers = new ASTModifiers();
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+		Type@ t;
 	{
-		node @= ftypes,
-		((Type)node).clazz.name.short_name.equals(name)
+		ftypes != null,
+		t @= ftypes,
+		t.clazz.name.short_name.equals(name),
+		node ?= new TypeRef(t)
 	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type)
@@ -83,8 +86,11 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 
-		foreach (BaseStruct ad; argtypes)
-			ftypes.append( ad.type );
+		if (argtypes.length > 0) {
+			ftypes = new Type[argtypes.length];
+			for (int i=0; i < argtypes.length; i++)
+				ftypes[i] = argtypes[i].type;
+		}
 
 		Type[] margs = Type.emptyArray;
 		Type[] mjargs = Type.emptyArray;
@@ -124,7 +130,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 					mjargs = (Type[])Arrays.append(mjargs,fdecl.mm_type.getType());
 					has_dispatcher = true;
 				}
-				else if (fdecl.type.getType().clazz.isPizzaCase()) {
+				else if (fdecl.type.getType().isPizzaCase()) {
 					mjargs = (Type[])Arrays.append(mjargs,
 						Type.getRealType(PassInfo.clazz.type,
 							fdecl.type.getType().clazz.super_type));
@@ -142,7 +148,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
 		}
-		MethodType mtype = MethodType.newMethodType(null,ftypes.toArray(),margs,type);
+		MethodType mtype = MethodType.newMethodType(null,ftypes,margs,type);
 		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,null,mjargs,type) : null;
 		me = new Method(clazz,ident.name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);

@@ -169,9 +169,14 @@ public class PassInfo {
 	}
 
 	public static boolean checkClassName(KString qname) {
-		PVar<ASTNode> node = new PVar<ASTNode>();
-		return resolveNameR(node,new ResInfo(),qname,null)
-			&& ((node instanceof BaseStruct && !node.isPackage()) || node instanceof Type);
+		ASTNode@ node;
+		if (!resolveNameR(node,new ResInfo(),qname,null))
+			return false;
+		if (node instanceof BaseStruct && !node.isPackage())
+			return true;
+		if (node instanceof TypeRef)
+			return true;
+		return false;
 	}
 
 	public static rule resolveOperatorR(Operator@ op)

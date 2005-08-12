@@ -31,8 +31,7 @@ import syntax kiev.Syntax;
  *
  */
 
-@node(copyable=false)
-public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFlags {
+public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
 	static Hash<Type>		typeHash;
@@ -50,7 +49,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 	Type() {}
 
 	protected Type(BaseStruct clazz) {
-		super(0);
 		this.clazz = clazz;
 		signature = Signature.from(clazz, null, null, null);
 		java_signature = Signature.getJavaSignature(signature);
@@ -62,7 +60,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 	}
 
 	protected Type(BaseStruct clazz, Type[] args) {
-		super(0);
 		this.clazz = clazz;
 		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
@@ -118,10 +115,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 	protected Type(ClazzName name, Type[] args) {
 		this(Env.newStruct(name),args);
 	}
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"Type node cannot be copied");
-	};
 
 	public static Type newJavaRefType(BaseStruct clazz) {
 		Type[] args = Type.emptyArray;
@@ -244,7 +237,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		Type@ arg;
 	{
 			arg @= this.args,
-			arg.clazz.isArgument(),
+			arg.isArgument(),
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
 		;	clazz instanceof Struct,
@@ -294,7 +287,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		;
 			clazz.isInterface(),
 			member @= getStruct().members,
-			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
+			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(Constants.nameIdefault),
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
 			((Struct)member).resolveMethodR(node,info,name,args,ret,tp)
 		;
@@ -354,7 +347,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		else if (this.isBoolean() && to.isBoolean() ) return true;
 		else if (clazz.isArgument() && clazz.super_type != null)
 			return clazz.super_type.equals(to);
-		else if (to.clazz.isArgument() && to.clazz.super_type != null)
+		else if (to.isArgument() && to.clazz.super_type != null)
 			return this.equals(to.clazz.super_type);
 		return false;
 	}
@@ -384,7 +377,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 			throw new RuntimeException("Unresolved type:"+e);
 		}
 		// Is this a case class without arguments?
-//		if( t1.clazz.isPizzaCase() && t1.clazz.super_clazz.clazz.equals(t2.clazz) )
+//		if( t1.isPizzaCase() && t1.clazz.super_clazz.clazz.equals(t2.clazz) )
 //			return true;
 		// Instance of closure
 		if( t1.clazz.instanceOf(Type.tpClosureClazz) &&
@@ -425,7 +418,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		if( isInstanceOf(t) ) return true;
 		if( this.isReference() && t.isReference() && this.clazz instanceof Struct
 		 && ((Struct)this.clazz).package_clazz.isClazz()
-		 && !this.clazz.isArgument()
+		 && !this.isArgument()
 		 && !this.clazz.isStatic() && ((Struct)this.clazz).package_clazz.type.isAutoCastableTo(t)
 		)
 			return true;
@@ -560,18 +553,18 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
-		if( this.isReference() && t.isReference() && (this.clazz.isInterface() || t.clazz.isInterface()) ) return true;
-		if( this.isReference() && t.isReference() && (this.clazz.name.short_name.equals(nameIdefault)) ) return true;
+		if( this.isReference() && t.isReference() && (this.isInterface() || t.isInterface()) ) return true;
+		if( this.isReference() && t.isReference() && (this.clazz.name.short_name.equals(Constants.nameIdefault)) ) return true;
 		if( this.isReference() && t.isReference() && this.clazz instanceof Struct
 		 && ((Struct)this.clazz).package_clazz.isClazz()
-		 && !this.clazz.isArgument()
+		 && !this.isArgument()
 		 && !this.clazz.isStatic() && ((Struct)this.clazz).package_clazz.type.isAutoCastableTo(t)
 		)
 			return true;
-		if( t.clazz.isEnum())
+		if( t.isEnum())
 			return this.isCastableTo(Type.tpInt);
-		if( t.clazz.isArgument() && isCastableTo(t.clazz.super_type) ) return true;
-		if( t.clazz.isArgument() && !this.isReference() ) {
+		if( t.isArgument() && isCastableTo(t.clazz.super_type) ) return true;
+		if( t.isArgument() && !this.isReference() ) {
 //			Kiev.reportWarning(0,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			return true;
 		}
@@ -625,6 +618,15 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
 
+	public final boolean isArgument()		{ return clazz.isArgument(); }
+	public final boolean isAnnotation()	{ return clazz.isAnnotation(); }
+	public final boolean isAbstract()		{ return clazz.isAbstract(); }
+	public final boolean isEnum()			{ return clazz.isEnum(); }
+	public final boolean isJavaEnum()		{ return clazz.isJavaEnum(); }
+	public final boolean isInterface()		{ return clazz.isInterface(); }
+	public final boolean isClazz()			{ return clazz.isClazz(); }
+	public final boolean isHasCases()		{ return clazz.isHasCases(); }
+	public final boolean isPizzaCase()		{ return clazz.isPizzaCase(); }
 	public final boolean isWrapper()		{ return (flags & flWrapper)		!= 0 ; }
 	
 	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)from,getStruct().wrapped_field); } 
@@ -690,7 +692,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 //			if( t1.clazz.super_clazz == null ) return t2;
 //			t1 = t1.clazz.super_clazz;
 //		}
-		if( t2.clazz.isArgument() ) {
+		if( t2.isArgument() ) {
 			for(int i=0; i < t1.args.length && i < t1.clazz.type.args.length; i++) {
 				if( t1.clazz.type.args[i].string_equals(t2) ) {
 					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
@@ -843,10 +845,6 @@ public class MethodType extends Type {
 		t = new MethodType(clazz,ret,args,fargs);
 		return t;
 	}
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"MethodType node cannot be copied");
-	};
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();

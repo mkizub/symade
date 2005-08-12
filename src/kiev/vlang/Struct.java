@@ -536,7 +536,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	{
 			this.name.short_name.equals(name), node ?= this
 		;	arg @= type.args,
-			arg.clazz.isArgument(),
+			arg.isArgument(),
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
 		;	node @= members,
@@ -919,7 +919,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			if( this.type.isInstanceOf(t.clazz.type) )
 				return ti_access;
 
-			if (t.clazz.isArgument()) {
+			if (t.isArgument()) {
 				// Get corresponded type argument
 				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.clazz.name.short_name.length())
 						.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();

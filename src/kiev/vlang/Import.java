@@ -149,7 +149,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		;	tmp instanceof Typedef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
 			((Typedef)tmp).name.equals(name),
-			node ?= ((Typedef)tmp).type.getType()
+			node ?= ((Typedef)tmp).type
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}

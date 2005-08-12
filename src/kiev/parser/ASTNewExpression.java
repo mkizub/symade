@@ -105,7 +105,7 @@ public class ASTNewExpression extends Expr {
 		clazz.setStatic(PassInfo.method==null || PassInfo.method.isStatic());
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		clazz.addAttr(sfa);
-		if( sup.clazz.isInterface() ) {
+		if( sup.isInterface() ) {
 			clazz.super_type = Type.tpObject;
 			clazz.interfaces.add(new TypeRef(sup));
 		} else {

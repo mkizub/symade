@@ -578,7 +578,7 @@ public class Code implements Constants {
 			try {
 				Type t1 = stack_at(mtype.args.length-i-1);
 				Type t2 = mtype.args[i];
-				if( t1.clazz.isArgument() || t2.clazz.isArgument() ) continue;
+				if( t1.isArgument() || t2.isArgument() ) continue;
 //				if( !t1.isInstanceOf(t2) && !(t1.isIntegerInCode() && t2.isIntegerInCode()) )
 //					throw new RuntimeException("Type of call argument in stack pos "+(m.params.length-i-1)
 //						+" is "+stack_at(m.params.length-i-1)+" but method "+m+" expects "+m.params[i].type);

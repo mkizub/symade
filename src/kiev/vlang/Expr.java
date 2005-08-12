@@ -1195,7 +1195,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			node ?= n
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
-			node ?= ((Typedef)n).type.getType()
+			node ?= ((Typedef)n).type
 		}
 	}
 
@@ -2099,9 +2099,9 @@ public class CastExpr extends Expr {
 			}
 
 			if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
-				if( !et.isReference() && type.clazz.isArgument() )
+				if( !et.isReference() && type.isArgument() )
 					Kiev.reportWarning(pos,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
-				else if (!et.clazz.isEnum())
+				else if (!et.isEnum())
 					throw new CompilerException(pos,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
 			if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
 				throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
@@ -2113,7 +2113,7 @@ public class CastExpr extends Expr {
 			if( et.isReference() && et.isInstanceOf((Type)type) ) return expr;
 			if( et.isReference() && type.isReference() && et.clazz instanceof Struct
 			 && ((Struct)et.clazz).package_clazz.isClazz()
-			 && !et.clazz.isArgument()
+			 && !et.isArgument()
 			 && !et.clazz.isStatic() && ((Struct)et.clazz).package_clazz.type.isAutoCastableTo(type)
 			) {
 				return new CastExpr(pos,type,

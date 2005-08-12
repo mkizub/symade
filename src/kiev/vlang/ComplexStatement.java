@@ -106,7 +106,7 @@ public class CaseLabel extends ASTNode {
 							Type et = sw.sel.getType();
 							if( f.var.type != et )
 								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
-							if (et.clazz.isEnum())
+							if (et.isEnum())
 								val = new ConstIntExpr(((Struct)et.clazz).getValueForEnumField(f.var));
 							else
 								val = (Expr)f.var.init.copy();
@@ -293,7 +293,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			try {
 				sel = (Expr)sel.resolve(Type.tpInt);
 				Type tp = sel.getType();
-				if( tp.clazz.isEnum() ) {
+				if( tp.isEnum() ) {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
@@ -308,7 +308,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						me.addStatement(ds);
 						me.addStatement(this);
 //					}
-					if( tp.clazz.isHasCases() ) {
+					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.pos = pos;

@@ -84,7 +84,7 @@ public class NewExpr extends Expr {
 			if( type.clazz.isAnonymouse() ) {
 				type.clazz.resolve(null);
 			}
-			if( !type.clazz.isArgument() && (type.clazz.isAbstract() || !type.clazz.isClazz()) ) {
+			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
 			}
 			if( outer != null ) outer = (Expr)outer.resolve(null);
@@ -120,7 +120,7 @@ public class NewExpr extends Expr {
 				outer_args = (Expr[])Arrays.insert(outer_args,tif_expr,(outer!=null?1:0));
 			}
 			// Don't try to find constructor of argument type
-			if( !type.clazz.isArgument() ) {
+			if( !type.isArgument() ) {
 				PVar<Method> m;
 				// First try overloaded 'new', than real 'new'
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
@@ -155,7 +155,7 @@ public class NewExpr extends Expr {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
 		PassInfo.push(this);
 		try {
-			if( type.clazz.isArgument() ) {
+			if( type.isArgument() ) {
 				if( outer != null || args.length > 0 ) {
 					Kiev.reportError(pos,"Constructor with arguments for type argument is not supported");
 					return;
@@ -295,7 +295,7 @@ public class NewArrayExpr extends Expr {
 			for(int i=0; i < args.length; i++)
 				if( args[i] != null )
 					args[i] = args[i].resolveExpr(Type.tpInt);
-			if( type.clazz.isArgument() ) {
+			if( type.isArgument() ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"Access to argument "+type+" from static method");
 				int i;

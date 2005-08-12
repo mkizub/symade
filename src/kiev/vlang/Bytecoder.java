@@ -111,7 +111,7 @@ public class Bytecoder implements Constants {
 			Type interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
 			if( Env.getStruct(interf.clazz.name) == null )
 				throw new RuntimeException("Class "+interf.clazz.name+" not found");
-			if( !interf.clazz.isInterface() )
+			if( !interf.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
 			cl.interfaces.append(new TypeRef(interf));
 		}
@@ -480,7 +480,7 @@ public class Bytecoder implements Constants {
 			kiev.bytecode.KievEnumAttribute ea = (kiev.bytecode.KievEnumAttribute)bca;
 			Vector<Field> vf = new Vector<Field>();
 			int i = 0;
-			foreach (ASTNode n; cl.members; n instanceof Field) {
+			foreach (ASTNode n; cl.members; n instanceof Field && n.isEnumField()) {
 				Field f = (Field)n;
 				// Values and fields must be in the same order, as fields of struct
 				if( ea.getFieldName(i,clazz) != f.name.name )

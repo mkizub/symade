@@ -321,8 +321,8 @@ public class ASTExpression extends Expr {
 		return new WrapedExpr(expr.pos,expr);
 	}
 
-	public Expr getExpr(Type:Object expr) {
-		return new WrapedExpr(expr.pos,expr);
+	public Expr getExpr(TypeRef:Object expr) {
+		return new WrapedExpr(expr.pos,(TypeRef)expr);
 	}
 
 	public Expr getExpr(Object:Object expr) {

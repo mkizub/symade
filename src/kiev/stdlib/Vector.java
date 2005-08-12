@@ -60,6 +60,7 @@ public class Vector<A> implements Cloneable
 	}
 
 	public synchronized A[] copyIntoArray()
+		alias toArray
 		alias operator(210,fy,$cast)
 	{
 		A[] anArray = new A[count];

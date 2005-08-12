@@ -52,7 +52,7 @@ public class ASTVarDecls extends ASTNode {
     }
 
 	public Dumper toJava(Dumper dmp) {
-        	modifiers.toJava(dmp);
+		modifiers.toJava(dmp);
 		type.toJava(dmp).space();
 		for(int i=0; i < vars.length; i++) {
 			vars[i].toJava(dmp);

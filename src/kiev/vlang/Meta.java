@@ -179,7 +179,7 @@ public class Meta extends ASTNode {
 	
 	public Meta verify() {
 		Type mt = type.getType();
-		if (mt == null || !mt.clazz.isAnnotation()) {
+		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(pos, "Annotation name expected");
 		}
 		Meta m = this;
@@ -234,7 +234,7 @@ public class Meta extends ASTNode {
 			}
 			if (t.isReference()) {
 				t.clazz.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
+				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
 					throw new CompilerException(m.pos, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);

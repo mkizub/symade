@@ -43,19 +43,22 @@ public class OpTypes {
 
 	public OpTypes() {}
 
-	public static Type getExprType(ASTNode n, Type tp) {
+	public static Type getExprType(Object n, Type tp) {
 		Type t = null;
 		switch(n) {
 		case Expr:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Expr)n).getType());
-			if( !n.isResolved() ) {
-				n = ((Expr)n).resolve(tp);
-				assert( n.isResolved() );
+		{
+			Expr e = (Expr)n;
+			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
+			if( !e.isResolved() ) {
+				n = e.resolve(tp);
+				//assert( e.isResolved() );
 				goto case n;
 			} else {
-				t = ((Expr)n).getType();
+				t = e.getType();
 			}
 			break;
+		}
 		case Type:
 			trace( Kiev.debugOperators,"type of "+n+" is "+((Type)n));
 			t = (Type)n;

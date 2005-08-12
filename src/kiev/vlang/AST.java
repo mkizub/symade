@@ -813,17 +813,17 @@ public abstract class ASTNode implements Constants {
 
 @node
 @cfnode
-public abstract class CFNode extends ASTNode {
-	@ref(copyable=false) public CFNode cf_in;
-	@ref(copyable=false) public CFNode cf_out;
-	public CFNode() {}
-	public CFNode(int pos) { super(pos); }
-	public CFNode(int pos, ASTNode parent) { super(pos,parent); }
+public abstract class CFlowNode extends ASTNode {
+	@ref(copyable=false) public CFlowNode cf_in;
+	@ref(copyable=false) public CFlowNode cf_out;
+	public CFlowNode() {}
+	public CFlowNode(int pos) { super(pos); }
+	public CFlowNode(int pos, ASTNode parent) { super(pos,parent); }
 }
 
 @node
 @cfnode
-public abstract class Expr extends CFNode {
+public abstract class Expr extends CFlowNode {
 
 	public static Expr[] emptyArray = new Expr[0];
 
@@ -930,15 +930,13 @@ public class WrapedExpr extends Expr {
 	}
 	public int		getPriority() { return 256; }
 	public Type getType() {
-		if( expr instanceof Type ) return Type.getRealType(base_type,(Type)expr);
 		if( expr instanceof BaseStruct ) return Type.getRealType(base_type,((BaseStruct)expr).type);
 		if( expr instanceof TypeRef ) return Type.getRealType(base_type,((TypeRef)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
-		if( expr instanceof Type ) return expr;
 		if( expr instanceof BaseStruct ) return expr;
-		if( expr instanceof TypeRef ) return ((TypeRef)expr).getType();
+		if( expr instanceof TypeRef ) return expr;
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }
@@ -984,7 +982,7 @@ public abstract class LvalueExpr extends Expr {
 
 @node
 @cfnode
-public abstract class Statement extends CFNode {
+public abstract class Statement extends CFlowNode {
 
 	public static Statement[] emptyArray = new Statement[0];
 
@@ -1065,13 +1063,28 @@ public class TypeRef extends ASTNode {
 		this.lnk = n;
 	}
 	
+//	public boolean equals(Object o) {
+//		Type t = lnk;
+//		if (t == null)
+//			return false;
+//		if (o instanceof TypeRef)
+//			return t == ((TypeRef)o).lnk;
+//		if (o instanceof Type)
+//			return t == o;
+//		return false;
+//	}
+	
 	public String toString() {
 		return String.valueOf(lnk);
 	}
 	
+	public Dumper toJava(Dumper dmp) {
+		return lnk.toJava(dmp);
+	}
+	
 	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {
-		NArr<Type> tmp = new NArr<Type>();
-		foreach (TypeRef tr; arr) { if (tr.lnk != null) tmp.add(tr.lnk); }
+		Vector<Type> tmp = new Vector<Type>();
+		foreach (TypeRef tr; arr) { if (tr.lnk != null) tmp.append(tr.lnk); }
 		return tmp.elements();
 	}
 }

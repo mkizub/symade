@@ -58,8 +58,8 @@ public class TypeNameRef extends TypeRef {
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),nm,null) )
 			throw new CompilerException(pos,"Unresolved identifier "+nm);
-		if( v instanceof Type ) {
-			this.lnk = (Type)v;
+		if( v instanceof TypeRef ) {
+			this.lnk = ((TypeRef)v).getType();
 		} else {
 			if( !(v instanceof BaseStruct) )
 				throw new CompilerException(pos,"Type name "+nm+" is not a structure, but "+v);

@@ -69,7 +69,7 @@ public class ASTAccessExpression extends Expr {
 					}
 					else throw new CompilerException(obj.getPos(),"Arrays "+tp+" has only one member 'length'");
 				}
-				else if( ident.name.equals("$self") && tp.isReference()/*.clazz.equals(Type.tpPrologVar.clazz)*/ )
+				else if( ident.name.equals("$self") && tp.isReference() )
 					return new SelfAccessExpr(pos,(LvalueExpr)o).resolve(reqType);
 				else if( tp.isReference() ) cl = tp.clazz;
 				else

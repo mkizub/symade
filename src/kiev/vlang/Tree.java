@@ -87,7 +87,7 @@ public class Tree extends ASTNode {
 
 @node
 @cfnode
-public class CFLabel extends CFNode {
+public class CFLabel extends CFlowNode {
 }
 
 public final class AttrSlot {
