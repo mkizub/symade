@@ -207,11 +207,11 @@ public final class ProcessVNode implements Constants {
 				new ConstBoolExpr(isArr)
 			});
 			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
-			Field f = s.addField(new Field(s, fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
+			Field f = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			f.init = e;
 			vals_init[i] = new StaticFieldAccessExpr(f.pos, s, f);
 		}
-		Field vals = s.addField(new Field(s, nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
+		Field vals = s.addField(new Field(nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
 		vals.init = new NewInitializedArrayExpr(0, atp, 1, vals_init);
 		vals.init.parent = vals;
 		// AttrSlot[] values() { return $values; }

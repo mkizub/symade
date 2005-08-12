@@ -652,7 +652,7 @@ public class VarAccessExpr extends LvalueExpr {
 					Field vf;
 					if( (vf = (Field)PassInfo.clazz.resolveName(var.name.name)) == null ) {
 						// Add field
-						vf = PassInfo.clazz.addField(new Field(PassInfo.clazz,var.name.name,var.type,ACC_PUBLIC));
+						vf = PassInfo.clazz.addField(new Field(var.name.name,var.type,ACC_PUBLIC));
 						vf.setNeedProxy(true);
 						vf.init = (Expr)this.copy();
 					}

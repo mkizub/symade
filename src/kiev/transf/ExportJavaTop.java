@@ -813,25 +813,24 @@ public final class ExportJavaTop implements Constants {
 							m.setAbstract(true);
 					}
 				}
-				else if( members[i] instanceof ASTFieldDecl ) {
-					ASTFieldDecl fdecl = (ASTFieldDecl)members[i];
+				else if( members[i] instanceof Field ) {
+					Field fdecl = (Field)members[i];
+					Field f = fdecl;
+					f.meta.verify();
 					// TODO: check flags for fields
-					int flags = fdecl.modifiers.getFlags();
-					if( me.isPackage() ) flags |= ACC_STATIC;
+					if( me.isPackage() )
+						f.setStatic(true);
 					if( me.isInterface() ) {
-						if( (flags & ACC_VIRTUAL) != 0 ) flags |= ACC_ABSTRACT;
-						else {
-							flags |= ACC_STATIC;
-							flags |= ACC_FINAL;
+						if (f.isVirtual()) {
+							f.setAbstract(true);
+						} else {
+							f.setStatic(true);
+							f.setFinal(true);
 						}
-						flags |= ACC_PUBLIC;
+						f.setPublic(true);
 					}
-					Type ftype = fdecl.type.getType();
-					KString fname = fdecl.name.name;
-					Field f = new Field(me,fname,ftype,flags);
-					f.setPos(fdecl.pos);
-					// Attach meta-data to the new structure
-					fdecl.modifiers.getMetas(f.meta);
+					f.acc.verifyAccessDecl(f); // recheck access
+					Type ftype = fdecl.type;
 					MetaPacked pack = f.getMetaPacked();
 					if( pack != null ) {
 						if( f.isStatic() ) {
@@ -871,16 +870,6 @@ public final class ExportJavaTop implements Constants {
 					}
 					if( f.getMetaPacked() != null )
 						f.setPackedField(true);
-					if( me.isInterface() ) {
-						if( f.isVirtual() )
-							f.setAbstract(true);
-						else {
-							f.setStatic(true);
-							f.setFinal(true);
-						}
-						f.setPublic(true);
-					}
-					fdecl.replaceWith(f);
 					if (fdecl.init == null && !ftype.isArray()) {
 						if(ftype.isWrapper()) {
 							f.init = new NewExpr(fdecl.pos,ftype,Expr.emptyArray);
@@ -888,7 +877,7 @@ public final class ExportJavaTop implements Constants {
 						}
 					} else {
 						if( ftype.isWrapper()) {
-							if (fdecl.of_wrapper)
+							if (fdecl.isInitWrapper())
 								f.init = fdecl.init;
 							else
 								f.init = new NewExpr(fdecl.pos,ftype, (fdecl.init==null)? Expr.emptyArray : new Expr[]{fdecl.init});
@@ -898,13 +887,11 @@ public final class ExportJavaTop implements Constants {
 							f.setInitWrapper(false);
 						}
 					}
-					if( ((ASTFieldDecl)members[i]).modifiers.acc != null )
-						f.acc = ((ASTFieldDecl)members[i]).modifiers.acc;
 				}
 				else if (members[i] instanceof ASTEnumFieldDeclaration) {
 					ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)members[i];
 					Type me_type = me.type;
-					Field f = new Field(me,efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_ENUM);
+					Field f = new Field(efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_ENUM);
 					f.pos = efd.pos;
 					f.setEnumField(true);
 					efd.replaceWith(f);
@@ -935,7 +922,7 @@ public final class ExportJavaTop implements Constants {
 				else if( members[i] instanceof ASTFormalParameter) {
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
 					Var v = ((ASTFormalParameter)members[i]).pass3();
-					Field f = new Field(me,v.name.name,v.type,ACC_PUBLIC);
+					Field f = new Field(v.name.name,v.type,ACC_PUBLIC);
 					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
 					members[i].replaceWith(f);
 				}

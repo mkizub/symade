@@ -987,7 +987,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				((Struct)t.clazz).autoGenerateTypeinfoClazz();
 			ftype = ((Struct)t.clazz).typeinfo_clazz.type;
 		}
-		Field f = new Field(this,KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
+		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
 		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
 		f.init = new CastExpr(pos,ftype,new CallExpr(pos,
 				Type.tpTypeInfo.clazz.resolveMethod(
@@ -1090,7 +1090,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Type t = type.args[arg];
 				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.clazz.name.short_name.length())
 					.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();
-				Field f = new Field(typeinfo_clazz,fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
+				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
 				Var v = new Var(pos,null,t.clazz.name.short_name,Type.tpTypeInfo,0);
@@ -1105,7 +1105,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			BlockStat ti_init_body = new BlockStat(pos,null,stats);
 
 			// create typeinfo field
-			Field tif = addField(new Field(this,nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
+			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
 
 			// create constructor method
 			ti_init = MethodType.newMethodType(null,ti_init_targs,Type.tpVoid);
@@ -1198,8 +1198,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					mpr.size += mp.size;
 				} else {
 					// Create
-					Field p = new Field(this,
-						KString.from("$pack$"+countPackerFields()),Type.tpInt,ACC_PUBLIC);
+					Field p = new Field(KString.from("$pack$"+countPackerFields()),Type.tpInt,ACC_PUBLIC);
 					p.pos = this.pos;
 					MetaPacker mpr = new MetaPacker();
 					p.meta.set(mpr);
@@ -1242,7 +1241,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				addAttr(ea);
 			}
 			this.super_type = Type.tpEnum;
-			Field vals = addField(new Field(this, nameEnumValuesFld,
+			Field vals = addField(new Field(nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, Expr.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
@@ -1254,7 +1253,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		if( isPizzaCase() ) {
 			PizzaCaseAttr case_attr = (PizzaCaseAttr)getAttr(attrPizzaCase);
 			Field ftag = addField(new Field(
-				this,nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
+				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
 			ConstExpr ce = new ConstIntExpr(case_attr.caseno);
 			ftag.init = ce;
 
@@ -1283,7 +1282,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			for(Struct pkg=package_clazz;
 					pkg.isClazz() && !pkg.isStatic();
 						pkg=pkg.package_clazz) n++;
-			Field f = addField(new Field(this,
+			Field f = addField(new Field(
 				KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD));
 			f.pos = pos;
 		}

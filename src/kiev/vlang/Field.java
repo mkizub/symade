@@ -44,10 +44,10 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	public NodeName			name;
 
 	/** Type of the field */
-	@ref public Type		type;
+	@att public TypeRef		ftype;
 
 	/** Initial value of this field */
-	@att public Expr		init = null;
+	@att public Expr		init;
 
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet		meta;
@@ -60,6 +60,8 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 
 	@ref public Field		generated_from;
 
+	@ref public abstract virtual access:ro Type	type;
+	
 	public Field() {
 	}
 	
@@ -67,18 +69,23 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(ASTNode clazz, KString name, Type type, int acc) {
+	public Field(KString name, TypeRef ftype, int acc) {
 		super(0,acc);
 		this.name = new NodeName(name);
-		this.type = type;
-        // Parent node is always a class this field was declared in
-		this.parent = clazz;
+		this.ftype = ftype;
 		this.acc = new Access(0);
 		this.meta = new MetaSet(this);
-		trace(Kiev.debugCreation,"New field created: "+name
-			+" with type "+type);
+		trace(Kiev.debugCreation,"New field created: "+name+" with type "+type);
 	}
 
+	public Field(KString name, Type type, int acc) {
+		this(name,new TypeRef(type),acc);
+	}
+	
+	@getter public Type get$type() {
+		return ftype.getType();
+	}
+	
 	@getter public Access get$acc() {
 		return acc;
 	}

@@ -334,6 +334,26 @@ public class kiev040 {
 			arg.meta.set(m);
 		return arg;
 	}
+
+	private static Field mkField(ASTIdentifier id, ASTModifiers modifiers, TypeRef type, boolean first) {
+		if (!first)
+			type = (TypeRef)type.copy();
+		Field f = new Field(id.name,type,modifiers.getFlags());
+		f.acc.flags = 0;
+		f.pos = id.pos;
+		if (first) {
+			if (modifiers.acc != null)
+				f.acc = modifiers.acc;
+			foreach (Meta m; modifiers.annotations)
+				f.meta.set(m);
+		} else {
+			if (modifiers.acc != null)
+				f.acc = new Access(modifiers.acc.flags);
+			foreach (Meta m; modifiers.annotations)
+				f.meta.set((Meta)m.copy());
+		}
+		return f;
+	}
 	}*/
 
 }
@@ -1269,23 +1289,20 @@ void FieldDecls(ASTModifiers modifiers, Struct clazz) :
 	";"
 }
 
-ASTFieldDecl FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; }
+Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; ASTIdentifier id; Field f; }
 {
-	{
-		ASTFieldDecl n = new ASTFieldDecl();
-		if (first) {
-			n.modifiers = modifiers;
-			n.type = type;
-		} else {
-			n.modifiers = (ASTModifiers)modifiers.copy();
-			n.type = (TypeRef)type.copy();
-		}
-	}
-	n.name = Name()
-	( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); } )*
-	[ ("=" | ":=" { n.of_wrapper=true; }) n.init = VariableInitializer() ]
-	{ return n; }
+	id = Name()
+	{ f = mkField(id, modifiers, type, first); }
+	( t=<OPERATOR_LRBRACKETS> { f.ftype = new TypeExpr(f.ftype,t); } )*
+	[
+		(
+			"="
+		|	":=" { f.setInitWrapper(true); }
+		)
+		f.init = VariableInitializer()
+	]
+	{ return f; }
 }
 
 ASTVarDecls VarDecls(ASTModifiers modifiers) :

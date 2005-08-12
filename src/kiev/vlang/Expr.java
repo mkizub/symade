@@ -332,9 +332,10 @@ public class AssignExpr extends LvalueExpr {
 				ASTNode p = var.parent;
 				while( !(p instanceof Struct) ) p = p.parent;
 				if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
-					var.setNeedRefProxy(true);
-					Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
-					vf.type = Type.getProxyType(var.type);
+					throw new RuntimeException("Unsupported operation");
+					//var.setNeedRefProxy(true);
+					//Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
+					//vf.type = Type.getProxyType(var.type);
 				}
 			}
 			lval = (Expr)lv;
@@ -1592,9 +1593,10 @@ public class IncrementExpr extends LvalueExpr {
 			ASTNode p = var.parent;
 			while( !(p instanceof Struct) ) p = p.parent;
 			if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
-				var.setNeedRefProxy(true);
-				Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
-				vf.type = Type.getProxyType(var.type);
+				throw new RuntimeException("Unsupported operation");
+				//var.setNeedRefProxy(true);
+				//Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
+				//vf.type = Type.getProxyType(var.type);
 			}
 		}
 		setResolved(true);

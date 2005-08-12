@@ -98,7 +98,6 @@ kiev.parser.ASTDoStatement kiev/parser/ASTDoStatement kiev\parser\ASTDoStatement
 kiev.parser.ASTEmptyStatement kiev/parser/ASTEmptyStatement kiev\parser\ASTEmptyStatement.java
 kiev.parser.ASTEnumFieldDeclaration kiev/parser/ASTEnumFieldDeclaration kiev\parser\ASTEnumFieldDeclaration.java
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
-kiev.parser.ASTFieldDecl kiev/parser/ASTFieldDecl kiev\parser\ASTFieldDecl.java
 kiev.parser.ASTFinallyInfo kiev/parser/ASTFinallyInfo kiev\parser\ASTFinallyInfo.java
 kiev.parser.ASTForEachStatement kiev/parser/ASTForEachStatement kiev\parser\ASTForEachStatement.java
 kiev.parser.ASTForStatement kiev/parser/ASTForStatement kiev\parser\ASTForStatement.java

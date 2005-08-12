@@ -207,7 +207,7 @@ public class Bytecoder implements Constants {
 			}
 		}
 		Type ftype = Signature.getType(new KString.KStringScanner(f_type));
-		f = new Field(cl,f_name,ftype,f_flags);
+		f = new Field(f_name,ftype,f_flags);
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
 			f.name.aliases = nm.aliases;
@@ -537,7 +537,6 @@ public class Bytecoder implements Constants {
 			kiev.bytecode.KievPackedFieldsAttribute pf = (kiev.bytecode.KievPackedFieldsAttribute)bca;
 			for(int i=0; i < pf.fields.length; i++) {
 				Field f = new Field(
-					cl,
 					pf.getFieldName(i,clazz),
 					Signature.getType(new KString.KStringScanner(pf.getSignature(i,clazz))),
 					ACC_PUBLIC

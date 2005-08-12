@@ -190,7 +190,7 @@ public final class ProcessVirtFld implements Constants {
 			if (mv != null && mv.set != null && mv.set != m)
 				return;
 		} else {
-			s.addField(f=new Field(s,name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			s.addField(f=new Field(name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)
@@ -230,7 +230,7 @@ public final class ProcessVirtFld implements Constants {
 			if (mv != null && mv.get != null && mv.get != m)
 				return;
 		} else {
-			s.addField(f=new Field(s,name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			s.addField(f=new Field(name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)

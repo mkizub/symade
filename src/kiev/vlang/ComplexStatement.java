@@ -319,8 +319,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						sel = cae;
 					} else {
 						mode = TYPE_SWITCH;
-						typehash = new Field(PassInfo.clazz,
-							KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
+						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						PassInfo.clazz.addField(typehash);
 						CallAccessExpr cae = new CallAccessExpr(pos,this,

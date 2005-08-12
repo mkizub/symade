@@ -326,7 +326,7 @@ public interface StdTypes {
 		tpArrayClazz.setResolved(true);
 		tpArray.flags			= flReference | flArray;
 		tpArrayClazz.interfaces.add(new TypeRef(tpCloneable));
-//		tpArrayClazz.fields = new Field[]{new Field(tpArrayClazz,KString.from("length"),tpInt,(short)(Constants.ACC_FINAL|Constants.ACC_PUBLIC))};
+//		tpArrayClazz.fields = new Field[]{new Field(KString.from("length"),tpInt,(short)(Constants.ACC_FINAL|Constants.ACC_PUBLIC))};
 		typeHash.put(tpArray);
 
 		Struct tpBooleanRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Boolean;")),java_lang,ACC_PUBLIC);
