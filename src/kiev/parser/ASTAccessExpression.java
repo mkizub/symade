@@ -60,7 +60,7 @@ public class ASTAccessExpression extends Expr {
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.isWrapper() && ident.name.byteAt(0) != '$') {
-					o = (Expr)new AccessExpr(obj.pos,obj,((Struct)tp.clazz).wrapped_field).resolve(null);
+					o = tp.makeWrappedAccess(obj).resolve(null);
 					tp = o.getType();
 				}
 				if( tp.isArray() ) {

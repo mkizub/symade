@@ -610,7 +610,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			PVar<Method> nextelem = new PVar<Method>();
 			PVar<Method> moreelem = new PVar<Method>();
 			if (ctype.isWrapper()) {
-				container = (Expr)new AccessExpr(container.pos,container,((Struct)ctype.clazz).wrapped_field).resolve(null);
+				container = (Expr)ctype.makeWrappedAccess(container).resolve(null);
 				ctype = container.getType();
 			}
 			if( ctype.isArray() ) {

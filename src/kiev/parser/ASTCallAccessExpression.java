@@ -111,7 +111,7 @@ public class ASTCallAccessExpression extends Expr {
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.isWrapper() && func.name.byteAt(0) != '$') {
-					o = (Expr)new AccessExpr(o.pos,(Expr)o,((Struct)tp.clazz).wrapped_field).resolve(null);
+					o = tp.makeWrappedAccess(o).resolve(null);
 					tp = o.getType();
 				}
 				if( reqType instanceof MethodType ) ret = null;

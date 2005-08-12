@@ -453,7 +453,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 			return false;
 		}
 		if( this.isWrapper() ) {
-			if( Type.getRealType(this,((Struct)this.clazz).wrapped_field.type).isAutoCastableTo(t) ) return true;
+			if( getWrappedType().isAutoCastableTo(t) ) return true;
 			return false;
 		}
 		if( this instanceof MethodType
@@ -626,6 +626,9 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
 
 	public final boolean isWrapper()		{ return (flags & flWrapper)		!= 0 ; }
+	
+	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)from,getStruct().wrapped_field); } 
+	public final Type getWrappedType()	{ return Type.getRealType(this,getStruct().wrapped_field.type); } 
 	
 	public Type getJavaType() {
 		if( !isReference() ) {

@@ -293,18 +293,15 @@ public class AssignExpr extends LvalueExpr {
 		// Not a standard and not overloaded, try wrapped classes
 		if (op != AssignOperator.Assign2) {
 			if (et1.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,new AccessExpr(lval.pos,lval,((Struct)et1.clazz).wrapped_field),value).tryResolve(reqType);
+				Expr e = new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value).tryResolve(reqType);
 				if (e != null) return e;
 			}
 			if (et2.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,lval,new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field)).tryResolve(reqType);
+				Expr e = new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)).tryResolve(reqType);
 				if (e != null) return e;
 			}
 			if (et1.isWrapper() && et2.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,
-					new AccessExpr(lval.pos,lval,((Struct)et1.clazz).wrapped_field),
-					new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field)
-					).tryResolve(reqType);
+				Expr e = new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)).tryResolve(reqType);
 				if (e != null) return e;
 			}
 		}
@@ -559,9 +556,7 @@ public class InitializeExpr extends AssignExpr {
 		// Try wrapped classes
 		if (op != AssignOperator.Assign2) {
 			if (et2.isWrapper()) {
-				Expr e = new InitializeExpr(pos,op,lval,
-					new AccessExpr(value.pos,value,((Struct)et2.clazz).wrapped_field),of_wrapper
-					).tryResolve(reqType);
+				Expr e = new InitializeExpr(pos,op,lval,et2.makeWrappedAccess(value),of_wrapper).tryResolve(reqType);
 				if (e != null) return e;
 			}
 		}
@@ -662,24 +657,24 @@ public class BinaryExpr extends Expr {
 		Type et2 = expr2.getType();
 		if( op == BinaryOperator.Add
 			&& ( et1 == Type.tpString || et2 == Type.tpString ||
-			    (et1.isWrapper() && Type.getRealType(et1,((Struct)et1.clazz).wrapped_field.type) == Type.tpString) ||
-			    (et2.isWrapper() && Type.getRealType(et2,((Struct)et2.clazz).wrapped_field.type) == Type.tpString)
+			    (et1.isWrapper() && et1.getWrappedType() == Type.tpString) ||
+			    (et2.isWrapper() && et2.getWrappedType() == Type.tpString)
 			   )
 		) {
 			if( expr1 instanceof StringConcatExpr ) {
 				StringConcatExpr sce = (StringConcatExpr)expr1;
 				Expr e = (Expr)expr2;
-				if (et2.isWrapper()) e = new AccessExpr(e.pos,e,((Struct)et2.clazz).wrapped_field);
+				if (et2.isWrapper()) e = et2.makeWrappedAccess(e);
 				sce.appendArg((Expr)e.resolve(null));
 				trace(Kiev.debugStatGen,"Adding "+e+" to StringConcatExpr, now ="+sce);
 				return (Expr)sce.resolve(Type.tpString);
 			} else {
 				StringConcatExpr sce = new StringConcatExpr(pos);
 				Expr e1 = (Expr)expr1;
-				if (et1.isWrapper()) e1 = new AccessExpr(e1.pos,e1,((Struct)et1.clazz).wrapped_field);
+				if (et1.isWrapper()) e1 = et1.makeWrappedAccess(e1);
 				sce.appendArg((Expr)e1.resolve(null));
 				Expr e2 = (Expr)expr2;
-				if (et2.isWrapper()) e2 = new AccessExpr(e2.pos,e2,((Struct)et2.clazz).wrapped_field);
+				if (et2.isWrapper()) e2 = et2.makeWrappedAccess(e2);
 				sce.appendArg((Expr)e2.resolve(null));
 				trace(Kiev.debugStatGen,"Rewriting "+e1+"+"+e2+" as StringConcatExpr");
 				return (Expr)sce.resolve(Type.tpString);
@@ -726,18 +721,15 @@ public class BinaryExpr extends Expr {
 		}
 		// Not a standard and not overloaded, try wrapped classes
 		if (et1.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,new AccessExpr(expr1.pos,expr1,((Struct)et1.clazz).wrapped_field),expr2).tryResolve(reqType);
+			Expr e = new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),expr2).tryResolve(reqType);
 			if (e != null) return e;
 		}
 		if (et2.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,expr1,new AccessExpr(expr2.pos,expr2,((Struct)et2.clazz).wrapped_field)).tryResolve(reqType);
+			Expr e = new BinaryExpr(pos,op,expr1,et2.makeWrappedAccess(expr2)).tryResolve(reqType);
 			if (e != null) return e;
 		}
 		if (et1.isWrapper() && et2.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,
-				new AccessExpr(expr1.pos,expr1,((Struct)et1.clazz).wrapped_field),
-				new AccessExpr(expr2.pos,expr2,((Struct)et2.clazz).wrapped_field)
-				).tryResolve(reqType);
+			Expr e = new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),et2.makeWrappedAccess(expr2)).tryResolve(reqType);
 			if (e != null) return e;
 		}
 		return null;
@@ -1453,7 +1445,7 @@ public class UnaryExpr extends Expr {
 		}
 		// Not a standard and not overloaded, try wrapped classes
 		if (et.isWrapper()) {
-			Expr e = new UnaryExpr(pos,op,new AccessExpr(expr.pos,expr,((Struct)et.clazz).wrapped_field)).tryResolve(reqType);
+			Expr e = new UnaryExpr(pos,op,et.makeWrappedAccess(expr)).tryResolve(reqType);
 			if (e != null) return e;
 		}
 		return null;
@@ -2004,14 +1996,13 @@ public class CastExpr extends Expr {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
 			if (extp.isWrapper()) {
-				return new CastExpr(pos,type,
-					new AccessExpr(expr.pos,expr,((Struct)extp.clazz).wrapped_field),explicit,reinterp).tryResolve(reqType);
+				return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).tryResolve(reqType);
 			}
 		}
-		else if (extp.isWrapper() && Type.getRealType(extp,((Struct)extp.clazz).wrapped_field.type).isAutoCastableTo(type)) {
+		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
 			Expr ocast = tryOverloadedCast(extp);
 			if( ocast == this ) return (Expr)resolve(reqType);
-			return new CastExpr(pos,type,new AccessExpr(expr.pos,expr,((Struct)extp.clazz).wrapped_field),explicit,reinterp).tryResolve(reqType);
+			return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).tryResolve(reqType);
 		}
 		else {
 //			if( extp.isReference() && type.isReference() ) {
@@ -2067,8 +2058,8 @@ public class CastExpr extends Expr {
 			}
 			Type et = Type.getRealType(type,expr.getType());
 			// Try wrapped field
-			if (et.isWrapper() && ((Struct)et.clazz).wrapped_field.type.equals(type)) {
-				return new AccessExpr(pos,parent,expr,((Struct)et.clazz).wrapped_field).resolve(reqType);
+			if (et.isWrapper() && et.getWrappedType().equals(type)) {
+				return et.makeWrappedAccess(expr).resolve(reqType);
 			}
 			// try null to something...
 			if (et == Type.tpNull && reqType.isReference())

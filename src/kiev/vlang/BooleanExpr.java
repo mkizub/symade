@@ -577,7 +577,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			return false;
 		expr1 = ast1;
 		if (!expr1.isForWrapper() && expr1.getType().isWrapper())
-			expr1 = new AccessExpr(expr1.pos,expr1,((Struct)expr1.getType().clazz).wrapped_field).resolveExpr(null);
+			expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
 
 		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
 		if( ast2 instanceof WrapedExpr )
@@ -588,7 +588,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			return false;
 		expr2 = (Expr)((Expr)ast2).resolve(null);
 		if (!expr2.isForWrapper() && expr2.getType().isWrapper())
-			expr2 = new AccessExpr(expr2.pos,expr2,((Struct)expr2.getType().clazz).wrapped_field).resolveExpr(null);
+			expr2 = expr2.getType().makeWrappedAccess(expr2).resolveExpr(null);
 		return true;
 	}
 
@@ -601,7 +601,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			ex = (Expr)new ConstIntExpr(ca.caseno).resolve(Type.tpInt);
 			Type tp = expr1.getType();
 			if (tp.isWrapper()) {
-				expr1 = new AccessExpr(expr1.pos,expr1,((Struct)tp.clazz).wrapped_field).resolveExpr(null);
+				expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
 				tp = expr1.getType();
 			}
 			if( !tp.clazz.isPizzaCase() && !tp.clazz.isHasCases() )
@@ -838,7 +838,7 @@ public class InstanceofExpr extends BoolExpr {
 				expr = (Expr)e;
 				Type et = expr.getType();
 				if (!expr.isForWrapper() && et.isWrapper())
-					expr = new AccessExpr(expr.pos,expr,((Struct)et.clazz).wrapped_field).resolveExpr(null);
+					expr = et.makeWrappedAccess(expr).resolveExpr(null);
 			}
 			if( !expr.getType().isCastableTo(type) ) {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
