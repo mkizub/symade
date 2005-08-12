@@ -135,15 +135,7 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		}
 		t = new Type(clazz);
 		t.flags |= flReference;
-		if (clazz.isEnum() && clazz.isPrimitiveEnum())
-			t.setMeAsPrimitiveEnum();
 		return t;
-	}
-
-	public void setMeAsPrimitiveEnum() {
-		flags &= ~flReference;
-		flags |= flIntegerInCode;
-		java_signature = ((Struct)clazz).getPrimitiveEnumType().java_signature;
 	}
 
 	public static Type newRefType(BaseStruct clazz) {
@@ -444,9 +436,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 			else if( !Kiev.javaMode && t==Type.tpInt && this.isInstanceOf(Type.tpEnum) )
 				return true;
 		}
-		if( !this.isReference() && !t.isReference() && !Kiev.javaMode && clazz.isPrimitiveEnum() ) {
-			return ((Struct)clazz).getPrimitiveEnumType().isAutoCastableTo(t);
-		}
 		if( this.isReference() && !t.isReference() ) {
 			if( getRefTypeForPrimitive(this) == t ) return true;
 			else if( !Kiev.javaMode && this==Type.tpInt && t.isInstanceOf(Type.tpEnum) ) return true;
@@ -579,8 +568,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		 && !this.clazz.isStatic() && ((Struct)this.clazz).package_clazz.type.isAutoCastableTo(t)
 		)
 			return true;
-		if( t.clazz.isPrimitiveEnum())
-			return this.isCastableTo(((Struct)t.clazz).getPrimitiveEnumType());
 		if( t.clazz.isEnum())
 			return this.isCastableTo(Type.tpInt);
 		if( t.clazz.isArgument() && isCastableTo(t.clazz.super_type) ) return true;
@@ -610,8 +597,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 		else if( tp == Type.tpDouble ) return Type.tpDoubleRef;
 		else if( tp == Type.tpChar ) return Type.tpCharRef;
 		else if( tp == Type.tpVoid ) return Type.tpVoidRef;
-		else if( tp.clazz.isPrimitiveEnum() )
-			return getRefTypeForPrimitive(((Struct)tp.clazz).getPrimitiveEnumType());
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
 	}
@@ -666,8 +651,6 @@ public class Type extends ASTNode implements StdTypes, ScopeOfMethods, AccessFla
 				targs[i] = args[i].getJavaType();
 			return MethodType.newMethodType(null,null,targs,((MethodType)this).ret.getJavaType());
 		}
-		if (clazz.isEnum() && clazz.isPrimitiveEnum())
-			return ((Struct)clazz).getPrimitiveEnumType();
 		if( args.length == 0 ) return this;
 		return newJavaRefType(clazz);
 	}

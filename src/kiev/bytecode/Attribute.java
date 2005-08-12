@@ -52,7 +52,6 @@ public class Attribute implements BytecodeElement,BytecodeFileConstants,Bytecode
 		attrMap.put(attrOperator,		Class.forName("kiev.bytecode.KievOperatorAttribute"));
 		attrMap.put(attrImport,			Class.forName("kiev.bytecode.KievImportAttribute"));
 		attrMap.put(attrEnum,			Class.forName("kiev.bytecode.KievEnumAttribute"));
-		attrMap.put(attrPrimitiveEnum,	Class.forName("kiev.bytecode.KievPrimitiveEnumAttribute"));
 		attrMap.put(attrRequire,		Class.forName("kiev.bytecode.KievContractAttribute"));
 		attrMap.put(attrEnsure,			Class.forName("kiev.bytecode.KievContractAttribute"));
 		attrMap.put(attrCheckFields,	Class.forName("kiev.bytecode.KievCheckFieldsAttribute"));
@@ -817,27 +816,6 @@ public class KievEnumAttribute extends Attribute {
 	}
 	public KString getFieldName(int i, Clazz clazz) {
 		return ((Utf8PoolConstant)clazz.pool[fields[i]]).value;
-	}
-}
-
-public class KievPrimitiveEnumAttribute extends KievEnumAttribute {
-
-	public int						signature;
-
-	public int size() {
-		return 6+2+2+6*fields.length;	// name+size(int)+data.length
-	}
-	public void read(ReadContext cont) {
-		super.read(cont);
-		signature = cont.readShort();
-	}
-	public void write(ReadContext cont) {
-		super.write(cont);
-		trace(Clazz.traceWrite,cont.offset+": signature '"+signature+"' for enum fields");
-		cont.writeShort(signature);
-	}
-	public KString getFieldTypeSignature(Clazz clazz) {
-		return ((Utf8PoolConstant)clazz.pool[signature]).value;
 	}
 }
 

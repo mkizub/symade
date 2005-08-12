@@ -363,7 +363,6 @@ public interface BytecodeAttributeNames {
 	public final static KString attrOperator		= KString.from("kiev.Operator");
 	public final static KString attrImport			= KString.from("kiev.Import");
 	public final static KString attrEnum			= KString.from("kiev.Enum");
-	public final static KString attrPrimitiveEnum	= KString.from("kiev.PrimitiveEnum");
 	public final static KString attrRequire			= KString.from("kiev.Require");
 	public final static KString attrEnsure			= KString.from("kiev.Ensure");
 	public final static KString attrCheckFields		= KString.from("kiev.CheckFields");

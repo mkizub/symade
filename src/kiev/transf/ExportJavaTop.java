@@ -660,15 +660,7 @@ public final class ExportJavaTop implements Constants {
 					tr.getType();
 			}
 			else if( me.isEnum() ) {
-				if( astn.super_type != null ) {
-					me.super_type.getType();
-					if( !me.super_type.isReference() ) {
-						me.setPrimitiveEnum(true);
-						me.type.setMeAsPrimitiveEnum();
-					}
-				} else {
-					me.super_type = Type.tpEnum;
-				}
+				me.super_type = Type.tpEnum;
 			}
 			else if( me.isSyntax() ) {
 				me.super_type = null;
@@ -895,26 +887,18 @@ public final class ExportJavaTop implements Constants {
 					f.pos = efd.pos;
 					f.setEnumField(true);
 					efd.replaceWith(f);
-					if (me.isPrimitiveEnum()) {
-						if (efd.val != null)
-							next_enum_val = ((Number)efd.val.getConstValue()).intValue();
-						f.init = new ConstIntExpr(next_enum_val);
-					} else {
-						if (efd.val != null)
-							Kiev.reportError(me.pos,"Enum "+me+" is not a primitive enum");
-						if (efd.text == null)
-							f.init = new NewExpr(f.pos,me.type,new Expr[]{
-										new ConstStringExpr(efd.name.name),
-										new ConstIntExpr(next_enum_val),
-										new ConstStringExpr(efd.name.name)
-							});
-						else
-							f.init = new NewExpr(f.pos,me.type,new Expr[]{
-										new ConstStringExpr(efd.name.name),
-										new ConstIntExpr(next_enum_val),
-										new ConstStringExpr(efd.text.value)
-							});
-					}
+					if (efd.text == null)
+						f.init = new NewExpr(f.pos,me.type,new Expr[]{
+									new ConstStringExpr(efd.name.name),
+									new ConstIntExpr(next_enum_val),
+									new ConstStringExpr(efd.name.name)
+						});
+					else
+						f.init = new NewExpr(f.pos,me.type,new Expr[]{
+									new ConstStringExpr(efd.name.name),
+									new ConstIntExpr(next_enum_val),
+									new ConstStringExpr(efd.text.value)
+						});
 					next_enum_val++;
 					if (efd.text != null)
 						f.name.addAlias(KString.from("\""+efd.text.value+"\""));

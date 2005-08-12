@@ -287,16 +287,10 @@ public class InnerClassesAttr extends Attr {
 		ConstPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				if (!inner[i].isPrimitiveEnum())
-					ConstPool.addClazzCP(((Type)inner[i].type).java_signature);
-				else
-					ConstPool.addClazzCP(((Type)inner[i].type).signature);
+				ConstPool.addClazzCP(((Type)inner[i].type).java_signature);
 			}
-			if( outer[i] != null && !outer[i].isPrimitiveEnum()) {
-				if (!outer[i].isPrimitiveEnum())
-					ConstPool.addClazzCP(((Type)outer[i].type).java_signature);
-				else
-					ConstPool.addClazzCP(((Type)outer[i].type).signature);
+			if( outer[i] != null ) {
+				ConstPool.addClazzCP(((Type)outer[i].type).java_signature);
 			}
 		}
 	}
@@ -311,22 +305,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				if (!inner[i].isPrimitiveEnum())
-					ica.cp_inners[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).pos;
-				else
-					ica.cp_inners[i] = ConstPool.getClazzCP(((Type)inner[i].type).signature).pos;
+				ica.cp_inners[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).pos;
 			}
 			if( outer[i] != null ) {
-				if (!outer[i].isPrimitiveEnum())
-					ica.cp_outers[i] = ConstPool.getClazzCP(((Type)outer[i].type).java_signature).pos;
-				else
-					ica.cp_outers[i] = ConstPool.getClazzCP(((Type)outer[i].type).signature).pos;
+				ica.cp_outers[i] = ConstPool.getClazzCP(((Type)outer[i].type).java_signature).pos;
 			}
 			if( inner[i] != null ) {
-				if (!inner[i].isPrimitiveEnum())
-					ica.cp_inner_names[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).asc.pos;
-				else
-					ica.cp_inner_names[i] = ConstPool.getClazzCP(((Type)inner[i].type).signature).asc.pos;
+				ica.cp_inner_names[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).asc.pos;
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}
@@ -679,37 +664,6 @@ public class EnumAttr extends Attr {
 			kea.fields[i] = ConstPool.getAsciiCP(fields[i].name.name).pos;
 			kea.values[i] = values[i];
 		}
-		return kea;
-	}
-}
-
-public class PrimitiveEnumAttr extends EnumAttr {
-
-	public Type			type;
-
-	/** Constructor for bytecode reader and raw field creation */
-	public PrimitiveEnumAttr(Type tp, Field[] fields, int[] values) {
-		super(fields,values);
-		name = attrPrimitiveEnum;
-		type = tp;
-	}
-
-	public void generate() {
-		super.generate();
-		ConstPool.addClazzCP(type.signature);
-	}
-
-	public kiev.bytecode.Attribute write() {
-		kiev.bytecode.KievPrimitiveEnumAttribute kea = new kiev.bytecode.KievPrimitiveEnumAttribute();
-		kea.cp_name = ConstPool.getAsciiCP(name).pos;
-		int len = fields.length;
-		kea.fields = new int[len];
-		kea.values = new int[len];
-		for(int i=0; i < len; i++) {
-			kea.fields[i] = ConstPool.getAsciiCP(fields[i].name.name).pos;
-			kea.values[i] = values[i];
-		}
-		kea.signature = ConstPool.getAsciiCP(type.signature).pos;
 		return kea;
 	}
 }

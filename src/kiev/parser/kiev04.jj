@@ -978,10 +978,6 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		{
 			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
 		}
-		[
-			"extends"
-			clazz.super_bound = PrimitiveType()	
-		]
 	)
 	{ PassInfo.push(clazz); }
 	try {
@@ -1033,7 +1029,6 @@ ASTEnumFieldDeclaration EnumFieldDeclaration(ASTModifiers modifiers) :
 {
 	{ n.modifiers = modifiers; }
 	n.name = Name()
-	["=" n.val  = IntConstExpression()    ]
 	[":" n.text = StringConstExpression() ]
 	{ return n; }
 }

@@ -53,7 +53,6 @@ kiev.bytecode.KievImportAttribute kiev/bytecode/KievImportAttribute kiev\bytecod
 kiev.bytecode.KievOperatorAttribute kiev/bytecode/KievOperatorAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.KievPackedFieldsAttribute kiev/bytecode/KievPackedFieldsAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.KievPackerFieldAttribute kiev/bytecode/KievPackerFieldAttribute kiev\bytecode\Attribute.java
-kiev.bytecode.KievPrimitiveEnumAttribute kiev/bytecode/KievPrimitiveEnumAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.KievTypedefAttribute kiev/bytecode/KievTypedefAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LineNumberTableAttribute kiev/bytecode/LineNumberTableAttribute kiev\bytecode\Attribute.java
 kiev.bytecode.LocalVariableTableAttribute kiev/bytecode/LocalVariableTableAttribute kiev\bytecode\Attribute.java
@@ -388,7 +387,6 @@ kiev.vlang.PathEnumerator kiev/vlang/PathEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PizzaCaseAttr kiev/vlang/PizzaCaseAttr kiev\vlang\Attr.java
 kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java
 kiev.vlang.PrefixOperator kiev/vlang/PrefixOperator kiev\vlang\Operator.java
-kiev.vlang.PrimitiveEnumAttr kiev/vlang/PrimitiveEnumAttr kiev\vlang\Attr.java
 kiev.vlang.ProjectFile kiev/vlang/ProjectFile kiev\vlang\Env.java
 kiev.vlang.RIMetaAttr kiev/vlang/RIMetaAttr kiev\vlang\Attr.java
 kiev.vlang.RMetaAttr kiev/vlang/RMetaAttr kiev\vlang\Attr.java

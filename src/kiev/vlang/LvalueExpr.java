@@ -1097,12 +1097,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			var.acc.verifyReadAccess(var);
-			if (var.parent.isPrimitiveEnum()) {
-				Code.addConst(((Integer)((ConstExpr)var.init).getConstValue()).intValue());
-			}
-			else {
-				Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
-			}
+			Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
 		} finally { PassInfo.pop(this); }
 	}
 

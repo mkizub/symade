@@ -345,9 +345,6 @@ public class AssignExpr extends LvalueExpr {
 				value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
 			}
 			value = value.resolveExpr(t1);
-			//if( value.isConstantExpr() && !t1.clazz.isPrimitiveEnum()) {
-			//	value = new ConstExpr(value.pos,value.getConstValue()).resolveExpr(t1);
-			//}
 			Type t2 = value.getType();
 			if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 				if( !t2.isIntegerInCode() ) {
@@ -2312,15 +2309,10 @@ public class CastExpr extends Expr {
 			expr.generate(null);
 			Type t = expr.getType();
 			if( t.isReference() ) {
-				if (t.clazz.isEnum() && t.clazz.isPrimitiveEnum() && !type.isReference()) {
-					if (((Struct)t.clazz).getPrimitiveEnumType() != type)
-						Code.addInstr(Instr.op_x2y,type);
-				} else {
-					if( t.isReference() != type.isReference() )
-						throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
-					if( Type.getRealType(Kiev.argtype,type).isReference() )
-						Code.addInstr(Instr.op_checkcast,Type.getRealType(Kiev.argtype,type));
-				}
+				if( t.isReference() != type.isReference() )
+					throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
+				if( Type.getRealType(Kiev.argtype,type).isReference() )
+					Code.addInstr(Instr.op_checkcast,Type.getRealType(Kiev.argtype,type));
 			} else {
 			    if (reinterp) {
 			        if (t.isIntegerInCode() && type.isIntegerInCode())

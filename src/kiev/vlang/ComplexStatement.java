@@ -106,9 +106,7 @@ public class CaseLabel extends ASTNode {
 							Type et = sw.sel.getType();
 							if( f.var.type != et )
 								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
-							if (et.clazz.isPrimitiveEnum())
-								et = ((Struct)et.clazz).getPrimitiveEnumType();
-							if (et.clazz.isEnum() && !et.clazz.isPrimitiveEnum())
+							if (et.clazz.isEnum())
 								val = new ConstIntExpr(((Struct)et.clazz).getValueForEnumField(f.var));
 							else
 								val = (Expr)f.var.init.copy();
@@ -433,10 +431,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						if( !has_unabrupted_case ) {
 							Type tp = sel.getType();
 							EnumAttr ea = null;
-							if (tp.clazz.isPrimitiveEnum())
-								ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrPrimitiveEnum);
-							else
-								ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrEnum);
+							ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrEnum);
 							if( ea.fields.length == cases.length )
 								setMethodAbrupted(true);
 						}

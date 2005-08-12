@@ -605,9 +605,6 @@ public class Code implements Constants {
 		if( ((Struct)m.parent).isInterface() )
 			cpm = ConstPool.addInterfaceMethodCP(ttt.java_signature,
 				m.name.name,sign);
-		else if( ((Struct)m.parent).isPrimitiveEnum() )
-			cpm = ConstPool.addMethodCP(ttt.signature,
-				m.name.name,sign);
 		else
 			cpm = ConstPool.addMethodCP(ttt.java_signature,
 				m.name.name,sign);

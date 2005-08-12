@@ -38,7 +38,6 @@ public class ASTEnumFieldDeclaration extends ASTNode {
 
 	@att public ASTModifiers		modifiers;
 	@att public ASTIdentifier		name;
-	@att public ConstIntExpr		val;
 	@att public ConstStringExpr		text;
 	
 }

@@ -490,29 +490,6 @@ public class Bytecoder implements Constants {
 			}
 			a = new EnumAttr(vf.copyIntoArray(),ea.values);
 		}
-		else if( name.equals(attrPrimitiveEnum) ) {
-			cl.setEnum(true);
-			cl.setPrimitiveEnum(true);
-			kiev.bytecode.KievPrimitiveEnumAttribute ea = (kiev.bytecode.KievPrimitiveEnumAttribute)bca;
-			Vector<Field> vf = new Vector<Field>();
-			int i = 0;
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
-				// Values and fields must be in the same order, as fields of struct
-				if( ea.getFieldName(i,clazz) != f.name.name )
-					throw new RuntimeException("Invalid entry "+i+" in "+attrPrimitiveEnum+" attribute");
-				vf.append(f);
-				i++;
-			}
-			KString sign = ea.getFieldTypeSignature(clazz);
-			Type tp = Type.fromSignature(sign);
-			if (tp.isReference() || !tp.isIntegerInCode())
-				throw new RuntimeException("Invalid signature '"+sign+"' in "+attrPrimitiveEnum+" attribute");
-			a = new PrimitiveEnumAttr(tp,vf.copyIntoArray(),ea.values);
-			cl.addAttr(a);
-			cl.type.setMeAsPrimitiveEnum();
-			a = null;
-		}
 		else if( name.equals(attrGenerations) ) {
 			kiev.bytecode.KievGenerationsAttribute ea = (kiev.bytecode.KievGenerationsAttribute)bca;
 			for(int i=0; i < ea.gens.length; i++) {
@@ -805,9 +782,7 @@ public class Bytecoder implements Constants {
 
 		// This class name
 		KString cl_sig;
-		if (cl.isPrimitiveEnum())
-			cl_sig = cl.type.signature;
-		else if (kievmode)
+		if (kievmode)
 			cl_sig = jcl.type.signature;
 		else
 			cl_sig = jcl.type.java_signature;

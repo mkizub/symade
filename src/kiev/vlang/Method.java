@@ -562,8 +562,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			Type tp1 = Type.getRealType(Kiev.argtype,jtype.args[i]);
 			Type tp2 = Type.getRealType(Kiev.argtype,params[j].type);
 			if( !tp1.equals(tp2) ) {
-				if (tp2.clazz.isEnum() && tp2.clazz.isPrimitiveEnum() && tp1.isIntegerInCode())
-					continue;
 				Code.addInstr(Instr.op_load,params[j]);
 				Code.addInstr(Instr.op_checkcast,type.args[i]);
 				Code.addInstr(Instr.op_store,params[j]);

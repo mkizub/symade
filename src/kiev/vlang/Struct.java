@@ -390,19 +390,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
 	}
 
-	public Type getPrimitiveEnumType() {
-		if( !isEnum() || !isPrimitiveEnum() )
-			throw new RuntimeException("Request for primitive enum super-type in non-primitive-enum structure "+this);
-		if (!super_type.isReference())
-			return super_type;
-		PrimitiveEnumAttr ea = (PrimitiveEnumAttr)getAttr(attrPrimitiveEnum);
-		if( ea == null )
-			throw new RuntimeException("enum structure "+this+" without "+attrPrimitiveEnum+" attribute");
-		if (ea.fields.length == 0)
-			throw new RuntimeException("empty enum "+this);
-		return ea.type;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( isArgument() ) {
 //			dmp.append("/*").append(name.short_name).append("*/");
@@ -1226,20 +1213,12 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				foreach (ASTNode n; members; n instanceof Field && n.isEnumField()) {
 					Field f = (Field)n;
 					eflds[idx] = f;
-					if (isPrimitiveEnum())
-						values[idx] = ((Number)((ConstExpr)f.init).getConstValue()).intValue();
-					else
-						values[idx] = idx;
+					values[idx] = idx;
 					idx ++;
 				}
 			}
-			if (isPrimitiveEnum()) {
-				PrimitiveEnumAttr ea = new PrimitiveEnumAttr(this.super_type,eflds,values);
-				addAttr(ea);
-			} else {
-				EnumAttr ea = new EnumAttr(eflds,values);
-				addAttr(ea);
-			}
+			EnumAttr ea = new EnumAttr(eflds,values);
+			addAttr(ea);
 			this.super_type = Type.tpEnum;
 			Field vals = addField(new Field(nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
@@ -1376,8 +1355,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("name"),Type.tpString,0));
 						params = (Var[])Arrays.append(params,new Var(pos,init,nameEnumOrdinal,Type.tpInt,0));
 						params = (Var[])Arrays.append(params,new Var(pos,init,KString.from("text"),Type.tpString,0));
-						if (isPrimitiveEnum())
-							params[0].type = Type.tpEnum;
 					}
 					mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
 					init = new Method(this,nameInit,mt,ACC_PUBLIC);
@@ -1459,10 +1436,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			tome.body = new BlockStat(pos,tome);
 			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ASTNode.emptyArray);
 			EnumAttr ea;
-			if (isPrimitiveEnum())
-				ea = (PrimitiveEnumAttr)getAttr(attrPrimitiveEnum);
-			else
-				ea = (EnumAttr)getAttr(attrEnum);
+			ea = (EnumAttr)getAttr(attrEnum);
 			if( ea == null )
 				throw new RuntimeException("enum structure "+this+" without "+attrEnum+" attribute");
 			ASTNode[] cases = new ASTNode[ea.fields.length+1];
@@ -1486,32 +1460,18 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			{
 			MethodType tostrt, jtostrt;
 			int acc_flags;
-			if (isPrimitiveEnum()) {
-				tostrt = MethodType.newMethodType(null,new Type[]{this.type},Type.tpString);
-				jtostrt= MethodType.newMethodType(null,new Type[]{Type.tpInt},Type.tpString);
-				acc_flags = ACC_PUBLIC | ACC_STATIC;
-			} else {
-				tostrt = MethodType.newMethodType(null,Type.emptyArray,Type.tpString);
-				jtostrt=tostrt;
-				acc_flags = ACC_PUBLIC;
-			}
+			tostrt = MethodType.newMethodType(null,Type.emptyArray,Type.tpString);
+			jtostrt=tostrt;
+			acc_flags = ACC_PUBLIC;
 			Method tostr = new Method(this,KString.from("toString"),tostrt,acc_flags);
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
 			tostr.jtype = jtostrt;
-			if (isPrimitiveEnum()) {
-				tostr.params.add(new Var(pos,tostr,nameEnumOrdinal,this.type,0));
-			} else {
-				tostr.params.add(new Var(pos,tostr,nameThis,this.type,ACC_FORWARD));
-			}
+			tostr.params.add(new Var(pos,tostr,nameThis,this.type,ACC_FORWARD));
 			tostr.body = new BlockStat(pos,tostr);
-			if (isPrimitiveEnum()) {
-				sw = new SwitchStat(pos,tostr.body,new VarAccessExpr(pos,tostr.params[0]),ASTNode.emptyArray);
-			} else {
-				sw = new SwitchStat(pos,tostr.body,
-					new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
-					ASTNode.emptyArray);
-			}
+			sw = new SwitchStat(pos,tostr.body,
+				new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
+				ASTNode.emptyArray);
 			cases = new ASTNode[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				Field f = ea.fields[i];
@@ -1520,9 +1480,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					str = f.name.aliases.head();
 					str = str.substr(1,str.length()-1);
 				}
-				cases[i] = new CaseLabel(pos,sw,
-					!isPrimitiveEnum() ? new ConstIntExpr(ea.values[i])
-										:new StaticFieldAccessExpr(pos,this,f),
+				cases[i] = new CaseLabel(pos,sw,new ConstIntExpr(ea.values[i])	,
 					new ASTNode[]{
 						new ReturnStat(pos,null,new ConstStringExpr(str))
 					});
@@ -1541,15 +1499,9 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			{
 			MethodType fromstrt, jfromstrt;
 			int acc_flags;
-			if (isPrimitiveEnum()) {
-				fromstrt = MethodType.newMethodType(null,new Type[]{Type.tpString},this.type);
-				jfromstrt= MethodType.newMethodType(null,new Type[]{Type.tpString},Type.tpInt);
-				acc_flags = ACC_PUBLIC | ACC_STATIC;
-			} else {
-				fromstrt = MethodType.newMethodType(null,new Type[]{Type.tpString},this.type);
-				jfromstrt= fromstrt;
-				acc_flags = ACC_PUBLIC | ACC_STATIC;
-			}
+			fromstrt = MethodType.newMethodType(null,new Type[]{Type.tpString},this.type);
+			jfromstrt= fromstrt;
+			acc_flags = ACC_PUBLIC | ACC_STATIC;
 			Method fromstr = new Method(this,KString.from("valueOf"),fromstrt,acc_flags);
 			fromstr.name.addAlias(nameCastOp);
 			fromstr.name.addAlias(KString.from("fromString"));
@@ -2402,10 +2354,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
 				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
-						if (isPrimitiveEnum())
-							f.init = f.init.resolveExpr(((Struct)f.type.clazz).getPrimitiveEnumType());
-						else
-							f.init = f.init.resolveExpr(f.type);
+						f.init = f.init.resolveExpr(f.type);
 					} catch( Exception e ) {
 						Kiev.reportError(f.init.pos,e);
 					}
@@ -2972,7 +2921,6 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			if( ats[j].name.equals(attrSourceFile)
 			||  ats[j].name.equals(attrPizzaCase)
 			||  ats[j].name.equals(attrEnum)
-			||  ats[j].name.equals(attrPrimitiveEnum)
 			||  ats[j].name.equals(attrRequire)
 			||  ats[j].name.equals(attrEnsure)
 			)

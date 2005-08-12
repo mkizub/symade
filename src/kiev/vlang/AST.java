@@ -58,7 +58,7 @@ public interface TopLevelDecl {
 	public Dumper  toJavaDecl(Dumper dmp);
 };
 
-public enum TopLevelPass /*extends int*/ {
+public enum TopLevelPass {
 	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
 	passCreateTopStruct		   ,	// create top-level Struct
 	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
@@ -114,7 +114,6 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,20 boolean is_struct_members_generated;
 	@virtual public virtual packed:1,compileflags,21 boolean is_struct_statements_generated;
 	@virtual public virtual packed:1,compileflags,22 boolean is_struct_generated;
-	@virtual public virtual packed:1,compileflags,23 boolean is_struct_enum_primitive;
 	
 	// Expression flags
 	@virtual public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
@@ -384,15 +383,6 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		this.is_struct_java_enum = on;
-	}
-	// kiev enum that extends int
-	@getter public final boolean get$is_struct_enum_primitive()  alias isPrimitiveEnum  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		return this.is_struct_enum_primitive;
-	}
-	@setter public final void set$is_struct_enum_primitive(boolean on) alias setPrimitiveEnum {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		this.is_struct_enum_primitive = on;
 	}
 	// kiev syntax
 	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
