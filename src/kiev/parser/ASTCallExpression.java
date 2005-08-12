@@ -165,6 +165,7 @@ public class ASTCallExpression extends Expr {
 				} catch(Exception eee) {
 					Kiev.reportError(pos,eee);
 				}
+				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
 			}
 			if( reqType instanceof MethodType ) {

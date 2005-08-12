@@ -793,7 +793,7 @@ public class ForEachStat extends LoopStat implements Scope {
 			switch( mode ) {
 			case ARRAY:
 				/* var = container[iter] */
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign,
+				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 					new VarAccessExpr(var.pos,var),
 					new ContainerAccessExpr(container.pos,new VarAccessExpr(0,iter_array),new VarAccessExpr(iter.pos,iter))
 					);
@@ -812,7 +812,7 @@ public class ForEachStat extends LoopStat implements Scope {
 					);
 				if (!nextelem.type.ret.isInstanceOf(var.type))
 					var_init = new CastExpr(pos,var.type,var_init);
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign,
+				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 					new VarAccessExpr(var.pos,var),
 					var_init
 				);
