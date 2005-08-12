@@ -95,7 +95,6 @@ kiev.parser.ASTCondStatement kiev/parser/ASTCondStatement kiev\parser\ASTCondSta
 kiev.parser.ASTContinueStatement kiev/parser/ASTContinueStatement kiev\parser\ASTContinueStatement.java
 kiev.parser.ASTDoStatement kiev/parser/ASTDoStatement kiev\parser\ASTDoStatement.java
 kiev.parser.ASTEmptyStatement kiev/parser/ASTEmptyStatement kiev\parser\ASTEmptyStatement.java
-kiev.parser.ASTEnumFieldDeclaration kiev/parser/ASTEnumFieldDeclaration kiev\parser\ASTEnumFieldDeclaration.java
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTFinallyInfo kiev/parser/ASTFinallyInfo kiev\parser\ASTFinallyInfo.java
 kiev.parser.ASTForEachStatement kiev/parser/ASTForEachStatement kiev\parser\ASTForEachStatement.java
@@ -218,6 +217,7 @@ kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\Type
 kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
 kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
+kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
 kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
@@ -343,6 +343,7 @@ kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
+kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaAttr kiev/vlang/MetaAttr kiev\vlang\Attr.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java

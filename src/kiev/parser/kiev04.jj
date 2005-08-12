@@ -354,6 +354,15 @@ public class kiev040 {
 		}
 		return f;
 	}
+
+	private static Field mkEnumField(ASTIdentifier id, ASTModifiers modifiers) {
+		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+		f.pos = id.pos;
+		f.setEnumField(true);
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set(m);
+		return f;
+	}
 	}*/
 
 }
@@ -1024,13 +1033,22 @@ void TypeBodyDeclaration(Struct clazz) :
 	"}"
 }
 
-ASTEnumFieldDeclaration EnumFieldDeclaration(ASTModifiers modifiers) :
-{ ASTEnumFieldDeclaration n = new ASTEnumFieldDeclaration(); }
+Field EnumFieldDeclaration(ASTModifiers modifiers) :
+{ ASTIdentifier id; Field f; ConstStringExpr text; }
 {
-	{ n.modifiers = modifiers; }
-	n.name = Name()
-	[":" n.text = StringConstExpression() ]
-	{ return n; }
+	id = Name()
+	{
+		f = mkEnumField(id, modifiers);
+	}
+	[
+		":"
+		text = StringConstExpression()
+		{
+			text.value = KString.from("\""+text.value+"\"");
+			f.meta.set(new MetaAlias(text));
+		}
+	]
+	{ return f; }
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :

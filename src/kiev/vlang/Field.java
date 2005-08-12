@@ -107,6 +107,10 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 		return (MetaPacker)this.meta.get(MetaPacker.NAME);
 	}
 
+	public MetaAlias getMetaAlias() {
+		return (MetaAlias)this.meta.get(MetaAlias.NAME);
+	}
+
 	public String toString() { return name.toString()/*+":="+type*/; }
 
 	public NodeName getName() { return name; }

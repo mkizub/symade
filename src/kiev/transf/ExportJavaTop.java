@@ -162,6 +162,14 @@ public final class ExportJavaTop implements Constants {
 		else
 			setupStructType(me, true);
 
+		// assign type of enum fields
+		if (me.isEnum()) {
+			foreach (ASTNode n; me.members; n instanceof Field && n.isEnumField()) {
+				Field f = (Field)n;
+				f.ftype = new TypeRef(me.type);
+			}
+		}
+		
 		PassInfo.push(me);
 		try {
 			// Process inner classes and cases
@@ -805,6 +813,27 @@ public final class ExportJavaTop implements Constants {
 							m.setAbstract(true);
 					}
 				}
+				else if (members[i] instanceof Field && members[i].isEnumField()) {
+					Field f = (Field)members[i];
+					KString text = f.name.name;
+					MetaAlias al = f.getMetaAlias();
+					if (al != null) {
+						foreach (ASTNode n; al.getAliases(); n instanceof ConstStringExpr) {
+							KString nm = ((ConstStringExpr)n).value;
+							if (nm.len > 2 && nm.byteAt(0) == '\"') {
+								f.name.addAlias(nm);
+								text = nm.substr(1,nm.len-2);
+								break;
+							}
+						}
+					}
+					f.init = new NewExpr(f.pos,me.type,new Expr[]{
+								new ConstStringExpr(f.name.name),
+								new ConstIntExpr(next_enum_val),
+								new ConstStringExpr(text)
+					});
+					next_enum_val++;
+				}
 				else if( members[i] instanceof Field ) {
 					Field fdecl = (Field)members[i];
 					Field f = fdecl;
@@ -879,29 +908,6 @@ public final class ExportJavaTop implements Constants {
 							f.setInitWrapper(false);
 						}
 					}
-				}
-				else if (members[i] instanceof ASTEnumFieldDeclaration) {
-					ASTEnumFieldDeclaration efd = (ASTEnumFieldDeclaration)members[i];
-					Type me_type = me.type;
-					Field f = new Field(efd.name.name,me_type,ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_ENUM);
-					f.pos = efd.pos;
-					f.setEnumField(true);
-					efd.replaceWith(f);
-					if (efd.text == null)
-						f.init = new NewExpr(f.pos,me.type,new Expr[]{
-									new ConstStringExpr(efd.name.name),
-									new ConstIntExpr(next_enum_val),
-									new ConstStringExpr(efd.name.name)
-						});
-					else
-						f.init = new NewExpr(f.pos,me.type,new Expr[]{
-									new ConstStringExpr(efd.name.name),
-									new ConstIntExpr(next_enum_val),
-									new ConstStringExpr(efd.text.value)
-						});
-					next_enum_val++;
-					if (efd.text != null)
-						f.name.addAlias(KString.from("\""+efd.text.value+"\""));
 				}
 				else if( members[i] instanceof ASTFormalParameter) {
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);

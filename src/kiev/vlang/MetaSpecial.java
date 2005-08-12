@@ -102,4 +102,32 @@ public class MetaPacker extends Meta {
 	@setter public void set$size(int val) { setI(nameSize, val); }
 }
 
+@node
+public class MetaAlias extends Meta {
+	public static final KString NAME = KString.from("kiev.stdlib.meta.alias");
+	public static final KString VALUE = KString.from("value");
+
+	public MetaAlias() {
+		super(new TypeNameRef(NAME));
+	}
+
+	public MetaAlias(ConstStringExpr name) {
+		super(new TypeNameRef(NAME));
+		MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpString).signature);
+		MetaValueArray mv = new MetaValueArray(mvt, new ASTNode[]{name});
+		set(mv);
+	}
+
+	public MetaAlias(TypeRef type) {
+		super(type);
+	}
+	
+	public ASTNode[] getAliases() {
+		MetaValueArray mv = (MetaValueArray)get(VALUE);
+		if (mv == null)
+			return new ASTNode[0];
+		return mv.values.toArray();
+	}
+}
+
 
