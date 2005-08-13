@@ -35,11 +35,11 @@ import kiev.vlang.*;
 
 @node
 public class ASTCatchInfo extends ASTNode {
-	@att public ASTFormalParameter	par;
-    @att public Statement			body;
+	@att public Var				par;
+    @att public Statement		body;
 
 	public ASTNode resolve(Type reqType) {
-		CatchInfo ci = new CatchInfo(pos,parent,par.pass3(),body);
+		CatchInfo ci = new CatchInfo(pos,parent,par,body);
 		return ci.resolve(Type.tpVoid);
 	}
 

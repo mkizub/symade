@@ -72,14 +72,14 @@ public class ShadowStat extends Statement {
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
-		Var		old_var;
-		Var		new_var;
-		ParamRedir(Var o, Var n) { old_var=o; new_var=n; }
+		FormPar		old_var;
+		FormPar		new_var;
+		ParamRedir(FormPar o, FormPar n) { old_var=o; new_var=n; }
 	};
 
 
 	@att public Method		method;
-	public ParamRedir[]	params_redir;
+	public ParamRedir[]		params_redir;
 
 	public InlineMethodStat() {
 	}
@@ -109,7 +109,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
 			types[i] = params_redir[i].new_var.type;
-			params_redir[i].new_var.type = method.params[i].type;
+			params_redir[i].new_var.vtype.lnk = method.params[i].type;
 		}
 		NodeInfoPass.pushState();
 		try {
@@ -123,7 +123,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		} finally {
 			PassInfo.pop(this);
 			for (int i=0; i < params_redir.length; i++)
-				params_redir[i].new_var.type = types[i];
+				params_redir[i].new_var.vtype.lnk = types[i];
 		}
 		return this;
 	}

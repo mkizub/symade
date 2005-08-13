@@ -81,7 +81,7 @@ public class Token implements kiev040Constants {
 	{
 		Token t = new Token();
 		switch(ofKind) {
-		case UNDERSCORE:
+//		case UNDERSCORE:
 		case FUNCTION:
 		case RULE:
 		case PCUT:

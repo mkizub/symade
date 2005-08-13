@@ -38,20 +38,20 @@ import syntax kiev.Syntax;
 
 @node
 public class ASTMethodDeclaration extends ASTNode implements PreScanneable, ScopeOfNames, ScopeOfMethods {
-	@att public ASTModifiers							modifiers;
-    @att public ASTIdentifier							ident;
-    @att public final NArr<ASTFormalParameter>			params;
-    @att public TypeRef									rettype;
-    @att public final NArr<BaseStruct>					argtypes;
-    @att public final NArr<ASTAlias>					aliases;
-    @att public ASTNode									throwns;
-    @att public Statement								body;
-	@att public PrescannedBody 							pbody;
-	@att public final NArr<WBCCondition>				conditions;
-    @att public MetaValue								annotation_default;
+	@att public ASTModifiers					modifiers;
+    @att public ASTIdentifier					ident;
+    @att public final NArr<FormPar>			params;
+    @att public TypeRef							rettype;
+    @att public final NArr<BaseStruct>			argtypes;
+    @att public final NArr<ASTAlias>			aliases;
+    @att public ASTNode							throwns;
+    @att public Statement						body;
+	@att public PrescannedBody 					pbody;
+	@att public final NArr<WBCCondition>		conditions;
+    @att public MetaValue						annotation_default;
 
-	@ref public Method									me;
-	@ref public Type[]									ftypes;
+	@ref public Method							me;
+	@ref public Type[]							ftypes;
 
 	ASTMethodDeclaration() {
 		modifiers = new ASTModifiers();
@@ -92,16 +92,9 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 				ftypes[i] = argtypes[i].type;
 		}
 
-		Type[] margs = Type.emptyArray;
-		Type[] mjargs = Type.emptyArray;
-		NArr<FormPar> vars = new NArr<FormPar>();
-		boolean has_dispatcher = false;
-		Type type;
-		
-		if (clazz.isAnnotation() && vars.length > 0) {
+		if (clazz.isAnnotation() && params.length > 0) {
 			Kiev.reportError(pos, "Annotation methods may not have arguments");
 			params.delAll();
-			vars.delAll();
 			setVarArgs(false);
 		}
 
@@ -111,6 +104,11 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			pbody = null;
 		}
 
+		Type[] margs  = new Type[params.length];
+		Type[] mjargs = new Type[params.length];
+		boolean has_dispatcher = false;
+		Type type;
+		
 		// push the method, because formal parameters may refer method's type args
 		PassInfo.push(this);
 		try {
@@ -122,31 +120,31 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 					throw new CompilerException(pos,"Return type missed or bad constructor name "+ident);
 				ident.name = Constants.nameInit;
 			}
-			for(int i=0; i < params.length; i++) {
-				ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
-				vars.append(fdecl.pass3());
-				margs = (Type[])Arrays.append(margs,fdecl.type.getType());
-				if (fdecl.mm_type != null) {
-					mjargs = (Type[])Arrays.append(mjargs,fdecl.mm_type.getType());
+			for (int i=0; i < params.length; i++) {
+				FormPar fp = params[i];
+				if (fp.meta != null)
+					fp.meta.verify();
+				margs[i] = fp.type;
+				if (fp.stype != null) {
+					mjargs[i] = fp.stype.getType();
 					has_dispatcher = true;
 				}
-				else if (fdecl.type.getType().isPizzaCase()) {
-					mjargs = (Type[])Arrays.append(mjargs,
-						Type.getRealType(PassInfo.clazz.type,
-							fdecl.type.getType().clazz.super_type));
+				else if (fp.type.isPizzaCase()) {
+					mjargs[i] = Type.getRealType(PassInfo.clazz.type, fp.type.clazz.super_type);
 					has_dispatcher = true;
 				}
-				else if (has_dispatcher) {
-					mjargs = (Type[])Arrays.append(mjargs,margs[i]);
+				else {
+					mjargs[i] = fp.type;
 				}
 			}
 		} finally {
 			PassInfo.pop(this);
 		}
 		if( isVarArgs() ) {
-			vars.append(new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0));
-			margs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
-			mjargs = (Type[])Arrays.append(margs,vars[vars.length-1].type);
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			params.append(va);
+			margs = (Type[])Arrays.append(margs,va.type);
+			mjargs = (Type[])Arrays.append(margs,va.type);
 		}
 		MethodType mtype = MethodType.newMethodType(null,ftypes,margs,type);
 		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,null,mjargs,type) : null;
@@ -161,7 +159,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
         me.body = body;
 		me.pbody = pbody;
 		foreach(ASTAlias al; aliases) al.attach(me);
-		me.params.addAll(vars);
+		me.params.addAll(params);
         this.replaceWith(me);
         if( throwns != null ) {
         	Type[] thrs = ((ASTThrows)throwns).pass3();

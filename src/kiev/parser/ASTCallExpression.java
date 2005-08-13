@@ -159,7 +159,7 @@ public class ASTCallExpression extends Expr {
 				ac.parent = parent;
 				ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
 				for (int i=0; i < ac.params.length; i++)
-					ac.params.append(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
+					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
 				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
 				Expr[] oldargs = args.toArray();
 				Expr[] cargs = new Expr[ac.params.length];

@@ -157,7 +157,7 @@ public class ASTCallAccessExpression extends Expr {
 						ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
 						Method meth = (Method)m;
 						for(int i=0; i < meth.type.args.length; i++) {
-							ac.params.add(new Var(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
+							ac.params.add(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
 						}
 						BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
 						Expr[] oldargs = args.toArray();

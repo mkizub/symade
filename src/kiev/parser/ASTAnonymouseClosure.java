@@ -37,7 +37,7 @@ import kiev.stdlib.*;
 @node
 @cfnode
 public class ASTAnonymouseClosure extends Expr {
-    @att public final NArr<ASTNode>		params;
+    @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
     @att public Statement					body;
 	@att public Expr						new_closure;
@@ -71,10 +71,7 @@ public class ASTAnonymouseClosure extends Expr {
 		Type[] types = new Type[params.length];
 		Var[] vars = new Var[params.length];
 		for(int i=0; i < types.length; i++) {
-			if( params[i] instanceof Var )
-				vars[i] = (Var)params[i];
-			else
-				vars[i] = ((ASTFormalParameter)params[i]).pass3();
+			vars[i] = (Var)params[i];
 			types[i] = vars[i].type;
 		}
 		Type ret = rettype.getType();

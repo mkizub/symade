@@ -813,6 +813,11 @@ public final class ExportJavaTop implements Constants {
 							m.setAbstract(true);
 					}
 				}
+				else if (members[i] instanceof Field && me.isPizzaCase()) {
+					Field f = (Field)members[i];
+					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
+					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
+				}
 				else if (members[i] instanceof Field && members[i].isEnumField()) {
 					Field f = (Field)members[i];
 					KString text = f.name.name;
@@ -908,13 +913,6 @@ public final class ExportJavaTop implements Constants {
 							f.setInitWrapper(false);
 						}
 					}
-				}
-				else if( members[i] instanceof ASTFormalParameter) {
-					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
-					Var v = ((ASTFormalParameter)members[i]).pass3();
-					Field f = new Field(v.name.name,v.type,ACC_PUBLIC);
-					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
-					members[i].replaceWith(f);
 				}
 				else if( members[i] instanceof WBCCondition ) {
 					WBCCondition inv = (WBCCondition)members[i];

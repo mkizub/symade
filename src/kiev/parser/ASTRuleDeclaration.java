@@ -40,7 +40,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 
 	@att public ASTModifiers				modifiers;
     @att public ASTIdentifier				ident;
-    @att public final NArr<ASTNode>		params;
+    @att public final NArr<FormPar>		params;
     @att public final NArr<ASTAlias>		aliases;
     @att public final NArr<ASTNode>		localvars;
     @att public Statement					body;
@@ -71,15 +71,14 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 		}
 		if( isVarArgs() ) flags |= ACC_VARARGS;
 		Type type = Type.tpRule;
-		NArr<FormPar> vars = new NArr<FormPar>();
-		vars.append(new FormPar(pos,namePEnv,Type.tpRule,0));
-		vars[0].setForward(true);
-		Type[] margs = new Type[] {Type.tpRule};
+		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,ACC_FORWARD));
+		Type[] margs = new Type[params.length];
 		Type[] mfargs = Type.emptyArray;
-		for(int i=0; i < params.length; i++) {
-			ASTFormalParameter fdecl = (ASTFormalParameter)params[i];
-			vars.append(fdecl.pass3());
-			margs = (Type[])Arrays.append(margs,vars[i+1].type);
+		for (int i=0; i < params.length; i++) {
+			FormPar fp = params[i];
+			if (fp.meta != null)
+				fp.meta.verify();
+			margs[i] = fp.type;
 		}
 		Var[] lvars = Var.emptyArray;
 		for(int i=0; i < localvars.length; i++) {
@@ -117,7 +116,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 			lvars[i].parent = me;
 		}
 		foreach(ASTAlias al; aliases) al.attach(me);
-		me.params.addAll(vars);
+		me.params.addAll(params);
 		me.localvars.addAll(lvars);
         this.replaceWith(me);
 

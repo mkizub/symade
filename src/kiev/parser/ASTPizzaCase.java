@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 @node
 public class ASTPizzaCase extends ASTNode {
 	@att public ASTIdentifier			val;
-	@att public final NArr<ASTNode>		params;
+	@att public final NArr<Var>			params;
 	@att public final NArr<ASTNode>		stats;
 
     public ASTNode resolve(Type reqType) {
@@ -50,12 +50,9 @@ public class ASTPizzaCase extends ASTNode {
 				throw new CompilerException(val.pos,"Unresolved class "+n);
 	    	if( !(v instanceof Struct) || !((Struct)v).isPizzaCase() )
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
-	    	for(int i=0; i < params.length; i++) {
-    			pattern[i] = ((ASTFormalParameter)params[i]).pass3();
-	    	}
 			CaseLabel cl = new CaseLabel(pos,parent,new WrapedExpr(pos,v),stats.toArray());
 			cl.parent = parent;
-			cl.pattern = pattern;
+			cl.pattern.addAll(params);
 			return cl;
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);

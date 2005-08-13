@@ -39,10 +39,10 @@ public class CaseLabel extends ASTNode {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att public Expr		val;
-	@ref public Type		type;
-	public Var[]		pattern;
-	@att public BlockStat	stats;
+	@att public Expr				val;
+	@ref public Type				type;
+	@att public final NArr<Var>		pattern;
+	@att public BlockStat			stats;
 
 	public CodeLabel	case_label;
 
@@ -131,18 +131,19 @@ public class CaseLabel extends ASTNode {
 								if( pattern.length != case_attr.casefields.length )
 									throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
 								for(int i=0, j=0; i < pattern.length; i++) {
-									if( pattern[i]==null ) continue;
-									pattern[i] = (Var)pattern[i].resolve(null);
+									Var p = pattern[i];
+									if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
+										continue;
 									Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
-									if( !pattern[i].type.equals(tp) )
-										throw new RuntimeException("Pattern variable "+pattern[i].name+" has type "+pattern[i].type+" but type "+tp+" is expected");
+									if( !p.type.equals(tp) )
+										throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 									Expr init =
-										new AccessExpr(pattern[i].pos,
-											new CastExpr(pattern[i].pos,Type.getRealType(sw.tmpvar.type,cas.type),
-												(Expr)new VarAccessExpr(pattern[i].pos,sw.tmpvar).resolve(null)),
+										new AccessExpr(p.pos,
+											new CastExpr(p.pos,Type.getRealType(sw.tmpvar.type,cas.type),
+												(Expr)new VarAccessExpr(p.pos,sw.tmpvar).resolve(null)),
 											case_attr.casefields[i]
 										);
-									addStatement(j++,new DeclStat(pattern[i].pos,stats,pattern[i],init));
+									addStatement(j++,new DeclStat(p.pos,stats,p,init));
 								}
 							}
 						} else {

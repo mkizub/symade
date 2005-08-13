@@ -36,16 +36,13 @@ import kiev.stdlib.*;
 @node
 @cfnode
 public class ASTForEachStatement extends Statement {
-	@att public ASTFormalParameter	var;
+	@att public Var					var;
 	@att public Expr				container;
 	@att public Expr				cond;
 	@att public Statement			body;
 
 	public ASTNode resolve(Type reqType) {
-		Var v = null;
-		if( var != null )
-			v = var.pass3();
-		return new ForEachStat(pos,parent,v,container,cond,body).resolve(Type.tpVoid);
+		return new ForEachStat(pos,parent,var,container,cond,body).resolve(Type.tpVoid);
 	}
 
 	public Dumper toJava(Dumper dmp) {

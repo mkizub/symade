@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.*;
 import kiev.stdlib.*;
+import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -38,19 +39,31 @@ public class Var extends ASTNode implements Named, Typed {
 	public static Var[]	emptyArray = new Var[0];
 
 	public NodeName			name;
-	@ref public Type		type;
+	@att public TypeRef		vtype;
 	@att public MetaSet		meta;
 	     int				bcpos = -1;
 
+	@ref public abstract virtual access:ro Type	type;
+	
 	public Var() {
 	}
 
-	public Var(int pos,KString name, Type type, int flags) {
+	public Var(int pos, KString name, Type type, int flags) {
 		super(pos,flags);
 		this.name = new NodeName(name);
-		this.type = type;
+		this.vtype = new TypeRef(type);
 	}
 
+	public Var(ASTIdentifier id, TypeRef vtype, int flags) {
+		super(id.pos,flags);
+		this.name = new NodeName(id.name);
+		this.vtype = vtype;
+	}
+
+	@getter public Type get$type() {
+		return vtype.getType();
+	}
+	
 	public String toString() {
 		return name.toString()/*+":="+type*/;
 	}
@@ -68,9 +81,9 @@ public class Var extends ASTNode implements Named, Typed {
 	}
 
 	public void cleanup() {
-		parent=null;
-		name = null;
-		type = null;
+		parent = null;
+		name   = null;
+		vtype  = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -111,11 +124,18 @@ public class Var extends ASTNode implements Named, Typed {
 
 @node
 public class FormPar extends Var {
+	@att public TypeRef		stype;
+
 	public FormPar() {
 	}
 
 	public FormPar(int pos, KString name, Type type, int flags) {
 		super(pos,name,type,flags);
+	}
+
+	public FormPar(ASTIdentifier id, TypeRef vtype, TypeRef stype, int flags) {
+		super(id,vtype,flags);
+		this.stype = stype;
 	}
 
 }

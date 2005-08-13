@@ -362,6 +362,35 @@ public class kiev040 {
 			f.meta.set(m);
 		return f;
 	}
+
+	private static Field mkCaseField(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp) {
+		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
+		f.pos = id.pos;
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set(m);
+		return f;
+	}
+	
+	private static Var mkVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp) {
+		Var v = new Var(id, tp, modifiers.getFlags());
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet(v);
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set(m);
+		}
+		return v;
+	}
+	
+	private static FormPar mkFormPar(ASTIdentifier id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet(v);
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set(m);
+		}
+		return v;
+	}
+
 	}*/
 
 }
@@ -476,7 +505,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < VOID: "void" >
 | < VOLATILE: "volatile" >
 | < WHILE: "while" >
-| < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
+//| < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < ARROW: "->" >
 | < FUNCTION: "fun" >
 | < VIRTUAL: "virtual" > { if(Kiev.javaMode || Kiev.disabled(Ext.VirtualFields) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
@@ -1064,11 +1093,11 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	"("
 		[
 			modifiers = Modifiers()
-			clazz.members += FormalParameter(modifiers)
+			clazz.members += CaseTypeField(modifiers)
 			(
 				","
 				modifiers = Modifiers()
-				clazz.members += FormalParameter(modifiers)
+				clazz.members += CaseTypeField(modifiers)
 			)*
 		]
 	")"
@@ -1367,42 +1396,51 @@ Expr ArrayInitializer() :
 	{ return e; }
 }
 
-ASTFormalParameter FormalParameter(ASTModifiers modifiers) :
-{ Token t; }
+Field CaseTypeField(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; ASTIdentifier id; }
 {
+	tp = Type()
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
 	{
-		ASTFormalParameter n = new ASTFormalParameter();
-		n.modifiers = modifiers;
+		return mkCaseField(id, modifiers, tp);
 	}
-	(
-		n.type  = Type()
-		n.ident = Name()
-		( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); } )*
-	|
-		t="_" { n.set(t); }
-	)
-	{ return n; }
 }
 
-ASTFormalParameter mmFormalParameter(ASTModifiers modifiers) :
-{ Token t; }
+Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; ASTIdentifier id; }
 {
-	{
-		ASTFormalParameter n = new ASTFormalParameter();
-		n.modifiers = modifiers;
-	}
 	(
-		n.type = Type()
-		(
-			LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
-			(":") n.mm_type = Type()
-		)?
-		n.ident = Name()
-		( t=<OPERATOR_LRBRACKETS> { n.type = new TypeExpr(n.type,t); if (n.mm_type != null) n.mm_type = new TypeExpr(n.mm_type,t); } )*
+		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals("_")) })
+		id = Name() { tp = null; }
 	|
-		t="_" { n.set(t); }
+		tp = Type()
+		id = Name()
+		( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
 	)
-	{ return n; }
+	{ return mkVar(id, modifiers, tp); }
+}
+
+FormPar MethodFormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; TypeRef st=null; ASTIdentifier id; }
+{
+	tp = Type()
+	(
+		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals(":")) })
+		(":") st = Type()
+	)?
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); if (st!= null) st = new TypeExpr(st,t); } )*
+	{ return mkFormPar(id, modifiers, tp, st); }
+}
+
+FormPar FormalParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp; ASTIdentifier id; }
+{
+	tp = Type()
+	id = Name()
+	( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
+	{ return mkFormPar(id, modifiers, tp, null); }
 }
 
 ASTThrows Throws() :
@@ -1510,11 +1548,11 @@ ASTMethodDeclaration MethodDeclaration(ASTModifiers modifiers) :
 	"("
 		[
 			modifiers = Modifiers()
-			n.params += mmFormalParameter(modifiers)
+			n.params += MethodFormalParameter(modifiers)
 			(
 				LOOKAHEAD(2) ","
 				modifiers = Modifiers()
-				n.params += mmFormalParameter(modifiers)
+				n.params += MethodFormalParameter(modifiers)
 			)*
 			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
 				[","]
@@ -1552,11 +1590,11 @@ ASTMethodDeclaration ConstructorDeclaration(ASTModifiers modifiers) :
 	"("
 		[
 			modifiers = Modifiers()
-			n.params += mmFormalParameter(modifiers)
+			n.params += FormalParameter(modifiers)
 			(
 				LOOKAHEAD(2) ","
 				modifiers = Modifiers()
-				n.params += mmFormalParameter(modifiers)
+				n.params += FormalParameter(modifiers)
 			)*
 			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
 				[","]
@@ -2742,11 +2780,11 @@ ASTPizzaCase PizzaCase() :
 	"("
 		[
 			modifiers = Modifiers()
-			c.params += FormalParameter(modifiers)
+			c.params += PizzaCaseFormalParameter(modifiers)
 			(
 				","
 				modifiers = Modifiers()
-				c.params += FormalParameter(modifiers)
+				c.params += PizzaCaseFormalParameter(modifiers)
 			)*
 		]
 	")" ":"
@@ -2822,7 +2860,7 @@ ASTForEachStatement ForEachStatement() :
 	"("
 	[	LOOKAHEAD( Modifiers() FormalParameter() )
 		modifiers = Modifiers()
-		st.var = FormalParameter(modifiers)
+		st.var = PizzaCaseFormalParameter(modifiers)
 		";"
 	]
 	st.container = ExpressionNT(null)
@@ -2947,7 +2985,7 @@ ASTCatchInfo CatchInfo() :
 	{ st.setPos(t.getPos()); }
 	"("
 		modifiers = Modifiers()
-		st.par = FormalParameter(modifiers)
+		st.par = PizzaCaseFormalParameter(modifiers)
 	")"
 	st.body = Block()
 	{ return st; }
