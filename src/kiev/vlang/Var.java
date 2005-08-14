@@ -64,6 +64,15 @@ public class Var extends ASTNode implements Named, Typed {
 		return vtype.getType();
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "vtype")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "meta")
+				parent.callbackChildChanged(pslot);
+		}
+	}
+	
 	public String toString() {
 		return name.toString()/*+":="+type*/;
 	}
@@ -138,6 +147,15 @@ public class FormPar extends Var {
 		this.stype = stype;
 	}
 
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if (attr.name == "stype")
+				parent.callbackChildChanged(pslot);
+			else
+				super.callbackChildChanged(attr);
+		}
+	}
+	
 }
 
 public class CodeVar {

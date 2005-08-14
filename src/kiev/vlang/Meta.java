@@ -43,6 +43,12 @@ public final class MetaSet extends ASTNode {
 		super(0,owner);
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if (attr.name == "metas") parent.callbackChildChanged(pslot);
+		}
+	}
+	
 	public int size() alias length {
 		return metas.length;
 	}
@@ -170,6 +176,15 @@ public class Meta extends ASTNode {
 		return new Meta(new TypeNameRef(name));
 	}
 
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "type")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "values")
+				parent.callbackChildChanged(pslot);
+		}
+	}
+	
 	public int size() alias length {
 		return values.length;
 	}

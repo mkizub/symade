@@ -77,6 +77,7 @@ public enum TopLevelPass {
 public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
+    public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false);
 
 	public int				pos;
     @ref(copyable=false)
@@ -169,6 +170,18 @@ public abstract class ASTNode implements Constants {
 		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
 	};
 
+	public /*abstract*/ Object copyTo(Object to$node) {
+        ASTNode node = (ASTNode)to$node;
+		node.pos			= this.pos;
+		node.flags			= this.flags;
+		node.compileflags	= this.compileflags;
+		return node;
+	};
+
+	public void callbackChildChanged(AttrSlot attr) {
+		// by default do nothing
+	}
+	
 	public ASTNode(int pos, int fl) {
 		this(pos);
 		flags = fl;
@@ -227,6 +240,7 @@ public abstract class ASTNode implements Constants {
 			self.acc = new Access(0);
 			self.acc.verifyAccessDecl(self);
 		}
+		this.callbackChildChanged(nodeattr$flags);
 		return flags;
 	}
 	public int getFlags() { return flags; }
@@ -261,7 +275,10 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_package(boolean on) alias setPackage {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
-		this.is_struct_package = on;
+		if (this.is_struct_package != on) {
+			this.is_struct_package = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_argument()  alias isArgument  {
@@ -270,7 +287,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_argument = on;
+		if (this.is_struct_argument != on) {
+			this.is_struct_argument = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
@@ -279,7 +299,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		this.is_struct_pizza_case = on;
+		if (this.is_struct_pizza_case != on) {
+			this.is_struct_pizza_case = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a local (in method) class	
 	@getter public final boolean get$is_struct_local()  alias isLocal  {
@@ -288,7 +311,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_local(boolean on) alias setLocal {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_local = on;
+		if (this.is_struct_local != on) {
+			this.is_struct_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// an anonymouse (unnamed) class	
 	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
@@ -297,7 +323,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_anomymouse = on;
+		if (this.is_struct_anomymouse != on) {
+			this.is_struct_anomymouse = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// has pizza cases
 	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
@@ -306,7 +335,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		this.is_struct_has_pizza_cases = on;
+		if (this.is_struct_has_pizza_cases != on) {
+			this.is_struct_has_pizza_cases = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// verified
 	@getter public final boolean get$is_struct_verified()  alias isVerified  {
@@ -315,7 +347,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_verified = on;
+		if (this.is_struct_verified != on) {
+			this.is_struct_verified = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// indicates that structure members were generated
 	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
@@ -324,7 +359,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_members_generated = on;
+		if (this.is_struct_members_generated != on) {
+			this.is_struct_members_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// indicates that statements in code were generated
 	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
@@ -333,7 +371,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_statements_generated = on;
+		if (this.is_struct_statements_generated != on) {
+			this.is_struct_statements_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// indicates that the structrue was generared (from template)
 	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
@@ -342,7 +383,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
 		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		this.is_struct_generated = on;
+		if (this.is_struct_generated != on) {
+			this.is_struct_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// kiev enum
 	@getter public final boolean get$is_struct_enum()  alias isEnum  {
@@ -352,7 +396,10 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		assert(!on || (!isPackage() && !isInterface() && !isSyntax()));
-		this.is_struct_enum = on;
+		if (this.is_struct_enum != on) {
+			this.is_struct_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// kiev annotation
 	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
@@ -362,8 +409,11 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		assert(!on || (!isPackage() && !isSyntax()));
-		this.is_struct_annotation = on;
-		if (on) this.setInterface(true);
+		if (this.is_struct_annotation != on) {
+			this.is_struct_annotation = on;
+			if (on) this.setInterface(true);
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// java enum
 	@getter public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
@@ -372,7 +422,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		this.is_struct_java_enum = on;
+		if (this.is_struct_java_enum != on) {
+			this.is_struct_java_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// kiev syntax
 	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
@@ -382,22 +435,11 @@ public abstract class ASTNode implements Constants {
 	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		assert(!on || (!isPackage() && ! isEnum()));
-		this.is_struct_syntax = on;
+		if (this.is_struct_syntax != on) {
+			this.is_struct_syntax = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
-	// kiev wrapper class
-//	@getter public final boolean get$is_struct_wrapper()  alias isWrapper  {
-//		assert(this instanceof BaseStruct,"For node "+this.getClass());
-//		return this.is_struct_wrapper;
-//	}
-//	@setter public final void set$is_struct_wrapper(boolean on) alias setWrapper {
-//		assert(this instanceof Struct,"For node "+this.getClass());
-//		this.is_struct_wrapper = on;
-//		Struct s = (Struct)this;
-//		if (on)
-//			s.type.flags |= StdTypes.flWrapper;
-//		else
-//			s.type.flags &= ~StdTypes.flWrapper;
-//	}
 
 	//
 	// Method specific
@@ -410,7 +452,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_multimethod(boolean on) alias setMultiMethod {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_multimethod = on;
+		if (this.is_mth_multimethod != on) {
+			this.is_mth_multimethod = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// virtual static method	
 	@getter public final boolean get$is_mth_virtual_static()  alias isVirtualStatic  {
@@ -419,7 +464,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_virtual_static(boolean on) alias setVirtualStatic {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_virtual_static = on;
+		if (this.is_mth_virtual_static != on) {
+			this.is_mth_virtual_static = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// method with variable number of arguments	
 	@getter public final boolean get$is_mth_varargs()  alias isVarArgs  {
@@ -428,7 +476,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_varargs(boolean on) alias setVarArgs {
 		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration || this instanceof kiev.parser.ASTRuleDeclaration,"For node "+this.getClass());
-		this.is_mth_varargs = on;
+		if (this.is_mth_varargs != on) {
+			this.is_mth_varargs = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// logic rule method	
 	@getter public final boolean get$is_mth_rule()  alias isRuleMethod  {
@@ -437,7 +488,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_rule(boolean on) alias setRuleMethod {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_rule = on;
+		if (this.is_mth_rule != on) {
+			this.is_mth_rule = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// method with attached operator	
 	@getter public final boolean get$is_mth_operator()  alias isOperatorMethod  {
@@ -446,7 +500,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_operator(boolean on) alias setOperatorMethod {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_operator = on;
+		if (this.is_mth_operator != on) {
+			this.is_mth_operator = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// needs to call post-condition before return	
 	@getter public final boolean get$is_mth_gen_post_cond()  alias isGenPostCond  {
@@ -455,7 +512,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_gen_post_cond(boolean on) alias setGenPostCond {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_gen_post_cond = on;
+		if (this.is_mth_gen_post_cond != on) {
+			this.is_mth_gen_post_cond = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// need fields initialization	
 	@getter public final boolean get$is_mth_need_fields_init()  alias isNeedFieldInits  {
@@ -464,7 +524,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_need_fields_init(boolean on) alias setNeedFieldInits {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_need_fields_init = on;
+		if (this.is_mth_need_fields_init != on) {
+			this.is_mth_need_fields_init = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a method generated as invariant	
 	@getter public final boolean get$is_mth_invariant()  alias isInvariantMethod  {
@@ -473,7 +536,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_invariant(boolean on) alias setInvariantMethod {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_invariant = on;
+		if (this.is_mth_invariant != on) {
+			this.is_mth_invariant = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// a local method (closure code or inner method)	
 	@getter public final boolean get$is_mth_local()  alias isLocalMethod  {
@@ -482,7 +548,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_mth_local(boolean on) alias setLocalMethod {
 		assert(this instanceof Method,"For node "+this.getClass());
-		this.is_mth_local = on;
+		if (this.is_mth_local != on) {
+			this.is_mth_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	//
@@ -496,7 +565,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_forward(boolean on) alias setForward {
 		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		this.is_forward = on;
+		if (this.is_forward != on) {
+			this.is_forward = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// init wrapper
 	@getter public final boolean get$is_init_wrapper()  alias isInitWrapper  {
@@ -505,7 +577,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_init_wrapper(boolean on) alias setInitWrapper {
 		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		this.is_init_wrapper = on;
+		if (this.is_init_wrapper != on) {
+			this.is_init_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// need a proxy access 
 	@getter public final boolean get$is_need_proxy()  alias isNeedProxy  {
@@ -514,7 +589,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_need_proxy(boolean on) alias setNeedProxy {
 		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		this.is_need_proxy = on;
+		if (this.is_need_proxy != on) {
+			this.is_need_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	// Var specific
@@ -526,8 +604,11 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_var_need_ref_proxy(boolean on) alias setNeedRefProxy {
 		assert(this instanceof Var,"For node "+this.getClass());
-		this.is_var_need_ref_proxy = on;
-		if (on) this.is_need_proxy = on;
+		if (this.is_var_need_ref_proxy != on) {
+			this.is_var_need_ref_proxy = on;
+			if (on) this.is_need_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// is a local var in a rule 
 	@getter public final boolean get$is_var_local_rule_var()  alias isLocalRuleVar  {
@@ -536,7 +617,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_var_local_rule_var(boolean on) alias setLocalRuleVar {
 		assert(this instanceof Var,"For node "+this.getClass());
-		this.is_var_local_rule_var = on;
+		if (this.is_var_local_rule_var != on) {
+			this.is_var_local_rule_var = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// closure proxy
 	@getter public final boolean get$is_var_closure_proxy()  alias isClosureProxy  {
@@ -545,7 +629,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
 		assert(this instanceof Var,"For node "+this.getClass());
-		this.is_var_closure_proxy = on;
+		if (this.is_var_closure_proxy != on) {
+			this.is_var_closure_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// "this" var
 	@getter public final boolean get$is_var_this()  alias isVarThis  {
@@ -554,7 +641,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_var_this(boolean on) alias setVarThis {
 		assert(this instanceof Var,"For node "+this.getClass());
-		this.is_var_this = on;
+		if (this.is_var_this != on) {
+			this.is_var_this = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// "super" var
 	@getter public final boolean get$is_var_super()  alias isVarSuper {
@@ -563,7 +653,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_var_super(boolean on) alias setVarSuper {
 		assert(this instanceof Var,"For node "+this.getClass());
-		this.is_var_super = on;
+		if (this.is_var_super != on) {
+			this.is_var_super = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	//
@@ -577,7 +670,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_fld_virtual(boolean on) alias setVirtual {
 		assert(this instanceof Field,"For node "+this.getClass());
-		this.is_fld_virtual = on;
+		if (this.is_fld_virtual != on) {
+			this.is_fld_virtual = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// is a field of enum
 	@getter public final boolean get$is_fld_enum()  alias isEnumField  {
@@ -586,7 +682,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_fld_enum(boolean on) alias setEnumField {
 		assert(this instanceof Field,"For node "+this.getClass());
-		this.is_fld_enum = on;
+		if (this.is_fld_enum != on) {
+			this.is_fld_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// packer field (auto-generated for packed fields)
 	@getter public final boolean get$is_fld_packer()  alias isPackerField  {
@@ -595,7 +694,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_fld_packer(boolean on) alias setPackerField {
 		assert(this instanceof Field,"For node "+this.getClass());
-		this.is_fld_packer = on;
+		if (this.is_fld_packer != on) {
+			this.is_fld_packer = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// packed field
 	@getter public final boolean get$is_fld_packed()  alias isPackedField  {
@@ -604,7 +706,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_fld_packed(boolean on) alias setPackedField {
 		assert(this instanceof Field,"For node "+this.getClass());
-		this.is_fld_packed = on;
+		if (this.is_fld_packed != on) {
+			this.is_fld_packed = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	//
@@ -618,7 +723,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_use_no_proxy(boolean on) alias setUseNoProxy {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_use_no_proxy = on;
+		if (this.is_expr_use_no_proxy != on) {
+			this.is_expr_use_no_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// use as field (disable setter/getter calls for virtual fields)
 	@getter public final boolean get$is_expr_as_field()  alias isAsField  {
@@ -627,7 +735,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_as_field(boolean on) alias setAsField {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_as_field = on;
+		if (this.is_expr_as_field != on) {
+			this.is_expr_as_field = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// expression will generate void value
 	@getter public final boolean get$is_expr_gen_void()  alias isGenVoidExpr  {
@@ -636,7 +747,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_gen_void(boolean on) alias setGenVoidExpr {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_gen_void = on;
+		if (this.is_expr_gen_void != on) {
+			this.is_expr_gen_void = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// tried to be resolved
 	@getter public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
@@ -645,7 +759,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_try_resolved(boolean on) alias setTryResolved {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_try_resolved = on;
+		if (this.is_expr_try_resolved != on) {
+			this.is_expr_try_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// resolved for generation
 	@getter public final boolean get$is_expr_gen_resolved()  alias isGenResolve  {
@@ -654,7 +771,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_gen_resolved(boolean on) alias setGenResolve {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_gen_resolved = on;
+		if (this.is_expr_gen_resolved != on) {
+			this.is_expr_gen_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// used bt for()
 	@getter public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
@@ -663,7 +783,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_expr_for_wrapper(boolean on) alias setForWrapper {
 		assert(this instanceof Expr,"For node "+this.getClass());
-		this.is_expr_for_wrapper = on;
+		if (this.is_expr_for_wrapper != on) {
+			this.is_expr_for_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	//
@@ -677,7 +800,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
 		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
-		this.is_stat_abrupted = on;
+		if (this.is_stat_abrupted != on) {
+			this.is_stat_abrupted = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// breaked
 	@getter public final boolean get$is_stat_breaked()  alias isBreaked  {
@@ -686,7 +812,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_stat_breaked(boolean on) alias setBreaked {
 		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
-		this.is_stat_breaked = on;
+		if (this.is_stat_breaked != on) {
+			this.is_stat_breaked = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// method-abrupted
 	@getter public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
@@ -695,8 +824,11 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
 		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
-		this.is_stat_method_abrupted = on;
-		if (on) this.is_stat_abrupted = true;
+		if (this.is_stat_method_abrupted != on) {
+			this.is_stat_method_abrupted = on;
+			if (on) this.is_stat_abrupted = true;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// auto-returnable
 	@getter public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
@@ -705,7 +837,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
 		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
-		this.is_stat_auto_returnable = on;
+		if (this.is_stat_auto_returnable != on) {
+			this.is_stat_auto_returnable = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 	// break target
 	@getter public final boolean get$is_stat_break_target()  alias isBreakTarget  {
@@ -714,7 +849,10 @@ public abstract class ASTNode implements Constants {
 	}
 	@setter public final void set$is_stat_auto_returable(boolean on) alias setBreakTarget {
 		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
-		this.is_stat_break_target = on;
+		if (this.is_stat_break_target != on) {
+			this.is_stat_break_target = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 	//
@@ -722,79 +860,119 @@ public abstract class ASTNode implements Constants {
 	//
 
 	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
-	@getter public final boolean get$is_accessed_from_inner()  alias isAccessedFromInner  { return this.is_accessed_from_inner; }
-	@setter public final void set$is_accessed_from_inner(boolean on) alias setAccessedFromInner { this.is_accessed_from_inner = on; }
+	@getter public final boolean get$is_accessed_from_inner()  alias isAccessedFromInner  {
+		return this.is_accessed_from_inner;
+	}
+	@setter public final void set$is_accessed_from_inner(boolean on) alias setAccessedFromInner {
+		if (this.is_accessed_from_inner != on) {
+			this.is_accessed_from_inner = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 	// resolved
-	@getter public final boolean get$is_resolved()  alias isResolved  { return this.is_resolved; }
-	@setter public final void set$is_resolved(boolean on) alias setResolved { this.is_resolved = on; }
+	@getter public final boolean get$is_resolved()  alias isResolved  {
+		return this.is_resolved;
+	}
+	@setter public final void set$is_resolved(boolean on) alias setResolved {
+		if (this.is_resolved != on) {
+			this.is_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 	// hidden
-	@getter public final boolean get$is_hidden()  alias isHidden  { return this.is_hidden; }
-	@setter public final void set$is_hidden(boolean on) alias setHidden { this.is_hidden = on; }
+	@getter public final boolean get$is_hidden()  alias isHidden  {
+		return this.is_hidden;
+	}
+	@setter public final void set$is_hidden(boolean on) alias setHidden {
+		if (this.is_hidden != on) {
+			this.is_hidden = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 	// bad
-	@getter public final boolean get$is_bad()  alias isBad  { return this.is_bad; }
-	@setter public final void set$is_bad(boolean on) alias setBad { this.is_bad = on; }
+	@getter public final boolean get$is_bad()  alias isBad  {
+		return this.is_bad;
+	}
+	@setter public final void set$is_bad(boolean on) alias setBad {
+		if (this.is_bad != on) {
+			this.is_bad = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 
 	public void setPublic(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
 		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 		if( on ) flags |= ACC_PUBLIC;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setPrivate(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
 		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 		if( on ) flags |= ACC_PRIVATE;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setProtected(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
 		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 		if( on ) flags |= ACC_PROTECTED;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setStatic(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_STATIC;
 		else flags &= ~ACC_STATIC;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setFinal(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_FINAL;
 		else flags &= ~ACC_FINAL;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setSynchronized(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_SYNCHRONIZED;
 		else flags &= ~ACC_SYNCHRONIZED;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setVolatile(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_VOLATILE;
 		else flags &= ~ACC_VOLATILE;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setTransient(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_TRANSIENT;
 		else flags &= ~ACC_TRANSIENT;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setNative(boolean on) {
 		assert(this instanceof Method,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_NATIVE;
 		else flags &= ~ACC_NATIVE;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setInterface(boolean on) {
 		assert(this instanceof Struct,"For node "+this.getClass());
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
 		else flags &= ~ACC_INTERFACE;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setAbstract(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_ABSTRACT;
 		else flags &= ~ACC_ABSTRACT;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 	public void setSuper(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
 		if( on ) flags |= ACC_SUPER;
 		else flags &= ~ACC_SUPER;
+		this.callbackChildChanged(nodeattr$flags);
 	}
 
 }

@@ -132,6 +132,21 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 
 	public NodeName	getName() { return name; }
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "super_bound") {
+			if (type != null)
+				type.invalidate();
+		}
+		else if (attr.name == "interfaces") {
+			if (type != null)
+				type.invalidate();
+		}
+		else if (attr.name == "meta") {
+			if (type != null)
+				type.invalidate();
+		}
+	}
+	
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 	{
 		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this),
@@ -382,6 +397,19 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		return name.name.equals(cl.name.name);
 	}
 
+	public void callbackChildChanged(AttrSlot attr) {
+		if (attr.name == "members") {
+			if (type != null)
+				type.invalidate();
+		}
+		else if (attr.name == "args") {
+			if (type != null)
+				type.invalidate();
+		}
+		else
+			super.callbackChildChanged(attr);
+	}
+	
 	public int getValueForEnumField(Field f) {
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);

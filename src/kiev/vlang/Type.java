@@ -213,6 +213,10 @@ public class Type implements StdTypes, AccessFlags {
 		}
 	}
 	
+	public void invalidate() {
+		// called when clazz was changed
+	}
+	
 	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
 	{
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+this),

@@ -111,6 +111,15 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 		return (MetaAlias)this.meta.get(MetaAlias.NAME);
 	}
 
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "ftype")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "meta")
+				parent.callbackChildChanged(pslot);
+		}
+	}
+	
 	public String toString() { return name.toString()/*+":="+type*/; }
 
 	public NodeName getName() { return name; }

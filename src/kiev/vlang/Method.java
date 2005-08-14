@@ -149,6 +149,17 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		}
 	}
 	
+	public void callbackChildChanged(AttrSlot attr) {
+		if (parent != null && pslot != null) {
+			if      (attr.name == "params")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "conditions")
+				parent.callbackChildChanged(pslot);
+			else if (attr.name == "annotation_default")
+				parent.callbackChildChanged(pslot);
+		}
+	}
+	
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
 			f.invs = (Method[])Arrays.appendUniq(f.invs,this);

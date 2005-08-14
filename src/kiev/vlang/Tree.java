@@ -156,6 +156,7 @@ public final class NArr<N extends ASTNode> {
 			node.parent = $parent;
 			node.pslot = $pslot;
 			$nodes[idx].pslot = null;
+			$parent.callbackChildChanged($pslot);
 		}
 		$nodes[idx] = node;
 		return node;
@@ -178,6 +179,7 @@ public final class NArr<N extends ASTNode> {
 		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
+			$parent.callbackChildChanged($pslot);
 		}
 		return node;
 	}
@@ -221,6 +223,7 @@ public final class NArr<N extends ASTNode> {
 					node.parent = $parent;
 					node.pslot = $pslot;
 					$nodes[i].pslot = null;
+					$parent.callbackChildChanged($pslot);
 				}
 				$nodes[i] = node;
 				return;
@@ -248,6 +251,7 @@ public final class NArr<N extends ASTNode> {
 		if ($pslot != null && $pslot.is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
+			$parent.callbackChildChanged($pslot);
 		}
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
@@ -261,6 +265,7 @@ public final class NArr<N extends ASTNode> {
 		N[] tmp = new N[sz];
 		if ($pslot != null && $pslot.is_attr) {
 			$nodes[idx].pslot = null;
+			$parent.callbackChildChanged($pslot);
 		}
 		int i;
 		for (i=0; i < idx; i++)
