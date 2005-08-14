@@ -285,12 +285,13 @@ public class ContainerAccessExpr extends LvalueExpr {
 			}
 			else {
 				// Resolve overloaded access method
-				PVar<ASTNode> v;
+				ASTNode@ v;
 				BaseStruct s = t.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
+				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,new Expr[]{index},null,t) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
+				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
+					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
@@ -371,10 +372,11 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_load);
 			} else {
 				// Resolve overloaded access method
-				PVar<ASTNode> v;
+				ASTNode@ v;
+				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,new Expr[]{index},null,obj.getType()) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
+				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
+					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt));
 				obj.generate(null);
 				index.generate(null);
 				Method func = (Method)v;
@@ -422,15 +424,16 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_store);
 			} else {
 				// Resolve overloaded set method
-				PVar<ASTNode> v;
+				ASTNode@ v;
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				BaseStruct s = objType.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
+				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,new Expr[]{index,o},null,objType) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
+				if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
+					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
 				Code.addInstr(Instr.op_call,(Method)v,false,objType);
 				// Pop return value
 				Code.addInstr(Instr.op_pop);
@@ -447,7 +450,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_arr_store);
 			} else {
 				// Resolve overloaded set method
-				PVar<ASTNode> v;
+				ASTNode@ v;
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
@@ -455,9 +458,10 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				BaseStruct s = obj.getType().clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
+				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,new Expr[]{index,o},null,obj.getType()) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
+				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
+					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt));
 				// The method must return the value to duplicate
 				Method func = (Method)v;
 				Code.addInstr(Instr.op_call,func,false,obj.getType());

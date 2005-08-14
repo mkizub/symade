@@ -89,7 +89,7 @@ public class ASTAccessExpression extends Expr {
 					info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
 					tp = snitps[snitps_index++];
 					cl = tp.clazz;
-					foreach(tp.resolveNameR(v,info,ident.name) ) {
+					foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 						if (info.getTransforms() > min_transforms)
 							continue;
 						ASTNode e = makeExpr(v,info,o,cl);
@@ -104,7 +104,7 @@ public class ASTAccessExpression extends Expr {
 					v.$unbind();
 					if (o instanceof Expr) {
 						info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
-						foreach(tp.resolveNameR(v,info,ident.name) ) {
+						foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
 							ASTNode e = makeExpr(v,info,o,cl);
@@ -116,7 +116,7 @@ public class ASTAccessExpression extends Expr {
 						}
 					} else {
 						info = new ResInfo();
-						foreach(cl.resolveNameR(v,info,ident.name,tp) ) {
+						foreach(cl.resolveNameR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
 							ASTNode e = makeExpr(v,info,o,cl);

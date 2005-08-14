@@ -121,19 +121,24 @@ public class NewExpr extends Expr {
 			}
 			// Don't try to find constructor of argument type
 			if( !type.isArgument() ) {
-				PVar<Method> m;
+				Type[] ta = new Type[outer_args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = outer_args[i].getType();
+				MethodType mt = MethodType.newMethodType(null,ta,type);
+				Method@ m;
 				// First try overloaded 'new', than real 'new'
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
 					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,outer_args,type,type)) {
+					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 						ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
 						n.type_of_static = type;
 						n.setResolved(true);
 						return n;
 					}
 				}
+				mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,outer_args,Type.tpVoid,type) ) {
+				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 					func = m;
 					outer_args = m.makeArgs(outer_args,type);
 					int po = 0;

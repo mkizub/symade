@@ -37,8 +37,8 @@ public class Pair<A,B>
 		<A,int>,<A,long>,<A,float>,<A,double>
 {
 
-	A fst;
-	B snd;
+	public A fst;
+	public B snd;
     
 	public Pair(A fst, B snd) {
 		this.fst = fst;

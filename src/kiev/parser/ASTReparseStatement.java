@@ -41,13 +41,13 @@ public class ASTReparseStatement extends Statement {
 
   	public void set(Token t) {
 		this.ref = t.image;
-		ASTNode n = Kiev.parserAddresses.get(ref.substring(2));
+		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
 		if( n != null )
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
 	public ASTNode resolve(Type reqType) {
-		ASTNode n = Kiev.parserAddresses.get(ref.substring(2));
+		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");
 		}

@@ -278,7 +278,7 @@ public final class ExportJavaTop implements Constants {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
 		KString name = astn.name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),name,null) ) {
+		if( !PassInfo.resolveNameR(v,new ResInfo(),name) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
 			return astn;
 		}
@@ -936,7 +936,7 @@ public final class ExportJavaTop implements Constants {
 			}
 
 			new ProcessVirtFld().createMembers(me);
-			me.setupWrappedField();
+			//me.setupWrappedField();
 			
 			// Create constructor for pizza case
 			if( me.isPizzaCase() ) {

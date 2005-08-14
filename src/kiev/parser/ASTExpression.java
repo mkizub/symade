@@ -271,7 +271,7 @@ public class ASTExpression extends Expr {
 		rest ?= rest1
 	}
 
-	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode>@ expr, List<ASTNode>@ rest)
+	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode> expr, List<ASTNode>@ rest)
 		ASTNode@		result1;
 		List<ASTNode>@	result2;
 		List<ASTNode>@	rest1;
@@ -313,7 +313,7 @@ public class ASTExpression extends Expr {
 		return expr;
 	}
 
-	public Expr getExpr(PVar<Object>:Object expr) {
+	public Expr getExpr(Object@:Object expr) {
 		return getExpr(expr.$var);
 	}
 

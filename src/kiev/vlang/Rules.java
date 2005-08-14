@@ -81,7 +81,7 @@ public class RuleMethod extends Method {
         super.cleanup();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
 		var @= localvars,
@@ -101,12 +101,12 @@ public class RuleMethod extends Method {
 		!this.isStatic(),
 		var ?= this_par,
 		path.enterForward(var) : path.leaveForward(var),
-		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
+		var.type.resolveNameAccessR(node,path,name)
 	;
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
+		var.type.resolveNameAccessR(node,path,name)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -168,44 +168,47 @@ public class RuleMethod extends Method {
 	}
 
 
-	public boolean compare(KString name, Expr[] args, Type ret, Type type, boolean exact) throws RuntimeException {
+	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
 		if( !this.name.equals(name) ) return false;
 		int type_len = this.type.args.length - 1;
-		int args_len = args==null? 0 : args.length;
+		int args_len = mt.args.length;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in number of params: "+type_len+" != "+args_len);
 				return false;
 			} else if( type_len-1 > args_len ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" not match in number of params: "+type_len+" != "+args_len);
 				return false;
 			}
 		}
-		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,args,ret));
+		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
+		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if( exact && !args[i].getType().equals(Type.getRealType(type,this.type.args[i+1])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+Type.getRealType(type,this.type.args[i+1])+" != "+args[i].getType());
+			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+rt.args[i+1]+" != "+mt.args[i]);
 				return false;
 			}
-			else if( !exact && !args[i].getType().isAutoCastableTo(Type.getRealType(type,this.type.args[i+1])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+args[i].getType()+" not auto-castable to "+Type.getRealType(type,this.type.args[i+1]));
+			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i+1]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i+1]);
 				return false;
 			}
 		}
 		boolean match = false;
-		if( ret == null )
+		if( mt.ret == Type.tpAny )
 			match = true;
-		else if( exact &&  Type.getRealType(type,this.type.ret).equals(Type.getRealType(type,ret)) )
+		else if( exact &&  rt.ret.equals(mt.ret) )
 			match = true;
-		else if( !exact && Type.getRealType(type,this.type.ret).isAutoCastableTo(Type.getRealType(type,ret)) )
+		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
 			match = true;
 		else
 			match = false;
-		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,args,ret)+(match?" match":" do not match"));
+		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
+		if (info != null && match)
+			info.mt = rt;
 		return match;
 	}
 
@@ -399,11 +402,11 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 				sb.append("int bt$").append(i).append(";\n");
 			// Local variables
 			foreach(Var v; rule_method.localvars) {
+				String tp = Kiev.parserAddr(v.type);
 				if( v.type.isWrapper() )
-					sb.append(v.type).append(' ').append(v.name.name)
-					  .append(" := new ").append(v.type).append("();\n");
+					sb.append("#t"+tp+' '+v.name.name+" := new #t"+tp+"();\n");
 				else
-					sb.append(v.type).append(' ').append(v.name.name).append(";\n");
+					sb.append("#t"+tp+' '+v.name.name+";\n");
 			}
 			// tmp variables inserted here
 			sb.append(fields_buf.toString());
@@ -444,7 +447,7 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ stat;
 	{
 		stat @= stats,
@@ -638,7 +641,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 				createTextUnification(var)+
 
 			// Unbound
-				createTextVarAccess(var)+".$bind(#e"+expr.parserAddr()+");\n"+
+				createTextVarAccess(var)+".$bind(#e"+Kiev.parserAddr(expr.copy())+");\n"+
 				"if( !"+createTextVarAccess(var)+".$is_bound ) {\n"+
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
@@ -651,7 +654,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 			// Already bound
 			"bound$"+idx+":;\n"+
-				"if( !"+createTextVarAccess(var)+".equals(#e"+expr.parserAddr()+") ) {\n"+	// check
+				"if( !"+createTextVarAccess(var)+".equals(#e"+Kiev.parserAddr(expr.copy())+") ) {\n"+	// check
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
 				createTextMoreCheck(false)							// check next
@@ -701,7 +704,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		for(int i=0; i < vars.length; i++) {
 			exprs[i] = (Expr)exprs[i].resolve(null);
 			Type ctype = exprs[i].getType();
-			PVar<Method> elems = new PVar<Method>();
+			Method@ elems;
 			if( ctype.isArray() ) {
 				itypes[i] = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
 				modes[i] = ARRAY;
@@ -711,7 +714,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itypes[i] = ctype;
 				modes[i] = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),nameElements,Expr.emptyArray,null,ctype) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+					nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
+			) {
 				itypes[i] = Type.getRealType(ctype,elems.type.ret);
 				modes[i] = ELEMS;
 			} else {
@@ -754,13 +759,13 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextNewIterator(int i) {
 		switch( modes[i] ) {
 		case ARRAY:
-			return "new "+itypes[i]+"(#e"+exprs[i].parserAddr()+")";
+			return "new "+itypes[i]+"(#e"+Kiev.parserAddr(exprs[i].copy())+")";
 		case KENUM:
-			return "#e"+exprs[i].parserAddr();
+			return "#e"+Kiev.parserAddr(exprs[i].copy());
 		case JENUM:
-			return "#e"+exprs[i].parserAddr();
+			return "#e"+Kiev.parserAddr(exprs[i].copy());
 		case ELEMS:
-			return "(#e"+exprs[i].parserAddr()+").elements()";
+			return "(#e"+Kiev.parserAddr(exprs[i].copy())+").elements()";
 		default:
 			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
 		}
@@ -794,13 +799,13 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextContaince(int i) {
 		switch( modes[i] ) {
 		case ARRAY:
-			return "kiev.stdlib.ArrayEnumerator.contains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.ArrayEnumerator.contains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
 		case KENUM:
-			return "kiev.stdlib.PEnv.contains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.contains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
 		case JENUM:
-			return "kiev.stdlib.PEnv.jcontains(#e"+exprs[i].parserAddr()+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.jcontains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
 		case ELEMS:
-			return "#e"+exprs[i].parserAddr()+".contains("+vars[i].name+".$var)";
+			return "#e"+Kiev.parserAddr(exprs[i].copy())+".contains("+vars[i].name+".$var)";
 		default:
 			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
 		}
@@ -878,6 +883,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = null;
 		this.func = expr.func;
 		foreach(Expr e; expr.args) this.args.append(e);
+		this.super_flag = expr.super_flag;
 	}
 
 	public RuleCallExpr(CallAccessExpr expr) {
@@ -885,6 +891,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.obj = expr.obj;
 		this.func = expr.func;
 		foreach(Expr e; expr.args) this.args.append(e);
+		this.super_flag = expr.super_flag;
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
@@ -937,11 +944,22 @@ public final class RuleCallExpr extends ASTRuleNode {
 	private String createTextCall() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("($env.$rc$frame$").append(env_var).append("=");
-		if( obj != null ) sb.append("#e").append(obj.parserAddr()).append('.');
+		if( obj != null ) {
+			if (super_flag) {
+				assert (obj instanceof ThisExpr);
+				sb.append("super.");
+			} else {
+				sb.append("#e").append(Kiev.parserAddr(obj.copy())).append('.');
+			}
+		}
+		else if (super_flag) {
+			sb.append("super.");
+		}
 		sb.append(func.getName()).append('(');
 		for(int i=1; i < args.length; i++) {
-			sb.append("#e"+args[i].parserAddr());
-			trace(Kiev.debugRules,"#e"+args[i].parserAddr()+" is "+args[i]);
+			String pa = Kiev.parserAddr(args[i].copy());
+			sb.append("#e"+pa);
+			trace(Kiev.debugRules,"#e"+pa+" is "+args[i]);
 			if( i < args.length-1) sb.append(',');
 		}
 		sb.append("))");
@@ -1051,9 +1069,9 @@ public final class RuleWhileExpr extends RuleExprBase {
 			"case "+base+":\n"+
 				(bt_expr == null ?
 					""
-				:	"#e"+bt_expr.parserAddr()+";\n"
+				:	"#e"+Kiev.parserAddr(bt_expr.copy())+";\n"
 				)+
-				"if ( !#e"+expr.parserAddr()+" ) {\n"+
+				"if ( !#e"+Kiev.parserAddr(expr.copy())+" ) {\n"+
 					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
 				"}\n"+
 				createTextMoreCheck(false)
@@ -1112,20 +1130,20 @@ public final class RuleExpr extends RuleExprBase {
 			// No unification need
 			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-					"if ( ! #e"+expr.parserAddr()+" ) {\n"+
+					"if ( ! #e"+Kiev.parserAddr(expr.copy())+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
 				: bt_expr == null ?
-					"#e"+expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(expr.copy())+";\n"+
 					createTextMoreCheck(false)
 				:
 					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-					"#e"+expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(expr.copy())+";\n"+
 					createTextMoreCheck(true)+
 			"case "+base+":\n"+
-					"#e"+bt_expr.parserAddr()+";\n"+
+					"#e"+Kiev.parserAddr(bt_expr.copy())+";\n"+
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
 				)
 		);

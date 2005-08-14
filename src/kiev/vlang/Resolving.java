@@ -48,6 +48,9 @@ public class ResInfo {
 	private int			transforms;
 	private Struct		from_scope;
 	
+	// a real type of the method in Method.compare() call
+	MethodType			mt;
+	
 	public boolean isStaticAllowed()   { return (flags & noStatic)   == 0; }
 	public boolean isImportsAllowed()  { return (flags & noImports)  == 0; }
 	public boolean isForwardsAllowed() { return (flags & noForwards) == 0; }
@@ -77,29 +80,44 @@ public class ResInfo {
 	}
 	
 	public void enterForward(ASTNode node) {
+		enterForward(node, 1);
+	}
+	public void enterForward(ASTNode node, int incr) {
 		assert ((flags & noForwards) == 0);
 		forwards_stack[forwards_p++] = node;
 		flags_stack[flags_p++] = flags;
 		flags |= noStatic | noImports;
-		transforms++;
+		transforms += incr;
 		trace(Kiev.debugResolve,"Entering forward of "+node+", now "+this);
 	}
+
 	public void leaveForward(ASTNode node) {
+		leaveForward(node, 1);
+	}
+	public void leaveForward(ASTNode node, int incr) {
 		forwards_stack[--forwards_p] = null;
 		flags = flags_stack[--flags_p];
-		transforms--;
+		transforms -= incr;
 		trace(Kiev.debugResolve,"Leaving forward of "+node+", now "+this);
 	}
+
 	public void enterSuper() {
+		enterSuper(1);
+	}
+	public void enterSuper(int incr) {
 		assert ((flags & noSuper) == 0);
 		flags_stack[flags_p++] = flags;
 		flags |= noImports;
-		transforms++;
+		transforms += incr;
 		trace(Kiev.debugResolve,"Entering super, now "+this);
 	}
+
 	public void leaveSuper() {
+		leaveSuper(1);
+	}
+	public void leaveSuper(int incr) {
 		flags = flags_stack[--flags_p];
-		transforms--;
+		transforms -= incr;
 		trace(Kiev.debugResolve,"Leaving super, now "+this);
 	}
 	
@@ -286,11 +304,11 @@ public interface Scope {
 }
 
 public interface ScopeOfNames extends Scope {
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type type);
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name);
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type);
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt);
 }
 
 public interface ScopeOfOperators extends Scope {

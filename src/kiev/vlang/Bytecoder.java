@@ -142,8 +142,8 @@ public class Bytecoder implements Constants {
 					if( at.name.equals(attrFlags) ) {
 						int flags = ((FlagsAttr)at).flags;
 						if ((flags & 1) == 1) {
-							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
-							cl.setWrapper(true);
+//							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
+//							cl.setWrapper(true);
 						}
 						else if ((flags & 2) == 2) {
 							if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
@@ -166,7 +166,7 @@ public class Bytecoder implements Constants {
 		}
 
 		new ProcessVirtFld().addAbstractFields(cl);
-		cl.setupWrappedField();
+		//cl.setupWrappedField();
 		return cl;
 	}
 

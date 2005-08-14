@@ -69,14 +69,14 @@ public class TypeExpr extends TypeRef {
 		if (op == Constants.nameArrayOp) {
 			tp = Type.newArrayType(tp);
 		} else {
-			if (!PassInfo.resolveNameR(v,new ResInfo(),op,null)) {
+			if (!PassInfo.resolveNameR(v,new ResInfo(),op)) {
 				if (op == opPVar) {
-					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming "+Type.tpPrologVar);
-					v = new TypeRef(Type.tpPrologVar);
+					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpPrologVar);
+					v = new TypeRef(WrapperType.tpWrappedPrologVar);
 				}
 				else if (op == opRef) {
-					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming "+Type.tpRefProxy);
-					v = new TypeRef(Type.tpRefProxy);
+					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
+					v = new TypeRef(WrapperType.tpWrappedRefProxy);
 				}
 				else
 					throw new CompilerException(pos,"Typedef for type operator "+op+" not found");
@@ -88,6 +88,8 @@ public class TypeExpr extends TypeRef {
 				throw new CompilerException(pos,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			Env.getStruct(t.clazz.name);
 			tp = Type.newRefType(t.clazz,new Type[]{tp});
+			if (t.isWrapper())
+				tp = WrapperType.newWrapperType(tp);
 		}
 		this.lnk = tp;
 		return tp;

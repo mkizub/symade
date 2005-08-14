@@ -98,7 +98,6 @@ kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.ja
 kiev.parser.ASTFinallyInfo kiev/parser/ASTFinallyInfo kiev\parser\ASTFinallyInfo.java
 kiev.parser.ASTForEachStatement kiev/parser/ASTForEachStatement kiev\parser\ASTForEachStatement.java
 kiev.parser.ASTForStatement kiev/parser/ASTForStatement kiev\parser\ASTForStatement.java
-kiev.parser.ASTFormalParameter kiev/parser/ASTFormalParameter kiev\parser\ASTFormalParameter.java
 kiev.parser.ASTGotoStatement kiev/parser/ASTGotoStatement kiev\parser\ASTGotoStatement.java
 kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
@@ -449,6 +448,7 @@ kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java
+kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.cffork kiev/vlang/cffork kiev\vlang\Tree.java
 kiev.vlang.cflink kiev/vlang/cflink kiev\vlang\Tree.java

@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
+public class Type implements StdTypes, AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
 	static Hash<Type>		typeHash;
@@ -54,7 +54,6 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		java_signature = Signature.getJavaSignature(signature);
 		flags = flReference;
 		if( clazz.isArgument() ) flags |= flArgumented;
-		if( clazz.isWrapper()  ) flags |= flWrapper;
 		typeHash.put(this);
 		trace(Kiev.debugCreation,"New type created: "+this+" with signature "+signature);
 	}
@@ -105,7 +104,6 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		java_signature = Signature.getJavaSignature(java_signature);
 		flags = flReference;
 		if( clazz.isArgument() ) flags |= flArgumented;
-		if( clazz.isWrapper()  ) flags |= flWrapper;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		typeHash.put(this);
 		trace(Kiev.debugCreation,"New type created: "+this
@@ -215,7 +213,7 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		}
 	}
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
 	{
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+this),
 		clazz.checkResolved(),
@@ -233,7 +231,7 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
 		Type@ arg;
 	{
 			arg @= this.args,
@@ -244,66 +242,60 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 			node @= getStruct().members,
 			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
 		{	sup ?= clazz.super_bound.lnk,
 			info.enterSuper() : info.leaveSuper(),
-			Type.getRealType(this, sup).resolveNameR(node,info,name)
+			Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
 		;	sup @= TypeRef.linked_elements(clazz.interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			Type.getRealType(this, sup).resolveNameR(node,info,name)
+			Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
 		}
 	}
 
-	protected rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ forw;
 	{
 			forw @= getStruct().members,
 			forw instanceof Field && forw.isForward() && !forw.isStatic(),
 			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(this,((Field)forw).type).resolveNameR(node,info,name)
+			Type.getRealType(this,((Field)forw).type).resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp)
+	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ member;
 		Type@ sup;
 		Field@ forw;
+		MethodType mtype;
 	{
 		clazz.checkResolved(),
-		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this+" for type "+tp),
+		mtype = (MethodType)Type.getRealType(this, mt),
+		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this),
 		{
 			clazz instanceof Struct,
 			node @= getStruct().members,
 			node instanceof Method,
 			((Method)node).name.equals(name),
 			info.check(node),
-			((Method)node).equalsByCast(name,args,ret,tp)
+			((Method)node).equalsByCast(name,mt,this,info)
 		;
 			info.isSuperAllowed(),
 			info.enterSuper() : info.leaveSuper(),
 			sup ?= clazz.super_bound.lnk,
-			Type.getRealType(tp,sup).resolveMethodR(node,info,name,args,ret,tp)
-		;
-			clazz.isInterface(),
-			member @= getStruct().members,
-			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(Constants.nameIdefault),
-			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveMethodR(node,info,name,args,ret,tp)
+			Type.getRealType(this,sup).resolveCallAccessR(node,info,name,mtype)
 		;
 			info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(clazz.interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			Type.getRealType(tp,sup).resolveMethodR(node,info,name,args,ret,tp)
+			Type.getRealType(this,sup).resolveCallAccessR(node,info,name,mtype)
 		;
 			info.isForwardsAllowed() && clazz instanceof Struct,
 			member @= getStruct().members,
 			member instanceof Field && member.isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			Type.getRealType(tp,((Field)member).type).resolveMethodR(
-				node,info,name,args,Type.getRealType(tp,ret),
-				Type.getRealType(tp,((Field)member).type))
+			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mtype)
 		}
 	}
 
@@ -438,15 +430,13 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		if( this==tpInt && (t==tpLong || t==tpFloat || t==tpDouble) ) return true;
 		if( this==tpLong && ( t==tpFloat || t==tpDouble) ) return true;
 		if( this==tpFloat && t==tpDouble ) return true;
-		if( this.clazz.instanceOf(tpPrologVar.clazz) || t.clazz.instanceOf(tpPrologVar.clazz) ) {
-			if( this.clazz.instanceOf(tpPrologVar.clazz) && t.clazz.instanceOf(tpPrologVar.clazz) )
-				return this.args[0].isAutoCastableTo(t.args[0]);
-			else if( this.clazz.instanceOf(tpPrologVar.clazz) && args[0].isAutoCastableTo(t) ) return true;
-			else if( t.clazz.instanceOf(tpPrologVar.clazz) && this.isAutoCastableTo(t.args[0]) ) return true;
-			return false;
-		}
-		if( this.isWrapper() ) {
-			if( getWrappedType().isAutoCastableTo(t) ) return true;
+		if( this.isWrapper() || t.isWrapper() ) {
+			if( this.isWrapper() && t.isWrapper() )
+				return this.getWrappedType().isAutoCastableTo(t.getWrappedType());
+			else if( this.isWrapper() && this.getWrappedType().isAutoCastableTo(t) )
+				return true;
+			else if( t.isWrapper() && t.isAutoCastableTo(t.getWrappedType()) )
+				return true;
 			return false;
 		}
 		if( this instanceof MethodType
@@ -512,9 +502,9 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 				else return t1;
 			}
 			else if( isInstanceOf(t2) ) return t2;
-			if( t1.clazz.instanceOf(Type.tpPrologVar.clazz) && t2.clazz.instanceOf(Type.tpPrologVar.clazz) ) {
-				Type tp1 = t1.args[0];
-				Type tp2 = t2.args[0];
+			if( t1.isWrapper() && t2.isWrapper() ) {
+				Type tp1 = t1.getWrappedType();
+				Type tp2 = t2.getWrappedType();
 				Type tp_better = betterCast(tp1,tp2);
 				if( tp_better != null ) {
 					if( tp_better == tp1 ) return t1;
@@ -627,10 +617,10 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 	public final boolean isClazz()			{ return clazz.isClazz(); }
 	public final boolean isHasCases()		{ return clazz.isHasCases(); }
 	public final boolean isPizzaCase()		{ return clazz.isPizzaCase(); }
-	public final boolean isWrapper()		{ return (flags & flWrapper)		!= 0 ; }
 	
-	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)from,getStruct().wrapped_field); } 
-	public final Type getWrappedType()	{ return Type.getRealType(this,getStruct().wrapped_field.type); } 
+	public boolean isWrapper()						{ return false; }
+	public Expr makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
+	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
 	
 	public Type getJavaType() {
 		if( !isReference() ) {
@@ -675,7 +665,6 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
 		if( t2 == null ) return null;
 		if( !t2.isArgumented() ) {
-//			trace(Kiev.debugResolve,"Type "+t2+" is not argumented");
 			return t2;
 		}
 		if( t1 == null || !t2.isReference() ) return t2;
@@ -685,13 +674,6 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 		try {
 		if( t1.isArray() ) return getRealType(t1.args[0],t2);
 		if( t2.isArray() ) return Type.newArrayType(getRealType(t1,t2.args[0]));
-//		makeTypeMap(tpmap=0,t1);
-//		if( tpmap_top == 0 ) return t2;
-		// Type does not containce rules
-//		while( t1.args==null || t1.args.length==0 ) {
-//			if( t1.clazz.super_clazz == null ) return t2;
-//			t1 = t1.clazz.super_clazz;
-//		}
 		if( t2.isArgument() ) {
 			for(int i=0; i < t1.args.length && i < t1.clazz.type.args.length; i++) {
 				if( t1.clazz.type.args[i].string_equals(t2) ) {
@@ -704,20 +686,7 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 						return t1.args[i];
 					}
 				}
-/*				if( !t1.clazz.package_clazz.isPackage() ) {
-					if( t1.clazz.package_clazz.type.args[i].string_equals(t2) ) {
-						trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
-						return t1.args[i];
-					}
-				}
-				if( !t1.clazz.package_clazz.isPackage() && t1.clazz.package_clazz.generated_from != null ) {
-					if( t1.clazz.package_clazz.generated_from.type.args[i].string_equals(t2) ) {
-						trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
-						return t1.args[i];
-					}
-				}
-				trace(Kiev.debugResolve,"type "+t2+" is not an argument "+t1.clazz.type.args[i]);
-*/			}
+			}
 			// Search in super-class and super-interfaces
 			Type tp;
 			BaseStruct rs = t1.clazz;
@@ -802,6 +771,67 @@ public class Type implements StdTypes, ScopeOfMethods, AccessFlags {
 
 }
 
+public class WrapperType extends Type {
+	
+	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
+	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
+	
+	Field wrapped_field;
+
+	public static Type newWrapperType(Type type) {
+		KString sign = new KStringBuffer(type.signature.len).append('%').append(type.signature).toKString();
+		Type t = typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
+		if( t != null ) return t;
+		t = new WrapperType();
+		t.wrapped_field = type.getStruct().getWrappedField(true);
+		t.clazz = type.clazz;
+		t.args = type.args;
+		t.signature = sign;
+		t.java_signature = type.java_signature;
+		t.flags	 = type.flags | flWrapper;
+		typeHash.put(t);
+		trace(Kiev.debugCreation,"New type created: "+t+" with signature "+t.signature+" / "+t.java_signature);
+		return t;
+	}
+	
+	public final boolean isWrapper()					{ return true; }
+	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)from, wrapped_field); } 
+	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); } 
+	
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	{
+		info.isForwardsAllowed(),$cut,
+		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+this),
+		clazz.checkResolved(),
+		{
+			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
+			getWrappedType().resolveNameAccessR(node, info, name),
+			$cut
+		;	info.enterSuper(10) : info.leaveSuper(10),
+			super.resolveNameAccessR(node, info, name)
+		}
+	;
+		super.resolveNameAccessR(node, info, name)
+	}
+	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+		MethodType mtype;
+	{
+		info.isForwardsAllowed(),$cut,
+		clazz.checkResolved(),
+		mtype = (MethodType)Type.getRealType(this, mt),
+		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
+		{
+			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),
+			getWrappedType().resolveCallAccessR(node, info, name, mtype),
+			$cut
+		;	info.enterSuper(10) : info.leaveSuper(10),
+			super.resolveCallAccessR(node, info, name, mt)
+		}
+	;
+		super.resolveCallAccessR(node, info, name, mt)
+	}
+	
+}
 
 @node(copyable=false)
 public class MethodType extends Type {
@@ -838,6 +868,7 @@ public class MethodType extends Type {
 	public static MethodType newMethodType(BaseStruct clazz, Type[] fargs, Type[] args, Type ret) {
 		if (clazz == null) clazz = tpMethodClazz;
 		if (fargs == null) fargs = Type.emptyArray;
+		if (ret   == null) ret   = Type.tpAny;
 		KString sign = Signature.from(clazz,fargs,args,ret);
 		MethodType t = (MethodType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
 			return t.signature.equals(sign) && t.clazz.equals(clazz); });
@@ -848,8 +879,6 @@ public class MethodType extends Type {
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-//		if( clazz.instanceOf(Type.tpClosureClazz) )
-//			str.append('&');
 		if (fargs != null && fargs.length > 0) {
 			str.append('<');
 			for(int i=0; i < fargs.length; i++) {

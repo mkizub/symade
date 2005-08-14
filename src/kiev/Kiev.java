@@ -402,9 +402,19 @@ public final class Kiev {
 	public static Vector<FileUnit>		file_unit = new Vector<FileUnit>();
 	public static Vector<FileUnit>		files_scanned = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
-	public static Hashtable<String,ASTNode> parserAddresses =
-		new Hashtable<String,ASTNode>();
 	public static Type					argtype = null;
+
+	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
+	private static int		parserAddrIdx;
+
+	public static String parserAddr(Object obj) {
+		String addr = Integer.toHexString(++parserAddrIdx);
+		while( addr.length() < 8 ) {
+			addr = '0'+addr;
+		}
+		Kiev.parserAddresses.put(addr,obj);
+		return addr;
+	}
 
 	public static boolean passLessThen(TopLevelPass p) {
 		return ((int)pass_no) < ((int)p);

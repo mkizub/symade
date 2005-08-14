@@ -325,8 +325,7 @@ public class CallAccessExpr extends Expr {
 				else
 					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
 			}
-			// Very special case for rule call from inside
-			// of RuleMethod
+			// Very special case for rule call from inside of RuleMethod
 			if( func instanceof RuleMethod
 			 && parent instanceof AssignExpr
 			 && ((AssignExpr)parent).op == AssignOperator.Assign
@@ -646,9 +645,10 @@ public class ClosureCallExpr extends Expr {
 			else
 				call_it_name = KString.from("call_"+((MethodType)tp).ret);
 			ASTNode@ callIt;
+			MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpAny);
 			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,Expr.emptyArray,null,reqType) ) {
-				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,new Expr[0])+" in class "+tp.clazz);
+			if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {
+				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);
 			} else {
 				call_it = (Method)callIt;
 				if( call_it.type.ret == Type.tpRule ) {

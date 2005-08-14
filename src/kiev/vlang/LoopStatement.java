@@ -261,7 +261,7 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 		decls.cleanup();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		DeclStat@ n;
 	{
 		n @= decls,
@@ -269,17 +269,17 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 			n.var.name.equals(name), node ?= n.var
 		;	n.var.isForward(),
 			info.enterForward(n.var) : info.leaveForward(n.var),
-			Type.getRealType(tp,n.var.getType()).resolveNameR(node,info,name)
+			n.var.getType().resolveNameAccessR(node,info,name)
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		DeclStat@ n;
 	{
 		n @= decls,
 		n.var.isForward(),
 		info.enterForward(n.var) : info.leaveForward(n.var),
-		Type.getRealType(type,n.var.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -412,17 +412,17 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveNameR(node,path,name,tp)
+		((ForInit)init).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveMethodR(node,info,name,args,ret,type)
+		((ForInit)init).resolveMethodR(node,info,name,mt)
 	}
 
 	public void generate(Type reqType) {
@@ -606,9 +606,9 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 			Type itype;
 			Type ctype = container.getType();
-			PVar<Method> elems = new PVar<Method>();
-			PVar<Method> nextelem = new PVar<Method>();
-			PVar<Method> moreelem = new PVar<Method>();
+			Method@ elems;
+			Method@ nextelem;
+			Method@ moreelem;
 			if (ctype.isWrapper()) {
 				container = (Expr)ctype.makeWrappedAccess(container).resolve(null);
 				ctype = container.getType();
@@ -622,7 +622,9 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itype = ctype;
 				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),nameElements,Expr.emptyArray,null,ctype) ) {
+			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+					nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
+			) {
 				itype = Type.getRealType(ctype,elems.type.ret);
 				mode = ELEMS;
 			} else if( ctype == Type.tpRule &&
@@ -729,7 +731,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			case ELEMS:
 				/* iter.hasMoreElements() */
 				if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
-					nameHasMoreElements,Expr.emptyArray,null,ctype) )
+					nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new CallAccessExpr(	iter.pos,
 						new VarAccessExpr(iter.pos,this,iter),
@@ -767,7 +769,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			case ELEMS:
 				/* var = iter.nextElement() */
 				if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
-					nameNextElement,Expr.emptyArray,null,ctype) )
+					nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 					var_init = new CallAccessExpr(iter.pos,
 						new VarAccessExpr(iter.pos,iter),
@@ -828,14 +830,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		return this;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		{	n ?= var
@@ -843,7 +845,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public void generate(Type reqType) {

@@ -132,21 +132,21 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 
 	public NodeName	getName() { return name; }
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 	{
-		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this+" for type "+tp),
+		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this),
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"BaseStruct: resolving in "+this),
-			resolveNameR_1(node,info,name,tp),	// resolve in this class
+			resolveNameR_1(node,info,name),	// resolve in this class
 			$cut
 		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"BaseStruct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name,tp),	// resolve in super-classes
+			resolveNameR_3(node,info,name),	// resolve in super-classes
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
 		Type@ arg;
 	{
 			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
@@ -154,31 +154,36 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 			arg.clazz.name.short_name.equals(name),
 			node ?= arg.clazz
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
 		{	sup ?= super_bound.lnk,
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name,tp)
+			sup.clazz.resolveNameR(node,info,name)
 		;	sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name,tp)
+			sup.clazz.resolveNameR(node,info,name)
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp)
+	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		resolveStructMethodR(node, info, name, mt, this.type)
+	}
+	
+	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
 		Type@ sup;
 	{
 		info.isSuperAllowed(),
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
 		info.enterSuper() : info.leaveSuper(),
 		{
 			sup ?= super_bound.lnk,
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
+			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;
 			sup @= TypeRef.linked_elements(interfaces),
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
+			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		}
 	}
 
@@ -504,26 +509,26 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 	{
 		info.isStaticAllowed(),
-		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this+" for type "+tp),
+		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this),
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Struct: resolving in "+this),
-			resolveNameR_1(node,info,name,tp),	// resolve in this class
+			resolveNameR_1(node,info,name),	// resolve in this class
 			$cut
 		;	info.isImportsAllowed(),
 			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
-			resolveNameR_2(node,info,name,tp),	// resolve in imports
+			resolveNameR_2(node,info,name),	// resolve in imports
 			$cut
 		;	this.name.short_name.equals(nameIdefault),
 			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
-			package_clazz.resolveNameR(node,info,name,tp),
+			package_clazz.resolveNameR(node,info,name),
 			$cut
 		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name,tp),	// resolve in super-classes
+			resolveNameR_3(node,info,name),	// resolve in super-classes
 			$cut
 		;	this.isPackage(),
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
@@ -531,7 +536,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name, Type tp)
+	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
 		Type@ arg;
 	{
 			this.name.short_name.equals(name), node ?= this
@@ -547,22 +552,22 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			node @= sub_clazz,
 			((Struct)node).name.short_name.equals(name)
 	}
-	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name, Type tp)
+	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name)
 	{
 			node @= imported,
 			{	node instanceof Field && node.isStatic() && ((Field)node).name.equals(name)
 			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
 			}
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name, Type tp)
+	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
 			{	sup ?= super_type,
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name,tp)
+				sup.clazz.resolveNameR(node,info,name)
 			;	sup @= TypeRef.linked_elements(interfaces),
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name,tp)
+				sup.clazz.resolveNameR(node,info,name)
 			}
 	}
 
@@ -597,36 +602,36 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		return false;
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type tp)
+	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{
 		info.isStaticAllowed(),
 		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this+" for type "+tp),
+		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
 		{
 			node @= members,
 			node instanceof Method,
 			((Method)node).name.equals(name),
 			info.check(node),
-			((Method)node).equalsByCast(name,args,ret,tp)
+			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isImportsAllowed() && isPackage(),
 			node @= imported, node instanceof Method,
-			((Method)node).equalsByCast(name,args,ret,tp)
+			((Method)node).equalsByCast(name,mt,tp,info)
 		;	info.isSuperAllowed(),
 			sup ?= super_type,
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
+			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	isInterface(),
 			member @= members,
 			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveMethodR(node,info,name,args,ret,tp)
+			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveMethodR(node,info,name,args,ret,tp)
+			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		}
 	}
 
@@ -1008,20 +1013,12 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 //		System.out.println("Field "+f+" of type "+f.init+" added");
 	}
 
-	public void setupWrappedField() {
-		if (!isWrapper()) {
-			wrapped_field = null;
-			return;
-		}
-		if (wrapped_field != null)
-			return;
+	public Field getWrappedField(boolean required) {
 		if (super_type != null && super_type.clazz instanceof Struct) {
 			Struct ss = (Struct)super_type.clazz;
-			ss.setupWrappedField();
-			if(ss.wrapped_field != null) {
-				wrapped_field = ss.wrapped_field;
-				return;
-			}
+			Field wf = ss.getWrappedField(false);
+			if(wf != null)
+				return wf;
 		}
 		Field wf = null;
 		foreach(ASTNode n; members; n instanceof Field && n.isForward()) {
@@ -1030,10 +1027,13 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			else
 				throw new CompilerException(n.pos,"Wrapper class with multiple forward fields");
 		}
-		if ( wf == null )
-			throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
+		if ( wf == null ) {
+			if (required)
+				throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
+			return null;
+		}
 		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
-		wrapped_field = wf;
+		return wf;
 	}
 
 	rule locatePackerField(Field@ f, int size)
@@ -2660,7 +2660,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 
 			{
 				int flags = 0;
-				if( jthis.isWrapper() ) flags |= 1;
+//				if( jthis.isWrapper() ) flags |= 1;
 				if( jthis.isSyntax()  ) flags |= 2;
 
 				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );

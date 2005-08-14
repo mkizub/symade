@@ -648,7 +648,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		body = null;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}

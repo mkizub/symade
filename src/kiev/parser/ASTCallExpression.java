@@ -69,7 +69,7 @@ public class ASTCallExpression extends Expr {
 //			}
         }
 		// method of current class or first-order function
-		PVar<ASTNode> m;
+		ASTNode@ m;
 		Type tp = PassInfo.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -82,8 +82,12 @@ public class ASTCallExpression extends Expr {
 				else
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
 			}
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,args.toArray(),ret,tp) )
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),false).resolve(ret);
@@ -111,27 +115,33 @@ public class ASTCallExpression extends Expr {
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
 				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[0]),0);
 			}
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,
-					m,info,PassInfo.method.name.name,args.toArray(),ret,PassInfo.clazz.super_type) )
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() )
 				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),true).resolve(ret);
 			else
 				throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
 		} else {
-			Expr[] args1 = args.toArray();
+			MethodType mt;
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
-				for(int i=0; i < reqType.args.length; i++) {
-					args1 = (Expr[])Arrays.append(args1,new VarAccessExpr(pos,this,new Var(pos,KString.Empty,reqType.args[i],0)));
-				}
+				mt = (MethodType)reqType;
+			} else {
+				Type[] ta = new Type[args.length];
+				for(int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				mt = MethodType.newMethodType(null,ta,ret);
 			}
 			ResInfo info = new ResInfo();
-			if( !PassInfo.resolveMethodR(m,info,func.name,args1,ret,tp) ) {
+			if( !PassInfo.resolveMethodR(m,info,func.name,mt) ) {
 				// May be a closure
-				PVar<ASTNode> closure = new PVar<ASTNode>();
+				ASTNode@ closure;
 				ResInfo info = new ResInfo();
-				if( !PassInfo.resolveNameR(closure,info,func.name,tp) ) {
+				if( !PassInfo.resolveNameR(closure,info,func.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
@@ -139,8 +149,6 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
 					) {
-//						Expr e = info.buildCall(pos,null,m,args.toArray());
-//						return e.resolve(ret);
 						if( info.isEmpty() )
 							return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
 						else {

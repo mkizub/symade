@@ -78,8 +78,6 @@ public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
 
-	private static int		parserAddrIdx;
-
 	public int				pos;
     @ref(copyable=false)
 	public ASTNode			parent;
@@ -102,7 +100,7 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
 	@virtual public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
 	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
-	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
+//	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
 
 	public int			compileflags;
 
@@ -184,15 +182,6 @@ public abstract class ASTNode implements Constants {
 	public ASTNode replaceWith(ASTNode node) {
 		parent.replaceVal(pslot.name, this, node);
 		return node;
-	}
-
-	public String parserAddr() {
-		String addr = Integer.toHexString(++parserAddrIdx);
-		while( addr.length() < 8 ) {
-			addr = '0'+addr;
-		}
-		Kiev.parserAddresses.put(addr,(ASTNode)this.copy());
-		return addr;
 	}
 
 	public void setParent(ASTNode n) { parent = n; }
@@ -396,21 +385,19 @@ public abstract class ASTNode implements Constants {
 		this.is_struct_syntax = on;
 	}
 	// kiev wrapper class
-	@getter public final boolean get$is_struct_wrapper()  alias isWrapper  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
-		return this.is_struct_wrapper;
-	}
-	@setter public final void set$is_struct_wrapper(boolean on) alias setWrapper {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		this.is_struct_wrapper = on;
-		Struct s = (Struct)this;
-//		if (s.type != null) {
-			if (on)
-				s.type.flags |= StdTypes.flWrapper;
-			else
-				s.type.flags &= ~StdTypes.flWrapper;
-//		}
-	}
+//	@getter public final boolean get$is_struct_wrapper()  alias isWrapper  {
+//		assert(this instanceof BaseStruct,"For node "+this.getClass());
+//		return this.is_struct_wrapper;
+//	}
+//	@setter public final void set$is_struct_wrapper(boolean on) alias setWrapper {
+//		assert(this instanceof Struct,"For node "+this.getClass());
+//		this.is_struct_wrapper = on;
+//		Struct s = (Struct)this;
+//		if (on)
+//			s.type.flags |= StdTypes.flWrapper;
+//		else
+//			s.type.flags &= ~StdTypes.flWrapper;
+//	}
 
 	//
 	// Method specific

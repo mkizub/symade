@@ -30,9 +30,7 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTCallAccessExpression.java,v 1.3.2.1.2.1 1999/02/15 21:45:08 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.1 $
  *
  */
 
@@ -60,7 +58,11 @@ public class ASTCallAccessExpression extends Expr {
 			ThisExpr sup = new ThisExpr();
 			info.enterForward(sup);
 			info.enterSuper();
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,args.toArray(),ret,tp) ) {
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			MethodType mt = MethodType.newMethodType(null,ta,ret);
+			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
 			}
@@ -79,27 +81,31 @@ public class ASTCallAccessExpression extends Expr {
 		try_static:
 			if( o instanceof Struct ) {
 				cl = (Struct)o;
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				MethodType mt = MethodType.newMethodType(null,ta,ret);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
-				if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,args.toArray(),ret,tp) ) {
-					// May be a closure
-					ASTNode@ closure;
-					info = new ResInfo();
-					if( !cl.type.resolveNameR(closure,info,func.name) ) {
-						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
-					}
-					try {
-						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
-						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
-						) {
-							Expr call = info.buildCall(pos, null, closure, args.toArray());
-							return call.resolve(ret);
-						}
-					} catch(Exception eee) {
-						Kiev.reportError(pos,eee);
-					}
+				if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,mt) ) {
+//					// May be a closure
+//					ASTNode@ closure;
+//					info = new ResInfo();
+//					if( !cl.type.resolveNameR(closure,info,func.name) ) {
+//						if( ret != null ) { ret = null; goto retry_with_null_ret; }
+//						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
+//					}
+//					try {
+//						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
+//						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
+//						) {
+//							Expr call = info.buildCall(pos, null, closure, args.toArray());
+//							return call.resolve(ret);
+//						}
+//					} catch(Exception eee) {
+//						Kiev.reportError(pos,eee);
+//					}
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(pos,"Method "+Method.toString(func.name,args,ret)+" unresolved in "+cl);
+					throw new CompilerException(pos,"Method "+Method.toString(func.name,mt)+" unresolved in "+cl);
 				}
 				if( !m.isStatic() )
 					throw new CompilerException(pos,"Static call to non-static method");
@@ -118,12 +124,16 @@ public class ASTCallAccessExpression extends Expr {
 				if( tp.isReference() ) {
 			retry_resolving:;
 					cl = tp.clazz;
+					Type[] ta = new Type[args.length];
+					for (int i=0; i < ta.length; i++)
+						ta[i] = args[i].getType();
+					MethodType mt = MethodType.newMethodType(null,ta,ret);
 					ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noImports);
-					if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,args.toArray(),ret,tp) ) {
+					if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,mt) ) {
 						// May be a closure
 						ASTNode@ closure;
 						info = new ResInfo();
-						if( !tp.resolveNameR(closure,info,func.name) ) {
+						if( !tp.resolveNameAccessR(closure,info,func.name) ) {
 							if( o instanceof Expr && snitps != null ) {
 								if( snitps_index < snitps.length ) {
 									tp = snitps[snitps_index++];
@@ -148,7 +158,9 @@ public class ASTCallAccessExpression extends Expr {
 							Kiev.reportError(pos,eee);
 						}
 						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-						throw new CompilerException(pos,"Method "+Method.toString(func.name,args,reqType)+" unresolved in "+tp);
+						o = o.getType().clazz;
+						goto try_static;
+//						throw new CompilerException(pos,"Method "+Method.toString(func.name,args,reqType)+" unresolved in "+tp);
 					}
 					if( reqType instanceof MethodType ) {
 						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();

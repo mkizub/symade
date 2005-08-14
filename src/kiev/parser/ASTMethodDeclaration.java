@@ -57,7 +57,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		modifiers = new ASTModifiers();
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Type@ t;
 	{
 		ftypes != null,
@@ -66,7 +66,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		node ?= new TypeRef(t)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt)
 	{
 		false
 	}

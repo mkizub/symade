@@ -1178,7 +1178,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	public int		getPriority() { return 255; }
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -1187,7 +1187,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			node ?= n
 		;	n.isForward(),
 			info.enterForward(n) : info.leaveForward(n),
-			Type.getRealType(tp,n.getType()).resolveNameR(node,info,name)
+			n.getType().resolveNameAccessR(node,info,name)
 		}
 	;	n @= members,
 		{	n instanceof Struct,
@@ -1199,13 +1199,13 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		n @= vars,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -2024,14 +2024,16 @@ public class CastExpr extends Expr {
 		ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		BaseStruct cl = et.clazz;
 		v.$unbind();
-		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,Expr.emptyArray,this.type,et) ) {
+		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,this.type);
+		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			Expr ce = info.buildCall(pos,expr,(Method)v,Expr.emptyArray);
 			expr = ce;
 			return this;
 		}
 		v.$unbind();
 		info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
-		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,new Expr[]{expr},this.type,et) ) {
+		mt = MethodType.newMethodType(null,new Type[]{expr.getType()},this.type);
+		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
 			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
 			expr = ce;
@@ -2068,11 +2070,11 @@ public class CastExpr extends Expr {
 //				Field varf = (Field)et.clazz.resolveName(KString.from("$var"));
 //				return new AccessExpr(pos,parent,expr,varf).resolve(reqType);
 //			}
-			if( type.clazz.equals(Type.tpPrologVar.clazz) && et.equals(type.args[0]) )
-				return new NewExpr(pos,
-						Type.newRefType(Type.tpPrologVar.clazz,new Type[]{et}),
-						new Expr[]{expr})
-					.resolve(reqType);
+//			if( type.clazz.equals(Type.tpPrologVar.clazz) && et.equals(type.args[0]) )
+//				return new NewExpr(pos,
+//						Type.newRefType(Type.tpPrologVar.clazz,new Type[]{et}),
+//						new Expr[]{expr})
+//					.resolve(reqType);
 			if( type == Type.tpBoolean && et == Type.tpRule )
 				return new BinaryBoolExpr(pos,
 					BinaryOperator.NotEquals,

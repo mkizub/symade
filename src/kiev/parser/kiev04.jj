@@ -616,6 +616,12 @@ TOKEN : /* LITERALS */
        ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
        ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
   >
+|
+  < REPARSE_TYPE:
+      "#" ["T","t"]
+       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+  >
 }
 
 <DEFAULT>
@@ -1757,9 +1763,9 @@ TypeRef Type() :
 { TypeRef res; }
 {
 	(
-		res = TypeExpr()
-	|
-		LOOKAHEAD({Kiev.enabled(Ext.With)})
+		res = ReparseType()
+	|	res = TypeExpr()
+	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
 		res = ClosureType()
 	)
 	{ return res; }
@@ -1769,7 +1775,8 @@ TypeRef TypeExpr() :
 { TypeRef res; Token t; }
 {
 	(
-		res = PrimitiveType()
+		res = ReparseType()
+	|	res = PrimitiveType()
 	|	res = TypeWithArgs()
 	)
 	(
@@ -1799,7 +1806,8 @@ TypeRef NArrType() :
 { TypeRef res; Token t; }
 {
 	(
-		res = PrimitiveType()
+		res = ReparseType()
+	|	res = PrimitiveType()
 	|	res = TypeWithArgs()
 	)
 	(	LOOKAHEAD(2)
@@ -1813,52 +1821,6 @@ TypeRef NArrType() :
 	)*
 	{ return res; }
 }
-
-/*
-TypeRef Type() :
-{ TypeRef res; Token t; }
-{
-	(
-		res = SimpleType()
-		(
-			t=TypeOperatorChar()
-			{ res = new TypeExpr(res,t); }
-		)*
-	|
-		LOOKAHEAD({Kiev.enabled(Ext.With)})
-		res = ClosureType()
-	)
-	{ return res; }
-}
-
-TypeRef SimpleType() :
-{ TypeRef tp; }
-{
-	(
-		tp = PrimitiveType()
-	|	tp = NonArrayType()
-	)
-	{ return tp; }
-}
-
-TypeRef NonArrayType() :
-{ Token t; ASTIdentifier id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
-{
-	id = QName() { res = new TypeNameRef(id); }
-	[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
-		"<"
-			{ res = tra = new TypeWithArgsRef(res); }
-			tra.args += Type()
-			( "," tra.args += Type() )*
-		">"
-	]
-	(
-		t=TypeOperatorChar()
-		{ res = new TypeExpr(res, t); }
-	)*
-	{ return res; }
-}
-*/
 
 TypeRef ClosureType() :
 { Token t; ASTClosureType n = new ASTClosureType(); }
@@ -1888,6 +1850,16 @@ TypeRef PrimitiveType() :
 	| t="rule"		{ tp.lnk = Type.tpRule; }
 	)
 	{ tp.pos = t.getPos(); return tp; }
+}
+
+TypeRef ReparseType() :
+{ Token t; }
+{
+	t=<REPARSE_TYPE>
+	{
+		Type tp = (Type)Kiev.parserAddresses.get(t.image.substring(2));
+		return new TypeRef(tp);
+	}
 }
 
 ASTIdentifier Name() :

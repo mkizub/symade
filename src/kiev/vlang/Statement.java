@@ -95,7 +95,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -215,7 +215,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		return var;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
 		n @= vars,
@@ -224,7 +224,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			node ?= n
 		;	n.isForward(),
 			info.enterForward(n) : info.leaveForward(n),
-			Type.getRealType(tp,n.getType()).resolveNameR(node,info,name)
+			n.getType().resolveNameAccessR(node,info,name)
 		}
 	;	n @= members,
 		{	n instanceof Struct,
@@ -236,13 +236,13 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		n @= vars,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public ASTNode resolve(Type reqType) {
@@ -283,10 +283,6 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 					// TODO: check flags for vars
 					int flags = vdecls.modifiers.getFlags();
 					Type type = ((TypeRef)vdecls.type).getType();
-//					if( (flags & ACC_PROLOGVAR) != 0 ) {
-//            			Kiev.reportWarning(stats[i].pos,"Modifier 'pvar' is deprecated. Replace 'pvar Type' with 'Type@', please");
-//						type = Type.newRefType(Type.tpPrologVar.clazz,new Type[]{type});
-//					}
 					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
@@ -594,9 +590,9 @@ public class DeclStat extends Statement {
 					Code.addInstr(Instr.op_new,prt);
 					Code.addInstr(Instr.op_dup);
 					init.generate(var.type);
+					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
 					Method@ in;
-					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),
-						nameInit,new Expr[]{init},Type.tpVoid,null);
+					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),nameInit,mt);
 					Code.addInstr(Instr.op_call,in,false);
 					Code.addVar(var);
 					Code.addInstr(Instr.op_store,var);

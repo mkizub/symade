@@ -194,6 +194,17 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return sb.toString();
 	}
 
+	public static String toString(KString nm, MethodType mt) {
+		Type[] args = mt.args;
+		StringBuffer sb = new StringBuffer(nm+"(");
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i].toString());
+			if( i < (args.length-1) ) sb.append(",");
+		}
+		sb.append(")->").append(mt.ret);
+		return sb.toString();
+	}
+
 	public NodeName getName() { return name; }
 
 	public Type	getType() { return type.ret; }
@@ -244,55 +255,53 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		}
 	}
 
-	public boolean equals(KString name, Expr[] args, Type ret, Type type) {
+	public boolean equalsByCast(KString name, MethodType mt, Type tp, ResInfo info) {
 		if( this.name.equals(name) )
-			return compare(name,args,ret,type,true);
+			return compare(name,mt,tp,info,false);
 		return false;
 	}
-	public boolean equalsByCast(KString name, Expr[] args, Type ret, Type type) {
-		if( this.name.equals(name) )
-			return compare(name,args,ret,type,false);
-		return false;
-	}
-
-	public boolean compare(KString name, Expr[] args, Type ret, Type type, boolean exact) throws RuntimeException {
+	
+	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
 		if( !this.name.equals(name) ) return false;
 		int type_len = this.type.args.length;
-		int args_len = args==null? 0 : args.length;
+		int args_len = mt.args.length;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in number of params: "+type_len+" != "+args_len);
 				return false;
 			} else if( type_len-1 > args_len ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" not match in number of params: "+type_len+" != "+args_len);
 				return false;
 			}
 		}
-		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,args,ret));
+		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
+		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if( exact && !Type.getRealType(type,args[i].getType()).equals(Type.getRealType(type,this.type.args[i])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+Type.getRealType(type,this.type.args[i])+" != "+Type.getRealType(type,args[i].getType()));
+			if( exact && !mt.args[i].equals(rt.args[i]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+rt.args[i]+" != "+mt.args[i]);
 				return false;
 			}
-			else if( !exact && !Type.getRealType(type,args[i].getType()).isAutoCastableTo(Type.getRealType(type,this.type.args[i])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+Type.getRealType(type,args[i].getType())+" not auto-castable to "+Type.getRealType(type,this.type.args[i]));
+			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i]);
 				return false;
 			}
 		}
 		boolean match = false;
-		if( ret == null )
+		if( mt.ret == Type.tpAny )
 			match = true;
-		else if( exact &&  Type.getRealType(type,this.type.ret).equals(Type.getRealType(type,ret)) )
+		else if( exact &&  rt.ret.equals(mt.ret) )
 			match = true;
-		else if( !exact && Type.getRealType(type,this.type.ret).isAutoCastableTo(Type.getRealType(type,ret)) )
+		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
 			match = true;
 		else
 			match = false;
-		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,args,ret)+(match?" match":" do not match"));
+		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
+		if (info != null && match)
+			info.mt = rt;
 		return match;
 	}
 
@@ -348,7 +357,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return dmp;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		FormPar@ var;
 		Type@ t;
 	{
@@ -371,26 +380,26 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		!this.isStatic(),
 		var ?= this_par,
 		path.enterForward(var) : path.leaveForward(var),
-		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
+		var.type.resolveNameAccessR(node,path,name)
 	;
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
-		Type.getRealType(tp,var.type).resolveNameR(node,path,name)
+		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		!this.isStatic(),
 		n ?= this_par,
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).resolveMethodR(node,info,name,args,ret,type)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public void resolveMetaDefaults() {

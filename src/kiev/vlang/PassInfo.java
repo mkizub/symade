@@ -170,7 +170,7 @@ public class PassInfo {
 
 	public static boolean checkClassName(KString qname) {
 		ASTNode@ node;
-		if (!resolveNameR(node,new ResInfo(),qname,null))
+		if (!resolveNameR(node,new ResInfo(),qname))
 			return false;
 		if (node instanceof BaseStruct && !node.isPackage())
 			return true;
@@ -187,7 +187,7 @@ public class PassInfo {
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp)
+	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -197,146 +197,204 @@ public class PassInfo {
 		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,path,qname_head,tp),
+		resolveNameR(p,path,qname_head),
 		p instanceof Struct,
-		((Struct)p).resolveNameR(node,path,qname_tail,tp)
+		((Struct)p).resolveNameR(node,path,qname_tail)
 	;
 		p @= new PathEnumerator(),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
-		((ScopeOfNames)p).resolveNameR(node,path,name,tp)
+		((ScopeOfNames)p).resolveNameR(node,path,name)
 	}
 
 	public static boolean resolveBestMethodR(
-		ScopeOfMethods sc,
+		Object sc,
 		ASTNode@ node,
 		ResInfo info,
 		KString name,
-		Expr[] args,
-		Type ret,
-		Type type)
+		MethodType mt)
 	{
-		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,args)+" in "+sc+" for base type "+type);
-		List<Method> lm = List.Nil;
-		List<ResInfo> lp = List.Nil;
-		foreach( sc.resolveMethodR(node,info,name,args,ret,type) ) {
-			trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
-			if (node.isPrivate() && clazz != (Struct)node.parent)
-				continue;
-			lm = lm.concat((Method)node);
-			lp = lp.concat(info.copy());
+		trace(Kiev.debugResolve,"Resolving best method "+Method.toString(name,mt)+" in "+sc);
+		Vector<Method>  methods  = new Vector<Method>();
+		Vector<ResInfo> paths    = new Vector<ResInfo>();
+		Vector<MethodType> types = new Vector<MethodType>();
+		if (sc instanceof ScopeOfMethods) {
+			ScopeOfMethods scm = (ScopeOfMethods)sc;
+		search_next_in_scope:
+			foreach( scm.resolveMethodR(node,info,name,mt) ) {
+				trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
+				if (node.isPrivate() && clazz != (Struct)node.parent)
+					continue;
+				Method m = (Method)node;
+				for (int i=0; i < methods.length; i++) {
+					if (methods[i] == m) {
+						trace(Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
+						if (info.getTransforms() < paths[i].getTransforms()) {
+							trace(Kiev.debugResolve,"Will use "+m+" with paths "+info);
+							methods[i] = m;
+							paths[i] = info.copy();
+						}
+						continue search_next_in_scope;
+					}
+				}
+				methods.append(m);
+				paths.append(info.copy());
+				if (!m.isRuleMethod()) {
+					types.append(info.mt);
+				} else {
+					Type[] ta = new Type[info.mt.args.length-1];
+					for (int i=0; i < ta.length; i++)
+						ta[i] = info.mt.args[i+1];
+					MethodType mt1 = MethodType.newMethodType(null,ta,mt.ret);
+					types.append(mt1);
+				}
+			}
 		}
-		if( lm == List.Nil ) {
+		else if (sc instanceof Type) {
+			Type tp = (Type)sc;
+		search_next_in_type:
+			foreach( tp.resolveCallAccessR(node,info,name,mt) ) {
+				trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
+				if (node.isPrivate() && clazz != (Struct)node.parent)
+					continue;
+				Method m = (Method)node;
+				for (int i=0; i < methods.length; i++) {
+					if (methods[i] == m) {
+						trace(Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
+						if (info.getTransforms() < paths[i].getTransforms()) {
+							trace(Kiev.debugResolve,"Will use "+m+" with paths "+info);
+							methods[i] = m;
+							paths[i] = info.copy();
+						}
+						continue search_next_in_type;
+					}
+				}
+				methods.append(m);
+				paths.append(info.copy());
+				if (!m.isRuleMethod()) {
+					types.append(info.mt);
+				} else {
+					Type[] ta = new Type[info.mt.args.length-1];
+					for (int i=0; i < ta.length; i++)
+						ta[i] = info.mt.args[i+1];
+					MethodType mt1 = MethodType.newMethodType(null,ta,mt.ret);
+					types.append(mt1);
+				}
+			}
+		}
+		else
+			throw new RuntimeException("Unknown scope "+sc);
+		if( methods.size() == 0 ) {
 			trace(Kiev.debugResolve,"Nothing found...");
 			return false;
 		}
-		if( lm.tail() == List.Nil ) {
-			node = lm.head();
-			info.set(lp.head());
+
+		if (Kiev.debugResolve) {
+			StringBuffer msg = new StringBuffer("Found "+methods.length+" candidate methods:\n");
+			for(int i=0; i < methods.length; i++) {
+				msg.append("\t").append(methods[i].parent).append('.').append(paths[i]).append(methods[i]).append('\n');
+			}
+			msg.append("while resolving ").append(Method.toString(name,mt));
+			trace(Kiev.debugResolve,msg.toString());
+		}
+
+		if( methods.size() == 1 ) {
+			node = methods[0];
+			info.set(paths[0]);
 			return true;
 		}
-		List<Method> lm1 = lm;
-		List<ResInfo> lp1 = lp;
-	next_method:
-		for(; lm1 != List.Nil; lm1 = lm1.tail(), lp1 = lp1.tail()) {
-			Method m1 = lm1.head();
-			ResInfo p1 = lp1.head();
+		
+		for (int i=0; i < methods.length; i++) {
+			Method m1 = methods[i];
+			ResInfo p1 = paths[i];
+			MethodType mt1 = types[i];
+		next_method:
+			for (int j=0; j < methods.length; j++) {
+				Method m2 = methods[j];
+				ResInfo p2 = paths[j];
+				MethodType mt2 = types[j];
+				
+				if (m1 == m2)
+					continue;
+				
+				trace(Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(name,mt));
 
-			List<Method> lm2 = lm;
-			List<ResInfo> lp2 = lp;
-
-			for(; lm2 != List.Nil; lm2 = lm2.tail(), lp2 = lp2.tail()) {
-				Method m2 = lm2.head();
-				if( m1 == m2 ) continue;
-				ResInfo p2 = lp2.head();
-
-				boolean m1_is_better = true;
-				boolean m2_is_better = true;
-				int m1_offs = (m1 instanceof RuleMethod )? 1:0;
-				int m2_offs = (m2 instanceof RuleMethod )? 1:0;
-				// Select better method
-				for(int i=0; i < args.length; i++) {
-					Type t = Type.getRealType(type,args[i].getType());
-					Type t1 = Type.getRealType(type,m1.type.args[i+m1_offs]);
-					Type t2 = Type.getRealType(type,m2.type.args[i+m2_offs]);
-					if( t1 == t2 ) continue;
-					Type t_better = t.betterCast(t1,t2);
-					trace(Kiev.debugResolve,"better cast for arg"+i+" "+t+" between "+t1+" and "+t2+" is "+t_better);
-					if( t_better != t1 )	m1_is_better = false;
-					if( t_better != t2 )	m2_is_better = false;
+				Type b;
+				int m1_arg_offs = m1.isRuleMethod() ? 1 : 0;
+				int m2_arg_offs = m2.isRuleMethod() ? 1 : 0;
+				
+				if (p1.getTransforms() > p2.getTransforms()) {
+					trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because of path");
+					continue next_method;
 				}
-				//{
-				//	Type r = ret;
-				//	if (r == null) r = Type.tpVoid;
-				//	Type t = Type.getRealType(type,r);
-				//	Type t1 = Type.getRealType(type,m1.type.ret);
-				//	Type t2 = Type.getRealType(type,m2.type.ret);
-				//	if( t1 != t2 ) {
-				//		Type t_better = t.betterCast(t1,t2);
-				//		trace(Kiev.debugResolve,"better cast for ret "+t+" between "+t1+" and "+t2+" is "+t_better);
-				//		if( r == Type.tpVoid && t_better == null ) {	// Equals
-				//			if( t2.isInstanceOf(t1) ) m2_is_better = false;
-				//			if( t1.isInstanceOf(t1) ) m1_is_better = false;
-				//		} else {
-				//			if( t_better != t1 )	m1_is_better = false;
-				//			if( t_better != t2 )	m2_is_better = false;
-				//		}
-				//	}
-				//}
-				if( m1_is_better && m2_is_better ) {	// Equals
-					Type t1 = Type.getRealType(type,m1.type.ret);
-					Type t2 = Type.getRealType(type,m2.type.ret);
-					if ( !t1.equals(t2) ) {
-						if (t1.isInstanceOf(t2)) m2_is_better = false;
-						if (t2.isInstanceOf(t1)) m1_is_better = false;
+				for (int k=0; k < mt.args.length; k++) {
+					if (mt1.args[k] != mt2.args[k]) {
+						b = mt.args[k].betterCast(mt1.args[k],mt2.args[k]);
+						if (b == mt2.args[k]) {
+							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+							continue next_method;
+						}
+						if (b == null && !mt1.args[k].isInstanceOf(mt2.args[k])) {
+							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
+							continue next_method;
+						}
 					}
 				}
-				if( m1_is_better && m2_is_better ) {	// Equals
-					if( m1.parent != m2.parent ) {
-						if( m1.parent == sc ) continue;
-						if( m2.parent == sc ) continue next_method;
-						if( ((Struct)m1.parent).instanceOf((Struct)m2.parent) ) continue;
+				if (mt1.ret != mt2.ret) {
+					b = mt.ret.betterCast(mt1.ret,mt2.ret);
+					if (b == mt2.ret) {
+						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
+						continue next_method;
 					}
-					if( p1.getTransforms() < p2.getTransforms() ) continue;
-					if( p1.getTransforms() > p2.getTransforms() ) continue next_method;
-					continue next_method; // Totally equals
+					if (b == null && mt2.ret.isInstanceOf(mt1.ret)) {
+						trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
+						continue next_method;
+					}
 				}
-				else if( m1_is_better && !m2_is_better ) continue;
-				continue next_method;
-			}
-			// Is better than all in list
-			node = m1;
-			info.set(p1);
-			return true;
-		}
-		// Check that all methods in list are multimethods
-		// and all path-es are the same
-		boolean all_multi = true;
-		Method m_multi = lm.head();
-		ResInfo p_multi = lp.head();
-		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
-			if( !lm.head().isMultiMethod() ) { all_multi=false; break; }
-			if( !lp.head().equals(p_multi) ) { all_multi=false; break; }
-			if (!lm.head().isPrivate()) {
-				m_multi = lm.head();
-				p_multi = lp.head();
+				
+				trace(Kiev.debugResolve,"Methods "+m1+" is more specific then "+m2+" resolving for "+Method.toString(name,mt));
+				methods.remove(j);
+				paths.remove(j);
+				types.remove(j);
+				j--;
+				if (i >= j)
+					i--;
 			}
 		}
-		if( all_multi ) {
-			node = m_multi;
-			info.set(p_multi);
+		if( methods.size() == 1 ) {
+			node = methods[0];
+			info.set(paths[0]);
 			return true;
 		}
+		
+//		// Check that all methods in list are multimethods
+//		// and all path-es are the same
+//		boolean all_multi = true;
+//		Method m_multi = lm.head();
+//		ResInfo p_multi = lp.head();
+//		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
+//			if( !lm.head().isMultiMethod() ) { all_multi=false; break; }
+//			if( !lp.head().equals(p_multi) ) { all_multi=false; break; }
+//			if (!lm.head().isPrivate()) {
+//				m_multi = lm.head();
+//				p_multi = lp.head();
+//			}
+//		}
+//		if( all_multi ) {
+//			node = m_multi;
+//			info.set(p_multi);
+//			return true;
+//		}
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
-		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
-			msg.append("\t").append(lm.head().parent).append('.');
-			msg.append(lp.head()).append(lm.head()).append('\n');
+		for(int i=0; i < methods.length; i++) {
+			msg.append("\t").append(methods[i].parent).append('.');
+			msg.append(paths[i]).append(methods[i]).append('\n');
 		}
-		msg.append("while resolving ").append(Method.toString(name,args,ret));
+		msg.append("while resolving ").append(Method.toString(name,mt));
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type)
+	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
@@ -344,12 +402,12 @@ public class PassInfo {
 		name.indexOf('.') > 0, $cut,
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,null,qname_head,type),
+		resolveNameR(p,new ResInfo(),qname_head),
 		p instanceof Struct,
-		((Struct)p).resolveMethodR(node, info, qname_tail, args, ret, type)
+		((Struct)p).resolveMethodR(node, info, qname_tail, mt)
 	;
 		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
-		resolveBestMethodR((ScopeOfMethods)p,node,info,name,args,ret,type),
+		resolveBestMethodR((ScopeOfMethods)p,node,info,name,mt),
 		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+info+" found...")
 	}
 

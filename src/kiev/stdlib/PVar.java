@@ -38,6 +38,7 @@ public final $wrapper class PVar<A>
 	@getter
 	public A get$$var()
 		alias $get_var
+		alias operator(210,fy,$cast)
 	{
 		if ($pvar.$self != null)
 			return $pvar.$get_var();

@@ -522,7 +522,7 @@ public interface StdTypes {
 		Type tpPrologVarArg = new Type(tpPrologVarArgClazz);
 		tpPrologVar	= new Type(tpPrologVarClazz,new Type[]{tpPrologVarArg});
 		tpPrologVarClazz.type	= tpPrologVar;
-		tpPrologVarClazz.setWrapper(true);
+//		tpPrologVarClazz.setWrapper(true);
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
@@ -530,7 +530,7 @@ public interface StdTypes {
 		Type tpRefProxyArg = new Type(tpRefProxyArgClazz);
 		tpRefProxy	= new Type(tpRefProxyClazz,new Type[]{tpRefProxyArg});
 		tpRefProxyClazz.type	= tpRefProxy;
-		tpRefProxyClazz.setWrapper(true);
+//		tpRefProxyClazz.setWrapper(true);
 		typeHash.put(tpRefProxy);
 
 		Struct tpTypeSwitchHashClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeSwitchHash;")),kiev_stdlib,ACC_PUBLIC);
