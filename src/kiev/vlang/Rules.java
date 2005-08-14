@@ -1097,6 +1097,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.func = expr.func;
 		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; expr.args) this.args.append(e);
+		this.super_flag = expr.super_flag;
 	}
 
 	public RuleCallExpr(CallAccessExpr expr) {
@@ -1106,6 +1107,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.func = expr.func;
 		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
 		foreach(Expr e; expr.args) this.args.append(e);
+		this.super_flag = expr.super_flag;
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
@@ -1161,7 +1163,17 @@ public final class RuleCallExpr extends ASTRuleNode {
 	private String createTextCall() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("($env.$rc$frame$").append(env_var).append("=");
-		if( obj != null ) sb.append("#e").append(obj.parserAddr()).append('.');
+		if( obj != null ) {
+			if (super_flag) {
+				assert (obj instanceof ThisExpr);
+				sb.append("super.");
+			} else {
+				sb.append("#e").append(obj.parserAddr()).append('.');
+			}
+		}
+		else if (super_flag) {
+			sb.append("super.");
+		}
 		sb.append(func.getName()).append('(');
 		for(int i=1; i < args.length; i++) {
 			sb.append("#e"+args[i].parserAddr());
