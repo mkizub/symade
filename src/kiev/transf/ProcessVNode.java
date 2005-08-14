@@ -48,6 +48,7 @@ public final class ProcessVNode implements Constants {
 	private static final KString sigSetVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
 	private static final KString sigReplaceVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 	private static final KString sigCopy   = KString.from("()Ljava/lang/Object;");
+	private static final KString sigCopyTo   = KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
 	
 	/////////////////////////////////////////////
 	//      Verify the VNode tree structure    //
@@ -277,69 +278,86 @@ public final class ProcessVNode implements Constants {
 			copyV.body = new BlockStat(0,copyV);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,null,KString.from("node"),s.type,0);
-			stats.append(new DeclStat(0,null,v,new NewExpr(0,s.type,Expr.emptyArray)));
-			{
-				Struct ss = s;
-				while (ss != null && ss.meta.get(mnNode) != null) {
-					int p = 1;
-					foreach (Field f; ss.fields) {
-						if (f.isPackedField() || f.isAbstract() || f.isStatic())
-							continue;
-						{	// check if we may not copy the field
-							Meta fmeta = f.meta.get(mnAtt);
-							if (fmeta == null)
-								fmeta = f.meta.get(mnRef);
-							if (fmeta != null && !fmeta.getZ(nameCopyable))
-								continue; // do not copy the field
-						}
-						if (f.name.equals(nameParent))
-							continue;
-						boolean isNode = (f.getType().clazz.meta.get(mnNode) != null);
-						boolean isArr = (f.getType().clazz.name.name == nameNArr);
-						if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
-							if (isArr) {
-								ASTCallAccessExpression cae = new ASTCallAccessExpression();
-								cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);
-								cae.obj.parent = cae;
-								cae.func = new ASTIdentifier(0, KString.from("copyFrom"));
-								cae.func.parent = cae;
-								cae.args.append(new AccessExpr(0,new ThisExpr(),f));
-								stats.insert(p, new ExprStat(0,null,cae));
-							} else {
-								ASTCallAccessExpression cae = new ASTCallAccessExpression();
-								cae.obj = new AccessExpr(0, new ThisExpr(),f);
-								cae.obj.parent = cae;
-								cae.func = new ASTIdentifier(0, copyV.name.name);
-								cae.func.parent = cae;
-								stats.insert(p, 
-									new IfElseStat(0,null,
-										new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
-											new AccessExpr(0,new ThisExpr(),f),
-											new ConstExpr(0, null)
-											),
-										new ExprStat(0,null,
-											new AssignExpr(0,AssignOperator.Assign,
-												new AccessExpr(0,new VarAccessExpr(0,v),f),
-												new CastExpr(0,f.getType(),cae)
-											)
-										),
-										null
-									)
-								);
-							}
-						} else {
-							stats.insert(p, 
+			stats.append(new ReturnStat(0,null,new ASTCallExpression(0,
+				KString.from("copyTo"),	new Expr[]{new NewExpr(0,s.type,Expr.emptyArray)})));
+			s.addMethod(copyV);
+		}
+		// copyTo(Object)
+		if (hasMethod(s, KString.from("copyTo"))) {
+			Kiev.reportWarning(s.pos,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
+		} else {
+			MethodType copyVt = (MethodType)Type.fromSignature(sigCopyTo);
+			Method copyV = new Method(s,KString.from("copyTo"),copyVt,ACC_PUBLIC);
+			copyV.params = new Var[]{
+				new Var(0, copyV, nameThis, s.type, 0),
+				new Var(0, copyV, KString.from("to$node"), Type.tpObject, 0),
+			};
+			copyV.body = new BlockStat(0,copyV);
+			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
+			Var v = new Var(0,null,KString.from("node"),s.type,0);
+			if (s.super_clazz != null && s.super_clazz.clazz.meta.get(mnNode) != null) {
+				ASTCallAccessExpression cae = new ASTCallAccessExpression();
+				cae.obj = new ASTIdentifier(0,KString.from("super"));
+				cae.func = new ASTIdentifier(0,KString.from("copyTo"));
+				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
+				stats.append(new DeclStat(0,null,v,new CastExpr(0,s.type,cae)));
+			} else {
+				stats.append(new DeclStat(0,null,v,new CastExpr(0,s.type,new ASTIdentifier(0,KString.from("to$node")))));
+			}
+			foreach (Field f; s.fields) {
+				if (f.isPackedField() || f.isAbstract() || f.isStatic())
+					continue;
+				{	// check if we may not copy the field
+					Meta fmeta = f.meta.get(mnAtt);
+					if (fmeta == null)
+						fmeta = f.meta.get(mnRef);
+					if (fmeta != null && !fmeta.getZ(nameCopyable))
+						continue; // do not copy the field
+				}
+				if (f.name.equals(nameParent))
+					continue;
+				boolean isNode = (f.getType().clazz.meta.get(mnNode) != null);
+				boolean isArr = (f.getType().clazz.name.name == nameNArr);
+				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
+					if (isArr) {
+						ASTCallAccessExpression cae = new ASTCallAccessExpression();
+						cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);
+						cae.obj.parent = cae;
+						cae.func = new ASTIdentifier(0, KString.from("copyFrom"));
+						cae.func.parent = cae;
+						cae.args.append(new AccessExpr(0,new ThisExpr(),f));
+						stats.append(new ExprStat(0,null,cae));
+					} else {
+						ASTCallAccessExpression cae = new ASTCallAccessExpression();
+						cae.obj = new AccessExpr(0, new ThisExpr(),f);
+						cae.obj.parent = cae;
+						cae.func = new ASTIdentifier(0, KString.from("copy"));
+						cae.func.parent = cae;
+						stats.append( 
+							new IfElseStat(0,null,
+								new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+									new AccessExpr(0,new ThisExpr(),f),
+									new ConstExpr(0, null)
+									),
 								new ExprStat(0,null,
 									new AssignExpr(0,AssignOperator.Assign,
 										new AccessExpr(0,new VarAccessExpr(0,v),f),
-										new AccessExpr(0,new ThisExpr(),f)
+										new CastExpr(0,f.getType(),cae)
 									)
-								)
-							);
-						}
-						p++;
+								),
+								null
+							)
+						);
 					}
-					ss = ss.super_clazz.clazz;
+				} else {
+					stats.append( 
+						new ExprStat(0,null,
+							new AssignExpr(0,AssignOperator.Assign,
+								new AccessExpr(0,new VarAccessExpr(0,v),f),
+								new AccessExpr(0,new ThisExpr(),f)
+							)
+						)
+					);
 				}
 			}
 			stats.append(new ReturnStat(0,null,new VarAccessExpr(0,null,v)));

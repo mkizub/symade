@@ -166,6 +166,18 @@ public abstract class ASTNode implements Constants {
 		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
 	};
 
+	public /*abstract*/ Object copyTo(Object to$node) {
+        ASTNode node = (ASTNode)to$node;
+		node.pos			= this.pos;
+		node.flags			= this.flags;
+		node.compileflags	= this.compileflags;
+		return node;
+	};
+
+	public void callbackChildChanged(AttrSlot attr) {
+		// by default do nothing
+	}
+	
 	public ASTNode(int pos, int fl) {
 		this(pos);
 		flags = fl;
