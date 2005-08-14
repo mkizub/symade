@@ -45,10 +45,12 @@ public class ASTNormalCase extends ASTNode {
 		    	n = val.resolve(null);
 				if (n instanceof Struct)
 					n = new WrapedExpr(val.pos, n);
+				else if (n instanceof TypeRef)
+					n = new WrapedExpr(val.pos, n);
 			}
 			CaseLabel cl = new CaseLabel(pos,parent,(Expr)n,stats.toArray());
 			cl.parent = parent;
-			return cl /*.resolve(Type.tpVoid)*/;
+			return cl;
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
 			return this;

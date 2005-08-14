@@ -50,6 +50,8 @@ public final class ProcessVNode implements Constants {
 	private static final KString sigCopy   = KString.from("()Ljava/lang/Object;");
 	private static final KString sigCopyTo   = KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
 	
+	private Type tpNArr = Env.getStruct(nameNArr).type;
+	
 	/////////////////////////////////////////////
 	//      Verify the VNode tree structure    //
     /////////////////////////////////////////////
@@ -90,7 +92,7 @@ public final class ProcessVNode implements Constants {
 				verify(n);
 			}
 		}
-		else if (s.super_type != null && s.super_type.clazz.meta.get(mnNode) != null) {
+		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
 		}
@@ -108,22 +110,16 @@ public final class ProcessVNode implements Constants {
 			boolean isArr = false;
 			Meta fsm;
 			{
-				BaseStruct fs = f.type.clazz;
-				if (fs.name.name == nameNArr) {
+				Type ft = f.type;
+				if (ft.isInstanceOf(tpNArr)) {
 					if (!f.isFinal()) {
 						Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
 						f.setFinal(true);
 					}
 					isArr = true;
 				}
-				fsm = fs.meta.get(mnNode);
+				fsm = ft.getStructMeta().get(mnNode);
 			}
-//			if (fsm == null) {
-//				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @node");
-//				fs.meta.unset(mnAtt);
-//				fs.meta.unset(mnRef);
-//				return;
-//			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
 				if (isArr) {
@@ -149,10 +145,9 @@ public final class ProcessVNode implements Constants {
 				}
 			}
 		} else {
-			BaseStruct fs = f.type.clazz;
-			if (fs.name.name == nameNArr)
+			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
-			else if (fs.type.clazz.meta.get(mnNode) != null)
+			else if (f.type.getStructMeta().get(mnNode) != null)
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
@@ -190,7 +185,7 @@ public final class ProcessVNode implements Constants {
 					aflds.insert(p, f);
 					p++;
 				}
-				ss = (Struct)ss.super_type.clazz;
+				ss = ss.super_type.getStruct();
 			}
 		}
 		if (hasField(s, nameEnumValuesFld)) {
@@ -201,7 +196,7 @@ public final class ProcessVNode implements Constants {
 		Expr[] vals_init = new Expr[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
-			boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+			boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
 			Expr e = new NewExpr(0, atp, new Expr[]{
 				new ConstStringExpr(aflds[i].name.name),
 				new ConstBoolExpr(isAtt),
@@ -279,7 +274,7 @@ public final class ProcessVNode implements Constants {
 			copyV.body = new BlockStat();
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.type,0);
-			if (s.super_bound != null && s.super_type.clazz.meta.get(mnNode) != null) {
+			if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new ASTIdentifier(0,KString.from("copyTo"));
@@ -299,8 +294,8 @@ public final class ProcessVNode implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				boolean isNode = (f.getType().clazz.meta.get(mnNode) != null);
-				boolean isArr = (f.getType().clazz.name.name == nameNArr);
+				boolean isNode = (f.getType().getStructMeta().get(mnNode) != null);
+				boolean isArr = f.getType().isInstanceOf(tpNArr);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -352,7 +347,7 @@ public final class ProcessVNode implements Constants {
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
 			for(int i=0; i < aflds.length; i++) {
-				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+				boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
 				if (isArr || aflds[i].isFinal())
 					continue;
 				((BlockStat)setV.body).addStatement(
@@ -394,7 +389,7 @@ public final class ProcessVNode implements Constants {
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
 			for(int i=0; i < aflds.length; i++) {
-				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+				boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
 				if (!isArr && aflds[i].isFinal())
 					continue;
 				BlockStat bs;

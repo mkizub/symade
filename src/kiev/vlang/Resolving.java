@@ -184,6 +184,8 @@ public class ResInfo {
 		int n = 0;
 		Expr e = null;
 		if (from != null) {
+			if (from instanceof TypeRef)
+				from = ((TypeRef)from).getType().getStruct();
 			if (from instanceof Struct) {
 				// static field access
 				if (isEmpty() && node instanceof Field) {

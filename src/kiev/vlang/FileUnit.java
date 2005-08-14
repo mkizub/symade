@@ -211,7 +211,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 							s.generate();
 							diff_time = System.currentTimeMillis() - curr_time;
 							if( Kiev.verbose )
-								Kiev.reportInfo("Generated clas "+t.clazz,diff_time);
+								Kiev.reportInfo("Generated clas "+t.getStruct(),diff_time);
 						} finally {
 							Kiev.argtype = oldargtype;
 						}
@@ -347,7 +347,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 		try {
 			File f;
-			Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
+			Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.getStruct();
 			String out_file = jcl.name.bytecode_name.replace('/',File.separatorChar).toString();
 			make_output_dir(output_dir,out_file);
 			f = new File(output_dir,out_file+".java");
@@ -455,7 +455,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 
 	public static void toBytecode(Struct cl) {
-		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
+		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.getStruct();
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;

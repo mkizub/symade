@@ -106,7 +106,7 @@ public class ASTRuleDeclaration extends ASTNode implements PreScanneable {
 				lvars = (Var[])Arrays.append(lvars,vars[j]);
 			}
 		}
-		MethodType mtype = MethodType.newMethodType(null,mfargs,margs,type);
+		MethodType mtype = MethodType.newMethodType(mfargs,margs,type);
 		me = new RuleMethod(clazz,ident.name,mtype,flags | ACC_MULTIMETHOD);
 		trace(Kiev.debugMultiMethod,"Rule "+me+" has java type "+me.jtype);
 		me.setPos(getPos());

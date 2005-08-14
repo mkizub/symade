@@ -341,15 +341,15 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
-		Struct cl = (Struct)parent;
-		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
 		Env.toJavaModifiers(dmp,getJavaFlags());
+//		Struct cl = (Struct)parent;
+//		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
 		if( !name.equals(nameInit) )
 			dmp.space()
 			.append(((MethodType)Type.getRealType(Kiev.argtype,type)).ret)
 			.forsed_space().append(name);
 		else
-			dmp.space().append(cl.name.short_name);
+			dmp.space().append(((Struct)parent).name.short_name);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
 			if (params[i].isFinal()) dmp.append("final").forsed_space();
@@ -383,7 +383,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		node ?= var
 	;
 		t @= type.fargs,
-		t.clazz.name.short_name.equals(name),
+		t.getClazzName().short_name.equals(name),
 		node ?= new TypeRef(t)
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
@@ -426,7 +426,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 				t = t.args[0];
 			}
 			if (t.isReference()) {
-				t.clazz.checkResolved();
+				t.checkResolved();
 				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
 					throw new CompilerException(pos, "Bad annotation value type "+tp);
 			}
@@ -582,7 +582,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 					KString msg = KString.from("Compiled with errors");
 					ConstPool.addStringCP(msg);
 					Code.addConst(msg);
-					Method func = Type.tpError.clazz.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
+					Method func = Type.tpError.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
 					Code.addInstr(Instr.op_call,func,false);
 					Code.addInstr(Instr.op_throw);
 				}

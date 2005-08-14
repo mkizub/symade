@@ -46,7 +46,6 @@ public class ASTCallAccessExpression extends Expr {
 			args[i] = (Expr)args[i].resolveExpr(null);
 		}
 		ASTNode o;
-		BaseStruct cl;
 		Type tp = null;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -79,33 +78,37 @@ public class ASTCallAccessExpression extends Expr {
 			if( o == null )
 				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 		try_static:
-			if( o instanceof Struct ) {
-				cl = (Struct)o;
+			if( o instanceof BaseStruct ) {
+				((BaseStruct)o).checkResolved();
+				o = new TypeRef(((BaseStruct)o).type);
+			}
+			if( o instanceof TypeRef ) {
+				tp = ((TypeRef)o).getType();
 				Type[] ta = new Type[args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
 				MethodType mt = MethodType.newMethodType(null,ta,ret);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
-				if( !PassInfo.resolveBestMethodR(cl,m,info,func.name,mt) ) {
-//					// May be a closure
-//					ASTNode@ closure;
-//					info = new ResInfo();
-//					if( !cl.type.resolveNameR(closure,info,func.name) ) {
-//						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-//						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
-//					}
-//					try {
-//						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
-//						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
-//						) {
-//							Expr call = info.buildCall(pos, null, closure, args.toArray());
-//							return call.resolve(ret);
-//						}
-//					} catch(Exception eee) {
-//						Kiev.reportError(pos,eee);
-//					}
+				if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,mt) ) {
+					// May be a closure
+					ASTNode@ closure;
+					info = new ResInfo();
+					if( !tp.resolveStaticNameR(closure,info,func.name) ) {
+						if( ret != null ) { ret = null; goto retry_with_null_ret; }
+						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
+					}
+					try {
+						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
+						) {
+							Expr call = info.buildCall(pos, null, closure, args.toArray());
+							return call.resolve(ret);
+						}
+					} catch(Exception eee) {
+						Kiev.reportError(pos,eee);
+					}
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(pos,"Method "+Method.toString(func.name,mt)+" unresolved in "+cl);
+					throw new CompilerException(pos,"Method "+Method.toString(func.name,mt)+" unresolved in "+tp);
 				}
 				if( !m.isStatic() )
 					throw new CompilerException(pos,"Static call to non-static method");
@@ -120,10 +123,9 @@ public class ASTCallAccessExpression extends Expr {
 					o = tp.makeWrappedAccess(o).resolve(null);
 					tp = o.getType();
 				}
-				if( reqType instanceof MethodType ) ret = null;
+				if( reqType instanceof CallableType ) ret = null;
 				if( tp.isReference() ) {
 			retry_resolving:;
-					cl = tp.clazz;
 					Type[] ta = new Type[args.length];
 					for (int i=0; i < ta.length; i++)
 						ta[i] = args[i].getType();
@@ -142,14 +144,14 @@ public class ASTCallAccessExpression extends Expr {
 								}
 							}
 							if( ret != null ) { ret = null; goto retry_with_null_ret; }
-							o = o.getType().clazz;
+							o = new TypeRef(o.getType());
 							goto try_static;
 							//throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret)+" in "
 							//	+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 						}
 						try {
-							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
-							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
+							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 							) {
 								Expr call = info.buildCall(pos, (Expr)o, closure, args.toArray());
 								return call.resolve(ret);
@@ -158,15 +160,15 @@ public class ASTCallAccessExpression extends Expr {
 							Kiev.reportError(pos,eee);
 						}
 						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-						o = o.getType().clazz;
+						o = new TypeRef(o.getType());
 						goto try_static;
 //						throw new CompilerException(pos,"Method "+Method.toString(func.name,args,reqType)+" unresolved in "+tp);
 					}
-					if( reqType instanceof MethodType ) {
+					if( reqType instanceof CallableType ) {
 						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 						ac.pos = pos;
 						ac.parent = parent;
-						ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
+						ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
 						Method meth = (Method)m;
 						for(int i=0; i < meth.type.args.length; i++) {
 							ac.params.add(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));

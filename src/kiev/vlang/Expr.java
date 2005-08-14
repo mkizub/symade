@@ -2022,7 +2022,6 @@ public class CastExpr extends Expr {
 	public Expr tryOverloadedCast(Type et) {
 		ASTNode@ v;
 		ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-		BaseStruct cl = et.clazz;
 		v.$unbind();
 		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,this.type);
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
@@ -2033,7 +2032,7 @@ public class CastExpr extends Expr {
 		v.$unbind();
 		info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
 		mt = MethodType.newMethodType(null,new Type[]{expr.getType()},this.type);
-		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,mt) ) {
+		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
 			Expr ce = (Expr)new CallAccessExpr(pos,parent,expr,(Method)v,new Expr[]{expr}).resolve(type);
 			expr = ce;
@@ -2085,13 +2084,13 @@ public class CastExpr extends Expr {
 				if (type.isIntegerInCode())
 					return this;
 				Method cm = null;
-				cm = type.clazz.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
+				cm = type.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
 				return new CallExpr(pos,parent,cm,new Expr[]{expr}).resolve(reqType);
 			}
 			if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 				if (et.isIntegerInCode())
 					return this;
-				Method cf = (Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+				Method cf = (Method)Type.tpEnum.resolveMethod(nameEnumOrdinal, KString.from("()I"));
 				return new CallAccessExpr(pos,parent,expr,cf,Expr.emptyArray).resolve(reqType);
 			}
 			// Try to find $cast method
@@ -2113,13 +2112,13 @@ public class CastExpr extends Expr {
 				return this;
 			}
 			if( et.isReference() && et.isInstanceOf((Type)type) ) return expr;
-			if( et.isReference() && type.isReference() && et.clazz instanceof Struct
-			 && ((Struct)et.clazz).package_clazz.isClazz()
+			if( et.isReference() && type.isReference() && et.isStruct()
+			 && et.getStruct().package_clazz.isClazz()
 			 && !et.isArgument()
-			 && !et.clazz.isStatic() && ((Struct)et.clazz).package_clazz.type.isAutoCastableTo(type)
+			 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
 			) {
 				return new CastExpr(pos,type,
-					new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.clazz)),explicit
+					new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct())),explicit
 				).resolve(reqType);
 			}
 			if( expr.isConstantExpr() ) {
@@ -2156,7 +2155,7 @@ public class CastExpr extends Expr {
 				}
 			}
 			if( et.equals(type) ) return expr;
-			if( expr instanceof ClosureCallExpr && et instanceof MethodType ) {
+			if( expr instanceof ClosureCallExpr && et instanceof ClosureType ) {
 				if( et.isAutoCastableTo(type) ) {
 					((ClosureCallExpr)expr).is_a_call = true;
 					return expr;

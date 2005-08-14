@@ -95,7 +95,7 @@ public class Signature {
 				ksb.append(args[i].signature);
 				if( full && args[i].isArgument() ) {
 					ksb.append('<');
-					ksb.append(args[i].clazz.super_type.signature);
+					ksb.append(args[i].getSuperType().signature);
 					ksb.append('>');
 				}
 			}
@@ -168,7 +168,9 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return MethodType.newMethodType(clazz,fargs,args,ret);
+			if (clazz == MethodType.tpMethodClazz)
+				return MethodType.newMethodType(fargs,args,ret);
+			return ClosureType.newClosureType(clazz,args,ret);
 		}
 
 		// Normal reference type

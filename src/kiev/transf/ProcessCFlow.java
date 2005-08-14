@@ -36,7 +36,9 @@ public final class ProcessCFlow implements Constants {
 
 	public static final KString mnCFNode = KString.from("kiev.vlang.cfnode"); 
 	public static final KString mnCFLink = KString.from("kiev.vlang.cflink"); 
-	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
+	public static final KString nameNArr  = KString.from("kiev.vlang.NArr");
+	
+	private Type tpNArr = Env.getStruct(nameNArr).type;
 	
 	/////////////////////////////////////////////
 	//      Verify the CFNode graph structure  //
@@ -78,7 +80,7 @@ public final class ProcessCFlow implements Constants {
 			//	verify(n);
 			//}
 		}
-		else if (s.super_type != null && s.super_type.clazz.meta.get(mnCFNode) != null) {
+		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnCFNode) != null) {
 			Kiev.reportError(s.pos,"Class "+s+" must be marked with @cfnode: it extends @cfnode "+s.super_type);
 			return;
 		}
@@ -86,21 +88,21 @@ public final class ProcessCFlow implements Constants {
 	
 	private void verify(Field:ASTNode f) {
 		Meta fmlnk = f.meta.get(mnCFLink);
-		BaseStruct fs = (Struct)f.type.clazz;
+		Type ft = f.type;
 		boolean isArr = false;
-		if (fs.name.name == nameNArr) {
-			fs = f.type.args[0].clazz;
+		if (ft.isInstanceOf(tpNArr)) {
+			ft = f.type.args[0];
 			isArr = true;
 		}
 		if (fmlnk != null) {
-			Meta fsm = fs.meta.get(mnCFNode);
+			Meta fsm = ft.getStructMeta().get(mnCFNode);
 			if (fsm == null) {
-				Kiev.reportWarning(f.pos,"Type "+fs+" of a field "+f.parent+"."+f+" is not a @cfnode");
-				fs.meta.unset(mnCFLink);
+				Kiev.reportWarning(f.pos,"Type "+ft+" of a field "+f.parent+"."+f+" is not a @cfnode");
+				ft.getStructMeta().unset(mnCFLink);
 				return;
 			}
 		} else {
-			if (fs.type.clazz.meta.get(mnCFNode) != null)
+			if (ft.getStructMeta().get(mnCFNode) != null)
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @cflink");
 		}
 	}

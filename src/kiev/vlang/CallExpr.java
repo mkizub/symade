@@ -581,12 +581,12 @@ public class ClosureCallExpr extends Expr {
 	}
 	public Type getType() {
 		Type tp1 = expr==null?null:expr.getType();
-		MethodType t = (MethodType)Type.getRealType(tp1,((Expr)func).getType());
+		ClosureType t = (ClosureType)Type.getRealType(tp1,((Expr)func).getType());
 		if( is_a_call )
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = MethodType.newMethodType(t.clazz,null,types,t.ret);
+		t = ClosureType.newClosureType(t.clazz,types,t.ret);
 		return t;
 	}
 
@@ -614,11 +614,11 @@ public class ClosureCallExpr extends Expr {
 			ASTNode v = func;
 			Type tp1 = expr==null?null:expr.getType();
 			Type tp;
-			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof MethodType )
+			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType )
 				func = (Expr)v;
-			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof MethodType )
+			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType )
 				func = new VarAccessExpr(pos,this,(Var)v).resolve(null);
-			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof MethodType )
+			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType )
 				if( ((Field)v).isStatic() )
 					func = (Expr)new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v).resolve(null);
 				else if( expr == null )
@@ -629,9 +629,9 @@ public class ClosureCallExpr extends Expr {
 				}
 			else
 				throw new RuntimeException("Resolved item "+v+" is not a closure");
-			if( reqType != null && reqType instanceof MethodType )
+			if( reqType != null && reqType instanceof CallableType )
 				is_a_call = false;
-			else if( (reqType == null || !(reqType instanceof MethodType)) && tp.args.length==args.length )
+			else if( (reqType == null || !(reqType instanceof CallableType)) && tp.args.length==args.length )
 				is_a_call = true;
 			else
 				is_a_call = false;
@@ -640,12 +640,12 @@ public class ClosureCallExpr extends Expr {
 				args[i] = args[i].resolveExpr(tp.args[i]);
 			clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			KString call_it_name;
-			if( ((MethodType)tp).ret.isReference() )
+			if( ((CallableType)tp).ret.isReference() )
 				call_it_name = KString.from("call_Object");
 			else
-				call_it_name = KString.from("call_"+((MethodType)tp).ret);
+				call_it_name = KString.from("call_"+((CallableType)tp).ret);
 			ASTNode@ callIt;
-			MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpAny);
+			MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
 			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {
 				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);

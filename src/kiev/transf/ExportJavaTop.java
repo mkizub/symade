@@ -113,10 +113,10 @@ public final class ExportJavaTop implements Constants {
 					Type[] outer_args = astnp.type.args;
 					if( outer_args == null || outer_args.length <= i)
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class arguments");
-					if !(outer_args[i].clazz.name.short_name.equals(arg.name.short_name))
+					if !(outer_args[i].getClazzName().short_name.equals(arg.name.short_name))
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class argument,"
 							+" but arg["+i+"] is "+arg
-							+" and have to be "+outer_args[i].clazz.name.short_name);
+							+" and have to be "+outer_args[i].getClazzName().short_name);
 				}
 				/* Create type for class's arguments, if any */
 				if( me.args.length > 0 ) {
@@ -299,7 +299,7 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1_1(Typedef:ASTNode astn) {
 		try {
 			if (astn.typearg != null) {
-				astn.type = new TypeRef(astn.type.getType().clazz.type);
+				astn.type = new TypeRef(astn.type.getType().getInitialType());
 			} else {
 				astn.type = new TypeRef(astn.type.getType());
 			}
@@ -509,9 +509,9 @@ public final class ExportJavaTop implements Constants {
 						} else { // ASTIdentifier
 							KString a = ((TypeNameRef)ag.args[m]).name.name;
 							Type ad = me.type.args[m]; 
-							if( a != ad.clazz.name.short_name )
+							if( a != ad.getClazzName().short_name )
 								Kiev.reportError(pos,"Generation argument ["+l+":"+m+"] of "+me.name+" do not match argument "+ad+", must be "+a);
-							ag.args[m].lnk = ad.clazz.type;
+							ag.args[m].lnk = ad.getInitialType();
 						}
 					}
 				}
@@ -537,7 +537,7 @@ public final class ExportJavaTop implements Constants {
 					Type[] tarr = new Type[me.type.args.length];
 					for (int l=0; l < tarr.length; l++)
 						tarr[l] = me.gens[k].args[l].lnk;
-					Type gtype = Type.newRefType(me,tarr);
+					BaseType gtype = Type.newRefType(me,tarr);
 					gtype.java_signature = cn.signature();
 					gtype.clazz = s;
 					me.gens[k].lnk = gtype;
@@ -686,7 +686,7 @@ public final class ExportJavaTop implements Constants {
 					me.super_type = Type.tpObject;
 				foreach(TypeRef tr; me.interfaces)
 					tr.getType();
-				if( me.type.args.length > 0 && !(me.type instanceof MethodType) ) {
+				if( me.type.args.length > 0 && !me.type.isInstanceOf(Type.tpClosure) ) {
 					me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 				}
 			}
@@ -918,7 +918,7 @@ public final class ExportJavaTop implements Constants {
 					WBCCondition inv = (WBCCondition)members[i];
 					assert(inv.cond == WBCType.CondInvariant);
 					// TODO: check flags for fields
-					MethodType mt = MethodType.newMethodType(null,null,Type.emptyArray,Type.tpVoid);
+					MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
 					Method m = new Method(astn,inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
 					inv.replaceWith(m);
@@ -944,7 +944,7 @@ public final class ExportJavaTop implements Constants {
 				Vector<Type> targs = new Vector<Type>();
 				foreach (Field f; case_attr.casefields)
 					targs.append(f.type);
-				MethodType mt = MethodType.newMethodType(Type.tpMethodClazz,null,targs.toArray(),Type.tpVoid);
+				MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
 				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
 				init.pos = me.pos;
 				foreach (Field f; case_attr.casefields)

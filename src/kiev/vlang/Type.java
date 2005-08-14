@@ -31,12 +31,12 @@ import syntax kiev.Syntax;
  *
  */
 
-public class Type implements StdTypes, AccessFlags {
+public class Type implements StdTypes, AccessFlags, Named {
 	public static Type[]	emptyArray = new Type[0];
 
 	static Hash<Type>		typeHash;
 
-	@ref public BaseStruct	clazz;
+	@ref public /*private access:no,ro,no,rw*/ BaseStruct	clazz;
 	public Type[]			args = Type.emptyArray;
 	public KString			signature;
 	public KString			java_signature;
@@ -45,6 +45,39 @@ public class Type implements StdTypes, AccessFlags {
 	public final Struct getStruct() {
 		return (Struct)clazz;
 	}
+
+	public ASTNode resolveName(KString name) {
+		return clazz.resolveName(name);
+	}
+	
+	public Field resolveField(KString name) {
+		return clazz.resolveField(name,true);
+	}
+
+	public Field resolveField(KString name, boolean fatal) {
+		return clazz.resolveField(name,fatal);
+	}
+
+	public Method resolveMethod(KString name, KString sign) {
+		return clazz.resolveMethod(name,sign,true);
+	}
+
+	public Method resolveMethod(KString name, KString sign, boolean fatal) {
+		return clazz.resolveMethod(name,sign,fatal);
+	}
+
+	public Type getInitialType() {
+		return clazz.type;
+	}
+	
+	public Type getSuperType() {
+		return Type.getRealType(this,clazz.super_type);
+	}
+	
+	public MetaSet getStructMeta() {
+		return clazz.meta;
+	}
+
 
 	Type() {}
 
@@ -114,7 +147,7 @@ public class Type implements StdTypes, AccessFlags {
 		this(Env.newStruct(name),args);
 	}
 
-	public static Type newJavaRefType(BaseStruct clazz) {
+	public static BaseType newJavaRefType(BaseStruct clazz) {
 		Type[] args = Type.emptyArray;
 		KString signature = Signature.from(clazz,null,null,null);
 		Type t = typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
@@ -122,14 +155,18 @@ public class Type implements StdTypes, AccessFlags {
 			if( t.clazz == null ) t.clazz = clazz;
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
 			t.flags |= flReference;
-			return t;
+			return (BaseType)t;
 		}
-		t = new Type(clazz);
+		t = new BaseType(clazz);
 		t.flags |= flReference;
-		return t;
+		return (BaseType)t;
 	}
 
-	public static Type newRefType(BaseStruct clazz) {
+	public static BaseType newRefType(Type tp) {
+		return newRefType(tp.clazz);
+	}
+	
+	public static BaseType newRefType(BaseStruct clazz) {
 		if( clazz != null && clazz.type != null && clazz.type.args.length > 0 )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		Type[] args = Type.emptyArray;
@@ -139,14 +176,18 @@ public class Type implements StdTypes, AccessFlags {
 			if( t.clazz == null ) t.clazz = clazz;
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
 			t.flags |= flReference;
-			return t;
+			return (BaseType)t;
 		}
-		t = new Type(clazz);
+		t = new BaseType(clazz);
 		t.flags |= flReference;
-		return t;
+		return (BaseType)t;
 	}
 
-	public static Type newRefType(BaseStruct clazz, Type[] args) {
+	public static BaseType newRefType(Type tp, Type[] args) {
+		return newRefType(tp.clazz, args);
+	}
+	
+	public static BaseType newRefType(BaseStruct clazz, Type[] args) {
 		if( clazz != null && clazz.type != null && clazz.type.args.length != args.length )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		if( clazz != null && clazz.type != null ) {
@@ -164,18 +205,18 @@ public class Type implements StdTypes, AccessFlags {
 		if( t != null ) {
 			if( t.clazz == null ) t.clazz = clazz;
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
-			return t;
+			return (BaseType)t;
 		}
-		t = new Type(clazz,args);
+		t = new BaseType(clazz,args);
 		t.flags |= flReference;
-		return t;
+		return (BaseType)t;
 	}
 
-	public static Type newRefType(ClazzName name) {
+	public static BaseType newRefType(ClazzName name) {
 		return newRefType(Env.newStruct(name));
 	}
 
-	public static Type newRefType(ClazzName name, Type[] args) {
+	public static BaseType newRefType(ClazzName name, Type[] args) {
 		return newRefType(Env.newStruct(name),args);
 	}
 
@@ -213,8 +254,21 @@ public class Type implements StdTypes, AccessFlags {
 		}
 	}
 	
+	public NodeName getName() {
+		return clazz.name;
+	}
+	
+	public ClazzName getClazzName() {
+		return clazz.name;
+	}
+	
 	public void invalidate() {
 		// called when clazz was changed
+	}
+	
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	{
+		clazz.resolveNameR(node, info, name)
 	}
 	
 	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
@@ -267,6 +321,11 @@ public class Type implements StdTypes, AccessFlags {
 			Type.getRealType(this,((Field)forw).type).resolveNameAccessR(node,info,name)
 	}
 
+	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		clazz.resolveStructMethodR(node, info, name, mt, this)
+	}
+	
 	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ member;
 		Type@ sup;
@@ -376,12 +435,15 @@ public class Type implements StdTypes, AccessFlags {
 //		if( t1.isPizzaCase() && t1.clazz.super_clazz.clazz.equals(t2.clazz) )
 //			return true;
 		// Instance of closure
-		if( t1.clazz.instanceOf(Type.tpClosureClazz) &&
-			t2.clazz.instanceOf(Type.tpClosureClazz) ) {
-			if( t1.args.length != t2.args.length ) return false;
-			for(int i=0; i < t1.args.length; i++)
-				if( !isInstanceOf(t1.args[i],t2.args[i]) ) return false;
-			return true;
+		if( t1.clazz.instanceOf(Type.tpClosureClazz) ) {
+			if( t2 == tpClosure )
+				return true;
+			if( t2.clazz.instanceOf(Type.tpClosureClazz) ) {
+				if( t1.args.length != t2.args.length ) return false;
+				for(int i=0; i < t1.args.length; i++)
+					if( !isInstanceOf(t1.args[i],t2.args[i]) ) return false;
+				return true;
+			}
 		}
 		// Check class1 == class2 && arguments
 		if( t1.clazz != null && t2.clazz != null && t1.clazz.equals(t2.clazz) ) {
@@ -396,7 +458,7 @@ public class Type implements StdTypes, AccessFlags {
 		if( t1.clazz.super_type != null
 		 && isInstanceOf(Type.getRealType(t1,t1.clazz.super_type),t2) ) return true;
 		for(int i=0; t1.clazz.interfaces!=null && i < t1.clazz.interfaces.length; i++)
-			if( isInstanceOf(t1.clazz.interfaces[i].lnk,t2) ) return true;
+			if( isInstanceOf(t1.clazz.interfaces[i].getType(),t2) ) return true;
 		return false;
 	}
 
@@ -443,12 +505,8 @@ public class Type implements StdTypes, AccessFlags {
 				return true;
 			return false;
 		}
-		if( this instanceof MethodType
-		 && this.clazz != tpMethodClazz
-		 && !(t instanceof MethodType)
-		 && this.args.length == 0
-		 ) {
-			if( ((MethodType)this).ret.isAutoCastableTo(t) ) return true;
+		if( this instanceof ClosureType && !(t instanceof CallableType) && this.args.length == 0 ) {
+			if( ((ClosureType)this).ret.isAutoCastableTo(t) ) return true;
 		}
 		return false;
 	}
@@ -562,12 +620,8 @@ public class Type implements StdTypes, AccessFlags {
 //			Kiev.reportWarning(0,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			return true;
 		}
-		if( this instanceof MethodType
-		 && this.clazz != tpMethodClazz
-		 && !(t instanceof MethodType)
-		 && this.args.length == 0
-		 ) {
-			if( ((MethodType)this).ret.isCastableTo(t) ) return true;
+		if( this instanceof ClosureType && !(t instanceof CallableType) && this.args.length == 0 ) {
+			if( ((ClosureType)this).ret.isCastableTo(t) ) return true;
 		}
 		return false;
 	}
@@ -621,6 +675,11 @@ public class Type implements StdTypes, AccessFlags {
 	public final boolean isClazz()			{ return clazz.isClazz(); }
 	public final boolean isHasCases()		{ return clazz.isHasCases(); }
 	public final boolean isPizzaCase()		{ return clazz.isPizzaCase(); }
+	public final boolean isStaticClazz()	{ return clazz.isStatic(); }
+	public final boolean isStruct()			{ return clazz instanceof Struct; }
+	public final boolean isAnonymouseClazz()			{ return clazz.isAnonymouse(); }
+	public final boolean isLocalClazz()				{ return clazz.isAnonymouse(); }
+	public final boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
 	public boolean isWrapper()						{ return false; }
 	public Expr makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
@@ -640,15 +699,15 @@ public class Type implements StdTypes, AccessFlags {
 			}
 			return clazz.super_type.getJavaType();
 		}
-		if( this instanceof MethodType ) {
+		if( this instanceof CallableType ) {
 			if( clazz.instanceOf(Type.tpClosureClazz) )
 				return newJavaRefType(clazz);
 			if( args.length == 0 )
-				return MethodType.newMethodType(null,null,Type.emptyArray,((MethodType)this).ret.getJavaType());
+				return MethodType.newMethodType(Type.emptyArray,((MethodType)this).ret.getJavaType());
 			Type[] targs = new Type[args.length];
 			for(int i=0; i < args.length; i++)
 				targs[i] = args[i].getJavaType();
-			return MethodType.newMethodType(null,null,targs,((MethodType)this).ret.getJavaType());
+			return MethodType.newMethodType(targs,((MethodType)this).ret.getJavaType());
 		}
 		if( args.length == 0 ) return this;
 		return newJavaRefType(clazz);
@@ -698,16 +757,16 @@ public class Type implements StdTypes, AccessFlags {
 			&&  rs.super_type.args != null
 			&&  (tp=getRealType(getRealType(t1,rs.super_type),t2))!=t2 )
 				return tp;
-			for(int i=0; rs.interfaces!=null && i < rs.interfaces.length; i++) {
-				if( rs.interfaces[i].args!=null
-				&& (tp=getRealType(getRealType(t1,rs.interfaces[i]),t2))!=t2 )
+			for(int i=0; i < rs.interfaces.length; i++) {
+				Type it = rs.interfaces[i].getType();
+				if( (tp=getRealType(getRealType(t1,it),t2)) != t2 )
 					return tp;
 			}
 			// Not found, return itself
 			return t2;
 		}
 		// Well, isn't an argument, but may be a type with arguments
-		if( t2.args.length == 0 && !(t2 instanceof MethodType) ) return t2;
+		if( t2.args.length == 0 && !(t2 instanceof CallableType) ) return t2;
 		Type[] tpargs = new Type[t2.args.length];
 		Type tpret = null;
 		for(int i=0; i < tpargs.length; i++) {
@@ -717,9 +776,9 @@ public class Type implements StdTypes, AccessFlags {
 			tpargs[i] = getRealType(t1,t2.args[i]);
 		}
 		boolean isRewritten = false;
-		if( t2 instanceof MethodType ) {
-			tpret = getRealType(t1,((MethodType)t2).ret);
-			if( tpret != ((MethodType)t2).ret ) isRewritten = true;
+		if( t2 instanceof CallableType ) {
+			tpret = getRealType(t1,((CallableType)t2).ret);
+			if( tpret != ((CallableType)t2).ret ) isRewritten = true;
 		}
 		// Check if anything was rewritten
 		for(int i=0; i < tpargs.length; i++) {
@@ -730,10 +789,10 @@ public class Type implements StdTypes, AccessFlags {
 			// Check we must return a MethodType, a ClosureType or an array
 			if( t2.clazz == tpArray.clazz )
 				tp = newArrayType(tpargs[0]);
+			else if( t2.isInstanceOf(Type.tpClosure) )
+				tp = ClosureType.newClosureType(t2.clazz,tpargs,getRealType(t1,((ClosureType)t2).ret));
 			else if( t2 instanceof MethodType )
-				tp = MethodType.newMethodType(t2.clazz,null,tpargs,tpret);
-//			else if( t2.clazz == ClosureType.tpClosureClazz )
-//				tp = ClosureType.newClosureType(tpargs,getRealType(t1,((ClosureType)t2).ret));
+				tp = MethodType.newMethodType(tpargs,tpret);
 			else
 				tp = newRefType(t2.clazz,tpargs);
 			trace(Kiev.debugResolve,"Type "+t2+" rewritten into "+tp+" using "+t1);
@@ -775,6 +834,82 @@ public class Type implements StdTypes, AccessFlags {
 
 }
 
+public class BaseType extends Type {
+
+	@virtual
+	public abstract virtual BaseStruct	clazz;
+	
+	BaseType() {
+		super();
+	}
+	
+	BaseType(BaseStruct clazz) {
+		super(clazz);
+	}
+	
+	BaseType(BaseStruct clazz, Type[] args) {
+		super(clazz,args);
+	}
+	
+	@getter public BaseStruct get$clazz() {
+		return clazz;
+	}
+
+	@setter public void set$clazz(BaseStruct value) {
+		clazz = value;
+	}
+}
+
+public interface CallableType {
+	@virtual public virtual access:ro Type[]	args;
+	@virtual public virtual access:ro Type		ret;
+}
+
+public class ClosureType extends BaseType implements CallableType {
+	@ref private Type		ret;
+	
+	private ClosureType(BaseStruct clazz, Type[] args, Type ret, KString sign) {
+		super(clazz,args);
+		this.ret = ret;
+		signature = sign;
+		java_signature = Signature.getJavaSignature(new KString.KStringScanner(sign));
+		flags |= flReference;
+		if( clazz.isArgument() ) flags |= flArgumented;
+		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
+		if( ret.isArgumented() ) flags |= flArgumented;
+		typeHash.put(this);
+		trace(Kiev.debugCreation,"New closure type created: "+this+" with signature "+signature+" / "+java_signature);
+	}
+
+	public static ClosureType newClosureType(BaseStruct clazz, Type[] args, Type ret) {
+		if (ret   == null) ret   = Type.tpAny;
+		KString sign = Signature.from(clazz,Type.emptyArray,args,ret);
+		ClosureType t = (ClosureType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
+			return t.signature.equals(sign) && t.clazz.equals(clazz); });
+		if( t != null ) return t;
+		t = new ClosureType(clazz,args,ret,sign);
+		return t;
+	}
+	
+	@getter public Type[]	get$args()	{ return args; }
+	@getter public Type		get$ret()	{ return ret; }
+
+	public String toString() {
+		StringBuffer str = new StringBuffer();
+		str.append('(');
+		if( args != null && args.length > 0 ) {
+			for(int i=0; i < args.length; i++) {
+				str.append(args[i]);
+				if( i < args.length-1)
+					str.append(',');
+			}
+		}
+		str.append(")->").append(ret);
+		return str.toString();
+	}
+
+}
+	
 public class WrapperType extends Type {
 	
 	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
@@ -837,28 +972,22 @@ public class WrapperType extends Type {
 	
 }
 
-@node(copyable=false)
-public class MethodType extends Type {
-	@ref public Type		ret;
+public class MethodType extends Type implements CallableType {
+	@ref private Type		ret;
 	public Type[]	fargs;	// formal arguments for parametriezed methods
 
-	private MethodType(BaseStruct clazz, Type ret, Type[] args, Type[] fargs) {
-		super(clazz==null?tpMethodClazz:clazz,args);
+	private MethodType(Type ret, Type[] args, Type[] fargs, KString sign) {
+		super(tpMethodClazz,args);
 		this.ret = ret;
 		this.fargs = fargs;
-		signature = Signature.from(clazz,fargs,args,ret);
-		if( clazz == tpMethodClazz ) {
-			KStringBuffer ksb = new KStringBuffer(64);
-			ksb.append((byte)'(');
-			for(int i=0; i < args.length; i++)
-				ksb.append(args[i].java_signature);
-			ksb.append((byte)')');
-			ksb.append(ret.java_signature);
-			java_signature = ksb.toKString();
-		} else {
-			java_signature = Signature.getJavaSignature(new KString.KStringScanner(signature));
-		}
-		if( clazz != tpMethodClazz ) flags |= flReference;
+		signature = sign;
+		KStringBuffer ksb = new KStringBuffer(64);
+		ksb.append((byte)'(');
+		for(int i=0; i < args.length; i++)
+			ksb.append(args[i].java_signature);
+		ksb.append((byte)')');
+		ksb.append(ret.java_signature);
+		java_signature = ksb.toKString();
 		if( clazz.isArgument() ) flags |= flArgumented;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		if( ret.isArgumented() ) flags |= flArgumented;
@@ -866,20 +995,23 @@ public class MethodType extends Type {
 		trace(Kiev.debugCreation,"New method type created: "+this+" with signature "+signature+" / "+java_signature);
 	}
 
-	public static MethodType newMethodType(BaseStruct clazz, Type[] args, Type ret) {
-		return newMethodType(clazz,null,args,ret);
-	}
-	public static MethodType newMethodType(BaseStruct clazz, Type[] fargs, Type[] args, Type ret) {
-		if (clazz == null) clazz = tpMethodClazz;
+	public static MethodType newMethodType(Type[] fargs, Type[] args, Type ret) {
 		if (fargs == null) fargs = Type.emptyArray;
 		if (ret   == null) ret   = Type.tpAny;
-		KString sign = Signature.from(clazz,fargs,args,ret);
+		BaseStruct clazz = tpMethodClazz;	// BUG, if not a local variable, compile with errors
+		KString sign = Signature.from(tpMethodClazz,fargs,args,ret);
 		MethodType t = (MethodType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
 			return t.signature.equals(sign) && t.clazz.equals(clazz); });
 		if( t != null ) return t;
-		t = new MethodType(clazz,ret,args,fargs);
+		t = new MethodType(ret,args,fargs,sign);
 		return t;
 	}
+	public static MethodType newMethodType(Type[] args, Type ret) {
+		return newMethodType(null,args,ret);
+	}
+
+	@getter public Type[]	get$args()	{ return args; }
+	@getter public Type		get$ret()	{ return ret; }
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -910,7 +1042,7 @@ public class MethodType extends Type {
 			if( !args[i].isReference() ) types[i] = args[i];
 			else types[i] = Type.tpObject;
 		}
-		return MethodType.newMethodType(clazz,fargs,types,ret);
+		return MethodType.newMethodType(fargs,types,ret);
 	}
 
 	public boolean greater(MethodType tp) {
@@ -984,3 +1116,4 @@ public class MethodType extends Type {
 		}
 	}
 }
+

@@ -708,7 +708,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			if( ctype.isArray() ) {
 				itypes[i] = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
 				modes[i] = ARRAY;
-			} else if( ctype.clazz.instanceOf( Type.tpKievEnumeration.clazz) ) {
+			} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 				itypes[i] = ctype;
 				modes[i] = KENUM;
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
@@ -1021,7 +1021,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
-			if( tp == Type.tpRule || (tp instanceof MethodType && ((MethodType)tp).ret == Type.tpRule && tp.args.length == 0) )
+			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) )
 				return new RuleCallExpr(e).resolve(reqType);
 		}
 

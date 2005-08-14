@@ -207,6 +207,37 @@ public class PassInfo {
 		((ScopeOfNames)p).resolveNameR(node,path,name)
 	}
 
+	private static void addResolvedMethod(
+		Method m, ResInfo info,
+		Vector<Method>  methods, Vector<ResInfo> paths, Vector<MethodType> types)
+	{
+		trace(Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
+		if (m.isPrivate() && PassInfo.clazz != (Struct)m.parent)
+			return;
+		for (int i=0; i < methods.length; i++) {
+			if (methods[i] == m) {
+				trace(Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
+				if (info.getTransforms() < paths[i].getTransforms()) {
+					trace(Kiev.debugResolve,"Will use "+m+" with paths "+info);
+					methods[i] = m;
+					paths[i] = info.copy();
+				}
+				return;
+			}
+		}
+		methods.append(m);
+		paths.append(info.copy());
+		if (!m.isRuleMethod()) {
+			types.append(info.mt);
+		} else {
+			Type[] ta = new Type[info.mt.args.length-1];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = info.mt.args[i+1];
+			MethodType mt1 = MethodType.newMethodType(null,ta,info.mt.ret);
+			types.append(mt1);
+		}
+	}
+	
 	public static boolean resolveBestMethodR(
 		Object sc,
 		ASTNode@ node,
@@ -220,67 +251,18 @@ public class PassInfo {
 		Vector<MethodType> types = new Vector<MethodType>();
 		if (sc instanceof ScopeOfMethods) {
 			ScopeOfMethods scm = (ScopeOfMethods)sc;
-		search_next_in_scope:
-			foreach( scm.resolveMethodR(node,info,name,mt) ) {
-				trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
-				if (node.isPrivate() && clazz != (Struct)node.parent)
-					continue;
-				Method m = (Method)node;
-				for (int i=0; i < methods.length; i++) {
-					if (methods[i] == m) {
-						trace(Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
-						if (info.getTransforms() < paths[i].getTransforms()) {
-							trace(Kiev.debugResolve,"Will use "+m+" with paths "+info);
-							methods[i] = m;
-							paths[i] = info.copy();
-						}
-						continue search_next_in_scope;
-					}
-				}
-				methods.append(m);
-				paths.append(info.copy());
-				if (!m.isRuleMethod()) {
-					types.append(info.mt);
-				} else {
-					Type[] ta = new Type[info.mt.args.length-1];
-					for (int i=0; i < ta.length; i++)
-						ta[i] = info.mt.args[i+1];
-					MethodType mt1 = MethodType.newMethodType(null,ta,mt.ret);
-					types.append(mt1);
-				}
-			}
+			foreach( scm.resolveMethodR(node,info,name,mt) )
+				addResolvedMethod((Method)node,info,methods,paths,types);
+		}
+		else if (sc instanceof Type && info.isStaticAllowed()) {
+			Type tp = (Type)sc;
+			foreach( tp.resolveCallStaticR(node,info,name,mt) )
+				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else if (sc instanceof Type) {
 			Type tp = (Type)sc;
-		search_next_in_type:
-			foreach( tp.resolveCallAccessR(node,info,name,mt) ) {
-				trace(Kiev.debugResolve,"Candidate method "+node+" with path "+info+" found...");
-				if (node.isPrivate() && clazz != (Struct)node.parent)
-					continue;
-				Method m = (Method)node;
-				for (int i=0; i < methods.length; i++) {
-					if (methods[i] == m) {
-						trace(Kiev.debugResolve,"Duplicate methods "+m+" with paths "+info+" and "+paths[i]+" found...");
-						if (info.getTransforms() < paths[i].getTransforms()) {
-							trace(Kiev.debugResolve,"Will use "+m+" with paths "+info);
-							methods[i] = m;
-							paths[i] = info.copy();
-						}
-						continue search_next_in_type;
-					}
-				}
-				methods.append(m);
-				paths.append(info.copy());
-				if (!m.isRuleMethod()) {
-					types.append(info.mt);
-				} else {
-					Type[] ta = new Type[info.mt.args.length-1];
-					for (int i=0; i < ta.length; i++)
-						ta[i] = info.mt.args[i+1];
-					MethodType mt1 = MethodType.newMethodType(null,ta,mt.ret);
-					types.append(mt1);
-				}
-			}
+			foreach( tp.resolveCallAccessR(node,info,name,mt) )
+				addResolvedMethod((Method)node,info,methods,paths,types);
 		}
 		else
 			throw new RuntimeException("Unknown scope "+sc);

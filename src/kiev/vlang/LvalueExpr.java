@@ -140,7 +140,7 @@ public class AccessExpr extends LvalueExpr {
 	public void generateCheckCastIfNeeded() {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.clazz.instanceOf((Struct)var.parent) )
+		if( !ot.isStructInstanceOf((Struct)var.parent) )
 			Code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
 	}
 
@@ -286,8 +286,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				ASTNode@ v;
-				BaseStruct s = t.clazz;
-				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
+//				BaseStruct s = t.clazz;
+//				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
@@ -706,7 +706,7 @@ public class VarAccessExpr extends LvalueExpr {
 	public Field resolveVarVal() {
 		Type prt = Type.getProxyType(var.type);
 		Field var_valf =
-			(Field)prt.clazz.resolveName(nameCellVal);
+			(Field)prt.resolveName(nameCellVal);
 		return var_valf;
 	}
 
@@ -1162,9 +1162,8 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
-		return dmp.space().append(cl.name)
-			.append('.').append(var.name).space();
+		ClazzName cln = Type.getRealType(Kiev.argtype,cl.type).getClazzName();
+		return dmp.space().append(cln).append('.').append(var.name).space();
 	}
 
 }
@@ -1219,7 +1218,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 				trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 				outer_refs = (Field[])Arrays.append(outer_refs,ou_ref);
 				if( ou_ref.type.isInstanceOf(outer.type) ) break;
-				ou_ref = outerOf((Struct)ou_ref.type.clazz);
+				ou_ref = outerOf(ou_ref.type.getStruct());
 			} while( ou_ref!=null );
 			if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.type) )
 				throw new RuntimeException("Outer class "+outer+" not found for inner class "+PassInfo.clazz);

@@ -1028,8 +1028,12 @@ public abstract class Expr extends CFlowNode {
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		Expr expr = null;
 		if( e instanceof Expr ) expr = (Expr)e;
-		if( e instanceof BaseStruct ) expr = toExpr((BaseStruct)e,reqType,pos,parent);
-		if( e instanceof WrapedExpr ) expr = toExpr((BaseStruct)((WrapedExpr)e).expr,reqType,pos,parent);
+		if( e instanceof BaseStruct )
+			expr = toExpr((BaseStruct)e,reqType,pos,parent);
+		else if( e instanceof TypeRef )
+			expr = toExpr((BaseStruct)e,reqType,pos,parent);
+		else if( e instanceof WrapedExpr )
+			expr = toExpr(((WrapedExpr)e).expr,reqType,pos,parent);
 		if( expr == null )
 			throw new CompilerException(e.pos,"Is not an expression");
 		else if( reqType == null || reqType == Type.tpVoid )
@@ -1046,33 +1050,43 @@ public abstract class Expr extends CFlowNode {
 		) return new CastExpr(pos,reqType,expr).tryResolve(reqType);
 		throw new CompilerException(e.pos,"Expression "+expr+" is not auto-castable to type "+reqType);
 	}
-	public static Expr toExpr(BaseStruct bs, Type reqType, int pos, ASTNode parent) {
-		if( bs.isPizzaCase() ) {
+	public static Expr toExpr(Object o, Type reqType, int pos, ASTNode parent) {
+		BaseStruct bs = null;
+		Type st = null;
+		if (o instanceof BaseStruct) {
+			bs = (BaseStruct)o;
+			st = bs.type;
+		}
+		else if (o instanceof TypeRef) {
+			st = ((TypeRef)o).getType();
+			if (st.isPizzaCase())
+				bs = st.getStruct();
+		}
+		if( bs != null && bs.isPizzaCase() ) {
 			Struct s = (Struct)bs;
 			// Pizza case may be casted to int or to itself or super-class
 			PizzaCaseAttr case_attr;
-			if( s.generated_from != null )
+			if (s.generated_from != null)
 				case_attr = (PizzaCaseAttr)s.generated_from.getAttr(attrPizzaCase);
 			else
 				case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-			if( case_attr == null )
+			if (case_attr == null)
 				throw new RuntimeException("Internal error - can't find case_attr");
-			s = (Struct)Type.getRealType(reqType,s.type).clazz;
-			if( !(reqType.isInteger() || s.instanceOf(reqType.clazz)) )
-				throw new CompilerException(pos,"Pizza case "+s+" cannot be casted to type "+reqType);
-			if( case_attr.casefields.length != 0 )
-				throw new CompilerException(pos,"Empty constructor for pizza case "+s+" not found");
-			if( reqType.isInteger() ) {
+			Type tp = Type.getRealType(reqType,st);
+			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
+				throw new CompilerException(pos,"Pizza case "+tp+" cannot be casted to type "+reqType);
+			if (case_attr.casefields.length != 0)
+				throw new CompilerException(pos,"Empty constructor for pizza case "+tp+" not found");
+			if (reqType.isInteger()) {
 				Expr expr = (Expr)new ConstIntExpr(case_attr.caseno).resolve(reqType);
 				if( reqType != Type.tpInt )
 					expr = (Expr)new CastExpr(pos,reqType,expr).resolve(reqType);
 				return expr;
 			}
 			// Now, check we need add type arguments
-			Type tp = Type.getRealType(reqType,s.type);
 			return (Expr)new NewExpr(pos,tp,Expr.emptyArray).resolve(reqType);
 		}
-		throw new CompilerException(pos,"Expr "+bs+" is not a class's case with no fields");
+		throw new CompilerException(pos,"Expr "+o+" is not a class's case with no fields");
 	}
 }
 

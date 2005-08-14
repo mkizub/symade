@@ -145,10 +145,12 @@ public class ASTIdentifier extends Expr {
 					return new ConstIntExpr(case_attr.caseno).resolve(reqType);
 				}
 			}
-			return v;
+			((BaseStruct)v).checkResolved();
+			TypeNameRef tr = new TypeNameRef(this,((BaseStruct)v).type);
+			return tr;
 		}
 		else if( v instanceof TypeRef ) {
-			return ((TypeRef)v).getType().clazz;
+			return (TypeRef)v;
 		}
 		else {
 			e = info.buildAccess(pos, null, v);

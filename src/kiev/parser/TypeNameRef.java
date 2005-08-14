@@ -47,6 +47,13 @@ public class TypeNameRef extends TypeRef {
 		this.name = nm;
 	}
 
+	public TypeNameRef(ASTIdentifier nm, Type tp) {
+		this.pos = nm.getPos();
+		this.name = nm;
+		this.lnk = tp;
+	}
+
+
 	public boolean isBound() {
 		return true;
 	}

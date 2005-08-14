@@ -68,7 +68,7 @@ public class Bytecoder implements Constants {
 
 		if( kaclazz != null ) {
 			trace(Kiev.debugBytecodeRead,"Clazz type "+kaclazz.getClazzName());
-			cl.type = Signature.getTypeOfClazzCP(new KString.KStringScanner(kaclazz.getClazzName()));
+			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(kaclazz.getClazzName()));
 			if( cl.generated_from != null ) {
 				cl.type.java_signature = cl.name.signature();
 				cl.type.clazz = cl;
@@ -76,7 +76,7 @@ public class Bytecoder implements Constants {
 			}
 		} else {
 			trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-			cl.type = Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
+			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
 		}
 
 		// This class's superclass name (load if not loaded)
@@ -281,7 +281,7 @@ public class Bytecoder implements Constants {
 		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.clazz,mtype.fargs,mtype.args,Type.tpRule);
+				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
 				m = new RuleMethod(cl,m_name,mtype,m_flags);
 			}
 			else

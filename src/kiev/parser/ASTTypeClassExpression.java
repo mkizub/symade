@@ -45,18 +45,18 @@ public class ASTTypeClassExpression extends Expr {
 		Type tp = type.getType();
 		if( !tp.isReference() ) {
 			Type rt = Type.getRefTypeForPrimitive(tp);
-			Field f = (Field)rt.clazz.resolveName(KString.from("TYPE"));
+			Field f = (Field)rt.resolveName(KString.from("TYPE"));
 			if( f == null || !f.isStatic() )
 				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
-			return new StaticFieldAccessExpr(pos,(Struct)rt.clazz,f).resolve(reqType);
+			return new StaticFieldAccessExpr(pos,rt.getStruct(),f).resolve(reqType);
 		}
 		KString name;
 		if( tp.isArray() )
 			name = tp.java_signature.replace('/','.');
 		else
-			name = tp.clazz.name.bytecode_name.replace('/','.');
+			name = tp.getClazzName().bytecode_name.replace('/','.');
 		return new CallExpr(pos,
-				Type.tpClass.clazz.resolveMethod(
+				Type.tpClass.resolveMethod(
 					KString.from("forName"),
 					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
 				),

@@ -94,10 +94,31 @@ public class CaseLabel extends ASTNode {
 			try {
 				if( val != null ) {
 					ASTNode v;
-					if( val instanceof Expr ) v = ((Expr)val).resolve(null);
-					else v = val;
-					if( v instanceof WrapedExpr && ((WrapedExpr)v).expr instanceof Struct )
-						v = ((WrapedExpr)v).expr;
+					if( val instanceof Expr )
+						v = ((Expr)val).resolve(null);
+					else
+						v = val;
+					if( v instanceof TypeRef)
+						;
+					else if (v instanceof Struct) {
+						Struct s = (Struct)v;
+						s.checkResolved();
+						v = new TypeRef(s.type);
+					}
+					else if( v instanceof WrapedExpr) {
+						WrapedExpr w = (WrapedExpr)v;
+						if (w.expr instanceof TypeRef )
+							v = w.expr;
+						else if (w.expr instanceof Struct) {
+							Struct s = (Struct)w.expr;
+							s.checkResolved();
+							v = new TypeRef(s.type);
+						}
+						else
+							throw new CompilerException(pos,"Unknown node of class "+w.expr.getClass());
+					}
+					else if !( v instanceof Expr )
+						throw new CompilerException(pos,"Unknown node of class "+val.getClass());
 					if( v instanceof Expr )	{
 						if( sw.mode == SwitchStat.ENUM_SWITCH ) {
 							if( !(v instanceof StaticFieldAccessExpr) )
@@ -107,7 +128,7 @@ public class CaseLabel extends ASTNode {
 							if( f.var.type != et )
 								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 							if (et.isEnum())
-								val = new ConstIntExpr(((Struct)et.clazz).getValueForEnumField(f.var));
+								val = new ConstIntExpr(et.getStruct().getValueForEnumField(f.var));
 							else
 								val = (Expr)f.var.init.copy();
 						}
@@ -116,10 +137,9 @@ public class CaseLabel extends ASTNode {
 						else
 							val = (Expr)v;
 					}
-					else if( v instanceof Struct ) {
-						((Struct)v).checkResolved();
-						v = Type.getRealType(sw.tmpvar.type,v.type).clazz;
-						this.type = ((Struct)v).type;
+					else if( v instanceof TypeRef ) {
+						this.type = Type.getRealType(sw.tmpvar.type,v.getType());
+						v = this.type.getStruct();
 						pizza_case = true;
 						Struct cas = (Struct)v;
 						if( cas.isPizzaCase() ) {
@@ -149,7 +169,7 @@ public class CaseLabel extends ASTNode {
 						} else {
 							if( sw.mode != SwitchStat.TYPE_SWITCH )
 								throw new CompilerException(pos,"Type case in non-type switch");
-							if( v.equals(Type.tpObject.clazz) ) {
+							if( v.equals(Type.tpObject.getStruct()) ) {
 								val = null;
 								sw.defCase = this;
 							} else {
@@ -323,7 +343,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						PassInfo.clazz.addField(typehash);
 						CallAccessExpr cae = new CallAccessExpr(pos,this,
 							new StaticFieldAccessExpr(pos,PassInfo.clazz,typehash),
-							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
+							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
 							new Expr[]{new VarAccessExpr(pos,tmpvar)}
 							);
 						sel = cae;
@@ -360,7 +380,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						CaseLabel c = (CaseLabel)cases[i];
 						if( c.type == null || !c.type.isReference() )
 							throw new CompilerException(c.pos,"Mixed switch and typeswitch cases");
-						KString name = c.type.clazz.name.name;
+						KString name = c.type.getClazzName().name;
 						typenames = (KString[])Arrays.append(typenames,name);
 						if( c.val != null )
 							c.val = new ConstIntExpr(i);
@@ -432,7 +452,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						if( !has_unabrupted_case ) {
 							Type tp = sel.getType();
 							EnumAttr ea = null;
-							ea = (EnumAttr)((Struct)tp.clazz).getAttr(attrEnum);
+							ea = (EnumAttr)tp.getStruct().getAttr(attrEnum);
 							if( ea.fields.length == cases.length )
 								setMethodAbrupted(true);
 						}
@@ -462,7 +482,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 								Type tp = tmpvar.getType();
 								PizzaCaseAttr case_attr;
 								int caseno = 0;
-								Struct tpclz = (Struct)tp.clazz;
+								Struct tpclz = tp.getStruct();
 								for(int i=0; i < tpclz.sub_clazz.length; i++) {
 									if( tpclz.sub_clazz[i].isPizzaCase() ) {
 										case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);

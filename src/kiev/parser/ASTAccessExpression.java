@@ -47,15 +47,18 @@ public class ASTAccessExpression extends Expr {
 		try {
 			ASTNode o = obj.resolve(null);
 			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
-			BaseStruct cl;
 			Type tp = null;
 			Type[] snitps = null;
 			int snitps_index = 0;
 		try_static:
-			if( o instanceof Struct ) {
-				cl = (Struct)o;
-				tp = cl.type;
-			} else {
+			if( o instanceof TypeRef ) {
+				tp = ((TypeRef)o).getType();
+			}
+			else if( o instanceof BaseStruct ) {
+				((BaseStruct)o).checkResolved();
+				tp = ((BaseStruct)o).type;
+			}
+			else {
 				obj = (Expr)o;
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
@@ -71,12 +74,13 @@ public class ASTAccessExpression extends Expr {
 				}
 				else if( ident.name.equals("$self") && tp.isReference() )
 					return new SelfAccessExpr(pos,(LvalueExpr)o).resolve(reqType);
-				else if( tp.isReference() ) cl = tp.clazz;
+				else if( tp.isReference() )
+					;
 				else
 					throw new CompilerException(obj.getPos(),"Resolved object "+o+" of type "+tp+" is not a scope");
 			}
-			if( o instanceof Struct && ident.name.equals(nameThis) ) {
-				return new OuterThisAccessExpr(pos,(Struct)o).resolve(null);
+			if( o instanceof TypeRef && ident.name.equals(nameThis) ) {
+				return new OuterThisAccessExpr(pos,((TypeRef)o).getType().getStruct()).resolve(null);
 			}
 			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
 			ASTNode@ v;
@@ -88,11 +92,10 @@ public class ASTAccessExpression extends Expr {
 					v.$unbind();
 					info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
 					tp = snitps[snitps_index++];
-					cl = tp.clazz;
 					foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 						if (info.getTransforms() > min_transforms)
 							continue;
-						ASTNode e = makeExpr(v,info,o,cl);
+						ASTNode e = makeExpr(v,info,o);
 						if (info.getTransforms() < min_transforms) {
 							res.setLength(0);
 							min_transforms = info.getTransforms();
@@ -107,7 +110,7 @@ public class ASTAccessExpression extends Expr {
 						foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
-							ASTNode e = makeExpr(v,info,o,cl);
+							ASTNode e = makeExpr(v,info,o);
 							if (info.getTransforms() < min_transforms) {
 								res.setLength(0);
 								min_transforms = info.getTransforms();
@@ -116,10 +119,10 @@ public class ASTAccessExpression extends Expr {
 						}
 					} else {
 						info = new ResInfo();
-						foreach(cl.resolveNameR(v,info,ident.name) ) {
+						foreach(tp.resolveStaticNameR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
-							ASTNode e = makeExpr(v,info,o,cl);
+							ASTNode e = makeExpr(v,info,o);
 							if (info.getTransforms() < min_transforms) {
 								res.setLength(0);
 								min_transforms = info.getTransforms();
@@ -130,15 +133,15 @@ public class ASTAccessExpression extends Expr {
 			}
 			if (res.length() == 0) {
 				if (o instanceof Expr) {
-					o = o.getType().clazz;
+					o = new TypeRef(o.getType());
 					goto try_static;
 				}
 				//resolve(reqType);
-				throw new CompilerException(pos,"Unresolved identifier "+ident+" in class "+cl+" for type(s) "
+				throw new CompilerException(pos,"Unresolved identifier "+ident+" in class "+tp+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
 			}
 			if (res.length() > 1) {
-				String msg = "Umbigous identifier "+ident+" in class "+cl+" for type(s) "
+				String msg = "Umbigous identifier "+ident+" in class "+tp+" for type(s) "
 					+(snitps==null?tp.toString():Arrays.toString(snitps));
 				Dumper dmp = new Dumper();
 				dmp.newLine(1);
@@ -152,7 +155,7 @@ public class ASTAccessExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o, BaseStruct cl) {
+	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
 		if( v instanceof Field ) {
 			return info.buildAccess(pos, o, v);
 		}

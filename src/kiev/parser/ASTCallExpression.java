@@ -108,8 +108,8 @@ public class ASTCallExpression extends Expr {
 					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_type),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
-			if( ((Struct)PassInfo.clazz.super_type.clazz).package_clazz.isClazz()
-			 && !PassInfo.clazz.super_type.clazz.isStatic()
+			if(  PassInfo.clazz.super_type.getStruct().package_clazz.isClazz()
+			 && !PassInfo.clazz.super_type.getStruct().isStatic()
 			) {
 				if( PassInfo.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
@@ -146,8 +146,8 @@ public class ASTCallExpression extends Expr {
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
 				try {
-					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof MethodType
-					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof MethodType
+					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
 						if( info.isEmpty() )
 							return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
@@ -161,11 +161,11 @@ public class ASTCallExpression extends Expr {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
 			}
-			if( reqType instanceof MethodType ) {
+			if( reqType instanceof CallableType ) {
 				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 				ac.pos = pos;
 				ac.parent = parent;
-				ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
+				ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
 				for (int i=0; i < ac.params.length; i++)
 					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
 				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);

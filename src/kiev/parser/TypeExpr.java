@@ -86,8 +86,8 @@ public class TypeExpr extends TypeRef {
 			Type t = ((TypeRef)v).getType();
 			if (t.args.length != 1)
 				throw new CompilerException(pos,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-			Env.getStruct(t.clazz.name);
-			tp = Type.newRefType(t.clazz,new Type[]{tp});
+			t.checkResolved();
+			tp = Type.newRefType(t,new Type[]{tp});
 			if (t.isWrapper())
 				tp = WrapperType.newWrapperType(tp);
 		}

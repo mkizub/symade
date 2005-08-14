@@ -62,7 +62,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 	{
 		ftypes != null,
 		t @= ftypes,
-		t.clazz.name.short_name.equals(name),
+		t.getClazzName().short_name.equals(name),
 		node ?= new TypeRef(t)
 	}
 
@@ -130,7 +130,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 					has_dispatcher = true;
 				}
 				else if (fp.type.isPizzaCase()) {
-					mjargs[i] = Type.getRealType(PassInfo.clazz.type, fp.type.clazz.super_type);
+					mjargs[i] = Type.getRealType(PassInfo.clazz.type, fp.type.getSuperType());
 					has_dispatcher = true;
 				}
 				else {
@@ -146,8 +146,8 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 			margs = (Type[])Arrays.append(margs,va.type);
 			mjargs = (Type[])Arrays.append(margs,va.type);
 		}
-		MethodType mtype = MethodType.newMethodType(null,ftypes,margs,type);
-		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,null,mjargs,type) : null;
+		MethodType mtype = MethodType.newMethodType(ftypes,margs,type);
+		MethodType mjtype = has_dispatcher ? MethodType.newMethodType(null,mjargs,type) : null;
 		me = new Method(clazz,ident.name,mtype,mjtype,flags);
 		trace(Kiev.debugMultiMethod,"Method "+me+" has dispatcher type "+me.dtype);
 		me.setPos(getPos());

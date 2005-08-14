@@ -616,7 +616,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			if( ctype.isArray() ) {
 				itype = Type.tpInt;
 				mode = ARRAY;
-			} else if( ctype.clazz.instanceOf( Type.tpKievEnumeration.clazz) ) {
+			} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 				itype = ctype;
 				mode = KENUM;
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {

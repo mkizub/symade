@@ -72,7 +72,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().clazz.name.name == name)
+			if (metas[i].type.getType().getClazzName().name == name)
 				return metas[i];
 		}
 		return null;
@@ -95,7 +95,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().clazz.name.name);
+		return unset(meta.type.getType().getClazzName().name);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -198,11 +198,11 @@ public class Meta extends ASTNode {
 			throw new CompilerException(pos, "Annotation name expected");
 		}
 		Meta m = this;
-		if (mt.clazz.name.name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
+		if (mt.getClazzName().name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
 			m = new MetaVirtual(new TypeRef(mt));
-		if (mt.clazz.name.name == MetaPacked.NAME && !(this instanceof MetaPacked))
+		if (mt.getClazzName().name == MetaPacked.NAME && !(this instanceof MetaPacked))
 			m = new MetaPacked(new TypeRef(mt));
-		if (mt.clazz.name.name == MetaPacker.NAME && !(this instanceof MetaPacker))
+		if (mt.getClazzName().name == MetaPacker.NAME && !(this instanceof MetaPacker))
 			m = new MetaPacker(new TypeRef(mt));
 		if (m != this) {
 			m.pos          = this.pos;
@@ -220,7 +220,7 @@ public class Meta extends ASTNode {
 	}
 	
 	public Meta resolve() {
-		Struct s = (Struct)type.getType().clazz;
+		Struct s = type.getType().getStruct();
 		s.checkResolved();
 		for (int n=0; n < values.length; n++) {
 			MetaValue v = values[n];
@@ -248,7 +248,7 @@ public class Meta extends ASTNode {
 				t = t.args[0];
 			}
 			if (t.isReference()) {
-				t.clazz.checkResolved();
+				t.checkResolved();
 				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
 					throw new CompilerException(m.pos, "Bad annotation value type "+tp);
 			}

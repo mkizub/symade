@@ -48,9 +48,13 @@ public class ASTPizzaCase extends ASTNode {
 			ASTNode@ v;
 			if( !PassInfo.resolveNameR(v,new ResInfo(),n) )
 				throw new CompilerException(val.pos,"Unresolved class "+n);
-	    	if( !(v instanceof Struct) || !((Struct)v).isPizzaCase() )
+	    	if (v instanceof Struct)
+				v = new WrapedExpr(pos,v);
+			if (v instanceof TypeRef)
+				v = new WrapedExpr(pos,v);
+	    	if (!v.getType().isPizzaCase())
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
-			CaseLabel cl = new CaseLabel(pos,parent,new WrapedExpr(pos,v),stats.toArray());
+			CaseLabel cl = new CaseLabel(pos,parent,(Expr)v,stats.toArray());
 			cl.parent = parent;
 			cl.pattern.addAll(params);
 			return cl;

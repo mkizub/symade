@@ -81,15 +81,15 @@ public class NewExpr extends Expr {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			if( type.clazz.isAnonymouse() ) {
-				type.clazz.resolve(null);
+			if( type.isAnonymouseClazz() ) {
+				type.getStruct().resolve(null);
 			}
 			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
 			}
 			if( outer != null ) outer = (Expr)outer.resolve(null);
-			else if( (!type.clazz.isStatic() && type.clazz.isLocal())
-				  || (!type.clazz.isStatic() && !((Struct)type.clazz).package_clazz.isPackage()) ) {
+			else if( (!type.isStaticClazz() && type.isLocalClazz())
+				  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
 				Var th = PassInfo.method.this_par;
@@ -105,7 +105,7 @@ public class NewExpr extends Expr {
 			} else {
 				outer_args = args.toArray();
 			}
-			if( type.clazz.isLocal() ) {
+			if( type.isLocalClazz() ) {
 				Struct cl = (Struct)type.clazz;
 				foreach (ASTNode n; cl.members; n instanceof Field) {
 					Field f = (Field)n;
@@ -312,7 +312,7 @@ public class NewArrayExpr extends Expr {
 				if( dim == 1 ) {
 					return (Expr)new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,parent,tie,
-							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
+							Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
 							new Expr[]{new ConstIntExpr(i),args[0]}
 						),true).resolve(reqType);
 				} else {
@@ -494,19 +494,19 @@ public class NewClosure extends Expr {
 	public NewClosure(int pos, Method func) {
 		super(pos);
 		this.func = func;
-		this.type = MethodType.newMethodType(Type.tpClosureClazz,null,func.type.args,func.type.ret);
+		this.type = ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret);
 	}
 
 	public NewClosure(int pos, Method func, Expr[] args) {
 		super(pos);
 		this.func = func;
 		if(args.length==0)
-			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,func.type.args,func.type.ret);
+			this.type = ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret);
 		else {
 			Type[] targs = new Type[func.type.args.length-args.length];
 			for(int i=args.length, j=0; i < func.type.args.length; i++, j++)
 				targs[j] = func.type.args[i];
-			this.type = MethodType.newMethodType(Type.tpClosureClazz,func.type.fargs,targs,func.type.ret);
+			this.type = ClosureType.newClosureType(Type.tpClosureClazz,targs,func.type.ret);
 		}
 		foreach (Expr e; args) this.args.append(e);
 	}
@@ -524,9 +524,9 @@ public class NewClosure extends Expr {
 		try {
 			if( Env.getStruct(Type.tpClosureClazz.name) == null )
 				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-			type.clazz.autoProxyMethods();
-			type.clazz.resolve(null);
-			Struct cl = (Struct)type.clazz;
+			type.getStruct().autoProxyMethods();
+			type.getStruct().resolve(null);
+			Struct cl = type.getStruct();
 			KStringBuffer sign = new KStringBuffer().append('(');
 			if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
 				sign.append(((Struct)PassInfo.method.parent).type.signature);
@@ -538,9 +538,9 @@ public class NewClosure extends Expr {
 				sign.append(f.type.signature);
 			}
 			sign.append(")V");
-			func = type.clazz.resolveMethod(nameInit,sign.toKString());
-			if( !((Struct)func.parent).equals(type.clazz) )
-				throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type.clazz);
+			func = type.resolveMethod(nameInit,sign.toKString());
+			if( !((Struct)func.parent).equals(type.getStruct()) )
+				throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type);
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;

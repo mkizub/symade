@@ -83,7 +83,7 @@ public final class ProcessVirtFld implements Constants {
 		}
 		if( !set_found && f.acc.writeable() ) {
 			Method set_var = new Method(s,set_name,
-				MethodType.newMethodType(null,null,new Type[]{f.type},Type.tpVoid),
+				MethodType.newMethodType(null,new Type[]{f.type},Type.tpVoid),
 				f.getJavaFlags()
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
@@ -130,7 +130,7 @@ public final class ProcessVirtFld implements Constants {
 									new AssignExpr(0, AssignOperator.Assign,
 										new AccessExpr(0,
 											new VarAccessExpr(0, value),
-											astT.clazz.resolveField(KString.from("parent"))
+											astT.resolveField(KString.from("parent"))
 										),
 										new ThisExpr()
 									)
@@ -139,7 +139,7 @@ public final class ProcessVirtFld implements Constants {
 									new AssignExpr(0, AssignOperator.Assign,
 										new AccessExpr(0,
 											new VarAccessExpr(0, value),
-											astT.clazz.resolveField(KString.from("pslot"))
+											astT.resolveField(KString.from("pslot"))
 										),
 										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
 									)

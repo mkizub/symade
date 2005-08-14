@@ -49,7 +49,7 @@ public class ASTClosureType extends TypeRef {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        this.lnk = MethodType.newMethodType(Type.tpClosureClazz,null,tps,ret);
+        this.lnk = ClosureType.newClosureType(Type.tpClosureClazz,tps,ret);
 		return this.lnk;
 	}
 

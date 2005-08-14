@@ -81,8 +81,8 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 					).resolve(Type.tpBoolean)
 				);
 		else if( e.getType().args.length == 0
-				&& e.getType() instanceof MethodType
-				&& ((MethodType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
+				&& e.getType() instanceof ClosureType
+				&& ((CallableType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
 				)
 		{
 			((ClosureCallExpr)e).is_a_call = true;
@@ -164,138 +164,6 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 		} finally { PassInfo.pop(expr); }
 	}
 }
-
-/*
-@node
-@cfnode
-public class BooleanWrapperExpr extends BooleanExpr {
-	@att public Expr		expr;
-
-	public BooleanWrapperExpr() {
-	}
-
-	public BooleanWrapperExpr(int pos, Expr expr) {
-		super(pos);
-		this.expr = expr;
-	}
-
-	public String toString() { return expr.toString(); }
-
-	public Type getType() { return Type.tpBoolean; }
-
-	public Object getConstValue() { return expr.getConstValue(); }
-
-	public boolean	isConstantExpr() { return true; }
-	public int		getPriority() { return 255; }
-
-	public void cleanup() {
-		parent = null;
-		expr.cleanup();
-		expr = null;
-	}
-
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			Expr e = (Expr)expr.resolve(Type.tpBoolean);
-			if( e instanceof BooleanExpr ) {
-				return e;
-			}
-			if( e instanceof ConstBoolExpr ) {
-				return new BooleanConstExpr((ConstBoolExpr)e);
-			}
-			if( e.getType().isBoolean() ) {
-				expr = e;
-			}
-			else if( e.getType() == Type.tpRule ) {
-				return new BinaryBooleanExpr(pos,
-					BinaryOperator.NotEquals,
-					e,
-					new ConstNullExpr()
-					).resolve(reqType);
-			}
-			else if( e.getType().args.length == 0 && e.getType() instanceof MethodType && ((MethodType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean) ) {
-				expr = e;
-				((ClosureCallExpr)expr).is_a_call = true;
-			}
-			else
-				throw new RuntimeException("Expression "+e+" resolved from "+expr+" must be of boolean type, but found "+e.getType());
-		} finally { PassInfo.pop(this); }
-		setResolved(true);
-		return this;
-	}
-
-	public void generate_iftrue(CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if true): "+this);
-		PassInfo.push(this);
-		try {
-			if( expr.getType().isBoolean() ) {
-				boolean optimized = false;
-				if( expr instanceof BinaryExpr ) {
-					BinaryExpr be = (BinaryExpr)expr;
-					if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
-						Object ce = be.expr2.getConstValue();
-						if( ((Number)ce).intValue() == 0 ) {
-							optimized = true;
-							if( be.op == BinaryOperator.LessThen ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifge,label);
-							}
-							else if( be.op == BinaryOperator.LessEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifgt,label);
-							}
-							else if( be.op == BinaryOperator.GreaterThen ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifle,label);
-							}
-							else if( be.op == BinaryOperator.GreaterEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_iflt,label);
-							}
-							else if( be.op == BinaryOperator.Equals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifne,label);
-							}
-							else if( be.op == BinaryOperator.NotEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifeq,label);
-							}
-							else {
-								optimized = false;
-							}
-						}
-					}
-				}
-				if( !optimized ) {
-					expr.generate(Type.tpBoolean);
-					Code.addInstr(Instr.op_ifne,label);
-				}
-			}
-			else
-				throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generate_iffalse(CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if false): "+this);
-		PassInfo.push(this);
-		try {
-			if( expr.getType().isBoolean() ) {
-				expr.generate(Type.tpBoolean);
-				Code.addInstr(Instr.op_ifeq,label);
-			}
-			else
-				throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append(expr).space();
-	}
-}
-*/
 
 @node
 @cfnode
@@ -582,6 +450,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
 		if( ast2 instanceof WrapedExpr )
 			ast2 = ((Expr)ast2).resolve(null);
+		if( ast2 instanceof TypeRef )
+			ast2 = getExprByStruct(((TypeRef)ast2).getType().getStruct());
 		if( ast2 instanceof Struct )
 			ast2 = getExprByStruct((Struct)ast2);
 		if !( ast2 instanceof Expr )
@@ -605,8 +475,8 @@ public class BinaryBoolExpr extends BoolExpr {
 				tp = expr1.getType();
 			}
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
-				throw new RuntimeException("Compare non-cased class "+tp.clazz+" with class's case "+cas);
-			Method m = tp.clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
+				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
+			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
 			expr1 = (Expr)new CallAccessExpr(ex.pos,parent,expr1,m,Expr.emptyArray).resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
@@ -829,7 +699,7 @@ public class InstanceofExpr extends BoolExpr {
 					Type t = (Type)e;
 					t = Type.getRealType(Kiev.argtype,t);
 					if( t.isArgument() )
-						t = t.clazz.super_type;
+						t = t.getSuperType();
 					return new ConstBoolExpr(t.isInstanceOf(type));
 				} else {
 					// Resolve at generate phase
@@ -852,7 +722,7 @@ public class InstanceofExpr extends BoolExpr {
 			if (!type.isArray() && type.args.length > 0) {
 				Expr be = new CallAccessExpr(pos,
 						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type),
-						Type.tpTypeInfo.clazz.resolveMethod(
+						Type.tpTypeInfo.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
 						new Expr[]{expr}
 						);

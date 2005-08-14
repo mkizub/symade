@@ -43,11 +43,13 @@ public class ASTThrows extends ASTNode {
 		for(int i=0; i < thrs.length; i++) {
 			try {
 				ASTNode n = names[i].resolve(null);
-				if !(n instanceof Struct)
+				if !(n instanceof TypeRef)
 					throw new CompilerException(names[i].pos, "Class name expected");
-				Struct s = (Struct)n;
-				s.checkResolved();
-				thrs[i] = s.type;
+				Type t = ((TypeRef)n).getType();
+				if (t == null || !t.isClazz())
+					throw new CompilerException(names[i].pos, "Class name expected");
+				t.checkResolved();
+				thrs[i] = t;
 			} catch(Exception e ) {
 				Kiev.reportError(names[i].getPos(),e);
 				thrs[i] = Type.tpRuntimeException;

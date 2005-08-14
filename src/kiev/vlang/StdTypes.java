@@ -48,61 +48,63 @@ public interface StdTypes {
 	public static final int flArgumented		=  512;
 	public static final int flWrapper			= 1024;
 
-	public static final Type tpEnv;
-	public static final Type tpAny;
-	public static final Type tpVoid;
-	public static final Type tpRule;
-	public static final Type tpBoolean;
-	public static final Type tpByte;
-	public static final Type tpChar;
-	public static final Type tpShort;
-	public static final Type tpInt;
-	public static final Type tpLong;
-	public static final Type tpFloat;
-	public static final Type tpDouble;
-	public static final Type tpBooleanRef;
-	public static final Type tpByteRef;
-	public static final Type tpCharRef;
-	public static final Type tpNumberRef;
-	public static final Type tpShortRef;
-	public static final Type tpIntRef;
-	public static final Type tpLongRef;
-	public static final Type tpFloatRef;
-	public static final Type tpDoubleRef;
-	public static final Type tpVoidRef;
-	public static final Type tpNull;
-	public static final Type tpObject;
-	public static final Type tpClass;
-	public static final Type tpDebug;
-	public static final Type tpTypeInfo;
-	public static final Type tpTypeInfoInterface;
-	public static final Type tpArray;
-	public static final Type tpCloneable;
-	public static final Type tpString;
-	public static final Type tpThrowable;
-	public static final Type tpError;
-	public static final Type tpException;
-	public static final Type tpCastException;
-	public static final Type tpJavaEnumeration;
-	public static final Type tpKievEnumeration;
-	public static final Type tpRuntimeException;
-	public static final Type tpAssertException;
-	public static final Type tpEnum;
-	public static final Type tpAnnotation;
+	public static final BaseType tpEnv;
+	public static final BaseType tpAny;
+	public static final BaseType tpVoid;
+	public static final BaseType tpRule;
+	public static final BaseType tpBoolean;
+	public static final BaseType tpByte;
+	public static final BaseType tpChar;
+	public static final BaseType tpShort;
+	public static final BaseType tpInt;
+	public static final BaseType tpLong;
+	public static final BaseType tpFloat;
+	public static final BaseType tpDouble;
+	public static final BaseType tpBooleanRef;
+	public static final BaseType tpByteRef;
+	public static final BaseType tpCharRef;
+	public static final BaseType tpNumberRef;
+	public static final BaseType tpShortRef;
+	public static final BaseType tpIntRef;
+	public static final BaseType tpLongRef;
+	public static final BaseType tpFloatRef;
+	public static final BaseType tpDoubleRef;
+	public static final BaseType tpVoidRef;
+	public static final BaseType tpNull;
+	public static final BaseType tpObject;
+	public static final BaseType tpClass;
+	public static final BaseType tpDebug;
+	public static final BaseType tpTypeInfo;
+	public static final BaseType tpTypeInfoInterface;
+	public static final BaseType tpArray;
+	public static final BaseType tpCloneable;
+	public static final BaseType tpString;
+	public static final BaseType tpThrowable;
+	public static final BaseType tpError;
+	public static final BaseType tpException;
+	public static final BaseType tpCastException;
+	public static final BaseType tpJavaEnumeration;
+	public static final BaseType tpKievEnumeration;
+	public static final BaseType tpRuntimeException;
+	public static final BaseType tpAssertException;
+	public static final BaseType tpEnum;
+	public static final BaseType tpAnnotation;
+	public static final BaseType tpClosure;
+	public static final BaseType tpMethod;
 	public static final Struct tpClosureClazz;
 	public static final Struct tpMethodClazz;
 
-	public static final Type tpPrologVar;
-	public static final Type tpRefProxy;
+	public static final BaseType tpPrologVar;
+	public static final BaseType tpRefProxy;
 
-	public static final Type tpTypeSwitchHash;
+	public static final BaseType tpTypeSwitchHash;
 
 	static {
 		Type.typeHash = new Hash<Type>();
 		Hash<Type> typeHash = Type.typeHash;
 
 		Struct tpEnvClazz = Env.root;
-		tpEnv				= new Type();
+		tpEnv				= new BaseType();
 		tpEnv.clazz			= tpEnvClazz;
 		tpEnvClazz.type		= tpEnv;
 		tpEnv.flags			= flResolved;
@@ -114,7 +116,7 @@ public interface StdTypes {
 							KString.from("<any>"),
 							KString.from("<any>"),
 							KString.from("?"),false,false),null,ACC_PUBLIC);
-		tpAny				= new Type();
+		tpAny				= new BaseType();
 		tpAny.clazz			= tpAnyClazz;
 //		typeHash.remove(tpAnyClazz.type);
 		tpAnyClazz.type		= tpAny;
@@ -128,7 +130,7 @@ public interface StdTypes {
 							KString.from("rule"),
 							KString.from("rule"),
 							KString.from("R"),false,false),null,ACC_PUBLIC);
-		tpRule					= new Type();
+		tpRule					= new BaseType();
 		tpRule.clazz			= tpRuleClazz;
 //		typeHash.remove(tpRuleClazz.type);
 		tpRuleClazz.type		= tpRule;
@@ -142,7 +144,7 @@ public interface StdTypes {
 							KString.from("boolean"),
 							KString.from("boolean"),
 							KString.from("Z"),false,false),null,ACC_PUBLIC);
-		tpBoolean				= new Type();
+		tpBoolean				= new BaseType();
 		tpBoolean.clazz			= tpBooleanClazz;
 //		typeHash.remove(tpBooleanClazz.type);
 		tpBooleanClazz.type		= tpBoolean;
@@ -156,7 +158,7 @@ public interface StdTypes {
 							KString.from("byte"),
 							KString.from("byte"),
 							KString.from("B"),false,false),null,ACC_PUBLIC);
-		tpByte					= new Type();
+		tpByte					= new BaseType();
 		tpByte.clazz			= tpByteClazz;
 //		typeHash.remove(tpByteClazz.type);
 		tpByteClazz.type		= tpByte;
@@ -170,7 +172,7 @@ public interface StdTypes {
 							KString.from("char"),
 							KString.from("char"),
 							KString.from("C"),false,false),null,ACC_PUBLIC);
-		tpChar					= new Type();
+		tpChar					= new BaseType();
 		tpChar.clazz			= tpCharClazz;
 //		typeHash.remove(tpCharClazz.type);
 		tpCharClazz.type		= tpChar;
@@ -184,7 +186,7 @@ public interface StdTypes {
 							KString.from("short"),
 							KString.from("short"),
 							KString.from("S"),false,false),null,ACC_PUBLIC);
-		tpShort					= new Type();
+		tpShort					= new BaseType();
 		tpShort.clazz			= tpShortClazz;
 //		typeHash.remove(tpShortClazz.type);
 		tpShortClazz.type		= tpShort;
@@ -198,7 +200,7 @@ public interface StdTypes {
 							KString.from("int"),
 							KString.from("int"),
 							KString.from("I"),false,false),null,ACC_PUBLIC);
-		tpInt					= new Type();
+		tpInt					= new BaseType();
 		tpInt.clazz			= tpIntClazz;
 //		typeHash.remove(tpIntClazz.type);
 		tpIntClazz.type		= tpInt;
@@ -212,7 +214,7 @@ public interface StdTypes {
 							KString.from("long"),
 							KString.from("long"),
 							KString.from("J"),false,false),null,ACC_PUBLIC);
-		tpLong					= new Type();
+		tpLong					= new BaseType();
 		tpLong.clazz			= tpLongClazz;
 //		typeHash.remove(tpLongClazz.type);
 		tpLongClazz.type		= tpLong;
@@ -226,7 +228,7 @@ public interface StdTypes {
 							KString.from("float"),
 							KString.from("float"),
 							KString.from("F"),false,false),null,ACC_PUBLIC);
-		tpFloat					= new Type();
+		tpFloat					= new BaseType();
 		tpFloat.clazz			= tpFloatClazz;
 //		typeHash.remove(tpFloatClazz.type);
 		tpFloatClazz.type		= tpFloat;
@@ -240,7 +242,7 @@ public interface StdTypes {
 							KString.from("double"),
 							KString.from("double"),
 							KString.from("D"),false,false),null,ACC_PUBLIC);
-		tpDouble				= new Type();
+		tpDouble				= new BaseType();
 		tpDouble.clazz			= tpDoubleClazz;
 //		typeHash.remove(tpDoubleClazz.type);
 		tpDoubleClazz.type		= tpDouble;
@@ -254,7 +256,7 @@ public interface StdTypes {
 							KString.from("void"),
 							KString.from("void"),
 							KString.from("V"),false,false),null,ACC_PUBLIC);
-		tpVoid					= new Type();
+		tpVoid					= new BaseType();
 		tpVoid.clazz			= tpVoidClazz;
 //		typeHash.remove(tpVoidClazz.type);
 		tpVoidClazz.type		= tpVoid;
@@ -271,37 +273,37 @@ public interface StdTypes {
 		Struct kiev_stdlib_meta = Env.newPackage(KString.from("kiev.stdlib.meta"));
 
 		Struct tpObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Object;")),java_lang,ACC_PUBLIC);
-		tpObject				= new Type(tpObjectClazz);
+		tpObject				= new BaseType(tpObjectClazz);
 		tpObjectClazz.type		= tpObject;
 		tpObject.flags			= flReference;
 		typeHash.put(tpObject);
 
 		Struct tpClassClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Class;")),java_lang,ACC_PUBLIC|ACC_FINAL);
-		tpClass				= new Type(tpClassClazz);
+		tpClass				= new BaseType(tpClassClazz);
 		tpClassClazz.type		= tpClass;
 		tpClass.flags			= flReference;
 		typeHash.put(tpClass);
 
 		Struct tpDebugClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Debug;")),kiev_stdlib,ACC_PUBLIC);
-		tpDebug				= new Type(tpDebugClazz);
+		tpDebug				= new BaseType(tpDebugClazz);
 		tpDebugClazz.type	= tpDebug;
 		tpDebug.flags		= flReference;
 		typeHash.put(tpDebug);
 
 		Struct tpTypeInfoClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeInfo;")),kiev_stdlib,ACC_PUBLIC|ACC_FINAL);
-		tpTypeInfo				= new Type(tpTypeInfoClazz);
+		tpTypeInfo				= new BaseType(tpTypeInfoClazz);
 		tpTypeInfoClazz.type	= tpTypeInfo;
 		tpTypeInfo.flags		= flReference;
 		typeHash.put(tpTypeInfo);
 
 		Struct tpTypeInfoInterfaceClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeInfoInterface;")),kiev_stdlib,ACC_PUBLIC|ACC_INTERFACE);
-		tpTypeInfoInterface				= new Type(tpTypeInfoInterfaceClazz);
+		tpTypeInfoInterface				= new BaseType(tpTypeInfoInterfaceClazz);
 		tpTypeInfoInterfaceClazz.type	= tpTypeInfoInterface;
 		tpTypeInfoInterface.flags		= flReference;
 		typeHash.put(tpTypeInfoInterface);
 
 		Struct tpNullClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Null;")),kiev_stdlib,ACC_PUBLIC);
-		tpNull					= new Type(tpNullClazz);
+		tpNull					= new BaseType(tpNullClazz);
 		tpNullClazz.type		= tpNull;
 		tpNull.flags			= flResolved | flReference;
 		tpNull.clazz.super_type = tpObject;
@@ -309,7 +311,7 @@ public interface StdTypes {
 		typeHash.put(tpNull);
 
 		Struct tpCloneableClazz = Env.newInterface(ClazzName.fromSignature(KString.from("Ljava/lang/Cloneable;")),java_lang,ACC_PUBLIC|ACC_INTERFACE);
-		tpCloneable				= new Type(tpCloneableClazz);
+		tpCloneable				= new BaseType(tpCloneableClazz);
 		tpCloneableClazz.type	= tpCloneable;
 		tpCloneable.flags		= flReference;
 		tpCloneableClazz.setInterface(true);
@@ -319,7 +321,7 @@ public interface StdTypes {
 		Struct tpArrayClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;")),kiev_stdlib,ACC_PUBLIC);
 		BaseStruct tpArrayArgClazz = Env.newArgument(KString.from("elem"),tpArrayClazz);
 		Type tpArrayArg = new Type(tpArrayArgClazz);
-		tpArray				= new Type(tpArrayClazz,new Type[]{tpArrayArg});
+		tpArray				= new BaseType(tpArrayClazz,new Type[]{tpArrayArg});
 		tpArrayClazz.type		= tpArray;
 		tpArrayClazz.super_type = tpObject;
 		tpArray.flags			|= flResolved;
@@ -330,92 +332,92 @@ public interface StdTypes {
 		typeHash.put(tpArray);
 
 		Struct tpBooleanRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Boolean;")),java_lang,ACC_PUBLIC);
-		tpBooleanRef			= new Type(tpBooleanRefClazz);
+		tpBooleanRef			= new BaseType(tpBooleanRefClazz);
 		tpBooleanRefClazz.type	= tpBooleanRef;
 		typeHash.put(tpBooleanRef);
 
 		Struct tpCharRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Character;")),java_lang,ACC_PUBLIC);
-		tpCharRef			= new Type(tpCharRefClazz);
+		tpCharRef			= new BaseType(tpCharRefClazz);
 		tpCharRefClazz.type	= tpCharRef;
 		typeHash.put(tpCharRef);
 
 		Struct tpNumberRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Number;")),java_lang,ACC_PUBLIC);
-		tpNumberRef			= new Type(tpNumberRefClazz);
+		tpNumberRef			= new BaseType(tpNumberRefClazz);
 		tpNumberRefClazz.type	= tpNumberRef;
 		typeHash.put(tpNumberRef);
 
 		Struct tpByteRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Byte;")),java_lang,ACC_PUBLIC);
-		tpByteRef			= new Type(tpByteRefClazz);
+		tpByteRef			= new BaseType(tpByteRefClazz);
 		tpByteRefClazz.type	= tpByteRef;
 		typeHash.put(tpByteRef);
 
 		Struct tpShortRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Short;")),java_lang,ACC_PUBLIC);
-		tpShortRef			= new Type(tpShortRefClazz);
+		tpShortRef			= new BaseType(tpShortRefClazz);
 		tpShortRefClazz.type	= tpShortRef;
 		typeHash.put(tpShortRef);
 
 		Struct tpIntRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Integer;")),java_lang,ACC_PUBLIC);
-		tpIntRef			= new Type(tpIntRefClazz);
+		tpIntRef			= new BaseType(tpIntRefClazz);
 		tpIntRefClazz.type	= tpIntRef;
 		typeHash.put(tpIntRef);
 
 		Struct tpLongRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Long;")),java_lang,ACC_PUBLIC);
-		tpLongRef			= new Type(tpLongRefClazz);
+		tpLongRef			= new BaseType(tpLongRefClazz);
 		tpLongRefClazz.type	= tpLongRef;
 		typeHash.put(tpLongRef);
 
 		Struct tpFloatRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Float;")),java_lang,ACC_PUBLIC);
-		tpFloatRef			= new Type(tpFloatRefClazz);
+		tpFloatRef			= new BaseType(tpFloatRefClazz);
 		tpFloatRefClazz.type	= tpFloatRef;
 		typeHash.put(tpFloatRef);
 
 		Struct tpDoubleRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Double;")),java_lang,ACC_PUBLIC);
-		tpDoubleRef			= new Type(tpDoubleRefClazz);
+		tpDoubleRef			= new BaseType(tpDoubleRefClazz);
 		tpDoubleRefClazz.type	= tpDoubleRef;
 		typeHash.put(tpDoubleRef);
 
 		Struct tpVoidRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Void;")),java_lang,ACC_PUBLIC);
-		tpVoidRef			= new Type(tpVoidRefClazz);
+		tpVoidRef			= new BaseType(tpVoidRefClazz);
 		tpVoidRefClazz.type	= tpVoidRef;
 		typeHash.put(tpVoidRef);
 
 		Struct tpStringClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/String;")),java_lang,ACC_PUBLIC);
-		tpString				= new Type(tpStringClazz);
+		tpString				= new BaseType(tpStringClazz);
 		tpStringClazz.type		= tpString;
 		typeHash.put(tpString);
 
 		Struct tpAnnotationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/annotation/Annotation;")),java_lang_annotation,ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
-		tpAnnotation			= new Type(tpAnnotationClazz);
+		tpAnnotation			= new BaseType(tpAnnotationClazz);
 		tpAnnotationClazz.type	= tpAnnotation;
 		typeHash.put(tpAnnotation);
 		
 		Struct tpThrowableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Throwable;")),java_lang,ACC_PUBLIC);
-		tpThrowable				= new Type(tpThrowableClazz);
+		tpThrowable				= new BaseType(tpThrowableClazz);
 		tpThrowableClazz.type	= tpThrowable;
 		typeHash.put(tpThrowable);
 
 		Struct tpErrorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Error;")),java_lang,ACC_PUBLIC);
-		tpError				= new Type(tpErrorClazz);
+		tpError				= new BaseType(tpErrorClazz);
 		tpErrorClazz.type	= tpError;
 		typeHash.put(tpError);
 
 		Struct tpExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Exception;")),java_lang,ACC_PUBLIC);
-		tpException				= new Type(tpExceptionClazz);
+		tpException				= new BaseType(tpExceptionClazz);
 		tpExceptionClazz.type	= tpException;
 		typeHash.put(tpException);
 
 		Struct tpCastExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/ClassCastException;")),java_lang,ACC_PUBLIC);
-		tpCastException				= new Type(tpCastExceptionClazz);
+		tpCastException				= new BaseType(tpCastExceptionClazz);
 		tpCastExceptionClazz.type	= tpCastException;
 		typeHash.put(tpCastException);
 
 		Struct tpRuntimeExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/RuntimeException;")),java_lang,ACC_PUBLIC);
-		tpRuntimeException				= new Type(tpRuntimeExceptionClazz);
+		tpRuntimeException				= new BaseType(tpRuntimeExceptionClazz);
 		tpRuntimeExceptionClazz.type	= tpRuntimeException;
 		typeHash.put(tpRuntimeException);
 
 		Struct tpAssertExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/AssertionFailedException;")),kiev_stdlib,ACC_PUBLIC);
-		tpAssertException				= new Type(tpAssertExceptionClazz);
+		tpAssertException				= new BaseType(tpAssertExceptionClazz);
 		tpAssertExceptionClazz.type	= tpAssertException;
 		typeHash.put(tpAssertException);
 
@@ -435,19 +437,19 @@ public interface StdTypes {
 //		typeHash.put(tpDynamic);
 
 		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enum;")),kiev_stdlib,ACC_PUBLIC | ACC_ABSTRACT);
-		tpEnum					= new Type(tpEnumClazz);
+		tpEnum					= new BaseType(tpEnumClazz);
 		tpEnumClazz.type		= tpEnum;
 		typeHash.put(tpEnum);
 
 		tpMethodClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/method;")),kiev_stdlib,ACC_PUBLIC);
         tpMethodClazz.setResolved(true);
-		Type tpMethod		= new Type(tpMethodClazz);
+		tpMethod		= new BaseType(tpMethodClazz);
 //		 new MethodType(tpMethodClazz,Type.tpVoid,Type.emptyArray,Type.emptyArray);
 		tpMethodClazz.type	= tpMethod;
         tpMethod.flags = flResolved;
 
 		tpClosureClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/closure;")),kiev_stdlib,ACC_PUBLIC);
-		Type tpClosure			= new Type(tpClosureClazz);
+		tpClosure				= new BaseType(tpClosureClazz);
 		tpClosureClazz.type		= tpClosure;
 
 /*		Struct tpCellClazz	= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell;")),kiev_stdlib,ACC_PUBLIC);
@@ -456,14 +458,14 @@ public interface StdTypes {
 		typeHash.put(tpCell);
 */
 		Struct tpJavaEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/util/Enumeration;")),java_util,ACC_PUBLIC);
-		tpJavaEnumeration	= new Type(tpJavaEnumerationClazz);
+		tpJavaEnumeration	= new BaseType(tpJavaEnumerationClazz);
 		tpJavaEnumerationClazz.type	= tpJavaEnumeration;
 		typeHash.put(tpJavaEnumeration);
 
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
 		BaseStruct tpKievEnumerationArgClazz = Env.newArgument(KString.from("A"),tpKievEnumerationClazz);
-		Type tpKievEnumerationArg = new Type(tpKievEnumerationArgClazz);
-		tpKievEnumeration	= new Type(tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
+		Type tpKievEnumerationArg = new BaseType(tpKievEnumerationArgClazz);
+		tpKievEnumeration	= new BaseType(tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
 		typeHash.put(tpKievEnumeration);
 
@@ -519,22 +521,22 @@ public interface StdTypes {
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
 		BaseStruct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
-		Type tpPrologVarArg = new Type(tpPrologVarArgClazz);
-		tpPrologVar	= new Type(tpPrologVarClazz,new Type[]{tpPrologVarArg});
+		Type tpPrologVarArg = new BaseType(tpPrologVarArgClazz);
+		tpPrologVar	= new BaseType(tpPrologVarClazz,new Type[]{tpPrologVarArg});
 		tpPrologVarClazz.type	= tpPrologVar;
 //		tpPrologVarClazz.setWrapper(true);
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
 		BaseStruct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
-		Type tpRefProxyArg = new Type(tpRefProxyArgClazz);
-		tpRefProxy	= new Type(tpRefProxyClazz,new Type[]{tpRefProxyArg});
+		Type tpRefProxyArg = new BaseType(tpRefProxyArgClazz);
+		tpRefProxy	= new BaseType(tpRefProxyClazz,new Type[]{tpRefProxyArg});
 		tpRefProxyClazz.type	= tpRefProxy;
 //		tpRefProxyClazz.setWrapper(true);
 		typeHash.put(tpRefProxy);
 
 		Struct tpTypeSwitchHashClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeSwitchHash;")),kiev_stdlib,ACC_PUBLIC);
-		tpTypeSwitchHash			= new Type(tpTypeSwitchHashClazz);
+		tpTypeSwitchHash			= new BaseType(tpTypeSwitchHashClazz);
 		tpTypeSwitchHashClazz.type	= tpTypeSwitchHash;
 		typeHash.put(tpTypeSwitchHash);
 

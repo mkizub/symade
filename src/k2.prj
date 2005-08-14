@@ -241,6 +241,7 @@ kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BaseStruct kiev/vlang/BaseStruct kiev\vlang\Struct.java
+kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
@@ -258,6 +259,7 @@ kiev.vlang.CFlowNode kiev/vlang/CFlowNode kiev\vlang\AST.java
 kiev.vlang.CP kiev/vlang/CP kiev\vlang\ConstPool.java
 kiev.vlang.CallAccessExpr kiev/vlang/CallAccessExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
+kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
 kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
 kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
 kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
@@ -267,6 +269,7 @@ kiev.vlang.ClassArgumentsAttr kiev/vlang/ClassArgumentsAttr kiev\vlang\Attr.java
 kiev.vlang.ClazzCP kiev/vlang/ClazzCP kiev\vlang\ConstPool.java
 kiev.vlang.ClazzName kiev/vlang/ClazzName kiev\vlang\ClazzName.java
 kiev.vlang.ClosureCallExpr kiev/vlang/ClosureCallExpr kiev\vlang\CallExpr.java
+kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java
 kiev.vlang.Code kiev/vlang/Code kiev\vlang\Code.java
 kiev.vlang.CodeAttr kiev/vlang/CodeAttr kiev\vlang\Attr.java
 kiev.vlang.CodeCatchInfo kiev/vlang/CodeCatchInfo kiev\vlang\CodeSupport.java

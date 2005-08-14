@@ -422,7 +422,7 @@ public class ClassArgumentsAttr extends Attr {
 		ConstPool.addAsciiCP(name);
 		for(int i=0; i < args.length; i++) {
 			ConstPool.addAsciiCP(args[i].signature);
-			ConstPool.addAsciiCP(args[i].clazz.super_type.signature);
+			ConstPool.addAsciiCP(args[i].getSuperType().signature);
 		}
 	}
 
@@ -434,7 +434,7 @@ public class ClassArgumentsAttr extends Attr {
 		kaa.argno = new int[args.length];
 		for(int i=0; i < args.length; i++) {
 			kaa.cp_argname[i] = ConstPool.getAsciiCP(args[i].signature).pos;
-			kaa.cp_supername[i] = ConstPool.getAsciiCP(args[i].clazz.super_type.signature).pos;
+			kaa.cp_supername[i] = ConstPool.getAsciiCP(args[i].getSuperType().signature).pos;
 			kaa.argno[i] = argno[i];
 		}
 		return kaa;

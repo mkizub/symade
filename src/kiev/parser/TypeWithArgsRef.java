@@ -57,14 +57,14 @@ public class TypeWithArgsRef extends TypeRef {
 		for(int i=0; i < atypes.length; i++) {
 			atypes[i] = args[i].getType();
 		}
-		this.lnk = Type.newRefType(tp.clazz,atypes);
+		this.lnk = Type.newRefType(tp,atypes);
 		return this.lnk;
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if (this.lnk != null)
-			sb.append(this.lnk.clazz.name);
+			sb.append(this.lnk.getClazzName());
 		else
 			sb.append(base_type);
 		sb.append('<');

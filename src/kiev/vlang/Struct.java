@@ -75,7 +75,7 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 	public ClazzName					name;
 
 	/** Type associated with this class */
-	@ref public Type					type;
+	@ref public BaseType				type;
 
 	/** Bound super-class for class arguments */
 	@att public TypeRef					super_bound;
@@ -166,7 +166,7 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 	{
 			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
 		;	arg @= type.args,
-			arg.clazz.name.short_name.equals(name),
+			arg.getClazzName().short_name.equals(name),
 			node ?= arg.clazz
 	}
 	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
@@ -174,10 +174,10 @@ public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfM
 	{
 		{	sup ?= super_bound.lnk,
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name)
+			sup.resolveStaticNameR(node,info,name)
 		;	sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveNameR(node,info,name)
+			sup.resolveStaticNameR(node,info,name)
 		}
 	}
 
@@ -481,7 +481,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
 		checkResolved();
 		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
-		if( super_type != null ) return super_type.clazz.resolveField(name,where,fatal);
+		if( super_type != null ) return super_type.getStruct().resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;
@@ -490,7 +490,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	public ASTNode resolveName(KString name) {
 		checkResolved();
 		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return f;
-		foreach(Type t; type.args; t.clazz.name.short_name.equals(name) ) return t.clazz;
+		foreach(Type t; type.args; t.getClazzName().short_name.equals(name) ) return t.clazz;
 		foreach(ASTNode s; members; s instanceof Struct && ((Struct)s).name.short_name.equals(name) ) return s;
 		if (isPackage())
 			foreach(Struct s; sub_clazz; s.name.short_name.equals(name) ) return s;
@@ -908,7 +908,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			t = t.getJavaType();
 			return "["+t.args[0];
 		}
-		if( t instanceof MethodType ) {
+		if( t instanceof ClosureType ) {
 			return "kiev.stdlib.closure";
 		}
 		if( t.isArgument() ) {
@@ -1080,7 +1080,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	private void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
 			return;
-		if( !isInterface() && type.args.length > 0 && !(type instanceof MethodType) ) {
+		if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -1267,7 +1267,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			ftag.init = ce;
 
 			Method gettag = new Method(this,nameGetCaseTag,
-				MethodType.newMethodType(this,Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,this,ftag))
@@ -1277,7 +1277,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		else if( isHasCases() ) {
 			// Add get$case$tag() method to itself
 			Method gettag = new Method(this,Constants.nameGetCaseTag,
-				MethodType.newMethodType(MethodType.tpMethodClazz,Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))
@@ -1320,14 +1320,14 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD),0);
 					retype = true;
 				}
-				if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
+				if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 					targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 					m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
 					retype = true;
 				}
 				if( retype ) {
 					// Make new MethodType for the constructor
-					m.type = MethodType.newMethodType(m.type.clazz,targs,m.type.ret);
+					m.type = MethodType.newMethodType(targs,m.type.ret);
 					m.jtype = (MethodType)m.type.getJavaType();
 					foreach (TypeRef g; gens) {
 						foreach (ASTNode gn; ((Struct)g.clazz).members; gn instanceof Method) {
@@ -1347,14 +1347,12 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					MethodType mt;
 					FormPar thisOuter, maxArgs;
 					if( !isStatic() ) {
-						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
-							new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
+						mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
 						init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					} else {
-						mt = MethodType.newMethodType(MethodType.tpMethodClazz,
-							new Type[]{Type.tpInt},Type.tpVoid);
+						mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
 						init = new Method(this,nameInit,mt,ACC_PUBLIC);
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					}
@@ -1366,7 +1364,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 						targs = (Type[])Arrays.append(targs,package_clazz.type);
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
 					}
-					if( !isInterface() && type.args.length > 0 && !(this.type instanceof MethodType) ) {
+					if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,0));
 					}
@@ -1378,7 +1376,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
 					}
-					mt = MethodType.newMethodType(MethodType.tpMethodClazz,targs,Type.tpVoid);
+					mt = MethodType.newMethodType(targs,Type.tpVoid);
 					init = new Method(this,nameInit,mt,ACC_PUBLIC);
 					init.params.addAll(params);
 				}
@@ -1824,7 +1822,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					}
 				}
 				if( type.args.length > 0
-				 && !(this.type instanceof MethodType)
+				 && !type.isInstanceOf(Type.tpClosure)
 				 && m.isNeedFieldInits()
 				) {
 					Field tif = resolveField(nameTypeInfo);
@@ -2043,7 +2041,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 					be = new InstanceofExpr(pos,
 						new VarAccessExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
-				if( t.args.length > 0 && !t.isArray() && !(t instanceof MethodType) ) {
+				if( t.args.length > 0 && !t.isArray() && !t.isInstanceOf(Type.tpClosure) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
 					Expr tibe = new CallAccessExpr(pos,
@@ -2490,7 +2488,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 				Method m = (Method)n;
 				m.resolve(null);
 			}
-			if( type.args != null && type.args.length > 0 && !(type instanceof MethodType) ) {
+			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 				ClassArgumentsAttr a = new ClassArgumentsAttr();
 				short[] argno = new short[type.args.length];
 				for(int j=0; j < type.args.length; j++) {

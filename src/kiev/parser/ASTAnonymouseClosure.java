@@ -75,7 +75,7 @@ public class ASTAnonymouseClosure extends Expr {
 			types[i] = vars[i].type;
 		}
 		Type ret = rettype.getType();
-		me.type = MethodType.newMethodType(me,null,types,ret);
+		me.type = ClosureType.newClosureType(me,types,ret);
 
 		if( ret != Type.tpRule ) {
 			ASTMethodDeclaration md = new ASTMethodDeclaration();
@@ -111,7 +111,7 @@ public class ASTAnonymouseClosure extends Expr {
 				Type celltp = Type.getProxyType(v.type);
 				val = new AccessExpr(v.getPos(),dc,
 						new CastExpr(v.getPos(),celltp,val,true),
-						(Field)celltp.clazz.resolveName(nameCellVal)
+						(Field)celltp.resolveName(nameCellVal)
 					);
 			} else {
 				val = new CastExpr(v.getPos(),v.type,val,true);
