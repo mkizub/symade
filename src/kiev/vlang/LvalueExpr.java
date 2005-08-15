@@ -384,8 +384,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if( Kiev.verify
 				 && func.type.ret.isReference()
 				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
+				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 		} finally { PassInfo.pop(this); }
@@ -467,8 +466,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_call,func,false,obj.getType());
 				if( Kiev.verify
 				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
+				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 		} finally { PassInfo.pop(this); }

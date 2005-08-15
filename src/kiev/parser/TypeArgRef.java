@@ -68,6 +68,10 @@ public class TypeArgRef extends TypeRef {
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
+			foreach (TypeArgRef pa; s.package_clazz.args; pa.name.name == name.name) {
+				this.lnk = pa.getType();
+				return this.lnk;
+			}
 			KString nm = KString.from(s.name.name+"$"+name.name);
 			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
 			cn = new ClazzName(nm,name.name,bc,true,true);

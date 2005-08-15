@@ -179,8 +179,7 @@ public class CallExpr extends Expr {
 					Code.addInstr(op_pop);
 				else if( Kiev.verify
 				 && getType().isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray()) )
+				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray()) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 			if( ok_label != null ) {
@@ -487,8 +486,7 @@ public class CallAccessExpr extends Expr {
 					Code.addInstr(op_pop);
 				else if( Kiev.verify
 				 && Type.getRealType(Kiev.argtype,getType()).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
+				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 		} finally { PassInfo.pop(this); }
@@ -725,8 +723,7 @@ public class ClosureCallExpr extends Expr {
 					Code.addInstr(op_pop);
 				else if( Kiev.verify
 				 && call_it.type.ret.isReference()
-//				 && call_it.jtype!= null
-				 && ( !getType().clazz.equals(call_it.type.ret.clazz) || getType().isArray() ) )
+				 && ( !getType().isStructInstanceOf(call_it.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 		} finally { PassInfo.pop(this); }

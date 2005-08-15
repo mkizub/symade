@@ -33,6 +33,10 @@ import kiev.parser.*;
 public final class Kiev {
 
 	private Kiev() {}
+	
+	static class CompilationAbortError extends java.lang.Error {
+		CompilationAbortError() { super("Compilation terminated"); }
+	}
 
 	// Error section
 	public static long		programm_start;
@@ -44,6 +48,8 @@ public final class Kiev {
 	public static KString	maybeCurFile = KString.Empty;
 
    	public static void reportError(int pos, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
 		if( debug ) e.printStackTrace( /* */System.out /* */ );
@@ -73,6 +79,8 @@ public final class Kiev {
 	}
 
    	public static void reportParserError(int pos, String msg, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;
@@ -83,6 +91,8 @@ public final class Kiev {
 	}
 
    	public static void reportParserError(int pos, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;
@@ -172,7 +182,7 @@ public final class Kiev {
 				case -1:
 				case 'a':
 				case 'A':
-					throw new Error("Compilation terminated");
+					throw new CompilationAbortError();
 				case ' ': case '\t': case '\r': case '\n':
 					continue;
 				}

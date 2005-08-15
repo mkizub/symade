@@ -1,5 +1,6 @@
 kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
+kiev.Kiev$CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev$Ext kiev/Kiev$Ext kiev\Kiev.java
 kiev.Kiev$profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
@@ -234,7 +235,6 @@ kiev.vlang.AccessExpr kiev/vlang/AccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 kiev.vlang.AliasAttr kiev/vlang/AliasAttr kiev\vlang\Attr.java
-kiev.vlang.ArgStruct kiev/vlang/ArgStruct kiev\vlang\Struct.java
 kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
 kiev.vlang.ArrayLengthAccessExpr kiev/vlang/ArrayLengthAccessExpr kiev\vlang\Expr.java
 kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
@@ -242,7 +242,6 @@ kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
-kiev.vlang.BaseStruct kiev/vlang/BaseStruct kiev\vlang\Struct.java bad
 kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java

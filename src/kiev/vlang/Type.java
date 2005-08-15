@@ -285,21 +285,15 @@ public class Type implements StdTypes, AccessFlags, Named {
 		}
 	}
 	private rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
-//		Type@ arg;
 	{
-//			arg @= this.args,
-//			arg.isArgument(),
-//			arg.getClazzName().short_name.equals(name),
-//			node ?= arg.clazz
-//		;
-			clazz instanceof Struct,
-			node @= getStruct().members,
-			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
+		clazz instanceof Struct,
+		node @= getStruct().members,
+		node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 	}
 	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
-		{	sup ?= clazz.super_bound.lnk,
+		{	sup ?= getSuperType(),
 			info.enterSuper() : info.leaveSuper(),
 			Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
 		;	sup @= TypeRef.linked_elements(clazz.interfaces),
@@ -713,12 +707,11 @@ public class Type implements StdTypes, AccessFlags, Named {
 	}
 	public static Type getRealType(Type t1, Type t2) {
 		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
-		if( t2 == null ) return null;
-		if( !t2.isArgumented() ) {
-			return t2;
-		}
-		if( t1 == null || !t2.isReference() ) return t2;
-		// No type for rewriting rules
+		if( t1 == null || t2 == null )	return t2;
+		if( !t2.isArgumented() )		return t2;
+		if( !t2.isReference() )			return t2;
+		if( t1.isArgument() )			return t2;
+		// No deep recursion for rewriting rules
 		if( get_real_type_depth > 32 ) return t2;
 		get_real_type_depth++;
 		try {
@@ -849,14 +842,14 @@ public class ArgumentType extends Type {
 	public ClazzName			name;
 
 	/** Bound super-class for class arguments */
-	public BaseType				super_type;
+	public Type					super_type;
 
-	private ArgumentType(ClazzName name, BaseType sup) {
+	private ArgumentType(ClazzName name, Type sup) {
 		this.name = name;
 		super_type = sup;
 	}
 	
-	public static ArgumentType newArgumentType(ClazzName name, BaseType sup) {
+	public static ArgumentType newArgumentType(ClazzName name, Type sup) {
 		KString sign = KString.from("A"+name.bytecode_name+";");
 		ArgumentType t = (ArgumentType)typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
 		if( t != null ) return t;
@@ -895,9 +888,30 @@ public class ArgumentType extends Type {
 	public boolean isLocalClazz()					{ return false; }
 	public boolean isStructInstanceOf(Struct s)	{ return super_type.isStructInstanceOf(s); }
 	public Type getSuperType()						{ return super_type; }
-	public MetaSet getStructMeta()					{ return null; }
+	public Type getInitialType()					{ return super_type.getInitialType(); }
+	public MetaSet getStructMeta()					{ return super_type.getStructMeta(); }
 	//public Struct getStruct()						{ return super_type.getStruct(); }
 
+	
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	{
+		false
+	}
+	
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	{
+		super_type.resolveNameAccessR(node, info, name)
+	}
+
+	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		false
+	}
+	
+	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		super_type.resolveCallAccessR(node, info, name, mt)
+	}
 	
 	public Type getJavaType() {
 		if( Kiev.argtype != null ) {

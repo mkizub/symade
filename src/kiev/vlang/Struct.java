@@ -631,8 +631,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	{
 			this.name.short_name.equals(name), node ?= this
 		;	arg @= args,
-			arg.getType().isArgument(),
-			arg.getClazzName().short_name.equals(name),
+			arg.name.name.equals(name),
 			node ?= arg
 		;	node @= members,
 			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
@@ -987,7 +986,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			return "kiev.stdlib.closure";
 		}
 		if( t.isArgument() ) {
-			return makeTypeInfoString(t.clazz.super_type);
+			return makeTypeInfoString(t.getSuperType());
 		}
 		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
@@ -1219,7 +1218,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					Type t = super_type.args[arg];
 					t = Type.getRealType(this.type,t);
 					if (t.isArgumented()) {
-						exprs[arg] = new ASTIdentifier(pos,t.clazz.name.short_name);
+						exprs[arg] = new ASTIdentifier(pos,t.getClazzName().short_name);
 					} else {
 						CallExpr ce = new CallExpr(pos,
 							Type.tpTypeInfo.clazz.resolveMethod(

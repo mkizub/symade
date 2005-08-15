@@ -491,12 +491,11 @@ public final class ExportJavaTop implements Constants {
 				if( arg.super_bound != null ) {
 					Type sup = arg.super_bound.getType();
 					if( !sup.isReference() ) {
-						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
+						Kiev.reportError(astn.pos,"Argument extends bad type "+sup);
 					} else {
-						arg.lnk = null;
-						arg.getType();
+						((ArgumentType)arg.getType()).super_type = sup;
 					}
-//					targs[i].checkJavaSignature();
+					targs[i].checkJavaSignature();
 //				} else {
 //					targs[i].clazz.super_type = Type.tpObject;
 				}

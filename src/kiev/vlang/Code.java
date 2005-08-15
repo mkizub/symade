@@ -1310,7 +1310,7 @@ public class Code implements Constants {
 			return;
 		}
 		tp = Type.getRealType(Kiev.argtype,tp);
-		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp.clazz.type,((Struct)f.parent).type));
+		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp.getInitialType(),((Struct)f.parent).type));
 //		Type ttt = ((Struct)f.parent).type;
 		KString struct_sig = ttt.java_signature;
 		KString field_sig = 
