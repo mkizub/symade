@@ -317,20 +317,15 @@ public class kiev040 {
 		return clazz;
 	}
 
-	private static BaseStruct mkStructArg(ASTIdentifier name, ASTModifiers modifiers, ASTNode parent) {
-		BaseStruct arg;
+	private static TypeArgRef mkTypeArgRef(ASTIdentifier name, ASTNode parent) {
+		TypeArgRef arg = new TypeArgRef(name);
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
-			arg = Env.newArgument(name.name, s);
 			s.args += arg;
 		} else {
 			ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
-			arg = Env.newMethodArgument(name.name, PassInfo.clazz);
 			m.argtypes += arg;
 		}
-		arg.pos  = name.pos;
-		foreach (Meta m; modifiers.annotations)
-			arg.meta.set(m);
 		return arg;
 	}
 
@@ -1126,11 +1121,10 @@ void ClazzArguments(ASTNode parent) :
 }
 
 void ArgumentDeclaration(ASTNode parent) :
-{ ASTModifiers modifiers; ASTIdentifier name; BaseStruct arg; }
+{ ASTIdentifier name; TypeArgRef arg; }
 {
-	modifiers = Modifiers()
 	name      = Name()
-	{ arg = mkStructArg(name, modifiers, parent); }
+	{ arg = mkTypeArgRef(name,parent); }
 	[
 		"extends"
 		arg.super_bound = NArrType()

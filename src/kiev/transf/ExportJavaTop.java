@@ -107,13 +107,14 @@ public final class ExportJavaTop implements Constants {
 			}
 			else if( me.parent instanceof Struct && ((Struct)me.parent).args.length > 0 ) {
 				Struct astnp = (Struct)me.parent;
-				// Inner classes's argumets have to be arguments of outer classes
+				// Inner classes's arguments have to be arguments of outer classes
+				// BUG BUG BUG - need to follow java scheme
 				for(int i=0; i < me.args.length; i++) {
-					BaseStruct arg = me.args[i];
+					TypeArgRef arg = me.args[i];
 					Type[] outer_args = astnp.type.args;
 					if( outer_args == null || outer_args.length <= i)
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class arguments");
-					if !(outer_args[i].getClazzName().short_name.equals(arg.name.short_name))
+					if !(outer_args[i].getClazzName().short_name.equals(arg.name.name))
 						throw new CompilerException(arg.getPos(),"Inner class arguments must match outer class argument,"
 							+" but arg["+i+"] is "+arg
 							+" and have to be "+outer_args[i].getClazzName().short_name);
@@ -124,7 +125,7 @@ public final class ExportJavaTop implements Constants {
 				}
 			} else {
 				for(int i=0; i < me.args.length; i++)
-					targs = (Type[])Arrays.append(targs,me.args[i].type);
+					targs = (Type[])Arrays.append(targs,me.args[i].getType());
 			}
 
 			/* Generate type for this structure */
@@ -486,16 +487,18 @@ public final class ExportJavaTop implements Constants {
 			/* Process inheritance of class's arguments, if any */
 			Type[] targs = me.type.args;
 			for(int i=0; i < astn.args.length; i++) {
-				BaseStruct arg = astn.args[i];
-				if( arg.super_bound.isBound() ) {
+				TypeArgRef arg = astn.args[i];
+				if( arg.super_bound != null ) {
 					Type sup = arg.super_bound.getType();
-					if( !sup.isReference() )
+					if( !sup.isReference() ) {
 						Kiev.reportError(astn.pos,"Argument extends primitive type "+sup);
-					else
-						targs[i].clazz.super_type = sup;
-					targs[i].checkJavaSignature();
-				} else {
-					targs[i].clazz.super_type = Type.tpObject;
+					} else {
+						arg.lnk = null;
+						arg.getType();
+					}
+//					targs[i].checkJavaSignature();
+//				} else {
+//					targs[i].clazz.super_type = Type.tpObject;
 				}
 			}
 			// Process ASTGenerete
@@ -504,7 +507,8 @@ public final class ExportJavaTop implements Constants {
 					TypeWithArgsRef ag = me.gens[l];
 					for(int m=0; m < me.type.args.length; m++) {
 						if (ag.args[m].lnk != null && !ag.args[m].isReference()) {
-							if( me.args[m].super_type != Type.tpObject )
+							ArgumentType at = (ArgumentType)me.args[m].getType();
+							if( at.super_type != Type.tpObject )
 								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
 						} else { // ASTIdentifier
 							KString a = ((TypeNameRef)ag.args[m]).name.name;

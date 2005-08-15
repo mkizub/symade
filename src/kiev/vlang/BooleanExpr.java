@@ -690,8 +690,8 @@ public class InstanceofExpr extends BoolExpr {
 			Object e = expr.resolve(null);
 			if (e instanceof WrapedExpr)
 				e = ((WrapedExpr)e).getType();
-			if (e instanceof BaseStruct)
-				e = ((BaseStruct)e).type;
+			if (e instanceof Struct)
+				e = ((Struct)e).type;
 			if( e instanceof TypeRef )
 				e = ((TypeRef)e).getType();
 			if( e instanceof Type ) {

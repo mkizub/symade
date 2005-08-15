@@ -318,12 +318,11 @@ public interface StdTypes {
 		typeHash.put(tpCloneable);
 
 
-		Struct tpArrayClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;")),kiev_stdlib,ACC_PUBLIC);
-		BaseStruct tpArrayArgClazz = Env.newArgument(KString.from("elem"),tpArrayClazz);
-		Type tpArrayArg = new Type(tpArrayArgClazz);
-		tpArray				= new BaseType(tpArrayClazz,new Type[]{tpArrayArg});
+		Struct tpArrayClazz		= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;")),kiev_stdlib,ACC_PUBLIC);
+		ArgumentType tpArrayArg	= ArgumentType.newArgumentType(tpArrayClazz,KString.from("elem"));
+		tpArray					= new BaseType(tpArrayClazz,new Type[]{tpArrayArg});
 		tpArrayClazz.type		= tpArray;
-		tpArrayClazz.super_type = tpObject;
+		tpArrayClazz.super_type	= tpObject;
 		tpArray.flags			|= flResolved;
 		tpArrayClazz.setResolved(true);
 		tpArray.flags			= flReference | flArray;
@@ -463,8 +462,7 @@ public interface StdTypes {
 		typeHash.put(tpJavaEnumeration);
 
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
-		BaseStruct tpKievEnumerationArgClazz = Env.newArgument(KString.from("A"),tpKievEnumerationClazz);
-		Type tpKievEnumerationArg = new BaseType(tpKievEnumerationArgClazz);
+		ArgumentType tpKievEnumerationArg = ArgumentType.newArgumentType(tpKievEnumerationClazz,KString.from("A"));
 		tpKievEnumeration	= new BaseType(tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
 		typeHash.put(tpKievEnumeration);
@@ -520,16 +518,14 @@ public interface StdTypes {
 //		typeHash.put(tpPrologEnv);
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
-		BaseStruct tpPrologVarArgClazz = Env.newArgument(KString.from("A"),tpPrologVarClazz);
-		Type tpPrologVarArg = new BaseType(tpPrologVarArgClazz);
+		ArgumentType tpPrologVarArg = ArgumentType.newArgumentType(tpPrologVarClazz,KString.from("A"));
 		tpPrologVar	= new BaseType(tpPrologVarClazz,new Type[]{tpPrologVarArg});
 		tpPrologVarClazz.type	= tpPrologVar;
 //		tpPrologVarClazz.setWrapper(true);
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
-		BaseStruct tpRefProxyArgClazz = Env.newArgument(KString.from("A"),tpRefProxyClazz);
-		Type tpRefProxyArg = new BaseType(tpRefProxyArgClazz);
+		ArgumentType tpRefProxyArg = ArgumentType.newArgumentType(tpRefProxyClazz,KString.from("A"));
 		tpRefProxy	= new BaseType(tpRefProxyClazz,new Type[]{tpRefProxyArg});
 		tpRefProxyClazz.type	= tpRefProxy;
 //		tpRefProxyClazz.setWrapper(true);

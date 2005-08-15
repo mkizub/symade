@@ -42,7 +42,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
     @att public ASTIdentifier					ident;
     @att public final NArr<FormPar>			params;
     @att public TypeRef							rettype;
-    @att public final NArr<BaseStruct>			argtypes;
+    @att public final NArr<TypeRef>			argtypes;
     @att public final NArr<ASTAlias>			aliases;
     @att public ASTNode							throwns;
     @att public Statement						body;
@@ -89,7 +89,7 @@ public class ASTMethodDeclaration extends ASTNode implements PreScanneable, Scop
 		if (argtypes.length > 0) {
 			ftypes = new Type[argtypes.length];
 			for (int i=0; i < argtypes.length; i++)
-				ftypes[i] = argtypes[i].type;
+				ftypes[i] = argtypes[i].getType();
 		}
 
 		if (clazz.isAnnotation() && params.length > 0) {

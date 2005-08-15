@@ -78,9 +78,9 @@ public class ASTCallAccessExpression extends Expr {
 			if( o == null )
 				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 		try_static:
-			if( o instanceof BaseStruct ) {
-				((BaseStruct)o).checkResolved();
-				o = new TypeRef(((BaseStruct)o).type);
+			if( o instanceof Struct ) {
+				((Struct)o).checkResolved();
+				o = new TypeRef(((Struct)o).type);
 			}
 			if( o instanceof TypeRef ) {
 				tp = ((TypeRef)o).getType();

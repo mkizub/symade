@@ -119,7 +119,7 @@ public class CallExpr extends Expr {
 		try {
 			func.acc.verifyReadAccess(func);
 			CodeLabel ok_label = null;
-			if( ((Struct)func.parent).instanceOf(Type.tpDebug.clazz) ) {
+			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 				String fname = func.name.name.toString().toLowerCase();
 				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 				if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
@@ -130,7 +130,7 @@ public class CallExpr extends Expr {
 				else
 					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
 			}
-			if( ((Struct)func.parent).instanceOf(Type.tpDebug.clazz) ) {
+			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 				int i = 0;
 				int mode = 0;
 				String fname = func.name.name.toString().toLowerCase();
@@ -299,7 +299,7 @@ public class CallAccessExpr extends Expr {
 	public void generateCheckCastIfNeeded() {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.clazz.instanceOf((Struct)func.parent) ) {
+		if( !ot.isStructInstanceOf((Struct)func.parent) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
 			Code.addInstr(Instr.op_checkcast,((Struct)func.parent).type);
 		}
@@ -310,7 +310,7 @@ public class CallAccessExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			func.acc.verifyReadAccess(func);
-			if( ((Struct)func.parent).instanceOf(Type.tpDebug.clazz) ) {
+			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 				String fname = func.name.name.toString().toLowerCase();
 				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 				if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;

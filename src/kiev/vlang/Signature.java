@@ -38,7 +38,7 @@ public class Signature {
 		this.sig = sig;
 	}
 
-	public static KString from(BaseStruct clazz, Type[] fargs, Type[] args, Type ret) {
+	public static KString from(Struct clazz, Type[] fargs, Type[] args, Type ret) {
 		KStringBuffer ksb = new KStringBuffer();
 		if( ret != null ) {
 			// Closure or method.
@@ -86,7 +86,7 @@ public class Signature {
 		return ksb.toKString();
 	}
 
-	public static KString fromToClazzCP(BaseStruct clazz,Type[] args, boolean full) {
+	public static KString fromToClazzCP(Struct clazz,Type[] args, boolean full) {
 		KStringBuffer ksb = new KStringBuffer(128);
 		ksb.append(clazz.name.bytecode_name);
 		if( args != null && args.length > 0 ) {
@@ -117,7 +117,7 @@ public class Signature {
 	//}
 
 	public static Type getType(KString.KStringScanner sc) {
-		BaseStruct clazz;
+		Struct clazz;
 		Type[] args = null;
 		Type ret = null;
 
@@ -184,24 +184,21 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
+		ClazzName cname = null;
 		if( isArgument ) {
 			KString bcn = sc.str.substr(pos,sc.pos-1);
-			ClazzName name;
-			//if (bcn.indexOf((byte)'.') >= 0)
-				name = ClazzName.fromBytecodeName(bcn,isArgument);
-			//else
-			//	name = ClazzName.fromOuterAndName(bcn);
-			//name.isArgument = true;
-			clazz = Env.newArgument(name.short_name,Env.getStruct(name.package_name()));
-			clazz.setArgument(true);
-			clazz.setResolved(true);
+			cname = ClazzName.fromBytecodeName(bcn,isArgument);
+			clazz = null;
 		} else {
-			ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
-			clazz = Env.newStruct(name);
+			cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
+			clazz = Env.newStruct(cname);
 		}
 
-		if( !sc.hasMoreChars() )
+		if( !sc.hasMoreChars() ) {
+			if (isArgument)
+				return ArgumentType.newArgumentType(cname,null);
 			return Type.newJavaRefType(clazz);
+		}
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
 			sc.nextChar();
@@ -210,20 +207,19 @@ public class Signature {
 			sc.nextChar();
 			if( isArgument ) {
 				if( args.length == 0 )
-					return Type.newRefType(clazz);
+					return ArgumentType.newArgumentType(cname,null);
 				else if( args.length == 1 ) {
-					if( clazz.super_type==null )
-						clazz.super_type = args[0];
-					else if( !args[0].equals(clazz.super_type) )
-						throw new RuntimeException("Is class argument signature "+sc
-							+" type of argument super-class "+args[0]+" does not match "+clazz.super_type);
-					return Type.newRefType(clazz);
+					if !( args[0] instanceof BaseType )
+						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
+					return ArgumentType.newArgumentType(cname,(BaseType)args[0]);
 				} else
-					throw new RuntimeException("Signature of class's argument "+clazz+" specifies more than one super-class: "+args);
+					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
 				return Type.newRefType(clazz,args);
 			}
 		} else {
+			if (isArgument)
+				return ArgumentType.newArgumentType(cname,null);
 			return Type.newJavaRefType(clazz);
 		}
 	}
@@ -323,7 +319,7 @@ public class Signature {
 		int pos = sc.pos;
 		while( sc.nextChar() != ';' );
 		KString kstr = sc.str.substr(pos,sc.pos);
-		BaseStruct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
+		Struct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
 		if( struct !=null && struct.isArgument() )
 			kstr = struct.super_type.clazz.name.signature();
 		if( sc.peekChar() == '<' ) {

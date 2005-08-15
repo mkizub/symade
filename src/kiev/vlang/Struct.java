@@ -66,261 +66,274 @@ public final class StructRef extends ASTNode {
 	}
 }
 
-@node(copyable=false)
-public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, Accessable {
-	
-	private static Access dummyAccess = new Access(0xFF);
-	
-	/** Variouse names of the class */
-	public ClazzName					name;
 
-	/** Type associated with this class */
-	@ref public BaseType				type;
-
-	/** Bound super-class for class arguments */
-	@att public TypeRef					super_bound;
-
-	/** Bound super-class for class arguments */
-	@virtual
-	@ref public virtual abstract Type	super_type;
-
-	/** SuperInterface types */
-	@att public final NArr<TypeRef>		interfaces;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet					meta;
-
-	protected BaseStruct(ClazzName name) {
-		super(0,0);
-		this.name = name;
-		this.super_bound = new TypeRef();
-		this.meta = new MetaSet(this);
-	}
-
-	public BaseStruct(ClazzName name, int acc) {
-		super(0,acc);
-		this.name = name;
-		this.super_bound = new TypeRef();
-		this.meta = new MetaSet(this);
-	}
-
-	public String toString() { return name.name.toString(); }
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"Struct node cannot be copied");
-	};
-
-	public boolean checkResolved() {
-		return true;
-	}
-	
-	@getter public Access get$acc() {
-		return dummyAccess;
-	}
-
-	@setter public void set$acc(Access a) {
-		throw new RuntimeException("Cannot set access of "+this);
-	}
-
-	@getter public Type get$super_type() {
-		return super_bound.lnk;
-	}
-
-	@setter public void set$super_type(Type tp) {
-		super_bound = new TypeRef(super_bound.pos, tp);
-	}
-
-	public NodeName	getName() { return name; }
-	
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "super_bound") {
-			if (type != null)
-				type.invalidate();
-		}
-		else if (attr.name == "interfaces") {
-			if (type != null)
-				type.invalidate();
-		}
-		else if (attr.name == "meta") {
-			if (type != null)
-				type.invalidate();
-		}
-	}
-	
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
-	{
-		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this),
-		checkResolved(),
-		{
-			trace(Kiev.debugResolve,"BaseStruct: resolving in "+this),
-			resolveNameR_1(node,info,name),	// resolve in this class
-			$cut
-		;	info.isSuperAllowed(),
-			trace(Kiev.debugResolve,"BaseStruct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name),	// resolve in super-classes
-			$cut
-		}
-	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
-		Type@ arg;
-	{
-			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
-		;	arg @= type.args,
-			arg.getClazzName().short_name.equals(name),
-			node ?= arg.clazz
-	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
-		Type@ sup;
-	{
-		{	sup ?= super_bound.lnk,
-			info.enterSuper() : info.leaveSuper(),
-			sup.resolveStaticNameR(node,info,name)
-		;	sup @= TypeRef.linked_elements(interfaces),
-			info.enterSuper() : info.leaveSuper(),
-			sup.resolveStaticNameR(node,info,name)
-		}
-	}
-
-	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
-	{
-		resolveStructMethodR(node, info, name, mt, this.type)
-	}
-	
-	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
-		Type@ sup;
-	{
-		info.isSuperAllowed(),
-		checkResolved(),
-		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
-		info.enterSuper() : info.leaveSuper(),
-		{
-			sup ?= super_bound.lnk,
-			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
-		;
-			sup @= TypeRef.linked_elements(interfaces),
-			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
-		}
-	}
-
-	public boolean instanceOf(BaseStruct cl) {
-		if( cl == null ) return false;
-		if( this.equals(cl) ) return true;
-		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
-		 	return true;
-		if( cl.isInterface() ) {
-			for(int i=0; i < interfaces.length; i++) {
-				if( interfaces[i].clazz.instanceOf(cl) ) return true;
-			}
-		}
-		return false;
-	}
-
-	public Field resolveField(KString name) {
-		return resolveField(name,this,true);
-	}
-
-	public Field resolveField(KString name, boolean fatal) {
-		return resolveField(name,this,fatal);
-	}
-
-	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
-		checkResolved();
-		if( super_bound.lnk != null )
-			return super_bound.lnk.clazz.resolveField(name,where,fatal);
-		if (fatal)
-			throw new RuntimeException("Unresolved field "+name+" in class "+where);
-		return null;
-	}
-
-	public ASTNode resolveName(KString name) {
-		checkResolved();
-		foreach(Type t; type.args; t.clazz.name.short_name.equals(name) ) return t.clazz;
-		return null;
-	}
-
-	public Method resolveMethod(KString name, KString sign) {
-		return resolveMethod(name,sign,this,true);
-	}
-
-	public Method resolveMethod(KString name, KString sign, boolean fatal) {
-		return resolveMethod(name,sign,this,fatal);
-	}
-
-	protected Method resolveMethod(KString name, KString sign, BaseStruct where, boolean fatal) {
-		checkResolved();
-		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
-		Method m = null;
-		if( super_bound.lnk != null )
-			m = super_bound.lnk.clazz.resolveMethod(name,sign,where,fatal);
-		if( m != null ) return m;
-		foreach(Type interf; interfaces) {
-			m = interf.clazz.resolveMethod(name,sign,where,fatal);
-			if( m != null ) return m;
-		}
-		if (fatal)
-			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
-		return null;
-	}
-
-	public Method getOverwrittenMethod(Type base, Method m) {
-		Method mm = null, mmret = null;
-		if( super_bound.lnk != null && !isInterface() )
-			mm = super_bound.lnk.clazz.getOverwrittenMethod(base,m);
-		if( mmret == null && mm != null ) mmret = mm;
-		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
-		return mmret;
-	}
-
-	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
-		if( super_type != null ) {
-			ms = super_type.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,super_type),ms);
-		}
-		foreach(Type i; interfaces) {
-			ms = i.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,i),ms);
-		}
-		return ms;
-	}
-
-	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
-	{
-		if( super_type != null )
-			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
-		return ms;
-	}
-
-	List<Method> collectVTmethods(List<Method> ms) {
-		ms = collectVTinterfaceMethods(this.type,ms);
-		ms = collectVTvirtualMethods(this.type,ms);
-		return ms;
-	}
-
-	public ASTNode resolve(Type reqType) { return this; }
-
-	public Dumper toJava(Dumper dmp) {
-		if( interfaces.length > 0 )
-			return dmp.append(interfaces[0]);
-		else
-			return dmp.append(super_type);
-	}
-	
-}
-
-@node(copyable=false)
-public class ArgStruct extends BaseStruct {
-	protected ArgStruct(ClazzName name) {
-		super(name);
-	}
-}
+//@node(copyable=false)
+//public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, Accessable {
+//	
+//	private static Access dummyAccess = new Access(0xFF);
+//	
+//	/** Variouse names of the class */
+//	public ClazzName					name;
+//
+//	/** Type associated with this class */
+//	@ref public BaseType				type;
+//
+//	/** Bound super-class for class arguments */
+//	@att public TypeRef					super_bound;
+//
+//	/** Bound super-class for class arguments */
+//	@virtual
+//	@ref public virtual abstract Type	super_type;
+//
+//	/** SuperInterface types */
+//	@att public final NArr<TypeRef>		interfaces;
+//
+//	/** Meta-information (annotations) of this structure */
+//	@att public MetaSet					meta;
+//
+//	protected BaseStruct(ClazzName name) {
+//		super(0,0);
+//		this.name = name;
+//		this.super_bound = new TypeRef();
+//		this.meta = new MetaSet(this);
+//	}
+//
+//	public BaseStruct(ClazzName name, int acc) {
+//		super(0,acc);
+//		this.name = name;
+//		this.super_bound = new TypeRef();
+//		this.meta = new MetaSet(this);
+//	}
+//
+//	public String toString() { return name.name.toString(); }
+//
+//	public Object copy() {
+//		throw new CompilerException(getPos(),"Struct node cannot be copied");
+//	};
+//
+//	public boolean checkResolved() {
+//		return true;
+//	}
+//	
+//	@getter public Access get$acc() {
+//		return dummyAccess;
+//	}
+//
+//	@setter public void set$acc(Access a) {
+//		throw new RuntimeException("Cannot set access of "+this);
+//	}
+//
+//	@getter public Type get$super_type() {
+//		return super_bound.lnk;
+//	}
+//
+//	@setter public void set$super_type(Type tp) {
+//		super_bound = new TypeRef(super_bound.pos, tp);
+//	}
+//
+//	public NodeName	getName() { return name; }
+//	
+//	public void callbackChildChanged(AttrSlot attr) {
+//		if (attr.name == "super_bound") {
+//			if (type != null)
+//				type.invalidate();
+//		}
+//		else if (attr.name == "interfaces") {
+//			if (type != null)
+//				type.invalidate();
+//		}
+//		else if (attr.name == "meta") {
+//			if (type != null)
+//				type.invalidate();
+//		}
+//	}
+//	
+//	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+//	{
+//		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this),
+//		checkResolved(),
+//		{
+//			trace(Kiev.debugResolve,"BaseStruct: resolving in "+this),
+//			resolveNameR_1(node,info,name),	// resolve in this class
+//			$cut
+//		;	info.isSuperAllowed(),
+//			trace(Kiev.debugResolve,"BaseStruct: resolving in super-class of "+this),
+//			resolveNameR_3(node,info,name),	// resolve in super-classes
+//			$cut
+//		}
+//	}
+//	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
+//		Type@ arg;
+//	{
+//			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
+//		;	arg @= type.args,
+//			arg.getClazzName().short_name.equals(name),
+//			node ?= arg.clazz
+//	}
+//	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+//		Type@ sup;
+//	{
+//		{	sup ?= super_bound.lnk,
+//			info.enterSuper() : info.leaveSuper(),
+//			sup.resolveStaticNameR(node,info,name)
+//		;	sup @= TypeRef.linked_elements(interfaces),
+//			info.enterSuper() : info.leaveSuper(),
+//			sup.resolveStaticNameR(node,info,name)
+//		}
+//	}
+//
+//	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+//	{
+//		resolveStructMethodR(node, info, name, mt, this.type)
+//	}
+//	
+//	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
+//		Type@ sup;
+//	{
+//		info.isSuperAllowed(),
+//		checkResolved(),
+//		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
+//		info.enterSuper() : info.leaveSuper(),
+//		{
+//			sup ?= super_bound.lnk,
+//			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+//		;
+//			sup @= TypeRef.linked_elements(interfaces),
+//			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+//		}
+//	}
+//
+//	public boolean instanceOf(Struct cl) {
+//		if( cl == null ) return false;
+//		if( this.equals(cl) ) return true;
+//		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
+//		 	return true;
+//		if( cl.isInterface() ) {
+//			for(int i=0; i < interfaces.length; i++) {
+//				if( interfaces[i].clazz.instanceOf(cl) ) return true;
+//			}
+//		}
+//		return false;
+//	}
+//
+//	public Field resolveField(KString name) {
+//		return resolveField(name,this,true);
+//	}
+//
+//	public Field resolveField(KString name, boolean fatal) {
+//		return resolveField(name,this,fatal);
+//	}
+//
+//	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
+//		checkResolved();
+//		if( super_bound.lnk != null )
+//			return super_bound.lnk.clazz.resolveField(name,where,fatal);
+//		if (fatal)
+//			throw new RuntimeException("Unresolved field "+name+" in class "+where);
+//		return null;
+//	}
+//
+//	public ASTNode resolveName(KString name) {
+//		checkResolved();
+//		foreach(Type t; type.args; t.clazz.name.short_name.equals(name) ) return t.clazz;
+//		return null;
+//	}
+//
+//	public Method resolveMethod(KString name, KString sign) {
+//		return resolveMethod(name,sign,this,true);
+//	}
+//
+//	public Method resolveMethod(KString name, KString sign, boolean fatal) {
+//		return resolveMethod(name,sign,this,fatal);
+//	}
+//
+//	protected Method resolveMethod(KString name, KString sign, BaseStruct where, boolean fatal) {
+//		checkResolved();
+//		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
+//		Method m = null;
+//		if( super_bound.lnk != null )
+//			m = super_bound.lnk.clazz.resolveMethod(name,sign,where,fatal);
+//		if( m != null ) return m;
+//		foreach(Type interf; interfaces) {
+//			m = interf.clazz.resolveMethod(name,sign,where,fatal);
+//			if( m != null ) return m;
+//		}
+//		if (fatal)
+//			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
+//		return null;
+//	}
+//
+//	public Method getOverwrittenMethod(Type base, Method m) {
+//		Method mm = null, mmret = null;
+//		if( super_bound.lnk != null && !isInterface() )
+//			mm = super_bound.lnk.clazz.getOverwrittenMethod(base,m);
+//		if( mmret == null && mm != null ) mmret = mm;
+//		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
+//		return mmret;
+//	}
+//
+//	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
+//		if( super_type != null ) {
+//			ms = super_type.clazz.collectVTinterfaceMethods(
+//				Type.getRealType(tp,super_type),ms);
+//		}
+//		foreach(Type i; interfaces) {
+//			ms = i.clazz.collectVTinterfaceMethods(
+//				Type.getRealType(tp,i),ms);
+//		}
+//		return ms;
+//	}
+//
+//	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
+//	{
+//		if( super_type != null )
+//			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
+//		return ms;
+//	}
+//
+//	List<Method> collectVTmethods(List<Method> ms) {
+//		ms = collectVTinterfaceMethods(this.type,ms);
+//		ms = collectVTvirtualMethods(this.type,ms);
+//		return ms;
+//	}
+//
+//	public ASTNode resolve(Type reqType) { return this; }
+//
+//	public Dumper toJava(Dumper dmp) {
+//		if( interfaces.length > 0 )
+//			return dmp.append(interfaces[0]);
+//		else
+//			return dmp.append(super_type);
+//	}
+//	
+//}
 
 @node(copyable=false)
-public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
+public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
+	/** Variouse names of the class */
+	public ClazzName								name;
+
+	/** Type associated with this class */
+	@ref public BaseType							type;
+
+	/** Bound super-class for class arguments */
+	@att public TypeRef								super_bound;
+
+	/** Bound super-class for class arguments */
+	@virtual
+	@ref public virtual abstract Type				super_type;
+
+	/** SuperInterface types */
+	@att public final NArr<TypeRef>					interfaces;
+
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet								meta;
+
 	/** Class' type arguments */
-	@att public final NArr<BaseStruct>				args;
+	@att public final NArr<TypeArgRef>				args;
 	
 	/** Class' access */
 	@virtual
@@ -358,12 +371,18 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	@att public final NArr<ASTNode>					members;
 
 	protected Struct(ClazzName name) {
-		super(name,0);
+		super(0,0);
+		this.name = name;
+		this.super_bound = new TypeRef();
+		this.meta = new MetaSet(this);
 		this.acc = new Access(0);
 	}
 
 	public Struct(ClazzName name, Struct outer, int acc) {
-		super(name,acc);
+		super(0,acc);
+		this.name = name;
+		this.super_bound = new TypeRef();
+		this.meta = new MetaSet(this);
 		package_clazz = outer;
 		this.acc = new Access(0);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
@@ -374,6 +393,8 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		throw new CompilerException(getPos(),"Struct node cannot be copied");
 	};
 
+	public String toString() { return name.name.toString(); }
+
 	@getter public Access get$acc() {
 		return acc;
 	}
@@ -382,6 +403,16 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}
+	
+	@getter public Type get$super_type() {
+		return super_bound.lnk;
+	}
+
+	@setter public void set$super_type(Type tp) {
+		super_bound = new TypeRef(super_bound.pos, tp);
+	}
+
+	public NodeName	getName() { return name; }
 	
 	/** hashCode of structure is a hash code
 		of it's name, which must be unique for each structure
@@ -406,8 +437,18 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			if (type != null)
 				type.invalidate();
 		}
-		else
-			super.callbackChildChanged(attr);
+		if (attr.name == "super_bound") {
+			if (type != null)
+				type.invalidate();
+		}
+		else if (attr.name == "interfaces") {
+			if (type != null)
+				type.invalidate();
+		}
+		else if (attr.name == "meta") {
+			if (type != null)
+				type.invalidate();
+		}
 	}
 	
 	public int getValueForEnumField(Field f) {
@@ -478,7 +519,28 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		return true;
 	}
 
-	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
+	public boolean instanceOf(Struct cl) {
+		if( cl == null ) return false;
+		if( this.equals(cl) ) return true;
+		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
+		 	return true;
+		if( cl.isInterface() ) {
+			for(int i=0; i < interfaces.length; i++) {
+				if( interfaces[i].clazz.instanceOf(cl) ) return true;
+			}
+		}
+		return false;
+	}
+
+	public Field resolveField(KString name) {
+		return resolveField(name,this,true);
+	}
+
+	public Field resolveField(KString name, boolean fatal) {
+		return resolveField(name,this,fatal);
+	}
+
+	private Field resolveField(KString name, Struct where, boolean fatal) {
 		checkResolved();
 		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
 		if( super_type != null ) return super_type.getStruct().resolveField(name,where,fatal);
@@ -565,13 +627,13 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		}
 	}
 	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
-		Type@ arg;
+		TypeArgRef@ arg;
 	{
 			this.name.short_name.equals(name), node ?= this
-		;	arg @= type.args,
-			arg.isArgument(),
-			arg.clazz.name.short_name.equals(name),
-			node ?= arg.clazz
+		;	arg @= args,
+			arg.getType().isArgument(),
+			arg.getClazzName().short_name.equals(name),
+			node ?= arg
 		;	node @= members,
 			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 		;	node @= members,
@@ -630,6 +692,11 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		return false;
 	}
 
+	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		resolveStructMethodR(node, info, name, mt, this.type)
+	}
+
 	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
@@ -663,7 +730,15 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		}
 	}
 
-	protected Method resolveMethod(KString name, KString sign, BaseStruct where, boolean fatal) {
+	public Method resolveMethod(KString name, KString sign) {
+		return resolveMethod(name,sign,this,true);
+	}
+
+	public Method resolveMethod(KString name, KString sign, boolean fatal) {
+		return resolveMethod(name,sign,this,fatal);
+	}
+
+	private Method resolveMethod(KString name, KString sign, Struct where, boolean fatal) {
 		checkResolved();
 		foreach (ASTNode n; members; n instanceof Method) {
 			Method m = (Method)n;
@@ -1106,12 +1181,12 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			ASTNode[] stats = new ASTNode[type.args.length];
 			for (int arg=0; arg < type.args.length; arg++) {
 				Type t = type.args[arg];
-				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.clazz.name.short_name.length())
-					.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();
+				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
+					.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
-				FormPar v = new FormPar(pos,t.clazz.name.short_name,Type.tpTypeInfo,0);
+				FormPar v = new FormPar(pos,t.getClazzName().short_name,Type.tpTypeInfo,0);
 				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,null,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -2198,10 +2273,10 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		}
 
 		// Check all methods
-		if( !isAbstract() && isClazz() ) {
-			List<Method> ms = List.Nil;
-			ms = collectVTmethods(ms);
-		}
+//		if( !isAbstract() && isClazz() ) {
+//			List<Method> ms = List.Nil;
+//			ms = collectVTmethods(ms);
+//		}
 
 		setMembersGenerated(true);
 		foreach(Struct s; sub_clazz; s.generated_from == null)
@@ -2468,18 +2543,21 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			foreach(ASTNode n; members; n instanceof Field) {
 				Field f = (Field)n;
 				try {
-					f.type.clazz.checkResolved();
-					f.type.clazz.acc.verifyReadWriteAccess(f.type.clazz);
+					f.type.checkResolved();
+					if (f.type.isStruct())
+						f.type.getStruct().acc.verifyReadWriteAccess(f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
 			foreach(ASTNode n; members; n instanceof Method) {
 				Method m = (Method)n;
 				try {
-					m.type.ret.clazz.checkResolved();
-					m.type.ret.clazz.acc.verifyReadWriteAccess(m.type.ret.clazz);
+					m.type.ret.checkResolved();
+					if (m.type.ret.isStruct())
+						m.type.ret.getStruct().acc.verifyReadWriteAccess(m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
-						t.clazz.checkResolved();
-						t.clazz.acc.verifyReadWriteAccess(t.clazz);
+						t.checkResolved();
+						if (t.isStruct())
+							t.getStruct().acc.verifyReadWriteAccess(t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
@@ -2543,7 +2621,7 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 		if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
 		return this;
 	}
-
+/*
 	List<Method> addMethodsToVT(Type tp, List<Method> ms, boolean by_name_name) {
 	next_method:
 		foreach(ASTNode n; members; n instanceof Method) {
@@ -2567,7 +2645,14 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 	}
 
 	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
-		ms = super.collectVTinterfaceMethods(tp, ms);
+		if( super_type != null ) {
+			ms = super_type.clazz.collectVTinterfaceMethods(
+				Type.getRealType(tp,super_type),ms);
+		}
+		foreach(Type i; interfaces) {
+			ms = i.clazz.collectVTinterfaceMethods(
+				Type.getRealType(tp,i),ms);
+		}
 		if( isInterface() ) {
 //			System.out.println("collecting in "+this);
 			ms = addMethodsToVT(tp,ms,false);
@@ -2577,11 +2662,19 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 
 	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
 	{
-		ms = super.collectVTvirtualMethods(tp, ms);
+		if( super_type != null )
+			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
 //		System.out.println("collecting in "+this);
 		ms = addMethodsToVT(tp,ms,true);
 		return ms;
 	}
+
+	List<Method> collectVTmethods(List<Method> ms) {
+		ms = collectVTinterfaceMethods(this.type,ms);
+		ms = collectVTvirtualMethods(this.type,ms);
+		return ms;
+	}
+*/
 
 	public void generate() {
 		Struct jthis = Kiev.argtype == null? this : (Struct)Kiev.argtype.clazz;
@@ -2602,14 +2695,14 @@ public class Struct extends BaseStruct implements Named, ScopeOfNames, ScopeOfMe
 			}
 
 			// Check all methods
-			if( !isAbstract() && isClazz() ) {
-				List<Method> ms = List.Nil;
-				ms = collectVTmethods(ms);
-//				System.out.println("VT: "+ms);
-//				foreach(Method m; ms) {
-//					if( m.isAbstract() ) throw new RuntimeException("Abstract method "+m+" in non-abstract class "+jthis);
-//				}
-			}
+//			if( !isAbstract() && isClazz() ) {
+//				List<Method> ms = List.Nil;
+//				ms = collectVTmethods(ms);
+////				System.out.println("VT: "+ms);
+////				foreach(Method m; ms) {
+////					if( m.isAbstract() ) throw new RuntimeException("Abstract method "+m+" in non-abstract class "+jthis);
+////				}
+//			}
 
 	        ConstPool.reInit();
 			ConstPool.addClazzCP(jthis.type.signature);

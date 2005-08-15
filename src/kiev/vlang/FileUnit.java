@@ -273,7 +273,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		ASTNode@ syn;
 	{
 		pkg != null && pkg != Env.root,
-		pkg.resolveMethodR(node,path,name,mt)
+		pkg.type.resolveCallStaticR(node,path,name,mt)
 	;	syn @= syntax,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),

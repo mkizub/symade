@@ -148,6 +148,7 @@ kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
 kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
+kiev.parser.TypeArgRef kiev/parser/TypeArgRef kiev\parser\TypeArgRef.java
 kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
 kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java
 kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java
@@ -234,13 +235,14 @@ kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
 kiev.vlang.AliasAttr kiev/vlang/AliasAttr kiev\vlang\Attr.java
 kiev.vlang.ArgStruct kiev/vlang/ArgStruct kiev\vlang\Struct.java
+kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
 kiev.vlang.ArrayLengthAccessExpr kiev/vlang/ArrayLengthAccessExpr kiev\vlang\Expr.java
 kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
-kiev.vlang.BaseStruct kiev/vlang/BaseStruct kiev\vlang\Struct.java
+kiev.vlang.BaseStruct kiev/vlang/BaseStruct kiev\vlang\Struct.java bad
 kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\BooleanExpr.java

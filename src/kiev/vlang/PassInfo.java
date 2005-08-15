@@ -172,7 +172,7 @@ public class PassInfo {
 		ASTNode@ node;
 		if (!resolveNameR(node,new ResInfo(),qname))
 			return false;
-		if (node instanceof BaseStruct && !node.isPackage())
+		if (node instanceof Struct && !node.isPackage())
 			return true;
 		if (node instanceof TypeRef)
 			return true;
@@ -386,7 +386,7 @@ public class PassInfo {
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
 		resolveNameR(p,new ResInfo(),qname_head),
 		p instanceof Struct,
-		((Struct)p).resolveMethodR(node, info, qname_tail, mt)
+		((Struct)p).type.resolveCallStaticR(node, info, qname_tail, mt)
 	;
 		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
 		resolveBestMethodR((ScopeOfMethods)p,node,info,name,mt),

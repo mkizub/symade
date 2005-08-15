@@ -317,7 +317,7 @@ public class ASTExpression extends Expr {
 		return getExpr(expr.$var);
 	}
 
-	public Expr getExpr(BaseStruct:Object expr) {
+	public Expr getExpr(Struct:Object expr) {
 		return new WrapedExpr(expr.pos,expr);
 	}
 
@@ -332,12 +332,12 @@ public class ASTExpression extends Expr {
 	ASTNode makeAssignExpr(Type tp, int pos, Operator op, OpTypes opt, ASTNode expr1, ASTNode expr2) {
 		Expr e;
 		AssignOperator aop = (AssignOperator)op;
-		if( expr1 instanceof BaseStruct )
-			expr1 = Expr.toExpr((BaseStruct)expr1,null,pos,this);
+		if( expr1 instanceof Struct )
+			expr1 = Expr.toExpr((Struct)expr1,null,pos,this);
 		else
 			expr1 = ((Expr)expr1).resolve(null);
-		if( expr2 instanceof BaseStruct )
-			expr2 = Expr.toExpr((BaseStruct)expr2,null,pos,this);
+		if( expr2 instanceof Struct )
+			expr2 = Expr.toExpr((Struct)expr2,null,pos,this);
 		else
 			expr2 = ((Expr)expr2).resolveExpr(expr1.getType());
 		if( opt.method != null )
@@ -372,12 +372,12 @@ public class ASTExpression extends Expr {
 					e = (Expr)new BinaryBoolExpr(pos,(BinaryOperator)op,getExpr(expr1),getExpr(expr2)).resolve(Type.tpBoolean);
 			}
 		} else {
-			if( expr1 instanceof BaseStruct )
-				expr1 = Expr.toExpr((BaseStruct)expr1,null,pos,this);
+			if( expr1 instanceof Struct )
+				expr1 = Expr.toExpr((Struct)expr1,null,pos,this);
 			else
 				expr1 = (Expr)((Expr)expr1).resolve(null);
-			if( expr2 instanceof BaseStruct )
-				expr2 = Expr.toExpr((BaseStruct)expr2,null,pos,this);
+			if( expr2 instanceof Struct )
+				expr2 = Expr.toExpr((Struct)expr2,null,pos,this);
 			else
 				expr2 = (Expr)((Expr)expr2).resolve(null);
 			if( opt.method != null )

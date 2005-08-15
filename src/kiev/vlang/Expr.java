@@ -1429,7 +1429,7 @@ public class UnaryExpr extends Expr {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !PassInfo.clazz.instanceOf((Struct)opt.method.parent) )
+				if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -2049,8 +2049,8 @@ public class CastExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			ASTNode e = expr.resolve(type);
-			if( e instanceof BaseStruct )
-				expr = Expr.toExpr((BaseStruct)e,reqType,pos,parent);
+			if( e instanceof Struct )
+				expr = Expr.toExpr((Struct)e,reqType,pos,parent);
 			else
 				expr = (Expr)e;
 			if (reqType == Type.tpVoid) {

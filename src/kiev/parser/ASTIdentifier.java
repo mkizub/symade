@@ -135,9 +135,9 @@ public class ASTIdentifier extends Expr {
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
 		Expr e = null;
-		if( v instanceof BaseStruct ) {
+		if( v instanceof Struct ) {
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
-				BaseStruct s = (BaseStruct)v;
+				Struct s = (Struct)v;
 				if( s.isPizzaCase() ) {
 					Struct pc = (Struct)s;
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)pc.getAttr(attrPizzaCase);
@@ -145,8 +145,8 @@ public class ASTIdentifier extends Expr {
 					return new ConstIntExpr(case_attr.caseno).resolve(reqType);
 				}
 			}
-			((BaseStruct)v).checkResolved();
-			TypeNameRef tr = new TypeNameRef(this,((BaseStruct)v).type);
+			((Struct)v).checkResolved();
+			TypeNameRef tr = new TypeNameRef(this,((Struct)v).type);
 			return tr;
 		}
 		else if( v instanceof TypeRef ) {

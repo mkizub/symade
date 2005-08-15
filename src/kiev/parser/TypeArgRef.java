@@ -32,25 +32,29 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class TypeNameRef extends TypeRef {
+public class TypeArgRef extends TypeRef {
+	
+	private static int anonymousCounter = 100;
+	
 	@att public ASTIdentifier			name;
+	@att public TypeRef					super_bound;
 
-	public TypeNameRef() {
+	public TypeArgRef() {
 	}
 
-	public TypeNameRef(KString nm) {
+	public TypeArgRef(KString nm) {
 		name = new ASTIdentifier(nm);
 	}
 
-	public TypeNameRef(ASTIdentifier nm) {
+	public TypeArgRef(ASTIdentifier nm) {
 		this.pos = nm.getPos();
 		this.name = nm;
 	}
 
-	public TypeNameRef(ASTIdentifier nm, Type tp) {
+	public TypeArgRef(ASTIdentifier nm, TypeRef sup) {
 		this.pos = nm.getPos();
 		this.name = nm;
-		this.lnk = tp;
+		this.super_bound = sup;
 	}
 
 
@@ -61,19 +65,23 @@ public class TypeNameRef extends TypeRef {
 	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
-		KString nm = name.name;
-		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),nm) )
-			throw new CompilerException(pos,"Unresolved identifier "+nm);
-		if( v instanceof TypeRef ) {
-			this.lnk = ((TypeRef)v).getType();
+		ClazzName cn;
+		if (parent instanceof Struct) {
+			Struct s = (Struct)parent;
+			KString nm = KString.from(s.name.name+"$"+name.name);
+			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
+			cn = new ClazzName(nm,name.name,bc,true,true);
 		} else {
-			if( !(v instanceof Struct) )
-				throw new CompilerException(pos,"Type name "+nm+" is not a structure, but "+v);
-			Struct bs = (Struct)v;
-			bs.checkResolved();
-			this.lnk = bs.type;
+			int cnt = anonymousCounter++;
+			KString nm = KString.from("$"+cnt+"$"+name.name);
+			cn = new ClazzName(nm,name.name,nm,true,true);
 		}
+		BaseType sup = null;
+		if (Kiev.pass_no.ordinal() >= TopLevelPass.passArgumentInheritance.ordinal()) {
+			if (super_bound != null)
+				sup = (BaseType)super_bound.getType();
+		}
+		this.lnk = ArgumentType.newArgumentType(cn,sup);
 		return this.lnk;
 	}
 

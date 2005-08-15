@@ -54,9 +54,9 @@ public class ASTAccessExpression extends Expr {
 			if( o instanceof TypeRef ) {
 				tp = ((TypeRef)o).getType();
 			}
-			else if( o instanceof BaseStruct ) {
-				((BaseStruct)o).checkResolved();
-				tp = ((BaseStruct)o).type;
+			else if( o instanceof Struct ) {
+				((Struct)o).checkResolved();
+				tp = ((Struct)o).type;
 			}
 			else {
 				obj = (Expr)o;
@@ -159,8 +159,8 @@ public class ASTAccessExpression extends Expr {
 		if( v instanceof Field ) {
 			return info.buildAccess(pos, o, v);
 		}
-		else if( v instanceof BaseStruct ) {
-			return (BaseStruct)v;
+		else if( v instanceof Struct ) {
+			return (Struct)v;
 		}
 		else if( v instanceof Method ) {
 			if( v.isStatic() )

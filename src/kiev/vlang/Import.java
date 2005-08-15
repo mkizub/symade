@@ -164,7 +164,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).resolveMethodR(node,path,name,mt),
+		((Struct)this.resolved).type.resolveCallStaticR(node,path,name,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 
@@ -188,7 +188,7 @@ public class Typedef extends ASTNode implements Named {
 
 	@att public KString		name;
 	@att public TypeRef		type;
-	@att public BaseStruct	typearg;
+	@att public TypeArgRef	typearg;
 
 	public Typedef() {
 	}
@@ -203,7 +203,7 @@ public class Typedef extends ASTNode implements Named {
 	}
 
 	public void set(ASTIdentifier id, ASTOperator op, TypeRef tp) {
-		typearg = Env.newMethodArgument(id.name, Env.root);
+		typearg = new TypeArgRef(id.name);
 		name = op.image;
 
 		TypeWithArgsRef natp = (TypeWithArgsRef)tp;
@@ -211,7 +211,7 @@ public class Typedef extends ASTNode implements Named {
 		KString argnm = arg.name.name;
 		//if (!typearg.name.short_name.equals(argnm))
 		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
-		natp.args[0] = new TypeRef(typearg.type);
+		natp.args[0] = new TypeRef(typearg.getType());
 		type = natp;
 		return;
 	}

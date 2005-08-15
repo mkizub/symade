@@ -269,7 +269,7 @@ public abstract class ASTNode implements Constants {
 	
 	// package	
 	@getter public final boolean get$is_struct_package()  alias isPackage  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_package;
 	}
 	@setter public final void set$is_struct_package(boolean on) alias setPackage {
@@ -282,11 +282,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_argument()  alias isArgument  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_argument;
 	}
 	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_argument != on) {
 			this.is_struct_argument = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -294,7 +294,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// a class's argument	
 	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_pizza_case;
 	}
 	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
@@ -306,11 +306,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// a local (in method) class	
 	@getter public final boolean get$is_struct_local()  alias isLocal  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_local;
 	}
 	@setter public final void set$is_struct_local(boolean on) alias setLocal {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_local != on) {
 			this.is_struct_local = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -318,11 +318,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// an anonymouse (unnamed) class	
 	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_anomymouse;
 	}
 	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_anomymouse != on) {
 			this.is_struct_anomymouse = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -330,7 +330,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// has pizza cases
 	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_has_pizza_cases;
 	}
 	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
@@ -342,11 +342,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// verified
 	@getter public final boolean get$is_struct_verified()  alias isVerified  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_verified;
 	}
 	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_verified != on) {
 			this.is_struct_verified = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -354,11 +354,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// indicates that structure members were generated
 	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_members_generated;
 	}
 	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_members_generated != on) {
 			this.is_struct_members_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -366,11 +366,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// indicates that statements in code were generated
 	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_statements_generated;
 	}
 	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_statements_generated != on) {
 			this.is_struct_statements_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -378,11 +378,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// indicates that the structrue was generared (from template)
 	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_generated;
 	}
 	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		if (this.is_struct_generated != on) {
 			this.is_struct_generated = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -390,7 +390,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev enum
 	@getter public final boolean get$is_struct_enum()  alias isEnum  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_enum;
 	}
 	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
@@ -403,7 +403,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev annotation
 	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_annotation;
 	}
 	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
@@ -417,7 +417,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// java enum
 	@getter public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_java_enum;
 	}
 	@setter public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
@@ -429,7 +429,7 @@ public abstract class ASTNode implements Constants {
 	}
 	// kiev syntax
 	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
-		assert(this instanceof BaseStruct,"For node "+this.getClass());
+		assert(this instanceof Struct,"For node "+this.getClass());
 		return this.is_struct_syntax;
 	}
 	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
@@ -1028,10 +1028,10 @@ public abstract class Expr extends CFlowNode {
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		Expr expr = null;
 		if( e instanceof Expr ) expr = (Expr)e;
-		if( e instanceof BaseStruct )
-			expr = toExpr((BaseStruct)e,reqType,pos,parent);
+		if( e instanceof Struct )
+			expr = toExpr((Struct)e,reqType,pos,parent);
 		else if( e instanceof TypeRef )
-			expr = toExpr((BaseStruct)e,reqType,pos,parent);
+			expr = toExpr((Struct)e,reqType,pos,parent);
 		else if( e instanceof WrapedExpr )
 			expr = toExpr(((WrapedExpr)e).expr,reqType,pos,parent);
 		if( expr == null )
@@ -1051,10 +1051,10 @@ public abstract class Expr extends CFlowNode {
 		throw new CompilerException(e.pos,"Expression "+expr+" is not auto-castable to type "+reqType);
 	}
 	public static Expr toExpr(Object o, Type reqType, int pos, ASTNode parent) {
-		BaseStruct bs = null;
+		Struct bs = null;
 		Type st = null;
-		if (o instanceof BaseStruct) {
-			bs = (BaseStruct)o;
+		if (o instanceof Struct) {
+			bs = (Struct)o;
 			st = bs.type;
 		}
 		else if (o instanceof TypeRef) {
@@ -1110,12 +1110,12 @@ public class WrapedExpr extends Expr {
 	}
 	public int		getPriority() { return 256; }
 	public Type getType() {
-		if( expr instanceof BaseStruct ) return Type.getRealType(base_type,((BaseStruct)expr).type);
+		if( expr instanceof Struct ) return Type.getRealType(base_type,((Struct)expr).type);
 		if( expr instanceof TypeRef ) return Type.getRealType(base_type,((TypeRef)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public ASTNode resolve(Type reqType) {
-		if( expr instanceof BaseStruct ) return expr;
+		if( expr instanceof Struct ) return expr;
 		if( expr instanceof TypeRef ) return expr;
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
@@ -1242,17 +1242,6 @@ public class TypeRef extends ASTNode {
 	public void set$lnk(Type n) {
 		this.lnk = n;
 	}
-	
-//	public boolean equals(Object o) {
-//		Type t = lnk;
-//		if (t == null)
-//			return false;
-//		if (o instanceof TypeRef)
-//			return t == ((TypeRef)o).lnk;
-//		if (o instanceof Type)
-//			return t == o;
-//		return false;
-//	}
 	
 	public String toString() {
 		return String.valueOf(lnk);

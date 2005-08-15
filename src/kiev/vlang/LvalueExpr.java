@@ -286,7 +286,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				ASTNode@ v;
-//				BaseStruct s = t.clazz;
+//				Struct s = t.clazz;
 //				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -305,7 +305,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 		if( t.isArray() ) {
 			return new Type[]{Type.getRealType(t,t.args[0])};
 		} else {
-			BaseStruct s = t.clazz;
+			Struct s = t.clazz;
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
@@ -339,7 +339,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			obj = (Expr)obj.resolve(null);
 			if( !obj.getType().isArray() ) {
 				// May be an overloaded '[]' operator, ensure overriding
-				BaseStruct s = obj.getType().clazz;
+				Struct s = obj.getType().clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 			lookup_op:
 				for(;;) {
@@ -428,7 +428,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				// We need to get the type of object in stack
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
-				BaseStruct s = objType.clazz;
+				Struct s = objType.clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -456,7 +456,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
 					throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
-				BaseStruct s = obj.getType().clazz;
+				Struct s = obj.getType().clazz;
 				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -748,7 +748,7 @@ public class VarAccessExpr extends LvalueExpr {
 		}
 		if( chtp == null )
 			chtp = var.type.getJavaType();
-		if( !var.type.clazz.equals(chtp.clazz) ) {
+		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
 			Code.addInstr(op_checkcast,var.type);
 			return;
 		}
