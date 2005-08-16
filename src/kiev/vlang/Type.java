@@ -220,22 +220,8 @@ public class Type implements StdTypes, AccessFlags, Named {
 		return newRefType(Env.newStruct(name),args);
 	}
 
-	public static Type newArrayType(Type type) {
-		KString sign = new KStringBuffer(type.signature.len).append('[').append(type.signature).toKString();
-		Type t = typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
-		if( t != null ) return t;
-		t = new Type();
-		t.clazz = tpArray.clazz;
-		t.args = new Type[]{type};
-		t.signature = sign;
-		t.java_signature = new KStringBuffer(type.java_signature.len+1).append_fast((byte)'[')
-			.append_fast(type.java_signature).toKString();
-		t.flags	 |= flReference | flArray;
-		if( t.args[0].isArgumented() ) t.flags |= flArgumented;
-		typeHash.put(t);
-		trace(Kiev.debugCreation,"New type created: "+t
-			+" with signature "+t.signature+" / "+t.java_signature);
-		return t;
+	public static ArrayType newArrayType(Type type) {
+		return ArrayType.newArrayType(type);
 	}
 
 	public static Type fromSignature(KString sig) {
@@ -293,13 +279,9 @@ public class Type implements StdTypes, AccessFlags, Named {
 	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
-		{	sup ?= getSuperType(),
-			info.enterSuper() : info.leaveSuper(),
-			Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
-		;	sup @= TypeRef.linked_elements(clazz.interfaces),
-			info.enterSuper() : info.leaveSuper(),
-			Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
-		}
+		sup @= getDirectSuperTypes(),
+		info.enterSuper() : info.leaveSuper(),
+		Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
 	}
 
 	private rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name)
@@ -335,13 +317,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 		;
 			info.isSuperAllowed(),
 			info.enterSuper() : info.leaveSuper(),
-			sup ?= getSuperType(),
-			Type.getRealType(this,sup).resolveCallAccessR(node,info,name,mtype)
-		;
-			info.isSuperAllowed(),
-			isInterface(),
-			sup @= TypeRef.linked_elements(clazz.interfaces),
-			info.enterSuper() : info.leaveSuper(),
+			sup @= getDirectSuperTypes(),
 			Type.getRealType(this,sup).resolveCallAccessR(node,info,name,mtype)
 		;
 			info.isForwardsAllowed() && clazz instanceof Struct,
@@ -417,9 +393,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 			if( Kiev.verbose ) e.printStackTrace( /* */System.out /* */ );
 			throw new RuntimeException("Unresolved type:"+e);
 		}
-		// Is this a case class without arguments?
-//		if( t1.isPizzaCase() && t1.clazz.super_clazz.clazz.equals(t2.clazz) )
-//			return true;
 		// Instance of closure
 		if( t1.isStructInstanceOf(Type.tpClosureClazz) ) {
 			if( t2 == tpClosure )
@@ -431,6 +404,8 @@ public class Type implements StdTypes, AccessFlags, Named {
 				return true;
 			}
 		}
+		if( t1.isArray() && t2.isArray() && isInstanceOf(t1.args[0],t2.args[0]))
+			return true;
 		// Check class1 == class2 && arguments
 		if( t1.clazz != null && t2.clazz != null && t1.clazz.equals(t2.clazz) ) {
 			int t1_args_len = t1.args==null?0:t1.args.length;
@@ -441,11 +416,9 @@ public class Type implements StdTypes, AccessFlags, Named {
 				if( !isInstanceOf(t1.args[i],t2.args[i]) ) return false;
 			return true;
 		}
-		if( t1.getSuperType() != null && isInstanceOf(Type.getRealType(t1,t1.getSuperType()),t2) )
-			return true;
-		if (!t1.isArgument()) {
-			for(int i=0; i < t1.clazz.interfaces.length; i++)
-				if( isInstanceOf(t1.clazz.interfaces[i].getType(),t2) ) return true;
+		foreach (Type sup; t1.getDirectSuperTypes()) {
+			if (isInstanceOf(Type.getRealType(t1,sup),t2))
+				return true;
 		}
 		return false;
 	}
@@ -464,6 +437,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 		if( isInstanceOf(t) ) return true;
 		if( this.isReference() && t.isReference()
 		 && !this.isArgument()
+		 && !this.isArray()
 		 && this.clazz.package_clazz.isClazz()
 		 && !this.clazz.isStatic() && this.clazz.package_clazz.type.isAutoCastableTo(t)
 		)
@@ -597,6 +571,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 		if( this.isReference() && t.isReference() && (this.clazz.name.short_name.equals(Constants.nameIdefault)) ) return true;
 		if( this.isReference() && t.isReference()
 		 && !this.isArgument()
+		 && !this.isArray()
 		 && this.clazz.package_clazz.isClazz()
 		 && !this.clazz.isStatic() && this.clazz.package_clazz.type.isAutoCastableTo(t)
 		)
@@ -657,23 +632,33 @@ public class Type implements StdTypes, AccessFlags, Named {
 	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
 
-	public boolean isAnnotation()	{ return clazz.isAnnotation(); }
-	public boolean isAbstract()		{ return clazz.isAbstract(); }
-	public boolean isEnum()			{ return clazz.isEnum(); }
-	public boolean isJavaEnum()		{ return clazz.isJavaEnum(); }
-	public boolean isInterface()		{ return clazz.isInterface(); }
-	public boolean isClazz()			{ return clazz.isClazz(); }
-	public boolean isHasCases()		{ return clazz.isHasCases(); }
-	public boolean isPizzaCase()		{ return clazz.isPizzaCase(); }
-	public boolean isStaticClazz()	{ return clazz.isStatic(); }
-	public boolean isStruct()			{ return clazz instanceof Struct; }
-	public boolean isAnonymouseClazz()			{ return clazz.isAnonymouse(); }
-	public boolean isLocalClazz()				{ return clazz.isAnonymouse(); }
+	public boolean isAnnotation()			{ return clazz.isAnnotation(); }
+	public boolean isAbstract()				{ return clazz.isAbstract(); }
+	public boolean isEnum()					{ return clazz.isEnum(); }
+	public boolean isJavaEnum()				{ return clazz.isJavaEnum(); }
+	public boolean isInterface()			{ return clazz.isInterface(); }
+	public boolean isClazz()				{ return clazz.isClazz(); }
+	public boolean isHasCases()				{ return clazz.isHasCases(); }
+	public boolean isPizzaCase()			{ return clazz.isPizzaCase(); }
+	public boolean isStaticClazz()			{ return clazz.isStatic(); }
+	public boolean isStruct()				{ return clazz instanceof Struct; }
+	public boolean isAnonymouseClazz()		{ return clazz.isAnonymouse(); }
+	public boolean isLocalClazz()			{ return clazz.isAnonymouse(); }
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
 	public boolean isWrapper()						{ return false; }
 	public Expr makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
-	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
+	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); }
+	
+	public Type[] getDirectSuperTypes() {
+		Type st = getSuperType();
+		if (st == null) return Type.emptyArray;
+		Type[] sta = new Type[clazz.interfaces.length+1];
+		sta[0] = st;
+		for (int i=1; i < sta.length; i++)
+			sta[i] = clazz.interfaces[i-1].getType();
+		return sta;
+	}
 	
 	public Type getJavaType() {
 		if( !isReference() ) {
@@ -732,15 +717,9 @@ public class Type implements StdTypes, AccessFlags, Named {
 				}
 			}
 			// Search in super-class and super-interfaces
-			Type tp;
-			Struct rs = t1.clazz;
-			if(	rs.super_type != null
-			&&  rs.super_type.args != null
-			&&  (tp=getRealType(getRealType(t1,rs.super_type),t2))!=t2 )
-				return tp;
-			for(int i=0; i < rs.interfaces.length; i++) {
-				Type it = rs.interfaces[i].getType();
-				if( (tp=getRealType(getRealType(t1,it),t2)) != t2 )
+			foreach (Type sup; t1.getDirectSuperTypes()) {
+				Type tp = getRealType(getRealType(t1,sup),t2);
+				if (tp != t2)
 					return tp;
 			}
 			// Not found, return itself
@@ -837,6 +816,91 @@ public class BaseType extends Type {
 	}
 }
 
+public class ArrayType extends Type {
+
+	private static final ClazzName cname = ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;"));
+	
+	public static ArrayType newArrayType(Type type) {
+		KString sign = new KStringBuffer(type.signature.len).append('[').append(type.signature).toKString();
+		ArrayType t = (ArrayType)typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
+		if( t != null ) return t;
+		t = new ArrayType();
+		t.clazz = null;
+		t.args = new Type[]{type};
+		t.signature = sign;
+		t.java_signature = new KStringBuffer(type.java_signature.len+1).append_fast((byte)'[')
+			.append_fast(type.java_signature).toKString();
+		t.flags	 |= flReference | flArray;
+		if( t.args[0].isArgumented() ) t.flags |= flArgumented;
+		typeHash.put(t);
+		trace(Kiev.debugCreation,"New type created: "+t+" with signature "+t.signature+" / "+t.java_signature);
+		return t;
+	}
+
+	public NodeName getName()						{ return cname; }
+	public ClazzName getClazzName()					{ return cname; }
+	public boolean isArgument()						{ return false; }
+	public boolean isAnnotation()					{ return false; }
+	public boolean isAbstract()						{ return false; }
+	public boolean isEnum()							{ return false; }
+	public boolean isJavaEnum()						{ return false; }
+	public boolean isInterface()					{ return false; }
+	public boolean isClazz()						{ return false; }
+	public boolean isHasCases()						{ return false; }
+	public boolean isPizzaCase()					{ return false; }
+	public boolean isStaticClazz()					{ return false; }
+	public boolean isStruct()						{ return false; }
+	public boolean isAnonymouseClazz()				{ return false; }
+	public boolean isLocalClazz()					{ return false; }
+	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
+	public Type getSuperType()						{ return tpObject; }
+	public Type getInitialType()					{ return this; }
+	public MetaSet getStructMeta()					{ return tpObject.getStructMeta(); }
+	public Type[] getDirectSuperTypes()			{ return new Type[] {tpObject, tpCloneable}; }
+
+	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	{
+		false
+	}
+	
+	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	{
+		tpObject.resolveNameAccessR(node, info, name)
+	}
+
+	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		false
+	}
+	
+	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	{
+		tpObject.resolveCallAccessR(node, info, name, mt)
+	}
+	
+	public Type getJavaType() {
+		return newArrayType(args[0].getJavaType());
+	}
+
+	public boolean checkResolved() {
+		return true;
+	}
+
+	public void checkJavaSignature() {
+		Type jt = getJavaType();
+		java_signature = jt.java_signature;
+	}
+
+	public String toString() {
+		return String.valueOf(args[0])+"[]";
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.append(args[0]).append("[]");
+	}
+
+}
+
 public class ArgumentType extends Type {
 
 	/** Variouse names of the type */
@@ -891,8 +955,7 @@ public class ArgumentType extends Type {
 	public Type getSuperType()						{ return super_type; }
 	public Type getInitialType()					{ return super_type.getInitialType(); }
 	public MetaSet getStructMeta()					{ return super_type.getStructMeta(); }
-	//public Struct getStruct()						{ return super_type.getStruct(); }
-
+	public Type[] getDirectSuperTypes()			{ return super_type.getDirectSuperTypes(); }
 	
 	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
 	{
@@ -915,11 +978,6 @@ public class ArgumentType extends Type {
 	}
 	
 	public Type getJavaType() {
-		if( Kiev.argtype != null ) {
-			Type t = Type.getRealType(Kiev.argtype,this);
-			if( t != this )
-				return t;
-		}
 		if (super_type == null)
 			return tpObject;
 		return super_type.getJavaType();
