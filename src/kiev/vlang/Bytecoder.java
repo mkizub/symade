@@ -23,8 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
-import kiev.parser.ASTIdentifier;
-import kiev.parser.TypeWithArgsRef;
+import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -279,13 +278,24 @@ public class Bytecoder implements Constants {
 			}
 		}
 		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
+		MethodType jtype;
+		if( kaclazz != null )
+			jtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type_java));
+		else
+			jtype = mtype;
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
 				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
-				m = new RuleMethod(cl,m_name,mtype,m_flags);
+				m = new RuleMethod(m_name,mtype,m_flags);
 			}
 			else
-				m = new Method(cl,m_name,mtype,m_flags);
+				m = new Method(m_name,mtype,m_flags);
+			m.parent = cl;
+			for (int i=0; i < mtype.args.length; i++) {
+				FormPar fp = new FormPar(new ASTIdentifier(KString.from("arg"+1)),
+					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),0);
+				m.params.add(fp);
+			}
 			trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 			if( conditions != null ) {
 				m.conditions.addAll(conditions);
@@ -296,8 +306,6 @@ public class Bytecoder implements Constants {
 		} else {
 			trace(Kiev.debugBytecodeRead,"read2 method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		}
-		if( kaclazz != null ) m.jtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type_java));
-		else m.jtype = m.type;
 		if( nm != null ) {
 			m.name.aliases = nm.aliases;
 			if( Kiev.verbose && m.name.equals(nameArrayOp)) {

@@ -38,18 +38,22 @@ import syntax kiev.Syntax;
 @node
 public class RuleMethod extends Method {
 
-	@att public final NArr<Var>		localvars;
-	public int						base = 1;
-	public int						max_depth = 0;
-	public int						state_depth = 0;
-	public int						max_vars;
-	public int						index;		// index counter for RuleNode.idx
+	@att public final NArr<LoclVar>		localvars;
+	public int							base = 1;
+	public int							max_depth = 0;
+	public int							state_depth = 0;
+	public int							max_vars;
+	public int							index;		// index counter for RuleNode.idx
 
 	public RuleMethod() {
 	}
 
-	public RuleMethod(ASTNode clazz, KString name, MethodType type, int acc) {
-		super(clazz,name,type,acc | ACC_RULEMETHOD);
+	public RuleMethod(ASTIdentifier id, TypeCallRef t_ref, int fl) {
+		super(id.name,t_ref,(TypeCallRef)t_ref.copy(),fl | ACC_RULEMETHOD);
+		pos = id.pos;
+	}
+	public RuleMethod(KString name, MethodType type, int fl) {
+		super(name,type,type,fl | ACC_RULEMETHOD);
 	}
 
 	public int allocNewBase(int n) {
@@ -92,14 +96,14 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic(),
 		name.equals(nameThis),
-		node ?= this_par
+		node ?= getThisPar()
 	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
 	;
 		!this.isStatic(),
-		var ?= this_par,
+		var ?= getThisPar(),
 		path.enterForward(var) : path.leaveForward(var),
 		var.type.resolveNameAccessR(node,path,name)
 	;
@@ -108,6 +112,43 @@ public class RuleMethod extends Method {
 		path.enterForward(var) : path.leaveForward(var),
 		var.type.resolveNameAccessR(node,path,name)
 	}
+
+    public ASTNode pass3() {
+		if !( parent instanceof Struct )
+			throw new CompilerException(pos,"Method must be declared on class level only");
+		Struct clazz = (Struct)parent;
+		// TODO: check flags for fields
+		if( clazz.isPackage() ) setStatic(true);
+		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
+		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
+		else if( clazz.isInterface() ) {
+			setPublic(true);
+			if( pbody == null ) setAbstract(true);
+		}
+		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,ACC_FORWARD));
+		// push the method, because formal parameters may refer method's type args
+		PassInfo.push(this);
+		try {
+			foreach (FormPar fp; params) {
+				fp.vtype.getType(); // resolve
+				if (fp.meta != null)
+					fp.meta.verify();
+			}
+			if( isVarArgs() ) {
+				FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+				params.append(va);
+			}
+		} finally {
+			PassInfo.pop(this);
+		}
+		trace(Kiev.debugMultiMethod,"Rule "+this+" has java type "+this.jtype);
+		foreach(ASTAlias al; aliases) al.attach(this);
+
+		foreach(WBCCondition cond; conditions)
+			cond.definer = this;
+
+		return this;
+    }
 
 	public ASTNode resolve(Type reqType) {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
@@ -119,7 +160,7 @@ public class RuleMethod extends Method {
 			state.guarded = true;
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
-					Var p = this_par;
+					Var p = getThisPar();
 					NodeInfoPass.setNodeType(p,p.type);
 					NodeInfoPass.setNodeInitialized(p,true);
 				}

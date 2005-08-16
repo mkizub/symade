@@ -158,6 +158,21 @@ public class FormPar extends Var {
 	
 }
 
+@node
+public class LoclVar extends Var {
+	@att public Expr		init;
+
+	public LoclVar() {
+		setLocalRuleVar(true);
+	}
+
+	public LoclVar(ASTIdentifier id, TypeRef vtype, int flags) {
+		super(id,vtype,flags);
+		setLocalRuleVar(true);
+	}
+
+}
+
 public class CodeVar {
 
 	public Var			var;

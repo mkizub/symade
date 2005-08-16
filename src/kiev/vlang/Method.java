@@ -49,39 +49,40 @@ import syntax kiev.Syntax;
 //}
 
 @node
-public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl {
+public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
 	@virtual
-	public virtual Access	acc;
+	public virtual Access				acc;
 
 	/** Name of the method */
-	public NodeName			name;
+	public NodeName						name;
 
 	/** Return type of the method and signature (argument's types) */
-	@ref public MethodType		type;
-
-	/** The java type of the method (if method overrides parametriezed method) */
-	@ref public MethodType		jtype;
+	@att public final TypeCallRef		type_ref;
 
 	/** The type of the dispatcher method (if method is a multimethod) */
-	@ref public MethodType		dtype;
+	@att public final TypeCallRef		dtype_ref;
 
 	/** Parameters of this method */
 	@att public final NArr<FormPar>		params;
 
+    @att public final NArr<ASTAlias>	aliases;
+
+    @att public ASTNode					throwns;
+
 	/** Return value of this method */
-	@att public Var			retvar;
+	@att public Var						retvar;
 
 	/** Body of the method - ASTBlockStat or BlockStat
 	 */
-	@att public ASTNode				body;
-	@att public PrescannedBody 		pbody;
+	@att public ASTNode					body;
+	@att public PrescannedBody 			pbody;
 
 	/** Array of attributes of this method
 	 */
-	public Attr[]			attrs = Attr.emptyArray;
+	public Attr[]						attrs = Attr.emptyArray;
 
 	/** Require & ensure clauses */
 	@att public final NArr<WBCCondition> conditions;
@@ -92,41 +93,46 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	@ref public final NArr<Field>		violated_fields;
 	
 	/** Default meta-value for annotation methods */
-	@att public MetaValue		annotation_default;
+	@att public MetaValue				annotation_default;
 
 	/** Meta-information (annotations) of this structure */
-	@att public MetaSet			meta;
+	@att public MetaSet					meta;
 
 	/** Indicates that this method is inlined by dispatcher method
 	 */
-	public boolean			inlined_by_dispatcher;
+	public boolean						inlined_by_dispatcher;
 	
-	@ref public Method		generated_from;
+	@ref public Method					generated_from;
 	
-	@att public FormPar		this_par;
+	@att protected FormPar				this_var;
 
+	private boolean		invalid_types;
+	
+	@virtual public virtual abstract access:ro MethodType type; 
+	@virtual public virtual abstract access:ro MethodType jtype; 
+	@virtual public virtual abstract access:ro MethodType dtype; 
+	
 	public Method() {
 	}
 
-	public Method(ASTNode clazz, KString name, MethodType type, int acc) {
-		this(clazz,name,type,null,acc);
+	public Method(KString name, MethodType mt, int fl) {
+		this(name,new TypeCallRef(mt),new TypeCallRef(mt),fl);
 	}
 
-	public Method(ASTNode clazz, KString name, MethodType type, MethodType dtype, int acc) {
-		super(0,acc);
+	public Method(KString name, MethodType mt, MethodType dmt, int fl) {
+		this(name,new TypeCallRef(mt),new TypeCallRef(dmt),fl);
+	}
+	public Method(KString name, TypeCallRef type_ref, TypeCallRef dtype_ref, int fl) {
+		super(0,fl);
 		this.name = new NodeName(name);
-		this.type = type;
-		this.dtype = dtype;
-		if( ((Struct)clazz).generated_from == null )
-			this.jtype = (MethodType)(dtype==null?type:dtype).getJavaType();
-		else
-			this.jtype = (MethodType)Type.getRealType(((Struct)clazz).type,(dtype==null?type:dtype)).getJavaType();
-        // Parent is always the class this method belongs to
-		this.parent = clazz;
+		this.type_ref = type_ref;
+		if (dtype_ref != null) {
+			this.dtype_ref = dtype_ref;
+		} else {
+			this.dtype_ref = (TypeCallRef)type_ref.copy();
+		}
 		this.acc = new Access(0);
 		this.meta = new MetaSet(this);
-		if ((acc & ACC_STATIC) == 0)
-			this_par = new FormPar(pos,Constants.nameThis,((Struct)parent).type,ACC_FORWARD);
 	}
 
 	@getter public Access get$acc() {
@@ -137,27 +143,61 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		acc = a;
 		acc.verifyAccessDecl(this);
 	}
-
-	public void setStatic(boolean on) {
-		super.setStatic(on);
-		if (on) {
-			if (this_par != null)
-				this_par = null; 
-		} else {
-			if (this_par == null)
-				this_par = new FormPar(pos,Constants.nameThis,((Struct)parent).type,ACC_FORWARD);
+	
+	private void rebuildTypes() {
+		type_ref.args.delAll();
+		dtype_ref.args.delAll();
+		foreach (FormPar fp; params) {
+			type_ref.args.add((TypeRef)fp.vtype.copy());
+			if (fp.stype != null)
+				dtype_ref.args.add((TypeRef)fp.stype.copy());
+			else if (fp.type.isPizzaCase())
+				dtype_ref.args.add(new TypeRef(fp.vtype.getSuperType()));
+			else
+				dtype_ref.args.add((TypeRef)fp.vtype.copy());
 		}
+		invalid_types = false;
 	}
 	
+	@getter public MethodType get$type()	{
+		if (invalid_types) rebuildTypes();
+		return type_ref.getMType();
+	} 
+	@getter public MethodType get$jtype()	{
+		if (invalid_types) rebuildTypes();
+		return (MethodType)dtype.getJavaType();
+	}
+	@getter public MethodType get$dtype()	{
+		if (invalid_types) rebuildTypes();
+		if (dtype_ref == null)
+			dtype_ref = new TypeCallRef(type_ref.getMType());
+		return dtype_ref.getMType();
+	}
+	
+	public FormPar getThisPar() {
+		if (isStatic()) {
+			this_var = null;
+		}
+		else if (this_var == null) {
+			ASTNode p = parent;
+			while !(p instanceof Struct) p = p.parent;
+			this_var = new FormPar(pos,Constants.nameThis,((Struct)p).type,ACC_FORWARD);
+		}
+		return this_var;
+	}
+
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
-			if      (attr.name == "params")
+			if      (attr.name == "params") {
 				parent.callbackChildChanged(pslot);
+			}
 			else if (attr.name == "conditions")
 				parent.callbackChildChanged(pslot);
 			else if (attr.name == "annotation_default")
 				parent.callbackChildChanged(pslot);
 		}
+		if (attr.name == "params")
+			invalid_types = true;
 	}
 	
 	public void addViolatedField(Field f) {
@@ -218,11 +258,11 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 	public NodeName getName() { return name; }
 
-	public Type	getType() { return type.ret; }
+	public Type	getType() { return type_ref.getMType(); }
 
 	public Var	getRetVar() {
 		if( retvar == null )
-			retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
+			retvar = new Var(pos,nameResultVar,type_ref.ret.getType(),ACC_FINAL);
 		return retvar;
 	}
 
@@ -354,7 +394,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		for(int i=0; i < params.length; i++) {
 			if (params[i].isFinal()) dmp.append("final").forsed_space();
 			if (params[i].isForward()) dmp.append("forward").forsed_space();
-			params[i].toJavaDecl(dmp,type.args[i]);
+			params[i].toJavaDecl(dmp,type_ref.args[i].getType());
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
@@ -376,20 +416,20 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	;
 		!this.isStatic(),
 		name.equals(nameThis),
-		node ?= this_par
+		node ?= getThisPar()
 	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
-	;
-		t @= type.fargs,
-		t.getClazzName().short_name.equals(name),
-		node ?= new TypeRef(t)
+//	;
+//		t @= type.fargs,
+//		t.getClazzName().short_name.equals(name),
+//		node ?= new TypeRef(t)
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
 	;
 		!this.isStatic(),
-		var ?= this_par,
+		var ?= getThisPar(),
 		path.enterForward(var) : path.leaveForward(var),
 		var.type.resolveNameAccessR(node,path,name)
 	;
@@ -403,7 +443,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		Var@ n;
 	{
 		!this.isStatic(),
-		n ?= this_par,
+		n ?= getThisPar(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	;
@@ -413,9 +453,75 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
+    public ASTNode pass3() {
+		if !( parent instanceof Struct )
+			throw new CompilerException(pos,"Method must be declared on class level only");
+		Struct clazz = (Struct)parent;
+		// TODO: check flags for methods
+		if( clazz.isPackage() ) setStatic(true);
+		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
+		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
+		else if( clazz.isInterface() ) {
+			setPublic(true);
+			if( pbody == null ) setAbstract(true);
+		}
+
+//		if (argtypes.length > 0) {
+//			ftypes = new Type[argtypes.length];
+//			for (int i=0; i < argtypes.length; i++)
+//				ftypes[i] = argtypes[i].getType();
+//		}
+
+		if (clazz.isAnnotation() && params.length > 0) {
+			Kiev.reportError(pos, "Annotation methods may not have arguments");
+			params.delAll();
+			setVarArgs(false);
+		}
+
+		if (clazz.isAnnotation() && (body != null || pbody != null)) {
+			Kiev.reportError(pos, "Annotation methods may not have bodies");
+			body = null;
+			pbody = null;
+		}
+
+		// push the method, because formal parameters may refer method's type args
+		PassInfo.push(this);
+		try {
+			foreach (FormPar fp; params) {
+				fp.vtype.getType(); // resolve
+				if (fp.meta != null)
+					fp.meta.verify();
+			}
+		} finally {
+			PassInfo.pop(this);
+		}
+		if( isVarArgs() ) {
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			params.append(va);
+		}
+		type_ref.getMType(); // resolve
+		dtype_ref.getMType(); // resolve
+		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
+		meta.verify();
+		if (annotation_default != null)
+			annotation_default.verify();
+		foreach(ASTAlias al; aliases) al.attach(this);
+        if( throwns != null ) {
+        	Type[] thrs = ((ASTThrows)throwns).pass3();
+        	ExceptionsAttr athr = new ExceptionsAttr();
+        	athr.exceptions = thrs;
+			this.addAttr(athr);
+        }
+
+		foreach(WBCCondition cond; conditions)
+			cond.definer = this;
+
+        return this;
+    }
+
 	public void resolveMetaDefaults() {
 		if (annotation_default != null) {
-			Type tp = this.type.ret;
+			Type tp = this.type_ref.getMType().ret;
 			Type t = tp;
 			if (t.isArray()) {
 				if (annotation_default instanceof MetaValueScalar) {
@@ -459,7 +565,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
-					Var p = this_par;
+					Var p = getThisPar();
 					NodeInfoPass.setNodeType(p,p.type);
 					NodeInfoPass.setNodeInitialized(p,true);
 				}
@@ -529,7 +635,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			PassInfo.push(this);
 			try {
 				if( !isBad() ) {
-					if( !isStatic() ) Code.addVar(this_par);
+					if( !isStatic() ) Code.addVar(getThisPar());
 					if( params.length > 0 ) Code.addVars(params.toArray());
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck();
@@ -540,7 +646,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
 								if( !cond.parent.isStatic() )
-									Code.addInstr(Instr.op_load,this_par);
+									Code.addInstr(Instr.op_load,getThisPar());
 								Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							}
 							setGenPostCond(true);
@@ -560,7 +666,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !cond.parent.isStatic() )
-								Code.addInstr(Instr.op_load,this_par);
+								Code.addInstr(Instr.op_load,getThisPar());
 							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
 						}
@@ -575,7 +681,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 						}
 					}
 					if( params.length > 0 ) Code.removeVars(params.toArray());
-					if( !isStatic() ) Code.removeVar(this_par);
+					if( !isStatic() ) Code.removeVar(getThisPar());
 				} else {
 					Code.addInstr(Instr.op_new,Type.tpError);
 					Code.addInstr(Instr.op_dup);
@@ -606,7 +712,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			Type tp2 = Type.getRealType(Kiev.argtype,params[i].type);
 			if( !tp1.equals(tp2) ) {
 				Code.addInstr(Instr.op_load,params[i]);
-				Code.addInstr(Instr.op_checkcast,type.args[i]);
+				Code.addInstr(Instr.op_checkcast,type_ref.args[i].getType());
 				Code.addInstr(Instr.op_store,params[i]);
 			}
 		}
@@ -676,13 +782,13 @@ public class WBCCondition extends Statement {
 			PassInfo.push(this);
 			Method m = (Method)PassInfo.method;
 			try {
-				if( !m.isStatic() ) Code.addVar(m.this_par);
+				if( !m.isStatic() ) Code.addVar(m.getThisPar());
 				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
 				body.generate(Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
 				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
-				if( !m.isStatic() ) Code.removeVar(m.this_par);
+				if( !m.isStatic() ) Code.removeVar(m.getThisPar());
 				Code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);

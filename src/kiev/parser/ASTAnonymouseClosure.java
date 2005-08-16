@@ -78,20 +78,17 @@ public class ASTAnonymouseClosure extends Expr {
 		me.type = ClosureType.newClosureType(me,types,ret);
 
 		if( ret != Type.tpRule ) {
-			ASTMethodDeclaration md = new ASTMethodDeclaration();
-			KString call_name;
-			if( ret.isReference() ) md.ident = new ASTIdentifier(pos, KString.from("call_Object"));
-			else md.ident = new ASTIdentifier(pos, KString.from("call_"+ret));
-			md.modifiers.modifier.add(ASTModifier.modPUBLIC);
 			if( ret.isReference() )
-				md.rettype = new TypeRef(pos, Type.tpObject);
-			else
-				md.rettype = new TypeRef(pos, ret);
+				ret = Type.tpObject;
+			KString call_name = KString.from("call_"+ret.getClazzName().short_name);
+			Method md = new Method(call_name, MethodType.newMethodType(Type.emptyArray,ret),ACC_PUBLIC);
+			md.pos = pos;
 			md.body = body;
 			me.members.add(md);
 		} else {
-			ASTRuleDeclaration md = new ASTRuleDeclaration();
-			md.ident = new ASTIdentifier(pos, KString.from("call_rule"));
+			KString call_name = KString.from("call_rule");
+			RuleMethod md = new RuleMethod(call_name, MethodType.newMethodType(Type.emptyArray,Type.tpRule),ACC_PUBLIC);
+			md.pos = pos;
 			md.body = body;
 			me.members.add(md);
 		}

@@ -323,12 +323,40 @@ public class kiev040 {
 			Struct s = (Struct)parent;
 			s.args += arg;
 		} else {
-			ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
-			m.argtypes += arg;
+			//ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
+			//m.argtypes += arg;
 		}
 		return arg;
 	}
 
+	private static Method mkMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
+		TypeCallRef tc = new TypeCallRef();
+		if (ret == null)
+			tc.ret = new TypeRef(Type.tpVoid);
+		else
+			tc.ret = ret;
+		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
+		meth.pos = id.pos;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		return meth;
+	}
+	
+	private static RuleMethod mkRuleMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
+		TypeCallRef tc = new TypeCallRef();
+		if (ret == null)
+			tc.ret = new TypeRef(Type.tpVoid);
+		else
+			tc.ret = ret;
+		RuleMethod meth = new RuleMethod(id, tc, modifiers.getFlags());
+		meth.pos = id.pos;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		return meth;
+	}
+	
 	private static Field mkField(ASTIdentifier id, ASTModifiers modifiers, TypeRef type, boolean first) {
 		if (!first)
 			type = (TypeRef)type.copy();
@@ -366,12 +394,36 @@ public class kiev040 {
 		return f;
 	}
 	
-	private static Var mkVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp) {
+	private static Var mkVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = (TypeRef)tp.copy();
 		Var v = new Var(id, tp, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet(v);
-			foreach (Meta m; modifiers.annotations)
-				v.meta.set(m);
+			if (first) {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m);
+			} else {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set((Meta)m.copy());
+			}
+		}
+		return v;
+	}
+	
+	private static LoclVar mkLoclVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+		if (!first)
+			tp = (TypeRef)tp.copy();
+		LoclVar v = new LoclVar(id, tp, modifiers.getFlags());
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet(v);
+			if (first) {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set(m);
+			} else {
+				foreach (Meta m; modifiers.annotations)
+					v.meta.set((Meta)m.copy());
+			}
 		}
 		return v;
 	}
@@ -1346,6 +1398,34 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 	{ return f; }
 }
 
+void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
+{ TypeRef type; }
+{
+	type = Type()
+	meth.localvars += LocalVarDecl(modifiers, type, true)
+	(	","
+		meth.localvars += LocalVarDecl(modifiers, type, false)
+	)*
+	";"
+}
+
+LoclVar LocalVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; ASTIdentifier id; LoclVar lv; }
+{
+	id = Name()
+	{ lv = mkLoclVar(id, modifiers, type, first); }
+	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr(lv.vtype,t); } )*
+	[
+		(
+			"="
+		|
+			":=" { lv.setInitWrapper(true); }
+		)
+		lv.init = VariableInitializer()
+	]
+	{ return lv; }
+}
+
 ASTVarDecls VarDecls(ASTModifiers modifiers) :
 { ASTVarDecls n = new ASTVarDecls(); }
 {
@@ -1418,7 +1498,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 		id = Name()
 		( t=<OPERATOR_LRBRACKETS> { tp = new TypeExpr(tp,t); } )*
 	)
-	{ return mkVar(id, modifiers, tp); }
+	{ return mkVar(id, modifiers, tp, true); }
 }
 
 FormPar MethodFormalParameter(ASTModifiers modifiers) :
@@ -1521,13 +1601,13 @@ ASTBlock MaybeSkipBlock() :
 				else if( tk.kind == RBRACE ) depth--;
 			} while( depth > 0 );
 			presc.pbody = pbody;
-			if( presc instanceof ASTRuleDeclaration )
+			if( presc instanceof RuleMethod )
 				pbody.mode = PrescannedBody.RuleBlockMode;
 			else
 				pbody.mode = PrescannedBody.BlockMode;
 		}
 	|
-		LOOKAHEAD({ presc instanceof ASTRuleDeclaration })
+		LOOKAHEAD({ presc instanceof RuleMethod })
 		bl = RuleBlock()
 	|
 		bl = Block()
@@ -1535,89 +1615,89 @@ ASTBlock MaybeSkipBlock() :
 	{ return bl; }
 }
 
-ASTMethodDeclaration MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; }
+Method MethodDeclaration(ASTModifiers modifiers) :
+{ Token t; Method m; TypeRef ret; ASTIdentifier id; }
 {
-	{
-		ASTMethodDeclaration n = new ASTMethodDeclaration();
-		n.modifiers = modifiers;
-	}
-	ClazzArguments(n)
-	n.rettype = Type()
-	n.ident = Name() { n.pos = n.ident.pos; }
+	ClazzArguments(null)
+	ret = Type()
+	id = Name()
+	{ m = mkMethod(id,modifiers,ret); }
 	"("
 		[
 			modifiers = Modifiers()
-			n.params += MethodFormalParameter(modifiers)
+			m.params += MethodFormalParameter(modifiers)
 			(
 				LOOKAHEAD(2) ","
 				modifiers = Modifiers()
-				n.params += MethodFormalParameter(modifiers)
+				m.params += MethodFormalParameter(modifiers)
 			)*
 			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
 				[","]
 				"..."
-				{ n.setVarArgs(true); }
+				{ m.setVarArgs(true); }
 			]
 		]
 	")"
-	(	t=<OPERATOR_LRBRACKETS> { n.rettype = new TypeExpr(n.rettype,t); } )*
+	(	t=<OPERATOR_LRBRACKETS> { m.type_ref.ret = new TypeExpr(m.type_ref.ret,t); } )*
 	(
-		n.aliases += Alias()
+		m.aliases += Alias()
 	)*
-	[	n.throwns = Throws()	]
+	[	m.throwns = Throws()	]
 	(
-		n.conditions += RequareDeclaration()
-	|	n.conditions += EnsureDeclaration()
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
 	)*
 	(
 		LOOKAHEAD("{")
-		{ presc = n; }
-		n.body = MaybeSkipBlock() [ ";" ]
-	|	[ "default" n.annotation_default = AnnotationValueAny() ] ";"
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
+	|	[ "default" m.annotation_default = AnnotationValueAny() ] ";"
 	)
-	{ return n; }
+	{ return m; }
 }
 
-ASTMethodDeclaration ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; }
+Method ConstructorDeclaration(ASTModifiers modifiers) :
+{ Token t; Method m; ASTIdentifier id; }
 {
+	id = Name()
 	{
-		ASTMethodDeclaration n = new ASTMethodDeclaration();
-		n.modifiers = modifiers;
+		if( !id.name.equals(PassInfo.clazz.name.short_name) )
+			Kiev.reportError(id.pos,"Return type missed or bad constructor name "+id);
+		else
+			id.name = Constants.nameInit;
+		m = mkMethod(id,modifiers,null); 
 	}
-	n.ident = Name() { n.pos = n.ident.pos; }
 	"("
 		[
 			modifiers = Modifiers()
-			n.params += FormalParameter(modifiers)
+			m.params += FormalParameter(modifiers)
 			(
 				LOOKAHEAD(2) ","
 				modifiers = Modifiers()
-				n.params += FormalParameter(modifiers)
+				m.params += FormalParameter(modifiers)
 			)*
 			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
 				[","]
 				"..."
-				{ n.setVarArgs(true); }
+				{ m.setVarArgs(true); }
 			]
 		]
 	")"
 	(
-		n.aliases += Alias()
+		m.aliases += Alias()
 	)*
-	[	n.throwns = Throws()	]
+	[	m.throwns = Throws()	]
 	(
-		n.conditions += RequareDeclaration()
-	|	n.conditions += EnsureDeclaration()
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
 	)*
 	(
 		LOOKAHEAD("{")
-		{ presc = n; }
-		n.body = MaybeSkipBlock() [ ";" ]
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
 	|	";"
 	)
-	{ return n; }
+	{ return m; }
 }
 
 ASTRequareDeclaration RequareDeclaration() :
@@ -1688,44 +1768,41 @@ ASTInvariantDeclaration InvariantDeclaration(ASTModifiers modifiers) :
 	
 }
 
-ASTRuleDeclaration RuleDeclaration(ASTModifiers modifiers) :
-{ ASTBlock bl; }
+RuleMethod RuleDeclaration(ASTModifiers modifiers) :
+{ ASTBlock bl; RuleMethod m; ASTIdentifier id; }
 {
-	{
-		ASTRuleDeclaration n = new ASTRuleDeclaration();
-		n.modifiers = modifiers;
-	}
 	"rule"
-	n.ident = Name() { n.pos = n.ident.pos; }
+	id = Name()
+	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); }
 	"("
 		[
 			modifiers = Modifiers()
-			n.params += FormalParameter(modifiers)
+			m.params += FormalParameter(modifiers)
 			(
 				","
 				modifiers = Modifiers()
-				n.params += FormalParameter(modifiers)
+				m.params += FormalParameter(modifiers)
 			)*
 		]
 	")"
 	(
-		n.aliases += Alias()
+		m.aliases += Alias()
 	)*
 	(
 		modifiers = Modifiers()
-		n.localvars += VarDecls(modifiers)
+		LocalVarDecls(modifiers,m)
 	)*
 	(
-		n.conditions += RequareDeclaration()
-	|	n.conditions += EnsureDeclaration()
+		m.conditions += RequareDeclaration()
+	|	m.conditions += EnsureDeclaration()
 	)*
 	(
 		LOOKAHEAD("{")
-		{ presc = n; }
-		n.body = MaybeSkipBlock() [ ";" ]
+		{ presc = m; }
+		m.body = MaybeSkipBlock() [ ";" ]
 	|	";"
 	)
-	{ return n; }
+	{ return m; }
 }
 
 ASTInitializer Initializer(ASTModifiers modifiers) :

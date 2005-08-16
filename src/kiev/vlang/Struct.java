@@ -842,7 +842,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		members.append(m);
 		foreach (TypeRef g; gens) {
 			Struct s = (Struct)g.clazz;
-			Method sm = new Method(s, m.name.name,
+			Method sm = new Method(m.name.name,
 				(MethodType)Type.getRealType(s.type,m.type),
 				m.getFlags()
 				);
@@ -1201,7 +1201,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 			// create constructor method
 			ti_init = MethodType.newMethodType(null,ti_init_targs,Type.tpVoid);
-			Method init = new Method(typeinfo_clazz,nameInit,ti_init,ACC_PUBLIC);
+			Method init = new Method(nameInit,ti_init,ACC_PUBLIC);
 			init.params.addAll(ti_init_params);
 			typeinfo_clazz.addMethod(init);
 			init.body = ti_init_body;
@@ -1238,7 +1238,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 			// create method to get typeinfo field
 			MethodType tim_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpTypeInfo);
-			Method tim = addMethod(new Method(this,nameGetTypeInfo,tim_type,ACC_PUBLIC));
+			Method tim = addMethod(new Method(nameGetTypeInfo,tim_type,ACC_PUBLIC));
 			tim.body = new BlockStat(pos,tim,new ASTNode[]{
 				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
@@ -1340,7 +1340,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			ConstExpr ce = new ConstIntExpr(case_attr.caseno);
 			ftag.init = ce;
 
-			Method gettag = new Method(this,nameGetCaseTag,
+			Method gettag = new Method(nameGetCaseTag,
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
@@ -1350,7 +1350,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		else if( isHasCases() ) {
 			// Add get$case$tag() method to itself
-			Method gettag = new Method(this,Constants.nameGetCaseTag,
+			Method gettag = new Method(Constants.nameGetCaseTag,
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
@@ -1399,20 +1399,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
 					retype = true;
 				}
-				if( retype ) {
-					// Make new MethodType for the constructor
-					m.type = MethodType.newMethodType(targs,m.type.ret);
-					m.jtype = (MethodType)m.type.getJavaType();
-					foreach (TypeRef g; gens) {
-						foreach (ASTNode gn; ((Struct)g.clazz).members; gn instanceof Method) {
-							Method gm = (Method)gn;
-							if (gm.generated_from == m) {
-								gm.type = (MethodType)Type.getRealType(g,m.type);
-								gm.jtype = (MethodType)Type.getRealType(g,m.type).getJavaType();
-							}
-						}
-					}
-				}
 			}
 			if( !init_found ) {
 				trace(Kiev.debugResolve,nameInit+" not found in class "+this);
@@ -1422,12 +1408,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					FormPar thisOuter, maxArgs;
 					if( !isStatic() ) {
 						mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
-						init = new Method(this,nameInit,mt,ACC_PUBLIC);
+						init = new Method(nameInit,mt,ACC_PUBLIC);
 						init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					} else {
 						mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
-						init = new Method(this,nameInit,mt,ACC_PUBLIC);
+						init = new Method(nameInit,mt,ACC_PUBLIC);
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					}
 				} else {
@@ -1451,7 +1437,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
 					}
 					mt = MethodType.newMethodType(targs,Type.tpVoid);
-					init = new Method(this,nameInit,mt,ACC_PUBLIC);
+					init = new Method(nameInit,mt,ACC_PUBLIC);
 					init.params.addAll(params);
 				}
 				init.pos = pos;
@@ -1472,7 +1458,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
-					Method abstr = new Method(m.parent,m.name.name,m.type,m.getFlags()|ACC_PUBLIC );
+					Method abstr = new Method(m.name.name,m.type,m.getFlags()|ACC_PUBLIC );
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
@@ -1492,13 +1478,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						Type[] tarr = type.args;
 						defaults.type = Type.newRefType(defaults, tarr);
 						defaults.super_type = Type.tpObject;
-						defaults.interfaces.add(new TypeRef(this.type));
+						//defaults.interfaces.add(new TypeRef(this.type));
 					}
 					m.setStatic(true);
 					m.setVirtualStatic(true);
-					Type[] types = (Type[])Arrays.insert(m.type.args,this.type,0);
-					m.type = MethodType.newMethodType(null,types,m.type.ret);
-					m.jtype = (MethodType)m.type.getJavaType();
 					m.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,ACC_FORWARD));
 					defaults.addMethod(m);
 				}
@@ -1514,7 +1497,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			{
 			MethodType valuestp;
 		 	valuestp = MethodType.newMethodType(null,Type.emptyArray,Type.newArrayType(this.type));
-			Method mvals = new Method(this,nameEnumValues,valuestp,ACC_PUBLIC | ACC_STATIC);
+			Method mvals = new Method(nameEnumValues,valuestp,ACC_PUBLIC | ACC_STATIC);
 			mvals.pos = pos;
 			mvals.body = new BlockStat(pos,mvals);
 			((BlockStat)mvals.body).addStatement(
@@ -1525,7 +1508,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			// Cast from int
 			MethodType tomet;
 		 	tomet = MethodType.newMethodType(null,new Type[]{Type.tpInt},this.type);
-			Method tome = new Method(this,nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
+			Method tome = new Method(nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos,tome);
@@ -1558,10 +1541,9 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			tostrt = MethodType.newMethodType(null,Type.emptyArray,Type.tpString);
 			jtostrt=tostrt;
 			acc_flags = ACC_PUBLIC;
-			Method tostr = new Method(this,KString.from("toString"),tostrt,acc_flags);
+			Method tostr = new Method(KString.from("toString"),tostrt,acc_flags);
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
-			tostr.jtype = jtostrt;
 			tostr.body = new BlockStat(pos,tostr);
 			sw = new SwitchStat(pos,tostr.body,
 				new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
@@ -1596,11 +1578,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			fromstrt = MethodType.newMethodType(null,new Type[]{Type.tpString},this.type);
 			jfromstrt= fromstrt;
 			acc_flags = ACC_PUBLIC | ACC_STATIC;
-			Method fromstr = new Method(this,KString.from("valueOf"),fromstrt,acc_flags);
+			Method fromstr = new Method(KString.from("valueOf"),fromstrt,acc_flags);
 			fromstr.name.addAlias(nameCastOp);
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
-			fromstr.jtype = jfromstrt;
 			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString,0));
 			fromstr.body = new BlockStat(pos,fromstr);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
@@ -1684,7 +1665,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	public Method getClazzInitMethod() {
 		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
 			return (Method)n;
-		Method class_init = new Method(this,nameClassInit,
+		Method class_init = new Method(nameClassInit,
 			MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
@@ -1769,7 +1750,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
-					Method abstr = new Method(m.parent,m.name.name,m.type,m.getFlags() | ACC_PUBLIC );
+					Method abstr = new Method(m.name.name,m.type,m.getFlags() | ACC_PUBLIC );
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
@@ -1932,9 +1913,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				trace(Kiev.debugMultiMethod,"Multimethod "+m+" already processed...");
 				continue; // do not process method twice...
 			}
-			MethodType type1 = m.dtype;
-			if (type1 == null)
+			MethodType type1;
+			if (m.dtype == null)
 				type1 = m.type;
+			else
+				type1 = m.dtype;
 			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+type1);
 			Method mm = null;
 			// find all methods with the same java type
@@ -1945,8 +1928,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					continue;
 				if( !mj.name.equals(m.name) || mj.type.args.length != m.type.args.length )
 					continue;
-				MethodType type2 = mj.dtype;
-				if (type2==null) type2 = mj.type;
+				MethodType type2;
+				if (mj.dtype == null)
+					type2 = mj.type;
+				else
+					type2 = mj.dtype;
 				if (type1.isMultimethodSuper(type2)) {
 					trace(Kiev.debugMultiMethod,"added dispatchable method "+mj);
 					if (mm == null && type1.equals(mj.type)) {
@@ -1985,12 +1971,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if (mm == null) {
 				// create dispatch method
 				if (m.isRuleMethod())
-					mm = new RuleMethod(this, m.name.name, type1, m.flags);
+					mm = new RuleMethod(m.name.name, type1, m.flags);
 				else
-					mm = new Method(this, m.name.name, type1, m.flags);
+					mm = new Method(m.name.name, type1, m.flags);
 				mm.setStatic(m.isStatic());
 				for (int j=0; j < m.params.length; j++) {
-					mm.params.add(new FormPar(m.params[j].pos,m.params[j].name.name,mm.type.args[j],m.params[j].flags));
+					mm.params.add(new FormPar(m.params[j].pos,m.params[j].name.name,type1.args[j],m.params[j].flags));
 				}
 			}
 
@@ -2053,7 +2039,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					removeMethod(rm);
 					if (!rm.type.ret.equals(mm.type.ret)) {
 						// insert new method
-						Method nm = new Method(this,rm.name.name,rm.type,rm.flags);
+						Method nm = new Method(rm.name.name,rm.type,rm.flags);
 						nm.pos = rm.pos;
 						nm.name = rm.name;
 						nm.params.addAll(rm.params);
@@ -2091,10 +2077,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				if( m == null ) m = si.clazz.getOverwrittenMethod(this.type,mi);
 				else si.clazz.getOverwrittenMethod(this.type,mi);
 			}
-			if( m == null ) {
-				mi.jtype = (MethodType)mi.type.getJavaType();
-			} else {
-				mi.jtype = m.jtype;
+			if( m != null ) {
+				for (int i=0; i < m.params.length; i++)
+					mi.params[i].stype = new TypeRef(m.jtype.args[i]);
+				mi.dtype_ref.ret = new TypeRef(m.jtype.ret);
 			}
 		}
 
@@ -2334,10 +2320,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if (defaults != null) {
 				foreach (ASTNode nn; defaults.members; nn instanceof Method) {
 					Method mn = (Method)nn;
-					if( mn.isStatic() && m.name.equals(mn.name) && m.type.args.length == mn.type.args.length) {
+					if( mn.isStatic() && m.name.equals(mn.name) && m.type.args.length+1 == mn.type.args.length) {
 						boolean match = true;
 						for(int p=0; p < m.type.args.length; p++) {
-							if( !m.type.args[p].equals(mn.type.args[p]) ) {
+							if( !m.type.args[p].equals(mn.type.args[p+1]) ) {
 								match = false;
 								break;
 							}
@@ -2352,23 +2338,21 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				}
 			}
 			if( m.isStatic() && m.isVirtualStatic() ) {
-				Type[] types = new Type[m.type.args.length];
-				FormPar[] params = new FormPar[m.type.args.length];
-				for(int l=0; l < types.length; l++)
-					types[l] = m.type.args[l];
-				Method proxy = new Method(me,m.name.name,
-					MethodType.newMethodType(null,types,m.type.ret),
-					m.getFlags() | ACC_PUBLIC );
-				proxy.setPublic(true);
-				for(int l=0; l < params.length; l++)
-					params[l] = new FormPar(0,KString.from("arg"+l),m.type.args[l],0);
-				proxy.params.addAll(params);
-				proxy.setStatic(false);
-				proxy.setVirtualStatic(false);
+				TypeCallRef tcr = new TypeCallRef();
+				tcr.ret = new TypeRef(mi.type.ret);
+				int flags = m.getFlags() | ACC_PUBLIC;
+				flags &= ~ACC_STATIC;
+				Method proxy = new Method(m.name.name,tcr,(TypeCallRef)tcr.copy(),flags);
+				if (proxy.isVirtualStatic())
+					proxy.setVirtualStatic(false);
+				me.addMethod(proxy);
+				for(int p=1; p < m.params.length; p++)
+					proxy.params.add(new FormPar(0,KString.from("arg"+p),m.type.args[p],0));
 				BlockStat bs = new BlockStat(0,proxy,ASTNode.emptyArray);
 				Expr[] args = new Expr[m.type.args.length];
-				for(int k=0; k < args.length; k++)
-					args[k] = new VarAccessExpr(0,params[k]);
+				args[0] = new ThisExpr();
+				for(int k=1; k < args.length; k++)
+					args[k] = new VarAccessExpr(0,proxy.params[k-1]);
 				CallExpr ce = new CallExpr(0,m,args);
 				if( proxy.type.ret == Type.tpVoid ) {
 					bs.addStatement(new ExprStat(0,bs,ce));
@@ -2377,7 +2361,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					bs.addStatement(new ReturnStat(0,bs,ce));
 				}
 				proxy.body = bs;
-				me.addMethod(proxy);
 			}
 			else if (m.name.equals(nameGetTypeInfo))
 				; // will be auto-generated later
@@ -2386,7 +2369,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					; // do not add methods to interfaces
 				else if( me.isAbstract() ) {
 					// Add abstract method
-					Method proxy = new Method(me,m.name.name,m.type,m.getFlags() | ACC_PUBLIC | ACC_ABSTRACT);
+					Method proxy = new Method(m.name.name,m.type,m.getFlags() | ACC_PUBLIC | ACC_ABSTRACT);
 					//proxy.jtype = m.jtype;
 					me.addMethod(proxy);
 				}
@@ -2587,7 +2570,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					foreach(ASTNode n; members; n instanceof Method) {
 						Method m = (Method)n;
 						if( !m.name.equals(nameInit) ) continue;
-						Type[] tps = m.type.args;
 						for(int j=0; j < proxy_fields.length; j++) {
 							int par = m.params.length;
 							KString nm = new KStringBuffer().append(nameVarProxy)
@@ -2601,10 +2583,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 									)
 								),1
 							);
-							tps = (Type[])Arrays.append(tps,proxy_fields[j].type);
 						}
-						m.type = MethodType.newMethodType(null,tps,m.type.ret);
-						m.jtype = (MethodType)m.type.getJavaType();
 					}
 				}
 			}

@@ -471,11 +471,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// method with variable number of arguments	
 	@getter public final boolean get$is_mth_varargs()  alias isVarArgs  {
-		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration || this instanceof kiev.parser.ASTRuleDeclaration,"For node "+this.getClass());
+		assert(this instanceof Method,"For node "+this.getClass());
 		return this.is_mth_varargs;
 	}
 	@setter public final void set$is_mth_varargs(boolean on) alias setVarArgs {
-		assert(this instanceof Method || this instanceof kiev.parser.ASTMethodDeclaration || this instanceof kiev.parser.ASTRuleDeclaration,"For node "+this.getClass());
+		assert(this instanceof Method,"For node "+this.getClass());
 		if (this.is_mth_varargs != on) {
 			this.is_mth_varargs = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -1241,6 +1241,11 @@ public class TypeRef extends ASTNode {
 	}
 	public void set$lnk(Type n) {
 		this.lnk = n;
+	}
+	
+	public boolean equals(Object o) {
+		if (o instanceof Type) return this.lnk == o;
+		return this == o;
 	}
 	
 	public String toString() {

@@ -49,7 +49,7 @@ public class Access implements Constants {
 	public packed:1,flags,0 boolean	w_private;
 
 	public Access(int flags) {
-		this.flags = flags;
+		this.flags = flags | (flags << 16);
 	}
 
 	public boolean readable() {
@@ -87,6 +87,8 @@ public class Access implements Constants {
 
 	public void verifyAccessDecl(ASTNode n) {
 
+		flags &= 0xFFFF0000;
+		flags |= (flags >>> 16);
 		if( flags == 0 ) {
 			if( n.isPublic() ) flags = 0xFF;
 			else if( n.isProtected() ) flags = 0x3F;
@@ -239,6 +241,6 @@ public class Access implements Constants {
 		if( n instanceof Struct ) sb.append(n);
 		else sb.append(n.parent).append('.').append(n);
 		sb.append("\n\tfrom class ").append(PassInfo.clazz);
-		throw new RuntimeException(sb.toString());
+		Kiev.reportError(0,new RuntimeException(sb.toString()));
 	}
 }

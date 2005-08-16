@@ -378,8 +378,9 @@ public class Type implements StdTypes, AccessFlags, Named {
 		return str.toString();
 	}
 
-	public boolean equals(Object to) {
+	public final boolean equals(Object to) {
 		if(to != null && to instanceof Type ) return equals((Type)to);
+		if(to instanceof TypeRef ) return equals(((TypeRef)to).getType());
 		return false;
 	}
 

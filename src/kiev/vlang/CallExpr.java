@@ -126,7 +126,7 @@ public class CallExpr extends Expr {
 			}
 			if( !func.isStatic() ) {
 				if( !PassInfo.method.isStatic() )
-					Code.addInstr(Instr.op_load,PassInfo.method.this_par);
+					Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
 				else
 					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
 			}
@@ -171,7 +171,7 @@ public class CallExpr extends Expr {
 				}
 			}
 			if( !func.isStatic() )
-				Code.addInstr(op_call,func,super_flag, PassInfo.method.this_par.type);
+				Code.addInstr(op_call,func,super_flag, PassInfo.method.getThisPar().type);
 			else
 				Code.addInstr(op_call,func,super_flag, PassInfo.clazz.type);
 			if( func.type.ret != Type.tpVoid ) {
@@ -320,7 +320,7 @@ public class CallAccessExpr extends Expr {
 			}
 			else if( !func.isStatic() ) {
 				if( !PassInfo.method.isStatic() )
-					Code.addInstr(Instr.op_load,PassInfo.method.this_par);
+					Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
 				else
 					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
 			}

@@ -786,16 +786,23 @@ public final class ExportJavaTop implements Constants {
 					// TODO: check flags for initialzer
 					if( me.isPackage() ) init.setStatic(true);
 				}
-				else if( members[i] instanceof ASTMethodDeclaration ) {
-					ASTMethodDeclaration astmd = (ASTMethodDeclaration)members[i];
-					Method m = (Method)((ASTMethodDeclaration)members[i]).pass3();
+				else if( members[i] instanceof RuleMethod ) {
+					RuleMethod m = (RuleMethod)members[i];
+					m.pass3();
+					if( me.isPackage() ) m.setStatic(true);
+					if( m.isPrivate() ) m.setFinal(true);
+					if( me.isClazz() && me.isFinal() ) m.setFinal(true);
+					else if( me.isInterface() ) 	m.setPublic(true);
+					m.acc.verifyAccessDecl(m);
+				}
+				else if( members[i] instanceof Method ) {
+					Method m = (Method)members[i];
+					m.pass3();
 					if( me.isPackage() ) m.setStatic(true);
 					if( m.isPrivate() ) m.setFinal(false);
 					else if( me.isClazz() && me.isFinal() ) m.setFinal(true);
 					else if( me.isInterface() ) {
 						m.setPublic(true);
-						if( astmd.pbody == null )
-							m.setAbstract(true);
 					}
 					if( m.name.equals(nameInit) ) {
 						m.setNative(false);
@@ -803,18 +810,7 @@ public final class ExportJavaTop implements Constants {
 						m.setSynchronized(false);
 						m.setFinal(false);
 					}
-				}
-				else if( members[i] instanceof ASTRuleDeclaration ) {
-					ASTRuleDeclaration astmd = (ASTRuleDeclaration)members[i];
-					Method m = (Method)((ASTRuleDeclaration)members[i]).pass3();
-					if( me.isPackage() ) m.setStatic(true);
-					if( m.isPrivate() ) m.setFinal(true);
-					if( me.isClazz() && me.isFinal() ) m.setFinal(true);
-					else if( me.isInterface() ) {
-						m.setPublic(true);
-						if( astmd.pbody == null )
-							m.setAbstract(true);
-					}
+					m.acc.verifyAccessDecl(m);
 				}
 				else if (members[i] instanceof Field && me.isPizzaCase()) {
 					Field f = (Field)members[i];
@@ -922,14 +918,13 @@ public final class ExportJavaTop implements Constants {
 					assert(inv.cond == WBCType.CondInvariant);
 					// TODO: check flags for fields
 					MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
-					Method m = new Method(astn,inv.name.name,mt,inv.flags);
+					Method m = new Method(inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
 					inv.replaceWith(m);
 					m.body = inv;
 				}
 				// Inner classes and cases after all methods and fields, skip now
 				else if( members[i] instanceof Struct );
-				else if( members[i] instanceof Method );
 				else if( members[i] instanceof Import ) {
 					me.imported.add(members[i]);
 				}
@@ -948,7 +943,7 @@ public final class ExportJavaTop implements Constants {
 				foreach (Field f; case_attr.casefields)
 					targs.append(f.type);
 				MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
-				Method init = new Method(me,Constants.nameInit,mt,ACC_PUBLIC);
+				Method init = new Method(Constants.nameInit,mt,ACC_PUBLIC);
 				init.pos = me.pos;
 				foreach (Field f; case_attr.casefields)
 					init.params.add(new FormPar(f.pos,f.name.name,f.type,0));

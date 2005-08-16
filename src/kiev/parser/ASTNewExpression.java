@@ -130,7 +130,7 @@ public class ASTNewExpression extends Expr {
 					params.append(new FormPar(pos,KString.from("arg$"+i),at,0));
 				}
 				mt = MethodType.newMethodType(null,targs,Type.tpVoid);
-				Method init = new Method(me,nameInit,mt,ACC_PUBLIC);
+				Method init = new Method(nameInit,mt,ACC_PUBLIC);
 				init.params.addAll(params);
 				init.pos = pos;
 				init.body = new BlockStat(pos,init);

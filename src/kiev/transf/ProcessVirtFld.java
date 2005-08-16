@@ -82,12 +82,13 @@ public final class ProcessVirtFld implements Constants {
 			}
 		}
 		if( !set_found && f.acc.writeable() ) {
-			Method set_var = new Method(s,set_name,
+			Method set_var = new Method(set_name,
 				MethodType.newMethodType(null,new Type[]{f.type},Type.tpVoid),
 				f.getJavaFlags()
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
+			s.addMethod(set_var);
 			FormPar self;
 			FormPar value;
 			if (f.isStatic()) {
@@ -95,7 +96,7 @@ public final class ProcessVirtFld implements Constants {
 				value = new FormPar(f.pos,KString.from("value"),f.type,0);
 				set_var.params.add(value);
 			} else {
-				self = set_var.this_par;
+				self = set_var.getThisPar();
 				value = new FormPar(f.pos,KString.from("value"),f.type,0);
 				set_var.params.add(value);
 			}
@@ -163,7 +164,6 @@ public final class ProcessVirtFld implements Constants {
 				body.stats.append(new ReturnStat(f.pos,body,null));
 				set_var.body = body;
 			}
-			s.addMethod(set_var);
 			f.getMetaVirtual().set = set_var;
 		}
 		else if( set_found && !f.acc.writeable() ) {
@@ -173,19 +173,19 @@ public final class ProcessVirtFld implements Constants {
 		if (!f.isVirtual())
 			return;		// no need to generate getter
 		if( !get_found && f.acc.readable()) {
-			Method get_var = new Method(s,get_name,
+			Method get_var = new Method(get_name,
 				MethodType.newMethodType(null,Type.emptyArray,f.type),
 				f.getJavaFlags()
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
-			FormPar self = get_var.this_par;
+			s.addMethod(get_var);
+			FormPar self = get_var.getThisPar();
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
 			}
-			s.addMethod(get_var);
 			f.getMetaVirtual().get = get_var;
 		}
 		else if( get_found && !f.acc.readable() ) {

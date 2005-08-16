@@ -215,7 +215,7 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
 			MethodType et = (MethodType)Type.fromSignature(sigValues);
-			Method elems = new Method(s,nameEnumValues,et,ACC_PUBLIC);
+			Method elems = new Method(nameEnumValues,et,ACC_PUBLIC);
 			elems.body = new BlockStat(0,elems);
 			((BlockStat)elems.body).addStatement(
 				new ReturnStat(0,elems.body,
@@ -223,7 +223,7 @@ public final class ProcessVNode implements Constants {
 			s.addMethod(elems);
 			// Object getVal(String)
 			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);
-			Method getV = new Method(s,KString.from("getVal"),getVt,ACC_PUBLIC);
+			Method getV = new Method(KString.from("getVal"),getVt,ACC_PUBLIC);
 			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, 0));
 			getV.body = new BlockStat(0,getV);
 			for(int i=0; i < aflds.length; i++) {
@@ -256,7 +256,7 @@ public final class ProcessVNode implements Constants {
 		}
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
-			Method copyV = new Method(s,KString.from("copy"),copyVt,ACC_PUBLIC);
+			Method copyV = new Method(KString.from("copy"),copyVt,ACC_PUBLIC);
 			copyV.body = new BlockStat(0,copyV);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0, KString.from("node"),s.type,0);
@@ -269,7 +269,7 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopyTo);
-			Method copyV = new Method(s,KString.from("copyTo"),copyVt,ACC_PUBLIC);
+			Method copyV = new Method(KString.from("copyTo"),copyVt,ACC_PUBLIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, 0));
 			copyV.body = new BlockStat();
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
@@ -342,7 +342,7 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
-			Method setV = new Method(s,KString.from("setVal"),setVt,ACC_PUBLIC);
+			Method setV = new Method(KString.from("setVal"),setVt,ACC_PUBLIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, 0));
 			setV.body = new BlockStat(0,setV);
@@ -383,7 +383,7 @@ public final class ProcessVNode implements Constants {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+"replaceVal"+sigReplaceVal+" already exists, @node member is not generated");
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigReplaceVal);
-			Method setV = new Method(s,KString.from("replaceVal"),setVt,ACC_PUBLIC);
+			Method setV = new Method(KString.from("replaceVal"),setVt,ACC_PUBLIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, 0));
 			setV.params.append(new FormPar(0, KString.from("old"), Type.tpObject, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, 0));

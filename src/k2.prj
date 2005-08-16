@@ -104,7 +104,6 @@ kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.ja
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTIfStatement kiev/parser/ASTIfStatement kiev\parser\ASTIfStatement.java
 kiev.parser.ASTLabeledStatement kiev/parser/ASTLabeledStatement kiev\parser\ASTLabeledStatement.java
-kiev.parser.ASTMethodDeclaration kiev/parser/ASTMethodDeclaration kiev\parser\ASTMethodDeclaration.java
 kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
@@ -123,7 +122,6 @@ kiev.parser.ASTReturnStatement kiev/parser/ASTReturnStatement kiev\parser\ASTRet
 kiev.parser.ASTRuleAndExpression kiev/parser/ASTRuleAndExpression kiev\parser\ASTRuleAndExpression.java
 kiev.parser.ASTRuleBlock kiev/parser/ASTRuleBlock kiev\parser\ASTRuleBlock.java
 kiev.parser.ASTRuleCutExpression kiev/parser/ASTRuleCutExpression kiev\parser\ASTRuleCutExpression.java
-kiev.parser.ASTRuleDeclaration kiev/parser/ASTRuleDeclaration kiev\parser\ASTRuleDeclaration.java
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
@@ -150,6 +148,7 @@ kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
 kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
 kiev.parser.TypeArgRef kiev/parser/TypeArgRef kiev\parser\TypeArgRef.java
+kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java
 kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
 kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java
 kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java
@@ -343,6 +342,7 @@ kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
 kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
+kiev.vlang.LoclVar kiev/vlang/LoclVar kiev\vlang\Var.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
