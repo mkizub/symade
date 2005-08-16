@@ -102,8 +102,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	 */
 	public boolean						inlined_by_dispatcher;
 	
-	@ref public Method					generated_from;
-	
 	@att protected FormPar				this_var;
 
 	private boolean		invalid_types;
@@ -382,12 +380,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-//		Struct cl = (Struct)parent;
-//		cl = (Struct)Type.getRealType(Kiev.argtype,cl.type).clazz;
 		if( !name.equals(nameInit) )
-			dmp.space()
-			.append(((MethodType)Type.getRealType(Kiev.argtype,type)).ret)
-			.forsed_space().append(name);
+			dmp.space().append(type.ret).forsed_space().append(name);
 		else
 			dmp.space().append(((Struct)parent).name.short_name);
 		dmp.append('(');
@@ -708,8 +702,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 //		if( jtype == null ) return;
 		int i=0;
 		for(; i < type.args.length; i++) {
-			Type tp1 = Type.getRealType(Kiev.argtype,jtype.args[i]);
-			Type tp2 = Type.getRealType(Kiev.argtype,params[i].type);
+			Type tp1 = jtype.args[i];
+			Type tp2 = params[i].type;
 			if( !tp1.equals(tp2) ) {
 				Code.addInstr(Instr.op_load,params[i]);
 				Code.addInstr(Instr.op_checkcast,type_ref.args[i].getType());

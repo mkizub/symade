@@ -119,8 +119,7 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,17 boolean is_expr_as_field;
 	@virtual public virtual packed:1,compileflags,18 boolean is_expr_gen_void;
 	@virtual public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
-	@virtual public virtual packed:1,compileflags,20 boolean is_expr_gen_resolved;
-	@virtual public virtual packed:1,compileflags,21 boolean is_expr_for_wrapper;
+	@virtual public virtual packed:1,compileflags,20 boolean is_expr_for_wrapper;
 	
 	// Method flags
 	@virtual public virtual packed:1,compileflags,17 boolean is_mth_virtual_static;
@@ -764,18 +763,6 @@ public abstract class ASTNode implements Constants {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
-	// resolved for generation
-	@getter public final boolean get$is_expr_gen_resolved()  alias isGenResolve  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_gen_resolved;
-	}
-	@setter public final void set$is_expr_gen_resolved(boolean on) alias setGenResolve {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_gen_resolved != on) {
-			this.is_expr_gen_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 	// used bt for()
 	@getter public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
 		assert(this instanceof Expr,"For node "+this.getClass());
@@ -1066,10 +1053,7 @@ public abstract class Expr extends CFlowNode {
 			Struct s = (Struct)bs;
 			// Pizza case may be casted to int or to itself or super-class
 			PizzaCaseAttr case_attr;
-			if (s.generated_from != null)
-				case_attr = (PizzaCaseAttr)s.generated_from.getAttr(attrPizzaCase);
-			else
-				case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
 			if (case_attr == null)
 				throw new RuntimeException("Internal error - can't find case_attr");
 			Type tp = Type.getRealType(reqType,st);

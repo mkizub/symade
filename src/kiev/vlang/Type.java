@@ -96,39 +96,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 		signature = Signature.from(clazz, null, args, null);
 		if( args != null && args.length > 0 ) {
 			this.args = args;
-			if( Kiev.pass_no.ordinal() >= TopLevelPass.passStructInheritance.ordinal() && clazz instanceof Struct && ((Struct)clazz).gens.length > 0 ) {
-				boolean best_found = false;
-				int i,j;
-				Struct clz = (Struct)clazz;
-		next_gen:
-				for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
-					for(j=0; j < args.length; j++) {
-						if (clz.gens[i].args[j].isReference() && args[j].isReference())
-							;
-						else if (clz.gens[i].args[j] != args[j])
-							continue next_gen;
-					}
-					this.clazz = clz = (Struct)clz.gens[i].clazz;
-					best_found = true;
-					break;
-				}
-				if( !best_found ) {
-			next_gen1:
-					for(i=0; i < clz.gens.length && clz.gens[i] != null; i++) {
-						for(j=0; j < args.length; j++) {
-							Type gt = (Type)clz.gens[i].args[j];
-							if( !( gt.isReference() && args[j].isReference()
-								|| gt == args[j]
-								|| (gt == Type.tpInt && args[j].isIntegerInCode())
-								|| (gt == Type.tpFloat && args[j] == Type.tpDouble)
-							))
-								continue next_gen1;
-						}
-						this.clazz = clz = (Struct)clz.gens[i].clazz;
-						break;
-					}
-				}
-			}
 			java_signature = Signature.from(clazz, null, null, null);
 		} else {
 			args = emptyArray;
@@ -338,10 +305,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 		if( isArray() )
 			return args[0]+"[]";
 		StringBuffer str = new StringBuffer();
-		if( clazz instanceof Struct && ((Struct)clazz).generated_from != null )
-			str.append(((Struct)clazz).generated_from.name.toString());
-		else
-			str.append(clazz.name.toString());
+		str.append(clazz.name.toString());
 		if( args != null && args.length > 0 ) {
 			str.append('<');
 			for(int i=0; i < args.length; i++) {
@@ -708,12 +672,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 				if( t1.clazz.type.args[i].string_equals(t2) ) {
 					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
 					return t1.args[i];
-				}
-				if( t1.clazz instanceof Struct && ((Struct)t1.clazz).generated_from != null ) {
-					if( ((Struct)t1.clazz).generated_from.type.args[i].string_equals(t2) ) {
-						trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
-						return t1.args[i];
-					}
 				}
 			}
 			// Search in super-class and super-interfaces

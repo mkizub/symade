@@ -29,7 +29,6 @@ package kiev.stdlib;
  */
 
 public class List<A>
-	$generate <int>,<long>,<float>,<double>
 {
 
 	public case Nil<A>;
@@ -465,25 +464,7 @@ public class List<A>
 	{
 		List<A> nl = Nil;
 		for(int i=va_args.length-1; i >= 0; i--) {
-			A h;
-			if( A instanceof boolean )
-				h = (A)((Boolean)va_args[i]).booleanValue();
-			else if( A instanceof char )
-				h = (A)((Character)va_args[i]).charValue();
-			else if( A instanceof byte )
-				h = (A)((Number)va_args[i]).byteValue();
-			else if( A instanceof short )
-				h = (A)((Number)va_args[i]).shortValue();
-			else if( A instanceof int )
-				h = (A)((Number)va_args[i]).intValue();
-			else if( A instanceof long )
-				h = (A)((Number)va_args[i]).longValue();
-			else if( A instanceof float )
-				h = (A)((Number)va_args[i]).floatValue();
-			else if( A instanceof double )
-				h = (A)((Number)va_args[i]).doubleValue();
-			else
-				h = (A)va_args[i];
+			A h = (A)va_args[i];
 			nl = new Cons<A>(h,nl);
 		}
 		return new Cons<A>(hd,nl);

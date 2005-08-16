@@ -410,10 +410,7 @@ public class AssignExpr extends LvalueExpr {
 					lval.generateStoreDupValue();
 				} else {
 					lval.generateAccess();
-					if( Kiev.argtype != null && value.getType()==Type.tpNull )
-						value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
-					else
-						value.generate(null);
+					value.generate(null);
 					lval.generateStoreDupValue();
 				}
 			} else {
@@ -424,10 +421,7 @@ public class AssignExpr extends LvalueExpr {
 					lval.generateStore();
 				} else {
 					lval.generateAccess();
-					if( Kiev.argtype != null && value.getType()==Type.tpNull )
-						value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
-					else
-						value.generate(null);
+					value.generate(null);
 					lval.generateStore();
 				}
 			}
@@ -440,10 +434,7 @@ public class AssignExpr extends LvalueExpr {
 		try {
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			lval.generateLoadDup();
-			if( Kiev.argtype != null && value.getType()==Type.tpNull )
-				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
-			else
-				value.generate(null);
+			value.generate(null);
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
 				Code.addInstr(op.instr);
 			lval.generateStoreDupValue();
@@ -473,10 +464,7 @@ public class AssignExpr extends LvalueExpr {
 		PassInfo.push(this);
 		try {
 			lval.generateLoadDup();
-			if( Kiev.argtype != null && value.getType()==Type.tpNull )
-				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
-			else
-				value.generate(null);
+			value.generate(null);
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
 				Code.addInstr(op.instr);
 			lval.generateStore();
@@ -489,10 +477,7 @@ public class AssignExpr extends LvalueExpr {
 		try {
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			lval.generateLoadDup();
-			if( Kiev.argtype != null && value.getType()==Type.tpNull )
-				value.generate(Type.getRealType(Kiev.argtype,lval.getType()));
-			else
-				value.generate(null);
+			value.generate(null);
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
 				Code.addInstr(op.instr);
 			lval.generateStoreDupValue();
@@ -1000,7 +985,7 @@ public class StringConcatExpr extends Expr {
 	static final KString sigStr = KString.from("(Ljava/lang/String;)Ljava/lang/StringBuffer;");
 	static final KString sigArrC = KString.from("([C)Ljava/lang/StringBuffer;");
 	public Method getMethodFor(Expr expr) {
-		Type t = Type.getRealType(Kiev.argtype,expr.getType());
+		Type t = expr.getType();
 		KString sig = null;
 		switch(t.java_signature.byteAt(0)) {
 		case 'B':
@@ -2303,8 +2288,8 @@ public class CastExpr extends Expr {
 			if( t.isReference() ) {
 				if( t.isReference() != type.isReference() )
 					throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
-				if( Type.getRealType(Kiev.argtype,type).isReference() )
-					Code.addInstr(Instr.op_checkcast,Type.getRealType(Kiev.argtype,type));
+				if( type.isReference() )
+					Code.addInstr(Instr.op_checkcast,type);
 			} else {
 			    if (reinterp) {
 			        if (t.isIntegerInCode() && type.isIntegerInCode())
@@ -2320,7 +2305,7 @@ public class CastExpr extends Expr {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		dmp.append("((").append(Type.getRealType(Kiev.argtype,type)).append(")(");
+		dmp.append("((").append(type).append(")(");
 		dmp.append(expr).append("))");
 		return dmp;
 	}

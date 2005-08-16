@@ -721,7 +721,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 		PassInfo.push(this);
 		try {
 			if( expr != null )
-				expr.generate(Type.getRealType(Kiev.argtype,PassInfo.method.type.ret));
+				expr.generate(PassInfo.method.type.ret);
 			generateReturn();
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
@@ -940,9 +940,6 @@ public class IfElseStat extends Statement {
 		PassInfo.push(this);
 		try {
 			Expr cond = this.cond;
-			if( cond.isGenResolve() ) {
-				cond = (Expr)cond.resolve(Type.tpBoolean);
-			}
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
@@ -991,19 +988,6 @@ public class IfElseStat extends Statement {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		if( cond.isGenResolve() ) {
-			Kiev.gen_resolve = true;
-			try {
-				Expr c = (Expr)cond.resolve(Type.tpBoolean);
-				if( c.isConstantExpr() ) {
-					if( ((Boolean)c.getConstValue()).booleanValue() )
-						dmp.append(thenSt);
-					else if( elseSt != null )
-						dmp.append(elseSt);
-					return dmp;
-				}
-			} finally { Kiev.gen_resolve = false; }
-		}
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
 		if( /*thenSt instanceof ExprStat ||*/ thenSt instanceof BlockStat || thenSt instanceof InlineMethodStat) dmp.forsed_space();

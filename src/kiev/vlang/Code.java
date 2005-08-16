@@ -440,13 +440,8 @@ public class Code implements Constants {
 		}
 		else if( value instanceof Number ) {
 			int val = ((Number)value).intValue();
-			// Bypass kaffe bug
-			if( val == -1 ) {
-				add_opcode(opc_iconst_m1);
-			}
-			else
 			switch(val) {
-//			case -1:	add_opcode(opc_iconst_m1); break;
+			case -1:	add_opcode(opc_iconst_m1); break;
 			case 0:		add_opcode(opc_iconst_0); break;
 			case 1:		add_opcode(opc_iconst_1); break;
 			case 2:		add_opcode(opc_iconst_2); break;
@@ -573,7 +568,7 @@ public class Code implements Constants {
 			trace(Kiev.debugInstrGen,"\t\tgenerating static call to method: "+m);
 			call_static = true;
 		}
-		MethodType mtype = (MethodType)Type.getRealType(Kiev.argtype,Type.getRealType(tp,m.type));
+		MethodType mtype = (MethodType)Type.getRealType(tp,m.type);
 		for(int i=0; mtype.args!=null && i < mtype.args.length; i++) {
 			try {
 				Type t1 = stack_at(mtype.args.length-i-1);
@@ -587,19 +582,7 @@ public class Code implements Constants {
 			}
 		}
 		KString sign;
-		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp,((Struct)m.parent).type));
-		if( ttt.clazz instanceof Struct && ttt.getStruct().generated_from != null ) {
-			Struct ss = (Struct)m.parent;
-			foreach (ASTNode gn; ss.members; gn instanceof Method) {
-				Method gm = (Method)gn;
-				if (gm.generated_from == m) {
-					m = gm;
-					m.type.checkJavaSignature();
-					m.jtype.checkJavaSignature();
-					break;
-				}
-			}
-		}
+		Type ttt = Type.getRealType(tp,((Struct)m.parent).type);
 		sign = m.jtype.java_signature;
 		CP cpm;
 		if( ((Struct)m.parent).isInterface() )
@@ -642,7 +625,6 @@ public class Code implements Constants {
 	static public void generateReturn() {
 		try {
 			Type t = PassInfo.method.type.ret;
-			t = Type.getRealType(Kiev.argtype,t);
 			if( t == Type.tpVoid )			add_opcode(opc_return);
 			else if( t.isIntegerInCode() )	add_opcode(opc_ireturn);
 			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
@@ -744,7 +726,6 @@ public class Code implements Constants {
 		Type t = v.var.type;
 		if( v.var.isNeedRefProxy() )
 			t = Type.getProxyType(t);
-		t = Type.getRealType(Kiev.argtype,t);
 		if( t == Type.tpVoid )
 			throw new RuntimeException("Can't load variable of type "+t);
 		else if( t == Type.tpLong )	opcodes = lload_ops;
@@ -781,7 +762,6 @@ public class Code implements Constants {
 		Type t = v.var.type;
 		if( v.var.isNeedRefProxy() )
 			t = Type.getProxyType(t);
-		t = Type.getRealType(Kiev.argtype,t);
 		if( t == Type.tpVoid )
 			throw new RuntimeException("Can't store variable of type "+t);
 		else if( t == Type.tpLong )	opcodes = lstore_ops;
@@ -1061,7 +1041,7 @@ public class Code implements Constants {
 		vars[pos] = new CodeVar(v);
 		vars[pos].start_pc = pc;
 		cur_locals++;
-		Type t = Type.getRealType(Kiev.argtype,v.type);
+		Type t = v.type;
 		if( t==Type.tpLong || t==Type.tpDouble ) cur_locals++;
 		if( cur_locals > max_locals ) max_locals = cur_locals;
 		if( !v.name.equals(KString.Empty) ) {
@@ -1075,7 +1055,7 @@ public class Code implements Constants {
 	 */
 	static public void removeVar(Var v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.getBCpos()+" "+vars[v.getBCpos()]);
-		Type t = Type.getRealType(Kiev.argtype,v.type);
+		Type t = v.type;
 		if( !v.name.equals(KString.Empty) ) {
 			lvta.vars[vars[v.getBCpos()].index].end_pc = pc-1;
 		}
@@ -1309,17 +1289,15 @@ public class Code implements Constants {
 			Kiev.reportWarning(0,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		tp = Type.getRealType(Kiev.argtype,tp);
-		Type ttt = Type.getRealType(Kiev.argtype,Type.getRealType(tp.getInitialType(),((Struct)f.parent).type));
+		Type ttt = Type.getRealType(tp.getInitialType(),((Struct)f.parent).type);
 //		Type ttt = ((Struct)f.parent).type;
 		KString struct_sig = ttt.java_signature;
-		KString field_sig = 
-			Type.getRealType(Kiev.argtype,Type.getRealType(((Struct)f.parent).type,f.type)).java_signature;
+		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).java_signature;
 		FieldCP cpf = ConstPool.addFieldCP(struct_sig,f.name.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
-			stack_push(Type.getRealType(Kiev.argtype,Type.getRealType(tp,f.type)));
+			stack_push(Type.getRealType(tp,f.type));
 			break;
         case op_putstatic:
 			add_opcode_and_CP(opc_putstatic,cpf);
@@ -1328,7 +1306,7 @@ public class Code implements Constants {
         case op_getfield:
 			add_opcode_and_CP(opc_getfield,cpf);
 			stack_pop();
-			stack_push(Type.getRealType(Kiev.argtype,Type.getRealType(tp,f.type)));
+			stack_push(Type.getRealType(tp,f.type));
 			break;
         case op_putfield:
 			add_opcode_and_CP(opc_putfield,cpf);
@@ -1368,7 +1346,6 @@ public class Code implements Constants {
 		case op_checkcast:
 			if( !type.isReference() )
 				throw new RuntimeException("Type "+type+" must be a reference for cast checking");
-			type = Type.getRealType(Kiev.argtype,type);
 			if( !type.isReference() )
 				break;
 			add_opcode_and_CP(opc_checkcast,ConstPool.addClazzCP(type.java_signature));
@@ -1414,7 +1391,6 @@ public class Code implements Constants {
 		}
 	    switch(i) {
         case op_call:
-//        	generateCall(method,super_flag, Type.getRealType(Kiev.argtype,tp));
         	generateCall(method,super_flag, tp);
         	break;
 		default:
@@ -1495,13 +1471,8 @@ public class Code implements Constants {
 			Kiev.reportWarning(0,"\""+Instr.op_push_iconst+"\" ingnored as unreachable");
 			return;
 		}
-		// Bypass kaffe bug
-		if( val == -1 ) {
-			add_opcode(opc_iconst_m1);
-		}
-		else
 		switch(val) {
-//		case -1:	add_opcode(opc_iconst_m1); break;
+		case -1:	add_opcode(opc_iconst_m1); break;
 		case 0:		add_opcode(opc_iconst_0); break;
 		case 1:		add_opcode(opc_iconst_1); break;
 		case 2:		add_opcode(opc_iconst_2); break;

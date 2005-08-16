@@ -28,7 +28,6 @@ package kiev.stdlib;
  */
 
 public final $wrapper class Ref<A>
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	forward public A			$val;
@@ -45,9 +44,6 @@ public final $wrapper class Ref<A>
 
 	public boolean equals(A value) {
 		A r = $val;
-		if( A instanceof Object )
-			return (r==null && value==null) || r.equals(value);
-		else
-			return r.equals(value);
+		return (r==null && value==null) || r.equals(value);
 	}
 }

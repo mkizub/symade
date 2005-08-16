@@ -28,7 +28,6 @@ package kiev.stdlib;
  */
 
 public class ArrayEnumerator<A> implements Enumeration<A>, Cloneable
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	private A[]		arr;
@@ -56,62 +55,5 @@ public class ArrayEnumerator<A> implements Enumeration<A>, Cloneable
 		}
 		return false;
 	}
-/*
-	public static boolean contains(int[] ar, int val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(long[] ar, long val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(float[] ar, float val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(double[] ar, double val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(boolean[] ar, boolean val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(byte[] ar, byte val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(char[] ar, char val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-
-	public static boolean contains(short[] ar, short val) {
-		for(int i=0; i < ar.length; i++)
-			if( val == ar[i] )
-				return true;
-		return false;
-	}
-*/
 }
 

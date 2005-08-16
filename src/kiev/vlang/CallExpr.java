@@ -339,7 +339,7 @@ public class CallAccessExpr extends Expr {
 			}
 			// Special meaning of Object.equals and so on
 			// for parametriezed with primitive types classes
-			Type objt = Type.getRealType(Kiev.argtype,obj.getType());
+			Type objt = obj.getType();
 			if( !objt.isReference() ) {
 				if( func.parent != Type.tpObject.clazz )
 					Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
@@ -445,47 +445,13 @@ public class CallAccessExpr extends Expr {
 				else
 					Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
 			}
-			// Special meaning of StringBuffer.append
-			// for parametriezed with primitive types classes
-			else if( objt == StringConcatExpr.clazzStringBuffer.type
-				  && func.name.name == nameStrBuffAppend
-				  && Kiev.argtype != null
-				  && !Type.getRealType(Kiev.argtype,args[0].getType()).isReference()
-			) {
-				KString sign = null;
-				switch(Type.getRealType(Kiev.argtype,args[0].getType()).signature.byteAt(0)) {
-				case 'Z':
-					sign = StringConcatExpr.sigZ;
-					break;
-				case 'C':
-					sign = StringConcatExpr.sigC;
-					break;
-				case 'B':
-				case 'S':
-				case 'I':
-					sign = StringConcatExpr.sigI;
-					break;
-				case 'J':
-					sign = StringConcatExpr.sigJ;
-					break;
-				case 'F':
-					sign = StringConcatExpr.sigF;
-					break;
-				case 'D':
-					sign = StringConcatExpr.sigD;
-					break;
-				}
-				Method m = StringConcatExpr.clazzStringBuffer.resolveMethod(
-					nameStrBuffAppend,sign);
-				Code.addInstr(op_call,m,false);
-			}
 			else
 				Code.addInstr(op_call,func,super_flag,obj.getType());
 			if( func.type.ret != Type.tpVoid ) {
 				if( reqType==Type.tpVoid )
 					Code.addInstr(op_pop);
 				else if( Kiev.verify
-				 && Type.getRealType(Kiev.argtype,getType()).isReference()
+				 && getType().isReference()
 				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
@@ -670,7 +636,7 @@ public class ClosureCallExpr extends Expr {
 	static final KString sigD = KString.from("(D)Lkiev/stdlib/closure;");
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Lkiev/stdlib/closure;");
 	public Method getMethodFor(Type tp) {
-		Type t = Type.getRealType(Kiev.argtype,tp);
+		Type t = tp;
 		KString sig = null;
 		switch(t.java_signature.byteAt(0)) {
 		case 'B': sig = sigB; break;

@@ -234,10 +234,6 @@ public class CaseLabel extends ASTNode {
 		else
 			dmp.newLine(-1).append("case ").append(val).append(':').newLine();
 		dmp.append(stats).newLine(1);
-//		for(int i=0; i < stats.length; i++) {
-//			if( stats[i] == null ) dmp.append(';');
-//			else dmp.append(stats[i]).newLine();
-//		}
 		return dmp;
 	}
 }
@@ -248,9 +244,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	@att public Expr					sel;
 	@ref public Var						tmpvar;
-	@ref public Field					typehash;
 	@att public final NArr<ASTNode>		cases;
 	@ref public ASTNode					defCase;
+	@ref private Field					typehash; // needed for re-resolving
 
 	public CodeSwitch	cosw;
 	protected CodeLabel	break_label = null;
@@ -281,7 +277,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		sel.cleanup();
 		sel = null;
 		tmpvar = null;
-		typehash = null;
 		foreach(ASTNode n; cases; n!=null) n.cleanup();
 		cases = null;
 		if( defCase != null ) {
@@ -290,7 +285,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		if( cases.length == 0 ) return new ExprStat(pos,parent,sel).resolve(Type.tpVoid);
 		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
@@ -318,17 +313,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
-//					if( sel instanceof VarAccessExpr ) {
-//						tmpvar = ((VarAccessExpr)sel).var;
-//					} else {
-						tmpvar = new Var(sel.getPos(),KString.from(
-							"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
-						Expr init = sel;
-						me = new BlockStat(pos,parent);
-						Statement ds = new DeclStat(tmpvar.pos,me,tmpvar,init);
-						me.addStatement(ds);
-						me.addStatement(this);
-//					}
+					tmpvar = new Var(sel.getPos(),KString.from(
+						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
+					Expr init = sel;
+					me = new BlockStat(pos,parent);
+					Statement ds = new DeclStat(tmpvar.pos,me,tmpvar,init);
+					me.addStatement(ds);
+					me.addStatement(this);
 					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();

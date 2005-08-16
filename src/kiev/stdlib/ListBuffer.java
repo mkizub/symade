@@ -37,7 +37,6 @@ package kiev.stdlib;
 import kiev.stdlib.List.*;
 
 public final class ListBuffer<A>
-	$generate <int>,<long>,<float>,<double>
 {
 
 	private List<A> elems;

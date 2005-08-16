@@ -500,75 +500,6 @@ public final class ExportJavaTop implements Constants {
 //					targs[i].clazz.super_type = Type.tpObject;
 				}
 			}
-			// Process ASTGenerete
-			if( me.gens.length > 0 ) {
-				for(int l=0; l < me.gens.length; l++) {
-					TypeWithArgsRef ag = me.gens[l];
-					for(int m=0; m < me.type.args.length; m++) {
-						if (ag.args[m].lnk != null && !ag.args[m].isReference()) {
-							ArgumentType at = (ArgumentType)me.args[m].getType();
-							if( at.super_type != Type.tpObject )
-								Kiev.reportError(pos,"Generation for primitive type for argument "+m+" is not allowed");
-						} else { // ASTIdentifier
-							KString a = ((TypeNameRef)ag.args[m]).name.name;
-							Type ad = me.type.args[m]; 
-							if( a != ad.getClazzName().short_name )
-								Kiev.reportError(pos,"Generation argument ["+l+":"+m+"] of "+me.name+" do not match argument "+ad+", must be "+a);
-							ag.args[m].lnk = ad.getInitialType();
-						}
-					}
-				}
-				// Clone 'me' for generated types
-				for(int k=0; k < me.gens.length; k++) {
-					KStringBuffer ksb;
-					ksb = new KStringBuffer(
-						me.name.bytecode_name.length()
-						+3+me.type.args.length);
-					ksb.append_fast(me.name.bytecode_name)
-						.append_fast((byte)'_').append_fast((byte)'_');
-					for(int l=0; l < me.type.args.length; l++) {
-						if( me.gens[k].args[l].isReference() )
-							ksb.append_fast((byte)'A');
-						else
-							ksb.append_fast(me.gens[k].args[l].signature.byteAt(0));
-					}
-					ksb.append_fast((byte)'_');
-					ClazzName cn = ClazzName.fromBytecodeName(ksb.toKString(),false);
-					Struct s = Env.newStruct(cn,true);
-					s.flags = me.flags;
-					s.acc = me.acc;
-					Type[] tarr = new Type[me.type.args.length];
-					for (int l=0; l < tarr.length; l++)
-						tarr[l] = me.gens[k].args[l].lnk;
-					BaseType gtype = Type.newRefType(me,tarr);
-					gtype.java_signature = cn.signature();
-					gtype.clazz = s;
-					me.gens[k].lnk = gtype;
-					s.type = gtype;
-					s.generated_from = me;
-					s.super_type = Type.getRealType(s.type,me.super_type);
-					// Add generation for inner parametriezed classes
-					for(int l=0; l < me.sub_clazz.length; l++) {
-						Struct sc = me.sub_clazz[l];
-						if (sc.isStatic()) continue;
-						if( sc.type.args.length == 0 ) continue;
-						TypeNameRef tn = new TypeNameRef(sc.name.name);
-						tn.lnk = sc.type;
-						TypeWithArgsRef ta = new TypeWithArgsRef(tn);
-						for(int m=0; m < sc.type.args.length; m++) {
-							Type a = Type.getRealType(gtype,sc.type.args[m]);
-							if( a.isReference() ) {
-								TypeNameRef tm = new TypeNameRef(((TypeNameRef)me.gens[k].args[m]).name.name);
-								tm.lnk = me.gens[k].args[m].lnk;
-								ta.args.append(tm);
-							} else {
-								ta.args.append(new TypeRef(a));
-							}
-						}
-						sc.gens.append(ta);
-					}
-				}
-			}
 
 			// Process inner classes and cases
 			if( !me.isPackage() ) {
@@ -691,14 +622,6 @@ public final class ExportJavaTop implements Constants {
 					tr.getType();
 				if( me.type.args.length > 0 && !me.type.isInstanceOf(Type.tpClosure) ) {
 					me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
-				}
-			}
-			if( me.interfaces.length > 0 && me.gens != null ) {
-				for(int g=0; g < me.gens.length; g++) {
-					for(int l=0; l < me.interfaces.length; l++) {
-						Struct s = (Struct)me.gens[g].clazz;
-						s.interfaces.add(new TypeRef(Type.getRealType(me.gens[g],me.interfaces[l])));
-					}
 				}
 			}
 
@@ -955,17 +878,6 @@ public final class ExportJavaTop implements Constants {
 			if( !me.isPackage() ) {
 				foreach (ASTNode n; me.members; n instanceof Struct)
 					pass3(n);
-			}
-			// Process ASTGenerete
-			for(int i=0; i < me.gens.length; i++) {
-				TypeRef g = me.gens[i];
-				Struct s = (Struct)g.clazz;
-				s.super_type = Type.getRealType(g,me.super_type);
-				s.package_clazz = me.package_clazz;
-				if( me.interfaces.length != 0 ) {
-					for(int j=0; j < me.interfaces.length; j++)
-						s.interfaces.add(new TypeRef(Type.getRealType(s.type,me.interfaces[j])));
-				}
 			}
 		} finally { PassInfo.pop(me); }
 	}

@@ -200,23 +200,6 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+members[i],diff_time);
-				if( members[i] instanceof Struct ) {
-					Struct s = (Struct)members[i];
-					foreach(TypeRef gen; s.gens) {
-						Type t = gen.lnk;
-						Type oldargtype = Kiev.argtype;
-						Kiev.argtype = t;
-						try {
-							diff_time = curr_time = System.currentTimeMillis();
-							s.generate();
-							diff_time = System.currentTimeMillis() - curr_time;
-							if( Kiev.verbose )
-								Kiev.reportInfo("Generated clas "+t.getStruct(),diff_time);
-						} finally {
-							Kiev.argtype = oldargtype;
-						}
-					}
-				}
 			}
 		} finally { PassInfo.pop(this); Kiev.curFile = cur_file; Kiev.setExtSet(exts); }
 	}
@@ -310,19 +293,6 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 			for(int i=0; i < members.length; i++) {
 				try {
 					toJava(output_dir, (Struct)members[i]);
-					if( members[i] instanceof Struct ) {
-						Struct s = (Struct)members[i];
-						foreach(TypeRef gen; s.gens) {
-							Type t = gen.lnk;
-							Type oldargtype = Kiev.argtype;
-							Kiev.argtype = t;
-							try {
-								toJava(output_dir, (Struct)members[i]);
-							} finally {
-								Kiev.argtype = oldargtype;
-							}
-						}
-					}
 				} catch(Exception e) {
 					Kiev.reportError(members[i].pos,e);
 				}
@@ -347,7 +317,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 		try {
 			File f;
-			Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.getStruct();
+			Struct jcl = cl;
 			String out_file = jcl.name.bytecode_name.replace('/',File.separatorChar).toString();
 			make_output_dir(output_dir,out_file);
 			f = new File(output_dir,out_file+".java");
@@ -455,7 +425,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 
 
 	public static void toBytecode(Struct cl) {
-		Struct jcl = Kiev.argtype == null? cl : Kiev.argtype.getStruct();
+		Struct jcl = cl;
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
 		String out_file;

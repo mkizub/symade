@@ -68,11 +68,6 @@ public class Bytecoder implements Constants {
 		if( kaclazz != null ) {
 			trace(Kiev.debugBytecodeRead,"Clazz type "+kaclazz.getClazzName());
 			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(kaclazz.getClazzName()));
-			if( cl.generated_from != null ) {
-				cl.type.java_signature = cl.name.signature();
-				cl.type.clazz = cl;
-				trace(Kiev.debugCreation,"Type "+cl.type+" with signature "+cl.type.signature+" java signature changed to "+cl.type.java_signature);
-			}
 		} else {
 			trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
 			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
@@ -498,23 +493,6 @@ public class Bytecoder implements Constants {
 			}
 			a = new EnumAttr(vf.copyIntoArray(),ea.values);
 		}
-//		else if( name.equals(attrGenerations) ) {
-//			kiev.bytecode.KievGenerationsAttribute ea = (kiev.bytecode.KievGenerationsAttribute)bca;
-//			for(int i=0; i < ea.gens.length; i++) {
-//				ClazzName sgcn = ClazzName.fromSignature(ea.getGenName(i,clazz));
-//				Struct sg = Env.newStruct(sgcn,true);
-//				sg.generated_from = cl;
-//				sg = Env.getStruct(sgcn);
-//				if( sg == null )
-//					throw new RuntimeException("Can't find class "+sgcn);
-//				TypeWithArgsRef t = new TypeWithArgsRef(new TypeRef(cl.type));
-//				foreach (Type a; sg.type.args)
-//					t.args += new TypeRef(a);
-//				cl.gens.add(t);
-//				((Struct)cl.gens[i].clazz).typeinfo_clazz = cl.typeinfo_clazz;
-//			}
-//			a = null;
-//		}
 		else if( name.equals(attrPackerField) ) {
 			a = new PackerFieldAttr(((kiev.bytecode.KievPackerFieldAttribute)bca).size);
 		}
@@ -772,7 +750,7 @@ public class Bytecoder implements Constants {
 	/** Write class
 	 */
 	public byte[] writeClazz() {
-		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
+		Struct jcl = cl;
 		if( kievmode ) {
 		    bcclazz = new kiev.bytecode.KievAttributeClazz(null);
 		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = ConstPool.java_hwm;
@@ -940,11 +918,11 @@ public class Bytecoder implements Constants {
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = ConstPool.getAsciiCP(f.name.name).pos;
 		if( !kievmode ) {
-			Type tp = Type.getRealType(Kiev.argtype,f.type);
+			Type tp = f.type;
 			bcf.cp_type = ConstPool.getAsciiCP(tp.java_signature).pos;
 		}
 		else
-			bcf.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,f.type).signature).pos;
+			bcf.cp_type = ConstPool.getAsciiCP(f.type.signature).pos;
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
 		if( !kievmode ) {
@@ -963,14 +941,14 @@ public class Bytecoder implements Constants {
 	}
 
     public kiev.bytecode.Method writeMethod(Method m) {
-		Struct jcl = Kiev.argtype == null? cl : (Struct)Kiev.argtype.clazz;
+		Struct jcl = cl;
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = ConstPool.getAsciiCP(m.name.name).pos;
 		if( !kievmode )
-			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,m.jtype).java_signature).pos;
+			bcm.cp_type = ConstPool.getAsciiCP(m.jtype.java_signature).pos;
 		else
-			bcm.cp_type = ConstPool.getAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature).pos;
+			bcm.cp_type = ConstPool.getAsciiCP(m.type.signature).pos;
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
 		if( !kievmode ) {

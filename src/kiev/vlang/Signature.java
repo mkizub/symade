@@ -67,7 +67,7 @@ public class Signature {
 				ksb.append('[');
 				ksb.append(args[0].signature);
 			} else {
-				if( clazz !=null && clazz.type!=null /*&& clazz.generated_from == null*/ && (clazz.type.args == null || clazz.type.args.length==0) ) {
+				if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
 					ksb.append(clazz.type.signature);
 				} else {
 					if(  clazz !=null )

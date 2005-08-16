@@ -28,7 +28,6 @@ package kiev.stdlib;
  */
 
 public abstract class Dictionary<A,B extends Object>
-	$generate <int,B>,<long,B>
 {
     /**
      * Returns the number of elements contained within the Dictionary. 

@@ -157,8 +157,7 @@ public class AccessExpr extends LvalueExpr {
 			obj.generate(null);
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_getfield,f,obj.getType());
-			if( Kiev.verify && f.type.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
+			if( Kiev.verify && f.type.isArgument() && getType().isReference() )
 				Code.addInstr(op_checkcast,getType());
 		} finally { PassInfo.pop(this); }
 	}
@@ -177,8 +176,7 @@ public class AccessExpr extends LvalueExpr {
 			generateCheckCastIfNeeded();
 			Code.addInstr(op_dup);
 			Code.addInstr(op_getfield,f,obj.getType());
-			if( Kiev.verify && f.type.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
+			if( Kiev.verify && f.type.isArgument() && getType().isReference() )
 				Code.addInstr(op_checkcast,getType());
 		} finally { PassInfo.pop(this); }
 	}
@@ -286,8 +284,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				ASTNode@ v;
-//				Struct s = t.clazz;
-//				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
@@ -340,7 +336,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 			if( !obj.getType().isArray() ) {
 				// May be an overloaded '[]' operator, ensure overriding
 				Struct s = obj.getType().clazz;
-				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 			lookup_op:
 				for(;;) {
 					s.checkResolved();
@@ -383,7 +378,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Code.addInstr(Instr.op_call,func,false,obj.getType());
 				if( Kiev.verify
 				 && func.type.ret.isReference()
-				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
 				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
@@ -418,7 +412,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
 		PassInfo.push(this);
 		try {
-			Type objType = Type.getRealType(Kiev.argtype,obj.getType());
+			Type objType = obj.getType();
 			if( objType.isArray() ) {
 				Code.addInstr(Instr.op_arr_store);
 			} else {
@@ -428,7 +422,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Type t = Code.stack_at(0);
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				Struct s = objType.clazz;
-				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
@@ -456,7 +449,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 					throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
 				Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 				Struct s = obj.getType().clazz;
-				if (s instanceof Struct && ((Struct)s).generated_from != null) s = ((Struct)s).generated_from;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
@@ -465,7 +457,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				Method func = (Method)v;
 				Code.addInstr(Instr.op_call,func,false,obj.getType());
 				if( Kiev.verify
-				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
+				 && func.type.ret.isReference()
 				 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
@@ -731,7 +723,7 @@ public class VarAccessExpr extends LvalueExpr {
 
 	public void generateVerifyCheckCast() {
 		if( !Kiev.verify ) return;
-		if( !Type.getRealType(Kiev.argtype,var.type).isReference() || var.type.isArray() ) return;
+		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
 		if( var.parent instanceof Method ) {
 			Method m = (Method)var.parent;
@@ -1160,7 +1152,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		ClazzName cln = Type.getRealType(Kiev.argtype,cl.type).getClazzName();
+		ClazzName cln = cl.type.getClazzName();
 		return dmp.space().append(cln).append('.').append(var.name).space();
 	}
 

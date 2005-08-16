@@ -104,18 +104,18 @@ public class Var extends ASTNode implements Named, Typed {
 		if (isFinal()) dmp.append("final").forsed_space();
 		if (isForward()) dmp.append("forward").forsed_space();
 		if( isNeedRefProxy() )
-			dmp.append(Type.getProxyType(Type.getRealType(Kiev.argtype,type)));
+			dmp.append(Type.getProxyType(type));
 		else
-			dmp.append(Type.getRealType(Kiev.argtype,type));
+			dmp.append(type);
 		return dmp.forsed_space().append(name);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp, Type jtype) {
 //		Env.toJavaModifiers(dmp,access);
 		if( isNeedRefProxy() )
-			dmp.append(Type.getProxyType(Type.getRealType(Kiev.argtype,jtype)));
+			dmp.append(Type.getProxyType(jtype));
 		else
-			dmp.append(Type.getRealType(Kiev.argtype,jtype));
+			dmp.append(jtype);
 		return dmp.forsed_space().append(name);
 	}
 

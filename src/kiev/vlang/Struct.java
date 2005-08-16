@@ -67,247 +67,6 @@ public final class StructRef extends ASTNode {
 }
 
 
-//@node(copyable=false)
-//public class BaseStruct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, Accessable {
-//	
-//	private static Access dummyAccess = new Access(0xFF);
-//	
-//	/** Variouse names of the class */
-//	public ClazzName					name;
-//
-//	/** Type associated with this class */
-//	@ref public BaseType				type;
-//
-//	/** Bound super-class for class arguments */
-//	@att public TypeRef					super_bound;
-//
-//	/** Bound super-class for class arguments */
-//	@virtual
-//	@ref public virtual abstract Type	super_type;
-//
-//	/** SuperInterface types */
-//	@att public final NArr<TypeRef>		interfaces;
-//
-//	/** Meta-information (annotations) of this structure */
-//	@att public MetaSet					meta;
-//
-//	protected BaseStruct(ClazzName name) {
-//		super(0,0);
-//		this.name = name;
-//		this.super_bound = new TypeRef();
-//		this.meta = new MetaSet(this);
-//	}
-//
-//	public BaseStruct(ClazzName name, int acc) {
-//		super(0,acc);
-//		this.name = name;
-//		this.super_bound = new TypeRef();
-//		this.meta = new MetaSet(this);
-//	}
-//
-//	public String toString() { return name.name.toString(); }
-//
-//	public Object copy() {
-//		throw new CompilerException(getPos(),"Struct node cannot be copied");
-//	};
-//
-//	public boolean checkResolved() {
-//		return true;
-//	}
-//	
-//	@getter public Access get$acc() {
-//		return dummyAccess;
-//	}
-//
-//	@setter public void set$acc(Access a) {
-//		throw new RuntimeException("Cannot set access of "+this);
-//	}
-//
-//	@getter public Type get$super_type() {
-//		return super_bound.lnk;
-//	}
-//
-//	@setter public void set$super_type(Type tp) {
-//		super_bound = new TypeRef(super_bound.pos, tp);
-//	}
-//
-//	public NodeName	getName() { return name; }
-//	
-//	public void callbackChildChanged(AttrSlot attr) {
-//		if (attr.name == "super_bound") {
-//			if (type != null)
-//				type.invalidate();
-//		}
-//		else if (attr.name == "interfaces") {
-//			if (type != null)
-//				type.invalidate();
-//		}
-//		else if (attr.name == "meta") {
-//			if (type != null)
-//				type.invalidate();
-//		}
-//	}
-//	
-//	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
-//	{
-//		trace(Kiev.debugResolve,"BaseStruct: Resolving name "+name+" in "+this),
-//		checkResolved(),
-//		{
-//			trace(Kiev.debugResolve,"BaseStruct: resolving in "+this),
-//			resolveNameR_1(node,info,name),	// resolve in this class
-//			$cut
-//		;	info.isSuperAllowed(),
-//			trace(Kiev.debugResolve,"BaseStruct: resolving in super-class of "+this),
-//			resolveNameR_3(node,info,name),	// resolve in super-classes
-//			$cut
-//		}
-//	}
-//	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
-//		Type@ arg;
-//	{
-//			node ?= this, ((BaseStruct)node).name.short_name.equals(name)
-//		;	arg @= type.args,
-//			arg.getClazzName().short_name.equals(name),
-//			node ?= arg.clazz
-//	}
-//	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
-//		Type@ sup;
-//	{
-//		{	sup ?= super_bound.lnk,
-//			info.enterSuper() : info.leaveSuper(),
-//			sup.resolveStaticNameR(node,info,name)
-//		;	sup @= TypeRef.linked_elements(interfaces),
-//			info.enterSuper() : info.leaveSuper(),
-//			sup.resolveStaticNameR(node,info,name)
-//		}
-//	}
-//
-//	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
-//	{
-//		resolveStructMethodR(node, info, name, mt, this.type)
-//	}
-//	
-//	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
-//		Type@ sup;
-//	{
-//		info.isSuperAllowed(),
-//		checkResolved(),
-//		trace(Kiev.debugResolve, "Resolving "+name+" in "+this),
-//		info.enterSuper() : info.leaveSuper(),
-//		{
-//			sup ?= super_bound.lnk,
-//			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
-//		;
-//			sup @= TypeRef.linked_elements(interfaces),
-//			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
-//		}
-//	}
-//
-//	public boolean instanceOf(Struct cl) {
-//		if( cl == null ) return false;
-//		if( this.equals(cl) ) return true;
-//		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
-//		 	return true;
-//		if( cl.isInterface() ) {
-//			for(int i=0; i < interfaces.length; i++) {
-//				if( interfaces[i].clazz.instanceOf(cl) ) return true;
-//			}
-//		}
-//		return false;
-//	}
-//
-//	public Field resolveField(KString name) {
-//		return resolveField(name,this,true);
-//	}
-//
-//	public Field resolveField(KString name, boolean fatal) {
-//		return resolveField(name,this,fatal);
-//	}
-//
-//	protected Field resolveField(KString name, BaseStruct where, boolean fatal) {
-//		checkResolved();
-//		if( super_bound.lnk != null )
-//			return super_bound.lnk.clazz.resolveField(name,where,fatal);
-//		if (fatal)
-//			throw new RuntimeException("Unresolved field "+name+" in class "+where);
-//		return null;
-//	}
-//
-//	public ASTNode resolveName(KString name) {
-//		checkResolved();
-//		foreach(Type t; type.args; t.clazz.name.short_name.equals(name) ) return t.clazz;
-//		return null;
-//	}
-//
-//	public Method resolveMethod(KString name, KString sign) {
-//		return resolveMethod(name,sign,this,true);
-//	}
-//
-//	public Method resolveMethod(KString name, KString sign, boolean fatal) {
-//		return resolveMethod(name,sign,this,fatal);
-//	}
-//
-//	protected Method resolveMethod(KString name, KString sign, BaseStruct where, boolean fatal) {
-//		checkResolved();
-//		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
-//		Method m = null;
-//		if( super_bound.lnk != null )
-//			m = super_bound.lnk.clazz.resolveMethod(name,sign,where,fatal);
-//		if( m != null ) return m;
-//		foreach(Type interf; interfaces) {
-//			m = interf.clazz.resolveMethod(name,sign,where,fatal);
-//			if( m != null ) return m;
-//		}
-//		if (fatal)
-//			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
-//		return null;
-//	}
-//
-//	public Method getOverwrittenMethod(Type base, Method m) {
-//		Method mm = null, mmret = null;
-//		if( super_bound.lnk != null && !isInterface() )
-//			mm = super_bound.lnk.clazz.getOverwrittenMethod(base,m);
-//		if( mmret == null && mm != null ) mmret = mm;
-//		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this);
-//		return mmret;
-//	}
-//
-//	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
-//		if( super_type != null ) {
-//			ms = super_type.clazz.collectVTinterfaceMethods(
-//				Type.getRealType(tp,super_type),ms);
-//		}
-//		foreach(Type i; interfaces) {
-//			ms = i.clazz.collectVTinterfaceMethods(
-//				Type.getRealType(tp,i),ms);
-//		}
-//		return ms;
-//	}
-//
-//	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
-//	{
-//		if( super_type != null )
-//			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
-//		return ms;
-//	}
-//
-//	List<Method> collectVTmethods(List<Method> ms) {
-//		ms = collectVTinterfaceMethods(this.type,ms);
-//		ms = collectVTvirtualMethods(this.type,ms);
-//		return ms;
-//	}
-//
-//	public ASTNode resolve(Type reqType) { return this; }
-//
-//	public Dumper toJava(Dumper dmp) {
-//		if( interfaces.length > 0 )
-//			return dmp.append(interfaces[0]);
-//		else
-//			return dmp.append(super_type);
-//	}
-//	
-//}
-
 @node(copyable=false)
 public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
@@ -342,14 +101,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	/** Package structure this structure belongs to */
 	@ref public Struct								package_clazz;
 
-	/** Array of types that are generated for primitive
-		paremeter types of type arguments
-	*/
-	@att public final NArr<TypeWithArgsRef>		gens;
-
-	/** Reference of template class for generated one */
-	@ref public Struct								generated_from;
-
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
@@ -357,9 +108,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	
 	/** Array of substructures of the structure */
 	@ref public final NArr<Struct>					sub_clazz;
-
-	/** The field this structure is wrapper of */
-	@ref public Field								wrapped_field;
 
 	/** Array of imported classes,fields and methods */
 	@ref public final NArr<ASTNode>					imported;
@@ -504,8 +252,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	}
 
 	public boolean checkResolved() {
-		if( generated_from != null )
-			return generated_from.checkResolved();
 		if( !isResolved() ) {
 			if( Env.getStruct(this.name) == null ) {
 				if (isPackage())
@@ -820,10 +566,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		trace(Kiev.debugMembers,"Sub-class "+sub+" added to class "+this);
 		if (sub.name.short_name == nameClTypeInfo) {
 			typeinfo_clazz = sub;
-			foreach (TypeRef gen; gens) {
-				((Struct)gen.clazz).typeinfo_clazz = sub;
-				trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+gen);
-			}
 			trace(Kiev.debugMembers,"Sub-class "+sub+" is the typeinfo class of "+this);
 		}
 		return sub;
@@ -840,15 +582,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				throw new RuntimeException("Method "+m+" already exists in class "+this);
 		}
 		members.append(m);
-		foreach (TypeRef g; gens) {
-			Struct s = (Struct)g.clazz;
-			Method sm = new Method(m.name.name,
-				(MethodType)Type.getRealType(s.type,m.type),
-				m.getFlags()
-				);
-			sm.generated_from = m;
-			s.members.append(sm);
-		}
 		trace(Kiev.debugMembers,"Method "+m+" added to class "+this);
 		return m;
 	}
@@ -860,18 +593,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		for(i=0; i < members.length; i++) {
 			if( members[i].equals(m) ) {
 				members.del(i);
-				foreach (TypeRef g; gens) {
-					Struct s = (Struct)g.clazz;
-					for (int j=0; j < s.members.length; j++) {
-						if (s.members[i] instanceof Method) {
-							Method sm = (Method)s.members[j];
-							if (sm.generated_from == m) {
-								s.members.del(j);
-								break;
-							}
-						}
-					}
-				}
 				trace(Kiev.debugMembers,"Method "+m+" removed from class "+this);
 				return;
 			}
@@ -889,12 +610,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			}
 		}
 		members.append(f);
-		foreach (TypeRef g; gens) {
-			Struct s = (Struct)g.clazz;
-			Field sf = (Field)f.copy();
-			sf.generated_from = f;
-			s.members.append(sf);
-		}
 		trace(Kiev.debugMembers,"Field "+f+" added to class "+this);
 		return f;
 	}
@@ -905,18 +620,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		for(int i=0; i < members.length; i++) {
 			if( members[i].equals(f) ) {
 				members.del(i);
-				foreach (TypeRef g; gens) {
-					Struct s = (Struct)g.clazz;
-					for (int j=0; j < s.members.length; j++) {
-						if (s.members[i] instanceof Field) {
-							Field sf = (Field)s.members[j];
-							if (sf.generated_from == f) {
-								s.members.del(j);
-								break;
-							}
-						}
-					}
-				}
 				trace(Kiev.debugMembers,"Field "+f+" removed from class "+this);
 				return;
 			}
@@ -990,10 +693,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
-			if (t.clazz instanceof Struct && ((Struct)t.clazz).generated_from != null)
-				sb.append(((Struct)t.clazz).generated_from.name.bytecode_name.toString().replace('/','.'));
-			else
-				sb.append(t.clazz.name.bytecode_name.toString().replace('/','.'));
+			sb.append(t.clazz.name.bytecode_name.toString().replace('/','.'));
 			sb.append('<');
 			for(int i=0; i < t.args.length; i++) {
 				Type ta = t.args[i];
@@ -1253,7 +953,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	public void autoGenerateMembers() {
 		checkResolved();
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
-		assert(generated_from == null);
 
 		// Setup packed/packer fields
 		foreach(ASTNode n; members; n instanceof Field && n.isPackedField() ) {
@@ -1677,7 +1376,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
 		assert( PassInfo.clazz == this );
-		assert(generated_from == null);
 		// <clinit> & common$init, if need
 		Method class_init = null;
 		BlockStat instance_init = null;
@@ -2220,17 +1918,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		if( isMembersGenerated() ) return this;
 		if( isPackage() ) return this;
 		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
-			if ( ((Struct)super_type.clazz).generated_from != null )
-				((Struct)super_type.clazz).generated_from.autoProxyMethods();
-			else
-				super_type.clazz.autoProxyMethods();
+			super_type.clazz.autoProxyMethods();
 		}
 		for(int i=0; i < interfaces.length; i++)
 			if( !interfaces[i].clazz.isMembersGenerated() ) {
-				if ( ((Struct)interfaces[i].clazz).generated_from != null )
-					((Struct)interfaces[i].clazz).generated_from.autoProxyMethods();
-				else
-					interfaces[i].clazz.autoProxyMethods();
+				interfaces[i].clazz.autoProxyMethods();
 			}
 		ASTNode fu = parent;
 		while( fu != null && !(fu instanceof FileUnit))
@@ -2239,10 +1931,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			Kiev.curFile = ((FileUnit)fu).filename;
 
 		for(int i=0; i < interfaces.length; i++) {
-			if ( ((Struct)interfaces[i].clazz).generated_from != null )
-				((Struct)interfaces[i].clazz).generated_from.autoProxyMethods(this);
-			else
-				((Struct)interfaces[i].clazz).autoProxyMethods(this);
+			((Struct)interfaces[i].clazz).autoProxyMethods(this);
 		}
 
 		autoGenerateMembers();
@@ -2264,7 +1953,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 //		}
 
 		setMembersGenerated(true);
-		foreach(Struct s; sub_clazz; s.generated_from == null)
+		foreach(Struct s; sub_clazz; )
 			s.autoProxyMethods();
 
 		combineMethods();
@@ -2655,7 +2344,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 */
 
 	public void generate() {
-		Struct jthis = Kiev.argtype == null? this : (Struct)Kiev.argtype.clazz;
+		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Generating class  "+jthis+"]");
 		if( Kiev.safe && isBad() ) return;
 		PassInfo.push(this);
@@ -2663,12 +2352,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if( !isPackage() ) {
 				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
 					Struct s = sub_clazz[i];
-					Type rt = Type.getRealType(Kiev.argtype,s.type);
-					Type oldargtype = Kiev.argtype;
-					Kiev.argtype = rt;
-					try {
-						s.generate();
-					} finally { Kiev.argtype = oldargtype; }
+					s.generate();
 				}
 			}
 
@@ -2738,23 +2422,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				}
 			}
 
-			if( jthis.gens.length > 0 ) {
-				Type[] t = new Type[jthis.gens.length];
-				for (int i=0; i < t.length; i++)
-					t[i] = jthis.gens[i].lnk;
-				jthis.addAttr(new GenerationsAttr(t));
-			} else {
-				for(int i=0; i < attrs.length; i++) {
-					if( attrs[i].name == attrGenerations ) {
-						Attr[] a = new Attr[attrs.length-1];
-						for(int k=0; k < i; k++) a[k] = attrs[k];
-						for(int k=i+1; k < attrs.length; k++) a[k-1] = attrs[k];
-						this.attrs = a;
-						i--;
-					}
-				}
-			}
-
 			{
 				int flags = 0;
 //				if( jthis.isWrapper() ) flags |= 1;
@@ -2769,8 +2436,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			foreach (ASTNode n; members; n instanceof Field) {
 				Field f = (Field)n;
 				ConstPool.addAsciiCP(f.name.name);
-				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).signature);
-				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,f.type).java_signature);
+				ConstPool.addAsciiCP(f.type.signature);
+				ConstPool.addAsciiCP(f.type.java_signature);
 
 				int flags = 0;
 				if( f.isVirtual() ) flags |= 2;
@@ -2798,10 +2465,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			foreach (ASTNode n; members; n instanceof Method) {
 				Method m = (Method)n;
 				ConstPool.addAsciiCP(m.name.name);
-				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).signature);
-				ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.type).java_signature);
+				ConstPool.addAsciiCP(m.type.signature);
+				ConstPool.addAsciiCP(m.type.java_signature);
 				if( m.jtype != null )
-					ConstPool.addAsciiCP(Type.getRealType(Kiev.argtype,m.jtype).java_signature);
+					ConstPool.addAsciiCP(m.jtype.java_signature);
 
 				try {
 					m.generate();
@@ -2883,7 +2550,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 	public Dumper toJavaDecl(Dumper dmp) {
 		PassInfo.push(this);
 		try {
-		Struct jthis = Kiev.argtype == null? this : (Struct)Kiev.argtype.clazz;
+		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( isInterface() || isArgument() ) {
@@ -2893,7 +2560,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if( type.args!=null && type.args.length > 0 ) {
 				dmp.append("/* <");
 				for(int i=0; i < type.args.length; i++) {
-					dmp.append(Type.getRealType(Kiev.argtype,type).args[i]);
+					dmp.append(type.args[i]);
 					if( i < type.args.length-1 ) dmp.append(',');
 				}
 				dmp.append("> */");
@@ -2922,7 +2589,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if( interfaces!=null && interfaces.length > 0 ) {
 				dmp.space().append("implements").forsed_space();
 				for(int i=0; i < interfaces.length; i++) {
-					dmp.append(Type.getRealType(Kiev.argtype,this.interfaces[i]).clazz);
+					dmp.append(this.interfaces[i].clazz);
 					if( i < (interfaces.length-1) ) dmp.append(',').space();
 				}
 			}

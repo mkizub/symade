@@ -42,7 +42,6 @@ package kiev.stdlib;
  * @see Hashtable
  */
 public interface Enumeration<A>
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
     /**
      * Returns true if the enumeration contains more elements; false

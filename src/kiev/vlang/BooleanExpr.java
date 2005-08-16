@@ -684,29 +684,19 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
+		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
 			Object e = expr.resolve(null);
+			Type tp = null;
 			if (e instanceof WrapedExpr)
-				e = ((WrapedExpr)e).getType();
+				tp = ((WrapedExpr)e).getType();
 			if (e instanceof Struct)
-				e = ((Struct)e).type;
+				tp = ((Struct)e).type;
 			if( e instanceof TypeRef )
-				e = ((TypeRef)e).getType();
-			if( e instanceof Type ) {
-				if( Code.generation||Kiev.gen_resolve ) {
-					Type t = (Type)e;
-					t = Type.getRealType(Kiev.argtype,t);
-					if( t.isArgument() )
-						t = t.getSuperType();
-					return new ConstBoolExpr(t.isInstanceOf(type));
-				} else {
-					// Resolve at generate phase
-					setGenResolve(true);
-					setResolved(true);
-					return this;
-				}
+				tp = ((TypeRef)e).getType();
+			if( tp != null ) {
+				return new ConstBoolExpr(tp.isInstanceOf(type));
 			} else {
 				expr = (Expr)e;
 				Type et = expr.getType();
@@ -770,8 +760,7 @@ public class InstanceofExpr extends BoolExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
-		dmp.append(expr).append(" instanceof ")
-			.append(Type.getRealType(Kiev.argtype,type)).space();
+		dmp.append(expr).append(" instanceof ").append(type).space();
 		return dmp;
 	}
 }
@@ -805,15 +794,12 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		if( isResolved() && !(isGenResolve() && (Code.generation||Kiev.gen_resolve))) return this;
+		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
 			expr = BoolExpr.checkBool(expr.resolve(Type.tpBoolean));
-			if( expr.isConstantExpr() ) {
+			if( expr.isConstantExpr() )
 				return new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue());
-			}
-			if( expr.isGenResolve() )
-				setGenResolve(true);
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 		return this;

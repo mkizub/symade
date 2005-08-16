@@ -319,8 +319,6 @@ public final class Kiev {
 
 	public static long gc_mem				= (long)(1024*1024);
 
-	public static boolean gen_resolve		= false;
-
 	public static boolean javacerrors		= false;
 	public static boolean nowarn			= false;
 
@@ -412,7 +410,6 @@ public final class Kiev {
 	public static Vector<FileUnit>		file_unit = new Vector<FileUnit>();
 	public static Vector<FileUnit>		files_scanned = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
-	public static Type					argtype = null;
 
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;

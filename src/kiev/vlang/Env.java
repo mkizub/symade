@@ -154,7 +154,6 @@ public class Env extends Struct {
 				cl.super_bound = new TypeRef();
 				cl.interfaces.delAll();
 				cl.sub_clazz.delAll();
-				cl.wrapped_field = null;
 				foreach(ASTNode n; cl.members; n instanceof Method && ((Method)n).isOperatorMethod() )
 					Operator.cleanupMethod((Method)n);
 				cl.members.delAll();

@@ -58,8 +58,6 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	/** Array of invariant methods, that check this field */
 	public Method[]			invs = Method.emptyArray;
 
-	@ref public Field		generated_from;
-
 	@ref public abstract virtual access:ro Type	type;
 	
 	public Field() {
@@ -167,7 +165,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( !name.equals(KString.Empty) )
-			Type.getRealType(Kiev.argtype,type).toJava(dmp).forsed_space().append(name);
+			type.toJava(dmp).forsed_space().append(name);
 		if( init != null ) {
 			if( !name.equals(KString.Empty) )
 				dmp.append(" = ");

@@ -28,7 +28,6 @@ package kiev.stdlib;
  */
 
 public class Vector<A> implements Cloneable
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	public A		data[];

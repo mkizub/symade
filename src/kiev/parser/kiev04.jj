@@ -571,8 +571,6 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 | < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < GENERATE: "$generate" > { if(Kiev.javaMode || Kiev.disabled(Ext.Templates) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
-
 | < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 | < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 
@@ -1043,7 +1041,6 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz.interfaces += NArrType()
 			( "," clazz.interfaces += NArrType()	)*
 		]
-		[	Generate(clazz.name.name, clazz.gens)	]
 	|	"interface"
 		name = Name()
 		{
@@ -1055,7 +1052,6 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz.interfaces += NArrType()
 			( "," clazz.interfaces += NArrType()	)*
 		]
-		[	Generate(clazz.name.name, clazz.gens)	]
 	|	"@" "interface"
 		(	name = Name()
 		|	name = KeywordAsName()
@@ -1181,28 +1177,6 @@ void ArgumentDeclaration(ASTNode parent) :
 		"extends"
 		arg.super_bound = NArrType()
 	]
-}
-
-// disabled
-void Generate(KString name, NArrTypeWithArgsRefs types) :
-{ Token t; ASTIdentifier id; TypeWithArgsRef tp; }
-{
-	"$generate"	// TODO: replace with @generate
-	{ tp = new TypeWithArgsRef(new TypeNameRef(name)); }
-	"<"
-		( tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } )
-		( "," (tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } ) )*
-	">"
-	{ /* types += tp; */ }
-	(
-		","
-		{ tp = new TypeWithArgsRef(new TypeNameRef(name)); }
-		"<"
-			( tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } )
-			( "," (tp.args += PrimitiveType() | id = Name() { tp.args += new TypeNameRef(id); } ) )*
-		">"
-		{ /* types += tp; */ }
-	)*
 }
 
 ASTModifier Modifier() :

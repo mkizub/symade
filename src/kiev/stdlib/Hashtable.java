@@ -28,7 +28,6 @@ package kiev.stdlib;
  */
 
 public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cloneable
-	$generate <int,B>,<long,B>
 {
     /**
      * The hash table data.
