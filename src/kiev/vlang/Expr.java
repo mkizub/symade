@@ -1128,8 +1128,6 @@ public class CommaExpr extends Expr {
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<ASTNode>		stats;
-	@ref public final NArr<Var>			vars;
-	@att public final NArr<ASTNode>		members;
 	@att public       Expr				res;
 
 	public BlockExpr() {
@@ -1148,14 +1146,26 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		this.res = res;
 	}
 
-	public Var addVar(Var var) {
-		foreach(Var v; vars; v.name.equals(var.name) ) {
-			Kiev.reportWarning(pos,"Variable "+var.name+" already declared in this scope");
+	public void addSymbol(Named sym) {
+		ASTNode s = (ASTNode)sym;
+		foreach(ASTNode n; stats) {
+			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
+				Kiev.reportError(s.pos,"Symbol "+sym.getName()+" already declared in this scope");
+			}
 		}
-		vars.append(var);
-		return var;
+		stats.append(s);
 	}
-	
+
+	public void insertSymbol(Named sym, int idx) {
+		ASTNode s = (ASTNode)sym;
+		foreach(ASTNode n; stats) {
+			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
+				Kiev.reportError(s.pos,"Symbol "+sym.getName()+" already declared in this scope");
+			}
+		}
+		stats.insert(s,idx);
+	}
+
 	public Type getType() {
 		if (res == null) return Type.tpVoid;
 		return res.getType();
@@ -1166,29 +1176,32 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
-		n @= vars,
+		n @= stats,
 		{
+			n instanceof Var,
 			((Var)n).name.equals(name),
 			node ?= n
-		;	n.isForward(),
-			info.enterForward(n) : info.leaveForward(n),
-			n.getType().resolveNameAccessR(node,info,name)
-		}
-	;	n @= members,
-		{	n instanceof Struct,
+		;	n instanceof Struct,
 			name.equals(((Struct)n).name.short_name),
 			node ?= n
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
 			node ?= ((Typedef)n).type
 		}
+	;
+		info.isForwardsAllowed(),
+		n @= stats,
+		n instanceof Var && n.isForward() && ((Var)n).name.equals(name),
+		info.enterForward(n) : info.leaveForward(n),
+		n.getType().resolveNameAccessR(node,info,name)
 	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
-		Var@ n;
+		ASTNode@ n;
 	{
-		n @= vars,
-		n.isForward(),
+		info.isForwardsAllowed(),
+		n @= stats,
+		n instanceof Var && n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
@@ -1202,6 +1215,8 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 				res = res.resolveExpr(reqType);
 			}
 		} finally {
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
 			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
 			NodeInfoPass.addInfo(nip_state);
@@ -1214,9 +1229,11 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		for(int i=0; i < stats.length; i++) {
 			try {
 				if( stats[i] instanceof Statement ) {
-					stats[i] = (Statement)((Statement)stats[i]).resolve(Type.tpVoid);
-					if( stats[i].isAbrupted() ) {
-						Kiev.reportError(stats[i].pos,"Abrupted statement in BockExpr");
+					Statement st = (Statement)stats[i];
+					st.resolve(Type.tpVoid);
+					st = (Statement)stats[i];
+					if( st.isAbrupted() ) {
+						Kiev.reportError(st.pos,"Abrupted statement in BockExpr");
 					}
 				}
 				else if( stats[i] instanceof ASTVarDecls ) {
@@ -1224,53 +1241,54 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 					// TODO: check flags for vars
 					int flags = vdecls.modifiers.getFlags();
 					Type type = ((TypeRef)vdecls.type).getType();
-					ASTNode[] vstats = ASTNode.emptyArray;
 					for(int j=0; j < vdecls.vars.length; j++) {
 						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 						KString vname = vdecl.name.name;
 						Type tp = type;
 						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-						DeclStat vstat;
+						Var vstat;
 						if( vdecl.init != null ) {
-							if (!type.isWrapper() || vdecl.of_wrapper)
-								vstat = (Statement)new DeclStat(
-									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),vdecl.init);
-							else
-								vstat = (Statement)new DeclStat(
-									vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags),
-									new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init}));
+							if (!type.isWrapper() || vdecl.of_wrapper) {
+								vstat = new Var(vdecl.pos,vname,tp,flags);
+								vstat.init = vdecl.init;
+							} else {
+								vstat = new Var(vdecl.pos,vname,tp,flags);
+								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
+							}
 						}
-						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper)
-							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags)
-								,new NewExpr(vdecl.pos,type,Expr.emptyArray));
-						else
-							vstat = (Statement)new DeclStat(vdecl.pos,this,new Var(vdecl.pos,vname,tp,flags));
-						vstat = (DeclStat)vstat.resolve(Type.tpVoid);
-						vstats = (ASTNode[])Arrays.append(vstats,vstat);
+						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
+							vstat = new Var(vdecl.pos,vname,tp,flags);
+							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
+						} else {
+							vstat = new Var(vdecl.pos,vname,tp,flags);
+						}
+						if (j == 0) {
+							stats[i] = vstat;
+							vstat.resolve(Type.tpVoid);
+						} else {
+							this.insertSymbol(vstat,i+j);
+						}
 					}
-					stats[i] = vstats[0];
-					for(int j=1; j < vstats.length; j++, i++) {
-						stats.insert(vstats[j],i+1);
-					}
+				}
+				else if( stats[i] instanceof Var ) {
+					Var var = (Var)stats[i];
+					var.resolve(Type.tpVoid);
 				}
 				else if( stats[i] instanceof Struct ) {
 					Struct decl = (Struct)stats[i];
-					TypeDeclStat tds = new TypeDeclStat(decl.pos,this);
 					if( PassInfo.method==null || PassInfo.method.isStatic())
 						decl.setStatic(true);
 					ExportJavaTop exporter = new ExportJavaTop();
 					decl.setLocal(true);
-					tds.struct = decl;
 					exporter.pass1(decl);
 					exporter.pass1_1(decl);
 					exporter.pass2(decl);
 					exporter.pass2_2(decl);
 					exporter.pass3(decl);
-					tds.struct.autoProxyMethods();
-					tds.struct.resolveFinalFields(false);
-					stats[i] = tds;
-					stats[i] = tds.resolve(null);
-					members.append(tds.struct);
+					decl.autoProxyMethods();
+					decl.resolveFinalFields(false);
+					decl.resolve(Type.tpVoid);
+					//stats[i] = decl;
 				}
 				else
 					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
@@ -1282,12 +1300,18 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 
 	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockExpr ("+vars.size()+" vars)");
+		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
 		PassInfo.push(this);
 		try {
 			for(int i=0; i < stats.length; i++) {
 				try {
-					((Statement)stats[i]).generate(Type.tpVoid);
+					ASTNode n = stats[i];
+					if (n instanceof Statement)
+						((Statement)n).generate(Type.tpVoid);
+					else if (n instanceof Expr)
+						((Expr)n).generate(Type.tpVoid);
+					else if (n instanceof Var)
+						((Var)n).generate(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(stats[i].getPos(),e);
 				}
@@ -1299,16 +1323,15 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 					Kiev.reportError(res.getPos(),e);
 				}
 			}
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			Code.removeVars(vars.toArray());
 		} finally { PassInfo.pop(this); }
 	}
 
 	public void cleanup() {
 		parent=null;
-		foreach(ASTNode n; stats; n!=null) n.cleanup();
-		stats = null;
-		foreach(ASTNode n; vars; n!=null) n.cleanup();
-		vars = null;
+		stats.cleanup();
 		if (res != null) {
 			res.cleanup();
 			res = null;

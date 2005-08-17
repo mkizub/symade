@@ -1001,13 +1001,18 @@ public abstract class Expr extends CFlowNode {
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");
     }
-	public /*abstract*/ ASTNode	resolve(Type reqType) {
+	public ASTNode	resolve(Type reqType) {
 		throw new CompilerException(pos,"Resolve call for node "+getClass());
 	}
-	public /*abstract*/ Expr tryResolve(Type reqType) {
+	public Expr tryResolve(Type reqType) {
 		ASTNode n = resolve(reqType);
-		if( n instanceof Expr ) return (Expr)n;
-		else return new WrapedExpr(pos,n,reqType);
+		if (n != this)
+			n.parent = this.parent;
+		if( n instanceof Expr )
+			return (Expr)n;
+		WrapedExpr we = new WrapedExpr(pos,n,reqType);
+		we.parent = this.parent;
+		return we;
 	}
 	public Expr resolveExpr(Type reqType) {
 		ASTNode e = tryResolve(reqType);

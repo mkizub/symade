@@ -38,12 +38,12 @@ import syntax kiev.Syntax;
 @node
 public class RuleMethod extends Method {
 
-	@att public final NArr<LoclVar>		localvars;
-	public int							base = 1;
-	public int							max_depth = 0;
-	public int							state_depth = 0;
-	public int							max_vars;
-	public int							index;		// index counter for RuleNode.idx
+	@att public final NArr<Var>		localvars;
+	public int						base = 1;
+	public int						max_depth = 0;
+	public int						state_depth = 0;
+	public int						max_vars;
+	public int						index;		// index counter for RuleNode.idx
 
 	public RuleMethod() {
 	}
@@ -138,6 +138,8 @@ public class RuleMethod extends Method {
 				FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
 				params.append(va);
 			}
+			foreach (Var lv; localvars)
+				lv.setLocalRuleVar(true);
 		} finally {
 			PassInfo.pop(this);
 		}
@@ -489,12 +491,10 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
-		ASTNode@ stat;
 	{
-		stat @= stats,
-		stat instanceof DeclStat,
-		((DeclStat)stat).var.name.equals(name),
-		node ?= ((DeclStat)stat).var
+		node @= stats,
+		node instanceof Var,
+		((Var)node).name.equals(name)
 	}
 
 }

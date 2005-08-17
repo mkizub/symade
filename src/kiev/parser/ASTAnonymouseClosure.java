@@ -103,18 +103,17 @@ public class ASTAnonymouseClosure extends Expr {
 			Expr val = new ContainerAccessExpr(pos,
 				new AccessExpr(pos,new ThisExpr(pos),(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
 				new ConstIntExpr(i));
-			DeclStat dc = new DeclStat(v.getPos(),body,v);
 			if( !v.type.isReference() ) {
 				Type celltp = Type.getProxyType(v.type);
-				val = new AccessExpr(v.getPos(),dc,
+				val = new AccessExpr(v.getPos(),v,
 						new CastExpr(v.getPos(),celltp,val,true),
 						(Field)celltp.resolveName(nameCellVal)
 					);
 			} else {
 				val = new CastExpr(v.getPos(),v.type,val,true);
 			}
-			dc.init = val;
-			stats.insert(dc,i);
+			v.init = val;
+			stats.insert(v,i);
 		}
 
 		ExportJavaTop exporter = new ExportJavaTop();

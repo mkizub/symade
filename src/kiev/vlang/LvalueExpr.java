@@ -946,8 +946,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	public Field resolveFieldForLocalPrologVar() {
 		RuleMethod rm = (RuleMethod)PassInfo.method;
-		TypeDeclStat tds = (TypeDeclStat)((BlockStat)rm.body).stats[0];
-		Struct s = tds.struct;
+		Struct s = (Struct)((BlockStat)rm.body).stats[0];
 		Field f = s.resolveField(var.name.name);
 		assert(f != null);
 		return f;

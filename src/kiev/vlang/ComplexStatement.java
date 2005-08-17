@@ -70,9 +70,12 @@ public class CaseLabel extends ASTNode {
 		return "case "+val+':';
 	}
 
-	public Statement addStatement(int i, Statement st) {
+	public ASTNode addStatement(int i, ASTNode st) {
 		if( st == null ) return null;
-		stats.stats.insert(st,i);
+		if (st instanceof Statement)
+			stats.stats.insert(st,i);
+		else
+			stats.insertSymbol((Named)st,i);
 		return st;
 	}
 
@@ -157,13 +160,13 @@ public class CaseLabel extends ASTNode {
 									Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
 									if( !p.type.equals(tp) )
 										throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
-									Expr init =
+									p.init =
 										new AccessExpr(p.pos,
 											new CastExpr(p.pos,Type.getRealType(sw.tmpvar.type,cas.type),
 												(Expr)new VarAccessExpr(p.pos,sw.tmpvar).resolve(null)),
 											case_attr.casefields[i]
 										);
-									addStatement(j++,new DeclStat(p.pos,stats,p,init));
+									addStatement(j++,p);
 								}
 							}
 						} else {
@@ -325,8 +328,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					Expr init = sel;
 					me = new BlockStat(pos,parent);
 					this.replaceWith(me);
-					Statement ds = new DeclStat(tmpvar.pos,me,tmpvar,init);
-					me.addStatement(ds);
+					tmpvar.init = init;
+					me.addSymbol(tmpvar);
 					me.addStatement(this);
 					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;

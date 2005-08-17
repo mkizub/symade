@@ -145,17 +145,17 @@ public final class ProcessPackedFld implements Constants {
 				acc = ((VarAccessExpr)fa.obj).var;
 			}
 			else {
-				acc = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
-				DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
-				be.addStatement(ds);
+				Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
+				var.init = fa.obj;
+				be.addSymbol(var);
+				acc = var;
 			}
 			Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
 			MetaPacked mp = f.getMetaPacked();
-			DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), mp.packer));
-			be.addStatement(dsfv);
+			fval.init = new AccessExpr(fa.pos, mkAccess(acc), mp.packer);
+			be.addSymbol(fval);
 			Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
-			DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
-			be.addStatement(ds);
+			be.addSymbol(tmp);
 			if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
@@ -167,10 +167,10 @@ public final class ProcessPackedFld implements Constants {
 					expr = new CastExpr(fa.pos, Type.tpByte, expr);
 				else if( mp.size == 16 && f.type == Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
-				ds.init = expr;
+				tmp.init = expr;
 				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ae.value)));
 			} else {
-				ds.init = ae.value;
+				tmp.init = ae.value;
 			}
 			
 			{
@@ -233,16 +233,16 @@ public final class ProcessPackedFld implements Constants {
 					acc = ((VarAccessExpr)fa.obj).var;
 				}
 				else {
-					acc = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
-					DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
-					be.addStatement(ds);
+					Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
+					var.init = fa.obj;
+					be.addSymbol(var);
+					acc = var;
 				}
 				Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
-				DeclStat dsfv = new DeclStat(fa.obj.pos, be, fval, new AccessExpr(fa.pos, mkAccess(acc), mp.packer));
-				be.addStatement(dsfv);
+				fval.init = new AccessExpr(fa.pos, mkAccess(acc), mp.packer);
+				be.addSymbol(fval);
 				Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
-				DeclStat ds = new DeclStat(fa.obj.pos, be, tmp);
-				be.addStatement(ds);
+				be.addSymbol(tmp);
 				{
 					ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 					Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
@@ -256,11 +256,11 @@ public final class ProcessPackedFld implements Constants {
 						expr = new CastExpr(fa.pos, Type.tpShort, expr);
 					ConstExpr ce;
 					if (ie.op == PrefixOperator.PreIncr)
-						ds.init = new BinaryExpr(0, BinaryOperator.Add, expr, new ConstIntExpr(1));
+						tmp.init = new BinaryExpr(0, BinaryOperator.Add, expr, new ConstIntExpr(1));
 					else if (ie.op == PrefixOperator.PreDecr)
-						ds.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstIntExpr(1));
+						tmp.init = new BinaryExpr(0, BinaryOperator.Sub, expr, new ConstIntExpr(1));
 					else
-						ds.init = expr;
+						tmp.init = expr;
 				}
 
 				{

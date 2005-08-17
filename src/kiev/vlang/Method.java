@@ -210,11 +210,13 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer(name+"(");
-		for(int i=0; type.args != null && i < type.args.length; i++) {
-			sb.append(type.args[i].toString());
-			if( i < (type.args.length-1) ) sb.append(",");
+		int n = type_ref.args.length;
+		for(int i=0; i < n; i++) {
+			sb.append(type_ref.args[i].toString());
+			if( i < (n-1) )
+				sb.append(",");
 		}
-		sb.append(")->").append(type.ret);
+		sb.append(")->").append(type_ref.ret);
 		return sb.toString();
 	}
 

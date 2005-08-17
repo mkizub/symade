@@ -57,6 +57,19 @@ public class PathEnumerator implements Enumeration<ASTNode> {
 	public ASTNode nextElement() { return PassInfo.path[--i]; }
 }
 
+public class ParentEnumerator implements Enumeration<ASTNode> {
+	public ASTNode n;
+	public ParentEnumerator(ASTNode n) {
+		this.n = n;
+	}
+	public ParentEnumerator() {
+		if (PassInfo.pathTop > 0)
+			this.n = PassInfo.path[PassInfo.pathTop-1];
+	}
+	public boolean hasMoreElements() { return n != null; }
+	public ASTNode nextElement() { ASTNode r = n; n = n.parent; return r; }
+}
+
 public class PassInfo {
 
 	// No instances
@@ -202,6 +215,7 @@ public class PassInfo {
 		((Struct)p).resolveNameR(node,path,qname_tail)
 	;
 		p @= new PathEnumerator(),
+		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
 		((ScopeOfNames)p).resolveNameR(node,path,name)

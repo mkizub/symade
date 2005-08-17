@@ -113,12 +113,12 @@ public final class ProcessVirtFld implements Constants {
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
 					Var changed = new Var(0,KString.from("$changed"),Type.tpBoolean,0);
-					Statement v_st = new DeclStat(0,null,changed,
+					changed.init =
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								new VarAccessExpr(0, value),
 								new AccessExpr(0,new ThisExpr(0),f,true)
-							));
-					body.stats.insert(v_st,0);
+							);
+					body.insertSymbol(changed,0);
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Field fatt = ((Struct)f.parent).resolveField(fname);
 					Statement p_st = new IfElseStat(0,
@@ -427,9 +427,10 @@ public final class ProcessVirtFld implements Constants {
 						acc = ((VarAccessExpr)fa.obj).var;
 					}
 					else {
-						acc = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-						DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
-						be.addStatement(ds);
+						Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
+						var.init = fa.obj;
+						be.addSymbol(var);
+						acc = var;
 					}
 					Expr g;
 					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
@@ -510,15 +511,15 @@ public final class ProcessVirtFld implements Constants {
 						acc = ((VarAccessExpr)fa.obj).var;
 					}
 					else {
-						acc = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-						DeclStat ds = new DeclStat(fa.obj.pos, be, (Var)acc, fa.obj);
-						be.addStatement(ds);
+						Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
+						var.init = fa.obj;
+						be.addSymbol(var);
+						acc = var;
 					}
 					Var res = null;
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr) {
 						res = new Var(0,KString.from("tmp$res"),f.getType(),0);
-						DeclStat ds = new DeclStat(fa.obj.pos, be, res);
-						be.addStatement(ds);
+						be.addSymbol(res);
 					}
 					ConstExpr ce;
 					if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr)

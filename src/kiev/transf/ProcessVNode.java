@@ -279,9 +279,11 @@ public final class ProcessVNode implements Constants {
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new ASTIdentifier(0,KString.from("copyTo"));
 				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
-				stats.append(new DeclStat(0,null,v,new CastExpr(0,s.type,cae)));
+				v.init = new CastExpr(0,s.type,cae);
+				((BlockStat)copyV.body).addSymbol(v);
 			} else {
-				stats.append(new DeclStat(0,null,v,new CastExpr(0,s.type,new ASTIdentifier(0,KString.from("to$node")))));
+				v.init = new CastExpr(0,s.type,new ASTIdentifier(0,KString.from("to$node")));
+				stats.append(v);
 			}
 			foreach (ASTNode n; s.members; n instanceof Field) {
 				Field f = (Field)n;

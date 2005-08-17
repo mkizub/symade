@@ -248,7 +248,7 @@ public class DoWhileStat extends LoopStat {
 @node
 public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 
-	@att public final NArr<DeclStat>	decls;
+	@att public final NArr<Var>		decls;
 
 	public ForInit() {
 	}
@@ -263,24 +263,24 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
-		DeclStat@ n;
+		Var@ var;
 	{
-		n @= decls,
-		{
-			n.var.name.equals(name), node ?= n.var
-		;	n.var.isForward(),
-			info.enterForward(n.var) : info.leaveForward(n.var),
-			n.var.getType().resolveNameAccessR(node,info,name)
-		}
+		var @= decls,
+		var.name.equals(name),
+		node ?= var
+	;	var @= decls,
+		var.isForward(),
+		info.enterForward(var) : info.leaveForward(var),
+		var.getType().resolveNameAccessR(node,info,name)
 	}
 
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
-		DeclStat@ n;
+		Var@ var;
 	{
-		n @= decls,
-		n.var.isForward(),
-		info.enterForward(n.var) : info.leaveForward(n.var),
-		n.var.getType().resolveCallAccessR(node,info,name,mt)
+		var @= decls,
+		var.isForward(),
+		info.enterForward(var) : info.leaveForward(var),
+		var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -347,23 +347,23 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 						Type type = ((TypeRef)vdecls.type).getType();
 						int dim = 0;
 						while( type.isArray() ) { dim++; type = type.args[0]; }
-						DeclStat[] decls = new DeclStat[vdecls.vars.length];
-						this.init = new ForInit(init.pos);
+						ForInit forinit = new ForInit(init.pos);
+						this.init = forinit;
 						for(int j=0; j < vdecls.vars.length; j++) {
 							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
 							KString vname = vdecl.name.name;
 							Type tp = type;
 							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
 							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-							DeclStat ds = new DeclStat(vdecl.pos, init, new Var(vdecl.pos,vname,tp,flags));
-							((ForInit)init).decls.append(ds);
-							if (vdecls.hasFinal()) ds.var.setFinal(true);
-							if (vdecls.hasForward()) ds.var.setForward(true);
+							Var var = new Var(vdecl.pos,vname,tp,flags);
+							forinit.decls.append(var);
+							if (vdecls.hasFinal()) var.setFinal(true);
+							if (vdecls.hasForward()) var.setForward(true);
 							if( vdecl.init != null ) {
-								ds.init = vdecl.init.resolveExpr(ds.var.type);
+								var.init = vdecl.init.resolveExpr(var.type);
 							}
-							else if (ds.var.isFinal())
-								Kiev.reportError(ds.var.pos,"Final variable "+ds.var+" must have initializer");
+							else if (var.isFinal())
+								Kiev.reportError(var.pos,"Final variable "+var+" must have initializer");
 						}
 					}
 					else
@@ -443,8 +443,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 					((Expr)init).generate(Type.tpVoid);
 				else if( init instanceof ForInit ) {
 					ForInit fi = (ForInit)init;
-					foreach (DeclStat ds; fi.decls) {
-						ds.generate(Type.tpVoid);
+					foreach (Var var; fi.decls) {
+						var.generate(Type.tpVoid);
 					}
 				}
 			}
@@ -476,7 +476,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			if( init != null && init instanceof ForInit ) {
 				ForInit fi = (ForInit)init;
 				for(int i=fi.decls.length-1; i >= 0; i--) {
-					Code.removeVar(fi.decls[i].var);
+					Code.removeVar(fi.decls[i]);
 				}
 			}
 		} catch(Exception e ) {

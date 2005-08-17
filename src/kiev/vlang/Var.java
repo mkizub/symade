@@ -41,6 +41,7 @@ public class Var extends ASTNode implements Named, Typed {
 	public NodeName			name;
 	@att public TypeRef		vtype;
 	@att public MetaSet		meta;
+	@att public Expr		init;
 	     int				bcpos = -1;
 
 	@ref public abstract virtual access:ro Type	type;
@@ -86,6 +87,31 @@ public class Var extends ASTNode implements Named, Typed {
 	public Type	getType() { return type; }
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return this;
+		PassInfo.push(this);
+		try {
+			if( init != null ) {
+				try {
+					init = init.resolveExpr(this.type);
+					Type it = init.getType();
+					if( it != this.type ) {
+						init = new CastExpr(init.pos,this.type,init);
+						init = init.resolveExpr(this.type);
+					}
+				} catch(Exception e ) {
+					Kiev.reportError(pos,e);
+				}
+			}
+			NodeInfoPass.setNodeType(this,this.type);
+			if( init != null && init.getType() != Type.tpVoid )
+				NodeInfoPass.setNodeValue(this,init);
+			ASTNode p = parent;
+			while( p != null && !(p instanceof BlockStat || p instanceof BlockExpr) ) p = p.parent;
+			if( p == null ) {
+				Kiev.reportWarning(pos,"Can't find scope for var "+this);
+			}
+		} finally { PassInfo.pop(this); }
+		setResolved(true);
 		return this;
 	}
 
@@ -93,6 +119,37 @@ public class Var extends ASTNode implements Named, Typed {
 		parent = null;
 		name   = null;
 		vtype  = null;
+		init = null;
+	}
+
+	public void generate(Type reqType) {
+		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
+		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
+		PassInfo.push(this);
+		try {
+			if( init != null ) {
+				if( !this.isNeedRefProxy() ) {
+					init.generate(this.type);
+					Code.addVar(this);
+					Code.addInstr(Instr.op_store,this);
+				} else {
+					Type prt = Type.getProxyType(this.type);
+					Code.addInstr(Instr.op_new,prt);
+					Code.addInstr(Instr.op_dup);
+					init.generate(this.type);
+					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
+					Method@ in;
+					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),nameInit,mt);
+					Code.addInstr(Instr.op_call,in,false);
+					Code.addVar(this);
+					Code.addInstr(Instr.op_store,this);
+				}
+			} else {
+				Code.addVar(this);
+			}
+		} catch(Exception e ) {
+			Kiev.reportError(pos,e);
+		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -156,21 +213,6 @@ public class FormPar extends Var {
 		}
 	}
 	
-}
-
-@node
-public class LoclVar extends Var {
-	@att public Expr		init;
-
-	public LoclVar() {
-		setLocalRuleVar(true);
-	}
-
-	public LoclVar(ASTIdentifier id, TypeRef vtype, int flags) {
-		super(id,vtype,flags);
-		setLocalRuleVar(true);
-	}
-
 }
 
 public class CodeVar {

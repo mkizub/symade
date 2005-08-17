@@ -301,7 +301,6 @@ kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\LvalueE
 kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
 kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
-kiev.vlang.DeclStat kiev/vlang/DeclStat kiev\vlang\Statement.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
@@ -343,7 +342,6 @@ kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
 kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
-kiev.vlang.LoclVar kiev/vlang/LoclVar kiev\vlang\Var.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
@@ -387,6 +385,7 @@ kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueE
 kiev.vlang.PackedFieldsAttr kiev/vlang/PackedFieldsAttr kiev\vlang\Attr.java
 kiev.vlang.PackerFieldAttr kiev/vlang/PackerFieldAttr kiev\vlang\Attr.java
 kiev.vlang.ParMetaAttr kiev/vlang/ParMetaAttr kiev\vlang\Attr.java
+kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PathEnumerator kiev/vlang/PathEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PizzaCaseAttr kiev/vlang/PizzaCaseAttr kiev\vlang\Attr.java
@@ -440,7 +439,6 @@ kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
-kiev.vlang.TypeDeclStat kiev/vlang/TypeDeclStat kiev\vlang\Statement.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java

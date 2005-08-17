@@ -67,6 +67,7 @@ public class ASTExpression extends Expr {
 					}
 					may_be_resolved = true;
 					trace( Kiev.debugOperators, "Add possible resolved expression: "+res);
+					res.parent = this;
 					results = new List.Cons<ASTNode>(res.resolve(reqType),results);
 				}
 			} catch(Exception e ) {

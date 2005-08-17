@@ -411,23 +411,6 @@ public class kiev040 {
 		return v;
 	}
 	
-	private static LoclVar mkLoclVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp, boolean first) {
-		if (!first)
-			tp = (TypeRef)tp.copy();
-		LoclVar v = new LoclVar(id, tp, modifiers.getFlags());
-		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet(v);
-			if (first) {
-				foreach (Meta m; modifiers.annotations)
-					v.meta.set(m);
-			} else {
-				foreach (Meta m; modifiers.annotations)
-					v.meta.set((Meta)m.copy());
-			}
-		}
-		return v;
-	}
-	
 	private static FormPar mkFormPar(ASTIdentifier id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
@@ -1383,11 +1366,11 @@ void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
 	";"
 }
 
-LoclVar LocalVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; ASTIdentifier id; LoclVar lv; }
+Var LocalVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+{ Token t; ASTIdentifier id; Var lv; }
 {
 	id = Name()
-	{ lv = mkLoclVar(id, modifiers, type, first); }
+	{ lv = mkVar(id, modifiers, type, first); }
 	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr(lv.vtype,t); } )*
 	[
 		(
