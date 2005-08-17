@@ -574,7 +574,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				body = ((Statement)body).resolve(Type.tpVoid);
+				((Statement)body).resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
@@ -760,7 +760,7 @@ public class WBCCondition extends Statement {
 
 	public ASTNode resolve(Type reqType) {
 		if( code != null ) return this;
-		body = (Statement)body.resolve(Type.tpVoid);
+		body.resolve(Type.tpVoid);
 		return this;
 	}
 

@@ -41,7 +41,9 @@ public class ASTRuleBlock extends ASTBlock {
 
 	public ASTNode resolve(Type reqType) {
 		RuleBlock rb = new RuleBlock(pos,parent,expr,stats);
-		return rb.resolve(reqType);
+		this.replaceWith(rb);
+		rb.resolve(reqType);
+		return null;
 	}
 
     public Dumper toJava(Dumper dmp) {

@@ -287,20 +287,27 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
-		if( cases.length == 0 ) return new ExprStat(pos,parent,sel).resolve(Type.tpVoid);
+		if( cases.length == 0 ) {
+			ExprStat st = new ExprStat(pos,parent,sel);
+			this.replaceWith(st);
+			return st.resolve(Type.tpVoid);
+		}
 		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
 			CaseLabel cas = (CaseLabel)((ASTNormalCase)cases[0]).resolve(Type.tpVoid);
-			BlockStat st = cas.stats;
-			st.setBreakTarget(true);
-			st = (BlockStat)st;
+			BlockStat bl = cas.stats;
+			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
-				st.stats.insert((Statement)new ExprStat(sel.pos,st,sel).resolve(Type.tpVoid),0);
-				return st.resolve(Type.tpVoid);
+				bl.stats.insert(new ExprStat(sel.pos,bl,sel),0);
+				this.replaceWith(bl);
+				return bl.resolve(Type.tpVoid);
 			} else {
-				return new IfElseStat(pos,parent,
-						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,sel,
-						(Expr)((Expr)((CaseLabel)cas).val).resolve(Type.tpInt)),st,null
-					).resolve(Type.tpVoid);
+				IfElseStat st = new IfElseStat(pos,parent,
+						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,sel,cas.val),
+						bl,
+						null
+					);
+				this.replaceWith(st);
+				return st.resolve(Type.tpVoid);
 			}
 		}
 		BlockStat me = null;
@@ -317,6 +324,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
 					Expr init = sel;
 					me = new BlockStat(pos,parent);
+					this.replaceWith(me);
 					Statement ds = new DeclStat(tmpvar.pos,me,tmpvar,init);
 					me.addStatement(ds);
 					me.addStatement(this);
@@ -343,7 +351,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			} catch(Exception e ) { Kiev.reportError(sel.getPos(),e);
 			} finally { PassInfo.pop(this); }
 		}
-		if( me != null ) return me.resolve(reqType);
+		if( me != null ) {
+			return me.resolve(reqType);
+		}
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		ScopeNodeInfoVector result_state = null;
@@ -517,8 +527,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 		}
 		setResolved(true);
-		if( me != null ) return me.resolve(reqType);
-		return this;
+		assert (me == null);
+		return null;
 	}
 
 	public CodeLabel getBreakLabel() throws RuntimeException {
@@ -668,12 +678,12 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
 		try {
-			body = (Statement)body.resolve(Type.tpVoid);
+			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body.pos,e);
 		} finally { PassInfo.pop(this); }
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -796,7 +806,7 @@ public class TryStat extends Statement/*defaults*/ {
 		for(int i=0; i < catchers.length; i++) {
 			try {
 				NodeInfoPass.pushState();
-				catchers[i] = (CatchInfo)((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
+				((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i].pos,e);
 			} finally {
@@ -806,7 +816,7 @@ public class TryStat extends Statement/*defaults*/ {
 		if(finally_catcher != null) {
 			try {
 				NodeInfoPass.pushState();
-				finally_catcher = (FinallyInfo)((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
+				((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher.pos,e);
 			} finally {
@@ -817,7 +827,7 @@ public class TryStat extends Statement/*defaults*/ {
 		NodeInfoPass.pushState();
 		try {
 			try {
-				body = (Statement)body.resolve(Type.tpVoid);
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(pos,e);
 			}
@@ -846,7 +856,7 @@ public class TryStat extends Statement/*defaults*/ {
 			if( finally_state != null && !finally_catcher.isMethodAbrupted())
 				NodeInfoPass.addInfo(finally_state);
 		}
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -961,12 +971,12 @@ public class SynchronizedStat extends Statement {
 				expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 			try {
-				body = (Statement)body.resolve(Type.tpVoid);
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 			setAbrupted(body.isAbrupted());
 			setMethodAbrupted(body.isMethodAbrupted());
 		} finally { PassInfo.pop(this); }
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -1063,17 +1073,19 @@ public class WithStat extends Statement {
 				}
 				if (var_or_field == null) {
 					Kiev.reportError(pos,"With statement needs variable or field argument");
-					return body.resolve(Type.tpVoid);
+					this.replaceWith(body);
+					body.resolve(Type.tpVoid);
+					return null;
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(pos,e);
-				return body.resolve(Type.tpVoid);
+				return null;
 			}
 
 			boolean is_forward = var_or_field.isForward();
 			if (!is_forward) var_or_field.setForward(true);
 			try {
-				body = (Statement)body.resolve(Type.tpVoid);
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(pos,e);
 			} finally {
@@ -1083,7 +1095,7 @@ public class WithStat extends Statement {
 			setAbrupted(body.isAbrupted());
 			setMethodAbrupted(body.isMethodAbrupted());
 		} finally { PassInfo.pop(this); }
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {

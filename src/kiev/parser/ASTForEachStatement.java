@@ -42,7 +42,10 @@ public class ASTForEachStatement extends Statement {
 	@att public Statement			body;
 
 	public ASTNode resolve(Type reqType) {
-		return new ForEachStat(pos,parent,var,container,cond,body).resolve(Type.tpVoid);
+		ForEachStat st = new ForEachStat(pos,parent,var,container,cond,body);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

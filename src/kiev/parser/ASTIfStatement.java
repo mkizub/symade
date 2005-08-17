@@ -52,7 +52,10 @@ public class ASTIfStatement extends Statement {
 			cond = e;
 			not = false;
 		}
-		return new IfElseStat(pos,parent,cond,thenSt,elseSt).resolve(Type.tpVoid);
+		IfElseStat st = new IfElseStat(pos,parent,cond,thenSt,elseSt);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

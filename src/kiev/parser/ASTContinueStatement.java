@@ -39,7 +39,10 @@ public class ASTContinueStatement extends Statement {
 	@att public ASTIdentifier	ident;
     
 	public ASTNode resolve(Type reqType) {
-		return new ContinueStat(pos,parent,ident==null?null:ident.name).resolve(Type.tpVoid);
+		ContinueStat st = new ContinueStat(pos,parent,ident==null?null:ident.name);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

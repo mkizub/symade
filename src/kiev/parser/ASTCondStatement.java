@@ -41,7 +41,10 @@ public class ASTCondStatement extends Statement {
 	@att public Expr		message;
 	
 	public ASTNode resolve(Type reqType) {
-		return new CondStat(pos,parent,cond,message).resolve(Type.tpVoid);
+		CondStat st = new CondStat(pos,parent,cond,message);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

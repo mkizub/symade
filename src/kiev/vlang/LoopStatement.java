@@ -102,7 +102,7 @@ public class WhileStat extends LoopStat {
 				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
 			}
 			try {
-				body = (Statement)body.resolve(Type.tpVoid);
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) { Kiev.reportError(body.pos,e); }
 			if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
 				setMethodAbrupted(true);
@@ -111,7 +111,7 @@ public class WhileStat extends LoopStat {
 			PassInfo.pop(this);
 			NodeInfoPass.popState();
 		}
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -183,7 +183,8 @@ public class DoWhileStat extends LoopStat {
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
 		try {
-			try {   body = (Statement)body.resolve(Type.tpVoid);
+			try {
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(body.pos,e);
 			}
@@ -199,7 +200,7 @@ public class DoWhileStat extends LoopStat {
 			PassInfo.pop(this);
 			NodeInfoPass.popState();
 		}
-		return this;
+		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -386,7 +387,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 					Kiev.reportError(cond.pos,e);
 				}
 			}
-			try {   body = (Statement)body.resolve(Type.tpVoid);
+			try {
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(body.pos,e);
 			}
@@ -409,7 +411,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			PassInfo.pop(this);
 			NodeInfoPass.popState();
 		}
-		return this;
+		return null;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
@@ -806,7 +808,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			}
 
 			// Process body
-			try {   body = (Statement)body.resolve(Type.tpVoid);
+			try {
+				body.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(body.pos,e);
 			}
@@ -827,7 +830,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			NodeInfoPass.popState();
 		}
 
-		return this;
+		return null;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)

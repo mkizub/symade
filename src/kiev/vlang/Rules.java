@@ -178,15 +178,15 @@ public class RuleMethod extends Method {
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				if( body instanceof ASTRuleBlock ) {
-					body = ((ASTRuleBlock)body).resolve(Type.tpVoid);
+					((ASTRuleBlock)body).resolve(Type.tpVoid);
 					boolean[] exts = Kiev.getExtSet();
 					try {
 						Kiev.enable(Ext.GotoCase);
 						Kiev.enable(Ext.Goto);
-						body = ((ASTBlock)body).resolve(Type.tpVoid);
+						((ASTBlock)body).resolve(Type.tpVoid);
 					} finally { Kiev.setExtSet(exts); }
 				} else {
-					body = ((BlockStat)body).resolve(Type.tpVoid);
+					((BlockStat)body).resolve(Type.tpVoid);
 				}
 			}
 			if( body != null && !body.isMethodAbrupted() ) {

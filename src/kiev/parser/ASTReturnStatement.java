@@ -39,7 +39,10 @@ public class ASTReturnStatement extends Statement {
 	@att public Expr expr;
 
 	public ASTNode resolve(Type reqType) {
-		return new ReturnStat(pos,parent,expr).resolve(Type.tpVoid);
+		ReturnStat st = new ReturnStat(pos,parent,expr);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

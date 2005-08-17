@@ -44,7 +44,10 @@ public class ASTSwitchStatement extends Statement {
 	public final NArr<ASTNode>		cases;
 
     public ASTNode resolve(Type reqType) {
-		return new SwitchStat(pos,parent,sel,cases.toArray()).resolve(Type.tpVoid);
+		SwitchStat st = new SwitchStat(pos,parent,sel,cases.toArray());
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
     }
 
 	public Dumper toJava(Dumper dmp) {

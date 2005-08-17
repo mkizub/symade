@@ -38,7 +38,10 @@ import kiev.stdlib.*;
 public class ASTEmptyStatement extends Statement {
 
 	public ASTNode resolve(Type reqType) {
-    	return new EmptyStat(pos,parent).resolve(reqType);
+		EmptyStat st = new EmptyStat(pos,parent);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
     
 	public Dumper toJava(Dumper dmp) {

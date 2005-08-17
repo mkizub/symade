@@ -40,7 +40,10 @@ public class ASTSynchronizedStatement extends Statement {
     @att public Statement	body;
 
 	public ASTNode resolve(Type reqType) {
-		return new SynchronizedStat(pos,parent,arg,body).resolve(Type.tpVoid);
+		SynchronizedStat st = new SynchronizedStat(pos,parent,arg,body);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

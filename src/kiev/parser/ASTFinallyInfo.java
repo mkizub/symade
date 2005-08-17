@@ -39,7 +39,9 @@ public class ASTFinallyInfo extends ASTNode {
 
 	public ASTNode resolve(Type reqType) {
 		FinallyInfo fi = new FinallyInfo(pos,parent,body);
-		return fi.resolve(Type.tpVoid);
+		this.replaceWith(fi);
+		fi.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

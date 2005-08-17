@@ -42,7 +42,10 @@ public class ASTWithStatement extends Statement {
 
 	public ASTNode resolve(Type reqType) {
 		Kiev.check(pos,Ext.With);
-		return new WithStat(pos,parent,arg,body).resolve(Type.tpVoid);
+		WithStat st = new WithStat(pos,parent,arg,body);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

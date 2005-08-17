@@ -38,10 +38,16 @@ public class ASTGotoStatement extends Statement {
 	public ASTNode resolve(Type reqType) {
 		if( !casemode ) {
 			Kiev.check(pos,Ext.Goto);
-			return new GotoStat(pos,parent,((ASTIdentifier)expr).name).resolve(Type.tpVoid);
+			GotoStat st = new GotoStat(pos,parent,((ASTIdentifier)expr).name);
+			this.replaceWith(st);
+			st.resolve(Type.tpVoid);
+			return null;
 		} else {
 			Kiev.check(pos,Ext.GotoCase);
-			return new GotoCaseStat(pos,parent,(Expr)expr).resolve(Type.tpVoid);
+			GotoCaseStat st = new GotoCaseStat(pos,parent,(Expr)expr);
+			this.replaceWith(st);
+			st.resolve(Type.tpVoid);
+			return null;
 		}
 	}
 

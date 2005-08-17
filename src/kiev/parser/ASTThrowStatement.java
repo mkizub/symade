@@ -40,7 +40,10 @@ public class ASTThrowStatement extends Statement {
 	public Expr expr;
 
 	public ASTNode resolve(Type reqType) {
-		return new ThrowStat(pos,parent,expr).resolve(Type.tpVoid);
+		ThrowStat st = new ThrowStat(pos,parent,expr);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

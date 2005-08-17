@@ -39,7 +39,10 @@ public class ASTBreakStatement extends Statement {
 	@att public ASTIdentifier ident;
     
 	public ASTNode resolve(Type reqType) {
-		return new BreakStat(pos,parent,ident==null?null:ident.name).resolve(Type.tpVoid);
+		BreakStat st = new BreakStat(pos,parent,ident==null?null:ident.name);
+		this.replaceWith(st);
+		st.resolve(reqType);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

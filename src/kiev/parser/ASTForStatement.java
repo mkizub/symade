@@ -49,7 +49,10 @@ public class ASTForStatement extends Statement {
 	public Statement		body;
 
 	public ASTNode resolve(Type reqType) {
-		return new ForStat(pos,parent,init,cond,iter,body).resolve(Type.tpVoid);
+		ForStat st = new ForStat(pos,parent,init,cond,iter,body);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

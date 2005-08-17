@@ -40,7 +40,9 @@ public class ASTCatchInfo extends ASTNode {
 
 	public ASTNode resolve(Type reqType) {
 		CatchInfo ci = new CatchInfo(pos,parent,par,body);
-		return ci.resolve(Type.tpVoid);
+		this.replaceWith(ci);
+		ci.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

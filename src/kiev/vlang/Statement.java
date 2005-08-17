@@ -116,7 +116,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			for(int i=0; i < params_redir.length; i++) {
 				NodeInfoPass.setNodeType(params_redir[i].new_var,method.params[i].type);
 			}
-			method.body.parent = this;
+			//method.body.parent = this;
 			method = (Method)method.resolve(reqType);
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
@@ -246,6 +246,8 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	}
 
 	public ASTNode resolve(Type reqType) {
+		assert (!isResolved());
+		setResolved(true);
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
@@ -256,7 +258,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			NodeInfoPass.addInfo(nip_state);
 			PassInfo.pop(this);
 		}
-		return this;
+		return null;
 	}
 
 	public void resolveBlockStats() {
@@ -274,9 +276,11 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 //					continue;
 				}
 				if( stats[i] instanceof Statement ) {
-					stats[i] = (Statement)((Statement)stats[i]).resolve(Type.tpVoid);
-					if( stats[i].isAbrupted() && !isBreaked() ) setAbrupted(true);
-					if( stats[i].isMethodAbrupted() && !isBreaked() ) setMethodAbrupted(true);
+					Statement st = (Statement)stats[i];
+					st.resolve(Type.tpVoid);
+					st = (Statement)stats[i];
+					if( st.isAbrupted() && !isBreaked() ) setAbrupted(true);
+					if( st.isMethodAbrupted() && !isBreaked() ) setMethodAbrupted(true);
 				}
 				else if( stats[i] instanceof ASTVarDecls ) {
 					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
@@ -882,7 +886,7 @@ public class IfElseStat extends Statement {
 				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
 			}
 			try {
-				thenSt = (Statement)thenSt.resolve(Type.tpVoid);
+				thenSt.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(thenSt.pos,e);
 			}
@@ -900,7 +904,7 @@ public class IfElseStat extends Statement {
 			}
 			if( elseSt != null ) {
 				try {
-					elseSt = (Statement)elseSt.resolve(Type.tpVoid);
+					elseSt.resolve(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(elseSt.pos,e);
 				}
@@ -1155,7 +1159,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-			stat = (Statement)stat.resolve(Type.tpVoid);
+			stat.resolve(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(stat.pos,e);
 		} finally { PassInfo.pop(this); }

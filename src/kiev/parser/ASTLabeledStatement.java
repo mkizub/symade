@@ -40,7 +40,10 @@ public class ASTLabeledStatement extends Statement {
     @att public Statement			stat;
 
 	public ASTNode resolve(Type reqType) {
-		return new LabeledStat(pos,parent,name.name,stat).resolve(Type.tpVoid);
+		LabeledStat st = new LabeledStat(pos,parent,name.name,stat);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -39,10 +39,10 @@ public class ASTBlock extends Statement {
 	@att public final NArr<ASTNode> stats;
 
 	public ASTNode resolve(Type reqType) {
-		BlockStat bs = new BlockStat(pos,parent,stats);
-		if( parent instanceof Method )
-			((Method)parent).body = bs;
-		return bs.resolve(reqType);
+		BlockStat st = new BlockStat(pos,parent,stats);
+		this.replaceWith(st);
+		st.resolve(reqType);
+		return null;
 	}
 
     public Dumper toJava(Dumper dmp) {

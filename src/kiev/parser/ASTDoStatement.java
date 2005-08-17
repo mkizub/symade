@@ -51,7 +51,10 @@ public class ASTDoStatement extends Statement {
 			cond = e;
 			not = false;
 		}
-		return new DoWhileStat(pos,parent,cond,body).resolve(Type.tpVoid);
+		DoWhileStat st = new DoWhileStat(pos,parent,cond,body);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

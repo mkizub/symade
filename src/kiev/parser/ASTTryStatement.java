@@ -41,7 +41,10 @@ public class ASTTryStatement extends Statement {
     @att public ASTNode					finally_catcher;
     
 	public ASTNode resolve(Type reqType) {
-		return new TryStat(pos,parent,body,catchers.toArray(),finally_catcher).resolve(reqType);
+		TryStat st = new TryStat(pos,parent,body,catchers.toArray(),finally_catcher);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

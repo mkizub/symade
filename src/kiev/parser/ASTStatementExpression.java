@@ -49,7 +49,10 @@ public class ASTStatementExpression extends Statement {
 	}
 
 	public ASTNode resolve(Type reqType) {
-		return new ExprStat(pos,parent,expr).resolve(Type.tpVoid);
+		ExprStat st = new ExprStat(pos,parent,expr);
+		this.replaceWith(st);
+		st.resolve(Type.tpVoid);
+		return null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
