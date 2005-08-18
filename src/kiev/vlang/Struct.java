@@ -2404,8 +2404,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					ASTNode node = imported[i];
 					if (node instanceof Typedef)
 						addAttr(new TypedefAttr((Typedef)node));
-					else if (node instanceof Operator)
-						addAttr(new OperatorAttr((Operator)node));
+					else if (node instanceof Opdef)
+						addAttr(new OperatorAttr(((Opdef)node).resolved));
 //					else if (node instanceof Import)
 //						addAttr(new ImportAlias(node));
 //					else

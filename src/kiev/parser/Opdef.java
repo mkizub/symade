@@ -43,8 +43,17 @@ public class Opdef extends ASTNode implements TopLevelDecl {
 	public int					opmode;
 	public KString				image;
 	
-	@ref public transient Operator		resolved;
+	public Operator				resolved;
 
+	public Opdef() {}
+	
+	public Opdef(Operator op) {
+		this.prior = op.priority;
+		this.opmode = op.mode;
+		this.image = op.image;
+		this.resolved = op;
+	}
+	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
 		if( n instanceof ASTOperator ) {

@@ -112,7 +112,7 @@ kiev.parser.ASTTypeClassExpression kiev/parser/ASTTypeClassExpression kiev\parse
 kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
 kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
-kiev.parser.Opdef kiev/parser/Opdef kiev\parser\ASTOpdef.java
+kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java
 kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
 kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java
 kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java

@@ -153,7 +153,7 @@ public class Bytecoder implements Constants {
 					}
 					else if( at.name.equals(attrOperator) ) {
 						Operator op = ((OperatorAttr)at).op;
-						cl.imported.add(op);
+						cl.imported.add(new Opdef(op));
 					}
 				}
 			}

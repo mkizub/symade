@@ -31,9 +31,7 @@ import static kiev.vlang.Operator.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Operator.java,v 1.3.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.2 $
  *
  */
 
@@ -369,8 +367,7 @@ public class OpTypes {
 }
 
 
-@node(copyable=false)
-public abstract class Operator extends ASTNode implements Constants {
+public abstract class Operator implements Constants {
 
 	// Assign orders
 	public static final int LFY			= 0;
@@ -430,12 +427,7 @@ public abstract class Operator extends ASTNode implements Constants {
 	@virtual
     public virtual abstract KString	smode;
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"Operator node cannot be copied");
-	};
-
 	protected Operator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
-		super(0);
 		priority = pr;
 		image = img;
 		name = nm;
@@ -556,7 +548,6 @@ public abstract class Operator extends ASTNode implements Constants {
 
 }
 
-@node(copyable=false)
 public class AssignOperator extends Operator {
 
 	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
@@ -628,10 +619,6 @@ public class AssignOperator extends Operator {
 			AssignMod.addTypes(otSame(1),otNumber(),otSame(1));
 	}
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"AssignOperator node cannot be copied");
-	};
-
 	protected AssignOperator(KString img, KString nm, Instr in, boolean std) {
 		super(opAssignPriority,img,nm,in,orderAndArityNames[LFY],std);
 		hash.put(img,this);
@@ -656,7 +643,6 @@ public class AssignOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class BinaryOperator extends Operator {
 
 	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
@@ -768,10 +754,6 @@ public class BinaryOperator extends Operator {
 
 	public boolean is_boolean_op;
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"BinaryOperator node cannot be copied");
-	};
-
 	protected BinaryOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
 		hash.put(img,this);
@@ -796,7 +778,6 @@ public class BinaryOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class MultiOperator extends Operator {
 
 	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
@@ -811,10 +792,6 @@ public class MultiOperator extends Operator {
 	}
 
 	public KString[]	images;
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"MultiOperator node cannot be copied");
-	};
 
 	protected MultiOperator(int pr, KString[] img, KString nm, boolean std) {
 		super(pr,img[0],nm,null,orderAndArityNames[XFXFY],std);
@@ -845,7 +822,6 @@ public class MultiOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class PrefixOperator extends Operator {
 
 	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
@@ -881,10 +857,6 @@ public class PrefixOperator extends Operator {
 //			BooleanNot.addTypes(otType(Type.tpBoolean),otBoolean());
 	}
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"PrefixOperator node cannot be copied");
-	};
-
 	protected PrefixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
 		hash.put(img,this);
@@ -909,7 +881,6 @@ public class PrefixOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class PostfixOperator extends Operator {
 
 	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
@@ -927,10 +898,6 @@ public class PostfixOperator extends Operator {
 //			PostDecr.addTypes(otSame(1),otInteger());
 	}
 
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"PostfixOperator node cannot be copied");
-	};
 
 	protected PostfixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
@@ -956,15 +923,10 @@ public class PostfixOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class CastOperator extends Operator {
 
 	@ref public Type		type;
 	public boolean  reinterp;
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"CastOperator node cannot be copied");
-	};
 
 	public CastOperator(Type tp, boolean r) {
 		super(opCastPriority,KString.Empty,KString.from("(cast)"),null,orderAndArityNames[FY],true);
