@@ -750,9 +750,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 public class BaseType extends Type {
 	public static BaseType[]	emptyArray = new BaseType[0];
 
-	@virtual
-	public abstract virtual Struct	clazz;
-	
 	BaseType() {
 		super();
 	}
@@ -765,13 +762,6 @@ public class BaseType extends Type {
 		super(clazz,args);
 	}
 	
-	@getter public Struct get$clazz() {
-		return clazz;
-	}
-
-	@setter public void set$clazz(Struct value) {
-		clazz = value;
-	}
 }
 
 public class ArrayType extends Type {

@@ -430,12 +430,12 @@ public final class Kiev {
 		return ((int)pass_no) >= ((int)p);
 	}
 
-	public static ASTNode parseBlock(StringBuffer sb, int begLine, int begCol) {
+	public static BlockStat parseBlock(StringBuffer sb, int begLine, int begCol) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
 		k.ReInit(is);
 		k.reparse_body = true;
 		k.reparse_pos = (begLine << 11) | (begCol & 0x3FF);
-		ASTBlock body = null;
+		BlockStat body = null;
 		try {
 			body = k.Block();
 		} finally { k.reparse_body = false; }
@@ -485,7 +485,7 @@ public final class Kiev {
 				foreach(ASTNode nn; pl) {
 					PassInfo.push(nn);
 				}
-				ASTBlock bl;
+				BlockStat bl;
 				switch(b.mode) {
 				case PrescannedBody.BlockMode:
 					bl = Kiev.k.PrescannedBlock(b);

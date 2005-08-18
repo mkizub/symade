@@ -73,14 +73,15 @@ public final class ExportJavaTop implements Constants {
 			FileUnit fu = astn;
 			fu.disabled_extensions = astn.disabled_extensions;
 			fu.bodies = astn.bodies;
-			PassInfo.push(astn.pkg);
+			PassInfo.push(fu);
+			PassInfo.push(fu.pkg.clazz);
 			try {
 				foreach (ASTNode n; astn.members) {
 					try {
 						pass1(n);
 					} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
 				}
-			} finally { PassInfo.pop(astn.pkg); }
+			} finally { PassInfo.pop(fu.pkg.clazz); PassInfo.pop(fu); }
 			return astn;
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
@@ -171,15 +172,15 @@ public final class ExportJavaTop implements Constants {
 			}
 		}
 		
-		PassInfo.push(me);
-		try {
-			// Process inner classes and cases
-			if( !me.isPackage() ) {
+		if( !me.isPackage() ) {
+			PassInfo.push(me);
+			try {
+				// Process inner classes and cases
 				foreach (ASTNode n; me.members) {
 					pass1(n);
 				}
-			}
-		} finally { PassInfo.pop(me); }
+			} finally { PassInfo.pop(me); }
+		}
 
 		return me;
 	}

@@ -281,7 +281,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			try {
 				if( (i == stats.length-1) && isAutoReturnable() )
 					stats[i].setAutoReturnable(true);
-				if( isAbrupted() && (stats[i] instanceof LabeledStat || stats[i] instanceof ASTLabeledStatement) ) {
+				if( isAbrupted() && (stats[i] instanceof LabeledStat) ) {
 					setAbrupted(false);
 				}
 				if( isAbrupted() ) {
@@ -714,6 +714,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
+		setMethodAbrupted(true);
 		PassInfo.push(this);
 		try {
 			if( expr != null ) {
@@ -760,6 +761,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
 			if( PassInfo.path[i] instanceof Method ) break;
 			else if( PassInfo.path[i] instanceof FinallyInfo ) {
+				assert (PassInfo.path[i-1] instanceof TryStat && PassInfo.path[i].parent == PassInfo.path[i-1]);
 				i--;	// skip TryStat that is parent of FinallyInfo
 				continue;
 			}
@@ -825,6 +827,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 	}
 
 	public ASTNode resolve(Type reqType) {
+		setMethodAbrupted(true);
 		PassInfo.push(this);
 		try {
 			try {
@@ -1155,21 +1158,15 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
-	public KString			name;
-	@att public Statement	stat;
+	@att public ASTIdentifier	ident;
+	@att public Statement		stat;
 
 	protected CodeLabel	tag_label = null;
 
 	public LabeledStat() {
 	}
 	
-	public LabeledStat(int pos, ASTNode parent, KString name, Statement stat) {
-		super(pos, parent);
-		this.name = name;
-		this.stat = stat;
-	}
-
-	public NodeName getName() { return new NodeName(name); }
+	public NodeName getName() { return new NodeName(ident.name); }
 
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
@@ -1206,28 +1203,29 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.newLine(-1).append(name).append(':').newLine(1).append(stat);
+		return dmp.newLine(-1).append(ident).append(':').newLine(1).append(stat);
 	}
 }
 
 @node
 @cfnode
-public class BreakStat extends Statement/*defaults*/ {
+public class BreakStat extends Statement {
 
-	public KString		name;
+	public ASTIdentifier	ident;
 
 	public BreakStat() {
 	}
 	
-	public BreakStat(int pos, ASTNode parent, KString name) {
-		super(pos, parent);
-		this.name = name;
-		setAbrupted(true);
-	}
+//	public BreakStat(int pos, ASTNode parent, KString name) {
+//		super(pos, parent);
+//		this.name = name;
+//		setAbrupted(true);
+//	}
 
 	public ASTNode resolve(Type reqType) {
+		setAbrupted(true);
 		ASTNode p;
-		if( name == null ) {
+		if( ident == null ) {
 			for(p=parent; !(
 				p instanceof BreakTarget
 			 || p instanceof Method
@@ -1237,12 +1235,12 @@ public class BreakStat extends Statement/*defaults*/ {
 	label_found:
 			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
 				if( p instanceof LabeledStat &&
-					((LabeledStat)p).getName().equals(name) )
-					throw new RuntimeException("Label "+name+" does not refer to break target");
+					((LabeledStat)p).getName().equals(ident.name) )
+					throw new RuntimeException("Label "+ident+" does not refer to break target");
 				if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
 				ASTNode pp = p;
 				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
-					if( ((LabeledStat)p).getName().equals(name) ) {
+					if( ((LabeledStat)p).getName().equals(ident.name) ) {
 						p = pp;
 						break label_found;
 					}
@@ -1260,7 +1258,7 @@ public class BreakStat extends Statement/*defaults*/ {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
 		PassInfo.push(this);
 		try {
-			Object[] lb = PassInfo.resolveBreakLabel(name);
+			Object[] lb = PassInfo.resolveBreakLabel(ident==null?null:ident.name);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
@@ -1287,8 +1285,8 @@ public class BreakStat extends Statement/*defaults*/ {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("break");
-		if( name != null && !name.equals(KString.Empty) )
-			dmp.space().append(name);
+		if( ident != null && !ident.name.equals(KString.Empty) )
+			dmp.space().append(ident);
 		return dmp.append(';');
 	}
 }
@@ -1297,18 +1295,19 @@ public class BreakStat extends Statement/*defaults*/ {
 @cfnode
 public class ContinueStat extends Statement/*defaults*/ {
 
-	public KString		name;
+	public ASTIdentifier	ident;
 
 	public ContinueStat() {
 	}
 	
-	public ContinueStat(int pos, ASTNode parent, KString name) {
-		super(pos, parent);
-		this.name = name;
-		setAbrupted(true);
-	}
+//	public ContinueStat(int pos, ASTNode parent, KString name) {
+//		super(pos, parent);
+//		this.name = name;
+//		setAbrupted(true);
+//	}
 
 	public ASTNode resolve(Type reqType) {
+		setAbrupted(true);
 		// TODO: check label or loop statement available
 		return this;
 	}
@@ -1317,7 +1316,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
 		PassInfo.push(this);
 		try {
-			Object[] lb = PassInfo.resolveContinueLabel(name);
+			Object[] lb = PassInfo.resolveContinueLabel(ident==null?null:ident.name);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
@@ -1341,8 +1340,8 @@ public class ContinueStat extends Statement/*defaults*/ {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("continue");
-		if( name != null && !name.equals(KString.Empty) )
-			dmp.space().append(name);
+		if( ident != null && !ident.name.equals(KString.Empty) )
+			dmp.space().append(ident);
 		return dmp.append(';');
 	}
 }
@@ -1351,18 +1350,19 @@ public class ContinueStat extends Statement/*defaults*/ {
 @cfnode
 public class GotoStat extends Statement/*defaults*/ {
 
-	public KString		name;
+	public ASTIdentifier	ident;
 
 	public GotoStat() {
 	}
 	
-	public GotoStat(int pos, ASTNode parent, KString name) {
-		super(pos, parent);
-		this.name = name;
-		setAbrupted(true);
-	}
+//	public GotoStat(int pos, ASTNode parent, KString name) {
+//		super(pos, parent);
+//		this.name = name;
+//		setAbrupted(true);
+//	}
 
 	public ASTNode resolve(Type reqType) {
+		setAbrupted(true);
 		return this;
 	}
 
@@ -1430,7 +1430,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		case LabeledStat:
 		{
 			LabeledStat lst = (LabeledStat)st;
-			if( lst.name.equals(name) ) {
+			if( lst.ident.name.equals(name) ) {
 				stats = (LabeledStat[])Arrays.appendUniq(stats,lst);
 			}
 			stats = resolveStat(name,lst.stat,stats);
@@ -1498,14 +1498,14 @@ public class GotoStat extends Statement/*defaults*/ {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
-		LabeledStat[] stats = resolveStat(name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 )
-			throw new CompilerException(pos,"Label "+name+" unresolved");
+			throw new CompilerException(pos,"Label "+ident+" unresolved");
 		if( stats.length > 1 )
-			throw new CompilerException(pos,"Umbigouse label "+name+" in goto statement");
+			throw new CompilerException(pos,"Umbigouse label "+ident+" in goto statement");
 		LabeledStat stat = stats[0];
 		if( stat == null )
-			throw new CompilerException(pos,"Label "+name+" unresolved");
+			throw new CompilerException(pos,"Label "+ident+" unresolved");
 		PassInfo.push(this);
 		try {
 			Object[] lb = resolveLabelStat(stat);
@@ -1531,7 +1531,7 @@ public class GotoStat extends Statement/*defaults*/ {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append("goto").space().append(name).append(';');
+		return dmp.append("goto").space().append(ident).append(';');
 	}
 }
 
@@ -1545,13 +1545,14 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	public GotoCaseStat() {
 	}
 	
-	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
-		super(pos, parent);
-		this.expr = expr;
-		setAbrupted(true);
-	}
+//	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
+//		super(pos, parent);
+//		this.expr = expr;
+//		setAbrupted(true);
+//	}
 
 	public ASTNode resolve(Type reqType) {
+		setAbrupted(true);
 		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
 			if( PassInfo.path[i] instanceof SwitchStat ) {
 				sw = (SwitchStat)PassInfo.path[i];

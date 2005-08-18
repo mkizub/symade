@@ -39,7 +39,7 @@ import kiev.stdlib.*;
 public class ASTAnonymouseClosure extends Expr {
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
-    @att public Statement					body;
+    @att public BlockStat					body;
 	@att public Expr						new_closure;
 
   	public void set(Token t) {
@@ -93,11 +93,6 @@ public class ASTAnonymouseClosure extends Expr {
 			me.members.add(md);
 		}
 
-		NArr<ASTNode> stats;
-		if( body instanceof ASTBlock )
-			stats = ((ASTBlock)body).stats;
-		else
-			stats = ((BlockStat)body).stats;
 		for(int i=0; i < vars.length; i++) {
 			Var v = vars[i];
 			Expr val = new ContainerAccessExpr(pos,
@@ -113,7 +108,7 @@ public class ASTAnonymouseClosure extends Expr {
 				val = new CastExpr(v.getPos(),v.type,val,true);
 			}
 			v.init = val;
-			stats.insert(v,i);
+			body.insertSymbol(v,i);
 		}
 
 		ExportJavaTop exporter = new ExportJavaTop();

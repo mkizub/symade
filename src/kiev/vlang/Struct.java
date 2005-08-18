@@ -933,7 +933,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				}
 				foreach (Expr e; exprs)
 					call_super.args.add(e);
-				ti_init_body.stats.insert(new ASTStatementExpression(call_super),0);
+				ti_init_body.stats.insert(new ExprStat(call_super),0);
 			}
 
 			// create method to get typeinfo field
@@ -1468,16 +1468,12 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				if( m.isAbstract() ) continue;
 
 				boolean gen_def_constr = false;
-	            NArr<ASTNode> stats;
-	            if( initbody instanceof ASTBlock )
-					stats = ((ASTBlock)initbody).stats;
-				else
-					stats = ((BlockStat)initbody).stats;
-				if( stats.length==0 ) gen_def_constr = true;
-	//			else if( !(stats[0] instanceof ExprStat) ) gen_def_constr = true;
-				else {
-					if( stats[0] instanceof ASTStatementExpression ) {
-						ASTStatementExpression es = (ASTStatementExpression)stats[0];
+	            NArr<ASTNode> stats = ((BlockStat)initbody).stats;
+				if( stats.length==0 ) {
+					gen_def_constr = true;
+				} else {
+					if( stats[0] instanceof ExprStat ) {
+						ExprStat es = (ExprStat)stats[0];
 						ASTNode ce = es.expr;
 						if( es.expr instanceof ASTExpression )
 							ce = ((ASTExpression)es.expr).nodes[0];
@@ -1490,13 +1486,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 							else if( nm.name.equals(nameSuper) )
 								m.setNeedFieldInits(true);
 						}
-						else
-							gen_def_constr = true;
-					}
-					else if( stats[0] instanceof ExprStat ) {
-						ExprStat es = (ExprStat)stats[0];
-						if( es.expr instanceof CallExpr ) {
-							KString nm = ((CallExpr)es.expr).func.name.name;
+						else if( ce instanceof CallExpr ) {
+							KString nm = ((CallExpr)ce).func.name.name;
 							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
 								gen_def_constr = true;
 							else {
@@ -1544,7 +1535,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
 						call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
-					stats.insert(new ASTStatementExpression(call_super),0);
+					stats.insert(new ExprStat(call_super),0);
 				}
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {

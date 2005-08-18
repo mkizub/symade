@@ -75,9 +75,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 	/** Return value of this method */
 	@att public Var						retvar;
 
-	/** Body of the method - ASTBlockStat or BlockStat
-	 */
-	@att public ASTNode					body;
+	/** Body of the method */
+	@att public Statement				body;
 	@att public PrescannedBody 			pbody;
 
 	/** Array of attributes of this method
@@ -576,7 +575,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				((Statement)body).resolve(Type.tpVoid);
+				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
@@ -654,7 +653,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 							}
 						}
 					}
-					((Statement)body).generate(Type.tpVoid);
+					body.generate(Type.tpVoid);
 					if( Kiev.debugOutputC && isGenPostCond() ) {
 						if( type.ret != Type.tpVoid ) {
 							Code.addVar(getRetVar());

@@ -89,7 +89,7 @@ public class CaseLabel extends ASTNode {
 		stats = null;
 	}
 
-	public ASTNode resolve(Type tpVoid) throws RuntimeException {
+	public ASTNode resolve(Type tpVoid) {
 		boolean pizza_case = false;
 		PassInfo.push(this);
 		try {
@@ -534,13 +534,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		return null;
 	}
 
-	public CodeLabel getBreakLabel() throws RuntimeException {
+	public CodeLabel getBreakLabel() {
 		if( break_label == null )
 			throw new RuntimeException("Wrong generation phase for getting 'break' label");
 		return break_label;
 	}
 
-	public CodeLabel getContinueLabel() throws RuntimeException {
+	public CodeLabel getContinueLabel() {
 		if( continue_label == null )
 			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
 		return continue_label;
@@ -646,7 +646,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@att public Var	arg;
+	@att public Var			arg;
 	@att public Statement	body;
 
 	public CodeLabel		handler;
@@ -655,11 +655,11 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public CatchInfo() {
 	}
 
-	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
-		super(pos, parent);
-		this.arg = arg;
-		this.body = body;
-	}
+//	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
+//		super(pos, parent);
+//		this.arg = arg;
+//		this.body = body;
+//	}
 
 	public String toString() {
 		return "catch( "+arg+" )";
@@ -677,7 +677,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
 		try {
@@ -733,13 +733,21 @@ public class FinallyInfo extends CatchInfo {
 	public FinallyInfo() {
 	}
 
-	public FinallyInfo(int pos, ASTNode parent, Statement body) {
-		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
-        ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
-	}
+//	public FinallyInfo(int pos, ASTNode parent, Statement body) {
+//		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
+//		ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
+//	}
 
 	public String toString() { return "finally"; }
 
+	public ASTNode resolve(Type reqType) {
+		if (arg == null)
+			arg = new Var(pos,KString.Empty,Type.tpThrowable,0);
+		if (ret_arg == null)
+			ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
+		return super.resolve(reqType);
+	}
+	
 	public void generate(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -777,20 +785,20 @@ public class FinallyInfo extends CatchInfo {
 public class TryStat extends Statement/*defaults*/ {
 
 	@att public Statement				body;
-	@att public final NArr<ASTNode>		catchers;
-	@att public ASTNode					finally_catcher;
+	@att public final NArr<CatchInfo>	catchers;
+	@att public FinallyInfo				finally_catcher;
 
 	public CodeLabel	end_label;
 
 	public TryStat() {
 	}
 
-	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
-		super(pos, parent);
-		this.body = body;
-		this.catchers.addAll(catchers);
-		this.finally_catcher = finally_catcher;
-	}
+//	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
+//		super(pos, parent);
+//		this.body = body;
+//		this.catchers.addAll(catchers);
+//		this.finally_catcher = finally_catcher;
+//	}
 
 	public void cleanup() {
 		parent=null;
@@ -804,12 +812,12 @@ public class TryStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		ScopeNodeInfoVector finally_state = null;
 		for(int i=0; i < catchers.length; i++) {
 			try {
 				NodeInfoPass.pushState();
-				((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
+				catchers[i].resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i].pos,e);
 			} finally {
@@ -819,7 +827,7 @@ public class TryStat extends Statement/*defaults*/ {
 		if(finally_catcher != null) {
 			try {
 				NodeInfoPass.pushState();
-				((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
+				finally_catcher.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher.pos,e);
 			} finally {
@@ -889,31 +897,31 @@ public class TryStat extends Statement/*defaults*/ {
 				Kiev.reportError(pos,e);
 			}
 			if( !body.isMethodAbrupted() ) {
-				if( finally_catcher != null ) {
-					Code.addInstr(Instr.op_jsr,((FinallyInfo)finally_catcher).subr_label);
-				}
-				if( isAutoReturnable() )
+				if( isAutoReturnable() ) {
 					ReturnStat.generateReturn();
-				else
+				} else {
+					if( finally_catcher != null )
+						Code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
 					Code.addInstr(Instr.op_goto,end_label);
+				}
 			}
 			for(int i=0; i < catchers.length; i++) {
-				Code.addInstr(Instr.stop_catcher,((CatchInfo)catchers[i]).code_catcher);
+				Code.addInstr(Instr.stop_catcher,catchers[i].code_catcher);
 			}
 
 			for(int i=0; i < catchers.length; i++) {
 				if( isAutoReturnable() )
 					catchers[i].setAutoReturnable(true);
 				try {
-					((CatchInfo)catchers[i]).generate(Type.tpVoid);
+					catchers[i].generate(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(catchers[i].pos,e);
 				}
 			}
 			if(finally_catcher != null) {
 				try {
-					Code.addInstr(Instr.stop_catcher,((FinallyInfo)finally_catcher).code_catcher);
-					((FinallyInfo)finally_catcher).generate(Type.tpVoid);
+					Code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
+					finally_catcher.generate(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(finally_catcher.pos,e);
 				}
@@ -922,7 +930,7 @@ public class TryStat extends Statement/*defaults*/ {
 		} finally {
 			PassInfo.pop(this);
 			if(finally_catcher != null)
-				Code.removeVar(((FinallyInfo)finally_catcher).ret_arg);
+				Code.removeVar(finally_catcher.ret_arg);
 		}
 	}
 
@@ -942,7 +950,7 @@ public class TryStat extends Statement/*defaults*/ {
 public class SynchronizedStat extends Statement {
 
 	@att public Statement	body;
-	@att public Expr			expr;
+	@att public Expr		expr;
 	@att public Var			expr_var;
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -951,11 +959,11 @@ public class SynchronizedStat extends Statement {
 	public SynchronizedStat() {
 	}
 
-	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
-		super(pos, parent);
-		this.expr = expr;
-		this.body = body;
-	}
+//	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
+//		super(pos, parent);
+//		this.expr = expr;
+//		this.body = body;
+//	}
 
 	public void cleanup() {
 		parent=null;
@@ -966,7 +974,7 @@ public class SynchronizedStat extends Statement {
 		expr_var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			try {
@@ -1046,11 +1054,11 @@ public class WithStat extends Statement {
 	public WithStat() {
 	}
 
-	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
-		super(pos, parent);
-		this.expr = expr;
-		this.body = body;
-	}
+//	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
+//		super(pos, parent);
+//		this.expr = expr;
+//		this.body = body;
+//	}
 
 	public void cleanup() {
 		parent=null;
@@ -1061,7 +1069,7 @@ public class WithStat extends Statement {
 		var_or_field = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			try {

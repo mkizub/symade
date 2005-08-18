@@ -179,13 +179,13 @@ public class RuleMethod extends Method {
 			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				if( body instanceof ASTRuleBlock ) {
-					((ASTRuleBlock)body).resolve(Type.tpVoid);
+				if( body instanceof RuleBlock ) {
+					((RuleBlock)body).resolve(Type.tpVoid);
 					boolean[] exts = Kiev.getExtSet();
 					try {
 						Kiev.enable(Ext.GotoCase);
 						Kiev.enable(Ext.Goto);
-						((ASTBlock)body).resolve(Type.tpVoid);
+						((BlockStat)body).resolve(Type.tpVoid);
 					} finally { Kiev.setExtSet(exts); }
 				} else {
 					((BlockStat)body).resolve(Type.tpVoid);
@@ -392,10 +392,10 @@ public abstract class ASTRuleNode extends ASTNode {
 
 
 @node
-public final class RuleBlock extends ASTNode implements ScopeOfNames {
+@cfnode
+public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 	@att public ASTRuleNode	node;
-	@att public final NArr<ASTNode>		stats;
 	public StringBuffer	fields_buf;
 
 	public RuleBlock() {
@@ -479,10 +479,9 @@ public final class RuleBlock extends ASTNode implements ScopeOfNames {
 				sb.append("}\nreturn null;\n");
 			sb.append("}\n");
 			trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-			ASTBlock mbody = (ASTBlock)Kiev.parseBlock(sb,getPosLine(),getPosColumn());
+			BlockStat mbody = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
 			PassInfo.method.body = mbody;
 			mbody.stats.addAll(stats);
-			//PassInfo.clazz.makeDispatch(PassInfo.method);
 			return PassInfo.method.body;
 		} finally {
 			PassInfo.pop(this);

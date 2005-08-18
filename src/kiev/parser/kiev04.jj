@@ -420,6 +420,15 @@ public class kiev040 {
 		}
 		return v;
 	}
+	
+	private static Expr mkNotExpr(ASTOperator not, Expr cond) {
+		ASTExpression e = new ASTExpression();
+		e.pos = cond.pos;
+		e.nodes.append(not);
+		e.nodes.append(cond);
+		return e;
+	}
+
 
 	}*/
 
@@ -1541,8 +1550,8 @@ ASTOperatorAlias OperatorAlias() :
 	{ return a; }
 }
 
-ASTBlock MaybeSkipBlock() :
-{ boolean old_declMode; ASTBlock bl = null; }
+BlockStat MaybeSkipBlock() :
+{ boolean old_declMode; BlockStat bl = null; }
 {
 	(
 		LOOKAHEAD({ interface_only })
@@ -1726,7 +1735,7 @@ ASTInvariantDeclaration InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ ASTBlock bl; RuleMethod m; ASTIdentifier id; }
+{ RuleBlock bl; RuleMethod m; ASTIdentifier id; }
 {
 	"rule"
 	id = Name()
@@ -1763,7 +1772,7 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 }
 
 ASTInitializer Initializer(ASTModifiers modifiers) :
-{ ASTInitializer n = new ASTInitializer(); ASTBlock bl; }
+{ ASTInitializer n = new ASTInitializer(); BlockStat bl; }
 {
 	{
 		n.setFlags(modifiers.getFlags());
@@ -2540,16 +2549,17 @@ Statement ReparseStatement() :
 }
 
 Statement LabeledStatement() :
-{ ASTLabeledStatement st = new ASTLabeledStatement(); }
+{ LabeledStat st = new LabeledStat(); }
 {
-	st.name = Name()
+	st.ident = Name()
 	":"
+	{ st.pos = getToken(0).getPos(); }
 	st.stat = Statement()
 	{ return st; }
 }
 
 
-ASTBlock PrescannedBlock(PrescannedBody b) :
+BlockStat PrescannedBlock(PrescannedBody b) :
 {
 	Token t;
 	// Skip to the start of prescanned body
@@ -2566,19 +2576,19 @@ ASTBlock PrescannedBlock(PrescannedBody b) :
 		}
 		getNextToken();
 	}
-	ASTBlock bl;
+	BlockStat bl;
 }
 {
 	bl=Block()
 	{ return bl; }
 }
 
-ASTBlock Block() :
+BlockStat Block() :
 { boolean old_declMode; }
 {
 	"{"
 	{
-		ASTBlock bl = new ASTBlock();
+		BlockStat bl = new BlockStat();
 		bl.setPos(getToken(1).getPos());
 		PassInfo.push(bl);
 		old_declMode = declMode;
@@ -2593,7 +2603,7 @@ ASTBlock Block() :
 	{ return bl; }
 }
 
-ASTBlock PrescannedRuleBlock(PrescannedBody b) :
+RuleBlock PrescannedRuleBlock(PrescannedBody b) :
 {
 	Token t;
 	// Skip to the start of prescanned body
@@ -2610,26 +2620,26 @@ ASTBlock PrescannedRuleBlock(PrescannedBody b) :
 		}
 		getNextToken();
 	}
-	ASTBlock bl;
+	RuleBlock bl;
 }
 {
 	bl=RuleBlock()
 	{ return bl; }
 }
 
-ASTRuleBlock RuleBlock() :
+RuleBlock RuleBlock() :
 { boolean old_declMode; }
 {
 	"{"
 	{
-		ASTRuleBlock bl = new ASTRuleBlock();
+		RuleBlock bl = new RuleBlock();
 		bl.setPos(getToken(1).getPos());
 		PassInfo.push(bl);
 		old_declMode = declMode;
 		declMode = false;
 	}
 	try {
-		bl.expr = RuleOrExpression()
+		bl.node = RuleOrExpression()
 	} finally {
 		declMode = old_declMode;
 		PassInfo.pop(bl);
@@ -2638,11 +2648,11 @@ ASTRuleBlock RuleBlock() :
 	{ return bl; }
 }
 
-ASTBlock CondBlock() :
+BlockStat CondBlock() :
 {}
 {
 	{
-		ASTBlock bl = new ASTBlock();
+		BlockStat bl = new BlockStat();
 		bl.setPos(getToken(1).getPos());
 		PassInfo.push(bl);
 	}
@@ -2712,7 +2722,7 @@ ASTCondStatement CondStatement() :
 }
 
 Statement EmptyStatement() :
-{ Token t; ASTEmptyStatement st = new ASTEmptyStatement(); }
+{ Token t; EmptyStat st = new EmptyStat(); }
 {
 	t=";"
 	{
@@ -2722,18 +2732,18 @@ Statement EmptyStatement() :
 }
 
 Statement StatementExpression() :
-{ ASTStatementExpression st = new ASTStatementExpression(); }
+{ ExprStat st = new ExprStat(); }
 {
 	st.expr = ExpressionNT(null)
 	";"
 	{ return st; }
 }
 
-ASTSwitchStatement SwitchStatement() :
-{ Token t; ASTSwitchStatement st = new ASTSwitchStatement(); }
+SwitchStat SwitchStatement() :
+{ SwitchStat st = new SwitchStat(); }
 {
-	t="switch"
-	{ st.setPos(t.getPos()); }
+	"switch"
+	{ st.setPos(getToken(0).getPos()); }
 	"(" st.sel = ExpressionNT(null) ")"
 	"{"
 	(	st.cases += CaseStatements()	)+
@@ -2794,13 +2804,19 @@ ASTPizzaCase PizzaCase() :
 	{ return c; }
 }
 
-ASTIfStatement IfStatement() :
-{ Token t; ASTIfStatement st = new ASTIfStatement(); }
+IfElseStat IfStatement() :
+{ IfElseStat st = new IfElseStat(); ASTOperator not = null; }
 {
-	t="if"
-	{ st.setPos(t.getPos()); }
-	[ "!" { st.not = true; } ]
-    "(" st.cond = ExpressionNT(null) ")"
+	"if"
+	{ st.setPos(getToken(0).getPos()); }
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")"
 	st.thenSt = Statement()
 	[	LOOKAHEAD(1)
 		"else"
@@ -2809,34 +2825,46 @@ ASTIfStatement IfStatement() :
 	{ return st; }
 }
 
-ASTWhileStatement WhileStatement() :
-{ Token t; ASTWhileStatement st = new ASTWhileStatement(); }
+WhileStat WhileStatement() :
+{ WhileStat st = new WhileStat(); ASTOperator not = null; }
 {
-	t="while"
-	{ st.setPos(t.getPos()); }
-	[ "!" { st.not = true; } ]
-    "(" st.cond = ExpressionNT(null) ")"
+	"while"
+	{ st.setPos(getToken(0).getPos()); }
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")"
     st.body = Statement()
 	{ return st; }
 }
 
-ASTDoStatement DoStatement() :
-{ Token t; ASTDoStatement st = new ASTDoStatement(); }
+DoWhileStat DoStatement() :
+{ DoWhileStat st = new DoWhileStat(); ASTOperator not = null; }
 {
-	t="do"
-	{ st.setPos(t.getPos()); }
+	"do"
+	{ st.setPos(getToken(0).getPos()); }
     st.body = Statement()
     "while"
-	[ "!" { st.not = true; } ]
-    "(" st.cond = ExpressionNT(null) ")" ";"
+	[
+		LOOKAHEAD("!")
+		not = Operator()
+	]
+    "("
+		st.cond = ExpressionNT(null)
+		{ if (not != null) st.cond = mkNotExpr(not,st.cond); }
+	")" ";"
 	{ return st; }
 }
 
-ASTForStatement ForStatement() :
-{ Token t; ASTForStatement st = new ASTForStatement(); }
+ForStat ForStatement() :
+{ ForStat st = new ForStat(); }
 {
-	t="for"
-	{ st.setPos(t.getPos()); }
+	"for"
+	{ st.setPos(getToken(0).getPos()); }
 	"("
 		st.init = ForInit()
 	/*";"*/
@@ -2852,11 +2880,11 @@ ASTForStatement ForStatement() :
 	{ return st; }
 }
 
-ASTForEachStatement ForEachStatement() :
-{ Token t; ASTModifiers modifiers; ASTForEachStatement st = new ASTForEachStatement(); }
+ForEachStat ForEachStatement() :
+{ ASTModifiers modifiers; ForEachStat st = new ForEachStat(); }
 {
-	t="foreach"
-	{ st.setPos(t.getPos()); }
+	"foreach"
+	{ st.setPos(getToken(0).getPos()); }
 	"("
 	[	LOOKAHEAD( Modifiers() FormalParameter() )
 		modifiers = Modifiers()
@@ -2865,8 +2893,10 @@ ASTForEachStatement ForEachStatement() :
 	]
 	st.container = ExpressionNT(null)
 	[
-	";"
-	[ st.cond = ExpressionNT(null) ]
+		";"
+		[
+			st.cond = ExpressionNT(null)
+		]
 	]
 	")"
 	st.body = Statement()
@@ -2888,86 +2918,97 @@ ASTNode ForInit() :
 	{ return n; }
 }
 
-ASTGotoStatement GotoStatement() :
-{ Token t; ASTGotoStatement st = new ASTGotoStatement(); }
+Statement GotoStatement() :
+{ Statement st; Expr expr; ASTIdentifier id; }
 {
-	t="goto"
-	{ st.setPos(t.getPos()); }
+	"goto"
 	(
 		"case"
-		{ st.casemode = true; }
-		st.expr = ExpressionNT(null)
+		{
+			st = new GotoCaseStat();
+			st.setPos(getToken(0).getPos());
+		}
+		expr = ExpressionNT(null)
+		{ ((GotoCaseStat)st).expr = expr; }
 	|
 		"default"
-		{ st.casemode = true; }
+		{
+			st = new GotoCaseStat();
+			st.setPos(getToken(0).getPos());
+		}
 	|
-    	st.expr = Name()
+		{
+			st = new GotoStat();
+			st.setPos(getToken(0).getPos());
+		}
+    	id = Name()
+		{ ((GotoStat)st).ident = id; }
     )
     ";"
 	{ return st; }
 }
 
-ASTBreakStatement BreakStatement() :
-{ Token t; ASTBreakStatement st = new ASTBreakStatement(); }
+BreakStat BreakStatement() :
+{ BreakStat st = new BreakStat(); }
 {
-	t="break"
-	{ st.setPos(t.getPos()); }
+	"break"
+	{ st.setPos(getToken(0).getPos()); }
     [ st.ident = Name() ] ";"
 	{ return st; }
 }
 
-ASTContinueStatement ContinueStatement() :
-{ Token t; ASTContinueStatement st = new ASTContinueStatement(); }
+ContinueStat ContinueStatement() :
+{ ContinueStat st = new ContinueStat(); }
 {
-	t="continue"
-	{ st.setPos(t.getPos()); }
+	"continue"
+	{ st.setPos(getToken(0).getPos()); }
     [ st.ident = Name() ] ";"
 	{ return st; }
 }
 
-ASTReturnStatement ReturnStatement() :
-{ Token t; ASTReturnStatement st = new ASTReturnStatement(); }
+ReturnStat ReturnStatement() :
+{ ReturnStat st = new ReturnStat(); }
 {
-	t="return"
-	{ st.setPos(t.getPos()); }
+	"return"
+	{ st.setPos(getToken(0).getPos()); }
     [ st.expr = ExpressionNT(null) ] ";"
 	{ return st; }
 }
 
-ASTThrowStatement ThrowStatement() :
-{ Token t; ASTThrowStatement st = new ASTThrowStatement(); }
+ThrowStat ThrowStatement() :
+{ ThrowStat st = new ThrowStat(); }
 {
-	t="throw"
-	{ st.setPos(t.getPos()); }
+	"throw"
+	{ st.setPos(getToken(0).getPos()); }
     st.expr = ExpressionNT(null) ";"
 	{ return st; }
 }
 
-ASTSynchronizedStatement SynchronizedStatement() :
-{ Token t; ASTSynchronizedStatement st = new ASTSynchronizedStatement(); }
+SynchronizedStat SynchronizedStatement() :
+{ SynchronizedStat st = new SynchronizedStat(); }
 {
-	t="synchronized"
-	{ st.setPos(t.getPos()); }
-	"(" st.arg = ExpressionNT(null) ")"
+	"synchronized"
+	{ st.setPos(getToken(0).getPos()); }
+	"(" st.expr = ExpressionNT(null) ")"
 	st.body = Block()
 	{ return st; }
 }
 
-ASTWithStatement WithStatement() :
-{ Token t; ASTWithStatement st = new ASTWithStatement(); }
+WithStat WithStatement() :
+{ WithStat st = new WithStat(); }
 {
-	t="with"
-	{ st.setPos(t.getPos()); }
-	"(" st.arg = ExpressionNT(null) ")"
+	"with"
+	{ st.setPos(getToken(0).getPos()); }
+	"(" st.expr = ExpressionNT(null) ")"
 	st.body = Block()
 	{ return st; }
 }
 
-ASTTryStatement TryStatement() :
-{ Token t; ASTModifiers modifiers; ASTTryStatement st = new ASTTryStatement(); }
+TryStat TryStatement() :
+{ ASTModifiers modifiers; TryStat st = new TryStat(); }
 {
-	t="try"
-	{ st.setPos(t.getPos()); }
+	"try"
+	{ st.setPos(getToken(0).getPos()); }
     st.body = Block()
 	(
 		st.catchers += CatchInfo()
@@ -2978,24 +3019,24 @@ ASTTryStatement TryStatement() :
 	{ return st; }
 }
 
-ASTCatchInfo CatchInfo() :
-{ Token t; ASTModifiers modifiers; ASTCatchInfo st = new ASTCatchInfo(); }
+CatchInfo CatchInfo() :
+{ ASTModifiers modifiers; CatchInfo st = new CatchInfo(); }
 {
-	t="catch"
-	{ st.setPos(t.getPos()); }
+	"catch"
+	{ st.setPos(getToken(0).getPos()); }
 	"("
 		modifiers = Modifiers()
-		st.par = PizzaCaseFormalParameter(modifiers)
+		st.arg = PizzaCaseFormalParameter(modifiers)
 	")"
 	st.body = Block()
 	{ return st; }
 }
 
-ASTFinallyInfo FinallyInfo() :
-{ Token t; ASTFinallyInfo st = new ASTFinallyInfo(); }
+FinallyInfo FinallyInfo() :
+{ Token t; FinallyInfo st = new FinallyInfo(); }
 {
-	t="finally"
-	{ st.setPos(t.getPos()); }
+	"finally"
+	{ st.setPos(getToken(0).getPos()); }
 	st.body = Block()
 	{ return st; }
 }
