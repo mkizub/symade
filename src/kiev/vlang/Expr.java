@@ -1058,9 +1058,9 @@ public class CommaExpr extends Expr {
 	public CommaExpr() {
 	}
 
-	public CommaExpr(int pos, Expr[] exprs) {
-		super(pos);
-		this.exprs.addAll(exprs);
+	public CommaExpr(Expr expr) {
+		super(expr.pos);
+		this.exprs.add(expr);
 	}
 
 	public String toString() {

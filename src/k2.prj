@@ -81,14 +81,10 @@ kiev.bytecode.ZipClasspathEntry kiev/bytecode/ZipClasspathEntry kiev\bytecode\Cl
 kiev.parser.ASTAccessExpression kiev/parser/ASTAccessExpression kiev\parser\ASTAccessExpression.java
 kiev.parser.ASTAlias kiev/parser/ASTAlias kiev\parser\ASTIdentifierAlias.java
 kiev.parser.ASTAnonymouseClosure kiev/parser/ASTAnonymouseClosure kiev\parser\ASTAnonymouseClosure.java
-kiev.parser.ASTArrayElementAccessExpression kiev/parser/ASTArrayElementAccessExpression kiev\parser\ASTArrayElementAccessExpression.java
 kiev.parser.ASTCallAccessExpression kiev/parser/ASTCallAccessExpression kiev\parser\ASTCallAccessExpression.java
 kiev.parser.ASTCallExpression kiev/parser/ASTCallExpression kiev\parser\ASTCallExpression.java
 kiev.parser.ASTCastExpression kiev/parser/ASTCastExpression kiev\parser\ASTCastExpression.java
 kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOperator.java
-kiev.parser.ASTClosureType kiev/parser/ASTClosureType kiev\parser\ASTClosureType.java
-kiev.parser.ASTCommaExpression kiev/parser/ASTCommaExpression kiev\parser\ASTCommaExpression.java
-kiev.parser.ASTCondStatement kiev/parser/ASTCondStatement kiev\parser\ASTCondStatement.java
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
@@ -127,6 +123,7 @@ kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.ja
 kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
 kiev.parser.TypeArgRef kiev/parser/TypeArgRef kiev\parser\TypeArgRef.java
 kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java
+kiev.parser.TypeClosureRef kiev/parser/TypeClosureRef kiev\parser\TypeClosure.java
 kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
 kiev.parser.TypeNameRef kiev/parser/TypeNameRef kiev\parser\TypeNameRef.java
 kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgsRef.java

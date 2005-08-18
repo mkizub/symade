@@ -658,16 +658,17 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			switch( mode ) {
 			case ARRAY:
 				/* iter = 0; arr = container;*/
-				iter_init = new CommaExpr(0, new Expr[]{
+				iter_init = new CommaExpr();
+				((CommaExpr)iter_init).exprs.add(
 					new AssignExpr(iter.pos,AssignOperator.Assign,
 						new VarAccessExpr(container.pos,iter_array),
 						new ShadowExpr(container)
-						),
+					));
+				((CommaExpr)iter_init).exprs.add(
 					new AssignExpr(iter.pos,AssignOperator.Assign,
 						new VarAccessExpr(iter.pos,iter),
 						new ConstIntExpr(0)
-						)
-				});
+					));
 				iter_init = (Expr)iter_init.resolve(Type.tpInt);
 				break;
 			case KENUM:

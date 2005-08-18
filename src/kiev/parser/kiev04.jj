@@ -1860,7 +1860,7 @@ TypeRef NArrType() :
 }
 
 TypeRef ClosureType() :
-{ Token t; ASTClosureType n = new ASTClosureType(); }
+{ Token t; TypeClosureRef n = new TypeClosureRef(); }
 {
 	t="(" { n.setPos(t.getPos()); }
 	[
@@ -1934,12 +1934,12 @@ ASTIdentifier QName() :
  */
 
 Expr CommaExpression() :
-{ Expr e; ASTCommaExpression ce = null; }
+{ Expr e; CommaExpr ce = null; }
 {
 	e = Expression()
 	(
 		","
-		{ if (ce==null) ce = new ASTCommaExpression(e); }
+		{ if (ce==null) ce = new CommaExpr(e); }
 		ce.exprs += Expression()
 	)*
 	{ return ce == null ? e : ce; }
@@ -2285,7 +2285,7 @@ Expr AccessExpression() :
         { e = ae; }
 	|	LOOKAHEAD(2)
 		t="["
-		{ ASTArrayElementAccessExpression ae = new ASTArrayElementAccessExpression(); ae.obj = e; ae.setPos(t.getPos()); }
+		{ ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.setPos(t.getPos()); }
 		ae.index = ExpressionNT(null)
 		"]"
         { e = ae; }
@@ -2695,8 +2695,8 @@ ASTNode BlockStatement(ASTNode parent) :
 	{ return st; }
 }
 
-ASTCondStatement CondStatement() :
-{ Token t = getToken(1); ASTCondStatement st = new ASTCondStatement(); }
+CondStat CondStatement() :
+{ Token t = getToken(1); CondStat st = new CondStat(); }
 {
 	st.cond = ExpressionNT(noColonTokenSet)
 	[

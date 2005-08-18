@@ -2363,7 +2363,7 @@ public class kiev040 implements kiev040Constants {
   }
 
   static final public TypeRef ClosureType() throws ParseException {
-  Token t; ASTClosureType n = new ASTClosureType();
+  Token t; TypeClosureRef n = new TypeClosureRef();
     t= jj_consume_token(LPAREN);
                 n.setPos(t.getPos());
     if (jj_2_51(1)) {
@@ -2484,7 +2484,7 @@ public class kiev040 implements kiev040Constants {
  * Expression syntax follows.
  */
   static final public Expr CommaExpression() throws ParseException {
-  Expr e; ASTCommaExpression ce = null;
+  Expr e; CommaExpr ce = null;
     e = Expression();
     label_47:
     while (true) {
@@ -2496,7 +2496,7 @@ public class kiev040 implements kiev040Constants {
         break label_47;
       }
       jj_consume_token(COMMA);
-                  if (ce==null) ce = new ASTCommaExpression(e);
+                  if (ce==null) ce = new CommaExpr(e);
       ce.exprs += Expression();
     }
           {if (true) return ce == null ? e : ce;}
@@ -3150,7 +3150,7 @@ public class kiev040 implements kiev040Constants {
           e = ae;
       } else if (jj_2_70(2)) {
         t= jj_consume_token(LBRACKET);
-                  ASTArrayElementAccessExpression ae = new ASTArrayElementAccessExpression(); ae.obj = e; ae.setPos(t.getPos());
+                  ContainerAccessExpr ae = new ContainerAccessExpr(); ae.obj = e; ae.setPos(t.getPos());
         ae.index = ExpressionNT(null);
         jj_consume_token(RBRACKET);
           e = ae;
@@ -3697,8 +3697,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTCondStatement CondStatement() throws ParseException {
-  Token t = getToken(1); ASTCondStatement st = new ASTCondStatement();
+  static final public CondStat CondStatement() throws ParseException {
+  Token t = getToken(1); CondStat st = new CondStat();
     st.cond = ExpressionNT(noColonTokenSet);
     switch (jj_nt.kind) {
     case COLON:
