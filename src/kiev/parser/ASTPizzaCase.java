@@ -36,11 +36,28 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class ASTPizzaCase extends ASTNode {
+public class ASTPizzaCase extends ASTNode implements ScopeOfNames {
 	@att public ASTIdentifier			val;
 	@att public final NArr<Var>			params;
 	@att public final NArr<ASTNode>		stats;
 
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+		Var@ p;
+	{
+		p @= params,
+		p.name.equals(name),
+		node ?= p
+	}
+	
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'val'
+			foreach (Var v; params) v.preResolve();
+			foreach (ASTNode s; stats) s.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
     public ASTNode resolve(Type reqType) {
     	Var[] pattern = new Var[params.length];
     	try {

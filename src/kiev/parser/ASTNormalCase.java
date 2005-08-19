@@ -38,6 +38,14 @@ public class ASTNormalCase extends ASTNode {
 	@att public Expr					val;
 	@att public final NArr<ASTNode>		stats;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'val'
+			foreach (ASTNode s; stats) s.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
     public ASTNode resolve(Type reqType) {
     	try {
 			ASTNode n = null;

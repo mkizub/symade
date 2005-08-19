@@ -236,6 +236,9 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name)
+		;	node ?= syn,
+			syn instanceof Opdef && ((Opdef)syn).resolved != null,
+			trace( Kiev.debugResolve, "Resolved operator: "+syn+" in file "+this)
 		}
 	;
 		pkg != null,
@@ -243,9 +246,15 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		pkg.clazz.resolveNameR(node,path,name)
 	;
 		syn @= syntax,
-		syn instanceof Import && ((Import)syn).star,
-		trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-		((Import)syn).resolveNameR(node,path,name)
+		syn instanceof Import,
+		{
+			((Import)syn).star,
+			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
+			((Import)syn).resolveNameR(node,path,name)
+		;	((Import)syn).mode == Import.ImportMode.IMPORT_SYNTAX,
+			((Import)syn).resolved != null,
+			((Struct)((Import)syn).resolved).resolveNameR(node,path,name)
+		}
 	;
 		trace( Kiev.debugResolve, "In root package"),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),

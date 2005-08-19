@@ -490,8 +490,12 @@ public abstract class Operator implements Constants {
 		};
 		foreach( Hashtable<KString,Operator> hash; hashes ) {
 			foreach( Operator op; hash; op.types.length > 0 ) {
-				foreach( OpTypes opt; op.types; opt.method == m) {
-					op.removeTypes(opt$iter);
+				for(int i=0; i < op.types.length; i++) {
+					OpTypes opt = op.types[i];
+					if (opt.method == m) {
+						op.removeTypes(i);
+						i--;
+					}
 				}
 			}
 		}

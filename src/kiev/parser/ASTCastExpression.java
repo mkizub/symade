@@ -39,6 +39,10 @@ public class ASTCastExpression extends Expr {
 	@att public TypeRef	type;
     @att public Expr	expr;
 
+	public Type getType() {
+		return type.getType();
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		Type tp = type.getType();
 		return new CastExpr(pos,tp,expr,true).resolve(reqType);

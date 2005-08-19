@@ -176,6 +176,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<ASTNode>		stats;
+	
+	private int resolve_pos;
 
 	protected CodeLabel	break_label = null;
 
@@ -224,11 +226,11 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 		stats.insert(s,idx);
 	}
-
+	
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
-		n @= stats,
+		n @= new SymbolIterator(this,this.stats),
 		{
 			n instanceof Var,
 			((Var)n).name.equals(name),
@@ -242,7 +244,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= stats,
+		n @= new SymbolIterator(this,this.stats),
 		n instanceof Var && n.isForward() && ((Var)n).name.equals(name),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -296,40 +298,40 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 					if( st.isAbrupted() && !isBreaked() ) setAbrupted(true);
 					if( st.isMethodAbrupted() && !isBreaked() ) setMethodAbrupted(true);
 				}
-				else if( stats[i] instanceof ASTVarDecls ) {
-					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-					// TODO: check flags for vars
-					int flags = vdecls.modifiers.getFlags();
-					Type type = ((TypeRef)vdecls.type).getType();
-					for(int j=0; j < vdecls.vars.length; j++) {
-						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-						KString vname = vdecl.name.name;
-						Type tp = type;
-						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-						Var vstat;
-						if( vdecl.init != null ) {
-							if (!type.isWrapper() || vdecl.of_wrapper) {
-								vstat = new Var(vdecl.pos,vname,tp,flags);
-								vstat.init = vdecl.init;
-							} else {
-								vstat = new Var(vdecl.pos,vname,tp,flags);
-								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
-							}
-						}
-						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
-							vstat = new Var(vdecl.pos,vname,tp,flags);
-							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
-						} else {
-							vstat = new Var(vdecl.pos,vname,tp,flags);
-						}
-						if (j == 0) {
-							stats[i] = vstat;
-							vstat.resolve(Type.tpVoid);
-						} else {
-							this.insertSymbol(vstat,i+j);
-						}
-					}
-				}
+//				else if( stats[i] instanceof ASTVarDecls ) {
+//					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
+//					// TODO: check flags for vars
+//					int flags = vdecls.modifiers.getFlags();
+//					Type type = ((TypeRef)vdecls.type).getType();
+//					for(int j=0; j < vdecls.vars.length; j++) {
+//						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
+//						KString vname = vdecl.name.name;
+//						Type tp = type;
+//						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
+//						Var vstat;
+//						if( vdecl.init != null ) {
+//							if (!type.isWrapper() || vdecl.of_wrapper) {
+//								vstat = new Var(vdecl.pos,vname,tp,flags);
+//								vstat.init = vdecl.init;
+//							} else {
+//								vstat = new Var(vdecl.pos,vname,tp,flags);
+//								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
+//							}
+//						}
+//						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
+//							vstat = new Var(vdecl.pos,vname,tp,flags);
+//							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
+//						} else {
+//							vstat = new Var(vdecl.pos,vname,tp,flags);
+//						}
+//						if (j == 0) {
+//							stats[i] = vstat;
+//							vstat.resolve(Type.tpVoid);
+//						} else {
+//							this.insertSymbol(vstat,i+j);
+//						}
+//					}
+//				}
 				else if( stats[i] instanceof Var ) {
 					Var var = (Var)stats[i];
 					var.resolve(Type.tpVoid);
@@ -1168,6 +1170,14 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	
 	public NodeName getName() { return new NodeName(ident.name); }
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'ident'
+			stat.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -1222,6 +1232,10 @@ public class BreakStat extends Statement {
 //		setAbrupted(true);
 //	}
 
+	public void preResolve() {
+		// don't pre-resolve
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		setAbrupted(true);
 		ASTNode p;
@@ -1306,6 +1320,10 @@ public class ContinueStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
+	public void preResolve() {
+		// don't pre-resolve
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		setAbrupted(true);
 		// TODO: check label or loop statement available
@@ -1361,6 +1379,10 @@ public class GotoStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
+	public void preResolve() {
+		// don't pre-resolve
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		setAbrupted(true);
 		return this;

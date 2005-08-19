@@ -287,7 +287,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
+					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
@@ -314,7 +314,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 					s = s.super_type.clazz;
 					continue;
 				}
-				throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
+				//throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
+				return Type.emptyArray;
 			}
 		}
 	}

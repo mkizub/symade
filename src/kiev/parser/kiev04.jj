@@ -45,6 +45,7 @@ import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
+typedef NArr<ASTNode> NArrNodes;
 
 }*/ 
 
@@ -1368,14 +1369,14 @@ void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
 { TypeRef type; }
 {
 	type = Type()
-	meth.localvars += LocalVarDecl(modifiers, type, true)
+	meth.localvars += VarDecl(modifiers, type, true)
 	(	","
-		meth.localvars += LocalVarDecl(modifiers, type, false)
+		meth.localvars += VarDecl(modifiers, type, false)
 	)*
 	";"
 }
 
-Var LocalVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
+Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 { Token t; ASTIdentifier id; Var lv; }
 {
 	id = Name()
@@ -1390,29 +1391,6 @@ Var LocalVarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 		lv.init = VariableInitializer()
 	]
 	{ return lv; }
-}
-
-ASTVarDecls VarDecls(ASTModifiers modifiers) :
-{ ASTVarDecls n = new ASTVarDecls(); }
-{
-	{ n.modifiers = modifiers; }
-	n.type = Type()
-	n.vars += VarDecl()
-	(	","	n.vars += VarDecl() )*
-	";"
-	{ return n; }
-}
-
-ASTVarDecl VarDecl() :
-{ ASTVarDecl v = new ASTVarDecl(); }
-{
-	v.name = Name()
-	( <OPERATOR_LRBRACKETS> { v.dim += 1; } )*
-	[
-		("=" | ":=" { v.of_wrapper=true; })
-		v.init = VariableInitializer()
-	]
-	{ return v; }
 }
 
 Expr VariableInitializer() :
@@ -2596,7 +2574,7 @@ BlockStat Block() :
 	}
 	try {
     	(
-			bl.stats += BlockStatement(bl)
+			BlockStatement(bl.stats)
 		)*
 	} finally { declMode = old_declMode; PassInfo.pop(bl); }
     "}"
@@ -2670,10 +2648,11 @@ BlockStat CondBlock() :
 	{ return bl; }
 }
 
-ASTNode BlockStatement(ASTNode parent) :
-{ boolean old_declMode; ASTModifiers modifiers; ASTNode st; }
+void BlockStatement(NArrNodes stats) :
+{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; }
 {
 	(
+		/* class declaration */
 		LOOKAHEAD( Modifiers() ("class" | "interface" | "@" "interface") )
 		{
 			old_declMode = declMode;
@@ -2681,18 +2660,27 @@ ASTNode BlockStatement(ASTNode parent) :
 		}
 		try {
 			modifiers = Modifiers()
-			st = TypeDeclaration(modifiers, parent)
+			stats += TypeDeclaration(modifiers, stats.getParent())
 			[ ";" ]
 		} finally {
 			declMode = old_declMode;
 		}
-	|	LOOKAHEAD( Modifiers() Type() Name() )
+	|
+		/* local vars declaration */
+		LOOKAHEAD( Modifiers() Type() Name() )
 		modifiers = Modifiers()
-		st = VarDecls(modifiers)
-	|	LOOKAHEAD(0)
-		st = Statement()
+		tp = Type()
+		stats += VarDecl(modifiers, tp, true)
+		(
+			","
+			stats += VarDecl(modifiers, tp, false)
+		)*
+		";"
+	|
+		/* other statements */
+		LOOKAHEAD(0)
+		stats += Statement()
 	)
-	{ return st; }
 }
 
 CondStat CondStatement() :
@@ -2776,7 +2764,7 @@ ASTNormalCase NormalCase() :
 	)
     { c.setPos(t.getPos()); }
 	(
-		c.stats += BlockStatement(c)
+		BlockStatement(c.stats)
 	)*
 	{ return c; }
 }
@@ -2799,7 +2787,7 @@ ASTPizzaCase PizzaCase() :
 		]
 	")" ":"
 	(
-		c.stats += BlockStatement(c)
+		BlockStatement(c.stats)
 	)*
 	{ return c; }
 }
@@ -2904,12 +2892,20 @@ ForEachStat ForEachStatement() :
 }
 
 ASTNode ForInit() :
-{ ASTModifiers modifiers; ASTNode n; }
+{ ASTModifiers modifiers; ASTNode n; ASTModifiers modifiers; TypeRef tp; ForInit fi; }
 {
 	(
 		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
 		modifiers = Modifiers()
-		n = VarDecls(modifiers)
+		{ fi = new ForInit(); }
+		tp = Type()
+		fi.decls += VarDecl(modifiers, tp, true)
+		(
+			","
+			fi.decls += VarDecl(modifiers, tp, false)
+		)*
+		";"
+		{ n = fi; }
 	|
 		n = CommaExpression() ";"
 	|

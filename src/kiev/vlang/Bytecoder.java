@@ -858,6 +858,7 @@ public class Bytecoder implements Constants {
 				((kiev.bytecode.Utf8PoolConstant)bcpool[i]).value = ((AsciiCP)c).value;
 				continue;
 			case NumberCP:
+			{
 				NumberCP num = (NumberCP)c;
 				switch( num.value ) {
 				case Float:
@@ -878,6 +879,7 @@ public class Bytecoder implements Constants {
 				bcpool[i] = new kiev.bytecode.IntegerPoolConstant();
 				((kiev.bytecode.IntegerPoolConstant)bcpool[i]).value = num.value.intValue();
 				continue;
+			}
 			case ClazzCP:
 				bcpool[i] = new kiev.bytecode.ClazzPoolConstant();
 				((kiev.bytecode.ClazzPoolConstant)bcpool[i]).ref = ((ClazzCP)c).asc.pos;

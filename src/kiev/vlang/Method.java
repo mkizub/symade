@@ -148,8 +148,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 			type_ref.args.add((TypeRef)fp.vtype.copy());
 			if (fp.stype != null)
 				dtype_ref.args.add((TypeRef)fp.stype.copy());
-			else if (fp.type.isPizzaCase())
-				dtype_ref.args.add(new TypeRef(fp.vtype.getSuperType()));
+//			else if (fp.type.isPizzaCase())
+//				dtype_ref.args.add(new TypeRef(fp.vtype.getSuperType()));
 			else
 				dtype_ref.args.add((TypeRef)fp.vtype.copy());
 		}
@@ -574,6 +574,12 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 				cond.resolve(Type.tpVoid);
 			}
 			if( body != null ) {
+				{
+					ScopeNodeInfoVector state = NodeInfoPass.pushState();
+					state.guarded = true;
+					body.preResolve();
+					NodeInfoPass.popState();
+				}
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}

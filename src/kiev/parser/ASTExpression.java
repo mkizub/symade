@@ -45,6 +45,15 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 public class ASTExpression extends Expr {
 	@att public final NArr<ASTNode>		nodes;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			foreach (ASTNode n; nodes) n.preResolve();
+			if (nodes.length == 1 && nodes[0] instanceof Expr)
+				this.replaceWith(nodes[0]);
+		} finally { PassInfo.pop(this); }
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -117,13 +126,13 @@ public class ASTExpression extends Expr {
 	;
 		expr.length() > 1 && priority > 0,
 		trace( Kiev.debugOperators, "check that "+expr.head()+" is an expression ("+(expr.head() instanceof Expr)+") and has priority >= "+priority),
-		expr.head() instanceof Expr && ((Expr)expr.head()).getPriority() >= priority,
-		result ?= expr.head(),
+		(expr.head() instanceof Expr || expr.head() instanceof TypeRef) && getPriority(expr.head()) >= priority,
+		result ?= getExpr(expr.head()),
 		rest ?= expr.tail(),
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	;
 		expr.length() == 1,
-		result ?= expr.head(),
+		result ?= getExpr(expr.head()),
 		rest ?= expr.tail(),
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	}

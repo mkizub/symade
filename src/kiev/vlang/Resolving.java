@@ -313,7 +313,7 @@ public interface ScopeOfMethods extends Scope {
 	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt);
 }
 
-public interface ScopeOfOperators extends Scope {
+public interface ScopeOfOperators extends ScopeOfNames {
 	public rule resolveOperatorR(Operator@ op);
 }
 

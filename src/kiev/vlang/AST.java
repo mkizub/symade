@@ -210,12 +210,25 @@ public abstract class ASTNode implements Constants {
     	dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
     	return dmp;
     }
+	
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+				Object val = this.getVal(attr.name);
+				if (val == null)
+					continue;
+				if (attr.is_space) {
+					foreach (ASTNode n; (NArr<ASTNode>)val)
+						n.preResolve();
+				}
+				else if (val instanceof ASTNode) {
+					((ASTNode)val).preResolve();
+				}
+			}
+		} finally { PassInfo.pop(this); }
+	}
 
-	//public ASTNode pass1(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	//public ASTNode pass1_1(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	//public ASTNode pass2(ASTNode pn)   { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	//public ASTNode pass2_2(ASTNode pn) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode pass3()             { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
@@ -1230,6 +1243,10 @@ public class TypeRef extends ASTNode {
 	}
 	public void set$lnk(Type n) {
 		this.lnk = n;
+	}
+	
+	public final void preResolve() {
+		getType(); // calls resolving
 	}
 	
 	public boolean equals(Object o) {

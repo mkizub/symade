@@ -156,8 +156,13 @@ public class ArrayLengthAccessExpr extends Expr {
 	}
 
 	public ASTNode resolve(Type reqType) throws RuntimeException {
+		PassInfo.push(this);
+		try {
+			array = array.resolveExpr(null);
+			if !(array.getType().isArray())
+				throw new CompilerException(pos, "Access to array length for non-array type "+array.getType());
+		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		// Thanks to AccessExpr, that resolved all things for us
 		return this;
 	}
 
@@ -1176,7 +1181,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
-		n @= stats,
+		n @= new SymbolIterator(this,this.stats),
 		{
 			n instanceof Var,
 			((Var)n).name.equals(name),
@@ -1190,7 +1195,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= stats,
+		n @= new SymbolIterator(this,this.stats),
 		n instanceof Var && n.isForward() && ((Var)n).name.equals(name),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -1236,40 +1241,40 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 						Kiev.reportError(st.pos,"Abrupted statement in BockExpr");
 					}
 				}
-				else if( stats[i] instanceof ASTVarDecls ) {
-					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-					// TODO: check flags for vars
-					int flags = vdecls.modifiers.getFlags();
-					Type type = ((TypeRef)vdecls.type).getType();
-					for(int j=0; j < vdecls.vars.length; j++) {
-						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-						KString vname = vdecl.name.name;
-						Type tp = type;
-						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-						Var vstat;
-						if( vdecl.init != null ) {
-							if (!type.isWrapper() || vdecl.of_wrapper) {
-								vstat = new Var(vdecl.pos,vname,tp,flags);
-								vstat.init = vdecl.init;
-							} else {
-								vstat = new Var(vdecl.pos,vname,tp,flags);
-								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
-							}
-						}
-						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
-							vstat = new Var(vdecl.pos,vname,tp,flags);
-							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
-						} else {
-							vstat = new Var(vdecl.pos,vname,tp,flags);
-						}
-						if (j == 0) {
-							stats[i] = vstat;
-							vstat.resolve(Type.tpVoid);
-						} else {
-							this.insertSymbol(vstat,i+j);
-						}
-					}
-				}
+//				else if( stats[i] instanceof ASTVarDecls ) {
+//					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
+//					// TODO: check flags for vars
+//					int flags = vdecls.modifiers.getFlags();
+//					Type type = ((TypeRef)vdecls.type).getType();
+//					for(int j=0; j < vdecls.vars.length; j++) {
+//						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
+//						KString vname = vdecl.name.name;
+//						Type tp = type;
+//						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
+//						Var vstat;
+//						if( vdecl.init != null ) {
+//							if (!type.isWrapper() || vdecl.of_wrapper) {
+//								vstat = new Var(vdecl.pos,vname,tp,flags);
+//								vstat.init = vdecl.init;
+//							} else {
+//								vstat = new Var(vdecl.pos,vname,tp,flags);
+//								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
+//							}
+//						}
+//						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
+//							vstat = new Var(vdecl.pos,vname,tp,flags);
+//							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
+//						} else {
+//							vstat = new Var(vdecl.pos,vname,tp,flags);
+//						}
+//						if (j == 0) {
+//							stats[i] = vstat;
+//							vstat.resolve(Type.tpVoid);
+//						} else {
+//							this.insertSymbol(vstat,i+j);
+//						}
+//					}
+//				}
 				else if( stats[i] instanceof Var ) {
 					Var var = (Var)stats[i];
 					var.resolve(Type.tpVoid);
@@ -1805,7 +1810,7 @@ public class MultiExpr extends Expr {
 			Expr expr2 = ((Expr)exprs[2]).tryResolve(reqType);
 			if( expr2 == null )
 				return null;
-			return (Expr)new ConditionalExpr(pos,cond,expr1,expr2).resolve(reqType);
+			return (Expr)new ConditionalExpr(pos,(Expr)cond.copy(),(Expr)expr1.copy(),(Expr)expr2.copy()).resolve(reqType);
 		}
 		throw new CompilerException(pos,"Multi-operators are not implemented");
 	}

@@ -39,6 +39,7 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTIdentifier extends Expr {
+	private static KString op_instanceof = KString.from("instanceof");
 	public KString name;
 
 	public ASTIdentifier() {
@@ -62,6 +63,111 @@ public class ASTIdentifier extends Expr {
         pos = t.getPos();
 	}
 
+	public void preResolve() {
+		// predefined operators
+		if( name == op_instanceof ) {
+			ASTOperator op = new ASTOperator();
+			op.pos = this.pos;
+			op.image = op_instanceof;
+			this.replaceWith(op);
+			return;
+		}
+		// predefined names
+		if( name == Constants.nameFILE ) {
+			this.replaceWith(new ConstStringExpr(Kiev.curFile));
+			return;
+		}
+		else if( name == Constants.nameLINENO ) {
+			this.replaceWith(new ConstIntExpr(pos>>>11));
+			return;
+		}
+		else if( name == Constants.nameMETHOD ) {
+			if( PassInfo.method != null )
+				this.replaceWith(new ConstStringExpr(PassInfo.method.name.name));
+			else
+				this.replaceWith(new ConstStringExpr(nameInit));
+			return;
+		}
+		else if( name == Constants.nameDEBUG ) {
+			this.replaceWith(new ConstBoolExpr(Kiev.debugOutputA));
+			return;
+		}
+		else if( name == Constants.nameReturnVar ) {
+			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
+			name = Constants.nameResultVar;
+		}
+
+		// resolve in the path of scopes
+		ASTNode@ v;
+		ResInfo info = new ResInfo();
+		if( !PassInfo.resolveNameR(v,info,name) ) {
+			// May be a function
+//			if( reqType instanceof MethodType ) {
+//				if( PassInfo.resolveMethodR(v,null,name,(MethodType)reqType) ) {
+//					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
+//					ac.pos = pos;
+//					ac.parent = parent;
+//					ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
+//					for(int i=0; i < ac.params.length; i++)
+//						ac.params[i] = new FormPar(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
+//					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
+//					Expr[] cargs = new Expr[ac.params.length];
+//					for(int i=0; i < cargs.length; i++)
+//						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
+//					args = cargs;
+//					ASTCallExpression ace = new ASTCallExpression();
+//					ace.func = new ASTIdentifier(pos,name);
+//					foreach (Expr e; cargs)
+//						ace.args.add(e);
+//					if( ac.rettype.getType() == Type.tpVoid ) {
+//						bs.addStatement(new ExprStat(pos,bs,ace));
+//						bs.addStatement(new ReturnStat(pos,bs,null));
+//					} else {
+//						bs.addStatement(new ReturnStat(pos,bs,ace));
+//					}
+//					ac.body = bs;
+//					return ac.resolve(reqType);
+//				}
+//			}
+
+//			if( name.startsWith(Constants.nameDEF) ) {
+//				String prop = name.toString().substring(2);
+//				String val = Env.getProperty(prop);
+//				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
+//				if( val != null ) {
+//					if( reqType == null || reqType == Type.tpString)
+//						return new ConstStringExpr(KString.from(val));
+//					if( reqType.isBoolean() )
+//						if( val == "" )
+//							return new ConstBoolExpr(true);
+//						else
+//							return new ConstBoolExpr(Boolean.valueOf(val).booleanValue());
+//					if( reqType.isInteger() )
+//						return new ConstIntExpr(Integer.valueOf(val).intValue());
+//					if( reqType.isNumber() )
+//						return new ConstDoubleExpr(Double.valueOf(val).doubleValue());
+//					return new ConstStringExpr(KString.from(val));
+//				}
+//				if( reqType.isBoolean() )
+//					return new ConstBoolExpr(false);
+//				return new ConstNullExpr();
+//			}
+			throw new CompilerException(pos,"Unresolved identifier "+name);
+		}
+		if( v instanceof Struct ) {
+			Struct s = (Struct)v;
+			s.checkResolved();
+			TypeNameRef tr = new TypeNameRef((ASTIdentifier)this.copy(),s.type);
+			this.replaceWith(tr);
+		}
+		else if( v instanceof TypeRef ) {
+			this.replaceWith((TypeRef)v);
+		}
+		else {
+			this.replaceWith(info.buildAccess(pos, null, v));
+		}
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		if( name == Constants.nameFILE )
 			return new ConstStringExpr(Kiev.curFile);

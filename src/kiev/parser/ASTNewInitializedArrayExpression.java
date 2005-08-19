@@ -46,7 +46,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
 			tp = reqType;
 		} else {
 			tp = type.getType();
-			while( dim > 0 ) { tp = Type.newArrayType(tp); dim--; }
+			while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
 		}
 		if( !tp.isArray() )
 			throw new CompilerException(pos,"Type "+type+" is not an array type");

@@ -56,8 +56,9 @@ public class CaseLabel extends ASTNode {
 	}
 
 	public String toString() {
-		if( val == null ) return "default:";
-		else if(pattern != null) {
+		if( val == null )
+			return "default:";
+		else if(pattern.length > 0) {
 			StringBuffer sb = new StringBuffer();
 			sb.append("case ").append(val).append('(');
 			for(int i=0; i < pattern.length; i++) {
@@ -150,7 +151,7 @@ public class CaseLabel extends ASTNode {
 								throw new CompilerException(pos,"Pizza case type in non-pizza switch");
 							PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 							val = new ConstIntExpr(case_attr.caseno);
-							if( pattern != null && pattern.length > 0 ) {
+							if( pattern.length > 0 ) {
 								if( pattern.length != case_attr.casefields.length )
 									throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
 								for(int i=0, j=0; i < pattern.length; i++) {

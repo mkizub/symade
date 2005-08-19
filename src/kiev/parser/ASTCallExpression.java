@@ -60,6 +60,14 @@ public class ASTCallExpression extends Expr {
 		foreach (Expr e; args) this.args.append(e);
 	}
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'func'
+			foreach (Expr e; args) e.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
 	public ASTNode resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
 //			try {

@@ -39,13 +39,107 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTAccessExpression extends Expr {
-	@att public Expr			obj;
+	@att public ASTNode			obj;
 	@att public ASTIdentifier	ident;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			ASTNode[] res;
+			Type[] tps;
+
+			// pre-resolve access
+			obj.preResolve();
+			// pre-resolve result
+			if( obj instanceof TypeRef ) {
+				tps = new Type[]{ ((TypeRef)obj).getType() };
+				res = new ASTNode[1];
+				if( ident.name.equals(nameThis) )
+					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+			}
+			else if( obj instanceof Struct ) {
+				((Struct)obj).checkResolved();
+				tps = new Type[]{ ((Struct)obj).type };
+				res = new ASTNode[1];
+				if( ident.name.equals(nameThis) )
+					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+			}
+			else {
+				Expr e = (Expr)obj;
+				tps = e.getAccessTypes();
+				res = new ASTNode[tps.length];
+				for (int si=0; si < tps.length; si++) {
+					Type tp = tps[si];
+					if( ident.name.equals("$self") && tp.isReference() ) {
+						if (tp.isWrapper()) {
+							tps[si] = ((WrapperType)tp).getUnwrappedType();
+							res[si] = obj;
+						}
+					}
+					else if (ident.name.byteAt(0) == '$') {
+						while (tp.isWrapper())
+							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+					}
+					else if( ident.name.equals("length") ) {
+						if( tp.isArray() ) {
+							tps[si] = Type.tpInt;
+							res[si] = new ArrayLengthAccessExpr(pos,(Expr)e.copy());
+						}
+					}
+				}
+				// fall down
+			}
+			for (int si=0; si < tps.length; si++) {
+				if (res[si] != null)
+					continue;
+				Type tp = tps[si];
+				ASTNode@ v;
+				ResInfo info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
+				if (obj instanceof Expr && tp.resolveNameAccessR(v,info,ident.name) ) {
+					res[si] = makeExpr(v,info,obj);
+				}
+				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name)) {
+					res[si] = makeExpr(v,info,tp.getStruct());
+				}
+			}
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
+			}
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous access:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
+			}
+			if (cnt == 0) {
+				//StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+				//for(int si=0; si < res.length; si++) {
+				//	if (tps[si] == null)
+				//		continue;
+				//	msg.append("\t").append(tps[si]).append('\n');
+				//}
+				//msg.append("while resolving ").append(this);
+				//throw new CompilerException(pos, msg.toString());
+				obj = obj;
+				return;
+			}
+			this.replaceWith(res[idx]);
+		} finally { PassInfo.pop(this); }
+	}
+	
 	public ASTNode resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
-			ASTNode o = obj.resolve(null);
+			ASTNode o = ((Expr)obj).resolve(null);
 			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 			Type tp = null;
 			Type[] snitps = null;
@@ -160,7 +254,8 @@ public class ASTAccessExpression extends Expr {
 			return info.buildAccess(pos, o, v);
 		}
 		else if( v instanceof Struct ) {
-			return (Struct)v;
+			TypeRef tr = new TypeRef(((Struct)v).type);
+			return tr;
 		}
 		else if( v instanceof Method ) {
 			if( v.isStatic() )

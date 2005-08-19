@@ -64,10 +64,7 @@ public final $wrapper class PVar<A>
 
 	public boolean equals(A value) {
 		A v = $var;
-		if( A instanceof Object )
-			return (v==null && value==null) || v.equals(value);
-		else
-			return v.equals(value);
+		return (v==null && value==null) || v.equals(value);
 	}
 
 	public void $bind(A var)

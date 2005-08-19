@@ -218,6 +218,10 @@ public abstract class ConstExpr extends Expr {
 	public boolean	isConstantExpr() { return true; }
 	public int		getPriority() { return 255; }
 
+	public final void preResolve() {
+		// already fully resolved
+	}
+	
 	public final ASTNode resolve(Type reqType) {
 		setResolved(true);
 		return this;

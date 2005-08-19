@@ -2171,6 +2171,10 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		} finally { PassInfo.pop(this); }
 	}
 
+	public final void preResolve() {
+		// don't pre-resolve now
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		if( isGenerated() ) return this;
 		long curr_time;

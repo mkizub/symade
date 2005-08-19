@@ -46,12 +46,8 @@ public class ArrayEnumerator<A> implements Enumeration<A>, Cloneable
 	
 	public static boolean contains(A[] ar, A val) {
 		for(int i=0; i < ar.length; i++) {
-			if( A instanceof Object )
-				if( val!=null && (val == ar[i] || val.equals(ar[i])) )
-					return true;
-			else
-				if( val.equals(ar[i]) )
-					return true;
+			if( val!=null && (val == ar[i] || val.equals(ar[i])) )
+				return true;
 		}
 		return false;
 	}

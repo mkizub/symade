@@ -86,11 +86,15 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
+			if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
+				init = new NewExpr(pos,type,Expr.emptyArray);
 			if( init != null ) {
+				if (type.isWrapper() && !this.isInitWrapper())
+					init = new NewExpr(init.pos,type,new Expr[]{init});
 				try {
 					init = init.resolveExpr(this.type);
 					Type it = init.getType();
@@ -370,10 +374,17 @@ public class NodeInfoPass {
 		Type[] newtypes = new Type[]{type};
 	next_type:
 		foreach(Type t1; types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull ) {
-			foreach(Type t2; newtypes; t2.isInstanceOf(t1)) continue next_type;
-			foreach(Type t2; newtypes; t1.isInstanceOf(t2)) {
-				newtypes[t2$iter] = t1;
-				continue next_type;
+			for( int i=0; i < newtypes.length; i++) {
+				Type t2 = newtypes[i];
+				if (t2.isInstanceOf(t1))
+					continue next_type;
+			}
+			for( int i=0; i < newtypes.length; i++) {
+				Type t2 = newtypes[i];
+				if (t1.isInstanceOf(t2)) {
+					newtypes[i] = t1;
+					continue next_type;
+				}
 			}
 			if( t1.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
 			else if( newtypes[0].isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);

@@ -49,13 +49,13 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 		setBreakTarget(true);
 	}
 
-	public CodeLabel getContinueLabel() throws RuntimeException {
+	public CodeLabel getContinueLabel() {
 		if( continue_label == null )
 			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
 		return continue_label;
 	}
 
-	public CodeLabel getBreakLabel() throws RuntimeException {
+	public CodeLabel getBreakLabel() {
 		if( break_label == null )
 			throw new RuntimeException("Wrong generation phase for getting 'break' label");
 		return break_label;
@@ -87,7 +87,7 @@ public class WhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -178,7 +178,7 @@ public class DoWhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -283,6 +283,12 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
+	public ASTNode resolve(Type reqType) {
+		foreach (Var v; decls)
+			v.resolve(Type.tpVoid);
+		return null;
+	}
+	
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < decls.length; i++) {
 			decls[i].toJava(dmp);
@@ -330,7 +336,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -338,34 +344,36 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			if( init != null ) {
 				try {
 					if( init instanceof Statement )
-						init = ((Statement)init).resolve(Type.tpVoid);
+						((Statement)init).resolve(Type.tpVoid);
+					else if( init instanceof ForInit )
+						((ForInit)init).resolve(Type.tpVoid);
 					else if( init instanceof Expr )
 						init = ((Expr)init).resolve(Type.tpVoid);
-					else if( init instanceof ASTVarDecls ) {
-						ASTVarDecls vdecls = (ASTVarDecls)init;
-						int flags = 0;
-						Type type = ((TypeRef)vdecls.type).getType();
-						int dim = 0;
-						while( type.isArray() ) { dim++; type = type.args[0]; }
-						ForInit forinit = new ForInit(init.pos);
-						this.init = forinit;
-						for(int j=0; j < vdecls.vars.length; j++) {
-							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-							KString vname = vdecl.name.name;
-							Type tp = type;
-							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-							Var var = new Var(vdecl.pos,vname,tp,flags);
-							forinit.decls.append(var);
-							if (vdecls.hasFinal()) var.setFinal(true);
-							if (vdecls.hasForward()) var.setForward(true);
-							if( vdecl.init != null ) {
-								var.init = vdecl.init.resolveExpr(var.type);
-							}
-							else if (var.isFinal())
-								Kiev.reportError(var.pos,"Final variable "+var+" must have initializer");
-						}
-					}
+//					else if( init instanceof ASTVarDecls ) {
+//						ASTVarDecls vdecls = (ASTVarDecls)init;
+//						int flags = 0;
+//						Type type = ((TypeRef)vdecls.type).getType();
+//						int dim = 0;
+//						while( type.isArray() ) { dim++; type = type.args[0]; }
+//						ForInit forinit = new ForInit(init.pos);
+//						this.init = forinit;
+//						for(int j=0; j < vdecls.vars.length; j++) {
+//							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
+//							KString vname = vdecl.name.name;
+//							Type tp = type;
+//							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
+//							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
+//							Var var = new Var(vdecl.pos,vname,tp,flags);
+//							forinit.decls.append(var);
+//							if (vdecls.hasFinal()) var.setFinal(true);
+//							if (vdecls.hasForward()) var.setForward(true);
+//							if( vdecl.init != null ) {
+//								var.init = vdecl.init.resolveExpr(var.type);
+//							}
+//							else if (var.isFinal())
+//								Kiev.reportError(var.pos,"Final variable "+var+" must have initializer");
+//						}
+//					}
 					else
 						throw new RuntimeException("Unknown type of for-init node "+init);
 					if (init instanceof Expr)
@@ -578,7 +586,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;

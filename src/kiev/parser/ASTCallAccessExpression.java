@@ -37,10 +37,25 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTCallAccessExpression extends Expr {
-	@att public Expr					obj;
+	@att public ASTNode					obj;
 	@att public ASTIdentifier			func;
     @att public final NArr<Expr>		args;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// pre-resolve 'obj', but check it's not 'super.'
+			if (obj != null) {
+				if !( obj instanceof ASTIdentifier && ((ASTIdentifier)obj).name.equals(Constants.nameSuper) )
+					obj.preResolve();
+			}
+			// don't pre-resolve 'func'
+			;
+			// pre-resolve arguments
+			foreach (Expr e; args) e.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		for(int i=0; i < args.length; i++) {
 			args[i] = (Expr)args[i].resolveExpr(null);
@@ -74,7 +89,10 @@ public class ASTCallAccessExpression extends Expr {
 			}
 			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
 		} else {
-			o = obj.resolve(null);
+			if (obj instanceof Expr)
+				o = ((Expr)obj).resolve(null);
+			else
+				o = obj;
 			if( o == null )
 				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 		try_static:
@@ -194,7 +212,7 @@ public class ASTCallAccessExpression extends Expr {
 							return ac.resolve(reqType);
 					} else {
 						obj = (Expr)o;
-						Expr call = info.buildCall(pos, obj, m, ((Method)m).makeArgs(args,tp));
+						Expr call = info.buildCall(pos, (Expr)obj, m, ((Method)m).makeArgs(args,tp));
 						return call.resolve(ret);
 					}
 				} else {

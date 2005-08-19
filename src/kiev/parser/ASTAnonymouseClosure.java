@@ -36,7 +36,7 @@ import kiev.stdlib.*;
 
 @node
 @cfnode
-public class ASTAnonymouseClosure extends Expr {
+public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
     @att public BlockStat					body;
@@ -46,6 +46,14 @@ public class ASTAnonymouseClosure extends Expr {
     	pos = t.getPos();
 	}
 
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+		Var@ p;
+	{
+		p @= params,
+		p.name.equals(name),
+		node ?= p
+	}
+	
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return new_closure;
 		ClazzName clname = ClazzName.fromBytecodeName(

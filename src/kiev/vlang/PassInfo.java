@@ -70,6 +70,38 @@ public class ParentEnumerator implements Enumeration<ASTNode> {
 	public ASTNode nextElement() { ASTNode r = n; n = n.parent; return r; }
 }
 
+public class SymbolIterator implements Enumeration<ASTNode> {
+	int current;
+	NArr<ASTNode> stats;
+	ASTNode last_stat;
+	public SymbolIterator(ASTNode block, NArr<ASTNode> stats) {
+		this.stats = stats;
+		for (int i=PassInfo.pathTop-1; i >= 0; i--) {
+			if (PassInfo.path[i] == block) {
+				last_stat = PassInfo.path[i+1];
+				return;
+			}
+		}
+		current = stats.length;
+	}
+	public boolean hasMoreElements() {
+		if (current >= stats.length)
+			return false;
+		if (stats[current] == last_stat)
+			return false;
+		return true;
+	}
+	public ASTNode nextElement() {
+		if ( current < stats.length ) return stats[current++];
+		throw new NoSuchElementException();
+	}
+	/// BUG BUG BUG ///
+	public Object nextElement() {
+		if ( current < stats.length ) return stats[current++];
+		throw new NoSuchElementException();
+	}
+}
+
 public class PassInfo {
 
 	// No instances
