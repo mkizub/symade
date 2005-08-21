@@ -256,23 +256,28 @@ public class NodeInfoPass {
 	public static void close() {
 		states = init_states.pop();
 	}
+	
+	public static int getDepth() {
+		if (states == null) return -1;
+		return states.length()-1;
+	}
 
 	public static ScopeNodeInfo getNodeInThisScope(ASTNode v) {
 		ScopeNodeInfoVector state = states.peek();
 		ScopeNodeInfo sni = getNodeInfo(v);
 		if( sni != null ) {
 			if( sni.state != state ) {
-				trace( Kiev.debugNodeTypes, "types: clone "+sni+" to current scope "+(states.length()-1));
+				trace( Kiev.debugNodeTypes, "types: clone "+sni+" to current scope "+getDepth());
 				sni = (ScopeNodeInfo)sni.clone();
 				sni.state = state;
 				state.append(sni);
 			} else {
-				trace( Kiev.debugNodeTypes, "types: existed "+sni+" in current scope "+(states.length()-1));
+				trace( Kiev.debugNodeTypes, "types: existed "+sni+" in current scope "+getDepth());
 			}
 		} else {
 			sni = new ScopeNodeInfo(v,state);
 			state.append(sni);
-			trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+(states.length()-1));
+			trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
 		}
 		return sni;
 	}
@@ -327,18 +332,18 @@ public class NodeInfoPass {
 	public static ScopeNodeInfoVector pushState() {
 		ScopeNodeInfoVector v = new ScopeNodeInfoVector();
 		states.push(v);
-		trace( Kiev.debugNodeTypes, "types: push state to level "+(states.length()-1));
+		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
 		return v;
 	}
 
 	public static ScopeNodeInfoVector pushState(ScopeNodeInfoVector v) {
 		states.push(v);
-		trace( Kiev.debugNodeTypes, "types: push state to level "+(states.length()-1));
+		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
 		return v;
 	}
 
 	public static ScopeNodeInfoVector popState() {
-		trace( Kiev.debugNodeTypes, "types: pop state to level "+(states.length()-2));
+		trace( Kiev.debugNodeTypes, "types: pop state to level "+(getDepth()-1));
 		return states.pop();
 	}
 

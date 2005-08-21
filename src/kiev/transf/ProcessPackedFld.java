@@ -81,7 +81,7 @@ public final class ProcessPackedFld implements Constants {
 		PassInfo.push(node);
 		try {
 			rewriteNode(node, id);
-		} finally { NodeInfoPass.close(); PassInfo.pop(node); }
+		} finally { PassInfo.pop(node); NodeInfoPass.close(); }
 	}
 	
 	public void rewrite(AccessExpr:Object fa, String id) {
@@ -170,7 +170,7 @@ public final class ProcessPackedFld implements Constants {
 				tmp.init = expr;
 				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ae.value)));
 			} else {
-				tmp.init = ae.value;
+				tmp.init = (Expr)ae.value;
 			}
 			
 			{

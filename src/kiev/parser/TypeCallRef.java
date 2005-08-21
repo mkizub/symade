@@ -31,6 +31,7 @@ import syntax kiev.Syntax;
  *
  */
 
+@cfnode
 @node
 public class TypeCallRef extends TypeRef {
 

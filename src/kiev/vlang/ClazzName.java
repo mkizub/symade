@@ -138,7 +138,7 @@ public class ClazzName extends NodeName implements Constants {
 			Kiev.reportError(0,e);
 			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 		}
-		delim = isInn ? "$" : "." ;
+		delim = "."; //isInn ? "$" : "." ;
 		KString name = KString.from(outer.name.name+delim+short_name);
 		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
 	}

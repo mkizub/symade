@@ -73,7 +73,7 @@ public class Dumper {
 		} catch( Throwable e ) {
 			System.out.println("Internal error in dumper for "+o.getClass());
 			e.printStackTrace();
-			append("/*INTERNEL ERROR*/");
+			append("/*INTERNAL ERROR*/");
 		}
 		return this;
 	}

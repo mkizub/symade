@@ -383,9 +383,9 @@ public class BinaryBoolExpr extends BoolExpr {
 		expr2 = null;
 	}
 
-	public Expr tryResolve(Type reqType) {
-		if( !resolveExprs() ) return null;
+	private Expr initialResolve(Type reqType) {
 		setTryResolved(true);
+		resolveExprs();
 		Type et1 = expr1.getType();
 		Type et2 = expr2.getType();
 		if( ( et1.isNumber() && et2.isNumber() ) &&
@@ -428,34 +428,28 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( opt.match(tps,argsarr) ) {
 				Expr e;
 				if( opt.method.isStatic() )
-					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).tryResolve(reqType);
+					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).resolveExpr(reqType);
 				else
-					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).tryResolve(reqType);
+					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).resolveExpr(reqType);
 				if( e != null ) return e;
 			}
 		}
-		return null;
+//		return null;
+		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
 	private boolean resolveExprs() {
-		Expr ast1 = ((Expr)expr1).tryResolve(null);
-		//if (ast1 == null)
-		//	throw new RuntimeException("tryResolve for "+expr1+" ("+expr1.getClass()+") returned null");
-		if (ast1 == null)
-			return false;
-		expr1 = ast1;
+		expr1 = (Expr)((Expr)expr1).resolve(null);
 		if (!expr1.isForWrapper() && expr1.getType().isWrapper())
 			expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
 
-		ASTNode ast2 = ((Expr)expr2).tryResolve(null);
+		ASTNode ast2 = ((Expr)expr2).resolve(null);
 		if( ast2 instanceof WrapedExpr )
 			ast2 = ((Expr)ast2).resolve(null);
 		if( ast2 instanceof TypeRef )
 			ast2 = getExprByStruct(((TypeRef)ast2).getType().getStruct());
 		if( ast2 instanceof Struct )
 			ast2 = getExprByStruct((Struct)ast2);
-		if !( ast2 instanceof Expr )
-			return false;
 		expr2 = (Expr)((Expr)ast2).resolve(null);
 		if (!expr2.isForWrapper() && expr2.getType().isWrapper())
 			expr2 = expr2.getType().makeWrappedAccess(expr2).resolveExpr(null);
@@ -486,50 +480,95 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
-		if( !isTryResolved() ) {
-			Expr e = tryResolve(reqType);
-			if( e != null ) return e;
-			return this;
-		}
 		PassInfo.push(this);
 		try {
-			if( !resolveExprs() )
-				throw new CompilerException(pos,"Unresolved expression "+this);
-			Type t1 = expr1.getType();
-			Type t2 = expr2.getType();
-			if( !t1.equals(t2) ) {
-				if( t1.isReference() != t2.isReference()) {
-					if (t1.isEnum() && !t1.isIntegerInCode()) {
-						expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1).resolveExpr(Type.tpInt);
-						t1 = expr1.getType();
-					}
-					if (t2.isEnum() && !t2.isIntegerInCode()) {
-						expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2).resolveExpr(Type.tpInt);
-						t2 = expr2.getType();
-					}
-					if( t1.isReference() != t2.isReference() && t1.isIntegerInCode() != t2.isIntegerInCode())
-						throw new RuntimeException("Boolean operator on reference and non-reference types");
+			resolveExprs();
+			Type et1 = expr1.getType();
+			Type et2 = expr2.getType();
+			if( ( et1.isNumber() && et2.isNumber() ) &&
+				(    op==BinaryOperator.LessThen
+				||   op==BinaryOperator.LessEquals
+				||   op==BinaryOperator.GreaterThen
+				||   op==BinaryOperator.GreaterEquals
+				)
+			) {
+				return (Expr)this.postResolve(reqType);
+			}
+			else if( op==BinaryOperator.BooleanOr ) {
+				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+					return (Expr)new BinaryBooleanOrExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
 				}
-				if( !t1.isReference() && !t2.isReference()) {
-					Type t;
-					if( t1==Type.tpDouble || t2==Type.tpDouble ) t=Type.tpDouble;
-					else if( t1==Type.tpFloat || t2==Type.tpFloat ) t=Type.tpFloat;
-					else if( t1==Type.tpLong || t2==Type.tpLong ) t=Type.tpLong;
+			}
+			else if( op==BinaryOperator.BooleanAnd ) {
+				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+					return (Expr)new BinaryBooleanAndExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
+				}
+			}
+			else if(
+				(	(et1.isNumber() && et2.isNumber())
+				 || (et1.isReference() && et2.isReference())
+				 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
+				 || (et1.isEnum() && et2.isIntegerInCode())
+				 || (et1.isIntegerInCode() && et2.isEnum())
+				 || (et1.isEnum() && et2.isEnum() && et1 == et2)
+				) &&
+				(   op==BinaryOperator.Equals
+				||  op==BinaryOperator.NotEquals
+				)
+			) {
+				return (Expr)this.postResolve(reqType);
+			}
+			// Not a standard operator, find out overloaded
+			foreach(OpTypes opt; op.types ) {
+				Type[] tps = new Type[]{null,et1,et2};
+				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+				if( opt.match(tps,argsarr) ) {
+					if( opt.method.isStatic() )
+						return new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).resolveExpr(reqType);
+					else
+						return new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).resolveExpr(reqType);
+				}
+			}
+		} finally { PassInfo.pop(this); }
+//		return null;
+		throw new CompilerException(pos,"Unresolved expression "+this);
+	}
+	
+	private ASTNode postResolve(Type reqType) {
+		Type t1 = expr1.getType();
+		Type t2 = expr2.getType();
+		if( !t1.equals(t2) ) {
+			if( t1.isReference() != t2.isReference()) {
+				if (t1.isEnum() && !t1.isIntegerInCode()) {
+					expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1).resolveExpr(Type.tpInt);
+					t1 = expr1.getType();
+				}
+				if (t2.isEnum() && !t2.isIntegerInCode()) {
+					expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2).resolveExpr(Type.tpInt);
+					t2 = expr2.getType();
+				}
+				if( t1.isReference() != t2.isReference() && t1.isIntegerInCode() != t2.isIntegerInCode())
+					throw new RuntimeException("Boolean operator on reference and non-reference types");
+			}
+			if( !t1.isReference() && !t2.isReference()) {
+				Type t;
+				if( t1==Type.tpDouble || t2==Type.tpDouble ) t=Type.tpDouble;
+				else if( t1==Type.tpFloat || t2==Type.tpFloat ) t=Type.tpFloat;
+				else if( t1==Type.tpLong || t2==Type.tpLong ) t=Type.tpLong;
 //					else if( t1==tInt || t2==tInt ) t=tInt;
 //					else if( t1==tShort || t2==tShort ) t=tShort;
 //					else if( t1==tByte || t2==tByte ) t=tByte;
 //					else t = tVoid;
-					else t = Type.tpInt;
+				else t = Type.tpInt;
 
-					if( !t.equals(t1) && t1.isCastableTo(t) ) {
-						expr1 = (Expr)new CastExpr(pos,t,expr1).resolve(t);
-					}
-					if( !t.equals(t2) && t2.isCastableTo(t) ) {
-						expr2 = (Expr)new CastExpr(pos,t,expr2).resolve(t);
-					}
+				if( !t.equals(t1) && t1.isCastableTo(t) ) {
+					expr1 = (Expr)new CastExpr(pos,t,expr1).resolve(t);
+				}
+				if( !t.equals(t2) && t2.isCastableTo(t) ) {
+					expr2 = (Expr)new CastExpr(pos,t,expr2).resolve(t);
 				}
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 		return this;
 	}

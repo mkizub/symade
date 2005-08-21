@@ -577,8 +577,9 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 				{
 					ScopeNodeInfoVector state = NodeInfoPass.pushState();
 					state.guarded = true;
-					body.preResolve();
-					NodeInfoPass.popState();
+					try {
+						body.preResolve();
+					} finally { NodeInfoPass.popState(); }
 				}
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
@@ -603,6 +604,7 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
+			NodeInfoPass.popState();
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.close();
 			PassInfo.pop(this);

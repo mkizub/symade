@@ -202,9 +202,10 @@ public class RuleMethod extends Method {
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			PassInfo.pop(this);
+			NodeInfoPass.popState();
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.close();
+			PassInfo.pop(this);
 		}
 
 		return this;
@@ -484,8 +485,8 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			mbody.stats.addAll(stats);
 			return PassInfo.method.body;
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
+			PassInfo.pop(this);
 		}
 	}
 

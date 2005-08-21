@@ -31,6 +31,7 @@ import kiev.vlang.*;
  *
  */
 
+@cfnode
 @node
 public class TypeClosureRef extends TypeRef {
     @att public final NArr<TypeRef>	types;

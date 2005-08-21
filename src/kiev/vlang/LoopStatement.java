@@ -108,8 +108,8 @@ public class WhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
+			PassInfo.pop(this);
 		}
 		return null;
 	}
@@ -197,8 +197,8 @@ public class DoWhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
+			PassInfo.pop(this);
 		}
 		return null;
 	}
@@ -416,8 +416,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
+			PassInfo.pop(this);
 		}
 		return null;
 	}
@@ -835,8 +835,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				iter_incr = null;
 			}
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
+			PassInfo.pop(this);
 		}
 
 		return null;

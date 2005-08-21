@@ -334,7 +334,7 @@ public final class ProcessVirtFld implements Constants {
 		PassInfo.push(node);
 		try {
 			rewriteNode(node, id);
-		} finally { NodeInfoPass.close(); PassInfo.pop(node); }
+		} finally { PassInfo.pop(node); NodeInfoPass.close(); }
 	}
 	
 	public void rewrite(AccessExpr:Object fa, String id) {
@@ -414,7 +414,7 @@ public final class ProcessVirtFld implements Constants {
 				else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 				Expr expr;
 				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-					expr = new CallAccessExpr(ae.pos, ae.parent, fa.obj, f.getMetaVirtual().set, new Expr[]{ae.value});
+					expr = new CallAccessExpr(ae.pos, ae.parent, fa.obj, f.getMetaVirtual().set, new Expr[]{(Expr)ae.value});
 					expr = expr.resolveExpr(Type.tpVoid);
 				}
 				else {
@@ -435,9 +435,9 @@ public final class ProcessVirtFld implements Constants {
 					Expr g;
 					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 						g = new CallAccessExpr(0, null, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
-						g = new BinaryExpr(ae.pos, op, g, ae.value);
+						g = new BinaryExpr(ae.pos, op, g, (Expr)ae.value);
 					} else {
-						g = ae.value;
+						g = (Expr)ae.value;
 					}
 					g = new CallAccessExpr(ae.pos, ae.parent, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
 					be.addStatement(new ExprStat(0, null, g));

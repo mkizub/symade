@@ -1407,9 +1407,15 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					if( class_init == null )
 						class_init = getClazzInitMethod();
 					((Initializer)class_init.body).addStatement(
+//						new ExprStat(f.init.getPos(),class_init.body,
+//							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
+//								,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init),f.isInitWrapper())
+//						)
 						new ExprStat(f.init.getPos(),class_init.body,
-							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
-								,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init),f.isInitWrapper())
+							new AssignExpr(f.init.getPos(),
+								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init)
+							)
 						)
 					);
 				} else {
@@ -1417,9 +1423,16 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						instance_init = new BlockStat(pos,instance_init);
 					}
 					Statement init_stat;
+//					init_stat = new ExprStat(f.init.getPos(),instance_init,
+//						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new AccessExpr(f.pos,new ThisExpr(0),f),new ShadowExpr(f.init),f.isInitWrapper())
+//					);
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
-						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new AccessExpr(f.pos,new ThisExpr(0),f),new ShadowExpr(f.init),f.isInitWrapper())
-					);
+							new AssignExpr(f.init.getPos(),
+								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
+								new AccessExpr(f.pos,new ThisExpr(0),f),
+								new ShadowExpr(f.init)
+							)
+						);
 					instance_init.addStatement(init_stat);
 					init_stat.setHidden(true);
 				}

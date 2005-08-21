@@ -980,11 +980,15 @@ public abstract class ASTNode implements Constants {
 @node
 @cfnode
 public abstract class CFlowNode extends ASTNode {
-	@ref(copyable=false) public CFlowNode cf_in;
-	@ref(copyable=false) public CFlowNode cf_out;
+//	@ref(copyable=false) public CFlowNode cf_in;
+//	@ref(copyable=false) public CFlowNode cf_out;
 	public CFlowNode() {}
 	public CFlowNode(int pos) { super(pos); }
 	public CFlowNode(int pos, ASTNode parent) { super(pos,parent); }
+
+	public ASTNode	resolve(Type reqType) {
+		throw new CompilerException(pos,"Resolve call for node "+getClass());
+	}
 }
 
 @node
@@ -1014,21 +1018,24 @@ public abstract class Expr extends CFlowNode {
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");
     }
-	public ASTNode	resolve(Type reqType) {
-		throw new CompilerException(pos,"Resolve call for node "+getClass());
+/*	public Expr tryResolve(Type reqType) {
+		Expr self = (Expr)this.copy();
+		self.parent = parent;
+//		try {
+			ASTNode n = self.resolve(reqType);
+			if (n != this)
+				n.parent = this.parent;
+			if( n instanceof Expr )
+				return (Expr)n;
+			WrapedExpr we = new WrapedExpr(pos,n,reqType);
+			we.parent = this.parent;
+			return we;
+//		} catch (Exception e) {
+//			return null;
+//		}
 	}
-	public Expr tryResolve(Type reqType) {
-		ASTNode n = resolve(reqType);
-		if (n != this)
-			n.parent = this.parent;
-		if( n instanceof Expr )
-			return (Expr)n;
-		WrapedExpr we = new WrapedExpr(pos,n,reqType);
-		we.parent = this.parent;
-		return we;
-	}
-	public Expr resolveExpr(Type reqType) {
-		ASTNode e = tryResolve(reqType);
+*/	public Expr resolveExpr(Type reqType) {
+		ASTNode e = resolve(reqType);
 		if( e == null )
 			throw new CompilerException(pos,"Unresolved expression "+this);
 		Expr expr = null;
@@ -1036,7 +1043,7 @@ public abstract class Expr extends CFlowNode {
 		if( e instanceof Struct )
 			expr = toExpr((Struct)e,reqType,pos,parent);
 		else if( e instanceof TypeRef )
-			expr = toExpr((Struct)e,reqType,pos,parent);
+			expr = toExpr((TypeRef)e,reqType,pos,parent);
 		else if( e instanceof WrapedExpr )
 			expr = toExpr(((WrapedExpr)e).expr,reqType,pos,parent);
 		if( expr == null )
@@ -1049,10 +1056,10 @@ public abstract class Expr extends CFlowNode {
 			return new CastExpr(0,reqType,expr,false,true).resolveExpr(reqType);
 		if( et.isInstanceOf(reqType) ) return expr;
 		if( et.isReference() && reqType.isBoolean() )
-			return new BinaryBoolExpr(pos,BinaryOperator.Equals,expr,new ConstNullExpr());
+			return new BinaryBoolExpr(pos,BinaryOperator.NotEquals,expr,new ConstNullExpr());
 		if( et.isAutoCastableTo(reqType)
 		 || et.isNumber() && reqType.isNumber()
-		) return new CastExpr(pos,reqType,expr).tryResolve(reqType);
+		) return (Expr)new CastExpr(pos,reqType,expr).resolve(reqType);
 		throw new CompilerException(e.pos,"Expression "+expr+" is not auto-castable to type "+reqType);
 	}
 	public static Expr toExpr(Object o, Type reqType, int pos, ASTNode parent) {
@@ -1210,8 +1217,9 @@ public class RefNode<N extends ASTNode> extends ASTNode {
 	
 }
 
+@cfnode
 @node
-public class TypeRef extends ASTNode {
+public class TypeRef extends CFlowNode {
 	//@att KString						name;
 	@ref public virtual forward Type	lnk;
 	

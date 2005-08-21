@@ -64,6 +64,10 @@ public class ShadowExpr extends Expr {
 	public void generate(Type reqType) {
 		expr.generate(reqType);
 	}
+	
+	public String toString() {
+		return "(shadow of) "+expr;
+	}
 
 	public Dumper toJava(Dumper dmp) {
 		return expr.toJava(dmp);
@@ -155,7 +159,7 @@ public class ArrayLengthAccessExpr extends Expr {
 		array = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			array = array.resolveExpr(null);
@@ -192,12 +196,12 @@ public class ArrayLengthAccessExpr extends Expr {
 public class AssignExpr extends LvalueExpr {
 	@ref public AssignOperator	op;
 	@att public Expr			lval;
-	@att public Expr			value;
+	@att public ASTNode			value;
 
 	public AssignExpr() {
 	}
 
-	public AssignExpr(int pos, AssignOperator op, Expr lval, Expr value) {
+	public AssignExpr(int pos, AssignOperator op, Expr lval, ASTNode value) {
 		super(pos);
 		this.op = op;
 		this.lval = lval;
@@ -211,7 +215,7 @@ public class AssignExpr extends LvalueExpr {
 		else
 			sb.append(lval);
 		sb.append(op.image);
-		if( value.getPriority() < opAssignPriority )
+		if( value instanceof Expr && ((Expr)value).getPriority() < opAssignPriority )
 			sb.append('(').append(value).append(')');
 		else
 			sb.append(value);
@@ -230,163 +234,158 @@ public class AssignExpr extends LvalueExpr {
 		value = null;
 	}
 
-	public Expr tryResolve(Type reqType) {
-		setTryResolved(true);
-		{
-			Expr e = lval.tryResolve(reqType);
-			if( e == null ) return null;
-			lval = e;
-			e = value.tryResolve(getType());
-			if( e == null ) return null;
-			value = e;
-		}
-		Type et1 = lval.getType();
-		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-			return (Expr)this.resolve(reqType);
-		}
-		else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
-			return (Expr)this.resolve(reqType);
-		}
-		else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
-			return (Expr)this.resolve(reqType);
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==AssignOperator.AssignAdd
-			||   op==AssignOperator.AssignSub
-			||   op==AssignOperator.AssignMul
-			||   op==AssignOperator.AssignDiv
-			||   op==AssignOperator.AssignMod
-			)
-		) {
-			return (Expr)this.resolve(null);
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==AssignOperator.AssignLeftShift
-			||   op==AssignOperator.AssignRightShift
-			||   op==AssignOperator.AssignUnsignedRightShift
-			)
-		) {
-			return (Expr)this.resolve(null);
-		}
-		else if( ( et1.isInteger() && et2.isInteger() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-				return (Expr)this.resolve(null);
-		}
-		else if( ( et1.isBoolean() && et2.isBoolean() ) &&
-			(    op==AssignOperator.AssignBitOr
-			||   op==AssignOperator.AssignBitXor
-			||   op==AssignOperator.AssignBitAnd
-			)
-		) {
-				return (Expr)this.resolve(null);
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Expr e;
-				e = new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{value}).tryResolve(reqType);
-				if( e != null ) return e;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (op != AssignOperator.Assign2) {
-			if (et1.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value).tryResolve(reqType);
-				if (e != null) return e;
-			}
-			if (et2.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)).tryResolve(reqType);
-				if (e != null) return e;
-			}
-			if (et1.isWrapper() && et2.isWrapper()) {
-				Expr e = new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)).tryResolve(reqType);
-				if (e != null) return e;
-			}
-		}
-		return null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) {
 			setNodeTypes();
 			return this;
 		}
-		if( !isTryResolved() ) {
-			Expr e = tryResolve(reqType);
-			if( e != null ) return e;
-			return this;
-		}
+		setTryResolved(true);
 		PassInfo.push(this);
 		try {
-			ASTNode lv = lval.resolve(null);
-			if( !(lv instanceof LvalueExpr) )
-				throw new RuntimeException("Can't assign to "+lv+": lvalue requared");
-			if( (lv instanceof VarAccessExpr) && ((VarAccessExpr)lv).var.isNeedProxy() ) {
-				// Check that we in local/anonymouse class, thus var need RefProxy
-				Var var = ((VarAccessExpr)lv).var;
-				ASTNode p = var.parent;
-				while( !(p instanceof Struct) ) p = p.parent;
-				if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
-					throw new RuntimeException("Unsupported operation");
-					//var.setNeedRefProxy(true);
-					//Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
-					//vf.type = Type.getProxyType(var.type);
-				}
+			lval = (Expr)lval.resolve(reqType);
+			Type et1 = lval.getType();
+			if (op == AssignOperator.Assign && et1.isWrapper())
+				value = ((CFlowNode)value).resolve(et1.getWrappedType());
+			else if (op == AssignOperator.Assign2 && et1.isWrapper())
+				value = ((CFlowNode)value).resolve(((WrapperType)et1).getUnwrappedType());
+			else
+				value = ((CFlowNode)value).resolve(et1);
+			Type et2 = value.getType();
+			if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
+				return this.postResolve(reqType);
 			}
-			lval = (Expr)lv;
-			Type t1 = lval.getType();
-			if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
-				op = AssignOperator.Assign;
-				value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
+			else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
+				return this.postResolve(reqType);
 			}
-			value = value.resolveExpr(t1);
-			Type t2 = value.getType();
-			if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
-				if( !t2.isIntegerInCode() ) {
-					value = (Expr)new CastExpr(pos,Type.tpInt,value).resolve(Type.tpInt);
-				}
+			else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
+				return this.postResolve(reqType);
 			}
-			else if( !t1.equals(t2) ) {
-				if( t2.isCastableTo(t1) ) {
-					value = (Expr)new CastExpr(pos,t1,value).resolve(t1);
-				} else {
-					throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
-				}
-			}
-			setNodeTypes();
-
-			// Set violation of the field
-			if( lval instanceof StaticFieldAccessExpr
-			 || (
-			 		lval instanceof AccessExpr
-				 && ((AccessExpr)lval).obj instanceof VarAccessExpr
-				 &&	((VarAccessExpr)((AccessExpr)lval).obj).var.name.equals(nameThis)
+			else if( ( et1.isNumber() && et2.isNumber() ) &&
+				(    op==AssignOperator.AssignAdd
+				||   op==AssignOperator.AssignSub
+				||   op==AssignOperator.AssignMul
+				||   op==AssignOperator.AssignDiv
+				||   op==AssignOperator.AssignMod
 				)
 			) {
-				if( PassInfo.method != null && PassInfo.method.isInvariantMethod() )
-					Kiev.reportError(pos,"Side-effect in invariant condition");
-				if( PassInfo.method != null && !PassInfo.method.isInvariantMethod() ) {
-					if( lval instanceof StaticFieldAccessExpr )
-						PassInfo.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
-					else
-						PassInfo.method.addViolatedField( ((AccessExpr)lval).var );
+				return this.postResolve(reqType);
+			}
+			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
+				(    op==AssignOperator.AssignLeftShift
+				||   op==AssignOperator.AssignRightShift
+				||   op==AssignOperator.AssignUnsignedRightShift
+				)
+			) {
+				return this.postResolve(reqType);
+			}
+			else if( ( et1.isInteger() && et2.isInteger() ) &&
+				(    op==AssignOperator.AssignBitOr
+				||   op==AssignOperator.AssignBitXor
+				||   op==AssignOperator.AssignBitAnd
+				)
+			) {
+				return this.postResolve(reqType);
+			}
+			else if( ( et1.isBoolean() && et2.isBoolean() ) &&
+				(    op==AssignOperator.AssignBitOr
+				||   op==AssignOperator.AssignBitXor
+				||   op==AssignOperator.AssignBitAnd
+				)
+			) {
+				return this.postResolve(reqType);
+			}
+			// Not a standard operator, find out overloaded
+			foreach(OpTypes opt; op.types ) {
+				Type[] tps = new Type[]{null,et1,et2};
+				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
+				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+					return new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{(Expr)value}).resolveExpr(reqType);
 				}
 			}
-
+			// Not a standard and not overloaded, try wrapped classes
+			if (op != AssignOperator.Assign2) {
+				if (et1.isWrapper() && et2.isWrapper()) {
+					return new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)).resolveExpr(reqType);
+				}
+				if (et1.isWrapper()) {
+					return new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value).resolveExpr(reqType);
+				}
+				if (et2.isWrapper()) {
+					return new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)).resolveExpr(reqType);
+				}
+			}
+			return this.postResolve(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 
 		} finally { PassInfo.pop(this); }
+		return this;
+	}
+
+	private Expr postResolve(Type reqType) {
+		ASTNode lv = lval.resolve(null);
+		if( !(lv instanceof LvalueExpr) )
+			throw new RuntimeException("Can't assign to "+lv+": lvalue requared");
+		if( (lv instanceof VarAccessExpr) && ((VarAccessExpr)lv).var.isNeedProxy() ) {
+			// Check that we in local/anonymouse class, thus var need RefProxy
+			Var var = ((VarAccessExpr)lv).var;
+			ASTNode p = var.parent;
+			while( !(p instanceof Struct) ) p = p.parent;
+			if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
+				throw new RuntimeException("Unsupported operation");
+				//var.setNeedRefProxy(true);
+				//Field vf = (Field)PassInfo.clazz.resolveName(var.name.name);
+				//vf.type = Type.getProxyType(var.type);
+			}
+		}
+		lval = (Expr)lv;
+		Type t1 = lval.getType();
+		if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
+			op = AssignOperator.Assign;
+			value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),(Expr)value);
+		}
+		if (value instanceof Expr)
+			value = ((Expr)value).resolveExpr(t1);
+		else
+			value = new WrapedExpr(value.pos,value).resolveExpr(t1);
+		Type t2 = value.getType();
+		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
+			if( !t2.isIntegerInCode() ) {
+				value = (Expr)new CastExpr(pos,Type.tpInt,(Expr)value).resolve(Type.tpInt);
+			}
+		}
+		else if( !t1.equals(t2) ) {
+			if( t2.isCastableTo(t1) ) {
+				value = (Expr)new CastExpr(pos,t1,(Expr)value).resolve(t1);
+			} else {
+				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
+			}
+		}
+		setNodeTypes();
+
+		// Set violation of the field
+		if( lval instanceof StaticFieldAccessExpr
+		 || (
+				lval instanceof AccessExpr
+			 && ((AccessExpr)lval).obj instanceof VarAccessExpr
+			 &&	((VarAccessExpr)((AccessExpr)lval).obj).var.name.equals(nameThis)
+			)
+		) {
+			if( PassInfo.method != null && PassInfo.method.isInvariantMethod() )
+				Kiev.reportError(pos,"Side-effect in invariant condition");
+			if( PassInfo.method != null && !PassInfo.method.isInvariantMethod() ) {
+				if( lval instanceof StaticFieldAccessExpr )
+					PassInfo.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
+				else
+					PassInfo.method.addViolatedField( ((AccessExpr)lval).var );
+			}
+		}
 		setResolved(true);
 		return this;
 	}
 
 	private void setNodeTypes() {
+		if !(value instanceof Expr)
+			return;
+		Expr value = (Expr)this.value;
 		switch(lval) {
 		case VarAccessExpr:
 			NodeInfoPass.setNodeValue(((VarAccessExpr)lval).var,value);
@@ -406,6 +405,7 @@ public class AssignExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
 		PassInfo.push(this);
 		try {
+			Expr value = (Expr)this.value;
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			if( reqType != Type.tpVoid ) {
 				if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
@@ -437,6 +437,7 @@ public class AssignExpr extends LvalueExpr {
 	public void generateLoad() {
 		PassInfo.push(this);
 		try {
+			Expr value = (Expr)this.value;
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			lval.generateLoadDup();
 			value.generate(null);
@@ -468,6 +469,7 @@ public class AssignExpr extends LvalueExpr {
 		LvalueExpr lval = (LvalueExpr)this.lval;
 		PassInfo.push(this);
 		try {
+			Expr value = (Expr)this.value;
 			lval.generateLoadDup();
 			value.generate(null);
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -480,6 +482,7 @@ public class AssignExpr extends LvalueExpr {
 	public void generateStoreDupValue() {
 		PassInfo.push(this);
 		try {
+			Expr value = (Expr)this.value;
 			LvalueExpr lval = (LvalueExpr)this.lval;
 			lval.generateLoadDup();
 			value.generate(null);
@@ -499,7 +502,7 @@ public class AssignExpr extends LvalueExpr {
 			dmp.space().append(op.image).space();
 		else
 			dmp.space().append(AssignOperator.Assign.image).space();
-		if( value.getPriority() < opAssignPriority ) {
+		if( value instanceof Expr && ((Expr)value).getPriority() < opAssignPriority ) {
 			dmp.append('(');
 			dmp.append(value).append(')');
 		} else {
@@ -509,7 +512,7 @@ public class AssignExpr extends LvalueExpr {
 	}
 }
 
-
+/*
 @node
 @cfnode
 public class InitializeExpr extends AssignExpr {
@@ -523,38 +526,35 @@ public class InitializeExpr extends AssignExpr {
 		this.of_wrapper = of_wrapper;
 	}
 
-	public Expr tryResolve(Type reqType) {
+	public ASTNode resolve(Type reqType) {
 		setTryResolved(true);
 		if (!(op==AssignOperator.Assign || op==AssignOperator.Assign2))
-			return null;
-		{
-			Expr e = lval.tryResolve(reqType);
-			if( e == null ) return null;
-			lval = e;
-			e = value.tryResolve(getType());
-			if( e == null ) return null;
-			value = e;
-		}
+			throw new CompilerException(pos,"Initializer must use = or :=");
+		lval = lval.resolveExpr(reqType);
 		Type et1 = lval.getType();
+		if (op == AssignOperator.Assign && et1.isWrapper())
+			value = ((CFlowNode)value).resolve(et1.getWrappedType());
+		else
+			value = ((CFlowNode)value).resolve(et1);
 		Type et2 = value.getType();
 		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-			return (Expr)this.resolve(reqType);
+			return (Expr)super.resolve(reqType);
 		}
 		else if((of_wrapper || op == AssignOperator.Assign2) && et1.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
-			return (Expr)this.resolve(reqType);
+			return (Expr)super.resolve(reqType);
 		}
 		// Try wrapped classes
 		if (op != AssignOperator.Assign2) {
 			if (et2.isWrapper()) {
-				Expr e = new InitializeExpr(pos,op,lval,et2.makeWrappedAccess(value),of_wrapper).tryResolve(reqType);
-				if (e != null) return e;
+				return new InitializeExpr(pos,op,lval,et2.makeWrappedAccess(value),of_wrapper).resolveExpr(reqType);
 			}
 		}
-		return null;
+		return super.resolve(reqType);
+		//throw new CompilerException(pos,"Unresolved initializer expression "+this);
 	}
 
 }
-
+*/
 
 
 @node
@@ -617,12 +617,13 @@ public class BinaryExpr extends Expr {
 				return Type.tpInt;
 			}
 		}
-		Expr e = tryResolve(null);
-		if( e == null )
-			Kiev.reportError(pos,"Type of binary operation "+op.image+" between "+expr1+" and "+expr2+" unknown, types are "+t1+" and "+t2);
-		else
-			return e.getType();
-		return Type.tpVoid;
+		resolve(null);
+		return getType();
+//		if( e == null )
+//			Kiev.reportError(pos,"Type of binary operation "+op.image+" between "+expr1+" and "+expr2+" unknown, types are "+t1+" and "+t2);
+//		else
+//			return e.getType();
+//		return Type.tpVoid;
 	}
 
 	public void cleanup() {
@@ -633,256 +634,240 @@ public class BinaryExpr extends Expr {
 		expr2 = null;
 	}
 
-	public Expr tryResolve(Type reqType) {
-		setTryResolved(true);
-		{
-			Expr e = expr1.tryResolve(null);
-			if( e == null ) return null;
-			expr1 = e;
-			e = expr2.tryResolve(null);
-			if( e == null ) return null;
-			expr2 = e;
-		}
-		Type et1 = expr1.getType();
-		Type et2 = expr2.getType();
-		if( op == BinaryOperator.Add
-			&& ( et1 == Type.tpString || et2 == Type.tpString ||
-			    (et1.isWrapper() && et1.getWrappedType() == Type.tpString) ||
-			    (et2.isWrapper() && et2.getWrappedType() == Type.tpString)
-			   )
-		) {
-			if( expr1 instanceof StringConcatExpr ) {
-				StringConcatExpr sce = (StringConcatExpr)expr1;
-				Expr e = (Expr)expr2;
-				if (et2.isWrapper()) e = et2.makeWrappedAccess(e);
-				sce.appendArg((Expr)e.resolve(null));
-				trace(Kiev.debugStatGen,"Adding "+e+" to StringConcatExpr, now ="+sce);
-				return (Expr)sce.resolve(Type.tpString);
-			} else {
-				StringConcatExpr sce = new StringConcatExpr(pos);
-				Expr e1 = (Expr)expr1;
-				if (et1.isWrapper()) e1 = et1.makeWrappedAccess(e1);
-				sce.appendArg((Expr)e1.resolve(null));
-				Expr e2 = (Expr)expr2;
-				if (et2.isWrapper()) e2 = et2.makeWrappedAccess(e2);
-				sce.appendArg((Expr)e2.resolve(null));
-				trace(Kiev.debugStatGen,"Rewriting "+e1+"+"+e2+" as StringConcatExpr");
-				return (Expr)sce.resolve(Type.tpString);
-			}
-		}
-		else if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.Add
-			||   op==BinaryOperator.Sub
-			||   op==BinaryOperator.Mul
-			||   op==BinaryOperator.Div
-			||   op==BinaryOperator.Mod
-			)
-		) {
-			return (Expr)this.resolve(null);
-		}
-		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-			(    op==BinaryOperator.LeftShift
-			||   op==BinaryOperator.RightShift
-			||   op==BinaryOperator.UnsignedRightShift
-			)
-		) {
-			return (Expr)this.resolve(null);
-		}
-		else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-			(    op==BinaryOperator.BitOr
-			||   op==BinaryOperator.BitXor
-			||   op==BinaryOperator.BitAnd
-			)
-		) {
-				return (Expr)this.resolve(null);
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Expr e;
-				if( opt.method.isStatic() )
-					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).tryResolve(reqType);
-				else
-					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).tryResolve(reqType);
-				if( e != null ) return e;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et1.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),expr2).tryResolve(reqType);
-			if (e != null) return e;
-		}
-		if (et2.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,expr1,et2.makeWrappedAccess(expr2)).tryResolve(reqType);
-			if (e != null) return e;
-		}
-		if (et1.isWrapper() && et2.isWrapper()) {
-			Expr e = new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),et2.makeWrappedAccess(expr2)).tryResolve(reqType);
-			if (e != null) return e;
-		}
-		return null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
-		if( !isTryResolved() ) {
-			Expr e = tryResolve(reqType);
-			if( e != null ) return e;
-			return this;
-		}
 		PassInfo.push(this);
 		try {
-			expr1 = (Expr)expr1.resolve(null);
-			expr2 = (Expr)expr2.resolve(null);
-
-			Type rt = getType();
-			Type t1 = expr1.getType();
-			Type t2 = expr2.getType();
-
-			// Special case for '+' operator if one arg is a String
-			if( op==BinaryOperator.Add && expr1.getType().equals(Type.tpString) || expr2.getType().equals(Type.tpString) ) {
+			expr1 = expr1.resolveExpr(null);
+			expr2 = expr2.resolveExpr(null);
+			Type et1 = expr1.getType();
+			Type et2 = expr2.getType();
+			if( op == BinaryOperator.Add
+				&& ( et1 == Type.tpString || et2 == Type.tpString ||
+					(et1.isWrapper() && et1.getWrappedType() == Type.tpString) ||
+					(et2.isWrapper() && et2.getWrappedType() == Type.tpString)
+				   )
+			) {
 				if( expr1 instanceof StringConcatExpr ) {
 					StringConcatExpr sce = (StringConcatExpr)expr1;
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-					return sce.resolve(Type.tpString);
+					Expr e = (Expr)expr2;
+					if (et2.isWrapper()) e = et2.makeWrappedAccess(e);
+					sce.appendArg((Expr)e.resolve(null));
+					trace(Kiev.debugStatGen,"Adding "+e+" to StringConcatExpr, now ="+sce);
+					return (Expr)sce.resolve(Type.tpString);
 				} else {
 					StringConcatExpr sce = new StringConcatExpr(pos);
-					sce.appendArg(expr1);
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-					return sce.resolve(Type.tpString);
+					Expr e1 = (Expr)expr1;
+					if (et1.isWrapper()) e1 = et1.makeWrappedAccess(e1);
+					sce.appendArg((Expr)e1.resolve(null));
+					Expr e2 = (Expr)expr2;
+					if (et2.isWrapper()) e2 = et2.makeWrappedAccess(e2);
+					sce.appendArg((Expr)e2.resolve(null));
+					trace(Kiev.debugStatGen,"Rewriting "+e1+"+"+e2+" as StringConcatExpr");
+					return (Expr)sce.resolve(Type.tpString);
 				}
 			}
-
-			if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
-				if( !t2.isIntegerInCode() ) {
-					expr2 = (Expr)new CastExpr(pos,Type.tpInt,expr2).resolve(Type.tpInt);
-				}
-			} else {
-				if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
-					expr1 = (Expr)new CastExpr(pos,rt,expr1).resolve(null);
-				}
-				if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
-					expr2 = (Expr)new CastExpr(pos,rt,expr2).resolve(null);
+			else if( ( et1.isNumber() && et2.isNumber() ) &&
+				(    op==BinaryOperator.Add
+				||   op==BinaryOperator.Sub
+				||   op==BinaryOperator.Mul
+				||   op==BinaryOperator.Div
+				||   op==BinaryOperator.Mod
+				)
+			) {
+				return (Expr)this.postResolve(null);
+			}
+			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
+				(    op==BinaryOperator.LeftShift
+				||   op==BinaryOperator.RightShift
+				||   op==BinaryOperator.UnsignedRightShift
+				)
+			) {
+				return (Expr)this.postResolve(null);
+			}
+			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
+				(    op==BinaryOperator.BitOr
+				||   op==BinaryOperator.BitXor
+				||   op==BinaryOperator.BitAnd
+				)
+			) {
+				return (Expr)this.postResolve(null);
+			}
+			// Not a standard operator, find out overloaded
+			foreach(OpTypes opt; op.types ) {
+				Type[] tps = new Type[]{null,et1,et2};
+				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+					Expr e;
+					if( opt.method.isStatic() )
+						return new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).resolveExpr(reqType);
+					else
+						return new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).resolveExpr(reqType);
 				}
 			}
-
-			// Check if both expressions are constant
-			if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
-				Number val1 = (Number)expr1.getConstValue();
-				Number val2 = (Number)expr2.getConstValue();
-				if( op == BinaryOperator.BitOr ) {
-					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() | val2.longValue()).resolve(null);
-					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstIntExpr(val1.intValue() | val2.intValue()).resolve(null);
-					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstShortExpr(val1.shortValue() | val2.shortValue()).resolve(null);
-					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstByteExpr(val1.byteValue() | val2.byteValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.BitXor ) {
-					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() ^ val2.longValue()).resolve(null);
-					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstIntExpr(val1.intValue() ^ val2.intValue()).resolve(null);
-					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstShortExpr(val1.shortValue() ^ val2.shortValue()).resolve(null);
-					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstByteExpr(val1.byteValue() ^ val2.byteValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.BitAnd ) {
-					if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() & val2.longValue()).resolve(null);
-					else if( val1 instanceof Integer || val2 instanceof Integer )
-						return new ConstIntExpr(val1.intValue() & val2.intValue()).resolve(null);
-					else if( val1 instanceof Short || val2 instanceof Short )
-						return new ConstShortExpr(val1.shortValue() & val2.shortValue()).resolve(null);
-					else if( val1 instanceof Byte || val2 instanceof Byte )
-						return new ConstByteExpr(val1.byteValue() & val2.byteValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.LeftShift ) {
-					if( val1 instanceof Long )
-						return new ConstLongExpr(val1.longValue() << val2.intValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() << val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.RightShift ) {
-					if( val1 instanceof Long )
-						return new ConstLongExpr(val1.longValue() >> val2.intValue()).resolve(null);
-					else if( val1 instanceof Integer )
-						return new ConstIntExpr(val1.intValue() >> val2.intValue()).resolve(null);
-					else if( val1 instanceof Short )
-						return new ConstShortExpr(val1.shortValue() >> val2.intValue()).resolve(null);
-					else if( val1 instanceof Byte )
-						return new ConstByteExpr(val1.byteValue() >> val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.UnsignedRightShift ) {
-					if( val1 instanceof Long )
-						return new ConstLongExpr(val1.longValue() >>> val2.intValue()).resolve(null);
-					else if( val1 instanceof Integer )
-						return new ConstIntExpr(val1.intValue() >>> val2.intValue()).resolve(null);
-					else if( val1 instanceof Short )
-						return new ConstShortExpr(val1.shortValue() >>> val2.intValue()).resolve(null);
-					else if( val1 instanceof Byte )
-						return new ConstByteExpr(val1.byteValue() >>> val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.Add ) {
-					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstDoubleExpr(val1.doubleValue() + val2.doubleValue()).resolve(null);
-					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstFloatExpr(val1.floatValue() + val2.floatValue()).resolve(null);
-					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() + val2.longValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() + val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.Sub ) {
-					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstDoubleExpr(val1.doubleValue() - val2.doubleValue()).resolve(null);
-					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstFloatExpr(val1.floatValue() - val2.floatValue()).resolve(null);
-					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() - val2.longValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() - val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.Mul ) {
-					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstDoubleExpr(val1.doubleValue() * val2.doubleValue()).resolve(null);
-					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstFloatExpr(val1.floatValue() * val2.floatValue()).resolve(null);
-					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() * val2.longValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() * val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.Div ) {
-					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstDoubleExpr(val1.doubleValue() / val2.doubleValue()).resolve(null);
-					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstFloatExpr(val1.floatValue() / val2.floatValue()).resolve(null);
-					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() / val2.longValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() / val2.intValue()).resolve(null);
-				}
-				else if( op == BinaryOperator.Mod ) {
-					if( val1 instanceof Double || val2 instanceof Double )
-						return new ConstDoubleExpr(val1.doubleValue() % val2.doubleValue()).resolve(null);
-					else if( val1 instanceof Float || val2 instanceof Float )
-						return new ConstFloatExpr(val1.floatValue() % val2.floatValue()).resolve(null);
-					else if( val1 instanceof Long || val2 instanceof Long )
-						return new ConstLongExpr(val1.longValue() % val2.longValue()).resolve(null);
-					else
-						return new ConstIntExpr(val1.intValue() % val2.intValue()).resolve(null);
-				}
+			// Not a standard and not overloaded, try wrapped classes
+			if (et1.isWrapper() && et2.isWrapper()) {
+				return new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),et2.makeWrappedAccess(expr2)).resolveExpr(reqType);
 			}
+			if (et1.isWrapper()) {
+				return new BinaryExpr(pos,op,et1.makeWrappedAccess(expr1),expr2).resolveExpr(reqType);
+			}
+			if (et2.isWrapper()) {
+				return new BinaryExpr(pos,op,expr1,et2.makeWrappedAccess(expr2)).resolveExpr(reqType);
+			}
+			return postResolve(reqType);
 
 		} finally { PassInfo.pop(this); }
+	}
+
+	private ASTNode postResolve(Type reqType) {
+		expr1 = (Expr)expr1.resolve(null);
+		expr2 = (Expr)expr2.resolve(null);
+
+		Type rt = getType();
+		Type t1 = expr1.getType();
+		Type t2 = expr2.getType();
+
+		// Special case for '+' operator if one arg is a String
+		if( op==BinaryOperator.Add && expr1.getType().equals(Type.tpString) || expr2.getType().equals(Type.tpString) ) {
+			if( expr1 instanceof StringConcatExpr ) {
+				StringConcatExpr sce = (StringConcatExpr)expr1;
+				sce.appendArg(expr2);
+				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
+				return sce.resolve(Type.tpString);
+			} else {
+				StringConcatExpr sce = new StringConcatExpr(pos);
+				sce.appendArg(expr1);
+				sce.appendArg(expr2);
+				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
+				return sce.resolve(Type.tpString);
+			}
+		}
+
+		if( op==BinaryOperator.LeftShift || op==BinaryOperator.RightShift || op==BinaryOperator.UnsignedRightShift ) {
+			if( !t2.isIntegerInCode() ) {
+				expr2 = (Expr)new CastExpr(pos,Type.tpInt,expr2).resolve(Type.tpInt);
+			}
+		} else {
+			if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
+				expr1 = (Expr)new CastExpr(pos,rt,expr1).resolve(null);
+			}
+			if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
+				expr2 = (Expr)new CastExpr(pos,rt,expr2).resolve(null);
+			}
+		}
+
+		// Check if both expressions are constant
+		if( expr1.isConstantExpr() && expr2.isConstantExpr() ) {
+			Number val1 = (Number)expr1.getConstValue();
+			Number val2 = (Number)expr2.getConstValue();
+			if( op == BinaryOperator.BitOr ) {
+				if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() | val2.longValue()).resolve(null);
+				else if( val1 instanceof Integer || val2 instanceof Integer )
+					return new ConstIntExpr(val1.intValue() | val2.intValue()).resolve(null);
+				else if( val1 instanceof Short || val2 instanceof Short )
+					return new ConstShortExpr(val1.shortValue() | val2.shortValue()).resolve(null);
+				else if( val1 instanceof Byte || val2 instanceof Byte )
+					return new ConstByteExpr(val1.byteValue() | val2.byteValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.BitXor ) {
+				if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() ^ val2.longValue()).resolve(null);
+				else if( val1 instanceof Integer || val2 instanceof Integer )
+					return new ConstIntExpr(val1.intValue() ^ val2.intValue()).resolve(null);
+				else if( val1 instanceof Short || val2 instanceof Short )
+					return new ConstShortExpr(val1.shortValue() ^ val2.shortValue()).resolve(null);
+				else if( val1 instanceof Byte || val2 instanceof Byte )
+					return new ConstByteExpr(val1.byteValue() ^ val2.byteValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.BitAnd ) {
+				if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() & val2.longValue()).resolve(null);
+				else if( val1 instanceof Integer || val2 instanceof Integer )
+					return new ConstIntExpr(val1.intValue() & val2.intValue()).resolve(null);
+				else if( val1 instanceof Short || val2 instanceof Short )
+					return new ConstShortExpr(val1.shortValue() & val2.shortValue()).resolve(null);
+				else if( val1 instanceof Byte || val2 instanceof Byte )
+					return new ConstByteExpr(val1.byteValue() & val2.byteValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.LeftShift ) {
+				if( val1 instanceof Long )
+					return new ConstLongExpr(val1.longValue() << val2.intValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() << val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.RightShift ) {
+				if( val1 instanceof Long )
+					return new ConstLongExpr(val1.longValue() >> val2.intValue()).resolve(null);
+				else if( val1 instanceof Integer )
+					return new ConstIntExpr(val1.intValue() >> val2.intValue()).resolve(null);
+				else if( val1 instanceof Short )
+					return new ConstShortExpr(val1.shortValue() >> val2.intValue()).resolve(null);
+				else if( val1 instanceof Byte )
+					return new ConstByteExpr(val1.byteValue() >> val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.UnsignedRightShift ) {
+				if( val1 instanceof Long )
+					return new ConstLongExpr(val1.longValue() >>> val2.intValue()).resolve(null);
+				else if( val1 instanceof Integer )
+					return new ConstIntExpr(val1.intValue() >>> val2.intValue()).resolve(null);
+				else if( val1 instanceof Short )
+					return new ConstShortExpr(val1.shortValue() >>> val2.intValue()).resolve(null);
+				else if( val1 instanceof Byte )
+					return new ConstByteExpr(val1.byteValue() >>> val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.Add ) {
+				if( val1 instanceof Double || val2 instanceof Double )
+					return new ConstDoubleExpr(val1.doubleValue() + val2.doubleValue()).resolve(null);
+				else if( val1 instanceof Float || val2 instanceof Float )
+					return new ConstFloatExpr(val1.floatValue() + val2.floatValue()).resolve(null);
+				else if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() + val2.longValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() + val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.Sub ) {
+				if( val1 instanceof Double || val2 instanceof Double )
+					return new ConstDoubleExpr(val1.doubleValue() - val2.doubleValue()).resolve(null);
+				else if( val1 instanceof Float || val2 instanceof Float )
+					return new ConstFloatExpr(val1.floatValue() - val2.floatValue()).resolve(null);
+				else if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() - val2.longValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() - val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.Mul ) {
+				if( val1 instanceof Double || val2 instanceof Double )
+					return new ConstDoubleExpr(val1.doubleValue() * val2.doubleValue()).resolve(null);
+				else if( val1 instanceof Float || val2 instanceof Float )
+					return new ConstFloatExpr(val1.floatValue() * val2.floatValue()).resolve(null);
+				else if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() * val2.longValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() * val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.Div ) {
+				if( val1 instanceof Double || val2 instanceof Double )
+					return new ConstDoubleExpr(val1.doubleValue() / val2.doubleValue()).resolve(null);
+				else if( val1 instanceof Float || val2 instanceof Float )
+					return new ConstFloatExpr(val1.floatValue() / val2.floatValue()).resolve(null);
+				else if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() / val2.longValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() / val2.intValue()).resolve(null);
+			}
+			else if( op == BinaryOperator.Mod ) {
+				if( val1 instanceof Double || val2 instanceof Double )
+					return new ConstDoubleExpr(val1.doubleValue() % val2.doubleValue()).resolve(null);
+				else if( val1 instanceof Float || val2 instanceof Float )
+					return new ConstFloatExpr(val1.floatValue() % val2.floatValue()).resolve(null);
+				else if( val1 instanceof Long || val2 instanceof Long )
+					return new ConstLongExpr(val1.longValue() % val2.longValue()).resolve(null);
+				else
+					return new ConstIntExpr(val1.intValue() % val2.intValue()).resolve(null);
+			}
+		}
 		setResolved(true);
 		return this;
 	}
@@ -966,7 +951,7 @@ public class StringConcatExpr extends Expr {
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		// Resolving of args done by BinaryExpr +
 		// just add items to clazz's CP
@@ -1089,7 +1074,7 @@ public class CommaExpr extends Expr {
 		exprs.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1406,111 +1391,106 @@ public class UnaryExpr extends Expr {
 		expr = null;
 	}
 
-	public Expr tryResolve(Type reqType) {
-		setTryResolved(true);
-		ASTNode ast = expr.tryResolve(reqType);
-		if( ast == null )
-			throw new CompilerException(pos,"Unresolved expression "+this);
-		expr = (Expr)ast;
-		Type et = expr.getType();
-		if( et.isNumber() &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.PreDecr
-			|| op==PostfixOperator.PostIncr
-			|| op==PostfixOperator.PostDecr
-			)
-		) {
-			return (Expr)new IncrementExpr(pos,op,expr).tryResolve(reqType);
-		}
-		if( et.isAutoCastableTo(Type.tpBoolean) &&
-			(  op==PrefixOperator.PreIncr
-			|| op==PrefixOperator.BooleanNot
-			)
-		) {
-			return (Expr)new BooleanNotExpr(pos,expr).tryResolve(Type.tpBoolean);
-		}
-		if( et.isNumber() &&
-			(  op==PrefixOperator.Pos
-			|| op==PrefixOperator.Neg
-			)
-		) {
-			return (Expr)this.resolve(reqType);
-		}
-		if( et.isInteger() && op==PrefixOperator.BitNot ) {
-			return (Expr)this.resolve(reqType);
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
-					continue;
-			}
-			Type[] tps = new Type[]{null,et};
-			ASTNode[] argsarr = new ASTNode[]{null,expr};
-			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-				Expr e;
-				if ( opt.method.isStatic() || opt.method.type.args.length == 1)
-					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr}).tryResolve(reqType);
-				else
-					e = new CallAccessExpr(pos,parent,expr,opt.method,Expr.emptyArray).tryResolve(reqType);
-				if( e != null ) return e;
-			}
-		}
-		// Not a standard and not overloaded, try wrapped classes
-		if (et.isWrapper()) {
-			Expr e = new UnaryExpr(pos,op,et.makeWrappedAccess(expr)).tryResolve(reqType);
-			if (e != null) return e;
-		}
-		return null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
-			expr = (Expr)expr.resolve(null);
-			if( op==PrefixOperator.PreIncr
-			||  op==PrefixOperator.PreDecr
-			||  op==PostfixOperator.PostIncr
-			||  op==PostfixOperator.PostDecr
+			setTryResolved(true);
+			expr = expr.resolveExpr(reqType);
+			Type et = expr.getType();
+			if( et.isNumber() &&
+				(  op==PrefixOperator.PreIncr
+				|| op==PrefixOperator.PreDecr
+				|| op==PostfixOperator.PostIncr
+				|| op==PostfixOperator.PostDecr
+				)
 			) {
-				return new IncrementExpr(pos,op,expr).resolve(null);
-			} else if( op==PrefixOperator.BooleanNot ) {
-				return new BooleanNotExpr(pos,expr).resolve(reqType);
+				return (Expr)new IncrementExpr(pos,op,expr).resolve(reqType);
 			}
-			// Check if expression is constant
-			if( expr.isConstantExpr() ) {
-				Number val = (Number)expr.getConstValue();
-				if( op == PrefixOperator.Pos ) {
-					if( val instanceof Double )
-						return new ConstDoubleExpr(val.doubleValue()).resolve(null);
-					else if( val instanceof Float )
-						return new ConstFloatExpr(val.floatValue()).resolve(null);
-					else if( val instanceof Long )
-						return new ConstLongExpr(val.longValue()).resolve(null);
-					else if( val instanceof Integer )
-						return new ConstIntExpr(val.intValue()).resolve(null);
-					else if( val instanceof Short )
-						return new ConstShortExpr(val.shortValue()).resolve(null);
-					else if( val instanceof Byte )
-						return new ConstByteExpr(val.byteValue()).resolve(null);
+			if( et.isAutoCastableTo(Type.tpBoolean) &&
+				(  op==PrefixOperator.PreIncr
+				|| op==PrefixOperator.BooleanNot
+				)
+			) {
+				return (Expr)new BooleanNotExpr(pos,expr).resolve(Type.tpBoolean);
+			}
+			if( et.isNumber() &&
+				(  op==PrefixOperator.Pos
+				|| op==PrefixOperator.Neg
+				)
+			) {
+				return (Expr)this.postResolve(reqType);
+			}
+			if( et.isInteger() && op==PrefixOperator.BitNot ) {
+				return (Expr)this.postResolve(reqType);
+			}
+			// Not a standard operator, find out overloaded
+			foreach(OpTypes opt; op.types ) {
+				if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
+					if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+						continue;
 				}
-				else if( op == PrefixOperator.Neg ) {
-					if( val instanceof Double )
-						return new ConstDoubleExpr(-val.doubleValue()).resolve(null);
-					else if( val instanceof Float )
-						return new ConstFloatExpr(-val.floatValue()).resolve(null);
-					else if( val instanceof Long )
-						return new ConstLongExpr(-val.longValue()).resolve(null);
-					else if( val instanceof Integer )
-						return new ConstIntExpr(-val.intValue()).resolve(null);
-					else if( val instanceof Short )
-						return new ConstShortExpr(-val.shortValue()).resolve(null);
-					else if( val instanceof Byte )
-						return new ConstByteExpr(-val.byteValue()).resolve(null);
+				Type[] tps = new Type[]{null,et};
+				ASTNode[] argsarr = new ASTNode[]{null,expr};
+				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+					Expr e;
+					if ( opt.method.isStatic() || opt.method.type.args.length == 1)
+						return new CallExpr(pos,parent,opt.method,new Expr[]{expr}).resolveExpr(reqType);
+					else
+						return new CallAccessExpr(pos,parent,expr,opt.method,Expr.emptyArray).resolveExpr(reqType);
 				}
 			}
+			// Not a standard and not overloaded, try wrapped classes
+			if (et.isWrapper()) {
+				return new UnaryExpr(pos,op,et.makeWrappedAccess(expr)).resolveExpr(reqType);
+			}
+			return postResolve(reqType);
 		} finally { PassInfo.pop(this); }
+	}
+
+	private ASTNode postResolve(Type reqType) {
+		expr = (Expr)expr.resolve(null);
+		if( op==PrefixOperator.PreIncr
+		||  op==PrefixOperator.PreDecr
+		||  op==PostfixOperator.PostIncr
+		||  op==PostfixOperator.PostDecr
+		) {
+			return new IncrementExpr(pos,op,expr).resolve(null);
+		} else if( op==PrefixOperator.BooleanNot ) {
+			return new BooleanNotExpr(pos,expr).resolve(reqType);
+		}
+		// Check if expression is constant
+		if( expr.isConstantExpr() ) {
+			Number val = (Number)expr.getConstValue();
+			if( op == PrefixOperator.Pos ) {
+				if( val instanceof Double )
+					return new ConstDoubleExpr(val.doubleValue()).resolve(null);
+				else if( val instanceof Float )
+					return new ConstFloatExpr(val.floatValue()).resolve(null);
+				else if( val instanceof Long )
+					return new ConstLongExpr(val.longValue()).resolve(null);
+				else if( val instanceof Integer )
+					return new ConstIntExpr(val.intValue()).resolve(null);
+				else if( val instanceof Short )
+					return new ConstShortExpr(val.shortValue()).resolve(null);
+				else if( val instanceof Byte )
+					return new ConstByteExpr(val.byteValue()).resolve(null);
+			}
+			else if( op == PrefixOperator.Neg ) {
+				if( val instanceof Double )
+					return new ConstDoubleExpr(-val.doubleValue()).resolve(null);
+				else if( val instanceof Float )
+					return new ConstFloatExpr(-val.floatValue()).resolve(null);
+				else if( val instanceof Long )
+					return new ConstLongExpr(-val.longValue()).resolve(null);
+				else if( val instanceof Integer )
+					return new ConstIntExpr(-val.intValue()).resolve(null);
+				else if( val instanceof Short )
+					return new ConstShortExpr(-val.shortValue()).resolve(null);
+				else if( val instanceof Byte )
+					return new ConstByteExpr(-val.byteValue()).resolve(null);
+			}
+		}
 		setResolved(true);
 		return this;
 	}
@@ -1587,7 +1567,7 @@ public class IncrementExpr extends LvalueExpr {
 		lval = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
@@ -1778,7 +1758,7 @@ public class IncrementExpr extends LvalueExpr {
 		return dmp;
 	}
 }
-
+/*
 @node
 @cfnode
 public class MultiExpr extends Expr {
@@ -1815,7 +1795,7 @@ public class MultiExpr extends Expr {
 		throw new CompilerException(pos,"Multi-operators are not implemented");
 	}
 }
-
+*/
 
 @node
 @cfnode
@@ -1870,7 +1850,7 @@ public class ConditionalExpr extends Expr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public ASTNode resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
@@ -1904,9 +1884,9 @@ public class ConditionalExpr extends Expr {
 			if( expr1.getType() != getType() ) expr1 = (Expr)new CastExpr(expr1.pos,getType(),expr1).resolve(getType());
 			if( expr2.getType() != getType() ) expr2 = (Expr)new CastExpr(expr2.pos,getType(),expr2).resolve(getType());
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
 			if( result_state != null ) NodeInfoPass.addInfo(result_state);
+			PassInfo.pop(this);
 		}
 		setResolved(true);
 		return this;
@@ -1998,38 +1978,39 @@ public class CastExpr extends Expr {
 
 	public int getPriority() { return opCastPriority; }
 
-	public Expr tryResolve(Type reqType) {
-		Expr ex = (Expr)expr.tryResolve(type);
-		if( ex == null ) return null;
-		expr = ex;
-		Type extp = Type.getRealType(type,expr.getType());
-		if( type == Type.tpBoolean && extp == Type.tpRule )	return ex;
-		// Try to find $cast method
-		if( !extp.isAutoCastableTo(type) ) {
-			Expr ocast = tryOverloadedCast(extp);
-			if( ocast == this ) return (Expr)resolve(reqType);
-			if (extp.isWrapper()) {
-				return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).tryResolve(reqType);
+	public ASTNode resolve(Type reqType) {
+		if( isResolved() ) {
+			setNodeCastType();
+			return this;
+		}
+		PassInfo.push(this);
+		try {
+			expr = (Expr)expr.resolve(type);
+			Type extp = Type.getRealType(type,expr.getType());
+			if( type == Type.tpBoolean && extp == Type.tpRule ) return expr;
+			// Try to find $cast method
+			if( !extp.isAutoCastableTo(type) ) {
+				Expr ocast = tryOverloadedCast(extp);
+				if( ocast == this ) return (Expr)resolve(reqType);
+				if (extp.isWrapper()) {
+					return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).resolveExpr(reqType);
+				}
 			}
-		}
-		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
-			Expr ocast = tryOverloadedCast(extp);
-			if( ocast == this ) return (Expr)resolve(reqType);
-			return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).tryResolve(reqType);
-		}
-		else {
-//			if( extp.isReference() && type.isReference() ) {
-//				trace(true,"unneded cast: "+extp+" is autocastable to "+type);
-//				return ex;
-//			}
-			return (Expr)this.resolve(type);
-		}
-		if( extp.isCastableTo(type) ) {
-			return (Expr)this.resolve(type);
-		}
-		if( type == Type.tpInt && extp == Type.tpBoolean && reinterp )	
-			return (Expr)this.resolve(type);
-		throw new CompilerException(pos,"Expression "+ex+" of type "+extp+" is not castable to "+type);
+			else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
+				Expr ocast = tryOverloadedCast(extp);
+				if( ocast == this ) return (Expr)resolve(reqType);
+				return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).resolveExpr(reqType);
+			}
+			else {
+				return (Expr)this.postResolve(type);
+			}
+			if( extp.isCastableTo(type) ) {
+				return (Expr)this.postResolve(type);
+			}
+			if( type == Type.tpInt && extp == Type.tpBoolean && reinterp )	
+				return (Expr)this.postResolve(type);
+			throw new CompilerException(pos,"Expression "+expr+" of type "+extp+" is not castable to "+type);
+		} finally { PassInfo.pop(this); 	}
 	}
 
 	public Expr tryOverloadedCast(Type et) {
@@ -2054,133 +2035,124 @@ public class CastExpr extends Expr {
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) {
+	private ASTNode postResolve(Type reqType) {
+		ASTNode e = expr.resolve(type);
+		if( e instanceof Struct )
+			expr = Expr.toExpr((Struct)e,reqType,pos,parent);
+		else
+			expr = (Expr)e;
+		if (reqType == Type.tpVoid) {
+			setResolved(true);
+			return this;
+		}
+		Type et = Type.getRealType(type,expr.getType());
+		// Try wrapped field
+		if (et.isWrapper() && et.getWrappedType().equals(type)) {
+			return et.makeWrappedAccess(expr).resolve(reqType);
+		}
+		// try null to something...
+		if (et == Type.tpNull && reqType.isReference())
+			return expr;
+		if( type == Type.tpBoolean && et == Type.tpRule )
+			return new BinaryBoolExpr(pos,
+				BinaryOperator.NotEquals,
+				expr,
+				new ConstNullExpr()).resolve(type);
+		if( type.isBoolean() && et.isBoolean() ) return expr;
+		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
+			if (type.isIntegerInCode())
+				return this;
+			Method cm = null;
+			cm = type.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
+			return new CallExpr(pos,parent,cm,new Expr[]{expr}).resolve(reqType);
+		}
+		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
+			if (et.isIntegerInCode())
+				return this;
+			Method cf = (Method)Type.tpEnum.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+			return new CallAccessExpr(pos,parent,expr,cf,Expr.emptyArray).resolve(reqType);
+		}
+		// Try to find $cast method
+		if( !et.isAutoCastableTo(type) ) {
+			Expr ocast = tryOverloadedCast(et);
+			if( ocast != null && ocast != this ) return ocast;
+		}
+
+		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
+			if( !et.isReference() && type.isArgument() )
+				Kiev.reportWarning(pos,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
+			else if (!et.isEnum())
+				throw new CompilerException(pos,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
+		if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
+			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
+		}
+		if( Kiev.verify && expr.getType() != et ) {
+			setResolved(true);
 			setNodeCastType();
 			return this;
 		}
-		PassInfo.push(this);
-		try {
-			ASTNode e = expr.resolve(type);
-			if( e instanceof Struct )
-				expr = Expr.toExpr((Struct)e,reqType,pos,parent);
-			else
-				expr = (Expr)e;
-			if (reqType == Type.tpVoid) {
-				setResolved(true);
-				return this;
-			}
-			Type et = Type.getRealType(type,expr.getType());
-			// Try wrapped field
-			if (et.isWrapper() && et.getWrappedType().equals(type)) {
-				return et.makeWrappedAccess(expr).resolve(reqType);
-			}
-			// try null to something...
-			if (et == Type.tpNull && reqType.isReference())
-				return expr;
-//			if( et.clazz.equals(Type.tpPrologVar.clazz) && type.equals(et.args[0]) ) {
-//				Field varf = (Field)et.clazz.resolveName(KString.from("$var"));
-//				return new AccessExpr(pos,parent,expr,varf).resolve(reqType);
-//			}
-//			if( type.clazz.equals(Type.tpPrologVar.clazz) && et.equals(type.args[0]) )
-//				return new NewExpr(pos,
-//						Type.newRefType(Type.tpPrologVar.clazz,new Type[]{et}),
-//						new Expr[]{expr})
-//					.resolve(reqType);
-			if( type == Type.tpBoolean && et == Type.tpRule )
-				return new BinaryBoolExpr(pos,
-					BinaryOperator.NotEquals,
-					expr,
-					new ConstNullExpr()).resolve(type);
-			if( type.isBoolean() && et.isBoolean() ) return expr;
-			if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
-				if (type.isIntegerInCode())
-					return this;
-				Method cm = null;
-				cm = type.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
-				return new CallExpr(pos,parent,cm,new Expr[]{expr}).resolve(reqType);
-			}
-			if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
-				if (et.isIntegerInCode())
-					return this;
-				Method cf = (Method)Type.tpEnum.resolveMethod(nameEnumOrdinal, KString.from("()I"));
-				return new CallAccessExpr(pos,parent,expr,cf,Expr.emptyArray).resolve(reqType);
-			}
-			// Try to find $cast method
-			if( !et.isAutoCastableTo(type) ) {
-				Expr ocast = tryOverloadedCast(et);
-				if( ocast != null && ocast != this ) return ocast;
-			}
-
-			if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
-				if( !et.isReference() && type.isArgument() )
-					Kiev.reportWarning(pos,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
-				else if (!et.isEnum())
-					throw new CompilerException(pos,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-			if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
-				throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
-			}
-			if( Kiev.verify && expr.getType() != et ) {
-				setNodeCastType();
-				return this;
-			}
-			if( et.isReference() && et.isInstanceOf((Type)type) ) return expr;
-			if( et.isReference() && type.isReference() && et.isStruct()
-			 && et.getStruct().package_clazz.isClazz()
-			 && !et.isArgument()
-			 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
-			) {
-				return new CastExpr(pos,type,
-					new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct())),explicit
-				).resolve(reqType);
-			}
-			if( expr.isConstantExpr() ) {
-				Object val = expr.getConstValue();
-				if( val instanceof Number ) {
-					Number num = (Number)val;
-					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num.doubleValue()).resolve(null);
-					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num.floatValue()).resolve(null);
-					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num.longValue()).resolve(null);
-					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num.intValue()).resolve(null);
-					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num.intValue()).resolve(null);
-					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num.intValue()).resolve(null);
-					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num.intValue()).resolve(null);
-				}
-				else if( val instanceof Character ) {
-					char num = ((Character)val).charValue();
-					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)(int)num).resolve(null);
-					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) (int)num).resolve(null);
-					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  (int)num).resolve(null);
-					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   (int)num).resolve(null);
-					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) (int)num).resolve(null);
-					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  (int)num).resolve(null);
-					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
-				}
-				else if( val instanceof Boolean ) {
-					int num = ((Boolean)val).booleanValue() ? 1 : 0;
-					if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num).resolve(null);
-					else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num).resolve(null);
-					else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num).resolve(null);
-					else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num).resolve(null);
-					else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num).resolve(null);
-					else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num).resolve(null);
-					else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
-				}
-			}
-			if( et.equals(type) ) return expr;
-			if( expr instanceof ClosureCallExpr && et instanceof ClosureType ) {
-				if( et.isAutoCastableTo(type) ) {
-					((ClosureCallExpr)expr).is_a_call = true;
-					return expr;
-				}
-				else if( et.isCastableTo(type) ) {
-					((ClosureCallExpr)expr).is_a_call = true;
-				}
-			}
+		if( et.isReference() && et.isInstanceOf((Type)type) ) {
+			setResolved(true);
 			setNodeCastType();
-		} finally {
-			PassInfo.pop(this);
+			return expr;
 		}
+		if( et.isReference() && type.isReference() && et.isStruct()
+		 && et.getStruct().package_clazz.isClazz()
+		 && !et.isArgument()
+		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
+		) {
+			return new CastExpr(pos,type,
+				new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct())),explicit
+			).resolve(reqType);
+		}
+		if( expr.isConstantExpr() ) {
+			Object val = expr.getConstValue();
+			if( val instanceof Number ) {
+				Number num = (Number)val;
+				if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num.doubleValue()).resolve(null);
+				else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num.floatValue()).resolve(null);
+				else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num.longValue()).resolve(null);
+				else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num.intValue()).resolve(null);
+				else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num.intValue()).resolve(null);
+				else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num.intValue()).resolve(null);
+				else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num.intValue()).resolve(null);
+			}
+			else if( val instanceof Character ) {
+				char num = ((Character)val).charValue();
+				if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)(int)num).resolve(null);
+				else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) (int)num).resolve(null);
+				else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  (int)num).resolve(null);
+				else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   (int)num).resolve(null);
+				else if( type == Type.tpShort )  return new ConstShortExpr  ((short) (int)num).resolve(null);
+				else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  (int)num).resolve(null);
+				else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
+			}
+			else if( val instanceof Boolean ) {
+				int num = ((Boolean)val).booleanValue() ? 1 : 0;
+				if     ( type == Type.tpDouble ) return new ConstDoubleExpr ((double)num).resolve(null);
+				else if( type == Type.tpFloat )  return new ConstFloatExpr  ((float) num).resolve(null);
+				else if( type == Type.tpLong )   return new ConstLongExpr   ((long)  num).resolve(null);
+				else if( type == Type.tpInt )    return new ConstIntExpr    ((int)   num).resolve(null);
+				else if( type == Type.tpShort )  return new ConstShortExpr  ((short) num).resolve(null);
+				else if( type == Type.tpByte )   return new ConstByteExpr   ((byte)  num).resolve(null);
+				else if( type == Type.tpChar )   return new ConstCharExpr   ((char)  num).resolve(null);
+			}
+		}
+		if( et.equals(type) ) {
+			setResolved(true);
+			setNodeCastType();
+			return expr;
+		}
+		if( expr instanceof ClosureCallExpr && et instanceof ClosureType ) {
+			if( et.isAutoCastableTo(type) ) {
+				((ClosureCallExpr)expr).is_a_call = true;
+				return expr;
+			}
+			else if( et.isCastableTo(type) ) {
+				((ClosureCallExpr)expr).is_a_call = true;
+			}
+		}
+		setNodeCastType();
 		setResolved(true);
 		return this;
 	}

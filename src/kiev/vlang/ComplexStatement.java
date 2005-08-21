@@ -367,8 +367,10 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			KString[] typenames = new KString[0];
 			int defindex = -1;
 			for(int i=0; i < cases.length; i++) {
+				boolean pushed_sni = false;
 				try {
 					case_states[i] = NodeInfoPass.pushState();
+					pushed_sni = true;
 					if( cases[i] instanceof ASTNormalCase ) {
 						cases[i] = (CaseLabel)((ASTNormalCase)cases[i]).resolve(Type.tpVoid);
 					}
@@ -381,6 +383,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					else
 						throw new CompilerException(cases[i].pos,"Unknown type of case");
 					case_states[i] = NodeInfoPass.popState();
+					pushed_sni = false;
 					if( typehash != null ) {
 						CaseLabel c = (CaseLabel)cases[i];
 						if( c.type == null || !c.type.isReference() )
@@ -392,7 +395,9 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						else
 							defindex = i;
 					}
-				} catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
+				}
+				catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
+				finally { if (pushed_sni) NodeInfoPass.popState(); }
 				if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
 					Kiev.reportWarning(cases[i+1].pos, "Fall through to switch case");
 				}
@@ -520,8 +525,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				sel = (Expr)cae.resolve(Type.tpInt);
 			}
 		} finally {
-			PassInfo.pop(this);
 			result_state = NodeInfoPass.popState();
+			PassInfo.pop(this);
 			if( !isMethodAbrupted() ) {
 				for(int i=0; i < case_states.length; i++) {
 					if( !cases[i].isMethodAbrupted() && case_states[i] != null )
@@ -863,10 +868,10 @@ public class TryStat extends Statement/*defaults*/ {
 				if( !has_unabrupted_catcher ) setMethodAbrupted(true);
 			}
 		} finally {
-			PassInfo.pop(this);
 			NodeInfoPass.popState();
 			if( finally_state != null && !finally_catcher.isMethodAbrupted())
 				NodeInfoPass.addInfo(finally_state);
+			PassInfo.pop(this);
 		}
 		return null;
 	}

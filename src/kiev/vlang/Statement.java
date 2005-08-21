@@ -121,9 +121,10 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
-			PassInfo.pop(this);
+			NodeInfoPass.popState();
 			for (int i=0; i < params_redir.length; i++)
 				params_redir[i].new_var.vtype.lnk = types[i];
+			PassInfo.pop(this);
 		}
 		return this;
 	}
@@ -404,8 +405,15 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
-		for(int i=0; i < stats.length; i++)
-			stats[i].toJava(dmp).newLine();
+		for(int i=0; i < stats.length; i++) {
+			ASTNode n = stats[i];
+			if (n instanceof Var)
+				((Var)n).toJavaDecl(dmp);
+			else if (n instanceof Struct)
+				((Struct)n).toJavaDecl(dmp);
+			else
+				n.toJava(dmp);
+		}
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -890,46 +898,54 @@ public class IfElseStat extends Statement {
 
 	public ASTNode resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
 		ScopeNodeInfoVector result_state = null;
 		try {
-			try {
-				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
-			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
-			}
+			ScopeNodeInfoVector then_state = null;
+			ScopeNodeInfoVector else_state = null;
 			NodeInfoPass.pushState();
-			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
 			try {
-				thenSt.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(thenSt.pos,e);
-			}
-			ScopeNodeInfoVector then_state = NodeInfoPass.popState();
-			NodeInfoPass.popState();
-			NodeInfoPass.pushState();
-			if( cond instanceof BooleanNotExpr ) {
-				BooleanNotExpr bne = (BooleanNotExpr)cond;
-				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-				}
-			}
-			if( elseSt != null ) {
 				try {
-					elseSt.resolve(Type.tpVoid);
+					cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
 				} catch(Exception e ) {
-					Kiev.reportError(elseSt.pos,e);
+					Kiev.reportError(cond.pos,e);
 				}
-			}
-			ScopeNodeInfoVector else_state = NodeInfoPass.popState();
+			
+				NodeInfoPass.pushState();
+				try {
+					if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+					else if( cond instanceof BinaryBooleanAndExpr ) {
+						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+					}
+					try {
+						thenSt.resolve(Type.tpVoid);
+					} catch(Exception e ) {
+						Kiev.reportError(thenSt.pos,e);
+					}
+				} finally { then_state = NodeInfoPass.popState(); }
+			
+			} finally { NodeInfoPass.popState(); }
+			
+			NodeInfoPass.pushState();
+			try {
+				if( cond instanceof BooleanNotExpr ) {
+					BooleanNotExpr bne = (BooleanNotExpr)cond;
+					if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
+					else if( bne.expr instanceof BinaryBooleanAndExpr ) {
+						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
+						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+					}
+				}
+				if( elseSt != null ) {
+					try {
+						elseSt.resolve(Type.tpVoid);
+					} catch(Exception e ) {
+						Kiev.reportError(elseSt.pos,e);
+					}
+				}
+			} finally { else_state = NodeInfoPass.popState(); }
 
 			if !(cond.isConstantExpr()) {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
@@ -1077,9 +1093,9 @@ public class CondStat extends Statement {
 			}
 			NodeInfoPass.popState();
 		} finally {
-			PassInfo.pop(this);
 			ScopeNodeInfoVector result_state = NodeInfoPass.popState();
 			NodeInfoPass.addInfo(result_state);
+			PassInfo.pop(this);
 		}
 		return this;
 	}
@@ -1221,7 +1237,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 @cfnode
 public class BreakStat extends Statement {
 
-	public ASTIdentifier	ident;
+	@att public ASTIdentifier	ident;
 
 	public BreakStat() {
 	}
@@ -1309,7 +1325,7 @@ public class BreakStat extends Statement {
 @cfnode
 public class ContinueStat extends Statement/*defaults*/ {
 
-	public ASTIdentifier	ident;
+	@att public ASTIdentifier	ident;
 
 	public ContinueStat() {
 	}
@@ -1368,7 +1384,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 @cfnode
 public class GotoStat extends Statement/*defaults*/ {
 
-	public ASTIdentifier	ident;
+	@att public ASTIdentifier	ident;
 
 	public GotoStat() {
 	}

@@ -63,6 +63,54 @@ public class ASTExpression extends Expr {
 			List<ASTNode> results = List.Nil;
 			ASTNode@ result;
 			List<ASTNode>@ rest;
+			trace( Kiev.debugOperators, "Expression: "+lst);
+			NodeInfoPass.pushState();
+			try {
+				foreach( resolveExpr(result,rest,lst,0) ) {
+					trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
+					trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
+					results = new List.Cons<ASTNode>(result,results);
+				}
+			} finally { NodeInfoPass.popState(); }
+			if (results.length() == 0) {
+				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
+				foreach(ASTNode n; results)
+					msg.append(n).append("\n");
+				throw new CompilerException(pos, msg.toString());
+			}
+			if (results.length() > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
+				foreach(ASTNode n; results)
+					msg.append(n).append("\n");
+				throw new CompilerException(pos, msg.toString());
+			}
+			
+			ASTNode h = results.head();
+			if( h instanceof UnresExpr )
+				h = ((UnresExpr)h).toResolvedExpr().resolve(reqType);
+			else if( h instanceof Expr )
+				h = ((Expr)h).resolve(reqType);
+			
+			if !(h instanceof Expr)
+				h = new WrapedExpr(pos,h,reqType);
+			
+			this.replaceWith(h);
+
+			return (Expr)h;
+			
+		} finally { PassInfo.pop(this); }
+	}
+/*	
+	public ASTNode resolve(Type reqType) {
+		return tryResolve(reqType);
+		PassInfo.push(this);
+		try {
+			List<ASTNode> lst = List.Nil;
+			for (int i=nodes.length-1; i >=0; i--)
+				lst = new List.Cons<ASTNode>(nodes[i], lst);
+			List<ASTNode> results = List.Nil;
+			ASTNode@ result;
+			List<ASTNode>@ rest;
 			boolean may_be_resolved = false;
 			trace( Kiev.debugOperators, "Expression: "+lst);
 			NodeInfoPass.pushState();
@@ -99,7 +147,7 @@ public class ASTExpression extends Expr {
 				return results.head();
 		} finally { PassInfo.pop(this); }
 	}
-
+*/
 	/**
 	 *  @param result	- output result of parsing
 	 *  @param expr		- input list of subexpressions and operators
@@ -148,7 +196,8 @@ public class ASTExpression extends Expr {
 		op ?= ((ASTCastOperator)expr.head()).resolveOperator(),
 		trace( Kiev.debugOperators, "trying cast "+op),
 		resolveExpr(result1,rest1,expr.tail(),Constants.opCastPriority),
-		result ?= new CastExpr(expr.head().pos,((CastOperator)op).type,getExpr(result1),false,((CastOperator)op).reinterp),
+		//result ?= new CastExpr(expr.head().pos,((CastOperator)op).type,getExpr(result1),false,((CastOperator)op).reinterp),
+		result ?= new PrefixExpr(expr.head().pos,op,getExpr(result1)),
 		trace( Kiev.debugOperators, "found cast "+result),
 		rest ?= rest1.$var
 	}
@@ -171,7 +220,8 @@ public class ASTExpression extends Expr {
 		op.priority >= priority,
 		trace( Kiev.debugOperators, "trying prefix "+op),
 		resolveExpr(result1,rest1,expr.tail(),op.getArgPriority(0)),
-		result ?= new UnaryExpr(expr.head().pos,op,getExpr(result1)),
+		//result ?= new UnaryExpr(expr.head().pos,op,getExpr(result1)),
+		result ?= new PrefixExpr(expr.head().pos,op,getExpr(result1)),
 		trace( Kiev.debugOperators, "found prefix "+result),
 		rest ?= rest1.$var
 	}
@@ -194,7 +244,8 @@ public class ASTExpression extends Expr {
 		op.priority >= priority,
 		getPriority(expr.head()) >= op.getArgPriority(0),
 		trace( Kiev.debugOperators, "trying postfix "+op),
-		result ?= new UnaryExpr(expr.tail().head().pos,op,getExpr(expr.head())),
+		//result ?= new UnaryExpr(expr.tail().head().pos,op,getExpr(expr.head())),
+		result ?= new PostfixExpr(expr.tail().head().pos,op,getExpr(expr.head())),
 		trace( Kiev.debugOperators, "found postfix "+result),
 		rest ?= expr.tail().tail()
 	}
@@ -223,12 +274,13 @@ public class ASTExpression extends Expr {
 			result ?= new InstanceofExpr(expr.at(1).getPos(),(Expr)expr.head(),((TypeRef)expr.at(2)).getType()),
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
-			{
-				((BinaryOperator)op).is_boolean_op, $cut,
-				result ?= new BinaryBoolExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
-			;	!((BinaryOperator)op).is_boolean_op, $cut,
-				result ?= new BinaryExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
-			}
+//			{
+//				((BinaryOperator)op).is_boolean_op, $cut,
+//				result ?= new BinaryBoolExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
+//			;	!((BinaryOperator)op).is_boolean_op, $cut,
+//				result ?= new BinaryExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
+//			}
+			result ?= new InfixExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
 		},
 		trace( Kiev.debugOperators, "found binary "+result+" and rest is "+rest1),
 		rest ?= rest1
@@ -254,7 +306,8 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "trying assign "+op),
 		getPriority(expr.head()) >= op.getArgPriority(0),
 		resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
-		result ?= new AssignExpr(expr.tail().head().pos,(AssignOperator)op,getExpr(expr.head()),getExpr(result1)),
+		//result ?= new AssignExpr(expr.tail().head().pos,(AssignOperator)op,getExpr(expr.head()),getExpr(result1)),
+		result ?= new InfixExpr(expr.tail().head().pos,(AssignOperator)op,getExpr(expr.head()),getExpr(result1)),
 		trace( Kiev.debugOperators, "found assign "+result+" and rest is "+rest1),
 		rest ?= rest1
 	}
