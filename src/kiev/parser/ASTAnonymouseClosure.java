@@ -54,8 +54,11 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return new_closure;
+	public void resolve(Type reqType) {
+		if( isResolved() ) {
+			replaceWith(new_closure);
+			return;
+		}
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)
@@ -118,6 +121,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 			v.init = val;
 			body.insertSymbol(v,i);
 		}
+		setResolved(true);
 
 		ExportJavaTop exporter = new ExportJavaTop();
 		//exporter.pass1(me);
@@ -127,11 +131,8 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		exporter.pass3(me);
 		//me.autoProxyMethods();
 		//me.resolveFinalFields(false);
-		new_closure = new NewClosure(pos,me.type);
-		new_closure.parent = parent;
-		new_closure = (Expr)new_closure.resolve(reqType);
-		setResolved(true);
-		return new_closure;
+		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
+		replaceWithResolve(new_closure, reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

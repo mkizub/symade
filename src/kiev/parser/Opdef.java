@@ -38,7 +38,7 @@ import static kiev.vlang.Operator.*;
  */
 
 @node
-public class Opdef extends ASTNode implements TopLevelDecl {
+public class Opdef extends DNode implements TopLevelDecl {
 	public int					prior;
 	public int					opmode;
 	public KString				image;
@@ -93,8 +93,7 @@ public class Opdef extends ASTNode implements TopLevelDecl {
 		return image.toString();
 	}
 
-	public ASTNode resolve(Type reqType) {
-		return this;
+	public void resolveDecl() {
 	}
 	
 	public Dumper toJavaDecl(Dumper dmp) {

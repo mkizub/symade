@@ -33,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class Field extends ASTNode implements Named, Typed, Accessable, TopLevelDecl {
+public class Field extends DNode implements Named, Typed, Accessable, TopLevelDecl {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
@@ -47,7 +47,7 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 	@att public TypeRef		ftype;
 
 	/** Initial value of this field */
-	@att public Expr		init;
+	@att public ENode		init;
 
 	/** Meta-information (annotations) of this structure */
 	@att public MetaSet		meta;
@@ -151,13 +151,13 @@ public class Field extends ASTNode implements Named, Typed, Accessable, TopLevel
 		return null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public DNode resolve(Type reqType) throws RuntimeException {
 		foreach (Meta m; meta)
 			m.resolve();
 		if( name.equals(KString.Empty) ) return this;
 		if( init != null ) {
 			if( init instanceof Expr )
-				init = ((Expr)init).resolveExpr(type);
+				init.resolve(type);
 		}
 		return this;
 	}

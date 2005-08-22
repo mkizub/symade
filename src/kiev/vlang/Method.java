@@ -219,19 +219,19 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return sb.toString();
 	}
 
-	public static String toString(KString nm, NArr<Expr> args) {
+	public static String toString(KString nm, NArr<ENode> args) {
 		return toString(nm,args.toArray(),null);
 	}
 
-	public static String toString(KString nm, Expr[] args) {
+	public static String toString(KString nm, ENode[] args) {
 		return toString(nm,args,null);
 	}
 
-	public static String toString(KString nm, NArr<Expr> args, Type ret) {
+	public static String toString(KString nm, NArr<ENode> args, Type ret) {
 		return toString(nm,args.toArray(),ret);
 	}
 	
-	public static String toString(KString nm, Expr[] args, Type ret) {
+	public static String toString(KString nm, ENode[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
 			sb.append(args[i].getType().toString());
@@ -278,21 +278,21 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return dmp.append(name);
 	}
 
-	public Expr[] makeArgs(NArr<Expr> args, Type t) {
+	public Expr[] makeArgs(NArr<ENode> args, Type t) {
 		return makeArgs(args.toArray(), t);
 	}
-	public Expr[] makeArgs(Expr[] args, Type t) {
+	public Expr[] makeArgs(ENode[] args, Type t) {
 		if( isVarArgs() ) {
-			Expr[] varargs = new Expr[type.args.length];
+			ENode[] varargs = new ENode[type.args.length];
 			int j;
 			for(j=0; j < varargs.length-1; j++)
 				varargs[j] = CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
-			Expr[] varargs2 = new Expr[args.length - varargs.length + 1];
+			ENode[] varargs2 = new ENode[args.length - varargs.length + 1];
 			for(int k=0; k < varargs2.length; j++,k++) {
 				varargs2[k] = CastExpr.autoCastToReference(args[j]);
 			}
 			NewInitializedArrayExpr nae =
-				new NewInitializedArrayExpr(getPos(),Type.tpObject,1,varargs2);
+				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs2);
 			varargs[varargs.length-1] = nae;
 			return varargs;
 		} else {
@@ -547,8 +547,8 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		}
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
+	public void resolveDecl() {
+		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
 		PassInfo.push(this);
@@ -611,7 +611,6 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		}
 
 		setResolved(true);
-		return this;
 	}
 
 	public void generate() {
@@ -767,10 +766,9 @@ public class WBCCondition extends Statement {
 		this.body = body;
 	}
 
-	public ASTNode resolve(Type reqType) {
-		if( code != null ) return this;
+	public void resolve(Type reqType) {
+		if( code != null ) return;
 		body.resolve(Type.tpVoid);
-		return this;
 	}
 
 	public void generate(Type reqType) {

@@ -69,29 +69,27 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 	public abstract void generate_iftrue(CodeLabel label);
 	public abstract void generate_iffalse(CodeLabel label);
 	
-	public static Expr checkBool(ASTNode e) {
-		if( e.getType().isBoolean() )
-			return (Expr)e;
-		if( e.getType() == Type.tpRule )
-			return checkBool(
-				new BinaryBoolExpr(e.pos,
-					BinaryOperator.NotEquals,
-					(Expr)e,
-					new ConstNullExpr()
-					).resolve(Type.tpBoolean)
-				);
+	public static void checkBool(ENode e) {
+		if( e.getType().isBoolean() ) {
+			return;
+		}
+		if( e.getType() == Type.tpRule ) {
+			e.replaceWithResolve(
+				new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr()),Type.tpBoolean);
+			return;
+		}
 		else if( e.getType().args.length == 0
 				&& e.getType() instanceof ClosureType
 				&& ((CallableType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
 				)
 		{
 			((ClosureCallExpr)e).is_a_call = true;
-			return (Expr)e;
+			return;
 		}
 		throw new RuntimeException("Expression "+e+" must be of boolean type, but found "+e.getType());
 	}
 	
-	public static void gen_iftrue(Expr expr, CodeLabel label) {
+	public static void gen_iftrue(ENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
 			((IBoolExpr)expr).generate_iftrue(label);
 			return;
@@ -147,7 +145,7 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 		} finally { PassInfo.pop(expr); }
 	}
 
-	public static void gen_iffalse(Expr expr, CodeLabel label) {
+	public static void gen_iffalse(ENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
 			((IBoolExpr)expr).generate_iffalse(label);
 			return;
@@ -168,13 +166,13 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 @node
 @cfnode
 public class BinaryBooleanOrExpr extends BoolExpr {
-	@att public Expr			expr1;
-	@att public Expr			expr2;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
 
 	public BinaryBooleanOrExpr() {
 	}
 
-	public BinaryBooleanOrExpr(int pos, Expr expr1, Expr expr2) {
+	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
 		super(pos);
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -204,16 +202,18 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public int getPriority() { return opBooleanOrPriority; }
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 //		if( isResolved() ) return this;
 		PassInfo.push(this);
 		ScopeNodeInfoVector result_state = null;
 		try {
 			NodeInfoPass.pushState();
-			expr1 = BoolExpr.checkBool(expr1.resolve(Type.tpBoolean));
+			expr1.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(expr1);
 			ScopeNodeInfoVector state1 = NodeInfoPass.popState();
 			NodeInfoPass.pushState();
-			expr2 = BoolExpr.checkBool(expr2.resolve(Type.tpBoolean));
+			expr2.resolve(Type.tpBoolean)
+			BoolExpr.checkBool(expr2);
 			ScopeNodeInfoVector state2 = NodeInfoPass.popState();
 			result_state = NodeInfoPass.joinInfo(state1,state2);
 		} finally {
@@ -221,7 +221,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			if( result_state != null ) NodeInfoPass.addInfo(result_state);
 		}
 		setResolved(true);
-		return this;
 	}
 
 	public void generate_iftrue(CodeLabel label) {
@@ -264,13 +263,13 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 @node
 @cfnode
 public class BinaryBooleanAndExpr extends BoolExpr {
-	@att public Expr			expr1;
-	@att public Expr			expr2;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
 
 	public BinaryBooleanAndExpr() {
 	}
 
-	public BinaryBooleanAndExpr(int pos, Expr expr1, Expr expr2) {
+	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
 		super(pos);
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -300,18 +299,20 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 //		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
 			NodeInfoPass.pushState();
-			expr1 = BoolExpr.checkBool(expr1.resolve(Type.tpBoolean));
-			if( expr1 instanceof InstanceofExpr ) ((InstanceofExpr)expr1).setNodeTypeInfo();
-			expr2 = BoolExpr.checkBool(expr2.resolve(Type.tpBoolean));
+			expr1.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(expr1);
+			if( expr1 instanceof InstanceofExpr )
+				((InstanceofExpr)expr1).setNodeTypeInfo();
+			expr2.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(expr2);
 			NodeInfoPass.popState();
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generate_iftrue(CodeLabel label) {
@@ -354,13 +355,13 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 @cfnode
 public class BinaryBoolExpr extends BoolExpr {
 	@ref public BinaryOperator		op;
-	@att public Expr				expr1;
-	@att public Expr				expr2;
+	@att public ENode				expr1;
+	@att public ENode				expr2;
 
 	public BinaryBoolExpr() {
 	}
 
-	public BinaryBoolExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
+	public BinaryBoolExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
 		super(pos);
 		this.op = op;
 		this.expr1 = expr1;
@@ -383,7 +384,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		expr2 = null;
 	}
 
-	private Expr initialResolve(Type reqType) {
+	private void initialResolve(Type reqType) {
 		setTryResolved(true);
 		resolveExprs();
 		Type et1 = expr1.getType();
@@ -395,16 +396,19 @@ public class BinaryBoolExpr extends BoolExpr {
 			||   op==BinaryOperator.GreaterEquals
 			)
 		) {
-			return (Expr)this.resolve(reqType);
+			this.resolve(reqType);
+			return;
 		}
 		else if( op==BinaryOperator.BooleanOr ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				return (Expr)new BinaryBooleanOrExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
+				replaceWithResolve(new BinaryBooleanOrExpr(pos,expr1,expr2), Type.tpBoolean);
+				return;
 			}
 		}
 		else if( op==BinaryOperator.BooleanAnd ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				return (Expr)new BinaryBooleanAndExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
+				replaceWithResolve(new BinaryBooleanAndExpr(pos,expr1,expr2), Type.tpBoolean);
+				return;
 			}
 		}
 		else if(
@@ -428,31 +432,34 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( opt.match(tps,argsarr) ) {
 				Expr e;
 				if( opt.method.isStatic() )
-					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).resolveExpr(reqType);
+					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2});
 				else
-					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).resolveExpr(reqType);
-				if( e != null ) return e;
+					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2});
+				replaceWithResolve(e, reqType);
 			}
 		}
-//		return null;
 		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
 	private boolean resolveExprs() {
-		expr1 = (Expr)((Expr)expr1).resolve(null);
-		if (!expr1.isForWrapper() && expr1.getType().isWrapper())
-			expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
+		expr1.resolve(null);
+		if (!expr1.isForWrapper() && expr1.getType().isWrapper()) {
+			expr1 = expr1.getType().makeWrappedAccess(expr1);
+			expr1.resolveExpr(null);
+		}
 
-		ASTNode ast2 = ((Expr)expr2).resolve(null);
-		if( ast2 instanceof WrapedExpr )
-			ast2 = ((Expr)ast2).resolve(null);
-		if( ast2 instanceof TypeRef )
-			ast2 = getExprByStruct(((TypeRef)ast2).getType().getStruct());
-		if( ast2 instanceof Struct )
-			ast2 = getExprByStruct((Struct)ast2);
-		expr2 = (Expr)((Expr)ast2).resolve(null);
-		if (!expr2.isForWrapper() && expr2.getType().isWrapper())
-			expr2 = expr2.getType().makeWrappedAccess(expr2).resolveExpr(null);
+		expr2.resolve(null);
+		if( expr2 instanceof WrapedExpr )
+			expr2.resolve(null);
+		if( expr2 instanceof TypeRef )
+			expr2 = getExprByStruct(((TypeRef)expr2).getType().getStruct());
+		if( expr2 instanceof Struct )
+			expr2 = getExprByStruct((Struct)expr2);
+		expr2.resolve(null);
+		if (!expr2.isForWrapper() && expr2.getType().isWrapper()) {
+			expr2 = expr2.getType().makeWrappedAccess(expr2);
+			expr2.resolveExpr(null);
+		}
 		return true;
 	}
 
@@ -478,7 +485,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		return ex;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -698,16 +705,22 @@ public class BinaryBoolExpr extends BoolExpr {
 @node
 @cfnode
 public class InstanceofExpr extends BoolExpr {
-	@att public Expr		expr;
-	@ref public Type		type;
+	@att public ENode		expr;
+	@att public TypeRef		type;
 
 	public InstanceofExpr() {
+	}
+
+	public InstanceofExpr(int pos, Expr expr, TypeRef type) {
+		super(pos);
+		this.expr = expr;
+		this.type = type;
 	}
 
 	public InstanceofExpr(int pos, Expr expr, Type type) {
 		super(pos);
 		this.expr = expr;
-		this.type = type;
+		this.type = new TypeRef(type);
 	}
 
 	public String toString() {
@@ -722,7 +735,7 @@ public class InstanceofExpr extends BoolExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -807,12 +820,12 @@ public class InstanceofExpr extends BoolExpr {
 @node
 @cfnode
 public class BooleanNotExpr extends BoolExpr {
-	@att public Expr				expr;
+	@att public ENode				expr;
 
 	public BooleanNotExpr() {
 	}
 
-	public BooleanNotExpr(int pos, Expr expr) {
+	public BooleanNotExpr(int pos, ENode expr) {
 		super(pos);
 		this.expr = expr;
 	}
@@ -832,7 +845,7 @@ public class BooleanNotExpr extends BoolExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {

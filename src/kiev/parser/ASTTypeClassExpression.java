@@ -41,27 +41,30 @@ public class ASTTypeClassExpression extends Expr {
 	
     public Type getType() { return Type.tpClass; }
 
-	public ASTNode resolve(Type reqType) throws CompilerException {
+	public void resolve(Type reqType) throws CompilerException {
 		Type tp = type.getType();
 		if( !tp.isReference() ) {
 			Type rt = Type.getRefTypeForPrimitive(tp);
 			Field f = (Field)rt.resolveName(KString.from("TYPE"));
 			if( f == null || !f.isStatic() )
 				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
-			return new StaticFieldAccessExpr(pos,rt.getStruct(),f).resolve(reqType);
+			replaceWithResolve(new StaticFieldAccessExpr(pos,rt.getStruct(),f), reqType);
+			return;
 		}
 		KString name;
 		if( tp.isArray() )
 			name = tp.java_signature.replace('/','.');
 		else
 			name = tp.getClazzName().bytecode_name.replace('/','.');
-		return new CallExpr(pos,
+		replaceWithResolve(new CallExpr(pos,
 				Type.tpClass.resolveMethod(
 					KString.from("forName"),
 					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
 				),
 				new Expr[]{new ConstStringExpr(name)}
-			).resolve(reqType);
+			),
+			reqType
+		);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

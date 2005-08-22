@@ -35,11 +35,11 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class CaseLabel extends ASTNode {
+public class CaseLabel extends ENode {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att public Expr				val;
+	@att public ENode				val;
 	@ref public Type				type;
 	@att public final NArr<Var>		pattern;
 	@att public BlockStat			stats;
@@ -49,7 +49,7 @@ public class CaseLabel extends ASTNode {
 	public CaseLabel() {
 	}
 
-	public CaseLabel(int pos, ASTNode parent, Expr val, ASTNode[] stats) {
+	public CaseLabel(int pos, ASTNode parent, ENode val, ENode[] stats) {
 		super(pos,parent);
 		this.val = val;
 		this.stats = new BlockStat(pos,this,stats);
@@ -90,7 +90,7 @@ public class CaseLabel extends ASTNode {
 		stats = null;
 	}
 
-	public ASTNode resolve(Type tpVoid) {
+	public void resolve(Type tpVoid) {
 		boolean pizza_case = false;
 		PassInfo.push(this);
 		try {
@@ -202,7 +202,6 @@ public class CaseLabel extends ASTNode {
 					throw new RuntimeException("Case label "+val+" must be of integer type");
 			}
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
 	public CodeLabel getLabel() {
@@ -246,9 +245,9 @@ public class CaseLabel extends ASTNode {
 @cfnode
 public class SwitchStat extends BlockStat implements BreakTarget {
 
-	@att public Expr					sel;
+	@att public ENode					sel;
 	@ref public Var						tmpvar;
-	@att public final NArr<ASTNode>		cases;
+	@att public final NArr<ENode>		cases;
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
@@ -266,7 +265,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public SwitchStat() {
 	}
 
-	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
+	public SwitchStat(int pos, ASTNode parent, ENode sel, ENode[] cases) {
 		super(pos, parent);
 		this.sel = sel;
 		this.cases.addAll(cases);
@@ -289,8 +288,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
 		if( cases.length == 0 ) {
 			ExprStat st = new ExprStat(pos,parent,sel);
 			this.replaceWith(st);
@@ -683,7 +682,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
 		try {
@@ -746,7 +745,7 @@ public class FinallyInfo extends CatchInfo {
 
 	public String toString() { return "finally"; }
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if (arg == null)
 			arg = new Var(pos,KString.Empty,Type.tpThrowable,0);
 		if (ret_arg == null)
@@ -818,7 +817,7 @@ public class TryStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		ScopeNodeInfoVector finally_state = null;
 		for(int i=0; i < catchers.length; i++) {
 			try {
@@ -956,7 +955,7 @@ public class TryStat extends Statement/*defaults*/ {
 public class SynchronizedStat extends Statement {
 
 	@att public Statement	body;
-	@att public Expr		expr;
+	@att public ENode		expr;
 	@att public Var			expr_var;
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -980,7 +979,7 @@ public class SynchronizedStat extends Statement {
 		expr_var = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			try {
@@ -1053,7 +1052,7 @@ public class SynchronizedStat extends Statement {
 public class WithStat extends Statement {
 
 	@att public Statement	body;
-	@att public Expr		expr;
+	@att public ENode		expr;
 	@ref public ASTNode		var_or_field;
 	public CodeLabel	end_label;
 
@@ -1075,7 +1074,7 @@ public class WithStat extends Statement {
 		var_or_field = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			try {

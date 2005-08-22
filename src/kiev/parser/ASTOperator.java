@@ -34,11 +34,11 @@ import kiev.stdlib.*;
  */
 
 @node
-public class ASTOperator extends ASTNode {
+public class ASTOperator extends ENode {
 
 	public KString		image;
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		throw new RuntimeException();
 	}
 

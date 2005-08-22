@@ -208,7 +208,7 @@ public final class ProcessVNode implements Constants {
 			vals_init[i] = new StaticFieldAccessExpr(f.pos, s, f);
 		}
 		Field vals = s.addField(new Field(nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
-		vals.init = new NewInitializedArrayExpr(0, atp, 1, vals_init);
+		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
 		vals.init.parent = vals;
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {
@@ -272,7 +272,7 @@ public final class ProcessVNode implements Constants {
 			Method copyV = new Method(KString.from("copyTo"),copyVt,ACC_PUBLIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, 0));
 			copyV.body = new BlockStat();
-			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
+			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.type,0);
 			if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
@@ -283,7 +283,7 @@ public final class ProcessVNode implements Constants {
 				((BlockStat)copyV.body).addSymbol(v);
 			} else {
 				v.init = new CastExpr(0,s.type,new ASTIdentifier(0,KString.from("to$node")));
-				stats.append(v);
+				((BlockStat)copyV.body).addSymbol(v);
 			}
 			foreach (ASTNode n; s.members; n instanceof Field) {
 				Field f = (Field)n;

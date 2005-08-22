@@ -49,7 +49,8 @@ public class OpTypes {
 			Expr e = (Expr)n;
 			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
 			if( !e.isResolved() ) {
-				n = e.resolve(tp);
+				e.resolve(tp);
+				n = e;
 				//assert( e.isResolved() );
 				goto case n;
 			} else {

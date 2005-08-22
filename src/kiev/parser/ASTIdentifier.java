@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 
 @node
 @cfnode
-public class ASTIdentifier extends Expr {
+public class ASTIdentifier extends ENode {
 	private static KString op_instanceof = KString.from("instanceof");
 	public KString name;
 
@@ -168,19 +168,26 @@ public class ASTIdentifier extends Expr {
 		}
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( name == Constants.nameFILE )
-			return new ConstStringExpr(Kiev.curFile);
-		else if( name == Constants.nameLINENO )
-			return new ConstIntExpr(pos>>>11);
+	public void resolve(Type reqType) {
+		if( name == Constants.nameFILE ) {
+			replaceWith(new ConstStringExpr(Kiev.curFile));
+			return;
+		}
+		else if( name == Constants.nameLINENO ) {
+			replaceWith(new ConstIntExpr(pos>>>11));
+			return;
+		}
 		else if( name == Constants.nameMETHOD ) {
 			if( PassInfo.method != null )
-				return new ConstStringExpr(PassInfo.method.name.name);
+				replaceWith(new ConstStringExpr(PassInfo.method.name.name));
 			else
-				return new ConstStringExpr(nameInit);
+				replaceWith(new ConstStringExpr(nameInit));
+			return;
 		}
-		else if( name == Constants.nameDEBUG )
-			return new ConstBoolExpr(Kiev.debugOutputA);
+		else if( name == Constants.nameDEBUG ) {
+			replaceWith(new ConstBoolExpr(Kiev.debugOutputA));
+			return;
+		}
 		else if( name == Constants.nameReturnVar ) {
 			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
 			name = Constants.nameResultVar;
@@ -221,48 +228,57 @@ public class ASTIdentifier extends Expr {
 				String val = Env.getProperty(prop);
 				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
 				if( val != null ) {
-					if( reqType == null || reqType == Type.tpString)
-						return new ConstStringExpr(KString.from(val));
-					if( reqType.isBoolean() )
-						if( val == "" )
-							return new ConstBoolExpr(true);
+					if( reqType == null || reqType == Type.tpString) {
+						replaceWith(new ConstStringExpr(KString.from(val)));
+						return;
+					}
+					if( reqType.isBoolean() ) {
+						if( val == "" ) 
+							replaceWith(new ConstBoolExpr(true));
 						else
-							return new ConstBoolExpr(Boolean.valueOf(val).booleanValue());
-					if( reqType.isInteger() )
-						return new ConstIntExpr(Integer.valueOf(val).intValue());
-					if( reqType.isNumber() )
-						return new ConstDoubleExpr(Double.valueOf(val).doubleValue());
-					return new ConstStringExpr(KString.from(val));
+							replaceWith(new ConstBoolExpr(Boolean.valueOf(val).booleanValue()));
+						return;
+					}
+					if( reqType.isInteger() ) {
+						replaceWith(new ConstIntExpr(Integer.valueOf(val).intValue()));
+						return;
+					}
+					if( reqType.isNumber() ) {
+						replaceWith(new ConstDoubleExpr(Double.valueOf(val).doubleValue()));
+					}
+					replaceWith(new ConstStringExpr(KString.from(val)));
+					return;
 				}
 				if( reqType.isBoolean() )
-					return new ConstBoolExpr(false);
-				return new ConstNullExpr();
+					replaceWith(new ConstBoolExpr(false));
+				else
+					replaceWith(new ConstNullExpr());
+				return;
 			}
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
-		Expr e = null;
 		if( v instanceof Struct ) {
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
 				Struct s = (Struct)v;
 				if( s.isPizzaCase() ) {
 					Struct pc = (Struct)s;
 					PizzaCaseAttr case_attr = (PizzaCaseAttr)pc.getAttr(attrPizzaCase);
-					if( case_attr == null ) return pc;
-					return new ConstIntExpr(case_attr.caseno).resolve(reqType);
+					if( case_attr == null ) {
+						replaceWith(pc);
+						return;
+					}
+					replaceWithResolve(new ConstIntExpr(case_attr.caseno), reqType);
 				}
 			}
 			((Struct)v).checkResolved();
-			TypeNameRef tr = new TypeNameRef(this,((Struct)v).type);
-			return tr;
+			replaceWith(new TypeNameRef(this,((Struct)v).type));
+			return;
 		}
 		else if( v instanceof TypeRef ) {
-			return (TypeRef)v;
+			replaceWith((TypeRef)v);
+			return;
 		}
-		else {
-			e = info.buildAccess(pos, null, v);
-		}
-		this.replaceWith(e);
-		return e.resolve(reqType);
+		replaceWithResolve(info.buildAccess(pos, null, v), reqType);
 	}
 
 	public int		getPriority() { return 256; }

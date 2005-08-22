@@ -31,7 +31,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@cfnode
 @node
 public class TypeNameRef extends TypeRef {
 	@att public ASTIdentifier			name;

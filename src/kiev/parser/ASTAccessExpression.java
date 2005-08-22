@@ -136,45 +136,46 @@ public class ASTAccessExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 	
-	public ASTNode resolve(Type reqType) throws CompilerException {
+	public void resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
-			ASTNode o = ((Expr)obj).resolve(null);
-			if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
+			obj.resolve(null);
+			//if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
 			Type tp = null;
 			Type[] snitps = null;
 			int snitps_index = 0;
 		try_static:
-			if( o instanceof TypeRef ) {
-				tp = ((TypeRef)o).getType();
+			if( obj instanceof TypeRef ) {
+				tp = ((TypeRef)obj).getType();
 			}
-			else if( o instanceof Struct ) {
-				((Struct)o).checkResolved();
-				tp = ((Struct)o).type;
-			}
+//			else if( obj instanceof Struct ) {
+//				((Struct)o).checkResolved();
+//				tp = ((Struct)obj).type;
+//			}
 			else {
-				obj = (Expr)o;
-				snitps = ((Expr)o).getAccessTypes();
+				snitps = ((Expr)obj).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.isWrapper() && ident.name.byteAt(0) != '$') {
-					o = tp.makeWrappedAccess(obj).resolve(null);
-					tp = o.getType();
+					obj.replaceWithResolve(tp.makeWrappedAccess(obj), null);
+					tp = obj.getType();
 				}
 				if( tp.isArray() ) {
 					if( ident.name.equals("length") ) {
-						return new ArrayLengthAccessExpr(pos,(Expr)o).resolve(reqType);
+						replaceWothResolve(new ArrayLengthAccessExpr(pos,o), reqType);
+						return;
 					}
 					else throw new CompilerException(obj.getPos(),"Arrays "+tp+" has only one member 'length'");
 				}
-				else if( ident.name.equals("$self") && tp.isReference() )
-					return new SelfAccessExpr(pos,(LvalueExpr)o).resolve(reqType);
+				else if( ident.name.equals("$self") && tp.isReference() ) {
+					replaceWithResolve(new SelfAccessExpr(pos,(LvalueExpr)obj), reqType);
+				}
 				else if( tp.isReference() )
 					;
 				else
 					throw new CompilerException(obj.getPos(),"Resolved object "+o+" of type "+tp+" is not a scope");
 			}
 			if( o instanceof TypeRef && ident.name.equals(nameThis) ) {
-				return new OuterThisAccessExpr(pos,((TypeRef)o).getType().getStruct()).resolve(null);
+				replaceWithResolve(new OuterThisAccessExpr(pos,obj.getType().getStruct()), null);
 			}
 			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
 			ASTNode@ v;
@@ -244,8 +245,7 @@ public class ASTAccessExpression extends Expr {
 				throw new CompilerException(pos,msg+dmp);
 			}
 			ASTNode n = res.getAt(0);
-			if (n instanceof Expr)	return ((Expr)n).resolve(reqType);
-			return n;
+			replaceWithResolve(n, reqType);
 		} finally { PassInfo.pop(this); }
 	}
 

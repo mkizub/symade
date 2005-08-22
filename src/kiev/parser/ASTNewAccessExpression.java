@@ -40,15 +40,15 @@ public class ASTNewAccessExpression extends Expr {
 	@att public TypeRef				type;
 	@att public final NArr<Expr>	args;
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {
-            	args[i] = (Expr)args[i].resolve(null);
+            	args[i].resolve(null);
             } catch(Exception e) {
             	Kiev.reportError(pos,e);
             }
         }
-		return new NewExpr(pos,type.getType(),args.toArray(),obj).resolve(reqType);
+		replaceWithResolve(new NewExpr(pos,type.getType(),args.toArray(),obj), reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

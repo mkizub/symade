@@ -39,13 +39,14 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	@att public ASTIdentifier	name;
 	@att public Expr			expr;
 
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name.name) )
 			throw new CompilerException(pos,"Unresolved identifier "+name.name);
 		if( !(v instanceof Var) )
     		throw new CompilerException(name.getPos(),"Identifier is not a var");
-    	return new RuleIstheExpr(getPos(), (Var)v, expr.resolveExpr(((Var)v).type.args[0]));
+		expr.resolve(((Var)v).type.args[0]);
+    	replaceWith(new RuleIstheExpr(getPos(), (Var)v, expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(name.getPos(),"Internal error"); }

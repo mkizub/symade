@@ -152,7 +152,7 @@ public class RuleMethod extends Method {
 		return this;
     }
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		PassInfo.push(this);
 		try {
@@ -207,8 +207,6 @@ public class RuleMethod extends Method {
 				NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
-
-		return this;
 	}
 
 
@@ -321,7 +319,7 @@ object, if fails - returns null.
 */
 
 @node
-public abstract class ASTRuleNode extends ASTNode {
+public abstract class ASTRuleNode extends CFlowNode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	public JumpNodes		jn;
@@ -352,7 +350,7 @@ public abstract class ASTRuleNode extends ASTNode {
 	@getter public int get$idx() { return idx; }
 	@setter public void set$idx(int i) { idx = i; }
 
-	public ASTNode resolve(Type tp) {
+	public void resolve(Type tp) {
 		throw new CompilerException(pos,"Resolving of ASTRuleNode");
 	}
 
@@ -427,7 +425,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type tp) {
+	public void resolveDecl() {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
@@ -530,7 +528,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 			n.createText(sb);
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
     		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
     	}
@@ -586,7 +584,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 			n.createText(sb);
 	}
 
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
     		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
     	}
@@ -961,7 +959,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		return this;
 	}
 
@@ -1046,7 +1044,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		expr = (Expr)expr.resolve(null);
 
 		if( expr instanceof CallExpr ) {
@@ -1084,7 +1082,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 		super(expr, bt_expr);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		ASTNode n = super.resolve(reqType);
 		if (n != this) return n;
 		if (!expr.getType().equals(Type.tpBoolean))
@@ -1142,7 +1140,7 @@ public final class RuleExpr extends RuleExprBase {
 		super.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		ASTNode n = super.resolve(reqType);
 		if (n != this) {
 			if (bt_expr != null)

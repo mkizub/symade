@@ -114,7 +114,7 @@ public class MetaAlias extends Meta {
 	public MetaAlias(ConstStringExpr name) {
 		super(new TypeNameRef(NAME));
 		MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpString).signature);
-		MetaValueArray mv = new MetaValueArray(mvt, new ASTNode[]{name});
+		MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{name});
 		set(mv);
 	}
 

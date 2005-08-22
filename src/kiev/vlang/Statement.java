@@ -51,10 +51,9 @@ public class ShadowStat extends Statement {
 		parent = null;
 		stat   = null;
 	}
-	public ASTNode resolve(Type reqType) {
-		stat = (Statement)stat.resolve(reqType);
+	public void resolve(Type reqType) {
+		stat.resolve(reqType);
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -104,7 +103,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		node ?= redir.new_var
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
@@ -116,8 +115,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			for(int i=0; i < params_redir.length; i++) {
 				NodeInfoPass.setNodeType(params_redir[i].new_var,method.params[i].type);
 			}
-			//method.body.parent = this;
-			method = (Method)method.resolve(reqType);
+			method.resolveDecl();
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
@@ -126,7 +124,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 				params_redir[i].new_var.vtype.lnk = types[i];
 			PassInfo.pop(this);
 		}
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -176,7 +173,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 @cfnode
 public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
-	@att public final NArr<ASTNode>		stats;
+	@att public final NArr<ENode>		stats;
 	
 	private int resolve_pos;
 
@@ -189,16 +186,16 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		super(pos, parent);
 	}
 
-	public BlockStat(int pos, ASTNode parent, NArr<ASTNode> sts) {
+	public BlockStat(int pos, ASTNode parent, NArr<ENode> sts) {
 		super(pos, parent);
-		foreach (ASTNode st; sts) {
+		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
 	}
 
-	public BlockStat(int pos, ASTNode parent, ASTNode[] sts) {
+	public BlockStat(int pos, ASTNode parent, ENode[] sts) {
 		super(pos, parent);
-		foreach (ASTNode st; sts) {
+		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
 	}
@@ -209,23 +206,35 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	}
 
 	public void addSymbol(Named sym) {
-		ASTNode s = (ASTNode)sym;
-		foreach(ASTNode n; stats) {
+		ENode decl;
+		if (sym instanceof Var)
+			decl = new VarDecl((Var)sym);
+		else if (sym instanceof Struct)
+			decl = new LocalStructDecl((Struct)sym);
+		else
+			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
+		foreach(ENode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(s.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
-		stats.append(s);
+		stats.append(decl);
 	}
 
 	public void insertSymbol(Named sym, int idx) {
-		ASTNode s = (ASTNode)sym;
+		ENode decl;
+		if (sym instanceof Var)
+			decl = new VarDecl((Var)sym);
+		else if (sym instanceof Struct)
+			decl = new LocalStructDecl((Struct)sym);
+		else
+			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
 		foreach(ASTNode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(s.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
-		stats.insert(s,idx);
+		stats.insert(decl,idx);
 	}
 	
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
@@ -261,7 +270,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		assert (!isResolved());
 		setResolved(true);
 		PassInfo.push(this);
@@ -276,7 +285,6 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			NodeInfoPass.addInfo(nip_state);
 			PassInfo.pop(this);
 		}
-		return null;
 	}
 
 	public void resolveBlockStats() {
@@ -333,28 +341,30 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 //						}
 //					}
 //				}
-				else if( stats[i] instanceof Var ) {
-					Var var = (Var)stats[i];
-					var.resolve(Type.tpVoid);
+//				else if( stats[i] instanceof Var ) {
+//					Var var = (Var)stats[i];
+//					var.resolve(Type.tpVoid);
+//				}
+//				else if( stats[i] instanceof Struct ) {
+//					Struct decl = (Struct)stats[i];
+//					if( PassInfo.method==null || PassInfo.method.isStatic())
+//						decl.setStatic(true);
+//					ExportJavaTop exporter = new ExportJavaTop();
+//					decl.setLocal(true);
+//					exporter.pass1(decl);
+//					exporter.pass1_1(decl);
+//					exporter.pass2(decl);
+//					exporter.pass2_2(decl);
+//					exporter.pass3(decl);
+//					decl.autoProxyMethods();
+//					decl.resolveFinalFields(false);
+//					decl.resolve(Type.tpVoid);
+//					//stats[i] = decl;
+//				}
+				else {
+					//Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
+					stats[i].resolve(Type.tpVoid);
 				}
-				else if( stats[i] instanceof Struct ) {
-					Struct decl = (Struct)stats[i];
-					if( PassInfo.method==null || PassInfo.method.isStatic())
-						decl.setStatic(true);
-					ExportJavaTop exporter = new ExportJavaTop();
-					decl.setLocal(true);
-					exporter.pass1(decl);
-					exporter.pass1_1(decl);
-					exporter.pass2(decl);
-					exporter.pass2_2(decl);
-					exporter.pass3(decl);
-					decl.autoProxyMethods();
-					decl.resolveFinalFields(false);
-					decl.resolve(Type.tpVoid);
-					//stats[i] = decl;
-				}
-				else
-					Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i].pos,e);
 			}
@@ -370,13 +380,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			//Code.addVars(vars);
 			for(int i=0; i < stats.length; i++) {
 				try {
-					ASTNode n = stats[i];
-					if (n instanceof Statement)
-						((Statement)n).generate(Type.tpVoid);
-					else if (n instanceof Expr)
-						((Expr)n).generate(Type.tpVoid);
-					else if (n instanceof Var)
-						((Var)n).generate(Type.tpVoid);
+					stats[i].generate(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(stats[i].getPos(),e);
 				}
@@ -407,10 +411,10 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		dmp.space().append('{').newLine(1);
 		for(int i=0; i < stats.length; i++) {
 			ASTNode n = stats[i];
-			if (n instanceof Var)
-				((Var)n).toJavaDecl(dmp);
-			else if (n instanceof Struct)
-				((Struct)n).toJavaDecl(dmp);
+			if (n instanceof VarDecl)
+				((VarDecl)n).var.toJavaDecl(dmp);
+			else if (n instanceof LocalStructDecl)
+				((LocalStructDecl)n).clazz.toJavaDecl(dmp);
 			else
 				n.toJava(dmp);
 		}
@@ -436,14 +440,13 @@ public class Initializer extends BlockStat implements SetBody, PreScanneable {
 		setFlags(flags);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		super.resolve(reqType);
 		for(int i=0; i < addstats.length; i++) {
 			stats.insert(addstats[i],i);
 			trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
 		}
 		addstats.delAll();
-		return this;
 	}
 
 	public boolean setBody(Statement body) {
@@ -473,10 +476,7 @@ public class EmptyStat extends Statement {
 
 	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
 
-	public ASTNode resolve(Type reqType) {
-		PassInfo.push(this);
-		PassInfo.pop(this);
-		return this;
+	public void resolve(Type reqType) {
 	}
 
 	public void generate(Type reqType) {
@@ -498,7 +498,7 @@ public class EmptyStat extends Statement {
 @cfnode
 public class ExprStat extends Statement {
 
-	@att public Expr		expr;
+	@att public ENode		expr;
 
 	public ExprStat() {
 	}
@@ -516,15 +516,14 @@ public class ExprStat extends Statement {
 		return "stat "+expr;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-			expr = expr.resolveExpr(Type.tpVoid);
+			expr.resolve(Type.tpVoid);
 			expr.setGenVoidExpr(true);
 		} catch(Exception e ) {
 			Kiev.reportError(expr.getPos(),e);
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -571,7 +570,7 @@ public class ExprStat extends Statement {
 //		this.init = init;
 //	}
 //
-//	public ASTNode resolve(Type reqType) throws RuntimeException {
+//	public void resolve(Type reqType) throws RuntimeException {
 //		if( isResolved() ) return this;
 //		PassInfo.push(this);
 //		try {
@@ -670,7 +669,7 @@ public class ExprStat extends Statement {
 //		super(pos, parent);
 //	}
 //	
-//	public ASTNode resolve(Type reqType) throws RuntimeException {
+//	public void resolve(Type reqType) throws RuntimeException {
 //		PassInfo.push(this);
 //		try {
 //			try {
@@ -708,7 +707,7 @@ public class ExprStat extends Statement {
 @cfnode
 public class ReturnStat extends Statement/*defaults*/ {
 
-	@att public Expr		expr;
+	@att public ENode		expr;
 
 	public ReturnStat() {
 	}
@@ -723,13 +722,13 @@ public class ReturnStat extends Statement/*defaults*/ {
 		this(pos,null,expr);
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		PassInfo.push(this);
 		try {
 			if( expr != null ) {
 				try {
-					expr = expr.resolveExpr(PassInfo.method.type.ret);
+					expr.resolve(PassInfo.method.type.ret);
 				} catch(Exception e ) {
 					Kiev.reportError(expr.pos,e);
 				}
@@ -743,7 +742,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 				}
 			}
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -821,7 +819,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 @cfnode
 public class ThrowStat extends Statement/*defaults*/ {
 
-	@att public Expr		expr;
+	@att public ENode		expr;
 
 	public ThrowStat() {
 	}
@@ -836,12 +834,12 @@ public class ThrowStat extends Statement/*defaults*/ {
 		this(pos,null,expr);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
 		PassInfo.push(this);
 		try {
 			try {
-				expr = expr.resolveExpr(Type.tpThrowable);
+				expr.resolve(Type.tpThrowable);
 			} catch(Exception e ) {
 				Kiev.reportError(expr.pos,e);
 			}
@@ -849,7 +847,6 @@ public class ThrowStat extends Statement/*defaults*/ {
 			if( !PassInfo.checkException(exc) )
 				Kiev.reportWarning(pos,"Exception "+exc+" must be caught or declared to be thrown");
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -878,7 +875,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 @cfnode
 public class IfElseStat extends Statement {
 
-	@att public Expr		cond;
+	@att public ENode		cond;
 	@att public Statement	thenSt;
 	@att public Statement	elseSt;
 
@@ -896,7 +893,7 @@ public class IfElseStat extends Statement {
 		this(pos,null,cond,thenSt,elseSt);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector result_state = null;
 		try {
@@ -905,7 +902,8 @@ public class IfElseStat extends Statement {
 			NodeInfoPass.pushState();
 			try {
 				try {
-					cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+					cond.resolve(Type.tpBoolean);
+					BoolExpr.checkBool(cond);
 				} catch(Exception e ) {
 					Kiev.reportError(cond.pos,e);
 				}
@@ -947,7 +945,7 @@ public class IfElseStat extends Statement {
 				}
 			} finally { else_state = NodeInfoPass.popState(); }
 
-			if !(cond.isConstantExpr()) {
+			if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
 				if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 			}
@@ -972,15 +970,14 @@ public class IfElseStat extends Statement {
 			PassInfo.pop(this);
 			if( result_state != null ) NodeInfoPass.addInfo(result_state);
 		}
-		return this;
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
 		PassInfo.push(this);
 		try {
-			Expr cond = this.cond;
-			if( cond.isConstantExpr() ) {
+			if( cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
+				Expr cond = (Expr)this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
@@ -1051,28 +1048,29 @@ public class IfElseStat extends Statement {
 @cfnode
 public class CondStat extends Statement {
 
-	@att public Expr			cond;
-	@att public Expr			message;
+	@att public ENode			cond;
+	@att public ENode			message;
 
 	public CondStat() {
 	}
 
-	public CondStat(int pos, ASTNode parent, Expr cond, Expr message) {
+	public CondStat(int pos, ASTNode parent, ENode cond, ENode message) {
 		super(pos,parent);
 		this.cond = cond;
 		this.message = message;
 	}
 
-	public CondStat(int pos, Expr cond, Expr message) {
+	public CondStat(int pos, ENode cond, ENode message) {
 		this(pos,null,cond,message);
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
 			try {
-				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -1087,7 +1085,7 @@ public class CondStat extends Statement {
 				}
 			}
 			try {
-				message = (Expr)message.resolve(Type.tpString);
+				message.resolve(Type.tpString);
 			} catch(Exception e ) {
 				Kiev.reportError(message.pos,e);
 			}
@@ -1097,7 +1095,6 @@ public class CondStat extends Statement {
 			NodeInfoPass.addInfo(result_state);
 			PassInfo.pop(this);
 		}
-		return this;
 	}
 
 	private KString getAssertMethodName() {
@@ -1128,7 +1125,8 @@ public class CondStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
 		PassInfo.push(this);
 		try {
-			if( cond.isConstantExpr() ) {
+			if(cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
+				Expr cond = (Expr)this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() );
 				else {
 					generateAssertName();
@@ -1194,7 +1192,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		} finally { PassInfo.pop(this); }
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
 			stat.resolve(Type.tpVoid);
@@ -1203,7 +1201,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		} finally { PassInfo.pop(this); }
 		if( stat.isAbrupted() ) setAbrupted(true);
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -1252,7 +1249,7 @@ public class BreakStat extends Statement {
 		// don't pre-resolve
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setAbrupted(true);
 		ASTNode p;
 		if( ident == null ) {
@@ -1281,7 +1278,6 @@ public class BreakStat extends Statement {
 		if( p instanceof Method )
 			Kiev.reportError(pos,"Break not within loop/switch statement");
 		p.setBreaked(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -1340,10 +1336,9 @@ public class ContinueStat extends Statement/*defaults*/ {
 		// don't pre-resolve
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setAbrupted(true);
 		// TODO: check label or loop statement available
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -1399,9 +1394,8 @@ public class GotoStat extends Statement/*defaults*/ {
 		// don't pre-resolve
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setAbrupted(true);
-		return this;
 	}
 
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
@@ -1577,7 +1571,7 @@ public class GotoStat extends Statement/*defaults*/ {
 @cfnode
 public class GotoCaseStat extends Statement/*defaults*/ {
 
-	@att public Expr		expr;
+	@att public ENode		expr;
 	@ref public SwitchStat	sw;
 
 	public GotoCaseStat() {
@@ -1589,7 +1583,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setAbrupted(true);
 		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
 			if( PassInfo.path[i] instanceof SwitchStat ) {
@@ -1602,21 +1596,21 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			throw new CompilerException(pos,"goto case statement not within a switch statement");
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
-				expr = (Expr)new AssignExpr(pos,AssignOperator.Assign,
-					new VarAccessExpr(pos,sw.tmpvar),expr).resolve(Type.tpVoid);
+				expr = new AssignExpr(pos,AssignOperator.Assign,
+					new VarAccessExpr(pos,sw.tmpvar),expr);
+				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			} else {
-				expr = expr.resolveExpr(sw.sel.getType());
+				expr.resolve(sw.sel.getType());
 			}
 		}
-		return this;
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
 		PassInfo.push(this);
 		try {
-			if( expr != null && !expr.isConstantExpr() ) {
+			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
 					expr.generate(Type.tpVoid);
 				else
@@ -1633,7 +1627,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				if( PassInfo.path[i] instanceof TryStat ) {
 					TryStat ts = (TryStat)PassInfo.path[i];
 					if( ts.finally_catcher != null ) {
-						if( tmp_var==null && Kiev.verify && expr != null && !expr.isConstantExpr() ) {
+						if( tmp_var==null && Kiev.verify && expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
 							Code.addVar(tmp_var);
 							Code.addInstr(Instr.op_store,tmp_var);
@@ -1651,13 +1645,13 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				Code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;
-			if( expr == null ) {
+			if !( expr instanceof Expr ) {
 				if( sw.defCase != null )
 					lb = ((CaseLabel)sw.defCase).getLabel();
 				else
 					lb = sw.getBreakLabel();
 			}
-			else if( !expr.isConstantExpr() )
+			else if( !((Expr)expr).isConstantExpr() )
 				lb = sw.getContinueLabel();
 			else {
 				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
@@ -1678,7 +1672,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				}
 			}
 			Code.addInstr(Instr.op_goto,lb);
-			if( expr != null && !expr.isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
+			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
 				Code.stack_pop();
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);

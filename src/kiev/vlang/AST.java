@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -45,7 +46,7 @@ public interface TopLevelDecl {
 	// process Struct's inheritance (extends/implements)
 	//public ASTNode pass2_2(ASTNode pn);
 	// process Struct's members (fields, methods)
-	public ASTNode pass3() { return (ASTNode)this; }
+	//public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
 	public ASTNode autoProxyMethods() { return (ASTNode)this; }
 	// resolveImports()
@@ -53,7 +54,7 @@ public interface TopLevelDecl {
 	// resolveFinalFields()
 	public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
 	// just resolve
-	public ASTNode resolve(Type reqType);
+	//public ASTNode resolve(Type reqType);
 	// dump
 	public Dumper  toJavaDecl(Dumper dmp);
 };
@@ -977,16 +978,124 @@ public abstract class ASTNode implements Constants {
 
 }
 
+/**
+ * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
+ */
+@node
+public abstract class DNode extends ASTNode {
+
+	public static final DNode[] emptyArray = new DNode[0];
+	
+	public DNode() {}
+	public DNode(int pos) { super(pos); }
+	public DNode(int pos, int fl) { super(pos,fl); }
+	public DNode(int pos, ASTNode parent) { super(pos,parent); }
+
+	public void resolveDecl() {
+		throw new CompilerException(pos,"Resolve call for d-node "+getClass());
+	}
+
+}
+
+/**
+ * A node that may be part of expression: statements, declarations, operators,
+ * type reference, and expressions themselves
+ */
+@node
+public abstract class ENode extends ASTNode {
+
+	public static final ENode[] emptyArray = new ENode[0];
+	
+	public ENode() {}
+	public ENode(int pos) { super(pos); }
+	public ENode(int pos, ASTNode parent) { super(pos,parent); }
+
+	public void resolve(Type reqType) {
+		throw new CompilerException(pos,"Resolve call for e-node "+getClass());
+	}
+	public void generate(Type reqType) {
+		Dumper dmp = new Dumper();
+		dmp.append(this);
+		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
+	}
+
+	public abstract int getPriority();
+
+	public boolean isConstantExpr() { return false; }
+	public Object	getConstValue() {
+		throw new RuntimeException("Request for constant value of non-constant expression");
+    }
+	
+	public final void replaceWithResolve(ENode node, Type reqType) {
+		parent.replaceVal(pslot.name, this, node);
+		node.resolve(reqType);
+	}
+
+}
+
+@node
+public class VarDecl extends ENode implements Named {
+
+	@att Var var;
+	
+	public VarDecl() {}
+	public VarDecl(Var var) {
+		this.var = var;
+	}
+	public void resolve(Type reqType) {
+		var.resolveDecl();
+	}
+
+	public NodeName getName() { return var.name; }
+	public int getPriority() { return 255; }
+	public void generate(Type reqType) {
+		var.generate(Type.tpVoid);
+	}
+}
+
+@node
+public class LocalStructDecl extends ENode implements Named {
+
+	@att Struct clazz;
+	
+	public LocalStructDecl() {}
+	public LocalStructDecl(Struct clazz) {
+		this.clazz = clazz;
+	}
+	public void resolve(Type reqType) {
+		if( PassInfo.method==null || PassInfo.method.isStatic())
+			clazz.setStatic(true);
+		ExportJavaTop exporter = new ExportJavaTop();
+		clazz.setLocal(true);
+		exporter.pass1(clazz);
+		exporter.pass1_1(clazz);
+		exporter.pass2(clazz);
+		exporter.pass2_2(clazz);
+		exporter.pass3(clazz);
+		clazz.autoProxyMethods();
+		clazz.resolveFinalFields(false);
+		clazz.resolveDecl();
+	}
+
+	public NodeName getName() { return clazz.name; }
+	public int getPriority() { return 255; }
+	public void generate(Type reqType) {
+		// don't generate here
+	}
+}
+
+
+/** A confrol-flow node: statement or expression */
 @node
 @cfnode
-public abstract class CFlowNode extends ASTNode {
+public abstract class CFlowNode extends ENode {
 //	@ref(copyable=false) public CFlowNode cf_in;
 //	@ref(copyable=false) public CFlowNode cf_out;
 	public CFlowNode() {}
 	public CFlowNode(int pos) { super(pos); }
 	public CFlowNode(int pos, ASTNode parent) { super(pos,parent); }
 
-	public ASTNode	resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		throw new CompilerException(pos,"Resolve call for node "+getClass());
 	}
 }
@@ -1007,34 +1116,11 @@ public abstract class Expr extends CFlowNode {
 		return new Type[]{getType()};
 	}
 
-	public void		generate(Type reqType) {
-		Dumper dmp = new Dumper();
-		dmp.append(this);
-		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
-	}
-
-	public int		getPriority() { return 0; }
-	public boolean	isConstantExpr() { return false; }
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");
     }
-/*	public Expr tryResolve(Type reqType) {
-		Expr self = (Expr)this.copy();
-		self.parent = parent;
-//		try {
-			ASTNode n = self.resolve(reqType);
-			if (n != this)
-				n.parent = this.parent;
-			if( n instanceof Expr )
-				return (Expr)n;
-			WrapedExpr we = new WrapedExpr(pos,n,reqType);
-			we.parent = this.parent;
-			return we;
-//		} catch (Exception e) {
-//			return null;
-//		}
-	}
-*/	public Expr resolveExpr(Type reqType) {
+/*
+	public Expr resolveExpr(Type reqType) {
 		ASTNode e = resolve(reqType);
 		if( e == null )
 			throw new CompilerException(pos,"Unresolved expression "+this);
@@ -1097,8 +1183,9 @@ public abstract class Expr extends CFlowNode {
 		}
 		throw new CompilerException(pos,"Expr "+o+" is not a class's case with no fields");
 	}
+*/
 }
-
+/*
 @node
 @cfnode
 public class WrapedExpr extends Expr {
@@ -1123,13 +1210,13 @@ public class WrapedExpr extends Expr {
 		if( expr instanceof TypeRef ) return Type.getRealType(base_type,((TypeRef)expr).getType());
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( expr instanceof Struct ) return expr;
 		if( expr instanceof TypeRef ) return expr;
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }
-
+*/
 @node
 @cfnode
 public abstract class LvalueExpr extends Expr {
@@ -1185,41 +1272,10 @@ public abstract class Statement extends CFlowNode {
 		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, stat: "+dmp.toString());
 	}
 
-	public ASTNode	resolve(Type reqType) { return this; }
-
 }
 
 @node
-public class RefNode<N extends ASTNode> extends ASTNode {
-	@att KString					name;
-	@ref public virtual forward N	lnk;
-	
-	public RefNode() {}
-	
-	public RefNode(N n) {
-		this.lnk = n;
-	}
-	public RefNode(int pos) {
-		super(pos);
-	}
-	public RefNode(int pos, N n) {
-		super(pos);
-		this.lnk = n;
-	}
-	public N get$lnk()
-		alias operator(210,fy,$cast)
-	{
-		return lnk;
-	}
-	public void set$lnk(N n) {
-		this.lnk = n;
-	}
-	
-}
-
-@cfnode
-@node
-public class TypeRef extends CFlowNode {
+public class TypeRef extends ENode {
 	//@att KString						name;
 	@ref public virtual forward Type	lnk;
 	

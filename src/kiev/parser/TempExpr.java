@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
  */
 @node
 @cfnode
-public abstract class UnresExpr extends Expr {
+public abstract class UnresExpr extends ENode {
 
 	public Operator			op;
 	
@@ -51,7 +51,7 @@ public abstract class UnresExpr extends Expr {
 	
 	public int getPriority() { return op.priority; }
 	
-	public abstract Expr toResolvedExpr();
+	public abstract ENode toResolvedExpr();
 	
 }
 
@@ -64,11 +64,11 @@ public abstract class UnresExpr extends Expr {
 @node
 @cfnode
 public class PrefixExpr extends UnresExpr {
-	@ref public Expr		expr;
+	@ref public ENode		expr;
 	
 	public PrefixExpr() {}
 
-	public PrefixExpr(int pos, Operator op, Expr expr) {
+	public PrefixExpr(int pos, Operator op, ENode expr) {
 		super(pos, op);
 		this.expr = expr;
 	}
@@ -77,11 +77,11 @@ public class PrefixExpr extends UnresExpr {
 		return op + " ( " +expr+ " )"; 
 	}
 
-	public Expr toResolvedExpr() {
-		Expr e = expr;
+	public ENode toResolvedExpr() {
+		ENode e = expr;
 		if (e instanceof UnresExpr) e = ((UnresExpr)e).toResolvedExpr();
 		if (op instanceof CastOperator)
-			return new CastExpr(pos,((CastOperator)op).type,e,false,((CastOperator)op).reinterp);
+			return new CastExpr(pos,((CastOperator)op).type,e,((CastOperator)op).reinterp);
 		return new UnaryExpr(0,op,e);
 	}
 	
@@ -96,11 +96,11 @@ public class PrefixExpr extends UnresExpr {
 @node
 @cfnode
 public class PostfixExpr extends UnresExpr {
-	@ref public Expr		expr;
+	@ref public ENode		expr;
 	
 	public PostfixExpr() {}
 
-	public PostfixExpr(int pos, Operator op, Expr expr) {
+	public PostfixExpr(int pos, Operator op, ENode expr) {
 		super(pos, op);
 		this.expr = expr;
 	}
@@ -109,8 +109,8 @@ public class PostfixExpr extends UnresExpr {
 		return "( " +expr+ " ) "+op; 
 	}
 
-	public Expr toResolvedExpr() {
-		Expr e = expr;
+	public ENode toResolvedExpr() {
+		ENode e = expr;
 		if (e instanceof UnresExpr) e = ((UnresExpr)e).toResolvedExpr();
 		return new UnaryExpr(0,op,e);
 	}
@@ -127,12 +127,12 @@ public class PostfixExpr extends UnresExpr {
 @cfnode
 public class InfixExpr extends UnresExpr {
 
-	@ref public Expr		expr1;
-	@ref public Expr		expr2;
+	@ref public ENode		expr1;
+	@ref public ENode		expr2;
 	
 	public InfixExpr() {}
 
-	public InfixExpr(int pos, Operator op, Expr expr1, Expr expr2) {
+	public InfixExpr(int pos, Operator op, ENode expr1, ENode expr2) {
 		super(pos, op);
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -142,10 +142,10 @@ public class InfixExpr extends UnresExpr {
 		return "( " +expr1+ " ) "+op+" ( "+expr2+" )"; 
 	}
 	
-	public Expr toResolvedExpr() {
-		Expr e1 = expr1;
+	public ENode toResolvedExpr() {
+		ENode e1 = expr1;
 		if (e1 instanceof UnresExpr) e1 = ((UnresExpr)e1).toResolvedExpr();
-		Expr e2 = expr2;
+		ENode e2 = expr2;
 		if (e2 instanceof UnresExpr) e2 = ((UnresExpr)e2).toResolvedExpr();
 		if (op instanceof AssignOperator)
 			return new AssignExpr(pos,(AssignOperator)op,e1,e2);
@@ -166,11 +166,11 @@ public class InfixExpr extends UnresExpr {
 @node
 @cfnode
 public class MultiExpr extends UnresExpr {
-	@ref public final NArr<ASTNode>		exprs;
+	@ref public final NArr<ENode>		exprs;
 
 	public MultiExpr() {}
 
-	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
+	public MultiExpr(int pos, MultiOperator op, List<ENode> exprs) {
 		super(pos, op);
 		this.exprs.addAll(exprs.toArray());
 	}
@@ -186,13 +186,13 @@ public class MultiExpr extends UnresExpr {
 		return sb.toString(); 
 	}
 
-	public Expr toResolvedExpr() {
+	public ENode toResolvedExpr() {
 		if (op == MultiOperator.Conditional) {
-			Expr e1 = (Expr)exprs[0];
+			ENode e1 = exprs[0];
 			if (e1 instanceof UnresExpr) e1 = ((UnresExpr)e1).toResolvedExpr();
-			Expr e2 = (Expr)exprs[1];
+			ENode e2 = exprs[1];
 			if (e2 instanceof UnresExpr) e2 = ((UnresExpr)e2).toResolvedExpr();
-			Expr e3 = (Expr)exprs[2];
+			ENode e3 = exprs[2];
 			if (e3 instanceof UnresExpr) e3 = ((UnresExpr)e3).toResolvedExpr();
 			return new ConditionalExpr(pos,e1,e2,e3);
 		}

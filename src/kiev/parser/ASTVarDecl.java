@@ -40,9 +40,7 @@ public class ASTVarDecl extends ASTNode {
 	@att public Expr			init;
 	public boolean				of_wrapper;
 
-	public ASTNode resolve(Type reqType) {
-		return null;
-	}
+	public void resolve(Type reqType) {}
 
     public Dumper toJava(Dumper dmp) {
     	dmp.append(name);

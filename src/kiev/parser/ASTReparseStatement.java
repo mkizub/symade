@@ -46,7 +46,7 @@ public class ASTReparseStatement extends Statement {
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");
@@ -56,8 +56,6 @@ public class ASTReparseStatement extends Statement {
 		}
 		Statement st = (Statement)n;
 		this.replaceWith(st);
-		//return st.resolve(Type.tpVoid);
-		return null;
 	}
   
 	public String toString() { return Kiev.parserAddresses.get(ref.substring(2)).toString(); }

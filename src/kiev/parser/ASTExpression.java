@@ -42,8 +42,8 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
 
 @node
 @cfnode
-public class ASTExpression extends Expr {
-	@att public final NArr<ASTNode>		nodes;
+public class ASTExpression extends ENode {
+	@att public final NArr<ENode>		nodes;
 
 	public void preResolve() {
 		PassInfo.push(this);
@@ -54,15 +54,15 @@ public class ASTExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-			List<ASTNode> lst = List.Nil;
+			List<ENode> lst = List.Nil;
 			for (int i=nodes.length-1; i >=0; i--)
-				lst = new List.Cons<ASTNode>(nodes[i], lst);
+				lst = new List.Cons<ENode>(nodes[i], lst);
 			List<ASTNode> results = List.Nil;
-			ASTNode@ result;
-			List<ASTNode>@ rest;
+			ENode@ result;
+			List<ENode>@ rest;
 			trace( Kiev.debugOperators, "Expression: "+lst);
 			NodeInfoPass.pushState();
 			try {
@@ -85,23 +85,17 @@ public class ASTExpression extends Expr {
 				throw new CompilerException(pos, msg.toString());
 			}
 			
-			ASTNode h = results.head();
+			ENode h = results.head();
 			if( h instanceof UnresExpr )
-				h = ((UnresExpr)h).toResolvedExpr().resolve(reqType);
+				h = ((UnresExpr)h).toResolvedExpr();
 			else if( h instanceof Expr )
-				h = ((Expr)h).resolve(reqType);
+				h = (Expr)h;
 			
-			if !(h instanceof Expr)
-				h = new WrapedExpr(pos,h,reqType);
-			
-			this.replaceWith(h);
-
-			return (Expr)h;
-			
+			this.replaceWithResolve(h, reqType);
 		} finally { PassInfo.pop(this); }
 	}
 /*	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		return tryResolve(reqType);
 		PassInfo.push(this);
 		try {
@@ -154,9 +148,9 @@ public class ASTExpression extends Expr {
 	 *  @param rest		- output rest of list (uprased yet part)
 	 */
 
-	public rule resolveExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+	public rule resolveExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		trace( Kiev.debugOperators, "resolving "+expr+" with priority "+priority),
 		expr.length() > 1,
@@ -185,10 +179,10 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	}
 
-	rule resolveCastExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolveCastExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		Constants.opCastPriority >= priority,
 		expr.length() > 1,
@@ -202,10 +196,10 @@ public class ASTExpression extends Expr {
 		rest ?= rest1.$var
 	}
 
-	rule resolvePrefixExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolvePrefixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -226,10 +220,10 @@ public class ASTExpression extends Expr {
 		rest ?= rest1.$var
 	}
 
-	rule resolvePostfixExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolvePostfixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		expr.length() > 1,
 		{
@@ -250,10 +244,10 @@ public class ASTExpression extends Expr {
 		rest ?= expr.tail().tail()
 	}
 
-	rule resolveBinaryExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolveBinaryExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -286,10 +280,10 @@ public class ASTExpression extends Expr {
 		rest ?= rest1
 	}
 
-	rule resolveAssignExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolveAssignExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		ASTNode@		result1;
-		List<ASTNode>@	rest1;
+		ENode@			result1;
+		List<ENode>@	rest1;
 	{
 		expr.length() > 2,
 		expr.head() instanceof Expr,
@@ -312,10 +306,10 @@ public class ASTExpression extends Expr {
 		rest ?= rest1
 	}
 
-	rule resolveMultiExpr(ASTNode@ result, List<ASTNode>@ rest, List<ASTNode> expr, int priority)
+	rule resolveMultiExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
-		List<ASTNode>@	result1;
-		List<ASTNode>@	rest1;
+		List<ENode>@	result1;
+		List<ENode>@	rest1;
 	{
 		expr.length() > 2,
 		{
@@ -334,11 +328,11 @@ public class ASTExpression extends Expr {
 		rest ?= rest1
 	}
 
-	rule resolveMultiExpr(MultiOperator op, int n, List<ASTNode>@ result, List<ASTNode> expr, List<ASTNode>@ rest)
-		ASTNode@		result1;
-		List<ASTNode>@	result2;
-		List<ASTNode>@	rest1;
-		List<ASTNode>@	rest2;
+	rule resolveMultiExpr(MultiOperator op, int n, List<ENode>@ result, List<ENode> expr, List<ENode>@ rest)
+		ENode@			result1;
+		List<ENode>@	result2;
+		List<ENode>@	rest1;
+		List<ENode>@	rest2;
 	{
 		resolveExpr(result1,rest1,expr,op.getArgPriority(n)),
 		{
@@ -391,8 +385,8 @@ public class ASTExpression extends Expr {
 	public Expr getExpr(Object:Object expr) {
 		throw new CompilerException(pos,"Node of type "+expr.getClass()+" cannot be an expression");
 	}
-
-	ASTNode makeAssignExpr(Type tp, int pos, Operator op, OpTypes opt, ASTNode expr1, ASTNode expr2) {
+/*
+	ENode makeAssignExpr(Type tp, int pos, Operator op, OpTypes opt, ENode expr1, ENode expr2) {
 		Expr e;
 		AssignOperator aop = (AssignOperator)op;
 		if( expr1 instanceof Struct )
@@ -453,7 +447,7 @@ public class ASTExpression extends Expr {
 		}
 		return e;
 	}
-
+*/
 	public int		getPriority() { return 256; }
 
     public String toString() {

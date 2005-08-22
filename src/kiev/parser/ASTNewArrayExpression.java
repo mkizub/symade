@@ -44,15 +44,15 @@ public class ASTNewArrayExpression extends Expr {
 	
 	public int dim;
   
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {
-            	args[i] = args[i].resolveExpr(Type.tpInt);
+            	args[i].resolve(Type.tpInt);
             } catch(Exception e) {
             	Kiev.reportError(pos,e);
             }
         }
-		return new NewArrayExpr(pos,type.getType(),args.toArray(),dim).resolve(reqType);
+		replaceWithResolve(new NewArrayExpr(pos,type,args.toArray(),dim), reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

@@ -22,6 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
@@ -39,10 +40,10 @@ import static kiev.vlang.Instr.*;
 @cfnode
 public class NewExpr extends Expr {
 
-	@ref public Type				type;
-	@att public final NArr<Expr>	args;
-	@att public Expr				outer;
-	@att public Expr				tif_expr;	// TypeInfo field access expression
+	@att public TypeRef				type;
+	@att public final NArr<ENode>	args;
+	@att public ENode				outer;
+	@att public ENode				tif_expr;	// TypeInfo field access expression
 	@att public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
@@ -50,13 +51,24 @@ public class NewExpr extends Expr {
 	public NewExpr() {
 	}
 
-	public NewExpr(int pos, Type type, Expr[] args) {
+	public NewExpr(int pos, Type type, ENode[] args) {
+		super(pos);
+		this.type = new TypeRef(type);
+		foreach (Expr e; args) this.args.append(e);
+	}
+
+	public NewExpr(int pos, TypeRef type, ENode[] args) {
 		super(pos);
 		this.type = type;
 		foreach (Expr e; args) this.args.append(e);
 	}
 
-	public NewExpr(int pos, Type type, Expr[] args, Expr outer) {
+	public NewExpr(int pos, Type type, ENode[] args, ENode outer) {
+		this(pos,type,args);
+		this.outer = outer;
+	}
+
+	public NewExpr(int pos, TypeRef type, ENode[] args, ENode outer) {
 		this(pos,type,args);
 		this.outer = outer;
 	}
@@ -74,34 +86,36 @@ public class NewExpr extends Expr {
 	}
 
 	public Type getType() {
-		return type;
+		return type.getType();
 	}
 
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			if( type.isAnonymouseClazz() ) {
-				type.getStruct().resolve(null);
+				type.getStruct().resolveDecl();
 			}
 			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
 			}
-			if( outer != null ) outer = (Expr)outer.resolve(null);
+			if( outer != null ) outer.resolve(null);
 			else if( (!type.isStaticClazz() && type.isLocalClazz())
 				  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) ) {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
 				Var th = PassInfo.method.getThisPar();
-				outer = (Expr)new VarAccessExpr(pos,this,th).resolve(null);
+				outer = new VarAccessExpr(pos,this,th);
+				outer.resolve(null);
 			}
 			for(int i=0; i < args.length; i++)
-				args[i] = (Expr)args[i].resolve(null);
-			Expr[] outer_args;
+				args[i].resolve(null);
+			ENode[] outer_args;
 			if( outer != null ) {
-				outer_args = new Expr[args.length+1];
+				outer_args = new ENode[args.length+1];
 				outer_args[0] = outer;
-				for(int i=0; i < args.length; i++) outer_args[i+1] = args[i];
+				for(int i=0; i < args.length; i++)
+					outer_args[i+1] = args[i];
 			} else {
 				outer_args = args.toArray();
 			}
@@ -115,7 +129,7 @@ public class NewExpr extends Expr {
 			}
 			if( type.args.length > 0 ) {
 				// Create static field for this type typeinfo
-				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type);
+				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type.getType());
 				args.insert(0,tif_expr);
 				outer_args = (Expr[])Arrays.insert(outer_args,tif_expr,(outer!=null?1:0));
 			}
@@ -124,23 +138,24 @@ public class NewExpr extends Expr {
 				Type[] ta = new Type[outer_args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = outer_args[i].getType();
-				MethodType mt = MethodType.newMethodType(null,ta,type);
+				MethodType mt = MethodType.newMethodType(null,ta,type.getType());
 				Method@ m;
 				// First try overloaded 'new', than real 'new'
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
 					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-						ASTNode n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
+						CallExpr n = new CallExpr(pos,parent,(Method)m,m.makeArgs(args,type));
 						n.type_of_static = type;
 						n.setResolved(true);
-						return n;
+						replaceWith(n);
+						return;
 					}
 				}
 				mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 					func = m;
-					outer_args = m.makeArgs(outer_args,type);
+					outer_args = m.makeArgs(outer_args,type.getType());
 					int po = 0;
 					int pa = 0;
 					if( outer != null ) outer = outer_args[po++];
@@ -153,7 +168,6 @@ public class NewExpr extends Expr {
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -263,15 +277,15 @@ public class NewExpr extends Expr {
 @cfnode
 public class NewArrayExpr extends Expr {
 
-	@ref public Type				type;
-	@att public final NArr<Expr>	args;
+	@att public TypeRef				type;
+	@att public final NArr<ENode>	args;
 	public int						dim;
-	@ref private Type				arrtype;
+	private Type					arrtype;
 
 	public NewArrayExpr() {
 	}
 
-	public NewArrayExpr(int pos, Type type, Expr[] args, int dim) {
+	public NewArrayExpr(int pos, TypeRef type, Expr[] args, int dim) {
 		super(pos);
 		this.type = type;
 		foreach (Expr e; args) this.args.append(e);
@@ -293,7 +307,7 @@ public class NewArrayExpr extends Expr {
 
 	public Type getType() { return arrtype; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -372,16 +386,16 @@ public class NewArrayExpr extends Expr {
 @cfnode
 public class NewInitializedArrayExpr extends Expr {
 
-	@ref public Type				type;
+	@att public TypeRef				type;
+	@att public final NArr<ENode>	args;
 	public int						dim;
 	public int[]					dims;
-	@att public final NArr<Expr>	args;
-	@ref private Type				arrtype;
+	private Type				arrtype;
 
 	public NewInitializedArrayExpr() {
 	}
 
-	public NewInitializedArrayExpr(int pos, Type type, int dim, Expr[] args) {
+	public NewInitializedArrayExpr(int pos, TypeRef type, int dim, ENode[] args) {
 		super(pos);
 		this.type = type;
 		this.dim = dim;
@@ -408,7 +422,7 @@ public class NewInitializedArrayExpr extends Expr {
 
 	public int getElementsNumber(int i) { return dims[i]; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -477,7 +491,7 @@ public class NewInitializedArrayExpr extends Expr {
 @cfnode
 public class NewClosure extends Expr {
 
-	@ref public Type				type;
+	@att public TypeClosureRef		type;
 	@att public final NArr<Expr>	args;
 	@att public Struct				clazz; // if this new expression defines new class
 
@@ -486,7 +500,7 @@ public class NewClosure extends Expr {
 	public NewClosure() {
 	}
 
-	public NewClosure(int pos, Type type) {
+	public NewClosure(int pos, TypeClosureRef type) {
 		super(pos);
 		this.type = type;
 	}
@@ -497,7 +511,7 @@ public class NewClosure extends Expr {
 		this.type = ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret);
 	}
 
-	public NewClosure(int pos, Method func, Expr[] args) {
+	public NewClosure(int pos, Method func, ENode[] args) {
 		super(pos);
 		this.func = func;
 		if(args.length==0)
@@ -517,7 +531,7 @@ public class NewClosure extends Expr {
 
 	public Type getType() { return type; }
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return this;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return this;
 		PassInfo.push(this);

@@ -44,8 +44,8 @@ public class ASTRuleAndExpression extends ASTRuleNode {
 		exprs += n;
 	}
 
-    public ASTNode resolve(Type reqType) {
-    	return new RuleAndExpr(getPos(),exprs.toArray()).resolve(null);
+    public void resolve(Type reqType) {
+    	replaceWithResolve(new RuleAndExpr(getPos(),exprs.toArray()), null);
     }
     
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

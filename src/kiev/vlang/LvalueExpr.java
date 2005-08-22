@@ -51,20 +51,20 @@ public class AccessExpr extends LvalueExpr {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	@att public Expr		obj;
+	@att public ENode		obj;
 	@ref public Field		var;
 
 	public AccessExpr() {
 	}
 
-	public AccessExpr(int pos, Expr obj, Field var) {
+	public AccessExpr(int pos, ENode obj, Field var) {
 		super(pos);
 		this.obj = obj;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, Expr obj, Field var, boolean direct_access) {
+	public AccessExpr(int pos, ENode obj, Field var, boolean direct_access) {
 		super(pos);
 		this.obj = obj;
 		this.var = var;
@@ -72,14 +72,14 @@ public class AccessExpr extends LvalueExpr {
 		if (direct_access) setAsField(true);
 	}
 
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var) {
+	public AccessExpr(int pos, ASTNode par, ENode obj, Field var) {
 		super(pos,par);
 		this.obj = obj;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, Expr obj, Field var, int flags) {
+	public AccessExpr(int pos, ENode obj, Field var, int flags) {
 		super(pos);
 		this.obj = obj;
 		this.var = var;
@@ -87,7 +87,7 @@ public class AccessExpr extends LvalueExpr {
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var, int flags) {
+	public AccessExpr(int pos, ASTNode par, ENode obj, Field var, int flags) {
 		super(pos,par);
 		this.obj = obj;
 		this.var = var;
@@ -115,12 +115,12 @@ public class AccessExpr extends LvalueExpr {
 		var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 
 		PassInfo.push(this);
 		try {
-			obj = (Expr)obj.resolve(null);
+			obj.resolve(null);
 
 			// Set violation of the field
 			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
@@ -131,10 +131,9 @@ public class AccessExpr extends LvalueExpr {
 			setResolved(true);
 			Type tp = getType();
 			if( !var.getType().equals(tp) ) {
-				return new CastExpr(pos,tp,this).resolve(null);
+				this.replaceWithResolve(new CastExpr(pos,tp,this), null);
 			}
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
 	public void generateCheckCastIfNeeded() {
@@ -256,13 +255,13 @@ public class AccessExpr extends LvalueExpr {
 @cfnode
 public class ContainerAccessExpr extends LvalueExpr {
 
-	@att public Expr		obj;
-	@att public Expr		index;
+	@att public ENode		obj;
+	@att public ENode		index;
 
 	public ContainerAccessExpr() {
 	}
 
-	public ContainerAccessExpr(int pos, Expr obj, Expr index) {
+	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
 		super(pos);
 		this.obj = obj;
 		this.index = index;
@@ -329,11 +328,11 @@ public class ContainerAccessExpr extends LvalueExpr {
 		index = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
-			obj = (Expr)obj.resolve(null);
+			obj.resolve(null);
 			if( !obj.getType().isArray() ) {
 				// May be an overloaded '[]' operator, ensure overriding
 				Struct s = obj.getType().clazz;
@@ -352,10 +351,9 @@ public class ContainerAccessExpr extends LvalueExpr {
 					throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");
 				}
 			}
-			index = (Expr)index.resolve(null);
+			index.resolve(null);
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generateLoad() {
@@ -527,8 +525,8 @@ public class ThisExpr extends LvalueExpr {
 		parent=null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			if (PassInfo.method != null &&
@@ -538,7 +536,6 @@ public class ThisExpr extends LvalueExpr {
 				Kiev.reportError(pos,"Access 'this' in static context");
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generateLoad() {
@@ -659,8 +656,8 @@ public class VarAccessExpr extends LvalueExpr {
 		var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			// Check if we try to access this var from local inner/anonymouse class
@@ -683,7 +680,6 @@ public class VarAccessExpr extends LvalueExpr {
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public Field resolveProxyVar() {
@@ -936,18 +932,12 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 		var = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-		} finally { PassInfo.pop(this); }
-		setResolved(true);
-		return this;
+	public void resolve(Type reqType) {
 	}
 
 	public Field resolveFieldForLocalPrologVar() {
 		RuleMethod rm = (RuleMethod)PassInfo.method;
-		Struct s = (Struct)((BlockStat)rm.body).stats[0];
+		Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
 		Field f = s.resolveField(var.name.name);
 		assert(f != null);
 		return f;
@@ -1094,8 +1084,8 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		obj = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			// Set violation of the field
@@ -1104,7 +1094,6 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		} finally { PassInfo.pop(this); }
 
 		setResolved(true);
-		return this;
 	}
 
 	public void generateLoad() {
@@ -1196,8 +1185,8 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		outer_refs = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() );
 		PassInfo.push(this);
 		try {
 			trace(Kiev.debugResolve,"Resolving "+this);
@@ -1223,7 +1212,6 @@ public class OuterThisAccessExpr extends LvalueExpr {
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generateLoad() {
@@ -1308,11 +1296,9 @@ public class SelfAccessExpr extends LvalueExpr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		expr = (LvalueExpr)expr.resolve(reqType);
+	public void resolve(Type reqType) throws RuntimeException {
+		expr.resolve(reqType);
 		setResolved(true);
-		// Thanks to AccessExpr, that resolved all things for us
-		return this;
 	}
 
 	/** Just load value referenced by lvalue */

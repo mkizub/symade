@@ -43,9 +43,9 @@ public class ASTCastExpression extends Expr {
 		return type.getType();
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		Type tp = type.getType();
-		return new CastExpr(pos,tp,expr,true).resolve(reqType);
+		replaceWithResolve(new CastExpr(pos,tp,expr,true), reqType);
 	}
     
     public Dumper toJava(Dumper dmp) {

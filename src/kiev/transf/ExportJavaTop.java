@@ -829,7 +829,7 @@ public final class ExportJavaTop implements Constants {
 							if (fdecl.isInitWrapper())
 								f.init = fdecl.init;
 							else
-								f.init = new NewExpr(fdecl.pos,ftype, (fdecl.init==null)? Expr.emptyArray : new Expr[]{fdecl.init});
+								f.init = new NewExpr(fdecl.pos,ftype, (fdecl.init==null)? ENode.emptyArray : new ENode[]{fdecl.init});
 							f.setInitWrapper(true);
 						} else {
 							f.init = fdecl.init;

@@ -101,7 +101,7 @@ public final class ProcessVirtFld implements Constants {
 				set_var.params.add(value);
 			}
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,set_var,ASTNode.emptyArray);
+				BlockStat body = new BlockStat(f.pos,set_var,ENode.emptyArray);
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,s,f,true)
@@ -182,7 +182,7 @@ public final class ProcessVirtFld implements Constants {
 			s.addMethod(get_var);
 			FormPar self = get_var.getThisPar();
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
+				BlockStat body = new BlockStat(f.pos,get_var,ENode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
 			}
@@ -415,7 +415,7 @@ public final class ProcessVirtFld implements Constants {
 				Expr expr;
 				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
 					expr = new CallAccessExpr(ae.pos, ae.parent, fa.obj, f.getMetaVirtual().set, new Expr[]{(Expr)ae.value});
-					expr = expr.resolveExpr(Type.tpVoid);
+					expr.resolve(Type.tpVoid);
 				}
 				else {
 					BlockExpr be = new BlockExpr(ae.pos, ae.parent);
@@ -446,9 +446,9 @@ public final class ProcessVirtFld implements Constants {
 						be.setExpr(g);
 					}
 					expr = be;
-					expr = expr.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
+					expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 				}
-				ae.parent.replaceVal(id, ae, expr);
+				ae.replaceWith(expr);
 				rewrite(expr, id);
 			}
 			else {
@@ -498,7 +498,7 @@ public final class ProcessVirtFld implements Constants {
 					} else {
 						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 					}
-					expr = expr.resolveExpr(Type.tpVoid);
+					expr.resolve(Type.tpVoid);
 					expr.setGenVoidExpr(true);
 				}
 				else {
@@ -537,9 +537,9 @@ public final class ProcessVirtFld implements Constants {
 					else
 						be.setExpr(new CallAccessExpr(0, null, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray));
 					expr = be;
-					expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
+					expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}
-				ie.parent.replaceVal(id, ie, expr);
+				ie.replaceWith(expr);
 				rewrite(expr, id);
 			}
 			else {

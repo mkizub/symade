@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 public class ASTPizzaCase extends ASTNode implements ScopeOfNames {
 	@att public ASTIdentifier			val;
 	@att public final NArr<Var>			params;
-	@att public final NArr<ASTNode>		stats;
+	@att public final NArr<ENode>		stats;
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ p;
@@ -58,7 +58,7 @@ public class ASTPizzaCase extends ASTNode implements ScopeOfNames {
 		} finally { PassInfo.pop(this); }
 	}
 	
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
     	Var[] pattern = new Var[params.length];
     	try {
 	    	KString n = val.name;
@@ -72,12 +72,10 @@ public class ASTPizzaCase extends ASTNode implements ScopeOfNames {
 	    	if (!v.getType().isPizzaCase())
 	    		throw new CompilerException(val.getPos(),"Class "+n+" is not a class case");
 			CaseLabel cl = new CaseLabel(pos,parent,(Expr)v,stats.toArray());
-			cl.parent = parent;
 			cl.pattern.addAll(params);
-			return cl;
+			replaceWith(cl);
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
-			return this;
 	    }
     }
 

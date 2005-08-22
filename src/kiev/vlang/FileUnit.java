@@ -37,11 +37,11 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 	@att public KString					filename = KString.Empty;
 	@att public StructRef				pkg;
 	@att public final NArr<ASTNode>		syntax;
-	@att public final NArr<ASTNode>		members;
+	@att public final NArr<DNode>		members;
 	
 	public PrescannedBody[]				bodies = PrescannedBody.emptyArray;
 	public boolean[]					disabled_extensions;
@@ -167,7 +167,7 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
 		return this;
 	}
 
-	public ASTNode resolve() throws RuntimeException {
+	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
 		PassInfo.push(this);
 		KString curr_file = Kiev.curFile;
@@ -177,13 +177,12 @@ public class FileUnit extends ASTNode implements Constants, ScopeOfNames, ScopeO
         	Kiev.setExtSet(disabled_extensions);
 			for(int i=0; i < members.length; i++) {
 				try {
-					members[i] = (Struct)((TopLevelDecl)members[i]).resolve(null);
+					members[i].resolveDecl();
 				} catch(Exception e) {
 					Kiev.reportError(members[i].pos,e);
 				}
 			}
 		} finally { PassInfo.pop(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); /*RuleNode.curr = RuleNode.curr.joinUp();*/ }
-		return this;
 	}
 
 	public void generate() {

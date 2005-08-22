@@ -32,9 +32,7 @@ public class ASTPragma extends ASTNode implements TopLevelDecl {
 	public boolean								enable;
 	@att public final NArr<ConstStringExpr>	options;
 
-	public ASTNode resolve(Type reqType) {
-		return this;
-	}
+	public void resolve(Type reqType) {}
 	
 	public Dumper toJavaDecl(Dumper dmp) {
 		return toJava(dmp);

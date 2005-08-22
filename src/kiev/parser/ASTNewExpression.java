@@ -49,7 +49,7 @@ public class ASTNewExpression extends Expr {
     @att
 	public final Struct				clazz;
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = type.getType();
 		tp.checkResolved();
@@ -84,15 +84,17 @@ public class ASTNewExpression extends Expr {
 		for(int i=0; i < args.length; i++) {
 			try {
 				if( targs[i] != Type.tpVoid )
-					args[i] = args[i].resolveExpr(targs[i]);
+					args[i].resolve(targs[i]);
 				else
-					args[i] = (Expr)args[i].resolve(null);
+					args[i].resolve(null);
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);
 			}
 		}
-		if( clazz == null )
-			return new NewExpr(pos,tp,args.toArray()).resolve(reqType);
+		if( clazz == null ) {
+			replaceWithResolve(new NewExpr(pos,tp,args.toArray()), reqType);
+			return;
+		}
 		// Local anonymouse class
 		Type sup  = tp;
 		Struct me = clazz;
@@ -124,7 +126,7 @@ public class ASTNewExpression extends Expr {
 				Type[] targs = Type.emptyArray;
 				NArr<FormPar> params = new NArr<FormPar>(null, null);
 				for(int i=0; i < args.length; i++) {
-					args[i] = (Expr)args[i].resolve(null);
+					args[i].resolve(null);
 					Type at = args[i].getType();
 					targs = (Type[])Arrays.append(targs,at);
 					params.append(new FormPar(pos,KString.from("arg$"+i),at,0));
@@ -150,14 +152,14 @@ public class ASTNewExpression extends Expr {
 		me.resolveFinalFields(false);
 		Expr ne;
 		if( sup.isInstanceOf(Type.tpClosure) ) {
-			ne = new NewClosure(pos,me.type);
+			ne = new NewClosure(pos,new TypeRef(me.type));
 			ne.clazz = me;
 		} else {
 			ne = new NewExpr(pos,me.type,args.toArray());
 			ne.clazz = me;
 		}
 		ne.parent = parent;
-		return ne.resolve(reqType);
+		replaceWithResolve(ne, reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

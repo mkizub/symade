@@ -40,13 +40,13 @@ public class ASTRuleExpression extends ASTRuleNode {
 	@att public Expr	bt_expr;
 	boolean				while_mode;
 
-    public ASTNode resolve(Type reqType) {
-    	expr = (Expr)expr.resolve(null);
-    	if (bt_expr != null) bt_expr = (Expr)bt_expr.resolve(null);
+    public void resolve(Type reqType) {
+    	expr.resolve(null);
+    	if (bt_expr != null) bt_expr.resolve(null);
     	if (while_mode)
-   			return new RuleWhileExpr(expr,bt_expr).resolve(null);
+   			replaceWithResolve(new RuleWhileExpr(expr,bt_expr), null);
    		else
-    		return new RuleExpr(expr,bt_expr).resolve(null);
+    		replaceWithResolve(new RuleExpr(expr,bt_expr), null);
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

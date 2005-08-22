@@ -239,7 +239,7 @@ public class Meta extends ASTNode {
 			Type t = tp;
 			if (t.isArray()) {
 				if (v instanceof MetaValueScalar) {
-					ASTNode val = ((MetaValueScalar)v).value;
+					ENode val = ((MetaValueScalar)v).value;
 					MetaValueArray mva = new MetaValueArray(v.type); 
 					values[n] = v = mva;
 					mva.values.add(val);
@@ -268,12 +268,12 @@ public class Meta extends ASTNode {
 				mvt.signature = m.type.ret.signature;
 				if (!m.type.ret.isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
-					ASTNode v = (ASTNode)mvs.value.copy();
+					ENode v = (ENode)mvs.value.copy();
 					values.append(new MetaValueScalar(mvt, v));
 				} else {
-					ASTNode[] arr = ((MetaValueArray)m.annotation_default).values.toArray();
+					ENode[] arr = ((MetaValueArray)m.annotation_default).values.toArray();
 					for(int j=0; j < arr.length; j++)
-						arr[j] = (ASTNode)arr[j].copy();
+						arr[j] = (ENode)arr[j].copy();
 					values.append(new MetaValueArray(mvt, arr));
 				}
 				continue;
@@ -448,11 +448,12 @@ public abstract class MetaValue extends ASTNode {
 		return this;
 	}
 	
-	ASTNode resolveValue(Type reqType, ASTNode value) {
+	ENode resolveValue(Type reqType, ENode value) {
 		if (value instanceof Meta) {
 			return ((Meta)value).resolve();
 		}
-		ASTNode v = ((Expr)value).resolve(reqType);
+		value.resolve(reqType);
+		ENode v = value;
 		if (!(v instanceof Expr)) {
 			if (reqType == Type.tpClass)
 				return new WrapedExpr(value.pos, v);
@@ -481,7 +482,7 @@ public abstract class MetaValue extends ASTNode {
 @node
 public class MetaValueScalar extends MetaValue {
 
-	@att public       ASTNode       value;
+	@att public       ENode       value;
 	
 	public MetaValueScalar() {
 	}
@@ -490,7 +491,7 @@ public class MetaValueScalar extends MetaValue {
 		super(type);
 	}
 
-	public MetaValueScalar(MetaValueType type, ASTNode value) {
+	public MetaValueScalar(MetaValueType type, ENode value) {
 		super(type);
 		this.value = value;
 	}
@@ -510,7 +511,7 @@ public class MetaValueScalar extends MetaValue {
 @node
 public class MetaValueArray extends MetaValue {
 
-	@att public final NArr<ASTNode>      values;
+	@att public final NArr<ENode>      values;
 	
 	public MetaValueArray() {
 	}
@@ -519,7 +520,7 @@ public class MetaValueArray extends MetaValue {
 		super(type);
 	}
 
-	public MetaValueArray(MetaValueType type, ASTNode[] values) {
+	public MetaValueArray(MetaValueType type, ENode[] values) {
 		super(type);
 		this.values.addAll(values);
 	}

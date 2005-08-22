@@ -41,7 +41,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	@att public final NArr<ASTIdentifier>	names;
 	@att public final NArr<Expr>			exprs;
 
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
 			ASTNode@ v;
@@ -50,9 +50,9 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 			if( !(v instanceof Var) )
 	    		throw new CompilerException(names[i].getPos(),"Identifier is not a var");
 			vars[i] = (Var)v;
-			exprs[i] = (Expr)exprs[i].resolve(null);
+			exprs[i].resolve(null);
 		}
-    	return new RuleIsoneofExpr(getPos(),vars,exprs.toArray());
+    	replaceWith(new RuleIsoneofExpr(getPos(),vars,exprs.toArray()));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }

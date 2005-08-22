@@ -40,7 +40,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	@att public final NArr<Expr>		args;
 	public int dim;
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		Type tp;
 		if( type == null ) {
 			tp = reqType;
@@ -52,14 +52,14 @@ public class ASTNewInitializedArrayExpression extends Expr {
 			throw new CompilerException(pos,"Type "+type+" is not an array type");
     	for(int i=0; i < args.length; i++) {
         	try {
-				args[i] = args[i].resolveExpr(tp.args[0]);
+				args[i].resolve(tp.args[0]);
             } catch(Exception e) {
             	Kiev.reportError(pos,e);
             }
         }
         int dim = 0;
         while( tp.isArray() ) { dim++; tp = tp.args[0]; }
-		return new NewInitializedArrayExpr(pos,tp,dim,args.toArray()).resolve(reqType);
+		replaceWithResolve(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.toArray()), reqType);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

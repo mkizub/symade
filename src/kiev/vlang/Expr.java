@@ -43,11 +43,11 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ShadowExpr extends Expr {
-	@ref public Expr expr;
+	@ref public ENode expr;
 	
 	public ShadowExpr() {
 	}
-	public ShadowExpr(Expr expr) {
+	public ShadowExpr(ENode expr) {
 		this.expr = expr;
 	}
 	public Type getType() { return expr.getType(); }
@@ -55,10 +55,9 @@ public class ShadowExpr extends Expr {
 		parent = null;
 		expr   = null;
 	}
-	public ASTNode resolve(Type reqType) {
-		expr = expr.resolveExpr(reqType);
+	public void resolve(Type reqType) {
+		expr.resolve(reqType);
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -99,7 +98,7 @@ public class StatExpr extends Expr implements SetBody {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		if( stat == null )
 			throw new CompilerException(pos,"Missed expression");
@@ -130,12 +129,12 @@ public class StatExpr extends Expr implements SetBody {
 @node
 @cfnode
 public class ArrayLengthAccessExpr extends Expr {
-	@att public Expr		array;
+	@att public ENode		array;
 
 	public ArrayLengthAccessExpr() {
 	}
 
-	public ArrayLengthAccessExpr(int pos, Expr array) {
+	public ArrayLengthAccessExpr(int pos, ENode array) {
 		super(pos);
 		this.array = array;
 	}
@@ -159,15 +158,14 @@ public class ArrayLengthAccessExpr extends Expr {
 		array = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-			array = array.resolveExpr(null);
+			array.resolve(null);
 			if !(array.getType().isArray())
 				throw new CompilerException(pos, "Access to array length for non-array type "+array.getType());
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType ) {
@@ -195,13 +193,13 @@ public class ArrayLengthAccessExpr extends Expr {
 @cfnode
 public class AssignExpr extends LvalueExpr {
 	@ref public AssignOperator	op;
-	@att public Expr			lval;
-	@att public ASTNode			value;
+	@att public ENode			lval;
+	@att public ENode			value;
 
 	public AssignExpr() {
 	}
 
-	public AssignExpr(int pos, AssignOperator op, Expr lval, ASTNode value) {
+	public AssignExpr(int pos, AssignOperator op, ENode lval, ENode value) {
 		super(pos);
 		this.op = op;
 		this.lval = lval;
@@ -234,31 +232,33 @@ public class AssignExpr extends LvalueExpr {
 		value = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) {
 			setNodeTypes();
-			return this;
 		}
 		setTryResolved(true);
 		PassInfo.push(this);
 		try {
-			lval = (Expr)lval.resolve(reqType);
+			lval.resolve(reqType);
 			Type et1 = lval.getType();
 			if (op == AssignOperator.Assign && et1.isWrapper())
-				value = ((CFlowNode)value).resolve(et1.getWrappedType());
+				value.resolve(et1.getWrappedType());
 			else if (op == AssignOperator.Assign2 && et1.isWrapper())
-				value = ((CFlowNode)value).resolve(((WrapperType)et1).getUnwrappedType());
+				value.resolve(((WrapperType)et1).getUnwrappedType());
 			else
-				value = ((CFlowNode)value).resolve(et1);
+				value.resolve(et1);
 			Type et2 = value.getType();
 			if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( ( et1.isNumber() && et2.isNumber() ) &&
 				(    op==AssignOperator.AssignAdd
@@ -268,7 +268,8 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignMod
 				)
 			) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
 				(    op==AssignOperator.AssignLeftShift
@@ -276,7 +277,8 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignUnsignedRightShift
 				)
 			) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( ( et1.isInteger() && et2.isInteger() ) &&
 				(    op==AssignOperator.AssignBitOr
@@ -284,7 +286,8 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignBitAnd
 				)
 			) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			else if( ( et1.isBoolean() && et2.isBoolean() ) &&
 				(    op==AssignOperator.AssignBitOr
@@ -292,35 +295,39 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignBitAnd
 				)
 			) {
-				return this.postResolve(reqType);
+				this.postResolve(reqType);
+				return;
 			}
 			// Not a standard operator, find out overloaded
 			foreach(OpTypes opt; op.types ) {
 				Type[] tps = new Type[]{null,et1,et2};
 				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					return new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{(Expr)value}).resolveExpr(reqType);
+					replaceWithResolve(new CallAccessExpr(pos,parent,lval,opt.method,new Expr[]{(Expr)value}), reqType);
+					return;
 				}
 			}
 			// Not a standard and not overloaded, try wrapped classes
 			if (op != AssignOperator.Assign2) {
 				if (et1.isWrapper() && et2.isWrapper()) {
-					return new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)).resolveExpr(reqType);
+					replaceWithResolve(new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)), reqType);
+					return;
 				}
-				if (et1.isWrapper()) {
-					return new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value).resolveExpr(reqType);
+				else if (et1.isWrapper()) {
+					replaceWithResolve(new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value), reqType);
+					return;
 				}
-				if (et2.isWrapper()) {
-					return new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)).resolveExpr(reqType);
+				else if (et2.isWrapper()) {
+					replaceWithResolve(new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)), reqType);
+					return;
 				}
 			}
-			return this.postResolve(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
+			this.postResolve(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 
 		} finally { PassInfo.pop(this); }
-		return this;
 	}
 
-	private Expr postResolve(Type reqType) {
+	private ENode postResolve(Type reqType) {
 		ASTNode lv = lval.resolve(null);
 		if( !(lv instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lv+": lvalue requared");
@@ -526,7 +533,7 @@ public class InitializeExpr extends AssignExpr {
 		this.of_wrapper = of_wrapper;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		setTryResolved(true);
 		if (!(op==AssignOperator.Assign || op==AssignOperator.Assign2))
 			throw new CompilerException(pos,"Initializer must use = or :=");
@@ -561,13 +568,13 @@ public class InitializeExpr extends AssignExpr {
 @cfnode
 public class BinaryExpr extends Expr {
 	@ref public BinaryOperator		op;
-	@att public Expr				expr1;
-	@att public Expr				expr2;
+	@att public ENode				expr1;
+	@att public ENode				expr2;
 
 	public BinaryExpr() {
 	}
 
-	public BinaryExpr(int pos, BinaryOperator op, Expr expr1, Expr expr2) {
+	public BinaryExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
 		super(pos);
 		this.op = op;
 		this.expr1 = expr1;
@@ -634,7 +641,7 @@ public class BinaryExpr extends Expr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -720,7 +727,7 @@ public class BinaryExpr extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode postResolve(Type reqType) {
+	private ENode postResolve(Type reqType) {
 		expr1 = (Expr)expr1.resolve(null);
 		expr2 = (Expr)expr2.resolve(null);
 
@@ -902,7 +909,7 @@ public class BinaryExpr extends Expr {
 @node
 @cfnode
 public class StringConcatExpr extends Expr {
-	@att public final NArr<Expr>	args;
+	@att public final NArr<ENode>	args;
 
 	@ref public static Struct clazzStringBuffer;
 	@ref public static Method clazzStringBufferToString;
@@ -951,7 +958,7 @@ public class StringConcatExpr extends Expr {
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		// Resolving of args done by BinaryExpr +
 		// just add items to clazz's CP
@@ -1043,12 +1050,12 @@ public class StringConcatExpr extends Expr {
 @node
 @cfnode
 public class CommaExpr extends Expr {
-	@att public final NArr<Expr>	exprs;
+	@att public final NArr<ENode>	exprs;
 
 	public CommaExpr() {
 	}
 
-	public CommaExpr(Expr expr) {
+	public CommaExpr(ENode expr) {
 		super(expr.pos);
 		this.exprs.add(expr);
 	}
@@ -1074,7 +1081,7 @@ public class CommaExpr extends Expr {
 		exprs.cleanup();
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1117,8 +1124,8 @@ public class CommaExpr extends Expr {
 @cfnode
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
-	@att public final NArr<ASTNode>		stats;
-	@att public       Expr				res;
+	@att public final NArr<ENode>		stats;
+	@att public       ENode				res;
 
 	public BlockExpr() {
 	}
@@ -1132,7 +1139,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		return st;
 	}
 
-	public void setExpr(Expr res) {
+	public void setExpr(ENode res) {
 		this.res = res;
 	}
 
@@ -1196,7 +1203,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
@@ -1355,12 +1362,12 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 @cfnode
 public class UnaryExpr extends Expr {
 	@ref public Operator			op;
-	@att public Expr				expr;
+	@att public ENode				expr;
 
 	public UnaryExpr() {
 	}
 
-	public UnaryExpr(int pos, Operator op, Expr expr) {
+	public UnaryExpr(int pos, Operator op, ENode expr) {
 		super(pos);
 		this.op = op;
 		this.expr = expr;
@@ -1391,7 +1398,7 @@ public class UnaryExpr extends Expr {
 		expr = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		try {
@@ -1537,12 +1544,12 @@ public class UnaryExpr extends Expr {
 @cfnode
 public class IncrementExpr extends LvalueExpr {
 	@ref public Operator			op;
-	@att public Expr				lval;
+	@att public ENode				lval;
 
 	public IncrementExpr() {
 	}
 
-	public IncrementExpr(int pos, Operator op, Expr lval) {
+	public IncrementExpr(int pos, Operator op, ENode lval) {
 		super(pos);
 		this.op = op;
 		this.lval = lval;
@@ -1567,7 +1574,7 @@ public class IncrementExpr extends LvalueExpr {
 		lval = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
@@ -1800,14 +1807,14 @@ public class MultiExpr extends Expr {
 @node
 @cfnode
 public class ConditionalExpr extends Expr {
-	@att public Expr		cond;
-	@att public Expr		expr1;
-	@att public Expr		expr2;
+	@att public ENode		cond;
+	@att public ENode		expr1;
+	@att public ENode		expr2;
 
 	public ConditionalExpr() {
 	}
 
-	public ConditionalExpr(int pos, Expr cond, Expr expr1, Expr expr2) {
+	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
 		super(pos);
 		this.cond = cond;
 		this.expr1 = expr1;
@@ -1850,7 +1857,7 @@ public class ConditionalExpr extends Expr {
 		expr2 = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) return this;
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
@@ -1927,32 +1934,33 @@ public class ConditionalExpr extends Expr {
 @node
 @cfnode
 public class CastExpr extends Expr {
-	@ref public Type			type;
-	@att public Expr			expr;
+	@att public TypeRef			type;
+	@att public ENode			expr;
 	public boolean				explicit = false;
 	public boolean				reinterp = false;
 
 	public CastExpr() {
 	}
 
-	public CastExpr(int pos, Type type, Expr expr) {
+	public CastExpr(int pos, Type type, ENode expr) {
+		super(pos);
+		this.type = new TypeRef(type);
+		this.expr = expr;
+	}
+
+	public CastExpr(int pos, TypeRef type, ENode expr) {
 		super(pos);
 		this.type = type;
 		this.expr = expr;
 	}
 
-	public CastExpr(int pos, Type type, Expr expr, boolean expl) {
-		super(pos);
-		this.type = type;
-		this.expr = expr;
-		explicit = expl;
+	public CastExpr(int pos, Type type, ENode expr, boolean reint) {
+		this(pos, type, expr);
+		reinterp = reint;
 	}
 
-	public CastExpr(int pos, Type type, Expr expr, boolean expl, boolean reint) {
-		super(pos);
-		this.type = type;
-		this.expr = expr;
-		explicit = expl;
+	public CastExpr(int pos, TypeRef type, ENode expr, boolean reint) {
+		this(pos, type, expr);
 		reinterp = reint;
 	}
 
@@ -1978,7 +1986,7 @@ public class CastExpr extends Expr {
 
 	public int getPriority() { return opCastPriority; }
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		if( isResolved() ) {
 			setNodeCastType();
 			return this;
@@ -1993,13 +2001,13 @@ public class CastExpr extends Expr {
 				Expr ocast = tryOverloadedCast(extp);
 				if( ocast == this ) return (Expr)resolve(reqType);
 				if (extp.isWrapper()) {
-					return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).resolveExpr(reqType);
+					return new CastExpr(pos,type,extp.makeWrappedAccess(expr),reinterp).resolveExpr(reqType);
 				}
 			}
 			else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
 				Expr ocast = tryOverloadedCast(extp);
 				if( ocast == this ) return (Expr)resolve(reqType);
-				return new CastExpr(pos,type,extp.makeWrappedAccess(expr),explicit,reinterp).resolveExpr(reqType);
+				return new CastExpr(pos,type,extp.makeWrappedAccess(expr),reinterp).resolveExpr(reqType);
 			}
 			else {
 				return (Expr)this.postResolve(type);
@@ -2102,7 +2110,7 @@ public class CastExpr extends Expr {
 		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
 		) {
 			return new CastExpr(pos,type,
-				new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct())),explicit
+				new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
 			).resolve(reqType);
 		}
 		if( expr.isConstantExpr() ) {

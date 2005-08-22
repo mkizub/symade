@@ -37,9 +37,9 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTCallAccessExpression extends Expr {
-	@att public ASTNode					obj;
+	@att public ENode					obj;
 	@att public ASTIdentifier			func;
-    @att public final NArr<Expr>		args;
+    @att public final NArr<ENode>		args;
 
 	public void preResolve() {
 		PassInfo.push(this);
@@ -56,9 +56,9 @@ public class ASTCallAccessExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		for(int i=0; i < args.length; i++) {
-			args[i] = (Expr)args[i].resolveExpr(null);
+			args[i].resolve(null);
 		}
 		ASTNode o;
 		Type tp = null;

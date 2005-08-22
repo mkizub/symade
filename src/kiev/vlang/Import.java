@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
 	public enum ImportMode {
@@ -97,9 +97,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 		return this;
 	}
 
-	public ASTNode resolve() throws RuntimeException {
-		return this;
-	}
+	public void resolveDecl() {}
 
 	public void generate() {}
 
@@ -182,7 +180,7 @@ public class Import extends ASTNode implements Constants, ScopeOfNames, ScopeOfM
 
 
 @node
-public class Typedef extends ASTNode implements Named {
+public class Typedef extends DNode implements Named {
 
 	public static Typedef[]	emptyArray = new Typedef[0];
 

@@ -674,7 +674,7 @@ public class Compiler {
 					Kiev.reportInfo("Parsed file    "+args[i],diff_time);
 				runGC();
 				try {
-					Kiev.files[i].resolve();
+					Kiev.files[i].resolveDecl();
 				} catch (Exception rte) {
 					Kiev.reportError(0,rte);
 				}

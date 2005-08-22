@@ -113,9 +113,9 @@ public final class ProcessPackedFld implements Constants {
 			else if( mp.size == 16 && f.type == Type.tpShort )
 				expr = new CastExpr(fa.pos, Type.tpShort, expr);
 			else if( mp.size == 16 && f.type == Type.tpChar )
-				expr = new CastExpr(fa.pos, Type.tpChar, expr, false, true);
+				expr = new CastExpr(fa.pos, Type.tpChar, expr, true);
 			else if( mp.size == 1 && f.type == Type.tpBoolean )
-				expr = new CastExpr(fa.pos, Type.tpBoolean, expr, false, true);
+				expr = new CastExpr(fa.pos, Type.tpBoolean, expr, true);
 
 			fa.parent.replaceVal(id, fa, expr);
 			rewriteNode(expr, id);
@@ -191,10 +191,9 @@ public final class ProcessPackedFld implements Constants {
 			if (!ae.isGenVoidExpr()) {
 				be.setExpr(mkAccess(tmp));
 			}
-			Expr expr = be.resolveExpr(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-
-			ae.parent.replaceVal(id, ae, expr);
-			rewrite(expr, id);
+			ae.replaceWith(be);
+			be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
+			rewrite(be, id);
 		} finally { PassInfo.pop(ae); }
 	}
 	
@@ -220,7 +219,7 @@ public final class ProcessPackedFld implements Constants {
 				} else {
 					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 				}
-				expr = expr.resolveExpr(Type.tpVoid);
+				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			}
 			else {
@@ -288,7 +287,7 @@ public final class ProcessPackedFld implements Constants {
 					be.setExpr(mkAccess(tmp));
 				}
 				expr = be;
-				expr = expr.resolveExpr(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
+				expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 			}
 			ie.parent.replaceVal(id, ie, expr);
 			rewrite(expr, id);

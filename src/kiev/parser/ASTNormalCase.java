@@ -36,7 +36,7 @@ import kiev.vlang.*;
 @node
 public class ASTNormalCase extends ASTNode {
 	@att public Expr					val;
-	@att public final NArr<ASTNode>		stats;
+	@att public final NArr<ENode>		stats;
 
 	public void preResolve() {
 		PassInfo.push(this);
@@ -46,22 +46,19 @@ public class ASTNormalCase extends ASTNode {
 		} finally { PassInfo.pop(this); }
 	}
 	
-    public ASTNode resolve(Type reqType) {
+    public void resolve(Type reqType) {
     	try {
-			ASTNode n = null;
+			ENode n = null;
     		if( val != null ) {
-		    	n = val.resolve(null);
-				if (n instanceof Struct)
-					n = new WrapedExpr(val.pos, n);
-				else if (n instanceof TypeRef)
-					n = new WrapedExpr(val.pos, n);
+		    	val.resolve(null);
+//				if (n instanceof Struct)
+//					n = new WrapedExpr(val.pos, n);
+//				else if (n instanceof TypeRef)
+//					n = new WrapedExpr(val.pos, n);
 			}
-			CaseLabel cl = new CaseLabel(pos,parent,(Expr)n,stats.toArray());
-			cl.parent = parent;
-			return cl;
+			CaseLabel cl = new CaseLabel(pos,parent,val,stats.toArray());
 	    } catch(Exception e ) {
 	    	Kiev.reportError(val.getPos(),e);
-			return this;
 	    }
     }
 

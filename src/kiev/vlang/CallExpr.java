@@ -39,33 +39,33 @@ import syntax kiev.Syntax;
 @cfnode
 public class CallExpr extends Expr {
 	@ref public Method				func;
-	@att public final NArr<Expr>	args;
+	@att public final NArr<ENode>	args;
 	@ref public Type				type_of_static;
 	public boolean					super_flag;
 
 	public CallExpr() {
 	}
 
-	public CallExpr(int pos, Method func, Expr[] args) {
+	public CallExpr(int pos, Method func, ENode[] args) {
 		super(pos);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, Expr[] args) {
+	public CallExpr(int pos, ASTNode par, Method func, ENode[] args) {
 		super(pos,par);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public CallExpr(int pos, Method func, Expr[] args, boolean sf) {
+	public CallExpr(int pos, Method func, ENode[] args, boolean sf) {
 		super(pos);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 		super_flag = sf;
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, Expr[] args, boolean sf) {
+	public CallExpr(int pos, ASTNode par, Method func, ENode[] args, boolean sf) {
 		super(pos,par);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
@@ -97,8 +97,8 @@ public class CallExpr extends Expr {
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
 				args.insert(0, new ConstNullExpr());
@@ -107,10 +107,9 @@ public class CallExpr extends Expr {
 		}
 		if (args != null) {
 			for (int i=0; i < args.length; i++)
-				args[i] = args[i].resolveExpr(Type.getRealType(PassInfo.clazz.type,func.type.args[i]));
+				args[i].resolve(Type.getRealType(PassInfo.clazz.type,func.type.args[i]));
 		}
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {
@@ -227,22 +226,22 @@ public class CallExpr extends Expr {
 @node
 @cfnode
 public class CallAccessExpr extends Expr {
-	@att public Expr				obj;
+	@att public ENode				obj;
 	@ref public Method				func;
-	@att public final NArr<Expr>	args;
+	@att public final NArr<ENode>	args;
 	public boolean					super_flag;
 
 	public CallAccessExpr() {
 	}
 
-	public CallAccessExpr(int pos, Expr obj, Method func, Expr[] args) {
+	public CallAccessExpr(int pos, Expr obj, Method func, ENode[] args) {
 		super(pos);
 		this.obj = obj;
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public CallAccessExpr(int pos, ASTNode par, Expr obj, Method func, Expr[] args) {
+	public CallAccessExpr(int pos, ASTNode par, ENode obj, Method func, ENode[] args) {
 		super(pos,par);
 		this.obj = obj;
 		this.func = func;
@@ -277,10 +276,13 @@ public class CallAccessExpr extends Expr {
 		args = null;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		if( func.isStatic() ) return new CallExpr(pos,parent,func,args.toArray()).resolve(reqType);
-		obj = (Expr)obj.resolve(null);
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		if( func.isStatic() ) {
+			replaceWithResolve(new CallExpr(pos,parent,func,args.toArray()), reqType);
+			return;
+		}
+		obj.resolve(null);
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
 				args.insert(0, new ConstNullExpr());
@@ -289,10 +291,9 @@ public class CallAccessExpr extends Expr {
 		}
 		if (args != null) {
 			for (int i=0; i < args.length; i++)
-				args[i] = args[i].resolveExpr(Type.getRealType(obj.getType(),func.type.args[i]));
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
 		}
 		setResolved(true);
-		return this;
 	}
 
 	public void generateCheckCastIfNeeded() {
@@ -492,10 +493,10 @@ public class CallAccessExpr extends Expr {
 @node
 @cfnode
 public class ClosureCallExpr extends Expr {
-	@att public Expr					expr;
-	@ref public ASTNode					func;	// Var or Field
-	@att public final NArr<Expr>		args;
-	@att public Expr					env_access;		// $env for rule closures
+	@att public ENode					expr;
+	@ref public ENode					func;	// Var or Field access expr
+	@att public final NArr<ENode>		args;
+	@att public ENode					env_access;		// $env for rule closures
 	public boolean						is_a_call;
 
 	@ref public Method	clone_it;
@@ -506,26 +507,26 @@ public class ClosureCallExpr extends Expr {
 	public ClosureCallExpr() {
 	}
 
-	public ClosureCallExpr(int pos, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, ENode func, ENode[] args) {
 		super(pos);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public ClosureCallExpr(int pos, ASTNode par, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, ASTNode par, ENode func, ENode[] args) {
 		super(pos,par);
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public ClosureCallExpr(int pos, Expr expr, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, ENode expr, ENode func, ENode[] args) {
 		super(pos);
 		this.expr = expr;
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public ClosureCallExpr(int pos, ASTNode par, Expr expr, ASTNode func, Expr[] args) {
+	public ClosureCallExpr(int pos, ASTNode par, ENode expr, ENode func, ENode[] args) {
 		super(pos,par);
 		this.expr = expr;
 		this.func = func;
@@ -569,28 +570,37 @@ public class ClosureCallExpr extends Expr {
 		}
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			if( expr != null )
-				expr = (Expr)expr.resolve(null);
+				expr.resolve(null);
 			ASTNode v = func;
 			Type tp1 = expr==null?null:expr.getType();
 			Type tp;
-			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType )
+			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType ) {
 				func = (Expr)v;
-			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType )
-				func = new VarAccessExpr(pos,this,(Var)v).resolve(null);
-			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType )
-				if( ((Field)v).isStatic() )
-					func = (Expr)new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v).resolve(null);
-				else if( expr == null )
-					func = (Expr)new AccessExpr(pos,new ThisExpr(pos),(Field)v).resolve(null);
+			}
+			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType ) {
+				func = new VarAccessExpr(pos,this,(Var)v);
+				func.resolve(null);
+			}
+			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType ) {
+				if( ((Field)v).isStatic() ) { 
+					func = new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v);
+					func.resolve(null);
+				}
+				else if( expr == null ) {
+					func = new AccessExpr(pos,new ThisExpr(pos),(Field)v);
+					func.resolve(null);
+				}
 				else {
-					func = (Expr)new AccessExpr(pos,parent,expr,(Field)v).resolve(null);
+					func = new AccessExpr(pos,parent,expr,(Field)v);
+					func.resolve(null);
 					expr = null;
 				}
+			}
 			else
 				throw new RuntimeException("Resolved item "+v+" is not a closure");
 			if( reqType != null && reqType instanceof CallableType )
@@ -601,7 +611,7 @@ public class ClosureCallExpr extends Expr {
 				is_a_call = false;
 			func_tp = tp;
 			for(int i=0; i < args.length; i++)
-				args[i] = args[i].resolveExpr(tp.args[i]);
+				args[i].resolve(tp.args[i]);
 			clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			KString call_it_name;
 			if( ((CallableType)tp).ret.isReference() )
@@ -623,7 +633,6 @@ public class ClosureCallExpr extends Expr {
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	static final KString sigZ = KString.from("(Z)Lkiev/stdlib/closure;");

@@ -40,12 +40,12 @@ import syntax kiev.Syntax;
 @cfnode
 public class ASTCallExpression extends Expr {
 	@att public ASTIdentifier			func;
-    @att public final NArr<Expr>		args;
+    @att public final NArr<ENode>		args;
 
 	public ASTCallExpression() {
 	}
 
-	public ASTCallExpression(int pos, KString func, Expr[] args) {
+	public ASTCallExpression(int pos, KString func, ENode[] args) {
 		super(pos);
 		this.func = new ASTIdentifier(pos, func);
 		foreach (Expr e; args) {
@@ -53,7 +53,7 @@ public class ASTCallExpression extends Expr {
 		}
 	}
 
-	public ASTCallExpression(int pos, KString func, NArr<Expr> args) {
+	public ASTCallExpression(int pos, KString func, NArr<ENode> args) {
 		super(pos);
 		this.func = new ASTIdentifier(pos, func);
 		this.args = args;
@@ -68,10 +68,10 @@ public class ASTCallExpression extends Expr {
 		} finally { PassInfo.pop(this); }
 	}
 	
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
 //			try {
-				args[i] = (Expr)args[i].resolve(null);
+				args[i].resolve(null);
 //			} catch(Exception e) {
 //				Kiev.reportError(args[i].getPos(),e);
 //			}

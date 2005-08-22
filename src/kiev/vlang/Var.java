@@ -34,14 +34,14 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class Var extends ASTNode implements Named, Typed {
+public class Var extends DNode implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];
 
 	public NodeName			name;
 	@att public TypeRef		vtype;
 	@att public MetaSet		meta;
-	@att public Expr		init;
+	@att public ENode		init;
 	     int				bcpos = -1;
 
 	@ref public abstract virtual access:ro Type	type;
@@ -86,21 +86,21 @@ public class Var extends ASTNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
+	public void resolveDecl() {
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
 				init = new NewExpr(pos,type,Expr.emptyArray);
 			if( init != null ) {
 				if (type.isWrapper() && !this.isInitWrapper())
-					init = new NewExpr(init.pos,type,new Expr[]{init});
+					init = new NewExpr(init.pos,type,new ENode[]{init});
 				try {
-					init = init.resolveExpr(this.type);
+					init.resolve(this.type);
 					Type it = init.getType();
 					if( it != this.type ) {
 						init = new CastExpr(init.pos,this.type,init);
-						init = init.resolveExpr(this.type);
+						init.resolve(this.type);
 					}
 				} catch(Exception e ) {
 					Kiev.reportError(pos,e);
@@ -116,7 +116,6 @@ public class Var extends ASTNode implements Named, Typed {
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void cleanup() {
@@ -295,7 +294,7 @@ public class NodeInfoPass {
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeValue(ASTNode v, Expr expr) {
+	public static ScopeNodeInfo setNodeValue(ASTNode v, ENode expr) {
 		Type tp = expr.getType();
 		ScopeNodeInfo sni = getNodeInThisScope(v);
 

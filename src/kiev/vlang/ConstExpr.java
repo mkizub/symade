@@ -222,9 +222,8 @@ public abstract class ConstExpr extends Expr {
 		// already fully resolved
 	}
 	
-	public final ASTNode resolve(Type reqType) {
+	public final void resolve(Type reqType) {
 		setResolved(true);
-		return this;
 	}
 
 	public void generate(Type reqType) {

@@ -36,16 +36,16 @@ import kiev.vlang.*;
 @node
 public class ASTThrows extends ASTNode {
 	
-	@att public final NArr<ASTIdentifier>	names;
+	@att public final NArr<ENode>	names;
 
 	public Type[] pass3() {
 		Type[] thrs = new Type[names.length];
 		for(int i=0; i < thrs.length; i++) {
 			try {
-				ASTNode n = names[i].resolve(null);
-				if !(n instanceof TypeRef)
+				names[i].resolve(null);
+				if !(names[i] instanceof TypeRef)
 					throw new CompilerException(names[i].pos, "Class name expected");
-				Type t = ((TypeRef)n).getType();
+				Type t = ((TypeRef)names[i]).getType();
 				if (t == null || !t.isClazz())
 					throw new CompilerException(names[i].pos, "Class name expected");
 				t.checkResolved();

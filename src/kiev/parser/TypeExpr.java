@@ -31,7 +31,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@cfnode
 @node
 public class TypeExpr extends TypeRef {
 	private static KString opPVar  = KString.from("@");

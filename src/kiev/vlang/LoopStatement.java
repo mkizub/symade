@@ -67,13 +67,13 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 @cfnode
 public class WhileStat extends LoopStat {
 
-	@att public Expr		cond;
+	@att public ENode		cond;
 	@att public Statement	body;
 
 	public WhileStat() {
 	}
 
-	public WhileStat(int pos, ASTNode parent, Expr cond, Statement body) {
+	public WhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos, parent);
 		this.cond = cond;
 		this.body = body;
@@ -87,13 +87,14 @@ public class WhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
 		try {
 			try {
-				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+				cond.resolve(Type.tpBoolean)
+				BoolExpr.checkBool(cond);
 			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
 			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
 			else if( cond instanceof BinaryBooleanAndExpr ) {
@@ -158,13 +159,13 @@ public class WhileStat extends LoopStat {
 @cfnode
 public class DoWhileStat extends LoopStat {
 
-	@att public Expr		cond;
+	@att public ENode		cond;
 	@att public Statement	body;
 
 	public DoWhileStat() {
 	}
 
-	public DoWhileStat(int pos, ASTNode parent, Expr cond, Statement body) {
+	public DoWhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos,parent);
 		this.cond = cond;
 		this.body = body;
@@ -178,7 +179,7 @@ public class DoWhileStat extends LoopStat {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -246,7 +247,7 @@ public class DoWhileStat extends LoopStat {
 }
 
 @node
-public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
+public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<Var>		decls;
 
@@ -283,9 +284,9 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		foreach (Var v; decls)
-			v.resolve(Type.tpVoid);
+			v.resolveDecl();
 		return null;
 	}
 	
@@ -302,15 +303,15 @@ public class ForInit extends ASTNode implements ScopeOfNames, ScopeOfMethods {
 @cfnode
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
-	@att public ASTNode		init;
-	@att public Expr		cond;
-	@att public Expr		iter;
+	@att public ENode		init;
+	@att public ENode		cond;
+	@att public ENode		iter;
 	@att public Statement	body;
 
 	public ForStat() {
 	}
 	
-	public ForStat(int pos, ASTNode parent, ASTNode init, Expr cond, Expr iter, Statement body) {
+	public ForStat(int pos, ASTNode parent, ENode init, Expr cond, Expr iter, Statement body) {
 		super(pos, parent);
 		this.init = init;
 		this.cond = cond;
@@ -336,7 +337,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -526,12 +527,12 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	@att public Var			var;
 	@att public Var			iter;
 	@att public Var			iter_array;
-	@att public Expr		iter_init;
-	@att public Expr		iter_cond;
-	@att public Expr		iter_incr;
-	@att public Expr		var_init;
-	@att public Expr		container;
-	@att public Expr		cond;
+	@att public ENode		iter_init;
+	@att public ENode		iter_cond;
+	@att public ENode		iter_incr;
+	@att public ENode		var_init;
+	@att public ENode		container;
+	@att public ENode		cond;
 	@att public Statement	body;
 
 	public static final int	ARRAY = 0;
@@ -545,7 +546,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public ForEachStat() {
 	}
 	
-	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, Expr cond, Statement body) {
+	public ForEachStat(int pos, ASTNode parent, Var var, ENode container, ENode cond, Statement body) {
 		super(pos, parent);
 		this.var = var;
 		this.container = container;
@@ -586,7 +587,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		body = null;
 	}
 
-	public ASTNode resolve(Type reqType) {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;

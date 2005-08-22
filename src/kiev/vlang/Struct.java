@@ -36,39 +36,8 @@ import syntax kiev.Syntax;
  */
 
 
-@node
-public final class StructRef extends ASTNode {
-	@att public KString						name;
-	@ref public virtual forward Struct		clazz;
-	
-	public StructRef() {}
-	
-	public StructRef(Struct s) {
-		this.clazz = s;
-	}
-	
-	public StructRef(int pos, KString name) {
-		super(pos);
-		this.name = name;
-	}
-	
-	@getter public final Struct get$clazz() {
-		if (clazz != null || name == null)
-			return clazz;
-		clazz = Env.getStruct(name);
-		return clazz;
-	}
-	
-	@setter public final void set$clazz(Struct clazz) {
-		this.clazz = clazz;
-		if (clazz != null)
-			name = clazz.name.name;
-	}
-}
-
-
 @node(copyable=false)
-public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
+public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
 	public static Struct[]	emptyArray = new Struct[0];
 
@@ -877,7 +846,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			MethodType ti_init;
 			Type[] ti_init_targs = new Type[this.type.args.length];
 			FormPar[] ti_init_params = new FormPar[]{};
-			ASTNode[] stats = new ASTNode[type.args.length];
+			ENode[] stats = new ENode[type.args.length];
 			for (int arg=0; arg < type.args.length; arg++) {
 				Type t = type.args[arg];
 				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
@@ -913,7 +882,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				ASTCallExpression call_super = new ASTCallExpression();
 				call_super.pos = pos;
 				call_super.func = new ASTIdentifier(pos, nameSuper);
-				Expr[] exprs = new Expr[super_type.args.length];
+				ENode[] exprs = new ENode[super_type.args.length];
 				for (int arg=0; arg < super_type.args.length; arg++) {
 					Type t = super_type.args[arg];
 					t = Type.getRealType(this.type,t);
@@ -939,7 +908,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			// create method to get typeinfo field
 			MethodType tim_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpTypeInfo);
 			Method tim = addMethod(new Method(nameGetTypeInfo,tim_type,ACC_PUBLIC));
-			tim.body = new BlockStat(pos,tim,new ASTNode[]{
+			tim.body = new BlockStat(pos,tim,new ENode[]{
 				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
 		}
@@ -1025,7 +994,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			this.super_type = Type.tpEnum;
 			Field vals = addField(new Field(nameEnumValuesFld,
 				Type.newArrayType(this.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, this.type, 1, Expr.emptyArray);
+			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(this.type), 1, Expr.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
 				Expr e = new StaticFieldAccessExpr(eflds[i].pos,this,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
@@ -1211,24 +1180,24 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos,tome);
-			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ASTNode.emptyArray);
+			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ENode.emptyArray);
 			EnumAttr ea;
 			ea = (EnumAttr)getAttr(attrEnum);
 			if( ea == null )
 				throw new RuntimeException("enum structure "+this+" without "+attrEnum+" attribute");
-			ASTNode[] cases = new ASTNode[ea.fields.length+1];
+			ENode[] cases = new ENode[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				cases[i] = new CaseLabel(pos,sw,
 					new ConstIntExpr(ea.values[i]),
-					new ASTNode[]{
+					new ENode[]{
 						new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,this,ea.fields[i]))
 					});
 			}
 			cases[cases.length-1] = new CaseLabel(pos,sw,null,
-					new ASTNode[]{
+					new ENode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
 					});
-			foreach (ASTNode c; cases)
+			foreach (ENode c; cases)
 				sw.cases.add(c);
 			((BlockStat)tome.body).addStatement(sw);
 			addMethod(tome);
@@ -1245,9 +1214,11 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			tostr.pos = pos;
 			tostr.body = new BlockStat(pos,tostr);
 			sw = new SwitchStat(pos,tostr.body,
-				new CallExpr(pos,(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")), Expr.emptyArray),
-				ASTNode.emptyArray);
-			cases = new ASTNode[ea.fields.length+1];
+				new CallExpr(pos,
+					(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")),
+					Expr.emptyArray),
+				ENode.emptyArray);
+			cases = new ENode[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				Field f = ea.fields[i];
 				KString str = f.name.name;
@@ -1256,15 +1227,15 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 					str = str.substr(1,str.length()-1);
 				}
 				cases[i] = new CaseLabel(pos,sw,new ConstIntExpr(ea.values[i])	,
-					new ASTNode[]{
+					new ENode[]{
 						new ReturnStat(pos,null,new ConstStringExpr(str))
 					});
 			}
 			cases[cases.length-1] = new CaseLabel(pos,sw,null,
-					new ASTNode[]{
+					new ENode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
 					});
-			foreach (ASTNode c; cases)
+			foreach (ENode c; cases)
 				sw.cases.add(c);
 			((BlockStat)tostr.body).addStatement(sw);
 			addMethod(tostr);
@@ -1702,14 +1673,14 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				Statement br;
 				while (last_st.elseSt != null)
 					last_st = (IfElseStat)last_st.elseSt;
-				Expr[] vae = new Expr[mm.params.length];
+				ENode[] vae = new ENode[mm.params.length];
 				for(int k=0; k < vae.length; k++) {
 					vae[k] = new CastExpr(0,mm.type.args[k],
 						new VarAccessExpr(0,mm.params[k]), Kiev.verify);
 				}
 				if( m.type.ret != Type.tpVoid ) {
 					if( overwr.type.ret == Type.tpVoid )
-						br = new BlockStat(0,last_st,new ASTNode[]{
+						br = new BlockStat(0,last_st,new ENode[]{
 							new ExprStat(0,null,new CallExpr(0,overwr,vae,true)),
 							new ReturnStat(0,null,new ConstNullExpr())
 						});
@@ -1721,7 +1692,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 							br = new ReturnStat(0,last_st,new CallExpr(0,overwr,vae,true));
 					}
 				} else {
-					br = new BlockStat(0,last_st,new ASTNode[]{
+					br = new BlockStat(0,last_st,new ENode[]{
 						new ExprStat(0,null,new CallExpr(0,overwr,vae,true)),
 						new ReturnStat(0,null,null)
 					});
@@ -1749,7 +1720,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 						for(int k=0; k < vae.length; k++) {
 							vae[k] = new VarAccessExpr(0,mm.params[k]);
 						}
-						nm.body = new BlockStat(0,nm,new ASTNode[]{
+						nm.body = new BlockStat(0,nm,new ENode[]{
 							new ReturnStat(0,null,
 								new CastExpr(0,rm.type.ret,
 									new CallExpr(0,mm,vae)))
@@ -2041,7 +2012,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				me.addMethod(proxy);
 				for(int p=1; p < m.params.length; p++)
 					proxy.params.add(new FormPar(0,KString.from("arg"+p),m.type.args[p],0));
-				BlockStat bs = new BlockStat(0,proxy,ASTNode.emptyArray);
+				BlockStat bs = new BlockStat(0,proxy,ENode.emptyArray);
 				Expr[] args = new Expr[m.type.args.length];
 				args[0] = new ThisExpr();
 				for(int k=1; k < args.length; k++)
@@ -2098,7 +2069,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
 				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
-						f.init = f.init.resolveExpr(f.type);
+						f.init.resolve(f.type);
 					} catch( Exception e ) {
 						Kiev.reportError(f.init.pos,e);
 					}
@@ -2188,8 +2159,8 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		// don't pre-resolve now
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( isGenerated() ) return this;
+	public void resolveDecl() {
+		if( isGenerated() ) return;
 		long curr_time;
 		PassInfo.push(this);
 		try {
@@ -2199,7 +2170,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 			if( !isPackage() ) {
 				foreach (ASTNode n; members; n instanceof Struct) {
 					Struct ss = (Struct)n;
-					ss.resolve(null);
+					ss.resolveDecl();
 				}
 			}
 		} catch(Exception e ) {
@@ -2243,7 +2214,7 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 
 			foreach(ASTNode n; members; n instanceof Method) {
 				Method m = (Method)n;
-				m.resolve(null);
+				m.resolveDecl();
 			}
 			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 				ClassArgumentsAttr a = new ClassArgumentsAttr();
@@ -2294,7 +2265,6 @@ public class Struct extends ASTNode implements Named, ScopeOfNames, ScopeOfMetho
 		setGenerated(true);
 		diff_time = System.currentTimeMillis() - curr_time;
 		if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
-		return this;
 	}
 /*
 	List<Method> addMethodsToVT(Type tp, List<Method> ms, boolean by_name_name) {

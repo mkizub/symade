@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTRuleCutExpression extends ASTRuleNode {
 
-    public ASTNode resolve(Type reqType) {
-		return new RuleCutExpr(pos);
+    public void resolve(Type reqType) {
+		this.replaceWithResolve(new RuleCutExpr(pos), reqType);
     }
     
 	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }
