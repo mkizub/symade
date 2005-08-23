@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 @node
 public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 	@att public KString					filename = KString.Empty;
-	@att public StructRef				pkg;
+	@att public TypeNameRef				pkg;
 	@att public final NArr<ASTNode>		syntax;
 	@att public final NArr<DNode>		members;
 	
@@ -52,7 +52,8 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 	public FileUnit(KString name, Struct pkg) {
 		super(0);
 		this.filename = name;
-		this.pkg = new StructRef(pkg);
+		this.pkg = new TypeNameRef(pkg.name.name);
+		this.pkg.lnk = pkg.type;
 		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
@@ -263,8 +264,8 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt)
 		ASTNode@ syn;
 	{
-		pkg != null && pkg != Env.root,
-		pkg.type.resolveCallStaticR(node,path,name,mt)
+		pkg != null,
+		pkg.getType().resolveCallStaticR(node,path,name,mt)
 	;	syn @= syntax,
 		syn instanceof Import && ((Import)syn).mode == Import.ImportMode.IMPORT_STATIC,
 		trace( Kiev.debugResolve, "In file syntax: "+syn),

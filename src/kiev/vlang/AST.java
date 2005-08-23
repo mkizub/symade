@@ -1186,7 +1186,7 @@ public abstract class Expr extends CFlowNode {
 	}
 */
 }
-/*
+
 @node
 @cfnode
 public class WrapedExpr extends Expr {
@@ -1212,12 +1212,18 @@ public class WrapedExpr extends Expr {
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 	public void resolve(Type reqType) {
-		if( expr instanceof Struct ) return expr;
-		if( expr instanceof TypeRef ) return expr;
+		if( expr instanceof Struct ) {
+			replaceWith(new TypeRef(((Struct)expr).type));
+			return;
+		}
+		if( expr instanceof TypeRef ) {
+			replaceWith((TypeRef)expr);
+			return;
+		}
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
 	}
 }
-*/
+
 @node
 @cfnode
 public abstract class LvalueExpr extends Expr {

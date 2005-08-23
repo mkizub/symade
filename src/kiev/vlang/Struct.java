@@ -39,8 +39,6 @@ import syntax kiev.Syntax;
 @node(copyable=false)
 public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
 
-	public static Struct[]	emptyArray = new Struct[0];
-
 	/** Variouse names of the class */
 	public ClazzName								name;
 

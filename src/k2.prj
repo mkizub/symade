@@ -473,7 +473,7 @@ kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
-kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java bad
+kiev.vlang.WrapedExpr kiev/vlang/WrapedExpr kiev\vlang\AST.java
 kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.cffork kiev/vlang/cffork kiev\vlang\Tree.java

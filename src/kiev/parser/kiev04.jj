@@ -892,17 +892,18 @@ ASTModifiers Modifiers() :
 	{ return n; }
 }
 
-StructRef Package() :
+TypeNameRef Package() :
 { ASTIdentifier qn; }
 {
 	"package"
 	qn = QName()
 	";"
 	{
+		TypeNameRef tr = new TypeNameRef(qn);
 		Struct pkg = Env.newPackage(qn.toKString());
-		StructRef r = new StructRef(pkg);
-		r.pos = qn.pos;
-		return r;
+		pkg.type = Type.Type.newRefType(pkg);
+		tr.lnk = pkg.type;
+		return tr;
 	}
 }
 
