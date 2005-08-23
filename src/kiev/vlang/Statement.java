@@ -200,7 +200,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public Statement addStatement(Statement st) {
+	public ENode addStatement(ENode st) {
 		stats.append(st);
 		return st;
 	}
@@ -503,11 +503,11 @@ public class ExprStat extends Statement {
 	public ExprStat() {
 	}
 
-	public ExprStat(Expr expr) {
+	public ExprStat(ENode expr) {
 		this.expr = expr;
 	}
 
-	public ExprStat(int pos, ASTNode parent, Expr expr) {
+	public ExprStat(int pos, ASTNode parent, ENode expr) {
 		super(pos, parent);
 		this.expr = expr;
 	}
@@ -712,13 +712,13 @@ public class ReturnStat extends Statement/*defaults*/ {
 	public ReturnStat() {
 	}
 
-	public ReturnStat(int pos, ASTNode parent, Expr expr) {
+	public ReturnStat(int pos, ASTNode parent, ENode expr) {
 		super(pos, parent);
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
 
-	public ReturnStat(int pos, Expr expr) {
+	public ReturnStat(int pos, ENode expr) {
 		this(pos,null,expr);
 	}
 

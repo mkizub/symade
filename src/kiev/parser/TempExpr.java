@@ -215,5 +215,48 @@ public class MultiExpr extends UnresExpr {
 //	}
 }
 
+/**
+ * Represents unresolved, temporary created call expression.
+ *
+ * 'exprs' field is @ref to not change the owner of the expressions.
+ * The owner will be changed when concrete, resolved multi-expression is created.
+ */
+@node
+@cfnode
+public class UnresCallExpr extends UnresExpr {
+	@ref public final ENode				obj;	// access expression or type ref
+	@ref public final ASTIdentifier		func;	// function name
+	@ref public final NArr<ENode>		args;
+	     public final boolean			super_flag;
+
+	public UnresCallExpr() {}
+
+	public UnresCallExpr(int pos, ENode obj, ASTIdentifier func, NArr<ENode> args, boolean super_flag) {
+		super(pos, null);
+		this.obj = obj;
+		this.func = func;
+		this.args.addAll(args);
+		this.super_flag = super_flag;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(obj).append('.').append(func);
+		sb.append('(');
+		for (int i=0; i < args.length; i++) {
+			sb.append(args[i]);
+			if (i < args.length)
+				sb.append(',');
+		}
+		sb.append(')');
+		return sb.toString(); 
+	}
+
+	public ENode toResolvedExpr() {
+		return null; //return new CallAccessExpr(pos, obj, func, args, super_flag);
+	}
+}
+
+
 
 

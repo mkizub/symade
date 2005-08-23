@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att public final NArr<ASTIdentifier>	names;
-	@att public final NArr<Expr>			exprs;
+	@att public final NArr<ENode>			exprs;
 
     public void resolve(Type reqType) {
     	Var[] vars = new Var[names.length];

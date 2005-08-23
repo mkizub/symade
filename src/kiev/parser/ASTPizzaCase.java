@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class ASTPizzaCase extends ASTNode implements ScopeOfNames {
+public class ASTPizzaCase extends ENode implements ScopeOfNames {
 	@att public ASTIdentifier			val;
 	@att public final NArr<Var>			params;
 	@att public final NArr<ENode>		stats;

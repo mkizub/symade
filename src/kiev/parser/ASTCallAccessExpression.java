@@ -83,18 +83,17 @@ public class ASTCallAccessExpression extends Expr {
 			info.leaveSuper();
 			info.leaveForward(sup);
 			if( info.isEmpty() ) {
-				CallAccessExpr cae = new CallAccessExpr(pos,parent,sup,(Method)m,((Method)m).makeArgs(args,tp));
+				Method meth = (Method)m;
+				CallAccessExpr cae = new CallAccessExpr(pos,sup,meth,args);
 				cae.super_flag = true;
-				return cae.resolve(ret);
+				replaceWith(cae);
+				meth.makeArgs(cae.args, tp);
+				cae.resolve(ret);
+				return;
 			}
 			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
 		} else {
-			if (obj instanceof Expr)
-				o = ((Expr)obj).resolve(null);
-			else
-				o = obj;
-			if( o == null )
-				throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
+			obj.resolve(null);
 		try_static:
 			if( o instanceof Struct ) {
 				((Struct)o).checkResolved();
@@ -119,8 +118,9 @@ public class ASTCallAccessExpression extends Expr {
 						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 						) {
-							Expr call = info.buildCall(pos, null, closure, args.toArray());
-							return call.resolve(ret);
+							ENode call = info.buildCall(pos, null, closure, args.toArray());
+							replaceWithResolve(call, ret);
+							return;
 						}
 					} catch(Exception eee) {
 						Kiev.reportError(pos,eee);
@@ -130,7 +130,12 @@ public class ASTCallAccessExpression extends Expr {
 				}
 				if( !m.isStatic() )
 					throw new CompilerException(pos,"Static call to non-static method");
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,tp)).resolve(ret);
+				Method meth = (Method)m;
+				CallExpr ce = new CallExpr(pos,meth,args);
+				replaceWith(ce);
+				meth.makeArgs(ce.args,tp);
+				ce.resolve(ret);
+				return;
 			}
 			else if( o instanceof Expr) {
 				Type[] snitps = null;
@@ -138,8 +143,9 @@ public class ASTCallAccessExpression extends Expr {
 				snitps = ((Expr)o).getAccessTypes();
 				tp = snitps[snitps_index++];
 				if (tp.isWrapper() && func.name.byteAt(0) != '$') {
-					o = tp.makeWrappedAccess(o).resolve(null);
-					tp = o.getType();
+					obj = tp.makeWrappedAccess(o);
+					obj.resolve(null);
+					tp = obj.getType();
 				}
 				if( reqType instanceof CallableType ) ret = null;
 				if( tp.isReference() ) {
@@ -171,8 +177,9 @@ public class ASTCallAccessExpression extends Expr {
 							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 							) {
-								Expr call = info.buildCall(pos, (Expr)o, closure, args.toArray());
-								return call.resolve(ret);
+								ENode call = info.buildCall(pos, obj, closure, args.toArray());
+								replaceWithResolve(call, ret);
+								return;
 							}
 						} catch(Exception eee) {
 							Kiev.reportError(pos,eee);
@@ -191,9 +198,9 @@ public class ASTCallAccessExpression extends Expr {
 						for(int i=0; i < meth.type.args.length; i++) {
 							ac.params.add(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
 						}
-						BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-						Expr[] oldargs = args.toArray();
-						Expr[] cargs = new Expr[ac.params.length];
+						BlockStat bs = new BlockStat(pos,ac,ENode.emptyArray);
+						ENode[] oldargs = args.toArray();
+						ENode[] cargs = new ENode[ac.params.length];
 						for(int i=0; i < cargs.length; i++)
 							cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
 						args.delAll();
@@ -206,20 +213,24 @@ public class ASTCallAccessExpression extends Expr {
 							bs.addStatement(new ReturnStat(pos,bs,this));
 						}
 						ac.body = bs;
-						if( oldargs.length > 0 )
-							return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
-						else
-							return ac.resolve(reqType);
+						if( oldargs.length > 0 ) {
+							ac.resolve(reqType);
+							replaceWithResolve(new ClosureCallExpr(pos,ac,oldargs), reqType);
+						} else {
+							replaceWithResolve(ac, reqType);
+						}
+						return;
 					} else {
-						obj = (Expr)o;
-						Expr call = info.buildCall(pos, (Expr)obj, m, ((Method)m).makeArgs(args,tp));
-						return call.resolve(ret);
+						Method meth = (Method)m;
+						ENode call = info.buildCall(pos, obj, meth, args.toArray());
+						replaceWithResolve(call, ret);
+						return;
 					}
 				} else {
 					throw new CompilerException(obj.getPos(),"Resolved object "+obj+" of type "+tp+" is not a scope");
 				}
 			} else {
-				throw new CompilerException(o.getPos(),"Resolved object "+o+" is not an object");
+				throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an object");
 			}
 		}
 	}

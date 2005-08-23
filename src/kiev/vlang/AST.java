@@ -1010,9 +1010,14 @@ public abstract class ENode extends ASTNode {
 	public ENode(int pos) { super(pos); }
 	public ENode(int pos, ASTNode parent) { super(pos,parent); }
 
+	public Type[] getAccessTypes() {
+		return new Type[]{getType()};
+	}
+
 	public void resolve(Type reqType) {
 		throw new CompilerException(pos,"Resolve call for e-node "+getClass());
 	}
+	
 	public void generate(Type reqType) {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
@@ -1111,10 +1116,6 @@ public abstract class Expr extends CFlowNode {
 	public Expr(int pos) { super(pos); }
 
 	public Expr(int pos, ASTNode parent) { super(pos,parent); }
-
-	public /*abstract*/ Type[] getAccessTypes() {
-		return new Type[]{getType()};
-	}
 
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");

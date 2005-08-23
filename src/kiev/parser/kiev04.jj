@@ -45,7 +45,7 @@ import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
-typedef NArr<ASTNode> NArrNodes;
+typedef NArr<ENode> NArrENodes;
 
 }*/ 
 
@@ -422,7 +422,7 @@ public class kiev040 {
 		return v;
 	}
 	
-	private static Expr mkNotExpr(ASTOperator not, Expr cond) {
+	private static ENode mkNotExpr(ASTOperator not, ENode cond) {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);
@@ -1293,7 +1293,7 @@ void AnnotationValues(ASTMeta m) :
 }
 
 MetaValue AnnotationValueAny() :
-{ ASTNode n; MetaValue v; }
+{ ENode n; MetaValue v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
@@ -1307,7 +1307,7 @@ MetaValue AnnotationValueAny() :
 }
 
 MetaValueScalar AnnotationValueScalar() :
-{ ASTNode n; MetaValueScalar v; }
+{ ENode n; MetaValueScalar v; }
 {
 	(
 		LOOKAHEAD( "@" <IDENTIFIER> )
@@ -1393,8 +1393,8 @@ Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 	{ return lv; }
 }
 
-Expr VariableInitializer() :
-{ Expr e; }
+ENode VariableInitializer() :
+{ ENode e; }
 {
 	(
 		e = ArrayInitializer()
@@ -1404,7 +1404,7 @@ Expr VariableInitializer() :
 	{ return e; }
 }
 
-Expr ArrayInitializer() :
+ENode ArrayInitializer() :
 { Token t; ASTNewInitializedArrayExpression e = new ASTNewInitializedArrayExpression(); }
 {
 	t="{"
@@ -1911,8 +1911,8 @@ ASTIdentifier QName() :
  * Expression syntax follows.
  */
 
-Expr CommaExpression() :
-{ Expr e; CommaExpr ce = null; }
+ENode CommaExpression() :
+{ ENode e; CommaExpr ce = null; }
 {
 	e = Expression()
 	(
@@ -2140,7 +2140,7 @@ void CastOperatorLA() :
 	)
 }
 
-ASTNode CastOperator() :
+ENode CastOperator() :
 { Token t; ASTCastOperator op = new ASTCastOperator(); }
 {
 	t="("
@@ -2151,8 +2151,8 @@ ASTNode CastOperator() :
 	{ return op; }
 }
 
-Expr ExpressionNT(int[] nt_new) :
-{ int[] nt_old = no_tokens; no_tokens = nt_new; Expr e; }
+ENode ExpressionNT(int[] nt_new) :
+{ int[] nt_old = no_tokens; no_tokens = nt_new; ENode e; }
 {
 	try {
 		e = Expression()
@@ -2160,7 +2160,7 @@ Expr ExpressionNT(int[] nt_new) :
 	{ return e; }
 }
 
-Expr Expression() :
+ENode Expression() :
 { ASTExpression e = new ASTExpression(); }
 {
 	(
@@ -2177,7 +2177,7 @@ Expr Expression() :
 	{ return e; }
 }
 
-Expr ReparseExpression() :
+ENode ReparseExpression() :
 { Token t; ASTReparseExpression e = new ASTReparseExpression(); }
 {
 	t=<REPARSE_EXPRESSION>
@@ -2187,7 +2187,7 @@ Expr ReparseExpression() :
 	}
 }
 
-Expr CallExpression() :
+ENode CallExpression() :
 { ASTCallExpression e = new ASTCallExpression(); }
 {
 	e.func = Name()
@@ -2199,7 +2199,7 @@ Expr CallExpression() :
 	{ return e; }
 }
 
-Expr CallAccessExpression(Expr obj) :
+ENode CallAccessExpression(ENode obj) :
 { ASTCallAccessExpression e = new ASTCallAccessExpression(); e.obj = obj; }
 {
 	e.func = Name()
@@ -2211,15 +2211,15 @@ Expr CallAccessExpression(Expr obj) :
 	{ return e; }
 }
 
-Expr TypeClassExpression() :
+ENode TypeClassExpression() :
 { ASTTypeClassExpression e = new ASTTypeClassExpression(); }
 {
 	e.type = Type() "." "class"
 	{ return e; }
 }
 
-Expr AccessExpression() :
-{ Token t; Expr e = null; }
+ENode AccessExpression() :
+{ Token t; ENode e = null; }
 {
 	(
 		LOOKAHEAD( Type() "." "class" )
@@ -2274,7 +2274,7 @@ Expr AccessExpression() :
 		e = NewExpression()
         {
 			ae.type = ((ASTNewExpression)e).type;
-			/*{ foreach (Expr a; ((ASTNewExpression)e).args) ae.args += a; }*/
+			/*{ foreach (ENode a; ((ASTNewExpression)e).args) ae.args += a; }*/
 			if (((ASTNewExpression)e).clazz != null)
 				throw new ParseException();
 			e = ae;
@@ -2648,8 +2648,8 @@ BlockStat CondBlock() :
 	{ return bl; }
 }
 
-void BlockStatement(NArrNodes stats) :
-{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; }
+void BlockStatement(NArrENodes stats) :
+{ boolean old_declMode; ASTModifiers modifiers; TypeRef tp; Struct clazz; Var var; }
 {
 	(
 		/* class declaration */
@@ -2660,7 +2660,8 @@ void BlockStatement(NArrNodes stats) :
 		}
 		try {
 			modifiers = Modifiers()
-			stats += TypeDeclaration(modifiers, stats.getParent())
+			clazz = TypeDeclaration(modifiers, stats.getParent())
+			{ stats += new LocalStructDecl(clazz); }
 			[ ";" ]
 		} finally {
 			declMode = old_declMode;
@@ -2670,10 +2671,12 @@ void BlockStatement(NArrNodes stats) :
 		LOOKAHEAD( Modifiers() Type() Name() )
 		modifiers = Modifiers()
 		tp = Type()
-		stats += VarDecl(modifiers, tp, true)
+		var = VarDecl(modifiers, tp, true)
+		{ stats += new VarDecl(var); }
 		(
 			","
-			stats += VarDecl(modifiers, tp, false)
+			var = VarDecl(modifiers, tp, false)
+			{ stats += new VarDecl(var); }
 		)*
 		";"
 	|
@@ -2739,8 +2742,8 @@ SwitchStat SwitchStatement() :
 	{ return st; }
 }
 
-ASTNode CaseStatements() :
-{ ASTNode st; }
+CaseLabel CaseStatements() :
+{ CaseLabel st; }
 {
 	(
 		LOOKAHEAD("case" QName() "(" )
@@ -2751,43 +2754,41 @@ ASTNode CaseStatements() :
 	{ return st; }
 }
 
-ASTNormalCase NormalCase() :
-{ Token t; ASTNormalCase c = new ASTNormalCase(); }
+CaseLabel NormalCase() :
+{ CaseLabel c = new CaseLabel(); }
 {
 	(
-		t="case"
+		"case"	{ c.pos = getToken(0).getPos(); }
 		c.val = ExpressionNT(noColonTokenSet)
 		":"
 	|
-		t="default"
+		"default"	{ c.pos = getToken(0).getPos(); }
 		":"
 	)
-    { c.setPos(t.getPos()); }
 	(
-		BlockStatement(c.stats)
+		BlockStatement(c.stats.stats)
 	)*
 	{ return c; }
 }
 
-ASTPizzaCase PizzaCase() :
-{ Token t; ASTModifiers modifiers; ASTPizzaCase c = new ASTPizzaCase(); }
+CaseLabel PizzaCase() :
+{ Token t; ASTModifiers modifiers; CaseLabel c = new CaseLabel(); }
 {
-	t="case"
-	{ c.setPos(t.getPos()); }
-    c.val = QName()
+	"case"		{ c.pos = getToken(0).getPos(); }
+	c.val = QName()
 	"("
-		[
+	[
+		modifiers = Modifiers()
+		c.pattern += PizzaCaseFormalParameter(modifiers)
+		(
+			","
 			modifiers = Modifiers()
-			c.params += PizzaCaseFormalParameter(modifiers)
-			(
-				","
-				modifiers = Modifiers()
-				c.params += PizzaCaseFormalParameter(modifiers)
-			)*
-		]
+			c.pattern += PizzaCaseFormalParameter(modifiers)
+		)*
+	]
 	")" ":"
 	(
-		BlockStatement(c.stats)
+		BlockStatement(c.stats.stats)
 	)*
 	{ return c; }
 }
@@ -2891,8 +2892,8 @@ ForEachStat ForEachStatement() :
 	{ return st; }
 }
 
-ASTNode ForInit() :
-{ ASTModifiers modifiers; ASTNode n; ASTModifiers modifiers; TypeRef tp; ForInit fi; }
+ENode ForInit() :
+{ ASTModifiers modifiers; ENode n; ASTModifiers modifiers; TypeRef tp; ForInit fi; }
 {
 	(
 		LOOKAHEAD( Modifiers() Type() QName() (<OPERATOR_LRBRACKETS>)* ("=" | ":=" | "," | ";") )
@@ -2915,7 +2916,7 @@ ASTNode ForInit() :
 }
 
 Statement GotoStatement() :
-{ Statement st; Expr expr; ASTIdentifier id; }
+{ Statement st; ENode expr; ASTIdentifier id; }
 {
 	"goto"
 	(

@@ -278,30 +278,26 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		return dmp.append(name);
 	}
 
-	public Expr[] makeArgs(NArr<ENode> args, Type t) {
-		return makeArgs(args.toArray(), t);
-	}
-	public Expr[] makeArgs(ENode[] args, Type t) {
+	public void makeArgs(NArr<ENode> args, Type t) {
 		if( isVarArgs() ) {
-			ENode[] varargs = new ENode[type.args.length];
 			int j;
-			for(j=0; j < varargs.length-1; j++)
-				varargs[j] = CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
-			ENode[] varargs2 = new ENode[args.length - varargs.length + 1];
-			for(int k=0; k < varargs2.length; j++,k++) {
-				varargs2[k] = CastExpr.autoCastToReference(args[j]);
+			for(j=0; j < type.args.length-1; j++)
+				CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
+			NArr<ENode> varargs = new NArr<ENode>();
+			while(j < args.length) {
+				CastExpr.autoCastToReference(args[j]);
+				varargs.append(args[j]);
+				args.del(j);
 			}
 			NewInitializedArrayExpr nae =
-				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs2);
-			varargs[varargs.length-1] = nae;
-			return varargs;
+				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs.toArray());
+			args.append(nae);
 		} else {
 			int i = 0;
 			int j = 0;
 			if( this instanceof RuleMethod ) j++;
 			for(; i < args.length; i++, j++)
-				args[i] = CastExpr.autoCast(args[i],Type.getRealType(t,type.args[j]));
-			return args;
+				CastExpr.autoCast(args[i],Type.getRealType(t,type.args[j]));
 		}
 	}
 

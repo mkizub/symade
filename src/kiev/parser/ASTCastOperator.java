@@ -34,7 +34,7 @@ import kiev.stdlib.*;
  */
 
 @node
-public class ASTCastOperator extends ASTNode {
+public class ASTCastOperator extends ENode {
 
 	@att public TypeRef	type;
 	public boolean  reinterp;

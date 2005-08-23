@@ -97,12 +97,14 @@ public class ASTCallExpression extends Expr {
 			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
-            if( info.isEmpty() )
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),false).resolve(ret);
-			else
-				throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
-			//Expr e = info.buildCall(pos,null,m,((Method)m).makeArgs(args,tp));
-			//return e.resolve(ret);
+            if( info.isEmpty() ) {
+				CallExpr ce = new CallExpr(pos,(Method)m,args,false);
+				replaceWith(ce);
+				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				ce.resolve(ret);
+				return;
+			}
+			throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = PassInfo.method;
@@ -130,10 +132,14 @@ public class ASTCallExpression extends Expr {
 			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
-            if( info.isEmpty() )
-				return new CallExpr(pos,parent,(Method)m,((Method)m).makeArgs(args,PassInfo.clazz.super_type),true).resolve(ret);
-			else
-				throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
+            if( info.isEmpty() ) {
+				CallExpr ce = new CallExpr(pos,(Method)m,args,true);
+				replaceWith(ce);
+				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				ce.resolve(ret);
+				return;
+			}
+			throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
 		} else {
 			MethodType mt;
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
@@ -157,11 +163,8 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
-						if( info.isEmpty() )
-							return new ClosureCallExpr(pos,parent,closure,args.toArray()).resolve(ret);
-						else {
-							return new ClosureCallExpr(pos,parent,info.buildAccess(pos,null),closure,args.toArray()).resolve(ret);
-						}
+						replaceWithResolve(new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.toArray()), ret);
+						return;
 					}
 				} catch(Exception eee) {
 					Kiev.reportError(pos,eee);
@@ -176,8 +179,8 @@ public class ASTCallExpression extends Expr {
 				ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
 				for (int i=0; i < ac.params.length; i++)
 					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
-				BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-				Expr[] oldargs = args.toArray();
+				BlockStat bs = new BlockStat(pos,ac,ENode.emptyArray);
+				ENode[] oldargs = args.toArray();
 				Expr[] cargs = new Expr[ac.params.length];
 				for(int i=0; i < cargs.length; i++)
 					cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
@@ -191,15 +194,18 @@ public class ASTCallExpression extends Expr {
 					bs.addStatement(new ReturnStat(pos,bs,this));
 				}
 				ac.body = bs;
-				if( oldargs.length > 0 )
-					return new ClosureCallExpr(pos,ac.resolve(reqType),oldargs).resolve(reqType);
-				else
-					return ac.resolve(reqType);
+				if( oldargs.length > 0 ) {
+					replaceWithResolve(new ClosureCallExpr(pos,ac/*.resolve(reqType)*/,oldargs), reqType);
+				} else {
+					replaceWithResolve(ac, reqType);
+				}
+				return;
 			} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				Expr e = info.buildCall(pos,null,m,((Method)m).makeArgs(args,tp));
-				return e.resolve(ret);
+				((Method)m).makeArgs(args,tp);
+				ENode e = info.buildCall(pos,null,m,args.toArray());
+				replaceWithResolve(e, ret);
 			}
 		}
 	}

@@ -226,7 +226,7 @@ public class ResInfo {
 		throw new CompilerException(pos, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public Expr buildCall(int pos, Expr from, ASTNode node, Expr[] args) {
+	public ENode buildCall(int pos, ENode from, ASTNode node, ENode[] args) {
 		if (node instanceof Method) {
 			Method meth = (Method)node;
 			if (from == null && forwards_p == 0) {
@@ -234,21 +234,25 @@ public class ResInfo {
 					throw new CompilerException(pos, "Don't know how to build call of "+meth+" via "+this);
 				return new CallExpr(pos,meth,args);
 			}
-			Expr expr = from;
+			ENode expr = from;
 			if (forwards_p > 0)
 				expr = buildAccess(pos, from, forwards_stack[--forwards_p]);
 			return new CallAccessExpr(pos,expr,meth,args);
 		}
-		else if (node instanceof Field || node instanceof Var) {
+		else if (node instanceof Field) {
+			Field f = (Field)node;
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(pos, "Don't know how to build closure for "+node+" via "+this);
-				return new ClosureCallExpr(pos,null,null,node,args);
+				return new ClosureCallExpr(pos,new StaticFieldAccessExpr(0,(Struct)f.parent,f),args);
 			}
-			Expr expr = from;
-			if (forwards_p > 0)
-				expr = buildAccess(pos, from, forwards_stack[--forwards_p]);
-			return new ClosureCallExpr(pos,null,expr,node,args);
+			Expr expr = buildAccess(pos, from, f);
+			return new ClosureCallExpr(pos,expr,args);
+		}
+		else if (node instanceof Var) {
+			Var var = (Var)node;
+			Expr expr = buildAccess(pos, from, var);
+			return new ClosureCallExpr(pos,expr,args);
 		}
 		throw new CompilerException(pos, "Don't know how to call "+node+" via "+this);
 	}

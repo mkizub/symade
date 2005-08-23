@@ -30,8 +30,8 @@ import static kiev.stdlib.Debug.*;
 
 import syntax kiev.Syntax;
 
-typedef kiev.stdlib.List<kiev.vlang.ASTNode>		ListAN;
-typedef kiev.stdlib.List.Cons<kiev.vlang.ASTNode>	ConsAN;
+typedef kiev.stdlib.List<kiev.vlang.ENode>		ListAN;
+typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTExpression.java,v 1.3.4.2 1999/05/29 21:03:06 max Exp $
@@ -48,7 +48,7 @@ public class ASTExpression extends ENode {
 	public void preResolve() {
 		PassInfo.push(this);
 		try {
-			foreach (ASTNode n; nodes) n.preResolve();
+			foreach (ENode n; nodes) n.preResolve();
 			if (nodes.length == 1 && nodes[0] instanceof Expr)
 				this.replaceWith(nodes[0]);
 		} finally { PassInfo.pop(this); }
@@ -60,7 +60,7 @@ public class ASTExpression extends ENode {
 			List<ENode> lst = List.Nil;
 			for (int i=nodes.length-1; i >=0; i--)
 				lst = new List.Cons<ENode>(nodes[i], lst);
-			List<ASTNode> results = List.Nil;
+			List<ENode> results = List.Nil;
 			ENode@ result;
 			List<ENode>@ rest;
 			trace( Kiev.debugOperators, "Expression: "+lst);
@@ -69,18 +69,18 @@ public class ASTExpression extends ENode {
 				foreach( resolveExpr(result,rest,lst,0) ) {
 					trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
 					trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
-					results = new List.Cons<ASTNode>(result,results);
+					results = new List.Cons<ENode>(result,results);
 				}
 			} finally { NodeInfoPass.popState(); }
 			if (results.length() == 0) {
 				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
-				foreach(ASTNode n; results)
+				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				throw new CompilerException(pos, msg.toString());
 			}
 			if (results.length() > 1) {
 				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
-				foreach(ASTNode n; results)
+				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				throw new CompilerException(pos, msg.toString());
 			}
@@ -163,7 +163,7 @@ public class ASTExpression extends ENode {
 		;	resolveBinaryExpr	(result1, rest1, expr, priority)
 		},
 		trace( Kiev.debugOperators, "partially resolved as ("+result1+")("+rest1+")"),
-		resolveExpr(result, rest, new List.Cons<ASTNode>(result1,rest1), priority),
+		resolveExpr(result, rest, new List.Cons<ENode>(result1,rest1), priority),
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	;
 		expr.length() > 1 && priority > 0,
@@ -452,13 +452,13 @@ public class ASTExpression extends ENode {
 
     public String toString() {
     	StringBuffer sb = new StringBuffer();
-    	foreach(ASTNode n; nodes)
+    	foreach(ENode n; nodes)
 	    	sb.append(' ').append(n);
         return sb.toString();
     }
 
     public Dumper toJava(Dumper dmp) {
-    	foreach(ASTNode n; nodes)
+    	foreach(ENode n; nodes)
 	    	dmp.space().append(n).space();
         return dmp;
     }

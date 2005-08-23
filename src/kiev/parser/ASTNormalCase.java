@@ -34,7 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTNormalCase extends ASTNode {
+public class ASTNormalCase extends ENode {
 	@att public Expr					val;
 	@att public final NArr<ENode>		stats;
 

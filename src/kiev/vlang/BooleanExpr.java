@@ -212,7 +212,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			BoolExpr.checkBool(expr1);
 			ScopeNodeInfoVector state1 = NodeInfoPass.popState();
 			NodeInfoPass.pushState();
-			expr2.resolve(Type.tpBoolean)
+			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
 			ScopeNodeInfoVector state2 = NodeInfoPass.popState();
 			result_state = NodeInfoPass.joinInfo(state1,state2);
@@ -423,7 +423,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			||  op==BinaryOperator.NotEquals
 			)
 		) {
-			return (Expr)this.resolve(reqType);
+			this.resolve(reqType);
 		}
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
@@ -432,9 +432,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( opt.match(tps,argsarr) ) {
 				Expr e;
 				if( opt.method.isStatic() )
-					e = new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2});
+					e = new CallExpr(pos,opt.method,new ENode[]{expr1,expr2});
 				else
-					e = new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2});
+					e = new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2});
 				replaceWithResolve(e, reqType);
 			}
 		}
@@ -445,48 +445,50 @@ public class BinaryBoolExpr extends BoolExpr {
 		expr1.resolve(null);
 		if (!expr1.isForWrapper() && expr1.getType().isWrapper()) {
 			expr1 = expr1.getType().makeWrappedAccess(expr1);
-			expr1.resolveExpr(null);
+			expr1.resolve(null);
 		}
 
 		expr2.resolve(null);
 		if( expr2 instanceof WrapedExpr )
 			expr2.resolve(null);
 		if( expr2 instanceof TypeRef )
-			expr2 = getExprByStruct(((TypeRef)expr2).getType().getStruct());
-		if( expr2 instanceof Struct )
-			expr2 = getExprByStruct((Struct)expr2);
+			getExprByStruct(((TypeRef)expr2).getType().getStruct());
+//		if( expr2 instanceof Struct )
+//			expr2 = getExprByStruct((Struct)expr2);
 		expr2.resolve(null);
 		if (!expr2.isForWrapper() && expr2.getType().isWrapper()) {
 			expr2 = expr2.getType().makeWrappedAccess(expr2);
-			expr2.resolveExpr(null);
+			expr2.resolve(null);
 		}
 		return true;
 	}
 
-	public Expr getExprByStruct(Struct cas) {
+	public void getExprByStruct(Struct cas) {
 		Expr ex = null;
 		if( cas.isPizzaCase() ) {
 			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
 				throw new CompilerException(pos,"Undefined operation "+op.image+" on cased class");
 			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-			ex = (Expr)new ConstIntExpr(ca.caseno).resolve(Type.tpInt);
+			expr2 = new ConstIntExpr(ca.caseno);
+			expr2.resolve(Type.tpInt);
 			Type tp = expr1.getType();
 			if (tp.isWrapper()) {
-				expr1 = expr1.getType().makeWrappedAccess(expr1).resolveExpr(null);
+				expr1.getType().makeWrappedAccess(expr1);
+				expr1.resolve(null);
 				tp = expr1.getType();
 			}
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
-			expr1 = (Expr)new CallAccessExpr(ex.pos,parent,expr1,m,Expr.emptyArray).resolve(Type.tpInt);
+			expr1 = new CallAccessExpr(ex.pos,expr1,m,Expr.emptyArray);
+			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
 		}
-		return ex;
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return this;
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			resolveExprs();
@@ -499,16 +501,16 @@ public class BinaryBoolExpr extends BoolExpr {
 				||   op==BinaryOperator.GreaterEquals
 				)
 			) {
-				return (Expr)this.postResolve(reqType);
+				this.postResolve(reqType);
 			}
 			else if( op==BinaryOperator.BooleanOr ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					return (Expr)new BinaryBooleanOrExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
+					replaceWithResolve(new BinaryBooleanOrExpr(pos,expr1,expr2), Type.tpBoolean);
 				}
 			}
 			else if( op==BinaryOperator.BooleanAnd ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					return (Expr)new BinaryBooleanAndExpr(pos,expr1,expr2).resolve(Type.tpBoolean);
+					replaceWithResolve(new BinaryBooleanAndExpr(pos,expr1,expr2), Type.tpBoolean);
 				}
 			}
 			else if(
@@ -523,7 +525,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				||  op==BinaryOperator.NotEquals
 				)
 			) {
-				return (Expr)this.postResolve(reqType);
+				this.postResolve(reqType);
 			}
 			// Not a standard operator, find out overloaded
 			foreach(OpTypes opt; op.types ) {
@@ -531,9 +533,9 @@ public class BinaryBoolExpr extends BoolExpr {
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) ) {
 					if( opt.method.isStatic() )
-						return new CallExpr(pos,parent,opt.method,new Expr[]{expr1,expr2}).resolveExpr(reqType);
+						replaceWithResolve(new CallExpr(pos,opt.method,new ENode[]{expr1,expr2}), reqType);
 					else
-						return new CallAccessExpr(pos,parent,expr1,opt.method,new Expr[]{expr2}).resolveExpr(reqType);
+						replaceWithResolve(new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2}), reqType);
 				}
 			}
 		} finally { PassInfo.pop(this); }
@@ -547,11 +549,13 @@ public class BinaryBoolExpr extends BoolExpr {
 		if( !t1.equals(t2) ) {
 			if( t1.isReference() != t2.isReference()) {
 				if (t1.isEnum() && !t1.isIntegerInCode()) {
-					expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1).resolveExpr(Type.tpInt);
+					expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1);
+					expr1.resolve(Type.tpInt);
 					t1 = expr1.getType();
 				}
 				if (t2.isEnum() && !t2.isIntegerInCode()) {
-					expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2).resolveExpr(Type.tpInt);
+					expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2);
+					expr2.resolve(Type.tpInt);
 					t2 = expr2.getType();
 				}
 				if( t1.isReference() != t2.isReference() && t1.isIntegerInCode() != t2.isIntegerInCode())
@@ -569,10 +573,12 @@ public class BinaryBoolExpr extends BoolExpr {
 				else t = Type.tpInt;
 
 				if( !t.equals(t1) && t1.isCastableTo(t) ) {
-					expr1 = (Expr)new CastExpr(pos,t,expr1).resolve(t);
+					expr1 = new CastExpr(pos,t,expr1);
+					expr1.resolve(t);
 				}
 				if( !t.equals(t2) && t2.isCastableTo(t) ) {
-					expr2 = (Expr)new CastExpr(pos,t,expr2).resolve(t);
+					expr2 = new CastExpr(pos,t,expr2);
+					expr2.resolve(t);
 				}
 			}
 		}
@@ -736,43 +742,47 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return this;
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
-			Object e = expr.resolve(null);
+			expr.resolve(null);
 			Type tp = null;
-			if (e instanceof WrapedExpr)
-				tp = ((WrapedExpr)e).getType();
-			if (e instanceof Struct)
-				tp = ((Struct)e).type;
-			if( e instanceof TypeRef )
-				tp = ((TypeRef)e).getType();
+			if (expr instanceof WrapedExpr)
+				tp = ((WrapedExpr)expr).getType();
+//			if (e instanceof Struct)
+//				tp = ((Struct)e).type;
+			if( expr instanceof TypeRef )
+				tp = ((TypeRef)expr).getType();
 			if( tp != null ) {
-				return new ConstBoolExpr(tp.isInstanceOf(type));
+				replaceWith(new ConstBoolExpr(tp.isInstanceOf(type.getType())));
+				return;
 			} else {
-				expr = (Expr)e;
 				Type et = expr.getType();
-				if (!expr.isForWrapper() && et.isWrapper())
-					expr = et.makeWrappedAccess(expr).resolveExpr(null);
+				if (!expr.isForWrapper() && et.isWrapper()) {
+					expr = et.makeWrappedAccess(expr);
+					expr.resolve(null);
+				}
 			}
-			if( !expr.getType().isCastableTo(type) ) {
+			if( !expr.getType().isCastableTo(type.getType()) ) {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
 			}
-			if (expr.getType().isInstanceOf(type)) {
-				return new BinaryBoolExpr(pos, BinaryOperator.NotEquals,expr,new ConstNullExpr()).resolve(reqType);
+			if (expr.getType().isInstanceOf(type.getType())) {
+				replaceWithResolve(new BinaryBoolExpr(pos, BinaryOperator.NotEquals,expr,new ConstNullExpr()), reqType);
+				return;
 			}
 			if (!type.isArray() && type.args.length > 0) {
-				Expr be = new CallAccessExpr(pos,
-						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type),
+				replaceWithResolve(new CallAccessExpr(pos,
+						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type.getType()),
 						Type.tpTypeInfo.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
-						new Expr[]{expr}
-						);
-				return be.resolve(reqType);
+						new ENode[]{expr}
+						),
+						reqType
+					);
+				return;
 			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
 	}
 
 	public void setNodeTypeInfo() {
@@ -787,7 +797,7 @@ public class InstanceofExpr extends BoolExpr {
 			break;
 		default: return;
 		}
-		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type));
+		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type.getType()));
 	}
 
 	public void generate_iftrue(CodeLabel label) {
@@ -795,7 +805,7 @@ public class InstanceofExpr extends BoolExpr {
 		PassInfo.push(this);
 		try {
 			expr.generate(Type.tpBoolean);
-			Code.addInstr(Instr.op_instanceof,type);
+			Code.addInstr(Instr.op_instanceof,type.getType());
 			Code.addInstr(Instr.op_ifne,label);
 		} finally { PassInfo.pop(this); }
 	}
@@ -805,7 +815,7 @@ public class InstanceofExpr extends BoolExpr {
 		PassInfo.push(this);
 		try {
 			expr.generate(Type.tpBoolean);
-			Code.addInstr(Instr.op_instanceof,type);
+			Code.addInstr(Instr.op_instanceof,type.getType());
 			Code.addInstr(Instr.op_ifeq,label);
 		} finally { PassInfo.pop(this); }
 	}
@@ -846,15 +856,18 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) return this;
+		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
-			expr = BoolExpr.checkBool(expr.resolve(Type.tpBoolean));
-			if( expr.isConstantExpr() )
-				return new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue());
+			expr.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(expr);
+			if( expr.isConstantExpr() ) {
+				replaceWith(new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue()));
+				return;
+			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
-		return this;
+		return;
 	}
 
 	public void generate_iftrue(CodeLabel label) {

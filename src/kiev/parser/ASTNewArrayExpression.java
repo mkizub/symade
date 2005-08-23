@@ -40,7 +40,7 @@ public class ASTNewArrayExpression extends Expr {
 	public TypeRef					type;
 	
 	@att
-	public final NArr<Expr>			args;
+	public final NArr<ENode>		args;
 	
 	public int dim;
   

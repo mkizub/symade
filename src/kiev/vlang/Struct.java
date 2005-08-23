@@ -1685,9 +1685,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 							new ReturnStat(0,null,new ConstNullExpr())
 						});
 					else {
-						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() )
-							br = new ReturnStat(0,last_st,CastExpr.autoCastToReference(
-								new CallExpr(0,overwr,vae,true)));
+						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() ) {
+							CallExpr ce = new CallExpr(0,overwr,vae,true);
+							br = new ReturnStat(0,last_st,ce);
+							CastExpr.autoCastToReference(ce);
+						}
 						else
 							br = new ReturnStat(0,last_st,new CallExpr(0,overwr,vae,true));
 					}

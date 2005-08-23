@@ -37,7 +37,7 @@ import kiev.vlang.*;
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
 	@att public ASTIdentifier	name;
-	@att public Expr			expr;
+	@att public ENode			expr;
 
     public void resolve(Type reqType) {
 		ASTNode@ v;

@@ -93,7 +93,7 @@ public class WhileStat extends LoopStat {
 		state.guarded = true;
 		try {
 			try {
-				cond.resolve(Type.tpBoolean)
+				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
 			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
@@ -112,7 +112,6 @@ public class WhileStat extends LoopStat {
 			NodeInfoPass.popState();
 			PassInfo.pop(this);
 		}
-		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -190,7 +189,8 @@ public class DoWhileStat extends LoopStat {
 				Kiev.reportError(body.pos,e);
 			}
 			try {
-				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
@@ -201,7 +201,6 @@ public class DoWhileStat extends LoopStat {
 			NodeInfoPass.popState();
 			PassInfo.pop(this);
 		}
-		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -287,7 +286,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	public void resolve(Type reqType) {
 		foreach (Var v; decls)
 			v.resolveDecl();
-		return null;
 	}
 	
 	public Dumper toJava(Dumper dmp) {
@@ -349,7 +347,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 					else if( init instanceof ForInit )
 						((ForInit)init).resolve(Type.tpVoid);
 					else if( init instanceof Expr )
-						init = ((Expr)init).resolve(Type.tpVoid);
+						init.resolve(Type.tpVoid);
 //					else if( init instanceof ASTVarDecls ) {
 //						ASTVarDecls vdecls = (ASTVarDecls)init;
 //						int flags = 0;
@@ -391,7 +389,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			}
 			if( cond != null ) {
 				try {
-					cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+					cond.resolve(Type.tpBoolean);
+					BoolExpr.checkBool(cond);
 				} catch(Exception e ) {
 					Kiev.reportError(cond.pos,e);
 				}
@@ -403,7 +402,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			}
 			if( iter != null ) {
 				try {
-					iter = (Expr)iter.resolve(Type.tpVoid);
+					iter.resolve(Type.tpVoid);
 					iter.setGenVoidExpr(true);
 				} catch(Exception e ) {
 					Kiev.reportError(iter.pos,e);
@@ -420,7 +419,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			NodeInfoPass.popState();
 			PassInfo.pop(this);
 		}
-		return null;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
@@ -613,7 +611,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			//	}
 			//
 
-			container = (Expr)container.resolve(null);
+			container.resolve(null);
 
 			Type itype;
 			Type ctype = container.getType();
@@ -621,7 +619,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			Method@ nextelem;
 			Method@ moreelem;
 			if (ctype.isWrapper()) {
-				container = (Expr)ctype.makeWrappedAccess(container).resolve(null);
+				container = ctype.makeWrappedAccess(container);
+				container.resolve(null);
 				ctype = container.getType();
 			}
 			if( ctype.isArray() ) {
@@ -678,21 +677,21 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 						new VarAccessExpr(iter.pos,iter),
 						new ConstIntExpr(0)
 					));
-				iter_init = (Expr)iter_init.resolve(Type.tpInt);
+				iter_init.resolve(Type.tpInt);
 				break;
 			case KENUM:
 				/* iter = container; */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
-				iter_init = (Expr)iter_init.resolve(iter.type);
+				iter_init.resolve(iter.type);
 				break;
 			case JENUM:
 				/* iter = container; */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 					);
-				iter_init = (Expr)iter_init.resolve(iter.type);
+				iter_init.resolve(iter.type);
 				break;
 			case ELEMS:
 				/* iter = container.elements(); */
@@ -700,7 +699,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 					new VarAccessExpr(iter.pos,iter),
 					new CallAccessExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
 					);
-				iter_init = (Expr)iter_init.resolve(iter.type);
+				iter_init.resolve(iter.type);
 				break;
 			case RULE:
 				/* iter = rule(iter,...); */
@@ -708,9 +707,9 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter), new ConstNullExpr()
 					);
-				iter_init = (Expr)iter_init.resolve(Type.tpVoid);
+				iter_init.resolve(Type.tpVoid);
 				// Also, patch the rule argument
-				NArr<Expr> args = null;
+				NArr<ENode> args = null;
 				if( container instanceof CallExpr ) {
 					args = ((CallExpr)container).args;
 				}
@@ -722,7 +721,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				}
 				else
 					Debug.assert("Unknown type of rule - "+container.getClass());
-				args[0] = (Expr)new VarAccessExpr(container.pos,iter).resolve(Type.tpRule);
+				args[0] = new VarAccessExpr(container.pos,iter);
+				args[0].resolve(Type.tpRule);
 				}
 				break;
 			}
@@ -764,7 +764,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				break;
 			}
 			if( iter_cond != null ) {
-				iter_cond = BoolExpr.checkBool(iter_cond.resolve(Type.tpBoolean));
+				iter_cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(iter_cond);
 			}
 
 			// Initialize value
@@ -801,13 +802,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				break;
 			}
 			if( var_init != null ) {
-				var_init = (Expr)var_init.resolve(var.getType());
+				var_init.resolve(var.getType());
 				var_init.setGenVoidExpr(true);
 			}
 
 			// Check condition, if any
 			if( cond != null ) {
-				cond = BoolExpr.checkBool(cond.resolve(Type.tpBoolean));
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
 			}
 
 			if( cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
@@ -830,7 +832,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
 					new VarAccessExpr(iter.pos,iter)
 					);
-				iter_incr = (Expr)iter_incr.resolve(Type.tpVoid);
+				iter_incr.resolve(Type.tpVoid);
 				iter_incr.setGenVoidExpr(true);
 			} else {
 				iter_incr = null;
@@ -839,8 +841,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			NodeInfoPass.popState();
 			PassInfo.pop(this);
 		}
-
-		return null;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)

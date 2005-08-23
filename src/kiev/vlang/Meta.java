@@ -151,7 +151,7 @@ public class MetaValueType {
 }
 
 @node
-public class Meta extends ASTNode {
+public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
 	@att public TypeRef					type;
@@ -448,34 +448,43 @@ public abstract class MetaValue extends ASTNode {
 		return this;
 	}
 	
-	ENode resolveValue(Type reqType, ENode value) {
+	void resolveValue(Type reqType, ENode value) {
 		if (value instanceof Meta) {
-			return ((Meta)value).resolve();
+			((Meta)value).resolve();
+			return;
 		}
 		value.resolve(reqType);
-		ENode v = value;
-		if (!(v instanceof Expr)) {
-			if (reqType == Type.tpClass)
-				return new WrapedExpr(value.pos, v);
-			else
-				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
+		if !(value instanceof Expr) {
+			if (reqType == Type.tpClass && value instanceof TypeRef) {
+				value.replaceWith(new WrapedExpr(value.pos, value));
+				return;
+			} else {
+				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
+					value+" ("+value.getClass()+")");
+			}
 		}
-		else if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField())
-			return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)v).var);
-		else if (!((Expr)v).isConstantExpr())
+		Expr v = (Expr)value;
+		if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField()) {
+			value.replaceWith(new WrapedExpr(value.pos, ((StaticFieldAccessExpr)value).var));
+			return;
+		}
+		else if (!v.isConstantExpr())
 			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
-		Type vt = v.getType();
+		Type vt = value.getType();
 		if (vt != reqType) {
-			if (!vt.isCastableTo(reqType))
-				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
-			v = new CastExpr(v.pos, reqType, (Expr)v).resolve(reqType);
-			if (!((Expr)v).isConstantExpr())
-				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
-			vt = v.getType();
+			v.replaceWithResolve(new CastExpr(v.pos, reqType, v), reqType);
+		}
+	}
+
+	void checkValue(Type reqType, ENode value) {
+		if (value instanceof Expr) {
+			Expr v = (Expr)value;
+			if (!v.isConstantExpr())
+				throw new CompilerException(pos, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
+			Type vt = v.getType();
 			if (vt != reqType)
 				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		}
-		return v;
 	}
 }
 
@@ -504,7 +513,8 @@ public class MetaValueScalar extends MetaValue {
 	}
 	
 	public void resolve(Type reqType) {
-		value = resolveValue(reqType, value);
+		resolveValue(reqType, this.value);
+		checkValue(reqType, this.value);
 	}
 }
 
@@ -535,8 +545,10 @@ public class MetaValueArray extends MetaValue {
 	}
 	
 	public void resolve(Type reqType) {
-		for (int i=0; i < values.length; i++)
-			values[i] = resolveValue(reqType, values[i]);
+		for (int i=0; i < values.length; i++) {
+			resolveValue(reqType, this.values[i]);
+			checkValue(reqType, this.values[i]);
+		}
 	}
 }
 

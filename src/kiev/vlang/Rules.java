@@ -405,15 +405,15 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		node = n;
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ASTNode> stats) {
+	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ENode> stats) {
 		this(pos,parent,n);
-		foreach (ASTNode st; stats)
+		foreach (ENode st; stats)
 			this.stats.add(st);
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, ASTNode[] stats) {
+	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, ENode[] stats) {
 		this(pos,parent,n);
-		foreach (ASTNode st; stats)
+		foreach (ENode st; stats)
 			this.stats.add(st);
 	}
 
@@ -425,11 +425,11 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		super.cleanup();
 	}
 
-	public void resolveDecl() {
+	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
-			node = (ASTRuleNode)node.resolve(Type.tpVoid);
+			node.resolve(Type.tpVoid);
 			fields_buf = new StringBuffer();
 			node.resolve1(new JumpNodes(false,null,false,null,false));
 			StringBuffer sb = new StringBuffer(256);
@@ -481,7 +481,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			BlockStat mbody = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
 			PassInfo.method.body = mbody;
 			mbody.stats.addAll(stats);
-			return PassInfo.method.body;
 		} finally {
 			NodeInfoPass.popState();
 			PassInfo.pop(this);
@@ -530,9 +529,8 @@ public final class RuleOrExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
+    		rules[i].resolve(reqType);
     	}
-    	return this;
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -586,7 +584,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
     	for(int i=0; i < rules.length; i++) {
-    		rules[i] = (ASTRuleNode)rules[i].resolve(reqType);
+    		rules[i].resolve(reqType);
     	}
     	// combine simple boolean expressions
     	for(int i=0; i < (rules.length-1); i++) {
@@ -606,8 +604,7 @@ public final class RuleAndExpr extends ASTRuleNode {
     		i--;
     	}
     	if (rules.length == 1)
-    		return rules[0];
-    	return this;
+    		replaceWith(rules[0]);
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -649,12 +646,12 @@ public final class RuleAndExpr extends ASTRuleNode {
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	@att public Var		var;		// variable of type PVar<...>
-	@att public Expr	expr;		// expression to check/unify
+	@att public ENode	expr;		// expression to check/unify
 
 	public RuleIstheExpr() {
 	}
 
-	public RuleIstheExpr(int pos, Var var, Expr expr) {
+	public RuleIstheExpr(int pos, Var var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
@@ -705,7 +702,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@ref public final NArr<Var>		vars;		// variable of type PVar<...>
-	@att public final NArr<Expr>	exprs;		// expression to check/unify
+	@att public final NArr<ENode>	exprs;		// expression to check/unify
 	public int[]	iter_vars;	// iterator var
 
 	public static final int	ARRAY = 0;
@@ -719,7 +716,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public RuleIsoneofExpr() {
 	}
 
-	public RuleIsoneofExpr(int pos, Var[] vars, Expr[] exprs) {
+	public RuleIsoneofExpr(int pos, Var[] vars, ENode[] exprs) {
 		super(pos);
 		this.vars.addAll(vars);
 		this.exprs.addAll(exprs);
@@ -741,7 +738,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		itypes = new Type[vars.length];
 		modes = new int[vars.length];
 		for(int i=0; i < vars.length; i++) {
-			exprs[i] = (Expr)exprs[i].resolve(null);
+			exprs[i].resolve(null);
 			Type ctype = exprs[i].getType();
 			Method@ elems;
 			if( ctype.isArray() ) {
@@ -908,9 +905,9 @@ public final class RuleCutExpr extends ASTRuleNode {
 @node
 public final class RuleCallExpr extends ASTRuleNode {
 
-	@att public Expr				obj;
+	@att public ENode				obj;
 	public Named					func;
-	@att public final NArr<Expr>	args;
+	@att public final NArr<ENode>	args;
 	public boolean					super_flag;
 	public int						env_var;
 
@@ -936,13 +933,13 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(ClosureCallExpr expr) {
 		super(expr.pos);
 		this.obj = expr.expr;
-		if( expr.func instanceof VarAccessExpr )
-			this.func = ((VarAccessExpr)expr.func).var;
-		else if( expr.func instanceof StaticFieldAccessExpr )
-			this.func = ((StaticFieldAccessExpr)expr.func).var;
-		else if( expr.func instanceof AccessExpr ) {
-			this.func = ((AccessExpr)expr.func).var;
-			this.obj = ((AccessExpr)expr.func).obj;
+		if( expr.expr instanceof VarAccessExpr )
+			this.func = ((VarAccessExpr)expr.expr).var;
+		else if( expr.expr instanceof StaticFieldAccessExpr )
+			this.func = ((StaticFieldAccessExpr)expr.expr).var;
+		else if( expr.expr instanceof AccessExpr ) {
+			this.func = ((AccessExpr)expr.expr).var;
+			this.obj = ((AccessExpr)expr.expr).obj;
 		}
 		foreach(Expr e; expr.args) this.args.append(e);
 		this.args.insert(0,expr.env_access);
@@ -960,7 +957,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public void resolve(Type reqType) {
-		return this;
 	}
 
 	public void resolve1(JumpNodes jn) {
@@ -1021,18 +1017,18 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 @node
 public abstract class RuleExprBase extends ASTRuleNode {
-	@att public Expr		expr;
-	@att public Expr		bt_expr;
+	@att public ENode		expr;
+	@att public ENode		bt_expr;
 
 	public RuleExprBase() {
 	}
 
-	public RuleExprBase(Expr expr) {
+	public RuleExprBase(ENode expr) {
 		super(expr.pos);
 		this.expr = expr;
 	}
 
-	public RuleExprBase(Expr expr, Expr bt_expr) {
+	public RuleExprBase(ENode expr, ENode bt_expr) {
 		super(expr.pos);
 		this.expr = expr;
 		this.bt_expr = bt_expr;
@@ -1045,26 +1041,30 @@ public abstract class RuleExprBase extends ASTRuleNode {
 	}
 
 	public void resolve(Type reqType) {
-		expr = (Expr)expr.resolve(null);
+		expr.resolve(null);
 
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.type.ret == Type.tpRule )
-				return new RuleCallExpr(e).resolve(reqType);
+			if( e.func.type.ret == Type.tpRule ) {
+				replaceWithResolve(new RuleCallExpr(e), reqType);
+				return;
+			}
 		}
 		else if( expr instanceof CallAccessExpr ) {
 			CallAccessExpr e = (CallAccessExpr)expr;
-			if( e.func.type.ret == Type.tpRule )
-				return new RuleCallExpr(e).resolve(reqType);
+			if( e.func.type.ret == Type.tpRule ) {
+				replaceWithResolve(new RuleCallExpr(e), reqType);
+				return;
+			}
 		}
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
-			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) )
-				return new RuleCallExpr(e).resolve(reqType);
+			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) ) {
+				replaceWithResolve(new RuleCallExpr(e), reqType);
+				return;
+			}
 		}
-
-		return this;
 	}
 }
 
@@ -1074,22 +1074,21 @@ public final class RuleWhileExpr extends RuleExprBase {
 	public RuleWhileExpr() {
 	}
 
-	public RuleWhileExpr(Expr expr) {
+	public RuleWhileExpr(ENode expr) {
 		super(expr);
 	}
 
-	public RuleWhileExpr(Expr expr, Expr bt_expr) {
+	public RuleWhileExpr(ENode expr, ENode bt_expr) {
 		super(expr, bt_expr);
 	}
 
 	public void resolve(Type reqType) {
-		ASTNode n = super.resolve(reqType);
-		if (n != this) return n;
+		super.resolve(reqType);
+		if (pslot == null) return; // check we were replaced
 		if (!expr.getType().equals(Type.tpBoolean))
 			throw new CompilerException(expr.pos,"Boolean expression is requared");
 		if (bt_expr != null)
-			bt_expr = (Expr)bt_expr.resolve(null);
-		return this;
+			bt_expr.resolve(null);
 	}
 
 	public void resolve1(JumpNodes jn) {
@@ -1124,11 +1123,11 @@ public final class RuleExpr extends RuleExprBase {
 	public RuleExpr() {
 	}
 
-	public RuleExpr(Expr expr) {
+	public RuleExpr(ENode expr) {
 		super(expr);
 	}
 
-	public RuleExpr(Expr expr, Expr bt_expr) {
+	public RuleExpr(ENode expr, ENode bt_expr) {
 		super(expr, bt_expr);
 	}
 
@@ -1141,18 +1140,16 @@ public final class RuleExpr extends RuleExprBase {
 	}
 
 	public void resolve(Type reqType) {
-		ASTNode n = super.resolve(reqType);
-		if (n != this) {
+		super.resolve(reqType);
+		if (pslot == null) {
 			if (bt_expr != null)
 				throw new CompilerException(bt_expr.pos,"Backtrace expression ignored for rule-call");
-			return n;
+			return;
 		}
 		if (bt_expr != null && expr.getType().equals(Type.tpBoolean))
 			throw new CompilerException(bt_expr.pos,"Backtrace expression in boolean rule");
 		if (bt_expr != null)
-			bt_expr = (Expr)bt_expr.resolve(null);
-
-		return this;
+			bt_expr.resolve(null);
 	}
 
 	public void resolve1(JumpNodes jn) {

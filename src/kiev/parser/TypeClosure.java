@@ -35,6 +35,12 @@ import kiev.vlang.*;
 public class TypeClosureRef extends TypeRef {
     @att public final NArr<TypeRef>	types;
 
+	TypeClosureRef() {}
+	
+	TypeClosureRef(ClosureType tp) {
+		this.lnk = tp;
+	}
+	
 	public boolean isBound() {
 		return true;
 	}

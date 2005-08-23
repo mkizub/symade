@@ -39,7 +39,7 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTAccessExpression extends Expr {
-	@att public ASTNode			obj;
+	@att public ENode			obj;
 	@att public ASTIdentifier	ident;
 
 	public void preResolve() {
@@ -57,13 +57,13 @@ public class ASTAccessExpression extends Expr {
 				if( ident.name.equals(nameThis) )
 					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
-			else if( obj instanceof Struct ) {
-				((Struct)obj).checkResolved();
-				tps = new Type[]{ ((Struct)obj).type };
-				res = new ASTNode[1];
-				if( ident.name.equals(nameThis) )
-					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-			}
+//			else if( obj instanceof Struct ) {
+//				((Struct)obj).checkResolved();
+//				tps = new Type[]{ ((Struct)obj).type };
+//				res = new ASTNode[1];
+//				if( ident.name.equals(nameThis) )
+//					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+//			}
 			else {
 				Expr e = (Expr)obj;
 				tps = e.getAccessTypes();
@@ -161,7 +161,7 @@ public class ASTAccessExpression extends Expr {
 				}
 				if( tp.isArray() ) {
 					if( ident.name.equals("length") ) {
-						replaceWothResolve(new ArrayLengthAccessExpr(pos,o), reqType);
+						replaceWithResolve(new ArrayLengthAccessExpr(pos,obj), reqType);
 						return;
 					}
 					else throw new CompilerException(obj.getPos(),"Arrays "+tp+" has only one member 'length'");
@@ -172,16 +172,17 @@ public class ASTAccessExpression extends Expr {
 				else if( tp.isReference() )
 					;
 				else
-					throw new CompilerException(obj.getPos(),"Resolved object "+o+" of type "+tp+" is not a scope");
+					throw new CompilerException(obj.getPos(),"Resolved object "+obj+" of type "+tp+" is not a scope");
 			}
-			if( o instanceof TypeRef && ident.name.equals(nameThis) ) {
+			if( obj instanceof TypeRef && ident.name.equals(nameThis) ) {
 				replaceWithResolve(new OuterThisAccessExpr(pos,obj.getType().getStruct()), null);
+				return;
 			}
-			ListBuffer<ASTNode> res = new ListBuffer<ASTNode>();
+			ListBuffer<ENode> res = new ListBuffer<ENode>();
 			ASTNode@ v;
 			ResInfo info;
 			int min_transforms = 8096;
-			if( o instanceof Expr && snitps != null && snitps.length > 1) {
+			if( obj instanceof Expr && snitps != null && snitps.length > 1) {
 				snitps_index = 0;
 				while (snitps_index < snitps.length) {
 					v.$unbind();
@@ -190,7 +191,7 @@ public class ASTAccessExpression extends Expr {
 					foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 						if (info.getTransforms() > min_transforms)
 							continue;
-						ASTNode e = makeExpr(v,info,o);
+						ENode e = makeExpr(v,info,obj);
 						if (info.getTransforms() < min_transforms) {
 							res.setLength(0);
 							min_transforms = info.getTransforms();
@@ -200,12 +201,12 @@ public class ASTAccessExpression extends Expr {
 				}
 			} else {
 					v.$unbind();
-					if (o instanceof Expr) {
+					if (obj instanceof Expr) {
 						info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
 						foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
-							ASTNode e = makeExpr(v,info,o);
+							ENode e = makeExpr(v,info,obj);
 							if (info.getTransforms() < min_transforms) {
 								res.setLength(0);
 								min_transforms = info.getTransforms();
@@ -217,7 +218,7 @@ public class ASTAccessExpression extends Expr {
 						foreach(tp.resolveStaticNameR(v,info,ident.name) ) {
 							if (info.getTransforms() > min_transforms)
 								continue;
-							ASTNode e = makeExpr(v,info,o);
+							ENode e = makeExpr(v,info,obj);
 							if (info.getTransforms() < min_transforms) {
 								res.setLength(0);
 								min_transforms = info.getTransforms();
@@ -227,8 +228,8 @@ public class ASTAccessExpression extends Expr {
 					}
 			}
 			if (res.length() == 0) {
-				if (o instanceof Expr) {
-					o = new TypeRef(o.getType());
+				if (obj instanceof Expr) {
+					obj = new TypeRef(obj.getType());
 					goto try_static;
 				}
 				//resolve(reqType);
@@ -244,12 +245,12 @@ public class ASTAccessExpression extends Expr {
 				dmp.newLine(-1);
 				throw new CompilerException(pos,msg+dmp);
 			}
-			ASTNode n = res.getAt(0);
+			ENode n = res.getAt(0);
 			replaceWithResolve(n, reqType);
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ASTNode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
 		if( v instanceof Field ) {
 			return info.buildAccess(pos, o, v);
 		}
@@ -259,13 +260,13 @@ public class ASTAccessExpression extends Expr {
 		}
 		else if( v instanceof Method ) {
 			if( v.isStatic() )
-				return new CallExpr(pos,parent,(Method)v,Expr.emptyArray);
+				return new CallExpr(pos,(Method)v,Expr.emptyArray);
 			if( info.isEmpty() ) {
 				if( o instanceof Struct )
 					throw new CompilerException(pos,"Static access to non-static method "+v);
-				return new CallAccessExpr(pos,parent,(Expr)o,(Method)v,Expr.emptyArray);
+				return new CallAccessExpr(pos,(Expr)obj,(Method)v,Expr.emptyArray);
 			} else {
-				Expr e = info.buildCall(pos, (Expr)o, v, Expr.emptyArray);
+				ENode e = info.buildCall(pos, (Expr)obj, v, Expr.emptyArray);
 				return e;
 			}
 		} else {

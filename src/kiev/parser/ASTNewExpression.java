@@ -44,7 +44,7 @@ public class ASTNewExpression extends Expr {
 	public TypeRef					type;
 	
 	@att
-	public final NArr<Expr>			args;
+	public final NArr<ENode>		args;
 	
     @att
 	public final Struct				clazz;
@@ -152,7 +152,7 @@ public class ASTNewExpression extends Expr {
 		me.resolveFinalFields(false);
 		Expr ne;
 		if( sup.isInstanceOf(Type.tpClosure) ) {
-			ne = new NewClosure(pos,new TypeRef(me.type));
+			ne = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
 			ne.clazz = me;
 		} else {
 			ne = new NewExpr(pos,me.type,args.toArray());

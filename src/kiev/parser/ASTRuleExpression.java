@@ -36,8 +36,8 @@ import kiev.vlang.*;
 @node
 public class ASTRuleExpression extends ASTRuleNode {
 
-	@att public Expr	expr;
-	@att public Expr	bt_expr;
+	@att public ENode	expr;
+	@att public ENode	bt_expr;
 	boolean				while_mode;
 
     public void resolve(Type reqType) {

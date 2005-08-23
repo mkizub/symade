@@ -71,13 +71,14 @@ public class CaseLabel extends ENode {
 		return "case "+val+':';
 	}
 
-	public ASTNode addStatement(int i, ASTNode st) {
+	public ENode addStatement(int i, ENode st) {
 		if( st == null ) return null;
-		if (st instanceof Statement)
-			stats.stats.insert(st,i);
-		else
-			stats.insertSymbol((Named)st,i);
+		stats.stats.insert(st,i);
 		return st;
+	}
+
+	public void addSymbol(int idx, Named sym) {
+		stats.insertSymbol(sym, idx);
 	}
 
 	public void cleanup() {
@@ -97,37 +98,31 @@ public class CaseLabel extends ENode {
 			SwitchStat sw = (SwitchStat)parent;
 			try {
 				if( val != null ) {
-					ASTNode v;
-					if( val instanceof Expr )
-						v = ((Expr)val).resolve(null);
-					else
-						v = val;
-					if( v instanceof TypeRef)
-						;
-					else if (v instanceof Struct) {
-						Struct s = (Struct)v;
-						s.checkResolved();
-						v = new TypeRef(s.type);
-					}
-					else if( v instanceof WrapedExpr) {
-						WrapedExpr w = (WrapedExpr)v;
+					val.resolve(null);
+//					else if (v instanceof Struct) {
+//						Struct s = (Struct)v;
+//						s.checkResolved();
+//						v = new TypeRef(s.type);
+//					}
+					if( val instanceof WrapedExpr) {
+						WrapedExpr w = (WrapedExpr)val;
 						if (w.expr instanceof TypeRef )
-							v = w.expr;
+							val = (TypeRef)w.expr;
 						else if (w.expr instanceof Struct) {
 							Struct s = (Struct)w.expr;
 							s.checkResolved();
-							v = new TypeRef(s.type);
+							val = new TypeRef(s.type);
 						}
 						else
 							throw new CompilerException(pos,"Unknown node of class "+w.expr.getClass());
 					}
-					else if !( v instanceof Expr )
+					else if !( val instanceof Expr )
 						throw new CompilerException(pos,"Unknown node of class "+val.getClass());
-					if( v instanceof Expr )	{
+					if( val instanceof Expr )	{
 						if( sw.mode == SwitchStat.ENUM_SWITCH ) {
-							if( !(v instanceof StaticFieldAccessExpr) )
+							if( !(val instanceof StaticFieldAccessExpr) )
 								throw new CompilerException(pos,"Wrong case in enum switch");
-							StaticFieldAccessExpr f = (StaticFieldAccessExpr)v;
+							StaticFieldAccessExpr f = (StaticFieldAccessExpr)val;
 							Type et = sw.sel.getType();
 							if( f.var.type != et )
 								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
@@ -138,14 +133,11 @@ public class CaseLabel extends ENode {
 						}
 						else if( sw.mode != SwitchStat.NORMAL_SWITCH )
 							throw new CompilerException(pos,"Wrong case in normal switch");
-						else
-							val = (Expr)v;
 					}
-					else if( v instanceof TypeRef ) {
-						this.type = Type.getRealType(sw.tmpvar.type,v.getType());
-						v = this.type.getStruct();
+					else if( val instanceof TypeRef ) {
+						this.type = Type.getRealType(sw.tmpvar.type,val.getType());
 						pizza_case = true;
-						Struct cas = (Struct)v;
+						Struct cas = this.type.getStruct();
 						if( cas.isPizzaCase() ) {
 							if( sw.mode != SwitchStat.PIZZA_SWITCH )
 								throw new CompilerException(pos,"Pizza case type in non-pizza switch");
@@ -161,19 +153,19 @@ public class CaseLabel extends ENode {
 									Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
 									if( !p.type.equals(tp) )
 										throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
-									p.init =
-										new AccessExpr(p.pos,
+									p.init = new AccessExpr(p.pos,
 											new CastExpr(p.pos,Type.getRealType(sw.tmpvar.type,cas.type),
-												(Expr)new VarAccessExpr(p.pos,sw.tmpvar).resolve(null)),
+												(Expr)new VarAccessExpr(p.pos,sw.tmpvar)),
 											case_attr.casefields[i]
 										);
-									addStatement(j++,p);
+									p.resolveDecl();
+									addSymbol(j++,p);
 								}
 							}
 						} else {
 							if( sw.mode != SwitchStat.TYPE_SWITCH )
 								throw new CompilerException(pos,"Type case in non-type switch");
-							if( v.equals(Type.tpObject.getStruct()) ) {
+							if( val.getType() == Type.tpObject ) {
 								val = null;
 								sw.defCase = this;
 							} else {
@@ -182,7 +174,7 @@ public class CaseLabel extends ENode {
 						}
 					}
 					else
-						throw new CompilerException(pos,"Unknown node of class "+v.getClass());
+						throw new CompilerException(pos,"Unknown node of class "+val.getClass());
 				} else {
 					sw.defCase = this;
 					if( sw.mode == SwitchStat.TYPE_SWITCH )
@@ -291,33 +283,33 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
-			ExprStat st = new ExprStat(pos,parent,sel);
-			this.replaceWith(st);
-			return st.resolve(Type.tpVoid);
+			ExprStat st = new ExprStat(pos,parent,(Expr)sel);
+			this.replaceWithResolve(st, Type.tpVoid);
 		}
 		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
-			CaseLabel cas = (CaseLabel)((ASTNormalCase)cases[0]).resolve(Type.tpVoid);
+			cases[0].resolve(Type.tpVoid);
+			CaseLabel cas = (CaseLabel)cases[0];
 			BlockStat bl = cas.stats;
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
 				bl.stats.insert(new ExprStat(sel.pos,bl,sel),0);
-				this.replaceWith(bl);
-				return bl.resolve(Type.tpVoid);
+				this.replaceWithResolve(bl, Type.tpVoid);
+				return;
 			} else {
 				IfElseStat st = new IfElseStat(pos,parent,
 						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,sel,cas.val),
 						bl,
 						null
 					);
-				this.replaceWith(st);
-				return st.resolve(Type.tpVoid);
+				this.replaceWithResolve(st, Type.tpVoid);
+				return;
 			}
 		}
 		BlockStat me = null;
 		if( tmpvar == null ) {
 			PassInfo.push(this);
 			try {
-				sel = (Expr)sel.resolve(Type.tpInt);
+				sel.resolve(Type.tpInt);
 				Type tp = sel.getType();
 				if( tp.isEnum() ) {
 					mode = ENUM_SWITCH;
@@ -325,25 +317,25 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				else if( tp.isReference() ) {
 					tmpvar = new Var(sel.getPos(),KString.from(
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
-					Expr init = sel;
 					me = new BlockStat(pos,parent);
 					this.replaceWith(me);
-					tmpvar.init = init;
+					tmpvar.init = sel;
 					me.addSymbol(tmpvar);
 					me.addStatement(this);
 					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
-						cae.pos = pos;
-						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
-						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
 						sel = cae;
+						cae.pos = pos;
+						cae.obj = new VarAccessExpr(tmpvar.pos,tmpvar);
+						cae.obj.resolve(null);
+						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
 					} else {
 						mode = TYPE_SWITCH;
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						PassInfo.clazz.addField(typehash);
-						CallAccessExpr cae = new CallAccessExpr(pos,this,
+						CallAccessExpr cae = new CallAccessExpr(pos,
 							new StaticFieldAccessExpr(pos,PassInfo.clazz,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
 							new Expr[]{new VarAccessExpr(pos,tmpvar)}
@@ -355,14 +347,15 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			} finally { PassInfo.pop(this); }
 		}
 		if( me != null ) {
-			return me.resolve(reqType);
+			replaceWithResolve(me, reqType);
+			return;
 		}
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		ScopeNodeInfoVector result_state = null;
 		ScopeNodeInfoVector case_states[] = new ScopeNodeInfoVector[cases.length];
 		try {
-			sel = (Expr)sel.resolve(Type.tpInt);
+			sel.resolve(Type.tpInt);
 			KString[] typenames = new KString[0];
 			int defindex = -1;
 			for(int i=0; i < cases.length; i++) {
@@ -371,13 +364,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					case_states[i] = NodeInfoPass.pushState();
 					pushed_sni = true;
 					if( cases[i] instanceof ASTNormalCase ) {
-						cases[i] = (CaseLabel)((ASTNormalCase)cases[i]).resolve(Type.tpVoid);
+						cases[i].resolve(Type.tpVoid);
 					}
 					else if( cases[i] instanceof ASTPizzaCase ) {
-						cases[i] = (CaseLabel)((ASTPizzaCase)cases[i]).resolve(Type.tpVoid);
+						cases[i].resolve(Type.tpVoid);
 					}
 					if( cases[i] instanceof CaseLabel ) {
-						cases[i] = (CaseLabel)((CaseLabel)cases[i]).resolve(Type.tpVoid);
+						cases[i].resolve(Type.tpVoid);
 					}
 					else
 						throw new CompilerException(cases[i].pos,"Unknown type of case");
@@ -407,7 +400,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					signs[j] = new ConstStringExpr(typenames[j]);
 				if( defindex < 0 ) defindex = signs.length;
 				typehash.init = new NewExpr(PassInfo.clazz.pos,Type.tpTypeSwitchHash,
-					new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,Type.tpString,1,signs),
+					new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,new TypeRef(Type.tpString),1,signs),
 						new ConstIntExpr(defindex)
 					});
 				Method clinit = PassInfo.clazz.getClazzInitMethod();
@@ -513,7 +506,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 			if( isMethodAbrupted() && defCase==null ) {
 				Statement thrErr = new ThrowStat(pos,this,new NewExpr(pos,Type.tpError,Expr.emptyArray));
-				CaseLabel dc = new CaseLabel(pos,this,null,new ASTNode[]{thrErr});
+				CaseLabel dc = new CaseLabel(pos,this,null,new ENode[]{thrErr});
 				cases.insert(dc,0);
 				dc.resolve(Type.tpVoid);
 			}
@@ -521,7 +514,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				Type tp = sel.getType();
 				Expr cae = new CastExpr(pos,Type.tpInt,sel);
 				cae.parent = sel.parent;
-				sel = (Expr)cae.resolve(Type.tpInt);
+				sel = cae;
+				sel.resolve(Type.tpInt);
 			}
 		} finally {
 			result_state = NodeInfoPass.popState();
@@ -536,7 +530,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		}
 		setResolved(true);
 		assert (me == null);
-		return null;
 	}
 
 	public CodeLabel getBreakLabel() {
@@ -691,7 +684,6 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		} catch(Exception e ) {
 			Kiev.reportError(body.pos,e);
 		} finally { PassInfo.pop(this); }
-		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -750,7 +742,7 @@ public class FinallyInfo extends CatchInfo {
 			arg = new Var(pos,KString.Empty,Type.tpThrowable,0);
 		if (ret_arg == null)
 			ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
-		return super.resolve(reqType);
+		super.resolve(reqType);
 	}
 	
 	public void generate(Type reqType) {
@@ -872,7 +864,6 @@ public class TryStat extends Statement/*defaults*/ {
 				NodeInfoPass.addInfo(finally_state);
 			PassInfo.pop(this);
 		}
-		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -983,7 +974,7 @@ public class SynchronizedStat extends Statement {
 		PassInfo.push(this);
 		try {
 			try {
-				expr = (Expr)expr.resolve(null);
+				expr.resolve(null);
 				expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 			try {
@@ -992,7 +983,6 @@ public class SynchronizedStat extends Statement {
 			setAbrupted(body.isAbrupted());
 			setMethodAbrupted(body.isMethodAbrupted());
 		} finally { PassInfo.pop(this); }
-		return null;
 	}
 
 	public void generate(Type reqType) {
@@ -1078,24 +1068,24 @@ public class WithStat extends Statement {
 		PassInfo.push(this);
 		try {
 			try {
-				expr = (Expr)expr.resolve(null);
-				Expr e = expr;
+				expr.resolve(null);
+				ENode e = expr;
 				switch (e) {
 				case VarAccessExpr:				var_or_field = ((VarAccessExpr)e).var;				break;
 				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)e).var;	break;
-				case AccessExpr:				var_or_field = ((AccessExpr)e).var;					break;
+				case AccessExpr:				var_or_field = ((AccessExpr)e).var;				break;
 				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)e).var;		break;
-				case AssignExpr:                e = ((AssignExpr)e).lval;                           goto case e;
+				case AssignExpr:				e = ((AssignExpr)e).lval;							goto case e;
 				}
 				if (var_or_field == null) {
 					Kiev.reportError(pos,"With statement needs variable or field argument");
 					this.replaceWith(body);
 					body.resolve(Type.tpVoid);
-					return null;
+					return;
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(pos,e);
-				return null;
+				return;
 			}
 
 			boolean is_forward = var_or_field.isForward();
@@ -1111,7 +1101,6 @@ public class WithStat extends Statement {
 			setAbrupted(body.isAbrupted());
 			setMethodAbrupted(body.isMethodAbrupted());
 		} finally { PassInfo.pop(this); }
-		return null;
 	}
 
 	public void generate(Type reqType) {

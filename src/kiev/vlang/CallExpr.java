@@ -52,10 +52,10 @@ public class CallExpr extends Expr {
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, ENode[] args) {
-		super(pos,par);
+	public CallExpr(int pos, Method func, NArr<ENode> args) {
+		super(pos);
 		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
+		this.args.addAll(args);
 	}
 
 	public CallExpr(int pos, Method func, ENode[] args, boolean sf) {
@@ -65,10 +65,10 @@ public class CallExpr extends Expr {
 		super_flag = sf;
 	}
 
-	public CallExpr(int pos, ASTNode par, Method func, ENode[] args, boolean sf) {
-		super(pos,par);
+	public CallExpr(int pos, Method func, NArr<ENode> args, boolean sf) {
+		super(pos);
 		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
+		this.args.addAll(args);
 		super_flag = sf;
 	}
 
@@ -234,18 +234,18 @@ public class CallAccessExpr extends Expr {
 	public CallAccessExpr() {
 	}
 
-	public CallAccessExpr(int pos, Expr obj, Method func, ENode[] args) {
+	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args) {
 		super(pos);
 		this.obj = obj;
 		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public CallAccessExpr(int pos, ASTNode par, ENode obj, Method func, ENode[] args) {
-		super(pos,par);
+	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
+		super(pos);
 		this.obj = obj;
 		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
+		this.args.addAll(args);
 	}
 
 	public String toString() {
@@ -279,7 +279,7 @@ public class CallAccessExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( func.isStatic() ) {
-			replaceWithResolve(new CallExpr(pos,parent,func,args.toArray()), reqType);
+			replaceWithResolve(new CallExpr(pos,func,args.toArray()), reqType);
 			return;
 		}
 		obj.resolve(null);
@@ -494,7 +494,6 @@ public class CallAccessExpr extends Expr {
 @cfnode
 public class ClosureCallExpr extends Expr {
 	@att public ENode					expr;
-	@ref public ENode					func;	// Var or Field access expr
 	@att public final NArr<ENode>		args;
 	@att public ENode					env_access;		// $env for rule closures
 	public boolean						is_a_call;
@@ -507,35 +506,21 @@ public class ClosureCallExpr extends Expr {
 	public ClosureCallExpr() {
 	}
 
-	public ClosureCallExpr(int pos, ENode func, ENode[] args) {
-		super(pos);
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
-	}
-
-	public ClosureCallExpr(int pos, ASTNode par, ENode func, ENode[] args) {
-		super(pos,par);
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
-	}
-
-	public ClosureCallExpr(int pos, ENode expr, ENode func, ENode[] args) {
+	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
 		super(pos);
 		this.expr = expr;
-		this.func = func;
 		foreach(Expr e; args) this.args.append(e);
 	}
 
-	public ClosureCallExpr(int pos, ASTNode par, ENode expr, ENode func, ENode[] args) {
-		super(pos,par);
+	public ClosureCallExpr(int pos, ENode expr, NArr<ENode> args) {
+		super(pos);
 		this.expr = expr;
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
+		this.args.addAll(args);
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(func).append('(');
+		sb.append(expr).append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if( i < args.length-1 )
@@ -545,8 +530,7 @@ public class ClosureCallExpr extends Expr {
 		return sb.toString();
 	}
 	public Type getType() {
-		Type tp1 = expr==null?null:expr.getType();
-		ClosureType t = (ClosureType)Type.getRealType(tp1,((Expr)func).getType());
+		ClosureType t = (ClosureType)expr.getType();
 		if( is_a_call )
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
@@ -557,11 +541,8 @@ public class ClosureCallExpr extends Expr {
 
 	public void cleanup() {
 		parent=null;
-		if( expr != null ) {
-			expr.cleanup();
-			expr = null;
-		}
-		func = null;
+		expr.cleanup();
+		expr = null;
 		foreach(ASTNode n; args; args!=null) n.cleanup();
 		args = null;
 		if( env_access != null ) {
@@ -574,35 +555,36 @@ public class ClosureCallExpr extends Expr {
 		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
-			if( expr != null )
-				expr.resolve(null);
-			ASTNode v = func;
-			Type tp1 = expr==null?null:expr.getType();
-			Type tp;
-			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType ) {
-				func = (Expr)v;
-			}
-			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType ) {
-				func = new VarAccessExpr(pos,this,(Var)v);
-				func.resolve(null);
-			}
-			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType ) {
-				if( ((Field)v).isStatic() ) { 
-					func = new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v);
-					func.resolve(null);
-				}
-				else if( expr == null ) {
-					func = new AccessExpr(pos,new ThisExpr(pos),(Field)v);
-					func.resolve(null);
-				}
-				else {
-					func = new AccessExpr(pos,parent,expr,(Field)v);
-					func.resolve(null);
-					expr = null;
-				}
-			}
-			else
-				throw new RuntimeException("Resolved item "+v+" is not a closure");
+			expr.resolve(null);
+//			ASTNode v = func;
+//			Type tp1 = expr==null?null:expr.getType();
+//			Type tp;
+//			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType ) {
+//				func = (Expr)v;
+//			}
+//			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType ) {
+//				func = new VarAccessExpr(pos,this,(Var)v);
+//				func.resolve(null);
+//			}
+//			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType ) {
+//				if( ((Field)v).isStatic() ) { 
+//					func = new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v);
+//					func.resolve(null);
+//				}
+//				else if( expr == null ) {
+//					func = new AccessExpr(pos,new ThisExpr(pos),(Field)v);
+//					func.resolve(null);
+//				}
+//				else {
+//					func = new AccessExpr(pos,parent,expr,(Field)v);
+//					func.resolve(null);
+//					expr = null;
+//				}
+//			}
+//			else
+			if !(expr.getType() instanceof ClosureType)
+				throw new RuntimeException("Resolved item "+expr+" is not a closure");
+			ClosureType tp = (ClosureType)expr.getType();
 			if( reqType != null && reqType instanceof CallableType )
 				is_a_call = false;
 			else if( (reqType == null || !(reqType instanceof CallableType)) && tp.args.length==args.length )
@@ -672,10 +654,8 @@ public class ClosureCallExpr extends Expr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
 		PassInfo.push(this);
 		try {
-			if( expr != null )
-				expr.generate(null);
 			// Load ref to closure
-			((Expr)func).generate(null);
+			expr.generate(null);
 			// Clone it
 			if( args.length > 0 ) {
 				Code.addInstr(op_call,clone_it,false);
@@ -707,7 +687,7 @@ public class ClosureCallExpr extends Expr {
 	public int		getPriority() { return Constants.opCallPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		func.toJava(dmp).append(".clone()");
+		expr.toJava(dmp).append(".clone()");
 		for(int i=0; i < args.length; i++) {
 			dmp.append(".addArg(");
 			args[i].toJava(dmp);
