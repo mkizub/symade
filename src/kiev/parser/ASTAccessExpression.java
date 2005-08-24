@@ -57,13 +57,6 @@ public class ASTAccessExpression extends Expr {
 				if( ident.name.equals(nameThis) )
 					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
-//			else if( obj instanceof Struct ) {
-//				((Struct)obj).checkResolved();
-//				tps = new Type[]{ ((Struct)obj).type };
-//				res = new ASTNode[1];
-//				if( ident.name.equals(nameThis) )
-//					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-//			}
 			else {
 				Expr e = (Expr)obj;
 				tps = e.getAccessTypes();
@@ -139,114 +132,91 @@ public class ASTAccessExpression extends Expr {
 	public void resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
+			ASTNode[] res;
+			Type[] tps;
+
+			// resolve access
 			obj.resolve(null);
-			//if( o == null ) throw new CompilerException(obj.getPos(),"Unresolved object "+obj);
-			Type tp = null;
-			Type[] snitps = null;
-			int snitps_index = 0;
+
 		try_static:
 			if( obj instanceof TypeRef ) {
-				tp = ((TypeRef)obj).getType();
+				tps = new Type[]{ ((TypeRef)obj).getType() };
+				res = new ASTNode[1];
+				if( ident.name.equals(nameThis) )
+					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
-//			else if( obj instanceof Struct ) {
-//				((Struct)o).checkResolved();
-//				tp = ((Struct)obj).type;
-//			}
 			else {
-				snitps = ((Expr)obj).getAccessTypes();
-				tp = snitps[snitps_index++];
-				if (tp.isWrapper() && ident.name.byteAt(0) != '$') {
-					obj.replaceWithResolve(tp.makeWrappedAccess(obj), null);
-					tp = obj.getType();
-				}
-				if( tp.isArray() ) {
-					if( ident.name.equals("length") ) {
-						replaceWithResolve(new ArrayLengthAccessExpr(pos,obj), reqType);
-						return;
+				Expr e = (Expr)obj;
+				tps = e.getAccessTypes();
+				res = new ASTNode[tps.length];
+				for (int si=0; si < tps.length; si++) {
+					Type tp = tps[si];
+					if( ident.name.equals("$self") && tp.isReference() ) {
+						if (tp.isWrapper()) {
+							tps[si] = ((WrapperType)tp).getUnwrappedType();
+							res[si] = obj;
+						}
 					}
-					else throw new CompilerException(obj.getPos(),"Arrays "+tp+" has only one member 'length'");
+					else if (ident.name.byteAt(0) == '$') {
+						while (tp.isWrapper())
+							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+					}
+					else if( ident.name.equals("length") ) {
+						if( tp.isArray() ) {
+							tps[si] = Type.tpInt;
+							res[si] = new ArrayLengthAccessExpr(pos,(Expr)e.copy());
+						}
+					}
 				}
-				else if( ident.name.equals("$self") && tp.isReference() ) {
-					replaceWithResolve(new SelfAccessExpr(pos,(LvalueExpr)obj), reqType);
-				}
-				else if( tp.isReference() )
-					;
-				else
-					throw new CompilerException(obj.getPos(),"Resolved object "+obj+" of type "+tp+" is not a scope");
+				// fall down
 			}
-			if( obj instanceof TypeRef && ident.name.equals(nameThis) ) {
-				replaceWithResolve(new OuterThisAccessExpr(pos,obj.getType().getStruct()), null);
+			for (int si=0; si < tps.length; si++) {
+				if (res[si] != null)
+					continue;
+				Type tp = tps[si];
+				ASTNode@ v;
+				ResInfo info;
+				if (obj instanceof Expr &&
+					tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic|ResInfo.noImports),ident.name) )
+				{
+					res[si] = makeExpr(v,info,obj);
+				}
+				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name))
+				{
+					res[si] = makeExpr(v,info,tp.getStruct());
+				}
+			}
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
+			}
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous access:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
+			}
+			if (cnt == 0) {
+				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
+				obj = obj;
 				return;
 			}
-			ListBuffer<ENode> res = new ListBuffer<ENode>();
-			ASTNode@ v;
-			ResInfo info;
-			int min_transforms = 8096;
-			if( obj instanceof Expr && snitps != null && snitps.length > 1) {
-				snitps_index = 0;
-				while (snitps_index < snitps.length) {
-					v.$unbind();
-					info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
-					tp = snitps[snitps_index++];
-					foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
-						if (info.getTransforms() > min_transforms)
-							continue;
-						ENode e = makeExpr(v,info,obj);
-						if (info.getTransforms() < min_transforms) {
-							res.setLength(0);
-							min_transforms = info.getTransforms();
-						}
-						res.append(e);
-					}
-				}
-			} else {
-					v.$unbind();
-					if (obj instanceof Expr) {
-						info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
-						foreach(tp.resolveNameAccessR(v,info,ident.name) ) {
-							if (info.getTransforms() > min_transforms)
-								continue;
-							ENode e = makeExpr(v,info,obj);
-							if (info.getTransforms() < min_transforms) {
-								res.setLength(0);
-								min_transforms = info.getTransforms();
-							}
-							res.append(e);
-						}
-					} else {
-						info = new ResInfo();
-						foreach(tp.resolveStaticNameR(v,info,ident.name) ) {
-							if (info.getTransforms() > min_transforms)
-								continue;
-							ENode e = makeExpr(v,info,obj);
-							if (info.getTransforms() < min_transforms) {
-								res.setLength(0);
-								min_transforms = info.getTransforms();
-							}
-							res.append(e);
-						}
-					}
-			}
-			if (res.length() == 0) {
-				if (obj instanceof Expr) {
-					obj = new TypeRef(obj.getType());
-					goto try_static;
-				}
-				//resolve(reqType);
-				throw new CompilerException(pos,"Unresolved identifier "+ident+" in class "+tp+" for type(s) "
-					+(snitps==null?tp.toString():Arrays.toString(snitps)) );
-			}
-			if (res.length() > 1) {
-				String msg = "Umbigous identifier "+ident+" in class "+tp+" for type(s) "
-					+(snitps==null?tp.toString():Arrays.toString(snitps));
-				Dumper dmp = new Dumper();
-				dmp.newLine(1);
-				foreach (ASTNode r; res.toList()) r.toJava(dmp).newLine();
-				dmp.newLine(-1);
-				throw new CompilerException(pos,msg+dmp);
-			}
-			ENode n = res.getAt(0);
-			replaceWithResolve(n, reqType);
+			this.replaceWith(res[idx]);
 		} finally { PassInfo.pop(this); }
 	}
 

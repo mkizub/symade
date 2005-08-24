@@ -1178,12 +1178,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos,tome);
-			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),ENode.emptyArray);
+			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),CaseLabel.emptyArray);
 			EnumAttr ea;
 			ea = (EnumAttr)getAttr(attrEnum);
 			if( ea == null )
 				throw new RuntimeException("enum structure "+this+" without "+attrEnum+" attribute");
-			ENode[] cases = new ENode[ea.fields.length+1];
+			CaseLabel[] cases = new CaseLabel[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				cases[i] = new CaseLabel(pos,sw,
 					new ConstIntExpr(ea.values[i]),
@@ -1195,7 +1195,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					new ENode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
 					});
-			foreach (ENode c; cases)
+			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
 			((BlockStat)tome.body).addStatement(sw);
 			addMethod(tome);
@@ -1215,8 +1215,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				new CallExpr(pos,
 					(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")),
 					Expr.emptyArray),
-				ENode.emptyArray);
-			cases = new ENode[ea.fields.length+1];
+				CaseLabel.emptyArray);
+			cases = new CaseLabel[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
 				Field f = ea.fields[i];
 				KString str = f.name.name;
@@ -1233,7 +1233,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					new ENode[]{
 						new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
 					});
-			foreach (ENode c; cases)
+			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
 			((BlockStat)tostr.body).addStatement(sw);
 			addMethod(tostr);

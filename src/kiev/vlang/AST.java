@@ -21,6 +21,7 @@
 package kiev.vlang;
 
 import kiev.Kiev;
+import kiev.CError;
 import kiev.stdlib.*;
 import kiev.transf.*;
 
@@ -1320,6 +1321,10 @@ public class TypeRef extends ENode {
 		getType(); // calls resolving
 	}
 	
+	public void resolve(Type reqType) {
+		getType(); // calls resolving
+	}
+	
 	public boolean equals(Object o) {
 		if (o instanceof Type) return this.lnk == o;
 		return this == o;
@@ -1347,9 +1352,16 @@ public interface SetBody {
 public class CompilerException extends RuntimeException {
 	public int		pos;
 	public Struct	clazz;
+	public CError	err_id;
 	public CompilerException(int pos, String msg) {
 		super(msg);
 		this.pos = pos;
+		this.clazz = PassInfo.clazz;
+	}
+	public CompilerException(int pos, CError err_id, String msg) {
+		super(msg);
+		this.pos = pos;
+		this.err_id = err_id;
 		this.clazz = PassInfo.clazz;
 	}
 }

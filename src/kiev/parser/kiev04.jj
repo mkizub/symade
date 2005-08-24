@@ -1925,25 +1925,25 @@ ENode CommaExpression() :
 }
 
 ASTRuleNode RuleOrExpression() :
-{ ASTRuleNode e; ASTRuleOrExpression r = null; }
+{ ASTRuleNode e; RuleOrExpr r = null; }
 {
 	e = RuleAndExpression()
 	(
 		";"
-		{ if (r==null) r = new ASTRuleOrExpression(e); }
-		r.exprs += RuleAndExpression()
+		{ if (r==null) { r = new RuleOrExpr(e); r.pos = getToken(0).getPos();} }
+		r.rules += RuleAndExpression()
 	)*
 	{ return r == null ? e : r; }
 }
 
 ASTRuleNode RuleAndExpression() :
-{ ASTRuleNode e; ASTRuleAndExpression r = null; }
+{ ASTRuleNode e; RuleAndExpr r = null; }
 {
 	e = RuleExpression()
 	(
 		","
-		{ if (r==null) r = new ASTRuleAndExpression(e); }
-		r.exprs += RuleExpression()
+		{ if (r==null) { r = new RuleAndExpr(e); r.pos = getToken(0).getPos();} }
+		r.rules += RuleExpression()
 	)*
 	{ return r == null ? e : r; }
 }
@@ -2014,12 +2014,12 @@ ASTRuleIsoneofExpression RuleIsoneofExpression() :
 	{ return r; }
 }
 
-ASTRuleCutExpression RuleCutExpression() :
-{ Token t; ASTRuleCutExpression r = new ASTRuleCutExpression(); }
+RuleCutExpr RuleCutExpression() :
+{ RuleCutExpr r = new RuleCutExpr(); }
 {
-	t="$cut"
+	"$cut"
 	{
-		r.setPos(t.getPos());
+		r.pos = getToken(0).getPos();
 		return r;
 	}
 }
@@ -2767,7 +2767,7 @@ CaseLabel NormalCase() :
 		":"
 	)
 	(
-		BlockStatement(c.stats.stats)
+		BlockStatement(c.stats)
 	)*
 	{ return c; }
 }
@@ -2789,7 +2789,7 @@ CaseLabel PizzaCase() :
 	]
 	")" ":"
 	(
-		BlockStatement(c.stats.stats)
+		BlockStatement(c.stats)
 	)*
 	{ return c; }
 }

@@ -1019,6 +1019,12 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	public StaticFieldAccessExpr() {
 	}
 
+	public StaticFieldAccessExpr(int pos, Field var) {
+		super(pos);
+		this.var = var;
+		this.obj = (Struct)var.parent;
+	}
+
 	public StaticFieldAccessExpr(int pos, Struct obj, Field var) {
 		super(pos);
 		this.var = var;

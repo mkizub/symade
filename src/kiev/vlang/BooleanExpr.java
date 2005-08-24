@@ -502,15 +502,18 @@ public class BinaryBoolExpr extends BoolExpr {
 				)
 			) {
 				this.postResolve(reqType);
+				return;
 			}
 			else if( op==BinaryOperator.BooleanOr ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 					replaceWithResolve(new BinaryBooleanOrExpr(pos,expr1,expr2), Type.tpBoolean);
+					return;
 				}
 			}
 			else if( op==BinaryOperator.BooleanAnd ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 					replaceWithResolve(new BinaryBooleanAndExpr(pos,expr1,expr2), Type.tpBoolean);
+					return;
 				}
 			}
 			else if(
@@ -526,6 +529,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				)
 			) {
 				this.postResolve(reqType);
+				return;
 			}
 			// Not a standard operator, find out overloaded
 			foreach(OpTypes opt; op.types ) {
@@ -536,10 +540,10 @@ public class BinaryBoolExpr extends BoolExpr {
 						replaceWithResolve(new CallExpr(pos,opt.method,new ENode[]{expr1,expr2}), reqType);
 					else
 						replaceWithResolve(new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2}), reqType);
+					return;
 				}
 			}
 		} finally { PassInfo.pop(this); }
-//		return null;
 		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 	

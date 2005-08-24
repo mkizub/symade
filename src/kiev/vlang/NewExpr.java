@@ -44,6 +44,7 @@ public class NewExpr extends Expr {
 	@att public final NArr<ENode>	args;
 	@att public ENode				outer;
 	@att public ENode				tif_expr;	// TypeInfo field access expression
+	@att public final NArr<ENode>	outer_args;
 	@att public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
@@ -91,88 +92,80 @@ public class NewExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
-//			if( type.isAnonymouseClazz() ) {
-//				type.getStruct().resolveDecl();
-//			}
-//			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-//				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
-//			}
-//			if( outer != null ) outer.resolve(null);
-//			else if( (!type.isStaticClazz() && type.isLocalClazz())
-//				  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) ) {
-//				if( PassInfo.method==null || PassInfo.method.isStatic() )
-//					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
-//				Var th = PassInfo.method.getThisPar();
-//				outer = new VarAccessExpr(pos,this,th);
-//				outer.resolve(null);
-//			}
-//			for(int i=0; i < args.length; i++)
-//				args[i].resolve(null);
-//			ENode[] outer_args;
-//			if( outer != null ) {
-//				outer_args = new ENode[args.length+1];
-//				outer_args[0] = outer;
-//				for(int i=0; i < args.length; i++)
-//					outer_args[i+1] = args[i];
-//			} else {
-//				outer_args = args.toArray();
-//			}
-//			if( type.isLocalClazz() ) {
-//				Struct cl = (Struct)type.clazz;
-//				foreach (ASTNode n; cl.members; n instanceof Field) {
-//					Field f = (Field)n;
-//					if( !f.isNeedProxy() ) continue;
-//					outer_args = (Expr[])Arrays.append(outer_args,new AccessExpr(pos,new ThisExpr(pos),f));
-//				}
-//			}
-//			if( type.args.length > 0 ) {
-//				// Create static field for this type typeinfo
-//				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type.getType());
-//				args.insert(0,tif_expr);
-//				outer_args = (Expr[])Arrays.insert(outer_args,tif_expr,(outer!=null?1:0));
-//			}
-//			// Don't try to find constructor of argument type
-//			if( !type.isArgument() ) {
-//				Type[] ta = new Type[outer_args.length];
-//				for (int i=0; i < ta.length; i++)
-//					ta[i] = outer_args[i].getType();
-//				MethodType mt = MethodType.newMethodType(null,ta,type.getType());
-//				Method@ m;
-//				// First try overloaded 'new', than real 'new'
-//				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
-//					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-//					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-//						CallExpr n = new CallExpr(pos,(Method)m,args);
-//						n.type_of_static = type.getType();
-//						replaceWith(n);
-//						m.makeArgs(args,type.getType());
-//						n.setResolved(true);
-//						return;
-//					}
-//				}
-//				mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-//				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-//				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-//					func = m;
-//					outer_args = m.makeArgs(outer_args,type.getType());
-//					int po = 0;
-//					int pa = 0;
-//					if( outer != null ) outer = outer_args[po++];
-//					while( pa < args.length ) args[pa++] = outer_args[po++];
-//				}
-//				else {
-//					throw new RuntimeException("Can't find apropriative initializer for "+
-//						Method.toString(nameInit,outer_args,Type.tpVoid)+" for "+type);
-//				}
-//			}
+			if( type.isAnonymouseClazz() ) {
+				type.getStruct().resolveDecl();
+			}
+			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
+				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
+			}
+			if( outer != null )
+				outer.resolve(null);
+			else if( (!type.isStaticClazz() && type.isLocalClazz())
+				  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+			{
+				if( PassInfo.method==null || PassInfo.method.isStatic() )
+					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
+				Var th = PassInfo.method.getThisPar();
+				outer = new VarAccessExpr(pos,this,th);
+				outer.resolve(null);
+			}
+			for(int i=0; i < args.length; i++)
+				args[i].resolve(null);
+			if( type.isLocalClazz() ) {
+				Struct cl = (Struct)type.clazz;
+				foreach (ASTNode n; cl.members; n instanceof Field) {
+					Field f = (Field)n;
+					if( !f.isNeedProxy() ) continue;
+					outer_args.append(new AccessExpr(pos,new ThisExpr(pos),f));
+				}
+			}
+			if( type.args.length > 0 ) {
+				// Create static field for this type typeinfo
+				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type);
+			}
+			// Don't try to find constructor of argument type
+			if( !type.isArgument() ) {
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				if (tif_expr != null)
+					ta = (Type[])Arrays.insert(ta,tif_expr.getType(),0);
+				if (outer != null)
+					ta = (Type[])Arrays.insert(ta,outer.getType(),0);
+				MethodType mt = MethodType.newMethodType(null,ta,type);
+				Method@ m;
+				// First try overloaded 'new', than real 'new'
+				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
+					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
+						CallExpr n = new CallExpr(pos,(Method)m,args);
+						n.type_of_static = type;
+						replaceWith(n);
+						m.makeArgs(args,type);
+						n.setResolved(true);
+						return;
+					}
+				}
+				mt = MethodType.newMethodType(null,ta,Type.tpVoid);
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
+					func = m;
+				}
+				else {
+					throw new RuntimeException("Can't find apropriative initializer for "+
+						Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
+				}
+			}
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
 			if( type.isArgument() ) {
@@ -182,7 +175,7 @@ public class NewExpr extends Expr {
 				} else {
 					// If we have primitive type
 					if( !type.isReference() ) {
-						new ConstNullExpr().generate(type.getType());
+						new ConstNullExpr().generate(type);
 						return;
 					}
 					int i;
@@ -204,26 +197,21 @@ public class NewExpr extends Expr {
 					return;
 				}
 			}
-			Code.addInstr(op_new,type.getType());
+			Code.addInstr(op_new,type);
 			// First arg ('this' pointer) is generated by 'op_dup'
 			if( reqType != Type.tpVoid )
 				Code.addInstr(op_dup);
 			// Constructor call args (first args 'this' skipped)
 			if( outer != null )
 				outer.generate(null);
+			if( tif_expr != null )
+				tif_expr.generate(null);
 			for(int i=0; i < args.length; i++)
 				args[i].generate(null);
 			// Now, fill proxyed fields (vars)
-			if( type.clazz.isLocal() ) {
-				Struct cl = (Struct)type.clazz;
-				foreach (ASTNode n; cl.members; n instanceof Field) {
-					Field f = (Field)n;
-					if( !f.isNeedProxy() ) continue;
-					Var v = ((VarAccessExpr)f.init).var;
-					Code.addInstr(Instr.op_load,v);
-				}
-			}
-			Code.addInstr(op_call,func,false,type.getType());
+			foreach (ENode n; outer_args)
+				n.generate(null);
+			Code.addInstr(op_call,func,false,type);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -232,13 +220,16 @@ public class NewExpr extends Expr {
 	public void cleanup() {
 		parent=null;
 		type = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
-		args = null;
+		args.cleanup();
 		if( outer != null ) {
 			outer.cleanup();
 			outer = null;
 		}
-		tif_expr = null;
+		if( tif_expr != null ) {
+			tif_expr.cleanup();
+			tif_expr = null;
+		}
+		outer_args.cleanup();
 		func = null;
 	}
 
@@ -308,6 +299,7 @@ public class NewArrayExpr extends Expr {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
 			for(int i=0; i < args.length; i++)
@@ -347,11 +339,12 @@ public class NewArrayExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
 			if( dim == 1 ) {
 				args[0].generate(null);
-				Code.addInstr(Instr.op_newarray,type.getType());
+				Code.addInstr(Instr.op_newarray,type);
 			} else {
 				for(int i=0; i < args.length; i++)
 					args[i].generate(null);
@@ -424,6 +417,7 @@ public class NewInitializedArrayExpr extends Expr {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
 			for(int i=0; i < args.length; i++)
@@ -444,11 +438,12 @@ public class NewInitializedArrayExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
+		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
 			if( dim == 1 ) {
 				Code.addConst(args.length);
-				Code.addInstr(Instr.op_newarray,type.getType());
+				Code.addInstr(Instr.op_newarray,type);
 			} else {
 				for(int i=0; i < dim; i++)
 					Code.addConst(dims[i]);
@@ -533,6 +528,7 @@ public class NewClosure extends Expr {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return;
+		ClosureType type = (ClosureType)this.type.getType();
 		PassInfo.push(this);
 		try {
 			if( Env.getStruct(Type.tpClosureClazz.name) == null )
@@ -560,9 +556,10 @@ public class NewClosure extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
+		ClosureType type = (ClosureType)this.type.getType();
 		PassInfo.push(this);
 		try {
-			Code.addInstr(op_new,type.getType());
+			Code.addInstr(op_new,type);
 			// First arg ('this' pointer) is generated by 'op_dup'
 			if( reqType != Type.tpVoid )
 				Code.addInstr(op_dup);

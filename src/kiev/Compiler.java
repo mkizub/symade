@@ -377,6 +377,15 @@ public class Compiler {
 					args[a] = null;
 					continue;
 				}
+				else if( args[a].equals("-test")) {
+					args[a++] = null;
+					String[] errs = args[a].split(":");
+					args[a] = null;
+					Kiev.testError = CError.valueOf(errs[0]);
+					Kiev.testErrorLine = Integer.parseInt(errs[1]);
+					Kiev.testErrorOffs = Integer.parseInt(errs[2]);
+					continue;
+				}
 				else if( args[a].startsWith("-D") ) {
 					Properties ps = System.getProperties();
 					String prop, value;
@@ -720,6 +729,9 @@ stop:;
 		Env.dumpProjectFile();
 		if( Kiev.verbose || Kiev.errCount > 0 )
 			Kiev.reportTotals();
+		if !(Kiev.interactive) {
+			System.exit(Kiev.errCount > 0 ? 1 : 0);
+		}
 		Kiev.errCount = 0;
 		Kiev.warnCount = 0;
 	}

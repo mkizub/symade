@@ -1,4 +1,6 @@
+kiev.CError kiev/CError kiev\Errors.java
 kiev.Compiler kiev/Compiler kiev\Compiler.java
+kiev.Error kiev/Error kiev\Errors.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
 kiev.Kiev$CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev$Ext kiev/Kiev$Ext kiev\Kiev.java
@@ -104,23 +106,16 @@ kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parse
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
 kiev.parser.ASTNewExpression kiev/parser/ASTNewExpression kiev\parser\ASTNewExpression.java
 kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayExpression kiev\parser\ASTNewInitializedArrayExpression.java
-kiev.parser.ASTNormalCase kiev/parser/ASTNormalCase kiev\parser\ASTNormalCase.java
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
-kiev.parser.ASTPizzaCase kiev/parser/ASTPizzaCase kiev\parser\ASTPizzaCase.java
 kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
 kiev.parser.ASTReparseExpression kiev/parser/ASTReparseExpression kiev\parser\ASTReparseExpression.java
 kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTReparseStatement.java
-kiev.parser.ASTRuleAndExpression kiev/parser/ASTRuleAndExpression kiev\parser\ASTRuleAndExpression.java
-kiev.parser.ASTRuleCutExpression kiev/parser/ASTRuleCutExpression kiev\parser\ASTRuleCutExpression.java
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
-kiev.parser.ASTRuleOrExpression kiev/parser/ASTRuleOrExpression kiev\parser\ASTRuleOrExpression.java
 kiev.parser.ASTThrows kiev/parser/ASTThrows kiev\parser\ASTThrows.java
 kiev.parser.ASTTypeClassExpression kiev/parser/ASTTypeClassExpression kiev\parser\ASTTypeClassExpression.java
-kiev.parser.ASTVarDecl kiev/parser/ASTVarDecl kiev\parser\ASTVarDecl.java
-kiev.parser.ASTVarDecls kiev/parser/ASTVarDecls kiev\parser\ASTVarDecls.java
 kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
 kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
@@ -314,13 +309,6 @@ kiev.vlang.EnumAttr kiev/vlang/EnumAttr kiev\vlang\Attr.java
 kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 kiev.vlang.ExceptionsAttr kiev/vlang/ExceptionsAttr kiev\vlang\Attr.java
 kiev.vlang.Expr kiev/vlang/Expr kiev\vlang\AST.java
-kiev.vlang.Expr$CompilerException kiev/vlang/Expr$CompilerException kiev\vlang\AST.java bad
-kiev.vlang.Expr$LvalueExpr kiev/vlang/Expr$LvalueExpr kiev\vlang\AST.java bad
-kiev.vlang.Expr$RefNode kiev/vlang/Expr$RefNode kiev\vlang\AST.java bad
-kiev.vlang.Expr$SetBody kiev/vlang/Expr$SetBody kiev\vlang\AST.java bad
-kiev.vlang.Expr$Statement kiev/vlang/Expr$Statement kiev\vlang\AST.java bad
-kiev.vlang.Expr$TypeRef kiev/vlang/Expr$TypeRef kiev\vlang\AST.java bad
-kiev.vlang.Expr$WrapedExpr kiev/vlang/Expr$WrapedExpr kiev\vlang\AST.java bad
 kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
 kiev.vlang.FieldCP kiev/vlang/FieldCP kiev\vlang\ConstPool.java
@@ -449,7 +437,6 @@ kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
 kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
-kiev.vlang.StructDecl kiev/vlang/StructDecl kiev\vlang\AST.java bad
 kiev.vlang.StructRef kiev/vlang/StructRef kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java

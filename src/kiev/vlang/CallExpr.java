@@ -234,18 +234,24 @@ public class CallAccessExpr extends Expr {
 	public CallAccessExpr() {
 	}
 
-	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args) {
-		super(pos);
-		this.obj = obj;
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
-	}
-
-	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
+	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args, boolean super_flag) {
 		super(pos);
 		this.obj = obj;
 		this.func = func;
 		this.args.addAll(args);
+		this.super_flag = super_flag;
+	}
+
+	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args, boolean super_flag) {
+		this(pos, obj, func, args.toArray(), super_flag);
+	}
+	
+	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args) {
+		this(pos, obj, func, args, false);
+	}
+
+	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
+		this(pos, obj, func, args.toArray(), false);
 	}
 
 	public String toString() {

@@ -331,7 +331,7 @@ public class AsciiCP extends CP {
 	}
 	public AsciiCP(KString value) {
 		if( value==null )
-			throw new Error("Null as AsciiCP's value in constant pool");
+			throw new RuntimeException("Null as AsciiCP's value in constant pool");
 		this.value = value;
 		if( ConstPool.poolHash != null  )
 			ConstPool.poolHash.put(this);

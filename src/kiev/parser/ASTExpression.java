@@ -42,7 +42,7 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 
 @node
 @cfnode
-public class ASTExpression extends ENode {
+public class ASTExpression extends Expr {
 	@att public final NArr<ENode>		nodes;
 
 	public void preResolve() {
@@ -358,31 +358,19 @@ public class ASTExpression extends ENode {
 		return 256;
 	}
 
-	public int getPriority(ASTExpression:Object expr) {
-		return 256;
-	}
-
-	public int getPriority(Expr:Object expr) {
+	public int getPriority(ENode:Object expr) {
 		return expr.getPriority();
 	}
 
-	public Expr getExpr(Expr:Object expr) {
+	public ENode getExpr(ENode:Object expr) {
 		return expr;
 	}
 
-	public Expr getExpr(Object@:Object expr) {
+	public ENode getExpr(Object@:Object expr) {
 		return getExpr(expr.$var);
 	}
 
-	public Expr getExpr(Struct:Object expr) {
-		return new WrapedExpr(expr.pos,expr);
-	}
-
-	public Expr getExpr(TypeRef:Object expr) {
-		return new WrapedExpr(expr.pos,(TypeRef)expr);
-	}
-
-	public Expr getExpr(Object:Object expr) {
+	public ENode getExpr(Object:Object expr) {
 		throw new CompilerException(pos,"Node of type "+expr.getClass()+" cannot be an expression");
 	}
 /*

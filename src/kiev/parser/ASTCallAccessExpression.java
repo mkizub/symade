@@ -52,7 +52,7 @@ public class ASTCallAccessExpression extends Expr {
 			// don't pre-resolve 'func'
 			;
 			// pre-resolve arguments
-			foreach (Expr e; args) e.preResolve();
+			foreach (ENode e; args) e.preResolve();
 		} finally { PassInfo.pop(this); }
 	}
 	
@@ -60,7 +60,6 @@ public class ASTCallAccessExpression extends Expr {
 		for(int i=0; i < args.length; i++) {
 			args[i].resolve(null);
 		}
-		ASTNode o;
 		Type tp = null;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -92,147 +91,88 @@ public class ASTCallAccessExpression extends Expr {
 				return;
 			}
 			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+		}
+		
+		obj.resolve(null);
+		
+		if !(obj instanceof Expr || obj instanceof TypeRef)
+			throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
+
+		MethodType mt;
+		{
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			mt = MethodType.newMethodType(null,ta,null);
+		}
+		int res_flags = ResInfo.noStatic | ResInfo.noImports;
+		ENode[] res;
+		Type[] tps;
+	try_static:;
+		if( obj instanceof TypeRef ) {
+			tp = ((TypeRef)obj).getType();
+			tps = new Type[]{tp};
+			res = new ENode[1];
+			res_flags = 0;
 		} else {
-			obj.resolve(null);
-		try_static:
-			if( o instanceof Struct ) {
-				((Struct)o).checkResolved();
-				o = new TypeRef(((Struct)o).type);
+			tps = ((Expr)obj).getAccessTypes();
+			res = new ENode[tps.length];
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				if (func.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
 			}
-			if( o instanceof TypeRef ) {
-				tp = ((TypeRef)o).getType();
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				MethodType mt = MethodType.newMethodType(null,ta,ret);
-				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
-				if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,mt) ) {
-					// May be a closure
-					ASTNode@ closure;
-					info = new ResInfo();
-					if( !tp.resolveStaticNameR(closure,info,func.name) ) {
-						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
-					}
-					try {
-						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
-						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
-						) {
-							ENode call = info.buildCall(pos, null, closure, args.toArray());
-							replaceWithResolve(call, ret);
-							return;
-						}
-					} catch(Exception eee) {
-						Kiev.reportError(pos,eee);
-					}
-					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(pos,"Method "+Method.toString(func.name,mt)+" unresolved in "+tp);
-				}
-				if( !m.isStatic() )
-					throw new CompilerException(pos,"Static call to non-static method");
-				Method meth = (Method)m;
-				CallExpr ce = new CallExpr(pos,meth,args);
-				replaceWith(ce);
-				meth.makeArgs(ce.args,tp);
-				ce.resolve(ret);
-				return;
-			}
-			else if( o instanceof Expr) {
-				Type[] snitps = null;
-				int snitps_index = 0;
-				snitps = ((Expr)o).getAccessTypes();
-				tp = snitps[snitps_index++];
-				if (tp.isWrapper() && func.name.byteAt(0) != '$') {
-					obj = tp.makeWrappedAccess(o);
-					obj.resolve(null);
-					tp = obj.getType();
-				}
-				if( reqType instanceof CallableType ) ret = null;
-				if( tp.isReference() ) {
-			retry_resolving:;
-					Type[] ta = new Type[args.length];
-					for (int i=0; i < ta.length; i++)
-						ta[i] = args[i].getType();
-					MethodType mt = MethodType.newMethodType(null,ta,ret);
-					ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noImports);
-					if( !PassInfo.resolveBestMethodR(tp,m,info,func.name,mt) ) {
-						// May be a closure
-						ASTNode@ closure;
-						info = new ResInfo();
-						if( !tp.resolveNameAccessR(closure,info,func.name) ) {
-							if( o instanceof Expr && snitps != null ) {
-								if( snitps_index < snitps.length ) {
-									tp = snitps[snitps_index++];
-//									cl = (Struct)tp.clazz;
-									goto retry_resolving;
-								}
-							}
-							if( ret != null ) { ret = null; goto retry_with_null_ret; }
-							o = new TypeRef(o.getType());
-							goto try_static;
-							//throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret)+" in "
-							//	+(snitps==null?tp.toString():Arrays.toString(snitps)) );
-						}
-						try {
-							if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
-							||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
-							) {
-								ENode call = info.buildCall(pos, obj, closure, args.toArray());
-								replaceWithResolve(call, ret);
-								return;
-							}
-						} catch(Exception eee) {
-							Kiev.reportError(pos,eee);
-						}
-						if( ret != null ) { ret = null; goto retry_with_null_ret; }
-						o = new TypeRef(o.getType());
-						goto try_static;
-//						throw new CompilerException(pos,"Method "+Method.toString(func.name,args,reqType)+" unresolved in "+tp);
-					}
-					if( reqType instanceof CallableType ) {
-						ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-						ac.pos = pos;
-						ac.parent = parent;
-						ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
-						Method meth = (Method)m;
-						for(int i=0; i < meth.type.args.length; i++) {
-							ac.params.add(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
-						}
-						BlockStat bs = new BlockStat(pos,ac,ENode.emptyArray);
-						ENode[] oldargs = args.toArray();
-						ENode[] cargs = new ENode[ac.params.length];
-						for(int i=0; i < cargs.length; i++)
-							cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-						args.delAll();
-						foreach (Expr e; cargs)
-							args.add(e);
-						if( ac.rettype.getType() == Type.tpVoid ) {
-							bs.addStatement(new ExprStat(pos,bs,this));
-							bs.addStatement(new ReturnStat(pos,bs,null));
-						} else {
-							bs.addStatement(new ReturnStat(pos,bs,this));
-						}
-						ac.body = bs;
-						if( oldargs.length > 0 ) {
-							ac.resolve(reqType);
-							replaceWithResolve(new ClosureCallExpr(pos,ac,oldargs), reqType);
-						} else {
-							replaceWithResolve(ac, reqType);
-						}
-						return;
-					} else {
-						Method meth = (Method)m;
-						ENode call = info.buildCall(pos, obj, meth, args.toArray());
-						replaceWithResolve(call, ret);
-						return;
-					}
-				} else {
-					throw new CompilerException(obj.getPos(),"Resolved object "+obj+" of type "+tp+" is not a scope");
-				}
-			} else {
-				throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an object");
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			Type tp = tps[si];
+			ASTNode@ v;
+			ResInfo info = new ResInfo(res_flags);
+			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+				if (tps.length == 1 && res_flags == 0)
+					res[si] = info.buildCall(pos, obj, m, args.toArray());
+				else if (res_flags == 0)
+					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.toArray());
+				else
+					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.toArray());
 			}
 		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous methods:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(pos, msg.toString());
+		}
+		if (cnt == 0 && res_flags != 0) {
+			res_flags = 0;
+			goto try_static;
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(pos, msg.toString());
+			return;
+		}
+		this.replaceWithResolve( res[idx], reqType );
 	}
 
 	public int		getPriority() { return Constants.opCallPriority; }

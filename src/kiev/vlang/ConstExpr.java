@@ -309,7 +309,7 @@ public abstract class ConstExpr extends Expr {
 			char ch = ((java.lang.Character)value).charValue();
 			return dmp.append('\'').append(Convert.escape(ch)).append('\'');
 		}
-		else throw new Error("Internal error: unknown type of constant "+value.getClass());
+		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
 		return dmp;
 	}
 

@@ -511,6 +511,10 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public RuleOrExpr() {
 	}
 
+	public RuleOrExpr(ASTRuleNode first) {
+		this.rules.add(first);
+	}
+
 	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
 		this.rules.addAll(rules);
@@ -564,6 +568,10 @@ public final class RuleAndExpr extends ASTRuleNode {
 	public void set$idx(int i) {}
 
 	public RuleAndExpr() {
+	}
+
+	public RuleAndExpr(ASTRuleNode first) {
+		this.rules.add(first);
 	}
 
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {

@@ -2445,7 +2445,7 @@ public class kiev040 implements kiev040Constants {
   }
 
   static final public ASTRuleNode RuleOrExpression() throws ParseException {
-  ASTRuleNode e; ASTRuleOrExpression r = null;
+  ASTRuleNode e; RuleOrExpr r = null;
     e = RuleAndExpression();
     label_46:
     while (true) {
@@ -2457,15 +2457,15 @@ public class kiev040 implements kiev040Constants {
         break label_46;
       }
       jj_consume_token(SEMICOLON);
-                  if (r==null) r = new ASTRuleOrExpression(e);
-      r.exprs += RuleAndExpression();
+                  if (r==null) { r = new RuleOrExpr(e); r.pos = getToken(0).getPos();}
+      r.rules += RuleAndExpression();
     }
           {if (true) return r == null ? e : r;}
     throw new Error("Missing return statement in function");
   }
 
   static final public ASTRuleNode RuleAndExpression() throws ParseException {
-  ASTRuleNode e; ASTRuleAndExpression r = null;
+  ASTRuleNode e; RuleAndExpr r = null;
     e = RuleExpression();
     label_47:
     while (true) {
@@ -2477,8 +2477,8 @@ public class kiev040 implements kiev040Constants {
         break label_47;
       }
       jj_consume_token(COMMA);
-                  if (r==null) r = new ASTRuleAndExpression(e);
-      r.exprs += RuleExpression();
+                  if (r==null) { r = new RuleAndExpr(e); r.pos = getToken(0).getPos();}
+      r.rules += RuleExpression();
     }
           {if (true) return r == null ? e : r;}
     throw new Error("Missing return statement in function");
@@ -2558,10 +2558,10 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTRuleCutExpression RuleCutExpression() throws ParseException {
-  Token t; ASTRuleCutExpression r = new ASTRuleCutExpression();
-    t= jj_consume_token(PCUT);
-                r.setPos(t.getPos());
+  static final public RuleCutExpr RuleCutExpression() throws ParseException {
+  RuleCutExpr r = new RuleCutExpr();
+    jj_consume_token(PCUT);
+                r.pos = getToken(0).getPos();
                 {if (true) return r;}
     throw new Error("Missing return statement in function");
   }
@@ -3766,7 +3766,7 @@ public class kiev040 implements kiev040Constants {
       } else {
         break label_65;
       }
-      BlockStatement(c.stats.stats);
+      BlockStatement(c.stats);
     }
           {if (true) return c;}
     throw new Error("Missing return statement in function");
@@ -3806,7 +3806,7 @@ public class kiev040 implements kiev040Constants {
       } else {
         break label_67;
       }
-      BlockStatement(c.stats.stats);
+      BlockStatement(c.stats);
     }
           {if (true) return c;}
     throw new Error("Missing return statement in function");

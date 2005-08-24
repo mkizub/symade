@@ -55,6 +55,11 @@ public class ShadowExpr extends Expr {
 		parent = null;
 		expr   = null;
 	}
+	
+	public int getPriority() {
+		return expr.getPriority();
+	}
+	
 	public void resolve(Type reqType) {
 		expr.resolve(reqType);
 		setResolved(true);
@@ -681,6 +686,7 @@ public class BinaryExpr extends Expr {
 				)
 			) {
 				this.postResolve(null);
+				return;
 			}
 			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
 				(    op==BinaryOperator.LeftShift
@@ -689,6 +695,7 @@ public class BinaryExpr extends Expr {
 				)
 			) {
 				this.postResolve(null);
+				return;
 			}
 			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
 				(    op==BinaryOperator.BitOr
@@ -697,6 +704,7 @@ public class BinaryExpr extends Expr {
 				)
 			) {
 				this.postResolve(null);
+				return;
 			}
 			// Not a standard operator, find out overloaded
 			foreach(OpTypes opt; op.types ) {
@@ -930,7 +938,7 @@ public class StringConcatExpr extends Expr {
 		clazzStringBufferInit = (Method)clazzStringBuffer.resolveMethod(
 			KString.from("<init>"),KString.from("()V"));
 		} catch(Exception e ) {
-			throw new Error("Can't initialize: "+e.getMessage());
+			throw new RuntimeException("Can't initialize: "+e.getMessage());
 		}
 	}
 
@@ -1191,12 +1199,12 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	{
 		n @= new SymbolIterator(this,this.stats),
 		{
-			n instanceof Var,
-			((Var)n).name.equals(name),
-			node ?= n
-		;	n instanceof Struct,
-			name.equals(((Struct)n).name.short_name),
-			node ?= n
+			n instanceof VarDecl,
+			((VarDecl)n).var.name.equals(name),
+			node ?= ((VarDecl)n).var
+		;	n instanceof LocalStructDecl,
+			name.equals(((LocalStructDecl)n).clazz.name.short_name),
+			node ?= ((LocalStructDecl)n).clazz
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
 			node ?= ((Typedef)n).type
@@ -1204,8 +1212,8 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this,this.stats),
-		n instanceof Var && n.isForward() && ((Var)n).name.equals(name),
-		info.enterForward(n) : info.leaveForward(n),
+		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
+		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
@@ -1213,17 +1221,17 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= stats,
-		n instanceof Var && n.isForward(),
-		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,name,mt)
+		n @= new SymbolIterator(this,this.stats),
+		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
+		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
+		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
-			resolveBlockStats();
+			BlockStat.resolveBlockStats(this, stats);
 			if (res != null) {
 				res.resolve(reqType);
 			}
@@ -1236,82 +1244,6 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			PassInfo.pop(this);
 		}
 	}
-
-	public void resolveBlockStats() {
-		for(int i=0; i < stats.length; i++) {
-			try {
-				if( stats[i] instanceof Statement ) {
-					Statement st = (Statement)stats[i];
-					st.resolve(Type.tpVoid);
-					st = (Statement)stats[i];
-					if( st.isAbrupted() ) {
-						Kiev.reportError(st.pos,"Abrupted statement in BockExpr");
-					}
-				}
-//				else if( stats[i] instanceof ASTVarDecls ) {
-//					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-//					// TODO: check flags for vars
-//					int flags = vdecls.modifiers.getFlags();
-//					Type type = ((TypeRef)vdecls.type).getType();
-//					for(int j=0; j < vdecls.vars.length; j++) {
-//						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-//						KString vname = vdecl.name.name;
-//						Type tp = type;
-//						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-//						Var vstat;
-//						if( vdecl.init != null ) {
-//							if (!type.isWrapper() || vdecl.of_wrapper) {
-//								vstat = new Var(vdecl.pos,vname,tp,flags);
-//								vstat.init = vdecl.init;
-//							} else {
-//								vstat = new Var(vdecl.pos,vname,tp,flags);
-//								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
-//							}
-//						}
-//						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
-//							vstat = new Var(vdecl.pos,vname,tp,flags);
-//							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
-//						} else {
-//							vstat = new Var(vdecl.pos,vname,tp,flags);
-//						}
-//						if (j == 0) {
-//							stats[i] = vstat;
-//							vstat.resolve(Type.tpVoid);
-//						} else {
-//							this.insertSymbol(vstat,i+j);
-//						}
-//					}
-//				}
-//				else if( stats[i] instanceof Var ) {
-//					Var var = (Var)stats[i];
-//					var.resolve(Type.tpVoid);
-//				}
-//				else if( stats[i] instanceof Struct ) {
-//					Struct decl = (Struct)stats[i];
-//					if( PassInfo.method==null || PassInfo.method.isStatic())
-//						decl.setStatic(true);
-//					ExportJavaTop exporter = new ExportJavaTop();
-//					decl.setLocal(true);
-//					exporter.pass1(decl);
-//					exporter.pass1_1(decl);
-//					exporter.pass2(decl);
-//					exporter.pass2_2(decl);
-//					exporter.pass3(decl);
-//					decl.autoProxyMethods();
-//					decl.resolveFinalFields(false);
-//					decl.resolve(Type.tpVoid);
-//					//stats[i] = decl;
-//				}
-				else {
-					//Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
-					stats[i].resolve(Type.tpVoid);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i].pos,e);
-			}
-		}
-	}
-
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");

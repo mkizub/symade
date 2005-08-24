@@ -42,7 +42,7 @@ public class CaseLabel extends ENode {
 	@att public ENode				val;
 	@ref public Type				type;
 	@att public final NArr<Var>		pattern;
-	@att public BlockStat			stats;
+	@att public final NArr<ENode>	stats;
 
 	public CodeLabel	case_label;
 
@@ -52,7 +52,7 @@ public class CaseLabel extends ENode {
 	public CaseLabel(int pos, ASTNode parent, ENode val, ENode[] stats) {
 		super(pos,parent);
 		this.val = val;
-		this.stats = new BlockStat(pos,this,stats);
+		this.stats.addAll(stats);
 	}
 
 	public String toString() {
@@ -73,12 +73,24 @@ public class CaseLabel extends ENode {
 
 	public ENode addStatement(int i, ENode st) {
 		if( st == null ) return null;
-		stats.stats.insert(st,i);
+		stats.insert(st,i);
 		return st;
 	}
 
 	public void addSymbol(int idx, Named sym) {
-		stats.insertSymbol(sym, idx);
+		ENode decl;
+		if (sym instanceof Var)
+			decl = new VarDecl((Var)sym);
+		else if (sym instanceof Struct)
+			decl = new LocalStructDecl((Struct)sym);
+		else
+			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
+		foreach(ASTNode n; stats) {
+			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
+				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+			}
+		}
+		stats.insert(decl,idx);
 	}
 
 	public void cleanup() {
@@ -86,9 +98,8 @@ public class CaseLabel extends ENode {
 		val.cleanup();
 		val = null;
 		type = null;
-		pattern = null;
+		pattern.cleanup();
 		stats.cleanup();
-		stats = null;
 	}
 
 	public void resolve(Type tpVoid) {
@@ -182,10 +193,7 @@ public class CaseLabel extends ENode {
 				}
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
 
-			//this.stats.resolveBlockStats();
-			this.stats.resolve(Type.tpVoid);
-			this.setAbrupted(stats.isAbrupted());
-			this.setMethodAbrupted(stats.isMethodAbrupted());
+			BlockStat.resolveBlockStats(this, stats);
 
 			if( val != null ) {
 				if( !((Expr)val).isConstantExpr() )
@@ -218,8 +226,13 @@ public class CaseLabel extends ENode {
 						throw new RuntimeException("Case label "+v+" must be of integer type");
 				}
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
-			if (isAutoReturnable()) stats.setAutoReturnable(true);
-			stats.generate(Type.tpVoid);
+			for(int i=0; i < stats.length; i++) {
+				try {
+					stats[i].generate(Type.tpVoid);
+				} catch(Exception e ) {
+					Kiev.reportError(stats[i].getPos(),e);
+				}
+			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -239,7 +252,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	@att public ENode					sel;
 	@ref public Var						tmpvar;
-	@att public final NArr<ENode>		cases;
+	@att public final NArr<CaseLabel>	cases;
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
@@ -257,7 +270,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public SwitchStat() {
 	}
 
-	public SwitchStat(int pos, ASTNode parent, ENode sel, ENode[] cases) {
+	public SwitchStat(int pos, ASTNode parent, ENode sel, CaseLabel[] cases) {
 		super(pos, parent);
 		this.sel = sel;
 		this.cases.addAll(cases);
@@ -286,10 +299,10 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			ExprStat st = new ExprStat(pos,parent,(Expr)sel);
 			this.replaceWithResolve(st, Type.tpVoid);
 		}
-		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
+		else if( cases.length == 1 && cases[0].pattern.length == 0) {
 			cases[0].resolve(Type.tpVoid);
 			CaseLabel cas = (CaseLabel)cases[0];
-			BlockStat bl = cas.stats;
+			BlockStat bl = new BlockStat(cas.pos, null, cas.stats);
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
 				bl.stats.insert(new ExprStat(sel.pos,bl,sel),0);
@@ -363,17 +376,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				try {
 					case_states[i] = NodeInfoPass.pushState();
 					pushed_sni = true;
-					if( cases[i] instanceof ASTNormalCase ) {
-						cases[i].resolve(Type.tpVoid);
-					}
-					else if( cases[i] instanceof ASTPizzaCase ) {
-						cases[i].resolve(Type.tpVoid);
-					}
-					if( cases[i] instanceof CaseLabel ) {
-						cases[i].resolve(Type.tpVoid);
-					}
-					else
-						throw new CompilerException(cases[i].pos,"Unknown type of case");
+					cases[i].resolve(Type.tpVoid);
 					case_states[i] = NodeInfoPass.popState();
 					pushed_sni = false;
 					if( typehash != null ) {
@@ -594,13 +597,19 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				cosw = Code.newLookupSwitch(tags);
 				Code.addInstr(Instr.op_lookupswitch,cosw);
 			}
-			//Code.addVars(vars);
+			
 			for(int i=0; i < cases.length; i++) {
 				if( isAutoReturnable() )
 					cases[i].setAutoReturnable(true);
 				((CaseLabel)cases[i]).generate(Type.tpVoid);
 			}
-			//Code.removeVars(vars);
+			Vector<Var> vars = new Vector<Var>();
+			for(int i=0; i < cases.length; i++) {
+				foreach (ENode n; cases[i].stats; n instanceof VarDecl)
+					vars.append(((VarDecl)n).var);
+			}
+			Code.removeVars(vars.toArray());
+
 			Code.addInstr(Instr.set_label,break_label);
 			Code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {

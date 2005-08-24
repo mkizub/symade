@@ -64,7 +64,7 @@ public class ASTCallExpression extends Expr {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'func'
-			foreach (Expr e; args) e.preResolve();
+			foreach (ENode e; args) e.preResolve();
 		} finally { PassInfo.pop(this); }
 	}
 	
@@ -205,7 +205,7 @@ public class ASTCallExpression extends Expr {
 					assert (info.isEmpty());
 				((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(pos,null,m,args.toArray());
-				replaceWithResolve(e, ret);
+				this.replaceWithResolve( e, reqType );
 			}
 		}
 	}

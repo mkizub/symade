@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
  */
 @node
 @cfnode
-public abstract class UnresExpr extends ENode {
+public abstract class UnresExpr extends Expr {
 
 	public Operator			op;
 	
@@ -52,6 +52,10 @@ public abstract class UnresExpr extends ENode {
 	public int getPriority() { return op.priority; }
 	
 	public abstract ENode toResolvedExpr();
+	
+	public void resolve(Type reqType) {
+		replaceWithResolve(toResolvedExpr(), reqType);
+	}
 	
 }
 
@@ -225,18 +229,22 @@ public class MultiExpr extends UnresExpr {
 @cfnode
 public class UnresCallExpr extends UnresExpr {
 	@ref public final ENode				obj;	// access expression or type ref
-	@ref public final ASTIdentifier		func;	// function name
+	@ref public final Named				func;	// function name
 	@ref public final NArr<ENode>		args;
 	     public final boolean			super_flag;
 
 	public UnresCallExpr() {}
 
-	public UnresCallExpr(int pos, ENode obj, ASTIdentifier func, NArr<ENode> args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, Named func, ENode[] args, boolean super_flag) {
 		super(pos, null);
 		this.obj = obj;
 		this.func = func;
 		this.args.addAll(args);
 		this.super_flag = super_flag;
+	}
+
+	public UnresCallExpr(int pos, ENode obj, Named func, NArr<ENode> args, boolean super_flag) {
+		this(pos, obj, func, args.toArray(), super_flag);
 	}
 
 	public String toString() {
@@ -253,7 +261,20 @@ public class UnresCallExpr extends UnresExpr {
 	}
 
 	public ENode toResolvedExpr() {
-		return null; //return new CallAccessExpr(pos, obj, func, args, super_flag);
+		if (obj instanceof TypeRef) {
+			if (func instanceof Method) {
+				return new CallExpr(pos, (Method)func, args);
+			} else {
+				Field f = (Field)func;
+				return new ClosureCallExpr(pos, new StaticFieldAccessExpr(pos, f), args);
+			}
+		} else {
+			if (func instanceof Method) {
+				return new CallAccessExpr(pos, obj, (Method)func, args, super_flag);
+			} else {
+				return new ClosureCallExpr(pos, obj, args);
+			}
+		}
 	}
 }
 

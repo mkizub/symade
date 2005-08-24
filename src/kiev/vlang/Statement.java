@@ -242,12 +242,12 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	{
 		n @= new SymbolIterator(this,this.stats),
 		{
-			n instanceof Var,
-			((Var)n).name.equals(name),
-			node ?= n
-		;	n instanceof Struct,
-			name.equals(((Struct)n).name.short_name),
-			node ?= n
+			n instanceof VarDecl,
+			((VarDecl)n).var.name.equals(name),
+			node ?= ((VarDecl)n).var
+		;	n instanceof LocalStructDecl,
+			name.equals(((LocalStructDecl)n).clazz.name.short_name),
+			node ?= ((LocalStructDecl)n).clazz
 		;	n instanceof Typedef,
 			name.equals(((Typedef)n).name),
 			node ?= ((Typedef)n).type
@@ -255,8 +255,8 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	;
 		info.isForwardsAllowed(),
 		n @= new SymbolIterator(this,this.stats),
-		n instanceof Var && n.isForward() && ((Var)n).name.equals(name),
-		info.enterForward(n) : info.leaveForward(n),
+		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
+		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
@@ -264,10 +264,10 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= stats,
-		n instanceof Var && n.isForward(),
-		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,name,mt)
+		n @= new SymbolIterator(this,this.stats),
+		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
+		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
+		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public void resolve(Type reqType) {
@@ -276,10 +276,10 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
 		try {
-			resolveBlockStats();
+			resolveBlockStats(this, stats);
 		} finally {
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
 			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
 			NodeInfoPass.addInfo(nip_state);
@@ -287,82 +287,25 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public void resolveBlockStats() {
+	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {
 		for(int i=0; i < stats.length; i++) {
 			try {
-				if( (i == stats.length-1) && isAutoReturnable() )
+				if( (i == stats.length-1) && self.isAutoReturnable() )
 					stats[i].setAutoReturnable(true);
-				if( isAbrupted() && (stats[i] instanceof LabeledStat) ) {
-					setAbrupted(false);
+				if( self.isAbrupted() && (stats[i] instanceof LabeledStat) ) {
+					self.setAbrupted(false);
 				}
-				if( isAbrupted() ) {
+				if( self.isAbrupted() ) {
 					Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
-//					stats[i].setHidden(true);
-//					continue;
 				}
 				if( stats[i] instanceof Statement ) {
 					Statement st = (Statement)stats[i];
 					st.resolve(Type.tpVoid);
 					st = (Statement)stats[i];
-					if( st.isAbrupted() && !isBreaked() ) setAbrupted(true);
-					if( st.isMethodAbrupted() && !isBreaked() ) setMethodAbrupted(true);
+					if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
+					if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
 				}
-//				else if( stats[i] instanceof ASTVarDecls ) {
-//					ASTVarDecls vdecls = (ASTVarDecls)stats[i];
-//					// TODO: check flags for vars
-//					int flags = vdecls.modifiers.getFlags();
-//					Type type = ((TypeRef)vdecls.type).getType();
-//					for(int j=0; j < vdecls.vars.length; j++) {
-//						ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-//						KString vname = vdecl.name.name;
-//						Type tp = type;
-//						for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-//						Var vstat;
-//						if( vdecl.init != null ) {
-//							if (!type.isWrapper() || vdecl.of_wrapper) {
-//								vstat = new Var(vdecl.pos,vname,tp,flags);
-//								vstat.init = vdecl.init;
-//							} else {
-//								vstat = new Var(vdecl.pos,vname,tp,flags);
-//								vstat.init = new NewExpr(vdecl.init.pos,type,new Expr[]{vdecl.init});
-//							}
-//						}
-//						else if( vdecl.dim == 0 && type.isWrapper() && !vdecl.of_wrapper) {
-//							vstat = new Var(vdecl.pos,vname,tp,flags);
-//							vstat.init = new NewExpr(vdecl.pos,type,Expr.emptyArray);
-//						} else {
-//							vstat = new Var(vdecl.pos,vname,tp,flags);
-//						}
-//						if (j == 0) {
-//							stats[i] = vstat;
-//							vstat.resolve(Type.tpVoid);
-//						} else {
-//							this.insertSymbol(vstat,i+j);
-//						}
-//					}
-//				}
-//				else if( stats[i] instanceof Var ) {
-//					Var var = (Var)stats[i];
-//					var.resolve(Type.tpVoid);
-//				}
-//				else if( stats[i] instanceof Struct ) {
-//					Struct decl = (Struct)stats[i];
-//					if( PassInfo.method==null || PassInfo.method.isStatic())
-//						decl.setStatic(true);
-//					ExportJavaTop exporter = new ExportJavaTop();
-//					decl.setLocal(true);
-//					exporter.pass1(decl);
-//					exporter.pass1_1(decl);
-//					exporter.pass2(decl);
-//					exporter.pass2_2(decl);
-//					exporter.pass3(decl);
-//					decl.autoProxyMethods();
-//					decl.resolveFinalFields(false);
-//					decl.resolve(Type.tpVoid);
-//					//stats[i] = decl;
-//				}
 				else {
-					//Kiev.reportError(stats[i].pos,"Unknown kind of statement/declaration "+stats[i].getClass());
 					stats[i].resolve(Type.tpVoid);
 				}
 			} catch(Exception e ) {
@@ -386,7 +329,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 				}
 			}
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			Code.removeVars(vars.toArray());
 			if( parent instanceof Method && Kiev.debugOutputC
 			 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
@@ -1406,7 +1349,9 @@ public class GotoStat extends Statement/*defaults*/ {
 			SwitchStat bst = (SwitchStat)st;
 			for(int j=0; j < bst.cases.length; j++ ) {
 				CaseLabel cl = (CaseLabel)bst.cases[j];
-				stats = resolveStat(name,cl.stats,stats);
+				for(i=0; i < cl.stats.length; i++ ) {
+					stats = resolveStat(name,cl.stats[i],stats);
+				}
 			}
 		}
 			break;

@@ -470,7 +470,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		dir = new File(top_dir,filename);
 		dir = new File(dir.getParent());
 		dir.mkdirs();
-		if( !dir.exists() || !dir.isDirectory() ) throw new Error("Can't create output dir "+dir);
+		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 }
 

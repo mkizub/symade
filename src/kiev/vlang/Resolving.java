@@ -21,14 +21,13 @@
 package kiev.vlang;
 
 import kiev.*;
+import kiev.parser.UnresCallExpr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Resolving.java,v 1.3 1998/10/26 23:47:22 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3 $
  *
  */
 
@@ -232,27 +231,28 @@ public class ResInfo {
 			if (from == null && forwards_p == 0) {
 				if !(meth.isStatic())
 					throw new CompilerException(pos, "Don't know how to build call of "+meth+" via "+this);
-				return new CallExpr(pos,meth,args);
+				//return new CallExpr(pos,meth,args);
+				return new UnresCallExpr(pos, new TypeRef(((Struct)meth.parent).type), meth, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
 				expr = buildAccess(pos, from, forwards_stack[--forwards_p]);
-			return new CallAccessExpr(pos,expr,meth,args);
+			return new UnresCallExpr(pos,expr,meth,args,false);
 		}
 		else if (node instanceof Field) {
 			Field f = (Field)node;
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(pos, "Don't know how to build closure for "+node+" via "+this);
-				return new ClosureCallExpr(pos,new StaticFieldAccessExpr(0,(Struct)f.parent,f),args);
+				return new UnresCallExpr(pos,new TypeRef(((Struct)f.parent).type),f,args,false);
 			}
 			Expr expr = buildAccess(pos, from, f);
-			return new ClosureCallExpr(pos,expr,args);
+			return new UnresCallExpr(pos,expr,f,args,false);
 		}
 		else if (node instanceof Var) {
 			Var var = (Var)node;
 			Expr expr = buildAccess(pos, from, var);
-			return new ClosureCallExpr(pos,expr,args);
+			return new UnresCallExpr(pos,expr,var,args,false);
 		}
 		throw new CompilerException(pos, "Don't know how to call "+node+" via "+this);
 	}

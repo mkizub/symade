@@ -67,6 +67,22 @@ public final class Kiev {
 			reportError(p,"Error",e.getClass().toString());
 		else
 			reportError(p,"Error",e.getMessage());
+		if (testError != null) {
+			if !(e instanceof CompilerException) {
+				System.out.println("FAILED: expected CompilerException");
+				System.exit(1);
+			}
+			else if ((p>>>11) != testErrorLine || (p&0x3FF) != testErrorOffs) {
+				System.out.println("FAILED: expected position "+(p>>>11)+":"+(p&0x3FF));
+				System.exit(1);
+			}
+			else if (((CompilerException)e).err_id != testError) {
+				System.out.println("FAILED: expected error "+testError);
+				System.exit(1);
+			}
+			System.out.println("SUCCESS: found expected error "+testError+" at "+(p>>>11)+":"+(p&0x3FF));
+			System.exit(0);
+		}
 	}
 
    	public static void reportParserError(int pos, String msg) {
@@ -238,11 +254,15 @@ public final class Kiev {
 
 	public static void reportTotals() {
 		if( errCount > 0 )
-			System./*err*/out.println(errCount+" errors");
+			System.out.println(errCount+" errors");
 		if( warnCount > 0 )
-			System./*err*/out.println(warnCount+" warnings");
+			System.out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
-		System./*err*/out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		System.out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		if (testError != null) {
+			System.out.println("FAILED: there was no expected error "+testError+" at "+testErrorLine+":"+testErrorOffs);
+			System.exit(1);
+		}
 		System.out.println("\007\007");
 	}
 
@@ -321,6 +341,10 @@ public final class Kiev {
 
 	public static boolean javacerrors		= false;
 	public static boolean nowarn			= false;
+	
+	public static CError testError			= null;
+	public static int    testErrorLine		= 0;
+	public static int    testErrorOffs		= 0;
 
     // New primitive objects section
 	public static final Byte[]		byteArray	= new Byte[256];
