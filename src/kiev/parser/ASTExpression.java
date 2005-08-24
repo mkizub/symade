@@ -50,7 +50,7 @@ public class ASTExpression extends Expr {
 		try {
 			foreach (ENode n; nodes) n.preResolve();
 			if (nodes.length == 1 && nodes[0] instanceof Expr)
-				this.replaceWith(nodes[0]);
+				this.replaceWithNode(nodes[0]);
 		} finally { PassInfo.pop(this); }
 	}
 	
@@ -85,13 +85,7 @@ public class ASTExpression extends Expr {
 				throw new CompilerException(pos, msg.toString());
 			}
 			
-			ENode h = results.head();
-			if( h instanceof UnresExpr )
-				h = ((UnresExpr)h).toResolvedExpr();
-			else if( h instanceof Expr )
-				h = (Expr)h;
-			
-			this.replaceWithResolve(h, reqType);
+			this.replaceWithNodeResolve(reqType, results.head());
 		} finally { PassInfo.pop(this); }
 	}
 /*	

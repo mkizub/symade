@@ -448,7 +448,7 @@ public final class ProcessVirtFld implements Constants {
 					expr = be;
 					expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 				}
-				ae.replaceWith(expr);
+				ae.replaceWithNode(expr);
 				rewrite(expr, id);
 			}
 			else {
@@ -539,7 +539,7 @@ public final class ProcessVirtFld implements Constants {
 					expr = be;
 					expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}
-				ie.replaceWith(expr);
+				ie.replaceWithNode(expr);
 				rewrite(expr, id);
 			}
 			else {

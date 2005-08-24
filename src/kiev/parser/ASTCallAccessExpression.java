@@ -60,13 +60,13 @@ public class ASTCallAccessExpression extends Expr {
 		for(int i=0; i < args.length; i++) {
 			args[i].resolve(null);
 		}
-		Type tp = null;
-		Type ret = reqType;
-	retry_with_null_ret:;
-		ASTNode@ m;
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
 		&& !PassInfo.method.isStatic() ) {
+			Type ret = reqType;
+			ASTNode@ m;
+	retry_with_null_ret:;
+			Type tp = null;
 			ResInfo info = new ResInfo();
 			ThisExpr sup = new ThisExpr();
 			info.enterForward(sup);
@@ -85,7 +85,7 @@ public class ASTCallAccessExpression extends Expr {
 				Method meth = (Method)m;
 				CallAccessExpr cae = new CallAccessExpr(pos,sup,meth,args);
 				cae.super_flag = true;
-				replaceWith(cae);
+				replaceWithNode(cae);
 				meth.makeArgs(cae.args, tp);
 				cae.resolve(ret);
 				return;
@@ -98,7 +98,7 @@ public class ASTCallAccessExpression extends Expr {
 		if !(obj instanceof Expr || obj instanceof TypeRef)
 			throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
 
-		MethodType mt;
+		MethodType mt = null;
 		{
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -110,7 +110,7 @@ public class ASTCallAccessExpression extends Expr {
 		Type[] tps;
 	try_static:;
 		if( obj instanceof TypeRef ) {
-			tp = ((TypeRef)obj).getType();
+			Type tp = ((TypeRef)obj).getType();
 			tps = new Type[]{tp};
 			res = new ENode[1];
 			res_flags = 0;
@@ -128,7 +128,7 @@ public class ASTCallAccessExpression extends Expr {
 		}
 		for (int si=0; si < tps.length; si++) {
 			Type tp = tps[si];
-			ASTNode@ v;
+			ASTNode@ m;
 			ResInfo info = new ResInfo(res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
@@ -172,7 +172,7 @@ public class ASTCallAccessExpression extends Expr {
 			throw new CompilerException(pos, msg.toString());
 			return;
 		}
-		this.replaceWithResolve( res[idx], reqType );
+		this.replaceWithNodeResolve( reqType, res[idx] );
 	}
 
 	public int		getPriority() { return Constants.opCallPriority; }

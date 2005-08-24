@@ -36,11 +36,20 @@ import syntax kiev.Syntax;
  */
 
 @node
+@cfnode
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att public final NArr<ASTIdentifier>	names;
 	@att public final NArr<ENode>			exprs;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'names'
+			foreach (ENode e; exprs) e.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
     public void resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
@@ -52,7 +61,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 			vars[i] = (Var)v;
 			exprs[i].resolve(null);
 		}
-    	replaceWith(new RuleIsoneofExpr(getPos(),vars,exprs.toArray()));
+    	replaceWithNode(new RuleIsoneofExpr(getPos(),vars,exprs.toArray()));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }

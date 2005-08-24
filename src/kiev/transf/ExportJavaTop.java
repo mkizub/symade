@@ -844,7 +844,7 @@ public final class ExportJavaTop implements Constants {
 					MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
 					Method m = new Method(inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
-					inv.replaceWith(m);
+					inv.replaceWithNode(m);
 					m.body = inv;
 				}
 				// Inner classes and cases after all methods and fields, skip now

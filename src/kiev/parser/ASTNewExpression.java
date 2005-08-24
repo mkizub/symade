@@ -92,7 +92,7 @@ public class ASTNewExpression extends Expr {
 			}
 		}
 		if( clazz == null ) {
-			replaceWithResolve(new NewExpr(pos,tp,args.toArray()), reqType);
+			replaceWithNodeResolve(reqType, new NewExpr(pos,tp,args.toArray()));
 			return;
 		}
 		// Local anonymouse class
@@ -159,7 +159,7 @@ public class ASTNewExpression extends Expr {
 			ne.clazz = me;
 		}
 		ne.parent = parent;
-		replaceWithResolve(ne, reqType);
+		replaceWithNodeResolve(reqType, ne);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

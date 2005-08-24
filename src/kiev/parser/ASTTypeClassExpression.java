@@ -48,7 +48,7 @@ public class ASTTypeClassExpression extends Expr {
 			Field f = (Field)rt.resolveName(KString.from("TYPE"));
 			if( f == null || !f.isStatic() )
 				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
-			replaceWithResolve(new StaticFieldAccessExpr(pos,rt.getStruct(),f), reqType);
+			replaceWithNodeResolve(reqType, new StaticFieldAccessExpr(pos,rt.getStruct(),f));
 			return;
 		}
 		KString name;
@@ -56,15 +56,13 @@ public class ASTTypeClassExpression extends Expr {
 			name = tp.java_signature.replace('/','.');
 		else
 			name = tp.getClazzName().bytecode_name.replace('/','.');
-		replaceWithResolve(new CallExpr(pos,
+		replaceWithNodeResolve(reqType, new CallExpr(pos,
 				Type.tpClass.resolveMethod(
 					KString.from("forName"),
 					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
 				),
 				new Expr[]{new ConstStringExpr(name)}
-			),
-			reqType
-		);
+			));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

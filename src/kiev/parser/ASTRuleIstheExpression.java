@@ -34,11 +34,20 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
 	@att public ASTIdentifier	name;
 	@att public ENode			expr;
 
+	public void preResolve() {
+		PassInfo.push(this);
+		try {
+			// don't pre-resolve 'name'
+			expr.preResolve();
+		} finally { PassInfo.pop(this); }
+	}
+	
     public void resolve(Type reqType) {
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name.name) )
@@ -46,7 +55,7 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 		if( !(v instanceof Var) )
     		throw new CompilerException(name.getPos(),"Identifier is not a var");
 		expr.resolve(((Var)v).type.args[0]);
-    	replaceWith(new RuleIstheExpr(getPos(), (Var)v, expr));
+    	replaceWithNode(new RuleIstheExpr(getPos(), (Var)v, expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(name.getPos(),"Internal error"); }

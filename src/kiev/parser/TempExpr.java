@@ -54,7 +54,7 @@ public abstract class UnresExpr extends Expr {
 	public abstract ENode toResolvedExpr();
 	
 	public void resolve(Type reqType) {
-		replaceWithResolve(toResolvedExpr(), reqType);
+		replaceWithResolve(reqType, fun ()->ENode {return toResolvedExpr();});
 	}
 	
 }

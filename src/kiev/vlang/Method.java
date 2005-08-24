@@ -567,6 +567,13 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
+				{
+					ScopeNodeInfoVector state = NodeInfoPass.pushState();
+					state.guarded = true;
+					try {
+						cond.preResolve();
+					} finally { NodeInfoPass.popState(); }
+				}
 				cond.resolve(Type.tpVoid);
 			}
 			if( body != null ) {

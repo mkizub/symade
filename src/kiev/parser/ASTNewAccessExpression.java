@@ -48,7 +48,7 @@ public class ASTNewAccessExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		replaceWithResolve(new NewExpr(pos,type.getType(),args.toArray(),obj), reqType);
+		replaceWithNodeResolve(reqType, new NewExpr(pos,type.getType(),args.toArray(),obj));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

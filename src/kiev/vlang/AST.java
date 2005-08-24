@@ -23,9 +23,12 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.CError;
 import kiev.stdlib.*;
+import kiev.vlang.*;
 import kiev.transf.*;
+import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/AST.java,v 1.6.2.1.2.3 1999/05/29 21:03:11 max Exp $
@@ -193,9 +196,16 @@ public abstract class ASTNode implements Constants {
 		this.parent = parent;
 	}
 	
-	public ASTNode replaceWith(ASTNode node) {
+	public final ASTNode replaceWithNode(ASTNode node) {
 		parent.replaceVal(pslot.name, this, node);
 		return node;
+	}
+	public final ASTNode replaceWith(()->ASTNode fnode) {
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		ASTNode n = fnode();
+		parent.replaceVal(pslot.name, this, n);
+		return n;
 	}
 
 	public void setParent(ASTNode n) { parent = n; }
@@ -797,11 +807,11 @@ public abstract class ASTNode implements Constants {
 	
 	// abrupted
 	@getter public final boolean get$is_stat_abrupted()  alias isAbrupted  {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_abrupted;
 	}
 	@setter public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_abrupted != on) {
 			this.is_stat_abrupted = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -809,11 +819,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// breaked
 	@getter public final boolean get$is_stat_breaked()  alias isBreaked  {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_breaked;
 	}
 	@setter public final void set$is_stat_breaked(boolean on) alias setBreaked {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_breaked != on) {
 			this.is_stat_breaked = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -821,11 +831,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// method-abrupted
 	@getter public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_method_abrupted;
 	}
 	@setter public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_method_abrupted != on) {
 			this.is_stat_method_abrupted = on;
 			if (on) this.is_stat_abrupted = true;
@@ -834,11 +844,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// auto-returnable
 	@getter public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_auto_returnable;
 	}
 	@setter public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_auto_returnable != on) {
 			this.is_stat_auto_returnable = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -846,11 +856,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// break target
 	@getter public final boolean get$is_stat_break_target()  alias isBreakTarget  {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_break_target;
 	}
 	@setter public final void set$is_stat_auto_returable(boolean on) alias setBreakTarget {
-		assert(this instanceof Statement || this instanceof CaseLabel,"For node "+this.getClass());
+		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_break_target != on) {
 			this.is_stat_break_target = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -1032,9 +1042,30 @@ public abstract class ENode extends ASTNode {
 		throw new RuntimeException("Request for constant value of non-constant expression");
     }
 	
-	public final void replaceWithResolve(ENode node, Type reqType) {
+	public final void replaceWithNodeResolve(Type reqType, ENode node) {
 		parent.replaceVal(pslot.name, this, node);
 		node.resolve(reqType);
+	}
+
+	public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		ENode n = fnode();
+		parent.replaceVal(pslot.name, this, n);
+		n.resolve(reqType);
+	}
+
+	public final void replaceWithNodeResolve(ENode node) {
+		parent.replaceVal(pslot.name, this, node);
+		node.resolve(null);
+	}
+
+	public final void replaceWithResolve(()->ENode fnode) {
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		ENode n = fnode();
+		parent.replaceVal(pslot.name, this, n);
+		n.resolve(null);
 	}
 
 }
@@ -1214,11 +1245,11 @@ public class WrapedExpr extends Expr {
 	}
 	public void resolve(Type reqType) {
 		if( expr instanceof Struct ) {
-			replaceWith(new TypeRef(((Struct)expr).type));
+			replaceWithNode(new TypeRef(((Struct)expr).type));
 			return;
 		}
 		if( expr instanceof TypeRef ) {
-			replaceWith((TypeRef)expr);
+			replaceWithNode((TypeRef)expr);
 			return;
 		}
 		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());

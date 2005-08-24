@@ -52,7 +52,7 @@ public class ASTNewArrayExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		replaceWithResolve(new NewArrayExpr(pos,type,args.toArray(),dim), reqType);
+		replaceWithNodeResolve(reqType, new NewArrayExpr(pos,type,args.toArray(),dim));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

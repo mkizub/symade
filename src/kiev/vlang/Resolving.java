@@ -163,8 +163,10 @@ public class ResInfo {
 
 	public Expr buildAccess(int pos, ASTNode from) {
 		if (isEmpty())
-			throw new CompilerException(pos, "Empty access build requested");
-		return buildAccess(pos, from, forwards_stack[--forwards_p]);
+			return buildAccess(pos, null, from);
+			//throw new CompilerException(pos, "Empty access build requested");
+		else
+			return buildAccess(pos, from, forwards_stack[--forwards_p]);
 	}
 	
 	public Expr buildAccess(int pos, ASTNode from, ASTNode node) {

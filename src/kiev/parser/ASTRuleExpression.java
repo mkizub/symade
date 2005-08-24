@@ -34,6 +34,7 @@ import kiev.vlang.*;
  */
 
 @node
+@cfnode
 public class ASTRuleExpression extends ASTRuleNode {
 
 	@att public ENode	expr;
@@ -44,9 +45,9 @@ public class ASTRuleExpression extends ASTRuleNode {
     	expr.resolve(null);
     	if (bt_expr != null) bt_expr.resolve(null);
     	if (while_mode)
-   			replaceWithResolve(new RuleWhileExpr(expr,bt_expr), null);
+   			replaceWithNodeResolve(new RuleWhileExpr(expr,bt_expr));
    		else
-    		replaceWithResolve(new RuleExpr(expr,bt_expr), null);
+    		replaceWithNodeResolve(new RuleExpr(expr,bt_expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

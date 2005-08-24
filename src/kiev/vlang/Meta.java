@@ -454,10 +454,13 @@ public abstract class MetaValue extends ASTNode {
 			return;
 		}
 		value.resolve(reqType);
+	}
+
+	boolean checkValue(Type reqType, ENode value) {
 		if !(value instanceof Expr) {
 			if (reqType == Type.tpClass && value instanceof TypeRef) {
-				value.replaceWith(new WrapedExpr(value.pos, value));
-				return;
+				value.replaceWith(fun ()->ENode {return new WrapedExpr(value.pos, value);});
+				return false;
 			} else {
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
 					value+" ("+value.getClass()+")");
@@ -465,18 +468,16 @@ public abstract class MetaValue extends ASTNode {
 		}
 		Expr v = (Expr)value;
 		if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField()) {
-			value.replaceWith(new WrapedExpr(value.pos, ((StaticFieldAccessExpr)value).var));
-			return;
+			value.replaceWith(fun ()->ENode {return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)value).var);});
+			return false;
 		}
 		else if (!v.isConstantExpr())
 			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = value.getType();
 		if (vt != reqType) {
-			v.replaceWithResolve(new CastExpr(v.pos, reqType, v), reqType);
+			v.replaceWith(fun ()->ENode {return new CastExpr(v.pos, reqType, v);});
+			return true;
 		}
-	}
-
-	void checkValue(Type reqType, ENode value) {
 		if (value instanceof Expr) {
 			Expr v = (Expr)value;
 			if (!v.isConstantExpr())
@@ -485,6 +486,7 @@ public abstract class MetaValue extends ASTNode {
 			if (vt != reqType)
 				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		}
+		return false;
 	}
 }
 
@@ -514,7 +516,8 @@ public class MetaValueScalar extends MetaValue {
 	
 	public void resolve(Type reqType) {
 		resolveValue(reqType, this.value);
-		checkValue(reqType, this.value);
+		while (checkValue(reqType, this.value))
+			resolveValue(reqType, this.value);
 	}
 }
 
@@ -547,7 +550,8 @@ public class MetaValueArray extends MetaValue {
 	public void resolve(Type reqType) {
 		for (int i=0; i < values.length; i++) {
 			resolveValue(reqType, this.values[i]);
-			checkValue(reqType, this.values[i]);
+			while (checkValue(reqType, this.values[i]))
+				resolveValue(reqType, this.values[i]);
 		}
 	}
 }

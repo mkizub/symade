@@ -285,7 +285,7 @@ public class CallAccessExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( func.isStatic() ) {
-			replaceWithResolve(new CallExpr(pos,func,args.toArray()), reqType);
+			replaceWithNodeResolve(reqType, new CallExpr(pos,func,args.toArray()));
 			return;
 		}
 		obj.resolve(null);

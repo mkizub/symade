@@ -55,7 +55,7 @@ public class ASTReparseStatement extends Statement {
 			throw new RuntimeException("Reparse node "+ref+" is not a statement");
 		}
 		Statement st = (Statement)n;
-		this.replaceWith(st);
+		this.replaceWithNode(st);
 	}
   
 	public String toString() { return Kiev.parserAddresses.get(ref.substring(2)).toString(); }

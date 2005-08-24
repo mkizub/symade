@@ -125,14 +125,14 @@ public class ASTAccessExpression extends Expr {
 				obj = obj;
 				return;
 			}
-			this.replaceWith(res[idx]);
+			this.replaceWithNode(res[idx]);
 		} finally { PassInfo.pop(this); }
 	}
 	
 	public void resolve(Type reqType) throws CompilerException {
 		PassInfo.push(this);
 		try {
-			ASTNode[] res;
+			ENode[] res;
 			Type[] tps;
 
 			// resolve access
@@ -141,14 +141,14 @@ public class ASTAccessExpression extends Expr {
 		try_static:
 			if( obj instanceof TypeRef ) {
 				tps = new Type[]{ ((TypeRef)obj).getType() };
-				res = new ASTNode[1];
+				res = new ENode[1];
 				if( ident.name.equals(nameThis) )
 					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
 			else {
 				Expr e = (Expr)obj;
 				tps = e.getAccessTypes();
-				res = new ASTNode[tps.length];
+				res = new ENode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
 					if( ident.name.equals("$self") && tp.isReference() ) {
@@ -216,7 +216,7 @@ public class ASTAccessExpression extends Expr {
 				obj = obj;
 				return;
 			}
-			this.replaceWith(res[idx]);
+			this.replaceWithNodeResolve(reqType,res[idx]);
 		} finally { PassInfo.pop(this); }
 	}
 

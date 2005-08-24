@@ -99,7 +99,7 @@ public class ASTCallExpression extends Expr {
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				CallExpr ce = new CallExpr(pos,(Method)m,args,false);
-				replaceWith(ce);
+				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);
 				return;
@@ -134,7 +134,7 @@ public class ASTCallExpression extends Expr {
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				CallExpr ce = new CallExpr(pos,(Method)m,args,true);
-				replaceWith(ce);
+				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);
 				return;
@@ -163,7 +163,7 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
-						replaceWithResolve(new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.toArray()), ret);
+						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.toArray()));
 						return;
 					}
 				} catch(Exception eee) {
@@ -195,9 +195,9 @@ public class ASTCallExpression extends Expr {
 				}
 				ac.body = bs;
 				if( oldargs.length > 0 ) {
-					replaceWithResolve(new ClosureCallExpr(pos,ac/*.resolve(reqType)*/,oldargs), reqType);
+					replaceWithNodeResolve(reqType, new ClosureCallExpr(pos,ac,oldargs));
 				} else {
-					replaceWithResolve(ac, reqType);
+					replaceWithNodeResolve(reqType, ac);
 				}
 				return;
 			} else {
@@ -205,7 +205,7 @@ public class ASTCallExpression extends Expr {
 					assert (info.isEmpty());
 				((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(pos,null,m,args.toArray());
-				this.replaceWithResolve( e, reqType );
+				this.replaceWithNodeResolve( reqType, e );
 			}
 		}
 	}

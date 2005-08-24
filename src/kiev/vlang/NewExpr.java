@@ -143,7 +143,7 @@ public class NewExpr extends Expr {
 					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 						CallExpr n = new CallExpr(pos,(Method)m,args);
 						n.type_of_static = type;
-						replaceWith(n);
+						replaceWithNode(n);
 						m.makeArgs(args,type);
 						n.setResolved(true);
 						return;
@@ -315,21 +315,21 @@ public class NewArrayExpr extends Expr {
 					throw new CompilerException(pos,"Can't create an array of argument type "+type);
 				Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
 				if( dim == 1 ) {
-					this.replaceWithResolve(new CastExpr(pos,arrtype,
+					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,tie,
 							Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
 							new ENode[]{new ConstIntExpr(i),args[0]}
-						),true), reqType);
+						),true));
 					return;
 				} else {
-					this.replaceWithResolve(new CastExpr(pos,arrtype,
+					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 						new CallAccessExpr(pos,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
 							new ENode[]{
 								new ConstIntExpr(i),
 								new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.toArray())
 							}
-						),true),reqType);
+						),true));
 					return;
 				}
 			}

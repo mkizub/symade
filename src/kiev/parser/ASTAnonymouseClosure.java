@@ -56,7 +56,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 	
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
-			replaceWith(new_closure);
+			replaceWithNode(new_closure);
 			return;
 		}
 		ClazzName clname = ClazzName.fromBytecodeName(
@@ -132,7 +132,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		//me.autoProxyMethods();
 		//me.resolveFinalFields(false);
 		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
-		replaceWithResolve(new_closure, reqType);
+		replaceWithNodeResolve(reqType, new_closure);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

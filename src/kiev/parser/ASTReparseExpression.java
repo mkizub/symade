@@ -54,7 +54,7 @@ public class ASTReparseExpression extends Expr {
 		if( !(n instanceof Expr) ) {
 			throw new RuntimeException("Reparse node "+ref+" is not an expression");
 		}
-		this.replaceWithResolve((Expr)n, reqType);
+		this.replaceWithNodeResolve(reqType, (Expr)n);
 	}
   
 	public int		getPriority() { return 256; }

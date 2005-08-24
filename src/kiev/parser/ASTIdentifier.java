@@ -69,27 +69,27 @@ public class ASTIdentifier extends ENode {
 			ASTOperator op = new ASTOperator();
 			op.pos = this.pos;
 			op.image = op_instanceof;
-			this.replaceWith(op);
+			this.replaceWithNode(op);
 			return;
 		}
 		// predefined names
 		if( name == Constants.nameFILE ) {
-			this.replaceWith(new ConstStringExpr(Kiev.curFile));
+			this.replaceWithNode(new ConstStringExpr(Kiev.curFile));
 			return;
 		}
 		else if( name == Constants.nameLINENO ) {
-			this.replaceWith(new ConstIntExpr(pos>>>11));
+			this.replaceWithNode(new ConstIntExpr(pos>>>11));
 			return;
 		}
 		else if( name == Constants.nameMETHOD ) {
 			if( PassInfo.method != null )
-				this.replaceWith(new ConstStringExpr(PassInfo.method.name.name));
+				this.replaceWithNode(new ConstStringExpr(PassInfo.method.name.name));
 			else
-				this.replaceWith(new ConstStringExpr(nameInit));
+				this.replaceWithNode(new ConstStringExpr(nameInit));
 			return;
 		}
 		else if( name == Constants.nameDEBUG ) {
-			this.replaceWith(new ConstBoolExpr(Kiev.debugOutputA));
+			this.replaceWithNode(new ConstBoolExpr(Kiev.debugOutputA));
 			return;
 		}
 		else if( name == Constants.nameReturnVar ) {
@@ -157,35 +157,34 @@ public class ASTIdentifier extends ENode {
 		if( v instanceof Struct ) {
 			Struct s = (Struct)v;
 			s.checkResolved();
-			TypeNameRef tr = new TypeNameRef((ASTIdentifier)this.copy(),s.type);
-			this.replaceWith(tr);
+			this.replaceWith(fun ()->ENode {return new TypeNameRef(this,s.type);});
 		}
 		else if( v instanceof TypeRef ) {
-			this.replaceWith((TypeRef)v);
+			this.replaceWithNode((TypeRef)v);
 		}
 		else {
-			this.replaceWith(info.buildAccess(pos, null, v));
+			this.replaceWith(fun ()->ENode { return info.buildAccess(pos, null, v); } );
 		}
 	}
 	
 	public void resolve(Type reqType) {
 		if( name == Constants.nameFILE ) {
-			replaceWith(new ConstStringExpr(Kiev.curFile));
+			replaceWithNode(new ConstStringExpr(Kiev.curFile));
 			return;
 		}
 		else if( name == Constants.nameLINENO ) {
-			replaceWith(new ConstIntExpr(pos>>>11));
+			replaceWithNode(new ConstIntExpr(pos>>>11));
 			return;
 		}
 		else if( name == Constants.nameMETHOD ) {
 			if( PassInfo.method != null )
-				replaceWith(new ConstStringExpr(PassInfo.method.name.name));
+				replaceWithNode(new ConstStringExpr(PassInfo.method.name.name));
 			else
-				replaceWith(new ConstStringExpr(nameInit));
+				replaceWithNode(new ConstStringExpr(nameInit));
 			return;
 		}
 		else if( name == Constants.nameDEBUG ) {
-			replaceWith(new ConstBoolExpr(Kiev.debugOutputA));
+			replaceWithNode(new ConstBoolExpr(Kiev.debugOutputA));
 			return;
 		}
 		else if( name == Constants.nameReturnVar ) {
@@ -229,56 +228,54 @@ public class ASTIdentifier extends ENode {
 				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
 				if( val != null ) {
 					if( reqType == null || reqType == Type.tpString) {
-						replaceWith(new ConstStringExpr(KString.from(val)));
+						replaceWithNode(new ConstStringExpr(KString.from(val)));
 						return;
 					}
 					if( reqType.isBoolean() ) {
 						if( val == "" ) 
-							replaceWith(new ConstBoolExpr(true));
+							replaceWithNode(new ConstBoolExpr(true));
 						else
-							replaceWith(new ConstBoolExpr(Boolean.valueOf(val).booleanValue()));
+							replaceWithNode(new ConstBoolExpr(Boolean.valueOf(val).booleanValue()));
 						return;
 					}
 					if( reqType.isInteger() ) {
-						replaceWith(new ConstIntExpr(Integer.valueOf(val).intValue()));
+						replaceWithNode(new ConstIntExpr(Integer.valueOf(val).intValue()));
 						return;
 					}
 					if( reqType.isNumber() ) {
-						replaceWith(new ConstDoubleExpr(Double.valueOf(val).doubleValue()));
+						replaceWithNode(new ConstDoubleExpr(Double.valueOf(val).doubleValue()));
 					}
-					replaceWith(new ConstStringExpr(KString.from(val)));
+					replaceWithNode(new ConstStringExpr(KString.from(val)));
 					return;
 				}
 				if( reqType.isBoolean() )
-					replaceWith(new ConstBoolExpr(false));
+					replaceWithNode(new ConstBoolExpr(false));
 				else
-					replaceWith(new ConstNullExpr());
+					replaceWithNode(new ConstNullExpr());
 				return;
 			}
 			throw new CompilerException(pos,"Unresolved identifier "+name);
 		}
 		if( v instanceof Struct ) {
+			Struct s = (Struct)v;
+			s.checkResolved();
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
-				Struct s = (Struct)v;
 				if( s.isPizzaCase() ) {
-					Struct pc = (Struct)s;
-					PizzaCaseAttr case_attr = (PizzaCaseAttr)pc.getAttr(attrPizzaCase);
-					if( case_attr == null ) {
-						replaceWith(pc);
+					PizzaCaseAttr case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+					if( case_attr != null ) {
+						replaceWithNodeResolve(reqType, new ConstIntExpr(case_attr.caseno));
 						return;
 					}
-					replaceWithResolve(new ConstIntExpr(case_attr.caseno), reqType);
 				}
 			}
-			((Struct)v).checkResolved();
-			replaceWith(new TypeNameRef(this,((Struct)v).type));
+			replaceWith(fun ()->ENode { return new TypeNameRef(this,s.type); } );
 			return;
 		}
 		else if( v instanceof TypeRef ) {
-			replaceWith((TypeRef)v);
+			replaceWithNode((TypeRef)v);
 			return;
 		}
-		replaceWithResolve(info.buildAccess(pos, null, v), reqType);
+		replaceWithNodeResolve(reqType, info.buildAccess(pos, null, v));
 	}
 
 	public int		getPriority() { return 256; }

@@ -131,7 +131,7 @@ public class AccessExpr extends LvalueExpr {
 			setResolved(true);
 			Type tp = getType();
 			if( !var.getType().equals(tp) ) {
-				this.replaceWithResolve(new CastExpr(pos,tp,this), null);
+				this.replaceWithResolve(fun ()->ENode {return new CastExpr(pos,tp,this);});
 			}
 		} finally { PassInfo.pop(this); }
 	}

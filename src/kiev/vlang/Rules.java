@@ -319,6 +319,7 @@ object, if fails - returns null.
 */
 
 @node
+@cfnode
 public abstract class ASTRuleNode extends CFlowNode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
@@ -498,6 +499,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 
 @node
+@cfnode
 public final class RuleOrExpr extends ASTRuleNode {
 
 	@att public final NArr<ASTRuleNode>	rules;
@@ -557,6 +559,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleAndExpr extends ASTRuleNode {
 
 	@att public final NArr<ASTRuleNode>	rules;
@@ -612,7 +615,7 @@ public final class RuleAndExpr extends ASTRuleNode {
     		i--;
     	}
     	if (rules.length == 1)
-    		replaceWith(rules[0]);
+    		replaceWithNode(rules[0]);
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -651,6 +654,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	@att public Var		var;		// variable of type PVar<...>
@@ -707,6 +711,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@ref public final NArr<Var>		vars;		// variable of type PVar<...>
@@ -886,6 +891,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr() {
@@ -893,6 +899,9 @@ public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr(int pos) {
 		super(pos);
+	}
+
+	public void resolve(Type reqType) {
 	}
 
 	public void resolve1(JumpNodes jn) {
@@ -911,6 +920,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleCallExpr extends ASTRuleNode {
 
 	@att public ENode				obj;
@@ -1024,6 +1034,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public abstract class RuleExprBase extends ASTRuleNode {
 	@att public ENode		expr;
 	@att public ENode		bt_expr;
@@ -1054,14 +1065,14 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
 			if( e.func.type.ret == Type.tpRule ) {
-				replaceWithResolve(new RuleCallExpr(e), reqType);
+				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
 				return;
 			}
 		}
 		else if( expr instanceof CallAccessExpr ) {
 			CallAccessExpr e = (CallAccessExpr)expr;
 			if( e.func.type.ret == Type.tpRule ) {
-				replaceWithResolve(new RuleCallExpr(e), reqType);
+				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
 				return;
 			}
 		}
@@ -1069,7 +1080,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
 			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) ) {
-				replaceWithResolve(new RuleCallExpr(e), reqType);
+				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
 				return;
 			}
 		}
@@ -1077,6 +1088,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 }
 
 @node
+@cfnode
 public final class RuleWhileExpr extends RuleExprBase {
 
 	public RuleWhileExpr() {
@@ -1126,6 +1138,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 }
 
 @node
+@cfnode
 public final class RuleExpr extends RuleExprBase {
 
 	public RuleExpr() {

@@ -110,11 +110,6 @@ public class CaseLabel extends ENode {
 			try {
 				if( val != null ) {
 					val.resolve(null);
-//					else if (v instanceof Struct) {
-//						Struct s = (Struct)v;
-//						s.checkResolved();
-//						v = new TypeRef(s.type);
-//					}
 					if( val instanceof WrapedExpr) {
 						WrapedExpr w = (WrapedExpr)val;
 						if (w.expr instanceof TypeRef )
@@ -127,6 +122,8 @@ public class CaseLabel extends ENode {
 						else
 							throw new CompilerException(pos,"Unknown node of class "+w.expr.getClass());
 					}
+					else if( val instanceof TypeRef)
+						;
 					else if !( val instanceof Expr )
 						throw new CompilerException(pos,"Unknown node of class "+val.getClass());
 					if( val instanceof Expr )	{
@@ -297,7 +294,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
 			ExprStat st = new ExprStat(pos,parent,(Expr)sel);
-			this.replaceWithResolve(st, Type.tpVoid);
+			this.replaceWithNodeResolve(Type.tpVoid, st);
 		}
 		else if( cases.length == 1 && cases[0].pattern.length == 0) {
 			cases[0].resolve(Type.tpVoid);
@@ -306,7 +303,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
 				bl.stats.insert(new ExprStat(sel.pos,bl,sel),0);
-				this.replaceWithResolve(bl, Type.tpVoid);
+				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
 				IfElseStat st = new IfElseStat(pos,parent,
@@ -314,12 +311,12 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						bl,
 						null
 					);
-				this.replaceWithResolve(st, Type.tpVoid);
+				this.replaceWithNodeResolve(Type.tpVoid, st);
 				return;
 			}
 		}
-		BlockStat me = null;
 		if( tmpvar == null ) {
+			BlockStat me = null;
 			PassInfo.push(this);
 			try {
 				sel.resolve(Type.tpInt);
@@ -331,7 +328,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					tmpvar = new Var(sel.getPos(),KString.from(
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
 					me = new BlockStat(pos,parent);
-					this.replaceWith(me);
+					this.replaceWithNode(me);
 					tmpvar.init = sel;
 					me.addSymbol(tmpvar);
 					me.addStatement(this);
@@ -358,10 +355,10 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				}
 			} catch(Exception e ) { Kiev.reportError(sel.getPos(),e);
 			} finally { PassInfo.pop(this); }
-		}
-		if( me != null ) {
-			replaceWithResolve(me, reqType);
-			return;
+			if( me != null ) {
+				me.resolve(reqType);
+				return;
+			}
 		}
 		PassInfo.push(this);
 		NodeInfoPass.pushState();
@@ -532,7 +529,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 		}
 		setResolved(true);
-		assert (me == null);
 	}
 
 	public CodeLabel getBreakLabel() {
@@ -1088,7 +1084,7 @@ public class WithStat extends Statement {
 				}
 				if (var_or_field == null) {
 					Kiev.reportError(pos,"With statement needs variable or field argument");
-					this.replaceWith(body);
+					this.replaceWithNode(body);
 					body.resolve(Type.tpVoid);
 					return;
 				}

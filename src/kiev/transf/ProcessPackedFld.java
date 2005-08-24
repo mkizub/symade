@@ -169,8 +169,12 @@ public final class ProcessPackedFld implements Constants {
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				tmp.init = expr;
 				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ae.value)));
-			} else {
-				tmp.init = (Expr)ae.value;
+			}
+			else if (ae.value.getType() == Type.tpBoolean) {
+				tmp.init = new CastExpr(ae.value.pos, Type.tpInt, ae.value, true);
+			}
+			else {
+				tmp.init = ae.value;
 			}
 			
 			{
@@ -191,7 +195,7 @@ public final class ProcessPackedFld implements Constants {
 			if (!ae.isGenVoidExpr()) {
 				be.setExpr(mkAccess(tmp));
 			}
-			ae.replaceWith(be);
+			ae.replaceWithNode(be);
 			be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 			rewrite(be, id);
 		} finally { PassInfo.pop(ae); }
