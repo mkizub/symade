@@ -1088,6 +1088,11 @@ public class VarDecl extends ENode implements Named {
 	public void generate(Type reqType) {
 		var.generate(Type.tpVoid);
 	}
+	public Dumper toJava(Dumper dmp) {
+		var.toJavaDecl(dmp);
+		return dmp;
+	}
+	
 }
 
 @node
@@ -1120,6 +1125,10 @@ public class LocalStructDecl extends ENode implements Named {
 	public int getPriority() { return 255; }
 	public void generate(Type reqType) {
 		// don't generate here
+	}
+	public Dumper toJava(Dumper dmp) {
+		clazz.toJavaDecl(dmp);
+		return dmp;
 	}
 }
 

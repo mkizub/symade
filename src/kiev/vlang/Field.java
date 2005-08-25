@@ -156,9 +156,13 @@ public class Field extends DNode implements Named, Typed, Accessable, TopLevelDe
 			m.resolve();
 		if( init != null ) {
 			if (init instanceof TypeRef)
-				((TypeRef)init).toExpr(this.getType());
+				((TypeRef)init).toExpr(type);
 			if( init instanceof Expr )
 				init.resolve(type);
+			if (init.getType() != type) {
+				init = new CastExpr(init.pos, type, init);
+				init.resolve(type);
+			}
 		}
 	}
 

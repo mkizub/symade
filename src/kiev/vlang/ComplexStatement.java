@@ -246,7 +246,11 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			dmp.newLine(-1).append("default:").newLine();
 		else
 			dmp.newLine(-1).append("case ").append(val).append(':').newLine();
-		dmp.append(stats).newLine(1);
+		dmp.newLine(1);
+		foreach (ENode s; stats)
+			s.toJava(dmp);
+		dmp.newLine(-1);
+
 		return dmp;
 	}
 }

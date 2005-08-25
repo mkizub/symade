@@ -898,7 +898,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						exprs[arg] = ce;
 					}
 				}
-				foreach (Expr e; exprs)
+				foreach (ENode e; exprs)
 					call_super.args.add(e);
 				ti_init_body.stats.insert(new ExprStat(call_super),0);
 			}
@@ -2072,6 +2072,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						f.init.resolve(f.type);
 						if (f.init instanceof TypeRef)
 							((TypeRef)f.init).toExpr(f.type);
+						if (f.init.getType() != f.type) {
+							f.init = new CastExpr(f.init.pos, f.type, f.init);
+							f.init.resolve(f.type);
+						}
 					} catch( Exception e ) {
 						Kiev.reportError(f.init.pos,e);
 					}

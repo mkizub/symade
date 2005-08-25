@@ -1193,9 +1193,11 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() );
+		if( isResolved() )
+			return;
 		PassInfo.push(this);
 		try {
+			outer_refs = Field.emptyArray;
 			trace(Kiev.debugResolve,"Resolving "+this);
 			Field ou_ref = outerOf(PassInfo.clazz);
 			if( ou_ref == null )

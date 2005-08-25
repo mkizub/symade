@@ -128,13 +128,13 @@ public class NewExpr extends Expr {
 			}
 			// Don't try to find constructor of argument type
 			if( !type.isArgument() ) {
+				if (tif_expr != null)
+					args.insert(tif_expr,0);
+				if (outer != null)
+					args.insert(outer,0);
 				Type[] ta = new Type[args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
-				if (tif_expr != null)
-					ta = (Type[])Arrays.insert(ta,tif_expr.getType(),0);
-				if (outer != null)
-					ta = (Type[])Arrays.insert(ta,outer.getType(),0);
 				MethodType mt = MethodType.newMethodType(null,ta,type);
 				Method@ m;
 				// First try overloaded 'new', than real 'new'
@@ -153,6 +153,7 @@ public class NewExpr extends Expr {
 				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 					func = m;
+					m.makeArgs(args,type);
 				}
 				else {
 					throw new RuntimeException("Can't find apropriative initializer for "+
@@ -202,10 +203,10 @@ public class NewExpr extends Expr {
 			if( reqType != Type.tpVoid )
 				Code.addInstr(op_dup);
 			// Constructor call args (first args 'this' skipped)
-			if( outer != null )
-				outer.generate(null);
-			if( tif_expr != null )
-				tif_expr.generate(null);
+			//if( outer != null )
+			//	outer.generate(null);
+			//if( tif_expr != null )
+			//	tif_expr.generate(null);
 			for(int i=0; i < args.length; i++)
 				args[i].generate(null);
 			// Now, fill proxyed fields (vars)

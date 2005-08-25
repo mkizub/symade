@@ -352,15 +352,8 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
-		for(int i=0; i < stats.length; i++) {
-			ASTNode n = stats[i];
-			if (n instanceof VarDecl)
-				((VarDecl)n).var.toJavaDecl(dmp);
-			else if (n instanceof LocalStructDecl)
-				((LocalStructDecl)n).clazz.toJavaDecl(dmp);
-			else
-				n.toJava(dmp);
-		}
+		foreach (ENode s; stats)
+			s.toJava(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}

@@ -369,7 +369,7 @@ public class AssignExpr extends LvalueExpr {
 				value.resolve(Type.tpInt);
 			}
 		}
-		else if( !t1.equals(t2) ) {
+		else if( !t2.isInstanceOf(t1) ) {
 			if( t2.isCastableTo(t1) ) {
 				value = new CastExpr(pos,t1,value);
 				value.resolve(t1);
