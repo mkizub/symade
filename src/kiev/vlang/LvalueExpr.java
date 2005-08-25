@@ -116,23 +116,17 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
-
 		PassInfo.push(this);
 		try {
 			obj.resolve(null);
 
 			// Set violation of the field
-			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
+			if( PassInfo.method != null
 			 && obj instanceof VarAccessExpr && ((VarAccessExpr)obj).var.name.equals(nameThis)
 			)
 				PassInfo.method.addViolatedField(var);
 
 			setResolved(true);
-//			Type tp = getType();
-//			if( !var.getType().equals(tp) ) {
-//				this.replaceWithResolve(fun ()->ENode {return new CastExpr(pos,tp,this);});
-//			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -657,7 +651,6 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return;
 		PassInfo.push(this);
 		try {
 			// Check if we try to access this var from local inner/anonymouse class
@@ -1159,7 +1152,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 public class OuterThisAccessExpr extends LvalueExpr {
 
 	@ref public Struct		outer;
-	public Field[]		outer_refs = Field.emptyArray;
+	public Field[]			outer_refs = Field.emptyArray;
 
 	public OuterThisAccessExpr() {
 	}
@@ -1193,8 +1186,6 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		if( isResolved() )
-			return;
 		PassInfo.push(this);
 		try {
 			outer_refs = Field.emptyArray;

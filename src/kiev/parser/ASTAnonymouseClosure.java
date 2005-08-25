@@ -54,6 +54,10 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		node ?= p
 	}
 	
+	public void preResolve() {
+		// don't pre-resolve me
+	}
+	
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
 			replaceWithNode(new_closure);
