@@ -24,8 +24,8 @@ public final $wrapper class PVar<A>
 {
 
 	@virtual
-	forward public virtual access:ro,rw			A			$var;
-	        private 							PVar<A>		$pvar := null;
+	forward public virtual access:ro,rw			A		$var;
+	        private 								PVar<A>	$pvar := null;
 	@virtual
 	        public virtual access:ro abstract 	boolean		$is_bound;
 
@@ -65,6 +65,12 @@ public final $wrapper class PVar<A>
 	public boolean equals(A value) {
 		A v = $var;
 		return (v==null && value==null) || v.equals(value);
+	}
+
+	public boolean equals(PVar<A> value) {
+		A v1 = $var;
+		A v2 = value.$var;
+		return (v1==null && v2==null) || v1.equals(v2);
 	}
 
 	public void $bind(A var)

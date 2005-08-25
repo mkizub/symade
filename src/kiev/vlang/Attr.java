@@ -334,11 +334,11 @@ public class ConstantValueAttr extends Attr {
 		if( value instanceof Number )
 			ConstPool.addNumberCP((Number)value);
 		else if( value instanceof Character )
-			ConstPool.addNumberCP(Kiev.newInteger((int)((Character)value).charValue()));
+			ConstPool.addNumberCP(Integer.valueOf((int)((Character)value).charValue()));
 		else if( value instanceof KString )
 			ConstPool.addStringCP((KString)value);
 		else if( value instanceof Boolean ) {
-			Integer i = new Integer(((Boolean)value).booleanValue()? 1: 0 );
+			Integer i = Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 );
 			ConstPool.addNumberCP(i);
 		}
 	}
@@ -348,10 +348,10 @@ public class ConstantValueAttr extends Attr {
 		cva.cp_name = ConstPool.getAsciiCP(name).pos;
 		switch( value ) {
 		case Boolean:
-			cva.cp_value = ConstPool.getNumberCP(new Integer(((Boolean)value).booleanValue()? 1: 0 )).pos;
+			cva.cp_value = ConstPool.getNumberCP(Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 )).pos;
 			break;
 		case Character:
-			cva.cp_value = ConstPool.getNumberCP(Kiev.newInteger((int)((Character)value).charValue())).pos;
+			cva.cp_value = ConstPool.getNumberCP(Integer.valueOf((int)((Character)value).charValue())).pos;
 			break;
 		case Number:
 			cva.cp_value = ConstPool.getNumberCP((Number)value).pos;
@@ -905,11 +905,11 @@ public abstract class MetaAttr extends Attr {
 	protected final void generateValue(ASTNode value) {
 		if (value instanceof ConstExpr) {
 			Object v = ((ConstExpr)value).getConstValue();
-			if     ( v instanceof Boolean )			ConstPool.addNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0));
+			if     ( v instanceof Boolean )			ConstPool.addNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0));
 			else if( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
 			else if( v instanceof Short )			ConstPool.addNumberCP((Short)v);
 			else if( v instanceof Integer )			ConstPool.addNumberCP((Integer)v);
-			else if( v instanceof Character )		ConstPool.addNumberCP(new Integer((int)((Character)v).charValue()));
+			else if( v instanceof Character )		ConstPool.addNumberCP(Integer.valueOf((int)((Character)v).charValue()));
 			else if( v instanceof Long )			ConstPool.addNumberCP((Long)v);
 			else if( v instanceof Float )			ConstPool.addNumberCP((Float)v);
 			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
@@ -965,7 +965,7 @@ public abstract class MetaAttr extends Attr {
 			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean ) {
 				ev.tag = (byte)'Z';
-				ev.const_value_index = ConstPool.getNumberCP(new Integer(((Boolean)v).booleanValue() ? 1 : 0)).pos;
+				ev.const_value_index = ConstPool.getNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0)).pos;
 			}
 			else if( v instanceof Byte ) {
 				ev.tag = (byte)'B';
@@ -981,7 +981,7 @@ public abstract class MetaAttr extends Attr {
 			}
 			else if( v instanceof Character ) {
 				ev.tag = (byte)'C';
-				ev.const_value_index = ConstPool.getNumberCP(new Integer((int)((Character)v).charValue())).pos;
+				ev.const_value_index = ConstPool.getNumberCP(Integer.valueOf((int)((Character)v).charValue())).pos;
 			}
 			else if( v instanceof Long ) {
 				ev.tag = (byte)'J';

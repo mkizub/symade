@@ -152,7 +152,7 @@ public class RuleMethod extends Method {
 		return this;
     }
 
-	public void resolve(Type reqType) {
+	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		PassInfo.push(this);
 		try {
@@ -180,15 +180,15 @@ public class RuleMethod extends Method {
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				if( body instanceof RuleBlock ) {
-					((RuleBlock)body).resolve(Type.tpVoid);
+					preAndResolve(body, false);
 					boolean[] exts = Kiev.getExtSet();
 					try {
 						Kiev.enable(Ext.GotoCase);
 						Kiev.enable(Ext.Goto);
-						((BlockStat)body).resolve(Type.tpVoid);
+						preAndResolve(body, type.ret == Type.tpVoid);
 					} finally { Kiev.setExtSet(exts); }
 				} else {
-					((BlockStat)body).resolve(Type.tpVoid);
+					preAndResolve(body, type.ret == Type.tpVoid);
 				}
 			}
 			if( body != null && !body.isMethodAbrupted() ) {

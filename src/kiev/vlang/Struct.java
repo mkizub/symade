@@ -2066,10 +2066,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
 				Field f = (Field)n;
-				if( f == null || f.init == null || f.name.equals(KString.Empty) ) continue;
+				if( f == null || f.init == null ) continue;
 				if( /*f.isStatic() &&*/ f.init != null ) {
 					try {
 						f.init.resolve(f.type);
+						if (f.init instanceof TypeRef)
+							((TypeRef)f.init).toExpr(f.type);
 					} catch( Exception e ) {
 						Kiev.reportError(f.init.pos,e);
 					}

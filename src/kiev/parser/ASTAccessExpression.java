@@ -39,6 +39,8 @@ import syntax kiev.Syntax;
 @node
 @cfnode
 public class ASTAccessExpression extends Expr {
+	private static KString nameWrapperSelf = KString.from("$self");
+	
 	@att public ENode			obj;
 	@att public ASTIdentifier	ident;
 
@@ -63,7 +65,7 @@ public class ASTAccessExpression extends Expr {
 				res = new ASTNode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
-					if( ident.name.equals("$self") && tp.isReference() ) {
+					if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
 						if (tp.isWrapper()) {
 							tps[si] = ((WrapperType)tp).getUnwrappedType();
 							res[si] = obj;
@@ -151,9 +153,13 @@ public class ASTAccessExpression extends Expr {
 				res = new ENode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
-					if( ident.name.equals("$self") && tp.isReference() ) {
+					if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
 						if (tp.isWrapper()) {
 							tps[si] = ((WrapperType)tp).getUnwrappedType();
+							res[si] = obj;
+						}
+						else if (tp.isInstanceOf(Type.tpPrologVar)) {
+							tps[si] = tp;
 							res[si] = obj;
 						}
 					}

@@ -1098,11 +1098,13 @@ public class LocalStructDecl extends ENode implements Named {
 	public LocalStructDecl() {}
 	public LocalStructDecl(Struct clazz) {
 		this.clazz = clazz;
+		clazz.setResolved(true);
 	}
 	public void resolve(Type reqType) {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
 		ExportJavaTop exporter = new ExportJavaTop();
+		clazz.setResolved(true);
 		clazz.setLocal(true);
 		exporter.pass1(clazz);
 		exporter.pass1_1(clazz);
@@ -1348,12 +1350,17 @@ public class TypeRef extends ENode {
 		this.lnk = n;
 	}
 	
+	public int getPriority() { return 255; }
+
 	public final void preResolve() {
 		getType(); // calls resolving
 	}
 	
 	public void resolve(Type reqType) {
-		getType(); // calls resolving
+		if (reqType != null)
+			toExpr(reqType);
+		else
+			getType(); // calls resolving
 	}
 	
 	public boolean equals(Object o) {
@@ -1367,6 +1374,34 @@ public class TypeRef extends ENode {
 	
 	public Dumper toJava(Dumper dmp) {
 		return lnk.toJava(dmp);
+	}
+	
+	public void toExpr(Type reqType) {
+		Type st = getType();
+		if (st.isPizzaCase()) {
+			Struct s = st.getStruct();
+			// Pizza case may be casted to int or to itself or super-class
+			PizzaCaseAttr case_attr;
+			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+			if (case_attr == null)
+				throw new RuntimeException("Internal error - can't find case_attr");
+			Type tp = Type.getRealType(reqType,st);
+			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
+				throw new CompilerException(pos,"Pizza case "+tp+" cannot be casted to type "+reqType);
+			if (case_attr.casefields.length != 0)
+				throw new CompilerException(pos,"Empty constructor for pizza case "+tp+" not found");
+			if (reqType.isInteger()) {
+				Expr expr = new ConstIntExpr(case_attr.caseno);
+				if( reqType != Type.tpInt )
+					expr = new CastExpr(pos,reqType,expr);
+				replaceWithNodeResolve(reqType, expr);
+				return;
+			}
+			// Now, check we need add type arguments
+			replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,Expr.emptyArray);});
+			return;
+		}
+		throw new CompilerException(pos,"Type "+this+" is not a class's case with no fields");
 	}
 	
 	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {

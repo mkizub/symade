@@ -1487,7 +1487,7 @@ public class Code implements Constants {
 				add_opcode_and_short(opc_sipush,val);
 			}
 			else {
-				CP c = ConstPool.addNumberCP(new Integer(val));
+				CP c = ConstPool.addNumberCP(Integer.valueOf(val));
 				add_opcode_and_CP(opc_ldc,c);
 				stack_push(Type.tpInt);
 			}
@@ -1503,7 +1503,7 @@ public class Code implements Constants {
 		if( val == 0L )			add_opcode(opc_lconst_0);
 		else if( val == 1L )	add_opcode(opc_lconst_1);
 		else {
-			CP c = ConstPool.addNumberCP(Kiev.newLong(val));
+			CP c = ConstPool.addNumberCP(Long.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
 			stack_push(Type.tpLong);
 		}
@@ -1519,7 +1519,7 @@ public class Code implements Constants {
 		else if( val == 1.0f )	add_opcode(opc_fconst_1);
 		else if( val == 2.0f )	add_opcode(opc_fconst_2);
 		else {
-			CP c = ConstPool.addNumberCP(Kiev.newFloat(val));
+			CP c = ConstPool.addNumberCP(Float.valueOf(val));
 			add_opcode_and_CP(opc_ldc,c);
 			stack_push(Type.tpFloat);
 		}
@@ -1534,7 +1534,7 @@ public class Code implements Constants {
 		if( val == 0.0D )		add_opcode(opc_dconst_0);
 		else if( val == 1.0D )	add_opcode(opc_dconst_1);
 		else {
-			CP c = ConstPool.addNumberCP(Kiev.newDouble(val));
+			CP c = ConstPool.addNumberCP(Double.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
 			stack_push(Type.tpDouble);
 		}

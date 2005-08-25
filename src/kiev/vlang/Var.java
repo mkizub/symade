@@ -93,6 +93,8 @@ public class Var extends DNode implements Named, Typed {
 			if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
 				init = new NewExpr(pos,type,Expr.emptyArray);
 			if( init != null ) {
+				if (init instanceof TypeRef)
+					((TypeRef)init).toExpr(this.getType());
 				if (type.isWrapper() && !this.isInitWrapper())
 					init = new NewExpr(init.pos,type,new ENode[]{init});
 				try {

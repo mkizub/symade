@@ -151,15 +151,15 @@ public class Field extends DNode implements Named, Typed, Accessable, TopLevelDe
 		return null;
 	}
 
-	public DNode resolve(Type reqType) throws RuntimeException {
+	public void resolveDecl() throws RuntimeException {
 		foreach (Meta m; meta)
 			m.resolve();
-		if( name.equals(KString.Empty) ) return this;
 		if( init != null ) {
+			if (init instanceof TypeRef)
+				((TypeRef)init).toExpr(this.getType());
 			if( init instanceof Expr )
 				init.resolve(type);
 		}
-		return this;
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

@@ -220,7 +220,7 @@ public class IntegerPoolConstant extends NumberPoolConstant {
 		cont.writeInt(value);
 	}
 	public int size()	{ return 1+4; }
-	public Number getValue() { return new Integer(value); }
+	public Number getValue() { return Integer.valueOf(value); }
 }
 
 public class FloatPoolConstant extends NumberPoolConstant {
@@ -239,7 +239,7 @@ public class FloatPoolConstant extends NumberPoolConstant {
 		cont.writeFloat(value);
 	}
 	public int size()	{ return 1+4; }
-	public Number getValue() { return new Float(value); }
+	public Number getValue() { return Float.valueOf(value); }
 }
 
 public class LongPoolConstant extends NumberPoolConstant {
@@ -259,7 +259,7 @@ public class LongPoolConstant extends NumberPoolConstant {
 	}
 	public int size()	{ return 1+8; }
 	public boolean double_slot() { return true; }
-	public Number getValue() { return new Long(value); }
+	public Number getValue() { return Long.valueOf(value); }
 }
 
 public class DoublePoolConstant extends NumberPoolConstant {
@@ -279,7 +279,7 @@ public class DoublePoolConstant extends NumberPoolConstant {
 	}
 	public int size()	{ return 1+8; }
 	public boolean double_slot() { return true; }
-	public Number getValue() { return new Double(value); }
+	public Number getValue() { return Double.valueOf(value); }
 }
 
 public abstract class RefPoolConstant extends PoolConstant {

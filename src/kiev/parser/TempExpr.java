@@ -261,16 +261,26 @@ public class UnresCallExpr extends UnresExpr {
 	}
 
 	public ENode toResolvedExpr() {
+		for (int i=0; i < args.length; i++) {
+			if (args[i] instanceof UnresExpr)
+				args[i] = ((UnresExpr)args[i]).toResolvedExpr();
+		}
 		if (obj instanceof TypeRef) {
 			if (func instanceof Method) {
-				return new CallExpr(pos, (Method)func, args);
+				Method m = (Method)func;
+				CallExpr ce = new CallExpr(pos, m, args);
+				m.makeArgs(ce.args, null);
+				return ce;
 			} else {
 				Field f = (Field)func;
 				return new ClosureCallExpr(pos, new StaticFieldAccessExpr(pos, f), args);
 			}
 		} else {
 			if (func instanceof Method) {
-				return new CallAccessExpr(pos, obj, (Method)func, args, super_flag);
+				Method m = (Method)func;
+				CallAccessExpr ce = new CallAccessExpr(pos, obj, m, args, super_flag);
+				m.makeArgs(ce.args, null);
+				return ce;
 			} else {
 				return new ClosureCallExpr(pos, obj, args);
 			}

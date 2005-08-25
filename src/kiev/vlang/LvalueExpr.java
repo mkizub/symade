@@ -129,10 +129,10 @@ public class AccessExpr extends LvalueExpr {
 				PassInfo.method.addViolatedField(var);
 
 			setResolved(true);
-			Type tp = getType();
-			if( !var.getType().equals(tp) ) {
-				this.replaceWithResolve(fun ()->ENode {return new CastExpr(pos,tp,this);});
-			}
+//			Type tp = getType();
+//			if( !var.getType().equals(tp) ) {
+//				this.replaceWithResolve(fun ()->ENode {return new CastExpr(pos,tp,this);});
+//			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -933,6 +933,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	}
 
 	public void resolve(Type reqType) {
+		setResolved(true);
 	}
 
 	public Field resolveFieldForLocalPrologVar() {
@@ -1269,79 +1270,79 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
 }
 
-@node
-@cfnode
-public class SelfAccessExpr extends LvalueExpr {
-
-	@att public LvalueExpr		expr;
-
-	public SelfAccessExpr() {
-	}
-
-	public SelfAccessExpr(int pos, LvalueExpr expr) {
-		super(pos);
-		this.expr = expr;
-	}
-
-	public String toString() {
-		if( expr.getPriority() < opAccessPriority )
-			return "("+expr.toString()+").$self";
-		else
-			return expr.toString()+".$self";
-	}
-
-	public Type getType() {
-		return Type.tpObject;
-	}
-
-	public int getPriority() { return opAccessPriority; }
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
-
-	public void resolve(Type reqType) throws RuntimeException {
-		expr.resolve(reqType);
-		setResolved(true);
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad() {
-		expr.generateLoad();
-	}
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public void generateLoadDup() {
-		expr.generateLoadDup();
-	}
-
-	/** Load info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public void generateAccess() {
-		expr.generateAccess();
-	}
-
-	/** Stores value using previously duped info */
-	public void generateStore() {
-		expr.generateStore();
-	}
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public void generateStoreDupValue() {
-		expr.generateStoreDupValue();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( expr.getPriority() < opAccessPriority ) {
-			dmp.append('(');
-			expr.toJava(dmp).append(")").space();
-		} else {
-			expr.toJava(dmp).space();
-		}
-		return dmp;
-	}
-}
+//@node
+//@cfnode
+//public class SelfAccessExpr extends LvalueExpr {
+//
+//	@att public LvalueExpr		expr;
+//
+//	public SelfAccessExpr() {
+//	}
+//
+//	public SelfAccessExpr(int pos, LvalueExpr expr) {
+//		super(pos);
+//		this.expr = expr;
+//	}
+//
+//	public String toString() {
+//		if( expr.getPriority() < opAccessPriority )
+//			return "("+expr.toString()+").$self";
+//		else
+//			return expr.toString()+".$self";
+//	}
+//
+//	public Type getType() {
+//		return Type.tpObject;
+//	}
+//
+//	public int getPriority() { return opAccessPriority; }
+//
+//	public void cleanup() {
+//		parent=null;
+//		expr.cleanup();
+//		expr = null;
+//	}
+//
+//	public void resolve(Type reqType) throws RuntimeException {
+//		expr.resolve(reqType);
+//		setResolved(true);
+//	}
+//
+//	/** Just load value referenced by lvalue */
+//	public void generateLoad() {
+//		expr.generateLoad();
+//	}
+//
+//	/** Load value and dup info needed for generateStore or generateStoreDupValue
+//		(the caller MUST provide one of Store call after a while) */
+//	public void generateLoadDup() {
+//		expr.generateLoadDup();
+//	}
+//
+//	/** Load info needed for generateStore or generateStoreDupValue
+//		(the caller MUST provide one of Store call after a while) */
+//	public void generateAccess() {
+//		expr.generateAccess();
+//	}
+//
+//	/** Stores value using previously duped info */
+//	public void generateStore() {
+//		expr.generateStore();
+//	}
+//
+//	/** Stores value using previously duped info, and put stored value in stack */
+//	public void generateStoreDupValue() {
+//		expr.generateStoreDupValue();
+//	}
+//
+//	public Dumper toJava(Dumper dmp) {
+//		if( expr.getPriority() < opAccessPriority ) {
+//			dmp.append('(');
+//			expr.toJava(dmp).append(")").space();
+//		} else {
+//			expr.toJava(dmp).space();
+//		}
+//		return dmp;
+//	}
+//}
 

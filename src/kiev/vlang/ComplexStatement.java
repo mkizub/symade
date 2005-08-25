@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class CaseLabel extends ENode {
+public class CaseLabel extends ENode implements ScopeOfNames {
 
 	static CaseLabel[] emptyArray = new CaseLabel[0];
 
@@ -93,6 +93,14 @@ public class CaseLabel extends ENode {
 		stats.insert(decl,idx);
 	}
 
+	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+		Var@ var;
+	{
+		var @= pattern,
+		var.name.equals(name),
+		node ?= var
+	}
+	
 	public void cleanup() {
 		parent=null;
 		val.cleanup();

@@ -543,6 +543,17 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 		}
 	}
 	
+	protected void preAndResolve(Statement st, boolean autoret) {
+		ScopeNodeInfoVector state = NodeInfoPass.pushState();
+		state.guarded = true;
+		try {
+			st.preResolve();
+		} finally { NodeInfoPass.popState(); }
+		if (autoret)
+			st.setAutoReturnable(true);
+		st.resolve(Type.tpVoid);
+	}
+	
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
@@ -567,25 +578,10 @@ public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfM
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
-				{
-					ScopeNodeInfoVector state = NodeInfoPass.pushState();
-					state.guarded = true;
-					try {
-						cond.preResolve();
-					} finally { NodeInfoPass.popState(); }
-				}
-				cond.resolve(Type.tpVoid);
+				preAndResolve(cond, false);
 			}
 			if( body != null ) {
-				{
-					ScopeNodeInfoVector state = NodeInfoPass.pushState();
-					state.guarded = true;
-					try {
-						body.preResolve();
-					} finally { NodeInfoPass.popState(); }
-				}
-				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				body.resolve(Type.tpVoid);
+				preAndResolve(body, type.ret == Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {

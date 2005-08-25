@@ -252,6 +252,8 @@ public class AssignExpr extends LvalueExpr {
 				value.resolve(((WrapperType)et1).getUnwrappedType());
 			else
 				value.resolve(et1);
+			if (value instanceof TypeRef)
+				((TypeRef)value).toExpr(et1);
 			Type et2 = value.getType();
 			if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
 				this.postResolve(reqType);
@@ -315,15 +317,19 @@ public class AssignExpr extends LvalueExpr {
 			// Not a standard and not overloaded, try wrapped classes
 			if (op != AssignOperator.Assign2) {
 				if (et1.isWrapper() && et2.isWrapper()) {
-					replaceWithNodeResolve(reqType, new AssignExpr(pos,op,et1.makeWrappedAccess(lval),et2.makeWrappedAccess(value)));
+					lval = et1.makeWrappedAccess(lval);
+					value = et2.makeWrappedAccess(value);
+					resolve(reqType);
 					return;
 				}
 				else if (et1.isWrapper()) {
-					replaceWithNodeResolve(reqType, new AssignExpr(pos,op,et1.makeWrappedAccess(lval),value));
+					lval = et1.makeWrappedAccess(lval);
+					resolve(reqType);
 					return;
 				}
 				else if (et2.isWrapper()) {
-					replaceWithNodeResolve(reqType, new AssignExpr(pos,op,lval,et2.makeWrappedAccess(value)));
+					value = et2.makeWrappedAccess(value);
+					resolve(reqType);
 					return;
 				}
 			}
@@ -789,32 +795,20 @@ public class BinaryExpr extends Expr {
 			if( op == BinaryOperator.BitOr ) {
 				if( val1 instanceof Long || val2 instanceof Long )
 					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() | val2.longValue()));
-				else if( val1 instanceof Integer || val2 instanceof Integer )
+				else
 					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() | val2.intValue()));
-				else if( val1 instanceof Short || val2 instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val1.shortValue() | val2.shortValue()));
-				else if( val1 instanceof Byte || val2 instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val1.byteValue() | val2.byteValue()));
 			}
 			else if( op == BinaryOperator.BitXor ) {
 				if( val1 instanceof Long || val2 instanceof Long )
 					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() ^ val2.longValue()));
-				else if( val1 instanceof Integer || val2 instanceof Integer )
+				else
 					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() ^ val2.intValue()));
-				else if( val1 instanceof Short || val2 instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val1.shortValue() ^ val2.shortValue()));
-				else if( val1 instanceof Byte || val2 instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val1.byteValue() ^ val2.byteValue()));
 			}
 			else if( op == BinaryOperator.BitAnd ) {
 				if( val1 instanceof Long || val2 instanceof Long )
 					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() & val2.longValue()));
-				else if( val1 instanceof Integer || val2 instanceof Integer )
+				else
 					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() & val2.intValue()));
-				else if( val1 instanceof Short || val2 instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val1.shortValue() & val2.shortValue()));
-				else if( val1 instanceof Byte || val2 instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val1.byteValue() & val2.byteValue()));
 			}
 			else if( op == BinaryOperator.LeftShift ) {
 				if( val1 instanceof Long )
@@ -825,22 +819,14 @@ public class BinaryExpr extends Expr {
 			else if( op == BinaryOperator.RightShift ) {
 				if( val1 instanceof Long )
 					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >> val2.intValue()));
-				else if( val1 instanceof Integer )
+				else
 					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >> val2.intValue()));
-				else if( val1 instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val1.shortValue() >> val2.intValue()));
-				else if( val1 instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val1.byteValue() >> val2.intValue()));
 			}
 			else if( op == BinaryOperator.UnsignedRightShift ) {
 				if( val1 instanceof Long )
 					replaceWithNodeResolve(new ConstLongExpr(val1.longValue() >>> val2.intValue()));
-				else if( val1 instanceof Integer )
+				else
 					replaceWithNodeResolve(new ConstIntExpr(val1.intValue() >>> val2.intValue()));
-				else if( val1 instanceof Short )
-					replaceWithNodeResolve(new ConstShortExpr(val1.shortValue() >>> val2.intValue()));
-				else if( val1 instanceof Byte )
-					replaceWithNodeResolve(new ConstByteExpr(val1.byteValue() >>> val2.intValue()));
 			}
 			else if( op == BinaryOperator.Add ) {
 				if( val1 instanceof Double || val2 instanceof Double )
@@ -1255,13 +1241,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		try {
 			for(int i=0; i < stats.length; i++) {
 				try {
-					ASTNode n = stats[i];
-					if (n instanceof Statement)
-						((Statement)n).generate(Type.tpVoid);
-					else if (n instanceof Expr)
-						((Expr)n).generate(Type.tpVoid);
-					else if (n instanceof Var)
-						((Var)n).generate(Type.tpVoid);
+					stats[i].generate(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(stats[i].getPos(),e);
 				}
@@ -1274,7 +1254,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 				}
 			}
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			Code.removeVars(vars.toArray());
 		} finally { PassInfo.pop(this); }
 	}
@@ -1956,6 +1936,8 @@ public class CastExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			expr.resolve(type);
+			if (expr instanceof TypeRef)
+				((TypeRef)expr).toExpr(type);
 			Type extp = Type.getRealType(type,expr.getType());
 			if( type == Type.tpBoolean && extp == Type.tpRule ) {
 				replaceWithNode(expr);

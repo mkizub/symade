@@ -210,7 +210,9 @@ public final class ConstStringExpr extends ConstExpr {
 @cfnode
 public abstract class ConstExpr extends Expr {
 
-	public ConstExpr() {}
+	public ConstExpr() {
+		setResolved(true);
+	}
 
 	public abstract Type getType();
 	public abstract Object getConstValue();
@@ -220,6 +222,7 @@ public abstract class ConstExpr extends Expr {
 
 	public final void preResolve() {
 		// already fully resolved
+		setResolved(true);
 	}
 	
 	public final void resolve(Type reqType) {

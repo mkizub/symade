@@ -1413,16 +1413,16 @@ public class GotoStat extends Statement/*defaults*/ {
 			stats = resolveStat(name,lst.stat,stats);
 		}
 			break;
-		case EmptyStat: 	break;
-		case Struct:		break;
-		case Var:		    break;
-		case GotoStat:  	break;
-		case GotoCaseStat: 	break;
-		case ReturnStat:	break;
-		case ThrowStat: 	break;
-		case ExprStat:	    break;
-		case BreakStat:	    break;
-		case ContinueStat:	break;
+		case EmptyStat: 		break;
+		case LocalStructDecl:	break;
+		case VarDecl:			break;
+		case GotoStat:			break;
+		case GotoCaseStat:		break;
+		case ReturnStat:		break;
+		case ThrowStat:			break;
+		case ExprStat:			break;
+		case BreakStat:			break;
+		case ContinueStat:		break;
 		default:
 			Kiev.reportWarning(st.pos,"Unknown statement in label lookup: "+st.getClass());
 		}

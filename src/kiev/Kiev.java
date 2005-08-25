@@ -347,84 +347,84 @@ public final class Kiev {
 	public static int    testErrorOffs		= 0;
 
     // New primitive objects section
-	public static final Byte[]		byteArray	= new Byte[256];
-	public static final java.lang.Character[]	charArray	= new java.lang.Character[128];
-	public static final Short[]		shortArray	= new Short[256+1];
-	public static final Integer[]	intArray	= new Integer[256*2+1];
-	public static final Long[]		longArray	= new Long[128+1];
-	public static final Float[]		floatArray	= new Float[4];
-	public static final Double[]	doubleArray = new Double[4];
-
-	static {
-		// Fill hash arrays
-		for(int i=0; i < byteArray.length; i++) {
-			byteArray[i] = new Byte((byte)(i-128));
-		}
-		for(int i=0; i < charArray.length; i++) {
-			charArray[i] = new java.lang.Character((char)i);
-		}
-		for(int i=0; i < shortArray.length; i++) {
-			shortArray[i] = new Short((short)(i-128));
-		}
-		for(int i=0; i < intArray.length; i++) {
-			intArray[i] = new Integer(i-256);
-		}
-		for(int i=0; i < longArray.length; i++) {
-			longArray[i] = new Long((long)(i-64));
-		}
-		for(int i=0; i < floatArray.length; i++) {
-			floatArray[i] = new Float((float)(i-1));
-		}
-		for(int i=0; i < doubleArray.length; i++) {
-			doubleArray[i] = new Double((double)(i-1));
-		}
-	}
-
-	public static Byte newByte(int n) {
-		byte b = (byte)n;
-		n = (int)b;
-		return byteArray[n+128];
-	}
-	public static java.lang.Character newCharacter(int n) {
-		if( n >= 0 && n <= 127 )
-			return charArray[n];
-		else
-			return new java.lang.Character((char)n);
-	}
-	public static Short newShort(int n) {
-		int i = n+128;
-		if( i >= 0 && i <= 256 )
-			return shortArray[i];
-		else
-			return new Short((short)n);
-	}
-	public static Integer newInteger(int n) {
-		if( n >= -256 && n <= 256 )
-			return intArray[n+256];
-		else
-			return new Integer(n);
-	}
-	public static Long newLong(long n) {
-		long i = n+64;
-		if( i >= 0 && i <= 128 )
-			return longArray[(int)i];
-		else
-			return new Long(n);
-	}
-	public static Float newFloat(float n) {
-		if( n == -1.f ) return floatArray[0];
-		if( n == 0.f ) return floatArray[1];
-		if( n == 1.f ) return floatArray[2];
-		if( n == 2.f ) return floatArray[3];
-		return new Float(n);
-	}
-	public static Double newDouble(double n) {
-		if( n == -1.d ) return doubleArray[0];
-		if( n == 0.d ) return doubleArray[1];
-		if( n == 1.d ) return doubleArray[2];
-		if( n == 2.d ) return doubleArray[3];
-		return new Double(n);
-	}
+//	public static final Byte[]		byteArray	= new Byte[256];
+//	public static final java.lang.Character[]	charArray	= new java.lang.Character[128];
+//	public static final Short[]		shortArray	= new Short[256+1];
+//	public static final Integer[]	intArray	= new Integer[256*2+1];
+//	public static final Long[]		longArray	= new Long[128+1];
+//	public static final Float[]		floatArray	= new Float[4];
+//	public static final Double[]	doubleArray = new Double[4];
+//
+//	static {
+//		// Fill hash arrays
+//		for(int i=0; i < byteArray.length; i++) {
+//			byteArray[i] = new Byte((byte)(i-128));
+//		}
+//		for(int i=0; i < charArray.length; i++) {
+//			charArray[i] = new java.lang.Character((char)i);
+//		}
+//		for(int i=0; i < shortArray.length; i++) {
+//			shortArray[i] = new Short((short)(i-128));
+//		}
+//		for(int i=0; i < intArray.length; i++) {
+//			intArray[i] = new Integer(i-256);
+//		}
+//		for(int i=0; i < longArray.length; i++) {
+//			longArray[i] = new Long((long)(i-64));
+//		}
+//		for(int i=0; i < floatArray.length; i++) {
+//			floatArray[i] = new Float((float)(i-1));
+//		}
+//		for(int i=0; i < doubleArray.length; i++) {
+//			doubleArray[i] = new Double((double)(i-1));
+//		}
+//	}
+//
+//	public static Byte newByte(int n) {
+//		byte b = (byte)n;
+//		n = (int)b;
+//		return byteArray[n+128];
+//	}
+//	public static java.lang.Character newCharacter(int n) {
+//		if( n >= 0 && n <= 127 )
+//			return charArray[n];
+//		else
+//			return new java.lang.Character((char)n);
+//	}
+//	public static Short newShort(int n) {
+//		int i = n+128;
+//		if( i >= 0 && i <= 256 )
+//			return shortArray[i];
+//		else
+//			return new Short((short)n);
+//	}
+//	public static Integer newInteger(int n) {
+//		if( n >= -256 && n <= 256 )
+//			return intArray[n+256];
+//		else
+//			return new Integer(n);
+//	}
+//	public static Long newLong(long n) {
+//		long i = n+64;
+//		if( i >= 0 && i <= 128 )
+//			return longArray[(int)i];
+//		else
+//			return new Long(n);
+//	}
+//	public static Float newFloat(float n) {
+//		if( n == -1.f ) return floatArray[0];
+//		if( n == 0.f ) return floatArray[1];
+//		if( n == 1.f ) return floatArray[2];
+//		if( n == 2.f ) return floatArray[3];
+//		return new Float(n);
+//	}
+//	public static Double newDouble(double n) {
+//		if( n == -1.d ) return doubleArray[0];
+//		if( n == 0.d ) return doubleArray[1];
+//		if( n == 1.d ) return doubleArray[2];
+//		if( n == 2.d ) return doubleArray[3];
+//		return new Double(n);
+//	}
 
 	// Scanning & parsing
 	public static kiev040				k;

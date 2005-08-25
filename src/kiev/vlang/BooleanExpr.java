@@ -74,8 +74,9 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 			return;
 		}
 		if( e.getType() == Type.tpRule ) {
-			e.replaceWithNodeResolve(Type.tpBoolean,
-				new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr()));
+			e.replaceWithResolve(Type.tpBoolean, fun ()->ENode {
+				return new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr());
+			});
 			return;
 		}
 		else if( e.getType().args.length == 0
@@ -466,7 +467,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 
 	public void getExprByStruct(Struct cas) {
-		Expr ex = null;
 		if( cas.isPizzaCase() ) {
 			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
 				throw new CompilerException(pos,"Undefined operation "+op.image+" on cased class");
@@ -482,7 +482,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
-			expr1 = new CallAccessExpr(ex.pos,expr1,m,Expr.emptyArray);
+			expr1 = new CallAccessExpr(expr1.pos,expr1,m,Expr.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
