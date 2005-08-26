@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 @node
 public class CaseLabel extends ENode implements ScopeOfNames {
 
-	static CaseLabel[] emptyArray = new CaseLabel[0];
+	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
 	@att public ENode				val;
 	@ref public Type				type;

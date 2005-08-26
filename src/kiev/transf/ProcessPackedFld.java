@@ -50,6 +50,118 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		super(ext);
 	}
 	
+	public boolean autoGenerateMembers() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no;
+		try {
+			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try {
+					this.autoGenerateMembers(Kiev.file_unit[i]);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					this.autoGenerateMembers(Kiev.file_unit[i]);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	
+	public void autoGenerateMembers(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = fu.filename;
+		PassInfo.push(fu);
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(fu.disabled_extensions);
+			foreach (DNode dn; fu.members; dn instanceof Struct) {
+				this.autoGenerateMembers(dn);
+			}
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(fu); Kiev.curFile = oldfn; }
+	}
+	
+	public void autoGenerateMembers(Struct:ASTNode s) {
+		// Setup packed/packer fields
+		foreach(ASTNode n; s.members; n instanceof Field && n.isPackedField() ) {
+			Field f = (Field)n;
+			Field@ packer;
+			// Locate or create nearest packer field that can hold this one
+			MetaPacked mp = f.getMetaPacked();
+			if( mp.packer == null ) {
+				KString mp_in = mp.fld;
+				if( mp_in != null && mp_in.len > 0 ) {
+					Field p = s.resolveField(mp_in);
+					if( p == null ) {
+						Kiev.reportError(f.pos,"Packer field "+mp_in+" not found");
+						f.meta.unset(mp);
+						f.setPackedField(false);
+						continue;
+					}
+					if( p.type != Type.tpInt ) {
+						Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
+						f.meta.unset(mp);
+						f.setPackedField(false);
+						continue;
+					}
+					mp.packer = p;
+					assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
+				}
+				else if( locatePackerField(packer,mp.size,s) ) {
+					// Found
+					mp.packer = packer;
+					mp.fld = packer.name.name;
+					MetaPacker mpr = packer.getMetaPacker();
+					mp.offset = mpr.size;
+					mpr.size += mp.size;
+				} else {
+					// Create
+					Field p = new Field(KString.from("$pack$"+countPackerFields(s)),Type.tpInt,ACC_PUBLIC);
+					p.pos = s.pos;
+					MetaPacker mpr = new MetaPacker();
+					p.meta.set(mpr);
+					p.setPackerField(true);
+					s.addField(p);
+					mp.packer = p;
+					mp.fld = p.name.name;
+					mp.offset = 0;
+					mpr.size += mp.size;
+				}
+			}
+		}
+	}
+
+	private int countPackerFields(Struct s) {
+		int i = 0;
+		foreach (ASTNode n; s.members; n instanceof Field && n.isPackerField()) i++;
+		return i;
+	}
+
+	private rule locatePackerField(Field@ f, int size, Struct s)
+		ASTNode@ n;
+		Field ff;
+	{
+		s.super_type != null && s.super_type.clazz instanceof Struct,
+		locatePackerField(f,size,(Struct)s.super_type.clazz)
+	;	n @= s.members,
+		n instanceof Field && n.isPackerField(),
+		ff = (Field)n : ff = null,
+		(32-ff.getMetaPacked().size) >= size,
+		f ?= ff
+	}
+
 	private void rewriteNode(ASTNode node, String id) {
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			Object val = node.getVal(attr.name);

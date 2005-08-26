@@ -28,28 +28,12 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Method.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.2 $
  *
  */
 
-//@node
-//public class MethodRef extends ASTNode {
-//	@att public ASTIdentifier	ident;
-//	@ref public Method			meth;
-//	
-//	public MethodRef() {}
-//	public MethodRef(ASTIdentifier ident, Method meth) {
-//		if (ident != null)
-//			this.pos = ident.pos;
-//		this.ident = ident;
-//		this.meth = meth;
-//	}
-//}
-
 @node
-public class Method extends ASTNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl,PreScanneable {
+public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
