@@ -47,30 +47,12 @@ public final class ProcessCFlow extends TransfProcessor implements Constants {
 	//      Verify the CFNode graph structure  //
     /////////////////////////////////////////////
 
-	public boolean verify() {
+	public void verify(ASTNode:ASTNode node) {
+	}
+	
+	public void verify(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
-		if (tpNArr == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNArr);
-			return false;
-		}
-		boolean failed = false;
-		for (int i=0; i < Kiev.files.length; i++) {
-			FileUnit fu = Kiev.files[i]; 
-			if( fu == null ) continue;
-			try {
-				verify(fu);
-			} catch (Exception e) {
-				Kiev.reportError(0,e); failed = true;
-			}
-		}
-		return failed;
-	}
-	
-	private void verify(ASTNode:ASTNode node) {
-	}
-	
-	private void verify(FileUnit:ASTNode fu) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = fu.filename;
 		PassInfo.push(fu);
@@ -81,7 +63,7 @@ public final class ProcessCFlow extends TransfProcessor implements Constants {
 		} finally { PassInfo.pop(fu); Kiev.curFile = oldfn; }
 	}
 	
-	private void verify(Struct:ASTNode s) {
+	public void verify(Struct:ASTNode s) {
 		Meta m = s.meta.get(mnCFNode);
 		if (m != null) {
 			// Check fields of the @cfnode
@@ -95,7 +77,7 @@ public final class ProcessCFlow extends TransfProcessor implements Constants {
 		}
 	}
 	
-	private void verify(Field:ASTNode f) {
+	public void verify(Field:ASTNode f) {
 		Meta fmlnk = f.meta.get(mnCFLink);
 		Type ft = f.type;
 		boolean isArr = false;

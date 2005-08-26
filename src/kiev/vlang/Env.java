@@ -542,6 +542,7 @@ public class Env extends Struct {
 			kiev040.interface_only = true;
 			k.ReInit(fin);
 			FileUnit fu = k.FileUnit(Kiev.curFile.toString());
+			fu.scanned_for_interface_only = true;
 			try {
 				fin.close();
 			} catch (IOException ioe) {
@@ -551,14 +552,8 @@ public class Env extends Struct {
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
 			System.gc();
 			try {
-				Kiev.files_scanned.append(fu);
+				Kiev.files.append(fu);
 				Kiev.runProcessorsOn(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
-					if (Kiev.safe)
-						Kiev.files.append(fu);
-					else
-						fu.cleanup();
-				}
 				fu = null;
 			} catch(Exception e ) {
 				Kiev.reportError(0,e);

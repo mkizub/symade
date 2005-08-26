@@ -69,12 +69,13 @@ public enum TopLevelPass {
 	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
 	passArgumentInheritance	   ,	// inheritance of type arguments
 	passStructInheritance	   ,	// inheritance of classe/interfaces/structures
+	passResolveMetaDecls	   ,	// resolved meta types declarations
+	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
+	passResolveMetaValues	   ,	// resolve values in meta-data
 	passCreateMembers		   ,	// create declared members of structures
 	passAutoProxyMethods	   ,	// autoProxyMethods()
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
-	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
-	passResolveMetaValues	   ,	// resolve values in meta-data
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 

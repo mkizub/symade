@@ -50,32 +50,6 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		super(ext);
 	}
 	
-	public boolean autoGenerateMembers() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no;
-		try {
-			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try {
-					this.autoGenerateMembers(Kiev.file_unit[i]);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					this.autoGenerateMembers(Kiev.file_unit[i]);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
-	
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 		return;
 	}

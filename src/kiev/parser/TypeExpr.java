@@ -71,7 +71,7 @@ public class TypeExpr extends TypeRef {
 		} else {
 			if (!PassInfo.resolveNameR(v,new ResInfo(),op)) {
 				if (op == opPVar) {
-					Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpPrologVar);
+					//Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpPrologVar);
 					v = new TypeRef(WrapperType.tpWrappedPrologVar);
 				}
 				else if (op == opRef) {

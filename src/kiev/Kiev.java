@@ -431,9 +431,6 @@ public final class Kiev {
 	public static kiev040				k;
 	public static FileUnit				curFileUnit;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
-	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
-	public static Vector<FileUnit>		file_unit = new Vector<FileUnit>();
-	public static Vector<FileUnit>		files_scanned = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
@@ -635,6 +632,30 @@ public final class Kiev {
 		}
 	}
 	
+	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
+		foreach (FileUnit fu; Kiev.files) {
+			KString curr_file = Kiev.curFile;
+			Kiev.curFile = fu.filename;
+			boolean[] exts = Kiev.getExtSet();
+			try {
+				Kiev.setExtSet(fu.disabled_extensions);
+				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+					try {
+						if (tp.isEnabled() )
+							step(tp,fu);
+					}
+					catch (Exception e) {
+						Kiev.reportError(0,e);
+					}
+				}
+			}
+			finally {
+				Kiev.curFile = curr_file; Kiev.setExtSet(exts);
+			}
+		}
+		return (Kiev.errCount > 0); // true if failed
+	}
+	
 	public static void runProcessorsOn(ASTNode node) {
 		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
@@ -664,16 +685,6 @@ public final class Kiev {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.preResolve(node);
 		}
-	}
-
-	public static boolean runVerify() {
-		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-			if (tp.isEnabled()) {
-				if (tp.verify())
-					return true; // failed
-			}
-		}
-		return false;
 	}
 
 }

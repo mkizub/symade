@@ -60,30 +60,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	//      Verify the VNode tree structure    //
     /////////////////////////////////////////////
 
-	public boolean verify() {
+	public void verify(ASTNode:ASTNode node) {
+	}
+	
+	public void verify(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
-		if (tpNArr == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNArr);
-			return false;
-		}
-		boolean failed = false;
-		for (int i=0; i < Kiev.files.length; i++) {
-			FileUnit fu = Kiev.files[i]; 
-			if( fu == null ) continue;
-			try {
-				verify(fu);
-			} catch (Exception e) {
-				Kiev.reportError(0,e); failed = true;
-			}
-		}
-		return failed;
-	}
-	
-	private void verify(ASTNode:ASTNode node) {
-	}
-	
-	private void verify(FileUnit:ASTNode fu) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = fu.filename;
 		PassInfo.push(fu);
@@ -94,7 +76,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		} finally { PassInfo.pop(fu); Kiev.curFile = oldfn; }
 	}
 	
-	private void verify(Struct:ASTNode s) {
+	public void verify(Struct:ASTNode s) {
 		Meta m = s.meta.get(mnNode);
 		if (m != null) {
 			// Check fields of the @node
@@ -108,7 +90,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		}
 	}
 	
-	private void verify(Field:ASTNode f) {
+	public void verify(Field:ASTNode f) {
 		Meta fmatt = f.meta.get(mnAtt);
 		Meta fmref = f.meta.get(mnRef);
 		//if (fmatt != null || fmref != null) {
@@ -178,32 +160,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		return false;
 	}
 
-	
-	public boolean autoGenerateMembers() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no;
-		try {
-			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try {
-					this.autoGenerateMembers(Kiev.file_unit[i]);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					this.autoGenerateMembers(Kiev.file_unit[i]);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 		return;

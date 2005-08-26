@@ -44,25 +44,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	//												   //
 	/////////////////////////////////////////////////////
 	
-	public boolean pass1() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no; 
-		Kiev.pass_no = TopLevelPass.passCreateTopStruct;
-		try
-		{
-			for (int i=0; i < Kiev.file_unit.length; i++) {
-				FileUnit fu = Kiev.file_unit[i]; 
-				if( fu == null ) continue;
-				try {
-					pass1(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	public void pass1(ASTNode:ASTNode node) {
 		return;
 	}
@@ -196,32 +177,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	/////////////////////////////////////////////////////
 
 
-	public boolean pass1_1() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no; 
-		Kiev.pass_no = TopLevelPass.passProcessSyntax;
-		try
-		{
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				FileUnit fu = Kiev.file_unit[i]; 
-				if( fu == null ) continue;
-				try { pass1_1(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				FileUnit fu = Kiev.files_scanned[i]; 
-				if( fu == null ) continue;
-				try { pass1_1(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	public void pass1_1(ASTNode:ASTNode node) {
 		return;
 	}
@@ -426,32 +381,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	/////////////////////////////////////////////////////
 
 
-	public boolean pass2() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no; 
-		Kiev.pass_no = TopLevelPass.passArgumentInheritance;
-		try
-		{
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				FileUnit fu = Kiev.file_unit[i]; 
-				if( fu == null ) continue;
-				try { pass2(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				FileUnit fu = Kiev.files_scanned[i]; 
-				if( fu == null ) continue;
-				try { pass2(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	public void pass2(ASTNode:ASTNode astn) {
 		return;
 	}
@@ -513,32 +442,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	/////////////////////////////////////////////////////
 
 
-	public boolean pass2_2() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no; 
-		Kiev.pass_no = TopLevelPass.passStructInheritance;
-		try
-		{
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				FileUnit fu = Kiev.file_unit[i]; 
-				if( fu == null ) continue;
-				try { pass2_2(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				FileUnit fu = Kiev.files_scanned[i]; 
-				if( fu == null ) continue;
-				try { pass2_2(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	public void pass2_2(ASTNode:ASTNode astn) {
 	}
 
@@ -595,8 +498,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 			}
 			else if( me.isSyntax() ) {
 				me.super_type = null;
-				if (!Kiev.packages_scanned.contains(me))
-					Kiev.packages_scanned.append(me);
 			}
 			else if( me.isPizzaCase() ) {
 				// already set
@@ -635,32 +536,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 
-	public boolean pass3() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no; 
-		Kiev.pass_no = TopLevelPass.passStructInheritance;
-		try
-		{
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				FileUnit fu = Kiev.file_unit[i]; 
-				if( fu == null ) continue;
-				try { pass3(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				FileUnit fu = Kiev.files_scanned[i]; 
-				if( fu == null ) continue;
-				try { pass3(fu);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-	}
-	
 	public void pass3(ASTNode:ASTNode astn) {
 	}
 
@@ -684,8 +559,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		int next_enum_val = 0;
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
 		if (me.isSyntax()) {
-			if (!Kiev.packages_scanned.contains(me))
-				Kiev.packages_scanned.append(me);
 			return;
 		}
 		PassInfo.push(me);
@@ -877,8 +750,86 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 
 
 
+	////////////////////////////////////////////////////
+	//	   PASS Meta 1 - resolve meta decls           //
+	////////////////////////////////////////////////////
 
+	public void resolveMetaDecl(ASTNode:ASTNode node) {
+	}
+	public void resolveMetaDecl(FileUnit:ASTNode fu) {
+		PassInfo.push(fu);
+		try {
+			foreach(ASTNode n; fu.members; n instanceof Struct)
+				resolveMetaDecl(n);
+		} finally { PassInfo.pop(fu); }
+	}
+	public void resolveMetaDecl(Struct:ASTNode clazz) {
+		PassInfo.push(clazz);
+		try {
+			if (clazz.isAnnotation()) {
+				foreach(ASTNode n; clazz.members) {
+					if( n instanceof Method ) {
+						Method m = (Method)n;
+						if (m.params.length > 0)
+							Kiev.reportError(m.pos, "Annotation methods may not have arguments");
+						if (m.body != null || m.pbody != null)
+							Kiev.reportError(m.pos, "Annotation methods may not have bodies");
+						if (m.throwns != null)
+							Kiev.reportError(m.pos, "Annotation methods may not throw exceptions");
+						if (m.conditions.length > 0)
+							Kiev.reportError(m.pos, "Annotation methods may not have work-by-contruct conditions");
+						m.setPublic(true);
+						m.setAbstract(true);
+						m.pass3();
+						if (m.type.ret == Type.tpVoid || m.type.ret == Type.tpRule)
+							Kiev.reportError(m.pos, "Annotation methods must return a value");
+					}
+					else if( n instanceof Field )
+						;
+					else if( n instanceof Struct )
+						;
+					else
+						Kiev.reportError(n.pos, "Annotations may only have methods and final fields");
+				}
+			}
+			foreach (Struct sub; clazz.sub_clazz)
+				resolveMetaDecl(sub);
+		} finally { PassInfo.pop(clazz); }
+	}
 
+	////////////////////////////////////////////////////
+	//	   PASS Meta 2 - resolve meta defaults        //
+	////////////////////////////////////////////////////
+
+	public void resolveMetaDefaults(ASTNode:ASTNode node) {
+	}
+	public void resolveMetaDefaults(FileUnit:ASTNode fu) {
+		PassInfo.push(fu);
+		try {
+			foreach(ASTNode n; fu.members; n instanceof Struct)
+				resolveMetaDefaults(n);
+		} finally { PassInfo.pop(fu); }
+	}
+	public void resolveMetaDefaults(Struct:ASTNode clazz) {
+		clazz.resolveMetaDefaults();
+	}
+
+	////////////////////////////////////////////////////
+	//	   PASS Meta 3 - resolve meta annotations     //
+	////////////////////////////////////////////////////
+
+	public void resolveMetaValues(ASTNode:ASTNode node) {
+	}
+	public void resolveMetaValues(FileUnit:ASTNode fu) {
+		PassInfo.push(fu);
+		try {
+			foreach(ASTNode n; fu.members; n instanceof Struct)
+				resolveMetaValues(n);
+		} finally { PassInfo.pop(fu); }
+	}
+	public void resolveMetaValues(Struct:ASTNode clazz) {
+		clazz.resolveMetaValues();
+	}
 
 	////////////////////////////////////////////////////
 	//												   //
@@ -886,78 +837,12 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	//												   //
 	////////////////////////////////////////////////////
 
-	public boolean autoGenerateMembers() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no;
-		try {
-			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].resolveMetaDefaults();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					Kiev.files_scanned[i].resolveMetaDefaults();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-			if( Kiev.errCount > 0 ) goto stop;
-			Kiev.pass_no = TopLevelPass.passResolveMetaValues;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].resolveMetaValues();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					Kiev.files_scanned[i].resolveMetaValues();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-			if( Kiev.errCount > 0 ) goto stop;
-
-			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].autoProxyMethods();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { Kiev.files_scanned[i].autoProxyMethods();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-stop:;
-		failed = true;
-		return failed;
-	}
-	
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
-		return;
 	}
 	public void autoGenerateMembers(FileUnit:ASTNode node) {
-		node.resolveMetaDefaults();
-		node.resolveMetaValues();
 		node.autoProxyMethods();
 	}
 	public void autoGenerateMembers(Struct:ASTNode node) {
-		node.resolveMetaDefaults();
-		node.resolveMetaValues();
 		node.autoProxyMethods();
 	}
 
@@ -973,63 +858,6 @@ stop:;
 	//												   //
 	////////////////////////////////////////////////////
 
-	public boolean preResolve() {
-		boolean failed = false;
-		TopLevelPass old_pass = Kiev.pass_no;
-		try {
-			Kiev.pass_no = TopLevelPass.passResolveImports;
-			for(int i=0; i < Kiev.packages_scanned.length; i++) {
-				PassInfo.push(Env.root);
-				try{ Kiev.packages_scanned[i].resolveImports();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); failed = true;
-				} finally {
-					PassInfo.pop(Env.root);
-				}
-			}
-			Kiev.packages_scanned.cleanup();
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try { Kiev.file_unit[i].resolveImports();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try { Kiev.files_scanned[i].resolveImports();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); failed = true;
-				}
-			}
-
-
-			Kiev.pass_no = TopLevelPass.passResolveFinalFields;
-			for(int i=0; i < Kiev.file_unit.length; i++) {
-				if( Kiev.file_unit[i] == null ) continue;
-				try {
-					Kiev.file_unit[i].resolveFinalFields(false);
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
-				}
-			}
-			for(int i=0; i < Kiev.files_scanned.length; i++) {
-				if( Kiev.files_scanned[i] == null ) continue;
-				try {
-					Kiev.files_scanned[i].resolveFinalFields(!Kiev.safe);
-					if (!Kiev.safe)
-						Kiev.files_scanned[i].cleanup();
-				} catch (Exception e) {
-					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
-				}
-			}
-		} finally { Kiev.pass_no = old_pass; }
-		return failed;
-stop:;
-		failed = true;
-		return failed;
-	}
-	
 	public void preResolve(ASTNode:ASTNode node) {
 		return;
 	}

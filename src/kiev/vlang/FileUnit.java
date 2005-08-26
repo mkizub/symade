@@ -45,6 +45,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 	
 	public PrescannedBody[]				bodies = PrescannedBody.emptyArray;
 	public boolean[]					disabled_extensions;
+	public boolean						scanned_for_interface_only;
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);

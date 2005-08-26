@@ -45,31 +45,44 @@ public class TransfProcessor {
 		return Kiev.disabled(extension);
 	}
 	
-	public boolean		pass1()								{ return false; }
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////    Import        //////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	// create base types
 	public void			pass1(ASTNode node)					{ return; }
-	public boolean		pass1_1()							{ return false; }
+	// resolve syntax
 	public void			pass1_1(ASTNode node)				{ return; }
-	public boolean		pass2()								{ return false; }
+	// resolve and create parameters of types
 	public void			pass2(ASTNode node)					{ return; }
-	public boolean		pass2_2()							{ return false; }
+	// create real types
 	public void			pass2_2(ASTNode node)				{ return; }
-	public boolean		pass3()								{ return false; }
+	// process meta declarations
+	public void			resolveMetaDecl(ASTNode node)		{ return; }
+	// process meta default values
+	public void			resolveMetaDefaults(ASTNode node)	{ return; }
+	// process meta values of classes and members
+	public void			resolveMetaValues(ASTNode node)		{ return; }
+	// process declared class members
 	public void			pass3(ASTNode node)					{ return; }
-//	public boolean		autoProxyMethods()					{ return false; }
-//	public void			autoProxyMethods(ASTNode node)		{ return; }
-	public boolean		autoGenerateMembers()				{ return false; }
+	
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////    VNode language     /////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	// auto-create class members
 	public void			autoGenerateMembers(ASTNode node)	{ return; }
-//	public boolean		resolveImports()					{ return false; }
-//	public void			resolveImports(ASTNode node)		{ return; }
-//	public boolean		resolveFinalFields(boolean cleanup)				{ return false; }
-//	public void			resolveFinalFields(ASTNode node, boolean cleanup)	{ return; }
-	public boolean		preResolve()						{ return false; }
+	// resolve vnodes
 	public void			preResolve(ASTNode node)			{ return; }
-	public boolean		verify()							{ return false; }
+	// verify resolved tree
 	public void			verify(ASTNode node)				{ return; }
-	public boolean		resolve()							{ return false; }
+	
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////    Back-end    ////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	// create back-end nodes
+	public void			preGenerate(ASTNode node)			{ return; }
+	// resolve back-end
 	public void			resolve(ASTNode node)				{ return; }
-	public boolean		generate()							{ return false; }
+	// generate back-end
 	public void			generate(ASTNode node)				{ return; }
 }
 

@@ -448,7 +448,6 @@ public class Compiler {
 	public static void run(String[] args) {
 		Kiev.programm_start = Kiev.programm_end = System.currentTimeMillis();
 		long curr_time = 0L, diff_time = 0L;
-		boolean delayed_stop = false;
 		Kiev.interface_only = false;
 		Kiev.makeall_project = false;
 
@@ -492,8 +491,7 @@ public class Compiler {
 
 
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
-			Kiev.file_unit.cleanup();
-			Kiev.file_unit.length = args.length;
+			Kiev.files.cleanup();
 			
 			ExportJavaTop exporter = (ExportJavaTop)Kiev.getProcessor(Kiev.Ext.JavaOnly);
 
@@ -528,7 +526,8 @@ public class Compiler {
 						Kiev.k = new kiev040(bis);
 					else
 						Kiev.k.ReInit(bis);
-					Kiev.file_unit[i] = Kiev.k.FileUnit(args[i]);
+					FileUnit fu = Kiev.k.FileUnit(args[i]);
+					Kiev.files.append(fu);
 					diff_time = System.currentTimeMillis() - curr_time;
 					runGC();
 					bis.close();
@@ -541,92 +540,106 @@ public class Compiler {
 					Kiev.reportParserError(0,e);
 				}
 			}
-			delayed_stop = exporter.pass1();
-			if( Kiev.errCount > 0 ) {
-				goto stop;
-			}
+
+
+			////////////////////////////////////////////////////
+			//		   PASS 1,2 - create top structures	   //
+			////////////////////////////////////////////////////
+
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass1(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
 			if( Kiev.project_file != null ) {
 				diff_time = curr_time = System.currentTimeMillis();
 				Env.dumpProjectFile();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose ) Kiev.reportInfo("Dumped project file \'"+Kiev.project_file+'\'',diff_time);
 			}
-			if( Kiev.interface_only ) {
-				goto stop;
-			}
+			if( Kiev.interface_only ) goto stop;
 			diff_time = curr_time = System.currentTimeMillis();
 			runGC();
 
 
 			Kiev.pass_no = TopLevelPass.passProcessSyntax;
-			delayed_stop |= exporter.pass1_1();
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass1_1(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
 			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
-			delayed_stop |= exporter.pass2();
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass2(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
 			Kiev.pass_no = TopLevelPass.passStructInheritance;
-			delayed_stop |= exporter.pass2_2();
-			
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass2_2(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
-			if( Kiev.errCount > 0 || delayed_stop ) {
-				goto stop;
-			}
 			runGC();
 
+			////////////////////////////////////////////////////
+			//		   PASS Meta - resolve meta-info		   //
+			////////////////////////////////////////////////////
+
+			diff_time = curr_time = System.currentTimeMillis();
+			Kiev.pass_no = TopLevelPass.passResolveMetaDecls;
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.resolveMetaDecl(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
+			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.resolveMetaDefaults(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
+			Kiev.pass_no = TopLevelPass.passResolveMetaValues;
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.resolveMetaValues(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
+
+			diff_time = System.currentTimeMillis() - curr_time;
+			if( Kiev.verbose ) Kiev.reportInfo("Meta information resolved",diff_time);
+			runGC();
+
+
+			////////////////////////////////////////////////////
+			//		   PASS 3 - class' members					//
+			////////////////////////////////////////////////////
 
 			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
-			delayed_stop |= exporter.pass3();
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass3(fu); });
 			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
-			if( Kiev.errCount > 0 || delayed_stop ) {
-				goto stop;
-			}
+			if( Kiev.errCount > 0) goto stop;
 			runGC();
 
-			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;
+			///////////////////////////////////////////////////////////////////////
+			///////////////////////    VNode language     /////////////////////////
+			///////////////////////////////////////////////////////////////////////
+			
+			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-				if (tp.isEnabled())
-					delayed_stop |= tp.autoGenerateMembers();
-			}
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.autoGenerateMembers(fu); });
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members created",diff_time);
-			if( Kiev.errCount > 0 || delayed_stop ) {
-				goto stop;
-			}
+			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
 
 
 			Kiev.pass_no = TopLevelPass.passResolveImports;
 			diff_time = curr_time = System.currentTimeMillis();
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-				if (tp.isEnabled())
-					delayed_stop |= tp.preResolve();
-			}
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preResolve(fu); });
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-resolved",diff_time);
-			if( Kiev.errCount > 0 || delayed_stop ) {
-				goto stop;
-			}
+			if( Kiev.errCount > 0 ) goto stop;
 			Kiev.pass_no = TopLevelPass.passResolveFinalFields;
 
-			foreach(FileUnit fu; Kiev.file_unit; fu != null)
-				Kiev.files.append(fu);
-			if (Kiev.safe)
-				foreach(FileUnit fu; Kiev.files_scanned; fu != null)
-					Kiev.files.append(fu);
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.verify(fu); });
+			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
-
-			delayed_stop |= Kiev.runVerify();
-			if( Kiev.errCount > 0 || delayed_stop ) {
-				goto stop;
-			}
 			
 			Kiev.pass_no = TopLevelPass.passGenerate;
-			Kiev.file_unit.cleanup();
-			Kiev.files_scanned.cleanup();
-			runGC();
 			diff_time = System.currentTimeMillis() - curr_time;
 			runGC();
 			if( Kiev.verbose ) Kiev.reportInfo("Class's pure interface declarations passed",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
+	
+			///////////////////////////////////////////////////////////////////////
+			///////////////////////    Back-end    ////////////////////////////////
+			///////////////////////////////////////////////////////////////////////
 			for(int i=0; i < Kiev.files.length; i++) {
 				try {
 					runGC();
@@ -636,7 +649,6 @@ public class Compiler {
 					Kiev.curFile = KString.Empty;
 				} catch (Exception ioe) {
 					Kiev.reportParserError(0,ioe);
-					delayed_stop = true;
 				}
 				if( Kiev.verbose )
 					Kiev.reportInfo("Parsed file    "+args[i],diff_time);

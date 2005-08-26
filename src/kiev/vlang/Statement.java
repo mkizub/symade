@@ -296,7 +296,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 					self.setAbrupted(false);
 				}
 				if( self.isAbrupted() ) {
-					Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
+					//Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
 				}
 				if( stats[i] instanceof Statement ) {
 					Statement st = (Statement)stats[i];

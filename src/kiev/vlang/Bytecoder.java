@@ -593,8 +593,6 @@ public class Bytecoder implements Constants {
 						imp.args.append(new TypeRef(t));
 				}
 				cl.imported.add(imp);
-				if( this.cl.isPackage() && !Kiev.packages_scanned.contains(this.cl))
-					Kiev.packages_scanned.append(this.cl);
 			} else {
 				ASTNode node;
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
