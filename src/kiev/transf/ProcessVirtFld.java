@@ -32,8 +32,12 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public final class ProcessVirtFld implements Constants {
+public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
+	public ProcessVirtFld(Kiev.Ext ext) {
+		super(ext);
+	}
+
 	public void createMembers(Struct s) {
 		foreach(ASTNode n; s.members; n instanceof Field)
 			addMethodsForVirtualField(s, (Field)n);

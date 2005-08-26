@@ -97,7 +97,6 @@ public class ASTNewExpression extends Expr {
 		}
 		// Local anonymouse class
 		Type sup  = tp;
-		Struct me = clazz;
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -119,7 +118,7 @@ public class ASTNewExpression extends Expr {
 //			Method m = (Method)md.pass3();
 //			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
 		} else {
-			me.type = Type.newRefType(me,Type.emptyArray);
+			clazz.type = Type.newRefType(clazz,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
 			if( args.length > 0 ) {
 				MethodType mt;
@@ -137,26 +136,19 @@ public class ASTNewExpression extends Expr {
 				init.pos = pos;
 				init.body = new BlockStat(pos,init);
 				init.setPublic(true);
-				me.addMethod(init);
+				clazz.addMethod(init);
 			}
 		}
 
         // Process inner classes and cases
-		ExportJavaTop exporter = new ExportJavaTop();
-		exporter.pass1(me);
-		exporter.pass1_1(me);
-		exporter.pass2(me);
-		exporter.pass2_2(me);
-		exporter.pass3(me);
-		me.autoProxyMethods();
-		me.resolveFinalFields(false);
+		Kiev.runProcessorsOn(clazz);
 		Expr ne;
 		if( sup.isInstanceOf(Type.tpClosure) ) {
-			ne = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
-			ne.clazz = me;
+			ne = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
+			ne.clazz = clazz;
 		} else {
-			ne = new NewExpr(pos,me.type,args.toArray());
-			ne.clazz = me;
+			ne = new NewExpr(pos,clazz.type,args.toArray());
+			ne.clazz = clazz;
 		}
 		ne.parent = parent;
 		replaceWithNodeResolve(reqType, ne);

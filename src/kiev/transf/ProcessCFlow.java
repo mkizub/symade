@@ -32,19 +32,28 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public final class ProcessCFlow implements Constants {
+public final class ProcessCFlow extends TransfProcessor implements Constants {
 
-	public static final KString mnCFNode = KString.from("kiev.vlang.cfnode"); 
-	public static final KString mnCFLink = KString.from("kiev.vlang.cflink"); 
-	public static final KString nameNArr  = KString.from("kiev.vlang.NArr");
+	public static final KString mnCFNode	= KString.from("kiev.vlang.cfnode"); 
+	public static final KString mnCFLink	= KString.from("kiev.vlang.cflink"); 
+	public static final KString nameNArr	= KString.from("kiev.vlang.NArr");
 	
-	private Type tpNArr = Env.getStruct(nameNArr).type;
+	private static Type tpNArr;
 	
+	public ProcessCFlow(Kiev.Ext ext) {
+		super(ext);
+	}
 	/////////////////////////////////////////////
 	//      Verify the CFNode graph structure  //
     /////////////////////////////////////////////
 
 	public boolean verify() {
+		if (tpNArr == null)
+			tpNArr = Env.getStruct(nameNArr).type;
+		if (tpNArr == null) {
+			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			return false;
+		}
 		boolean failed = false;
 		for (int i=0; i < Kiev.files.length; i++) {
 			FileUnit fu = Kiev.files[i]; 

@@ -1296,9 +1296,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			addMethod(fromstr);
 			}
 		}
-		
-		new ProcessVirtFld().autoGenerateMembers(this);
-		new ProcessVNode().autoGenerateMembers(this);
+//		
+//		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+//			if (tp.isEnabled())
+//				tp.autoGenerateMembers(this);
+//		}
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
@@ -1888,10 +1890,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	}
 
-	public ASTNode autoProxyMethods() {
+	public void autoProxyMethods() {
 		checkResolved();
-		if( isMembersGenerated() ) return this;
-		if( isPackage() ) return this;
+		if( isMembersGenerated() ) return;
+		if( isPackage() ) return;
 		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
 			super_type.clazz.autoProxyMethods();
 		}
@@ -1928,11 +1930,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 //		}
 
 		setMembersGenerated(true);
+		
 		foreach(Struct s; sub_clazz; )
 			s.autoProxyMethods();
 
 		combineMethods();
-		return this;
 	}
 
 	// Check that Struct me implements all methods and

@@ -41,16 +41,16 @@ public class ASTModifier extends ASTNode implements kiev040Constants {
 	public int 			kind;
 	public String		image;
 
-	@ref public static final ASTModifier modPUBLIC		= new ASTModifier(PUBLIC,"public");
+	@ref public static final ASTModifier modPUBLIC			= new ASTModifier(PUBLIC,"public");
 	@ref public static final ASTModifier modPRIVATE		= new ASTModifier(PRIVATE,"private");
-	@ref public static final ASTModifier modPROTECTED	= new ASTModifier(PROTECTED,"protected");
-	@ref public static final ASTModifier modFINAL		= new ASTModifier(FINAL,"final");
-	@ref public static final ASTModifier modSTATIC		= new ASTModifier(STATIC,"static");
+	@ref public static final ASTModifier modPROTECTED		= new ASTModifier(PROTECTED,"protected");
+	@ref public static final ASTModifier modFINAL			= new ASTModifier(FINAL,"final");
+	@ref public static final ASTModifier modSTATIC			= new ASTModifier(STATIC,"static");
 	@ref public static final ASTModifier modABSTRACT		= new ASTModifier(ABSTRACT,"abstract");
-	@ref public static final ASTModifier modNATIVE		= new ASTModifier(NATIVE,"native");
+	@ref public static final ASTModifier modNATIVE			= new ASTModifier(NATIVE,"native");
 	@ref public static final ASTModifier modSYNCHRONIZED	= new ASTModifier(SYNCHRONIZED,"synchronized");
 	@ref public static final ASTModifier modVOLATILE		= new ASTModifier(VOLATILE,"volatile");
-	@ref public static final ASTModifier modTRANSIENT	= new ASTModifier(TRANSIENT,"transient");
+	@ref public static final ASTModifier modTRANSIENT		= new ASTModifier(TRANSIENT,"transient");
 	@ref public static final ASTModifier modWRAPPER		= new ASTModifier(WRAPPER,"$wrapper");
 
 	ASTModifier() {

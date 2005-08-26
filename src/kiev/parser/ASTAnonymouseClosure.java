@@ -127,14 +127,10 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		}
 		setResolved(true);
 
-		ExportJavaTop exporter = new ExportJavaTop();
-		//exporter.pass1(me);
-		//exporter.pass1_1(me);
-		//exporter.pass2(me);
-		//exporter.pass2_2(me);
-		exporter.pass3(me);
-		//me.autoProxyMethods();
-		//me.resolveFinalFields(false);
+		{
+			ExportJavaTop tp = (ExportJavaTop)Kiev.getProcessor(Kiev.Ext.JavaOnly);
+			tp.pass3(me);
+		}
 		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
 		replaceWithNodeResolve(reqType, new_closure);
 	}

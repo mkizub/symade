@@ -33,8 +33,11 @@ import syntax kiev.Syntax;
  *
  */
 
-public final class ExportJavaTop implements Constants {
+public final class ExportJavaTop extends TransfProcessor implements Constants {
 	
+	public ExportJavaTop(Kiev.Ext ext) {
+		super(ext);
+	}
 	/////////////////////////////////////////////////////
 	//												   //
 	//		   PASS 1 - create top structures		   //
@@ -60,11 +63,11 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass1(ASTNode:ASTNode node) {
-		return node;
+	public void pass1(ASTNode:ASTNode node) {
+		return;
 	}
 	
-	public ASTNode pass1(FileUnit:ASTNode astn) {
+	public void pass1(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -82,7 +85,6 @@ public final class ExportJavaTop implements Constants {
 					} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
 				}
 			} finally { PassInfo.pop(fu.pkg.clazz); PassInfo.pop(fu); }
-			return astn;
 		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
 	}
 
@@ -135,7 +137,7 @@ public final class ExportJavaTop implements Constants {
 
 	}
 
-	public ASTNode pass1(Struct:ASTNode astn) {
+	public void pass1(Struct:ASTNode astn) {
 		trace(Kiev.debugResolve,"Pass 1 for struct "+astn);
 
 		Struct piclz = PassInfo.clazz;
@@ -181,8 +183,6 @@ public final class ExportJavaTop implements Constants {
 				}
 			} finally { PassInfo.pop(me); }
 		}
-
-		return me;
 	}
 
 
@@ -222,11 +222,11 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass1_1(ASTNode:ASTNode node) {
-		return node;
+	public void pass1_1(ASTNode:ASTNode node) {
+		return;
 	}
 
-	public ASTNode pass1_1(FileUnit:ASTNode astn) {
+	public void pass1_1(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		PassInfo.push(astn);
@@ -246,16 +246,16 @@ public final class ExportJavaTop implements Constants {
 				try {
 					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
 						continue; // process later
-					ASTNode sn = pass1_1(n);
-					if (sn instanceof Import) {
-						if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(java_lang_name))
+					pass1_1(n);
+					if (n instanceof Import) {
+						if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
 							java_lang_found = true;
-						else if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(kiev_stdlib_name))
+						else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_name))
 							kiev_stdlib_found = true;
-						else if( sn.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)sn.resolved).name.name.equals(kiev_stdlib_meta_name))
+						else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_meta_name))
 							kiev_stdlib_meta_found = true;
 					}
-					trace(Kiev.debugResolve,"Add "+sn);
+					trace(Kiev.debugResolve,"Add "+n);
 				} catch(Exception e ) {
 					Kiev.reportError(n.getPos(),e);
 				}
@@ -273,16 +273,14 @@ public final class ExportJavaTop implements Constants {
 				pass1_1(n);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
-		return astn;
 	}
 
-	public ASTNode pass1_1(Import:ASTNode astn) {
-		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return astn;
+	public void pass1_1(Import:ASTNode astn) {
+		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
 		ASTNode@ v;
 		if( !PassInfo.resolveNameR(v,new ResInfo(),name) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
-			return astn;
 		}
 		ASTNode n = v;
 		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
@@ -295,10 +293,9 @@ public final class ExportJavaTop implements Constants {
 			Kiev.reportError(astn.pos,"Identifier "+name+" is not a syntax");
 		else
 			astn.resolved = n;
-		return astn;
 	}
 
-	public ASTNode pass1_1(Typedef:ASTNode astn) {
+	public void pass1_1(Typedef:ASTNode astn) {
 		try {
 			if (astn.typearg != null) {
 				astn.type = new TypeRef(astn.type.getType().getInitialType());
@@ -306,42 +303,36 @@ public final class ExportJavaTop implements Constants {
 				astn.type = new TypeRef(astn.type.getType());
 			}
 		} catch (RuntimeException e) { /* ignore */ }
-		return astn;
 	}
 
-	public ASTNode pass1_1(Struct:ASTNode astn) {
+	public void pass1_1(Struct:ASTNode astn) {
 		// Verify meta-data to the new structure
 		Struct me = astn;
 		me.meta.verify();
 		
 		if (me.isSyntax()) {
 			trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
-			foreach (ASTNode n; me.members) {
+			for (int i=0; i < me.members.length; i++) {
+				ASTNode n = me.members[i];
 				try {
 					if (n instanceof Typedef) {
-						n = pass1_1(n);
-						if (n != null) {
-							me.imported.add(n);
-							trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-						}
+						pass1_1(n);
+						me.imported.add(me.members[i]);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 					}
 					else if (n instanceof Opdef) {
-						n = pass1_1(n);
-						if (n != null) {
-							me.imported.add(n);
-							trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-						}
+						pass1_1(n);
+						me.imported.add(me.members[i]);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
 					}
 				} catch(Exception e ) {
 					Kiev.reportError(n.getPos(),e);
 				}
 			}
 		}
-		
-		return me;
 	}
 	
-	public ASTNode pass1_1(Opdef:ASTNode astn) {
+	public void pass1_1(Opdef:ASTNode astn) {
 		int pos = astn.pos;
 		int prior = astn.prior;
 		int opmode = astn.opmode;
@@ -356,12 +347,12 @@ public final class ExportJavaTop implements Constants {
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
 					astn.resolved = op;
-					return astn;
+					return;
 				}
 				op = AssignOperator.newAssignOperator(image,null,null,false);
 				if( Kiev.verbose ) System.out.println("Declared assign operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
-				return astn;
+				return;
 			}
 		case Operator.XFX:
 		case Operator.YFX:
@@ -375,12 +366,12 @@ public final class ExportJavaTop implements Constants {
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
 					astn.resolved = op;
-					return astn;
+					return;
 				}
 				op = BinaryOperator.newBinaryOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared infix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
-				return astn;
+				return;
 			}
 		case Operator.FX:
 		case Operator.FY:
@@ -392,12 +383,12 @@ public final class ExportJavaTop implements Constants {
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
 					astn.resolved = op;
-					return astn;
+					return;
 				}
 				op = PrefixOperator.newPrefixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared prefix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
-				return astn;
+				return;
 			}
 		case Operator.XF:
 		case Operator.YF:
@@ -409,12 +400,12 @@ public final class ExportJavaTop implements Constants {
 					if (opmode != op.mode)
 						throw new CompilerException(pos,"Operator declaration conflict: "+Operator.orderAndArityNames[opmode]+" and "+Operator.orderAndArityNames[op.mode]+" are different");
 					astn.resolved = op;
-					return astn;
+					return;
 				}
 				op = PostfixOperator.newPostfixOperator(prior,image,null,null,Operator.orderAndArityNames[opmode],false);
 				if( Kiev.verbose ) System.out.println("Declared postfix operator "+op+" "+Operator.orderAndArityNames[op.mode]+" "+op.priority);
 				astn.resolved = op;
-				return astn;
+				return;
 			}
 		case Operator.XFXFY:
 			throw new CompilerException(pos,"Multioperators are not supported yet");
@@ -461,11 +452,11 @@ public final class ExportJavaTop implements Constants {
 		return failed;
 	}
 	
-	public ASTNode pass2(ASTNode:ASTNode astn) {
-		return astn;
+	public void pass2(ASTNode:ASTNode astn) {
+		return;
 	}
 
-	public ASTNode pass2(FileUnit:ASTNode astn) {
+	public void pass2(FileUnit:ASTNode astn) {
 		KString oldfn = Kiev.curFile;
 		Kiev.curFile = astn.filename;
 		PassInfo.push(astn);
@@ -476,10 +467,9 @@ public final class ExportJavaTop implements Constants {
 			foreach (ASTNode n; astn.members)
 				pass2(n);
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
-		return astn;
 	}
 
-	public ASTNode pass2(Struct:ASTNode astn) {
+	public void pass2(Struct:ASTNode astn) {
 		Struct me = astn;
 		int pos = astn.pos;
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
@@ -508,8 +498,6 @@ public final class ExportJavaTop implements Constants {
 					pass2(m);
 			}
 		} finally { PassInfo.pop(me); }
-
-		return me;
 	}
 
 
@@ -857,8 +845,11 @@ public final class ExportJavaTop implements Constants {
 				}
 			}
 
-			new ProcessVirtFld().createMembers(me);
-			//me.setupWrappedField();
+			{
+				ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
+				if (tp != null)
+					tp.createMembers(me);
+			}
 			
 			// Create constructor for pizza case
 			if( me.isPizzaCase() ) {
@@ -883,6 +874,173 @@ public final class ExportJavaTop implements Constants {
 		} finally { PassInfo.pop(me); }
 	}
 
+
+
+
+
+
+
+	////////////////////////////////////////////////////
+	//												   //
+	//	   PASS 4 - resolve meta and generate members //
+	//												   //
+	////////////////////////////////////////////////////
+
+	public boolean autoGenerateMembers() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no;
+		try {
+			Kiev.pass_no = TopLevelPass.passResolveMetaDefaults;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].resolveMetaDefaults();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					Kiev.files_scanned[i].resolveMetaDefaults();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+			if( Kiev.errCount > 0 ) goto stop;
+			Kiev.pass_no = TopLevelPass.passResolveMetaValues;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].resolveMetaValues();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					Kiev.files_scanned[i].resolveMetaValues();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+			if( Kiev.errCount > 0 ) goto stop;
+
+			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].autoProxyMethods();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try { Kiev.files_scanned[i].autoProxyMethods();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+stop:;
+		failed = true;
+		return failed;
+	}
+	
+	public void autoGenerateMembers(ASTNode:ASTNode node) {
+		return;
+	}
+	public void autoGenerateMembers(FileUnit:ASTNode node) {
+		node.resolveMetaDefaults();
+		node.resolveMetaValues();
+		node.autoProxyMethods();
+	}
+	public void autoGenerateMembers(Struct:ASTNode node) {
+		node.resolveMetaDefaults();
+		node.resolveMetaValues();
+		node.autoProxyMethods();
+	}
+
+
+
+
+
+
+
+	////////////////////////////////////////////////////
+	//												   //
+	//	   PASS 5 - pre-resolve                       //
+	//												   //
+	////////////////////////////////////////////////////
+
+	public boolean preResolve() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no;
+		try {
+			Kiev.pass_no = TopLevelPass.passResolveImports;
+			for(int i=0; i < Kiev.packages_scanned.length; i++) {
+				PassInfo.push(Env.root);
+				try{ Kiev.packages_scanned[i].resolveImports();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); failed = true;
+				} finally {
+					PassInfo.pop(Env.root);
+				}
+			}
+			Kiev.packages_scanned.cleanup();
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try { Kiev.file_unit[i].resolveImports();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try { Kiev.files_scanned[i].resolveImports();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); failed = true;
+				}
+			}
+
+
+			Kiev.pass_no = TopLevelPass.passResolveFinalFields;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try {
+					Kiev.file_unit[i].resolveFinalFields(false);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					Kiev.files_scanned[i].resolveFinalFields(!Kiev.safe);
+					if (!Kiev.safe)
+						Kiev.files_scanned[i].cleanup();
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+stop:;
+		failed = true;
+		return failed;
+	}
+	
+	public void preResolve(ASTNode:ASTNode node) {
+		return;
+	}
+	public void preResolve(FileUnit:ASTNode node) {
+		node.resolveImports();
+		node.resolveFinalFields(false);
+	}
+	public void preResolve(Struct:ASTNode node) {
+		node.resolveImports();
+		node.resolveFinalFields(false);
+	}
 }
 
 

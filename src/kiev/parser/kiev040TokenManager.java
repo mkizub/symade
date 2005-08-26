@@ -2749,13 +2749,6 @@ static void TokenLexicalActions(Token matchedToken)
             image.append(jjstrLiteralImages[74]);
                            if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !kiev040.declMode) matchedToken.kind=IDENTIFIER;
          break;
-      case 75 :
-        if (image == null)
-            image = new StringBuffer(jjstrLiteralImages[75]);
-         else
-            image.append(jjstrLiteralImages[75]);
-                     if(Kiev.javaMode || Kiev.disabled(Ext.Enum) || !kiev040.declMode) matchedToken.kind=IDENTIFIER;
-         break;
       case 76 :
         if (image == null)
             image = new StringBuffer(jjstrLiteralImages[76]);

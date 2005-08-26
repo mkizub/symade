@@ -127,9 +127,8 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			// Process members - pass3()
-			for(int i=0; i < members.length; i++) {
-				members[i].autoProxyMethods();
+			foreach (DNode dn; members; dn instanceof Struct) {
+				((Struct)dn).autoProxyMethods();
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
 		return this;
@@ -144,7 +143,12 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
         	Kiev.setExtSet(disabled_extensions);
 			for(int i=0; i < members.length; i++) {
 				try {
-					members[i].resolveImports();
+					foreach (DNode dn; syntax; dn instanceof Import) {
+						((Import)dn).resolveImports();
+					}
+					foreach (DNode dn; members; dn instanceof Struct) {
+						((Struct)dn).resolveImports();
+					}
 				} catch(Exception e ) {
 					Kiev.reportError/*Warning*/(members[i].getPos(),e);
 				}
@@ -160,9 +164,8 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		boolean[] exts = Kiev.getExtSet();
         try {
         	Kiev.setExtSet(disabled_extensions);
-			// Process members - resolveFinalFields()
-			for(int i=0; i < members.length; i++) {
-				members[i].resolveFinalFields(cleanup);
+			foreach (DNode dn; members; dn instanceof Struct) {
+				((Struct)dn).resolveFinalFields(cleanup);
 			}
 		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
 		return this;

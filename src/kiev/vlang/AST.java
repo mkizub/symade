@@ -52,11 +52,11 @@ public interface TopLevelDecl {
 	// process Struct's members (fields, methods)
 	//public ASTNode pass3() { return (ASTNode)this; }
 	// autoProxyMethods()
-	public ASTNode autoProxyMethods() { return (ASTNode)this; }
+	//public ASTNode autoProxyMethods() { return (ASTNode)this; }
 	// resolveImports()
-	public ASTNode resolveImports() { return (ASTNode)this; }
+	//public ASTNode resolveImports() { return (ASTNode)this; }
 	// resolveFinalFields()
-	public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
+	//public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
 	// just resolve
 	//public ASTNode resolve(Type reqType);
 	// dump
@@ -241,9 +241,9 @@ public abstract class ASTNode implements Constants {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+//	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+//	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
+//	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 
 	public int setFlags(int fl) {
 		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
@@ -1108,16 +1108,9 @@ public class LocalStructDecl extends ENode implements Named {
 	public void resolve(Type reqType) {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
-		ExportJavaTop exporter = new ExportJavaTop();
 		clazz.setResolved(true);
 		clazz.setLocal(true);
-		exporter.pass1(clazz);
-		exporter.pass1_1(clazz);
-		exporter.pass2(clazz);
-		exporter.pass2_2(clazz);
-		exporter.pass3(clazz);
-		clazz.autoProxyMethods();
-		clazz.resolveFinalFields(false);
+		Kiev.runProcessorsOn(clazz);
 		clazz.resolveDecl();
 	}
 

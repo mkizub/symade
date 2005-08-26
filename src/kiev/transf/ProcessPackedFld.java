@@ -32,7 +32,7 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public final class ProcessPackedFld implements Constants {
+public final class ProcessPackedFld extends TransfProcessor implements Constants {
 	
 	private static final int[] masks =
 		{	0,
@@ -46,6 +46,10 @@ public final class ProcessPackedFld implements Constants {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
+	public ProcessPackedFld(Kiev.Ext ext) {
+		super(ext);
+	}
+	
 	private void rewriteNode(ASTNode node, String id) {
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			Object val = node.getVal(attr.name);

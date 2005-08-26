@@ -159,8 +159,9 @@ public class Bytecoder implements Constants {
 			}
 		}
 
-		new ProcessVirtFld().addAbstractFields(cl);
-		//cl.setupWrappedField();
+		ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
+		if (tp != null)
+			tp.addAbstractFields(cl);
 		return cl;
 	}
 

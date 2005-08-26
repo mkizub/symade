@@ -32,31 +32,41 @@ import static kiev.stdlib.Debug.*;
  *
  */
 
-public final class ProcessVNode implements Constants {
+public final class ProcessVNode extends TransfProcessor implements Constants {
 
-	public static final KString mnNode = KString.from("kiev.vlang.node"); 
-	public static final KString mnAtt  = KString.from("kiev.vlang.att"); 
-	public static final KString mnRef  = KString.from("kiev.vlang.ref"); 
-	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
-	private static final KString nameNArrReplace  = KString.from("replace"); 
-	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
-	private static final KString nameParent  = KString.from("parent"); 
-	private static final KString nameCopyable  = KString.from("copyable"); 
+	public static final KString mnNode				= KString.from("kiev.vlang.node"); 
+	public static final KString mnAtt				= KString.from("kiev.vlang.att"); 
+	public static final KString mnRef				= KString.from("kiev.vlang.ref"); 
+	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
+	private static final KString nameNArrReplace	= KString.from("replace"); 
+	private static final KString signNArrReplace	= KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
+	private static final KString nameParent		= KString.from("parent"); 
+	private static final KString nameCopyable		= KString.from("copyable"); 
 	
-	private static final KString sigValues = KString.from("()[Lkiev/vlang/AttrSlot;");
-	private static final KString sigGetVal = KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
-	private static final KString sigSetVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
-	private static final KString sigReplaceVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
-	private static final KString sigCopy   = KString.from("()Ljava/lang/Object;");
-	private static final KString sigCopyTo   = KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final KString sigValues			= KString.from("()[Lkiev/vlang/AttrSlot;");
+	private static final KString sigGetVal			= KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
+	private static final KString sigSetVal			= KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
+	private static final KString sigReplaceVal		= KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+	private static final KString sigCopy			= KString.from("()Ljava/lang/Object;");
+	private static final KString sigCopyTo			= KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
 	
-	private Type tpNArr = Env.getStruct(nameNArr).type;
+	private static Type tpNArr;
 	
+	public ProcessVNode(Kiev.Ext ext) {
+		super(ext);
+	}
+
 	/////////////////////////////////////////////
 	//      Verify the VNode tree structure    //
     /////////////////////////////////////////////
 
 	public boolean verify() {
+		if (tpNArr == null)
+			tpNArr = Env.getStruct(nameNArr).type;
+		if (tpNArr == null) {
+			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			return false;
+		}
 		boolean failed = false;
 		for (int i=0; i < Kiev.files.length; i++) {
 			FileUnit fu = Kiev.files[i]; 
@@ -167,8 +177,58 @@ public final class ProcessVNode implements Constants {
 		foreach (ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(name)) return true;
 		return false;
 	}
+
 	
-	public void autoGenerateMembers(Struct s) {
+	public boolean autoGenerateMembers() {
+		boolean failed = false;
+		TopLevelPass old_pass = Kiev.pass_no;
+		try {
+			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
+			for(int i=0; i < Kiev.file_unit.length; i++) {
+				if( Kiev.file_unit[i] == null ) continue;
+				try {
+					this.autoGenerateMembers(Kiev.file_unit[i]);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.file_unit[i] = null; failed = true;
+				}
+			}
+			for(int i=0; i < Kiev.files_scanned.length; i++) {
+				if( Kiev.files_scanned[i] == null ) continue;
+				try {
+					this.autoGenerateMembers(Kiev.file_unit[i]);
+				} catch (Exception e) {
+					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; failed = true;
+				}
+			}
+		} finally { Kiev.pass_no = old_pass; }
+		return failed;
+	}
+	
+	
+	public void autoGenerateMembers(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+		KString oldfn = Kiev.curFile;
+		Kiev.curFile = fu.filename;
+		PassInfo.push(fu);
+		boolean[] exts = Kiev.getExtSet();
+        try {
+        	Kiev.setExtSet(fu.disabled_extensions);
+			foreach (DNode dn; fu.members; dn instanceof Struct) {
+				this.autoGenerateMembers(dn);
+			}
+		} finally { Kiev.setExtSet(exts); PassInfo.pop(fu); Kiev.curFile = oldfn; }
+	}
+	
+	private void autoGenerateMembers(Struct:ASTNode s) {
+		if (tpNArr == null)
+			tpNArr = Env.getStruct(nameNArr).type;
+		if (tpNArr == null) {
+			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			return;
+		}
 		if (!s.isClazz())
 			return;
 		Meta mnMeta = s.meta.get(mnNode);

@@ -558,7 +558,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < ALIAS: "alias" > { if(Kiev.javaMode || Kiev.disabled(Ext.Alias)  || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 | < OPERATOR_ID: "operator" > { if(Kiev.javaMode || Kiev.disabled(Ext.Operator) ) matchedToken.kind=IDENTIFIER; }
 | < TYPEDEF: "typedef" > { if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
-| < ENUM: "enum" > { if(Kiev.javaMode || Kiev.disabled(Ext.Enum) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < ENUM: "enum" >
 
 | < REQUIRE: "require" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
 | < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
@@ -1576,7 +1576,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 				modifiers = Modifiers()
 				m.params += MethodFormalParameter(modifiers)
 			)*
-			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
+			[	LOOKAHEAD(2, [","] "...")
 				[","]
 				"..."
 				{ m.setVarArgs(true); }
@@ -1621,7 +1621,7 @@ Method ConstructorDeclaration(ASTModifiers modifiers) :
 				modifiers = Modifiers()
 				m.params += FormalParameter(modifiers)
 			)*
-			[	LOOKAHEAD(2, [","] "...", {Kiev.enabled(Ext.VarArgs)})
+			[	LOOKAHEAD(2, [","] "...")
 				[","]
 				"..."
 				{ m.setVarArgs(true); }
@@ -1808,7 +1808,7 @@ TypeRef TypeWithArgs() :
 { ASTIdentifier id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
 {
 	id = QName() { res = new TypeNameRef(id); }
-	[	LOOKAHEAD(1, "<", {Kiev.enabled(Ext.Generics)})
+	[	LOOKAHEAD(1, "<")
 		"<"
 			{ res = tra = new TypeWithArgsRef(res); }
 			tra.args += Type()

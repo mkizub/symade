@@ -552,15 +552,7 @@ public class Env extends Struct {
 			System.gc();
 			try {
 				Kiev.files_scanned.append(fu);
-				ExportJavaTop exporter = new ExportJavaTop();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )		exporter.pass1(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )			exporter.pass1_1(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) )	exporter.pass2(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )		exporter.pass2_2(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )			exporter.pass3(fu);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )		fu.autoProxyMethods();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )			fu.resolveImports();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveFinalFields) )		fu.resolveFinalFields(false);
+				Kiev.runProcessorsOn(fu);
 				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
 					if (Kiev.safe)
 						Kiev.files.append(fu);

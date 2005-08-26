@@ -199,9 +199,11 @@ kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
 kiev.transf.ProcessCFlow kiev/transf/ProcessCFlow kiev\transf\ProcessCFlow.java
+kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java
 kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java
 kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
 kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
+kiev.transf.TransfProcessor kiev/transf/TransfProcessor kiev\transf\TransfProcessor.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java
 kiev.vlang.ASTRuleNode kiev/vlang/ASTRuleNode kiev\vlang\Rules.java
 kiev.vlang.Access kiev/vlang/Access kiev\vlang\Access.java

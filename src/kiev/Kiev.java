@@ -24,6 +24,7 @@ import kiev.stdlib.*;
 import java.io.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
@@ -37,7 +38,7 @@ public final class Kiev {
 	static class CompilationAbortError extends java.lang.Error {
 		CompilationAbortError() { super("Compilation terminated"); }
 	}
-
+	
 	// Error section
 	public static long		programm_start;
 	public static long		programm_end;
@@ -552,25 +553,45 @@ public final class Kiev {
 		Operator				: "operators"		,
 		Typedef					: "typedef"			,
 		Enum					: "enum"			,
-		EnumInt					: "enum int"		,
 		Contract				: "contract"		,
 		Generics				: "generics"		,
 		Templates				: "templates"		,
 		Wrappers				: "wrappers"		,
-		Access					: "access"
+		Access					: "access"			,
+		VNode					: "vnode"			,
+		CFlow					: "cflow"
 	};
 	
-	private static boolean[] command_line_disabled_extensions	= new boolean[20];
-	private static boolean[] disabled_extensions				= new boolean[20];
+	private static boolean[] command_line_disabled_extensions	= new boolean[Ext.values().length];
+	private static boolean[] disabled_extensions				= new boolean[Ext.values().length];
+	
+	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
+	static {
+		transfProcessors[(int)Ext.JavaOnly]		= new ExportJavaTop(Ext.JavaOnly);
+		transfProcessors[(int)Ext.VirtualFields]	= new ProcessVirtFld(Ext.VirtualFields);
+		transfProcessors[(int)Ext.PackedFields]	= new ProcessPackedFld(Ext.PackedFields);
+		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);
+		transfProcessors[(int)Ext.VNode]			= new ProcessVNode(Ext.VNode);
+		transfProcessors[(int)Ext.CFlow]			= new ProcessCFlow(Ext.CFlow);
+		setExtension(false, "vnode");
+		setExtension(false, "cflow");
+	}
+	
+	public static TransfProcessor getProcessor(Ext ext) {
+		TransfProcessor tp = transfProcessors[(int)ext];
+		if (tp != null && !tp.isDisabled())
+			return tp;
+		return null;
+	}
 	
 	public static boolean disabled(Ext ext) {
 		int idx = (int)ext;
-		return disabled_extensions[idx-1];
+		return disabled_extensions[idx];
 	}
 	
 	public static boolean enabled(Ext ext) {
 		int idx = (int)ext;
-		return !disabled_extensions[idx-1];
+		return !disabled_extensions[idx];
 	}
 	
 	public static void check(int pos, Ext ext) {
@@ -591,7 +612,7 @@ public final class Kiev {
 	}
 	
 	public static void enable(Ext ext) {
-		disabled_extensions[((int)ext)-1] = false;
+		disabled_extensions[((int)ext)] = false;
 	}
 	
 	static void setExtension(boolean enabled, String s) {
@@ -602,9 +623,9 @@ public final class Kiev {
 			Kiev.reportWarning(0,"Unknown pragma '"+s+"'");
 			return;
 		}
-		int i = ((int)ext)-1;
-		if (i < 0) {
-			for (int i=0; i < disabled_extensions.length; i++) {
+		int i = (int)ext;
+		if (i == 0) {
+			for (int i=1; i < disabled_extensions.length; i++) {
 				command_line_disabled_extensions[i] = !enabled;
 				disabled_extensions[i] = !enabled;
 			}
@@ -613,4 +634,47 @@ public final class Kiev {
 			disabled_extensions[i] = !enabled;
 		}
 	}
+	
+	public static void runProcessorsOn(ASTNode node) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass1(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass1_1(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass2(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass2_2(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass3(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.autoGenerateMembers(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.preResolve(node);
+		}
+	}
+
+	public static boolean runVerify() {
+		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+			if (tp.isEnabled()) {
+				if (tp.verify())
+					return true; // failed
+			}
+		}
+		return false;
+	}
+
 }
+
