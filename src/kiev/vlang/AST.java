@@ -50,6 +50,8 @@ public enum TopLevelPass {
 	passAutoProxyMethods	   ,	// autoProxyMethods()
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
+	passVerify				   ,	// verify the tree before generation
+	passPreGenerate			   ,	// prepare tree for generation phase
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
@@ -834,7 +836,7 @@ public abstract class ASTNode implements Constants {
 		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		return this.is_stat_break_target;
 	}
-	@setter public final void set$is_stat_auto_returable(boolean on) alias setBreakTarget {
+	@setter public final void set$is_stat_break_target(boolean on) alias setBreakTarget {
 		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
 		if (this.is_stat_break_target != on) {
 			this.is_stat_break_target = on;

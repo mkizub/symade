@@ -44,16 +44,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		PassInfo.push(fu);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(fu.disabled_extensions);
-			foreach (DNode dn; fu.members; dn instanceof Struct) {
-				this.autoGenerateMembers(dn);
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(fu); Kiev.curFile = oldfn; }
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.autoGenerateMembers(dn);
 	}
 	
 	public void autoGenerateMembers(Struct:ASTNode clazz) {

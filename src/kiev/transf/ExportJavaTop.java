@@ -49,24 +49,15 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 	
 	public void pass1(FileUnit:ASTNode astn) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = astn.filename;
-		boolean[] exts = Kiev.getExtSet();
+		FileUnit fu = astn;
+		PassInfo.push(fu.pkg.clazz);
 		try {
-			Kiev.setExtSet(astn.disabled_extensions);
-			FileUnit fu = astn;
-			fu.disabled_extensions = astn.disabled_extensions;
-			fu.bodies = astn.bodies;
-			PassInfo.push(fu);
-			PassInfo.push(fu.pkg.clazz);
-			try {
-				foreach (ASTNode n; astn.members) {
-					try {
-						pass1(n);
-					} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
-				}
-			} finally { PassInfo.pop(fu.pkg.clazz); PassInfo.pop(fu); }
-		} finally { Kiev.curFile = oldfn; Kiev.setExtSet(exts); }
+			foreach (ASTNode n; astn.members) {
+				try {
+					pass1(n);
+				} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
+			}
+		} finally { PassInfo.pop(fu.pkg.clazz); }
 	}
 
 	private void setSourceFile(Struct me) {
@@ -182,52 +173,44 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 
 	public void pass1_1(FileUnit:ASTNode astn) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = astn.filename;
-		PassInfo.push(astn);
-		boolean[] exts = Kiev.getExtSet();
-		try {
-			Kiev.setExtSet(astn.disabled_extensions);
+		// Process file imports...
+		boolean java_lang_found = false;
+		KString java_lang_name = KString.from("java.lang");
+		boolean kiev_stdlib_found = false;
+		KString kiev_stdlib_name = KString.from("kiev.stdlib");
+		boolean kiev_stdlib_meta_found = false;
+		KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
 
-			// Process file imports...
-			boolean java_lang_found = false;
-			KString java_lang_name = KString.from("java.lang");
-			boolean kiev_stdlib_found = false;
-			KString kiev_stdlib_name = KString.from("kiev.stdlib");
-			boolean kiev_stdlib_meta_found = false;
-			KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
-
-			foreach (ASTNode n; astn.syntax) {
-				try {
-					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
-						continue; // process later
-					pass1_1(n);
-					if (n instanceof Import) {
-						if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
-							java_lang_found = true;
-						else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_name))
-							kiev_stdlib_found = true;
-						else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_meta_name))
-							kiev_stdlib_meta_found = true;
-					}
-					trace(Kiev.debugResolve,"Add "+n);
-				} catch(Exception e ) {
-					Kiev.reportError(n.getPos(),e);
-				}
-			}
-			// Add standard imports, if they were not defined
-			if( !Kiev.javaMode && !kiev_stdlib_found )
-				astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
-			if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-				astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
-			if( !java_lang_found )
-				astn.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
-
-			// Process members - pass1_1()
-			foreach (ASTNode n; astn.members) {
+		foreach (ASTNode n; astn.syntax) {
+			try {
+				if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
+					continue; // process later
 				pass1_1(n);
+				if (n instanceof Import) {
+					if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
+						java_lang_found = true;
+					else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_name))
+						kiev_stdlib_found = true;
+					else if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(kiev_stdlib_meta_name))
+						kiev_stdlib_meta_found = true;
+				}
+				trace(Kiev.debugResolve,"Add "+n);
+			} catch(Exception e ) {
+				Kiev.reportError(n.getPos(),e);
 			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+		}
+		// Add standard imports, if they were not defined
+		if( !Kiev.javaMode && !kiev_stdlib_found )
+			astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
+		if( !Kiev.javaMode && !kiev_stdlib_meta_found )
+			astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
+		if( !java_lang_found )
+			astn.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
+
+		// Process members - pass1_1()
+		foreach (ASTNode n; astn.members) {
+			pass1_1(n);
+		}
 	}
 
 	public void pass1_1(Import:ASTNode astn) {
@@ -386,16 +369,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 
 	public void pass2(FileUnit:ASTNode astn) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = astn.filename;
-		PassInfo.push(astn);
-		boolean[] exts = Kiev.getExtSet();
-		try {
-			Kiev.setExtSet(astn.disabled_extensions);
-			// Process members - pass2()
-			foreach (ASTNode n; astn.members)
-				pass2(n);
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+		foreach (ASTNode n; astn.members)
+			pass2(n);
 	}
 
 	public void pass2(Struct:ASTNode astn) {
@@ -446,25 +421,17 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 
 	public void pass2_2(FileUnit:ASTNode astn) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = astn.filename;
-		PassInfo.push(astn);
-		boolean[] exts = Kiev.getExtSet();
-		try {
-			Kiev.setExtSet(astn.disabled_extensions);
-			// Process members - pass2()
-			foreach (ASTNode n; astn.syntax) {
-				try {
-					if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
-						continue; // process later
-					pass2_2(n);
-				} catch(Exception e ) {
-					Kiev.reportError(n.getPos(),e);
-				}
-			}
-			foreach (ASTNode n; astn.members)
+		foreach (ASTNode n; astn.syntax) {
+			try {
+				if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
+					continue; // process later
 				pass2_2(n);
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+			} catch(Exception e ) {
+				Kiev.reportError(n.getPos(),e);
+			}
+		}
+		foreach (ASTNode n; astn.members)
+			pass2_2(n);
 	}
 
 	public void pass2_2(Typedef:ASTNode astn) {
@@ -540,16 +507,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 
 	public void pass3(FileUnit:ASTNode astn) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = astn.filename;
-		PassInfo.push(astn);
-		boolean[] exts = Kiev.getExtSet();
-		try {
-			Kiev.setExtSet(astn.disabled_extensions);
-			// Process members - pass3()
-			foreach (ASTNode n; astn.members)
-				pass3(n);
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(astn); Kiev.curFile = oldfn; }
+		foreach (ASTNode n; astn.members)
+			pass3(n);
 	}
 
 
@@ -596,11 +555,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 						m.setFinal(false);
 					}
 					m.acc.verifyAccessDecl(m);
-				}
-				else if (members[i] instanceof Field && me.isPizzaCase()) {
-					Field f = (Field)members[i];
-					PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
-					case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
 				}
 				else if (members[i] instanceof Field && members[i].isEnumField()) {
 					Field f = (Field)members[i];
@@ -719,27 +673,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 				}
 			}
 
-			{
-				ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
-				if (tp != null)
-					tp.createMembers(me);
-			}
-			
-			// Create constructor for pizza case
-			if( me.isPizzaCase() ) {
-				PizzaCaseAttr case_attr = (PizzaCaseAttr)me.getAttr(attrPizzaCase);
-				Vector<Type> targs = new Vector<Type>();
-				foreach (Field f; case_attr.casefields)
-					targs.append(f.type);
-				MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
-				Constructor init = new Constructor(mt,ACC_PUBLIC);
-				init.pos = me.pos;
-				foreach (Field f; case_attr.casefields)
-					init.params.add(new FormPar(f.pos,f.name.name,f.type,0));
-				me.addMethod(init);
-				init.body = new BlockStat(me.pos,init);
-			}
-
 			// Process inner classes and cases
 			if( !me.isPackage() ) {
 				foreach (ASTNode n; me.members; n instanceof Struct)
@@ -758,11 +691,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	public void resolveMetaDecl(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaDecl(FileUnit:ASTNode fu) {
-		PassInfo.push(fu);
-		try {
-			foreach(ASTNode n; fu.members; n instanceof Struct)
-				resolveMetaDecl(n);
-		} finally { PassInfo.pop(fu); }
+		foreach(ASTNode n; fu.members; n instanceof Struct)
+			resolveMetaDecl(n);
 	}
 	public void resolveMetaDecl(Struct:ASTNode clazz) {
 		PassInfo.push(clazz);
@@ -805,11 +735,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	public void resolveMetaDefaults(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaDefaults(FileUnit:ASTNode fu) {
-		PassInfo.push(fu);
-		try {
-			foreach(ASTNode n; fu.members; n instanceof Struct)
-				resolveMetaDefaults(n);
-		} finally { PassInfo.pop(fu); }
+		foreach(ASTNode n; fu.members; n instanceof Struct)
+			resolveMetaDefaults(n);
 	}
 	public void resolveMetaDefaults(Struct:ASTNode clazz) {
 		clazz.resolveMetaDefaults();
@@ -822,11 +749,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	public void resolveMetaValues(ASTNode:ASTNode node) {
 	}
 	public void resolveMetaValues(FileUnit:ASTNode fu) {
-		PassInfo.push(fu);
-		try {
-			foreach(ASTNode n; fu.members; n instanceof Struct)
-				resolveMetaValues(n);
-		} finally { PassInfo.pop(fu); }
+		foreach(ASTNode n; fu.members; n instanceof Struct)
+			resolveMetaValues(n);
 	}
 	public void resolveMetaValues(Struct:ASTNode clazz) {
 		clazz.resolveMetaValues();

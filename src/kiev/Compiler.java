@@ -604,6 +604,7 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass3(fu); });
+			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
 			if( Kiev.errCount > 0) goto stop;
 			runGC();
@@ -615,6 +616,7 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passCreateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.autoGenerateMembers(fu); });
+			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members created",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
@@ -623,23 +625,30 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passResolveImports;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preResolve(fu); });
+			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-resolved",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
-			Kiev.pass_no = TopLevelPass.passResolveFinalFields;
 
+			Kiev.pass_no = TopLevelPass.passVerify;
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.verify(fu); });
 			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
 			
-			Kiev.pass_no = TopLevelPass.passGenerate;
 			diff_time = System.currentTimeMillis() - curr_time;
-			runGC();
 			if( Kiev.verbose ) Kiev.reportInfo("Class's pure interface declarations passed",diff_time);
-			if( Kiev.errCount > 0 ) goto stop;
 	
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////    Back-end    ////////////////////////////////
 			///////////////////////////////////////////////////////////////////////
+
+			Kiev.pass_no = TopLevelPass.passPreGenerate;
+			diff_time = curr_time = System.currentTimeMillis();
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preGenerate(fu); });
+			diff_time = System.currentTimeMillis() - curr_time;
+			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-generated",diff_time);
+			if( Kiev.errCount > 0 ) goto stop;
+
+			Kiev.pass_no = TopLevelPass.passGenerate;
 			for(int i=0; i < Kiev.files.length; i++) {
 				try {
 					runGC();

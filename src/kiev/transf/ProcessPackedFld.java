@@ -50,24 +50,63 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		super(ext);
 	}
 	
-	public void autoGenerateMembers(ASTNode:ASTNode node) {
+	public void verify(ASTNode:ASTNode node) {
+	}
+	
+	public void verify(FileUnit:ASTNode fu) {
+		foreach (DNode n; fu.members; n instanceof Struct)
+			verify(n);
+	}
+	
+	public void verify(Struct:ASTNode s) {
+		PassInfo.push(s);
+		try {
+			foreach (DNode n; s.members; n instanceof Field)
+				verify(n);
+			foreach (Struct sub; s.sub_clazz)
+				verify(sub);
+		} finally { PassInfo.pop(s); }
+	}
+	
+	public void verify(Field:ASTNode f) {
+		MetaPacked mp = f.getMetaPacked();
+		if !(f.isPackedField() ) {
+			if (mp != null)
+				Kiev.reportError(f.pos, "Non-packed field has @packed attribute");
+			return;
+		}
+		if (mp == null) {
+			if (mp != null)
+				Kiev.reportError(f.pos, "Packed field has no @packed attribute");
+			return;
+		}
+		Struct s = (Struct)f.parent;
+		KString mp_in = mp.fld;
+		if( mp_in != null && mp_in.len > 0 ) {
+			Field p = s.resolveField(mp_in);
+			if( p == null ) {
+				Kiev.reportError(f.pos,"Packer field "+mp_in+" not found");
+				return;
+			}
+			if( p.type != Type.tpInt ) {
+				Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
+				return;
+			}
+			mp.packer = p;
+			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
+		}
+	}
+	
+	public void preGenerate(ASTNode:ASTNode node) {
 		return;
 	}
 	
-	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		PassInfo.push(fu);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(fu.disabled_extensions);
-			foreach (DNode dn; fu.members; dn instanceof Struct) {
-				this.autoGenerateMembers(dn);
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(fu); Kiev.curFile = oldfn; }
+	public void preGenerate(FileUnit:ASTNode fu) {
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.preGenerate(dn);
 	}
 	
-	public void autoGenerateMembers(Struct:ASTNode s) {
+	public void preGenerate(Struct:ASTNode s) {
 		// Setup packed/packer fields
 		foreach(ASTNode n; s.members; n instanceof Field && n.isPackedField() ) {
 			Field f = (Field)n;

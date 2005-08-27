@@ -66,23 +66,18 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	public void verify(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		PassInfo.push(fu);
-		try {
-			foreach (ASTNode n; fu.members; n instanceof Struct) {
-				verify(n);
-			}
-		} finally { PassInfo.pop(fu); Kiev.curFile = oldfn; }
+		foreach (ASTNode n; fu.members; n instanceof Struct)
+			verify(n);
 	}
 	
 	public void verify(Struct:ASTNode s) {
 		Meta m = s.meta.get(mnNode);
 		if (m != null) {
 			// Check fields of the @node
-			foreach (ASTNode n; s.members; n instanceof Field) {
+			foreach (ASTNode n; s.members; n instanceof Field)
 				verify(n);
-			}
+			foreach (Struct sub; s.sub_clazz)
+				verify(sub);
 		}
 		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
@@ -126,7 +121,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					});
 				} else {
 					f.setVirtual(true);
-					ProcessVirtFld.addMethodsForVirtualField((Struct)f.parent, f);
+					//ProcessVirtFld.addMethodsForVirtualField((Struct)f.parent, f);
 				}
 			}
 			else if (fmref != null) {
@@ -166,16 +161,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(FileUnit:ASTNode fu) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		PassInfo.push(fu);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(fu.disabled_extensions);
-			foreach (DNode dn; fu.members; dn instanceof Struct) {
-				this.autoGenerateMembers(dn);
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(fu); Kiev.curFile = oldfn; }
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.autoGenerateMembers(dn);
 	}
 	
 	private void autoGenerateMembers(Struct:ASTNode s) {

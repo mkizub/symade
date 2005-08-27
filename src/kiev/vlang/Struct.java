@@ -898,32 +898,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		autoGenerateTypeinfoClazz();
 
-		if( isPizzaCase() ) {
-			PizzaCaseAttr case_attr = (PizzaCaseAttr)getAttr(attrPizzaCase);
-			Field ftag = addField(new Field(
-				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
-			ConstExpr ce = new ConstIntExpr(case_attr.caseno);
-			ftag.init = ce;
-
-			Method gettag = new Method(nameGetCaseTag,
-				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
-			gettag.body = new BlockStat(gettag.pos,gettag);
-			((BlockStat)gettag.body).addStatement(
-				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,this,ftag))
-			);
-			addMethod(gettag);
-		}
-		else if( isHasCases() ) {
-			// Add get$case$tag() method to itself
-			Method gettag = new Method(Constants.nameGetCaseTag,
-				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
-			gettag.body = new BlockStat(gettag.pos,gettag);
-			((BlockStat)gettag.body).addStatement(
-				new ReturnStat(gettag.pos,new ConstIntExpr(0))
-			);
-			addMethod(gettag);
-		}
-
 		// Check if it's an inner class
 		if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
 			int n = 0;

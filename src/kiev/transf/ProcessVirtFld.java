@@ -38,22 +38,165 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		super(ext);
 	}
 
-	public void createMembers(Struct s) {
-		foreach(ASTNode n; s.members; n instanceof Field)
-			addMethodsForVirtualField(s, (Field)n);
-		addAbstractFields(s);
-		foreach(ASTNode n; s.members; n instanceof Field) {
-			Field f = (Field)n;
-			if (!f.isVirtual())
-				continue;
-			if (s.isInterface() && !n.isAbstract())
-				f.setAbstract(true);
-			if (f.getMetaVirtual() == null)
-				f.meta.set(new MetaVirtual());
+	////////////////////////////////////////////////////
+	//	   PASS - autoGenerateMembers                 //
+	////////////////////////////////////////////////////
+
+	public void autoGenerateMembers(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.autoGenerateMembers(dn);
+	}
+	
+	public void autoGenerateMembers(Struct:ASTNode s) {
+		PassInfo.push(s);
+		try {
+			addAbstractFields(s);
+			foreach(Struct sub; s.sub_clazz)
+				autoGenerateMembers(sub);
+		} finally { PassInfo.pop(s); }
+	}
+	
+	public void addAbstractFields(Struct s) {
+		foreach(ASTNode n; s.members; n instanceof Method) {
+			Method m = (Method)n;
+			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
+			if (m.name.name.startsWith(nameSet))
+				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);
+			foreach (KString name; m.name.aliases) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a setter");
+				if (name.startsWith(nameSet))
+					addSetterForAbstractField(s, name.substr(nameSet.length()), m);
+			}
+			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
+			if (m.name.name.startsWith(nameGet))
+				addGetterForAbstractField(s, m.name.name.substr(nameGet.length()), m);
+			foreach (KString name; m.name.aliases) {
+				//trace(Kiev.debugCreation,"check "+name+" to be a getter");
+				if (name.startsWith(nameGet))
+					addGetterForAbstractField(s, name.substr(nameGet.length()), m);
+			}
 		}
 	}
 	
-	public static void addMethodsForVirtualField(Struct s, Field f) {
+	private void addSetterForAbstractField(Struct s, KString name, Method m) {
+		Field f = s.resolveField( name, false );
+		if( f != null ) {
+			trace(Kiev.debugCreation,"method "+m+" has field "+f);
+			if (f.parent != m.parent)
+				return;
+			MetaVirtual mv = f.getMetaVirtual();
+			if (mv != null && mv.set != null && mv.set != m)
+				return;
+		} else {
+			s.addField(f=new Field(name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			f.acc.flags = 0;
+			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
+		}
+		if (f.getMetaVirtual() == null)
+			f.meta.set(new MetaVirtual());
+		f.getMetaVirtual().set = m;
+		if( m.isPublic() ) {
+			f.acc.w_public = true;
+			f.acc.w_protected = true;
+			f.acc.w_default = true;
+			f.acc.w_private = true;
+		}
+		else if( m.isPrivate() ) {
+			f.acc.w_public = false;
+			f.acc.w_protected = false;
+			f.acc.w_default = false;
+			f.acc.w_private = true;
+		}
+		else if( m.isProtected() ) {
+			f.acc.w_public = false;
+			f.acc.w_private = true;
+		}
+		else {
+			f.acc.w_public = false;
+			f.acc.w_default = true;
+			f.acc.w_private = true;
+		}
+		f.acc.flags |= f.acc.flags << 16;
+		f.acc.verifyAccessDecl(f);
+	}
+	
+	private void addGetterForAbstractField(Struct s, KString name, Method m) {
+		Field f = s.resolveField( name, false );
+		if( f != null ) {
+			trace(Kiev.debugCreation,"method "+m+" has field "+f);
+			if (f.parent != m.parent)
+				return;
+			MetaVirtual mv = f.getMetaVirtual();
+			if (mv != null && mv.get != null && mv.get != m)
+				return;
+		} else {
+			s.addField(f=new Field(name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			f.acc.flags = 0;
+			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
+		}
+		if (f.getMetaVirtual() == null)
+			f.meta.set(new MetaVirtual());
+		f.getMetaVirtual().get = m;
+		if( m.isPublic() ) {
+			f.acc.r_public = true;
+			f.acc.r_protected = true;
+			f.acc.r_default = true;
+			f.acc.r_private = true;
+		}
+		else if( m.isPrivate() ) {
+			f.acc.r_public = false;
+			f.acc.r_protected = false;
+			f.acc.r_default = false;
+			f.acc.r_private = true;
+		}
+		else if( m.isProtected() ) {
+			f.acc.r_public = false;
+			f.acc.r_private = true;
+		}
+		else {
+			f.acc.r_public = false;
+			f.acc.r_default = true;
+			f.acc.r_private = true;
+		}
+		f.acc.flags |= f.acc.flags << 16;
+		f.acc.verifyAccessDecl(f);
+	}
+	
+	////////////////////////////////////////////////////
+	//	   PASS - preGenerate                         //
+	////////////////////////////////////////////////////
+
+	public void preGenerate(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void preGenerate(FileUnit:ASTNode fu) {
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.preGenerate(dn);
+	}
+	
+	public void preGenerate(Struct:ASTNode s) {
+		PassInfo.push(s);
+		try {
+			foreach(ASTNode n; s.members; n instanceof Field)
+				addMethodsForVirtualField(s, (Field)n);
+			foreach(ASTNode n; s.members; n instanceof Field) {
+				Field f = (Field)n;
+				if (!f.isVirtual())
+					continue;
+				if (s.isInterface() && !n.isAbstract())
+					f.setAbstract(true);
+			}
+			foreach(Struct sub; s.sub_clazz)
+				preGenerate(sub);
+		} finally { PassInfo.pop(s); }
+	}
+	
+	private static void addMethodsForVirtualField(Struct s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
 			Kiev.reportError(f.pos,"Static fields can't be virtual");
 			f.setVirtual(false);
@@ -74,7 +217,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		foreach(ASTNode n; s.members; n instanceof Method && ((Method)n).name.name.byteAt(3) == '$') {
+		foreach(ASTNode n; s.members; n instanceof Method) {
 			Method m = (Method)n;
 			if( m.name.equals(set_name) ) {
 				set_found = true;
@@ -197,112 +340,11 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		}
 	}
 
-	public void autoGenerateMembers(Struct s) {
-	}
 	
-	private void addSetterForAbstractField(Struct s, KString name, Method m) {
-		Field f = s.resolveField( name, false );
-		if( f != null ) {
-			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent != m.parent)
-				return;
-			MetaVirtual mv = f.getMetaVirtual();
-			if (mv != null && mv.set != null && mv.set != m)
-				return;
-		} else {
-			s.addField(f=new Field(name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
-			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
-		}
-		if (f.getMetaVirtual() == null)
-			f.meta.set(new MetaVirtual());
-		f.getMetaVirtual().set = m;
-		if( m.isPublic() ) {
-			f.acc.w_public = true;
-			f.acc.w_protected = true;
-			f.acc.w_default = true;
-			f.acc.w_private = true;
-		}
-		else if( m.isPrivate() ) {
-			f.acc.w_public = false;
-			f.acc.w_protected = false;
-			f.acc.w_default = false;
-			f.acc.w_private = true;
-		}
-		else if( m.isProtected() ) {
-			f.acc.w_public = false;
-			f.acc.w_private = true;
-		}
-		else {
-			f.acc.w_public = false;
-			f.acc.w_default = true;
-			f.acc.w_private = true;
-		}
-		f.acc.verifyAccessDecl(f);
-	}
-	
-	private void addGetterForAbstractField(Struct s, KString name, Method m) {
-		Field f = s.resolveField( name, false );
-		if( f != null ) {
-			trace(Kiev.debugCreation,"method "+m+" has field "+f);
-			if (f.parent != m.parent)
-				return;
-			MetaVirtual mv = f.getMetaVirtual();
-			if (mv != null && mv.get != null && mv.get != m)
-				return;
-		} else {
-			s.addField(f=new Field(name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
-			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
-		}
-		if (f.getMetaVirtual() == null)
-			f.meta.set(new MetaVirtual());
-		f.getMetaVirtual().get = m;
-		if( m.isPublic() ) {
-			f.acc.r_public = true;
-			f.acc.r_protected = true;
-			f.acc.r_default = true;
-			f.acc.r_private = true;
-		}
-		else if( m.isPrivate() ) {
-			f.acc.r_public = false;
-			f.acc.r_protected = false;
-			f.acc.r_default = false;
-			f.acc.r_private = true;
-		}
-		else if( m.isProtected() ) {
-			f.acc.r_public = false;
-			f.acc.r_private = true;
-		}
-		else {
-			f.acc.r_public = false;
-			f.acc.r_default = true;
-			f.acc.r_private = true;
-		}
-		f.acc.verifyAccessDecl(f);
-	}
-	
-	public void addAbstractFields(Struct s) {
-		foreach(ASTNode n; s.members; n instanceof Method) {
-			Method m = (Method)n;
-			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a setter");
-			if (m.name.name.startsWith(nameSet))
-				addSetterForAbstractField(s, m.name.name.substr(nameSet.length()), m);
-			foreach (KString name; m.name.aliases) {
-				//trace(Kiev.debugCreation,"check "+name+" to be a setter");
-				if (name.startsWith(nameSet))
-					addSetterForAbstractField(s, name.substr(nameSet.length()), m);
-			}
-			//trace(Kiev.debugCreation,"check "+m.name.name+" to be a getter");
-			if (m.name.name.startsWith(nameGet))
-				addGetterForAbstractField(s, m.name.name.substr(nameGet.length()), m);
-			foreach (KString name; m.name.aliases) {
-				//trace(Kiev.debugCreation,"check "+name+" to be a getter");
-				if (name.startsWith(nameGet))
-					addGetterForAbstractField(s, name.substr(nameGet.length()), m);
-			}
-		}
-	}
-	
-	
+	////////////////////////////////////////////////////
+	//	   PASS - rewrite code                        //
+	////////////////////////////////////////////////////
+
 	private void rewriteNode(ASTNode node, String id) {
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			Object val = node.getVal(attr.name);

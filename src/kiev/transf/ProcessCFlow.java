@@ -53,14 +53,8 @@ public final class ProcessCFlow extends TransfProcessor implements Constants {
 	public void verify(FileUnit:ASTNode fu) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		PassInfo.push(fu);
-		try {
-			foreach (ASTNode n; fu.members) {
-				verify(n);
-			}
-		} finally { PassInfo.pop(fu); Kiev.curFile = oldfn; }
+		foreach (ASTNode n; fu.members)
+			verify(n);
 	}
 	
 	public void verify(Struct:ASTNode s) {

@@ -550,6 +550,7 @@ public final class Kiev {
 		Operator				: "operators"		,
 		Typedef					: "typedef"			,
 		Enum					: "enum"			,
+		PizzaCase				: "pizza case"		,
 		Contract				: "contract"		,
 		Generics				: "generics"		,
 		Templates				: "templates"		,
@@ -568,6 +569,7 @@ public final class Kiev {
 		transfProcessors[(int)Ext.VirtualFields]	= new ProcessVirtFld(Ext.VirtualFields);
 		transfProcessors[(int)Ext.PackedFields]	= new ProcessPackedFld(Ext.PackedFields);
 		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);
+		transfProcessors[(int)Ext.PizzaCase]		= new ProcessPizzaCase(Ext.PizzaCase);
 		transfProcessors[(int)Ext.VNode]			= new ProcessVNode(Ext.VNode);
 		transfProcessors[(int)Ext.CFlow]			= new ProcessCFlow(Ext.CFlow);
 		setExtension(false, "vnode");
@@ -637,6 +639,7 @@ public final class Kiev {
 			KString curr_file = Kiev.curFile;
 			Kiev.curFile = fu.filename;
 			boolean[] exts = Kiev.getExtSet();
+			PassInfo.push(fu);
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
 				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
@@ -650,7 +653,9 @@ public final class Kiev {
 				}
 			}
 			finally {
-				Kiev.curFile = curr_file; Kiev.setExtSet(exts);
+				PassInfo.pop(fu);
+				Kiev.curFile = curr_file;
+				Kiev.setExtSet(exts);
 			}
 		}
 		return (Kiev.errCount > 0); // true if failed
@@ -672,6 +677,18 @@ public final class Kiev {
 		if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.pass2_2(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDecls) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaDecl(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDefaults) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaDefaults(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaValues) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaValues(node);
 		}
 		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
