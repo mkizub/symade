@@ -283,19 +283,14 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 	}
 
 	public void cleanup() {
-		parent=null;
         Kiev.parserAddresses.clear();
 		Kiev.curFileUnit = null;
 		Kiev.k.presc = null;
-		for(int i=0; i < members.length; i++)
-			members[i].cleanup();
 		foreach(ASTNode n; syntax) n.cleanup();
-		syntax = null;
 		foreach(ASTNode n; members) n.cleanup();
-		members = null;
 		foreach(PrescannedBody n; bodies)
 			n.replaceWith(null);
-		bodies = null;
+		bodies = PrescannedBody.emptyArray;
 	}
 
 	public void toJava(String output_dir) {

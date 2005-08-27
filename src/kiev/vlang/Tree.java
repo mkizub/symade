@@ -134,13 +134,6 @@ public final class NArr<N extends ASTNode> {
 		return $nodes.length;
 	}
 
-	public void cleanup() {
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++)
-			$nodes[i].cleanup();
-		$nodes = null;
-	};
-	
 	public final N get(int idx)
 		alias at
 		alias operator(210,xfy,[])

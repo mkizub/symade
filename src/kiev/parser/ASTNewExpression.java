@@ -49,6 +49,12 @@ public class ASTNewExpression extends Expr {
     @att
 	public final Struct				clazz;
 	
+	public void preResolve() {
+		// don't pre-resolve clazz
+		type.preResolve();
+		foreach (ENode a; args) a.preResolve();
+	}
+	
 	public void resolve(Type reqType) {
 		// Find out possible constructors
 		Type tp = type.getType();

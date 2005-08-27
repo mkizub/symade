@@ -529,17 +529,17 @@ public class Compiler {
 					FileUnit fu = Kiev.k.FileUnit(args[i]);
 					Kiev.files.append(fu);
 					diff_time = System.currentTimeMillis() - curr_time;
-					runGC();
 					bis.close();
+					runGC();
 					Kiev.curFile = KString.Empty;
 					if( Kiev.verbose )
 						Kiev.reportInfo("Scanned file   "+args[i],diff_time);
 					System.out.flush();
-					runGC();
 				} catch (Exception e) {
 					Kiev.reportParserError(0,e);
 				}
 			}
+			runGC();
 
 
 			////////////////////////////////////////////////////
@@ -605,15 +605,34 @@ public class Compiler {
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass3(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's declarations passed",diff_time);
+			if( Kiev.verbose ) Kiev.reportInfo("Class's pure interface declarations passed",diff_time);
 			if( Kiev.errCount > 0) goto stop;
 			runGC();
 
 			///////////////////////////////////////////////////////////////////////
+			///////////////////////    Parse bodies       /////////////////////////
+			///////////////////////////////////////////////////////////////////////
+			
+			foreach (FileUnit fu; Kiev.files; !fu.scanned_for_interface_only) {
+				try {
+					runGC();
+					diff_time = curr_time = System.currentTimeMillis();
+					Kiev.parseFile(fu);
+					diff_time = System.currentTimeMillis() - curr_time;
+					Kiev.curFile = KString.Empty;
+				} catch (Exception ioe) {
+					Kiev.reportParserError(0,ioe);
+				}
+				if( Kiev.verbose )
+					Kiev.reportInfo("Parsed file    "+fu,diff_time);
+			}
+			runGC();
+				
+			///////////////////////////////////////////////////////////////////////
 			///////////////////////    VNode language     /////////////////////////
 			///////////////////////////////////////////////////////////////////////
 			
-			Kiev.pass_no = TopLevelPass.passCreateMembers;
+			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.autoGenerateMembers(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;
@@ -621,13 +640,13 @@ public class Compiler {
 			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
 
-
 			Kiev.pass_no = TopLevelPass.passResolveImports;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preResolve(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-resolved",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
+			runGC();
 
 			Kiev.pass_no = TopLevelPass.passVerify;
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.verify(fu); });
@@ -635,7 +654,7 @@ public class Compiler {
 			runGC();
 			
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's pure interface declarations passed",diff_time);
+			if( Kiev.verbose ) Kiev.reportInfo("Semantic tree verification passed",diff_time);
 	
 			///////////////////////////////////////////////////////////////////////
 			///////////////////////    Back-end    ////////////////////////////////
@@ -650,17 +669,17 @@ public class Compiler {
 
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			for(int i=0; i < Kiev.files.length; i++) {
-				try {
-					runGC();
-					diff_time = curr_time = System.currentTimeMillis();
-					Kiev.parseFile(Kiev.files[i]);
-					diff_time = System.currentTimeMillis() - curr_time;
-					Kiev.curFile = KString.Empty;
-				} catch (Exception ioe) {
-					Kiev.reportParserError(0,ioe);
-				}
-				if( Kiev.verbose )
-					Kiev.reportInfo("Parsed file    "+args[i],diff_time);
+				//try {
+				//	runGC();
+				//	diff_time = curr_time = System.currentTimeMillis();
+				//	Kiev.parseFile(Kiev.files[i]);
+				//	diff_time = System.currentTimeMillis() - curr_time;
+				//	Kiev.curFile = KString.Empty;
+				//} catch (Exception ioe) {
+				//	Kiev.reportParserError(0,ioe);
+				//}
+				//if( Kiev.verbose )
+				//	Kiev.reportInfo("Parsed file    "+args[i],diff_time);
 				runGC();
 				try {
 					Kiev.files[i].resolveDecl();

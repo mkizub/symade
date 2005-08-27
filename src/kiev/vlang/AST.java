@@ -143,8 +143,8 @@ public abstract class ASTNode implements Constants {
 		this.pos = pos;
 	}
 
-	public /*abstract*/ void cleanup() {
-		parent = null;
+	public void cleanup() {
+		// do nothing
 	};
 	
 	public /*abstract*/ Object copy() {

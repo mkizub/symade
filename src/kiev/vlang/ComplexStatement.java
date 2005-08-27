@@ -101,15 +101,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		node ?= var
 	}
 	
-	public void cleanup() {
-		parent=null;
-		val.cleanup();
-		val = null;
-		type = null;
-		pattern.cleanup();
-		stats.cleanup();
-	}
-
 	public void resolve(Type tpVoid) {
 		boolean pizza_case = false;
 		PassInfo.push(this);
@@ -288,19 +279,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	}
 
 	public String toString() { return "switch("+sel+")"; }
-
-	public void cleanup() {
-		parent=null;
-		sel.cleanup();
-		sel = null;
-		tmpvar = null;
-		foreach(ASTNode n; cases; n!=null) n.cleanup();
-		cases = null;
-		if( defCase != null ) {
-			defCase.cleanup();
-			defCase = null;
-		}
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -680,13 +658,6 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public void cleanup() {
-		parent=null;
-		arg = null;
-		body.cleanup();
-		body = null;
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
@@ -805,25 +776,6 @@ public class TryStat extends Statement/*defaults*/ {
 	public CodeLabel	end_label;
 
 	public TryStat() {
-	}
-
-//	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
-//		super(pos, parent);
-//		this.body = body;
-//		this.catchers.addAll(catchers);
-//		this.finally_catcher = finally_catcher;
-//	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		foreach(ASTNode n; catchers; n!=null) n.cleanup();
-		catchers = null;
-		if( finally_catcher != null ) {
-			finally_catcher.cleanup();
-			finally_catcher = null;
-		}
 	}
 
 	public void resolve(Type reqType) {
@@ -972,21 +924,6 @@ public class SynchronizedStat extends Statement {
 	public SynchronizedStat() {
 	}
 
-//	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
-//		super(pos, parent);
-//		this.expr = expr;
-//		this.body = body;
-//	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		expr.cleanup();
-		expr = null;
-		expr_var = null;
-	}
-
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -1064,21 +1001,6 @@ public class WithStat extends Statement {
 	public CodeLabel	end_label;
 
 	public WithStat() {
-	}
-
-//	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
-//		super(pos, parent);
-//		this.expr = expr;
-//		this.body = body;
-//	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		expr.cleanup();
-		expr = null;
-		var_or_field = null;
 	}
 
 	public void resolve(Type reqType) {

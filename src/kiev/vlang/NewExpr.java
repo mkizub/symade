@@ -218,22 +218,6 @@ public class NewExpr extends Expr {
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public void cleanup() {
-		parent=null;
-		type = null;
-		args.cleanup();
-		if( outer != null ) {
-			outer.cleanup();
-			outer = null;
-		}
-		if( tif_expr != null ) {
-			tif_expr.cleanup();
-			tif_expr = null;
-		}
-		outer_args.cleanup();
-		func = null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		Type tp = type.getType();
 		if( !tp.isReference() ) {
@@ -357,14 +341,6 @@ public class NewArrayExpr extends Expr {
 
 	public int		getPriority() { return Constants.opAccessPriority; }
 
-	public void cleanup() {
-		parent=null;
-		type = null;
-		arrtype = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
-		args = null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(type);
 		for(int i=0; i < dim; i++) {
@@ -461,14 +437,6 @@ public class NewInitializedArrayExpr extends Expr {
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
-
-	public void cleanup() {
-		parent=null;
-		type = null;
-		arrtype = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
-		args = null;
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("new ").append(arrtype);
@@ -584,12 +552,6 @@ public class NewClosure extends Expr {
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
-
-	public void cleanup() {
-		parent=null;
-		type = null;
-		func = null;
-	}
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)type.clazz;

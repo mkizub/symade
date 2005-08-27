@@ -8701,6 +8701,7 @@ public class kiev040 implements kiev040Constants {
 			clazz.pos  = name.pos;
 		else
 			clazz.pos  = parent.pos;
+		clazz.setResolved(true);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
 		if      (parent instanceof FileUnit)

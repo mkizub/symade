@@ -171,11 +171,6 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		return dmp;
 	}
 
-	public void cleanup() {
-		parent=null;
-		resolved = null;
-	}
-
 }
 
 

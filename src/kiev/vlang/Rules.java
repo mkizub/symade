@@ -80,11 +80,6 @@ public class RuleMethod extends Method {
 		return max_vars++;
 	}
 
-	public void cleanup() {
-    	localvars = null;
-        super.cleanup();
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
@@ -293,11 +288,6 @@ public /*immutable*/ class JumpNodes implements Cloneable {
 		jump_to_back = jtb;
 	}
 
-	public void cleanup() {
-    	next_check = null;
-        next_back = null;
-	}
-
 	public Object clone() {
 		return super.clone();
 	}
@@ -338,11 +328,6 @@ public abstract class ASTRuleNode extends CFlowNode {
 
 	public ASTRuleNode(int pos) {
 		super(pos);
-	}
-
-	public void cleanup() {
-		jn.cleanup();
-		jn = null;
 	}
 
 	@getter public int get$base() { return base; }
@@ -416,14 +401,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		this(pos,parent,n);
 		foreach (ENode st; stats)
 			this.stats.add(st);
-	}
-
-	public void cleanup() {
-		node.cleanup();
-		node = null;
-		foreach(ASTNode n; stats; n!=null) n.cleanup();
-		stats = null;
-		super.cleanup();
 	}
 
 	public void resolve(Type reqType) {
@@ -522,12 +499,6 @@ public final class RuleOrExpr extends ASTRuleNode {
 		this.rules.addAll(rules);
 	}
 
-	public void cleanup() {
-		foreach(ASTNode n; rules; n!=null) n.cleanup();
-		rules = null;
-		super.cleanup();
-	}
-
 	public void createText(StringBuffer sb) {
 		foreach( ASTRuleNode n; rules )
 			n.createText(sb);
@@ -580,12 +551,6 @@ public final class RuleAndExpr extends ASTRuleNode {
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
 		super(pos);
 		this.rules.addAll(rules);
-	}
-
-	public void cleanup() {
-		foreach(ASTNode n; rules; n!=null) n.cleanup();
-		rules = null;
-		super.cleanup();
 	}
 
 	public void createText(StringBuffer sb) {
@@ -669,13 +634,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
 		this.expr = expr;
 	}
 
-	public void cleanup() {
-		var = null;
-		expr.cleanup();
-		expr = null;
-		super.cleanup();
-	}
-
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 		idx = ++((RuleMethod)PassInfo.method).index;
@@ -733,13 +691,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		super(pos);
 		this.vars.addAll(vars);
 		this.exprs.addAll(exprs);
-	}
-
-	public void cleanup() {
-		foreach(ASTNode n; exprs; n!=null) n.cleanup();
-		exprs = null;
-		vars = null;
-		super.cleanup();
 	}
 
 	public void resolve1(JumpNodes jn) {
@@ -963,17 +914,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 		this.args.insert(0,expr.env_access);
 	}
 
-	public void cleanup() {
-		if( obj != null ) {
-			obj.cleanup();
-			obj = null;
-		}
-		func = null;
-		foreach(ASTNode n; args; n!=null) n.cleanup();
-		args = null;
-		super.cleanup();
-	}
-
 	public void resolve(Type reqType) {
 	}
 
@@ -1051,12 +991,6 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		super(expr.pos);
 		this.expr = expr;
 		this.bt_expr = bt_expr;
-	}
-
-	public void cleanup() {
-		expr.cleanup();
-		expr = null;
-		super.cleanup();
 	}
 
 	public void resolve(Type reqType) {
@@ -1150,14 +1084,6 @@ public final class RuleExpr extends RuleExprBase {
 
 	public RuleExpr(ENode expr, ENode bt_expr) {
 		super(expr, bt_expr);
-	}
-
-	public void cleanup() {
-		if (bt_expr != null) {
-			bt_expr.cleanup();
-			bt_expr = null;
-		}
-		super.cleanup();
 	}
 
 	public void resolve(Type reqType) {

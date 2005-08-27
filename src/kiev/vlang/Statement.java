@@ -47,10 +47,7 @@ public class ShadowStat extends Statement {
 		this.stat = stat;
 	}
 	public Type getType() { return stat.getType(); }
-	public void cleanup() {
-		parent = null;
-		stat   = null;
-	}
+
 	public void resolve(Type reqType) {
 		stat.resolve(reqType);
 		setResolved(true);
@@ -145,11 +142,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 				Code.addInstr(Instr.op_store,redir.new_var);
 			}
 		}
-	}
-
-	public void cleanup() {
-		parent=null;
-		method = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -345,11 +337,6 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		return break_label;
 	}
 
-	public void cleanup() {
-		parent=null;
-		stats.cleanup();
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
 		foreach (ENode s; stats)
@@ -375,10 +362,6 @@ public class EmptyStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating EmptyStat");
 //		Code.setPos(pos);
 //		Code.addInstr(Instr.op_nop);
-	}
-
-	public void cleanup() {
-		parent=null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -428,12 +411,6 @@ public class ExprStat extends Statement {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( isHidden() ) dmp.append("/* ");
 		expr.toJava(dmp).append(';');
@@ -441,159 +418,6 @@ public class ExprStat extends Statement {
 		return dmp;
 	}
 }
-
-//@node
-//@cfnode
-//public class DeclStat extends Statement {
-//
-//	@att public Var		var;
-//	@att public Expr	init;
-//
-//	public DeclStat() {
-//	}
-//
-//	public DeclStat(int pos, ASTNode parent, Var var) {
-//		super(pos, parent);
-//		this.var = var;
-//	}
-//
-//	public DeclStat(int pos, ASTNode parent, Var var, Expr init) {
-//		this(pos,parent,var);
-//		this.init = init;
-//	}
-//
-//	public void resolve(Type reqType) throws RuntimeException {
-//		if( isResolved() ) return this;
-//		PassInfo.push(this);
-//		try {
-//			if( init != null ) {
-//				try {
-//					init = init.resolveExpr(var.type);
-//					Type it = init.getType();
-//					if( it != var.type ) {
-//						init = new CastExpr(init.pos,var.type,init);
-//						init = init.resolveExpr(var.type);
-//					}
-//				} catch(Exception e ) {
-//					Kiev.reportError(pos,e);
-//				}
-//			}
-//			ASTNode p = parent;
-//			while( p != null && !(p instanceof BlockStat || p instanceof BlockExpr) ) p = p.parent;
-//			if( p != null ) {
-//				if (p instanceof BlockStat)
-//					((BlockStat)p).addVar(var);
-//				else
-//					((BlockExpr)p).addVar(var);
-//				NodeInfoPass.setNodeType(var,var.type);
-//				if( init != null )
-//					NodeInfoPass.setNodeValue(var,init);
-//			} else {
-//				Kiev.reportError(pos,"Can't find scope for var "+var);
-//			}
-//		} finally { PassInfo.pop(this); }
-//		setResolved(true);
-//		return this;
-//	}
-//
-//	public void generate(Type reqType) {
-//		trace(Kiev.debugStatGen,"\tgenerating DeclStat");
-//		PassInfo.push(this);
-//		try {
-//			if( init != null ) {
-//				if( !var.isNeedRefProxy() ) {
-//					init.generate(var.type);
-//					Code.addVar(var);
-//					Code.addInstr(Instr.op_store,var);
-//				} else {
-//					Type prt = Type.getProxyType(var.type);
-//					Code.addInstr(Instr.op_new,prt);
-//					Code.addInstr(Instr.op_dup);
-//					init.generate(var.type);
-//					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
-//					Method@ in;
-//					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),nameInit,mt);
-//					Code.addInstr(Instr.op_call,in,false);
-//					Code.addVar(var);
-//					Code.addInstr(Instr.op_store,var);
-//				}
-//			} else {
-//				Code.addVar(var);
-//			}
-//		} catch(Exception e ) {
-//			Kiev.reportError(pos,e);
-//		} finally { PassInfo.pop(this); }
-//	}
-//
-//	public void cleanup() {
-//		parent=null;
-//		var.cleanup();
-//		var = null;
-//		if( init != null ) {
-//			init.cleanup();
-//			init = null;
-//		}
-//	}
-//
-//	public Dumper toJava(Dumper dmp) {
-//		var.toJavaDecl(dmp);
-//		if( init != null )
-//			dmp.space().append("=").space();
-//		if( var.isNeedRefProxy() )
-//			dmp.append("new").forsed_space().append(Type.getProxyType(var.type))
-//			.append('(').append(init).append(')');
-//		else
-//			dmp.append(init);
-//		return dmp.append(';');
-//	}
-//}
-
-//@node
-//@cfnode
-//public class TypeDeclStat extends Statement/*defaults*/ {
-//
-//	@att public Struct		struct;
-//
-//	public TypeDeclStat() {
-//	}
-//	
-//	public TypeDeclStat(int pos, ASTNode parent) {
-//		super(pos, parent);
-//	}
-//	
-//	public void resolve(Type reqType) throws RuntimeException {
-//		PassInfo.push(this);
-//		try {
-//			try {
-//				struct = (Struct)struct.resolve(Type.tpVoid);
-//			} catch(Exception e ) {
-//				Kiev.reportError(pos,e);
-//			}
-//		} finally { PassInfo.pop(this); }
-//		return this;
-//	}
-//
-//	public void generate(Type reqType) {
-//		trace(Kiev.debugStatGen,"\tgenerating TypeDeclStat");
-//		PassInfo.push(this);
-//		try {
-////			struct.generate();
-//		} catch(Exception e ) {
-//			Kiev.reportError(pos,e);
-//		} finally { PassInfo.pop(this); }
-//	}
-//
-//	public void cleanup() {
-//		parent=null;
-//		struct.cleanup();
-//		struct = null;
-//	}
-//
-//	public Dumper toJava(Dumper dmp) {
-//		struct.toJavaDecl(dmp);
-//		return dmp.append(';');
-//	}
-//}
 
 @node
 @cfnode
@@ -646,14 +470,6 @@ public class ReturnStat extends Statement/*defaults*/ {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
-	}
-
-	public void cleanup() {
-		parent=null;
-		if( expr != null ) {
-			expr.cleanup();
-			expr = null;
-		}
 	}
 
 	public static void generateReturn() {
@@ -750,12 +566,6 @@ public class ThrowStat extends Statement/*defaults*/ {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
-	}
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -904,18 +714,6 @@ public class IfElseStat extends Statement {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		thenSt.cleanup();
-		thenSt = null;
-		if( elseSt != null ) {
-			elseSt.cleanup();
-			elseSt = null;
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
@@ -1044,14 +842,6 @@ public class CondStat extends Statement {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		message.cleanup();
-		message = null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("if( !(").append(cond)
 			.append(") ) throw new kiev.stdlib.AssertionFailedException(")
@@ -1109,12 +899,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	public CodeLabel getLabel() {
 		if( tag_label == null ) tag_label = Code.newLabel();
 		return tag_label;
-	}
-
-	public void cleanup() {
-		parent=null;
-		stat.cleanup();
-		stat = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1197,10 +981,6 @@ public class BreakStat extends Statement {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("break");
 		if( ident != null && !ident.name.equals(KString.Empty) )
@@ -1253,10 +1033,6 @@ public class ContinueStat extends Statement/*defaults*/ {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
-	}
-
-	public void cleanup() {
-		parent=null;
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1452,10 +1228,6 @@ public class GotoStat extends Statement/*defaults*/ {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append("goto").space().append(ident).append(';');
 	}
@@ -1571,12 +1343,6 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
-	}
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
 	}
 
 	public Dumper toJava(Dumper dmp) {

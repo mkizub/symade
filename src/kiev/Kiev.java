@@ -521,6 +521,7 @@ public final class Kiev {
 				if( !((SetBody)b.parent).setBody(bl) ) {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body does not math");
 				}
+				b.replaceWithNode(null);
 				pl = pl.reverse();
 				foreach(ASTNode nn; pl) {
 					PassInfo.pop(nn);
@@ -701,6 +702,10 @@ public final class Kiev {
 		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.preResolve(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passVerify) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.verify(node);
 		}
 	}
 

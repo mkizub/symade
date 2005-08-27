@@ -297,10 +297,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 
 	public int hashCode() { return signature.hashCode(); }
 
-	public void cleanup() {
-		// Type is persistent
-	}
-
 	public String toString() {
 		if( isArray() )
 			return args[0]+"[]";

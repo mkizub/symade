@@ -179,14 +179,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		this.expr2 = expr2;
 	}
 
-	public void cleanup() {
-		parent=null;
-		expr1.cleanup();
-		expr1 = null;
-		expr2.cleanup();
-		expr2 = null;
-	}
-
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		if( expr1.getPriority() < opBooleanOrPriority )
@@ -292,14 +284,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public int getPriority() { return opBooleanAndPriority; }
 
-	public void cleanup() {
-		parent=null;
-		expr1.cleanup();
-		expr1 = null;
-		expr2.cleanup();
-		expr2 = null;
-	}
-
 	public void resolve(Type reqType) {
 //		if( isResolved() ) return this;
 		PassInfo.push(this);
@@ -376,14 +360,6 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 
 	public int getPriority() { return op.priority; }
-
-	public void cleanup() {
-		parent=null;
-		expr1.cleanup();
-		expr1 = null;
-		expr2.cleanup();
-		expr2 = null;
-	}
 
 	private void initialResolve(Type reqType) {
 		setTryResolved(true);
@@ -741,12 +717,6 @@ public class InstanceofExpr extends BoolExpr {
 
 	public int getPriority() { return Constants.opInstanceOfPriority; }
 
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
-
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);
@@ -853,12 +823,6 @@ public class BooleanNotExpr extends BoolExpr {
 	}
 
 	public int getPriority() { return opBooleanNotPriority; }
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

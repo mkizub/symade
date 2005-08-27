@@ -124,7 +124,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		super_bound = new TypeRef(super_bound.pos, tp);
 	}
 
-	public NodeName	getName() { return name; }
+	public NodeName getName() { return name; }
 	
 	/** hashCode of structure is a hash code
 		of it's name, which must be unique for each structure
@@ -227,7 +227,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
 		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
-		 	return true;
+			return true;
 		if( cl.isInterface() ) {
 			for(int i=0; i < interfaces.length; i++) {
 				if( interfaces[i].clazz.instanceOf(cl) ) return true;
@@ -264,7 +264,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			ASTNode n = package_clazz.resolveName(name);
 			if( n != null ) return n;
 		}
-        if( isPackage() ) {
+		if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
 			try {
@@ -310,11 +310,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		checkResolved(),
 		{
 			trace(Kiev.debugResolve,"Struct: resolving in "+this),
-			resolveNameR_1(node,info,name),	// resolve in this class
+			resolveNameR_1(node,info,name), // resolve in this class
 			$cut
 		;	info.isImportsAllowed(),
 			trace(Kiev.debugResolve,"Struct: resolving in imports of "+this),
-			resolveNameR_2(node,info,name),	// resolve in imports
+			resolveNameR_2(node,info,name), // resolve in imports
 			$cut
 		;	this.name.short_name.equals(nameIdefault),
 			trace(Kiev.debugResolve,"Struct: resolving in default interface implementation of "+this),
@@ -322,7 +322,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			$cut
 		;	info.isSuperAllowed(),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
-			resolveNameR_3(node,info,name),	// resolve in super-classes
+			resolveNameR_3(node,info,name), // resolve in super-classes
 			$cut
 		;	this.isPackage(),
 			trace(Kiev.debugResolve,"Struct: trying to load in package "+this),
@@ -365,7 +365,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	}
 
 	public boolean tryLoad(ASTNode@ node, KString name) {
-        if( isPackage() ) {
+		if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
 			try {
@@ -676,7 +676,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				 || PassInfo.method.params[0].name.name != nameTypeInfo
 				 || !PassInfo.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
 				 )
-				 	throw new CompilerException(pos,"$typeinfo cannot be accessed from "+PassInfo.method);
+					throw new CompilerException(pos,"$typeinfo cannot be accessed from "+PassInfo.method);
 				ti_access = new VarAccessExpr(pos,PassInfo.method.params[0]);
 			}
 			else {
@@ -1183,7 +1183,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ASTNode initbody = m.body;
 
 				boolean gen_def_constr = false;
-	            NArr<ASTNode> stats = ((BlockStat)initbody).stats;
+				NArr<ASTNode> stats = ((BlockStat)initbody).stats;
 				if( stats.length==0 ) {
 					gen_def_constr = true;
 				} else {
@@ -1241,7 +1241,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( this.type.args.length > 0 && super_type.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
-								call_super.args.append(	new VarAccessExpr(m.pos,call_super,m.params[i]));
+								call_super.args.append( new VarAccessExpr(m.pos,call_super,m.params[i]));
 							}
 						}
 					}
@@ -1435,7 +1435,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			if (st != null) {
 				BlockStat body = new BlockStat(0,mm);
 				body.addStatement(st);
-				mm.body = body;
+				if (mm.body != null)
+					mm.body.stats.insert(0, body);
+				else
+					mm.body = body;
 			}
 			mm.setMultiMethod(true);
 			boolean add_mm = true;
@@ -1465,7 +1468,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					if (m == rm)
 						cur_m--;
 				} else {
-					add_mm = false;	// do not add it
+					add_mm = false; // do not add it
 				}
 			}
 			if (add_mm)
@@ -1662,8 +1665,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		setMembersGenerated(true);
 		
-		foreach(Struct s; sub_clazz; )
-			s.autoProxyMethods();
+		foreach(DNode s; members; s instanceof Struct)
+			((Struct)s).autoProxyMethods();
 
 		combineMethods();
 	}
@@ -1697,8 +1700,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								Kiev.reportWarning(0,"Method "+s+"."+mj+" must be declared public");
 								mj.setPublic(true);
 							}
-						 	found = true;
-						 	break scan_class;
+							found = true;
+							break scan_class;
 						 } else {
 							trace(Kiev.debugResolve,"chk: methods "+mi.name+
 									Type.getRealType(me.type,mj.type)+
@@ -1823,8 +1826,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						f.addAttr(new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()) ));
 				}
 			}
-	   	    // Process inner classes and cases
-	   	    if( !isPackage() ) {
+			// Process inner classes and cases
+			if( !isPackage() ) {
 				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
 					sub_clazz[i].resolveFinalFields(cleanup);
 				}
@@ -1855,7 +1858,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 							Kiev.reportError(m.pos,e);
 						}
 					}
-				} finally { 	NodeInfoPass.close(); }
+				} finally {		NodeInfoPass.close(); }
 			}
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {
@@ -1890,7 +1893,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						}
 					}
 				}
-			} finally { 	NodeInfoPass.close(); }
+			} finally {		NodeInfoPass.close(); }
 			
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {
@@ -2089,7 +2092,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 ////				}
 //			}
 
-	        ConstPool.reInit();
+			ConstPool.reInit();
 			ConstPool.addClazzCP(jthis.type.signature);
 			ConstPool.addClazzCP(jthis.type.java_signature);
 			if( super_type != null ) {
@@ -2264,7 +2267,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			if( Kiev.safe && isBad() ) return;
 			FileUnit.toBytecode(this);
 			Env.setProjectInfo(name, true);
-	        ConstPool.reInit();
+			ConstPool.reInit();
 			kiev.Main.runGC();
 		} finally { PassInfo.pop(this); }
 //		setPassed_3(true);
@@ -2340,38 +2343,32 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	}
 
 	public void cleanup() {
-   	    if( !isPackage() ) {
-			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					sub_clazz[i].cleanup();
-			}
+		if( !isPackage() ) {
+			foreach (Struct sub; sub_clazz)
+					sub.cleanup();
 		}
 
 		foreach (ASTNode n; members; n instanceof Field) {
 			Field f = (Field)n;
-			if( f.init != null && !f.isFinal() && !f.init.isConstantExpr() )
-				f.init = null;
 			f.attrs = Attr.emptyArray;
 		}
 		foreach (ASTNode n; members; n instanceof Method) {
 			Method m = (Method)n;
-			m.params.delAll();
-			m.body = null;
 			Attr[] ats = m.attrs;
 			m.attrs = Attr.emptyArray;
 			for(int j=0; j < ats.length; j++) {
 				if( ats[j].name.equals(attrExceptions) )
 					m.addAttr(ats[j]);
 			}
-			m.cleanup();
 		}
 		Attr[] ats = this.attrs;
 		this.attrs = Attr.emptyArray;
 		for(int j=0; j < ats.length; j++) {
 			if( ats[j].name.equals(attrSourceFile)
-			||  ats[j].name.equals(attrPizzaCase)
-			||  ats[j].name.equals(attrEnum)
-			||  ats[j].name.equals(attrRequire)
-			||  ats[j].name.equals(attrEnsure)
+			||	ats[j].name.equals(attrPizzaCase)
+			||	ats[j].name.equals(attrEnum)
+			||	ats[j].name.equals(attrRequire)
+			||	ats[j].name.equals(attrEnsure)
 			)
 				addAttr(ats[j]);
 		}

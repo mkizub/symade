@@ -79,14 +79,6 @@ public class WhileStat extends LoopStat {
 		this.body = body;
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		body.cleanup();
-		body = null;
-	}
-
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
@@ -170,14 +162,6 @@ public class DoWhileStat extends LoopStat {
 		this.body = body;
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		body.cleanup();
-		body = null;
-	}
-
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
@@ -257,11 +241,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		super(pos);
 	}
 
-	public void cleanup() {
-		parent=null;
-		decls.cleanup();
-	}
-
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		Var@ var;
 	{
@@ -315,24 +294,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.cond = cond;
 		this.iter = iter;
 		this.body = body;
-	}
-
-	public void cleanup() {
-		parent=null;
-		if( init != null ) {
-			init.cleanup();
-			init = null;
-			}
-		if( cond != null ) {
-			cond.cleanup();
-			cond = null;
-			}
-		if( iter != null ) {
-			iter.cleanup();
-			iter = null;
-			}
-		body.cleanup();
-		body = null;
 	}
 
 	public void resolve(Type reqType) {
@@ -550,39 +511,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.container = container;
 		this.cond = cond;
 		this.body = body;
-	}
-
-	public void cleanup() {
-		parent=null;
-		var = null;
-		iter = null;
-		iter_array = null;
-		if( iter_init != null ) {
-			iter_init.cleanup();
-			iter_init = null;
-			}
-		if( iter_cond != null ) {
-			iter_cond.cleanup();
-			iter_cond = null;
-			}
-		if( iter_incr != null ) {
-			iter_incr.cleanup();
-			iter_incr = null;
-			}
-		if( var_init != null ) {
-			var_init.cleanup();
-			var_init = null;
-			}
-		if( container != null ) {
-			container.cleanup();
-			container = null;
-			}
-		if( cond != null ) {
-			cond.cleanup();
-			cond = null;
-			}
-		body.cleanup();
-		body = null;
 	}
 
 	public void resolve(Type reqType) {

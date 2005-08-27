@@ -51,10 +51,6 @@ public class ShadowExpr extends Expr {
 		this.expr = expr;
 	}
 	public Type getType() { return expr.getType(); }
-	public void cleanup() {
-		parent = null;
-		expr   = null;
-	}
 	
 	public int getPriority() {
 		return expr.getPriority();
@@ -78,58 +74,6 @@ public class ShadowExpr extends Expr {
 	}
 
 }
-
-/*
-@node
-@cfnode
-public class StatExpr extends Expr implements SetBody {
-	@att public Statement	stat;
-
-	public StatExpr() {
-	}
-
-	public StatExpr(int pos, Statement stat) {
-		super(pos);
-		this.stat = stat;
-	}
-
-	public Type getType() { return Type.tpVoid; }
-
-	public void cleanup() {
-		parent=null;
-		if( stat != null ) {
-			stat.cleanup();
-			stat = null;
-		}
-	}
-
-	public void resolve(Type reqType) {
-		if( isResolved() ) return this;
-		if( stat == null )
-			throw new CompilerException(pos,"Missed expression");
-		stat = (Statement)stat.resolve(reqType);
-		setResolved(true);
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		stat.generate(reqType);
-		if( reqType != Type.tpVoid ) {
-			throw new CompilerException(pos,"Statement can't return a value");
-		}
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return stat.toJava(dmp);
-	}
-
-	public boolean setBody(Statement body) {
-		this.stat = body;
-		return true;
-	}
-
-}
-*/
 
 @node
 @cfnode
@@ -156,12 +100,6 @@ public class ArrayLengthAccessExpr extends Expr {
 	}
 
 	public int getPriority() { return opAccessPriority; }
-
-	public void cleanup() {
-		parent=null;
-		array.cleanup();
-		array = null;
-	}
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
@@ -228,14 +166,6 @@ public class AssignExpr extends LvalueExpr {
 	public Type getType() { return lval.getType(); }
 
 	public int getPriority() { return opAssignPriority; }
-
-	public void cleanup() {
-		parent=null;
-		lval.cleanup();
-		lval = null;
-		value.cleanup();
-		value = null;
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
@@ -600,14 +530,6 @@ public class BinaryExpr extends Expr {
 //		return Type.tpVoid;
 	}
 
-	public void cleanup() {
-		parent=null;
-		expr1.cleanup();
-		expr1 = null;
-		expr2.cleanup();
-		expr2 = null;
-	}
-
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);
@@ -911,12 +833,6 @@ public class StringConcatExpr extends Expr {
 
 	public int getPriority() { return opAddPriority; }
 
-	public void cleanup() {
-		parent=null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
-		args = null;
-	}
-
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);
@@ -1034,11 +950,6 @@ public class CommaExpr extends Expr {
 	public Type getType() { return exprs[exprs.length-1].getType(); }
 
 	public int getPriority() { return 0; }
-
-	public void cleanup() {
-		parent=null;
-		exprs.cleanup();
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1215,15 +1126,6 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void cleanup() {
-		parent=null;
-		stats.cleanup();
-		if (res != null) {
-			res.cleanup();
-			res = null;
-		}
-	}
-
 	public String toString() {
 		Dumper dmp = new Dumper();
 		dmp.append("({").space();
@@ -1280,12 +1182,6 @@ public class UnaryExpr extends Expr {
 	}
 
 	public int getPriority() { return op.priority; }
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1463,12 +1359,6 @@ public class IncrementExpr extends LvalueExpr {
 	}
 
 	public int getPriority() { return op.priority; }
-
-	public void cleanup() {
-		parent=null;
-		lval.cleanup();
-		lval = null;
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1657,44 +1547,6 @@ public class IncrementExpr extends LvalueExpr {
 		return dmp;
 	}
 }
-/*
-@node
-@cfnode
-public class MultiExpr extends Expr {
-	@ref public MultiOperator			op;
-	@att public final NArr<ASTNode>		exprs;
-
-	public MultiExpr() {
-	}
-
-	public MultiExpr(int pos, MultiOperator op, List<ASTNode> exprs) {
-		super(pos);
-		this.op = op;
-		this.exprs.addAll(exprs.toArray());
-	}
-
-	public void cleanup() {
-		parent=null;
-		exprs.cleanup();
-	}
-
-	public Expr tryResolve(Type reqType) {
-		if( op == MultiOperator.Conditional ) {
-			Expr cond = ((Expr)exprs[0]).tryResolve(Type.tpBoolean);
-			if( cond == null )
-				return null;
-			Expr expr1 = ((Expr)exprs[1]).tryResolve(reqType);
-			if( expr1 == null )
-				return null;
-			Expr expr2 = ((Expr)exprs[2]).tryResolve(reqType);
-			if( expr2 == null )
-				return null;
-			return (Expr)new ConditionalExpr(pos,(Expr)cond.copy(),(Expr)expr1.copy(),(Expr)expr2.copy()).resolve(reqType);
-		}
-		throw new CompilerException(pos,"Multi-operators are not implemented");
-	}
-}
-*/
 
 @node
 @cfnode
@@ -1738,16 +1590,6 @@ public class ConditionalExpr extends Expr {
 	}
 
 	public int getPriority() { return opConditionalPriority; }
-
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		expr1.cleanup();
-		expr1 = null;
-		expr2.cleanup();
-		expr2 = null;
-	}
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1867,13 +1709,6 @@ public class CastExpr extends Expr {
 
 	public Type getType() {
 		return type.getType();
-	}
-
-	public void cleanup() {
-		parent=null;
-		type = null;
-		expr.cleanup();
-		expr = null;
 	}
 
 	public Type[] getAccessTypes() {

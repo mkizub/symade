@@ -90,13 +90,6 @@ public class CallExpr extends Expr {
 			return Type.getRealType(PassInfo.clazz.type,func.type.ret);
 	}
 
-	public void cleanup() {
-		parent=null;
-		func = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
-		args = null;
-	}
-
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( func.type.ret == Type.tpRule ) {
@@ -271,15 +264,6 @@ public class CallAccessExpr extends Expr {
 	}
 	public Type getType() {
 		return Type.getRealType(obj.getType(),func.type.ret);
-	}
-
-	public void cleanup() {
-		parent=null;
-		func = null;
-		obj.cleanup();
-		obj = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
-		args = null;
 	}
 
 	public void resolve(Type reqType) {
@@ -543,18 +527,6 @@ public class ClosureCallExpr extends Expr {
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
 		t = ClosureType.newClosureType(t.clazz,types,t.ret);
 		return t;
-	}
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-		foreach(ASTNode n; args; args!=null) n.cleanup();
-		args = null;
-		if( env_access != null ) {
-			env_access.cleanup();
-			env_access = null;
-		}
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {

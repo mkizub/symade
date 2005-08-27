@@ -247,15 +247,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return retvar;
 	}
 
-	public void cleanup() {
-//		parent=null;
-		// Methods are persistant
-		if( body != null ) {
-			body.cleanup();
-			body = null;
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);
 	}
@@ -665,7 +656,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Code.generateCode();
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);
-				body = null;
 			} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
 		}
 	}
@@ -693,10 +683,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if (this.body == null) {
 			this.body = (BlockStat)body;
 		}
-		else if (isMultiMethod()){
-			BlockStat b = (BlockStat)this.body;
-			b.addStatement(body);
-		}
+//		else if (isMultiMethod()){
+//			BlockStat b = (BlockStat)this.body;
+//			b.addStatement(body);
+//		}
 		else {
 			throw new RuntimeException("Added body to method "+this+" which already have body");
 		}
@@ -790,12 +780,6 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 			throw new RuntimeException("Added body to initializer "+this+" which already has body");
 		}
 		return true;
-	}
-
-	public void cleanup() {
-		super.cleanup();
-		body.cleanup();
-		body = null;
 	}
 
 }

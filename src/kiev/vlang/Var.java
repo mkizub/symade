@@ -119,13 +119,6 @@ public class Var extends DNode implements Named, Typed {
 		setResolved(true);
 	}
 
-	public void cleanup() {
-		parent = null;
-		name   = null;
-		vtype  = null;
-		init = null;
-	}
-
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
