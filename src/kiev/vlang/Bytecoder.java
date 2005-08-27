@@ -284,6 +284,8 @@ public class Bytecoder implements Constants {
 				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
 				m = new RuleMethod(m_name,mtype,m_flags);
 			}
+			else if (m_name == nameInit || m_name == nameClassInit)
+				m = new Constructor(mtype,m_flags);
 			else
 				m = new Method(m_name,mtype,m_flags);
 			m.parent = cl;

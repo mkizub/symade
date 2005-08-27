@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
-public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable, TopLevelDecl {
+public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	/** Variouse names of the class */
 	public ClazzName								name;
@@ -54,9 +54,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	/** SuperInterface types */
 	@att public final NArr<TypeRef>					interfaces;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet								meta;
 
 	/** Class' type arguments */
 	@att public final NArr<TypeArgRef>				args;
@@ -83,7 +80,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public Attr[]									attrs = Attr.emptyArray;
 	
 	/** Array of methods defined in this structure */
-	@att public final NArr<ASTNode>					members;
+	@att public final NArr<DNode>					members;
 
 	protected Struct(ClazzName name) {
 		super(0,0);
@@ -706,10 +703,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if (PassInfo.method != null &&
-			PassInfo.method.name.name == nameClassInit &&
-			PassInfo.clazz.isInterface()
-		) {
+		if ((PassInfo.method == null || PassInfo.method.name.name == nameClassInit) && PassInfo.clazz.isInterface()) {
 			Type ftype = Type.tpTypeInfo;
 			if (t.args.length > 0) {
 				if (((Struct)t.clazz).typeinfo_clazz == null)
@@ -753,16 +747,16 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 				), ti_args));
 		// Add initialization in <clinit>
-		Method class_init = getClazzInitMethod();
+		Constructor class_init = getClazzInitMethod();
 		if( PassInfo.method != null && PassInfo.method.name.equals(nameClassInit) ) {
-			((Initializer)class_init.body).addstats.insert(
+			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
 				),0
 			);
 		} else {
-			((Initializer)class_init.body).stats.insert(
+			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
@@ -849,7 +843,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 			// create constructor method
 			ti_init = MethodType.newMethodType(null,ti_init_targs,Type.tpVoid);
-			Method init = new Method(nameInit,ti_init,ACC_PUBLIC);
+			Constructor init = new Constructor(ti_init,ACC_PUBLIC);
 			init.params.addAll(ti_init_params);
 			typeinfo_clazz.addMethod(init);
 			init.body = ti_init_body;
@@ -946,7 +940,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			boolean init_found = false;
 			// Add outer hidden parameter to constructors for inner and non-static classes
 			int i = -1;
-			foreach (ASTNode n; members; ) {
+			foreach (DNode n; members; ) {
 				i++;
 				if !(n instanceof Method)
 					continue;
@@ -973,18 +967,18 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			}
 			if( !init_found ) {
 				trace(Kiev.debugResolve,nameInit+" not found in class "+this);
-				Method init = null;
+				Constructor init = null;
 				if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 					MethodType mt;
 					FormPar thisOuter, maxArgs;
 					if( !isStatic() ) {
 						mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
-						init = new Method(nameInit,mt,ACC_PUBLIC);
+						init = new Constructor(mt,ACC_PUBLIC);
 						init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					} else {
 						mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
-						init = new Method(nameInit,mt,ACC_PUBLIC);
+						init = new Constructor(mt,ACC_PUBLIC);
 						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 					}
 				} else {
@@ -1008,7 +1002,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
 					}
 					mt = MethodType.newMethodType(targs,Type.tpVoid);
-					init = new Method(nameInit,mt,ACC_PUBLIC);
+					init = new Constructor(mt,ACC_PUBLIC);
 					init.params.addAll(params);
 				}
 				init.pos = pos;
@@ -1093,14 +1087,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return mmret;
 	}
 	
-	public Method getClazzInitMethod() {
+	public Constructor getClazzInitMethod() {
 		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
-			return (Method)n;
-		Method class_init = new Method(nameClassInit,
-			MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
+			return (Constructor)n;
+		Constructor class_init = new Constructor(MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
-		class_init.body = new Initializer(pos,ACC_STATIC);
+		class_init.body = new BlockStat(pos,class_init);
 		return class_init;
 	}
 
@@ -1109,8 +1102,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
 		assert( PassInfo.clazz == this );
 		// <clinit> & common$init, if need
-		Method class_init = null;
-		BlockStat instance_init = null;
+		Constructor class_init = null;
+		Initializer instance_init = null;
 
 		foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer) {
 			if( isInterface() && !n.isAbstract() ) {
@@ -1138,11 +1131,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				if( f.isStatic() ) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					((Initializer)class_init.body).addStatement(
-//						new ExprStat(f.init.getPos(),class_init.body,
-//							new InitializeExpr(f.init.getPos(),AssignOperator.Assign
-//								,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init),f.isInitWrapper())
-//						)
+					class_init.body.addStatement(
 						new ExprStat(f.init.getPos(),class_init.body,
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
@@ -1152,12 +1141,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					);
 				} else {
 					if( instance_init == null ) {
-						instance_init = new BlockStat(pos,instance_init);
+						instance_init = new Initializer();
+						instance_init.pos = f.init.pos;
+						instance_init.body = new BlockStat();
 					}
 					Statement init_stat;
-//					init_stat = new ExprStat(f.init.getPos(),instance_init,
-//						new InitializeExpr(f.init.getPos(),AssignOperator.Assign,new AccessExpr(f.pos,new ThisExpr(0),f),new ShadowExpr(f.init),f.isInitWrapper())
-//					);
 					init_stat = new ExprStat(f.init.getPos(),instance_init,
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
@@ -1165,31 +1153,33 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								new ShadowExpr(f.init)
 							)
 						);
-					instance_init.addStatement(init_stat);
+					instance_init.body.addStatement(init_stat);
 					init_stat.setHidden(true);
 				}
 			} else {
 				Initializer init = (Initializer)n;
+				ENode init_stat = new InitializerShadow(init);
+				init_stat.setHidden(true);
 				if (init.isStatic()) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
-					((Initializer)class_init.body).addStatement(init);
+					class_init.body.addStatement(init_stat);
 				} else {
-					if( instance_init == null )
-						instance_init = new BlockStat(pos,instance_init);
-					Statement init_stat = new ShadowStat(init);
-					instance_init.addStatement(init_stat);
-					init_stat.setHidden(true);
+					if( instance_init == null ) {
+						instance_init = new Initializer();
+						instance_init.pos = init.pos;
+						instance_init.body = new BlockStat();
+					}
+					instance_init.body.addStatement(init_stat);
 				}
 			}
 		}
 
-		// Generate super(...) constructor calls, if they are not
-		// specified as first statements of a constructor
-		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
+		// template methods of interfaces
+		if( isInterface() ) {
 			foreach (ASTNode n; members; n instanceof Method) {
 				Method m = (Method)n;
-				if( isInterface() && !m.isAbstract() ) {
+				if( !m.isAbstract() ) {
 					if( m.isStatic() ) continue;
 					// Now, non-static methods (templates)
 					// Make it static and add abstract method
@@ -1203,14 +1193,20 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					m.setVirtualStatic(true);
 					this.addMethod(abstr);
 				}
-				if( isInterface() && !m.isStatic() ) {
+				if( !m.isStatic() ) {
 					m.setAbstract(true);
 				}
-				if( !m.name.equals(nameInit) ) continue;
+			}
+		}
+		
+		// Generate super(...) constructor calls, if they are not
+		// specified as first statements of a constructor
+		if( !name.name.equals(Type.tpObject.clazz.name.name) ) {
+			foreach (ASTNode n; members; n instanceof Constructor) {
+				Constructor m = (Constructor)n;
+				if( m.isStatic() ) continue;
 
 				ASTNode initbody = m.body;
-
-				if( m.isAbstract() ) continue;
 
 				boolean gen_def_constr = false;
 	            NArr<ASTNode> stats = ((BlockStat)initbody).stats;
@@ -1330,7 +1326,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						p++);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					stats.insert((Statement)instance_init.copy(),p++);
+					stats.insert((Statement)instance_init.body.copy(),p++);
 				}
 			}
 		}
@@ -1905,13 +1901,19 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			try {
 				foreach (Meta m; meta)
 					m.resolve();
-				foreach(ASTNode n; members) {
-					if (n instanceof Field) {
-						foreach (Meta m; ((Field)n).meta)
+				foreach(DNode dn; members) {
+					if (dn.meta != null) {
+						foreach (Meta m; dn.meta)
 							m.resolve();
 					}
-					else if (n instanceof Method) {
-						((Method)n).resolveMetaValues();
+					if (dn instanceof Method) {
+						Method meth = (Method)dn;
+						foreach (Var p; meth.params) {
+							if (p.meta != null) {
+								foreach (Meta m; p.meta)
+									m.resolve();
+							}
+						}
 					}
 				}
 			} finally { 	NodeInfoPass.close(); }
@@ -1981,10 +1983,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
 
-			foreach(ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
-				m.resolveDecl();
+			foreach(DNode n; members; n instanceof Method || n instanceof Initializer) {
+				n.resolveDecl();
 			}
+			
 			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 				ClassArgumentsAttr a = new ClassArgumentsAttr();
 				short[] argno = new short[type.args.length];

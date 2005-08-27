@@ -40,7 +40,7 @@ import syntax kiev.Syntax;
 public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 	@att public KString					filename = KString.Empty;
 	@att public TypeNameRef				pkg;
-	@att public final NArr<ASTNode>		syntax;
+	@att public final NArr<DNode>		syntax;
 	@att public final NArr<DNode>		members;
 	
 	public PrescannedBody[]				bodies = PrescannedBody.emptyArray;

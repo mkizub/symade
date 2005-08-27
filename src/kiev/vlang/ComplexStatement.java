@@ -415,8 +415,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,new TypeRef(Type.tpString),1,signs),
 						new ConstIntExpr(defindex)
 					});
-				Method clinit = PassInfo.clazz.getClazzInitMethod();
-				((Initializer)clinit.body).addStatement(
+				Constructor clinit = PassInfo.clazz.getClazzInitMethod();
+				clinit.body.addStatement(
 					new ExprStat(typehash.init.getPos(),clinit.body,
 						new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
 							,new StaticFieldAccessExpr(typehash.pos,PassInfo.clazz,typehash),new ShadowExpr(typehash.init))

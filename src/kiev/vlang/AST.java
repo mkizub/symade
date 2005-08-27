@@ -37,32 +37,6 @@ import syntax kiev.Syntax;
  *
  */
 
-// AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
-public interface TopLevelDecl {
-	// create top-level, inner named, argument Struct-s
-	//public ASTNode pass1(ASTNode pn);
-	// resolve some imports, remember typedef's names, remember
-	// operator declarations, remember names/operators for type macroses
-	//public ASTNode pass1_1(ASTNode pn);
-	// process inheritance for type arguments, create
-	// Struct's for template types
-	//public ASTNode pass2(ASTNode pn);
-	// process Struct's inheritance (extends/implements)
-	//public ASTNode pass2_2(ASTNode pn);
-	// process Struct's members (fields, methods)
-	//public ASTNode pass3() { return (ASTNode)this; }
-	// autoProxyMethods()
-	//public ASTNode autoProxyMethods() { return (ASTNode)this; }
-	// resolveImports()
-	//public ASTNode resolveImports() { return (ASTNode)this; }
-	// resolveFinalFields()
-	//public ASTNode resolveFinalFields(boolean cleanup) { return (ASTNode)this; }
-	// just resolve
-	//public ASTNode resolve(Type reqType);
-	// dump
-	public Dumper  toJavaDecl(Dumper dmp);
-};
-
 public enum TopLevelPass {
 	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
 	passCreateTopStruct		   ,	// create top-level Struct
@@ -998,15 +972,16 @@ public abstract class DNode extends ASTNode {
 
 	public static final DNode[] emptyArray = new DNode[0];
 	
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet								meta;
+
 	public DNode() {}
 	public DNode(int pos) { super(pos); }
 	public DNode(int pos, int fl) { super(pos,fl); }
 	public DNode(int pos, ASTNode parent) { super(pos,parent); }
 
-	public void resolveDecl() {
-		throw new CompilerException(pos,"Resolve call for d-node "+getClass());
-	}
-
+	public abstract void resolveDecl();
+	public abstract Dumper toJavaDecl(Dumper dmp);
 }
 
 /**
@@ -1157,71 +1132,6 @@ public abstract class Expr extends CFlowNode {
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");
     }
-/*
-	public Expr resolveExpr(Type reqType) {
-		ASTNode e = resolve(reqType);
-		if( e == null )
-			throw new CompilerException(pos,"Unresolved expression "+this);
-		Expr expr = null;
-		if( e instanceof Expr ) expr = (Expr)e;
-		if( e instanceof Struct )
-			expr = toExpr((Struct)e,reqType,pos,parent);
-		else if( e instanceof TypeRef )
-			expr = toExpr((TypeRef)e,reqType,pos,parent);
-		else if( e instanceof WrapedExpr )
-			expr = toExpr(((WrapedExpr)e).expr,reqType,pos,parent);
-		if( expr == null )
-			throw new CompilerException(e.pos,"Is not an expression");
-		else if( reqType == null || reqType == Type.tpVoid )
-			return expr;
-//		if( reqType == Type.tpRule ) reqType = Type.tpBoolean;
-		Type et = expr.getType();
-		if( et == Type.tpBoolean && reqType == Type.tpInt )
-			return new CastExpr(0,reqType,expr,false,true).resolveExpr(reqType);
-		if( et.isInstanceOf(reqType) ) return expr;
-		if( et.isReference() && reqType.isBoolean() )
-			return new BinaryBoolExpr(pos,BinaryOperator.NotEquals,expr,new ConstNullExpr());
-		if( et.isAutoCastableTo(reqType)
-		 || et.isNumber() && reqType.isNumber()
-		) return (Expr)new CastExpr(pos,reqType,expr).resolve(reqType);
-		throw new CompilerException(e.pos,"Expression "+expr+" is not auto-castable to type "+reqType);
-	}
-	public static Expr toExpr(Object o, Type reqType, int pos, ASTNode parent) {
-		Struct bs = null;
-		Type st = null;
-		if (o instanceof Struct) {
-			bs = (Struct)o;
-			st = bs.type;
-		}
-		else if (o instanceof TypeRef) {
-			st = ((TypeRef)o).getType();
-			if (st.isPizzaCase())
-				bs = st.getStruct();
-		}
-		if( bs != null && bs.isPizzaCase() ) {
-			Struct s = (Struct)bs;
-			// Pizza case may be casted to int or to itself or super-class
-			PizzaCaseAttr case_attr;
-			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-			if (case_attr == null)
-				throw new RuntimeException("Internal error - can't find case_attr");
-			Type tp = Type.getRealType(reqType,st);
-			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
-				throw new CompilerException(pos,"Pizza case "+tp+" cannot be casted to type "+reqType);
-			if (case_attr.casefields.length != 0)
-				throw new CompilerException(pos,"Empty constructor for pizza case "+tp+" not found");
-			if (reqType.isInteger()) {
-				Expr expr = (Expr)new ConstIntExpr(case_attr.caseno).resolve(reqType);
-				if( reqType != Type.tpInt )
-					expr = (Expr)new CastExpr(pos,reqType,expr).resolve(reqType);
-				return expr;
-			}
-			// Now, check we need add type arguments
-			return (Expr)new NewExpr(pos,tp,Expr.emptyArray).resolve(reqType);
-		}
-		throw new CompilerException(pos,"Expr "+o+" is not a class's case with no fields");
-	}
-*/
 }
 
 @node
@@ -1317,6 +1227,33 @@ public abstract class Statement extends CFlowNode {
 	}
 
 }
+
+@node
+@cfnode
+public class InitializerShadow extends Statement {
+
+	@ref Initializer init;
+	
+	public InitializerShadow() {}
+	public InitializerShadow(Initializer init) {
+		this.init = init;
+		this.setResolved(true);
+	}
+	public void resolve(Type reqType) {
+	}
+
+	public int getPriority() { return 255; }
+	public void generate(Type reqType) {
+		init.generate(reqType);
+	}
+	public Dumper toJava(Dumper dmp) {
+		dmp.append("/* ");
+		init.toJavaDecl(dmp);
+		dmp.append(" */");
+		return dmp;
+	}
+}
+
 
 @node
 public class TypeRef extends ENode {

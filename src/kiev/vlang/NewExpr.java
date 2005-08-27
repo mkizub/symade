@@ -256,8 +256,8 @@ public class NewExpr extends Expr {
 		if( tp.clazz.isAnonymouse() ) {
 			Struct cl = (Struct)type.clazz;
 			dmp.space().append('{').newLine(1);
-			foreach (ASTNode n; cl.members)
-				((TopLevelDecl)n).toJavaDecl(dmp).newLine();
+			foreach (DNode n; cl.members)
+				n.toJavaDecl(dmp).newLine();
 			dmp.newLine(-1).append('}').newLine();
 		}
 		return dmp;
@@ -596,8 +596,8 @@ public class NewClosure extends Expr {
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);
-		foreach (ASTNode n; cl.members)
-			((TopLevelDecl)n).toJavaDecl(dmp).newLine();
+		foreach (DNode n; cl.members)
+			n.toJavaDecl(dmp).newLine();
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}

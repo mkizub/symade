@@ -362,50 +362,6 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 
 @node
 @cfnode
-public class Initializer extends BlockStat implements SetBody, PreScanneable {
-	/** Meta-information (annotations) of this initializer */
-	@att public MetaSet					meta;
-	@att public PrescannedBody			pbody;
-	@att public final NArr<Statement>	addstats;
-
-	public Initializer() {
-	}
-
-	public Initializer(int pos, int flags) {
-		super(pos, null);
-		setFlags(flags);
-	}
-
-	public void resolve(Type reqType) {
-		super.resolve(reqType);
-		for(int i=0; i < addstats.length; i++) {
-			stats.insert(addstats[i],i);
-			trace(Kiev.debugResolve,"Statement added to block: "+addstats[i]);
-		}
-		addstats.delAll();
-	}
-
-	public boolean setBody(Statement body) {
-		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
-		if (this.stats.length == 0) {
-			this.addStatement(body);
-		}
-		else {
-			throw new RuntimeException("Added body to initializer "+this+" which already have statements");
-		}
-		return true;
-	}
-
-	public void cleanup() {
-		super.cleanup();
-		addstats.cleanup();
-		addstats = null;
-	}
-
-}
-
-@node
-@cfnode
 public class EmptyStat extends Statement {
 
 	public EmptyStat() {}

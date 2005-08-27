@@ -530,50 +530,6 @@ public class AssignExpr extends LvalueExpr {
 	}
 }
 
-/*
-@node
-@cfnode
-public class InitializeExpr extends AssignExpr {
-    public boolean	of_wrapper;
-
-	public InitializeExpr() {
-	}
-
-	public InitializeExpr(int pos, AssignOperator op, Expr lval, Expr value, boolean of_wrapper) {
-		super(pos,op,lval,value);
-		this.of_wrapper = of_wrapper;
-	}
-
-	public void resolve(Type reqType) {
-		setTryResolved(true);
-		if (!(op==AssignOperator.Assign || op==AssignOperator.Assign2))
-			throw new CompilerException(pos,"Initializer must use = or :=");
-		lval = lval.resolveExpr(reqType);
-		Type et1 = lval.getType();
-		if (op == AssignOperator.Assign && et1.isWrapper())
-			value = ((CFlowNode)value).resolve(et1.getWrappedType());
-		else
-			value = ((CFlowNode)value).resolve(et1);
-		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-			return (Expr)super.resolve(reqType);
-		}
-		else if((of_wrapper || op == AssignOperator.Assign2) && et1.isWrapper() && (et2 == Type.tpNull || et2.isInstanceOf(et1))) {
-			return (Expr)super.resolve(reqType);
-		}
-		// Try wrapped classes
-		if (op != AssignOperator.Assign2) {
-			if (et2.isWrapper()) {
-				return new InitializeExpr(pos,op,lval,et2.makeWrappedAccess(value),of_wrapper).resolveExpr(reqType);
-			}
-		}
-		return super.resolve(reqType);
-		//throw new CompilerException(pos,"Unresolved initializer expression "+this);
-	}
-
-}
-*/
-
 
 @node
 @cfnode

@@ -152,7 +152,7 @@ public class ASTCallAccessExpression extends Expr {
 			for(int si=0; si < res.length; si++) {
 				if (res[si] == null)
 					continue;
-				msg.append("\t").append(res).append('\n');
+				msg.append("\t").append(res[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
 			throw new CompilerException(pos, msg.toString());

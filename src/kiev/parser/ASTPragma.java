@@ -27,7 +27,7 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 @node
-public class ASTPragma extends ASTNode implements TopLevelDecl {
+public class ASTPragma extends DNode {
 
 	public boolean								enable;
 	@att public final NArr<ConstStringExpr>	options;

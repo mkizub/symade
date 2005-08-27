@@ -705,8 +705,9 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 					MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
 					Method m = new Method(inv.name.name,mt,inv.flags);
 					m.setInvariantMethod(true);
+					m.body = new BlockStat();
 					inv.replaceWithNode(m);
-					m.body = inv;
+					m.conditions += inv;
 				}
 				// Inner classes and cases after all methods and fields, skip now
 				else if( members[i] instanceof Struct );
@@ -731,7 +732,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 				foreach (Field f; case_attr.casefields)
 					targs.append(f.type);
 				MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
-				Method init = new Method(Constants.nameInit,mt,ACC_PUBLIC);
+				Constructor init = new Constructor(mt,ACC_PUBLIC);
 				init.pos = me.pos;
 				foreach (Field f; case_attr.casefields)
 					init.params.add(new FormPar(f.pos,f.name.name,f.type,0));

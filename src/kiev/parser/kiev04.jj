@@ -330,12 +330,20 @@ public class kiev040 {
 		return arg;
 	}
 
+	private static Constructor mkConstructor(ASTIdentifier id, ASTModifiers modifiers) {
+		TypeCallRef tc = new TypeCallRef();
+		tc.ret = new TypeRef(Type.tpVoid);
+		Constructor meth = new Constructor(tc, modifiers.getFlags());
+		meth.pos = id.pos;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		return meth;
+	}
+	
 	private static Method mkMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
-		if (ret == null)
-			tc.ret = new TypeRef(Type.tpVoid);
-		else
-			tc.ret = ret;
+		tc.ret = ret;
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
@@ -1601,8 +1609,8 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	{ return m; }
 }
 
-Method ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m; ASTIdentifier id; }
+Constructor ConstructorDeclaration(ASTModifiers modifiers) :
+{ Token t; Constructor m; ASTIdentifier id; }
 {
 	id = Name()
 	{
@@ -1610,7 +1618,7 @@ Method ConstructorDeclaration(ASTModifiers modifiers) :
 			Kiev.reportError(id.pos,"Return type missed or bad constructor name "+id);
 		else
 			id.name = Constants.nameInit;
-		m = mkMethod(id,modifiers,null); 
+		m = mkConstructor(id,modifiers); 
 	}
 	"("
 		[
@@ -1762,7 +1770,7 @@ ASTInitializer Initializer(ASTModifiers modifiers) :
 	}
 	{ presc = n; }
 	bl = MaybeSkipBlock()
-	{	if (bl != null) n.stats += bl;	}
+	{	if (bl != null) n.body = bl;	}
 	[ ";" ]
 	
 	{ return n; }

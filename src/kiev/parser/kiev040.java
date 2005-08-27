@@ -1811,14 +1811,14 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public Method ConstructorDeclaration(ASTModifiers modifiers) throws ParseException {
-  Token t; Method m; ASTIdentifier id;
+  static final public Constructor ConstructorDeclaration(ASTModifiers modifiers) throws ParseException {
+  Token t; Constructor m; ASTIdentifier id;
     id = Name();
                 if( !id.name.equals(PassInfo.clazz.name.short_name) )
                         Kiev.reportError(id.pos,"Return type missed or bad constructor name "+id);
                 else
                         id.name = Constants.nameInit;
-                m = mkMethod(id,modifiers,null);
+                m = mkConstructor(id,modifiers);
     jj_consume_token(LPAREN);
     if (jj_2_36(1)) {
       modifiers = Modifiers();
@@ -2085,7 +2085,7 @@ public class kiev040 implements kiev040Constants {
 
           presc = n;
     bl = MaybeSkipBlock();
-                if (bl != null) n.stats += bl;
+                if (bl != null) n.body = bl;
     switch (jj_nt.kind) {
     case SEMICOLON:
       jj_consume_token(SEMICOLON);
@@ -4710,33 +4710,6 @@ public class kiev040 implements kiev040Constants {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_97(); }
     catch(LookaheadSuccess ls) { return true; }
-  }
-
-  static final private boolean jj_3_70() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_scan_token(NEW)) return true;
-    if (jj_3R_112()) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  static final private boolean jj_3R_200() {
-    if (jj_scan_token(FUNCTION)) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_71()) jj_scanpos = xsp;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_scan_token(ARROW)) return true;
-    xsp = jj_scanpos;
-    lookingAhead = true;
-    jj_semLA = getToken(1).kind == RULE;
-    lookingAhead = false;
-    if (!jj_semLA || jj_3R_290()) {
-    jj_scanpos = xsp;
-    if (jj_3_72()) return true;
-    }
-    return false;
   }
 
   static final private boolean jj_3R_201() {
@@ -8543,6 +8516,33 @@ public class kiev040 implements kiev040Constants {
     return false;
   }
 
+  static final private boolean jj_3_70() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_scan_token(NEW)) return true;
+    if (jj_3R_112()) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  static final private boolean jj_3R_200() {
+    if (jj_scan_token(FUNCTION)) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_71()) jj_scanpos = xsp;
+    if (jj_scan_token(RPAREN)) return true;
+    if (jj_scan_token(ARROW)) return true;
+    xsp = jj_scanpos;
+    lookingAhead = true;
+    jj_semLA = getToken(1).kind == RULE;
+    lookingAhead = false;
+    if (!jj_semLA || jj_3R_290()) {
+    jj_scanpos = xsp;
+    if (jj_3_72()) return true;
+    }
+    return false;
+  }
+
   static private boolean jj_initialized_once = false;
   static public kiev040TokenManager token_source;
   static JavaCharStream jj_input_stream;
@@ -8726,12 +8726,20 @@ public class kiev040 implements kiev040Constants {
 		return arg;
 	}
 
+	private static Constructor mkConstructor(ASTIdentifier id, ASTModifiers modifiers) {
+		TypeCallRef tc = new TypeCallRef();
+		tc.ret = new TypeRef(Type.tpVoid);
+		Constructor meth = new Constructor(tc, modifiers.getFlags());
+		meth.pos = id.pos;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set(m);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		return meth;
+	}
+	
 	private static Method mkMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
-		if (ret == null)
-			tc.ret = new TypeRef(Type.tpVoid);
-		else
-			tc.ret = ret;
+		tc.ret = ret;
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)

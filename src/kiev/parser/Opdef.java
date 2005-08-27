@@ -38,7 +38,7 @@ import static kiev.vlang.Operator.*;
  */
 
 @node
-public class Opdef extends DNode implements TopLevelDecl {
+public class Opdef extends DNode {
 	public int					prior;
 	public int					opmode;
 	public KString				image;

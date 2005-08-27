@@ -33,7 +33,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,TopLevelDecl,PreScanneable {
+public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -60,7 +60,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@att public Var						retvar;
 
 	/** Body of the method */
-	@att public Statement				body;
+	@att public BlockStat				body;
 	@att public PrescannedBody 			pbody;
 
 	/** Array of attributes of this method
@@ -77,9 +77,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	
 	/** Default meta-value for annotation methods */
 	@att public MetaValue				annotation_default;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet					meta;
 
 	/** Indicates that this method is inlined by dispatcher method
 	 */
@@ -105,6 +102,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 	public Method(KString name, TypeCallRef type_ref, TypeCallRef dtype_ref, int fl) {
 		super(0,fl);
+		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
 		this.type_ref = type_ref;
 		if (dtype_ref != null) {
@@ -515,18 +513,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
-	public void resolveMetaValues() {
-		foreach (Meta m; meta)
-			m.resolve();
-		for(int i=0; i < params.length; i++) {
-			Var p = params[i];
-			if (p.meta != null) {
-				foreach (Meta m; p.meta)
-					m.resolve();
-			}
-		}
-	}
-	
 	protected void preAndResolve(Statement st, boolean autoret) {
 		ScopeNodeInfoVector state = NodeInfoPass.pushState();
 		state.guarded = true;
@@ -562,7 +548,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
-				preAndResolve(cond, false);
+				preAndResolve(cond.body, false);
 			}
 			if( body != null ) {
 				preAndResolve(body, type.ret == Type.tpVoid);
@@ -573,8 +559,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 						((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
 						body.setAbrupted(true);
 					}
-					else if( body instanceof WBCCondition );
-					else
+					else if !(isInvariantMethod())
 						Kiev.reportError(pos,"Return requared");
 				} else {
 					Kiev.reportError(pos,"Return requared");
@@ -606,7 +591,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions.addUniq((WBCCondition)inv.body);
+						conditions.addUniq(inv.conditions[0]);
 				}
 			}
 		}
@@ -706,7 +691,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public boolean setBody(Statement body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
-			this.body = body;
+			this.body = (BlockStat)body;
 		}
 		else if (isMultiMethod()){
 			BlockStat b = (BlockStat)this.body;
@@ -721,6 +706,100 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 }
 
+@node
+public class Constructor extends Method {
+	@att public final NArr<Statement>	addstats;
+
+	public Constructor() {
+	}
+
+	public Constructor(MethodType mt, int fl) {
+		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, mt, fl);
+	}
+
+	public Constructor(TypeCallRef type_ref, int fl) {
+		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, type_ref, (TypeCallRef)type_ref.copy(), fl);
+	}
+
+	public void resolveDecl() {
+		super.resolveDecl();
+		for(int i=0; i < addstats.length; i++) {
+			body.stats.insert(addstats[i],i);
+			trace(Kiev.debugResolve,"Statement added to constructor: "+addstats[i]);
+		}
+		addstats.delAll();
+	}
+}
+
+@node
+@cfnode
+public class Initializer extends DNode implements SetBody, PreScanneable {
+	@att public BlockStat				body;
+	@att public PrescannedBody			pbody;
+
+	public Initializer() {
+	}
+
+	public Initializer(int pos, int flags) {
+		super(pos, null);
+		setFlags(flags);
+	}
+
+	public void resolveDecl() {
+		if( isResolved() ) return;
+		
+		PassInfo.push(this);
+		NodeInfoPass.init();
+		ScopeNodeInfoVector state = NodeInfoPass.pushState();
+		state.guarded = true;
+		try {
+			
+			ScopeNodeInfoVector state_p = NodeInfoPass.pushState();
+			state_p.guarded = true;
+			try {
+				body.preResolve();
+			} finally { NodeInfoPass.popState(); }
+
+			body.resolve(Type.tpVoid);
+
+		} catch(Exception e ) {
+			Kiev.reportError(0,e);
+		} finally {
+			NodeInfoPass.popState();
+			NodeInfoPass.close();
+			PassInfo.pop(this);
+		}
+
+		setResolved(true);
+	}
+
+	public void generate(Type reqType) {
+		trace(Kiev.debugStatGen,"\tgenerating Initializer");
+		PassInfo.push(this);
+		try {
+			body.generate(reqType);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public boolean setBody(Statement body) {
+		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
+		if (this.body == null) {
+			this.body = (BlockStat)body;
+		}
+		else {
+			throw new RuntimeException("Added body to initializer "+this+" which already has body");
+		}
+		return true;
+	}
+
+	public void cleanup() {
+		super.cleanup();
+		body.cleanup();
+		body = null;
+	}
+
+}
+
 public enum WBCType {
 	public CondUnknown,
 	public CondRequire,
@@ -730,7 +809,7 @@ public enum WBCType {
 
 @node
 @cfnode
-public class WBCCondition extends Statement {
+public class WBCCondition extends DNode {
 
 	public WBCType					cond;
 	@att public ASTIdentifier		name;

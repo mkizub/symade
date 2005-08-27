@@ -274,6 +274,7 @@ kiev.vlang.ConstShortExpr kiev/vlang/ConstShortExpr kiev\vlang\ConstExpr.java
 kiev.vlang.ConstStringExpr kiev/vlang/ConstStringExpr kiev\vlang\ConstExpr.java
 kiev.vlang.ConstantValueAttr kiev/vlang/ConstantValueAttr kiev\vlang\Attr.java
 kiev.vlang.Constants kiev/vlang/Constants kiev\vlang\Constants.java
+kiev.vlang.Constructor kiev/vlang/Constructor kiev\vlang\Method.java
 kiev.vlang.ContainerAccessExpr kiev/vlang/ContainerAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
 kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
@@ -307,7 +308,8 @@ kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
 kiev.vlang.Import.ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
-kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Statement.java
+kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
+kiev.vlang.InitializerShadow kiev/vlang/InitializerShadow kiev\vlang\AST.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
@@ -410,7 +412,6 @@ kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
-kiev.vlang.TopLevelDecl kiev/vlang/TopLevelDecl kiev\vlang\AST.java
 kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java

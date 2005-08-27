@@ -33,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class Field extends DNode implements Named, Typed, Accessable, TopLevelDecl {
+public class Field extends DNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
@@ -48,9 +48,6 @@ public class Field extends DNode implements Named, Typed, Accessable, TopLevelDe
 
 	/** Initial value of this field */
 	@att public ENode		init;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet		meta;
 
 	/** Array of attributes of this field */
 	public Attr[]			attrs = Attr.emptyArray;

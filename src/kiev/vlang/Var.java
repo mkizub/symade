@@ -40,7 +40,6 @@ public class Var extends DNode implements Named, Typed {
 
 	public NodeName			name;
 	@att public TypeRef		vtype;
-	@att public MetaSet		meta;
 	@att public ENode		init;
 	     int				bcpos = -1;
 
