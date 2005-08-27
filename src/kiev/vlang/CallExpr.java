@@ -546,7 +546,7 @@ public class ClosureCallExpr extends Expr {
 //			}
 //			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType ) {
 //				if( ((Field)v).isStatic() ) { 
-//					func = new StaticFieldAccessExpr(pos,PassInfo.clazz,(Field)v);
+//					func = new StaticFieldAccessExpr(pos,(Field)v);
 //					func.resolve(null);
 //				}
 //				else if( expr == null ) {

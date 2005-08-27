@@ -428,12 +428,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		}
 
 		expr2.resolve(null);
-		if( expr2 instanceof WrapedExpr )
-			expr2.resolve(null);
 		if( expr2 instanceof TypeRef )
 			getExprByStruct(((TypeRef)expr2).getType().getStruct());
-//		if( expr2 instanceof Struct )
-//			expr2 = getExprByStruct((Struct)expr2);
 		expr2.resolve(null);
 		if (!expr2.isForWrapper() && expr2.getType().isWrapper()) {
 			expr2 = expr2.getType().makeWrappedAccess(expr2);
@@ -723,10 +719,6 @@ public class InstanceofExpr extends BoolExpr {
 		try {
 			expr.resolve(null);
 			Type tp = null;
-			if (expr instanceof WrapedExpr)
-				tp = ((WrapedExpr)expr).getType();
-//			if (e instanceof Struct)
-//				tp = ((Struct)e).type;
 			if( expr instanceof TypeRef )
 				tp = ((TypeRef)expr).getType();
 			if( tp != null ) {

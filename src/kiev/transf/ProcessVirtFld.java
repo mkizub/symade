@@ -251,7 +251,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				BlockStat body = new BlockStat(f.pos,set_var,ENode.emptyArray);
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
-						f.isStatic()? new StaticFieldAccessExpr(f.pos,s,f,true)
+						f.isStatic()? new StaticFieldAccessExpr(f.pos,f,true)
 									: new AccessExpr(f.pos,new ThisExpr(0),f,true),
 						new VarAccessExpr(f.pos,value)
 					)
@@ -289,7 +289,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 											new VarAccessExpr(0, value),
 											astT.resolveField(KString.from("pslot"))
 										),
-										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
+										new StaticFieldAccessExpr(f.pos, fatt)
 									)
 								)
 							}),
@@ -301,7 +301,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 								new ExprStat(0,null,
 									new ASTCallExpression(0,
 										KString.from("callbackChildChanged"),
-										new Expr[]{new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)}
+										new Expr[]{new StaticFieldAccessExpr(f.pos, fatt)}
 									)
 								),
 								null

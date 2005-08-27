@@ -459,7 +459,7 @@ public abstract class MetaValue extends ASTNode {
 	boolean checkValue(Type reqType, ENode value) {
 		if !(value instanceof Expr) {
 			if (reqType == Type.tpClass && value instanceof TypeRef) {
-				value.replaceWith(fun ()->ENode {return new WrapedExpr(value.pos, value);});
+				((TypeRef)value).getType();
 				return false;
 			} else {
 				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
@@ -467,8 +467,7 @@ public abstract class MetaValue extends ASTNode {
 			}
 		}
 		Expr v = (Expr)value;
-		if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).obj.isJavaEnum() && ((StaticFieldAccessExpr)v).var.isEnumField()) {
-			value.replaceWith(fun ()->ENode {return new WrapedExpr(value.pos, ((StaticFieldAccessExpr)value).var);});
+		if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).var.isEnumField()) {
 			return false;
 		}
 		else if (!v.isConstantExpr())

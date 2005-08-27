@@ -109,19 +109,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			try {
 				if( val != null ) {
 					val.resolve(null);
-					if( val instanceof WrapedExpr) {
-						WrapedExpr w = (WrapedExpr)val;
-						if (w.expr instanceof TypeRef )
-							val = (TypeRef)w.expr;
-						else if (w.expr instanceof Struct) {
-							Struct s = (Struct)w.expr;
-							s.checkResolved();
-							val = new TypeRef(s.type);
-						}
-						else
-							throw new CompilerException(pos,"Unknown node of class "+w.expr.getClass());
-					}
-					else if( val instanceof TypeRef)
+					if( val instanceof TypeRef)
 						;
 					else if !( val instanceof Expr )
 						throw new CompilerException(pos,"Unknown node of class "+val.getClass());
@@ -336,7 +324,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						PassInfo.clazz.addField(typehash);
 						CallAccessExpr cae = new CallAccessExpr(pos,
-							new StaticFieldAccessExpr(pos,PassInfo.clazz,typehash),
+							new StaticFieldAccessExpr(pos,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
 							new Expr[]{new VarAccessExpr(pos,tmpvar)}
 							);
@@ -397,7 +385,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				clinit.body.addStatement(
 					new ExprStat(typehash.init.getPos(),clinit.body,
 						new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
-							,new StaticFieldAccessExpr(typehash.pos,PassInfo.clazz,typehash),new ShadowExpr(typehash.init))
+							,new StaticFieldAccessExpr(typehash.pos,typehash),new ShadowExpr(typehash.init))
 					)
 				);
 			}

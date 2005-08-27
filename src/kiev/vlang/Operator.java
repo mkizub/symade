@@ -49,14 +49,15 @@ public class OpTypes {
 			Expr e = (Expr)n;
 			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
 			if( !e.isResolved() ) {
-				WrapedExpr we = new WrapedExpr();
+				NopExpr we = new NopExpr();
 				e.replaceWithNode(we);
 				we.expr = e;
 				e.resolve(tp);
-				n = we.expr;
+				e = we.expr;
 				we.replaceWithNode(e);
 				assert( e.isResolved() );
-				goto case n;
+				n = e;
+				goto case e;
 			} else {
 				t = e.getType();
 			}

@@ -286,12 +286,12 @@ public class AssignExpr extends LvalueExpr {
 			op = AssignOperator.Assign;
 			value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),value);
 		}
-		if (value instanceof Expr) {
+		if (value instanceof Expr)
 			value.resolve(t1);
-		} else {
-			value = new WrapedExpr(value.pos,value);
-			value.resolve(t1);
-		}
+		else if (value instanceof TypeRef)
+			((TypeRef)value).toExpr(t1);
+		else
+			throw new CompilerException(value.pos, "Can't opeerate on "+value);
 		Type t2 = value.getType();
 		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 			if( !t2.isIntegerInCode() ) {

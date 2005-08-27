@@ -48,7 +48,7 @@ public class ASTTypeClassExpression extends Expr {
 			Field f = (Field)rt.resolveName(KString.from("TYPE"));
 			if( f == null || !f.isStatic() )
 				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
-			replaceWithNodeResolve(reqType, new StaticFieldAccessExpr(pos,rt.getStruct(),f));
+			replaceWithNodeResolve(reqType, new StaticFieldAccessExpr(pos,f));
 			return;
 		}
 		KString name;

@@ -175,7 +175,7 @@ public class ResInfo {
 			// var or static field
 			if (node instanceof Field) {
 				if (node.isStatic())
-					return new StaticFieldAccessExpr(pos,(Struct)node.parent,(Field)node);
+					return new StaticFieldAccessExpr(pos,(Field)node);
 				throw new CompilerException(pos, "Static access to an instance field "+node);
 			}
 			if (node instanceof Var) {
@@ -191,13 +191,13 @@ public class ResInfo {
 				// static field access
 				if (isEmpty() && node instanceof Field) {
 					if (node.isStatic())
-						return new StaticFieldAccessExpr(pos,(Struct)node.parent,(Field)node);
+						return new StaticFieldAccessExpr(pos,(Field)node);
 					throw new CompilerException(pos, "Static access to an instance field "+node);
 				}
 				else if (forwards_stack[0] instanceof Field) {
 					if (!forwards_stack[0].isStatic())
 						throw new CompilerException(pos, "Static access to an instance field "+forwards_stack[0]);
-					e = new StaticFieldAccessExpr(pos,(Struct)node.parent,(Field)forwards_stack[0]);
+					e = new StaticFieldAccessExpr(pos,(Field)forwards_stack[0]);
 					n++;
 				}
 			}

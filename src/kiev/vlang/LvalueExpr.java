@@ -979,7 +979,6 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 @cfnode
 public class StaticFieldAccessExpr extends LvalueExpr {
 
-	@ref public Struct		obj;
 	@ref public Field		var;
 
 	public StaticFieldAccessExpr() {
@@ -988,19 +987,11 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	public StaticFieldAccessExpr(int pos, Field var) {
 		super(pos);
 		this.var = var;
-		this.obj = (Struct)var.parent;
 	}
 
-	public StaticFieldAccessExpr(int pos, Struct obj, Field var) {
+	public StaticFieldAccessExpr(int pos, Field var, boolean direct_access) {
 		super(pos);
 		this.var = var;
-		this.obj = obj;
-	}
-
-	public StaticFieldAccessExpr(int pos, Struct obj, Field var, boolean direct_access) {
-		super(pos);
-		this.var = var;
-		this.obj = obj;
 		if (direct_access) setAsField(true);
 	}
 
@@ -1031,8 +1022,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			Type t = var.getType();
-			return Type.getRealType(obj.super_type,t);
+			return var.type;
 		} catch(Exception e) {
 			Kiev.reportError(pos,e);
 			return Type.tpVoid;
@@ -1046,7 +1036,6 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 			types = new Type[]{var.type};
 		else
 			types = sni.types;
-		for(int i=0; i < types.length; i++) types[i] = Type.getRealType(obj.super_type,types[i]);
 		return types;
 	}
 

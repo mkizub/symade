@@ -96,7 +96,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos,gettag);
 			((BlockStat)gettag.body).addStatement(
-				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,clazz,ftag))
+				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,ftag))
 			);
 			clazz.addMethod(gettag);
 		}

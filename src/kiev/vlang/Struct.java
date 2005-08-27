@@ -729,7 +729,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			i++;
 			KString ti_str = ((ConstStringExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
-			Expr e = new StaticFieldAccessExpr(pos,this,f);
+			Expr e = new StaticFieldAccessExpr(pos,f);
 			e.parent = parent;
 			return e;
 		}
@@ -752,19 +752,19 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
+						,new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init))
 				),0
 			);
 		} else {
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),class_init.body,
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init))
+						,new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init))
 				),0
 			);
 		}
 		addField(f);
-		Expr e = new StaticFieldAccessExpr(pos,this,f);
+		Expr e = new StaticFieldAccessExpr(pos,f);
 		e.parent = parent;
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");
@@ -1135,7 +1135,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						new ExprStat(f.init.getPos(),class_init.body,
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
-								new StaticFieldAccessExpr(f.pos,this,f),new ShadowExpr(f.init)
+								new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init)
 							)
 						)
 					);

@@ -1122,8 +1122,8 @@ public class LocalStructDecl extends ENode implements Named {
 @node
 @cfnode
 public abstract class CFlowNode extends ENode {
-//	@ref(copyable=false) public CFlowNode cf_in;
-//	@ref(copyable=false) public CFlowNode cf_out;
+//	public virtual abstract CFlowNode cf_in;
+//	public virtual abstract CFlowNode cf_out;
 	public CFlowNode() {}
 	public CFlowNode(int pos) { super(pos); }
 	public CFlowNode(int pos, ASTNode parent) { super(pos,parent); }
@@ -1152,38 +1152,22 @@ public abstract class Expr extends CFlowNode {
 
 @node
 @cfnode
-public class WrapedExpr extends Expr {
+public class NopExpr extends Expr {
 
-	@ref public ASTNode		expr;
-	@ref public Type		base_type;
+	@att public Expr		expr;
 	
-	public WrapedExpr() {
+	public NopExpr() {
 	}
-	public WrapedExpr(int pos, ASTNode expr) {
-		super(pos);
+	public NopExpr(Expr expr) {
+		this.pos = expr.pos;
 		this.expr = expr;
 	}
-	public WrapedExpr(int pos, ASTNode expr, Type t) {
-		super(pos);
-		this.expr = expr;
-		base_type = t;
-	}
-	public int		getPriority() { return 256; }
+	public int getPriority() { return 256; }
 	public Type getType() {
-		if( expr instanceof Struct ) return Type.getRealType(base_type,((Struct)expr).type);
-		if( expr instanceof TypeRef ) return Type.getRealType(base_type,((TypeRef)expr).getType());
-		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
+		return expr.getType();
 	}
 	public void resolve(Type reqType) {
-		if( expr instanceof Struct ) {
-			replaceWithNode(new TypeRef(((Struct)expr).type));
-			return;
-		}
-		if( expr instanceof TypeRef ) {
-			replaceWithNode((TypeRef)expr);
-			return;
-		}
-		throw new CompilerException(pos,"Unknown wrapped node of class "+expr.getClass());
+		expr.resolve(reqType);
 	}
 }
 

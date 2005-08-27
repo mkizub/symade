@@ -117,7 +117,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					Field fatt = fs.resolveField(fname);
 					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
 						new ThisExpr(),
-						new StaticFieldAccessExpr(f.pos, fs, fatt)
+						new StaticFieldAccessExpr(f.pos, fatt)
 					});
 				} else {
 					f.setVirtual(true);
@@ -208,7 +208,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
 			Field f = s.addField(new Field(fname, atp, ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			f.init = e;
-			vals_init[i] = new StaticFieldAccessExpr(f.pos, s, f);
+			vals_init[i] = new StaticFieldAccessExpr(f.pos, f);
 		}
 		Field vals = s.addField(new Field(nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
 		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
@@ -222,7 +222,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			elems.body = new BlockStat(0,elems);
 			((BlockStat)elems.body).addStatement(
 				new ReturnStat(0,elems.body,
-					new StaticFieldAccessExpr(0,s,vals) ) );
+					new StaticFieldAccessExpr(0,vals) ) );
 			s.addMethod(elems);
 			// Object getVal(String)
 			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);

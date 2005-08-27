@@ -83,7 +83,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				Type.newArrayType(clazz.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
 			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.type), 1, Expr.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
-				Expr e = new StaticFieldAccessExpr(eflds[i].pos,clazz,eflds[i]);
+				Expr e = new StaticFieldAccessExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
 			}
 		}
@@ -99,7 +99,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			mvals.body = new BlockStat(pos,mvals);
 			((BlockStat)mvals.body).addStatement(
 				new ReturnStat(pos,mvals.body,
-					new StaticFieldAccessExpr(pos,clazz,clazz.resolveField(nameEnumValuesFld)) ) );
+					new StaticFieldAccessExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
 			clazz.addMethod(mvals);
 		}
 		
@@ -120,7 +120,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				cases[i] = new CaseLabel(pos,sw,
 					new ConstIntExpr(ea.values[i]),
 					new ENode[]{
-						new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,clazz,ea.fields[i]))
+						new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,ea.fields[i]))
 					});
 			}
 			cases[cases.length-1] = new CaseLabel(pos,sw,null,
@@ -201,7 +201,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					new BinaryBoolExpr(pos,BinaryOperator.Equals,
 						new VarAccessExpr(pos,fromstr.params[0]),
 						new ConstStringExpr(str)),
-					new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,clazz,f)),
+					new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,f)),
 					null
 					);
 				((BlockStat)fromstr.body).addStatement(ifst);
@@ -214,7 +214,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 								new BinaryBoolExpr(pos,BinaryOperator.Equals,
 									new VarAccessExpr(pos,fromstr.params[0]),
 									new ConstStringExpr(str)),
-									new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,clazz,f)),
+									new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,f)),
 									null
 									);
 							((BlockStat)fromstr.body).addStatement(ifst);
