@@ -695,7 +695,7 @@ public final class Kiev {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.pass3(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) ) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passAutoGenerateMembers) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.autoGenerateMembers(node);
 		}

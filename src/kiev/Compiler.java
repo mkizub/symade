@@ -632,7 +632,7 @@ public class Compiler {
 			///////////////////////    VNode language     /////////////////////////
 			///////////////////////////////////////////////////////////////////////
 			
-			Kiev.pass_no = TopLevelPass.passAutoProxyMethods;
+			Kiev.pass_no = TopLevelPass.passAutoGenerateMembers;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.autoGenerateMembers(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;

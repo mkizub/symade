@@ -888,147 +888,173 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	}
 	
-	/** Auto-generates <init>()V method if no <init> declared,
-		also, used to generate this$N fields and arguments for
-		inner classes, case$tag field for case classes and so on
-	*/
+
 	public void autoGenerateMembers() {
 		checkResolved();
+		if( isMembersGenerated() ) return;
+		if( isPackage() ) return;
+
+		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
+			super_type.clazz.autoGenerateMembers();
+		}
+		for(int i=0; i < interfaces.length; i++) {
+			if( !interfaces[i].clazz.isMembersGenerated() )
+				interfaces[i].clazz.autoGenerateMembers();
+		}
+
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
 
-		autoGenerateTypeinfoClazz();
-
-		// Check if it's an inner class
-		if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
-			int n = 0;
-			for(Struct pkg=package_clazz;
-					pkg.isClazz() && !pkg.isStatic();
-						pkg=pkg.package_clazz) n++;
-			Field f = addField(new Field(
-				KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD));
-			f.pos = pos;
+		KString oldfn = Kiev.curFile;
+		boolean[] old_exts = Kiev.getExtSet();
+		{
+			ASTNode fu = parent;
+			while( fu != null && !(fu instanceof FileUnit))
+				fu = fu.parent;
+			if( fu != null ) {
+				Kiev.curFile = ((FileUnit)fu).filename;
+				Kiev.setExtSet(((FileUnit)fu).disabled_extensions);
+			}
 		}
 
-		if( !isInterface() && !isPackage() ) {
-			// Default <init> method, if no one is declared
-			boolean init_found = false;
-			// Add outer hidden parameter to constructors for inner and non-static classes
-			int i = -1;
-			foreach (DNode n; members; ) {
-				i++;
-				if !(n instanceof Method)
-					continue;
-				Method m = (Method)n;
-				if( !(m.name.equals(nameInit) || m.name.equals(nameNewOp)) ) continue;
-				if( m.name.equals(nameInit) )
-					init_found = true;
-				boolean retype = false;
-				Type[] targs = m.type.args;
-				package_clazz.checkResolved();
-				if( package_clazz.isClazz() && !isStatic() ) {
-					// Insert outer class type as second argument, but first type
-					// in signature
-					targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
-					// Also add formal parameter
-					m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD),0);
-					retype = true;
-				}
-				if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
-					targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
-					m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
-					retype = true;
-				}
+		try {
+			autoGenerateTypeinfoClazz();
+	
+			// Check if it's an inner class
+			if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
+				int n = 0;
+				for(Struct pkg=package_clazz;
+						pkg.isClazz() && !pkg.isStatic();
+							pkg=pkg.package_clazz) n++;
+				Field f = addField(new Field(
+					KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD));
+				f.pos = pos;
 			}
-			if( !init_found ) {
-				trace(Kiev.debugResolve,nameInit+" not found in class "+this);
-				Constructor init = null;
-				if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
-					MethodType mt;
-					FormPar thisOuter, maxArgs;
-					if( !isStatic() ) {
-						mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
-						init = new Constructor(mt,ACC_PUBLIC);
-						init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
-						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
-					} else {
-						mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
-						init = new Constructor(mt,ACC_PUBLIC);
-						init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
-					}
-				} else {
-					MethodType mt;
-					Type[] targs = Type.emptyArray;
-					FormPar[] params = new FormPar[0];
+	
+			if( !isInterface() && !isPackage() ) {
+				// Default <init> method, if no one is declared
+				boolean init_found = false;
+				// Add outer hidden parameter to constructors for inner and non-static classes
+				int i = -1;
+				foreach (DNode n; members; ) {
+					i++;
+					if !(n instanceof Method)
+						continue;
+					Method m = (Method)n;
+					if( !(m.name.equals(nameInit) || m.name.equals(nameNewOp)) ) continue;
+					if( m.name.equals(nameInit) )
+						init_found = true;
+					boolean retype = false;
+					Type[] targs = m.type.args;
+					package_clazz.checkResolved();
 					if( package_clazz.isClazz() && !isStatic() ) {
-						targs = (Type[])Arrays.append(targs,package_clazz.type);
-						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+						// Insert outer class type as second argument, but first type
+						// in signature
+						targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
+						// Also add formal parameter
+						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD),0);
+						retype = true;
 					}
 					if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
-						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
-						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,0));
+						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
+						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,0),(retype?1:0));
+						retype = true;
 					}
-					if( isEnum() ) {
-						targs = (Type[])Arrays.append(targs,Type.tpString);
-						targs = (Type[])Arrays.append(targs,Type.tpInt);
-						targs = (Type[])Arrays.append(targs,Type.tpString);
-						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("name"),Type.tpString,0));
-						params = (FormPar[])Arrays.append(params,new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
-						params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
-					}
-					mt = MethodType.newMethodType(targs,Type.tpVoid);
-					init = new Constructor(mt,ACC_PUBLIC);
-					init.params.addAll(params);
 				}
-				init.pos = pos;
-				init.body = new BlockStat(pos,init);
-				if( isEnum() )
-					init.setPrivate(true);
-				else
-					init.setPublic(true);
-				addMethod(init);
+				if( !init_found ) {
+					trace(Kiev.debugResolve,nameInit+" not found in class "+this);
+					Constructor init = null;
+					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
+						MethodType mt;
+						FormPar thisOuter, maxArgs;
+						if( !isStatic() ) {
+							mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
+							init = new Constructor(mt,ACC_PUBLIC);
+							init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+							init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
+						} else {
+							mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
+							init = new Constructor(mt,ACC_PUBLIC);
+							init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
+						}
+					} else {
+						MethodType mt;
+						Type[] targs = Type.emptyArray;
+						FormPar[] params = new FormPar[0];
+						if( package_clazz.isClazz() && !isStatic() ) {
+							targs = (Type[])Arrays.append(targs,package_clazz.type);
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+						}
+						if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,0));
+						}
+						if( isEnum() ) {
+							targs = (Type[])Arrays.append(targs,Type.tpString);
+							targs = (Type[])Arrays.append(targs,Type.tpInt);
+							targs = (Type[])Arrays.append(targs,Type.tpString);
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("name"),Type.tpString,0));
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,0));
+						}
+						mt = MethodType.newMethodType(targs,Type.tpVoid);
+						init = new Constructor(mt,ACC_PUBLIC);
+						init.params.addAll(params);
+					}
+					init.pos = pos;
+					init.body = new BlockStat(pos,init);
+					if( isEnum() )
+						init.setPrivate(true);
+					else
+						init.setPublic(true);
+					addMethod(init);
+				}
 			}
-		}
-		else if( isInterface() ) {
-			Struct defaults = null;
-			foreach (ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
-				m.setPublic(true);
-				if( !m.isAbstract() ) {
-					if( m.isStatic() ) continue;
-					// Now, non-static methods (templates)
-					// Make it static and add abstract method
-					Method abstr = new Method(m.name.name,m.type,m.getFlags()|ACC_PUBLIC );
-					abstr.pos = m.pos;
-					abstr.setStatic(false);
-					abstr.setAbstract(true);
-					abstr.params.copyFrom(m.params);
-					members.replace(m, abstr);
+			else if( isInterface() ) {
+				Struct defaults = null;
+				foreach (ASTNode n; members; n instanceof Method) {
+					Method m = (Method)n;
+					m.setPublic(true);
+					if( !m.isAbstract() ) {
+						if( m.isStatic() ) continue;
+						// Now, non-static methods (templates)
+						// Make it static and add abstract method
+						Method abstr = new Method(m.name.name,m.type,m.getFlags()|ACC_PUBLIC );
+						abstr.pos = m.pos;
+						abstr.setStatic(false);
+						abstr.setAbstract(true);
+						abstr.params.copyFrom(m.params);
+						members.replace(m, abstr);
+	
+						// Make inner class name$default
+						if( defaults == null ) {
+							defaults = Env.newStruct(
+								ClazzName.fromOuterAndName(this,nameIdefault,false,true),
+								this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
+							);
+							members.add(defaults);
+							defaults.setResolved(true);
+							SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
+							defaults.addAttr(sfa);
+							Type[] tarr = type.args;
+							defaults.type = Type.newRefType(defaults, tarr);
+							defaults.super_type = Type.tpObject;
+							//defaults.interfaces.add(new TypeRef(this.type));
+						}
+						m.setStatic(true);
+						m.setVirtualStatic(true);
+						m.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,ACC_FORWARD));
+						defaults.addMethod(m);
+					}
+					if( isInterface() && !m.isStatic() ) {
+						m.setAbstract(true);
+					}
+				}
+			}
+		} finally { Kiev.setExtSet(old_exts); Kiev.curFile = oldfn; }
 
-					// Make inner class name$default
-					if( defaults == null ) {
-						defaults = Env.newStruct(
-							ClazzName.fromOuterAndName(this,nameIdefault,false,true),
-							this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
-						);
-						members.add(defaults);
-						defaults.setResolved(true);
-						SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-						defaults.addAttr(sfa);
-						Type[] tarr = type.args;
-						defaults.type = Type.newRefType(defaults, tarr);
-						defaults.super_type = Type.tpObject;
-						//defaults.interfaces.add(new TypeRef(this.type));
-					}
-					m.setStatic(true);
-					m.setVirtualStatic(true);
-					m.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,ACC_FORWARD));
-					defaults.addMethod(m);
-				}
-				if( isInterface() && !m.isStatic() ) {
-					m.setAbstract(true);
-				}
-			}
-		}
+		setMembersGenerated(true);
+		foreach(DNode s; members; s instanceof Struct)
+			((Struct)s).autoGenerateMembers();
 
 	}
 
@@ -1626,13 +1652,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public void autoProxyMethods() {
 		checkResolved();
-		if( isMembersGenerated() ) return;
+		if( isMembersPreGenerated() ) return;
 		if( isPackage() ) return;
-		if( super_type != null && !super_type.clazz.isMembersGenerated() ) {
+		if( super_type != null && !super_type.clazz.isMembersPreGenerated() ) {
 			super_type.clazz.autoProxyMethods();
 		}
 		for(int i=0; i < interfaces.length; i++)
-			if( !interfaces[i].clazz.isMembersGenerated() ) {
+			if( !interfaces[i].clazz.isMembersPreGenerated() ) {
 				interfaces[i].clazz.autoProxyMethods();
 			}
 		ASTNode fu = parent;
@@ -1644,8 +1670,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		for(int i=0; i < interfaces.length; i++) {
 			((Struct)interfaces[i].clazz).autoProxyMethods(this);
 		}
-
-		autoGenerateMembers();
 
 		if( isClazz() ) {
 			boolean make_abstract = false;
@@ -1663,7 +1687,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 //			ms = collectVTmethods(ms);
 //		}
 
-		setMembersGenerated(true);
+		setMembersPreGenerated(true);
 		
 		foreach(DNode s; members; s instanceof Struct)
 			((Struct)s).autoProxyMethods();

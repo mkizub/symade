@@ -71,17 +71,17 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				.toKString(),
 			false
 		);
-		Struct me = Env.newStruct(clname,PassInfo.clazz,flags,true);
-		me.setResolved(true);
-		me.setLocal(true);
-		me.setAnonymouse(true);
-		if( PassInfo.method==null || PassInfo.method.isStatic() ) me.setStatic(true);
-		me.parent = parent;
+		Struct clazz = Env.newStruct(clname,PassInfo.clazz,flags,true);
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		clazz.setAnonymouse(true);
+		if( PassInfo.method==null || PassInfo.method.isStatic() ) clazz.setStatic(true);
+		clazz.parent = parent;
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
+		clazz.addAttr(sfa);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		me.super_type = Type.tpClosureClazz.type;
+		clazz.super_type = Type.tpClosureClazz.type;
 
 		Type[] types = new Type[params.length];
 		Var[] vars = new Var[params.length];
@@ -90,7 +90,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 			types[i] = vars[i].type;
 		}
 		Type ret = rettype.getType();
-		me.type = ClosureType.newClosureType(me,types,ret);
+		clazz.type = ClosureType.newClosureType(clazz,types,ret);
 
 		if( ret != Type.tpRule ) {
 			if( ret.isReference() )
@@ -99,13 +99,13 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 			Method md = new Method(call_name, MethodType.newMethodType(Type.emptyArray,ret),ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
-			me.members.add(md);
+			clazz.members.add(md);
 		} else {
 			KString call_name = KString.from("call_rule");
 			RuleMethod md = new RuleMethod(call_name, MethodType.newMethodType(Type.emptyArray,Type.tpRule),ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
-			me.members.add(md);
+			clazz.members.add(md);
 		}
 
 		for(int i=0; i < vars.length; i++) {
@@ -127,11 +127,8 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		}
 		setResolved(true);
 
-		{
-			ExportJavaTop tp = (ExportJavaTop)Kiev.getProcessor(Kiev.Ext.JavaOnly);
-			tp.pass3(me);
-		}
-		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)me.type));
+		Kiev.runProcessorsOn(clazz);
+		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
 		replaceWithNodeResolve(reqType, new_closure);
 	}
 

@@ -47,7 +47,7 @@ public enum TopLevelPass {
 	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
 	passResolveMetaValues	   ,	// resolve values in meta-data
 	passCreateMembers		   ,	// create declared members of structures
-	passAutoProxyMethods	   ,	// autoProxyMethods()
+	passAutoGenerateMembers	   ,	// generation of members
 	passResolveImports		   ,	// recolve import static for import of fields and methods
 	passResolveFinalFields	   ,	// resolve final fields, to find out if they are constants
 	passVerify				   ,	// verify the tree before generation
@@ -93,8 +93,9 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
 	@virtual public virtual packed:1,compileflags,19 boolean is_struct_verified;
 	@virtual public virtual packed:1,compileflags,20 boolean is_struct_members_generated;
-	@virtual public virtual packed:1,compileflags,21 boolean is_struct_statements_generated;
-	@virtual public virtual packed:1,compileflags,22 boolean is_struct_generated;
+	@virtual public virtual packed:1,compileflags,21 boolean is_struct_pre_generated;
+	@virtual public virtual packed:1,compileflags,22 boolean is_struct_statements_generated;
+	@virtual public virtual packed:1,compileflags,23 boolean is_struct_generated;
 	
 	// Expression flags
 	@virtual public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
@@ -365,6 +366,19 @@ public abstract class ASTNode implements Constants {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	// indicates that structure members were pre-generated
+	@getter public final boolean get$is_struct_pre_generated()  alias isMembersPreGenerated  {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		return this.is_struct_pre_generated;
+	}
+	@setter public final void set$is_struct_pre_generated(boolean on) alias setMembersPreGenerated {
+		assert(this instanceof Struct,"For node "+this.getClass());
+		if (this.is_struct_pre_generated != on) {
+			this.is_struct_pre_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	
 	// indicates that statements in code were generated
 	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
 		assert(this instanceof Struct,"For node "+this.getClass());

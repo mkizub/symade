@@ -135,6 +135,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 			me.setStatementsGenerated(true);
 			setupStructType(me, false);
 		}
+		else if (me.type != null)
+			;
 		else
 			setupStructType(me, true);
 
@@ -764,16 +766,13 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 
 	public void autoGenerateMembers(ASTNode:ASTNode node) {
 	}
-	public void autoGenerateMembers(FileUnit:ASTNode node) {
-		node.autoProxyMethods();
+	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+		foreach(DNode n; fu.members; n instanceof Struct)
+			autoGenerateMembers(n);
 	}
-	public void autoGenerateMembers(Struct:ASTNode node) {
-		node.autoProxyMethods();
+	public void autoGenerateMembers(Struct:ASTNode clazz) {
+		clazz.autoGenerateMembers();
 	}
-
-
-
-
 
 
 
@@ -794,6 +793,24 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		node.resolveImports();
 		node.resolveFinalFields(false);
 	}
+
+	////////////////////////////////////////////////////
+	//												   //
+	//	   PASS - pre-generation, auto-proxy methods  //
+	//												   //
+	////////////////////////////////////////////////////
+
+	public void preGenerate(ASTNode:ASTNode node) {
+	}
+	public void preGenerate(FileUnit:ASTNode node) {
+		node.autoProxyMethods();
+	}
+	public void preGenerate(Struct:ASTNode node) {
+		node.autoProxyMethods();
+	}
+
+
+
 }
 
 
