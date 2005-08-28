@@ -106,7 +106,7 @@ public class AccessExpr extends LvalueExpr {
 		return Type.getRealType(obj.getType(),var.type);
 	}
 
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
@@ -580,8 +580,6 @@ public class ThisExpr extends LvalueExpr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public int getPriority() { return opAccessPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append("this").space();
 	}
@@ -848,8 +846,6 @@ public class VarAccessExpr extends LvalueExpr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public int getPriority() { return opAccessPriority; }
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
 		dmp.append(var);
@@ -965,8 +961,6 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 			Code.addInstr(op_putfield,resolveFieldForLocalPrologVar(),var.getType());
 		} finally { PassInfo.pop(this); }
 	}
-
-	public int getPriority() { return opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
@@ -1092,7 +1086,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
@@ -1207,7 +1201,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 		Code.addInstr(op_putfield,outer_refs[outer_refs.length-1],PassInfo.clazz.type);
 	}
 
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
 }

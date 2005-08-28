@@ -99,7 +99,7 @@ public class ArrayLengthAccessExpr extends Expr {
 		return Type.tpInt;
 	}
 
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
@@ -165,7 +165,7 @@ public class AssignExpr extends LvalueExpr {
 
 	public Type getType() { return lval.getType(); }
 
-	public int getPriority() { return opAssignPriority; }
+	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
@@ -492,7 +492,7 @@ public class BinaryExpr extends Expr {
 		return sb.toString();
 	}
 
-	public int getPriority() { return op.priority; }
+	public Operator getOp() { return op; }
 
 	public Type getType() {
 		Type t1 = expr1.getType();
@@ -831,7 +831,7 @@ public class StringConcatExpr extends Expr {
 		return Type.tpString;
 	}
 
-	public int getPriority() { return opAddPriority; }
+	public Operator getOp() { return BinaryOperator.Add; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1181,7 +1181,7 @@ public class UnaryExpr extends Expr {
 		return expr.getType();
 	}
 
-	public int getPriority() { return op.priority; }
+	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1358,7 +1358,7 @@ public class IncrementExpr extends LvalueExpr {
 		return lval.getType();
 	}
 
-	public int getPriority() { return op.priority; }
+	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -1589,7 +1589,7 @@ public class ConditionalExpr extends Expr {
 		return expr1.getType();
 	}
 
-	public int getPriority() { return opConditionalPriority; }
+	public Operator getOp() { return MultiOperator.Conditional; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

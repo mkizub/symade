@@ -193,7 +193,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		return sb.toString();
 	}
 
-	public int getPriority() { return opBooleanOrPriority; }
+	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public void resolve(Type reqType) {
 //		if( isResolved() ) return this;
@@ -282,7 +282,7 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		return sb.toString();
 	}
 
-	public int getPriority() { return opBooleanAndPriority; }
+	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public void resolve(Type reqType) {
 //		if( isResolved() ) return this;
@@ -359,7 +359,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		return sb.toString();
 	}
 
-	public int getPriority() { return op.priority; }
+	public Operator getOp() { return op; }
 
 	private void initialResolve(Type reqType) {
 		setTryResolved(true);
@@ -711,7 +711,7 @@ public class InstanceofExpr extends BoolExpr {
 		return expr+" instanceof "+type;
 	}
 
-	public int getPriority() { return Constants.opInstanceOfPriority; }
+	public Operator getOp() { return BinaryOperator.InstanceOf; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
@@ -814,7 +814,7 @@ public class BooleanNotExpr extends BoolExpr {
 			return "!"+expr;
 	}
 
-	public int getPriority() { return opBooleanNotPriority; }
+	public Operator getOp() { return PrefixOperator.BooleanNot; }
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;

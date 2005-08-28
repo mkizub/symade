@@ -46,6 +46,8 @@ public @interface ref {
 
 // control-flow simple node
 public @interface cfnode {
+	String in() default "";
+	String out() default "";
 }
 // sontrol-flow loop node
 public @interface cfloop {

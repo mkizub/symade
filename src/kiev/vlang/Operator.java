@@ -679,6 +679,8 @@ public class BinaryOperator extends Operator {
 	@ref public static final BinaryOperator Div;
 	@ref public static final BinaryOperator Mod;
 
+	@ref public static final BinaryOperator Access;
+	
 	static {
 		BooleanOr = newBinaryOperator(opBooleanOrPriority, KString.from("||"), KString.from("opBooleanOr"),null,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
@@ -760,6 +762,7 @@ public class BinaryOperator extends Operator {
 //			iopt=new OpTypes();
 //			Mod.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
 
+		Access = newBinaryOperator(opAccessPriority, KString.from("."), KString.from("opAccess"),null,orderAndArityNames[YFX],true);
 	}
 
 	public boolean is_boolean_op;

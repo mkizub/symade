@@ -49,7 +49,7 @@ public abstract class UnresExpr extends Expr {
 		this.op = op;
 	}
 	
-	public int getPriority() { return op.priority; }
+	public Operator getOp() { return op; }
 	
 	public abstract ENode toResolvedExpr();
 	
@@ -202,21 +202,6 @@ public class MultiExpr extends UnresExpr {
 		}
 		throw new CompilerException(pos,"Multi-operators are not implemented");
 	}
-//	public Expr tryResolve(Type reqType) {
-//		if( op == MultiOperator.Conditional ) {
-//			Expr cond = ((Expr)exprs[0]).tryResolve(Type.tpBoolean);
-//			if( cond == null )
-//				return null;
-//			Expr expr1 = ((Expr)exprs[1]).tryResolve(reqType);
-//			if( expr1 == null )
-//				return null;
-//			Expr expr2 = ((Expr)exprs[2]).tryResolve(reqType);
-//			if( expr2 == null )
-//				return null;
-//			return (Expr)new ConditionalExpr(pos,(Expr)cond.copy(),(Expr)expr1.copy(),(Expr)expr2.copy()).resolve(reqType);
-//		}
-//		throw new CompilerException(pos,"Multi-operators are not implemented");
-//	}
 }
 
 /**

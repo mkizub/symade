@@ -2258,6 +2258,7 @@ ENode AccessExpression() :
 		"("
 		e = ExpressionNT(null)
 		")"
+		{ e.setPrimaryExpr(true); }
 	|   LOOKAHEAD("fun" "(")
 		e = AnonymouseClosure()
 	)

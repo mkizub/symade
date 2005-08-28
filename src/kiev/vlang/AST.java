@@ -103,6 +103,7 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,18 boolean is_expr_gen_void;
 	@virtual public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
 	@virtual public virtual packed:1,compileflags,20 boolean is_expr_for_wrapper;
+	@virtual public virtual packed:1,compileflags,21 boolean is_expr_primary;
 	
 	// Method flags
 	@virtual public virtual packed:1,compileflags,17 boolean is_mth_virtual_static;
@@ -791,6 +792,18 @@ public abstract class ASTNode implements Constants {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+	// used for primary expressions, i.e. (a+b)
+	@getter public final boolean get$is_expr_primary()  alias isPrimaryExpr  {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		return this.is_expr_primary;
+	}
+	@setter public final void set$is_expr_primary(boolean on) alias setPrimaryExpr {
+		assert(this instanceof Expr,"For node "+this.getClass());
+		if (this.is_expr_primary != on) {
+			this.is_expr_primary = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 
 	//
 	// Statement specific flags
@@ -1027,7 +1040,7 @@ public abstract class ENode extends ASTNode {
 		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
 	}
 
-	public abstract int getPriority();
+	public int getPriority() { return 255; }
 
 	public boolean isConstantExpr() { return false; }
 	public Object	getConstValue() {
@@ -1063,7 +1076,7 @@ public abstract class ENode extends ASTNode {
 }
 
 @node
-public class VarDecl extends ENode implements Named {
+public final class VarDecl extends ENode implements Named {
 
 	@att Var var;
 	
@@ -1076,7 +1089,6 @@ public class VarDecl extends ENode implements Named {
 	}
 
 	public NodeName getName() { return var.name; }
-	public int getPriority() { return 255; }
 	public void generate(Type reqType) {
 		var.generate(Type.tpVoid);
 	}
@@ -1088,7 +1100,7 @@ public class VarDecl extends ENode implements Named {
 }
 
 @node
-public class LocalStructDecl extends ENode implements Named {
+public final class LocalStructDecl extends ENode implements Named {
 
 	@att Struct clazz;
 	
@@ -1097,17 +1109,25 @@ public class LocalStructDecl extends ENode implements Named {
 		this.clazz = clazz;
 		clazz.setResolved(true);
 	}
-	public void resolve(Type reqType) {
+
+	public final void preResolve() {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		Kiev.runProcessorsOn(clazz);
+	}
+	
+	public void resolve(Type reqType) {
+//		if( PassInfo.method==null || PassInfo.method.isStatic())
+//			clazz.setStatic(true);
+//		clazz.setResolved(true);
+//		clazz.setLocal(true);
+//		Kiev.runProcessorsOn(clazz);
 		clazz.resolveDecl();
 	}
 
 	public NodeName getName() { return clazz.name; }
-	public int getPriority() { return 255; }
 	public void generate(Type reqType) {
 		// don't generate here
 	}
@@ -1145,6 +1165,17 @@ public abstract class Expr extends CFlowNode {
 
 	public Expr(int pos, ASTNode parent) { super(pos,parent); }
 
+	public Operator getOp() { return null; }
+
+	public int getPriority() {
+		if (isPrimaryExpr())
+			return 255;
+		Operator op = getOp();
+		if (op == null)
+			return 255;
+		return op.priority;
+	}
+
 	public Object	getConstValue() {
     	throw new RuntimeException("Request for constant value of non-constant expression");
     }
@@ -1162,7 +1193,6 @@ public class NopExpr extends Expr {
 		this.pos = expr.pos;
 		this.expr = expr;
 	}
-	public int getPriority() { return 256; }
 	public Type getType() {
 		return expr.getType();
 	}
@@ -1189,8 +1219,6 @@ public abstract class LvalueExpr extends Expr {
 				Code.addInstr(Instr.op_pop);
 		} finally { PassInfo.pop(this); }
 	}
-
-	public int		getPriority() { return 256; }
 
 	/** Just load value referenced by lvalue */
 	public abstract void generateLoad();
@@ -1242,7 +1270,6 @@ public class InitializerShadow extends Statement {
 	public void resolve(Type reqType) {
 	}
 
-	public int getPriority() { return 255; }
 	public void generate(Type reqType) {
 		init.generate(reqType);
 	}
@@ -1290,8 +1317,6 @@ public class TypeRef extends ENode {
 		this.lnk = n;
 	}
 	
-	public int getPriority() { return 255; }
-
 	public final void preResolve() {
 		getType(); // calls resolving
 	}
