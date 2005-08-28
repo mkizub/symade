@@ -434,7 +434,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				} else {
 					bs.addStatement(
 						new ExprStat(0,null,
-							new CallAccessExpr(0,
+							new CallExpr(0,
 								new AccessExpr(0,new ThisExpr(0),aflds[i]),
 								Env.getStruct(nameNArr).resolveMethod(nameNArrReplace, signNArrReplace),
 								new Expr[]{

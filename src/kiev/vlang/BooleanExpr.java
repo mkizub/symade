@@ -410,9 +410,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( opt.match(tps,argsarr) ) {
 				Expr e;
 				if( opt.method.isStatic() )
-					e = new CallExpr(pos,opt.method,new ENode[]{expr1,expr2});
+					e = new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2});
 				else
-					e = new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2});
+					e = new CallExpr(pos,expr1,opt.method,new ENode[]{expr2});
 				replaceWithNodeResolve(reqType, e);
 				return;
 			}
@@ -454,7 +454,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
-			expr1 = new CallAccessExpr(expr1.pos,expr1,m,Expr.emptyArray);
+			expr1 = new CallExpr(expr1.pos,expr1,m,Expr.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
@@ -511,9 +511,9 @@ public class BinaryBoolExpr extends BoolExpr {
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) ) {
 					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,opt.method,new ENode[]{expr1,expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2}));
 					else
-						replaceWithNodeResolve(reqType, new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{expr2}));
 					return;
 				}
 			}
@@ -739,7 +739,7 @@ public class InstanceofExpr extends BoolExpr {
 				return;
 			}
 			if (!type.isArray() && type.args.length > 0) {
-				replaceWithNodeResolve(reqType, new CallAccessExpr(pos,
+				replaceWithNodeResolve(reqType, new CallExpr(pos,
 						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type.getType()),
 						Type.tpTypeInfo.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),

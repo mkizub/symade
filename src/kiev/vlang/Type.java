@@ -953,7 +953,7 @@ public interface CallableType {
 }
 
 public class ClosureType extends BaseType implements CallableType {
-	@ref private Type		ret;
+	public virtual Type		ret;
 	
 	private ClosureType(Struct clazz, Type[] args, Type ret, KString sign) {
 		super(clazz,args);
@@ -1062,7 +1062,7 @@ public class WrapperType extends Type {
 }
 
 public class MethodType extends Type implements CallableType {
-	@ref private Type		ret;
+	public virtual Type		ret;
 	public Type[]	fargs;	// formal arguments for parametriezed methods
 
 	private MethodType(Type ret, Type[] args, Type[] fargs, KString sign) {

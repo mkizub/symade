@@ -885,14 +885,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public RuleCallExpr(CallExpr expr) {
 		super(expr.pos);
-		this.obj = null;
-		this.func = expr.func;
-		foreach(Expr e; expr.args) this.args.append(e);
-		this.super_flag = expr.super_flag;
-	}
-
-	public RuleCallExpr(CallAccessExpr expr) {
-		super(expr.pos);
 		this.obj = expr.obj;
 		this.func = expr.func;
 		foreach(Expr e; expr.args) this.args.append(e);
@@ -998,13 +990,6 @@ public abstract class RuleExprBase extends ASTRuleNode {
 
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.type.ret == Type.tpRule ) {
-				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
-				return;
-			}
-		}
-		else if( expr instanceof CallAccessExpr ) {
-			CallAccessExpr e = (CallAccessExpr)expr;
 			if( e.func.type.ret == Type.tpRule ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
 				return;

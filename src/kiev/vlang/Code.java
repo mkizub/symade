@@ -1551,6 +1551,17 @@ public class Code implements Constants {
 		stack_push(Type.tpString);
 	}
 
+	static public void addConst(Type val) {
+		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
+		if( !reachable ) {
+			Kiev.reportWarning(0,"\""+Instr.op_push_tconst+"\" ingnored as unreachable");
+			return;
+		}
+		CP c = ConstPool.addClazzCP(val.java_signature);
+		add_opcode_and_CP(opc_ldc,c);
+		stack_push(Type.tpClass);
+	}
+
 	static public void addNullConst() {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_null);
 		if( !reachable ) {

@@ -711,7 +711,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ftype = ((Struct)t.clazz).typeinfo_clazz.type;
 			}
 			Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
-			Expr e = new CastExpr(pos,ftype,new CallExpr(pos,
+			Expr e = new CastExpr(pos,ftype,new CallExpr(pos,null,
 					Type.tpTypeInfo.clazz.resolveMethod(
 						KString.from("newTypeInfo"),
 						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
@@ -741,7 +741,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
 		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
-		f.init = new CastExpr(pos,ftype,new CallExpr(pos,
+		f.init = new CastExpr(pos,ftype,new CallExpr(pos,null,
 				Type.tpTypeInfo.clazz.resolveMethod(
 					KString.from("newTypeInfo"),
 					KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
@@ -862,14 +862,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					if (t.isArgumented()) {
 						exprs[arg] = new ASTIdentifier(pos,t.getClazzName().short_name);
 					} else {
-						CallExpr ce = new CallExpr(pos,
+						CallExpr ce = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
 								KString.from("newTypeInfo"),
 								KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 							),
 							new Expr[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
 						);
-						ce.type_of_static = this.type;
+						//ce.type_of_static = this.type;
 						exprs[arg] = ce;
 					}
 				}
@@ -1438,21 +1438,21 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				if( m.type.ret != Type.tpVoid ) {
 					if( overwr.type.ret == Type.tpVoid )
 						br = new BlockStat(0,last_st,new ENode[]{
-							new ExprStat(0,null,new CallExpr(0,overwr,vae,true)),
+							new ExprStat(0,null,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
 							new ReturnStat(0,null,new ConstNullExpr())
 						});
 					else {
 						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() ) {
-							CallExpr ce = new CallExpr(0,overwr,vae,true);
+							CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,vae,true);
 							br = new ReturnStat(0,last_st,ce);
 							CastExpr.autoCastToReference(ce);
 						}
 						else
-							br = new ReturnStat(0,last_st,new CallExpr(0,overwr,vae,true));
+							br = new ReturnStat(0,last_st,new CallExpr(0,new ThisExpr(true),overwr,vae,true));
 					}
 				} else {
 					br = new BlockStat(0,last_st,new ENode[]{
-						new ExprStat(0,null,new CallExpr(0,overwr,vae,true)),
+						new ExprStat(0,null,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
 						new ReturnStat(0,null,null)
 					});
 				}
@@ -1485,7 +1485,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						nm.body = new BlockStat(0,nm,new ENode[]{
 							new ReturnStat(0,null,
 								new CastExpr(0,rm.type.ret,
-									new CallExpr(0,mm,vae)))
+									new CallExpr(0,new ThisExpr(true),mm,vae)))
 							});
 						addMethod(nm);
 					}
@@ -1539,7 +1539,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				if( t.args.length > 0 && !t.isArray() && !t.isInstanceOf(Type.tpClosure) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
-					Expr tibe = new CallAccessExpr(pos,
+					Expr tibe = new CallExpr(pos,
 						accessTypeInfoField(pos,this,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
@@ -1777,7 +1777,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				args[0] = new ThisExpr();
 				for(int k=1; k < args.length; k++)
 					args[k] = new VarAccessExpr(0,proxy.params[k-1]);
-				CallExpr ce = new CallExpr(0,m,args);
+				CallExpr ce = new CallExpr(0,null,m,args);
 				if( proxy.type.ret == Type.tpVoid ) {
 					bs.addStatement(new ExprStat(0,bs,ce));
 					bs.addStatement(new ReturnStat(0,bs,null));

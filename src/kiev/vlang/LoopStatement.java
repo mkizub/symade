@@ -568,7 +568,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			} else if( ctype == Type.tpRule &&
 				(
 				   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
-				|| ( container instanceof CallAccessExpr && ((CallAccessExpr)container).func.type.ret == Type.tpRule )
 				|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() == Type.tpRule )
 				)
 			  ) {
@@ -625,7 +624,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				/* iter = container.elements(); */
 				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter),
-					new CallAccessExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
+					new CallExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
 					);
 				iter_init.resolve(iter.type);
 				break;
@@ -640,9 +639,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				NArr<ENode> args = null;
 				if( container instanceof CallExpr ) {
 					args = ((CallExpr)container).args;
-				}
-				else if( container instanceof CallAccessExpr ) {
-					args = ((CallAccessExpr)container).args;
 				}
 				else if( container instanceof ClosureCallExpr ) {
 					args = ((ClosureCallExpr)container).args;
@@ -673,7 +669,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
 					nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-				iter_cond = new CallAccessExpr(	iter.pos,
+				iter_cond = new CallExpr(	iter.pos,
 						new VarAccessExpr(iter.pos,this,iter),
 						moreelem,
 						Expr.emptyArray
@@ -712,7 +708,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
 					nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-					var_init = new CallAccessExpr(iter.pos,
+					var_init = new CallExpr(iter.pos,
 						new VarAccessExpr(iter.pos,iter),
 						nextelem,
 						Expr.emptyArray

@@ -51,11 +51,10 @@ public class ASTReparseStatement extends Statement {
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");
 		}
-		if( !(n instanceof Statement) ) {
-			throw new RuntimeException("Reparse node "+ref+" is not a statement");
+		if( !(n instanceof ENode) ) {
+			throw new RuntimeException("Reparse node "+ref+" is not an e-node");
 		}
-		Statement st = (Statement)n;
-		this.replaceWithNode(st);
+		this.replaceWithNodeResolve(reqType, (ENode)n);
 	}
   
 	public String toString() { return Kiev.parserAddresses.get(ref.substring(2)).toString(); }

@@ -323,7 +323,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						PassInfo.clazz.addField(typehash);
-						CallAccessExpr cae = new CallAccessExpr(pos,
+						CallExpr cae = new CallExpr(pos,
 							new StaticFieldAccessExpr(pos,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
 							new Expr[]{new VarAccessExpr(pos,tmpvar)}

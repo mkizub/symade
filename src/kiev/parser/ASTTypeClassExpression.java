@@ -42,27 +42,28 @@ public class ASTTypeClassExpression extends Expr {
     public Type getType() { return Type.tpClass; }
 
 	public void resolve(Type reqType) throws CompilerException {
-		Type tp = type.getType();
-		if( !tp.isReference() ) {
-			Type rt = Type.getRefTypeForPrimitive(tp);
-			Field f = (Field)rt.resolveName(KString.from("TYPE"));
-			if( f == null || !f.isStatic() )
-				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
-			replaceWithNodeResolve(reqType, new StaticFieldAccessExpr(pos,f));
-			return;
-		}
-		KString name;
-		if( tp.isArray() )
-			name = tp.java_signature.replace('/','.');
-		else
-			name = tp.getClazzName().bytecode_name.replace('/','.');
-		replaceWithNodeResolve(reqType, new CallExpr(pos,
-				Type.tpClass.resolveMethod(
-					KString.from("forName"),
-					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
-				),
-				new Expr[]{new ConstStringExpr(name)}
-			));
+//		Type tp = type.getType();
+//		if( !tp.isReference() ) {
+//			Type rt = Type.getRefTypeForPrimitive(tp);
+//			Field f = (Field)rt.resolveName(KString.from("TYPE"));
+//			if( f == null || !f.isStatic() )
+//				throw new CompilerException(pos,"Static final field TYPE not found in "+rt);
+//			replaceWithNodeResolve(reqType, new StaticFieldAccessExpr(pos,f));
+//			return;
+//		}
+//		KString name;
+//		if( tp.isArray() )
+//			name = tp.java_signature.replace('/','.');
+//		else
+//			name = tp.getClazzName().bytecode_name.replace('/','.');
+//		replaceWithNodeResolve(reqType, new CallExpr(pos,
+//				Type.tpClass.resolveMethod(
+//					KString.from("forName"),
+//					KString.from("(Ljava/lang/String;)Ljava/lang/Class;")
+//				),
+//				new Expr[]{new ConstStringExpr(name)}
+//			));
+		replaceWithNodeResolve(reqType, new TypeClassExpr(pos, this.type));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

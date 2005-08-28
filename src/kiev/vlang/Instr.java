@@ -37,6 +37,7 @@ public enum Instr {
 	op_push_fconst,
 	op_push_dconst,
 	op_push_sconst,
+	op_push_tconst,
 	op_push_null,
 	op_pop,
 	op_load,		//(int v),

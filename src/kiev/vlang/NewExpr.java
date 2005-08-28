@@ -141,8 +141,7 @@ public class NewExpr extends Expr {
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
 					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-						CallExpr n = new CallExpr(pos,(Method)m,args);
-						n.type_of_static = type;
+						CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args);
 						replaceWithNode(n);
 						m.makeArgs(args,type);
 						n.setResolved(true);
@@ -186,7 +185,7 @@ public class NewExpr extends Expr {
 						throw new CompilerException(pos,"Can't create an instance of argument type "+type);
 					Expr tie = new AccessExpr(pos,new ThisExpr(pos),PassInfo.clazz.resolveField(nameTypeInfo));
 					Expr e = new CastExpr(pos,type,
-						new CallAccessExpr(pos,tie,
+						new CallExpr(pos,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(
 								KString.from("newInstance"),
 								KString.from("(I)Ljava/lang/Object;")
@@ -301,14 +300,14 @@ public class NewArrayExpr extends Expr {
 				Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
 				if( dim == 1 ) {
 					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-						new CallAccessExpr(pos,tie,
+						new CallExpr(pos,tie,
 							Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
 							new ENode[]{new ConstIntExpr(i),args[0]}
 						),true));
 					return;
 				} else {
 					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-						new CallAccessExpr(pos,tie,
+						new CallExpr(pos,tie,
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
 							new ENode[]{
 								new ConstIntExpr(i),

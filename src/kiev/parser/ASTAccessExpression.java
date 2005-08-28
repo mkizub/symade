@@ -234,18 +234,20 @@ public class ASTAccessExpression extends Expr {
 			TypeRef tr = new TypeRef(((Struct)v).type);
 			return tr;
 		}
-		else if( v instanceof Method ) {
-			if( v.isStatic() )
-				return new CallExpr(pos,(Method)v,Expr.emptyArray);
-			if( info.isEmpty() ) {
-				if( o instanceof Struct )
-					throw new CompilerException(pos,"Static access to non-static method "+v);
-				return new CallAccessExpr(pos,(Expr)obj,(Method)v,Expr.emptyArray);
-			} else {
-				ENode e = info.buildCall(pos, (Expr)obj, v, Expr.emptyArray);
-				return e;
-			}
-		} else {
+//		else if( v instanceof Method ) {
+//			if( v.isStatic() ) {
+//				return new CallExpr(pos,(Method)v,Expr.emptyArray);
+//			}
+//			if( info.isEmpty() ) {
+//				if( o instanceof Struct )
+//					throw new CompilerException(pos,"Static access to non-static method "+v);
+//				return new CallExpr(pos,(Expr)obj,(Method)v,Expr.emptyArray);
+//			} else {
+//				ENode e = info.buildCall(pos, (Expr)obj, v, Expr.emptyArray);
+//				return e;
+//			}
+//		}
+		else {
 			throw new CompilerException(pos,"Identifier "+ident+" must be a class's field");
 		}
 	}

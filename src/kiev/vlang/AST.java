@@ -1322,7 +1322,7 @@ public class TypeRef extends ENode {
 	}
 	
 	public void resolve(Type reqType) {
-		if (reqType != null)
+		if (reqType != null && reqType != Type.tpClass)
 			toExpr(reqType);
 		else
 			getType(); // calls resolving

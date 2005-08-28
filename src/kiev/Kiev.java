@@ -50,7 +50,7 @@ public final class Kiev {
 
    	public static void reportError(int pos, Throwable e) {
 		if (e instanceof CompilationAbortError)
-			throw e;
+			throw (CompilationAbortError)e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
 		if( debug ) e.printStackTrace( /* */System.out /* */ );
@@ -97,7 +97,7 @@ public final class Kiev {
 
    	public static void reportParserError(int pos, String msg, Throwable e) {
 		if (e instanceof CompilationAbortError)
-			throw e;
+			throw (CompilationAbortError)e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;
@@ -109,7 +109,7 @@ public final class Kiev {
 
    	public static void reportParserError(int pos, Throwable e) {
 		if (e instanceof CompilationAbortError)
-			throw e;
+			throw (CompilationAbortError)e;
 		if( PassInfo.method != null ) PassInfo.method.setBad(true);
 		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;

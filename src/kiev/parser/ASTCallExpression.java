@@ -98,7 +98,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,(Method)m,args,false);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,args,false);
 				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);
@@ -133,7 +133,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,(Method)m,args,true);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,args,true);
 				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);

@@ -101,35 +101,6 @@ public class ASTIdentifier extends ENode {
 		ASTNode@ v;
 		ResInfo info = new ResInfo();
 		if( !PassInfo.resolveNameR(v,info,name) ) {
-			// May be a function
-//			if( reqType instanceof MethodType ) {
-//				if( PassInfo.resolveMethodR(v,null,name,(MethodType)reqType) ) {
-//					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-//					ac.pos = pos;
-//					ac.parent = parent;
-//					ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
-//					for(int i=0; i < ac.params.length; i++)
-//						ac.params[i] = new FormPar(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
-//					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-//					Expr[] cargs = new Expr[ac.params.length];
-//					for(int i=0; i < cargs.length; i++)
-//						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-//					args = cargs;
-//					ASTCallExpression ace = new ASTCallExpression();
-//					ace.func = new ASTIdentifier(pos,name);
-//					foreach (Expr e; cargs)
-//						ace.args.add(e);
-//					if( ac.rettype.getType() == Type.tpVoid ) {
-//						bs.addStatement(new ExprStat(pos,bs,ace));
-//						bs.addStatement(new ReturnStat(pos,bs,null));
-//					} else {
-//						bs.addStatement(new ReturnStat(pos,bs,ace));
-//					}
-//					ac.body = bs;
-//					return ac.resolve(reqType);
-//				}
-//			}
-
 //			if( name.startsWith(Constants.nameDEF) ) {
 //				String prop = name.toString().substring(2);
 //				String val = Env.getProperty(prop);
@@ -194,34 +165,6 @@ public class ASTIdentifier extends ENode {
 		ASTNode@ v;
 		ResInfo info = new ResInfo();
 		if( !PassInfo.resolveNameR(v,info,name) ) {
-			// May be a function
-//			if( reqType instanceof MethodType ) {
-//				if( PassInfo.resolveMethodR(v,null,name,(MethodType)reqType) ) {
-//					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-//					ac.pos = pos;
-//					ac.parent = parent;
-//					ac.rettype = new TypeRef(pos, ((MethodType)reqType).ret);
-//					for(int i=0; i < ac.params.length; i++)
-//						ac.params[i] = new FormPar(pos,KString.from("arg"+(i+1)),reqType.args[i],0);
-//					BlockStat bs = new BlockStat(pos,ac,ASTNode.emptyArray);
-//					Expr[] cargs = new Expr[ac.params.length];
-//					for(int i=0; i < cargs.length; i++)
-//						cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
-//					args = cargs;
-//					ASTCallExpression ace = new ASTCallExpression();
-//					ace.func = new ASTIdentifier(pos,name);
-//					foreach (Expr e; cargs)
-//						ace.args.add(e);
-//					if( ac.rettype.getType() == Type.tpVoid ) {
-//						bs.addStatement(new ExprStat(pos,bs,ace));
-//						bs.addStatement(new ReturnStat(pos,bs,null));
-//					} else {
-//						bs.addStatement(new ReturnStat(pos,bs,ace));
-//					}
-//					ac.body = bs;
-//					return ac.resolve(reqType);
-//				}
-//			}
 			if( name.startsWith(Constants.nameDEF) ) {
 				String prop = name.toString().substring(2);
 				String val = Env.getProperty(prop);

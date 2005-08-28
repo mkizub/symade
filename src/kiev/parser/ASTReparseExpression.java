@@ -27,9 +27,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTReparseExpression.java,v 1.3 1998/10/26 23:47:05 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3 $
  *
  */
 
@@ -51,10 +49,10 @@ public class ASTReparseExpression extends Expr {
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");
 		}
-		if( !(n instanceof Expr) ) {
-			throw new RuntimeException("Reparse node "+ref+" is not an expression");
+		if( !(n instanceof ENode) ) {
+			throw new RuntimeException("Reparse node "+ref+" is not an e-node");
 		}
-		this.replaceWithNodeResolve(reqType, (Expr)n);
+		this.replaceWithNodeResolve(reqType, (ENode)n);
 	}
   
 	public int		getPriority() { return 256; }

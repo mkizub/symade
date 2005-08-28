@@ -83,7 +83,7 @@ public class ASTCallAccessExpression extends Expr {
 			info.leaveForward(sup);
 			if( info.isEmpty() ) {
 				Method meth = (Method)m;
-				CallAccessExpr cae = new CallAccessExpr(pos,sup,meth,args);
+				CallExpr cae = new CallExpr(pos,sup,meth,args);
 				cae.super_flag = true;
 				replaceWithNode(cae);
 				meth.makeArgs(cae.args, tp);

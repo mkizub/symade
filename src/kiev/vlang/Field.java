@@ -70,7 +70,7 @@ public class Field extends DNode implements Named, Typed, Accessable {
 		this.ftype = ftype;
 		this.acc = new Access(0);
 		this.meta = new MetaSet(this);
-		trace(Kiev.debugCreation,"New field created: "+name+" with type "+type);
+		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
 
 	public Field(KString name, Type type, int acc) {

@@ -253,7 +253,7 @@ public class UnresCallExpr extends UnresExpr {
 		if (obj instanceof TypeRef) {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, m, args);
+				CallExpr ce = new CallExpr(pos, obj, m, args);
 				m.makeArgs(ce.args, null);
 				return ce;
 			} else {
@@ -263,7 +263,7 @@ public class UnresCallExpr extends UnresExpr {
 		} else {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallAccessExpr ce = new CallAccessExpr(pos, obj, m, args, super_flag);
+				CallExpr ce = new CallExpr(pos, obj, m, args, super_flag);
 				m.makeArgs(ce.args, null);
 				return ce;
 			} else {

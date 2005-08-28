@@ -407,7 +407,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				rewriteNode(fa, id);
 				return;
 			}
-			Expr ce = new CallAccessExpr(fa.pos, fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
+			Expr ce = new CallExpr(fa.pos, fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
 			//ce = ce.resolveExpr(fa.getType());
 			fa.parent.replaceVal(id, fa, ce);
 			rewriteNode(ce, id);
@@ -460,7 +460,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 				Expr expr;
 				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-					expr = new CallAccessExpr(ae.pos, fa.obj, f.getMetaVirtual().set, new Expr[]{(Expr)ae.value});
+					expr = new CallExpr(ae.pos, fa.obj, f.getMetaVirtual().set, new Expr[]{(Expr)ae.value});
 					expr.resolve(Type.tpVoid);
 				}
 				else {
@@ -480,15 +480,15 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					}
 					Expr g;
 					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
-						g = new CallAccessExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
 						g = new BinaryExpr(ae.pos, op, g, (Expr)ae.value);
 					} else {
 						g = (Expr)ae.value;
 					}
-					g = new CallAccessExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
+					g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
 					be.addStatement(new ExprStat(0, null, g));
 					if (!ae.isGenVoidExpr()) {
-						g = new CallAccessExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
 						be.setExpr(g);
 					}
 					expr = be;
@@ -573,15 +573,15 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					else
 						ce = new ConstIntExpr(-1);
 					Expr g;
-					g = new CallAccessExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
-					g = new CallAccessExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
+					g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
 					be.addStatement(new ExprStat(0, null, g));
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						be.setExpr(mkAccess(res));
 					else
-						be.setExpr(new CallAccessExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray));
+						be.setExpr(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray));
 					expr = be;
 					expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}

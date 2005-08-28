@@ -235,7 +235,6 @@ kiev.vlang.Bytecoder kiev/vlang/Bytecoder kiev\vlang\Bytecoder.java
 kiev.vlang.CFLabel kiev/vlang/CFLabel kiev\vlang\Tree.java
 kiev.vlang.CFlowNode kiev/vlang/CFlowNode kiev\vlang\AST.java
 kiev.vlang.CP kiev/vlang/CP kiev\vlang\ConstPool.java
-kiev.vlang.CallAccessExpr kiev/vlang/CallAccessExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
 kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
@@ -417,6 +416,7 @@ kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
+kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java

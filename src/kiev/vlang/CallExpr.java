@@ -34,216 +34,45 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
 @node
 @cfnode
 public class CallExpr extends Expr {
-	@ref public Method				func;
-	@att public final NArr<ENode>	args;
-	@ref public Type				type_of_static;
-	public boolean					super_flag;
-
-	public CallExpr() {
-	}
-
-	public CallExpr(int pos, Method func, ENode[] args) {
-		super(pos);
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
-	}
-
-	public CallExpr(int pos, Method func, NArr<ENode> args) {
-		super(pos);
-		this.func = func;
-		this.args.addAll(args);
-	}
-
-	public CallExpr(int pos, Method func, ENode[] args, boolean sf) {
-		super(pos);
-		this.func = func;
-		foreach(Expr e; args) this.args.append(e);
-		super_flag = sf;
-	}
-
-	public CallExpr(int pos, Method func, NArr<ENode> args, boolean sf) {
-		super(pos);
-		this.func = func;
-		this.args.addAll(args);
-		super_flag = sf;
-	}
-
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(func.getName()).append('(');
-		for(int i=0; i < args.length; i++) {
-			sb.append(args[i]);
-			if( i < args.length-1 )
-				sb.append(',');
-		}
-		sb.append(')');
-		return sb.toString();
-	}
-	public Type getType() {
-		if( func.isStatic() )
-			return Type.getRealType(type_of_static,func.type.ret);
-		else
-			return Type.getRealType(PassInfo.clazz.type,func.type.ret);
-	}
-
-	public void resolve(Type reqType) {
-		if( isResolved() ) return;
-		if( func.type.ret == Type.tpRule ) {
-			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args.insert(0, new ConstNullExpr());
-		} else {
-			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
-		}
-		if (args != null) {
-			for (int i=0; i < args.length; i++)
-				args[i].resolve(Type.getRealType(PassInfo.clazz.type,func.type.args[i]));
-		}
-		setResolved(true);
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
-		PassInfo.push(this);
-		try {
-			func.acc.verifyReadAccess(func);
-			CodeLabel ok_label = null;
-			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-				String fname = func.name.name.toString().toLowerCase();
-				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
-				if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
-			}
-			if( !func.isStatic() ) {
-				if( !PassInfo.method.isStatic() )
-					Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
-				else
-					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
-			}
-			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-				int i = 0;
-				int mode = 0;
-				String fname = func.name.name.toString().toLowerCase();
-				if( fname.indexOf("assert") >= 0 ) mode = 1;
-				else if( fname.indexOf("trace") >= 0 ) mode = 2;
-				if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
-					ok_label = Code.newLabel();
-					if( args[0] instanceof IBoolExpr ) {
-						if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
-						else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
-					} else {
-						args[0].generate(null);
-						if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
-						else Code.addInstr(Instr.op_ifeq,ok_label);
-					}
-					if( mode == 1 )
-						Code.addConst(0);
-					else
-						Code.addConst(1);
-					i++;
-				}
-				for(; i < args.length; i++)
-					args[i].generate(null);
-			} else {
-				// Very special case for rule call from inside
-				// of RuleMethod
-				if( func instanceof RuleMethod
-				 && parent instanceof AssignExpr
-				 && ((AssignExpr)parent).op == AssignOperator.Assign
-				 && ((AssignExpr)parent).lval.getType() == Type.tpRule
-				) {
-					((AssignExpr)parent).lval.generate(null);
-					for(int i=1; i < args.length; i++)
-						args[i].generate(null);
-				} else {
-					for(int i=0; i < args.length; i++)
-						args[i].generate(null);
-				}
-			}
-			if( !func.isStatic() )
-				Code.addInstr(op_call,func,super_flag, PassInfo.method.getThisPar().type);
-			else
-				Code.addInstr(op_call,func,super_flag, PassInfo.clazz.type);
-			if( func.type.ret != Type.tpVoid ) {
-				if( reqType==Type.tpVoid )
-					Code.addInstr(op_pop);
-				else if( Kiev.verify
-				 && getType().isReference()
-				 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray()) )
-				 	Code.addInstr(op_checkcast,getType());
-			}
-			if( ok_label != null ) {
-				Code.addInstr(Instr.set_label,ok_label);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int		getPriority() { return Constants.opCallPriority; }
-
-	public Dumper toJava(Dumper dmp) {
-		if( func.getName().equals(nameInit) ) {
-			if( super_flag ) dmp.append(nameSuper);
-			else dmp.append(nameThis);
-		} else {
-			if( super_flag )
-				dmp.append("super.");
-			else if( func.isStatic() )
-				dmp.append(((Struct)func.parent).name).append('.');
-			dmp.append(func.name);
-		}
-		dmp.append('(');
-		for(int i=0; i < args.length; i++) {
-			// Very special case for rule call from inside
-			// of RuleMethod
-			if( i==0
-			 && func instanceof RuleMethod
-			 && parent instanceof AssignExpr
-			 && ((AssignExpr)parent).op == AssignOperator.Assign
-			 && ((AssignExpr)parent).lval.getType() == Type.tpRule
-			) {
-				((AssignExpr)parent).lval.toJava(dmp).append(',');
-			} else {
-				args[i].toJava(dmp);
-				if( i < args.length-1 )
-					dmp.append(',');
-			}
-		}
-		dmp.append(')');
-		return dmp;
-	}
-
-}
-
-@node
-@cfnode
-public class CallAccessExpr extends Expr {
 	@att public ENode				obj;
 	@ref public Method				func;
 	@att public final NArr<ENode>	args;
 	public boolean					super_flag;
 
-	public CallAccessExpr() {
+	public CallExpr() {
 	}
 
-	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, Method func, ENode[] args, boolean super_flag) {
 		super(pos);
-		this.obj = obj;
+		if (obj == null) {
+			if !(func.isStatic() || func instanceof Constructor) {
+				throw new RuntimeException("Call to non-static method "+func+" without accessor");
+			}
+			this.obj = new TypeRef(((Struct)func.parent).type);
+		}
+		else if (func.isStatic() && !(obj instanceof TypeRef)) {
+			this.obj = new TypeRef(obj.getType());
+		}
+		else {
+			this.obj = obj;
+		}
 		this.func = func;
 		this.args.addAll(args);
 		this.super_flag = super_flag;
 	}
 
-	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, Method func, NArr<ENode> args, boolean super_flag) {
 		this(pos, obj, func, args.toArray(), super_flag);
 	}
 	
-	public CallAccessExpr(int pos, ENode obj, Method func, ENode[] args) {
+	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
 		this(pos, obj, func, args, false);
 	}
 
-	public CallAccessExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
+	public CallExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
 		this(pos, obj, func, args.toArray(), false);
 	}
 
@@ -268,10 +97,6 @@ public class CallAccessExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if( func.isStatic() ) {
-			replaceWithNodeResolve(reqType, new CallExpr(pos,func,args.toArray()));
-			return;
-		}
 		obj.resolve(null);
 		if( func.type.ret == Type.tpRule ) {
 			if( args.length == 0 || args[0].getType() != Type.tpRule )
@@ -300,12 +125,13 @@ public class CallAccessExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			func.acc.verifyReadAccess(func);
+			CodeLabel ok_label = null;
 			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 				String fname = func.name.name.toString().toLowerCase();
 				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 				if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 			}
-			if( obj != null ) {
+			if( obj instanceof Expr) {
 				obj.generate(null);
 				generateCheckCastIfNeeded();
 			}
@@ -324,7 +150,33 @@ public class CallAccessExpr extends Expr {
 				((AssignExpr)parent).lval.generate(null);
 				for(int i=1; i < args.length; i++)
 					args[i].generate(null);
-			} else {
+			}
+			else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
+				int i = 0;
+				int mode = 0;
+				String fname = func.name.name.toString().toLowerCase();
+				if( fname.indexOf("assert") >= 0 ) mode = 1;
+				else if( fname.indexOf("trace") >= 0 ) mode = 2;
+				if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
+					ok_label = Code.newLabel();
+					if( args[0] instanceof IBoolExpr ) {
+						if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
+						else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
+					} else {
+						args[0].generate(null);
+						if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
+						else Code.addInstr(Instr.op_ifeq,ok_label);
+					}
+					if( mode == 1 )
+						Code.addConst(0);
+					else
+						Code.addConst(1);
+					i++;
+				}
+				for(; i < args.length; i++)
+					args[i].generate(null);
+			}
+			else {
 				for(int i=0; i < args.length; i++)
 					args[i].generate(null);
 			}
@@ -446,6 +298,9 @@ public class CallAccessExpr extends Expr {
 				 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
+			if( ok_label != null ) {
+				Code.addInstr(Instr.set_label,ok_label);
+			}
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -534,32 +389,6 @@ public class ClosureCallExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			expr.resolve(null);
-//			ASTNode v = func;
-//			Type tp1 = expr==null?null:expr.getType();
-//			Type tp;
-//			if( v instanceof Expr && (tp=Type.getRealType(tp1,((Expr)v).getType())) instanceof ClosureType ) {
-//				func = (Expr)v;
-//			}
-//			else if( v instanceof Var && (tp=Type.getRealType(tp1,((Var)v).getType())) instanceof ClosureType ) {
-//				func = new VarAccessExpr(pos,this,(Var)v);
-//				func.resolve(null);
-//			}
-//			else if( v instanceof Field && (tp=Type.getRealType(tp1,((Field)v).getType())) instanceof ClosureType ) {
-//				if( ((Field)v).isStatic() ) { 
-//					func = new StaticFieldAccessExpr(pos,(Field)v);
-//					func.resolve(null);
-//				}
-//				else if( expr == null ) {
-//					func = new AccessExpr(pos,new ThisExpr(pos),(Field)v);
-//					func.resolve(null);
-//				}
-//				else {
-//					func = new AccessExpr(pos,parent,expr,(Field)v);
-//					func.resolve(null);
-//					expr = null;
-//				}
-//			}
-//			else
 			if !(expr.getType() instanceof ClosureType)
 				throw new RuntimeException("Resolved item "+expr+" is not a closure");
 			ClosureType tp = (ClosureType)expr.getType();
@@ -588,7 +417,7 @@ public class ClosureCallExpr extends Expr {
 				if( call_it.type.ret == Type.tpRule ) {
 					env_access = new ConstNullExpr();
 				} else {
-					trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
+					trace(Kiev.debugResolve,"ClosureCallExpr "+this+" is not a rule call");
 				}
 			}
 		} finally { PassInfo.pop(this); }

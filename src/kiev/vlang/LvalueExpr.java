@@ -458,6 +458,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 @cfnode
 public class ThisExpr extends LvalueExpr {
 
+	public boolean super_flag;
+	
 	public ThisExpr() {
 	}
 	public ThisExpr(int pos) {
@@ -466,9 +468,11 @@ public class ThisExpr extends LvalueExpr {
 	public ThisExpr(int pos, ASTNode par) {
 		super(pos,par);
 	}
+	public ThisExpr(boolean super_flag) {
+		this.super_flag = super_flag;
+	}
 
-
-	public String toString() { return "this"; }
+	public String toString() { return super_flag ? "super" : "this"; }
 
 	private Var getVar() {
 		if (PassInfo.method == null)
@@ -484,6 +488,8 @@ public class ThisExpr extends LvalueExpr {
 				return Type.tpVoid;
 			if (PassInfo.clazz.name.short_name.equals(nameIdefault))
 				return PassInfo.clazz.package_clazz.type;
+			if (super_flag)
+				PassInfo.clazz.type.getSuperType();
 			return PassInfo.clazz.type;
 		} catch(Exception e) {
 			Kiev.reportError(pos,e);
@@ -493,7 +499,7 @@ public class ThisExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Var var = getVar();
-		if (var == null)
+		if (var == null || super_flag)
 			return new Type[]{getType()};
 		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
 		if( sni == null || sni.types == null )
@@ -509,7 +515,7 @@ public class ThisExpr extends LvalueExpr {
 				PassInfo.method.isStatic() &&
 				!PassInfo.clazz.name.short_name.equals(nameIdefault)
 			)
-				Kiev.reportError(pos,"Access 'this' in static context");
+				Kiev.reportError(pos,"Access '"+toString()+"' in static context");
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 	}
@@ -523,7 +529,7 @@ public class ThisExpr extends LvalueExpr {
 			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
 				Code.addInstr(op_load,PassInfo.method.params[0]);
 			else {
-				Kiev.reportError(pos,"Access 'this' in static context");
+				Kiev.reportError(pos,"Access '"+toString()+"' in static context");
 				Code.addNullConst();
 			}
 		} finally { PassInfo.pop(this); }
@@ -538,7 +544,7 @@ public class ThisExpr extends LvalueExpr {
 			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
 				Code.addInstr(op_load,PassInfo.method.params[0]);
 			else {
-				Kiev.reportError(pos,"Access 'this' in static context");
+				Kiev.reportError(pos,"Access '"+toString()+"' in static context");
 				Code.addNullConst();
 			}
 			Code.addInstr(op_dup);
@@ -558,7 +564,7 @@ public class ThisExpr extends LvalueExpr {
 			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
 				Code.addInstr(op_store,PassInfo.method.params[0]);
 			else {
-				Kiev.reportError(pos,"Access 'this' in static context");
+				Kiev.reportError(pos,"Access '"+toString()+"' in static context");
 				Code.addInstr(op_pop);
 			}
 		} finally { PassInfo.pop(this); }
@@ -574,14 +580,14 @@ public class ThisExpr extends LvalueExpr {
 			else if (PassInfo.method.isStatic() && PassInfo.method.isVirtualStatic())
 				Code.addInstr(op_store,PassInfo.method.params[0]);
 			else {
-				Kiev.reportError(pos,"Access 'this' in static context");
+				Kiev.reportError(pos,"Access '"+toString()+"' in static context");
 				Code.addInstr(op_pop);
 			}
 		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("this").space();
+		return dmp.space().append(toString()).space();
 	}
 }
 

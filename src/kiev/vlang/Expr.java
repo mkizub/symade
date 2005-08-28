@@ -134,6 +134,52 @@ public class ArrayLengthAccessExpr extends Expr {
 
 @node
 @cfnode
+public class TypeClassExpr extends Expr {
+	@att public TypeRef		type;
+
+	public TypeClassExpr() {
+	}
+
+	public TypeClassExpr(int pos, TypeRef type) {
+		super(pos);
+		this.type = type;
+	}
+
+	public String toString() {
+		return type.toString()+".class";
+	}
+
+	public Type getType() {
+		return Type.tpClass;
+	}
+
+	public Operator getOp() { return BinaryOperator.Access; }
+
+	public void resolve(Type reqType) {
+		PassInfo.push(this);
+		try {
+			type.getType();
+		} finally { PassInfo.pop(this); }
+		setResolved(true);
+	}
+
+	public void generate(Type reqType ) {
+		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
+		PassInfo.push(this);
+		try {
+			Code.addConst(type.getJavaType());
+			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		type.toJava(dmp).append(".class").space();
+		return dmp;
+	}
+}
+
+@node
+@cfnode
 public class AssignExpr extends LvalueExpr {
 	@ref public AssignOperator	op;
 	@att public ENode			lval;
@@ -240,7 +286,7 @@ public class AssignExpr extends LvalueExpr {
 				Type[] tps = new Type[]{null,et1,et2};
 				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					replaceWithNodeResolve(reqType, new CallAccessExpr(pos,lval,opt.method,new Expr[]{(Expr)value}));
+					replaceWithNodeResolve(reqType, new CallExpr(pos,lval,opt.method,new Expr[]{(Expr)value}));
 					return;
 				}
 			}
@@ -597,9 +643,9 @@ public class BinaryExpr extends Expr {
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 					Expr e;
 					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,opt.method,new ENode[]{expr1,expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2}));
 					else
-						replaceWithNodeResolve(reqType, new CallAccessExpr(pos,expr1,opt.method,new ENode[]{expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{expr2}));
 					return;
 				}
 			}
@@ -1230,10 +1276,10 @@ public class UnaryExpr extends Expr {
 				ASTNode[] argsarr = new ASTNode[]{null,expr};
 				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
 					Expr e;
-					if ( opt.method.isStatic() || opt.method.type.args.length == 1)
-						replaceWithNodeResolve(reqType, new CallExpr(pos,opt.method,new ENode[]{expr}));
+					if ( opt.method.isStatic() )
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr}));
 					else
-						replaceWithNodeResolve(reqType, new CallAccessExpr(pos,expr,opt.method,Expr.emptyArray));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,expr,opt.method,Expr.emptyArray));
 					return;
 				}
 			}
@@ -1787,7 +1833,7 @@ public class CastExpr extends Expr {
 		mt = MethodType.newMethodType(null,new Type[]{expr.getType()},this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
-			expr = new CallAccessExpr(pos,expr,(Method)v,new ENode[]{expr});
+			expr = new CallExpr(pos,expr,(Method)v,new ENode[]{expr});
 			expr.resolve(type.getType());
 			return this;
 		}
@@ -1825,14 +1871,14 @@ public class CastExpr extends Expr {
 				return;
 			Method cm = null;
 			cm = type.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
-			replaceWithNodeResolve(reqType, new CallExpr(pos,cm,new ENode[]{expr}));
+			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{expr}));
 			return;
 		}
 		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
 			Method cf = (Method)Type.tpEnum.resolveMethod(nameEnumOrdinal, KString.from("()I"));
-			replaceWithNodeResolve(reqType, new CallAccessExpr(pos,expr,cf,Expr.emptyArray));
+			replaceWithNodeResolve(reqType, new CallExpr(pos,expr,cf,Expr.emptyArray));
 			return;
 		}
 		// Try to find $cast method
@@ -1980,56 +2026,56 @@ public class CastExpr extends Expr {
 		Type tp = ex.getType();
 		if( !tp.isReference() ) return;
 		if( tp == Type.tpBooleanRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpBooleanRef.clazz.resolveMethod(
 					KString.from("booleanValue"),
 					KString.from("()Z")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpByteRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpByteRef.clazz.resolveMethod(
 					KString.from("byteValue"),
 					KString.from("()B")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpShortRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpShortRef.clazz.resolveMethod(
 					KString.from("shortValue"),
 					KString.from("()S")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpIntRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpIntRef.clazz.resolveMethod(
 					KString.from("intValue"),
 					KString.from("()I")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpLongRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpLongRef.clazz.resolveMethod(
 					KString.from("longValue"),
 					KString.from("()J")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpFloatRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpFloatRef.clazz.resolveMethod(
 					KString.from("floatValue"),
 					KString.from("()F")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpDoubleRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpDoubleRef.clazz.resolveMethod(
 					KString.from("doubleValue"),
 					KString.from("()D")
 				),Expr.emptyArray
 			);});
 		else if( tp == Type.tpCharRef )
-			ex.replaceWith(fun ()->ENode {return new CallAccessExpr(ex.pos,ex,
+			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,ex,
 				Type.tpCharRef.clazz.resolveMethod(
 					KString.from("charValue"),
 					KString.from("()C")
