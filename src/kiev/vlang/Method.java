@@ -54,8 +54,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
     @att public final NArr<ASTAlias>	aliases;
 
-    @att public ASTNode					throwns;
-
 	/** Return value of this method */
 	@att public Var						retvar;
 
@@ -123,6 +121,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		acc.verifyAccessDecl(this);
 	}
 	
+	public MetaThrows getMetaThrows() {
+		return (MetaThrows)this.meta.get(MetaThrows.NAME);
+	}
+
 	private void rebuildTypes() {
 		type_ref.args.delAll();
 		dtype_ref.args.delAll();
@@ -470,8 +472,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if (annotation_default != null)
 			annotation_default.verify();
 		foreach(ASTAlias al; aliases) al.attach(this);
+		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
-        	Type[] thrs = ((ASTThrows)throwns).pass3();
+			ASTNode[] mthrs = throwns.getThrowns();
+        	Type[] thrs = new Type[mthrs.length];
+			for (int i=0; i < mthrs.length; i++)
+				thrs[i] = mthrs[i].getType();
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);

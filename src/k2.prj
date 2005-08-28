@@ -88,7 +88,6 @@ kiev.parser.ASTCastOperator kiev/parser/ASTCastOperator kiev\parser\ASTCastOpera
 kiev.parser.ASTExpression kiev/parser/ASTExpression kiev\parser\ASTExpression.java
 kiev.parser.ASTIdentifier kiev/parser/ASTIdentifier kiev\parser\ASTIdentifier.java
 kiev.parser.ASTIdentifierAlias kiev/parser/ASTIdentifierAlias kiev\parser\ASTIdentifierAlias.java
-kiev.parser.ASTModifier kiev/parser/ASTModifier kiev\parser\ASTModifier.java
 kiev.parser.ASTModifiers kiev/parser/ASTModifiers kiev\parser\ASTModifiers.java
 kiev.parser.ASTNewAccessExpression kiev/parser/ASTNewAccessExpression kiev\parser\ASTNewAccessExpression.java
 kiev.parser.ASTNewArrayExpression kiev/parser/ASTNewArrayExpression kiev\parser\ASTNewArrayExpression.java
@@ -102,8 +101,6 @@ kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTR
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
-kiev.parser.ASTThrows kiev/parser/ASTThrows kiev\parser\ASTThrows.java
-kiev.parser.ASTTypeClassExpression kiev/parser/ASTTypeClassExpression kiev\parser\ASTTypeClassExpression.java
 kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
 kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
@@ -195,6 +192,7 @@ kiev.stdlib.meta.getter kiev/stdlib/meta/getter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.packed kiev/stdlib/meta/packed kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
+kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
 kiev.transf.ProcessCFlow kiev/transf/ProcessCFlow kiev\transf\ProcessCFlow.java
@@ -330,6 +328,7 @@ kiev.vlang.MetaAttr kiev/vlang/MetaAttr kiev\vlang\Attr.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaSet kiev/vlang/MetaSet kiev\vlang\Meta.java
+kiev.vlang.MetaThrows kiev/vlang/MetaThrows kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaValue kiev/vlang/MetaValue kiev\vlang\Meta.java
 kiev.vlang.MetaValueArray kiev/vlang/MetaValueArray kiev\vlang\Meta.java
 kiev.vlang.MetaValueScalar kiev/vlang/MetaValueScalar kiev\vlang\Meta.java

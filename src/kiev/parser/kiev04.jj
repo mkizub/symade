@@ -888,15 +888,15 @@ ASTFileUnit FileUnit(String filename) :
 }
 
 ASTModifiers Modifiers() :
-{}
+{ int modifier; }
 {	{ ASTModifiers n = new ASTModifiers(); }
 	(
-		n.annotations += Annotation()
+		n.annotations	+= Annotation()
 	)*
 	(
-		n.modifier    += Modifier()
-	|	n.annotations += Pack()				// TODO: remove, use @packed
-	|	n.acc          = Access()			// TODO: remove, use @access and views
+		modifier		 = Modifier() {n.modifier |= modifier; }
+	|	n.annotations	+= Pack()			// TODO: remove, use @packed
+	|	n.acc			 = Access()			// TODO: remove, use @access and views
 	)*
 	{ return n; }
 }
@@ -1182,27 +1182,24 @@ void ArgumentDeclaration(ASTNode parent) :
 	]
 }
 
-ASTModifier Modifier() :
-{ Token t=null; }
+int Modifier() :
+{}
 {
 	(
-	  t="public"
-	| t="protected"
-	| t="private"
-	| t="static"
-	| t="abstract"
-	| t="final"
-	| t="native"
-	| t="synchronized"
-	| t="transient"
-	| t="volatile"
-	| t="virtual"		// TODO: replace with @virtual
-	| t="forward"		// TODO: replace with @forward
-
-	| t="$wrapper"		// TODO: replace with @wrapper
-
+	  "public"			{ return AccessFlags.ACC_PUBLIC;		}
+	| "protected"		{ return AccessFlags.ACC_PROTECTED;	}
+	| "private"			{ return AccessFlags.ACC_PRIVATE;		}
+	| "static"			{ return AccessFlags.ACC_STATIC;		}
+	| "abstract"		{ return AccessFlags.ACC_ABSTRACT;		}
+	| "final"			{ return AccessFlags.ACC_FINAL;			}
+	| "native"			{ return AccessFlags.ACC_NATIVE;		}
+	| "synchronized"	{ return AccessFlags.ACC_SYNCHRONIZED;	}
+	| "transient"		{ return AccessFlags.ACC_TRANSIENT;	}
+	| "volatile"		{ return AccessFlags.ACC_VOLATILE;		}
+	| "virtual"			{ return AccessFlags.ACC_VIRTUAL;		} // TODO: replace with @virtual
+	| "forward"			{ return AccessFlags.ACC_FORWARD;		} // TODO: replace with @forward
+	| "$wrapper"		{ return AccessFlags.ACC_WRAPPER;		} // TODO: replace with @wrapper
 	)
-	{ ASTModifier n = new ASTModifier(); n.set(t); return n; }
 }
 
 Meta Pack() :
@@ -1257,6 +1254,7 @@ ASTIdentifier KeywordAsName() :
 		t="virtual"
 	|	t="alias"
 	|	t="packed"
+	|	t="throws"
 	)
 	{
 		id = new ASTIdentifier();
@@ -1477,12 +1475,15 @@ FormPar FormalParameter(ASTModifiers modifiers) :
 	{ return mkFormPar(id, modifiers, tp, null); }
 }
 
-ASTThrows Throws() :
-{ Token t; ASTThrows n = new ASTThrows(); }
+MetaThrows Throws() :
+{ MetaThrows n = new MetaThrows(); ASTIdentifier id; }
 {
-	t="throws" { n.setPos(t.getPos()); }
-	n.names += QName()
-	(	"," n.names += QName()	)*
+	"throws"
+	id = QName() { n.add(id); }
+	(
+		","
+		id = QName() { n.add(id); }
+	)*
 	{ return n; }
 }
 
@@ -1570,7 +1571,7 @@ BlockStat MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m; TypeRef ret; ASTIdentifier id; }
+{ Token t; Method m; TypeRef ret; ASTIdentifier id; MetaThrows thr; }
 {
 	ClazzArguments(null)
 	ret = Type()
@@ -1596,7 +1597,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	m.throwns = Throws()	]
+	[	thr = Throws()	{m.meta.set(thr);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -1611,7 +1612,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 }
 
 Constructor ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; Constructor m; ASTIdentifier id; }
+{ Token t; Constructor m; ASTIdentifier id; MetaThrows thr; }
 {
 	id = Name()
 	{
@@ -1640,7 +1641,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	m.throwns = Throws()	]
+	[	thr = Throws()	{m.meta.set(thr);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -2222,10 +2223,13 @@ ENode CallAccessExpression(ENode obj) :
 }
 
 ENode TypeClassExpression() :
-{ ASTTypeClassExpression e = new ASTTypeClassExpression(); }
+{ TypeClassExpr e = new TypeClassExpr(); }
 {
 	e.type = Type() "." "class"
-	{ return e; }
+	{
+		e.pos = getToken(0).getPos();
+		return e;
+	}
 }
 
 ENode AccessExpression() :

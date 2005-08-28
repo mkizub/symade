@@ -707,8 +707,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 							Kiev.reportError(m.pos, "Annotation methods may not have arguments");
 						if (m.body != null || m.pbody != null)
 							Kiev.reportError(m.pos, "Annotation methods may not have bodies");
-						if (m.throwns != null)
-							Kiev.reportError(m.pos, "Annotation methods may not throw exceptions");
 						if (m.conditions.length > 0)
 							Kiev.reportError(m.pos, "Annotation methods may not have work-by-contruct conditions");
 						m.setPublic(true);

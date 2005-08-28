@@ -13,15 +13,12 @@ import kiev.vlang.*;
 
 @node
 public class ASTModifiers extends ASTNode {
-	@att public final NArr<ASTModifier>	modifier;
+	     public int							modifier;
 	@att public Access 						acc;
 	@att public final NArr<Meta>			annotations;
 	
 	public int getFlags() {
-		int flags = 0;
-		foreach (ASTModifier m; modifier)
-			flags |= m.flag();
-		return flags;
+		return modifier;
 	}
 
 	public MetaSet getMetas(MetaSet ms) {
@@ -40,8 +37,14 @@ public class ASTModifiers extends ASTNode {
 	}
 
     public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < modifier.length; i++)
-			modifier[i].toJava(dmp);
+		foreach (Meta m; annotations)
+			dmp.append(m);
+		Env.toJavaModifiers(dmp,(short)modifier);
+		if( (modifier & ACC_VIRTUAL		) > 0 ) dmp.append("/*virtual*/ ");
+		if( (modifier & ACC_FORWARD		) > 0 ) dmp.append("/*forward*/ ");
+		
+		if (acc != null) dmp.append(acc.toString());
+		
 		return dmp;
     }
 }

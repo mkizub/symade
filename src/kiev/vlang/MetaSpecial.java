@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.TypeNameRef;
+import kiev.parser.ASTIdentifier;
 
 import static kiev.stdlib.Debug.*;
 
@@ -126,6 +127,38 @@ public class MetaAlias extends Meta {
 		MetaValueArray mv = (MetaValueArray)get(VALUE);
 		if (mv == null)
 			return new ASTNode[0];
+		return mv.values.toArray();
+	}
+}
+
+@node
+public class MetaThrows extends Meta {
+	public static final KString NAME = KString.from("kiev.stdlib.meta.throws");
+	public static final KString VALUE = KString.from("value");
+
+	public MetaThrows() {
+		super(new TypeNameRef(NAME));
+	}
+
+	public MetaThrows(TypeRef type) {
+		super(type);
+	}
+	
+	public void add(ASTIdentifier thr) {
+		if (size() == 0) {
+			MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpClass).signature);
+			MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{thr});
+			set(mv);
+		} else {
+			MetaValueArray mv = (MetaValueArray)get(VALUE);
+			mv.values.append(thr);
+		}
+	}
+	
+	public ASTNode[] getThrowns() {
+		MetaValueArray mv = (MetaValueArray)get(VALUE);
+		if (mv == null)
+			return new TypeRef[0];
 		return mv.values.toArray();
 	}
 }
