@@ -23,7 +23,6 @@ package kiev.bytecode;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Attribute.java,v 1.3.2.1.2.2 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.2.1.2.2 $
  *

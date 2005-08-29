@@ -26,7 +26,6 @@ import kiev.stdlib.*;
 import java.io.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/ConstPool.java,v 1.5.2.1 1999/02/12 18:47:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1 $
  *

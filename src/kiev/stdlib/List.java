@@ -21,7 +21,6 @@
 package kiev.stdlib;
 
 /** a class for immutable lists
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/List.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @see		ListBuffer
  * @author Martin Odersky
  * @author Maxim Kizub

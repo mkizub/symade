@@ -26,7 +26,6 @@ import kiev.stdlib.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Field.java,v 1.3.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.2.1.2.3 $
  *

@@ -23,7 +23,6 @@ package kiev.vlang;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Constants.java,v 1.4.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.2.1.2.3 $
  *
@@ -374,7 +373,7 @@ public interface Constants extends AccessFlags {
 	public final static KString nameSet			= KString.from("set$");
 	public final static KString nameGet			= KString.from("get$");
 	public final static KString nameVarArgs		= KString.from("va_args");
-	public final static KString namePEnv		= KString.from("$env");
+	public final static KString namePEnv		= KString.from("$env$");
 	public final static KString namePlvBase		= KString.from("lvar$base");
 	public final static KString nameCellVal		= KString.from("$val");
 	public final static KString nameEnumValuesFld	= KString.from("$values");

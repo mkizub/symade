@@ -32,7 +32,6 @@ import java.util.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/Compiler.java,v 1.5.2.1.2.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1.2.1 $
  *

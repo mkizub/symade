@@ -27,7 +27,6 @@ import kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/CodeSupport.java,v 1.3 1998/10/26 23:47:20 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3 $
  *

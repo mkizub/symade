@@ -7,7 +7,6 @@ import kiev.vlang.*;
 
 /*{
 
-import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
@@ -248,10 +247,10 @@ public class kiev040 implements kiev040Constants {
 /*
  * Program structuring syntax follows.
  */
-  static final public ASTFileUnit FileUnit(String filename) throws ParseException {
-  ASTFileUnit old_fu;
+  static final public FileUnit FileUnit(String filename) throws ParseException {
+  FileUnit old_fu;
                 old_fu = Kiev.curFileUnit;
-                ASTFileUnit fu = new FileUnit();
+                FileUnit fu = new FileUnit();
                 Kiev.curFileUnit = fu;
                 fu.filename = KString.from(filename);
                 fu.setPos(0);
@@ -464,8 +463,8 @@ public class kiev040 implements kiev040Constants {
           fu.setPragma(p);
   }
 
-  static final public ASTImport Import() throws ParseException {
-  ASTImport imp = new ASTImport();
+  static final public Import Import() throws ParseException {
+  Import imp = new Import();
     jj_consume_token(IMPORT);
     if (getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax")) {
       jj_consume_token(IDENTIFIER);
@@ -566,8 +565,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTTypedef Typedef() throws ParseException {
-  ASTIdentifier id; ASTOperator op; TypeRef tp; ASTTypedef n = new ASTTypedef();
+  static final public Typedef Typedef() throws ParseException {
+  ASTIdentifier id; ASTOperator op; TypeRef tp; Typedef n = new Typedef();
     jj_consume_token(TYPEDEF);
     if (jj_2_4(3) && (checkNoSpace(getToken(1),getToken(2)))) {
       id = Name();
@@ -587,8 +586,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTOpdef Opdef() throws ParseException {
-  ASTIdentifier id; ASTOperator op; ConstIntExpr ce; ASTOpdef opd = new ASTOpdef();
+  static final public Opdef Opdef() throws ParseException {
+  ASTIdentifier id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef();
     jj_consume_token(OPERATOR_ID);
     if (jj_2_6(1)) {
       op = Operator();
@@ -1146,9 +1145,9 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTMeta Annotation() throws ParseException {
+  static final public Meta Annotation() throws ParseException {
   ASTIdentifier id; MetaValue v;
-          ASTMeta n = new ASTMeta();
+          Meta n = new Meta();
     jj_consume_token(OPERATOR_AT);
     switch (jj_nt.kind) {
     case IDENTIFIER:
@@ -1190,7 +1189,7 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public void AnnotationValues(ASTMeta m) throws ParseException {
+  static final public void AnnotationValues(Meta m) throws ParseException {
   ASTIdentifier id; MetaValue v;
     id = Name();
     jj_consume_token(ASSIGN);
@@ -1936,8 +1935,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTRequareDeclaration RequareDeclaration() throws ParseException {
-                ASTRequareDeclaration n = new ASTRequareDeclaration();
+  static final public WBCCondition RequareDeclaration() throws ParseException {
+                WBCCondition n = new WBCCondition();
                 //n.modifiers = modifiers;
                 n.cond = WBCType.CondRequire;
     jj_consume_token(REQUIRE);
@@ -1959,8 +1958,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTEnsureDeclaration EnsureDeclaration() throws ParseException {
-                ASTEnsureDeclaration n = new ASTEnsureDeclaration();
+  static final public WBCCondition EnsureDeclaration() throws ParseException {
+                WBCCondition n = new WBCCondition();
                 //n.modifiers = modifiers;
                 n.cond = WBCType.CondEnsure;
     jj_consume_token(ENSURE);
@@ -1982,8 +1981,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTInvariantDeclaration InvariantDeclaration(ASTModifiers modifiers) throws ParseException {
-                ASTInvariantDeclaration n = new ASTInvariantDeclaration();
+  static final public WBCCondition InvariantDeclaration(ASTModifiers modifiers) throws ParseException {
+                WBCCondition n = new WBCCondition();
                 //n.modifiers = modifiers;
                 n.cond = WBCType.CondInvariant;
     jj_consume_token(INVARIANT);
@@ -2096,8 +2095,8 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public ASTInitializer Initializer(ASTModifiers modifiers) throws ParseException {
-  ASTInitializer n = new ASTInitializer(); BlockStat bl;
+  static final public Initializer Initializer(ASTModifiers modifiers) throws ParseException {
+  Initializer n = new Initializer(); BlockStat bl;
                 n.setFlags(modifiers.getFlags());
                 /*{
 		foreach (Meta m; modifiers.annotations)

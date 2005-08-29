@@ -1820,8 +1820,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 		PassInfo.push(this);
 		NodeInfoPass.init();
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
@@ -1872,8 +1871,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		try {
 			if (isAnnotation()) {
 				NodeInfoPass.init();
-				ScopeNodeInfoVector state = NodeInfoPass.pushState();
-				state.guarded = true;
+				NodeInfoPass.pushGuardedState();
 				try {
 					foreach(ASTNode m; members; m instanceof Method) {
 						try {
@@ -1882,7 +1880,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 							Kiev.reportError(m.pos,e);
 						}
 					}
-				} finally {		NodeInfoPass.close(); }
+				} finally { NodeInfoPass.close(); }
 			}
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {
@@ -1897,8 +1895,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		PassInfo.push(this);
 		try {
 			NodeInfoPass.init();
-			ScopeNodeInfoVector state = NodeInfoPass.pushState();
-			state.guarded = true;
+			NodeInfoPass.pushGuardedState();
 			try {
 				foreach (Meta m; meta)
 					m.resolve();
@@ -1917,7 +1914,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						}
 					}
 				}
-			} finally {		NodeInfoPass.close(); }
+			} finally { NodeInfoPass.close(); }
 			
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {

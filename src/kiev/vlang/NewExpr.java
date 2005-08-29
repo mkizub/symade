@@ -30,7 +30,6 @@ import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/NewExpr.java,v 1.6.2.1.2.1 1999/02/15 21:45:13 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.6.2.1.2.1 $
  *

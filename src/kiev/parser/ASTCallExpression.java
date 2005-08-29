@@ -30,7 +30,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTCallExpression.java,v 1.4.2.1.2.1 1999/02/15 21:45:08 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.2.1.2.1 $
  *

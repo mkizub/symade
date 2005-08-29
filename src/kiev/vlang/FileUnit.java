@@ -30,7 +30,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/FileUnit.java,v 1.5.2.1.2.1 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1.2.1 $
  *

@@ -33,7 +33,6 @@ import static kiev.vlang.Instr.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Expr.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.6.2.1.2.2 $
  *
@@ -1758,17 +1757,13 @@ public class CastExpr extends Expr {
 	}
 
 	public Type[] getAccessTypes() {
-		Type[] types = expr.getAccessTypes();
-		return NodeInfoPass.addAccessType(types,type.getType());
+		return new Type[]{getType()};
 	}
 
 	public int getPriority() { return opCastPriority; }
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) {
-			setNodeCastType();
-			return;
-		}
+		if( isResolved() ) return;
 		Type type = this.type.getType();
 		PassInfo.push(this);
 		try {
@@ -1900,12 +1895,10 @@ public class CastExpr extends Expr {
 		}
 		if( Kiev.verify && expr.getType() != et ) {
 			setResolved(true);
-			setNodeCastType();
 			return;
 		}
 		if( et.isReference() && et.isInstanceOf((Type)type) ) {
 			setResolved(true);
-			setNodeCastType();
 			return;
 		}
 		if( et.isReference() && type.isReference() && et.isStruct()
@@ -1955,7 +1948,6 @@ public class CastExpr extends Expr {
 		}
 		if( et.equals(type) ) {
 			setResolved(true);
-			setNodeCastType();
 			return;
 		}
 		if( expr instanceof ClosureCallExpr && et instanceof ClosureType ) {
@@ -1967,25 +1959,7 @@ public class CastExpr extends Expr {
 				((ClosureCallExpr)expr).is_a_call = true;
 			}
 		}
-		setNodeCastType();
 		setResolved(true);
-	}
-
-	public void setNodeCastType() {
-		ASTNode n;
-		Type type = this.type.getType();
-		if (type == Type.tpVoid) return;
-		switch(expr) {
-		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
-		case StaticFieldAccessExpr:	n = ((StaticFieldAccessExpr)expr).var;	break;
-		case AccessExpr:
-			if !(((AccessExpr)expr).obj instanceof ThisExpr)
-				return;
-			n = ((AccessExpr)expr).var;
-			break;
-		default: return;
-		}
-		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type));
 	}
 
 	public static void autoCast(ENode ex, TypeRef tp) {

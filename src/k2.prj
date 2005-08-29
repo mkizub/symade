@@ -114,7 +114,6 @@ kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody
 kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
-kiev.parser.TypeAliases kiev/parser/TypeAliases kiev\parser\TypeAliases.java
 kiev.parser.TypeArgRef kiev/parser/TypeArgRef kiev\parser\TypeArgRef.java
 kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java
 kiev.parser.TypeClosureRef kiev/parser/TypeClosureRef kiev\parser\TypeClosure.java

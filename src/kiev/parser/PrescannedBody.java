@@ -25,7 +25,6 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/PrescannedBody.java,v 1.3 1998/10/26 23:47:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3 $
  *

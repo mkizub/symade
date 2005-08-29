@@ -31,7 +31,6 @@ import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTOperatorAlias.java,v 1.3.4.2 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.4.2 $
  *

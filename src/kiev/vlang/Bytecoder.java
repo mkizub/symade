@@ -30,7 +30,6 @@ import static kiev.vlang.Instr.*;
 import static kiev.vlang.Operator.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Bytecoder.java,v 1.5.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1.2.3 $
  *

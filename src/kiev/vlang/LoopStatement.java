@@ -28,7 +28,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LoopStatement.java,v 1.5.2.1 1999/02/12 18:47:07 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1 $
  *
@@ -81,8 +80,7 @@ public class WhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			try {
 				cond.resolve(Type.tpBoolean);
@@ -164,8 +162,7 @@ public class DoWhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			try {
 				body.resolve(Type.tpVoid);
@@ -298,8 +295,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			if( init != null ) {
 				try {
@@ -309,31 +305,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 						((ForInit)init).resolve(Type.tpVoid);
 					else if( init instanceof Expr )
 						init.resolve(Type.tpVoid);
-//					else if( init instanceof ASTVarDecls ) {
-//						ASTVarDecls vdecls = (ASTVarDecls)init;
-//						int flags = 0;
-//						Type type = ((TypeRef)vdecls.type).getType();
-//						int dim = 0;
-//						while( type.isArray() ) { dim++; type = type.args[0]; }
-//						ForInit forinit = new ForInit(init.pos);
-//						this.init = forinit;
-//						for(int j=0; j < vdecls.vars.length; j++) {
-//							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-//							KString vname = vdecl.name.name;
-//							Type tp = type;
-//							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-//							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-//							Var var = new Var(vdecl.pos,vname,tp,flags);
-//							forinit.decls.append(var);
-//							if (vdecls.hasFinal()) var.setFinal(true);
-//							if (vdecls.hasForward()) var.setForward(true);
-//							if( vdecl.init != null ) {
-//								var.init = vdecl.init.resolveExpr(var.type);
-//							}
-//							else if (var.isFinal())
-//								Kiev.reportError(var.pos,"Final variable "+var+" must have initializer");
-//						}
-//					}
 					else
 						throw new RuntimeException("Unknown type of for-init node "+init);
 					if (init instanceof Expr)
@@ -515,8 +486,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			// foreach( type x; container; cond) statement
 			// is equivalent to
@@ -579,11 +549,16 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			}
 			if( itype == Type.tpRule ) {
 				iter = new Var(pos,KString.from("$env"),itype,0);
+				NodeInfoPass.setNodeType(iter,iter.type);
 			}
 			else if( var != null ) {
+				NodeInfoPass.setNodeType(var,var.type);
 				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-				if (mode == ARRAY)
+				NodeInfoPass.setNodeType(iter,iter.type);
+				if (mode == ARRAY) {
 					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
+					NodeInfoPass.setNodeType(iter_array,iter_array.type);
+				}
 			}
 			else {
 				iter = null;

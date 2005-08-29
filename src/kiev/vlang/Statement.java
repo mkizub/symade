@@ -29,7 +29,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Statement.java,v 1.6.2.1.2.2 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.6.2.1.2.2 $
  *

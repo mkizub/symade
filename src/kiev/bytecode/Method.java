@@ -23,7 +23,6 @@ package kiev.bytecode;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Method.java,v 1.2 1998/10/21 19:44:17 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.2 $
  *

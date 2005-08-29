@@ -25,7 +25,6 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/StandardClassLoader.java,v 1.3.4.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.4.1 $
  *

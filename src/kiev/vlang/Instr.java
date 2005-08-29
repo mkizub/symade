@@ -24,7 +24,6 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Instr.java,v 1.4 1999/01/29 01:22:23 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4 $
  *

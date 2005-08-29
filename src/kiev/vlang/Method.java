@@ -511,8 +511,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 	
 	protected void preAndResolve(Statement st, boolean autoret) {
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			st.preResolve();
 		} finally { NodeInfoPass.popState(); }
@@ -529,8 +528,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		try {
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.init();
-			ScopeNodeInfoVector state = NodeInfoPass.pushState();
-			state.guarded = true;
+			NodeInfoPass.pushGuardedState();
 			
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
@@ -746,12 +744,10 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		
 		PassInfo.push(this);
 		NodeInfoPass.init();
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+		NodeInfoPass.pushGuardedState();
 		try {
 			
-			ScopeNodeInfoVector state_p = NodeInfoPass.pushState();
-			state_p.guarded = true;
+			NodeInfoPass.pushGuardedState();
 			try {
 				body.preResolve();
 			} finally { NodeInfoPass.popState(); }

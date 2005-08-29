@@ -29,7 +29,6 @@ import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LvalueExpr.java,v 1.6.2.1.2.5 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.6.2.1.2.5 $
  *

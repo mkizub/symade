@@ -27,7 +27,6 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNewArrayExpression.java,v 1.3.4.1 1999/02/15 21:45:09 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.4.1 $
  *

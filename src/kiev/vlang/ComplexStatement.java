@@ -28,7 +28,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/ComplexStatement.java,v 1.5.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1.2.2 $
  *
@@ -654,12 +653,14 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public void resolve(Type reqType) {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
+		NodeInfoPass.pushGuardedState();
 		try {
+			NodeInfoPass.setNodeType(arg,arg.type);
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body.pos,e);
-		} finally { PassInfo.pop(this); }
+		} finally { NodeInfoPass.popState(); PassInfo.pop(this); }
 	}
 
 	public void generate(Type reqType) {

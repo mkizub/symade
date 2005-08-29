@@ -28,7 +28,6 @@ package kiev.stdlib;
  * Note that the method toList() does not create a copy of the
  * internal buffer.  Instead the buffer is marked as shared. Any
  * further changes to the buffer will cause a copy to be made. <p>
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/ListBuffer.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @author Martin Odersky
  * @author Maxim Kizub
  * @version $Revision: 1.2.4.2 $

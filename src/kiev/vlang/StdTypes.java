@@ -27,7 +27,6 @@ import static kiev.vlang.AccessFlags.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Type.java,v 1.5.2.1.2.1 1999/05/29 21:03:12 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1.2.1 $
  *

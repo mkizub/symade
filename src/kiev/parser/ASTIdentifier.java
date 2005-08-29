@@ -30,7 +30,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTIdentifier.java,v 1.4.4.1 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.4.1 $
  *

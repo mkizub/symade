@@ -27,7 +27,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTRuleExpression.java,v 1.3 1998/10/26 23:47:05 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3 $
  *

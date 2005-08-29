@@ -29,7 +29,6 @@ import java.net.*;
 import java.util.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/Main.java,v 1.5 1998/10/26 23:46:31 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5 $
  *

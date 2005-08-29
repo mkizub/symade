@@ -31,7 +31,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTNewExpression.java,v 1.4.2.1.2.2 1999/05/29 21:03:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.2.1.2.2 $
  *

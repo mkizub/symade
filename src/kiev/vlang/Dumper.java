@@ -24,7 +24,6 @@ import kiev.Main;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Dumper.java,v 1.3.2.1 1999/02/12 18:47:07 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.2.1 $
  *

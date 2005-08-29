@@ -27,7 +27,6 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTOperator.java,v 1.3 1998/10/26 23:47:04 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3 $
  *

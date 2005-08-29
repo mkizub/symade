@@ -27,7 +27,6 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Var.java,v 1.5.2.1 1999/02/12 18:47:10 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5.2.1 $
  *
@@ -232,7 +231,7 @@ public class CodeVar {
 }
 
 public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
-	public boolean		guarded = false;
+	public boolean		guarded;
 }
 
 public class NodeInfoPass {
@@ -268,7 +267,12 @@ public class NodeInfoPass {
 				trace( Kiev.debugNodeTypes, "types: existed "+sni+" in current scope "+getDepth());
 			}
 		} else {
-			sni = new ScopeNodeInfo(v,state);
+			if (v instanceof Var)
+				sni = new ScopeNodeInfo(v,((Var)v).type,state);
+			else if (v instanceof Field)
+				sni = new ScopeNodeInfo(v,((Field)v).type,state);
+			else
+				sni = new ScopeNodeInfo(v,Type.tpAny,state);
 			state.append(sni);
 			trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
 		}
@@ -276,7 +280,13 @@ public class NodeInfoPass {
 	}
 
 	public static ScopeNodeInfo setNodeType(ASTNode v, Type type) {
-		return setNodeTypes(v,new Type[]{type});
+		ScopeNodeInfoVector state = states.peek();
+		ScopeNodeInfo sni = getNodeInThisScope(v);
+
+		sni.decl_type = type;
+		sni.types = new Type[]{type};
+		trace( Kiev.debugNodeTypes, "types: set decl type to "+sni);
+		return sni;
 	}
 
 	public static ScopeNodeInfo setNodeTypes(ASTNode v, Type[] types) {
@@ -298,7 +308,7 @@ public class NodeInfoPass {
 		else
 			sni.value = null;
 		if( expr.getType() != Type.tpNull )
-			sni.types = expr.getAccessTypes();
+			sni.types = addAccessType(expr.getAccessTypes(), sni.decl_type);
 		trace( Kiev.debugNodeTypes, "types: set expr "+expr+" for node "+sni);
 		return sni;
 	}
@@ -315,7 +325,7 @@ public class NodeInfoPass {
 		ScopeNodeInfoVector state = states.peek();
 		ScopeNodeInfo sni = getNodeInThisScope(sni_new.var);
 
-		sni.types = sni_new.types;
+		sni.types = addAccessType(sni_new.types, sni.decl_type);
 		sni.initialized = sni_new.initialized;
 		sni.value = sni_new.value;
 		trace( Kiev.debugNodeTypes, "types: set info to "+sni);
@@ -325,6 +335,14 @@ public class NodeInfoPass {
 	public static ScopeNodeInfoVector pushState() {
 		ScopeNodeInfoVector v = new ScopeNodeInfoVector();
 		states.push(v);
+		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
+		return v;
+	}
+
+	public static ScopeNodeInfoVector pushGuardedState() {
+		ScopeNodeInfoVector v = new ScopeNodeInfoVector();
+		states.push(v);
+		v.guarded = true;
 		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
 		return v;
 	}
@@ -348,7 +366,7 @@ public class NodeInfoPass {
 				trace( Kiev.debugNodeTypes, "types: getinfo for node "+sni.var+" is "+sni+" in scope "+ --i);
 				if( guarded ) {
 					sni = (ScopeNodeInfo)sni.clone();
-					sni.types = new Type[]{getDeclType(sni.var)};
+					sni.types = new Type[]{sni.decl_type};
 					sni.value = null;
 				}
 				return sni;
@@ -384,14 +402,21 @@ public class NodeInfoPass {
 					continue next_type;
 				}
 			}
-			if( t1.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
-			else if( newtypes[0].isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
-			else newtypes[0] = t1;
+			if( t1.isInterface() ) {
+				newtypes = (Type[])Arrays.append(newtypes,t1);
+			} else {
+				for (int i=0; i < newtypes.length; i++) {
+					if (!newtypes[i].isInterface())
+						continue;
+					newtypes = (Type[])Arrays.insert(newtypes,t1,i);
+					break;
+				}
+			}
 		}
 		trace( Kiev.debugNodeTypes, "types: add type yeilds "+Arrays.toString(newtypes));
 		return newtypes;
 	}
-
+/*
 	public static Type[] removeAccessType(Type[] types, Type type) {
 		if( type == null || type == Type.tpVoid || type == Type.tpNull ) return types;
 		if( types == null || !type.isReference() ) return types;
@@ -407,7 +432,7 @@ public class NodeInfoPass {
 			throw new RuntimeException("Null type list while removing type "+type+" from "+Arrays.toString(types));
 		return newtypes;
 	}
-
+*/
 	static ScopeNodeInfoVector cleanInfoForVars(ScopeNodeInfoVector nip_state, Var[] vars) {
 		foreach(Var v; vars) {
 			foreach(ScopeNodeInfo sni; nip_state; sni.var == v) {
@@ -431,34 +456,22 @@ public class NodeInfoPass {
 		foreach(ScopeNodeInfo sni1; nip_state1) {
 			foreach(ScopeNodeInfo sni2; nip_state2; sni2.var == sni1.var ) {
 				trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2);
-				ScopeNodeInfo sni = new ScopeNodeInfo(sni1.var,nip_state);
+				ScopeNodeInfo sni = new ScopeNodeInfo(sni1.var,sni1.decl_type,nip_state);
 				sni.initialized = sni1.initialized && sni2.initialized;
-				if( sni1.value != null && sni1.value.equals(sni2.value) ) sni.value = sni1.value;
-				if( sni1.types != null && sni2.types != null ) {
-					Type[] types = new Type[]{getDeclType(sni1.var)};
-					if( sni1.types.length > 0 && sni2.types.length > 0
-					 && sni1.types[0].isClazz() && sni2.types[0].isClazz() ) {
-						types = addAccessType(types,Type.leastCommonType(sni1.types[0],sni2.types[0]));
-					}
-					foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull && t1.isInterface() ) {
-						foreach(Type t2; sni2.types; t2 == t1 )
-							types = addAccessType(types,t1);
-					}
-					sni.types = types;
+				if( sni1.value != null && sni1.value.equals(sni2.value) )
+					sni.value = sni1.value;
+				assert( sni1.decl_type == sni2.decl_type);
+				Type[] types = new Type[]{sni1.decl_type};
+				foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
+					foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
+						types = addAccessType(types,Type.leastCommonType(t1,t2));
 				}
+				sni.types = types;
 				nip_state.append(sni);
 			}
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+nip_state);
 		return nip_state;
-	}
-
-	public static Type getDeclType(ASTNode n) {
-		switch(n) {
-		case Var: return ((Var)n).type;
-		case Field: return ((Field)n).type;
-		}
-		throw new RuntimeException("Unknown node of type "+n.getClass());
 	}
 
 }
@@ -468,12 +481,15 @@ public class ScopeNodeInfo implements Cloneable {
 	/** Var or Field */
 	public ASTNode					var;
 	public ScopeNodeInfoVector		state;
+	public Type						decl_type;
 	public Type[]					types;
 	public boolean					initialized;
 	public ConstExpr				value;
 
-	public ScopeNodeInfo(ASTNode var, ScopeNodeInfoVector state ) {
+	public ScopeNodeInfo(ASTNode var, Type decl_type, ScopeNodeInfoVector state ) {
 		this.var = var;
+		this.decl_type = decl_type;
+		this.types = new Type[]{decl_type};
 		this.state = state;
 	}
 

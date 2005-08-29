@@ -29,7 +29,6 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Rules.java,v 1.4.2.1.2.1 1999/02/15 21:45:14 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.2.1.2.1 $
  *
@@ -153,8 +152,7 @@ public class RuleMethod extends Method {
 		try {
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.init();
-			ScopeNodeInfoVector state = NodeInfoPass.pushState();
-			state.guarded = true;
+			NodeInfoPass.pushGuardedState();
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
 					Var p = getThisPar();
@@ -434,14 +432,15 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			sb.append("}\n");
 			// Create new method frame or hash values from
 			// existing one
+			sb.append(tmpClassName).append(" $env;\n");
 			sb.append("int bt$;\n");
-			sb.append("if($env==null) {\n");
+			sb.append("if("+namePEnv+"==null) {\n");
 			sb.append(" $env=new ").append(tmpClassName).append("(); bt$=0;\n");
 			sb.append(" goto enter$1;\n");
 			sb.append("}\n");
 			if (rule_method.base != 1) {
 				sb.append("else{\n");
-				sb.append(" $env=($cast ").append(tmpClassName).append(")$env;\n");
+				sb.append(" $env=($cast ").append(tmpClassName).append(")"+namePEnv+";\n");
 				sb.append(" bt$=$env.bt$;\n");
 				sb.append("}\n");
 				sb.append("switch(bt$) {\ncase 0:\n");

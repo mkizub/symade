@@ -23,7 +23,6 @@ package kiev.vlang;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/OpCodeRules.java,v 1.4.2.1 1999/02/12 18:47:06 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.4.2.1 $
  *

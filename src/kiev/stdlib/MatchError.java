@@ -21,7 +21,6 @@
 package kiev.stdlib;
 
 /** a class for errors due to missing patterns
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/MatchError.java,v 1.3 1998/10/26 23:47:14 max Exp $
  * @author   Martin Odersky
  * @author Maxim Kizub
  * @version $Revision: 1.3 $

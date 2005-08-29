@@ -21,7 +21,6 @@
 package kiev.bytecode;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Constants.java,v 1.3.2.1.2.1 1999/02/17 21:38:28 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.2.1.2.1 $
  *

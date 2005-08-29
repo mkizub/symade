@@ -28,7 +28,6 @@ import kiev.transf.*;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/ASTAnonymouseClosure.java,v 1.5 1999/01/29 01:22:21 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.5 $
  *

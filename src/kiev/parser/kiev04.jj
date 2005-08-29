@@ -41,7 +41,6 @@ import kiev.vlang.*;
 
 /*{
 
-import syntax kiev.parser.TypeAliases;
 import static kiev.vlang.AccessFlags.*;
 
 typedef NArr<TypeWithArgsRef> NArrTypeWithArgsRefs;
@@ -845,12 +844,12 @@ TOKEN : /* OPERATORS */
  * Program structuring syntax follows.
  */
 
-ASTFileUnit FileUnit(String filename) :
-{ ASTFileUnit old_fu; }
+FileUnit FileUnit(String filename) :
+{ FileUnit old_fu; }
 {
 	{
 		old_fu = Kiev.curFileUnit;
-		ASTFileUnit fu = new FileUnit();
+		FileUnit fu = new FileUnit();
 		Kiev.curFileUnit = fu;
 		fu.filename = KString.from(filename);
 		fu.setPos(0);
@@ -929,8 +928,8 @@ void Pragma(FileUnit fu) :
 	{ fu.setPragma(p); }
 }
 
-ASTImport Import() :
-{ ASTImport imp = new ASTImport(); }
+Import Import() :
+{ Import imp = new Import(); }
 {
 	"import"
 	(	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
@@ -967,8 +966,8 @@ ASTImport Import() :
 	{ return imp; }
 }
 
-ASTTypedef Typedef() :
-{ ASTIdentifier id; ASTOperator op; TypeRef tp; ASTTypedef n = new ASTTypedef(); }
+Typedef Typedef() :
+{ ASTIdentifier id; ASTOperator op; TypeRef tp; Typedef n = new Typedef(); }
 {
 	"typedef"
 	(
@@ -985,8 +984,8 @@ ASTTypedef Typedef() :
 	{ return n; }
 }
 
-ASTOpdef Opdef() :
-{ ASTIdentifier id; ASTOperator op; ConstIntExpr ce; ASTOpdef opd = new ASTOpdef(); }
+Opdef Opdef() :
+{ ASTIdentifier id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
 {
 	"operator"
 	(
@@ -1263,10 +1262,10 @@ ASTIdentifier KeywordAsName() :
 	}
 }
 
-ASTMeta Annotation() :
+Meta Annotation() :
 { ASTIdentifier id; MetaValue v; }
 {
-	{ ASTMeta n = new ASTMeta(); }
+	{ Meta n = new Meta(); }
 	"@"
 	(
 		id = Name()
@@ -1284,7 +1283,7 @@ ASTMeta Annotation() :
 	{ return n; }
 }
 
-void AnnotationValues(ASTMeta m) :
+void AnnotationValues(Meta m) :
 { ASTIdentifier id; MetaValue v; }
 {
 	id = Name()
@@ -1655,11 +1654,11 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	{ return m; }
 }
 
-ASTRequareDeclaration RequareDeclaration() :
+WBCCondition RequareDeclaration() :
 {}
 {
 	{
-		ASTRequareDeclaration n = new ASTRequareDeclaration();
+		WBCCondition n = new WBCCondition();
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondRequire;
 	}
@@ -1679,11 +1678,11 @@ ASTRequareDeclaration RequareDeclaration() :
 }
 
 
-ASTEnsureDeclaration EnsureDeclaration() :
+WBCCondition EnsureDeclaration() :
 {}
 {
 	{
-		ASTEnsureDeclaration n = new ASTEnsureDeclaration();
+		WBCCondition n = new WBCCondition();
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondEnsure;
 	}
@@ -1702,11 +1701,11 @@ ASTEnsureDeclaration EnsureDeclaration() :
 	{ return n; }
 }
 
-ASTInvariantDeclaration InvariantDeclaration(ASTModifiers modifiers) :
+WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 {}
 {
 	{
-		ASTInvariantDeclaration n = new ASTInvariantDeclaration();
+		WBCCondition n = new WBCCondition();
 		//n.modifiers = modifiers;
 		n.cond = WBCType.CondInvariant;
 	}
@@ -1760,8 +1759,8 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 	{ return m; }
 }
 
-ASTInitializer Initializer(ASTModifiers modifiers) :
-{ ASTInitializer n = new ASTInitializer(); BlockStat bl; }
+Initializer Initializer(ASTModifiers modifiers) :
+{ Initializer n = new Initializer(); BlockStat bl; }
 {
 	{
 		n.setFlags(modifiers.getFlags());

@@ -24,7 +24,6 @@ import kiev.Main;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Signature.java,v 1.3.2.1.2.1 1999/02/15 21:45:14 max Exp $
  * @author Maxim Kizub
  * @version $Revision: 1.3.2.1.2.1 $
  *
