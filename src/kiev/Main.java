@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.5 $
+ * @version $Revision$
  *
  */
 

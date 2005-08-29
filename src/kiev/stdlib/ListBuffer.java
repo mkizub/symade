@@ -30,7 +30,7 @@ package kiev.stdlib;
  * further changes to the buffer will cause a copy to be made. <p>
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  */
 
 import kiev.stdlib.List.*;

@@ -31,7 +31,7 @@ import static kiev.vlang.Instr.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.1 $
+ * @version $Revision$
  *
  */
 

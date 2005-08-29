@@ -23,7 +23,7 @@ package kiev.stdlib;
 /** a class for pairs
  * @author      Martin Odersky
  * @author      Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 

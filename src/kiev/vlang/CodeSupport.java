@@ -28,7 +28,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.3 $
+ * @version $Revision$
  *
  */
 

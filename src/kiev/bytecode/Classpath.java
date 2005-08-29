@@ -29,7 +29,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.1 $
+ * @version $Revision$
  *
  */
 

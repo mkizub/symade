@@ -23,7 +23,7 @@ package kiev.stdlib;
 /** a class for errors due to missing patterns
  * @author   Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 1.3 $
+ * @version $Revision$
  *
  */
 public class MatchError extends Error {

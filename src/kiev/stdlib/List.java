@@ -24,7 +24,7 @@ package kiev.stdlib;
  * @see		ListBuffer
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  */
 
 public class List<A>

@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.2.2.1.2.1 $
+ * @version $Revision$
  *
  */
 

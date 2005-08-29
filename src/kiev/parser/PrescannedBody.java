@@ -26,7 +26,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.3 $
+ * @version $Revision$
  *
  */
 
