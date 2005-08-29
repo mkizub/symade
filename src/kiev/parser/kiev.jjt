@@ -1169,6 +1169,7 @@ void KeywordAsIdentifier() #void :
 		t="virtual"
 	|	t="alias"
 	|	t="packed"
+	|	t="throws"
 	)
 	{
 		id = new ASTIdentifier(0);
