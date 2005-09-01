@@ -43,7 +43,7 @@ public class ASTAccessExpression extends Expr {
 	@att public ENode			obj;
 	@att public ASTIdentifier	ident;
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			ASTNode[] res;
@@ -59,8 +59,8 @@ public class ASTAccessExpression extends Expr {
 					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 			}
 			else {
-				Expr e = (Expr)obj;
-				tps = e.getAccessTypes();
+				ENode e = obj;
+				tps = new Type[]{e.getType()};
 				res = new ASTNode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
@@ -77,7 +77,7 @@ public class ASTAccessExpression extends Expr {
 					else if( ident.name.equals("length") ) {
 						if( tp.isArray() ) {
 							tps[si] = Type.tpInt;
-							res[si] = new ArrayLengthAccessExpr(pos,(Expr)e.copy());
+							res[si] = new ArrayLengthAccessExpr(pos,(ENode)e.copy());
 						}
 					}
 				}
@@ -123,12 +123,13 @@ public class ASTAccessExpression extends Expr {
 				//}
 				//msg.append("while resolving ").append(this);
 				//throw new CompilerException(pos, msg.toString());
-				Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
+				//Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
 				obj = obj;
-				return;
+				return false;
 			}
 			this.replaceWithNode(res[idx]);
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
 	public void resolve(Type reqType) throws CompilerException {

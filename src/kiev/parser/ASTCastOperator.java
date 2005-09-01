@@ -33,11 +33,17 @@ import kiev.stdlib.*;
  */
 
 @node
-public class ASTCastOperator extends ENode {
+public class ASTCastOperator extends ASTOperator {
 
+	static final KString fakeImage = KString.from("$cast");
+	
 	@att public TypeRef	type;
 	public boolean  reinterp;
 
+	public ASTCastOperator() {
+		image = fakeImage;
+	}
+	
 	public Operator resolveOperator() {
 		Type tp = type.getType();
 	    return CastOperator.newCastOperator(tp,reinterp);

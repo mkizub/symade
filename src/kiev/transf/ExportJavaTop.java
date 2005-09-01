@@ -780,16 +780,11 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	//												   //
 	////////////////////////////////////////////////////
 
-	public void preResolve(ASTNode:ASTNode node) {
+	public void preResolve(ASTNode node) {
+		node.walkTree(fun (ASTNode n)->boolean {
+			return n.preResolve();
+		});
 		return;
-	}
-	public void preResolve(FileUnit:ASTNode node) {
-		node.resolveImports();
-		node.resolveFinalFields(false);
-	}
-	public void preResolve(Struct:ASTNode node) {
-		node.resolveImports();
-		node.resolveFinalFields(false);
 	}
 
 	////////////////////////////////////////////////////
@@ -798,16 +793,11 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	//												   //
 	////////////////////////////////////////////////////
 
-	public void preGenerate(ASTNode:ASTNode node) {
+	public void preGenerate(ASTNode node) {
+		node.walkTree(fun (ASTNode n)->boolean {
+			return n.preGenerate();
+		});
 	}
-	public void preGenerate(FileUnit:ASTNode node) {
-		node.autoProxyMethods();
-	}
-	public void preGenerate(Struct:ASTNode node) {
-		node.autoProxyMethods();
-	}
-
-
 
 }
 

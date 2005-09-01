@@ -201,27 +201,28 @@ public abstract class ASTNode implements Constants {
     	return dmp;
     }
 	
-	public void preResolve() {
+	public boolean preGenerate()	{ return true; }
+	public boolean preResolve()		{ return true; }
+	
+	public void walkTree((ASTNode)->boolean exec) {
 		PassInfo.push(this);
 		try {
-			foreach (AttrSlot attr; this.values(); attr.is_attr) {
-				Object val = this.getVal(attr.name);
-				if (val == null)
-					continue;
-				if (attr.is_space) {
-					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.preResolve();
-				}
-				else if (val instanceof ASTNode) {
-					((ASTNode)val).preResolve();
+			if (exec(this)) {
+				foreach (AttrSlot attr; this.values(); attr.is_attr) {
+					Object val = this.getVal(attr.name);
+					if (val == null)
+						continue;
+					if (attr.is_space) {
+						foreach (ASTNode n; (NArr<ASTNode>)val)
+							n.walkTree(exec);
+					}
+					else if (val instanceof ASTNode) {
+						((ASTNode)val).walkTree(exec);
+					}
 				}
 			}
 		} finally { PassInfo.pop(this); }
 	}
-
-//	public ASTNode autoProxyMethods()  { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-//	public ASTNode resolveImports()    { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
-//	public ASTNode resolveFinalFields(boolean cleanup) { throw new CompilerException(getPos(),"Internal error ("+this.getClass()+")"); }
 
 	public int setFlags(int fl) {
 		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
@@ -793,11 +794,11 @@ public abstract class ASTNode implements Constants {
 	}
 	// used for primary expressions, i.e. (a+b)
 	@getter public final boolean get$is_expr_primary()  alias isPrimaryExpr  {
-		assert(this instanceof Expr,"For node "+this.getClass());
+		assert(this instanceof ENode,"For node "+this.getClass());
 		return this.is_expr_primary;
 	}
 	@setter public final void set$is_expr_primary(boolean on) alias setPrimaryExpr {
-		assert(this instanceof Expr,"For node "+this.getClass());
+		assert(this instanceof ENode,"For node "+this.getClass());
 		if (this.is_expr_primary != on) {
 			this.is_expr_primary = on;
 			this.callbackChildChanged(nodeattr$flags);
@@ -1109,12 +1110,13 @@ public final class LocalStructDecl extends ENode implements Named {
 		clazz.setResolved(true);
 	}
 
-	public final void preResolve() {
+	public boolean preResolve() {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		Kiev.runProcessorsOn(clazz);
+		return false;
 	}
 	
 	public void resolve(Type reqType) {
@@ -1137,24 +1139,9 @@ public final class LocalStructDecl extends ENode implements Named {
 }
 
 
-/** A confrol-flow node: statement or expression */
 @node
 @cfnode
-public abstract class CFlowNode extends ENode {
-//	public virtual abstract CFlowNode cf_in;
-//	public virtual abstract CFlowNode cf_out;
-	public CFlowNode() {}
-	public CFlowNode(int pos) { super(pos); }
-	public CFlowNode(int pos, ASTNode parent) { super(pos,parent); }
-
-	public void resolve(Type reqType) {
-		throw new CompilerException(pos,"Resolve call for node "+getClass());
-	}
-}
-
-@node
-@cfnode
-public abstract class Expr extends CFlowNode {
+public abstract class Expr extends ENode {
 
 	public static Expr[] emptyArray = new Expr[0];
 
@@ -1239,7 +1226,7 @@ public abstract class LvalueExpr extends Expr {
 
 @node
 @cfnode
-public abstract class Statement extends CFlowNode {
+public abstract class Statement extends ENode {
 
 	public static Statement[] emptyArray = new Statement[0];
 
@@ -1316,8 +1303,9 @@ public class TypeRef extends ENode {
 		this.lnk = n;
 	}
 	
-	public final void preResolve() {
+	public final boolean preResolve() {
 		getType(); // calls resolving
+		return false;
 	}
 	
 	public void resolve(Type reqType) {

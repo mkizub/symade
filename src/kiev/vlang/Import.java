@@ -73,6 +73,9 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		return str.toString();
 	}
 
+	public boolean preGenerate()	{ return false; }
+	public boolean preResolve()		{ return false; }
+
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
 		ASTNode@ v;
@@ -212,6 +215,9 @@ public class Typedef extends DNode implements Named {
 		type = tp;
 		name = id.name;
 	}
+
+	public boolean preGenerate()	{ return false; }
+	public boolean preResolve()		{ return false; }
 
 	public String toString() {
 		if (typearg != null)

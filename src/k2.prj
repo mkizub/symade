@@ -229,8 +229,6 @@ kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java
 kiev.vlang.BreakTarget kiev/vlang/BreakTarget kiev\vlang\PassInfo.java
 kiev.vlang.Bytecoder kiev/vlang/Bytecoder kiev\vlang\Bytecoder.java
-kiev.vlang.CFLabel kiev/vlang/CFLabel kiev\vlang\Tree.java
-kiev.vlang.CFlowNode kiev/vlang/CFlowNode kiev\vlang\AST.java
 kiev.vlang.CP kiev/vlang/CP kiev\vlang\ConstPool.java
 kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
@@ -429,11 +427,6 @@ kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
-kiev.vlang.cffork kiev/vlang/cffork kiev\vlang\Tree.java
-kiev.vlang.cflink kiev/vlang/cflink kiev\vlang\Tree.java
-kiev.vlang.cflist kiev/vlang/cflist kiev\vlang\Tree.java
-kiev.vlang.cfloop kiev/vlang/cfloop kiev\vlang\Tree.java
-kiev.vlang.cfnode kiev/vlang/cfnode kiev\vlang\Tree.java
-kiev.vlang.cfswitch kiev/vlang/cfswitch kiev\vlang\Tree.java
+kiev.vlang.cfnode kiev/vlang/cfnode kiev\vlang\CFlow.java
 kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java

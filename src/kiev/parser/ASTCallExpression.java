@@ -59,12 +59,13 @@ public class ASTCallExpression extends Expr {
 		foreach (Expr e; args) this.args.append(e);
 	}
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'func'
 			foreach (ENode e; args) e.preResolve();
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
 	public void resolve(Type reqType) {

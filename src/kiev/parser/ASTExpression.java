@@ -43,13 +43,13 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 public class ASTExpression extends Expr {
 	@att public final NArr<ENode>		nodes;
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			foreach (ENode n; nodes) n.preResolve();
 			if (nodes.length == 1 && nodes[0] instanceof Expr) {
 				this.replaceWithNode(nodes[0]);
-				return;
+				return false;
 			}
 			List<ENode> lst = List.Nil;
 			for (int i=nodes.length-1; i >=0; i--)
@@ -58,27 +58,24 @@ public class ASTExpression extends Expr {
 			ENode@ result;
 			List<ENode>@ rest;
 			trace( Kiev.debugOperators, "Expression: "+lst);
-			NodeInfoPass.pushState();
-			try {
-				foreach( resolveExpr(result,rest,lst,0) ) {
-					trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
-					trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
-					results = new List.Cons<ENode>(result,results);
-				}
-			} finally { NodeInfoPass.popState(); }
+			foreach( resolveExpr(result,rest,lst,0) ) {
+				trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
+				trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
+				results = new List.Cons<ENode>(result,results);
+			}
 			if (results.length() == 0) {
 				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
 				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				Kiev.reportError(pos, msg.toString());
-				return;
+				return false;
 			}
 			if (results.length() > 1) {
 				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
 				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				Kiev.reportError(pos, msg.toString());
-				return;
+				return false;
 			}
 			
 			ENode e = results.head();
@@ -88,6 +85,7 @@ public class ASTExpression extends Expr {
 				e.setPrimaryExpr(true);
 			this.replaceWithNode(e);
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
 	public void resolve(Type reqType) {
@@ -143,8 +141,7 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "resolving "+expr+" with priority "+priority),
 		expr.length() > 1,
 		{
-			resolveCastExpr		(result1, rest1, expr, priority)
-		;	resolvePrefixExpr	(result1, rest1, expr, priority)
+			resolvePrefixExpr	(result1, rest1, expr, priority)
 		;	resolvePostfixExpr	(result1, rest1, expr, priority)
 		;	resolveMultiExpr	(result1, rest1, expr, priority)
 		;	resolveAssignExpr	(result1, rest1, expr, priority)
@@ -155,8 +152,8 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	;
 		expr.length() > 1 && priority > 0,
-		trace( Kiev.debugOperators, "check that "+expr.head()+" is an expression ("+(expr.head() instanceof Expr)+") and has priority >= "+priority),
-		(expr.head() instanceof Expr || expr.head() instanceof TypeRef) && expr.head().getPriority() >= priority,
+		trace( Kiev.debugOperators, "check that "+expr.head()+" is an expression and has priority >= "+priority),
+		!(expr.head() instanceof ASTOperator) && expr.head().getPriority() >= priority,
 		result ?= getExpr(expr.head()),
 		rest ?= expr.tail(),
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
@@ -167,22 +164,6 @@ public class ASTExpression extends Expr {
 		trace( Kiev.debugOperators, "return expr "+result+" and rest "+rest)
 	}
 
-	rule resolveCastExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
-		Operator@		op;
-		ENode@			result1;
-		List<ENode>@	rest1;
-	{
-		Constants.opCastPriority >= priority,
-		expr.length() > 1,
-		expr.head() instanceof ASTCastOperator,
-		op ?= ((ASTCastOperator)expr.head()).resolveOperator(),
-		trace( Kiev.debugOperators, "trying cast "+op),
-		resolveExpr(result1,rest1,expr.tail(),Constants.opCastPriority),
-		result ?= new PrefixExpr(expr.head().pos,op,getExpr(result1)),
-		trace( Kiev.debugOperators, "found cast "+result),
-		rest ?= rest1.$var
-	}
-
 	rule resolvePrefixExpr(ENode@ result, List<ENode>@ rest, List<ENode> expr, int priority)
 		Operator@		op;
 		ENode@			result1;
@@ -190,7 +171,11 @@ public class ASTExpression extends Expr {
 	{
 		expr.length() > 1,
 		{
-			expr.head() instanceof ASTOperator,
+			expr.head() instanceof ASTCastOperator,
+			$cut,
+			op ?= ((ASTCastOperator)expr.head()).resolveOperator(),
+			trace( Kiev.debugOperators, "trying cast "+op)
+		;	expr.head() instanceof ASTOperator,
 			op ?= PrefixOperator.getOperator(((ASTOperator)expr.head()).image),
 			op.isStandard() || PassInfo.resolveOperatorR(op)
 		;	expr.head() instanceof ASTIdentifier,
@@ -235,7 +220,7 @@ public class ASTExpression extends Expr {
 		List<ENode>@	rest1;
 	{
 		expr.length() > 2,
-		expr.head() instanceof Expr,
+		!(expr.head() instanceof ASTOperator),
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= BinaryOperator.getOperator(((ASTOperator)expr.tail().head()).image),
@@ -250,7 +235,7 @@ public class ASTExpression extends Expr {
 		expr.head().getPriority() >= op.getArgPriority(0),
 		{
 			op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof TypeRef,
-			result ?= new InstanceofExpr(expr.at(1).getPos(),(Expr)expr.head(),((TypeRef)expr.at(2)).getType()),
+			result ?= new InstanceofExpr(expr.at(1).getPos(),expr.head(),((TypeRef)expr.at(2)).getType()),
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 			result ?= new InfixExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))
@@ -265,7 +250,7 @@ public class ASTExpression extends Expr {
 		List<ENode>@	rest1;
 	{
 		expr.length() > 2,
-		expr.head() instanceof Expr,
+		!(expr.head() instanceof ASTOperator),
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= AssignOperator.getOperator(((ASTOperator)expr.tail().head()).image),

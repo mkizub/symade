@@ -1650,6 +1650,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	}
 
+	public boolean preGenerate() {
+		autoProxyMethods();
+		return true;
+	}
+	
 	public void autoProxyMethods() {
 		checkResolved();
 		if( isMembersPreGenerated() ) return;
@@ -1924,8 +1929,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		} finally { PassInfo.pop(this); }
 	}
 
-	public final void preResolve() {
-		// don't pre-resolve now
+	public final boolean preResolve() {
+		this.resolveImports();
+		this.resolveFinalFields(false);
+		return !isLocal();
 	}
 	
 	public void resolveDecl() {

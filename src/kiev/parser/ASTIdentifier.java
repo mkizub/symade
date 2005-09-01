@@ -40,6 +40,9 @@ import syntax kiev.Syntax;
 public class ASTIdentifier extends ENode {
 	private static KString op_instanceof = KString.from("instanceof");
 	public KString name;
+	
+	// resolved at preResolve phase node, will be used at preGenerate phase
+	@att public ENode resolved;
 
 	public ASTIdentifier() {
 	}
@@ -61,35 +64,52 @@ public class ASTIdentifier extends ENode {
 			this.name = KString.from(t.image);
         pos = t.getPos();
 	}
+	
+	public Type getType() {
+		if (resolved != null)
+			return resolved.getType();
+		return Type.tpVoid;
+	}
 
-	public void preResolve() {
+	public boolean isConstantExpr() {
+		if (resolved != null)
+			return resolved.isConstantExpr();
+		return false;
+	}
+	public Object getConstValue() {
+		if (resolved != null)
+			return resolved.getConstValue();
+		return super.getConstValue();
+    }
+
+	public boolean preResolve() {
 		// predefined operators
 		if( name == op_instanceof ) {
 			ASTOperator op = new ASTOperator();
 			op.pos = this.pos;
 			op.image = op_instanceof;
 			this.replaceWithNode(op);
-			return;
+			return false;
 		}
 		// predefined names
 		if( name == Constants.nameFILE ) {
-			this.replaceWithNode(new ConstStringExpr(Kiev.curFile));
-			return;
+			resolved = new ConstStringExpr(Kiev.curFile);
+			return false;
 		}
 		else if( name == Constants.nameLINENO ) {
-			this.replaceWithNode(new ConstIntExpr(pos>>>11));
-			return;
+			resolved = new ConstIntExpr(pos>>>11);
+			return false;
 		}
 		else if( name == Constants.nameMETHOD ) {
 			if( PassInfo.method != null )
-				this.replaceWithNode(new ConstStringExpr(PassInfo.method.name.name));
+				resolved = new ConstStringExpr(PassInfo.method.name.name);
 			else
-				this.replaceWithNode(new ConstStringExpr(nameInit));
-			return;
+				resolved = new ConstStringExpr(nameInit);
+			return false;
 		}
 		else if( name == Constants.nameDEBUG ) {
-			this.replaceWithNode(new ConstBoolExpr(Kiev.debugOutputA));
-			return;
+			resolved = new ConstBoolExpr(Kiev.debugOutputA);
+			return false;
 		}
 		else if( name == Constants.nameReturnVar ) {
 			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
@@ -127,14 +147,21 @@ public class ASTIdentifier extends ENode {
 		if( v instanceof Struct ) {
 			Struct s = (Struct)v;
 			s.checkResolved();
-			this.replaceWith(fun ()->ENode {return new TypeNameRef(this,s.type);});
+			resolved = new TypeRef(s.type);
 		}
 		else if( v instanceof TypeRef ) {
-			this.replaceWithNode((TypeRef)v);
+			resolved = (TypeRef)v;
 		}
 		else {
-			this.replaceWith(fun ()->ENode { return info.buildAccess(pos, null, v); } );
+			resolved = info.buildAccess(pos, null, v);
 		}
+		return false;
+	}
+	
+	public boolean preGenerate() {
+		if (resolved != null)
+			this.replaceWithNode(resolved);
+		return false;
 	}
 	
 	public void resolve(Type reqType) {

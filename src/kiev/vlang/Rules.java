@@ -173,15 +173,16 @@ public class RuleMethod extends Method {
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				if( body instanceof RuleBlock ) {
-					preAndResolve(body, false);
+					body.resolve(Type.tpVoid);
 					boolean[] exts = Kiev.getExtSet();
 					try {
 						Kiev.enable(Ext.GotoCase);
 						Kiev.enable(Ext.Goto);
-						preAndResolve(body, type.ret == Type.tpVoid);
+						Kiev.runProcessorsOn(body);
+						body.resolve(Type.tpVoid);
 					} finally { Kiev.setExtSet(exts); }
 				} else {
-					preAndResolve(body, type.ret == Type.tpVoid);
+					body.resolve(Type.tpVoid);
 				}
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
@@ -308,7 +309,7 @@ object, if fails - returns null.
 
 @node
 @cfnode
-public abstract class ASTRuleNode extends CFlowNode {
+public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
 	public JumpNodes		jn;
@@ -446,7 +447,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 				sb.append("switch(bt$) {\ncase 0:\n");
 			} else {
 				// BUG!!!
-				sb.append("else{\n$env=($cast ").append(tmpClassName).append(")$env;}\n");
+				sb.append("else{\n$env=($cast ").append(tmpClassName).append(")"+namePEnv+";}\n");
 			}
 			sb.append("return null;\n");
 			node.createText(sb);

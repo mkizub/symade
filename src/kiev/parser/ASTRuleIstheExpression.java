@@ -39,12 +39,13 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	@att public ASTIdentifier	name;
 	@att public ENode			expr;
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'name'
 			expr.preResolve();
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
     public void resolve(Type reqType) {

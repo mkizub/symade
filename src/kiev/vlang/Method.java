@@ -510,16 +510,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
-	protected void preAndResolve(Statement st, boolean autoret) {
-		NodeInfoPass.pushGuardedState();
-		try {
-			st.preResolve();
-		} finally { NodeInfoPass.popState(); }
-		if (autoret)
-			st.setAutoReturnable(true);
-		st.resolve(Type.tpVoid);
-	}
-	
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
@@ -543,10 +533,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
-				preAndResolve(cond.body, false);
+				cond.body.resolve(Type.tpVoid);
 			}
 			if( body != null ) {
-				preAndResolve(body, type.ret == Type.tpVoid);
+				if (type.ret == Type.tpVoid)
+					body.setAutoReturnable(true);
+				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {

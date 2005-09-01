@@ -864,6 +864,8 @@ public class VarAccessExpr extends LvalueExpr {
 @cfnode
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
+	static final KString namePEnv = KString.from("$env");
+	
 	@ref public Var		var;
 
 	public LocalPrologVarAccessExpr() {
@@ -913,6 +915,14 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	public Var resolveFrameForLocalPrologVar() {
 		RuleMethod rm = (RuleMethod)PassInfo.method;
 		assert(rm.params[0].type == Type.tpRule);
+		foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
+			VarDecl vd = (VarDecl)n;
+			if (vd.var.name.equals(namePEnv)) {
+				assert(vd.var.type.isInstanceOf(Type.tpRule));
+				return vd.var;
+			}
+		}
+		Kiev.reportError(pos, "Cannot find "+namePEnv);
 		return rm.params[0];
 	}
 

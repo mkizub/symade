@@ -37,6 +37,15 @@ public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
 	public abstract void attach(ASTNode n);
+
+	public boolean preResolve() {
+		return false; // don't pre-resolve
+	}
+	
+	public boolean preGenerate() {
+		return false; // don't pre-generate
+	}
+	
 }
 
 @node

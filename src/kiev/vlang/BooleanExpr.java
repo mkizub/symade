@@ -695,13 +695,13 @@ public class InstanceofExpr extends BoolExpr {
 	public InstanceofExpr() {
 	}
 
-	public InstanceofExpr(int pos, Expr expr, TypeRef type) {
+	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
 		super(pos);
 		this.expr = expr;
 		this.type = type;
 	}
 
-	public InstanceofExpr(int pos, Expr expr, Type type) {
+	public InstanceofExpr(int pos, ENode expr, Type type) {
 		super(pos);
 		this.expr = expr;
 		this.type = new TypeRef(type);

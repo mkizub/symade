@@ -220,9 +220,10 @@ public abstract class ConstExpr extends Expr {
 	public boolean	isConstantExpr() { return true; }
 	public int		getPriority() { return 255; }
 
-	public final void preResolve() {
+	public final boolean preResolve() {
 		// already fully resolved
 		setResolved(true);
+		return false;
 	}
 	
 	public final void resolve(Type reqType) {

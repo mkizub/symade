@@ -41,12 +41,13 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 	@att public final NArr<ASTIdentifier>	names;
 	@att public final NArr<ENode>			exprs;
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'names'
 			foreach (ENode e; exprs) e.preResolve();
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
     public void resolve(Type reqType) {

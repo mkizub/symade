@@ -48,10 +48,11 @@ public class ASTNewExpression extends Expr {
     @att
 	public final Struct				clazz;
 	
-	public void preResolve() {
+	public boolean preResolve() {
 		// don't pre-resolve clazz
 		type.preResolve();
 		foreach (ENode a; args) a.preResolve();
+		return false;
 	}
 	
 	public void resolve(Type reqType) {

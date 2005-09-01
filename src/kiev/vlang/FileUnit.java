@@ -120,55 +120,24 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		disabled_extensions[i] = !enabled;
 	}
 
-	public ASTNode autoProxyMethods() {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		PassInfo.push(this);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			foreach (DNode dn; members; dn instanceof Struct) {
-				((Struct)dn).autoProxyMethods();
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
-		return this;
+	public boolean preResolve() {
+		this.resolveImports();
+		return true;
 	}
-
-	public ASTNode resolveImports() {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		PassInfo.push(this);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			for(int i=0; i < members.length; i++) {
-				try {
-					foreach (DNode dn; syntax; dn instanceof Import) {
-						((Import)dn).resolveImports();
-					}
-					foreach (DNode dn; members; dn instanceof Struct) {
-						((Struct)dn).resolveImports();
-					}
-				} catch(Exception e ) {
-					Kiev.reportError/*Warning*/(members[i].getPos(),e);
+	
+	private void resolveImports() {
+		for(int i=0; i < members.length; i++) {
+			try {
+				foreach (DNode dn; syntax; dn instanceof Import) {
+					((Import)dn).resolveImports();
 				}
+				foreach (DNode dn; members; dn instanceof Struct) {
+					((Struct)dn).resolveImports();
+				}
+			} catch(Exception e ) {
+				Kiev.reportError/*Warning*/(members[i].getPos(),e);
 			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
-		return this;
-	}
-
-	public ASTNode resolveFinalFields(boolean cleanup) {
-		KString oldfn = Kiev.curFile;
-		Kiev.curFile = filename;
-		PassInfo.push(this);
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			foreach (DNode dn; members; dn instanceof Struct) {
-				((Struct)dn).resolveFinalFields(cleanup);
-			}
-		} finally { Kiev.setExtSet(exts); PassInfo.pop(this); Kiev.curFile = oldfn; }
-		return this;
+		}
 	}
 
 	public void resolveDecl() {

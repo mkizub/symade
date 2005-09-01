@@ -128,6 +128,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		try {
 			if( Kiev.verify )
 				generateArgumentCheck();
+			foreach (ParamRedir redir; params_redir)
+				redir.old_var.bcpos = redir.new_var.bcpos;
 			((Statement)method.body).generate(reqType);
 		} finally { PassInfo.pop(this); }
 	}
@@ -865,12 +867,13 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	
 	public NodeName getName() { return new NodeName(ident.name); }
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'ident'
 			stat.preResolve();
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
 	public void resolve(Type reqType) {
@@ -920,8 +923,8 @@ public class BreakStat extends Statement {
 //		setAbrupted(true);
 //	}
 
-	public void preResolve() {
-		// don't pre-resolve
+	public boolean preResolve() {
+		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
@@ -1003,8 +1006,8 @@ public class ContinueStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public void preResolve() {
-		// don't pre-resolve
+	public boolean preResolve() {
+		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
@@ -1057,8 +1060,8 @@ public class GotoStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public void preResolve() {
-		// don't pre-resolve
+	public boolean preResolve() {
+		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {

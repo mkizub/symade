@@ -41,7 +41,7 @@ public class ASTCallAccessExpression extends Expr {
 	@att public ASTIdentifier			func;
     @att public final NArr<ENode>		args;
 
-	public void preResolve() {
+	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
 			// pre-resolve 'obj', but check it's not 'super.'
@@ -54,6 +54,7 @@ public class ASTCallAccessExpression extends Expr {
 			// pre-resolve arguments
 			foreach (ENode e; args) e.preResolve();
 		} finally { PassInfo.pop(this); }
+		return false;
 	}
 	
 	public void resolve(Type reqType) {

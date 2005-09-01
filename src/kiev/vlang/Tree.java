@@ -44,35 +44,6 @@ public @interface ref {
 	boolean copyable() default true;
 }
 
-// control-flow simple node
-public @interface cfnode {
-	String in() default "";
-	String out() default "";
-}
-// sontrol-flow loop node
-public @interface cfloop {
-	String cont();
-	String brk();	
-}
-// sontrol-flow switch node
-public @interface cfswitch {
-	String brk();	
-}
-// control-flow field in/out links
-public @interface cflink {
-	String in();
-	String out();
-}
-// control-flow fork (boolean) field links
-public @interface cffork {
-	String in();
-	String yes();
-	String no();
-}
-// control-flow field in/out links
-public @interface cflist {
-}
-
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 @node(copyable=false)
 public class Tree extends ASTNode {
@@ -85,11 +56,6 @@ public class Tree extends ASTNode {
 		throw new CompilerException(getPos(),"Tree node cannot be copied");
 	};
 
-}
-
-@node
-@cfnode
-public class CFLabel extends CFlowNode {
 }
 
 public final class AttrSlot {
