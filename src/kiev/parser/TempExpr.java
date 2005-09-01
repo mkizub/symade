@@ -37,7 +37,6 @@ import syntax kiev.Syntax;
  * Base class to represent unresolved, temporary created expressions.
  */
 @node
-@cfnode
 public abstract class UnresExpr extends Expr {
 
 	public Operator			op;
@@ -66,7 +65,6 @@ public abstract class UnresExpr extends Expr {
  * The owner will be changed when concrete, resolved unary expression is created.
  */
 @node
-@cfnode
 public class PrefixExpr extends UnresExpr {
 	@ref public ENode		expr;
 	
@@ -98,7 +96,6 @@ public class PrefixExpr extends UnresExpr {
  * The owner will be changed when concrete, resolved unary expression is created.
  */
 @node
-@cfnode
 public class PostfixExpr extends UnresExpr {
 	@ref public ENode		expr;
 	
@@ -128,7 +125,6 @@ public class PostfixExpr extends UnresExpr {
  * The owner will be changed when concrete, resolved binary expression is created.
  */
 @node
-@cfnode
 public class InfixExpr extends UnresExpr {
 
 	@ref public ENode		expr1;
@@ -168,7 +164,6 @@ public class InfixExpr extends UnresExpr {
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
 @node
-@cfnode
 public class MultiExpr extends UnresExpr {
 	@ref public final NArr<ENode>		exprs;
 
@@ -211,7 +206,6 @@ public class MultiExpr extends UnresExpr {
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
 @node
-@cfnode
 public class UnresCallExpr extends UnresExpr {
 	@ref public final ENode				obj;	// access expression or type ref
 	@ref public final Named				func;	// function name

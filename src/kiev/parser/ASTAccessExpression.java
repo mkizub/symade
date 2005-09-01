@@ -36,7 +36,6 @@ import syntax kiev.Syntax;
  */
 
 @node
-@cfnode
 public class ASTAccessExpression extends Expr {
 	private static KString nameWrapperSelf = KString.from("$self");
 	

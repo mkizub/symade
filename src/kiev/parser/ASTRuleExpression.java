@@ -33,7 +33,6 @@ import kiev.vlang.*;
  */
 
 @node
-@cfnode
 public class ASTRuleExpression extends ASTRuleNode {
 
 	@att public ENode	expr;

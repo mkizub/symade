@@ -33,7 +33,6 @@ import kiev.stdlib.*;
  */
 
 @node
-@cfnode
 public class ASTNewAccessExpression extends Expr {
 	@att public ENode				obj;
 	@att public TypeRef				type;

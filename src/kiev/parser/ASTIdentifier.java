@@ -36,7 +36,6 @@ import syntax kiev.Syntax;
  */
 
 @node
-@cfnode
 public class ASTIdentifier extends ENode {
 	private static KString op_instanceof = KString.from("instanceof");
 	public KString name;

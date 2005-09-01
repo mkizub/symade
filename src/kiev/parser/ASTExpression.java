@@ -39,7 +39,6 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  */
 
 @node
-@cfnode
 public class ASTExpression extends Expr {
 	@att public final NArr<ENode>		nodes;
 

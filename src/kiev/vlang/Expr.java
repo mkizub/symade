@@ -40,7 +40,6 @@ import syntax kiev.Syntax;
 
 
 @node
-@cfnode
 public class ShadowExpr extends Expr {
 	@ref public ENode expr;
 	
@@ -75,7 +74,6 @@ public class ShadowExpr extends Expr {
 }
 
 @node
-@cfnode
 public class ArrayLengthAccessExpr extends Expr {
 	@att public ENode		array;
 
@@ -132,7 +130,6 @@ public class ArrayLengthAccessExpr extends Expr {
 }
 
 @node
-@cfnode
 public class TypeClassExpr extends Expr {
 	@att public TypeRef		type;
 
@@ -178,7 +175,6 @@ public class TypeClassExpr extends Expr {
 }
 
 @node
-@cfnode
 public class AssignExpr extends LvalueExpr {
 	@ref public AssignOperator	op;
 	@att public ENode			lval;
@@ -507,7 +503,6 @@ public class AssignExpr extends LvalueExpr {
 
 
 @node
-@cfnode
 public class BinaryExpr extends Expr {
 	@ref public BinaryOperator		op;
 	@att public ENode				expr1;
@@ -833,7 +828,6 @@ public class BinaryExpr extends Expr {
 }
 
 @node
-@cfnode
 public class StringConcatExpr extends Expr {
 	@att public final NArr<ENode>	args;
 
@@ -968,7 +962,6 @@ public class StringConcatExpr extends Expr {
 }
 
 @node
-@cfnode
 public class CommaExpr extends Expr {
 	@att public final NArr<ENode>	exprs;
 
@@ -1035,7 +1028,6 @@ public class CommaExpr extends Expr {
 }
 
 @node
-@cfnode
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	@att public final NArr<ENode>		stats;
@@ -1195,7 +1187,6 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-@cfnode
 public class UnaryExpr extends Expr {
 	@ref public Operator			op;
 	@att public ENode				expr;
@@ -1378,7 +1369,6 @@ public class UnaryExpr extends Expr {
 }
 
 @node
-@cfnode
 public class IncrementExpr extends LvalueExpr {
 	@ref public Operator			op;
 	@att public ENode				lval;
@@ -1594,7 +1584,6 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class ConditionalExpr extends Expr {
 	@att public ENode		cond;
 	@att public ENode		expr1;
@@ -1716,7 +1705,6 @@ public class ConditionalExpr extends Expr {
 }
 
 @node
-@cfnode
 public class CastExpr extends Expr {
 	@att public TypeRef			type;
 	@att public ENode			expr;

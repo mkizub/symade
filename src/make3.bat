@@ -1,1 +1,1 @@
-c:\java\jdk1.5.0\bin\java -classpath classes2 -verify kiev.Main -classpath classes3 -d classes3 -verify -enable cflow -enable vnode -p k2.prj -g %1 %2 %3 %4 %5 %6 %7 %8 %9
+c:\java\jdk1.5.0\bin\java -classpath classes2 -verify kiev.Main -classpath classes3 -d classes3 -verify -enable vnode -p k2.prj -g %1 %2 %3 %4 %5 %6 %7 %8 %9

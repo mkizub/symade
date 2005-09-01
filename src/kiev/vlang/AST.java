@@ -1140,7 +1140,6 @@ public final class LocalStructDecl extends ENode implements Named {
 
 
 @node
-@cfnode
 public abstract class Expr extends ENode {
 
 	public static Expr[] emptyArray = new Expr[0];
@@ -1168,7 +1167,6 @@ public abstract class Expr extends ENode {
 }
 
 @node
-@cfnode
 public class NopExpr extends Expr {
 
 	@att public Expr		expr;
@@ -1188,7 +1186,6 @@ public class NopExpr extends Expr {
 }
 
 @node
-@cfnode
 public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr() {}
@@ -1225,7 +1222,6 @@ public abstract class LvalueExpr extends Expr {
 }
 
 @node
-@cfnode
 public abstract class Statement extends ENode {
 
 	public static Statement[] emptyArray = new Statement[0];
@@ -1243,7 +1239,6 @@ public abstract class Statement extends ENode {
 }
 
 @node
-@cfnode
 public class InitializerShadow extends Statement {
 
 	@ref Initializer init;

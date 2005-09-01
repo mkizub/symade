@@ -35,7 +35,6 @@ import syntax kiev.Syntax;
  */
 
 @node
-@cfnode
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att public final NArr<ASTIdentifier>	names;

@@ -39,7 +39,6 @@ import syntax kiev.Syntax;
 
 
 @node
-@cfnode
 public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 	public boolean value;
 
@@ -85,7 +84,6 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 }
 
 @node
-@cfnode
 public final class ConstNullExpr extends ConstExpr {
 	public byte		value;
 
@@ -97,7 +95,6 @@ public final class ConstNullExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstByteExpr extends ConstExpr {
 	public byte		value;
 
@@ -110,7 +107,6 @@ public final class ConstByteExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstShortExpr extends ConstExpr {
 	public short		value;
 
@@ -123,7 +119,6 @@ public final class ConstShortExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstIntExpr extends ConstExpr {
 	public int			value;
 
@@ -136,7 +131,6 @@ public final class ConstIntExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstLongExpr extends ConstExpr {
 	public long			value;
 
@@ -149,7 +143,6 @@ public final class ConstLongExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstCharExpr extends ConstExpr {
 	public char			value;
 
@@ -163,7 +156,6 @@ public final class ConstCharExpr extends ConstExpr {
 
 
 @node
-@cfnode
 public final class ConstFloatExpr extends ConstExpr {
 	public float			value;
 
@@ -177,7 +169,6 @@ public final class ConstFloatExpr extends ConstExpr {
 
 
 @node
-@cfnode
 public final class ConstDoubleExpr extends ConstExpr {
 	public double			value;
 
@@ -190,7 +181,6 @@ public final class ConstDoubleExpr extends ConstExpr {
 }
 
 @node
-@cfnode
 public final class ConstStringExpr extends ConstExpr {
 	public KString			value;
 
@@ -207,7 +197,6 @@ public final class ConstStringExpr extends ConstExpr {
 
 
 @node
-@cfnode
 public abstract class ConstExpr extends Expr {
 
 	public ConstExpr() {

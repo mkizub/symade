@@ -34,7 +34,6 @@ import kiev.stdlib.*;
  */
 
 @node
-@cfnode
 public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;

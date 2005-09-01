@@ -308,7 +308,6 @@ object, if fails - returns null.
 */
 
 @node
-@cfnode
 public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
@@ -376,7 +375,6 @@ public abstract class ASTRuleNode extends ENode {
 
 
 @node
-@cfnode
 public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 	@att public ASTRuleNode	node;
@@ -476,7 +474,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 
 @node
-@cfnode
 public final class RuleOrExpr extends ASTRuleNode {
 
 	@att public final NArr<ASTRuleNode>	rules;
@@ -530,7 +527,6 @@ public final class RuleOrExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleAndExpr extends ASTRuleNode {
 
 	@att public final NArr<ASTRuleNode>	rules;
@@ -619,7 +615,6 @@ public final class RuleAndExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	@att public Var		var;		// variable of type PVar<...>
@@ -669,7 +664,6 @@ public final class RuleIstheExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@ref public final NArr<Var>		vars;		// variable of type PVar<...>
@@ -842,7 +836,6 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr() {
@@ -871,7 +864,6 @@ public final class RuleCutExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleCallExpr extends ASTRuleNode {
 
 	@att public ENode				obj;
@@ -966,7 +958,6 @@ public final class RuleCallExpr extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public abstract class RuleExprBase extends ASTRuleNode {
 	@att public ENode		expr;
 	@att public ENode		bt_expr;
@@ -1007,7 +998,6 @@ public abstract class RuleExprBase extends ASTRuleNode {
 }
 
 @node
-@cfnode
 public final class RuleWhileExpr extends RuleExprBase {
 
 	public RuleWhileExpr() {
@@ -1057,7 +1047,6 @@ public final class RuleWhileExpr extends RuleExprBase {
 }
 
 @node
-@cfnode
 public final class RuleExpr extends RuleExprBase {
 
 	public RuleExpr() {

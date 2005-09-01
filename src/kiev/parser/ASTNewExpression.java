@@ -37,7 +37,6 @@ import syntax kiev.Syntax;
  */
 
 @node
-@cfnode
 public class ASTNewExpression extends Expr {
 	@att
 	public TypeRef					type;

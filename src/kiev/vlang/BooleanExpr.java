@@ -38,7 +38,6 @@ public interface IBoolExpr {
 }
 
 @node
-@cfnode
 public abstract class BoolExpr extends Expr implements IBoolExpr {
 
 	public BoolExpr() {}
@@ -165,7 +164,6 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 }
 
 @node
-@cfnode
 public class BinaryBooleanOrExpr extends BoolExpr {
 	@att public ENode			expr1;
 	@att public ENode			expr2;
@@ -254,7 +252,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 
 @node
-@cfnode
 public class BinaryBooleanAndExpr extends BoolExpr {
 	@att public ENode			expr1;
 	@att public ENode			expr2;
@@ -337,7 +334,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 }
 
 @node
-@cfnode
 public class BinaryBoolExpr extends BoolExpr {
 	@ref public BinaryOperator		op;
 	@att public ENode				expr1;
@@ -687,7 +683,6 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
-@cfnode
 public class InstanceofExpr extends BoolExpr {
 	@att public ENode		expr;
 	@att public TypeRef		type;
@@ -795,7 +790,6 @@ public class InstanceofExpr extends BoolExpr {
 }
 
 @node
-@cfnode
 public class BooleanNotExpr extends BoolExpr {
 	@att public ENode				expr;
 

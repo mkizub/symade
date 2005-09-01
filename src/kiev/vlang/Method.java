@@ -718,7 +718,6 @@ public class Constructor extends Method {
 }
 
 @node
-@cfnode
 public class Initializer extends DNode implements SetBody, PreScanneable {
 	@att public BlockStat				body;
 	@att public PrescannedBody			pbody;
@@ -786,7 +785,6 @@ public enum WBCType {
 }
 
 @node
-@cfnode
 public class WBCCondition extends DNode {
 
 	public WBCType					cond;

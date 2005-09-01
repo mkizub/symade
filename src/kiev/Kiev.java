@@ -557,8 +557,7 @@ public final class Kiev {
 		Templates				: "templates"		,
 		Wrappers				: "wrappers"		,
 		Access					: "access"			,
-		VNode					: "vnode"			,
-		CFlow					: "cflow"
+		VNode					: "vnode"
 	};
 	
 	private static boolean[] command_line_disabled_extensions	= new boolean[Ext.values().length];
@@ -572,9 +571,7 @@ public final class Kiev {
 		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);
 		transfProcessors[(int)Ext.PizzaCase]		= new ProcessPizzaCase(Ext.PizzaCase);
 		transfProcessors[(int)Ext.VNode]			= new ProcessVNode(Ext.VNode);
-		transfProcessors[(int)Ext.CFlow]			= new ProcessCFlow(Ext.CFlow);
 		setExtension(false, "vnode");
-		setExtension(false, "cflow");
 	}
 	
 	public static TransfProcessor getProcessor(Ext ext) {

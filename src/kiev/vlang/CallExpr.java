@@ -35,7 +35,6 @@ import syntax kiev.Syntax;
  *
  */
 @node
-@cfnode
 public class CallExpr extends Expr {
 	@att public ENode				obj;
 	@ref public Method				func;
@@ -336,7 +335,6 @@ public class CallExpr extends Expr {
 }
 
 @node
-@cfnode
 public class ClosureCallExpr extends Expr {
 	@att public ENode					expr;
 	@att public final NArr<ENode>		args;

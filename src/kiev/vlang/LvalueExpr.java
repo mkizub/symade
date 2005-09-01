@@ -35,7 +35,6 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
-@cfnode
 public class AccessExpr extends LvalueExpr {
 
 	public static final int[] masks =
@@ -238,7 +237,6 @@ public class AccessExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class ContainerAccessExpr extends LvalueExpr {
 
 	@att public ENode		obj;
@@ -454,7 +452,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class ThisExpr extends LvalueExpr {
 
 	public boolean super_flag;
@@ -591,7 +588,6 @@ public class ThisExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class VarAccessExpr extends LvalueExpr {
 
 	@ref public Var		var;
@@ -861,7 +857,6 @@ public class VarAccessExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
@@ -985,7 +980,6 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class StaticFieldAccessExpr extends LvalueExpr {
 
 	@ref public Field		var;
@@ -1112,7 +1106,6 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 }
 
 @node
-@cfnode
 public class OuterThisAccessExpr extends LvalueExpr {
 
 	@ref public Struct		outer;
