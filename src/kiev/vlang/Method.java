@@ -162,7 +162,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		else if (this_var == null) {
 			ASTNode p = parent;
 			while !(p instanceof Struct) p = p.parent;
-			this_var = new FormPar(pos,Constants.nameThis,((Struct)p).type,ACC_FORWARD);
+			this_var = new FormPar(pos,Constants.nameThis,((Struct)p).type,ACC_FORWARD|ACC_FINAL);
 		}
 		return this_var;
 	}
@@ -523,13 +523,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
 					Var p = getThisPar();
-					NodeInfoPass.setNodeType(p,p.type);
-					NodeInfoPass.setNodeInitialized(p,true);
+					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
 				}
 				for(int i=0; i < params.length; i++) {
 					Var p = params[i];
-					NodeInfoPass.setNodeType(p,p.type);
-					NodeInfoPass.setNodeInitialized(p,true);
+					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {

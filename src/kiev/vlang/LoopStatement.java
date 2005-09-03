@@ -544,15 +544,15 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			}
 			if( itype == Type.tpRule ) {
 				iter = new Var(pos,KString.from("$env"),itype,0);
-				NodeInfoPass.setNodeType(iter,iter.type);
+				NodeInfoPass.setNodeType(new DNode[]{iter},iter.type);
 			}
 			else if( var != null ) {
-				NodeInfoPass.setNodeType(var,var.type);
+				NodeInfoPass.setNodeType(new DNode[]{var},var.type);
 				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-				NodeInfoPass.setNodeType(iter,iter.type);
+				NodeInfoPass.setNodeType(new DNode[]{iter},iter.type);
 				if (mode == ARRAY) {
 					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
-					NodeInfoPass.setNodeType(iter_array,iter_array.type);
+					NodeInfoPass.setNodeType(new DNode[]{iter_array},iter_array.type);
 				}
 			}
 			else {

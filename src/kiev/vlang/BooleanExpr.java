@@ -748,18 +748,20 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	public void setNodeTypeInfo() {
-		ASTNode n;
+		DNode[] path = null;
 		switch(expr) {
-		case VarAccessExpr:			n = ((VarAccessExpr)expr).var;	break;
-		case StaticFieldAccessExpr:	n = ((StaticFieldAccessExpr)expr).var;	break;
-		case AccessExpr:
-			if !(((AccessExpr)expr).obj instanceof ThisExpr)
-				return;
-			n = ((AccessExpr)expr).var;
+		case VarAccessExpr:
+			path = new DNode[]{((VarAccessExpr)expr).var};
 			break;
-		default: return;
+		case AccessExpr:
+			path = ((AccessExpr)expr).getAccessPath();
+			break;
+		case StaticFieldAccessExpr:
+			path = new DNode[]{((StaticFieldAccessExpr)expr).var};
+			break;
 		}
-		NodeInfoPass.setNodeTypes(n,NodeInfoPass.addAccessType(expr.getAccessTypes(),type.getType()));
+		if (path != null)
+			NodeInfoPass.setNodeTypes(path,NodeInfoPass.addAccessType(expr.getAccessTypes(),type.getType()));
 	}
 
 	public void generate_iftrue(CodeLabel label) {

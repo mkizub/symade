@@ -926,7 +926,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						pkg.isClazz() && !pkg.isStatic();
 							pkg=pkg.package_clazz) n++;
 				Field f = addField(new Field(
-					KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD));
+					KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD|ACC_FINAL));
 				f.pos = pos;
 			}
 	
@@ -951,7 +951,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						// in signature
 						targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
 						// Also add formal parameter
-						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD),0);
+						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
 					if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
@@ -969,7 +969,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( !isStatic() ) {
 							mt = MethodType.newMethodType(new Type[]{package_clazz.type,Type.tpInt},Type.tpVoid);
 							init = new Constructor(mt,ACC_PUBLIC);
-							init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+							init.params.append(thisOuter=new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD|ACC_FINAL));
 							init.params.append(maxArgs=new FormPar(pos,KString.from("max$args"),Type.tpInt,0));
 						} else {
 							mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
@@ -982,7 +982,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						FormPar[] params = new FormPar[0];
 						if( package_clazz.isClazz() && !isStatic() ) {
 							targs = (Type[])Arrays.append(targs,package_clazz.type);
-							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD));
+							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,ACC_FORWARD|ACC_FINAL));
 						}
 						if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
 							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);

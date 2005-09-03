@@ -374,20 +374,20 @@ public class AssignExpr extends LvalueExpr {
 	private void setNodeTypes() {
 		if !(value instanceof Expr)
 			return;
-		Expr value = (Expr)this.value;
+		DNode[] path = null;
 		switch(lval) {
 		case VarAccessExpr:
-			NodeInfoPass.setNodeValue(((VarAccessExpr)lval).var,value);
+			path = new DNode[]{((VarAccessExpr)lval).var};
 			break;
 		case AccessExpr:
-			if !(((AccessExpr)lval).obj instanceof ThisExpr)
-				break;
-			NodeInfoPass.setNodeValue(((AccessExpr)lval).var,value);
+			path = ((AccessExpr)lval).getAccessPath();
 			break;
 		case StaticFieldAccessExpr:
-			NodeInfoPass.setNodeValue(((StaticFieldAccessExpr)lval).var,value);
+			path = new DNode[]{((StaticFieldAccessExpr)lval).var};
 			break;
 		}
+		if (path != null)
+			NodeInfoPass.setNodeValue(path,value);
 	}
 
 	public void generate(Type reqType) {

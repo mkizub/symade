@@ -106,6 +106,25 @@ public class AccessExpr extends LvalueExpr {
 
 	public Operator getOp() { return BinaryOperator.Access; }
 
+	public DNode[] getAccessPath() {
+		if (obj instanceof VarAccessExpr) {
+			VarAccessExpr va = (VarAccessExpr)obj;
+			if (va.var.isFinal() && va.var.isForward())
+				return new DNode[]{va.var, this.var};
+			return null;
+		}
+		if (obj instanceof AccessExpr) {
+			AccessExpr ae = (AccessExpr)obj;
+			if !(ae.var.isFinal() || ae.var.isForward())
+				return null;
+			DNode[] path = ae.getAccessPath();
+			if (path == null)
+				return null;
+			return (DNode[])Arrays.append(path, var);
+		}
+		return null;
+	}
+	
 	public void resolve(Type reqType) throws RuntimeException {
 		PassInfo.push(this);
 		try {
@@ -493,16 +512,6 @@ public class ThisExpr extends LvalueExpr {
 		}
 	}
 
-	public Type[] getAccessTypes() {
-		Var var = getVar();
-		if (var == null || super_flag)
-			return new Type[]{getType()};
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
-			return new Type[]{var.type};
-		return sni.types;
-	}
-
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		PassInfo.push(this);
@@ -620,8 +629,8 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
+		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(new DNode[]{var});
+		if( sni == null || sni.types.length == 0 )
 			return new Type[]{var.type};
 		return sni.types;
 	}
@@ -1034,8 +1043,8 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
+		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(new DNode[]{var});
+		if( sni == null || sni.types.length == 0 )
 			types = new Type[]{var.type};
 		else
 			types = sni.types;

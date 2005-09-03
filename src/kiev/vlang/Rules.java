@@ -156,19 +156,16 @@ public class RuleMethod extends Method {
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
 					Var p = getThisPar();
-					NodeInfoPass.setNodeType(p,p.type);
-					NodeInfoPass.setNodeInitialized(p,true);
+					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
 				}
 				for(int i=0; i < params.length; i++) {
-					NodeInfoPass.setNodeType(params[i],params[i].type);
-					NodeInfoPass.setNodeInitialized(params[i],true);
+					NodeInfoPass.setNodeType(new DNode[]{params[i]},params[i].type);
 				}
 			}
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			for(int i=0; i < localvars.length; i++) {
-				NodeInfoPass.setNodeType(localvars[i],localvars[i].type);
-//				NodeInfoPass.setNodeInitialized(localvars[i],true);
+				NodeInfoPass.setNodeType(new DNode[]{localvars[i]},localvars[i].type);
 			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);

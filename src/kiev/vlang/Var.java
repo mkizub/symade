@@ -106,9 +106,9 @@ public class Var extends DNode implements Named, Typed {
 					Kiev.reportError(pos,e);
 				}
 			}
-			NodeInfoPass.setNodeType(this,this.type);
+			NodeInfoPass.setNodeType(new DNode[]{this},this.type);
 			if( init != null && init.getType() != Type.tpVoid )
-				NodeInfoPass.setNodeValue(this,init);
+				NodeInfoPass.setNodeValue(new DNode[]{this},init);
 			ASTNode p = parent;
 			while( p != null && !(p instanceof BlockStat || p instanceof BlockExpr) ) p = p.parent;
 			if( p == null ) {
@@ -232,6 +232,15 @@ public class CodeVar {
 
 public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
 	public boolean		guarded;
+	public void setInfo(ScopeNodeInfo sni) {
+		for(int i=length()-1; i >= 0; i--) {
+			if (this[i].equals(sni)) {
+				this[i] = sni;
+				return;
+			}
+		}
+		append(sni);
+	}
 }
 
 public class NodeInfoPass {
@@ -254,80 +263,66 @@ public class NodeInfoPass {
 		return states.length()-1;
 	}
 
-	public static ScopeNodeInfo getNodeInThisScope(ASTNode v) {
+	private static ScopeNodeInfo makeNodeInThisScope(DNode[] path) {
 		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = getNodeInfo(v);
+		ScopeNodeInfo sni = getNodeInfo(path);
 		if( sni != null ) {
-			if( sni.state != state ) {
-				trace( Kiev.debugNodeTypes, "types: clone "+sni+" to current scope "+getDepth());
-				sni = (ScopeNodeInfo)sni.clone();
-				sni.state = state;
-				state.append(sni);
-			} else {
-				trace( Kiev.debugNodeTypes, "types: existed "+sni+" in current scope "+getDepth());
-			}
+			trace( Kiev.debugNodeTypes, "types: clone "+sni+" to current scope "+getDepth());
+			sni = (ScopeNodeInfo)sni.clone();
+			state.setInfo(sni);
 		} else {
-			if (v instanceof Var)
-				sni = new ScopeNodeInfo(v,((Var)v).type,state);
-			else if (v instanceof Field)
-				sni = new ScopeNodeInfo(v,((Field)v).type,state);
+			if (path.length == 1) {
+				if (path[0] instanceof Var)
+					sni = new ScopeVarInfo((Var)path[0]);
+				else if (path[0] instanceof Field && path[0].isStatic())
+					sni = new ScopeStaticFieldInfo((Field)path[0]);
+			}
+			else if (ScopeForwardFieldInfo.checkForwards(path)) {
+				sni = new ScopeForwardFieldInfo(path);
+			}
 			else
-				sni = new ScopeNodeInfo(v,Type.tpAny,state);
-			state.append(sni);
+				return null;
+			state.setInfo(sni);
 			trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
 		}
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeType(ASTNode v, Type type) {
+	public static ScopeNodeInfo setNodeType(DNode[] path, Type type) {
 		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = getNodeInThisScope(v);
+		ScopeNodeInfo sni = makeNodeInThisScope(path);
 
-		sni.decl_type = type;
-		sni.types = new Type[]{type};
-		trace( Kiev.debugNodeTypes, "types: set decl type to "+sni);
+		trace( Kiev.debugNodeTypes, "types: set type to "+sni);
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeTypes(ASTNode v, Type[] types) {
+	public static ScopeNodeInfo setNodeTypes(DNode[] path, Type[] types) {
 		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = getNodeInThisScope(v);
+		ScopeNodeInfo sni = makeNodeInThisScope(path);
 
 		sni.types = types;
 		trace( Kiev.debugNodeTypes, "types: set types to "+sni);
 		return sni;
 	}
 
-	public static ScopeNodeInfo setNodeValue(ASTNode v, ENode expr) {
+	public static ScopeNodeInfo setNodeValue(DNode[] path, ENode expr) {
 		Type tp = expr.getType();
-		ScopeNodeInfo sni = getNodeInThisScope(v);
+		ScopeNodeInfo sni = makeNodeInThisScope(path);
 
-		sni.initialized = true;
-		if( expr instanceof ConstExpr )
-			sni.value = (ConstExpr)expr;
-		else
-			sni.value = null;
-		if( expr.getType() != Type.tpNull )
-			sni.types = addAccessType(expr.getAccessTypes(), sni.decl_type);
-		trace( Kiev.debugNodeTypes, "types: set expr "+expr+" for node "+sni);
-		return sni;
-	}
-
-	public static ScopeNodeInfo setNodeInitialized(ASTNode v, boolean initialized) {
-		ScopeNodeInfo sni = getNodeInThisScope(v);
-
-		trace( Kiev.debugNodeTypes, "types: set initialized = "+initialized+" for node "+sni.var);
-		sni.initialized = initialized;
+		if( tp != Type.tpNull && tp != Type.tpVoid ) {
+			foreach (Type tp; sni.types)
+				sni.types = addAccessType(expr.getAccessTypes(), tp);
+		}
+		trace( Kiev.debugNodeTypes, "types: set type "+tp+" for node "+sni);
 		return sni;
 	}
 
 	static ScopeNodeInfo addInfo(ScopeNodeInfo sni_new) {
 		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = getNodeInThisScope(sni_new.var);
+		ScopeNodeInfo sni = makeNodeInThisScope(sni_new.getPath());
 
-		sni.types = addAccessType(sni_new.types, sni.decl_type);
-		sni.initialized = sni_new.initialized;
-		sni.value = sni_new.value;
+		foreach (Type tp; sni.types)
+			sni.types = addAccessType(sni_new.types, tp);
 		trace( Kiev.debugNodeTypes, "types: set info to "+sni);
 		return sni;
 	}
@@ -358,16 +353,15 @@ public class NodeInfoPass {
 		return states.pop();
 	}
 
-	public static ScopeNodeInfo getNodeInfo(ASTNode v) {
+	public static ScopeNodeInfo getNodeInfo(DNode[] path) {
 		int i = states.length();
 		boolean guarded = false;
 		foreach(ScopeNodeInfoVector state; states) {
-			foreach(ScopeNodeInfo sni; state; sni.var == v) {
-				trace( Kiev.debugNodeTypes, "types: getinfo for node "+sni.var+" is "+sni+" in scope "+ --i);
+			foreach(ScopeNodeInfo sni; state; sni.match(path)) {
+				trace( Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni+" in scope "+ --i);
 				if( guarded ) {
 					sni = (ScopeNodeInfo)sni.clone();
-					sni.types = new Type[]{sni.decl_type};
-					sni.value = null;
+					sni.setupDeclType();
 				}
 				return sni;
 			}
@@ -416,28 +410,18 @@ public class NodeInfoPass {
 		trace( Kiev.debugNodeTypes, "types: add type yeilds "+Arrays.toString(newtypes));
 		return newtypes;
 	}
-/*
-	public static Type[] removeAccessType(Type[] types, Type type) {
-		if( type == null || type == Type.tpVoid || type == Type.tpNull ) return types;
-		if( types == null || !type.isReference() ) return types;
-		Type[] newtypes = Type.emptyArray;
-	next_type:
-		foreach(Type t1; types) {
-			if( t1.isInstanceOf(type) ) continue;
-			if( t1.isInterface() ) newtypes = (Type[])Arrays.append(newtypes,t1);
-			else if( newtypes.length==0 || newtypes[0].isInterface() ) newtypes = (Type[])Arrays.insert(newtypes,t1,0);
-			else newtypes[0] = t1;
-		}
-		if( newtypes.length == 0 )
-			throw new RuntimeException("Null type list while removing type "+type+" from "+Arrays.toString(types));
-		return newtypes;
-	}
-*/
+
 	static ScopeNodeInfoVector cleanInfoForVars(ScopeNodeInfoVector nip_state, Var[] vars) {
 		foreach(Var v; vars) {
-			foreach(ScopeNodeInfo sni; nip_state; sni.var == v) {
-				nip_state.removeElement(sni);
-				break;
+			foreach(ScopeNodeInfo sni; nip_state) {
+				if (sni instanceof ScopeVarInfo && ((ScopeVarInfo)sni).var == v) {
+					nip_state.removeElement(sni);
+					break;
+				}
+				if (sni instanceof ScopeForwardFieldInfo && ((ScopeForwardFieldInfo)sni).path[0] == v) {
+					nip_state.removeElement(sni);
+					break;
+				}
 			}
 		}
 		return nip_state;
@@ -454,20 +438,17 @@ public class NodeInfoPass {
 	static ScopeNodeInfoVector joinInfo(ScopeNodeInfoVector nip_state1, ScopeNodeInfoVector nip_state2) {
 		ScopeNodeInfoVector nip_state = new ScopeNodeInfoVector();
 		foreach(ScopeNodeInfo sni1; nip_state1) {
-			foreach(ScopeNodeInfo sni2; nip_state2; sni2.var == sni1.var ) {
+			foreach(ScopeNodeInfo sni2; nip_state2; sni2.equals(sni1) ) {
 				trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2);
-				ScopeNodeInfo sni = new ScopeNodeInfo(sni1.var,sni1.decl_type,nip_state);
-				sni.initialized = sni1.initialized && sni2.initialized;
-				if( sni1.value != null && sni1.value.equals(sni2.value) )
-					sni.value = sni1.value;
-				assert( sni1.decl_type == sni2.decl_type);
-				Type[] types = new Type[]{sni1.decl_type};
+				ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
+				sni.setupDeclType();
+				Type[] types = sni.types;
 				foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
 					foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
 						types = addAccessType(types,Type.leastCommonType(t1,t2));
 				}
 				sni.types = types;
-				nip_state.append(sni);
+				nip_state.setInfo(sni);
 			}
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+nip_state);
@@ -476,32 +457,166 @@ public class NodeInfoPass {
 
 }
 
-public class ScopeNodeInfo implements Cloneable {
+public abstract class ScopeNodeInfo implements Cloneable {
+	public Type[]	types = Type.emptyArray;
+	public abstract void setupDeclType();
+	public abstract boolean match(DNode[] path);
+	public abstract DNode[] getPath();
+	public Object clone() { return super.clone(); }
+}
 
-	/** Var or Field */
-	public ASTNode					var;
-	public ScopeNodeInfoVector		state;
-	public Type						decl_type;
-	public Type[]					types;
-	public boolean					initialized;
-	public ConstExpr				value;
+public class ScopeVarInfo extends ScopeNodeInfo {
 
-	public ScopeNodeInfo(ASTNode var, Type decl_type, ScopeNodeInfoVector state ) {
+	public Var		var;
+
+	public ScopeVarInfo(Var var) {
 		this.var = var;
-		this.decl_type = decl_type;
-		this.types = new Type[]{decl_type};
-		this.state = state;
+		setupDeclType();
 	}
 
+	public void setupDeclType() {
+		this.types = new Type[]{var.type};
+	}
+	
 	public String toString() {
-		return "sni:{"+var+","+Arrays.toString(types)+","+initialized+","+value+"}";
+		return "sni:{var "+var+","+Arrays.toString(types)+"}";
 	}
 
 	public Object clone() {
-		ScopeNodeInfo newsni = (ScopeNodeInfo)super.clone();
-		if( newsni.types != null )
+		ScopeVarInfo newsni = (ScopeVarInfo)super.clone();
+		if( newsni.types.length > 0)
 			newsni.types = (Type[])newsni.types.clone();
 		return newsni;
+	}
+	
+	public DNode[] getPath() {
+		return new DNode[]{var};
+	}
+	
+	public boolean equals(Object obj) {
+		if !(obj instanceof ScopeVarInfo)
+			return false;
+		return var == ((ScopeVarInfo)obj).var;
+	}
+	
+	public boolean match(DNode[] path) {
+		return path.length==1 && path[0] == var;
+	}
+}
+
+public class ScopeStaticFieldInfo extends ScopeNodeInfo {
+
+	public Field	fld;
+
+	public ScopeStaticFieldInfo(Field fld) {
+		assert(fld.isStatic());
+		this.fld = fld;
+		setupDeclType();
+	}
+
+	public void setupDeclType() {
+		this.types = new Type[]{fld.type};
+	}
+	
+	public String toString() {
+		return "sni:{static fld "+fld+","+Arrays.toString(types)+"}";
+	}
+
+	public Object clone() {
+		ScopeStaticFieldInfo newsni = (ScopeStaticFieldInfo)super.clone();
+		if( newsni.types.length > 0)
+			newsni.types = (Type[])newsni.types.clone();
+		return newsni;
+	}
+	
+	public DNode[] getPath() {
+		return new DNode[]{fld};
+	}
+	
+	public boolean equals(Object obj) {
+		if !(obj instanceof ScopeStaticFieldInfo)
+			return false;
+		return fld == ((ScopeStaticFieldInfo)obj).fld;
+	}
+	
+	public boolean match(DNode[] path) {
+		return path.length==1 && path[0] == fld;
+	}
+}
+
+public class ScopeForwardFieldInfo extends ScopeNodeInfo {
+
+	public DNode[] path;
+
+	public ScopeForwardFieldInfo(DNode[] path) {
+		assert(path.length > 1);
+		assert(checkForwards(path));
+		this.path = path;
+		setupDeclType();
+	}
+	
+	public static boolean checkForwards(DNode[] path) {
+		if !(path[0] instanceof Var)
+			return false;
+		if !(path[0].isForward())
+			return false;
+		for(int i=1; i < path.length-1; i++) {
+			if !(path[i] instanceof Field)
+				return false;
+			if !(path[i].isForward())
+				return false;
+			if (path[i].isStatic())
+				return false;
+		}
+		if (path[path.length-1].isStatic())
+			return false;
+		return true;
+	}
+	
+	public void setupDeclType() {
+		Type tp = ((Var)path[0]).type;
+		for(int i=1; i < path.length; i++)
+			tp = Type.getRealType(tp, ((Field)path[i]).type);
+		this.types = new Type[]{tp};
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for(int i=0; i < path.length; i++) {
+			if (i < path.length-1)
+				sb.append('.');
+			sb.append(path[i]);
+		}
+		return "sni:{forward fld "+sb.toString()+","+Arrays.toString(types)+"}";
+	}
+
+	public DNode[] getPath() {
+		return path;
+	}
+	
+	public Object clone() {
+		ScopeStaticFieldInfo newsni = (ScopeStaticFieldInfo)super.clone();
+		if( newsni.types.length > 0)
+			newsni.types = (Type[])newsni.types.clone();
+		return newsni;
+	}
+
+	
+	public boolean equals(Object obj) {
+		if !(obj instanceof ScopeForwardFieldInfo)
+			return false;
+		ScopeForwardFieldInfo ffi = (ScopeForwardFieldInfo)obj;
+		return match(ffi.path);
+	}
+
+	public boolean match(DNode[] path) {
+		if (this.path.length != path.length)
+			return false;
+		for(int i=0; i < path.length; i++) {
+			if (this.path[i] != path[i])
+				return false;
+		}
+		return true;
 	}
 }
 

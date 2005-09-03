@@ -107,7 +107,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		NodeInfoPass.pushState();
 		try {
 			for(int i=0; i < params_redir.length; i++) {
-				NodeInfoPass.setNodeType(params_redir[i].new_var,method.params[i].type);
+				NodeInfoPass.setNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
 			method.resolveDecl();
 			if( method.body.isAbrupted() ) setAbrupted(true);

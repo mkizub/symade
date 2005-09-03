@@ -653,7 +653,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		PassInfo.push(this);
 		NodeInfoPass.pushGuardedState();
 		try {
-			NodeInfoPass.setNodeType(arg,arg.type);
+			NodeInfoPass.setNodeType(new DNode[]{arg},arg.type);
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
