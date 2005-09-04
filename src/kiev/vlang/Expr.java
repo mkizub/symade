@@ -1123,7 +1123,6 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
 		try {
 			BlockStat.resolveBlockStats(this, stats);
 			if (res != null) {
@@ -1132,9 +1131,8 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		} finally {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
-			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
-			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
-			NodeInfoPass.addInfo(nip_state);
+			if (vars.length > 0)
+				NodeInfoPass.cleanInfoForVars(vars.toArray());
 			PassInfo.pop(this);
 		}
 	}
@@ -1628,11 +1626,9 @@ public class ConditionalExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
-		ScopeNodeInfoVector result_state = null;
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			cond.resolve(Type.tpBoolean);
-			NodeInfoPass.pushState();
 			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
 			else if( cond instanceof BinaryBooleanAndExpr ) {
 				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
@@ -1640,8 +1636,8 @@ public class ConditionalExpr extends Expr {
 				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
 			}
 			expr1.resolve(reqType);
-			ScopeNodeInfoVector then_state = NodeInfoPass.popState();
-			NodeInfoPass.pushState();
+			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
+			NodeInfoPass.states = state_base;
 			if( cond instanceof BooleanNotExpr ) {
 				BooleanNotExpr bne = (BooleanNotExpr)cond;
 				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
@@ -1652,9 +1648,10 @@ public class ConditionalExpr extends Expr {
 				}
 			}
 			expr2.resolve(reqType);
-			ScopeNodeInfoVector else_state = NodeInfoPass.popState();
+			List<ScopeNodeInfo> state_else = NodeInfoPass.states;
 
-			result_state = NodeInfoPass.joinInfo(then_state,else_state);
+			NodeInfoPass.joinInfo(state_then,state_else,state_base);
+			state_base = NodeInfoPass.states;
 
 			if( expr1.getType() != getType() ) {
 				expr1 = new CastExpr(expr1.pos,getType(),expr1);
@@ -1665,8 +1662,7 @@ public class ConditionalExpr extends Expr {
 				expr2.resolve(getType());
 			}
 		} finally {
-			NodeInfoPass.popState();
-			if( result_state != null ) NodeInfoPass.addInfo(result_state);
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 		setResolved(true);

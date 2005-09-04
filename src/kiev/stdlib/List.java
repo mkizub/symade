@@ -245,8 +245,15 @@ public class List<A>
 		case Nil:
 			return this;
 		case Cons(A x, List<A> xs):
-			if (p(x)) return new Cons<A>(x, xs.filter(p));
-			else return xs.filter(p);
+		{
+			List<A> t = xs.filter(p);
+			if (p(x)) {
+				if (t == xs) return this;
+				return new Cons<A>(x, t);
+			}
+			else
+				return t;
+		}
 		}
 	}
 

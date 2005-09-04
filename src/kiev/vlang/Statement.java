@@ -104,16 +104,17 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			types[i] = params_redir[i].new_var.type;
 			params_redir[i].new_var.vtype.lnk = method.params[i].type;
 		}
-		NodeInfoPass.pushState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			for(int i=0; i < params_redir.length; i++) {
-				NodeInfoPass.setNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
+				NodeInfoPass.declNode(params_redir[i].new_var);
+				NodeInfoPass.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
 			method.resolveDecl();
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			for (int i=0; i < params_redir.length; i++)
 				params_redir[i].new_var.vtype.lnk = types[i];
 			PassInfo.pop(this);
@@ -264,15 +265,13 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		assert (!isResolved());
 		setResolved(true);
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
 		try {
 			resolveBlockStats(this, stats);
 		} finally {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			ScopeNodeInfoVector nip_state = NodeInfoPass.popState();
-			nip_state = NodeInfoPass.cleanInfoForVars(nip_state,vars.toArray());
-			NodeInfoPass.addInfo(nip_state);
+			if (vars.length > 0)
+				NodeInfoPass.cleanInfoForVars(vars.toArray());
 			PassInfo.pop(this);
 		}
 	}
@@ -590,37 +589,33 @@ public class IfElseStat extends Statement {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		ScopeNodeInfoVector result_state = null;
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+		List<ScopeNodeInfo> result_state = state_base;
 		try {
-			ScopeNodeInfoVector then_state = null;
-			ScopeNodeInfoVector else_state = null;
-			NodeInfoPass.pushState();
 			try {
-				try {
-					cond.resolve(Type.tpBoolean);
-					BoolExpr.checkBool(cond);
-				} catch(Exception e ) {
-					Kiev.reportError(cond.pos,e);
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
+			} catch(Exception e ) {
+				Kiev.reportError(cond.pos,e);
+			}
+		
+			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
+			try {
+				if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+				else if( cond instanceof BinaryBooleanAndExpr ) {
+					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
 				}
-			
-				NodeInfoPass.pushState();
 				try {
-					if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-					else if( cond instanceof BinaryBooleanAndExpr ) {
-						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-					}
-					try {
-						thenSt.resolve(Type.tpVoid);
-					} catch(Exception e ) {
-						Kiev.reportError(thenSt.pos,e);
-					}
-				} finally { then_state = NodeInfoPass.popState(); }
+					thenSt.resolve(Type.tpVoid);
+				} catch(Exception e ) {
+					Kiev.reportError(thenSt.pos,e);
+				}
+			} finally { state_then = NodeInfoPass.states; }
 			
-			} finally { NodeInfoPass.popState(); }
-			
-			NodeInfoPass.pushState();
+			NodeInfoPass.states = state_base;
+			List<ScopeNodeInfo> state_else = state_base;
 			try {
 				if( cond instanceof BooleanNotExpr ) {
 					BooleanNotExpr bne = (BooleanNotExpr)cond;
@@ -638,7 +633,7 @@ public class IfElseStat extends Statement {
 						Kiev.reportError(elseSt.pos,e);
 					}
 				}
-			} finally { else_state = NodeInfoPass.popState(); }
+			} finally { state_else = NodeInfoPass.states; }
 
 			if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
@@ -654,16 +649,18 @@ public class IfElseStat extends Statement {
 			}
 
 			if( thenSt.isAbrupted() && (elseSt==null || elseSt.isAbrupted()) )
-				result_state = null;
+				result_state = state_base;
 			else if( thenSt.isAbrupted() && elseSt!=null && !elseSt.isAbrupted() )
-				result_state = else_state;
+				result_state = state_else;
 			else if( !thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() )
-				result_state = then_state;
-			else
-				result_state = NodeInfoPass.joinInfo(then_state,else_state);
+				result_state = state_then;
+			else {
+				NodeInfoPass.joinInfo(state_then,state_else,state_base);
+				result_state = NodeInfoPass.states;
+			}
 		} finally {
 			PassInfo.pop(this);
-			if( result_state != null ) NodeInfoPass.addInfo(result_state);
+			NodeInfoPass.states = result_state;
 		}
 	}
 
@@ -748,15 +745,14 @@ public class CondStat extends Statement {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
 		try {
+			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 			try {
 				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
-			NodeInfoPass.pushState();
 			if( cond instanceof BooleanNotExpr ) {
 				BooleanNotExpr bne = (BooleanNotExpr)cond;
 				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
@@ -766,15 +762,13 @@ public class CondStat extends Statement {
 					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
 				}
 			}
+			NodeInfoPass.states = state_base;
 			try {
 				message.resolve(Type.tpString);
 			} catch(Exception e ) {
 				Kiev.reportError(message.pos,e);
 			}
-			NodeInfoPass.popState();
 		} finally {
-			ScopeNodeInfoVector result_state = NodeInfoPass.popState();
-			NodeInfoPass.addInfo(result_state);
 			PassInfo.pop(this);
 		}
 	}

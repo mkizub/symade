@@ -149,23 +149,23 @@ public class RuleMethod extends Method {
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		PassInfo.push(this);
+		if (!inlined_by_dispatcher)
+			NodeInfoPass.init();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.init();
-			NodeInfoPass.pushGuardedState();
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
 					Var p = getThisPar();
-					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
+					NodeInfoPass.declNode(p);
 				}
 				for(int i=0; i < params.length; i++) {
-					NodeInfoPass.setNodeType(new DNode[]{params[i]},params[i].type);
+					NodeInfoPass.declNode(params[i]);
 				}
 			}
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			for(int i=0; i < localvars.length; i++) {
-				NodeInfoPass.setNodeType(new DNode[]{localvars[i]},localvars[i].type);
+				NodeInfoPass.declNode(localvars[i]);
 			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
@@ -193,7 +193,7 @@ public class RuleMethod extends Method {
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.close();
 			PassInfo.pop(this);
@@ -399,7 +399,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			node.resolve(Type.tpVoid);
 			fields_buf = new StringBuffer();
@@ -455,7 +455,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			PassInfo.method.body = mbody;
 			mbody.stats.addAll(stats);
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}

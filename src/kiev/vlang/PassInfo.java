@@ -111,13 +111,13 @@ public class PassInfo {
 	public static Struct			clazz;
 	public static Method			method;
 	public static ASTNode[]			path	= new ASTNode[1024];
-	public static int[]				snidepth= new int[1024];
+//	public static int[]				snidepth= new int[1024];
 	public static int				pathTop = 0;
 
 
 	public static void push(ASTNode node) {
 		trace(Kiev.debugAST,"AST "+pathTop+" push '"+node+"'"+debugAt());
-		snidepth[pathTop] = NodeInfoPass.getDepth();
+//		snidepth[pathTop] = NodeInfoPass.getDepth();
         path[pathTop++] = node;
 		if( node instanceof FileUnit ) {
 			trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
@@ -154,8 +154,8 @@ public class PassInfo {
     	if( n!=node )
     		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
         path[pathTop] = null;
-		if (snidepth[pathTop] != NodeInfoPass.getDepth())
-    		throw new RuntimeException("PassInfo/SNI push/pop node "+n+" had sni depth "+snidepth[pathTop]+", but popped at "+NodeInfoPass.getDepth());
+//		if (snidepth[pathTop] != NodeInfoPass.getDepth())
+//			throw new RuntimeException("PassInfo/SNI push/pop node "+n+" had sni depth "+snidepth[pathTop]+", but popped at "+NodeInfoPass.getDepth());
 		if( node instanceof FileUnit ) {
 			file_unit = null;
 		}

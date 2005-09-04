@@ -1,22 +1,12 @@
 kiev.CError kiev/CError kiev\Errors.java
 kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
-kiev.Kiev$CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
-kiev.Kiev$Ext kiev/Kiev$Ext kiev\Kiev.java
-kiev.Kiev$profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Kiev.CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
 kiev.Kiev.profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
 kiev.Syntax kiev/Syntax kiev\Syntax.java
 kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value kiev/bytecode/Annotation$element_value kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value_annotation kiev/bytecode/Annotation$element_value_annotation kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value_array kiev/bytecode/Annotation$element_value_array kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value_class_info kiev/bytecode/Annotation$element_value_class_info kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value_const kiev/bytecode/Annotation$element_value_const kiev\bytecode\Attribute.java
-kiev.bytecode.Annotation$element_value_enum_const kiev/bytecode/Annotation$element_value_enum_const kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value kiev/bytecode/Annotation$element_value kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value_annotation kiev/bytecode/Annotation$element_value_annotation kiev\bytecode\Attribute.java
@@ -133,7 +123,6 @@ kiev.parser.TypeWithArgsRef kiev/parser/TypeWithArgsRef kiev\parser\TypeWithArgs
 kiev.parser.UnresCallExpr kiev/parser/UnresCallExpr kiev\parser\TempExpr.java
 kiev.parser.UnresExpr kiev/parser/UnresExpr kiev\parser\TempExpr.java
 kiev.parser.kiev040 kiev/parser/kiev040 kiev\parser\kiev040.java
-kiev.parser.kiev040$LookaheadSuccess kiev/parser/kiev040$LookaheadSuccess kiev\parser\kiev040.java
 kiev.parser.kiev040.LookaheadSuccess kiev/parser/kiev040$LookaheadSuccess kiev\parser\kiev040.java
 kiev.parser.kiev040Constants kiev/parser/kiev040Constants kiev\parser\kiev040Constants.java
 kiev.parser.kiev040TokenManager kiev/parser/kiev040TokenManager kiev\parser\kiev040TokenManager.java
@@ -162,27 +151,18 @@ kiev.stdlib.EnsureFailedException kiev/stdlib/EnsureFailedException kiev\stdlib\
 kiev.stdlib.Enum kiev/stdlib/Enum kiev\stdlib\Enum.java
 kiev.stdlib.Enumeration kiev/stdlib/Enumeration kiev\stdlib\Enumeration.java
 kiev.stdlib.Hash kiev/stdlib/Hash kiev\stdlib\Hash.java
-kiev.stdlib.Hash$HashEntry kiev/stdlib/Hash$HashEntry kiev\stdlib\Hash.java
-kiev.stdlib.Hash$HashEnumerator kiev/stdlib/Hash$HashEnumerator kiev\stdlib\Hash.java
 kiev.stdlib.Hash.HashEntry kiev/stdlib/Hash$HashEntry kiev\stdlib\Hash.java
 kiev.stdlib.Hash.HashEnumerator kiev/stdlib/Hash$HashEnumerator kiev\stdlib\Hash.java
 kiev.stdlib.Hashtable kiev/stdlib/Hashtable kiev\stdlib\Hashtable.java
-kiev.stdlib.Hashtable$HashtableEntry kiev/stdlib/Hashtable$HashtableEntry kiev\stdlib\Hashtable.java
-kiev.stdlib.Hashtable$KeyEnumerator kiev/stdlib/Hashtable$KeyEnumerator kiev\stdlib\Hashtable.java
-kiev.stdlib.Hashtable$ValueEnumerator kiev/stdlib/Hashtable$ValueEnumerator kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.HashtableEntry kiev/stdlib/Hashtable$HashtableEntry kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.KeyEnumerator kiev/stdlib/Hashtable$KeyEnumerator kiev\stdlib\Hashtable.java
 kiev.stdlib.Hashtable.ValueEnumerator kiev/stdlib/Hashtable$ValueEnumerator kiev\stdlib\Hashtable.java
 kiev.stdlib.InvariantFailedException kiev/stdlib/InvariantFailedException kiev\stdlib\Debug.java
 kiev.stdlib.KString kiev/stdlib/KString kiev\stdlib\KString.java
-kiev.stdlib.KString$KStringScanner kiev/stdlib/KString$KStringScanner kiev\stdlib\KString.java
 kiev.stdlib.KString.KStringScanner kiev/stdlib/KString$KStringScanner kiev\stdlib\KString.java
 kiev.stdlib.KStringBuffer kiev/stdlib/KStringBuffer kiev\stdlib\KStringBuffer.java
 kiev.stdlib.KStringTokenizer kiev/stdlib/KStringTokenizer kiev\stdlib\KStringTokenizer.java
 kiev.stdlib.List kiev/stdlib/List kiev\stdlib\List.java
-kiev.stdlib.List$Cons kiev/stdlib/List$Cons kiev\stdlib\List.java
-kiev.stdlib.List$ListEnumerator kiev/stdlib/List$ListEnumerator kiev\stdlib\List.java
-kiev.stdlib.List$Nil kiev/stdlib/List$Nil kiev\stdlib\List.java
 kiev.stdlib.List.Cons kiev/stdlib/List$Cons kiev\stdlib\List.java
 kiev.stdlib.List.ListEnumerator kiev/stdlib/List$ListEnumerator kiev\stdlib\List.java
 kiev.stdlib.List.Nil kiev/stdlib/List$Nil kiev\stdlib\List.java
@@ -197,7 +177,6 @@ kiev.stdlib.Ref kiev/stdlib/Ref kiev\stdlib\Ref.java
 kiev.stdlib.RequireFailedException kiev/stdlib/RequireFailedException kiev\stdlib\Debug.java
 kiev.stdlib.RuleFrame kiev/stdlib/RuleFrame kiev\stdlib\RuleFrame.java
 kiev.stdlib.Stack kiev/stdlib/Stack kiev\stdlib\Stack.java
-kiev.stdlib.Stack$StackEnumerator kiev/stdlib/Stack$StackEnumerator kiev\stdlib\Stack.java
 kiev.stdlib.Stack.StackEnumerator kiev/stdlib/Stack$StackEnumerator kiev\stdlib\Stack.java
 kiev.stdlib.TTYAssertionHandler kiev/stdlib/TTYAssertionHandler kiev\stdlib\Debug.java
 kiev.stdlib.TypeInfo kiev/stdlib/TypeInfo kiev\stdlib\TypeInfo.java
@@ -205,7 +184,6 @@ kiev.stdlib.TypeInfoInterface kiev/stdlib/TypeInfoInterface kiev\stdlib\TypeInfo
 kiev.stdlib.TypeSwitchHash kiev/stdlib/TypeSwitchHash kiev\stdlib\TypeSwitchHash.java
 kiev.stdlib.TypeSwitchHashEntry kiev/stdlib/TypeSwitchHashEntry kiev\stdlib\TypeSwitchHash.java
 kiev.stdlib.Vector kiev/stdlib/Vector kiev\stdlib\Vector.java
-kiev.stdlib.Vector$VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.Vector.VectorEnumerator kiev/stdlib/Vector$VectorEnumerator kiev\stdlib\Vector.java
 kiev.stdlib.closure kiev/stdlib/closure kiev\stdlib\SupportTypes.java
 kiev.stdlib.meta.alias kiev/stdlib/meta/alias kiev\stdlib\meta\alias.java
@@ -234,14 +212,6 @@ kiev.vlang.ArrayLengthAccessExpr kiev/vlang/ArrayLengthAccessExpr kiev\vlang\Exp
 kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java
 kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
-kiev.vlang.AssignExpr$BinaryExpr kiev/vlang/AssignExpr$BinaryExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$BlockExpr kiev/vlang/AssignExpr$BlockExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$CastExpr kiev/vlang/AssignExpr$CastExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$CommaExpr kiev/vlang/AssignExpr$CommaExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$ConditionalExpr kiev/vlang/AssignExpr$ConditionalExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$IncrementExpr kiev/vlang/AssignExpr$IncrementExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$StringConcatExpr kiev/vlang/AssignExpr$StringConcatExpr kiev\vlang\Expr.java bad
-kiev.vlang.AssignExpr$UnaryExpr kiev/vlang/AssignExpr$UnaryExpr kiev\vlang\Expr.java bad
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
@@ -328,14 +298,12 @@ kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
 kiev.vlang.IBoolExpr kiev/vlang/IBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
-kiev.vlang.Import$ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.Import.ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
 kiev.vlang.InitializerShadow kiev/vlang/InitializerShadow kiev\vlang\AST.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
-kiev.vlang.InlineMethodStat$ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
 kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
@@ -380,12 +348,6 @@ kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java
 kiev.vlang.NumberCP kiev/vlang/NumberCP kiev\vlang\ConstPool.java
 kiev.vlang.OpCodeRules kiev/vlang/OpCodeRules kiev\vlang\OpCodeRules.java
 kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
-kiev.vlang.OpTypes$TypeRule kiev/vlang/OpTypes$TypeRule kiev\vlang\Operator.java
-kiev.vlang.OpTypes$rtAny kiev/vlang/OpTypes$rtAny kiev\vlang\Operator.java
-kiev.vlang.OpTypes$rtDownCast kiev/vlang/OpTypes$rtDownCast kiev\vlang\Operator.java
-kiev.vlang.OpTypes$rtSame kiev/vlang/OpTypes$rtSame kiev\vlang\Operator.java
-kiev.vlang.OpTypes$rtType kiev/vlang/OpTypes$rtType kiev\vlang\Operator.java
-kiev.vlang.OpTypes$rtUpperCastNumber kiev/vlang/OpTypes$rtUpperCastNumber kiev\vlang\Operator.java
 kiev.vlang.OpTypes.TypeRule kiev/vlang/OpTypes$TypeRule kiev\vlang\Operator.java
 kiev.vlang.OpTypes.rtAny kiev/vlang/OpTypes$rtAny kiev\vlang\Operator.java
 kiev.vlang.OpTypes.rtDownCast kiev/vlang/OpTypes$rtDownCast kiev\vlang\Operator.java
@@ -425,7 +387,6 @@ kiev.vlang.RuleWhileExpr kiev/vlang/RuleWhileExpr kiev\vlang\Rules.java
 kiev.vlang.Scope kiev/vlang/Scope kiev\vlang\Resolving.java
 kiev.vlang.ScopeForwardFieldInfo kiev/vlang/ScopeForwardFieldInfo kiev\vlang\Var.java
 kiev.vlang.ScopeNodeInfo kiev/vlang/ScopeNodeInfo kiev\vlang\Var.java
-kiev.vlang.ScopeNodeInfoVector kiev/vlang/ScopeNodeInfoVector kiev\vlang\Var.java
 kiev.vlang.ScopeOfMethods kiev/vlang/ScopeOfMethods kiev\vlang\Resolving.java
 kiev.vlang.ScopeOfNames kiev/vlang/ScopeOfNames kiev\vlang\Resolving.java
 kiev.vlang.ScopeOfOperators kiev/vlang/ScopeOfOperators kiev\vlang\Resolving.java
@@ -442,7 +403,6 @@ kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
-kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java

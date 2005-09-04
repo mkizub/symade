@@ -78,7 +78,7 @@ public class WhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushGuardedState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			try {
 				cond.resolve(Type.tpBoolean);
@@ -97,7 +97,7 @@ public class WhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -159,7 +159,7 @@ public class DoWhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushGuardedState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			try {
 				body.resolve(Type.tpVoid);
@@ -176,7 +176,7 @@ public class DoWhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -291,7 +291,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushGuardedState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			if( init != null ) {
 				try {
@@ -344,7 +344,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -481,7 +481,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		NodeInfoPass.pushGuardedState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			// foreach( type x; container; cond) statement
 			// is equivalent to
@@ -544,15 +544,15 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			}
 			if( itype == Type.tpRule ) {
 				iter = new Var(pos,KString.from("$env"),itype,0);
-				NodeInfoPass.setNodeType(new DNode[]{iter},iter.type);
+				NodeInfoPass.declNode(iter);
 			}
 			else if( var != null ) {
-				NodeInfoPass.setNodeType(new DNode[]{var},var.type);
+				NodeInfoPass.declNode(var);
 				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-				NodeInfoPass.setNodeType(new DNode[]{iter},iter.type);
+				NodeInfoPass.declNode(iter);
 				if (mode == ARRAY) {
 					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
-					NodeInfoPass.setNodeType(new DNode[]{iter_array},iter_array.type);
+					NodeInfoPass.declNode(iter_array);
 				}
 			}
 			else {
@@ -732,7 +732,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				iter_incr = null;
 			}
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}

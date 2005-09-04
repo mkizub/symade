@@ -632,7 +632,7 @@ public class VarAccessExpr extends LvalueExpr {
 		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(new DNode[]{var});
 		if( sni == null || sni.types.length == 0 )
 			return new Type[]{var.type};
-		return sni.types;
+		return (Type[])sni.types.clone();
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
@@ -1047,7 +1047,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		if( sni == null || sni.types.length == 0 )
 			types = new Type[]{var.type};
 		else
-			types = sni.types;
+			types = (Type[])sni.types.clone();
 		return types;
 	}
 

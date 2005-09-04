@@ -97,14 +97,11 @@ public class ASTExpression extends Expr {
 			ENode@ result;
 			List<ENode>@ rest;
 			trace( Kiev.debugOperators, "Expression: "+lst);
-			NodeInfoPass.pushState();
-			try {
-				foreach( resolveExpr(result,rest,lst,0) ) {
-					trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
-					trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
-					results = new List.Cons<ENode>(result,results);
-				}
-			} finally { NodeInfoPass.popState(); }
+			foreach( resolveExpr(result,rest,lst,0) ) {
+				trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
+				trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
+				results = new List.Cons<ENode>(result,results);
+			}
 			if (results.length() == 0) {
 				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
 				foreach(ENode n; results)

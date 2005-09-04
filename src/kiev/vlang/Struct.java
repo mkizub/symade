@@ -1825,7 +1825,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 		PassInfo.push(this);
 		NodeInfoPass.init();
-		NodeInfoPass.pushGuardedState();
 		try {
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
@@ -1876,7 +1875,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		try {
 			if (isAnnotation()) {
 				NodeInfoPass.init();
-				NodeInfoPass.pushGuardedState();
 				try {
 					foreach(ASTNode m; members; m instanceof Method) {
 						try {
@@ -1900,7 +1898,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		PassInfo.push(this);
 		try {
 			NodeInfoPass.init();
-			NodeInfoPass.pushGuardedState();
 			try {
 				foreach (Meta m; meta)
 					m.resolve();

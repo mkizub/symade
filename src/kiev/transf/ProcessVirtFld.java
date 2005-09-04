@@ -375,7 +375,6 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	public void rewrite(FileUnit:Object node, String id) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
 		NodeInfoPass.init();
-		NodeInfoPass.pushGuardedState();
 		PassInfo.push(node);
 		try {
 			rewriteNode(node, id);

@@ -1113,19 +1113,20 @@ public final class LocalStructDecl extends ENode implements Named {
 	public boolean preResolve() {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
-		clazz.setResolved(true);
-		clazz.setLocal(true);
-		Kiev.runProcessorsOn(clazz);
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+		try {
+			clazz.setResolved(true);
+			clazz.setLocal(true);
+			Kiev.runProcessorsOn(clazz);
+		} finally { NodeInfoPass.states = state_base; }
 		return false;
 	}
 	
 	public void resolve(Type reqType) {
-//		if( PassInfo.method==null || PassInfo.method.isStatic())
-//			clazz.setStatic(true);
-//		clazz.setResolved(true);
-//		clazz.setLocal(true);
-//		Kiev.runProcessorsOn(clazz);
-		clazz.resolveDecl();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+		try {
+			clazz.resolveDecl();
+		} finally { NodeInfoPass.states = state_base; }
 	}
 
 	public NodeName getName() { return clazz.name; }

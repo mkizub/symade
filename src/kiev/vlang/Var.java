@@ -106,7 +106,7 @@ public class Var extends DNode implements Named, Typed {
 					Kiev.reportError(pos,e);
 				}
 			}
-			NodeInfoPass.setNodeType(new DNode[]{this},this.type);
+			NodeInfoPass.declNode(this);
 			if( init != null && init.getType() != Type.tpVoid )
 				NodeInfoPass.setNodeValue(new DNode[]{this},init);
 			ASTNode p = parent;
@@ -230,31 +230,32 @@ public class CodeVar {
 
 }
 
-public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
-	public boolean		guarded;
-	public void setInfo(ScopeNodeInfo sni) {
-		for(int i=length()-1; i >= 0; i--) {
-			if (this[i].equals(sni)) {
-				this[i] = sni;
-				return;
-			}
-		}
-		append(sni);
-	}
-}
+//public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
+//	public boolean		guarded;
+//	public void setInfo(ScopeNodeInfo sni) {
+//		for(int i=length()-1; i >= 0; i--) {
+//			if (this[i].equals(sni)) {
+//				this[i] = sni;
+//				return;
+//			}
+//		}
+//		append(sni);
+//	}
+//}
 
 public class NodeInfoPass {
 
-	public static Stack<ScopeNodeInfoVector>	states;
-	public static Stack<Stack<ScopeNodeInfoVector>>	init_states =
-		new Stack<Stack<ScopeNodeInfoVector>>();
+	public static List<ScopeNodeInfo> states;
+	public static Stack<List<ScopeNodeInfo>> init_states = new Stack<List<ScopeNodeInfo>>();
 
 	public static void init() {
+		trace( Kiev.debugNodeTypes, "types: init()");
 		init_states.push(states);
-		states = new Stack<ScopeNodeInfoVector>();
+		states = List.Nil;
 	}
 
 	public static void close() {
+		trace( Kiev.debugNodeTypes, "types: close()");
 		states = init_states.pop();
 	}
 	
@@ -263,111 +264,69 @@ public class NodeInfoPass {
 		return states.length()-1;
 	}
 
-	private static ScopeNodeInfo makeNodeInThisScope(DNode[] path) {
-		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = getNodeInfo(path);
-		if( sni != null ) {
-			trace( Kiev.debugNodeTypes, "types: clone "+sni+" to current scope "+getDepth());
-			sni = (ScopeNodeInfo)sni.clone();
-			state.setInfo(sni);
-		} else {
-			if (path.length == 1) {
-				if (path[0] instanceof Var)
-					sni = new ScopeVarInfo((Var)path[0]);
-				else if (path[0] instanceof Field && path[0].isStatic())
-					sni = new ScopeStaticFieldInfo((Field)path[0]);
-			}
-			else if (ScopeForwardFieldInfo.checkForwards(path)) {
-				sni = new ScopeForwardFieldInfo(path);
-			}
-			else
-				return null;
-			state.setInfo(sni);
-			trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
-		}
-		return sni;
-	}
-
-	public static ScopeNodeInfo setNodeType(DNode[] path, Type type) {
-		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = makeNodeInThisScope(path);
-
-		trace( Kiev.debugNodeTypes, "types: set type to "+sni);
-		return sni;
-	}
-
-	public static ScopeNodeInfo setNodeTypes(DNode[] path, Type[] types) {
-		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = makeNodeInThisScope(path);
-
-		sni.types = types;
-		trace( Kiev.debugNodeTypes, "types: set types to "+sni);
-		return sni;
-	}
-
-	public static ScopeNodeInfo setNodeValue(DNode[] path, ENode expr) {
-		Type tp = expr.getType();
-		ScopeNodeInfo sni = makeNodeInThisScope(path);
-
-		if( tp != Type.tpNull && tp != Type.tpVoid ) {
-			foreach (Type tp; sni.types)
-				sni.types = addAccessType(expr.getAccessTypes(), tp);
-		}
-		trace( Kiev.debugNodeTypes, "types: set type "+tp+" for node "+sni);
-		return sni;
-	}
-
-	static ScopeNodeInfo addInfo(ScopeNodeInfo sni_new) {
-		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = makeNodeInThisScope(sni_new.getPath());
-
-		foreach (Type tp; sni.types)
-			sni.types = addAccessType(sni_new.types, tp);
-		trace( Kiev.debugNodeTypes, "types: set info to "+sni);
-		return sni;
-	}
-
-	public static ScopeNodeInfoVector pushState() {
-		ScopeNodeInfoVector v = new ScopeNodeInfoVector();
-		states.push(v);
-		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
-		return v;
-	}
-
-	public static ScopeNodeInfoVector pushGuardedState() {
-		ScopeNodeInfoVector v = new ScopeNodeInfoVector();
-		states.push(v);
-		v.guarded = true;
-		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
-		return v;
-	}
-
-	public static ScopeNodeInfoVector pushState(ScopeNodeInfoVector v) {
-		states.push(v);
-		trace( Kiev.debugNodeTypes, "types: push state to level "+getDepth());
-		return v;
-	}
-
-	public static ScopeNodeInfoVector popState() {
-		trace( Kiev.debugNodeTypes, "types: pop state to level "+(getDepth()-1));
-		return states.pop();
-	}
-
 	public static ScopeNodeInfo getNodeInfo(DNode[] path) {
-		int i = states.length();
-		boolean guarded = false;
-		foreach(ScopeNodeInfoVector state; states) {
-			foreach(ScopeNodeInfo sni; state; sni.match(path)) {
-				trace( Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni+" in scope "+ --i);
-				if( guarded ) {
-					sni = (ScopeNodeInfo)sni.clone();
-					sni.setupDeclType();
-				}
-				return sni;
-			}
-			if( state.guarded ) guarded = true;
+		foreach(ScopeNodeInfo sni; states; sni.match(path)) {
+			trace( Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni);
+			return sni;
 		}
 		return null;
+	}
+
+	private static ScopeNodeInfo makeNode(DNode[] path) {
+		ScopeNodeInfo sni;
+		if (path.length == 1) {
+			if (path[0] instanceof Var)
+				sni = new ScopeVarInfo((Var)path[0]);
+			else if (path[0] instanceof Field && path[0].isStatic())
+				sni = new ScopeStaticFieldInfo((Field)path[0]);
+			else
+				return null;
+		}
+		else if (ScopeForwardFieldInfo.checkForwards(path)) {
+			sni = new ScopeForwardFieldInfo(path);
+		}
+		else
+			return null;
+		states = new List.Cons<ScopeNodeInfo>(sni,states);
+		trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
+		return sni;
+	}
+
+	private static ScopeNodeInfo makeNode(Var var) {
+		ScopeNodeInfo sni = new ScopeVarInfo(var);
+		states = new List.Cons<ScopeNodeInfo>(sni,states);
+		trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
+		return sni;
+	}
+
+	public static void declNode(Var var) {
+		ScopeNodeInfo sni = makeNode(var);
+		trace( Kiev.debugNodeTypes, "types: decl var "+sni);
+	}
+
+	public static void addNodeType(DNode[] path, Type type) {
+		ScopeNodeInfo sni = getNodeInfo(path);
+		if (sni == null) sni = makeNode(path);
+		if (sni == null) return;
+		Type[] types = addAccessType(sni.types, type);
+		if (types.length == sni.types.length) {
+			for (int i=0; i < types.length; i++) {
+				if (types[i] != sni.types[i])
+					goto changed;
+			}
+			return;
+		}
+changed:;
+		sni = (ScopeNodeInfo)sni.clone();
+		sni.types = types;
+		states = new List.Cons<ScopeNodeInfo>(sni,states);
+		trace( Kiev.debugNodeTypes, "types: set types to "+sni);
+	}
+
+	public static void setNodeValue(DNode[] path, ENode expr) {
+		Type tp = expr.getType();
+		if( tp != Type.tpNull && tp != Type.tpVoid )
+			addNodeType(path, tp);
 	}
 
 	/** Add access type to access type array
@@ -411,48 +370,64 @@ public class NodeInfoPass {
 		return newtypes;
 	}
 
-	static ScopeNodeInfoVector cleanInfoForVars(ScopeNodeInfoVector nip_state, Var[] vars) {
-		foreach(Var v; vars) {
-			foreach(ScopeNodeInfo sni; nip_state) {
-				if (sni instanceof ScopeVarInfo && ((ScopeVarInfo)sni).var == v) {
-					nip_state.removeElement(sni);
-					break;
-				}
-				if (sni instanceof ScopeForwardFieldInfo && ((ScopeForwardFieldInfo)sni).path[0] == v) {
-					nip_state.removeElement(sni);
-					break;
-				}
+	public static void cleanInfoForVars(Var[] vars) {
+		if (vars == null || vars.length == 0)
+			return;
+		states = states.filter(fun (ScopeNodeInfo sni)->boolean {
+			foreach (Var v; vars) {
+				if (sni instanceof ScopeVarInfo && ((ScopeVarInfo)sni).var == v)
+					return false;
+				if (sni instanceof ScopeForwardFieldInfo && ((ScopeForwardFieldInfo)sni).path[0] == v)
+					return false;
 			}
-		}
-		return nip_state;
+			return true;
+		});
+		trace( Kiev.debugNodeTypes, "types: vars "+Arrays.toString(vars)+" cleared to "+states);
+	}
+/*
+	private static ScopeNodeInfo addInfo(ScopeNodeInfo sni_new) {
+		ScopeNodeInfoVector state = states.peek();
+		ScopeNodeInfo sni = makeNodeInThisScope(sni_new.getPath());
+
+		foreach (Type tp; sni.types)
+			sni.types = addAccessType(sni_new.types, tp);
+		trace( Kiev.debugNodeTypes, "types: set info to "+sni);
+		return sni;
 	}
 
 	static void addInfo(ScopeNodeInfoVector nip_state) {
 		foreach(ScopeNodeInfo sni; nip_state)
 			addInfo(sni);
 	}
-
+*/
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
-	static ScopeNodeInfoVector joinInfo(ScopeNodeInfoVector nip_state1, ScopeNodeInfoVector nip_state2) {
-		ScopeNodeInfoVector nip_state = new ScopeNodeInfoVector();
-		foreach(ScopeNodeInfo sni1; nip_state1) {
-			foreach(ScopeNodeInfo sni2; nip_state2; sni2.equals(sni1) ) {
-				trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2);
-				ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
-				sni.setupDeclType();
-				Type[] types = sni.types;
-				foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
-					foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
-						types = addAccessType(types,Type.leastCommonType(t1,t2));
+	public static void joinInfo(List<ScopeNodeInfo> state1, List<ScopeNodeInfo> state2, List<ScopeNodeInfo> base) {
+		states = base;
+		List<ScopeNodeInfo> lst_done = List.Nil;
+		for(List<ScopeNodeInfo> lst1=state1; lst1 != base; lst1=lst1.tail()) {
+			ScopeNodeInfo sni1 = lst1.head();
+			if (lst_done.contains(sni1))
+				continue;
+			lst_done = new List.Cons<ScopeNodeInfo>(sni1, lst_done);
+			for(List<ScopeNodeInfo> lst2=state2; lst2 != base; lst2=lst2.tail()) {
+				ScopeNodeInfo sni2 = lst2.head();
+				if (sni1.equals(sni2)) {
+					ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
+					sni.setupDeclType();
+					Type[] types = sni.types;
+					foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
+						foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
+							types = addAccessType(types,Type.leastCommonType(t1,t2));
+					}
+					sni.types = types;
+					states = new List.Cons<ScopeNodeInfo>(sni, states);
+					trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
 				}
-				sni.types = types;
-				nip_state.setInfo(sni);
 			}
 		}
-		trace( Kiev.debugNodeTypes, "types: joined to "+nip_state);
-		return nip_state;
+		trace( Kiev.debugNodeTypes, "types: joined to "+states);
 	}
 
 }

@@ -515,19 +515,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
 		PassInfo.push(this);
+		if (!inlined_by_dispatcher)
+			NodeInfoPass.init();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.init();
-			NodeInfoPass.pushGuardedState();
-			
 			if (!inlined_by_dispatcher) {
 				if (!isStatic()) {
 					Var p = getThisPar();
-					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
+					NodeInfoPass.declNode(p);
 				}
 				for(int i=0; i < params.length; i++) {
 					Var p = params[i];
-					NodeInfoPass.setNodeType(new DNode[]{p},p.type);
+					NodeInfoPass.declNode(p);
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
@@ -557,7 +556,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			NodeInfoPass.popState();
+			NodeInfoPass.states = state_base;
 			if (!inlined_by_dispatcher)
 				NodeInfoPass.close();
 			PassInfo.pop(this);
@@ -733,20 +732,18 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		
 		PassInfo.push(this);
 		NodeInfoPass.init();
-		NodeInfoPass.pushGuardedState();
 		try {
 			
-			NodeInfoPass.pushGuardedState();
+			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 			try {
 				body.preResolve();
-			} finally { NodeInfoPass.popState(); }
+			} finally { NodeInfoPass.states = state_base; }
 
 			body.resolve(Type.tpVoid);
 
 		} catch(Exception e ) {
 			Kiev.reportError(0,e);
 		} finally {
-			NodeInfoPass.popState();
 			NodeInfoPass.close();
 			PassInfo.pop(this);
 		}

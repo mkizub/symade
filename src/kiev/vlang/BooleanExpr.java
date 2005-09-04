@@ -194,22 +194,22 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public void resolve(Type reqType) {
-//		if( isResolved() ) return this;
 		PassInfo.push(this);
-		ScopeNodeInfoVector result_state = null;
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			NodeInfoPass.pushState();
 			expr1.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr1);
-			ScopeNodeInfoVector state1 = NodeInfoPass.popState();
-			NodeInfoPass.pushState();
+			List<ScopeNodeInfo> state1 = NodeInfoPass.states;
+			NodeInfoPass.states = state_base;
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			ScopeNodeInfoVector state2 = NodeInfoPass.popState();
-			result_state = NodeInfoPass.joinInfo(state1,state2);
+			List<ScopeNodeInfo> state2 = NodeInfoPass.states;
+			NodeInfoPass.states = state_base;
+			NodeInfoPass.joinInfo(state1,state2,state_base);
+			state_base = null;
 		} finally {
+			if( state_base != null ) NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
-			if( result_state != null ) NodeInfoPass.addInfo(result_state);
 		}
 		setResolved(true);
 	}
@@ -282,18 +282,19 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public void resolve(Type reqType) {
-//		if( isResolved() ) return this;
 		PassInfo.push(this);
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			NodeInfoPass.pushState();
 			expr1.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr1);
 			if( expr1 instanceof InstanceofExpr )
 				((InstanceofExpr)expr1).setNodeTypeInfo();
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			NodeInfoPass.popState();
-		} finally { PassInfo.pop(this); }
+		} finally {
+			if( state_base != null ) NodeInfoPass.states = state_base;
+			PassInfo.pop(this);
+		}
 		setResolved(true);
 	}
 
@@ -761,7 +762,7 @@ public class InstanceofExpr extends BoolExpr {
 			break;
 		}
 		if (path != null)
-			NodeInfoPass.setNodeTypes(path,NodeInfoPass.addAccessType(expr.getAccessTypes(),type.getType()));
+			NodeInfoPass.addNodeType(path,type.getType());
 	}
 
 	public void generate_iftrue(CodeLabel label) {

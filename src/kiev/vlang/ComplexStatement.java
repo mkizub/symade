@@ -337,21 +337,21 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 		}
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
-		ScopeNodeInfoVector result_state = null;
-		ScopeNodeInfoVector case_states[] = new ScopeNodeInfoVector[cases.length];
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+		List<ScopeNodeInfo> result_state = state_base;
+		Vector<List<ScopeNodeInfo>> case_states = new Vector<List<ScopeNodeInfo>>(cases.length);
+		case_states.setSize(cases.length);
 		try {
 			sel.resolve(Type.tpInt);
+			result_state = NodeInfoPass.states;
 			KString[] typenames = new KString[0];
 			int defindex = -1;
 			for(int i=0; i < cases.length; i++) {
-				boolean pushed_sni = false;
 				try {
-					case_states[i] = NodeInfoPass.pushState();
-					pushed_sni = true;
+					NodeInfoPass.states = result_state;
 					cases[i].resolve(Type.tpVoid);
-					case_states[i] = NodeInfoPass.popState();
-					pushed_sni = false;
+					case_states[i] = result_state;
+					NodeInfoPass.states = state_base;
 					if( typehash != null ) {
 						CaseLabel c = (CaseLabel)cases[i];
 						if( c.type == null || !c.type.isReference() )
@@ -365,7 +365,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					}
 				}
 				catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
-				finally { if (pushed_sni) NodeInfoPass.popState(); }
+				finally { NodeInfoPass.states = result_state; }
 				if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
 					Kiev.reportWarning(cases[i+1].pos, "Fall through to switch case");
 				}
@@ -494,14 +494,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				sel.resolve(Type.tpInt);
 			}
 		} finally {
-			result_state = NodeInfoPass.popState();
 			PassInfo.pop(this);
 			if( !isMethodAbrupted() ) {
 				for(int i=0; i < case_states.length; i++) {
 					if( !cases[i].isMethodAbrupted() && case_states[i] != null )
-						result_state = NodeInfoPass.joinInfo(result_state, case_states[i]);
+						NodeInfoPass.joinInfo(result_state, case_states[i], state_base);
 				}
-				NodeInfoPass.addInfo(result_state);
+				NodeInfoPass.states = result_state;
 			}
 		}
 		setResolved(true);
@@ -651,14 +650,14 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public void resolve(Type reqType) {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
-		NodeInfoPass.pushGuardedState();
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			NodeInfoPass.setNodeType(new DNode[]{arg},arg.type);
+			NodeInfoPass.declNode(arg);
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body.pos,e);
-		} finally { NodeInfoPass.popState(); PassInfo.pop(this); }
+		} finally { NodeInfoPass.states = state_base; PassInfo.pop(this); }
 	}
 
 	public void generate(Type reqType) {
@@ -764,29 +763,28 @@ public class TryStat extends Statement/*defaults*/ {
 	}
 
 	public void resolve(Type reqType) {
-		ScopeNodeInfoVector finally_state = null;
+		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+		List<ScopeNodeInfo> finally_state = state_base;
 		for(int i=0; i < catchers.length; i++) {
 			try {
-				NodeInfoPass.pushState();
 				catchers[i].resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i].pos,e);
 			} finally {
-				NodeInfoPass.popState();
+				NodeInfoPass.states = state_base;
 			}
 		}
 		if(finally_catcher != null) {
 			try {
-				NodeInfoPass.pushState();
 				finally_catcher.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher.pos,e);
 			} finally {
-				finally_state = NodeInfoPass.popState();
+				finally_state = NodeInfoPass.states;
 			}
 		}
 		PassInfo.push(this);
-		NodeInfoPass.pushState();
+		NodeInfoPass.states = state_base;
 		try {
 			try {
 				body.resolve(Type.tpVoid);
@@ -813,9 +811,9 @@ public class TryStat extends Statement/*defaults*/ {
 				if( !has_unabrupted_catcher ) setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.popState();
-			if( finally_state != null && !finally_catcher.isMethodAbrupted())
-				NodeInfoPass.addInfo(finally_state);
+			NodeInfoPass.states = state_base;
+			if( finally_catcher != null && !finally_catcher.isMethodAbrupted())
+				NodeInfoPass.states = finally_state;
 			PassInfo.pop(this);
 		}
 	}
