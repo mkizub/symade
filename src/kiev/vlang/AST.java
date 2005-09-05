@@ -54,6 +54,15 @@ public enum TopLevelPass {
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
+public abstract class NodeData {
+	public final KString	id;
+	public NodeData			prev;
+	public NodeData			next;
+	public NodeData(KString id) {
+		this.id = id;
+	}
+};
+
 @node
 public abstract class ASTNode implements Constants {
 
@@ -65,7 +74,10 @@ public abstract class ASTNode implements Constants {
 	public ASTNode			parent;
     @ref(copyable=false)
 	public AttrSlot			pslot;
+	public NodeData			ndata;
+
 	public int				flags;
+	public int			compileflags;
 	
 	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
 	@virtual public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
@@ -83,8 +95,6 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
 	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
 //	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
-
-	public int			compileflags;
 
 	// Structures	
 	@virtual public virtual packed:1,compileflags,16 boolean is_struct_local;
@@ -200,6 +210,73 @@ public abstract class ASTNode implements Constants {
     	dmp.append("/* INTERNAL ERROR - ").append(this.getClass().toString()).append(" */");
     	return dmp;
     }
+	
+	public NodeData getNodeData(KString id) {
+		for (NodeData nd = ndata; nd != null; nd = nd.next) {
+			if (nd.id == id)
+				return nd;
+		}
+		return null;
+	}
+	
+	public void addNodeData(NodeData d) {
+		for (NodeData nd = ndata; nd != null; nd = nd.next) {
+			if (nd.id == d.id) {
+				d.prev = nd.prev;
+				d.next = nd.next;
+				if (nd.prev != null) { d.prev.next = d; nd.prev = null; }
+				if (nd.next != null) { d.next.prev = d; nd.next = null; }
+				return;
+			}
+		}
+		d.next = ndata;
+		if (d.next != null) d.next.prev = d;
+		ndata = d;
+	}
+	
+	public void delNodeData(KString id) {
+		for (NodeData nd = ndata; nd != null; nd = nd.next) {
+			if (nd.id == id) {
+				if (ndata == nd) ndata = nd.next;
+				if (nd.prev != null) nd.prev.next = nd.next;
+				if (nd.next != null) nd.next.prev = nd.prev;
+				nd.prev = null;
+				nd.next = null;
+				return;
+			}
+		}
+	}
+	
+	// get data flow for a child node
+	public DFState getDFlowIn(ASTNode child) {
+		throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
+	}
+	
+	// build data flow for this node
+	public DataFlow getDFlow() {
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlow();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
+	// get incoming data flow for this node
+	public DFState getDFlowIn() {
+		DataFlow df = getDFlow();
+		if (df.state_in == null)
+			df.state_in = parent.getDFlowIn(this);
+		return df.state_in;
+	}
+	
+	// get outgoing data flow for this node
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null)
+			df.state_out = getDFlowIn();
+		return df.state_out;
+	}
 	
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }
@@ -1113,20 +1190,14 @@ public final class LocalStructDecl extends ENode implements Named {
 	public boolean preResolve() {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-		try {
-			clazz.setResolved(true);
-			clazz.setLocal(true);
-			Kiev.runProcessorsOn(clazz);
-		} finally { NodeInfoPass.states = state_base; }
+		clazz.setResolved(true);
+		clazz.setLocal(true);
+		Kiev.runProcessorsOn(clazz);
 		return false;
 	}
 	
 	public void resolve(Type reqType) {
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-		try {
-			clazz.resolveDecl();
-		} finally { NodeInfoPass.states = state_base; }
+		clazz.resolveDecl();
 	}
 
 	public NodeName getName() { return clazz.name; }

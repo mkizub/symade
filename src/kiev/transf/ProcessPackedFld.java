@@ -204,11 +204,10 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 
 	public void rewrite(FileUnit:Object node, String id) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
-		NodeInfoPass.init();
 		PassInfo.push(node);
 		try {
 			rewriteNode(node, id);
-		} finally { PassInfo.pop(node); NodeInfoPass.close(); }
+		} finally { PassInfo.pop(node); }
 	}
 	
 	public void rewrite(AccessExpr:Object fa, String id) {

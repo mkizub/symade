@@ -84,6 +84,24 @@ public class Var extends DNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
+	public DFState getDFlowIn(ASTNode child) {
+		return parent.getDFlowIn(this);
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null) {
+			DFState out = getDFlowIn();
+			if (init != null)
+				out = init.getDFlowOut();
+			out = out.declNode(this);
+			if( init != null && init.getType() != Type.tpVoid )
+				out = out.setNodeValue(new DNode[]{this},init);
+			df.state_out = out;
+		}
+		return df.state_out;
+	}
+	
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		PassInfo.push(this);
@@ -106,14 +124,7 @@ public class Var extends DNode implements Named, Typed {
 					Kiev.reportError(pos,e);
 				}
 			}
-			NodeInfoPass.declNode(this);
-			if( init != null && init.getType() != Type.tpVoid )
-				NodeInfoPass.setNodeValue(new DNode[]{this},init);
-			ASTNode p = parent;
-			while( p != null && !(p instanceof BlockStat || p instanceof BlockExpr) ) p = p.parent;
-			if( p == null ) {
-				Kiev.reportWarning(pos,"Can't find scope for var "+this);
-			}
+			getDFlowOut();
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 	}
@@ -230,41 +241,20 @@ public class CodeVar {
 
 }
 
-//public class ScopeNodeInfoVector extends Vector<ScopeNodeInfo> {
-//	public boolean		guarded;
-//	public void setInfo(ScopeNodeInfo sni) {
-//		for(int i=length()-1; i >= 0; i--) {
-//			if (this[i].equals(sni)) {
-//				this[i] = sni;
-//				return;
-//			}
-//		}
-//		append(sni);
-//	}
-//}
+public class DFState {
 
-public class NodeInfoPass {
+	private final List<ScopeNodeInfo> states;
 
-	public static List<ScopeNodeInfo> states;
-	public static Stack<List<ScopeNodeInfo>> init_states = new Stack<List<ScopeNodeInfo>>();
-
-	public static void init() {
-		trace( Kiev.debugNodeTypes, "types: init()");
-		init_states.push(states);
-		states = List.Nil;
-	}
-
-	public static void close() {
-		trace( Kiev.debugNodeTypes, "types: close()");
-		states = init_states.pop();
+	private DFState(List<ScopeNodeInfo> states) {
+		this.states = states;
 	}
 	
-	public static int getDepth() {
-		if (states == null) return -1;
-		return states.length()-1;
+	public static DFState makeNewState() {
+		List<ScopeNodeInfo> states = List.Nil;
+		return new DFState(states);
 	}
-
-	public static ScopeNodeInfo getNodeInfo(DNode[] path) {
+	
+	public ScopeNodeInfo getNodeInfo(DNode[] path) {
 		foreach(ScopeNodeInfo sni; states; sni.match(path)) {
 			trace( Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni);
 			return sni;
@@ -287,46 +277,48 @@ public class NodeInfoPass {
 		}
 		else
 			return null;
-		states = new List.Cons<ScopeNodeInfo>(sni,states);
-		trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
+		trace( Kiev.debugNodeTypes, "types: add "+sni);
 		return sni;
 	}
 
 	private static ScopeNodeInfo makeNode(Var var) {
 		ScopeNodeInfo sni = new ScopeVarInfo(var);
-		states = new List.Cons<ScopeNodeInfo>(sni,states);
-		trace( Kiev.debugNodeTypes, "types: add "+sni+" to current scope "+getDepth());
+		trace( Kiev.debugNodeTypes, "types: add "+sni);
 		return sni;
 	}
 
-	public static void declNode(Var var) {
+	public DFState declNode(Var var) {
 		ScopeNodeInfo sni = makeNode(var);
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
 		trace( Kiev.debugNodeTypes, "types: decl var "+sni);
+		return dfs;
 	}
 
-	public static void addNodeType(DNode[] path, Type type) {
+	public DFState addNodeType(DNode[] path, Type type) {
 		ScopeNodeInfo sni = getNodeInfo(path);
 		if (sni == null) sni = makeNode(path);
-		if (sni == null) return;
+		if (sni == null) return this;
 		Type[] types = addAccessType(sni.types, type);
 		if (types.length == sni.types.length) {
 			for (int i=0; i < types.length; i++) {
 				if (types[i] != sni.types[i])
 					goto changed;
 			}
-			return;
+			return this;
 		}
 changed:;
 		sni = (ScopeNodeInfo)sni.clone();
 		sni.types = types;
-		states = new List.Cons<ScopeNodeInfo>(sni,states);
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
 		trace( Kiev.debugNodeTypes, "types: set types to "+sni);
+		return dfs;
 	}
 
-	public static void setNodeValue(DNode[] path, ENode expr) {
+	public DFState setNodeValue(DNode[] path, ENode expr) {
 		Type tp = expr.getType();
 		if( tp != Type.tpNull && tp != Type.tpVoid )
-			addNodeType(path, tp);
+			return addNodeType(path, tp);
+		return this;
 	}
 
 	/** Add access type to access type array
@@ -334,7 +326,7 @@ changed:;
 	 *  the access type array must has first element to be
 	 *  the class type (if exists), and others to be interface types
 	 */
-	public static Type[] addAccessType(Type[] types, Type type) {
+	private static Type[] addAccessType(Type[] types, Type type) {
 		if( type == null || type == Type.tpVoid || type == Type.tpNull ) return types;
 		if( types == null || !type.isReference() ) {
 			return new Type[]{type};
@@ -370,10 +362,10 @@ changed:;
 		return newtypes;
 	}
 
-	public static void cleanInfoForVars(Var[] vars) {
+	public DFState cleanInfoForVars(Var[] vars) {
 		if (vars == null || vars.length == 0)
-			return;
-		states = states.filter(fun (ScopeNodeInfo sni)->boolean {
+			return this;
+		List<ScopeNodeInfo> states = this.states.filter(fun (ScopeNodeInfo sni)->boolean {
 			foreach (Var v; vars) {
 				if (sni instanceof ScopeVarInfo && ((ScopeVarInfo)sni).var == v)
 					return false;
@@ -383,35 +375,27 @@ changed:;
 			return true;
 		});
 		trace( Kiev.debugNodeTypes, "types: vars "+Arrays.toString(vars)+" cleared to "+states);
-	}
-/*
-	private static ScopeNodeInfo addInfo(ScopeNodeInfo sni_new) {
-		ScopeNodeInfoVector state = states.peek();
-		ScopeNodeInfo sni = makeNodeInThisScope(sni_new.getPath());
-
-		foreach (Type tp; sni.types)
-			sni.types = addAccessType(sni_new.types, tp);
-		trace( Kiev.debugNodeTypes, "types: set info to "+sni);
-		return sni;
+		if (states == this.states)
+			return this;
+		DFState dfs = new DFState(states);
+		return dfs;
 	}
 
-	static void addInfo(ScopeNodeInfoVector nip_state) {
-		foreach(ScopeNodeInfo sni; nip_state)
-			addInfo(sni);
+	public DFState joinInfo(DFState state1, DFState state2) {
+		return joinInfo(state1.states, state2.states);
 	}
-*/
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
-	public static void joinInfo(List<ScopeNodeInfo> state1, List<ScopeNodeInfo> state2, List<ScopeNodeInfo> base) {
-		states = base;
+	public DFState joinInfo(List<ScopeNodeInfo> state1, List<ScopeNodeInfo> state2) {
+		List<ScopeNodeInfo> states = this.states;
 		List<ScopeNodeInfo> lst_done = List.Nil;
-		for(List<ScopeNodeInfo> lst1=state1; lst1 != base; lst1=lst1.tail()) {
+		for(List<ScopeNodeInfo> lst1=state1; lst1 != this.states; lst1=lst1.tail()) {
 			ScopeNodeInfo sni1 = lst1.head();
 			if (lst_done.contains(sni1))
 				continue;
 			lst_done = new List.Cons<ScopeNodeInfo>(sni1, lst_done);
-			for(List<ScopeNodeInfo> lst2=state2; lst2 != base; lst2=lst2.tail()) {
+			for(List<ScopeNodeInfo> lst2=state2; lst2 != this.states; lst2=lst2.tail()) {
 				ScopeNodeInfo sni2 = lst2.head();
 				if (sni1.equals(sni2)) {
 					ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
@@ -428,6 +412,10 @@ changed:;
 			}
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+states);
+		if (states == this.states)
+			return this;
+		DFState dfs = new DFState(states);
+		return dfs;
 	}
 
 }
@@ -593,6 +581,20 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 		}
 		return true;
 	}
+}
+
+class DataFlow extends NodeData {
+	public static final KString ID = KString.from("data flow");
+	
+	public DFState state_in;
+	public DFState state_out;
+	
+	public DataFlow() { super(ID); }
+}
+
+class DataFlowFork extends DataFlow {
+	public DFState state_tru;
+	public DFState state_fls;
 }
 
 

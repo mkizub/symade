@@ -510,25 +510,58 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
+	public DataFlow getDFlow() {
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlow();
+			DFState in = DFState.makeNewState();
+			if (!isStatic()) {
+				Var p = getThisPar();
+				in = in.declNode(p);
+			}
+			for(int i=0; i < params.length; i++) {
+				Var p = params[i];
+				in = in.declNode(p);
+			}
+			df.state_in = in;
+			df.state_out = DFState.makeNewState();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
+	public DFState getDFlowIn() {
+		DataFlow df = getDFlow();
+		return df.state_in;
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		return df.state_out;
+	}
+
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "body")
+			return getDFlowIn();
+		if (name == "conditions") {
+			WBCCondition cond = (WBCCondition)child;
+			if (cond.cond == WBCType.CondRequire)
+				return getDFlowIn();
+			else if (cond.cond == WBCType.CondEnsure)
+				return body.getDFlowOut();
+			else if (cond.cond == WBCType.CondInvariant)
+				return getDFlowOut();
+		}
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
 		PassInfo.push(this);
-		if (!inlined_by_dispatcher)
-			NodeInfoPass.init();
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			if (!inlined_by_dispatcher) {
-				if (!isStatic()) {
-					Var p = getThisPar();
-					NodeInfoPass.declNode(p);
-				}
-				for(int i=0; i < params.length; i++) {
-					Var p = params[i];
-					NodeInfoPass.declNode(p);
-				}
-			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
 			}
@@ -556,9 +589,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			NodeInfoPass.states = state_base;
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
 
@@ -731,20 +761,11 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		if( isResolved() ) return;
 		
 		PassInfo.push(this);
-		NodeInfoPass.init();
 		try {
-			
-			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-			try {
-				body.preResolve();
-			} finally { NodeInfoPass.states = state_base; }
-
 			body.resolve(Type.tpVoid);
-
 		} catch(Exception e ) {
 			Kiev.reportError(0,e);
 		} finally {
-			NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
 

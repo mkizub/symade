@@ -146,27 +146,35 @@ public class RuleMethod extends Method {
 		return this;
     }
 
+	public DataFlow getDFlow() {
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlow();
+			DFState in = DFState.makeNewState();
+			if (!isStatic()) {
+				Var p = getThisPar();
+				in = in.declNode(p);
+			}
+			for(int i=0; i < params.length; i++) {
+				Var p = params[i];
+				in = in.declNode(p);
+			}
+			for(int i=0; i < localvars.length; i++) {
+				in = in.declNode(localvars[i]);
+			}
+			df.state_in = in;
+			df.state_out = DFState.makeNewState();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		PassInfo.push(this);
-		if (!inlined_by_dispatcher)
-			NodeInfoPass.init();
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			if (!inlined_by_dispatcher) {
-				if (!isStatic()) {
-					Var p = getThisPar();
-					NodeInfoPass.declNode(p);
-				}
-				for(int i=0; i < params.length; i++) {
-					NodeInfoPass.declNode(params[i]);
-				}
-			}
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
-			for(int i=0; i < localvars.length; i++) {
-				NodeInfoPass.declNode(localvars[i]);
-			}
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				if( body instanceof RuleBlock ) {
@@ -193,9 +201,6 @@ public class RuleMethod extends Method {
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			NodeInfoPass.states = state_base;
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
 	}
@@ -399,7 +404,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			node.resolve(Type.tpVoid);
 			fields_buf = new StringBuffer();
@@ -455,7 +459,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			PassInfo.method.body = mbody;
 			mbody.stats.addAll(stats);
 		} finally {
-			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}

@@ -48,6 +48,30 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 
 	public Type getType() { return Type.tpBoolean; }
 
+	// build data flow for boolean node
+	public DataFlow getDFlow() {
+		DataFlowFork df = (DataFlowFork)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlowFork();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
+	public static DFState getDFlowTru(ASTNode n) {
+		DataFlow df = n.getDFlow();
+		if (df instanceof DataFlowFork)
+			return ((DataFlowFork)df).state_tru;
+		return df.state_out;
+	}
+	
+	public static DFState getDFlowFls(ASTNode n) {
+		DataFlow df = n.getDFlow();
+		if (df instanceof DataFlowFork)
+			return ((DataFlowFork)df).state_fls;
+		return df.state_out;
+	}
+	
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);
 		PassInfo.push(this);
@@ -193,22 +217,38 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "expr1")
+			return parent.getDFlowIn(this);
+		if (name == "expr2")
+			return BoolExpr.getDFlowFls(expr1);
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			DFState out_tru1 = BoolExpr.getDFlowTru(expr1);
+			DFState out_tru2 = BoolExpr.getDFlowTru(expr2);
+			DFState out_tru = getDFlowIn().joinInfo(out_tru1, out_tru2);
+			df.state_tru = out_tru;
+			DFState out_fls = BoolExpr.getDFlowFls(expr2);
+			df.state_fls = out_fls;
+			df.state_out = getDFlowIn().joinInfo(out_tru, out_fls);
+		}
+		return df.state_out;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			expr1.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr1);
-			List<ScopeNodeInfo> state1 = NodeInfoPass.states;
-			NodeInfoPass.states = state_base;
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			List<ScopeNodeInfo> state2 = NodeInfoPass.states;
-			NodeInfoPass.states = state_base;
-			NodeInfoPass.joinInfo(state1,state2,state_base);
-			state_base = null;
+			getDFlowOut();
 		} finally {
-			if( state_base != null ) NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 		setResolved(true);
@@ -281,18 +321,37 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "expr1")
+			return parent.getDFlowIn(this);
+		if (name == "expr2")
+			return BoolExpr.getDFlowTru(expr1);
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			DFState out_fls1 = BoolExpr.getDFlowFls(expr1);
+			DFState out_fls2 = BoolExpr.getDFlowFls(expr2);
+			DFState out_fls = getDFlowIn().joinInfo(out_fls1, out_fls2);
+			df.state_fls = out_fls;
+			DFState out_tru = BoolExpr.getDFlowTru(expr2);
+			df.state_tru = out_tru;
+			df.state_out = getDFlowIn().joinInfo(out_tru, out_fls);
+		}
+		return df.state_out;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			expr1.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr1);
-			if( expr1 instanceof InstanceofExpr )
-				((InstanceofExpr)expr1).setNodeTypeInfo();
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
 		} finally {
-			if( state_base != null ) NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 		setResolved(true);
@@ -748,7 +807,23 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public void setNodeTypeInfo() {
+	public DFState getDFlowIn(ASTNode child) {
+		return parent.getDFlowIn(this);
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			DFState out_tru = expr.getDFlowOut();
+			df.state_tru = addNodeTypeInfo(out_tru);
+			DFState out_fls = expr.getDFlowOut();
+			df.state_fls = out_fls;
+			df.state_out = getDFlowIn().joinInfo(out_tru, out_fls);
+		}
+		return df.state_out;
+	}
+	
+	private DFState addNodeTypeInfo(DFState dfs) {
 		DNode[] path = null;
 		switch(expr) {
 		case VarAccessExpr:
@@ -762,7 +837,8 @@ public class InstanceofExpr extends BoolExpr {
 			break;
 		}
 		if (path != null)
-			NodeInfoPass.addNodeType(path,type.getType());
+			return dfs.addNodeType(path,type.getType());
+		return dfs;
 	}
 
 	public void generate_iftrue(CodeLabel label) {
