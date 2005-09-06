@@ -51,14 +51,14 @@ public class ASTCallAccessExpression extends Expr {
 	}
 	
 	public DFState getDFlowOut() {
-		DataFlowFork df = (DataFlowFork)getDFlow();
-		if (df.state_out == null) {
+		DataFlow df = getDFlow();
+		if (df.out == null) {
 			DFState dfs = obj.getDFlowOut();
 			foreach (ENode a; args)
 				dfs = dfs.joinInfo(dfs, a.getDFlowOut());
-			df.state_out = dfs;
+			df.out = dfs;
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	public boolean preResolve() {

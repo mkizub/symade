@@ -86,16 +86,16 @@ public class Var extends DNode implements Named, Typed {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null) {
+		if (df.out == null) {
 			DFState out = getDFlowIn();
 			if (init != null)
 				out = init.getDFlowOut();
 			out = out.declNode(this);
 			if( init != null && init.getType() != Type.tpVoid )
 				out = out.setNodeValue(new DNode[]{this},init);
-			df.state_out = out;
+			df.out = out;
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	public void resolveDecl() {
@@ -579,18 +579,46 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 	}
 }
 
-class DataFlow extends NodeData {
+public final class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
 	
-	public DFState state_in;
-	public DFState state_out;
-	
-	public DataFlow() { super(ID); }
-}
+	final public ASTNode owner;
+	virtual public DFState in;
+	virtual public DFState out;
+	virtual public DFState tru;
+	virtual public DFState fls;
 
-class DataFlowFork extends DataFlow {
-	public DFState state_tru;
-	public DFState state_fls;
+	public DataFlow(ASTNode owner) {
+		super(ID);
+		this.owner = owner;
+		owner.addNodeData(this);
+	}
+	
+	public DFState get$in() {
+		if (this.in == null)
+			owner.getDFlowIn();
+		return this.in;
+	}
+	public DFState get$out() {
+		if (this.out == null)
+			owner.getDFlowOut();
+		return this.out;
+	}
+	public DFState get$tru() {
+		if (this.out == null)
+			owner.getDFlowOut();
+		return this.tru==null? this.out : this.tru;
+	}
+	public DFState get$fls() {
+		if (this.out == null)
+			owner.getDFlowOut();
+		return this.fls==null? this.out : this.fls;
+	}
+	
+	public void set$in(DFState in) { this.in = in; }
+	public void set$out(DFState out) { this.out = out; }
+	public void set$tru(DFState tru) { this.tru = tru; }
+	public void set$fls(DFState fls) { this.fls = fls; }
 }
 
 

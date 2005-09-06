@@ -257,27 +257,37 @@ public abstract class ASTNode implements Constants {
 	// build data flow for this node
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
-		if (df == null) {
-			df = new DataFlow();
-			addNodeData(df);
-		}
+		if (df == null)
+			df = new DataFlow(this);
 		return df;
 	}
 	
 	// get incoming data flow for this node
 	public DFState getDFlowIn() {
 		DataFlow df = getDFlow();
-		if (df.state_in == null)
-			df.state_in = parent.getDFlowIn(this);
-		return df.state_in;
+		if (df.in == null)
+			df.in = parent.getDFlowIn(this);
+		return df.in;
 	}
 	
 	// get outgoing data flow for this node
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null)
-			df.state_out = getDFlowIn();
-		return df.state_out;
+		if (df.out == null)
+			df.out = getDFlowIn();
+		return df.out;
+	}
+	
+	// get outgoing data flow for this node
+	public DFState getDFlowTru() {
+		DataFlow df = getDFlow();
+		return df.out;
+	}
+	
+	// get outgoing data flow for this node
+	public DFState getDFlowFls() {
+		DataFlow df = getDFlow();
+		return df.fls;
 	}
 	
 	public boolean preGenerate()	{ return true; }
@@ -1166,10 +1176,9 @@ public final class VarDecl extends ENode implements Named {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null) {
-			df.state_out = var.getDFlowOut();
-		}
-		return df.state_out;
+		if (df.out == null)
+			df.out = var.getDFlowOut();
+		return df.out;
 	}
 	
 	public void resolve(Type reqType) {

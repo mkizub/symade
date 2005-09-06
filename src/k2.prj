@@ -297,7 +297,6 @@ kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlow kiev/vlang/DataFlow kiev\vlang\Var.java
-kiev.vlang.DataFlowFork kiev/vlang/DataFlowFork kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java

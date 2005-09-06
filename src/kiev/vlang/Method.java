@@ -513,7 +513,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow();
+			df = new DataFlow(this);
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
 				Var p = getThisPar();
@@ -523,21 +523,20 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Var p = params[i];
 				in = in.declNode(p);
 			}
-			df.state_in = in;
-			df.state_out = DFState.makeNewState();
-			addNodeData(df);
+			df.in = in;
+			df.out = DFState.makeNewState();
 		}
 		return df;
 	}
 	
 	public DFState getDFlowIn() {
 		DataFlow df = getDFlow();
-		return df.state_in;
+		return df.in;
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		return df.state_out;
+		return df.out;
 	}
 
 	public DFState getDFlowIn(ASTNode child) {

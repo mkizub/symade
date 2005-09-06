@@ -100,27 +100,26 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow();
+			df = new DataFlow(this);
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < params_redir.length; i++) {
 				in = in.declNode(params_redir[i].new_var);
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
-			df.state_in = in;
-			df.state_out = DFState.makeNewState();
-			addNodeData(df);
+			df.in = in;
+			df.out = DFState.makeNewState();
 		}
 		return df;
 	}
 	
 	public DFState getDFlowIn() {
 		DataFlow df = getDFlow();
-		return df.state_in;
+		return df.in;
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		return df.state_out;
+		return df.out;
 	}
 
 	public DFState getDFlowIn(ASTNode child) {
@@ -319,20 +318,20 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null) {
+		if (df.out == null) {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			if (stats.length > 0) {
 				if (vars.length > 0)
-					df.state_out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
+					df.out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
 				else
-					df.state_out = stats[stats.length-1].getDFlowOut();
+					df.out = stats[stats.length-1].getDFlowOut();
 			}
 			else {
-				df.state_out = getDFlowIn();
+				df.out = getDFlowIn();
 			}
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {
@@ -454,10 +453,10 @@ public class ExprStat extends Statement {
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null) {
-			df.state_out = expr.getDFlowOut();
+		if (df.out == null) {
+			df.out = expr.getDFlowOut();
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	public void resolve(Type reqType) {

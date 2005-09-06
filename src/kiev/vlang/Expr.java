@@ -372,10 +372,10 @@ public class AssignExpr extends LvalueExpr {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.state_out == null) {
-			df.state_out = addNodeTypeInfo(value.getDFlowOut());
+		if (df.out == null) {
+			df.out = addNodeTypeInfo(value.getDFlowOut());
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {
@@ -1142,27 +1142,27 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public DFState getDFlowOut() {
-		DataFlowFork df = (DataFlowFork)getDFlow();
-		if (df.state_out == null) {
+		DataFlow df = getDFlow();
+		if (df.out == null) {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			if (res != null) {
 				if (vars.length > 0)
-					df.state_out = res.getDFlowOut().cleanInfoForVars(vars.toArray());
+					df.out = res.getDFlowOut().cleanInfoForVars(vars.toArray());
 				else
-					df.state_out = res.getDFlowOut();
+					df.out = res.getDFlowOut();
 			}
 			else if (stats.length > 0) {
 				if (vars.length > 0)
-					df.state_out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
+					df.out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
 				else
-					df.state_out = stats[stats.length-1].getDFlowOut();
+					df.out = stats[stats.length-1].getDFlowOut();
 			}
 			else {
-				df.state_out = getDFlowIn();
+				df.out = getDFlowIn();
 			}
 		}
-		return df.state_out;
+		return df.out;
 	}
 	
 	public void generate(Type reqType) {
