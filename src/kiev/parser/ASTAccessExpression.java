@@ -42,6 +42,10 @@ public class ASTAccessExpression extends Expr {
 	@att public ENode			obj;
 	@att public ASTIdentifier	ident;
 
+	public DFState getDFlowIn(ASTNode child) {
+		return getDFlowIn();
+	}
+	
 	public boolean preResolve() {
 		PassInfo.push(this);
 		try {

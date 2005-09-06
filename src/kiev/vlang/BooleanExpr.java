@@ -59,17 +59,19 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 	}
 	
 	public static DFState getDFlowTru(ASTNode n) {
+		DFState out = n.getDFlowOut();
 		DataFlow df = n.getDFlow();
 		if (df instanceof DataFlowFork)
 			return ((DataFlowFork)df).state_tru;
-		return df.state_out;
+		return out;
 	}
 	
 	public static DFState getDFlowFls(ASTNode n) {
+		DFState out = n.getDFlowOut();
 		DataFlow df = n.getDFlow();
 		if (df instanceof DataFlowFork)
 			return ((DataFlowFork)df).state_fls;
-		return df.state_out;
+		return out;
 	}
 	
 	public void generate(Type reqType) {
@@ -417,6 +419,16 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public Operator getOp() { return op; }
 
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			df.state_out = getDFlowIn().joinInfo(expr1.getDFlowOut(), expr1.getDFlowOut());
+			df.state_tru = df.state_out;
+			df.state_fls = df.state_out;
+		}
+		return df.state_out;
+	}
+	
 	private void initialResolve(Type reqType) {
 		setTryResolved(true);
 		resolveExprs();
@@ -889,6 +901,16 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public Operator getOp() { return PrefixOperator.BooleanNot; }
 
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			df.state_tru = BoolExpr.getDFlowFls(expr);
+			df.state_fls = BoolExpr.getDFlowTru(expr);
+			df.state_out = getDFlowIn().joinInfo(df.state_tru, df.state_fls);
+		}
+		return df.state_out;
+	}
+	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);

@@ -1812,6 +1812,31 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
+	public DataFlow getDFlow() {
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlow();
+			df.state_in = DFState.makeNewState();
+			df.state_out = DFState.makeNewState();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
+	public DFState getDFlowIn() {
+		DataFlow df = getDFlow();
+		return df.state_in;
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		return df.state_out;
+	}
+
+	public DFState getDFlowIn(ASTNode child) {
+		return getDFlowIn();
+	}
+	
 
 	/** This routine validates declaration of class, auto-generates
 		<init>()V method if no <init> declared,
@@ -1824,7 +1849,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public ASTNode resolveFinalFields(boolean cleanup) {
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 		PassInfo.push(this);
-		NodeInfoPass.init();
 		try {
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
@@ -1860,7 +1884,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				}
 			}
 		} finally {
-			NodeInfoPass.close();
 			PassInfo.pop(this);
 		}
 		return this;
@@ -1874,16 +1897,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		PassInfo.push(this);
 		try {
 			if (isAnnotation()) {
-				NodeInfoPass.init();
-				try {
-					foreach(ASTNode m; members; m instanceof Method) {
-						try {
-							((Method)m).resolveMetaDefaults();
-						} catch(Exception e) {
-							Kiev.reportError(m.pos,e);
-						}
+				foreach(ASTNode m; members; m instanceof Method) {
+					try {
+						((Method)m).resolveMetaDefaults();
+					} catch(Exception e) {
+						Kiev.reportError(m.pos,e);
 					}
-				} finally { NodeInfoPass.close(); }
+				}
 			}
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {
@@ -1897,26 +1917,23 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public void resolveMetaValues() {
 		PassInfo.push(this);
 		try {
-			NodeInfoPass.init();
-			try {
-				foreach (Meta m; meta)
-					m.resolve();
-				foreach(DNode dn; members) {
-					if (dn.meta != null) {
-						foreach (Meta m; dn.meta)
-							m.resolve();
-					}
-					if (dn instanceof Method) {
-						Method meth = (Method)dn;
-						foreach (Var p; meth.params) {
-							if (p.meta != null) {
-								foreach (Meta m; p.meta)
-									m.resolve();
-							}
+			foreach (Meta m; meta)
+				m.resolve();
+			foreach(DNode dn; members) {
+				if (dn.meta != null) {
+					foreach (Meta m; dn.meta)
+						m.resolve();
+				}
+				if (dn instanceof Method) {
+					Method meth = (Method)dn;
+					foreach (Var p; meth.params) {
+						if (p.meta != null) {
+							foreach (Meta m; p.meta)
+								m.resolve();
 						}
 					}
 				}
-			} finally { NodeInfoPass.close(); }
+			}
 			
 			if( !isPackage() ) {
 				for(int i=0; i < sub_clazz.length; i++) {

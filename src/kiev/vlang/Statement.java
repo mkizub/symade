@@ -97,6 +97,36 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		node ?= redir.new_var
 	}
 
+	public DataFlow getDFlow() {
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df == null) {
+			df = new DataFlow();
+			DFState in = DFState.makeNewState();
+			for(int i=0; i < params_redir.length; i++) {
+				in = in.declNode(params_redir[i].new_var);
+				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
+			}
+			df.state_in = in;
+			df.state_out = DFState.makeNewState();
+			addNodeData(df);
+		}
+		return df;
+	}
+	
+	public DFState getDFlowIn() {
+		DataFlow df = getDFlow();
+		return df.state_in;
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		return df.state_out;
+	}
+
+	public DFState getDFlowIn(ASTNode child) {
+		return getDFlowIn();
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		Type[] types = new Type[params_redir.length];
@@ -104,17 +134,17 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			types[i] = params_redir[i].new_var.type;
 			params_redir[i].new_var.vtype.lnk = method.params[i].type;
 		}
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			for(int i=0; i < params_redir.length; i++) {
-				NodeInfoPass.declNode(params_redir[i].new_var);
-				NodeInfoPass.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
-			}
+//			for(int i=0; i < params_redir.length; i++) {
+//				NodeInfoPass.declNode(params_redir[i].new_var);
+//				NodeInfoPass.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
+//			}
 			method.resolveDecl();
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			for (int i=0; i < params_redir.length; i++)
 				params_redir[i].new_var.vtype.lnk = types[i];
 			PassInfo.pop(this);
@@ -268,14 +298,43 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		try {
 			resolveBlockStats(this, stats);
 		} finally {
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			if (vars.length > 0)
-				NodeInfoPass.cleanInfoForVars(vars.toArray());
 			PassInfo.pop(this);
 		}
 	}
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "stats") {
+			for (int i=0; i < stats.length; i++) {
+				if (stats[i] == child) {
+					if (i == 0)
+						return getDFlowIn();
+					else
+						return stats[i-1].getDFlowOut();
+				}
+			}
+		}
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null) {
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			if (stats.length > 0) {
+				if (vars.length > 0)
+					df.state_out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
+				else
+					df.state_out = stats[stats.length-1].getDFlowOut();
+			}
+			else {
+				df.state_out = getDFlowIn();
+			}
+		}
+		return df.state_out;
+	}
+	
 	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {
 		for(int i=0; i < stats.length; i++) {
 			try {
@@ -386,6 +445,21 @@ public class ExprStat extends Statement {
 		return "stat "+expr;
 	}
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "expr")
+			return getDFlowIn();
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null) {
+			df.state_out = expr.getDFlowOut();
+		}
+		return df.state_out;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -589,8 +663,8 @@ public class IfElseStat extends Statement {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-		List<ScopeNodeInfo> result_state = state_base;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> result_state = state_base;
 		try {
 			try {
 				cond.resolve(Type.tpBoolean);
@@ -599,33 +673,33 @@ public class IfElseStat extends Statement {
 				Kiev.reportError(cond.pos,e);
 			}
 		
-			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
-			try {
-				if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-				else if( cond instanceof BinaryBooleanAndExpr ) {
-					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-				}
+//			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
+//			try {
+//				if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+//				else if( cond instanceof BinaryBooleanAndExpr ) {
+//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//				}
 				try {
 					thenSt.resolve(Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(thenSt.pos,e);
 				}
-			} finally { state_then = NodeInfoPass.states; }
-			
-			NodeInfoPass.states = state_base;
-			List<ScopeNodeInfo> state_else = state_base;
-			try {
-				if( cond instanceof BooleanNotExpr ) {
-					BooleanNotExpr bne = (BooleanNotExpr)cond;
-					if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-					else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-					}
-				}
+//			} finally { state_then = NodeInfoPass.states; }
+//			
+//			NodeInfoPass.states = state_base;
+//			List<ScopeNodeInfo> state_else = state_base;
+//			try {
+//				if( cond instanceof BooleanNotExpr ) {
+//					BooleanNotExpr bne = (BooleanNotExpr)cond;
+//					if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
+//					else if( bne.expr instanceof BinaryBooleanAndExpr ) {
+//						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
+//						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//					}
+//				}
 				if( elseSt != null ) {
 					try {
 						elseSt.resolve(Type.tpVoid);
@@ -633,7 +707,7 @@ public class IfElseStat extends Statement {
 						Kiev.reportError(elseSt.pos,e);
 					}
 				}
-			} finally { state_else = NodeInfoPass.states; }
+//			} finally { state_else = NodeInfoPass.states; }
 
 			if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
@@ -648,19 +722,19 @@ public class IfElseStat extends Statement {
 				if( elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 			}
 
-			if( thenSt.isAbrupted() && (elseSt==null || elseSt.isAbrupted()) )
-				result_state = state_base;
-			else if( thenSt.isAbrupted() && elseSt!=null && !elseSt.isAbrupted() )
-				result_state = state_else;
-			else if( !thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() )
-				result_state = state_then;
-			else {
-				NodeInfoPass.joinInfo(state_then,state_else,state_base);
-				result_state = NodeInfoPass.states;
-			}
+//			if( thenSt.isAbrupted() && (elseSt==null || elseSt.isAbrupted()) )
+//				result_state = state_base;
+//			else if( thenSt.isAbrupted() && elseSt!=null && !elseSt.isAbrupted() )
+//				result_state = state_else;
+//			else if( !thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() )
+//				result_state = state_then;
+//			else {
+//				NodeInfoPass.joinInfo(state_then,state_else,state_base);
+//				result_state = NodeInfoPass.states;
+//			}
 		} finally {
 			PassInfo.pop(this);
-			NodeInfoPass.states = result_state;
+//			NodeInfoPass.states = result_state;
 		}
 	}
 
@@ -746,23 +820,23 @@ public class CondStat extends Statement {
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 			try {
 				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
-			if( cond instanceof BooleanNotExpr ) {
-				BooleanNotExpr bne = (BooleanNotExpr)cond;
-				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-				}
-			}
-			NodeInfoPass.states = state_base;
+//			if( cond instanceof BooleanNotExpr ) {
+//				BooleanNotExpr bne = (BooleanNotExpr)cond;
+//				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
+//				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
+//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
+//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//				}
+//			}
+//			NodeInfoPass.states = state_base;
 			try {
 				message.resolve(Type.tpString);
 			} catch(Exception e ) {

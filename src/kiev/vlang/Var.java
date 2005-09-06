@@ -84,10 +84,6 @@ public class Var extends DNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
-	public DFState getDFlowIn(ASTNode child) {
-		return parent.getDFlowIn(this);
-	}
-	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if (df.state_out == null) {
@@ -116,7 +112,7 @@ public class Var extends DNode implements Named, Typed {
 				try {
 					init.resolve(this.type);
 					Type it = init.getType();
-					if( it != this.type ) {
+					if( !it.isInstanceOf(this.type) ) {
 						init = new CastExpr(init.pos,this.type,init);
 						init.resolve(this.type);
 					}

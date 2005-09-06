@@ -266,6 +266,17 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public String toString() { return "switch("+sel+")"; }
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "sel") {
+			return getDFlowIn();
+		}
+		if (name == "cases") {
+			return sel.getDFlowOut();
+		}
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
@@ -337,21 +348,21 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 		}
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-		List<ScopeNodeInfo> result_state = state_base;
-		Vector<List<ScopeNodeInfo>> case_states = new Vector<List<ScopeNodeInfo>>(cases.length);
-		case_states.setSize(cases.length);
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> result_state = state_base;
+//		Vector<List<ScopeNodeInfo>> case_states = new Vector<List<ScopeNodeInfo>>(cases.length);
+//		case_states.setSize(cases.length);
 		try {
 			sel.resolve(Type.tpInt);
-			result_state = NodeInfoPass.states;
+//			result_state = NodeInfoPass.states;
 			KString[] typenames = new KString[0];
 			int defindex = -1;
 			for(int i=0; i < cases.length; i++) {
 				try {
-					NodeInfoPass.states = result_state;
+//					NodeInfoPass.states = result_state;
 					cases[i].resolve(Type.tpVoid);
-					case_states[i] = result_state;
-					NodeInfoPass.states = state_base;
+//					case_states[i] = result_state;
+//					NodeInfoPass.states = state_base;
 					if( typehash != null ) {
 						CaseLabel c = (CaseLabel)cases[i];
 						if( c.type == null || !c.type.isReference() )
@@ -365,7 +376,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					}
 				}
 				catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
-				finally { NodeInfoPass.states = result_state; }
+//				finally { NodeInfoPass.states = result_state; }
 				if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
 					Kiev.reportWarning(cases[i+1].pos, "Fall through to switch case");
 				}
@@ -495,13 +506,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 		} finally {
 			PassInfo.pop(this);
-			if( !isMethodAbrupted() ) {
-				for(int i=0; i < case_states.length; i++) {
-					if( !cases[i].isMethodAbrupted() && case_states[i] != null )
-						NodeInfoPass.joinInfo(result_state, case_states[i], state_base);
-				}
-				NodeInfoPass.states = result_state;
-			}
+//			if( !isMethodAbrupted() ) {
+//				for(int i=0; i < case_states.length; i++) {
+//					if( !cases[i].isMethodAbrupted() && case_states[i] != null )
+//						NodeInfoPass.joinInfo(result_state, case_states[i], state_base);
+//				}
+//				NodeInfoPass.states = result_state;
+//			}
 		}
 		setResolved(true);
 	}
@@ -650,14 +661,14 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public void resolve(Type reqType) {
 //		arg = (Var)arg.resolve();
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-			NodeInfoPass.declNode(arg);
+//			NodeInfoPass.declNode(arg);
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
 			Kiev.reportError(body.pos,e);
-		} finally { NodeInfoPass.states = state_base; PassInfo.pop(this); }
+		} finally { /*NodeInfoPass.states = state_base;*/ PassInfo.pop(this); }
 	}
 
 	public void generate(Type reqType) {
@@ -763,15 +774,15 @@ public class TryStat extends Statement/*defaults*/ {
 	}
 
 	public void resolve(Type reqType) {
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-		List<ScopeNodeInfo> finally_state = state_base;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> finally_state = state_base;
 		for(int i=0; i < catchers.length; i++) {
 			try {
 				catchers[i].resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(catchers[i].pos,e);
-			} finally {
-				NodeInfoPass.states = state_base;
+//			} finally {
+//				NodeInfoPass.states = state_base;
 			}
 		}
 		if(finally_catcher != null) {
@@ -779,12 +790,12 @@ public class TryStat extends Statement/*defaults*/ {
 				finally_catcher.resolve(Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(finally_catcher.pos,e);
-			} finally {
-				finally_state = NodeInfoPass.states;
+//			} finally {
+//				finally_state = NodeInfoPass.states;
 			}
 		}
 		PassInfo.push(this);
-		NodeInfoPass.states = state_base;
+//		NodeInfoPass.states = state_base;
 		try {
 			try {
 				body.resolve(Type.tpVoid);
@@ -811,9 +822,9 @@ public class TryStat extends Statement/*defaults*/ {
 				if( !has_unabrupted_catcher ) setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
-			if( finally_catcher != null && !finally_catcher.isMethodAbrupted())
-				NodeInfoPass.states = finally_state;
+//			NodeInfoPass.states = state_base;
+//			if( finally_catcher != null && !finally_catcher.isMethodAbrupted())
+//				NodeInfoPass.states = finally_state;
 			PassInfo.pop(this);
 		}
 	}

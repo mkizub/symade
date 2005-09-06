@@ -78,18 +78,18 @@ public class WhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			try {
 				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
-			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
+//			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+//			else if( cond instanceof BinaryBooleanAndExpr ) {
+//				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+//				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//			}
 			try {
 				body.resolve(Type.tpVoid);
 			} catch(Exception e ) { Kiev.reportError(body.pos,e); }
@@ -97,7 +97,7 @@ public class WhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -159,7 +159,7 @@ public class DoWhileStat extends LoopStat {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			try {
 				body.resolve(Type.tpVoid);
@@ -176,7 +176,7 @@ public class DoWhileStat extends LoopStat {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -291,7 +291,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			if( init != null ) {
 				try {
@@ -309,12 +309,12 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 					Kiev.reportError(init.pos,e);
 				}
 			}
-			if(  cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if(  cond != null && cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
+//			if(  cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+//			else if(  cond != null && cond instanceof BinaryBooleanAndExpr ) {
+//				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+//				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//			}
 			if( cond != null ) {
 				try {
 					cond.resolve(Type.tpBoolean);
@@ -344,7 +344,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				setMethodAbrupted(true);
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}
@@ -481,7 +481,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
+//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			// foreach( type x; container; cond) statement
 			// is equivalent to
@@ -544,15 +544,15 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			}
 			if( itype == Type.tpRule ) {
 				iter = new Var(pos,KString.from("$env"),itype,0);
-				NodeInfoPass.declNode(iter);
+//				NodeInfoPass.declNode(iter);
 			}
 			else if( var != null ) {
-				NodeInfoPass.declNode(var);
+//				NodeInfoPass.declNode(var);
 				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-				NodeInfoPass.declNode(iter);
+//				NodeInfoPass.declNode(iter);
 				if (mode == ARRAY) {
 					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
-					NodeInfoPass.declNode(iter_array);
+//					NodeInfoPass.declNode(iter_array);
 				}
 			}
 			else {
@@ -706,12 +706,12 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				BoolExpr.checkBool(cond);
 			}
 
-			if( cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond != null &&  cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
+//			if( cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+//			else if( cond != null &&  cond instanceof BinaryBooleanAndExpr ) {
+//				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+//				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//			}
 
 			// Process body
 			try {
@@ -732,7 +732,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				iter_incr = null;
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 	}

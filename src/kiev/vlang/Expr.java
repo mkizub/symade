@@ -209,9 +209,8 @@ public class AssignExpr extends LvalueExpr {
 	public Operator getOp() { return op; }
 
 	public void resolve(Type reqType) {
-		if( isResolved() ) {
-			setNodeTypes();
-		}
+		if( isResolved() )
+			return;
 		setTryResolved(true);
 		PassInfo.push(this);
 		try {
@@ -348,7 +347,7 @@ public class AssignExpr extends LvalueExpr {
 				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
 			}
 		}
-		setNodeTypes();
+		getDFlowOut();
 
 		// Set violation of the field
 		if( lval instanceof StaticFieldAccessExpr
@@ -371,9 +370,17 @@ public class AssignExpr extends LvalueExpr {
 		return this;
 	}
 
-	private void setNodeTypes() {
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null) {
+			df.state_out = addNodeTypeInfo(value.getDFlowOut());
+		}
+		return df.state_out;
+	}
+	
+	private DFState addNodeTypeInfo(DFState dfs) {
 		if !(value instanceof Expr)
-			return;
+			return dfs;
 		DNode[] path = null;
 		switch(lval) {
 		case VarAccessExpr:
@@ -387,7 +394,8 @@ public class AssignExpr extends LvalueExpr {
 			break;
 		}
 		if (path != null)
-			NodeInfoPass.setNodeValue(path,value);
+			return dfs.addNodeType(path,value.getType());
+		return dfs;
 	}
 
 	public void generate(Type reqType) {
@@ -1129,14 +1137,34 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 				res.resolve(reqType);
 			}
 		} finally {
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
-			if (vars.length > 0)
-				NodeInfoPass.cleanInfoForVars(vars.toArray());
 			PassInfo.pop(this);
 		}
 	}
 
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			if (res != null) {
+				if (vars.length > 0)
+					df.state_out = res.getDFlowOut().cleanInfoForVars(vars.toArray());
+				else
+					df.state_out = res.getDFlowOut();
+			}
+			else if (stats.length > 0) {
+				if (vars.length > 0)
+					df.state_out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
+				else
+					df.state_out = stats[stats.length-1].getDFlowOut();
+			}
+			else {
+				df.state_out = getDFlowIn();
+			}
+		}
+		return df.state_out;
+	}
+	
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
 		PassInfo.push(this);
@@ -1626,32 +1654,31 @@ public class ConditionalExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);
-		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
 			cond.resolve(Type.tpBoolean);
-			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
+//			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
+//			else if( cond instanceof BinaryBooleanAndExpr ) {
+//				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
+//				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//			}
 			expr1.resolve(reqType);
-			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
-			NodeInfoPass.states = state_base;
-			if( cond instanceof BooleanNotExpr ) {
-				BooleanNotExpr bne = (BooleanNotExpr)cond;
-				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-				}
-			}
+//			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
+//			NodeInfoPass.states = state_base;
+//			if( cond instanceof BooleanNotExpr ) {
+//				BooleanNotExpr bne = (BooleanNotExpr)cond;
+//				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
+//				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
+//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
+//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
+//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
+//				}
+//			}
 			expr2.resolve(reqType);
-			List<ScopeNodeInfo> state_else = NodeInfoPass.states;
-
-			NodeInfoPass.joinInfo(state_then,state_else,state_base);
-			state_base = NodeInfoPass.states;
+//			List<ScopeNodeInfo> state_else = NodeInfoPass.states;
+//
+//			NodeInfoPass.joinInfo(state_then,state_else,state_base);
+//			state_base = NodeInfoPass.states;
 
 			if( expr1.getType() != getType() ) {
 				expr1 = new CastExpr(expr1.pos,getType(),expr1);
@@ -1662,7 +1689,7 @@ public class ConditionalExpr extends Expr {
 				expr2.resolve(getType());
 			}
 		} finally {
-			NodeInfoPass.states = state_base;
+//			NodeInfoPass.states = state_base;
 			PassInfo.pop(this);
 		}
 		setResolved(true);

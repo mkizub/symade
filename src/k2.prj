@@ -233,7 +233,7 @@ kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
 kiev.vlang.ArrayLengthAccessExpr kiev/vlang/ArrayLengthAccessExpr kiev\vlang\Expr.java
 kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java
 kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
-kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java bad
+kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
@@ -243,8 +243,8 @@ kiev.vlang.BinaryBooleanAndExpr kiev/vlang/BinaryBooleanAndExpr kiev\vlang\Boole
 kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
 kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
-kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java bad
-kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java bad
+kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java
+kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java
 kiev.vlang.BoolExpr kiev/vlang/BoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java
@@ -256,7 +256,7 @@ kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
 kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
 kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
 kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
-kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java bad
+kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
 kiev.vlang.CheckFieldsAttr kiev/vlang/CheckFieldsAttr kiev\vlang\Attr.java
 kiev.vlang.ClassArgumentsAttr kiev/vlang/ClassArgumentsAttr kiev\vlang\Attr.java
 kiev.vlang.ClazzCP kiev/vlang/ClazzCP kiev\vlang\ConstPool.java
@@ -273,8 +273,8 @@ kiev.vlang.CodeTableSwitch kiev/vlang/CodeTableSwitch kiev\vlang\CodeSupport.jav
 kiev.vlang.CodeVar kiev/vlang/CodeVar kiev\vlang\Var.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.CompilerException kiev/vlang/CompilerException kiev\vlang\AST.java
-kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java bad
-kiev.vlang.ConditionalExpr kiev/vlang/ConditionalExpr kiev\vlang\Expr.java bad
+kiev.vlang.CondStat kiev/vlang/CondStat kiev\vlang\Statement.java
+kiev.vlang.ConditionalExpr kiev/vlang/ConditionalExpr kiev\vlang\Expr.java
 kiev.vlang.ConstBoolExpr kiev/vlang/ConstBoolExpr kiev\vlang\ConstExpr.java
 kiev.vlang.ConstByteExpr kiev/vlang/ConstByteExpr kiev\vlang\ConstExpr.java
 kiev.vlang.ConstCharExpr kiev/vlang/ConstCharExpr kiev\vlang\ConstExpr.java
@@ -299,7 +299,7 @@ kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlow kiev/vlang/DataFlow kiev\vlang\Var.java
 kiev.vlang.DataFlowFork kiev/vlang/DataFlowFork kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
-kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java bad
+kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
 kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java
 kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java
@@ -313,15 +313,15 @@ kiev.vlang.FieldCP kiev/vlang/FieldCP kiev\vlang\ConstPool.java
 kiev.vlang.FileUnit kiev/vlang/FileUnit kiev\vlang\FileUnit.java
 kiev.vlang.FinallyInfo kiev/vlang/FinallyInfo kiev\vlang\ComplexStatement.java
 kiev.vlang.FlagsAttr kiev/vlang/FlagsAttr kiev\vlang\Attr.java
-kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java bad
+kiev.vlang.ForEachStat kiev/vlang/ForEachStat kiev\vlang\LoopStatement.java
 kiev.vlang.ForInit kiev/vlang/ForInit kiev\vlang\LoopStatement.java
-kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java bad
+kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
 kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java
 kiev.vlang.GenerationsAttr kiev/vlang/GenerationsAttr kiev\vlang\Attr.java
 kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
 kiev.vlang.IBoolExpr kiev/vlang/IBoolExpr kiev\vlang\BooleanExpr.java
-kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java bad
+kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java
 kiev.vlang.Import$ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java
 kiev.vlang.Import.ImportMode kiev/vlang/Import$ImportMode kiev\vlang\Import.java bad
@@ -329,8 +329,8 @@ kiev.vlang.ImportAttr kiev/vlang/ImportAttr kiev\vlang\Attr.java
 kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
 kiev.vlang.InitializerShadow kiev/vlang/InitializerShadow kiev\vlang\AST.java
-kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java bad
-kiev.vlang.InlineMethodStat$ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java bad
+kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
+kiev.vlang.InlineMethodStat$ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java bad
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
 kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
@@ -432,21 +432,21 @@ kiev.vlang.ShadowStat kiev/vlang/ShadowStat kiev\vlang\Statement.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.SourceFileAttr kiev/vlang/SourceFileAttr kiev\vlang\Attr.java
 kiev.vlang.Statement kiev/vlang/Statement kiev\vlang\AST.java
-kiev.vlang.StaticFieldAccessExpr kiev/vlang/StaticFieldAccessExpr kiev\vlang\LvalueExpr.java bad
+kiev.vlang.StaticFieldAccessExpr kiev/vlang/StaticFieldAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
-kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java bad
-kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java bad
+kiev.vlang.Struct kiev/vlang/Struct kiev\vlang\Struct.java
+kiev.vlang.Struct$MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java
 kiev.vlang.Struct.MMTree kiev/vlang/Struct$MMTree kiev\vlang\Struct.java bad
-kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java bad
+kiev.vlang.SwitchStat kiev/vlang/SwitchStat kiev\vlang\ComplexStatement.java
 kiev.vlang.SymbolIterator kiev/vlang/SymbolIterator kiev\vlang\PassInfo.java
 kiev.vlang.SynchronizedStat kiev/vlang/SynchronizedStat kiev\vlang\ComplexStatement.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThrowStat kiev/vlang/ThrowStat kiev\vlang\Statement.java
 kiev.vlang.TopLevelPass kiev/vlang/TopLevelPass kiev\vlang\AST.java
 kiev.vlang.Tree kiev/vlang/Tree kiev\vlang\Tree.java
-kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java bad
+kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
@@ -455,11 +455,11 @@ kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java
 kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
-kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java bad
+kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
-kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java bad
+kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java

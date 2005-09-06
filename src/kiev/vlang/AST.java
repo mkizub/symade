@@ -249,8 +249,10 @@ public abstract class ASTNode implements Constants {
 	
 	// get data flow for a child node
 	public DFState getDFlowIn(ASTNode child) {
-		throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
+		return getDFlowIn();
+		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
 	}
+	
 	
 	// build data flow for this node
 	public DataFlow getDFlow() {
@@ -1161,6 +1163,15 @@ public final class VarDecl extends ENode implements Named {
 	public VarDecl(Var var) {
 		this.var = var;
 	}
+
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if (df.state_out == null) {
+			df.state_out = var.getDFlowOut();
+		}
+		return df.state_out;
+	}
+	
 	public void resolve(Type reqType) {
 		var.resolveDecl();
 	}

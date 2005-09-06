@@ -40,6 +40,27 @@ public class ASTCallAccessExpression extends Expr {
 	@att public ASTIdentifier			func;
     @att public final NArr<ENode>		args;
 
+	public DFState getDFlowIn(ASTNode child) {
+		String name = child.pslot.name;
+		if (name == "obj")
+			return getDFlowIn();
+		if (name == "args") {
+			return obj.getDFlowOut();
+		}
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlowFork df = (DataFlowFork)getDFlow();
+		if (df.state_out == null) {
+			DFState dfs = obj.getDFlowOut();
+			foreach (ENode a; args)
+				dfs = dfs.joinInfo(dfs, a.getDFlowOut());
+			df.state_out = dfs;
+		}
+		return df.state_out;
+	}
+	
 	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
