@@ -178,6 +178,7 @@ public class RuleMethod extends Method {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
 				if( body instanceof RuleBlock ) {
 					body.resolve(Type.tpVoid);
+					body.cleanDFlow();
 					boolean[] exts = Kiev.getExtSet();
 					try {
 						Kiev.enable(Ext.GotoCase);
@@ -202,6 +203,7 @@ public class RuleMethod extends Method {
 		} finally {
 			PassInfo.pop(this);
 		}
+		this.cleanDFlow();
 	}
 
 
@@ -401,6 +403,18 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			this.stats.add(st);
 	}
 
+	public DFState getDFlowIn(ASTNode child) {
+		return getDFlowIn();
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if !(df.isCalculated()) {
+			df.out = getDFlowIn();
+		}
+		return df.out;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {

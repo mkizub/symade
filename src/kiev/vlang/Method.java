@@ -590,6 +590,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		} finally {
 			PassInfo.pop(this);
 		}
+		this.cleanDFlow();
 
 		setResolved(true);
 	}

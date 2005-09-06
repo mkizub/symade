@@ -107,7 +107,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
 			df.in = in;
-			df.out = DFState.makeNewState();
 		}
 		return df;
 	}
@@ -118,8 +117,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	}
 	
 	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		return df.out;
+		return parent.getDFlowIn(this);
 	}
 
 	public DFState getDFlowIn(ASTNode child) {
@@ -640,11 +638,20 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
+@dflow
 public class IfElseStat extends Statement {
 
-	@att public ENode		cond;
-	@att public Statement	thenSt;
-	@att public Statement	elseSt;
+	@att
+	@dflow
+	public ENode		cond;
+	
+	@att
+	@dflow(in="cond:true")
+	public Statement	thenSt;
+	
+	@att
+	@dflow(in="cond:false")
+	public Statement	elseSt;
 
 	public IfElseStat() {
 	}
@@ -660,6 +667,16 @@ public class IfElseStat extends Statement {
 		this(pos,null,cond,thenSt,elseSt);
 	}
 
+	public DFState getDFlowOut() {
+		DataFlow df = getDFlow();
+		if !(df.isCalculated()) {
+			DFState out_then = thenSt.getDFlowOut();
+			DFState out_else = elseSt != null ? elseSt.getDFlowOut() : getDFlowIn$elseSt();
+			df.out = getDFlowIn().joinInfo(out_then, out_else);
+		}
+		return df.out;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 //		List<ScopeNodeInfo> state_base = NodeInfoPass.states;

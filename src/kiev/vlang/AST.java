@@ -247,6 +247,10 @@ public abstract class ASTNode implements Constants {
 		}
 	}
 	
+	public void cleanDFlow() {
+		walkTree(fun (ASTNode n)->boolean {n.delNodeData(DataFlow.ID); return true;});
+	}
+	
 	// get data flow for a child node
 	public DFState getDFlowIn(ASTNode child) {
 		return getDFlowIn();
@@ -281,7 +285,7 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	public DFState getDFlowTru() {
 		DataFlow df = getDFlow();
-		return df.out;
+		return df.tru;
 	}
 	
 	// get outgoing data flow for this node

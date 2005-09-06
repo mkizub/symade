@@ -2365,8 +2365,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( !isPackage() ) {
 			foreach (ASTNode n; members; n instanceof Struct) {
 				Struct s = (Struct)n;
-				if( n.isArgument() ) continue;
-				n.toJavaDecl(dmp).newLine();
+				if( s.isArgument() ) continue;
+				s.toJavaDecl(dmp).newLine();
 			}
 		}
 		foreach (ASTNode n; members; n instanceof Field) {

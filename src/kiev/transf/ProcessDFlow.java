@@ -166,6 +166,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			} else {
 				Meta meta = fld.meta.get(mnNode);
 				KString src = meta.getS(KString.from("in"));
+				ASTAccessExpression acc_fld = null;
 				ASTCallAccessExpression cae_tru = null;
 				ASTCallAccessExpression cae_fls = null;
 				{
@@ -198,6 +199,9 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					cae_tru.func = new ASTIdentifier(fun_nm);
 					
 					if (acc_nm != nameThis) {
+						acc_fld = new ASTAccessExpression();
+						acc_fld.obj = new ThisExpr();
+						acc_fld.ident = new ASTIdentifier(acc_nm);
 						cae_fls = new ASTCallAccessExpression();
 						cae_fls.obj = new ThisExpr();
 						cae_fls.func = new ASTIdentifier(KString.from("getDFlowIn$"+acc_nm));
@@ -210,7 +214,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					dfIn.body.addStatement(
 						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-								new AccessExpr(0,new ThisExpr(), fld),
+								acc_fld,
 								new ConstNullExpr()
 							),
 							new ReturnStat(0,null,cae_tru),

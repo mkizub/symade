@@ -402,7 +402,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
-			df.out = getDFlowIn().joinInfo(expr1.getDFlowOut(), expr1.getDFlowOut());
+			df.out = getDFlowIn().joinInfo(expr1.getDFlowOut(), expr2.getDFlowOut());
 			df.tru = df.out;
 			df.fls = df.out;
 		}
@@ -807,10 +807,11 @@ public class InstanceofExpr extends BoolExpr {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
 			DFState out_tru = expr.getDFlowOut();
-			df.tru = addNodeTypeInfo(out_tru);
+			out_tru = addNodeTypeInfo(out_tru);
 			DFState out_fls = expr.getDFlowOut();
-			df.fls = out_fls;
 			df.out = getDFlowIn().joinInfo(out_tru, out_fls);
+			df.tru = out_tru;
+			df.fls = out_fls;
 		}
 		return df.out;
 	}

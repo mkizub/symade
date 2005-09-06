@@ -46,6 +46,7 @@ public @interface ref {
 
 public @interface dflow {
 	String in() default "";
+	boolean seq() default false;
 }
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
