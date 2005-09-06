@@ -241,6 +241,16 @@ public class Meta extends ASTNode {
 		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a boolean constant, but "+v);
 	}
 	
+	public KString getS(KString name) {
+		MetaValueScalar mv = (MetaValueScalar)get(name);
+		ASTNode v = mv.value;
+		if (v == null)
+			return KString.Empty;
+		if (v instanceof ConstExpr && ((ConstExpr)v).value instanceof KString)
+			return (KString)((ConstExpr)v).value;
+		throw new RuntimeException("Value "+name+" in annotation "+type.name+" is not a string constant, but "+v);
+	}
+	
 	public MetaValue set(MetaValue value) alias add alias operator (5,lfy,+=)
 	{
 		if (value == null)

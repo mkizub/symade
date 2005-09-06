@@ -1700,6 +1700,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		
 		new ProcessVNode().autoGenerateMembers(this);
+		new ProcessDFlow().autoGenerateMembers(this);
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
