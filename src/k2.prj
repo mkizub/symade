@@ -216,6 +216,7 @@ kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
+kiev.transf.ProcessDFlow kiev/transf/ProcessDFlow kiev\transf\ProcessDFlow.java
 kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java
 kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java
 kiev.transf.ProcessPizzaCase kiev/transf/ProcessPizzaCase kiev\transf\ProcessPizzaCase.java
@@ -462,5 +463,6 @@ kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.WithStat kiev/vlang/WithStat kiev\vlang\ComplexStatement.java
 kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
+kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java
 kiev.vlang.ref kiev/vlang/ref kiev\vlang\Tree.java

@@ -86,7 +86,7 @@ public class Var extends DNode implements Named, Typed {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			DFState out = getDFlowIn();
 			if (init != null)
 				out = init.getDFlowOut();
@@ -160,18 +160,22 @@ public class Var extends DNode implements Named, Typed {
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
-//		Env.toJavaModifiers(dmp,access);
-		if (isFinal()) dmp.append("final").forsed_space();
-		if (isForward()) dmp.append("forward").forsed_space();
+		Env.toJavaModifiers(dmp,getJavaFlags());
+//		if (isFinal()) dmp.append("final").forsed_space();
+//		if (isForward()) dmp.append("forward").forsed_space();
 		if( isNeedRefProxy() )
 			dmp.append(Type.getProxyType(type));
 		else
 			dmp.append(type);
-		return dmp.forsed_space().append(name);
+		dmp.forsed_space().append(name);
+		if (init != null)
+			dmp.space().append('=').append(init);
+		dmp.append(';').newLine();
+		return dmp;
 	}
 
 	public Dumper toJavaDecl(Dumper dmp, Type jtype) {
-//		Env.toJavaModifiers(dmp,access);
+		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( isNeedRefProxy() )
 			dmp.append(Type.getProxyType(jtype));
 		else
@@ -583,10 +587,15 @@ public final class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
 	
 	final public ASTNode owner;
-	virtual public DFState in;
-	virtual public DFState out;
-	virtual public DFState tru;
-	virtual public DFState fls;
+	private DFState state_in;
+	private DFState state_out;
+	private DFState state_tru;
+	private DFState state_fls;
+	
+	virtual abstract public DFState in;
+	virtual abstract public DFState out;
+	virtual abstract public DFState tru;
+	virtual abstract public DFState fls;
 
 	public DataFlow(ASTNode owner) {
 		super(ID);
@@ -594,31 +603,39 @@ public final class DataFlow extends NodeData {
 		owner.addNodeData(this);
 	}
 	
-	public DFState get$in() {
-		if (this.in == null)
-			owner.getDFlowIn();
-		return this.in;
-	}
-	public DFState get$out() {
-		if (this.out == null)
-			owner.getDFlowOut();
-		return this.out;
-	}
-	public DFState get$tru() {
-		if (this.out == null)
-			owner.getDFlowOut();
-		return this.tru==null? this.out : this.tru;
-	}
-	public DFState get$fls() {
-		if (this.out == null)
-			owner.getDFlowOut();
-		return this.fls==null? this.out : this.fls;
+	public boolean isInitialized() {
+		return state_in != null;
 	}
 	
-	public void set$in(DFState in) { this.in = in; }
-	public void set$out(DFState out) { this.out = out; }
-	public void set$tru(DFState tru) { this.tru = tru; }
-	public void set$fls(DFState fls) { this.fls = fls; }
+	public boolean isCalculated() {
+		return state_out != null;
+	}
+	
+	public DFState get$in() {
+		if (state_in == null)
+			owner.getDFlowIn();
+		return state_in;
+	}
+	public DFState get$out() {
+		if (state_out == null)
+			owner.getDFlowOut();
+		return state_out;
+	}
+	public DFState get$tru() {
+		if (state_out == null)
+			owner.getDFlowOut();
+		return state_tru==null? state_out : state_tru;
+	}
+	public DFState get$fls() {
+		if (state_out == null)
+			owner.getDFlowOut();
+		return state_fls==null? state_out : state_fls;
+	}
+	
+	public void set$in(DFState in) { state_in = in; }
+	public void set$out(DFState out) { state_out = out; }
+	public void set$tru(DFState tru) { state_tru = tru; }
+	public void set$fls(DFState fls) { state_fls = fls; }
 }
 
 

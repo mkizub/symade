@@ -313,12 +313,12 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 				}
 			}
 		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			if (stats.length > 0) {
@@ -448,12 +448,12 @@ public class ExprStat extends Statement {
 		String name = child.pslot.name;
 		if (name == "expr")
 			return getDFlowIn();
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			df.out = expr.getDFlowOut();
 		}
 		return df.out;

@@ -265,7 +265,7 @@ public abstract class ASTNode implements Constants {
 	// get incoming data flow for this node
 	public DFState getDFlowIn() {
 		DataFlow df = getDFlow();
-		if (df.in == null)
+		if !(df.isInitialized())
 			df.in = parent.getDFlowIn(this);
 		return df.in;
 	}
@@ -273,7 +273,7 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null)
+		if !(df.isCalculated())
 			df.out = getDFlowIn();
 		return df.out;
 	}
@@ -1176,7 +1176,7 @@ public final class VarDecl extends ENode implements Named {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null)
+		if !(df.isCalculated())
 			df.out = var.getDFlowOut();
 		return df.out;
 	}

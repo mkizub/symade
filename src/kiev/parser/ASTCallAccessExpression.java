@@ -47,12 +47,12 @@ public class ASTCallAccessExpression extends Expr {
 		if (name == "args") {
 			return obj.getDFlowOut();
 		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			DFState dfs = obj.getDFlowOut();
 			foreach (ENode a; args)
 				dfs = dfs.joinInfo(dfs, a.getDFlowOut());

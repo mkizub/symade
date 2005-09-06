@@ -44,6 +44,10 @@ public @interface ref {
 	boolean copyable() default true;
 }
 
+public @interface dflow {
+	String in() default "";
+}
+
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
 @node(copyable=false)
 public class Tree extends ASTNode {

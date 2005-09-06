@@ -164,9 +164,15 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 }
 
 @node
+@dflow
 public class BinaryBooleanOrExpr extends BoolExpr {
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@att
+	@dflow
+	public ENode			expr1;
+	
+	@att
+	@dflow(in="expr1:false")
+	public ENode			expr2;
 
 	public BinaryBooleanOrExpr() {
 	}
@@ -193,18 +199,18 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "expr1")
-			return parent.getDFlowIn(this);
-		if (name == "expr2")
-			return expr1.getDFlowFls();
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
-	}
+//	public DFState getDFlowIn(ASTNode child) {
+//		String name = child.pslot.name;
+//		if (name == "expr1")
+//			return parent.getDFlowIn(this);
+//		if (name == "expr2")
+//			return expr1.getDFlowFls();
+//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
+//	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			DFState out_tru1 = expr1.getDFlowTru();
 			DFState out_tru2 = expr2.getDFlowTru();
 			DFState out_tru = getDFlowIn().joinInfo(out_tru1, out_tru2);
@@ -303,12 +309,12 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 			return parent.getDFlowIn(this);
 		if (name == "expr2")
 			return expr1.getDFlowTru();
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			DFState out_fls1 = expr1.getDFlowFls();
 			DFState out_fls2 = expr2.getDFlowFls();
 			DFState out_fls = getDFlowIn().joinInfo(out_fls1, out_fls2);
@@ -395,7 +401,7 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			df.out = getDFlowIn().joinInfo(expr1.getDFlowOut(), expr1.getDFlowOut());
 			df.tru = df.out;
 			df.fls = df.out;
@@ -799,7 +805,7 @@ public class InstanceofExpr extends BoolExpr {
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			DFState out_tru = expr.getDFlowOut();
 			df.tru = addNodeTypeInfo(out_tru);
 			DFState out_fls = expr.getDFlowOut();
@@ -877,10 +883,12 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
-			df.tru = expr.getDFlowFls();
-			df.fls = expr.getDFlowTru();
-			df.out = getDFlowIn().joinInfo(df.tru, df.fls);
+		if !(df.isCalculated()) {
+			DFState tru = expr.getDFlowFls();
+			DFState fls = expr.getDFlowTru();
+			df.out = getDFlowIn().joinInfo(tru, fls);
+			df.tru = tru;
+			df.fls = fls;
 		}
 		return df.out;
 	}

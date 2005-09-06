@@ -552,7 +552,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			else if (cond.cond == WBCType.CondInvariant)
 				return getDFlowOut();
 		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public void resolveDecl() {

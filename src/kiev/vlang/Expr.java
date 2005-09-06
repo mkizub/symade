@@ -372,7 +372,7 @@ public class AssignExpr extends LvalueExpr {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			df.out = addNodeTypeInfo(value.getDFlowOut());
 		}
 		return df.out;
@@ -1143,7 +1143,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.out == null) {
+		if !(df.isCalculated()) {
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
 			if (res != null) {

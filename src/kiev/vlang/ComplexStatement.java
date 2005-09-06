@@ -274,7 +274,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		if (name == "cases") {
 			return sel.getDFlowOut();
 		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+")");
+		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 	}
 	
 	public void resolve(Type reqType) {
