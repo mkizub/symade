@@ -199,15 +199,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
-//	public DFState getDFlowIn(ASTNode child) {
-//		String name = child.pslot.name;
-//		if (name == "expr1")
-//			return parent.getDFlowIn(this);
-//		if (name == "expr2")
-//			return expr1.getDFlowFls();
-//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-//	}
-	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
@@ -275,7 +266,10 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 @node
 public class BinaryBooleanAndExpr extends BoolExpr {
+	@dflow
 	@att public ENode			expr1;
+	
+	@dflow(in="expr1:true")
 	@att public ENode			expr2;
 
 	public BinaryBooleanAndExpr() {
@@ -303,15 +297,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "expr1")
-			return parent.getDFlowIn(this);
-		if (name == "expr2")
-			return expr1.getDFlowTru();
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
-	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
@@ -799,10 +784,6 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public DFState getDFlowIn(ASTNode child) {
-		return parent.getDFlowIn(this);
-	}
-	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {

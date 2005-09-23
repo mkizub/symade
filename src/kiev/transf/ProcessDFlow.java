@@ -41,6 +41,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	public static final KString nameGetDFlowIn		= KString.from("getDFlowIn"); 
 	public static final KString signGetDFlowIn		= KString.from("(Lkiev/vlang/ASTNode;)Lkiev/vlang/DFState;"); 
 	public static final KString signGetDFlowInFld	= KString.from("()Lkiev/vlang/DFState;"); 
+	public static final KString signGetDFlowInSeq	= KString.from("(Lkiev/vlang/ASTNode;)Lkiev/vlang/DFState;"); 
 	
 	private static Type tpNArr;
 	private static Type tpNode;
@@ -112,7 +113,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				ss = ss.super_type.getStruct();
 			}
 		}
-		// DFState getDFlowIn(ASTNode child)
+		// DFState getDFlowIn(ASTNode $child)
 		if (hasMethod(s, nameGetDFlowIn)) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
@@ -132,10 +133,15 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				var.init = ae1;
 			}
 			for(int i=0; i < aflds.length; i++) {
-				KString fldnm = aflds[i].name.name;
+				Field fld = aflds[i];
+				boolean isArr = fld.getType().isInstanceOf(tpNArr);
+				boolean seq = isArr && fld.meta.get(mnNode).getZ(KString.from("seq"));
+				KString fldnm = fld.name.name;
 				KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 				ASTCallExpression ce = new ASTCallExpression();
 				ce.func = new ASTIdentifier(fname);
+				if (seq)
+					ce.args.add(new VarAccessExpr(0, dfIn.params[0]));
 				dfIn.body.addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
@@ -159,14 +165,18 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		// DFState getDFlowIn$xxx()
 		for(int i=0; i < aflds.length; i++) {
 			Field fld = aflds[i];
+			boolean isArr = fld.getType().isInstanceOf(tpNArr);
 			KString fldnm = fld.name.name;
 			KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
+			Meta meta = fld.meta.get(mnNode);
+			KString src = meta.getS(KString.from("in"));
+			boolean seq = isArr && meta.getZ(KString.from("seq"));
 			if (hasMethod(s, fname)) {
 				Kiev.reportWarning(s.pos,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
 			} else {
-				Meta meta = fld.meta.get(mnNode);
-				KString src = meta.getS(KString.from("in"));
 				ASTAccessExpression acc_fld = null;
+				ASTAccessExpression acc_prev = null;
+				ASTCallAccessExpression cae_prev = null;
 				ASTCallAccessExpression cae_tru = null;
 				ASTCallAccessExpression cae_fls = null;
 				{
@@ -198,6 +208,15 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					cae_tru.obj = new ASTIdentifier(acc_nm);
 					cae_tru.func = new ASTIdentifier(fun_nm);
 					
+					if (seq) {
+						acc_prev = new ASTAccessExpression();
+						acc_prev.obj = new ASTIdentifier(KString.from("$child"));
+						acc_prev.ident = new ASTIdentifier(KString.from("pprev"));
+						cae_prev = new ASTCallAccessExpression();
+						cae_prev.obj = (ASTAccessExpression)acc_prev.copy();
+						cae_prev.func = new ASTIdentifier(KString.from("getDFlowOut"));
+					}
+					
 					if (acc_nm != nameThis) {
 						acc_fld = new ASTAccessExpression();
 						acc_fld.obj = new ThisExpr();
@@ -207,9 +226,28 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 						cae_fls.func = new ASTIdentifier(KString.from("getDFlowIn$"+acc_nm));
 					}
 				}
-				MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
-				Method dfIn = new Method(fname,mt,ACC_PRIVATE);
+				Method dfIn;
+				if (seq) {
+					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInSeq);
+					dfIn = new Method(fname,mt,ACC_PRIVATE);
+					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, 0));
+				} else {
+					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
+					dfIn = new Method(fname,mt,ACC_PRIVATE);
+				}
 				dfIn.body = new BlockStat(0,dfIn);
+				if (isArr && seq) {
+					dfIn.body.addStatement(
+						new IfElseStat(0,null,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+								acc_prev,
+								new ConstNullExpr()
+							),
+							new ReturnStat(0,null,cae_prev),
+							null
+						)
+					);
+				}
 				if (cae_fls != null) {
 					dfIn.body.addStatement(
 						new IfElseStat(0,

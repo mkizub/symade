@@ -70,14 +70,20 @@ public abstract class ASTNode implements Constants {
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false);
 
 	public int				pos;
+	
     @ref(copyable=false)
 	public ASTNode			parent;
     @ref(copyable=false)
 	public AttrSlot			pslot;
+    @ref(copyable=false)
+	public ASTNode			pprev;
+    @ref(copyable=false)
+	public ASTNode			pnext;
+	
 	public NodeData			ndata;
 
 	public int				flags;
-	public int			compileflags;
+	public int				compileflags;
 	
 	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
 	@virtual public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
@@ -170,6 +176,14 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
+	public void callbackDetached() {
+		parent.callbackChildChanged(pslot);
+	}
+	
+	public void callbackAttached() {
+		parent.callbackChildChanged(pslot);
+	}
+	
 	public void callbackChildChanged(AttrSlot attr) {
 		// by default do nothing
 	}
@@ -251,12 +265,78 @@ public abstract class ASTNode implements Constants {
 		walkTree(fun (ASTNode n)->boolean {n.delNodeData(DataFlow.ID); return true;});
 	}
 	
+	private java.lang.reflect.Field getDeclaredField(String name) {
+		java.lang.Class cls = getClass();
+		while (cls != null) {
+			try {
+				return cls.getDeclaredField(name);
+			} catch (NoSuchFieldException e) {}
+			cls = cls.getSuperclass();
+		}
+		throw new RuntimeException("Internal error: no field "+name+" in "+getClass());
+	}
+	
 	// get data flow for a child node
 	public DFState getDFlowIn(ASTNode child) {
-		return getDFlowIn();
+		String name = child.pslot.name;
+		java.lang.reflect.Field jf = getDeclaredField(name);
+		kiev.vlang.dflow df = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+		if (df == null)
+			return getDFlowIn();
+		String in = df.in().intern();
+		if (child.pslot.is_space && df.seq() && child.pprev != null)
+			return child.pprev.getDFlowOut();
+		if (in == "" || in == "this")
+			return getDFlowIn();
+		int p = in.indexOf(':');
+		if (p < 0) {
+			Object obj = getVal(in);
+			if (obj instanceof ASTNode)
+				return ((ASTNode)obj).getDFlowOut();
+			return getDFlowIn(in,null);
+		}
+		String port = in.substring(p+1).intern();
+		in = in.substring(0,p).intern();
+		Object obj = getVal(in);
+		if (obj instanceof ASTNode) {
+			if (port == "true")
+				return ((ASTNode)obj).getDFlowTru();
+			if (port == "false")
+				return ((ASTNode)obj).getDFlowFls();
+			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
+		}
+		return getDFlowIn(in,port);
 		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
 	}
 	
+	public DFState getDFlowIn(String name, String port) {
+		java.lang.reflect.Field jf = getDeclaredField(name);
+		kiev.vlang.dflow df = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+		if (df == null)
+			return getDFlowIn();
+		String in = df.in().intern();
+		if (in == "" || in == "this")
+			return getDFlowIn();
+		int p = in.indexOf(':');
+		if (p < 0) {
+			Object obj = getVal(in);
+			if (obj instanceof ASTNode)
+				return ((ASTNode)obj).getDFlowOut();
+			return getDFlowIn(in,null);
+		}
+		String port = in.substring(p+1).intern();
+		in = in.substring(0,p).intern();
+		Object obj = getVal(in);
+		if (obj instanceof ASTNode) {
+			if (port == "true")
+				return ((ASTNode)obj).getDFlowTru();
+			if (port == "false")
+				return ((ASTNode)obj).getDFlowFls();
+			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
+		}
+		return getDFlowIn(in,port);
+		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
+	}
 	
 	// build data flow for this node
 	public DataFlow getDFlow() {

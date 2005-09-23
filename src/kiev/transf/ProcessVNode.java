@@ -83,6 +83,17 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
 		}
+		else {
+			// Check fields to not have @att and @ref
+			foreach (ASTNode n; s.members; n instanceof Field) {
+				Field f = (Field)n;
+				Meta fmatt = f.meta.get(mnAtt);
+				Meta fmref = f.meta.get(mnRef);
+				if (fmatt != null || fmref != null) {
+					Kiev.reportError(f.pos,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
+				}
+			}
+		}
 	}
 	
 	public void verify(Field:ASTNode f) {
@@ -94,6 +105,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" marked both @att and @ref");
 		}
 		if (fmatt != null || fmref != null) {
+			if (f.isStatic())
+				Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" is static and cannot have @att or @ref");
 			boolean isArr = false;
 			Meta fsm;
 			{
@@ -131,7 +144,8 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstNullExpr()});
 				}
 			}
-		} else {
+		}
+		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 			else if (f.type.getStructMeta().get(mnNode) != null)

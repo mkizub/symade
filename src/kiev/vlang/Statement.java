@@ -189,8 +189,10 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 }
 
 @node
+@dflow
 public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
+	@dflow(in="", seq=true)
 	@att public final NArr<ENode>		stats;
 	
 	private int resolve_pos;
@@ -299,20 +301,20 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "stats") {
-			for (int i=0; i < stats.length; i++) {
-				if (stats[i] == child) {
-					if (i == 0)
-						return getDFlowIn();
-					else
-						return stats[i-1].getDFlowOut();
-				}
-			}
-		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
+//	public DFState getDFlowIn(ASTNode child) {
+//		String name = child.pslot.name;
+//		if (name == "stats") {
+//			for (int i=0; i < stats.length; i++) {
+//				if (stats[i] == child) {
+//					if (i == 0)
+//						return getDFlowIn();
+//					else
+//						return stats[i-1].getDFlowOut();
+//				}
+//			}
+//		}
+//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
+//	}
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
@@ -424,6 +426,7 @@ public class EmptyStat extends Statement {
 @node
 public class ExprStat extends Statement {
 
+	@dflow
 	@att public ENode		expr;
 
 	public ExprStat() {
@@ -442,13 +445,6 @@ public class ExprStat extends Statement {
 		return "stat "+expr;
 	}
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "expr")
-			return getDFlowIn();
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
-	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
@@ -671,7 +667,7 @@ public class IfElseStat extends Statement {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
 			DFState out_then = thenSt.getDFlowOut();
-			DFState out_else = elseSt != null ? elseSt.getDFlowOut() : getDFlowIn$elseSt();
+			DFState out_else = elseSt != null ? elseSt.getDFlowOut() : getDFlowIn("elseSt",null);
 			df.out = getDFlowIn().joinInfo(out_then, out_else);
 		}
 		return df.out;

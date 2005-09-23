@@ -36,7 +36,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 
 	static Hash<Type>		typeHash;
 
-	@ref public /*private access:no,ro,no,rw*/ Struct	clazz;
+	public /*private access:no,ro,no,rw*/ Struct	clazz;
 	public Type[]			args = Type.emptyArray;
 	public KString			signature;
 	public KString			java_signature;

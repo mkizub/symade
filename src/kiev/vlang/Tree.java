@@ -25,6 +25,7 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import java.lang.annotation.*;
 
 /**
  * @author Maxim Kizub
@@ -44,6 +45,7 @@ public @interface ref {
 	boolean copyable() default true;
 }
 
+@Retention(RetentionPolicy.RUNTIME)
 public @interface dflow {
 	String in() default "";
 	boolean seq() default false;
@@ -89,6 +91,8 @@ public final class NArr<N extends ASTNode> {
 		this.$parent = parent;
 		this.$pslot = pslot;
 		this.$nodes = new N[0];
+		if (parent == null)
+			assert (pslot == null || !pslot.is_attr);
 	}
 	
 	public ASTNode getParent() {
@@ -118,13 +122,31 @@ public final class NArr<N extends ASTNode> {
 		alias operator(210,lfy,[])
 		require { node != null; }
 	{
-		if ($pslot != null && $pslot.is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			$nodes[idx].pslot = null;
-			$parent.callbackChildChanged($pslot);
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr) {
+			ASTNode old = $nodes[idx];
+			old.callbackDetached();
+			//old.parent = null;
+			//old.pslot = null;
+			old.pprev = null;
+			old.pnext = null;
 		}
 		$nodes[idx] = node;
+		if (is_attr) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (idx > 0) {
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
+			}
+			if (idx+1 < size()) {
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
+			}
+			node.callbackAttached();
+		}
 		return node;
 	}
 
@@ -133,7 +155,8 @@ public final class NArr<N extends ASTNode> {
 		alias operator(5, lfy, +=)
 		require { node != null; }
 	{
-		if ($pslot != null && $pslot.is_attr)
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr)
 			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
@@ -142,10 +165,16 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
-		if ($pslot != null && $pslot.is_attr) {
+		if (is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
-			$parent.callbackChildChanged($pslot);
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (sz > 0) {
+				$nodes[sz-1].pnext = node;
+				node.pprev = $nodes[sz-1];
+			}
+			node.callbackAttached();
 		}
 		return node;
 	}
@@ -185,13 +214,7 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
-				if ($pslot != null && $pslot.is_attr) {
-					node.parent = $parent;
-					node.pslot = $pslot;
-					$nodes[i].pslot = null;
-					$parent.callbackChildChanged($pslot);
-				}
-				$nodes[i] = node;
+				this.set(i, node);
 				return;
 			}
 		}
@@ -206,7 +229,8 @@ public final class NArr<N extends ASTNode> {
 	public N insert(int idx, N node)
 		require { node != null; }
 	{
-		if ($pslot != null && $pslot.is_attr)
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr)
 			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
@@ -214,25 +238,48 @@ public final class NArr<N extends ASTNode> {
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
-		if ($pslot != null && $pslot.is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			$parent.callbackChildChanged($pslot);
-		}
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
+		if (is_attr) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (idx > 0) {
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
+			}
+			if (idx+1 < size()) {
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
+			}
+			node.callbackAttached();
+		}
 		return node;
 	}
 
 	public void del(int idx)
 	{
+		ASTNode old = $nodes[idx];
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr) {
+			old.callbackDetached();
+			if (old.pprev != null) {
+				assert (idx > 0 && $nodes[idx-1] == old.pprev);
+				old.pprev.pnext = old.pnext;
+			}
+			if (old.pnext != null) {
+				assert (idx+1 < size() && $nodes[idx+1] == old.pnext);
+				old.pnext.pprev = old.pprev;
+			}
+			//old.parent = null;
+			//old.pslot = null;
+			old.pnext = null;
+			old.pprev = null;
+		}
 		int sz = $nodes.length-1;
 		N[] tmp = new N[sz];
-		if ($pslot != null && $pslot.is_attr) {
-			$nodes[idx].pslot = null;
-			$parent.callbackChildChanged($pslot);
-		}
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
@@ -293,5 +340,6 @@ public final class NArr<N extends ASTNode> {
 	}
 
 }
+
 
 

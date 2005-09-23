@@ -839,9 +839,9 @@ public class BinaryExpr extends Expr {
 public class StringConcatExpr extends Expr {
 	@att public final NArr<ENode>	args;
 
-	@ref public static Struct clazzStringBuffer;
-	@ref public static Method clazzStringBufferToString;
-	@ref public static Method clazzStringBufferInit;
+	public static Struct clazzStringBuffer;
+	public static Method clazzStringBufferToString;
+	public static Method clazzStringBufferInit;
 
 	static {
 		try {
@@ -970,7 +970,9 @@ public class StringConcatExpr extends Expr {
 }
 
 @node
+@dflow
 public class CommaExpr extends Expr {
+	@dflow(in="", seq=true)
 	@att public final NArr<ENode>	exprs;
 
 	public CommaExpr() {
@@ -1036,9 +1038,13 @@ public class CommaExpr extends Expr {
 }
 
 @node
+@dflow
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
+	@dflow(in="", seq=true)
 	@att public final NArr<ENode>		stats;
+	
+	@dflow(in="stats")
 	@att public       ENode				res;
 
 	public BlockExpr() {

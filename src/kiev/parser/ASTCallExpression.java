@@ -36,8 +36,12 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow
 public class ASTCallExpression extends Expr {
+
 	@att public ASTIdentifier			func;
+
+	@dflow(in="", seq=false)
     @att public final NArr<ENode>		args;
 
 	public ASTCallExpression() {

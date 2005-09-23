@@ -35,21 +35,25 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow
 public class ASTCallAccessExpression extends Expr {
+	@dflow
 	@att public ENode					obj;
+
 	@att public ASTIdentifier			func;
+
+	@dflow(in="obj", seq=false)
     @att public final NArr<ENode>		args;
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "obj")
-			return getDFlowIn();
-		if (name == "args") {
-			return obj.getDFlowOut();
-		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
+	public ASTCallAccessExpression() {}
 	
+	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
+		super(pos);
+		this.obj = obj;
+		this.func = new ASTIdentifier(pos, func);
+		this.args.addAll(args);
+	}
+
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {

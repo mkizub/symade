@@ -249,6 +249,44 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			}
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,set_var,ENode.emptyArray);
+				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					Statement p_st = new IfElseStat(0,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
+								new AccessExpr(0,new ThisExpr(0),f,true),
+								new ConstNullExpr()
+							),
+							new BlockStat(0,null,new Statement[]{
+								new ExprStat(0,null,
+									new ASTCallAccessExpression(0,
+										new AccessExpr(0,new ThisExpr(0),f,true),
+										KString.from("callbackDetached"),
+										ENode.emptyArray
+									)
+//								),
+//								new ExprStat(0,null,
+//									new AssignExpr(0, AssignOperator.Assign,
+//										new AccessExpr(0,
+//											new AccessExpr(0,new ThisExpr(0),f,true),
+//											astT.resolveField(KString.from("parent"))
+//										),
+//										new ConstNullExpr()
+//									)
+//								),
+//								new ExprStat(0,null,
+//									new AssignExpr(0, AssignOperator.Assign,
+//										new AccessExpr(0,
+//											new AccessExpr(0,new ThisExpr(0),f,true),
+//											astT.resolveField(KString.from("pslot"))
+//										),
+//										new ConstNullExpr()
+//									)
+								)
+							}),
+							null
+						);
+					body.stats.append(p_st);
+				}
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,f,true)
@@ -257,15 +295,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					)
 				);
 				body.stats.append(ass_st);
-				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
-					Var changed = new Var(0,KString.from("$changed"),Type.tpBoolean,0);
-					changed.init =
-							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-								new VarAccessExpr(0, value),
-								new AccessExpr(0,new ThisExpr(0),f,true)
-							);
-					body.insertSymbol(changed,0);
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Field fatt = ((Struct)f.parent).resolveField(fname);
 					Statement p_st = new IfElseStat(0,
@@ -291,21 +321,17 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 										),
 										new StaticFieldAccessExpr(f.pos, fatt)
 									)
+								),
+								new ExprStat(0,null,
+									new ASTCallAccessExpression(0,
+										new VarAccessExpr(0, value),
+										KString.from("callbackAttached"),
+										ENode.emptyArray
+									)
 								)
 							}),
 							null
 						);
-					body.stats.append(p_st);
-					p_st = new IfElseStat(0,
-								new VarAccessExpr(0, changed),
-								new ExprStat(0,null,
-									new ASTCallExpression(0,
-										KString.from("callbackChildChanged"),
-										new Expr[]{new StaticFieldAccessExpr(f.pos, fatt)}
-									)
-								),
-								null
-							);
 					body.stats.append(p_st);
 				}
 				body.stats.append(new ReturnStat(f.pos,body,null));

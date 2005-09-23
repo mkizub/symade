@@ -39,13 +39,11 @@ import syntax kiev.Syntax;
 public class ASTAccessExpression extends Expr {
 	private static KString nameWrapperSelf = KString.from("$self");
 	
+	@dflow
 	@att public ENode			obj;
+	
 	@att public ASTIdentifier	ident;
 
-	public DFState getDFlowIn(ASTNode child) {
-		return getDFlowIn();
-	}
-	
 	public boolean preResolve() {
 		PassInfo.push(this);
 		try {

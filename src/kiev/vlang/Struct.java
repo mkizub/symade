@@ -1412,8 +1412,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 			// create mmtree
 			MMTree mmt = new MMTree(mm);
-			for(List<Method> ul = mlist; ul != List.Nil; ul = ul.tail())
-				mmt.add(ul.head());
+			for(List<Method> ul = mlist; ul != List.Nil; ul = ul.tail()) {
+				Method rm = ul.head();
+				if (rm != mm)
+					removeMethod(rm);
+				mmt.add(rm);
+			}
 
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
@@ -1469,9 +1473,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			mm.setMultiMethod(true);
 			boolean add_mm = true;
 			foreach (Method rm; mlist) {
-				// remove method, if need...
 				if (mm != rm) {
-					removeMethod(rm);
+					// already removed
 					if (!rm.type.ret.equals(mm.type.ret)) {
 						// insert new method
 						Method nm = new Method(rm.name.name,rm.type,rm.flags);

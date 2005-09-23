@@ -234,11 +234,16 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 }
 
 @node
+@dflow
 public class SwitchStat extends BlockStat implements BreakTarget {
 
+	@dflow
 	@att public ENode					sel;
-	@ref public Var						tmpvar;
+
+	@dflow(in="sel", seq=false)
 	@att public final NArr<CaseLabel>	cases;
+
+	@ref public Var						tmpvar;
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
@@ -266,16 +271,16 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public String toString() { return "switch("+sel+")"; }
 
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "sel") {
-			return getDFlowIn();
-		}
-		if (name == "cases") {
-			return sel.getDFlowOut();
-		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
+//	public DFState getDFlowIn(ASTNode child) {
+//		String name = child.pslot.name;
+//		if (name == "sel") {
+//			return getDFlowIn();
+//		}
+//		if (name == "cases") {
+//			return sel.getDFlowOut();
+//		}
+//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
+//	}
 	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
