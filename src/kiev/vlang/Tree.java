@@ -46,6 +46,7 @@ public @interface ref {
 
 public @interface dflow {
 	String in() default "";
+	boolean seq() default false;
 }
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
@@ -104,6 +105,10 @@ public final class NArr<N extends ASTNode> {
 		return $pslot;
 	}
 	
+	public boolean isEmpty() {
+		return $nodes.length == 0;
+	}
+	
 	public int size()
 		alias length
 		alias get$size
@@ -131,12 +136,31 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
-		if ($pslot != null && $pslot.is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			$nodes[idx].pslot = null;
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr) {
+			ASTNode old = $nodes[idx];
+			old.callbackDetached();
+			//old.parent = null;
+			//old.pslot = null;
+			old.pprev = null;
+			old.pnext = null;
 		}
 		$nodes[idx] = node;
+		if (is_attr) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (idx > 0) {
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
+			}
+			if (idx+1 < size()) {
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
+			}
+			node.callbackAttached();
+		}
 		return node;
 	}
 
@@ -145,6 +169,9 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr)
+			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -152,9 +179,16 @@ public final class NArr<N extends ASTNode> {
 			tmp[i] = $nodes[i];
 		$nodes = tmp;
 		$nodes[sz] = node;
-		if ($pslot != null && $pslot.is_attr) {
+		if (is_attr) {
 			node.parent = $parent;
 			node.pslot = $pslot;
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (sz > 0) {
+				$nodes[sz-1].pnext = node;
+				node.pprev = $nodes[sz-1];
+			}
+			node.callbackAttached();
 		}
 		return node;
 	}
@@ -194,12 +228,7 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		for (int i=0; i < sz; i++) {
 			if ($nodes[i] == old) {
-				if ($pslot != null && $pslot.is_attr) {
-					node.parent = $parent;
-					node.pslot = $pslot;
-					$nodes[i].pslot = null;
-				}
-				$nodes[i] = node;
+				this.set(i, node);
 				return;
 			}
 		}
@@ -215,29 +244,57 @@ public final class NArr<N extends ASTNode> {
 	{
 		if (node == null)
 			throw new NullPointerException();
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr)
+			assert(!contains(node));
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];
 		tmp[idx] = node;
-		if ($pslot != null && $pslot.is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-		}
 		for (; i < sz; i++)
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
+		if (is_attr) {
+			node.parent = $parent;
+			node.pslot = $pslot;
+			//assert (node.pprev == null);
+			//assert (node.pnext == null);
+			if (idx > 0) {
+				$nodes[idx-1].pnext = node;
+				node.pprev = $nodes[idx-1];
+			}
+			if (idx+1 < size()) {
+				$nodes[idx+1].pprev = node;
+				node.pnext = $nodes[idx+1];
+			}
+			node.callbackAttached();
+		}
 		return node;
 	}
 
 	public void del(int idx)
 	{
+		ASTNode old = $nodes[idx];
+		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		if (is_attr) {
+			old.callbackDetached();
+			if (old.pprev != null) {
+				assert (idx > 0 && $nodes[idx-1] == old.pprev);
+				old.pprev.pnext = old.pnext;
+			}
+			if (old.pnext != null) {
+				assert (idx+1 < size() && $nodes[idx+1] == old.pnext);
+				old.pnext.pprev = old.pprev;
+			}
+			//old.parent = null;
+			//old.pslot = null;
+			old.pnext = null;
+			old.pprev = null;
+		}
 		int sz = $nodes.length-1;
 		N[] tmp = new N[sz];
-		if ($pslot != null && $pslot.is_attr) {
-			$nodes[idx].pslot = null;
-		}
 		int i;
 		for (i=0; i < idx; i++)
 			tmp[i] = $nodes[i];

@@ -77,10 +77,16 @@ public abstract class ASTNode implements Constants {
 	private static int		parserAddrIdx;
 
 	public int				pos;
+	
     @ref(copyable=false)
 	public ASTNode			parent;
     @ref(copyable=false)
 	public AttrSlot			pslot;
+    @ref(copyable=false)
+	public ASTNode			pprev;
+    @ref(copyable=false)
+	public ASTNode			pnext;
+	
 	public int				flags;
 	
 	public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
@@ -174,6 +180,14 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
+	public void callbackDetached() {
+		parent.callbackChildChanged(pslot);
+	}
+	
+	public void callbackAttached() {
+		parent.callbackChildChanged(pslot);
+	}
+	
 	public void callbackChildChanged(AttrSlot attr) {
 		// by default do nothing
 	}

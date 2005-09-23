@@ -41,6 +41,7 @@ public final class ProcessDFlow implements Constants {
 	public static final KString nameGetDFlowIn		= KString.from("getDFlowIn"); 
 	public static final KString signGetDFlowIn		= KString.from("(Lkiev/vlang/ASTNode;)Lkiev/vlang/DFState;"); 
 	public static final KString signGetDFlowInFld	= KString.from("()Lkiev/vlang/DFState;"); 
+	public static final KString signGetDFlowInSeq	= KString.from("(Lkiev/vlang/ASTNode;)Lkiev/vlang/DFState;"); 
 	
 	private static Type tpNArr;
 	private static Type tpNode;
@@ -97,7 +98,7 @@ public final class ProcessDFlow implements Constants {
 				ss = ss.super_clazz.clazz;
 			}
 		}
-		// DFState getDFlowIn(ASTNode child)
+		// DFState getDFlowIn(ASTNode $child)
 		if (hasMethod(s, nameGetDFlowIn)) {
 			Kiev.reportWarning(s.pos,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
@@ -105,7 +106,7 @@ public final class ProcessDFlow implements Constants {
 			Method dfIn = new Method(s,nameGetDFlowIn,mt,ACC_PUBLIC);
 			dfIn.params = new Var[]{
 				new Var(0, dfIn, nameThis, s.type, 0),
-				new Var(0, dfIn, KString.from("child"), tpNode, 0),
+				new Var(0, dfIn, KString.from("$child"), tpNode, 0),
 			};
 			dfIn.body = new BlockStat(0,dfIn);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
@@ -121,10 +122,15 @@ public final class ProcessDFlow implements Constants {
 				vdecl.init = ae1;
 			}
 			for(int i=0; i < aflds.length; i++) {
-				KString fldnm = aflds[i].name.name;
+				Field fld = aflds[i];
+				boolean isArr = fld.getType().isInstanceOf(tpNArr);
+				boolean seq = isArr && fld.meta.get(mnNode).getZ(KString.from("seq"));
+				KString fldnm = fld.name.name;
 				KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 				ASTCallExpression ce = new ASTCallExpression();
 				ce.func = new ASTIdentifier(0,fname);
+				if (seq)
+					ce.args.add(new VarAccessExpr(0,dfIn.params[1]));
 				((BlockStat)dfIn.body).addStatement(
 					new IfElseStat(0,null,
 						new BinaryBooleanExpr(0, BinaryOperator.Equals,
@@ -148,14 +154,18 @@ public final class ProcessDFlow implements Constants {
 		// DFState getDFlowIn$xxx()
 		for(int i=0; i < aflds.length; i++) {
 			Field fld = aflds[i];
+			boolean isArr = fld.getType().isInstanceOf(tpNArr);
 			KString fldnm = fld.name.name;
 			KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
+			Meta meta = fld.meta.get(mnNode);
+			KString src = meta.getS(KString.from("in"));
+			boolean seq = isArr && meta.getZ(KString.from("seq"));
 			if (hasMethod(s, fname)) {
 				Kiev.reportWarning(s.pos,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
 			} else {
-				Meta meta = fld.meta.get(mnNode);
-				KString src = meta.getS(KString.from("in"));
 				ASTAccessExpression acc_fld = null;
+				ASTAccessExpression acc_prev = null;
+				ASTCallAccessExpression cae_prev = null;
 				ASTCallAccessExpression cae_tru = null;
 				ASTCallAccessExpression cae_fls = null;
 				{
@@ -187,6 +197,15 @@ public final class ProcessDFlow implements Constants {
 					cae_tru.obj = new ASTIdentifier(0,acc_nm);
 					cae_tru.func = new ASTIdentifier(0,fun_nm);
 					
+					if (seq) {
+						acc_prev = new ASTAccessExpression();
+						acc_prev.obj = new ASTIdentifier(0,KString.from("$child"));
+						acc_prev.ident = new ASTIdentifier(0,KString.from("pprev"));
+						cae_prev = new ASTCallAccessExpression();
+						cae_prev.obj = (ASTAccessExpression)acc_prev.copy();
+						cae_prev.func = new ASTIdentifier(0,KString.from("getDFlowOut"));
+					}
+					
 					if (acc_nm != nameThis) {
 						acc_fld = new ASTAccessExpression();
 						acc_fld.obj = new ThisExpr();
@@ -196,12 +215,34 @@ public final class ProcessDFlow implements Constants {
 						cae_fls.func = new ASTIdentifier(0,KString.from("getDFlowIn$"+acc_nm));
 					}
 				}
-				MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
-				Method dfIn = new Method(s,fname,mt,ACC_PRIVATE);
-				dfIn.params = new Var[]{
-					new Var(0, dfIn, nameThis, s.type, 0),
-				};
+				Method dfIn;
+				if (seq) {
+					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInSeq);
+					dfIn = new Method(s,fname,mt,ACC_PRIVATE);
+					dfIn.params = new Var[]{
+						new Var(0, dfIn, nameThis, s.type, 0),
+						new Var(0, dfIn, KString.from("$child"), tpNode, 0),
+					};
+				} else {
+					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
+					dfIn = new Method(s,fname,mt,ACC_PRIVATE);
+					dfIn.params = new Var[]{
+						new Var(0, dfIn, nameThis, s.type, 0),
+					};
+				}
 				dfIn.body = new BlockStat(0,dfIn);
+				if (isArr && seq) {
+					((BlockStat)dfIn.body).addStatement(
+						new IfElseStat(0,null,
+							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+								acc_prev,
+								new ConstExpr(0,null)
+							),
+							new ReturnStat(0,null,cae_prev),
+							null
+						)
+					);
+				}
 				if (cae_fls != null) {
 					((BlockStat)dfIn.body).addStatement(
 						new IfElseStat(0,null,

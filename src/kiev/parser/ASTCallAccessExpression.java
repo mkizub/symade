@@ -50,6 +50,13 @@ public class ASTCallAccessExpression extends Expr {
 		args = new NArr<Expr>(this);
 	}
 	
+	public ASTCallAccessExpression(int pos, Expr obj, KString func, Expr[] args) {
+		super(pos);
+		this.obj = obj;
+		this.func = new ASTIdentifier(pos, func);
+		this.args.addAll(args);
+	}
+
 	public void jjtAddChild(ASTNode n, int i) {
     	if(i==0) {
         	obj = (Expr)n;

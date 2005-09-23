@@ -929,6 +929,26 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			}
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,set_var,ASTNode.emptyArray);
+				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
+				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
+					Statement p_st = new IfElseStat(0,
+							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+								new AccessExpr(0,new ThisExpr(0),f,true),
+								new ConstExpr(0, null)
+							),
+							new BlockStat(0,null,new Statement[]{
+								new ExprStat(0,null,
+									new ASTCallAccessExpression(0,
+										new AccessExpr(0,new ThisExpr(0),f,true),
+										KString.from("callbackDetached"),
+										Expr.emptyArray
+									)
+								)
+							}),
+							null
+						);
+					body.stats.append(p_st);
+				}
 				Statement ass_st = new ExprStat(f.pos,body,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,this,f,true)
@@ -937,15 +957,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					)
 				);
 				body.stats.append(ass_st);
-				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
-					Var changed = new Var(0,null,KString.from("$changed"),Type.tpBoolean,0);
-					Statement v_st = new DeclStat(0,null,changed,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
-								new VarAccessExpr(0, value),
-								new AccessExpr(f.pos,new ThisExpr(0),f,true)
-							));
-					body.stats.insert(v_st,0);
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Field fatt = this.resolveField(fname);
 					Statement p_st = new IfElseStat(0,
@@ -971,21 +983,17 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 										),
 										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
 									)
+								),
+								new ExprStat(0,null,
+									new ASTCallAccessExpression(0,
+										new VarAccessExpr(0, value),
+										KString.from("callbackAttached"),
+										Expr.emptyArray
+									)
 								)
 							}),
 							null
 						);
-					body.stats.append(p_st);
-					p_st = new IfElseStat(0,
-								new BooleanWrapperExpr(0, new VarAccessExpr(0, changed)),
-								new ExprStat(0,null,
-									new ASTCallExpression(0,
-										KString.from("callbackChildChanged"),
-										new Expr[]{new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)}
-									)
-								),
-								null
-							);
 					body.stats.append(p_st);
 				}
 				body.stats.append(new ReturnStat(f.pos,body,null));
@@ -1700,7 +1708,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		}
 		
 		new ProcessVNode().autoGenerateMembers(this);
-		new ProcessDFlow().autoGenerateMembers(this);
+		//new ProcessDFlow().autoGenerateMembers(this);
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
