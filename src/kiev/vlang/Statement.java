@@ -62,6 +62,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
+@dflow
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
@@ -131,17 +132,11 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			types[i] = params_redir[i].new_var.type;
 			params_redir[i].new_var.vtype.lnk = method.params[i].type;
 		}
-//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 		try {
-//			for(int i=0; i < params_redir.length; i++) {
-//				NodeInfoPass.declNode(params_redir[i].new_var);
-//				NodeInfoPass.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
-//			}
 			method.resolveDecl();
 			if( method.body.isAbrupted() ) setAbrupted(true);
 			if( method.body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} finally {
-//			NodeInfoPass.states = state_base;
 			for (int i=0; i < params_redir.length; i++)
 				params_redir[i].new_var.vtype.lnk = types[i];
 			PassInfo.pop(this);
@@ -320,7 +315,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (stats.length > 0) {
 				if (vars.length > 0)
 					df.out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
@@ -424,6 +419,7 @@ public class EmptyStat extends Statement {
 }
 
 @node
+@dflow(out="expr")
 public class ExprStat extends Statement {
 
 	@dflow
@@ -445,14 +441,6 @@ public class ExprStat extends Statement {
 		return "stat "+expr;
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			df.out = expr.getDFlowOut();
-		}
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -634,7 +622,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
-@dflow
+@dflow(out="label")
 public class IfElseStat extends Statement {
 
 	@att
@@ -648,6 +636,10 @@ public class IfElseStat extends Statement {
 	@att
 	@dflow(in="cond:false")
 	public Statement	elseSt;
+
+	@att
+	@dflow(in="join thenSt elseSt")
+	public Label		label;
 
 	public IfElseStat() {
 	}
@@ -663,20 +655,8 @@ public class IfElseStat extends Statement {
 		this(pos,null,cond,thenSt,elseSt);
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState out_then = thenSt.getDFlowOut();
-			DFState out_else = elseSt != null ? elseSt.getDFlowOut() : getDFlowIn("elseSt",null);
-			df.out = getDFlowIn().joinInfo(out_then, out_else);
-		}
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
-//		List<ScopeNodeInfo> state_base = NodeInfoPass.states;
-//		List<ScopeNodeInfo> result_state = state_base;
 		try {
 			try {
 				cond.resolve(Type.tpBoolean);
@@ -685,41 +665,18 @@ public class IfElseStat extends Statement {
 				Kiev.reportError(cond.pos,e);
 			}
 		
-//			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
-//			try {
-//				if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-//				else if( cond instanceof BinaryBooleanAndExpr ) {
-//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-//				}
+			try {
+				thenSt.resolve(Type.tpVoid);
+			} catch(Exception e ) {
+				Kiev.reportError(thenSt.pos,e);
+			}
+			if( elseSt != null ) {
 				try {
-					thenSt.resolve(Type.tpVoid);
+					elseSt.resolve(Type.tpVoid);
 				} catch(Exception e ) {
-					Kiev.reportError(thenSt.pos,e);
+					Kiev.reportError(elseSt.pos,e);
 				}
-//			} finally { state_then = NodeInfoPass.states; }
-//			
-//			NodeInfoPass.states = state_base;
-//			List<ScopeNodeInfo> state_else = state_base;
-//			try {
-//				if( cond instanceof BooleanNotExpr ) {
-//					BooleanNotExpr bne = (BooleanNotExpr)cond;
-//					if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-//					else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-//						BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-//						if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-//						if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-//					}
-//				}
-				if( elseSt != null ) {
-					try {
-						elseSt.resolve(Type.tpVoid);
-					} catch(Exception e ) {
-						Kiev.reportError(elseSt.pos,e);
-					}
-				}
-//			} finally { state_else = NodeInfoPass.states; }
+			}
 
 			if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
@@ -734,20 +691,7 @@ public class IfElseStat extends Statement {
 				if( elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 			}
 
-//			if( thenSt.isAbrupted() && (elseSt==null || elseSt.isAbrupted()) )
-//				result_state = state_base;
-//			else if( thenSt.isAbrupted() && elseSt!=null && !elseSt.isAbrupted() )
-//				result_state = state_else;
-//			else if( !thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() )
-//				result_state = state_then;
-//			else {
-//				NodeInfoPass.joinInfo(state_then,state_else,state_base);
-//				result_state = NodeInfoPass.states;
-//			}
-		} finally {
-			PassInfo.pop(this);
-//			NodeInfoPass.states = result_state;
-		}
+		} finally { PassInfo.pop(this); }
 	}
 
 	public void generate(Type reqType) {
@@ -811,10 +755,16 @@ public class IfElseStat extends Statement {
 }
 
 @node
+@dflow(out="cond:true")
 public class CondStat extends Statement {
 
-	@att public ENode			cond;
-	@att public ENode			message;
+	@att
+	@dflow(in="")
+	public ENode			cond;
+	
+	@att
+	@dflow(in="cond:false")
+	public ENode			message;
 
 	public CondStat() {
 	}
@@ -832,31 +782,18 @@ public class CondStat extends Statement {
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
-//			List<ScopeNodeInfo> state_base = NodeInfoPass.states;
 			try {
 				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
 				Kiev.reportError(cond.pos,e);
 			}
-//			if( cond instanceof BooleanNotExpr ) {
-//				BooleanNotExpr bne = (BooleanNotExpr)cond;
-//				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-//				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-//				}
-//			}
-//			NodeInfoPass.states = state_base;
 			try {
 				message.resolve(Type.tpString);
 			} catch(Exception e ) {
 				Kiev.reportError(message.pos,e);
 			}
-		} finally {
-			PassInfo.pop(this);
-		}
+		} finally { PassInfo.pop(this); }
 	}
 
 	private KString getAssertMethodName() {
@@ -923,16 +860,26 @@ public class CondStat extends Statement {
 }
 
 @node
+@dflow(out="stat")
 public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
-	@att public ASTIdentifier	ident;
-	@att public Statement		stat;
+	@att
+	public ASTIdentifier	ident;
+	
+	@att(copyable=false)
+	@dflow(in="")
+	public Label			dflbl;
+
+	@att
+	@dflow(in="dflbl")
+	public Statement		stat;
 
 	protected CodeLabel	tag_label = null;
 
 	public LabeledStat() {
+		dflbl = new Label();
 	}
 	
 	public NodeName getName() { return new NodeName(ident.name); }

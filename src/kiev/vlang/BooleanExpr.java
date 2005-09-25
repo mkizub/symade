@@ -164,7 +164,7 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 }
 
 @node
-@dflow
+@dflow(tru="join expr1:true expr2:true", fls="expr2:false", out="join this:true this:false")
 public class BinaryBooleanOrExpr extends BoolExpr {
 	@att
 	@dflow
@@ -199,20 +199,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState out_tru1 = expr1.getDFlowTru();
-			DFState out_tru2 = expr2.getDFlowTru();
-			DFState out_tru = getDFlowIn().joinInfo(out_tru1, out_tru2);
-			df.tru = out_tru;
-			DFState out_fls = expr2.getDFlowFls();
-			df.fls = out_fls;
-			df.out = getDFlowIn().joinInfo(out_tru, out_fls);
-		}
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -265,6 +251,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 
 @node
+@dflow(fls="join expr1:false expr2:false", tru="expr2:true", out="join this:true this:false")
 public class BinaryBooleanAndExpr extends BoolExpr {
 	@dflow
 	@att public ENode			expr1;
@@ -297,20 +284,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState out_fls1 = expr1.getDFlowFls();
-			DFState out_fls2 = expr2.getDFlowFls();
-			DFState out_fls = getDFlowIn().joinInfo(out_fls1, out_fls2);
-			df.fls = out_fls;
-			DFState out_tru = expr2.getDFlowTru();
-			df.tru = out_tru;
-			df.out = getDFlowIn().joinInfo(out_tru, out_fls);
-		}
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -361,9 +334,14 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 }
 
 @node
+@dflow(out="expr2")
 public class BinaryBoolExpr extends BoolExpr {
+	
 	@ref public BinaryOperator		op;
+	
+	@dflow(in="")
 	@att public ENode				expr1;
+	@dflow(in="expr1")
 	@att public ENode				expr2;
 
 	public BinaryBoolExpr() {
@@ -384,16 +362,6 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public Operator getOp() { return op; }
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			df.out = getDFlowIn().joinInfo(expr1.getDFlowOut(), expr2.getDFlowOut());
-			df.tru = df.out;
-			df.fls = df.out;
-		}
-		return df.out;
-	}
-	
 	private void initialResolve(Type reqType) {
 		setTryResolved(true);
 		resolveExprs();
@@ -720,7 +688,9 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
+@dflow
 public class InstanceofExpr extends BoolExpr {
+	@dflow(in="")
 	@att public ENode		expr;
 	@att public TypeRef		type;
 
@@ -843,7 +813,10 @@ public class InstanceofExpr extends BoolExpr {
 }
 
 @node
+@dflow(fls="expr:true", tru="expr:false", out="join this:true this:false")
 public class BooleanNotExpr extends BoolExpr {
+	
+	@dflow(in="")
 	@att public ENode				expr;
 
 	public BooleanNotExpr() {
@@ -863,18 +836,6 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public Operator getOp() { return PrefixOperator.BooleanNot; }
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState tru = expr.getDFlowFls();
-			DFState fls = expr.getDFlowTru();
-			df.out = getDFlowIn().joinInfo(tru, fls);
-			df.tru = tru;
-			df.fls = fls;
-		}
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		PassInfo.push(this);

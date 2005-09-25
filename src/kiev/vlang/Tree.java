@@ -48,6 +48,9 @@ public @interface ref {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface dflow {
 	String in() default "";
+	String tru() default "";
+	String fls() default "";
+	String out() default "";
 	boolean seq() default false;
 }
 

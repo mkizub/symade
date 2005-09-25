@@ -80,6 +80,7 @@ public abstract class ASTNode implements Constants {
     @ref(copyable=false)
 	public ASTNode			pnext;
 	
+    @ref(copyable=false)
 	public NodeData			ndata;
 
 	public int				flags;
@@ -286,56 +287,58 @@ public abstract class ASTNode implements Constants {
 		String in = df.in().intern();
 		if (child.pslot.is_space && df.seq() && child.pprev != null)
 			return child.pprev.getDFlowOut();
-		if (in == "" || in == "this")
-			return getDFlowIn();
-		int p = in.indexOf(':');
-		if (p < 0) {
-			Object obj = getVal(in);
-			if (obj instanceof ASTNode)
-				return ((ASTNode)obj).getDFlowOut();
-			return getDFlowIn(in,null);
-		}
-		String port = in.substring(p+1).intern();
-		in = in.substring(0,p).intern();
-		Object obj = getVal(in);
-		if (obj instanceof ASTNode) {
-			if (port == "true")
-				return ((ASTNode)obj).getDFlowTru();
-			if (port == "false")
-				return ((ASTNode)obj).getDFlowFls();
-			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
-		}
-		return getDFlowIn(in,port);
-		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
+		return getDFStateOfExpr(in);
+//		if (in == "" || in == "this")
+//			return getDFlowIn();
+//		int p = in.indexOf(':');
+//		if (p < 0) {
+//			Object obj = getVal(in);
+//			if (obj instanceof ASTNode)
+//				return ((ASTNode)obj).getDFlowOut();
+//			return getDFlowIn(in);
+//		}
+//		String port = in.substring(p+1).intern();
+//		in = in.substring(0,p).intern();
+//		Object obj = getVal(in);
+//		if (obj instanceof ASTNode) {
+//			if (port == "true")
+//				return ((ASTNode)obj).getDFlowTru();
+//			if (port == "false")
+//				return ((ASTNode)obj).getDFlowFls();
+//			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
+//		}
+//		return getDFlowIn(in);
+//		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
 	}
 	
-	public DFState getDFlowIn(String name, String port) {
+	public DFState getDFlowIn(String name) {
 		java.lang.reflect.Field jf = getDeclaredField(name);
 		kiev.vlang.dflow df = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
 		if (df == null)
 			return getDFlowIn();
 		String in = df.in().intern();
-		if (in == "" || in == "this")
-			return getDFlowIn();
-		int p = in.indexOf(':');
-		if (p < 0) {
-			Object obj = getVal(in);
-			if (obj instanceof ASTNode)
-				return ((ASTNode)obj).getDFlowOut();
-			return getDFlowIn(in,null);
-		}
-		String port = in.substring(p+1).intern();
-		in = in.substring(0,p).intern();
-		Object obj = getVal(in);
-		if (obj instanceof ASTNode) {
-			if (port == "true")
-				return ((ASTNode)obj).getDFlowTru();
-			if (port == "false")
-				return ((ASTNode)obj).getDFlowFls();
-			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
-		}
-		return getDFlowIn(in,port);
-		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
+		return getDFStateOfExpr(in);
+//		if (in == "" || in == "this")
+//			return getDFlowIn();
+//		int p = in.indexOf(':');
+//		if (p < 0) {
+//			Object obj = getVal(in);
+//			if (obj instanceof ASTNode)
+//				return ((ASTNode)obj).getDFlowOut();
+//			return getDFlowIn(in);
+//		}
+//		String port = in.substring(p+1).intern();
+//		in = in.substring(0,p).intern();
+//		Object obj = getVal(in);
+//		if (obj instanceof ASTNode) {
+//			if (port == "true")
+//				return ((ASTNode)obj).getDFlowTru();
+//			if (port == "false")
+//				return ((ASTNode)obj).getDFlowFls();
+//			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
+//		}
+//		return getDFlowIn(in);
+//		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
 	}
 	
 	// build data flow for this node
@@ -354,12 +357,80 @@ public abstract class ASTNode implements Constants {
 		return df.in;
 	}
 	
+	
 	// get outgoing data flow for this node
+	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9]+) ([\\:a-zA-Z_0-9]+)( from ([\\:a-zA-Z_0-9]+))?");
+	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
-		if !(df.isCalculated())
-			df.out = getDFlowIn();
+		if (df.isCalculated())
+			return df.out;
+		kiev.vlang.dflow dfmeta = (kiev.vlang.dflow)getClass().getAnnotation(kiev.vlang.dflow.class);
+		df.out = getDFlowIn();
+		if (dfmeta != null) {
+			if (dfmeta.tru() != "" || dfmeta.fls() != "") {
+				df.tru = getDFStateOfExpr(dfmeta.tru());
+				df.fls = getDFStateOfExpr(dfmeta.fls());
+			}
+			df.out = getDFStateOfExpr(dfmeta.out());
+		}
 		return df.out;
+	}
+	
+	private DFState getDFStateOfExpr(String expr) {
+		java.util.regex.Matcher m = join_pattern.matcher(expr);
+		if !(m.matches()) {
+			return getDFStateByName(expr);
+		} else {
+			DFState s1 = getDFStateByName(m.group(1));
+			DFState s2 = getDFStateByName(m.group(2));
+			DFState base;
+			if (m.group(3) == null)
+				base = getDFlowIn();
+			else
+				base = getDFStateByName(m.group(4));
+			return base.joinInfo(s1,s2);
+		}
+	}
+	private DFState getDFStateByName(String expr) {
+		expr = expr.intern();
+		if (expr == "" || expr == "this")
+			return getDFlowIn();
+		int p = expr.indexOf(':');
+		if (p < 0) {
+			Object obj = getVal(expr);
+			if (obj instanceof ASTNode)
+				return ((ASTNode)obj).getDFlowOut();
+			else
+				return getDFlowIn(expr);
+		}
+		String port = expr.substring(p+1).intern();
+		expr = expr.substring(0,p).intern();
+		if (expr == "" || expr == "this") {
+			if (port == "true")
+				return getDFlowTru();
+			else if (port == "false")
+				return getDFlowFls();
+			else if (port == "in")
+				return getDFlowIn();
+			else if (port == "out")
+				return getDFlowOut();
+			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
+		} else {
+			Object obj = getVal(expr);
+			if (obj instanceof ASTNode) {
+				if (port == "true")
+					return ((ASTNode)obj).getDFlowTru();
+				else if (port == "false")
+					return ((ASTNode)obj).getDFlowFls();
+				else if (port == "in")
+					return ((ASTNode)obj).getDFlowIn();
+				else if (port == "out")
+					return ((ASTNode)obj).getDFlowOut();
+				throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
+			}
+			return getDFlowIn(expr);
+		}
 	}
 	
 	// get outgoing data flow for this node
@@ -1249,22 +1320,17 @@ public abstract class ENode extends ASTNode {
 }
 
 @node
+@dflow(out="var")
 public final class VarDecl extends ENode implements Named {
 
-	@att Var var;
+	@att @dflow Var var;
 	
 	public VarDecl() {}
+	
 	public VarDecl(Var var) {
 		this.var = var;
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated())
-			df.out = var.getDFlowOut();
-		return df.out;
-	}
-	
 	public void resolve(Type reqType) {
 		var.resolveDecl();
 	}

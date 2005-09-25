@@ -242,6 +242,8 @@ public class CodeVar {
 }
 
 public class DFState {
+	
+	public static final DFState[] emptyArray = new DFState[0];
 
 	private final List<ScopeNodeInfo> states;
 
@@ -583,7 +585,7 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 	}
 }
 
-public final class DataFlow extends NodeData {
+public class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
 	
 	final public ASTNode owner;
@@ -603,39 +605,75 @@ public final class DataFlow extends NodeData {
 		owner.addNodeData(this);
 	}
 	
-	public boolean isInitialized() {
+	public final boolean isInitialized() {
 		return state_in != null;
 	}
 	
-	public boolean isCalculated() {
+	public final boolean isCalculated() {
 		return state_out != null;
 	}
 	
-	public DFState get$in() {
-		if (state_in == null)
+	void reset() {
+		state_in = null;
+		state_out = null;
+		state_tru = null;
+		state_fls = null;
+	}
+	
+	public final DFState get$in() {
+		if !(isInitialized())
 			owner.getDFlowIn();
 		return state_in;
 	}
 	public DFState get$out() {
-		if (state_out == null)
+		if !(isCalculated())
 			owner.getDFlowOut();
 		return state_out;
 	}
-	public DFState get$tru() {
-		if (state_out == null)
+	public final DFState get$tru() {
+		if !(isCalculated())
 			owner.getDFlowOut();
 		return state_tru==null? state_out : state_tru;
 	}
-	public DFState get$fls() {
-		if (state_out == null)
+	public final DFState get$fls() {
+		if !(isCalculated())
 			owner.getDFlowOut();
 		return state_fls==null? state_out : state_fls;
 	}
 	
-	public void set$in(DFState in) { state_in = in; }
-	public void set$out(DFState out) { state_out = out; }
-	public void set$tru(DFState tru) { state_tru = tru; }
-	public void set$fls(DFState fls) { state_fls = fls; }
+	public final void set$in(DFState in) { state_in = in; }
+	public final void set$out(DFState out) { state_out = out; }
+	public final void set$tru(DFState tru) { state_tru = tru; }
+	public final void set$fls(DFState fls) { state_fls = fls; }
 }
 
+public final class DataFlowLabel extends DataFlow {
+	private DFState[] state_lnks = DFState.emptyArray;
+	
+	public DataFlowLabel(ASTNode owner) {
+		super(owner);
+	}
+	
+	public void addLink(DFState lnk) {
+		int sz = state_lnks.length;
+		DFState[] tmp = new DFState[sz+1];
+		for (int i=0; i < sz; i++)
+			tmp[i] = state_lnks[i];
+		tmp[sz] = lnk;
+		state_lnks = tmp;
+		this.reset();
+		return;
+	}
+	
+	public DFState get$out() {
+		if !(isCalculated()) {
+			DFState base = this.in;
+			DFState out = base;
+			foreach (DFState lnk; state_lnks)
+				out = base.joinInfo(out,lnk);
+			this.set$out(out);
+		}
+		return super.get$out();
+	}
+}
 

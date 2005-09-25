@@ -175,9 +175,14 @@ public class TypeClassExpr extends Expr {
 }
 
 @node
+@dflow
 public class AssignExpr extends LvalueExpr {
+	
 	@ref public AssignOperator	op;
+	
+	@dflow(in="")
 	@att public ENode			lval;
+	@dflow(in="lval")
 	@att public ENode			value;
 
 	public AssignExpr() {
@@ -1151,7 +1156,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		DataFlow df = getDFlow();
 		if !(df.isCalculated()) {
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof Var) vars.append((Var)n);
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (res != null) {
 				if (vars.length > 0)
 					df.out = res.getDFlowOut().cleanInfoForVars(vars.toArray());
@@ -1662,29 +1667,8 @@ public class ConditionalExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			cond.resolve(Type.tpBoolean);
-//			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-//			else if( cond instanceof BinaryBooleanAndExpr ) {
-//				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-//				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-//				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-//			}
 			expr1.resolve(reqType);
-//			List<ScopeNodeInfo> state_then = NodeInfoPass.states;
-//			NodeInfoPass.states = state_base;
-//			if( cond instanceof BooleanNotExpr ) {
-//				BooleanNotExpr bne = (BooleanNotExpr)cond;
-//				if( bne.expr instanceof InstanceofExpr ) ((InstanceofExpr)bne.expr).setNodeTypeInfo();
-//				else if( bne.expr instanceof BinaryBooleanAndExpr ) {
-//					BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)bne.expr;
-//					if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-//					if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-//				}
-//			}
 			expr2.resolve(reqType);
-//			List<ScopeNodeInfo> state_else = NodeInfoPass.states;
-//
-//			NodeInfoPass.joinInfo(state_then,state_else,state_base);
-//			state_base = NodeInfoPass.states;
 
 			if( expr1.getType() != getType() ) {
 				expr1 = new CastExpr(expr1.pos,getType(),expr1);
@@ -1694,10 +1678,7 @@ public class ConditionalExpr extends Expr {
 				expr2 = new CastExpr(expr2.pos,getType(),expr2);
 				expr2.resolve(getType());
 			}
-		} finally {
-//			NodeInfoPass.states = state_base;
-			PassInfo.pop(this);
-		}
+		} finally { PassInfo.pop(this); }
 		setResolved(true);
 	}
 

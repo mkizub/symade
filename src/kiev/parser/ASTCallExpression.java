@@ -36,12 +36,12 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow
+@dflow(out="args")
 public class ASTCallExpression extends Expr {
 
 	@att public ASTIdentifier			func;
 
-	@dflow(in="", seq=false)
+	@dflow(in="", seq=true)
     @att public final NArr<ENode>		args;
 
 	public ASTCallExpression() {

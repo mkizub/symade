@@ -35,14 +35,14 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow
+@dflow(out="args")
 public class ASTCallAccessExpression extends Expr {
 	@dflow
 	@att public ENode					obj;
 
 	@att public ASTIdentifier			func;
 
-	@dflow(in="obj", seq=false)
+	@dflow(in="obj", seq=true)
     @att public final NArr<ENode>		args;
 
 	public ASTCallAccessExpression() {}
@@ -54,17 +54,6 @@ public class ASTCallAccessExpression extends Expr {
 		this.args.addAll(args);
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState dfs = obj.getDFlowOut();
-			foreach (ENode a; args)
-				dfs = dfs.joinInfo(dfs, a.getDFlowOut());
-			df.out = dfs;
-		}
-		return df.out;
-	}
-	
 	public boolean preResolve() {
 		PassInfo.push(this);
 		try {
