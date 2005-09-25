@@ -399,7 +399,7 @@ public class AssignExpr extends LvalueExpr {
 			break;
 		}
 		if (path != null)
-			return dfs.addNodeType(path,value.getType());
+			return dfs.setNodeValue(path,value);
 		return dfs;
 	}
 

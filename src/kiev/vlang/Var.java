@@ -292,7 +292,7 @@ public class DFState {
 	public DFState declNode(Var var) {
 		ScopeNodeInfo sni = makeNode(var);
 		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
-		trace( Kiev.debugNodeTypes, "types: decl var "+sni);
+		trace( Kiev.debugNodeTypes, "types: (decl) var "+sni);
 		return dfs;
 	}
 
@@ -312,15 +312,21 @@ changed:;
 		sni = (ScopeNodeInfo)sni.clone();
 		sni.types = types;
 		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
-		trace( Kiev.debugNodeTypes, "types: set types to "+sni);
+		trace( Kiev.debugNodeTypes, "types: (set types to) "+sni);
 		return dfs;
 	}
 
 	public DFState setNodeValue(DNode[] path, ENode expr) {
 		Type tp = expr.getType();
-		if( tp != Type.tpNull && tp != Type.tpVoid )
-			return addNodeType(path, tp);
-		return this;
+		if( tp == Type.tpNull && tp == Type.tpVoid )
+			return this;
+		ScopeNodeInfo sni = makeNode(path);
+		if (sni == null) return this;
+		Type[] types = addAccessType(sni.types, tp);
+		sni.types = types;
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
+		trace( Kiev.debugNodeTypes, "types: (set value to) "+sni);
+		return dfs;
 	}
 
 	/** Add access type to access type array
@@ -390,14 +396,31 @@ changed:;
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
 	public DFState joinInfo(List<ScopeNodeInfo> state1, List<ScopeNodeInfo> state2) {
-		List<ScopeNodeInfo> states = this.states;
 		List<ScopeNodeInfo> lst_done = List.Nil;
-		for(List<ScopeNodeInfo> lst1=state1; lst1 != this.states; lst1=lst1.tail()) {
+		List<ScopeNodeInfo> base_states = states;
+		{
+			int len0 = base_states.length();
+			int len1 = state1.length();
+			int len2 = state2.length();
+			int min = Math.min(len0,Math.min(len1,len2));
+			List<ScopeNodeInfo> s1 = state1;
+			List<ScopeNodeInfo> s2 = state2;
+			for (int i=len0-min; i > 0; i--) base_states = base_states.tail();
+			for (int i=len1-min; i > 0; i--) s1 = s1.tail();
+			for (int i=len2-min; i > 0; i--) s2 = s2.tail();
+			while (s1 != s2 || s1 != base_states) {
+				s1 = s1.tail();
+				s2 = s2.tail();
+				base_states = base_states.tail();
+			}
+		}
+		List<ScopeNodeInfo> states = base_states;
+		for(List<ScopeNodeInfo> lst1=state1; lst1 != base_states; lst1=lst1.tail()) {
 			ScopeNodeInfo sni1 = lst1.head();
 			if (lst_done.contains(sni1))
 				continue;
 			lst_done = new List.Cons<ScopeNodeInfo>(sni1, lst_done);
-			for(List<ScopeNodeInfo> lst2=state2; lst2 != this.states; lst2=lst2.tail()) {
+			for(List<ScopeNodeInfo> lst2=state2; lst2 != base_states; lst2=lst2.tail()) {
 				ScopeNodeInfo sni2 = lst2.head();
 				if (sni1.equals(sni2)) {
 					ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
@@ -648,7 +671,7 @@ public class DataFlow extends NodeData {
 }
 
 public final class DataFlowLabel extends DataFlow {
-	private DFState[] state_lnks = DFState.emptyArray;
+	public DFState[] state_lnks = DFState.emptyArray;
 	
 	public DataFlowLabel(ASTNode owner) {
 		super(owner);

@@ -35,7 +35,18 @@ import syntax kiev.Syntax;
 
 @node
 public class Label extends DNode {
+	
+	@ref
+	public final NArr<ASTNode> links;
+	
 	public Label() {}
+	
+	public void addLink(ASTNode lnk) {
+		links.addUniq(lnk);
+		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+		if (df != null)
+			df.reset();
+	}
 
 	// build data flow for this node
 	public DataFlow getDFlow() {
@@ -43,6 +54,15 @@ public class Label extends DNode {
 		if (df == null)
 			df = new DataFlowLabel(this);
 		return df;
+	}
+	
+	public DFState getDFlowOut() {
+		DataFlowLabel df = (DataFlowLabel)getDFlow();
+		if (df.isCalculated())
+			return df.out;
+		foreach (ASTNode n; links)
+			df.addLink(n.getDFlowOut());
+		return df.out;
 	}
 	
 }

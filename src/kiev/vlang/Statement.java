@@ -870,16 +870,16 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	
 	@att(copyable=false)
 	@dflow(in="")
-	public Label			dflbl;
+	public Label			lbl;
 
 	@att
-	@dflow(in="dflbl")
+	@dflow(in="lbl")
 	public Statement		stat;
 
 	protected CodeLabel	tag_label = null;
 
 	public LabeledStat() {
-		dflbl = new Label();
+		lbl = new Label();
 	}
 	
 	public NodeName getName() { return new NodeName(ident.name); }
@@ -1075,11 +1075,39 @@ public class GotoStat extends Statement/*defaults*/ {
 //	}
 
 	public boolean preResolve() {
+		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		if( stats.length == 0 ) {
+			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			return false;
+		}
+		if( stats.length > 1 ) {
+			Kiev.reportError(pos,"Umbigouse label "+ident+" in goto statement");
+		}
+		LabeledStat stat = stats[0];
+		if( stat == null ) {
+			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			return false;
+		}
+		stat.lbl.addLink(this);
 		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
 		setAbrupted(true);
+		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		if( stats.length == 0 ) {
+			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			return;
+		}
+		if( stats.length > 1 ) {
+			Kiev.reportError(pos,"Umbigouse label "+ident+" in goto statement");
+		}
+		LabeledStat stat = stats[0];
+		if( stat == null ) {
+			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			return;
+		}
+		stat.lbl.addLink(this);
 	}
 
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
