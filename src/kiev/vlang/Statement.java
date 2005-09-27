@@ -622,7 +622,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
-@dflow(out="label")
+@dflow(out="join thenSt elseSt")
 public class IfElseStat extends Statement {
 
 	@att
@@ -636,10 +636,6 @@ public class IfElseStat extends Statement {
 	@att
 	@dflow(in="cond:false")
 	public Statement	elseSt;
-
-	@att
-	@dflow(in="join thenSt elseSt")
-	public Label		label;
 
 	public IfElseStat() {
 	}
@@ -940,6 +936,48 @@ public class BreakStat extends Statement {
 //	}
 
 	public boolean preResolve() {
+		ASTNode p;
+		if( ident == null ) {
+			for(p=parent; !(
+				p instanceof BreakTarget
+			 || p instanceof Method
+			 || (p instanceof BlockStat && p.isBreakTarget())
+			 				); p = p.parent );
+			if( p instanceof Method || p == null ) {
+				Kiev.reportError(pos,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getDFlowBrkLabel();
+					if (l != null)
+						l.addLink(this);
+				}
+			}
+		} else {
+	label_found:
+			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+				if( p instanceof LabeledStat &&
+					((LabeledStat)p).getName().equals(ident.name) )
+					throw new RuntimeException("Label "+ident+" does not refer to break target");
+				if( !(p instanceof BreakTarget || p instanceof BlockStat ) ) continue;
+				ASTNode pp = p;
+				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+					if( ((LabeledStat)p).getName().equals(ident.name) ) {
+						p = pp;
+						break label_found;
+					}
+				}
+				p = pp;
+			}
+			if( p instanceof Method || p == null) {
+				Kiev.reportError(pos,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getDFlowBrkLabel();
+					if (l != null)
+						l.addLink(this);
+				}
+			}
+		}
 		return false; // don't pre-resolve
 	}
 	
@@ -1022,6 +1060,43 @@ public class ContinueStat extends Statement/*defaults*/ {
 //	}
 
 	public boolean preResolve() {
+		ASTNode p;
+		if( ident == null ) {
+			for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
+			if( p instanceof Method || p == null ) {
+				Kiev.reportError(pos,"Continue not within loop statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getDFlowCntLabel();
+					if (l != null)
+						l.addLink(this);
+				}
+			}
+		} else {
+	label_found:
+			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
+				if( p instanceof LabeledStat && ((LabeledStat)p).getName().equals(ident.name) )
+					throw new RuntimeException("Label "+ident+" does not refer to continue target");
+				if !(p instanceof LoopStat) continue;
+				ASTNode pp = p;
+				for(p=p.parent; p instanceof LabeledStat; p = p.parent) {
+					if( ((LabeledStat)p).getName().equals(ident.name) ) {
+						p = pp;
+						break label_found;
+					}
+				}
+				p = pp;
+			}
+			if( p instanceof Method || p == null) {
+				Kiev.reportError(pos,"Continue not within loop statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getDFlowCntLabel();
+					if (l != null)
+						l.addLink(this);
+				}
+			}
+		}
 		return false; // don't pre-resolve
 	}
 	

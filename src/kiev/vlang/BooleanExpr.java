@@ -760,7 +760,7 @@ public class InstanceofExpr extends BoolExpr {
 			DFState out_tru = expr.getDFlowOut();
 			out_tru = addNodeTypeInfo(out_tru);
 			DFState out_fls = expr.getDFlowOut();
-			df.out = getDFlowIn().joinInfo(out_tru, out_fls);
+			df.out = DFState.join(out_tru, out_fls);
 			df.tru = out_tru;
 			df.fls = out_fls;
 		}

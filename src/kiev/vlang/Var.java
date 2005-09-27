@@ -389,56 +389,55 @@ changed:;
 		return dfs;
 	}
 
-	public DFState joinInfo(DFState state1, DFState state2) {
-		return joinInfo(state1.states, state2.states);
-	}
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
-	public DFState joinInfo(List<ScopeNodeInfo> state1, List<ScopeNodeInfo> state2) {
-		List<ScopeNodeInfo> lst_done = List.Nil;
-		List<ScopeNodeInfo> base_states = states;
+	public static DFState join(DFState state1, DFState state2) {
+		List<ScopeNodeInfo> diff = List.Nil;
+		List<ScopeNodeInfo> base_states;
 		{
-			int len0 = base_states.length();
-			int len1 = state1.length();
-			int len2 = state2.length();
-			int min = Math.min(len0,Math.min(len1,len2));
-			List<ScopeNodeInfo> s1 = state1;
-			List<ScopeNodeInfo> s2 = state2;
-			for (int i=len0-min; i > 0; i--) base_states = base_states.tail();
+			int len1 = state1.states.length();
+			int len2 = state2.states.length();
+			int min = Math.min(len1,len2);
+			List<ScopeNodeInfo> s1 = state1.states;
+			List<ScopeNodeInfo> s2 = state2.states;
 			for (int i=len1-min; i > 0; i--) s1 = s1.tail();
 			for (int i=len2-min; i > 0; i--) s2 = s2.tail();
-			while (s1 != s2 || s1 != base_states) {
+			while (s1 != s2) {
 				s1 = s1.tail();
 				s2 = s2.tail();
-				base_states = base_states.tail();
+			}
+			base_states = s1;
+			min = base_states.length();
+			for (s1=state1.states; s1 != base_states; s1=s1.tail()) {
+				ScopeNodeInfo sni = s1.head();
+				if !(diff.contains(sni))
+					diff = new List.Cons<ScopeNodeInfo>(sni,diff);
+			}
+			for (s2=state2.states; s2 != base_states; s2=s2.tail()) {
+				ScopeNodeInfo sni = s2.head();
+				if !(diff.contains(sni))
+					diff = new List.Cons<ScopeNodeInfo>(sni,diff);
 			}
 		}
 		List<ScopeNodeInfo> states = base_states;
-		for(List<ScopeNodeInfo> lst1=state1; lst1 != base_states; lst1=lst1.tail()) {
-			ScopeNodeInfo sni1 = lst1.head();
-			if (lst_done.contains(sni1))
+		foreach(ScopeNodeInfo sni; diff) {
+			ScopeNodeInfo sni1 = state1.getNodeInfo(sni.getPath());
+			ScopeNodeInfo sni2 = state2.getNodeInfo(sni.getPath());
+			if (sni1 == null || sni2 == null)
 				continue;
-			lst_done = new List.Cons<ScopeNodeInfo>(sni1, lst_done);
-			for(List<ScopeNodeInfo> lst2=state2; lst2 != base_states; lst2=lst2.tail()) {
-				ScopeNodeInfo sni2 = lst2.head();
-				if (sni1.equals(sni2)) {
-					ScopeNodeInfo sni = (ScopeNodeInfo)sni1.clone();
-					sni.setupDeclType();
-					Type[] types = sni.types;
-					foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
-						foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
-							types = addAccessType(types,Type.leastCommonType(t1,t2));
-					}
-					sni.types = types;
-					states = new List.Cons<ScopeNodeInfo>(sni, states);
-					trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
-				}
+			sni = (ScopeNodeInfo)sni.clone();
+			sni.setupDeclType();
+			Type[] types = sni.types;
+			foreach(Type t1; sni1.types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
+				foreach(Type t2; sni2.types; t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
+					types = addAccessType(types,Type.leastCommonType(t1,t2));
 			}
+			sni.types = types;
+			states = new List.Cons<ScopeNodeInfo>(sni, states);
+			trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+states);
-		if (states == this.states)
-			return this;
 		DFState dfs = new DFState(states);
 		return dfs;
 	}
@@ -635,7 +634,7 @@ public class DataFlow extends NodeData {
 	public final boolean isCalculated() {
 		return state_out != null;
 	}
-	
+		
 	void reset() {
 		state_in = null;
 		state_out = null;
@@ -649,8 +648,9 @@ public class DataFlow extends NodeData {
 		return state_in;
 	}
 	public DFState get$out() {
-		if !(isCalculated())
+		if !(isCalculated()) {
 			owner.getDFlowOut();
+		}
 		return state_out;
 	}
 	public final DFState get$tru() {
@@ -668,35 +668,5 @@ public class DataFlow extends NodeData {
 	public final void set$out(DFState out) { state_out = out; }
 	public final void set$tru(DFState tru) { state_tru = tru; }
 	public final void set$fls(DFState fls) { state_fls = fls; }
-}
-
-public final class DataFlowLabel extends DataFlow {
-	public DFState[] state_lnks = DFState.emptyArray;
-	
-	public DataFlowLabel(ASTNode owner) {
-		super(owner);
-	}
-	
-	public void addLink(DFState lnk) {
-		int sz = state_lnks.length;
-		DFState[] tmp = new DFState[sz+1];
-		for (int i=0; i < sz; i++)
-			tmp[i] = state_lnks[i];
-		tmp[sz] = lnk;
-		state_lnks = tmp;
-		this.reset();
-		return;
-	}
-	
-	public DFState get$out() {
-		if !(isCalculated()) {
-			DFState base = this.in;
-			DFState out = base;
-			foreach (DFState lnk; state_lnks)
-				out = base.joinInfo(out,lnk);
-			this.set$out(out);
-		}
-		return super.get$out();
-	}
 }
 

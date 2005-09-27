@@ -71,16 +71,16 @@ public abstract class ASTNode implements Constants {
 
 	public int				pos;
 	
-    @ref(copyable=false)
+	@ref(copyable=false)
 	public ASTNode			parent;
-    @ref(copyable=false)
+	@ref(copyable=false)
 	public AttrSlot			pslot;
-    @ref(copyable=false)
+	@ref(copyable=false)
 	public ASTNode			pprev;
-    @ref(copyable=false)
+	@ref(copyable=false)
 	public ASTNode			pnext;
 	
-    @ref(copyable=false)
+	@ref(copyable=false)
 	public NodeData			ndata;
 
 	public int				flags;
@@ -352,14 +352,15 @@ public abstract class ASTNode implements Constants {
 	// get incoming data flow for this node
 	public DFState getDFlowIn() {
 		DataFlow df = getDFlow();
-		if !(df.isInitialized())
+		if !(df.isInitialized()) {
 			df.in = parent.getDFlowIn(this);
+		}
 		return df.in;
 	}
 	
 	
 	// get outgoing data flow for this node
-	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9]+) ([\\:a-zA-Z_0-9]+)( from ([\\:a-zA-Z_0-9]+))?");
+	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9]+) ([\\:a-zA-Z_0-9]+)");
 	
 	public DFState getDFlowOut() {
 		DataFlow df = getDFlow();
@@ -384,12 +385,7 @@ public abstract class ASTNode implements Constants {
 		} else {
 			DFState s1 = getDFStateByName(m.group(1));
 			DFState s2 = getDFStateByName(m.group(2));
-			DFState base;
-			if (m.group(3) == null)
-				base = getDFlowIn();
-			else
-				base = getDFStateByName(m.group(4));
-			return base.joinInfo(s1,s2);
+			return DFState.join(s1,s2);
 		}
 	}
 	private DFState getDFStateByName(String expr) {

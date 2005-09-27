@@ -48,20 +48,31 @@ public class Label extends DNode {
 			df.reset();
 	}
 
-	// build data flow for this node
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
-		if (df == null)
-			df = new DataFlowLabel(this);
-		return df;
+	private static class DFLoopException extends RuntimeException {
+		Label label;
+		DFLoopException(Label l) { this.label = l; }
 	}
-	
+	private boolean lock;
 	public DFState getDFlowOut() {
-		DataFlowLabel df = (DataFlowLabel)getDFlow();
+		DataFlow df = getDFlow();
 		if (df.isCalculated())
 			return df.out;
-		foreach (ASTNode n; links)
-			df.addLink(n.getDFlowOut());
+		DFState tmp = df.in;
+		df.out = tmp;
+		if (lock)
+			throw new DFLoopException(this);
+		lock = true;
+		try {
+			foreach (ASTNode n; links) {
+				try {
+					DFState s = n.getDFlowOut();
+					tmp = DFState.join(s,tmp);
+				} catch (DFLoopException e) {
+					if (e.label != this) throw e;
+				}
+			}
+		} finally { lock = false; }
+		df.out = tmp;
 		return df.out;
 	}
 	

@@ -38,7 +38,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 
 	protected	CodeLabel	continue_label = null;
 	protected	CodeLabel	break_label = null;
-
+	
 	protected LoopStat() {
 	}
 
@@ -58,24 +58,53 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 			throw new RuntimeException("Wrong generation phase for getting 'break' label");
 		return break_label;
 	}
+
+	public abstract Label getDFlowCntLabel();
+	public abstract Label getDFlowBrkLabel();
 }
 
 
 @node
+@dflow(out="lblbrk")
 public class WhileStat extends LoopStat {
 
-	@att public ENode		cond;
-	@att public Statement	body;
+	@att(copyable=false)
+	@dflow(in="")
+	public Label		lblcnt;
+
+	@att
+	@dflow(in="lblcnt")
+	public ENode		cond;
+	
+	@att
+	@dflow(in="cond:true")
+	public Statement	body;
+	
+	@att(copyable=false)
+	@dflow(in="cond:false")
+	public Label		lblbrk;
 
 	public WhileStat() {
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 
 	public WhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos, parent);
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
+	public Label getDFlowCntLabel() { return lblcnt; }
+	public Label getDFlowBrkLabel() { return lblbrk; }
+	
+	public boolean preResolve() {
+		lblcnt.addLink(body);
+		return true;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -133,20 +162,58 @@ public class WhileStat extends LoopStat {
 }
 
 @node
+@dflow(out="lblbrk")
 public class DoWhileStat extends LoopStat {
 
-	@att public ENode		cond;
-	@att public Statement	body;
+	@att(copyable=false)
+	@dflow(in="")
+	public Label		lbltmp1;
+
+	@att
+	@dflow(in="lbltmp1")
+	public Statement	body;
+
+	@att(copyable=false)
+	@dflow(in="body")
+	public Label		lblcnt;
+
+	@att
+	@dflow(in="lblcnt")
+	public ENode		cond;
+	
+	@att(copyable=false)
+	@dflow(in="cond:true")
+	public Label		lbltmp2;
+
+	@att(copyable=false)
+	@dflow(in="cond:false")
+	public Label		lblbrk;
 
 	public DoWhileStat() {
+		this.lbltmp1 = new Label();
+		this.lbltmp2 = new Label();
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 
 	public DoWhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos,parent);
+		this.lbltmp1 = new Label();
+		this.lbltmp2 = new Label();
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
+	public Label getDFlowCntLabel() { return lblcnt; }
+	public Label getDFlowBrkLabel() { return lblbrk; }
+	
+	public boolean preResolve() {
+		lbltmp1.addLink(lbltmp2);
+		return true;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -257,24 +324,65 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
+@dflow(out="lblbrk")
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
-	@att public ENode		init;
-	@att public ENode		cond;
-	@att public ENode		iter;
-	@att public Statement	body;
+	@att
+	@dflow(in="")
+	public ENode		init;
+
+	@att(copyable=false)
+	@dflow(in="init")
+	public Label		lbltmp;
+
+	@att
+	@dflow(in="lbltmp")
+	public ENode		cond;
+	
+	@att
+	@dflow(in="cond:true")
+	public Statement	body;
+
+	@att(copyable=false)
+	@dflow(in="body")
+	public Label		lblcnt;
+
+	@att
+	@dflow(in="lblcnt")
+	public ENode		iter;
+	
+	@att(copyable=false)
+	@dflow(in="cond:false")
+	public Label		lblbrk;
 
 	public ForStat() {
+		this.lbltmp = new Label();
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 	
 	public ForStat(int pos, ASTNode parent, ENode init, Expr cond, Expr iter, Statement body) {
 		super(pos, parent);
+		this.lbltmp = new Label();
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 		this.init = init;
 		this.cond = cond;
 		this.iter = iter;
 		this.body = body;
 	}
 
+	public Label getDFlowCntLabel() { return lblcnt; }
+	public Label getDFlowBrkLabel() { return lblbrk; }
+	
+	public boolean preResolve() {
+		if (iter != null)
+			lbltmp.addLink(iter);
+		else
+			lbltmp.addLink(lblcnt);
+		return true;
+	}
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -455,6 +563,9 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.body = body;
 	}
 
+	public Label getDFlowCntLabel() { return null; }
+	public Label getDFlowBrkLabel() { return null; }
+	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {

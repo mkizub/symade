@@ -276,7 +276,6 @@ kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlow kiev/vlang/DataFlow kiev\vlang\Var.java
-kiev.vlang.DataFlowLabel kiev/vlang/DataFlowLabel kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java
@@ -316,6 +315,7 @@ kiev.vlang.InterfaceMethodCP kiev/vlang/InterfaceMethodCP kiev\vlang\ConstPool.j
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.KievAttr kiev/vlang/KievAttr kiev\vlang\Attr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\ComplexStatement.java
+kiev.vlang.Label.DFLoopException kiev/vlang/Label$DFLoopException kiev\vlang\ComplexStatement.java
 kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
 kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vlang\LvalueExpr.java

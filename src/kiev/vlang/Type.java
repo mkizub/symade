@@ -503,8 +503,9 @@ public class Type implements StdTypes, AccessFlags, Named {
 	public static Type leastCommonType(Type tp1, Type tp2) {
 		Type tp = tp1;
 		while( tp != null ) {
-			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) ) return tp;
-			tp = tp.clazz.super_type;
+			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) )
+				return tp;
+			tp = tp.getSuperType();
 		}
 		return tp;
 	}
