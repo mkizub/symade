@@ -101,7 +101,9 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow(this);
+			df = new DataFlow();
+			df.owner = this;
+			this.addNodeData(df);
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < params_redir.length; i++) {
 				in = in.declNode(params_redir[i].new_var);
@@ -622,7 +624,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
-@dflow(out="join thenSt elseSt")
+@dflow(out="lblout")
 public class IfElseStat extends Statement {
 
 	@att
@@ -637,11 +639,17 @@ public class IfElseStat extends Statement {
 	@dflow(in="cond:false")
 	public Statement	elseSt;
 
+	@att(copyable=false)
+	@dflow(in="join thenSt elseSt")
+	public Label		lblout;
+
 	public IfElseStat() {
+		this.lblout = new Label();
 	}
 	
 	public IfElseStat(int pos, ASTNode parent, Expr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
+		this.lblout = new Label();
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;

@@ -81,16 +81,22 @@ public class WhileStat extends LoopStat {
 	public Statement	body;
 	
 	@att(copyable=false)
+	@dflow(in="body")
+	public Label		lbltmp;
+
+	@att(copyable=false)
 	@dflow(in="cond:false")
 	public Label		lblbrk;
 
 	public WhileStat() {
+		this.lbltmp = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 	}
 
 	public WhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos, parent);
+		this.lbltmp = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.cond = cond;
@@ -101,7 +107,7 @@ public class WhileStat extends LoopStat {
 	public Label getDFlowBrkLabel() { return lblbrk; }
 	
 	public boolean preResolve() {
-		lblcnt.addLink(body);
+		lblcnt.addLink(lbltmp);
 		return true;
 	}
 	
@@ -333,10 +339,10 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	@att(copyable=false)
 	@dflow(in="init")
-	public Label		lbltmp;
+	public Label		lbltmp1;
 
 	@att
-	@dflow(in="lbltmp")
+	@dflow(in="lbltmp1")
 	public ENode		cond;
 	
 	@att
@@ -352,18 +358,24 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	public ENode		iter;
 	
 	@att(copyable=false)
+	@dflow(in="iter")
+	public Label		lbltmp2;
+
+	@att(copyable=false)
 	@dflow(in="cond:false")
 	public Label		lblbrk;
 
 	public ForStat() {
-		this.lbltmp = new Label();
+		this.lbltmp2 = new Label();
+		this.lbltmp1 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 	}
 	
 	public ForStat(int pos, ASTNode parent, ENode init, Expr cond, Expr iter, Statement body) {
 		super(pos, parent);
-		this.lbltmp = new Label();
+		this.lbltmp2 = new Label();
+		this.lbltmp1 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.init = init;
@@ -376,10 +388,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	public Label getDFlowBrkLabel() { return lblbrk; }
 	
 	public boolean preResolve() {
-		if (iter != null)
-			lbltmp.addLink(iter);
-		else
-			lbltmp.addLink(lblcnt);
+		lbltmp1.addLink(lbltmp2);
 		return true;
 	}
 	

@@ -513,7 +513,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow(this);
+			df = new DataFlow();
+			df.owner = this;
+			this.addNodeData(df);
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
 				Var p = getThisPar();

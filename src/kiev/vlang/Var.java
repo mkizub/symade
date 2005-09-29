@@ -609,8 +609,16 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 
 public class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
+
+	Hashtable<String,DataFlow> children = new Hashtable<String,DataFlow>();
 	
-	final public ASTNode owner;
+	public String func_in;
+	public String func_out;
+	public String func_tru;
+	public String func_fls;
+	public boolean is_seq;
+
+	public ASTNode owner;
 	private DFState state_in;
 	private DFState state_out;
 	private DFState state_tru;
@@ -621,10 +629,22 @@ public class DataFlow extends NodeData {
 	virtual abstract public DFState tru;
 	virtual abstract public DFState fls;
 
-	public DataFlow(ASTNode owner) {
+	public DataFlow() {
 		super(ID);
-		this.owner = owner;
-		owner.addNodeData(this);
+		this.func_in = "";
+		this.func_out = "";
+		this.func_tru = "";
+		this.func_fls = "";
+		this.is_seq = false;
+	}
+	
+	public void nodeDetached() {
+		owner.delNodeData(ID);
+	}
+	
+	public void dataDetached() {
+		reset();
+		owner = null;
 	}
 	
 	public final boolean isInitialized() {

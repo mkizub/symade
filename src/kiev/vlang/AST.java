@@ -61,6 +61,10 @@ public abstract class NodeData {
 	public NodeData(KString id) {
 		this.id = id;
 	}
+	public void nodeAttached() {}
+	public void dataAttached() {}
+	public void nodeDetached() {}
+	public void dataDetached() {}
 };
 
 @node
@@ -178,11 +182,23 @@ public abstract class ASTNode implements Constants {
 	};
 
 	public void callbackDetached() {
+		NodeData nd = ndata;
+		while (nd != null) {
+			NodeData nx = nd.next;
+			nd.nodeDetached();
+			nd = nx;
+		}
 		parent.callbackChildChanged(pslot);
 	}
 	
 	public void callbackAttached() {
 		parent.callbackChildChanged(pslot);
+		NodeData nd = ndata;
+		while (nd != null) {
+			NodeData nx = nd.next;
+			nd.nodeAttached();
+			nd = nx;
+		}
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
@@ -237,16 +253,21 @@ public abstract class ASTNode implements Constants {
 	public void addNodeData(NodeData d) {
 		for (NodeData nd = ndata; nd != null; nd = nd.next) {
 			if (nd.id == d.id) {
+				if (nd == d)
+					return;
+				nd.dataDetached();
 				d.prev = nd.prev;
 				d.next = nd.next;
 				if (nd.prev != null) { d.prev.next = d; nd.prev = null; }
 				if (nd.next != null) { d.next.prev = d; nd.next = null; }
+				d.dataAttached();
 				return;
 			}
 		}
 		d.next = ndata;
 		if (d.next != null) d.next.prev = d;
 		ndata = d;
+		d.dataAttached();
 	}
 	
 	public void delNodeData(KString id) {
@@ -257,6 +278,7 @@ public abstract class ASTNode implements Constants {
 				if (nd.next != null) nd.next.prev = nd.prev;
 				nd.prev = null;
 				nd.next = null;
+				nd.dataDetached();
 				return;
 			}
 		}
@@ -277,76 +299,61 @@ public abstract class ASTNode implements Constants {
 		throw new RuntimeException("Internal error: no field "+name+" in "+getClass());
 	}
 	
-	// get data flow for a child node
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		java.lang.reflect.Field jf = getDeclaredField(name);
-		kiev.vlang.dflow df = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
-		if (df == null)
-			return getDFlowIn();
-		String in = df.in().intern();
-		if (child.pslot.is_space && df.seq() && child.pprev != null)
-			return child.pprev.getDFlowOut();
-		return getDFStateOfExpr(in);
-//		if (in == "" || in == "this")
-//			return getDFlowIn();
-//		int p = in.indexOf(':');
-//		if (p < 0) {
-//			Object obj = getVal(in);
-//			if (obj instanceof ASTNode)
-//				return ((ASTNode)obj).getDFlowOut();
-//			return getDFlowIn(in);
-//		}
-//		String port = in.substring(p+1).intern();
-//		in = in.substring(0,p).intern();
-//		Object obj = getVal(in);
-//		if (obj instanceof ASTNode) {
-//			if (port == "true")
-//				return ((ASTNode)obj).getDFlowTru();
-//			if (port == "false")
-//				return ((ASTNode)obj).getDFlowFls();
-//			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
-//		}
-//		return getDFlowIn(in);
-//		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
-	}
-	
-	public DFState getDFlowIn(String name) {
-		java.lang.reflect.Field jf = getDeclaredField(name);
-		kiev.vlang.dflow df = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
-		if (df == null)
-			return getDFlowIn();
-		String in = df.in().intern();
-		return getDFStateOfExpr(in);
-//		if (in == "" || in == "this")
-//			return getDFlowIn();
-//		int p = in.indexOf(':');
-//		if (p < 0) {
-//			Object obj = getVal(in);
-//			if (obj instanceof ASTNode)
-//				return ((ASTNode)obj).getDFlowOut();
-//			return getDFlowIn(in);
-//		}
-//		String port = in.substring(p+1).intern();
-//		in = in.substring(0,p).intern();
-//		Object obj = getVal(in);
-//		if (obj instanceof ASTNode) {
-//			if (port == "true")
-//				return ((ASTNode)obj).getDFlowTru();
-//			if (port == "false")
-//				return ((ASTNode)obj).getDFlowFls();
-//			throw new CompilerException(pos,"Internal error: getDFlowIn("+in+":"+port+") for "+getClass());
-//		}
-//		return getDFlowIn(in);
-//		//throw new CompilerException(pos,"Internal error: getDFlowIn(child) not implemented for "+getClass());
-	}
-	
 	// build data flow for this node
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
-		if (df == null)
-			df = new DataFlow(this);
+		if (df == null) {
+			df = parent.getDFlowFor(pslot.name);
+			assert(df.owner == null);
+			kiev.vlang.dflow dfd = (kiev.vlang.dflow)this.getClass().getAnnotation(kiev.vlang.dflow.class);
+			String fout="", ftru="", ffls="";
+			if (dfd != null) {
+				fout = dfd.out().intern();
+				ftru = dfd.tru().intern();
+				ffls = dfd.fls().intern();
+			}
+			if (pslot.is_space) {
+				boolean is_seq = df.is_seq;
+				df = new DataFlow();
+				df.is_seq = is_seq;
+			}
+			df.func_out = fout;
+			df.func_tru = ftru;
+			df.func_fls = ffls;
+			df.owner = this;
+			this.addNodeData(df);
+		}
 		return df;
+	}
+	
+	// build data flow for a child node
+	private DataFlow getDFlowFor(String name) {
+		DataFlow df = getDFlow().children.get(name);
+		if (df == null) {
+			df = new DataFlow();
+			java.lang.reflect.Field jf = getDeclaredField(name);
+			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+			df = new DataFlow();
+			if (dfd != null) {
+				df.func_in = dfd.in().intern();
+				df.is_seq = dfd.seq();
+			}
+			getDFlow().children.put(name,df);
+		}
+		return df;
+	}
+	
+	// get data flow for a child node
+	public DFState getDFlowIn(ASTNode child) {
+		DataFlow df = getDFlowFor(child.pslot.name);
+		if (child.pslot.is_space && df.is_seq && child.pprev != null)
+			return child.pprev.getDFlowOut();
+		return getDFStateOfExpr(df.func_in);
+	}
+	
+	public DFState getDFlowIn(String name) {
+		DataFlow df = getDFlowFor(name);
+		return getDFStateOfExpr(df.func_in);
 	}
 	
 	// get incoming data flow for this node
@@ -366,15 +373,12 @@ public abstract class ASTNode implements Constants {
 		DataFlow df = getDFlow();
 		if (df.isCalculated())
 			return df.out;
-		kiev.vlang.dflow dfmeta = (kiev.vlang.dflow)getClass().getAnnotation(kiev.vlang.dflow.class);
 		df.out = getDFlowIn();
-		if (dfmeta != null) {
-			if (dfmeta.tru() != "" || dfmeta.fls() != "") {
-				df.tru = getDFStateOfExpr(dfmeta.tru());
-				df.fls = getDFStateOfExpr(dfmeta.fls());
-			}
-			df.out = getDFStateOfExpr(dfmeta.out());
+		if (df.func_tru != "" || df.func_fls != "") {
+			df.tru = getDFStateOfExpr(df.func_tru);
+			df.fls = getDFStateOfExpr(df.func_fls);
 		}
+		df.out = getDFStateOfExpr(df.func_out);
 		return df.out;
 	}
 	

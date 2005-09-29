@@ -1818,7 +1818,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow(this);
+			df = new DataFlow();
+			df.owner = this;
+			this.addNodeData(df);
 			df.in = DFState.makeNewState();
 			df.out = DFState.makeNewState();
 		}
