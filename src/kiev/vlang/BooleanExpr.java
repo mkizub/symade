@@ -185,12 +185,16 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		if( expr1.getPriority() < opBooleanOrPriority )
+		if (expr1 == null)
+			sb.append("(?)");
+		else if( expr1.getPriority() < opBooleanOrPriority )
 			sb.append('(').append(expr1).append(')');
 		else
 			sb.append(expr1);
 		sb.append(BinaryOperator.BooleanOr.image);
-		if( expr2.getPriority() < opBooleanOrPriority )
+		if (expr2 == null)
+			sb.append("(?)");
+		else if( expr2.getPriority() < opBooleanOrPriority )
 			sb.append('(').append(expr2).append(')');
 		else
 			sb.append(expr2);
@@ -206,7 +210,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			BoolExpr.checkBool(expr1);
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			getDFlowOut();
+			getDFlow().out();
 		} finally {
 			PassInfo.pop(this);
 		}
@@ -688,7 +692,7 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
-@dflow
+@dflow(out="join this:true this:false", tru="this:?tru", fls="expr")
 public class InstanceofExpr extends BoolExpr {
 	@dflow(in="")
 	@att public ENode		expr;
@@ -754,17 +758,8 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState out_tru = expr.getDFlowOut();
-			out_tru = addNodeTypeInfo(out_tru);
-			DFState out_fls = expr.getDFlowOut();
-			df.out = DFState.join(out_tru, out_fls);
-			df.tru = out_tru;
-			df.fls = out_fls;
-		}
-		return df.out;
+	public DFState calcDFlowTru() {
+		return addNodeTypeInfo(getDFlow().in());
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {

@@ -35,11 +35,20 @@ import syntax kiev.Syntax;
  *
  */
 @node
+@dflow(out="args")
 public class CallExpr extends Expr {
-	@att public ENode				obj;
-	@ref public Method				func;
-	@att public final NArr<ENode>	args;
-	public boolean					super_flag;
+	@att
+	@dflow(in="")
+	public ENode				obj;
+	
+	@ref
+	public Method				func;
+	
+	@att
+	@dflow(in="obj", seq=true)
+	public final NArr<ENode>	args;
+	
+	public boolean				super_flag;
 
 	public CallExpr() {
 	}

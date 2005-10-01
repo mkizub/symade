@@ -62,7 +62,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
-@dflow
+@dflow(out="this:?out")
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
@@ -101,32 +101,21 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow();
-			df.owner = this;
-			this.addNodeData(df);
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < params_redir.length; i++) {
 				in = in.declNode(params_redir[i].new_var);
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
-			df.in = in;
+			df = new DataFlow(new DataFlowInFixed(in));
+			this.addNodeData(df);
 		}
 		return df;
 	}
 	
-	public DFState getDFlowIn() {
-		DataFlow df = getDFlow();
-		return df.in;
-	}
-	
-	public DFState getDFlowOut() {
-		return parent.getDFlowIn(this);
+	public DFState calcDFlowOut() {
+		return parent.getDFlowFor(pslot.name).in();
 	}
 
-	public DFState getDFlowIn(ASTNode child) {
-		return getDFlowIn();
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		Type[] types = new Type[params_redir.length];
@@ -186,7 +175,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 }
 
 @node
-@dflow
+@dflow(out="this:?out")
 public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
 	@dflow(in="", seq=true)
@@ -313,22 +302,18 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 //		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 //	}
 	
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			if (stats.length > 0) {
-				if (vars.length > 0)
-					df.out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
-				else
-					df.out = stats[stats.length-1].getDFlowOut();
-			}
-			else {
-				df.out = getDFlowIn();
-			}
+	public DFState calcDFlowOut() {
+		Vector<Var> vars = new Vector<Var>();
+		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+		if (stats.length > 0) {
+			if (vars.length > 0)
+				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
+			else
+				return stats[stats.length-1].getDFlow().out();
 		}
-		return df.out;
+		else {
+			return getDFlow().in();
+		}
 	}
 	
 	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {

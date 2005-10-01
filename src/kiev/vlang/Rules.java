@@ -149,9 +149,6 @@ public class RuleMethod extends Method {
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow();
-			df.owner = this;
-			this.addNodeData(df);
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
 				Var p = getThisPar();
@@ -164,8 +161,8 @@ public class RuleMethod extends Method {
 			for(int i=0; i < localvars.length; i++) {
 				in = in.declNode(localvars[i]);
 			}
-			df.in = in;
-			df.out = DFState.makeNewState();
+			df = new DataFlow(new DataFlowInFixed(in));
+			this.addNodeData(df);
 		}
 		return df;
 	}
@@ -405,17 +402,9 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 			this.stats.add(st);
 	}
 
-	public DFState getDFlowIn(ASTNode child) {
-		return getDFlowIn();
-	}
-	
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			df.out = getDFlowIn();
-		}
-		return df.out;
-	}
+//	public DFState getDFlowIn(ASTNode child) {
+//		return getDFlowIn();
+//	}
 	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);

@@ -175,7 +175,7 @@ public class TypeClassExpr extends Expr {
 }
 
 @node
-@dflow
+@dflow(out="this:?out")
 public class AssignExpr extends LvalueExpr {
 	
 	@ref public AssignOperator	op;
@@ -352,7 +352,7 @@ public class AssignExpr extends LvalueExpr {
 				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
 			}
 		}
-		getDFlowOut();
+		getDFlow().out();
 
 		// Set violation of the field
 		if( lval instanceof StaticFieldAccessExpr
@@ -375,12 +375,8 @@ public class AssignExpr extends LvalueExpr {
 		return this;
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			df.out = addNodeTypeInfo(value.getDFlowOut());
-		}
-		return df.out;
+	public DFState calcDFlowOut() {
+		return addNodeTypeInfo(value.getDFlow().out());
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {
@@ -1043,7 +1039,7 @@ public class CommaExpr extends Expr {
 }
 
 @node
-@dflow
+@dflow(out="this:?out")
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
 	@dflow(in="", seq=true)
@@ -1152,28 +1148,24 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			if (res != null) {
-				if (vars.length > 0)
-					df.out = res.getDFlowOut().cleanInfoForVars(vars.toArray());
-				else
-					df.out = res.getDFlowOut();
-			}
-			else if (stats.length > 0) {
-				if (vars.length > 0)
-					df.out = stats[stats.length-1].getDFlowOut().cleanInfoForVars(vars.toArray());
-				else
-					df.out = stats[stats.length-1].getDFlowOut();
-			}
-			else {
-				df.out = getDFlowIn();
-			}
+	public DFState calcDFlowOut() {
+		Vector<Var> vars = new Vector<Var>();
+		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+		if (res != null) {
+			if (vars.length > 0)
+				return res.getDFlow().out().cleanInfoForVars(vars.toArray());
+			else
+				return res.getDFlow().out();
 		}
-		return df.out;
+		else if (stats.length > 0) {
+			if (vars.length > 0)
+				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
+			else
+				return stats[stats.length-1].getDFlow().out();
+		}
+		else {
+			return getDFlow().in();
+		}
 	}
 	
 	public void generate(Type reqType) {

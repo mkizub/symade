@@ -33,6 +33,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
+@dflow(out="this:?out")
 public class Var extends DNode implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];
@@ -84,18 +85,14 @@ public class Var extends DNode implements Named, Typed {
 
 	public Type	getType() { return type; }
 
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if !(df.isCalculated()) {
-			DFState out = getDFlowIn();
-			if (init != null)
-				out = init.getDFlowOut();
-			out = out.declNode(this);
-			if( init != null && init.getType() != Type.tpVoid )
-				out = out.setNodeValue(new DNode[]{this},init);
-			df.out = out;
-		}
-		return df.out;
+	public DFState calcDFlowOut() {
+		DFState out = getDFlow().in();
+		if (init != null)
+			out = init.getDFlow().out();
+		out = out.declNode(this);
+		if( init != null && init.getType() != Type.tpVoid )
+			out = out.setNodeValue(new DNode[]{this},init);
+		return out;
 	}
 	
 	public void resolveDecl() {
@@ -120,7 +117,7 @@ public class Var extends DNode implements Named, Typed {
 					Kiev.reportError(pos,e);
 				}
 			}
-			getDFlowOut();
+			getDFlow().out();
 		} finally { PassInfo.pop(this); }
 		setResolved(true);
 	}
@@ -610,83 +607,199 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 public class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
 
-	Hashtable<String,DataFlow> children = new Hashtable<String,DataFlow>();
-	
-	public String func_in;
-	public String func_out;
-	public String func_tru;
-	public String func_fls;
-	public boolean is_seq;
+	DataFlowIn  df_in;
+	DataFlowOut df_out;
 
+	public DataFlow(DataFlowIn df_in) {
+		super(ID);
+		assert(df_in != null);
+		this.df_in = df_in;
+	}
+	
+	public void nodeAttached(ASTNode n) {
+		n.delNodeData(ID);
+	}
+	
+	public void dataAttached(ASTNode n) {
+		assert(df_out == null);
+		kiev.vlang.dflow dfd = (kiev.vlang.dflow)n.getClass().getAnnotation(kiev.vlang.dflow.class);
+		String fout="", ftru="", ffls="";
+		if (dfd != null) {
+			fout = dfd.out().intern();
+			ftru = dfd.tru().intern();
+			ffls = dfd.fls().intern();
+		}
+		df_out = new DataFlowOutFunc(n, fout, ftru, ffls);
+	}
+	
+	public void nodeDetached(ASTNode n) {
+		n.delNodeData(ID);
+	}
+	
+	public void dataDetached(ASTNode n) {
+		df_out = null;
+	}
+	
+	public final DFState in() {
+		return df_in.calcDFStateIn();
+	}
+	public DFState out() {
+		if (df_out == null)
+			return df_in.calcDFStateIn();
+		return df_out.calcDFStateOut();
+	}
+	public final DFState tru() {
+		if (df_out == null)
+			return df_in.calcDFStateIn();
+		return df_out.calcDFStateTru();
+	}
+	public final DFState fls() {
+		if (df_out == null)
+			return df_in.calcDFStateIn();
+		return df_out.calcDFStateFls();
+	}
+}
+
+// DataFlowIn is owned and configured by a parent node, and calculates
+// input DFState for a child node
+public abstract class DataFlowIn {
+	public DataFlowIn() {
+	}
+	public abstract DFState calcDFStateIn();
+}
+
+public class DataFlowInFunc extends DataFlowIn {
 	public ASTNode owner;
 	private DFState state_in;
+	public final boolean is_seq;
+	public final String func_in;
+
+	public DataFlowInFunc(ASTNode owner, String func_in, boolean is_seq) {
+		this.owner = owner;
+		this.func_in = func_in;
+		this.is_seq = is_seq;
+	}
+	public DFState calcDFStateIn() {
+		if (state_in == null)
+			state_in = owner.getDFStateOfExpr(func_in);
+		return state_in;
+	}
+}
+
+public class DataFlowInSpace extends DataFlowIn {
+	public ASTNode owner;
+	DataFlowInFunc space_in;
+	public DataFlowInSpace(ASTNode owner, DataFlowIn space_in) {
+		this.owner = owner;
+		this.space_in = (DataFlowInFunc)space_in;
+	}
+	public DFState calcDFStateIn() {
+		if (space_in.is_seq && owner.pprev != null)
+			return owner.pprev.getDFlow().out();
+		else
+			return space_in.calcDFStateIn();
+	}
+}
+
+public class DataFlowInFixed extends DataFlowIn {
+	private DFState state_in;
+	public DataFlowInFixed(DFState state_in) {
+		this.state_in = state_in;
+	}
+	public DFState calcDFStateIn() {
+		return state_in;
+	}
+}
+
+// DataFlowOut is owned and configured by a node, and holds
+// DataFlow subnodes for chidlren nodes, and calculates out
+// DFState of the node
+public abstract class DataFlowOut {
+
+	// will be a set of fields (DataFlow nodes for children) in code-generation 
+	Hashtable<String,DataFlow> children = new Hashtable<String,DataFlow>();
+	
+	public ASTNode owner;
+	
+	public DataFlowOut(ASTNode owner) {
+		this.owner = owner;
+	}
+	public abstract DFState calcDFStateOut();
+	public abstract DFState calcDFStateTru();
+	public abstract DFState calcDFStateFls();
+	public abstract void reset();
+}
+public class DataFlowOutSpaceSeq extends DataFlowOut {
+	private final NArr<ASTNode> space;
+	DataFlowIn space_in;
+	public DataFlowOutSpaceSeq(ASTNode owner, NArr<ASTNode> space, DataFlowIn space_in) {
+		super(owner);
+		this.space = space;
+		this.space_in = space_in;
+	}
+	public DFState calcDFStateOut() {
+		if (space.size() == 0)
+			return space_in.calcDFStateIn();
+		return space[space.size()-1].getDFlow().out();
+	}
+	public DFState calcDFStateTru() { return calcDFStateOut(); }
+	public DFState calcDFStateFls() { return calcDFStateOut(); }
+	public void reset() {}
+}
+public class DataFlowOutFunc extends DataFlowOut {
+	public final String func_out;
+	public final String func_tru;
+	public final String func_fls;
+
 	private DFState state_out;
 	private DFState state_tru;
 	private DFState state_fls;
-	
-	virtual abstract public DFState in;
-	virtual abstract public DFState out;
-	virtual abstract public DFState tru;
-	virtual abstract public DFState fls;
 
-	public DataFlow() {
-		super(ID);
-		this.func_in = "";
-		this.func_out = "";
-		this.func_tru = "";
-		this.func_fls = "";
-		this.is_seq = false;
+	public DataFlowOutFunc(ASTNode owner, String func_out, String func_tru, String func_fls) {
+		super(owner);
+		this.func_out = func_out;
+		this.func_tru = func_tru;
+		this.func_fls = func_fls;
 	}
-	
-	public void nodeDetached() {
-		owner.delNodeData(ID);
-	}
-	
-	public void dataDetached() {
-		reset();
-		owner = null;
-	}
-	
-	public final boolean isInitialized() {
-		return state_in != null;
-	}
-	
-	public final boolean isCalculated() {
-		return state_out != null;
-	}
-		
-	void reset() {
-		state_in = null;
+	public void reset() {
 		state_out = null;
 		state_tru = null;
 		state_fls = null;
 	}
-	
-	public final DFState get$in() {
-		if !(isInitialized())
-			owner.getDFlowIn();
-		return state_in;
-	}
-	public DFState get$out() {
-		if !(isCalculated()) {
-			owner.getDFlowOut();
+	public DFState calcDFStateOut() {
+		if (state_out == null) {
+			if (func_tru != "" || func_fls != "") {
+				state_tru = owner.getDFStateOfExpr(func_tru);
+				state_fls = owner.getDFStateOfExpr(func_fls);
+			}
+			state_out = owner.getDFStateOfExpr(func_out);
 		}
 		return state_out;
 	}
-	public final DFState get$tru() {
-		if !(isCalculated())
-			owner.getDFlowOut();
+	public DFState calcDFStateTru() {
+		if (state_tru != null)
+			return state_tru;
+		if (state_out == null) {
+			if (func_tru != "" || func_fls != "") {
+				state_tru = owner.getDFStateOfExpr(func_tru);
+				state_fls = owner.getDFStateOfExpr(func_fls);
+			}
+			state_out = owner.getDFStateOfExpr(func_out);
+		}
 		return state_tru==null? state_out : state_tru;
 	}
-	public final DFState get$fls() {
-		if !(isCalculated())
-			owner.getDFlowOut();
+	public DFState calcDFStateFls() {
+		if (state_fls != null)
+			return state_fls;
+		if (state_out == null) {
+			if (func_tru != "" || func_fls != "") {
+				state_tru = owner.getDFStateOfExpr(func_tru);
+				state_fls = owner.getDFStateOfExpr(func_fls);
+			}
+			state_out = owner.getDFStateOfExpr(func_out);
+		}
 		return state_fls==null? state_out : state_fls;
 	}
-	
-	public final void set$in(DFState in) { state_in = in; }
-	public final void set$out(DFState out) { state_out = out; }
-	public final void set$tru(DFState tru) { state_tru = tru; }
-	public final void set$fls(DFState fls) { state_fls = fls; }
 }
+
 

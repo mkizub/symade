@@ -513,9 +513,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow();
-			df.owner = this;
-			this.addNodeData(df);
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
 				Var p = getThisPar();
@@ -525,37 +522,32 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Var p = params[i];
 				in = in.declNode(p);
 			}
-			df.in = in;
-			df.out = DFState.makeNewState();
+			df = new DataFlow(new DataFlowInFixed(in));
+			this.addNodeData(df);
 		}
 		return df;
 	}
 	
-	public DFState getDFlowIn() {
-		DataFlow df = getDFlow();
-		return df.in;
-	}
-	
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		return df.out;
-	}
-
-	public DFState getDFlowIn(ASTNode child) {
-		String name = child.pslot.name;
-		if (name == "body")
-			return getDFlowIn();
-		if (name == "conditions") {
-			WBCCondition cond = (WBCCondition)child;
-			if (cond.cond == WBCType.CondRequire)
-				return getDFlowIn();
-			else if (cond.cond == WBCType.CondEnsure)
-				return body.getDFlowOut();
-			else if (cond.cond == WBCType.CondInvariant)
-				return getDFlowOut();
-		}
-		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-	}
+//	public DFState getDFlowIn() {
+//		DataFlow df = getDFlow();
+//		return df.in;
+//	}
+//	
+//	public DFState getDFlowIn(ASTNode child) {
+//		String name = child.pslot.name;
+//		if (name == "body")
+//			return getDFlowIn();
+//		if (name == "conditions") {
+//			WBCCondition cond = (WBCCondition)child;
+//			if (cond.cond == WBCType.CondRequire)
+//				return getDFlowIn();
+//			else if (cond.cond == WBCType.CondEnsure)
+//				return body.getDFlowOut();
+//			else if (cond.cond == WBCType.CondInvariant)
+//				return getDFlowOut();
+//		}
+//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
+//	}
 	
 	public void resolveDecl() {
 		if( isResolved() ) return;

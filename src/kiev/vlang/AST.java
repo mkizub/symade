@@ -61,10 +61,10 @@ public abstract class NodeData {
 	public NodeData(KString id) {
 		this.id = id;
 	}
-	public void nodeAttached() {}
-	public void dataAttached() {}
-	public void nodeDetached() {}
-	public void dataDetached() {}
+	public void nodeAttached(ASTNode n) {}
+	public void dataAttached(ASTNode n) {}
+	public void nodeDetached(ASTNode n) {}
+	public void dataDetached(ASTNode n) {}
 };
 
 @node
@@ -185,7 +185,7 @@ public abstract class ASTNode implements Constants {
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
-			nd.nodeDetached();
+			nd.nodeDetached(this);
 			nd = nx;
 		}
 		parent.callbackChildChanged(pslot);
@@ -196,7 +196,7 @@ public abstract class ASTNode implements Constants {
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
-			nd.nodeAttached();
+			nd.nodeAttached(this);
 			nd = nx;
 		}
 	}
@@ -255,19 +255,19 @@ public abstract class ASTNode implements Constants {
 			if (nd.id == d.id) {
 				if (nd == d)
 					return;
-				nd.dataDetached();
 				d.prev = nd.prev;
 				d.next = nd.next;
 				if (nd.prev != null) { d.prev.next = d; nd.prev = null; }
 				if (nd.next != null) { d.next.prev = d; nd.next = null; }
-				d.dataAttached();
+				nd.dataDetached(this);
+				d.dataAttached(this);
 				return;
 			}
 		}
 		d.next = ndata;
 		if (d.next != null) d.next.prev = d;
 		ndata = d;
-		d.dataAttached();
+		d.dataAttached(this);
 	}
 	
 	public void delNodeData(KString id) {
@@ -278,7 +278,7 @@ public abstract class ASTNode implements Constants {
 				if (nd.next != null) nd.next.prev = nd.prev;
 				nd.prev = null;
 				nd.next = null;
-				nd.dataDetached();
+				nd.dataDetached(this);
 				return;
 			}
 		}
@@ -304,85 +304,53 @@ public abstract class ASTNode implements Constants {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
 			df = parent.getDFlowFor(pslot.name);
-			assert(df.owner == null);
-			kiev.vlang.dflow dfd = (kiev.vlang.dflow)this.getClass().getAnnotation(kiev.vlang.dflow.class);
-			String fout="", ftru="", ffls="";
-			if (dfd != null) {
-				fout = dfd.out().intern();
-				ftru = dfd.tru().intern();
-				ffls = dfd.fls().intern();
-			}
 			if (pslot.is_space) {
-				boolean is_seq = df.is_seq;
-				df = new DataFlow();
-				df.is_seq = is_seq;
+				df = new DataFlow(new DataFlowInSpace(this,df.df_in));
+				this.addNodeData(df);
+			} else {
+				assert(getNodeData(DataFlow.ID) == df);
 			}
-			df.func_out = fout;
-			df.func_tru = ftru;
-			df.func_fls = ffls;
-			df.owner = this;
-			this.addNodeData(df);
 		}
 		return df;
 	}
 	
 	// build data flow for a child node
-	private DataFlow getDFlowFor(String name) {
-		DataFlow df = getDFlow().children.get(name);
+	final DataFlow getDFlowFor(String name) {
+		DataFlow df = getDFlow().df_out.children.get(name);
 		if (df == null) {
-			df = new DataFlow();
 			java.lang.reflect.Field jf = getDeclaredField(name);
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
-			df = new DataFlow();
+			String fin = "";
+			boolean is_seq = false;
 			if (dfd != null) {
-				df.func_in = dfd.in().intern();
-				df.is_seq = dfd.seq();
+				fin = dfd.in().intern();
+				is_seq = dfd.seq();
 			}
-			getDFlow().children.put(name,df);
+			df = new DataFlow(new DataFlowInFunc(this,fin,is_seq));
+			if (is_seq)
+				df.df_out = new DataFlowOutSpaceSeq(this,(NArr<ASTNode>)getVal(name),df.df_in);
+			getDFlow().df_out.children.put(name,df);
+		}
+		if (df.df_out == null) {
+			Object obj = getVal(name);
+			if (obj instanceof ASTNode) {
+				ASTNode n = (ASTNode)obj;
+				n.delNodeData(DataFlow.ID);
+				n.addNodeData(df);
+			}
 		}
 		return df;
 	}
 	
-	// get data flow for a child node
-	public DFState getDFlowIn(ASTNode child) {
-		DataFlow df = getDFlowFor(child.pslot.name);
-		if (child.pslot.is_space && df.is_seq && child.pprev != null)
-			return child.pprev.getDFlowOut();
-		return getDFStateOfExpr(df.func_in);
-	}
-	
-	public DFState getDFlowIn(String name) {
-		DataFlow df = getDFlowFor(name);
-		return getDFStateOfExpr(df.func_in);
-	}
-	
-	// get incoming data flow for this node
-	public DFState getDFlowIn() {
-		DataFlow df = getDFlow();
-		if !(df.isInitialized()) {
-			df.in = parent.getDFlowIn(this);
-		}
-		return df.in;
-	}
-	
-	
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9]+) ([\\:a-zA-Z_0-9]+)");
 	
-	public DFState getDFlowOut() {
-		DataFlow df = getDFlow();
-		if (df.isCalculated())
-			return df.out;
-		df.out = getDFlowIn();
-		if (df.func_tru != "" || df.func_fls != "") {
-			df.tru = getDFStateOfExpr(df.func_tru);
-			df.fls = getDFStateOfExpr(df.func_fls);
-		}
-		df.out = getDFStateOfExpr(df.func_out);
-		return df.out;
-	}
-	
-	private DFState getDFStateOfExpr(String expr) {
+	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
+	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
+	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
+	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
+
+	final DFState getDFStateOfExpr(String expr) {
 		java.util.regex.Matcher m = join_pattern.matcher(expr);
 		if !(m.matches()) {
 			return getDFStateByName(expr);
@@ -395,54 +363,44 @@ public abstract class ASTNode implements Constants {
 	private DFState getDFStateByName(String expr) {
 		expr = expr.intern();
 		if (expr == "" || expr == "this")
-			return getDFlowIn();
+			return getDFlow().in();
 		int p = expr.indexOf(':');
 		if (p < 0) {
-			Object obj = getVal(expr);
-			if (obj instanceof ASTNode)
-				return ((ASTNode)obj).getDFlowOut();
-			else
-				return getDFlowIn(expr);
+			return getDFlowFor(expr).out();
 		}
 		String port = expr.substring(p+1).intern();
 		expr = expr.substring(0,p).intern();
 		if (expr == "" || expr == "this") {
-			if (port == "true")
-				return getDFlowTru();
-			else if (port == "false")
-				return getDFlowFls();
+			if (port == "true" || port == "tru")
+				return getDFlow().tru();
+			else if (port == "false" || port == "fls")
+				return getDFlow().fls();
 			else if (port == "in")
-				return getDFlowIn();
+				return getDFlow().in();
 			else if (port == "out")
-				return getDFlowOut();
+				return getDFlow().out();
+			else if (port == "?true" || port == "?tru")
+				return calcDFlowTru();
+			else if (port == "?false" || port == "?fls")
+				return calcDFlowFls();
+			else if (port == "?in")
+				return calcDFlowIn();
+			else if (port == "?out")
+				return calcDFlowOut();
 			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
-		} else {
-			Object obj = getVal(expr);
-			if (obj instanceof ASTNode) {
-				if (port == "true")
-					return ((ASTNode)obj).getDFlowTru();
-				else if (port == "false")
-					return ((ASTNode)obj).getDFlowFls();
-				else if (port == "in")
-					return ((ASTNode)obj).getDFlowIn();
-				else if (port == "out")
-					return ((ASTNode)obj).getDFlowOut();
-				throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
-			}
-			return getDFlowIn(expr);
 		}
-	}
-	
-	// get outgoing data flow for this node
-	public DFState getDFlowTru() {
-		DataFlow df = getDFlow();
-		return df.tru;
-	}
-	
-	// get outgoing data flow for this node
-	public DFState getDFlowFls() {
-		DataFlow df = getDFlow();
-		return df.fls;
+		else {
+			DataFlow df = getDFlowFor(expr);
+			if (port == "true" || port == "tru")
+				return df.tru();
+			else if (port == "false" || port == "fls")
+				return df.fls();
+			else if (port == "in")
+				return df.in();
+			else if (port == "out")
+				return df.out();
+			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
+		}
 	}
 	
 	public boolean preGenerate()	{ return true; }

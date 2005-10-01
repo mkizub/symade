@@ -43,9 +43,9 @@ public class Label extends DNode {
 	
 	public void addLink(ASTNode lnk) {
 		links.addUniq(lnk);
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
-		if (df != null)
-			df.reset();
+		DataFlow df = getDFlow();
+		if (df.df_out != null)
+			df.df_out.reset();
 	}
 
 	private static class DFLoopException extends RuntimeException {
@@ -53,27 +53,23 @@ public class Label extends DNode {
 		DFLoopException(Label l) { this.label = l; }
 	}
 	private boolean lock;
-	public DFState getDFlowOut() {
+	public DFState calcDFlowOut() {
 		DataFlow df = getDFlow();
-		if (df.isCalculated())
-			return df.out;
-		DFState tmp = df.in;
-		df.out = tmp;
+		DFState tmp = df.in();
 		if (lock)
 			throw new DFLoopException(this);
 		lock = true;
 		try {
 			foreach (ASTNode n; links) {
 				try {
-					DFState s = n.getDFlowOut();
+					DFState s = n.getDFlow().out();
 					tmp = DFState.join(s,tmp);
 				} catch (DFLoopException e) {
 					if (e.label != this) throw e;
 				}
 			}
 		} finally { lock = false; }
-		df.out = tmp;
-		return df.out;
+		return tmp;
 	}
 	
 }
