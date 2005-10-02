@@ -36,9 +36,6 @@ import syntax kiev.Syntax;
 @node
 public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
 
-	protected	CodeLabel	continue_label = null;
-	protected	CodeLabel	break_label = null;
-	
 	protected LoopStat() {
 	}
 
@@ -47,29 +44,69 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 		setBreakTarget(true);
 	}
 
-	public CodeLabel getContinueLabel() {
-		if( continue_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
-		return continue_label;
-	}
-
-	public CodeLabel getBreakLabel() {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
-	}
-
-	public abstract Label getDFlowCntLabel();
-	public abstract Label getDFlowBrkLabel();
+	public abstract Label getCntLabel();
+	public abstract Label getBrkLabel();
 }
 
+
+@node
+@dflow(out="this:out()")
+public class Label extends DNode {
+	
+	@ref(copyable=false)
+	public List<DataFlow>	links;
+	
+	CodeLabel				label;
+	
+	public Label() {
+		links = List.Nil;
+	}
+	
+	public void addLink(DataFlow lnk) {
+		if (links.contains(lnk))
+			return;
+		links = new List.Cons<DataFlow>(lnk, links);
+		DataFlow df = getDFlow();
+		if (df.df_out != null)
+			df.df_out.reset();
+	}
+
+	private boolean lock;
+	public DFState calcDFlowOut() {
+		DataFlow df = getDFlow();
+		DFState tmp = df.in();
+		if (lock)
+			throw new DFLoopException(df);
+		lock = true;
+		try {
+			foreach (DataFlow lnk; links) {
+				try {
+					DFState s = lnk.out();
+					tmp = DFState.join(s,tmp);
+				} catch (DFLoopException e) {
+					if (e.label != df) throw e;
+				}
+			}
+		} finally { lock = false; }
+		return tmp;
+	}
+	
+	public CodeLabel getCodeLabel() {
+		if( label == null ) label = Code.newLabel();
+		return label;
+	}
+	public void generate(Type reqType) {
+		if( label == null ) label = Code.newLabel();
+		Code.addInstr(Instr.set_label,getCodeLabel());
+	}
+}
 
 @node
 @dflow(out="lblbrk")
 public class WhileStat extends LoopStat {
 
 	@att(copyable=false)
-	@dflow(in="")
+	@dflow(in="", links="body")
 	public Label		lblcnt;
 
 	@att
@@ -81,35 +118,24 @@ public class WhileStat extends LoopStat {
 	public Statement	body;
 	
 	@att(copyable=false)
-	@dflow(in="body")
-	public Label		lbltmp;
-
-	@att(copyable=false)
 	@dflow(in="cond:false")
 	public Label		lblbrk;
 
 	public WhileStat() {
-		this.lbltmp = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 	}
 
 	public WhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos, parent);
-		this.lbltmp = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getDFlowCntLabel() { return lblcnt; }
-	public Label getDFlowBrkLabel() { return lblbrk; }
-	
-	public boolean preResolve() {
-		lblcnt.addLink(lbltmp);
-		return true;
-	}
+	public Label getCntLabel() { return lblcnt; }
+	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
@@ -131,16 +157,16 @@ public class WhileStat extends LoopStat {
 		trace(Kiev.debugStatGen,"\tgenerating WhileStat");
 		PassInfo.push(this);
 		try {
-			continue_label = Code.newLabel();
-			break_label = Code.newLabel();
+			lblcnt.label = Code.newLabel();
+			lblbrk.label = Code.newLabel();
 			CodeLabel body_label = Code.newLabel();
 
-			Code.addInstr(Instr.op_goto,continue_label);
+			Code.addInstr(Instr.op_goto,lblcnt.label);
 			Code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.set_label,continue_label);
+			lblcnt.generate(Type.tpVoid);
 
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
@@ -149,7 +175,7 @@ public class WhileStat extends LoopStat {
 			} else {
 				BoolExpr.gen_iftrue(cond, body_label);
 			}
-			Code.addInstr(Instr.set_label,break_label);
+			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
@@ -171,12 +197,8 @@ public class WhileStat extends LoopStat {
 @dflow(out="lblbrk")
 public class DoWhileStat extends LoopStat {
 
-	@att(copyable=false)
-	@dflow(in="")
-	public Label		lbltmp1;
-
 	@att
-	@dflow(in="lbltmp1")
+	@dflow(in="", links="cond:true")
 	public Statement	body;
 
 	@att(copyable=false)
@@ -188,37 +210,24 @@ public class DoWhileStat extends LoopStat {
 	public ENode		cond;
 	
 	@att(copyable=false)
-	@dflow(in="cond:true")
-	public Label		lbltmp2;
-
-	@att(copyable=false)
 	@dflow(in="cond:false")
 	public Label		lblbrk;
 
 	public DoWhileStat() {
-		this.lbltmp1 = new Label();
-		this.lbltmp2 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 	}
 
 	public DoWhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
 		super(pos,parent);
-		this.lbltmp1 = new Label();
-		this.lbltmp2 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getDFlowCntLabel() { return lblcnt; }
-	public Label getDFlowBrkLabel() { return lblbrk; }
-	
-	public boolean preResolve() {
-		lbltmp1.addLink(lbltmp2);
-		return true;
-	}
+	public Label getCntLabel() { return lblcnt; }
+	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
@@ -244,8 +253,8 @@ public class DoWhileStat extends LoopStat {
 		trace(Kiev.debugStatGen,"\tgenerating DoWhileStat");
 		PassInfo.push(this);
 		try {
-			continue_label = Code.newLabel();
-			break_label = Code.newLabel();
+			lblcnt.label = Code.newLabel();
+			lblbrk.label = Code.newLabel();
 			CodeLabel body_label = Code.newLabel();
 
 // Differ from WhileStat in this:	Code.addInstr(Instr.op_goto,continue_label);
@@ -253,7 +262,7 @@ public class DoWhileStat extends LoopStat {
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.set_label,continue_label);
+			lblcnt.generate(Type.tpVoid);
 
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
@@ -262,7 +271,7 @@ public class DoWhileStat extends LoopStat {
 			} else {
 				BoolExpr.gen_iftrue(cond, body_label);
 			}
-			Code.addInstr(Instr.set_label,break_label);
+			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
@@ -340,12 +349,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="")
 	public ENode		init;
 
-	@att(copyable=false)
-	@dflow(in="init")
-	public Label		lbltmp1;
-
 	@att
-	@dflow(in="lbltmp1")
+	@dflow(in="init", links="iter")
 	public ENode		cond;
 	
 	@att
@@ -361,24 +366,16 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	public ENode		iter;
 	
 	@att(copyable=false)
-	@dflow(in="iter")
-	public Label		lbltmp2;
-
-	@att(copyable=false)
 	@dflow(in="cond:false")
 	public Label		lblbrk;
 
 	public ForStat() {
-		this.lbltmp2 = new Label();
-		this.lbltmp1 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 	}
 	
 	public ForStat(int pos, ASTNode parent, ENode init, Expr cond, Expr iter, Statement body) {
 		super(pos, parent);
-		this.lbltmp2 = new Label();
-		this.lbltmp1 = new Label();
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.init = init;
@@ -387,11 +384,10 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.body = body;
 	}
 
-	public Label getDFlowCntLabel() { return lblcnt; }
-	public Label getDFlowBrkLabel() { return lblbrk; }
+	public Label getCntLabel() { return lblcnt; }
+	public Label getBrkLabel() { return lblbrk; }
 	
 	public boolean preResolve() {
-		lbltmp1.addLink(lbltmp2);
 		return true;
 	}
 	
@@ -460,8 +456,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForStat");
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
+		lblcnt.label = Code.newLabel();
+		lblbrk.label = Code.newLabel();
 		CodeLabel body_label = Code.newLabel();
 		CodeLabel check_label = Code.newLabel();
 
@@ -489,7 +485,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
 
-			Code.addInstr(Instr.set_label,continue_label);
+			lblcnt.generate(Type.tpVoid);
 			if( iter != null )
 				iter.generate(Type.tpVoid);
 
@@ -502,7 +498,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			} else {
 				Code.addInstr(Instr.op_goto,body_label);
 			}
-			Code.addInstr(Instr.set_label,break_label);
+			lblbrk.generate(Type.tpVoid);
 
 			if( init != null && init instanceof ForInit ) {
 				ForInit fi = (ForInit)init;
@@ -543,18 +539,44 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
+@dflow(out="lblbrk")
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
-	@att public Var			var;
-	@att public Var			iter;
-	@att public Var			iter_array;
-	@att public ENode		iter_init;
-	@att public ENode		iter_cond;
-	@att public ENode		iter_incr;
-	@att public ENode		var_init;
 	@att public ENode		container;
-	@att public ENode		cond;
-	@att public Statement	body;
+
+	@att @dflow(in="")		public Var			var;
+	@att @dflow(in="var")	public Var			iter;
+	@att @dflow(in="iter")	public Var			iter_array;
+	
+	@att
+	@dflow(in="iter_array")
+	public ENode								iter_init;
+	
+	@att
+	@dflow(in="iter_init", links="iter_incr")
+	public ENode								iter_cond;
+	
+	@att
+	@dflow(in="iter_cond:true")
+	public ENode								var_init;
+	@att
+	@dflow(in="var_init")
+	public ENode								cond;
+	@att
+	@dflow(in="cond:true")
+	public Statement							body;
+
+	@att(copyable=false)
+	@dflow(in="body", links="cond:false")
+	public Label								lblcnt;
+
+	@att
+	@dflow(in="lblcnt")
+	public ENode								iter_incr;
+
+	@att(copyable=false)
+	@dflow(in="iter_cond:false")
+	public Label								lblbrk;
 
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
@@ -565,18 +587,22 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public int			mode;
 
 	public ForEachStat() {
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 	
 	public ForEachStat(int pos, ASTNode parent, Var var, ENode container, ENode cond, Statement body) {
 		super(pos, parent);
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 		this.var = var;
 		this.container = container;
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getDFlowCntLabel() { return null; }
-	public Label getDFlowBrkLabel() { return null; }
+	public Label getCntLabel() { return lblcnt; }
+	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
@@ -591,7 +617,6 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			//	or if container is an array:
 			//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
 			//		type x = x$arr[ x$iter ];
-			//
 			//		if( !cond ) continue;
 			//		...
 			//	}
@@ -841,8 +866,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForEachStat");
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
+		lblcnt.label = Code.newLabel();
+		lblbrk.label = Code.newLabel();
 		CodeLabel body_label = Code.newLabel();
 		CodeLabel check_label = Code.newLabel();
 
@@ -867,12 +892,12 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			if( var_init != null)
 				var_init.generate(Type.tpVoid);
 			if( cond != null )
-				BoolExpr.gen_iffalse(cond, continue_label);
+				BoolExpr.gen_iffalse(cond, lblcnt.label);
 
 			body.generate(Type.tpVoid);
 
 			// Continue - iterate iterator and check iterator condition
-			Code.addInstr(Instr.set_label,continue_label);
+			lblcnt.generate(Type.tpVoid);
 			if( iter_incr != null )
 				iter_incr.generate(Type.tpVoid);
 
@@ -888,7 +913,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			if( iter != null )
 				Code.removeVar(iter);
 
-			Code.addInstr(Instr.set_label,break_label);
+			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }

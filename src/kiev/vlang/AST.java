@@ -321,16 +321,24 @@ public abstract class ASTNode implements Constants {
 			java.lang.reflect.Field jf = getDeclaredField(name);
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
 			String fin = "";
+			String[] flnk = null;
 			String seq = "";
 			if (dfd != null) {
 				fin = dfd.in().intern();
+				flnk = dfd.links();
 				seq = dfd.seq().intern();
 				assert (seq=="true" || seq=="false" || seq=="");
 			}
-			if (seq != "")
-				df = new DataFlowSpace(this,(NArr<ASTNode>)getVal(name),fin,seq=="true");
-			else
+			if (seq != "") {
+				assert (flnk == null || flnk.length == 0);
+				df = new DataFlowSpace((NArr<ASTNode>)getVal(name),fin,seq=="true");
+			}
+			else if (flnk == null || flnk.length == 0) {
 				df = new DataFlowFunc(this,fin);
+			}
+			else {
+				df = new DataFlowLabel(this,fin,flnk);
+			}
 			getDFlow().df_out.children.put(name,df);
 		}
 		if (df.df_out == null) {
@@ -351,7 +359,7 @@ public abstract class ASTNode implements Constants {
 	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
 	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
 	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
-
+/*
 	final DFState getDFStateOfExpr(String expr) {
 		java.util.regex.Matcher m = join_pattern.matcher(expr);
 		if !(m.matches()) {
@@ -404,7 +412,7 @@ public abstract class ASTNode implements Constants {
 			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
 		}
 	}
-	
+*/	
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }
 	

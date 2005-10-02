@@ -52,6 +52,7 @@ public @interface dflow {
 	String fls() default "";
 	String out() default "";
 	String seq() default "";
+	String[] links() default {};
 }
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es

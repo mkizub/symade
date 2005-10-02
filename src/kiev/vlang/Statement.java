@@ -609,7 +609,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 }
 
 @node
-@dflow(out="lblout")
+@dflow(out="join thenSt elseSt")
 public class IfElseStat extends Statement {
 
 	@att
@@ -624,17 +624,11 @@ public class IfElseStat extends Statement {
 	@dflow(in="cond:false")
 	public Statement	elseSt;
 
-	@att(copyable=false)
-	@dflow(in="join thenSt elseSt")
-	public Label		lblout;
-
 	public IfElseStat() {
-		this.lblout = new Label();
 	}
 	
 	public IfElseStat(int pos, ASTNode parent, Expr cond, Statement thenSt, Statement elseSt) {
 		super(pos,parent);
-		this.lblout = new Label();
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
@@ -865,8 +859,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	@dflow(in="lbl")
 	public Statement		stat;
 
-	protected CodeLabel	tag_label = null;
-
 	public LabeledStat() {
 		lbl = new Label();
 	}
@@ -897,16 +889,15 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
 		PassInfo.push(this);
 		try {
-			Code.addInstr(Instr.set_label,getLabel());
+			lbl.generate(Type.tpVoid);
 			stat.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(stat.getPos(),e);
 		} finally { PassInfo.pop(this); }
 	}
 
-	public CodeLabel getLabel() {
-		if( tag_label == null ) tag_label = Code.newLabel();
-		return tag_label;
+	public CodeLabel getCodeLabel() {
+		return lbl.getCodeLabel();
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -940,9 +931,9 @@ public class BreakStat extends Statement {
 				Kiev.reportError(pos,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getDFlowBrkLabel();
+					Label l = ((LoopStat)p).getBrkLabel();
 					if (l != null)
-						l.addLink(this);
+						l.addLink(getDFlow());
 				}
 			}
 		} else {
@@ -965,9 +956,9 @@ public class BreakStat extends Statement {
 				Kiev.reportError(pos,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getDFlowBrkLabel();
+					Label l = ((LoopStat)p).getBrkLabel();
 					if (l != null)
-						l.addLink(this);
+						l.addLink(getDFlow());
 				}
 			}
 		}
@@ -1012,8 +1003,9 @@ public class BreakStat extends Statement {
 			Object[] lb = PassInfo.resolveBreakLabel(ident==null?null:ident.name);
 			int i=0;
 			for(; i < lb.length-1; i++)
-				if( lb[i] instanceof CodeLabel )
+				if( lb[i] instanceof CodeLabel ) {
 					Code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
+				}
 				else {
 					Code.addInstr(Instr.op_load,(Var)lb[i]);
 					Code.addInstr(Instr.op_monitorexit);
@@ -1060,9 +1052,9 @@ public class ContinueStat extends Statement/*defaults*/ {
 				Kiev.reportError(pos,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getDFlowCntLabel();
+					Label l = ((LoopStat)p).getCntLabel();
 					if (l != null)
-						l.addLink(this);
+						l.addLink(getDFlow());
 				}
 			}
 		} else {
@@ -1084,9 +1076,9 @@ public class ContinueStat extends Statement/*defaults*/ {
 				Kiev.reportError(pos,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getDFlowCntLabel();
+					Label l = ((LoopStat)p).getCntLabel();
 					if (l != null)
-						l.addLink(this);
+						l.addLink(getDFlow());
 				}
 			}
 		}
@@ -1156,7 +1148,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return false;
 		}
-		stat.lbl.addLink(this);
+		stat.lbl.addLink(getDFlow());
 		return false; // don't pre-resolve
 	}
 	
@@ -1175,7 +1167,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return;
 		}
-		stat.lbl.addLink(this);
+		stat.lbl.addLink(getDFlow());
 	}
 
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {
@@ -1306,7 +1298,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			if( cl1[i] != cl2[i] ) break;
 		Object[] cl3 = new Object[ cl2.length - i + 1 ];
 		System.arraycopy(cl2,i,cl3,0,cl3.length-1);
-		cl3[cl3.length-1] = stat.getLabel();
+		cl3[cl3.length-1] = stat.getCodeLabel();
 		return cl3;
 	}
 
@@ -1429,7 +1421,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 					lb = sw.getBreakLabel();
 			}
 			else if( !((Expr)expr).isConstantExpr() )
-				lb = sw.getContinueLabel();
+				lb = sw.getCntLabel().getCodeLabel();
 			else {
 				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
 				foreach(ASTNode an; sw.cases) {

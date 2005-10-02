@@ -34,47 +34,6 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Label extends DNode {
-	
-	@ref
-	public final NArr<ASTNode> links;
-	
-	public Label() {}
-	
-	public void addLink(ASTNode lnk) {
-		links.addUniq(lnk);
-		DataFlow df = getDFlow();
-		if (df.df_out != null)
-			df.df_out.reset();
-	}
-
-	private static class DFLoopException extends RuntimeException {
-		Label label;
-		DFLoopException(Label l) { this.label = l; }
-	}
-	private boolean lock;
-	public DFState calcDFlowOut() {
-		DataFlow df = getDFlow();
-		DFState tmp = df.in();
-		if (lock)
-			throw new DFLoopException(this);
-		lock = true;
-		try {
-			foreach (ASTNode n; links) {
-				try {
-					DFState s = n.getDFlow().out();
-					tmp = DFState.join(s,tmp);
-				} catch (DFLoopException e) {
-					if (e.label != this) throw e;
-				}
-			}
-		} finally { lock = false; }
-		return tmp;
-	}
-	
-}
-
-@node
 @dflow(out="stats")
 public class CaseLabel extends ENode implements ScopeOfNames {
 
@@ -285,7 +244,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 }
 
 @node
-@dflow
+@dflow(out="lblbrk")
 public class SwitchStat extends BlockStat implements BreakTarget {
 
 	@dflow
@@ -298,9 +257,16 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
+	@att
+	@dflow(in="cases")
+	public Label						lblcnt;
+
+	@att
+	@dflow(in="cases")
+	public Label						lblbrk;
+
 	public CodeSwitch	cosw;
-	protected CodeLabel	break_label = null;
-	protected CodeLabel	continue_label = null;
+	
 
 	public static final int NORMAL_SWITCH = 0;
 	public static final int PIZZA_SWITCH = 1;
@@ -310,10 +276,14 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public int mode = NORMAL_SWITCH;
 
 	public SwitchStat() {
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 	}
 
 	public SwitchStat(int pos, ASTNode parent, ENode sel, CaseLabel[] cases) {
 		super(pos, parent);
+		this.lblcnt = new Label();
+		this.lblbrk = new Label();
 		this.sel = sel;
 		this.cases.addAll(cases);
 		defCase = null;
@@ -322,17 +292,6 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 
 	public String toString() { return "switch("+sel+")"; }
 
-//	public DFState getDFlowIn(ASTNode child) {
-//		String name = child.pslot.name;
-//		if (name == "sel") {
-//			return getDFlowIn();
-//		}
-//		if (name == "cases") {
-//			return sel.getDFlowOut();
-//		}
-//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-//	}
-	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
@@ -564,16 +523,11 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		setResolved(true);
 	}
 
-	public CodeLabel getBreakLabel() {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
+	public Label getCntLabel() {
+		return lblcnt;
 	}
-
-	public CodeLabel getContinueLabel() {
-		if( continue_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
-		return continue_label;
+	public Label getBrkLabel() {
+		return lblbrk;
 	}
 
 	public void generate(Type reqType) {
@@ -608,15 +562,13 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			lookup_space_cost + 3 * lookup_time_cost;
 
 		PassInfo.push(this);
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
 		try {
 			if( mode == TYPE_SWITCH ) {
-				Code.addInstr(Instr.set_label,continue_label);
+				lblcnt.generate(null);
 				sel.generate(null);
 			} else {
 				sel.generate(null);
-				Code.addInstr(Instr.set_label,continue_label);
+				lblcnt.generate(null);
 			}
 			if( tabswitch ) {
 				cosw = Code.newTableSwitch(lo,hi);
@@ -639,7 +591,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 			}
 			Code.removeVars(vars.toArray());
 
-			Code.addInstr(Instr.set_label,break_label);
+			lblbrk.generate(null);
 			Code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);

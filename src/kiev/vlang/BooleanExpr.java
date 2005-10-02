@@ -164,7 +164,7 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 }
 
 @node
-@dflow(tru="join expr1:true expr2:true", fls="expr2:false", out="join this:true this:false")
+@dflow(tru="join expr1:true expr2:true", fls="expr2:false")
 public class BinaryBooleanOrExpr extends BoolExpr {
 	@att
 	@dflow
@@ -255,7 +255,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 
 @node
-@dflow(fls="join expr1:false expr2:false", tru="expr2:true", out="join this:true this:false")
+@dflow(fls="join expr1:false expr2:false", tru="expr2:true")
 public class BinaryBooleanAndExpr extends BoolExpr {
 	@dflow
 	@att public ENode			expr1;
@@ -692,7 +692,7 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
-@dflow(out="join this:true this:false", tru="this:tru()", fls="expr")
+@dflow(tru="this:tru()", fls="expr")
 public class InstanceofExpr extends BoolExpr {
 	@dflow(in="")
 	@att public ENode		expr;
@@ -808,7 +808,7 @@ public class InstanceofExpr extends BoolExpr {
 }
 
 @node
-@dflow(fls="expr:true", tru="expr:false", out="join this:true this:false")
+@dflow(fls="expr:true", tru="expr:false")
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(in="")

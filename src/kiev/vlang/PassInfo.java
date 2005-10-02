@@ -38,11 +38,11 @@ public interface Typed {
 }
 
 public interface BreakTarget {
-	public CodeLabel getBreakLabel();
+	public Label getBrkLabel();
 }
 
 public interface ContinueTarget {
-	public CodeLabel getContinueLabel();
+	public Label getCntLabel();
 }
 
 public interface Named {
@@ -459,7 +459,7 @@ public class PassInfo {
 				if( path[i] instanceof Method ) break;
 				if( ! (path[i] instanceof ContinueTarget) ) continue;
 				ContinueTarget t = (ContinueTarget)path[i];
-				return (Object[])Arrays.append(cl,t.getContinueLabel());
+				return (Object[])Arrays.append(cl,t.getCntLabel().getCodeLabel());
 			}
 			throw new RuntimeException("Continue not within loop statement");
 		} else {
@@ -479,7 +479,7 @@ public class PassInfo {
 					if( ! (st instanceof ContinueTarget) )
 						throw new RuntimeException("Label "+name+" does not refer to continue target");
 					ContinueTarget t = (ContinueTarget)st;
-					return (Object[])Arrays.append(cl,t.getContinueLabel());
+					return (Object[])Arrays.append(cl,t.getCntLabel().getCodeLabel());
 				}
 			}
 		}
@@ -505,7 +505,7 @@ public class PassInfo {
 				else continue;
 				if( path[i] instanceof BreakTarget ) {
 					BreakTarget t = (BreakTarget)path[i];
-					return (Object[])Arrays.append(cl,t.getBreakLabel());
+					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel());
 				}
 				else if( path[i] instanceof BlockStat && path[i].isBreakTarget() ){
 					BlockStat t = (BlockStat)path[i];
@@ -535,7 +535,7 @@ public class PassInfo {
 					if( ! (st instanceof BreakTarget || st instanceof BlockStat) )
 						throw new RuntimeException("Label "+name+" does not refer to break target");
 					if( st instanceof BreakTarget )
-						return (Object[])Arrays.append(cl,((BreakTarget)st).getBreakLabel());
+						return (Object[])Arrays.append(cl,((BreakTarget)st).getBrkLabel().getCodeLabel());
 					else
 						return (Object[])Arrays.append(cl,((BlockStat)st).getBreakLabel());
 				}
