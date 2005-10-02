@@ -276,13 +276,12 @@ kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlow kiev/vlang/DataFlow kiev\vlang\Var.java
-kiev.vlang.DataFlowIn kiev/vlang/DataFlowIn kiev\vlang\Var.java
-kiev.vlang.DataFlowInFixed kiev/vlang/DataFlowInFixed kiev\vlang\Var.java
-kiev.vlang.DataFlowInFunc kiev/vlang/DataFlowInFunc kiev\vlang\Var.java
-kiev.vlang.DataFlowInSpace kiev/vlang/DataFlowInSpace kiev\vlang\Var.java
+kiev.vlang.DataFlowFixed kiev/vlang/DataFlowFixed kiev\vlang\Var.java
+kiev.vlang.DataFlowFunc kiev/vlang/DataFlowFunc kiev\vlang\Var.java
 kiev.vlang.DataFlowOut kiev/vlang/DataFlowOut kiev\vlang\Var.java
 kiev.vlang.DataFlowOutFunc kiev/vlang/DataFlowOutFunc kiev\vlang\Var.java
-kiev.vlang.DataFlowOutSpaceSeq kiev/vlang/DataFlowOutSpaceSeq kiev\vlang\Var.java
+kiev.vlang.DataFlowSpace kiev/vlang/DataFlowSpace kiev\vlang\Var.java
+kiev.vlang.DataFlowSpaceNode kiev/vlang/DataFlowSpaceNode kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java

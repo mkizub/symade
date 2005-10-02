@@ -45,7 +45,7 @@ public class CallExpr extends Expr {
 	public Method				func;
 	
 	@att
-	@dflow(in="obj", seq=true)
+	@dflow(in="obj", seq="true")
 	public final NArr<ENode>	args;
 	
 	public boolean				super_flag;

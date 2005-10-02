@@ -80,7 +80,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public Attr[]									attrs = Attr.emptyArray;
 	
 	/** Array of methods defined in this structure */
-	@att public final NArr<DNode>					members;
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<DNode>					members;
 
 	protected Struct(ClazzName name) {
 		super(0,0);
@@ -1818,7 +1820,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlow(new DataFlowInFixed(DFState.makeNewState()));
+			df = new DataFlowFixed(DFState.makeNewState());
 			this.addNodeData(df);
 		}
 		return df;

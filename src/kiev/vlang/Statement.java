@@ -62,7 +62,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
-@dflow(out="this:?out")
+@dflow(out="this:out()")
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
@@ -106,7 +106,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 				in = in.declNode(params_redir[i].new_var);
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
-			df = new DataFlow(new DataFlowInFixed(in));
+			df = new DataFlowFixed(in);
 			this.addNodeData(df);
 		}
 		return df;
@@ -175,10 +175,10 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 }
 
 @node
-@dflow(out="this:?out")
+@dflow(out="this:out()")
 public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
 
-	@dflow(in="", seq=true)
+	@dflow(in="", seq="true")
 	@att public final NArr<ENode>		stats;
 	
 	private int resolve_pos;

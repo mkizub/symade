@@ -42,7 +42,7 @@ public class ASTCallAccessExpression extends Expr {
 
 	@att public ASTIdentifier			func;
 
-	@dflow(in="obj", seq=true)
+	@dflow(in="obj", seq="true")
     @att public final NArr<ENode>		args;
 
 	public ASTCallAccessExpression() {}

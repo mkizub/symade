@@ -34,8 +34,13 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewInitializedArrayExpression extends Expr {
-	@att public TypeRef					type;
-	@att public final NArr<ENode>		args;
+	@att
+	public TypeRef					type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>		args;
+	
 	public int dim;
 	
 	public void resolve(Type reqType) {

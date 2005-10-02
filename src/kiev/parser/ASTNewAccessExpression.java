@@ -34,9 +34,15 @@ import kiev.stdlib.*;
 
 @node
 public class ASTNewAccessExpression extends Expr {
-	@att public ENode				obj;
-	@att public TypeRef				type;
-	@att public final NArr<ENode>	args;
+	@att
+	public ENode				obj;
+	
+	@att
+	public TypeRef				type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
 
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {

@@ -522,7 +522,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Var p = params[i];
 				in = in.declNode(p);
 			}
-			df = new DataFlow(new DataFlowInFixed(in));
+			df = new DataFlowFixed(in);
 			this.addNodeData(df);
 		}
 		return df;

@@ -41,7 +41,7 @@ public class ASTCallExpression extends Expr {
 
 	@att public ASTIdentifier			func;
 
-	@dflow(in="", seq=true)
+	@dflow(in="", seq="true")
     @att public final NArr<ENode>		args;
 
 	public ASTCallExpression() {

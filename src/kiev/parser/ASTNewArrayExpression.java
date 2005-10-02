@@ -38,6 +38,7 @@ public class ASTNewArrayExpression extends Expr {
 	public TypeRef					type;
 	
 	@att
+	@dflow(in="", seq="true")
 	public final NArr<ENode>		args;
 	
 	public int dim;

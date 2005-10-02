@@ -161,7 +161,7 @@ public class RuleMethod extends Method {
 			for(int i=0; i < localvars.length; i++) {
 				in = in.declNode(localvars[i]);
 			}
-			df = new DataFlow(new DataFlowInFixed(in));
+			df = new DataFlowFixed(in);
 			this.addNodeData(df);
 		}
 		return df;
@@ -480,7 +480,9 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 @node
 public final class RuleOrExpr extends ASTRuleNode {
 
-	@att public final NArr<ASTRuleNode>	rules;
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<ASTRuleNode>	rules;
 
 	public int get$base() {	return rules[0].get$base(); }
 	public void set$base(int b) {}
@@ -533,7 +535,9 @@ public final class RuleOrExpr extends ASTRuleNode {
 @node
 public final class RuleAndExpr extends ASTRuleNode {
 
-	@att public final NArr<ASTRuleNode>	rules;
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ASTRuleNode>	rules;
 
 	public int get$base() {	return rules[0].get$base();	}
 	public void set$base(int b) {}
@@ -872,7 +876,9 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	@att public ENode				obj;
 	public Named					func;
-	@att public final NArr<ENode>	args;
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>		args;
 	public boolean					super_flag;
 	public int						env_var;
 

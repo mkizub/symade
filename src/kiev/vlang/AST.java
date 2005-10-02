@@ -305,7 +305,7 @@ public abstract class ASTNode implements Constants {
 		if (df == null) {
 			df = parent.getDFlowFor(pslot.name);
 			if (pslot.is_space) {
-				df = new DataFlow(new DataFlowInSpace(this,df.df_in));
+				df = new DataFlowSpaceNode(this,(DataFlowSpace)df);
 				this.addNodeData(df);
 			} else {
 				assert(getNodeData(DataFlow.ID) == df);
@@ -321,14 +321,16 @@ public abstract class ASTNode implements Constants {
 			java.lang.reflect.Field jf = getDeclaredField(name);
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
 			String fin = "";
-			boolean is_seq = false;
+			String seq = "";
 			if (dfd != null) {
 				fin = dfd.in().intern();
-				is_seq = dfd.seq();
+				seq = dfd.seq().intern();
+				assert (seq=="true" || seq=="false" || seq=="");
 			}
-			df = new DataFlow(new DataFlowInFunc(this,fin,is_seq));
-			if (is_seq)
-				df.df_out = new DataFlowOutSpaceSeq(this,(NArr<ASTNode>)getVal(name),df.df_in);
+			if (seq != "")
+				df = new DataFlowSpace(this,(NArr<ASTNode>)getVal(name),fin,seq=="true");
+			else
+				df = new DataFlowFunc(this,fin);
 			getDFlow().df_out.children.put(name,df);
 		}
 		if (df.df_out == null) {
@@ -343,7 +345,7 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	// get outgoing data flow for this node
-	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9]+) ([\\:a-zA-Z_0-9]+)");
+	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
 	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
 	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
@@ -379,13 +381,13 @@ public abstract class ASTNode implements Constants {
 				return getDFlow().in();
 			else if (port == "out")
 				return getDFlow().out();
-			else if (port == "?true" || port == "?tru")
+			else if (port == "true()" || port == "tru()")
 				return calcDFlowTru();
-			else if (port == "?false" || port == "?fls")
+			else if (port == "false()" || port == "fls()")
 				return calcDFlowFls();
-			else if (port == "?in")
+			else if (port == "in()")
 				return calcDFlowIn();
-			else if (port == "?out")
+			else if (port == "out()")
 				return calcDFlowOut();
 			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
 		}

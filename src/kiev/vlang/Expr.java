@@ -175,7 +175,7 @@ public class TypeClassExpr extends Expr {
 }
 
 @node
-@dflow(out="this:?out")
+@dflow(out="this:out()")
 public class AssignExpr extends LvalueExpr {
 	
 	@ref public AssignOperator	op;
@@ -973,7 +973,7 @@ public class StringConcatExpr extends Expr {
 @node
 @dflow
 public class CommaExpr extends Expr {
-	@dflow(in="", seq=true)
+	@dflow(in="", seq="true")
 	@att public final NArr<ENode>	exprs;
 
 	public CommaExpr() {
@@ -1039,10 +1039,10 @@ public class CommaExpr extends Expr {
 }
 
 @node
-@dflow(out="this:?out")
+@dflow(out="this:out()")
 public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 
-	@dflow(in="", seq=true)
+	@dflow(in="", seq="true")
 	@att public final NArr<ENode>		stats;
 	
 	@dflow(in="stats")

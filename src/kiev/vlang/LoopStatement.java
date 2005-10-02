@@ -283,9 +283,12 @@ public class DoWhileStat extends LoopStat {
 }
 
 @node
+@dflow(out="decls")
 public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 
-	@att public final NArr<Var>		decls;
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<Var>		decls;
 
 	public ForInit() {
 	}

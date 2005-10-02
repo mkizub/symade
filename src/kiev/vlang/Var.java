@@ -33,7 +33,7 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-@dflow(out="this:?out")
+@dflow(out="this:out()")
 public class Var extends DNode implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];
@@ -604,16 +604,13 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 	}
 }
 
-public class DataFlow extends NodeData {
+public abstract class DataFlow extends NodeData {
 	public static final KString ID = KString.from("data flow");
 
-	DataFlowIn  df_in;
 	DataFlowOut df_out;
 
-	public DataFlow(DataFlowIn df_in) {
+	public DataFlow() {
 		super(ID);
-		assert(df_in != null);
-		this.df_in = df_in;
 	}
 	
 	public void nodeAttached(ASTNode n) {
@@ -641,43 +638,36 @@ public class DataFlow extends NodeData {
 	}
 	
 	public final DFState in() {
-		return df_in.calcDFStateIn();
+		return calcDFStateIn();
 	}
 	public DFState out() {
 		if (df_out == null)
-			return df_in.calcDFStateIn();
+			return calcDFStateIn();
 		return df_out.calcDFStateOut();
 	}
 	public final DFState tru() {
 		if (df_out == null)
-			return df_in.calcDFStateIn();
+			return calcDFStateIn();
 		return df_out.calcDFStateTru();
 	}
 	public final DFState fls() {
 		if (df_out == null)
-			return df_in.calcDFStateIn();
+			return calcDFStateIn();
 		return df_out.calcDFStateFls();
 	}
-}
 
-// DataFlowIn is owned and configured by a parent node, and calculates
-// input DFState for a child node
-public abstract class DataFlowIn {
-	public DataFlowIn() {
-	}
 	public abstract DFState calcDFStateIn();
 }
 
-public class DataFlowInFunc extends DataFlowIn {
-	public ASTNode owner;
-	private DFState state_in;
-	public final boolean is_seq;
+public class DataFlowFunc extends DataFlow {
+	public final ASTNode owner;
 	public final String func_in;
 
-	public DataFlowInFunc(ASTNode owner, String func_in, boolean is_seq) {
+	private DFState state_in;
+	
+	public DataFlowFunc(ASTNode owner, String func_in) {
 		this.owner = owner;
 		this.func_in = func_in;
-		this.is_seq = is_seq;
 	}
 	public DFState calcDFStateIn() {
 		if (state_in == null)
@@ -686,12 +676,27 @@ public class DataFlowInFunc extends DataFlowIn {
 	}
 }
 
-public class DataFlowInSpace extends DataFlowIn {
+public class DataFlowSpace extends DataFlowFunc {
+	public final boolean is_seq;
+	private final NArr<ASTNode> space;
+	public DataFlowSpace(ASTNode owner, NArr<ASTNode> space, String func_in, boolean is_seq) {
+		super(owner, func_in);
+		this.space = space;
+		this.is_seq = is_seq;
+	}
+	public DFState out() {
+		if (space.size() == 0)
+			return in();
+		return space[space.size()-1].getDFlow().out();
+	}
+}
+
+public class DataFlowSpaceNode extends DataFlow {
 	public ASTNode owner;
-	DataFlowInFunc space_in;
-	public DataFlowInSpace(ASTNode owner, DataFlowIn space_in) {
+	DataFlowSpace space_in;
+	public DataFlowSpaceNode(ASTNode owner, DataFlowSpace space_in) {
 		this.owner = owner;
-		this.space_in = (DataFlowInFunc)space_in;
+		this.space_in = space_in;
 	}
 	public DFState calcDFStateIn() {
 		if (space_in.is_seq && owner.pprev != null)
@@ -701,9 +706,9 @@ public class DataFlowInSpace extends DataFlowIn {
 	}
 }
 
-public class DataFlowInFixed extends DataFlowIn {
+public class DataFlowFixed extends DataFlow {
 	private DFState state_in;
-	public DataFlowInFixed(DFState state_in) {
+	public DataFlowFixed(DFState state_in) {
 		this.state_in = state_in;
 	}
 	public DFState calcDFStateIn() {
@@ -728,23 +733,6 @@ public abstract class DataFlowOut {
 	public abstract DFState calcDFStateTru();
 	public abstract DFState calcDFStateFls();
 	public abstract void reset();
-}
-public class DataFlowOutSpaceSeq extends DataFlowOut {
-	private final NArr<ASTNode> space;
-	DataFlowIn space_in;
-	public DataFlowOutSpaceSeq(ASTNode owner, NArr<ASTNode> space, DataFlowIn space_in) {
-		super(owner);
-		this.space = space;
-		this.space_in = space_in;
-	}
-	public DFState calcDFStateOut() {
-		if (space.size() == 0)
-			return space_in.calcDFStateIn();
-		return space[space.size()-1].getDFlow().out();
-	}
-	public DFState calcDFStateTru() { return calcDFStateOut(); }
-	public DFState calcDFStateFls() { return calcDFStateOut(); }
-	public void reset() {}
 }
 public class DataFlowOutFunc extends DataFlowOut {
 	public final String func_out;

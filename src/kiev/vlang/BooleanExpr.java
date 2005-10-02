@@ -692,7 +692,7 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
-@dflow(out="join this:true this:false", tru="this:?tru", fls="expr")
+@dflow(out="join this:true this:false", tru="this:tru()", fls="expr")
 public class InstanceofExpr extends BoolExpr {
 	@dflow(in="")
 	@att public ENode		expr;

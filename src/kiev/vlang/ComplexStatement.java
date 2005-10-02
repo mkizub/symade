@@ -75,14 +75,24 @@ public class Label extends DNode {
 }
 
 @node
+@dflow(out="stats")
 public class CaseLabel extends ENode implements ScopeOfNames {
 
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att public ENode				val;
-	@ref public Type				type;
-	@att public final NArr<Var>		pattern;
-	@att public final NArr<ENode>	stats;
+	@att
+	public ENode				val;
+	
+	@ref
+	public Type					type;
+	
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<Var>		pattern;
+	
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<ENode>	stats;
 
 	public CodeLabel	case_label;
 
@@ -281,7 +291,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	@dflow
 	@att public ENode					sel;
 
-	@dflow(in="sel", seq=false)
+	@dflow(in="sel", seq="false")
 	@att public final NArr<CaseLabel>	cases;
 
 	@ref public Var						tmpvar;
@@ -798,9 +808,16 @@ public class FinallyInfo extends CatchInfo {
 @node
 public class TryStat extends Statement/*defaults*/ {
 
-	@att public Statement				body;
-	@att public final NArr<CatchInfo>	catchers;
-	@att public FinallyInfo				finally_catcher;
+	@att
+	@dflow(in="")
+	public Statement				body;
+	
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<CatchInfo>	catchers;
+	
+	@att
+	public FinallyInfo				finally_catcher;
 
 	public CodeLabel	end_label;
 

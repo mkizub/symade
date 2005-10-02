@@ -37,8 +37,12 @@ import syntax kiev.Syntax;
 @node
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
-	@att public final NArr<ASTIdentifier>	names;
-	@att public final NArr<ENode>			exprs;
+	@att
+	public final NArr<ASTIdentifier>	names;
+	
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<ENode>			exprs;
 
 	public boolean preResolve() {
 		PassInfo.push(this);

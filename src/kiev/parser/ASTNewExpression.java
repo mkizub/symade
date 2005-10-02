@@ -42,6 +42,7 @@ public class ASTNewExpression extends Expr {
 	public TypeRef					type;
 	
 	@att
+	@dflow(in="", seq="true")
 	public final NArr<ENode>		args;
 	
     @att
