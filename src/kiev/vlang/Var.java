@@ -691,98 +691,158 @@ public abstract class DataFlow extends NodeData {
 public abstract class DFFunc {
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
-	public static DFFunc make(String func) {
+	public static DFFunc make(ASTNode node, String func) {
 		java.util.regex.Matcher m = join_pattern.matcher(func);
 		if (m.matches())
-			return new DFFuncJoin(make(m.group(1)), make(m.group(2)));
+			return new DFFuncJoin(make(node,m.group(1)), make(node,m.group(2)));
 			
 		func = func.intern();
 		if (func == "" || func == "this")
-			return new DFFuncThisIn();
+			return new DFFuncThisIn(node);
 		int p = func.indexOf(':');
 		if (p < 0)
-			return new DFFuncChildOut(func);
+			return new DFFuncChildOut(node,func);
 		String port = func.substring(p+1).intern();
 		func = func.substring(0,p).intern();
 		if (func == "" || func == "this") {
 			if (port == "true" || port == "tru")
-				return new DFFuncThisTru();
+				return new DFFuncThisTru(node);
 			else if (port == "false" || port == "fls")
-				return new DFFuncThisFls();
+				return new DFFuncThisFls(node);
 			else if (port == "in")
-				return new DFFuncThisIn();
+				return new DFFuncThisIn(node);
 			else if (port == "out")
-				return new DFFuncThisOut();
+				return new DFFuncThisOut(node);
 			else if (port == "true()" || port == "tru()")
-				return new DFFuncCalcTru();
+				return new DFFuncCalcTru(node);
 			else if (port == "false()" || port == "fls()")
-				return new DFFuncCalcFls();
+				return new DFFuncCalcFls(node);
 			else if (port == "in()")
-				return new DFFuncCalcIn();
+				return new DFFuncCalcIn(node);
 			else if (port == "out()")
-				return new DFFuncCalcOut();
+				return new DFFuncCalcOut(node);
 			throw new RuntimeException("Internal error: DFFunc.make("+func+":"+port+")");
 		}
 		else {
 			if (port == "true" || port == "tru")
-				return new DFFuncChildTru(func);
+				return new DFFuncChildTru(node,func);
 			else if (port == "false" || port == "fls")
-				return new DFFuncChildFls(func);
+				return new DFFuncChildFls(node,func);
 			else if (port == "in")
-				return new DFFuncChildIn(func);
+				return new DFFuncChildIn(node,func);
 			else if (port == "out")
-				return new DFFuncChildOut(func);
+				return new DFFuncChildOut(node,func);
 			throw new RuntimeException("Internal error: DFFunc.make("+func+":"+port+")");
 		}
 	}
 	
-	abstract DFState calc(ASTNode node);
+	DFState res;
+	abstract DFState calc();
+	void invalidate() { res = null; }
 }
 
 class DFFuncThisIn extends DFFunc {
-	DFState calc(ASTNode node) { return node.getDFlow().in(); }
+	ASTNode node;
+	DFFuncThisIn(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlow().in();
+	}
 }
 class DFFuncThisOut extends DFFunc {
-	DFState calc(ASTNode node) { return node.getDFlow().out(); }
+	ASTNode node;
+	DFState res;
+	DFFuncThisOut(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlow().out();
+	}
 }
+
 class DFFuncThisTru extends DFFunc {
-	DFState calc(ASTNode node) { return node.getDFlow().tru(); }
+	ASTNode node;
+	DFFuncThisTru(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlow().tru();
+	}
 }
 class DFFuncThisFls extends DFFunc {
-	DFState calc(ASTNode node) { return node.getDFlow().fls(); }
+	ASTNode node;
+	DFFuncThisFls(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlow().fls();
+	}
 }
 class DFFuncCalcIn extends DFFunc {
-	DFState calc(ASTNode node) { return node.calcDFlowIn(); }
+	ASTNode node;
+	DFFuncCalcIn(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.calcDFlowIn();
+	}
 }
 class DFFuncCalcOut extends DFFunc {
-	DFState calc(ASTNode node) { return node.calcDFlowOut(); }
+	ASTNode node;
+	DFFuncCalcOut(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.calcDFlowOut();
+	}
 }
 class DFFuncCalcTru extends DFFunc {
-	DFState calc(ASTNode node) { return node.calcDFlowTru(); }
+	ASTNode node;
+	DFFuncCalcTru(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.calcDFlowTru();
+	}
 }
 class DFFuncCalcFls extends DFFunc {
-	DFState calc(ASTNode node) { return node.calcDFlowFls(); }
+	ASTNode node;
+	DFFuncCalcFls(ASTNode node) { this.node = node; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.calcDFlowFls();
+	}
 }
 
 class DFFuncChildIn extends DFFunc {
+	ASTNode node;
 	String child;
-	DFFuncChildIn(String child) { this.child = child; }
-	DFState calc(ASTNode node) { return node.getDFlowFor(child).in(); }
+	DFFuncChildIn(ASTNode node, String child) { this.node = node; this.child = child; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlowFor(child).in();
+	}
 }
 class DFFuncChildOut extends DFFunc {
+	ASTNode node;
 	String child;
-	DFFuncChildOut(String child) { this.child = child; }
-	DFState calc(ASTNode node) { return node.getDFlowFor(child).out(); }
+	DFFuncChildOut(ASTNode node, String child) { this.node = node; this.child = child; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlowFor(child).out();
+	}
 }
 class DFFuncChildTru extends DFFunc {
+	ASTNode node;
 	String child;
-	DFFuncChildTru(String child) { this.child = child; }
-	DFState calc(ASTNode node) { return node.getDFlowFor(child).tru(); }
+	DFFuncChildTru(ASTNode node, String child) { this.node = node; this.child = child; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlowFor(child).tru();
+	}
 }
 class DFFuncChildFls extends DFFunc {
+	ASTNode node;
 	String child;
-	DFFuncChildFls(String child) { this.child = child; }
-	DFState calc(ASTNode node) { return node.getDFlowFor(child).fls(); }
+	DFFuncChildFls(ASTNode node, String child) { this.node = node; this.child = child; }
+	DFState calc() {
+		if (res != null) return res;
+		return res = node.getDFlowFor(child).fls();
+	}
 }
 
 class DFFuncJoin extends DFFunc {
@@ -791,25 +851,31 @@ class DFFuncJoin extends DFFunc {
 		this.f1 = f1;
 		this.f2 = f2;
 	}
-	DFState calc(ASTNode node) {
-		return DFState.join(f1.calc(node),f2.calc(node));
+	DFState calc() {
+		if (res != null) return res;
+		return res = DFState.join(f1.calc(),f2.calc());
+	}
+}
+class DFFuncAbrupt extends DFFunc {
+	DFFunc f;
+	DFFuncAbrupt(DFFunc f) {
+		this.f = f;
+	}
+	DFState calc() {
+		if (res != null) return res;
+		return res = f.calc().setAbrupted();
 	}
 }
 
-public class DataFlowFunc extends DataFlow {
-	public final ASTNode owner;
-	public final DFFunc  func_in;
 
-	private DFState state_in;
+public class DataFlowFunc extends DataFlow {
+	public final DFFunc  func_in;
 	
 	public DataFlowFunc(ASTNode owner, String func_in) {
-		this.owner = owner;
-		this.func_in = DFFunc.make(func_in);
+		this.func_in = DFFunc.make(owner,func_in);
 	}
 	public DFState calcDFStateIn() {
-		if (state_in == null)
-			state_in = func_in.calc(owner);
-		return state_in;
+		return func_in.calc();
 	}
 }
 
@@ -819,7 +885,6 @@ static class DFLoopException extends RuntimeException {
 }
 
 public class DataFlowLabel extends DataFlow {
-	public final ASTNode   owner;
 	public final DFFunc    func_in;
 	public final DFFunc[]  link_in;
 
@@ -827,22 +892,21 @@ public class DataFlowLabel extends DataFlow {
 	private boolean lock;
 	
 	public DataFlowLabel(ASTNode owner, String func_in, String[] link_in) {
-		this.owner = owner;
-		this.func_in = DFFunc.make(func_in);
+		this.func_in = DFFunc.make(owner,func_in);
 		this.link_in = new DFFunc[link_in.length];
 		for (int i=0; i < link_in.length; i++)
-			this.link_in[i] = DFFunc.make(link_in[i]);
+			this.link_in[i] = DFFunc.make(owner,link_in[i]);
 	}
 	public DFState calcDFStateIn() {
 		if (state_in == null) {
-			DFState tmp = func_in.calc(owner);
+			DFState tmp = func_in.calc();
 			if (lock)
 				throw new DFLoopException(this);
 			lock = true;
 			try {
 				foreach (DFFunc lnk; link_in) {
 					try {
-						DFState s = lnk.calc(owner);
+						DFState s = lnk.calc();
 						tmp = DFState.join(s,tmp);
 					} catch (DFLoopException e) {
 						if (e.label != this) throw e;
@@ -860,18 +924,13 @@ public class DataFlowSpace extends DataFlow {
 	public final boolean is_seq;
 	private final NArr<ASTNode> space;
 
-	private DFState state_in;
-	
 	public DataFlowSpace(NArr<ASTNode> space, String func_in, boolean is_seq) {
 		this.space = space;
 		this.is_seq = is_seq;
-		this.func_in = DFFunc.make(func_in);
-		assert(space != null);
+		this.func_in = DFFunc.make(space.getParent(),func_in);
 	}
 	public DFState calcDFStateIn() {
-		if (state_in == null)
-			state_in = func_in.calc(space.getParent());
-		return state_in;
+		return func_in.calc();
 	}
 	public DFState out() {
 		if (space.size() == 0)
@@ -913,10 +972,7 @@ public abstract class DataFlowOut {
 	// will be a set of fields (DataFlow nodes for children) in code-generation 
 	Hashtable<String,DataFlow> children = new Hashtable<String,DataFlow>();
 	
-	public ASTNode owner;
-	
-	public DataFlowOut(ASTNode owner) {
-		this.owner = owner;
+	public DataFlowOut() {
 	}
 	public abstract DFState calcDFStateOut();
 	public abstract DFState calcDFStateTru();
@@ -926,84 +982,65 @@ public abstract class DataFlowOut {
 }
 public class DataFlowOutFunc extends DataFlowOut {
 	public final DFFunc func_out;
-	private DFState state_out;
 	public DataFlowOutFunc(ASTNode owner, String func_out) {
-		super(owner);
-		this.func_out = DFFunc.make(func_out);
+		this.func_out = DFFunc.make(owner,func_out);
 	}
 	public void reset() {
-		state_out = null;
+		func_out.invalidate();
 	}
 	public DFState calcDFStateTru() { return calcDFStateOut(); }
 	public DFState calcDFStateFls() { return calcDFStateOut(); }
 	public DFState calcDFStateJmp() { return calcDFStateOut(); }
 	public DFState calcDFStateOut() {
-		if (state_out == null)
-			state_out = func_out.calc(owner);
-		return state_out;
+		return func_out.calc();
 	}
 }
 public class DataFlowOutFork extends DataFlowOut {
 	public final DFFunc func_tru;
 	public final DFFunc func_fls;
-
-	private DFState state_tru;
-	private DFState state_fls;
-	private DFState state_out;
+	public final DFFunc func_out;
 
 	public DataFlowOutFork(ASTNode owner, String func_tru, String func_fls) {
-		super(owner);
-		this.func_tru = DFFunc.make(func_tru);
-		this.func_fls = DFFunc.make(func_fls);
+		this.func_tru = DFFunc.make(owner,func_tru);
+		this.func_fls = DFFunc.make(owner,func_fls);
+		this.func_out = new DFFuncJoin(this.func_tru,this.func_fls);
 	}
 	public void reset() {
-		state_out = null;
-		state_tru = null;
-		state_fls = null;
+		func_tru.invalidate();
+		func_fls.invalidate();
+		func_out.invalidate();
 	}
 	public DFState calcDFStateJmp() { return calcDFStateOut(); }
 	public DFState calcDFStateOut() {
-		if (state_out == null)
-			state_out = DFState.join(calcDFStateTru(),calcDFStateFls());
-		return state_out;
+		return func_out.calc();
 	}
 	public DFState calcDFStateTru() {
-		if (state_tru == null)
-			state_tru = func_tru.calc(owner);
-		return state_tru;
+		return func_tru.calc();
 	}
 	public DFState calcDFStateFls() {
-		if (state_fls == null)
-			state_fls = func_fls.calc(owner);
-		return state_fls;
+		return func_fls.calc();
 	}
 }
 
 public class DataFlowOutJump extends DataFlowOut {
 	public final DFFunc func_jmp;
-
-	private DFState state_jmp;
-	private DFState state_out;
+	public final DFFunc func_out;
 
 	public DataFlowOutJump(ASTNode owner, String func_jmp) {
-		super(owner);
-		this.func_jmp = DFFunc.make(func_jmp);
+		this.func_jmp = DFFunc.make(owner,func_jmp);
+		this.func_out = new DFFuncAbrupt(this.func_jmp);
 	}
 	public void reset() {
-		state_jmp = null;
-		state_out = null;
+		func_jmp.invalidate();
+		func_out.invalidate();
 	}
 	public DFState calcDFStateTru() { return calcDFStateOut(); }
 	public DFState calcDFStateFls() { return calcDFStateOut(); }
 	public DFState calcDFStateJmp() {
-		if (state_jmp == null)
-			state_jmp = func_jmp.calc(owner);
-		return state_jmp;
+		return func_jmp.calc();
 	}
 	public DFState calcDFStateOut() {
-		if (state_out == null)
-			state_out = calcDFStateJmp().setAbrupted();
-		return state_out;
+		return func_out.calc();
 	}
 }
 

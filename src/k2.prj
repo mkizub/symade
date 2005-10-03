@@ -274,6 +274,7 @@ kiev.vlang.ContinueStat kiev/vlang/ContinueStat kiev\vlang\Statement.java
 kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java
+kiev.vlang.DFFuncAbrupt kiev/vlang/DFFuncAbrupt kiev\vlang\Var.java
 kiev.vlang.DFFuncCalcFls kiev/vlang/DFFuncCalcFls kiev\vlang\Var.java
 kiev.vlang.DFFuncCalcIn kiev/vlang/DFFuncCalcIn kiev\vlang\Var.java
 kiev.vlang.DFFuncCalcOut kiev/vlang/DFFuncCalcOut kiev\vlang\Var.java

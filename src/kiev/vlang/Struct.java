@@ -2111,7 +2111,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public void generate() {
 		Struct jthis = this;
-		if( Kiev.verbose ) System.out.println("[ Generating class  "+jthis+"]");
+		//if( Kiev.verbose ) System.out.println("[ Generating cls "+jthis+"]");
 		if( Kiev.safe && isBad() ) return;
 		PassInfo.push(this);
 		try {
