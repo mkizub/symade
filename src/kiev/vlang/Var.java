@@ -243,14 +243,16 @@ public class DFState {
 	public static final DFState[] emptyArray = new DFState[0];
 
 	private final List<ScopeNodeInfo> states;
+	private final boolean abrupted;
 
-	private DFState(List<ScopeNodeInfo> states) {
+	private DFState(List<ScopeNodeInfo> states, boolean abrupted) {
 		this.states = states;
+		this.abrupted = abrupted;
 	}
 	
 	public static DFState makeNewState() {
 		List<ScopeNodeInfo> states = List.Nil;
-		return new DFState(states);
+		return new DFState(states,false);
 	}
 	
 	public ScopeNodeInfo getNodeInfo(DNode[] path) {
@@ -288,7 +290,7 @@ public class DFState {
 
 	public DFState declNode(Var var) {
 		ScopeNodeInfo sni = makeNode(var);
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
 		trace( Kiev.debugNodeTypes, "types: (decl) var "+sni);
 		return dfs;
 	}
@@ -308,7 +310,7 @@ public class DFState {
 changed:;
 		sni = (ScopeNodeInfo)sni.clone();
 		sni.types = types;
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
 		trace( Kiev.debugNodeTypes, "types: (set types to) "+sni);
 		return dfs;
 	}
@@ -321,7 +323,7 @@ changed:;
 		if (sni == null) return this;
 		Type[] types = addAccessType(sni.types, tp);
 		sni.types = types;
-		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states));
+		DFState dfs = new DFState(new List.Cons<ScopeNodeInfo>(sni,states),this.abrupted);
 		trace( Kiev.debugNodeTypes, "types: (set value to) "+sni);
 		return dfs;
 	}
@@ -382,14 +384,24 @@ changed:;
 		trace( Kiev.debugNodeTypes, "types: vars "+Arrays.toString(vars)+" cleared to "+states);
 		if (states == this.states)
 			return this;
-		DFState dfs = new DFState(states);
+		DFState dfs = new DFState(states,this.abrupted);
 		return dfs;
 	}
 
+	public DFState setAbrupted() {
+		if (this.abrupted)
+			return this;
+		return new DFState(states,true);
+	}
+	
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
 	public static DFState join(DFState state1, DFState state2) {
+		if (state1.abrupted && !state2.abrupted)
+			return state2;
+		if (state2.abrupted && !state1.abrupted)
+			return state1;
 		List<ScopeNodeInfo> diff = List.Nil;
 		List<ScopeNodeInfo> base_states;
 		{
@@ -435,7 +447,7 @@ changed:;
 			trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+states);
-		DFState dfs = new DFState(states);
+		DFState dfs = new DFState(states,state1.abrupted && state2.abrupted);
 		return dfs;
 	}
 
@@ -620,16 +632,23 @@ public abstract class DataFlow extends NodeData {
 	public void dataAttached(ASTNode n) {
 		assert(df_out == null);
 		kiev.vlang.dflow dfd = (kiev.vlang.dflow)n.getClass().getAnnotation(kiev.vlang.dflow.class);
-		String fout="", ftru="", ffls="";
+		String fout="", ftru="", ffls="", fjmp="";
 		if (dfd != null) {
 			fout = dfd.out().intern();
+			fjmp = dfd.jmp().intern();
 			ftru = dfd.tru().intern();
 			ffls = dfd.fls().intern();
 		}
 		if (ftru != "" || ffls != "") {
 			assert (fout == "");
 			df_out = new DataFlowOutFork(n, ftru, ffls);
-		} else {
+		}
+		else if (fjmp != "") {
+			assert (fout == "");
+			df_out = new DataFlowOutJump(n, fjmp);
+		}
+		else {
+			assert (fjmp == "" && ftru == "" && ffls == "");
 			df_out = new DataFlowOutFunc(n, fout);
 		}
 	}
@@ -659,6 +678,11 @@ public abstract class DataFlow extends NodeData {
 		if (df_out == null)
 			return calcDFStateIn();
 		return df_out.calcDFStateFls();
+	}
+	public final DFState jmp() {
+		if (df_out == null)
+			return calcDFStateIn();
+		return df_out.calcDFStateJmp();
 	}
 
 	public abstract DFState calcDFStateIn();
@@ -712,7 +736,7 @@ public abstract class DFFunc {
 		}
 	}
 	
-	abstract DFState calc(ASTNode node); 
+	abstract DFState calc(ASTNode node);
 }
 
 class DFFuncThisIn extends DFFunc {
@@ -897,6 +921,7 @@ public abstract class DataFlowOut {
 	public abstract DFState calcDFStateOut();
 	public abstract DFState calcDFStateTru();
 	public abstract DFState calcDFStateFls();
+	public abstract DFState calcDFStateJmp();
 	public abstract void reset();
 }
 public class DataFlowOutFunc extends DataFlowOut {
@@ -911,6 +936,7 @@ public class DataFlowOutFunc extends DataFlowOut {
 	}
 	public DFState calcDFStateTru() { return calcDFStateOut(); }
 	public DFState calcDFStateFls() { return calcDFStateOut(); }
+	public DFState calcDFStateJmp() { return calcDFStateOut(); }
 	public DFState calcDFStateOut() {
 		if (state_out == null)
 			state_out = func_out.calc(owner);
@@ -935,6 +961,7 @@ public class DataFlowOutFork extends DataFlowOut {
 		state_tru = null;
 		state_fls = null;
 	}
+	public DFState calcDFStateJmp() { return calcDFStateOut(); }
 	public DFState calcDFStateOut() {
 		if (state_out == null)
 			state_out = DFState.join(calcDFStateTru(),calcDFStateFls());
@@ -949,6 +976,34 @@ public class DataFlowOutFork extends DataFlowOut {
 		if (state_fls == null)
 			state_fls = func_fls.calc(owner);
 		return state_fls;
+	}
+}
+
+public class DataFlowOutJump extends DataFlowOut {
+	public final DFFunc func_jmp;
+
+	private DFState state_jmp;
+	private DFState state_out;
+
+	public DataFlowOutJump(ASTNode owner, String func_jmp) {
+		super(owner);
+		this.func_jmp = DFFunc.make(func_jmp);
+	}
+	public void reset() {
+		state_jmp = null;
+		state_out = null;
+	}
+	public DFState calcDFStateTru() { return calcDFStateOut(); }
+	public DFState calcDFStateFls() { return calcDFStateOut(); }
+	public DFState calcDFStateJmp() {
+		if (state_jmp == null)
+			state_jmp = func_jmp.calc(owner);
+		return state_jmp;
+	}
+	public DFState calcDFStateOut() {
+		if (state_out == null)
+			state_out = calcDFStateJmp().setAbrupted();
+		return state_out;
 	}
 }
 

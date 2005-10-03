@@ -81,7 +81,7 @@ public class Label extends DNode {
 		try {
 			foreach (DataFlow lnk; links) {
 				try {
-					DFState s = lnk.out();
+					DFState s = lnk.jmp();
 					tmp = DFState.join(s,tmp);
 				} catch (DFLoopException e) {
 					if (e.label != df) throw e;

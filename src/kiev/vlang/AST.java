@@ -355,64 +355,12 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
+	public DFState calcDFlowJmp() { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
 	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
 	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
 	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
 	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
-/*
-	final DFState getDFStateOfExpr(String expr) {
-		java.util.regex.Matcher m = join_pattern.matcher(expr);
-		if !(m.matches()) {
-			return getDFStateByName(expr);
-		} else {
-			DFState s1 = getDFStateByName(m.group(1));
-			DFState s2 = getDFStateByName(m.group(2));
-			return DFState.join(s1,s2);
-		}
-	}
-	private DFState getDFStateByName(String expr) {
-		expr = expr.intern();
-		if (expr == "" || expr == "this")
-			return getDFlow().in();
-		int p = expr.indexOf(':');
-		if (p < 0) {
-			return getDFlowFor(expr).out();
-		}
-		String port = expr.substring(p+1).intern();
-		expr = expr.substring(0,p).intern();
-		if (expr == "" || expr == "this") {
-			if (port == "true" || port == "tru")
-				return getDFlow().tru();
-			else if (port == "false" || port == "fls")
-				return getDFlow().fls();
-			else if (port == "in")
-				return getDFlow().in();
-			else if (port == "out")
-				return getDFlow().out();
-			else if (port == "true()" || port == "tru()")
-				return calcDFlowTru();
-			else if (port == "false()" || port == "fls()")
-				return calcDFlowFls();
-			else if (port == "in()")
-				return calcDFlowIn();
-			else if (port == "out()")
-				return calcDFlowOut();
-			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
-		}
-		else {
-			DataFlow df = getDFlowFor(expr);
-			if (port == "true" || port == "tru")
-				return df.tru();
-			else if (port == "false" || port == "fls")
-				return df.fls();
-			else if (port == "in")
-				return df.in();
-			else if (port == "out")
-				return df.out();
-			throw new CompilerException(pos,"Internal error: getDFStateByName("+expr+":"+port+") for "+getClass());
-		}
-	}
-*/	
+
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }
 	

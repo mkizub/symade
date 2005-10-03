@@ -457,9 +457,12 @@ public class ExprStat extends Statement {
 }
 
 @node
+@dflow(jmp="expr")
 public class ReturnStat extends Statement/*defaults*/ {
 
-	@att public ENode		expr;
+	@att
+	@dflow(in="this:in")
+	public ENode		expr;
 
 	public ReturnStat() {
 	}
@@ -560,9 +563,12 @@ public class ReturnStat extends Statement/*defaults*/ {
 }
 
 @node
+@dflow(jmp="expr")
 public class ThrowStat extends Statement/*defaults*/ {
 
-	@att public ENode		expr;
+	@att
+	@dflow(in="")
+	public ENode		expr;
 
 	public ThrowStat() {
 	}
@@ -906,6 +912,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 }
 
 @node
+@dflow(jmp="this:in")
 public class BreakStat extends Statement {
 
 	@att public ASTIdentifier	ident;
@@ -1031,6 +1038,7 @@ public class BreakStat extends Statement {
 }
 
 @node
+@dflow(jmp="this:in")
 public class ContinueStat extends Statement/*defaults*/ {
 
 	@att public ASTIdentifier	ident;
@@ -1121,6 +1129,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 }
 
 @node
+@dflow(jmp="this:in")
 public class GotoStat extends Statement/*defaults*/ {
 
 	@att public ASTIdentifier	ident;
@@ -1338,10 +1347,15 @@ public class GotoStat extends Statement/*defaults*/ {
 }
 
 @node
+@dflow(jmp="expr")
 public class GotoCaseStat extends Statement/*defaults*/ {
 
-	@att public ENode		expr;
-	@ref public SwitchStat	sw;
+	@att
+	@dflow(in="")
+	public ENode		expr;
+	
+	@ref
+	public SwitchStat	sw;
 
 	public GotoCaseStat() {
 	}

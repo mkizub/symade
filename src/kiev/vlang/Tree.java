@@ -51,6 +51,7 @@ public @interface dflow {
 	String tru() default "";
 	String fls() default "";
 	String out() default "";
+	String jmp() default "";
 	String seq() default "";
 	String[] links() default {};
 }
