@@ -965,33 +965,16 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 								new VarAccessExpr(0, value),
 								new ConstExpr(0, null)
 							),
-							new BlockStat(0,null,new Statement[]{
-								new ExprStat(0,null,
-									new AssignExpr(0, AssignOperator.Assign,
-										new AccessExpr(0,
-											new VarAccessExpr(0, value),
-											astT.clazz.resolveField(KString.from("parent"))
-										),
-										new ThisExpr()
-									)
-								),
-								new ExprStat(0,null,
-									new AssignExpr(0, AssignOperator.Assign,
-										new AccessExpr(0,
-											new VarAccessExpr(0, value),
-											astT.clazz.resolveField(KString.from("pslot"))
-										),
+							new ExprStat(0,null,
+								new ASTCallAccessExpression(0,
+									new VarAccessExpr(0, value),
+									KString.from("callbackAttached"),
+									new Expr[] {
+										new ThisExpr(),
 										new StaticFieldAccessExpr(f.pos, (Struct)fatt.parent, fatt)
-									)
-								),
-								new ExprStat(0,null,
-									new ASTCallAccessExpression(0,
-										new VarAccessExpr(0, value),
-										KString.from("callbackAttached"),
-										Expr.emptyArray
-									)
+									}
 								)
-							}),
+							),
 							null
 						);
 					body.stats.append(p_st);

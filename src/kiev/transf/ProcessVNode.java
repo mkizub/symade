@@ -38,17 +38,14 @@ public final class ProcessVNode implements Constants {
 	public static final KString mnAtt  = KString.from("kiev.vlang.att"); 
 	public static final KString mnRef  = KString.from("kiev.vlang.ref"); 
 	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
-	private static final KString nameNArrReplace  = KString.from("replace"); 
-	private static final KString signNArrReplace  = KString.from("(Ljava/lang/Object;Akiev/vlang/NArr$N;)V"); 
 	private static final KString nameParent  = KString.from("parent"); 
 	private static final KString nameCopyable  = KString.from("copyable"); 
 	
 	private static final KString sigValues = KString.from("()[Lkiev/vlang/AttrSlot;");
 	private static final KString sigGetVal = KString.from("(Ljava/lang/String;)Ljava/lang/Object;");
 	private static final KString sigSetVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;)V");
-	private static final KString sigReplaceVal = KString.from("(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 	private static final KString sigCopy   = KString.from("()Ljava/lang/Object;");
-	private static final KString sigCopyTo   = KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
+	private static final KString sigCopyTo = KString.from("(Ljava/lang/Object;)Ljava/lang/Object;");
 	
 	/////////////////////////////////////////////
 	//      Verify the VNode tree structure    //
@@ -209,10 +206,14 @@ public final class ProcessVNode implements Constants {
 		for(int i=0; i < vals_init.length; i++) {
 			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
 			boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
+			ASTType clz_tp = new ASTType(0, isArr ? aflds[i].getType().args[0] : aflds[i].getType());
+			ASTTypeClassExpression clz_expr = new ASTTypeClassExpression();
+			clz_expr.type = clz_tp;
 			Expr e = new NewExpr(0, atp, new Expr[]{
 				new ConstExpr(0, aflds[i].name.name),
 				new ConstExpr(0, isAtt ? Boolean.TRUE : Boolean.FALSE),
-				new ConstExpr(0, isArr ? Boolean.TRUE : Boolean.FALSE)
+				new ConstExpr(0, isArr ? Boolean.TRUE : Boolean.FALSE),
+				clz_expr
 			});
 			KString fname = new KStringBuffer().append("nodeattr$").append(aflds[i].name.name).toKString();
 			Field f = s.addField(new Field(s, fname, atp, ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
@@ -379,6 +380,13 @@ public final class ProcessVNode implements Constants {
 				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
 				if (isArr || aflds[i].isFinal())
 					continue;
+				{	// check if we may not set the field
+					Meta fmeta = aflds[i].meta.get(mnAtt);
+					if (fmeta == null)
+						fmeta = aflds[i].meta.get(mnRef);
+					if (fmeta != null && !fmeta.getZ(nameCopyable))
+						continue; // do not copy the field
+				}
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBooleanExpr(0, BinaryOperator.Equals,
@@ -397,82 +405,6 @@ public final class ProcessVNode implements Constants {
 						null
 					)
 				);
-			}
-			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstExpr(0, KString.from("No @att value \"")));
-			msg.appendArg(new VarAccessExpr(0, setV.params[1]));
-			msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
-			((BlockStat)setV.body).addStatement(
-				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
-			);
-			s.addMethod(setV);
-		}
-		// replaceVal(String name, Object old, Object val)
-		if (hasMethod(s, KString.from("replaceVal"))) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+"replaceVal"+sigReplaceVal+" already exists, @node member is not generated");
-		} else {
-			MethodType setVt = (MethodType)Type.fromSignature(sigReplaceVal);
-			Method setV = new Method(s,KString.from("replaceVal"),setVt,ACC_PUBLIC);
-			setV.params = new Var[]{
-				new Var(0, setV, nameThis, s.type, 0),
-				new Var(0, setV, KString.from("name"), Type.tpString, 0),
-				new Var(0, setV, KString.from("old"), Type.tpObject, 0),
-				new Var(0, setV, KString.from("val"), Type.tpObject, 0),
-			};
-			setV.body = new BlockStat(0,setV);
-			for(int i=0; i < aflds.length; i++) {
-				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
-				if (!isArr && aflds[i].isFinal())
-					continue;
-				BlockStat bs;
-				((BlockStat)setV.body).addStatement(
-					new IfElseStat(0,
-						new BinaryBooleanExpr(0, BinaryOperator.Equals,
-							new VarAccessExpr(0, setV.params[1]),
-							new ConstExpr(0, aflds[i].name.name)
-							),
-						bs = new BlockStat(0,null),
-						null
-					)
-				);
-				if (!isArr) {
-					StringConcatExpr msg = new StringConcatExpr();
-					msg.appendArg(new ConstExpr(0, KString.from("Missmatch node for \"")));
-					msg.appendArg(new VarAccessExpr(0, setV.params[1]));
-					msg.appendArg(new ConstExpr(0, KString.from("\" in "+s.name.short_name)));
-					bs.addStatement(
-						new IfElseStat(0,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
-								new VarAccessExpr(0, setV.params[2]),
-								new AccessExpr(0,new ThisExpr(0),aflds[i])
-								),
-							new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg})),
-							null
-						)
-					);
-					bs.addStatement(
-						new ExprStat(0,null,
-							new AssignExpr(0,AssignOperator.Assign,
-								new AccessExpr(0,new ThisExpr(0),aflds[i]),
-								new CastExpr(0,aflds[i].getType(),new VarAccessExpr(0, setV.params[3]))
-							)
-						)
-					);
-				} else {
-					bs.addStatement(
-						new ExprStat(0,null,
-							new CallAccessExpr(0,null,
-								new AccessExpr(0,new ThisExpr(0),aflds[i]),
-								Env.getStruct(nameNArr).resolveMethod(nameNArrReplace, signNArrReplace),
-								new Expr[]{
-									new VarAccessExpr(0, setV.params[2]),
-									new CastExpr(0,aflds[i].getType().args[0],new VarAccessExpr(0, setV.params[3]))
-								}
-							)
-						)
-					);
-				}
-				bs.addStatement(new ReturnStat(0,null));
 			}
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstExpr(0, KString.from("No @att value \"")));

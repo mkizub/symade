@@ -68,11 +68,19 @@ public final class AttrSlot {
 	public final String  name; // field (property) name
 	public final boolean is_attr; // @att or @ref
 	public final boolean is_space; // if NArr<Node>
+	public final Class   clazz; // type of the fields
 	
+	public AttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
+		this.name = name;
+		this.is_attr = is_attr;
+		this.is_space = is_space;
+		this.clazz = clazz;
+	}
 	public AttrSlot(String name, boolean is_attr, boolean is_space) {
 		this.name = name;
 		this.is_attr = is_attr;
 		this.is_space = is_space;
+		this.clazz = null;
 	}
 }
 
@@ -159,7 +167,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}
@@ -188,7 +196,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[sz-1].pnext = node;
 				node.pprev = $nodes[sz-1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}
@@ -225,14 +233,7 @@ public final class NArr<N extends ASTNode> {
 
 	public void replace(Object old, N node)
 	{
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++) {
-			if ($nodes[i] == old) {
-				this.set(i, node);
-				return;
-			}
-		}
-		throw new RuntimeException("Not found node");
+		throw new RuntimeException("NArr.replace() was removed");
 	}
 	
 	public N insert(N node, int idx)
@@ -269,7 +270,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}

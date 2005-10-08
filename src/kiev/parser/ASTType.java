@@ -43,19 +43,19 @@ public class ASTType extends ASTNode {
 	
 	@ref private Type		type;
 	
-	ASTType() {
+	public ASTType() {
 	}
 
-	ASTType(int id) {
+	public ASTType(int id) {
 	}
 
-	ASTType(int pos, int dim, ASTNode asttype) {
+	public ASTType(int pos, int dim, ASTNode asttype) {
 		super(pos);
 		this.dim = dim;
 		this.asttype = asttype;
 	}
 
-	ASTType(int pos, Type type) {
+	public ASTType(int pos, Type type) {
 		super(pos);
 		this.type = type;
 	}

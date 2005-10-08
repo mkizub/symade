@@ -185,6 +185,14 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public void callbackAttached() {
+		assert (parent != null);
+		assert (pslot != null && pslot.is_attr);
+		parent.callbackChildChanged(pslot);
+	}
+
+	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		this.parent = parent;
+		this.pslot = pslot;
 		parent.callbackChildChanged(pslot);
 	}
 	
