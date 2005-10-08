@@ -64,7 +64,7 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
 			vars[i] = (Var)v;
 			exprs[i].resolve(null);
 		}
-    	replaceWithNode(new RuleIsoneofExpr(getPos(),vars,exprs.toArray()));
+    	replaceWithNode(new RuleIsoneofExpr(getPos(),vars,exprs.delToArray()));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }

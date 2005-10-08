@@ -283,7 +283,11 @@ kiev.vlang.DFFuncChildFls kiev/vlang/DFFuncChildFls kiev\vlang\Var.java
 kiev.vlang.DFFuncChildIn kiev/vlang/DFFuncChildIn kiev\vlang\Var.java
 kiev.vlang.DFFuncChildOut kiev/vlang/DFFuncChildOut kiev\vlang\Var.java
 kiev.vlang.DFFuncChildTru kiev/vlang/DFFuncChildTru kiev\vlang\Var.java
+kiev.vlang.DFFuncFixedFunc kiev/vlang/DFFuncFixedFunc kiev\vlang\Var.java
+kiev.vlang.DFFuncFixedState kiev/vlang/DFFuncFixedState kiev\vlang\Var.java
 kiev.vlang.DFFuncJoin kiev/vlang/DFFuncJoin kiev\vlang\Var.java
+kiev.vlang.DFFuncLabel kiev/vlang/DFFuncLabel kiev\vlang\Var.java
+kiev.vlang.DFFuncSpaceSeqNodeIn kiev/vlang/DFFuncSpaceSeqNodeIn kiev\vlang\Var.java
 kiev.vlang.DFFuncThisFls kiev/vlang/DFFuncThisFls kiev\vlang\Var.java
 kiev.vlang.DFFuncThisIn kiev/vlang/DFFuncThisIn kiev\vlang\Var.java
 kiev.vlang.DFFuncThisOut kiev/vlang/DFFuncThisOut kiev\vlang\Var.java
@@ -292,15 +296,7 @@ kiev.vlang.DFLoopException kiev/vlang/DFLoopException kiev\vlang\Var.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlow kiev/vlang/DataFlow kiev\vlang\Var.java
-kiev.vlang.DataFlowFixed kiev/vlang/DataFlowFixed kiev\vlang\Var.java
-kiev.vlang.DataFlowFunc kiev/vlang/DataFlowFunc kiev\vlang\Var.java
-kiev.vlang.DataFlowLabel kiev/vlang/DataFlowLabel kiev\vlang\Var.java
-kiev.vlang.DataFlowOut kiev/vlang/DataFlowOut kiev\vlang\Var.java
-kiev.vlang.DataFlowOutFork kiev/vlang/DataFlowOutFork kiev\vlang\Var.java
-kiev.vlang.DataFlowOutFunc kiev/vlang/DataFlowOutFunc kiev\vlang\Var.java
-kiev.vlang.DataFlowOutJump kiev/vlang/DataFlowOutJump kiev\vlang\Var.java
 kiev.vlang.DataFlowSpace kiev/vlang/DataFlowSpace kiev\vlang\Var.java
-kiev.vlang.DataFlowSpaceNode kiev/vlang/DataFlowSpaceNode kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
 kiev.vlang.Dumper kiev/vlang/Dumper kiev\vlang\Dumper.java

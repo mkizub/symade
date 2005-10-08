@@ -175,54 +175,54 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		f ?= ff
 	}
 
-	private void rewriteNode(ASTNode node, String id) {
+	private void rewriteNode(ASTNode node) {
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			Object val = node.getVal(attr.name);
-			rewrite(val, attr.name);
+			rewrite(val);
 		}
 	}
 	
-	public void rewrite(ASTNode:Object node, String id) {
+	public void rewrite(ASTNode:Object node) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
 		PassInfo.push(node);
 		try {
-			rewriteNode(node, id);
+			rewriteNode(node);
 		} finally { PassInfo.pop(node); }
 	}
 	
-	public void rewrite(NArr<ASTNode>:Object arr, String id) {
+	public void rewrite(NArr<ASTNode>:Object arr) {
 		//System.out.println("ProcessPackedFld: rewrite "+arr.getClass().getName()+" in "+id);
 		foreach (ASTNode n; arr) {
-			rewrite(n, id);
+			rewrite(n);
 		}
 	}
 
-	public void rewrite(Object:Object o, String id) {
+	public void rewrite(Object:Object o) {
 		//System.out.println("ProcessPackedFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
 		return;
 	}
 
-	public void rewrite(FileUnit:Object node, String id) {
+	public void rewrite(FileUnit:Object node) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
 		PassInfo.push(node);
 		try {
-			rewriteNode(node, id);
+			rewriteNode(node);
 		} finally { PassInfo.pop(node); }
 	}
 	
-	public void rewrite(AccessExpr:Object fa, String id) {
+	public void rewrite(AccessExpr:Object fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		PassInfo.push(fa);
 		try {
 			Field f = fa.var;
 			if( !f.isPackedField() ) {
-				rewriteNode(fa, id);
+				rewriteNode(fa);
 				return;
 			}
 			MetaPacked mp = f.getMetaPacked();
 		if( mp == null || mp.packer == null ) {
 				Kiev.reportError(fa.pos, "Internal error: packed field "+f+" has no packer");
-				rewriteNode(fa, id);
+				rewriteNode(fa);
 				return;
 			}
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
@@ -243,26 +243,26 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			else if( mp.size == 1 && f.type == Type.tpBoolean )
 				expr = new CastExpr(fa.pos, Type.tpBoolean, expr, true);
 
-			fa.parent.replaceVal(id, fa, expr);
-			rewriteNode(expr, id);
+			fa.replaceWithNode(expr);
+			rewriteNode(expr);
 		} finally { PassInfo.pop(fa); }
 	}
 	
-	public void rewrite(AssignExpr:Object ae, String id) {
+	public void rewrite(AssignExpr:Object ae) {
 		//System.out.println("ProcessPackedFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		PassInfo.push(ae);
 		try {
 			if !(ae.lval instanceof AccessExpr) {
-				rewriteNode(ae, id);
+				rewriteNode(ae);
 				return;
 			}
 			AccessExpr fa = (AccessExpr)ae.lval;
 			Field f = fa.var;
 			if( !f.isPackedField() ) {
-				rewriteNode(ae, id);
+				rewriteNode(ae);
 				return;
 			}
-			BlockExpr be = new BlockExpr(ae.pos, ae.parent);
+			BlockExpr be = new BlockExpr(ae.pos);
 			Object acc;
 			if (fa.obj instanceof ThisExpr) {
 				acc = fa.obj;
@@ -272,7 +272,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			}
 			else {
 				Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
-				var.init = fa.obj;
+				var.init = (ENode)~fa.obj;
 				be.addSymbol(var);
 				acc = var;
 			}
@@ -294,13 +294,13 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				else if( mp.size == 16 && f.type == Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				tmp.init = expr;
-				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), ae.value)));
+				be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), (ENode)~ae.value)));
 			}
 			else if (ae.value.getType() == Type.tpBoolean) {
-				tmp.init = new CastExpr(ae.value.pos, Type.tpInt, ae.value, true);
+				tmp.init = new CastExpr(ae.value.pos, Type.tpInt, (ENode)~ae.value, true);
 			}
 			else {
-				tmp.init = ae.value;
+				tmp.init = (ENode)~ae.value;
 			}
 			
 			{
@@ -316,29 +316,29 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 					new AccessExpr(fa.pos, mkAccess(acc), mp.packer),
 					expr);
-				be.addStatement(new ExprStat(fa.pos, be, expr));
+				be.addStatement(new ExprStat(fa.pos, expr));
 			}
 			if (!ae.isGenVoidExpr()) {
 				be.setExpr(mkAccess(tmp));
 			}
 			ae.replaceWithNode(be);
 			be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-			rewrite(be, id);
+			rewrite(be);
 		} finally { PassInfo.pop(ae); }
 	}
 	
-	public void rewrite(IncrementExpr:Object ie, String id) {
+	public void rewrite(IncrementExpr:Object ie) {
 		//System.out.println("ProcessPackedFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
 		PassInfo.push(ie);
 		try {
 			if !(ie.lval instanceof AccessExpr) {
-				rewriteNode(ie, id);
+				rewriteNode(ie);
 				return;
 			}
 			AccessExpr fa = (AccessExpr)ie.lval;
 			Field f = fa.var;
 			if( !f.isPackedField() ) {
-				rewriteNode(ie, id);
+				rewriteNode(ie);
 				return;
 			}
 			MetaPacked mp = f.getMetaPacked();
@@ -353,7 +353,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				expr.setGenVoidExpr(true);
 			}
 			else {
-				BlockExpr be = new BlockExpr(ie.pos, ie.parent);
+				BlockExpr be = new BlockExpr(ie.pos);
 				Object acc;
 				if (fa.obj instanceof ThisExpr) {
 					acc = fa.obj;
@@ -411,7 +411,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 					expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 						new AccessExpr(fa.pos, mkAccess(acc), mp.packer),
 						expr);
-					be.addStatement(new ExprStat(fa.pos, be, expr));
+					be.addStatement(new ExprStat(fa.pos, expr));
 				}
 				if (!ie.isGenVoidExpr()) {
 					be.setExpr(mkAccess(tmp));
@@ -419,14 +419,14 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				expr = be;
 				expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 			}
-			ie.parent.replaceVal(id, ie, expr);
-			rewrite(expr, id);
+			ie.replaceWithNode(expr);
+			rewrite(expr);
 		} finally { PassInfo.pop(ie); }
 	}
 	
 	private Expr mkAccess(Object o) {
-		if (o instanceof Var) return new VarAccessExpr(0,null,(Var)o);
-		if (o instanceof ThisExpr) return new ThisExpr(0,null);
+		if (o instanceof Var) return new VarAccessExpr(0,(Var)o);
+		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}
 }

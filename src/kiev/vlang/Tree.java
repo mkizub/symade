@@ -74,11 +74,13 @@ public final class AttrSlot {
 	public final String  name; // field (property) name
 	public final boolean is_attr; // @att or @ref
 	public final boolean is_space; // if NArr<Node>
+	public final Class   clazz; // type of the fields
 	
-	public AttrSlot(String name, boolean is_attr, boolean is_space) {
+	public AttrSlot(String name, boolean is_attr, boolean is_space, Class clazz) {
 		this.name = name;
 		this.is_attr = is_attr;
 		this.is_space = is_space;
+		this.clazz = clazz;
 	}
 }
 
@@ -128,20 +130,13 @@ public final class NArr<N extends ASTNode> {
 		require { node != null; }
 	{
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		assert(!is_attr || !node.isAttached());
 		if (is_attr) {
 			ASTNode old = $nodes[idx];
 			old.callbackDetached();
-			//old.parent = null;
-			//old.pslot = null;
-			old.pprev = null;
-			old.pnext = null;
 		}
 		$nodes[idx] = node;
 		if (is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			//assert (node.pprev == null);
-			//assert (node.pnext == null);
 			if (idx > 0) {
 				$nodes[idx-1].pnext = node;
 				node.pprev = $nodes[idx-1];
@@ -150,7 +145,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}
@@ -161,8 +156,9 @@ public final class NArr<N extends ASTNode> {
 		require { node != null; }
 	{
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		assert(!is_attr || !node.isAttached());
 		if (is_attr)
-			assert(!contains(node));
+			assert(indexOf(node) < 0);
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -171,15 +167,11 @@ public final class NArr<N extends ASTNode> {
 		$nodes = tmp;
 		$nodes[sz] = node;
 		if (is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			//assert (node.pprev == null);
-			//assert (node.pnext == null);
 			if (sz > 0) {
 				$nodes[sz-1].pnext = node;
 				node.pprev = $nodes[sz-1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}
@@ -199,33 +191,21 @@ public final class NArr<N extends ASTNode> {
 	public void addUniq(N node)
 		alias appendUniq
 	{
-		if (!contains(node)) add(node);
+		if (indexOf(node) < 0) add(node);
 	}
 
 	public void addUniq(NArr<N> arr)
 		alias appendUniq
 	{
-		foreach(N n; arr; !contains(n)) add(n);
+		foreach(N n; arr) addUniq(n);
 	}
 
 	public void addUniq(N[] arr)
 		alias appendUniq
 	{
-		foreach(N n; arr; !contains(n)) add(n);
+		foreach(N n; arr) addUniq(n);
 	}
 
-	public void replace(Object old, N node)
-	{
-		int sz = $nodes.length;
-		for (int i=0; i < sz; i++) {
-			if ($nodes[i] == old) {
-				this.set(i, node);
-				return;
-			}
-		}
-		throw new RuntimeException("Not found node");
-	}
-	
 	public N insert(N node, int idx)
 	{
 		return insert(idx, node);
@@ -235,8 +215,9 @@ public final class NArr<N extends ASTNode> {
 		require { node != null; }
 	{
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
+		assert(!is_attr || !node.isAttached());
 		if (is_attr)
-			assert(!contains(node));
+			assert(indexOf(node) < 0);
 		int sz = $nodes.length;
 		N[] tmp = new N[sz+1];
 		int i;
@@ -247,10 +228,6 @@ public final class NArr<N extends ASTNode> {
 			tmp[i+1] = $nodes[i];
 		$nodes = tmp;
 		if (is_attr) {
-			node.parent = $parent;
-			node.pslot = $pslot;
-			//assert (node.pprev == null);
-			//assert (node.pnext == null);
 			if (idx > 0) {
 				$nodes[idx-1].pnext = node;
 				node.pprev = $nodes[idx-1];
@@ -259,29 +236,39 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached();
+			node.callbackAttached($parent, $pslot);
 		}
 		return node;
 	}
 
+	public void detach(ASTNode old)
+	{
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++) {
+			if ($nodes[i] == old) {
+				this.del(i);
+				return;
+			}
+		}
+		throw new RuntimeException("Not found node");
+	}
+	
 	public void del(int idx)
 	{
 		ASTNode old = $nodes[idx];
 		final boolean is_attr = ($pslot != null && $pslot.is_attr);
 		if (is_attr) {
+			ASTNode old_pprev = old.pprev;
+			ASTNode old_pnext = old.pnext;
 			old.callbackDetached();
-			if (old.pprev != null) {
-				assert (idx > 0 && $nodes[idx-1] == old.pprev);
-				old.pprev.pnext = old.pnext;
+			if (old_pprev != null) {
+				assert (idx > 0 && $nodes[idx-1] == old_pprev);
+				old_pprev.pnext = old_pnext;
 			}
-			if (old.pnext != null) {
-				assert (idx+1 < size() && $nodes[idx+1] == old.pnext);
-				old.pnext.pprev = old.pprev;
+			if (old_pnext != null) {
+				assert (idx+1 < size() && $nodes[idx+1] == old_pnext);
+				old_pnext.pprev = old_pprev;
 			}
-			//old.parent = null;
-			//old.pslot = null;
-			old.pnext = null;
-			old.pprev = null;
 		}
 		int sz = $nodes.length-1;
 		N[] tmp = new N[sz];
@@ -297,7 +284,9 @@ public final class NArr<N extends ASTNode> {
 		if (this.$nodes.length == 0)
 			return;
 		if ($pslot != null && $pslot.is_attr) {
-			foreach (N node; $nodes) node.pslot = null;
+			foreach (N node; $nodes) {
+				node.callbackDetached();
+			}
 		}
 		this.$nodes = new N[0];
 	};
@@ -312,6 +301,16 @@ public final class NArr<N extends ASTNode> {
 		}
 	}
 	
+	public void moveFrom(NArr<N> arr) {
+		if ($pslot != null && $pslot.is_attr) {
+			foreach (N n; arr.$nodes)
+				append((N)~n);
+		} else {
+			foreach (N n; arr.$nodes)
+				append(n);
+		}
+	}
+	
 	public boolean contains(ASTNode node) {
 		for (int i=0; i < $nodes.length; i++) {
 			if ($nodes[i].equals(node))
@@ -320,11 +319,33 @@ public final class NArr<N extends ASTNode> {
 		return false;
 	}
 	
+	public int indexOf(ASTNode node) {
+		int sz = $nodes.length;
+		for (int i=0; i < sz; i++) {
+			if ($nodes[i] == node)
+				return i;
+		}
+		return -1;
+	}
+	
 	public N[] toArray() {
 		int sz = $nodes.length;
 		N[] arr = new N[sz];
 		for (int i=0; i < sz; i++)
 			arr[i] = $nodes[i];
+		return arr;
+	}
+
+	public N[] delToArray() {
+		int sz = $nodes.length;
+		N[] arr = $nodes;
+		$nodes = new N[0];
+		for (int i=0; i < sz; i++) {
+			N node = arr[i];
+			node.callbackDetached();
+			node.pnext = null;
+			node.pprev = null;
+		}
 		return arr;
 	}
 

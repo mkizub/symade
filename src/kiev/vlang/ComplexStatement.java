@@ -58,8 +58,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	public CaseLabel() {
 	}
 
-	public CaseLabel(int pos, ASTNode parent, ENode val, ENode[] stats) {
-		super(pos,parent);
+	public CaseLabel(int pos, ENode val, ENode[] stats) {
+		super(pos);
 		this.val = val;
 		this.stats.addAll(stats);
 	}
@@ -86,21 +86,21 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return st;
 	}
 
-	public void addSymbol(int idx, Named sym) {
-		ENode decl;
-		if (sym instanceof Var)
-			decl = new VarDecl((Var)sym);
-		else if (sym instanceof Struct)
-			decl = new LocalStructDecl((Struct)sym);
-		else
-			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-		foreach(ASTNode n; stats) {
-			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
-			}
-		}
-		stats.insert(decl,idx);
-	}
+//	public void addSymbol(int idx, Named sym) {
+//		ENode decl;
+//		if (sym instanceof Var)
+//			decl = new VarDecl((Var)sym);
+//		else if (sym instanceof Struct)
+//			decl = new LocalStructDecl((Struct)sym);
+//		else
+//			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
+//		foreach(ASTNode n; stats) {
+//			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
+//				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+//			}
+//		}
+//		stats.insert(decl,idx);
+//	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;
@@ -162,8 +162,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 												(Expr)new VarAccessExpr(p.pos,sw.tmpvar)),
 											case_attr.casefields[i]
 										);
+//									addSymbol(j++,p);
 									p.resolveDecl();
-									addSymbol(j++,p);
 								}
 							}
 						} else {
@@ -219,6 +219,14 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						throw new RuntimeException("Case label "+v+" must be of integer type");
 				}
 			} catch(Exception e ) { Kiev.reportError(pos,e); }
+			Vector<Var> vars = null;
+			if (pattern.length > 0) {
+				vars = new Vector<Var>();
+				foreach (Var p; pattern; p.vtype != null && !(p.name.name.len == 1 && p.name.name.byteAt(0) == '_')) {
+					vars.append(p);
+					p.generate(Type.tpVoid);
+				}
+			}
 			for(int i=0; i < stats.length; i++) {
 				try {
 					stats[i].generate(Type.tpVoid);
@@ -226,6 +234,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					Kiev.reportError(stats[i].getPos(),e);
 				}
 			}
+			if (vars != null)
+				Code.removeVars(vars.toArray());
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -280,8 +290,8 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		this.lblbrk = new Label();
 	}
 
-	public SwitchStat(int pos, ASTNode parent, ENode sel, CaseLabel[] cases) {
-		super(pos, parent);
+	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
+		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.sel = sel;
@@ -295,21 +305,21 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		if( cases.length == 0 ) {
-			ExprStat st = new ExprStat(pos,parent,(Expr)sel);
+			ExprStat st = new ExprStat(pos,(ENode)~sel);
 			this.replaceWithNodeResolve(Type.tpVoid, st);
 		}
 		else if( cases.length == 1 && cases[0].pattern.length == 0) {
 			cases[0].resolve(Type.tpVoid);
 			CaseLabel cas = (CaseLabel)cases[0];
-			BlockStat bl = new BlockStat(cas.pos, null, cas.stats);
+			BlockStat bl = new BlockStat(cas.pos, cas.stats.delToArray());
 			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
-				bl.stats.insert(new ExprStat(sel.pos,bl,sel),0);
+				bl.stats.insert(new ExprStat(sel.pos,(ENode)~sel),0);
 				this.replaceWithNodeResolve(Type.tpVoid, bl);
 				return;
 			} else {
-				IfElseStat st = new IfElseStat(pos,parent,
-						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,sel,cas.val),
+				IfElseStat st = new IfElseStat(pos,
+						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,(ENode)~sel,(ENode)~cas.val),
 						bl,
 						null
 					);
@@ -329,9 +339,10 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				else if( tp.isReference() ) {
 					tmpvar = new Var(sel.getPos(),KString.from(
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
-					me = new BlockStat(pos,parent);
+					me = new BlockStat(pos);
 					this.replaceWithNode(me);
-					tmpvar.init = sel;
+					ENode old_sel = (ENode)~this.sel;
+					tmpvar.init = old_sel;
 					me.addSymbol(tmpvar);
 					me.addStatement(this);
 					if( tp.isHasCases() ) {
@@ -344,7 +355,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
 					} else {
 						mode = TYPE_SWITCH;
-						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
+						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
 						PassInfo.clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
@@ -398,7 +409,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 					});
 				Constructor clinit = PassInfo.clazz.getClazzInitMethod();
 				clinit.body.addStatement(
-					new ExprStat(typehash.init.getPos(),clinit.body,
+					new ExprStat(typehash.init.getPos(),
 						new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
 							,new StaticFieldAccessExpr(typehash.pos,typehash),new ShadowExpr(typehash.init))
 					)
@@ -498,16 +509,14 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 				}
 			}
 			if( isMethodAbrupted() && defCase==null ) {
-				Statement thrErr = new ThrowStat(pos,this,new NewExpr(pos,Type.tpError,Expr.emptyArray));
-				CaseLabel dc = new CaseLabel(pos,this,null,new ENode[]{thrErr});
+				Statement thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,Expr.emptyArray));
+				CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
 				cases.insert(dc,0);
 				dc.resolve(Type.tpVoid);
 			}
 			if( mode == ENUM_SWITCH ) {
 				Type tp = sel.getType();
-				Expr cae = new CastExpr(pos,Type.tpInt,sel);
-				cae.parent = sel.parent;
-				sel = cae;
+				sel = new CastExpr(pos,Type.tpInt,(ENode)~sel);
 				sel.resolve(Type.tpInt);
 			}
 		} finally {

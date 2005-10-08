@@ -109,7 +109,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			this.dtype_ref = (TypeCallRef)type_ref.copy();
 		}
 		this.acc = new Access(0);
-		this.meta = new MetaSet(this);
+		this.meta = new MetaSet();
 	}
 
 	@getter public Access get$acc() {
@@ -254,6 +254,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public void makeArgs(NArr<ENode> args, Type t) {
+		assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int j;
 			for(j=0; j < type.args.length-1; j++)
@@ -522,7 +523,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Var p = params[i];
 				in = in.declNode(p);
 			}
-			df = new DataFlowFixed(in);
+			df = new DataFlow(new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;
@@ -566,7 +567,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
 					if( body instanceof BlockStat ) {
-						((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
+						((BlockStat)body).stats.append(new ReturnStat(pos,null));
 						body.setAbrupted(true);
 					}
 					else if !(isInvariantMethod())
@@ -730,11 +731,11 @@ public class Constructor extends Method {
 
 	public void resolveDecl() {
 		super.resolveDecl();
+		Statement[] addstats = this.addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
 			body.stats.insert(addstats[i],i);
 			trace(Kiev.debugResolve,"Statement added to constructor: "+addstats[i]);
 		}
-		addstats.delAll();
 	}
 }
 
@@ -747,7 +748,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	}
 
 	public Initializer(int pos, int flags) {
-		super(pos, null);
+		super(pos);
 		setFlags(flags);
 	}
 
@@ -807,7 +808,7 @@ public class WBCCondition extends DNode {
 	}
 
 	public WBCCondition(int pos, WBCType cond, KString name, Statement body) {
-		super(pos,null);
+		super(pos);
 		if (name != null)
 			this.name = new ASTIdentifier(pos, name);
 		this.cond = cond;

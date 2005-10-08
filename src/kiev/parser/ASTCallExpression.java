@@ -89,9 +89,9 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[0]),0);
+					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.type),0);
+					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.type),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -101,7 +101,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args,false);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);
@@ -114,11 +114,11 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[0]),0);
+					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,this,mmm.params[1]),0);
+					args.insert(new VarAccessExpr(pos,mmm.params[1]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,this,PassInfo.clazz.super_type),0);
+					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.super_type),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
 			if(  PassInfo.clazz.super_type.getStruct().package_clazz.isClazz()
@@ -136,7 +136,7 @@ public class ASTCallExpression extends Expr {
 			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args,true);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
 				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
 				ce.resolve(ret);
@@ -166,7 +166,7 @@ public class ASTCallExpression extends Expr {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
-						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.toArray()));
+						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.delToArray()));
 						return;
 					}
 				} catch(Exception eee) {
@@ -178,23 +178,22 @@ public class ASTCallExpression extends Expr {
 			if( reqType instanceof CallableType ) {
 				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 				ac.pos = pos;
-				ac.parent = parent;
 				ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
 				for (int i=0; i < ac.params.length; i++)
 					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
-				BlockStat bs = new BlockStat(pos,ac,ENode.emptyArray);
+				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
 				Expr[] cargs = new Expr[ac.params.length];
 				for(int i=0; i < cargs.length; i++)
-					cargs[i] = new VarAccessExpr(pos,this,(Var)ac.params[i]);
+					cargs[i] = new VarAccessExpr(pos,(Var)ac.params[i]);
 				args.delAll();
 				foreach (Expr e; cargs)
 					args.add(e);
 				if( ac.rettype.getType() == Type.tpVoid ) {
-					bs.addStatement(new ExprStat(pos,bs,this));
-					bs.addStatement(new ReturnStat(pos,bs,null));
+					bs.addStatement(new ExprStat(pos,this));
+					bs.addStatement(new ReturnStat(pos,null));
 				} else {
-					bs.addStatement(new ReturnStat(pos,bs,this));
+					bs.addStatement(new ReturnStat(pos,this));
 				}
 				ac.body = bs;
 				if( oldargs.length > 0 ) {

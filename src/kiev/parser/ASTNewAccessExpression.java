@@ -52,7 +52,7 @@ public class ASTNewAccessExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		replaceWithNodeResolve(reqType, new NewExpr(pos,type.getType(),args.toArray(),obj));
+		replaceWithNodeResolve(reqType, new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

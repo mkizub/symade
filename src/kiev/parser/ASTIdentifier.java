@@ -159,7 +159,7 @@ public class ASTIdentifier extends ENode {
 	
 	public boolean preGenerate() {
 		if (resolved != null)
-			this.replaceWithNode(resolved);
+			this.replaceWithNode((ENode)~resolved);
 		return false;
 	}
 	
@@ -236,7 +236,7 @@ public class ASTIdentifier extends ENode {
 					}
 				}
 			}
-			replaceWith(fun ()->ENode { return new TypeNameRef(this,s.type); } );
+			replaceWithNode(new TypeNameRef((ASTIdentifier)this.copy(),s.type));
 			return;
 		}
 		else if( v instanceof TypeRef ) {

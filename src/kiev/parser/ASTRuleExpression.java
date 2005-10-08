@@ -41,11 +41,12 @@ public class ASTRuleExpression extends ASTRuleNode {
 
     public void resolve(Type reqType) {
     	expr.resolve(null);
-    	if (bt_expr != null) bt_expr.resolve(null);
+    	if (bt_expr != null)
+			bt_expr.resolve(null);
     	if (while_mode)
-   			replaceWithNodeResolve(new RuleWhileExpr(expr,bt_expr));
+   			replaceWithNodeResolve(new RuleWhileExpr((ENode)~expr,bt_expr==null?null:(ENode)~bt_expr));
    		else
-    		replaceWithNodeResolve(new RuleExpr(expr,bt_expr));
+    		replaceWithNodeResolve(new RuleExpr((ENode)~expr,bt_expr==null?null:(ENode)~bt_expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }

@@ -41,7 +41,7 @@ public class ShadowStat extends Statement {
 	public ShadowStat() {
 	}
 	public ShadowStat(Statement stat) {
-		super(0,null);
+		super(0);
 		this.stat = stat;
 	}
 	public Type getType() { return stat.getType(); }
@@ -78,8 +78,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	public InlineMethodStat() {
 	}
 
-	public InlineMethodStat(int pos, ASTNode parent, Method m, Method in) {
-		super(pos, parent);
+	public InlineMethodStat(int pos, Method m, Method in) {
+		super(pos);
 		method = m;
 		method.inlined_by_dispatcher = true;
 		assert(m.params.length == in.params.length);
@@ -106,14 +106,14 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 				in = in.declNode(params_redir[i].new_var);
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
-			df = new DataFlowFixed(in);
+			df = new DataFlow(new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;
 	}
 	
-	public DFState calcDFlowOut() {
-		return parent.getDFlowFor(pslot.name).in();
+	public DFState calcDFlowOut(DFFunc flnk) {
+		return parent.getDFlowFor(pslot.name).in(flnk);
 	}
 
 	public void resolve(Type reqType) {
@@ -188,19 +188,19 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	public BlockStat() {
 	}
 
-	public BlockStat(int pos, ASTNode parent) {
-		super(pos, parent);
+	public BlockStat(int pos) {
+		super(pos);
 	}
 
-	public BlockStat(int pos, ASTNode parent, NArr<ENode> sts) {
-		super(pos, parent);
+	public BlockStat(int pos, NArr<ENode> sts) {
+		super(pos);
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
 	}
 
-	public BlockStat(int pos, ASTNode parent, ENode[] sts) {
-		super(pos, parent);
+	public BlockStat(int pos, ENode[] sts) {
+		super(pos);
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
@@ -302,17 +302,17 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 //		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 //	}
 	
-	public DFState calcDFlowOut() {
+	public DFState calcDFlowOut(DFFunc flnk) {
 		Vector<Var> vars = new Vector<Var>();
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 		if (stats.length > 0) {
 			if (vars.length > 0)
-				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
+				return stats[stats.length-1].getDFlow().out(flnk).cleanInfoForVars(vars.toArray());
 			else
-				return stats[stats.length-1].getDFlow().out();
+				return stats[stats.length-1].getDFlow().out(flnk);
 		}
 		else {
-			return getDFlow().in();
+			return getDFlow().in(flnk);
 		}
 	}
 	
@@ -389,7 +389,7 @@ public class EmptyStat extends Statement {
 
 	public EmptyStat() {}
 
-	public EmptyStat(int pos, ASTNode parent) { super(pos, parent); }
+	public EmptyStat(int pos) { super(pos); }
 
 	public void resolve(Type reqType) {
 	}
@@ -419,8 +419,8 @@ public class ExprStat extends Statement {
 		this.expr = expr;
 	}
 
-	public ExprStat(int pos, ASTNode parent, ENode expr) {
-		super(pos, parent);
+	public ExprStat(int pos, ENode expr) {
+		super(pos);
 		this.expr = expr;
 	}
 
@@ -467,14 +467,10 @@ public class ReturnStat extends Statement/*defaults*/ {
 	public ReturnStat() {
 	}
 
-	public ReturnStat(int pos, ASTNode parent, ENode expr) {
-		super(pos, parent);
+	public ReturnStat(int pos, ENode expr) {
+		super(pos);
 		this.expr = expr;
 		setMethodAbrupted(true);
-	}
-
-	public ReturnStat(int pos, ENode expr) {
-		this(pos,null,expr);
 	}
 
 	public void resolve(Type reqType) {
@@ -573,14 +569,10 @@ public class ThrowStat extends Statement/*defaults*/ {
 	public ThrowStat() {
 	}
 
-	public ThrowStat(int pos, ASTNode parent, Expr expr) {
-		super(pos, parent);
+	public ThrowStat(int pos, Expr expr) {
+		super(pos);
 		this.expr = expr;
 		setMethodAbrupted(true);
-	}
-
-	public ThrowStat(int pos, Expr expr) {
-		this(pos,null,expr);
 	}
 
 	public void resolve(Type reqType) {
@@ -633,15 +625,11 @@ public class IfElseStat extends Statement {
 	public IfElseStat() {
 	}
 	
-	public IfElseStat(int pos, ASTNode parent, Expr cond, Statement thenSt, Statement elseSt) {
-		super(pos,parent);
+	public IfElseStat(int pos, Expr cond, Statement thenSt, Statement elseSt) {
+		super(pos);
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
-	}
-
-	public IfElseStat(int pos, Expr cond, Statement thenSt, Statement elseSt) {
-		this(pos,null,cond,thenSt,elseSt);
 	}
 
 	public void resolve(Type reqType) {
@@ -758,14 +746,10 @@ public class CondStat extends Statement {
 	public CondStat() {
 	}
 
-	public CondStat(int pos, ASTNode parent, ENode cond, ENode message) {
-		super(pos,parent);
+	public CondStat(int pos, ENode cond, ENode message) {
+		super(pos);
 		this.cond = cond;
 		this.message = message;
-	}
-
-	public CondStat(int pos, ENode cond, ENode message) {
-		this(pos,null,cond,message);
 	}
 
 	public void resolve(Type reqType) {
@@ -1380,7 +1364,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = new AssignExpr(pos,AssignOperator.Assign,
-					new VarAccessExpr(pos,sw.tmpvar),expr);
+					new VarAccessExpr(pos,sw.tmpvar),(ENode)~expr);
 				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			} else {

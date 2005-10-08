@@ -69,7 +69,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		foreach (Field f; case_attr.casefields)
 			init.params.add(new FormPar(f.pos,f.name.name,f.type,0));
 		clazz.addMethod(init);
-		init.body = new BlockStat(clazz.pos,init);
+		init.body = new BlockStat(clazz.pos);
 	}
 
 	public void preGenerate(ASTNode:ASTNode node) {
@@ -94,7 +94,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 
 			Method gettag = new Method(nameGetCaseTag,
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
-			gettag.body = new BlockStat(gettag.pos,gettag);
+			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,ftag))
 			);
@@ -104,7 +104,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 			// Add get$case$tag() method to itself
 			Method gettag = new Method(Constants.nameGetCaseTag,
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
-			gettag.body = new BlockStat(gettag.pos,gettag);
+			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))
 			);

@@ -1022,7 +1022,7 @@ public class WrapperType extends Type {
 	}
 	
 	public final boolean isWrapper()					{ return true; }
-	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)from, wrapped_field); } 
+	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); }
 	
 	public Type getUnwrappedType()						{ return Type.fromSignature(signature.substr(1)); }

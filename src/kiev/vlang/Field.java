@@ -68,7 +68,7 @@ public class Field extends DNode implements Named, Typed, Accessable {
 		this.name = new NodeName(name);
 		this.ftype = ftype;
 		this.acc = new Access(0);
-		this.meta = new MetaSet(this);
+		this.meta = new MetaSet();
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
 

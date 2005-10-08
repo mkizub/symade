@@ -54,7 +54,7 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 		if( !(v instanceof Var) )
     		throw new CompilerException(name.getPos(),"Identifier is not a var");
 		expr.resolve(((Var)v).type.args[0]);
-    	replaceWithNode(new RuleIstheExpr(getPos(), (Var)v, expr));
+    	replaceWithNode(new RuleIstheExpr(getPos(), (Var)v, (ENode)~expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(name.getPos(),"Internal error"); }

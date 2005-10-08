@@ -1258,7 +1258,7 @@ public class kiev040 implements kiev040Constants {
     jj_consume_token(LBRACE);
     if (jj_2_22(1)) {
       n = AnnotationValueScalar();
-                                              v.values.add(n.value);
+                                              v.values.add((ENode)~n.value);
       label_18:
       while (true) {
         switch (jj_nt.kind) {
@@ -1270,7 +1270,7 @@ public class kiev040 implements kiev040Constants {
         }
         jj_consume_token(COMMA);
         n = AnnotationValueScalar();
-                                                      v.values.add(n.value);
+                                                      v.values.add((ENode)~n.value);
       }
     } else {
       ;
@@ -1318,7 +1318,7 @@ public class kiev040 implements kiev040Constants {
         break label_20;
       }
       t= jj_consume_token(OPERATOR_LRBRACKETS);
-                                    f.ftype = new TypeExpr(f.ftype,t);
+                                    f.ftype = new TypeExpr((TypeRef)~f.ftype,t);
     }
     switch (jj_nt.kind) {
     case ASSIGN:
@@ -1377,7 +1377,7 @@ public class kiev040 implements kiev040Constants {
         break label_22;
       }
       t= jj_consume_token(OPERATOR_LRBRACKETS);
-                                    lv.vtype = new TypeExpr(lv.vtype,t);
+                                    lv.vtype = new TypeExpr((TypeRef)~lv.vtype,t);
     }
     switch (jj_nt.kind) {
     case ASSIGN:
@@ -2100,7 +2100,7 @@ public class kiev040 implements kiev040Constants {
                 n.setFlags(modifiers.getFlags());
                 /*{
 		foreach (Meta m; modifiers.annotations)
-			n.meta.set(m);
+			n.meta.set((Meta)m.copy());
 		}*/
 
           presc = n;
@@ -3123,8 +3123,8 @@ public class kiev040 implements kiev040Constants {
         t= jj_consume_token(DOT);
                   ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.setPos(t.getPos());
         e = NewExpression();
-                        ae.type = ((ASTNewExpression)e).type;
-                        /*{ foreach (ENode a; ((ASTNewExpression)e).args) ae.args += a; }*/
+                        ae.type = (TypeRef)~((ASTNewExpression)e).type;
+                        ae.args.moveFrom(((ASTNewExpression)e).args);
                         if (((ASTNewExpression)e).clazz != null)
                                 {if (true) throw new ParseException();}
                         e = ae;
@@ -8801,7 +8801,7 @@ public class kiev040 implements kiev040Constants {
 		else
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
-			clazz.meta.set(m);
+			clazz.meta.set((Meta)m.copy());
 		return clazz;
 	}
 
@@ -8823,7 +8823,7 @@ public class kiev040 implements kiev040Constants {
 		Constructor meth = new Constructor(tc, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -8834,7 +8834,7 @@ public class kiev040 implements kiev040Constants {
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -8848,7 +8848,7 @@ public class kiev040 implements kiev040Constants {
 		RuleMethod meth = new RuleMethod(id, tc, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -8863,7 +8863,7 @@ public class kiev040 implements kiev040Constants {
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
-				f.meta.set(m);
+				f.meta.set((Meta)m.copy());
 		} else {
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
@@ -8878,7 +8878,7 @@ public class kiev040 implements kiev040Constants {
 		f.pos = id.pos;
 		f.setEnumField(true);
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m);
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 
@@ -8886,7 +8886,7 @@ public class kiev040 implements kiev040Constants {
 		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m);
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 	
@@ -8895,10 +8895,10 @@ public class kiev040 implements kiev040Constants {
 			tp = (TypeRef)tp.copy();
 		Var v = new Var(id, tp, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet(v);
+			v.meta = new MetaSet();
 			if (first) {
 				foreach (Meta m; modifiers.annotations)
-					v.meta.set(m);
+					v.meta.set((Meta)m.copy());
 			} else {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
@@ -8910,9 +8910,9 @@ public class kiev040 implements kiev040Constants {
 	private static FormPar mkFormPar(ASTIdentifier id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet(v);
+			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
-				v.meta.set(m);
+				v.meta.set((Meta)m.copy());
 		}
 		return v;
 	}
@@ -8921,7 +8921,7 @@ public class kiev040 implements kiev040Constants {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);
-		e.nodes.append(cond);
+		e.nodes.append((ENode)~cond);
 		return e;
 	}
 

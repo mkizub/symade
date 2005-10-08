@@ -161,7 +161,7 @@ public class RuleMethod extends Method {
 			for(int i=0; i < localvars.length; i++) {
 				in = in.declNode(localvars[i]);
 			}
-			df = new DataFlowFixed(in);
+			df = new DataFlow(new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;
@@ -191,7 +191,7 @@ public class RuleMethod extends Method {
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
-					((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
+					((BlockStat)body).stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
 					Kiev.reportError(pos,"Return requared");
@@ -385,19 +385,19 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 	public RuleBlock() {
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n) {
-		super(pos,parent);
+	public RuleBlock(int pos, ASTRuleNode n) {
+		super(pos);
 		node = n;
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, NArr<ENode> stats) {
-		this(pos,parent,n);
+	public RuleBlock(int pos, ASTRuleNode n, NArr<ENode> stats) {
+		this(pos,n);
 		foreach (ENode st; stats)
 			this.stats.add(st);
 	}
 
-	public RuleBlock(int pos, ASTNode parent, ASTRuleNode n, ENode[] stats) {
-		this(pos,parent,n);
+	public RuleBlock(int pos, ASTRuleNode n, ENode[] stats) {
+		this(pos,n);
 		foreach (ENode st; stats)
 			this.stats.add(st);
 	}
@@ -578,13 +578,13 @@ public final class RuleAndExpr extends ASTRuleNode {
     		if (!e2.expr.getType().equals(Type.tpBoolean)) continue;
     		if (e1.bt_expr != null) continue;
     		if (e2.bt_expr != null) continue;
-    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,e1.expr,e2.expr));
+    		RuleExpr e = new RuleExpr(new BinaryBooleanAndExpr(e1.pos,(ENode)~e1.expr,(ENode)~e2.expr));
     		rules[i] = e;
 			rules.del(i+1);
     		i--;
     	}
     	if (rules.length == 1)
-    		replaceWithNode(rules[0]);
+    		replaceWithNode((ENode)~rules[0]);
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -625,7 +625,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 @node
 public final class RuleIstheExpr extends ASTRuleNode {
 
-	@att public Var		var;		// variable of type PVar<...>
+	@ref public Var		var;		// variable of type PVar<...>
 	@att public ENode	expr;		// expression to check/unify
 
 	public RuleIstheExpr() {
@@ -887,24 +887,24 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public RuleCallExpr(CallExpr expr) {
 		super(expr.pos);
-		this.obj = expr.obj;
+		this.obj = (ENode)~expr.obj;
 		this.func = expr.func;
-		foreach(Expr e; expr.args) this.args.append(e);
+		this.args.addAll(expr.args.delToArray());
 		this.super_flag = expr.super_flag;
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
 		super(expr.pos);
-		this.obj = expr.expr;
+		this.obj = (ENode)~expr.expr;
 		if( expr.expr instanceof VarAccessExpr )
 			this.func = ((VarAccessExpr)expr.expr).var;
 		else if( expr.expr instanceof StaticFieldAccessExpr )
 			this.func = ((StaticFieldAccessExpr)expr.expr).var;
 		else if( expr.expr instanceof AccessExpr ) {
 			this.func = ((AccessExpr)expr.expr).var;
-			this.obj = ((AccessExpr)expr.expr).obj;
+			this.obj = (ENode)~((AccessExpr)expr.expr).obj;
 		}
-		foreach(Expr e; expr.args) this.args.append(e);
+		this.args.addAll(expr.args.delToArray());
 		this.args.insert(0,expr.env_access);
 	}
 
@@ -992,7 +992,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
 			if( e.func.type.ret == Type.tpRule ) {
-				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
+				replaceWithNodeResolve(reqType, new RuleCallExpr((CallExpr)~e));
 				return;
 			}
 		}
@@ -1000,7 +1000,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
 			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) ) {
-				replaceWithNodeResolve(reqType, new RuleCallExpr(e));
+				replaceWithNodeResolve(reqType, new RuleCallExpr((ClosureCallExpr)~e));
 				return;
 			}
 		}

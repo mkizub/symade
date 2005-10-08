@@ -71,14 +71,14 @@ public abstract class NodeData {
 public abstract class ASTNode implements Constants {
 
 	public static ASTNode[] emptyArray = new ASTNode[0];
-    public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false);
+    public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
 	public int				pos;
 	
 	@ref(copyable=false)
-	public ASTNode			parent;
+	public access:ro,ro,ro,rw ASTNode			parent;
 	@ref(copyable=false)
-	public AttrSlot			pslot;
+	public access:ro,ro,ro,rw AttrSlot			pslot;
 	@ref(copyable=false)
 	public ASTNode			pprev;
 	@ref(copyable=false)
@@ -165,9 +165,28 @@ public abstract class ASTNode implements Constants {
 		this.pos = pos;
 	}
 
+	public ASTNode(int pos, int fl) {
+		this(pos);
+		flags = fl;
+	}
+
 	public void cleanup() {
 		// do nothing
 	};
+	
+	public ASTNode detach()
+		alias operator (210,fy,~)
+	{
+		if (!isAttached())
+			return this;
+		if (pslot.is_space) {
+			((NArr<ASTNode>)parent.getVal(pslot.name)).detach(this);
+		} else {
+			parent.setVal(pslot.name,null);
+		}
+		assert(!isAttached());
+		return this;
+	}
 	
 	public /*abstract*/ Object copy() {
 		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
@@ -181,53 +200,85 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
-	public void callbackDetached() {
+	public final void callbackDetached() {
+		assert(isAttached());
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
 			nd.nodeDetached(this);
 			nd = nx;
 		}
+		ASTNode parent = this.parent;
+		AttrSlot pslot = this.pslot;
+		this.parent = null;
+		this.pslot = null;
+		this.pprev = null;
+		this.pnext = null;
 		parent.callbackChildChanged(pslot);
 	}
 	
-	public void callbackAttached() {
-		parent.callbackChildChanged(pslot);
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		assert(!isAttached());
+		assert(parent != null && parent != this);
+		this.parent = parent;
+		this.pslot = pslot;
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
 			nd.nodeAttached(this);
 			nd = nx;
 		}
+		parent.callbackChildChanged(pslot);
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
 		// by default do nothing
 	}
 	
-	public ASTNode(int pos, int fl) {
-		this(pos);
-		flags = fl;
-	}
-
-	public ASTNode(int pos, ASTNode parent) {
-		this(pos);
-		this.parent = parent;
-	}
-	
 	public final ASTNode replaceWithNode(ASTNode node) {
-		parent.replaceVal(pslot.name, this, node);
+		assert(isAttached());
+		if (pslot.is_space) {
+			assert(node != null);
+			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+			int idx = space.indexOf(this);
+			assert(idx >= 0);
+			space[idx] = node;
+		} else {
+			assert(parent.getVal(pslot.name) == this);
+			parent.setVal(pslot.name, node);
+		}
+		assert(node == null || node.isAttached());
 		return node;
 	}
 	public final ASTNode replaceWith(()->ASTNode fnode) {
+		assert(isAttached());
 		ASTNode parent = this.parent;
 		AttrSlot pslot = this.pslot;
-		ASTNode n = fnode();
-		parent.replaceVal(pslot.name, this, n);
-		return n;
+		if (pslot.is_space) {
+			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
+			int idx = space.indexOf(this);
+			assert(idx >= 0);
+			space[idx] = (ASTNode)pslot.clazz.newInstance();
+			ASTNode n = fnode();
+			assert(n != null);
+			space[idx] = n;
+			assert(n.isAttached());
+			return n;
+		} else {
+			assert(parent.getVal(pslot.name) == this);
+			parent.setVal(pslot.name, pslot.clazz.newInstance());
+			ASTNode n = fnode();
+			parent.setVal(pslot.name, n);
+			assert(n == null || n.isAttached());
+			return n;
+		}
 	}
 
-	public void setParent(ASTNode n) { parent = n; }
+	// the node is attached
+	public final boolean isAttached()  {
+		return parent != null;
+	}
+
 	public ASTNode getParent() { return parent; }
 
     public final int getPos() { return pos; }
@@ -305,7 +356,11 @@ public abstract class ASTNode implements Constants {
 		if (df == null) {
 			df = parent.getDFlowFor(pslot.name);
 			if (pslot.is_space) {
-				df = new DataFlowSpaceNode(this,(DataFlowSpace)df);
+				DataFlowSpace sdf = (DataFlowSpace)df;
+				if (sdf.is_seq)
+					df = new DataFlow(new DFFuncSpaceSeqNodeIn(this,new DFFuncFixedFunc(sdf.func_in)));
+				else
+					df = new DataFlow(new DFFuncFixedFunc(sdf.func_in));
 				this.addNodeData(df);
 			} else {
 				assert(getNodeData(DataFlow.ID) == df);
@@ -316,7 +371,7 @@ public abstract class ASTNode implements Constants {
 	
 	// build data flow for a child node
 	final DataFlow getDFlowFor(String name) {
-		DataFlow df = getDFlow().df_out.children.get(name);
+		DataFlow df = getDFlow().children.get(name);
 		if (df == null) {
 			java.lang.reflect.Field jf = getDeclaredField(name);
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
@@ -334,14 +389,14 @@ public abstract class ASTNode implements Constants {
 				df = new DataFlowSpace((NArr<ASTNode>)getVal(name),fin,seq=="true");
 			}
 			else if (flnk == null || flnk.length == 0) {
-				df = new DataFlowFunc(this,fin);
+				df = new DataFlow(DFFunc.make(this,fin));
 			}
 			else {
-				df = new DataFlowLabel(this,fin,flnk);
+				df = new DataFlow(new DFFuncLabel(DFFunc.make(this,fin),DFFunc.make(this,flnk)));
 			}
-			getDFlow().df_out.children.put(name,df);
+			getDFlow().children.put(name,df);
 		}
-		if (df.df_out == null) {
+		if !(df.isAttached()) {
 			Object obj = getVal(name);
 			if (obj instanceof ASTNode) {
 				ASTNode n = (ASTNode)obj;
@@ -355,11 +410,11 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
-	public DFState calcDFlowJmp() { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
-	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
-	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
-	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
-	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
+	public DFState calcDFlowJmp(DFFunc flnk) { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
+	public DFState calcDFlowOut(DFFunc flnk) { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
+	public DFState calcDFlowTru(DFFunc flnk) { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
+	public DFState calcDFlowFls(DFFunc flnk) { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
+	public DFState calcDFlowIn(DFFunc flnk)  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
 
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }
@@ -1167,7 +1222,6 @@ public abstract class DNode extends ASTNode {
 	public DNode() {}
 	public DNode(int pos) { super(pos); }
 	public DNode(int pos, int fl) { super(pos,fl); }
-	public DNode(int pos, ASTNode parent) { super(pos,parent); }
 
 	public abstract void resolveDecl();
 	public abstract Dumper toJavaDecl(Dumper dmp);
@@ -1178,13 +1232,12 @@ public abstract class DNode extends ASTNode {
  * type reference, and expressions themselves
  */
 @node
-public abstract class ENode extends ASTNode {
+public /*abstract*/ class ENode extends ASTNode {
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
 	public ENode() {}
 	public ENode(int pos) { super(pos); }
-	public ENode(int pos, ASTNode parent) { super(pos,parent); }
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
@@ -1208,29 +1261,33 @@ public abstract class ENode extends ASTNode {
     }
 	
 	public final void replaceWithNodeResolve(Type reqType, ENode node) {
-		parent.replaceVal(pslot.name, this, node);
-		node.resolve(reqType);
+		assert(isAttached());
+		ASTNode n = this.replaceWithNode(node);
+		assert(n == node);
+		assert(n.isAttached());
+		((ENode)n).resolve(reqType);
 	}
 
 	public final void replaceWithResolve(Type reqType, ()->ENode fnode) {
-		ASTNode parent = this.parent;
-		AttrSlot pslot = this.pslot;
-		ENode n = fnode();
-		parent.replaceVal(pslot.name, this, n);
-		n.resolve(reqType);
+		assert(isAttached());
+		ASTNode n = this.replaceWith(fnode);
+		assert(n.isAttached());
+		((ENode)n).resolve(reqType);
 	}
 
 	public final void replaceWithNodeResolve(ENode node) {
-		parent.replaceVal(pslot.name, this, node);
-		node.resolve(null);
+		assert(isAttached());
+		ASTNode n = this.replaceWithNode(node);
+		assert(n == node);
+		assert(n.isAttached());
+		((ENode)n).resolve(null);
 	}
 
 	public final void replaceWithResolve(()->ENode fnode) {
-		ASTNode parent = this.parent;
-		AttrSlot pslot = this.pslot;
-		ENode n = fnode();
-		parent.replaceVal(pslot.name, this, n);
-		n.resolve(null);
+		assert(isAttached());
+		ASTNode n = this.replaceWith(fnode);
+		assert(n.isAttached());
+		((ENode)n).resolve(null);
 	}
 
 }
@@ -1306,8 +1363,6 @@ public abstract class Expr extends ENode {
 
 	public Expr(int pos) { super(pos); }
 
-	public Expr(int pos, ASTNode parent) { super(pos,parent); }
-
 	public Operator getOp() { return null; }
 
 	public int getPriority() {
@@ -1350,8 +1405,6 @@ public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr(int pos) { super(pos); }
 
-	public LvalueExpr(int pos, ASTNode parent) { super(pos, parent); }
-
 	public void generate(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -1386,7 +1439,7 @@ public abstract class Statement extends ENode {
 
 	public Statement() {}
 
-	public Statement(int pos, ASTNode parent) { super(pos, parent); }
+	public Statement(int pos) { super(pos); }
 
 	public void		generate(Type reqType) {
 		Dumper dmp = new Dumper();

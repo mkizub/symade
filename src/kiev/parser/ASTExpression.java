@@ -47,7 +47,8 @@ public class ASTExpression extends Expr {
 		try {
 			foreach (ENode n; nodes) n.preResolve();
 			if (nodes.length == 1 && nodes[0] instanceof Expr) {
-				this.replaceWithNode(nodes[0]);
+				ENode n = nodes[0];
+				this.replaceWithNode((ENode)~n);
 				return false;
 			}
 			List<ENode> lst = List.Nil;
@@ -82,7 +83,7 @@ public class ASTExpression extends Expr {
 				e = ((UnresExpr)e).toResolvedExpr();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
-			this.replaceWithNode(e);
+			this.replaceWithNode((ENode)~e);
 		} finally { PassInfo.pop(this); }
 		return false;
 	}
@@ -120,7 +121,7 @@ public class ASTExpression extends Expr {
 				e = ((UnresExpr)e).toResolvedExpr();
 			if (isPrimaryExpr())
 				e.setPrimaryExpr(true);
-			this.replaceWithNodeResolve(reqType, e);
+			this.replaceWithNodeResolve(reqType, (ENode)~e);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -231,7 +232,7 @@ public class ASTExpression extends Expr {
 		expr.head().getPriority() >= op.getArgPriority(0),
 		{
 			op ?= BinaryOperator.InstanceOf, $cut,	expr.at(2) instanceof TypeRef,
-			result ?= new InstanceofExpr(expr.at(1).getPos(),expr.head(),((TypeRef)expr.at(2)).getType()),
+			result ?= new InstanceofExpr(expr.at(1).getPos(),(ENode)~expr.head(),((TypeRef)expr.at(2)).getType()),
 			rest1 ?= expr.tail().tail().tail()
 		;	resolveExpr(result1,rest1,expr.tail().tail(),op.getArgPriority(1)),
 			result ?= new InfixExpr(expr.tail().head().pos,(BinaryOperator)op,getExpr(expr.head()),getExpr(result1))

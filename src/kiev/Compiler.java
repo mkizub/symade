@@ -689,14 +689,14 @@ public class Compiler {
 				try {
 					ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
 					if (tp != null)
-						tp.rewrite(Kiev.files[i], null);
+						tp.rewrite(Kiev.files[i]);
 				} catch (Exception rte) {
 					Kiev.reportError(0,rte);
 				}
 				try {
 					ProcessPackedFld tp = (ProcessPackedFld)Kiev.getProcessor(Kiev.Ext.PackedFields);
 					if (tp != null)
-						tp.rewrite(Kiev.files[i], null);
+						tp.rewrite(Kiev.files[i]);
 				} catch (Exception rte) {
 					Kiev.reportError(0,rte);
 				}

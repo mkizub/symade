@@ -44,8 +44,6 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 
 	public BoolExpr(int pos) { super(pos); }
 
-	public BoolExpr(int pos, ASTNode parent) { super(pos, parent); }
-
 	public Type getType() { return Type.tpBoolean; }
 
 	public void generate(Type reqType) {
@@ -210,7 +208,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			BoolExpr.checkBool(expr1);
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			getDFlow().out();
+			getDFlow().out(null);
 		} finally {
 			PassInfo.pop(this);
 		}
@@ -459,7 +457,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
-			expr1 = new CallExpr(expr1.pos,expr1,m,Expr.emptyArray);
+			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,Expr.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
@@ -485,13 +483,13 @@ public class BinaryBoolExpr extends BoolExpr {
 			}
 			else if( op==BinaryOperator.BooleanOr ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,expr1,expr2));
+					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,(ENode)~expr1,(ENode)~expr2));
 					return;
 				}
 			}
 			else if( op==BinaryOperator.BooleanAnd ) {
 				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,expr1,expr2));
+					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,(ENode)~expr1,(ENode)~expr2));
 					return;
 				}
 			}
@@ -516,9 +514,9 @@ public class BinaryBoolExpr extends BoolExpr {
 				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
 				if( opt.match(tps,argsarr) ) {
 					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
 					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{expr2}));
+						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{(ENode)~expr2}));
 					return;
 				}
 			}
@@ -532,12 +530,12 @@ public class BinaryBoolExpr extends BoolExpr {
 		if( !t1.equals(t2) ) {
 			if( t1.isReference() != t2.isReference()) {
 				if (t1.isEnum() && !t1.isIntegerInCode()) {
-					expr1 = new CastExpr(expr1.pos,Type.tpInt,expr1);
+					expr1 = new CastExpr(expr1.pos,Type.tpInt,(ENode)~expr1);
 					expr1.resolve(Type.tpInt);
 					t1 = expr1.getType();
 				}
 				if (t2.isEnum() && !t2.isIntegerInCode()) {
-					expr2 = new CastExpr(expr2.pos,Type.tpInt,expr2);
+					expr2 = new CastExpr(expr2.pos,Type.tpInt,(ENode)~expr2);
 					expr2.resolve(Type.tpInt);
 					t2 = expr2.getType();
 				}
@@ -556,11 +554,11 @@ public class BinaryBoolExpr extends BoolExpr {
 				else t = Type.tpInt;
 
 				if( !t.equals(t1) && t1.isCastableTo(t) ) {
-					expr1 = new CastExpr(pos,t,expr1);
+					expr1 = new CastExpr(pos,t,(ENode)~expr1);
 					expr1.resolve(t);
 				}
 				if( !t.equals(t2) && t2.isCastableTo(t) ) {
-					expr2 = new CastExpr(pos,t,expr2);
+					expr2 = new CastExpr(pos,t,(ENode)~expr2);
 					expr2.resolve(t);
 				}
 			}
@@ -741,15 +739,16 @@ public class InstanceofExpr extends BoolExpr {
 				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
 			}
 			if (expr.getType().isInstanceOf(type.getType())) {
-				replaceWithNodeResolve(reqType, new BinaryBoolExpr(pos, BinaryOperator.NotEquals,expr,new ConstNullExpr()));
+				replaceWithNodeResolve(reqType,
+					new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
 				return;
 			}
 			if (!type.isArray() && type.args.length > 0) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz,type.getType()),
+						PassInfo.clazz.accessTypeInfoField(pos,type.getType()),
 						Type.tpTypeInfo.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
-						new ENode[]{expr}
+						new ENode[]{(ENode)~expr}
 						)
 					);
 				return;
@@ -758,8 +757,8 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public DFState calcDFlowTru() {
-		return addNodeTypeInfo(getDFlow().in());
+	public DFState calcDFlowTru(DFFunc flnk) {
+		return addNodeTypeInfo(getDFlow().in(flnk));
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {

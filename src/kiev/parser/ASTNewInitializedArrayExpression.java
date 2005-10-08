@@ -62,7 +62,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
         }
         int dim = 0;
         while( tp.isArray() ) { dim++; tp = tp.args[0]; }
-		replaceWithNodeResolve(reqType, new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.toArray()));
+		replaceWithNodeResolve(reqType, new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

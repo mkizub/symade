@@ -248,7 +248,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				set_var.params.add(value);
 			}
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,set_var,ENode.emptyArray);
+				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
 					Statement p_st = new IfElseStat(0,
@@ -256,38 +256,20 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 								new AccessExpr(0,new ThisExpr(0),f,true),
 								new ConstNullExpr()
 							),
-							new BlockStat(0,null,new Statement[]{
-								new ExprStat(0,null,
+							new BlockStat(0,new Statement[]{
+								new ExprStat(0,
 									new ASTCallAccessExpression(0,
 										new AccessExpr(0,new ThisExpr(0),f,true),
 										KString.from("callbackDetached"),
 										ENode.emptyArray
 									)
-//								),
-//								new ExprStat(0,null,
-//									new AssignExpr(0, AssignOperator.Assign,
-//										new AccessExpr(0,
-//											new AccessExpr(0,new ThisExpr(0),f,true),
-//											astT.resolveField(KString.from("parent"))
-//										),
-//										new ConstNullExpr()
-//									)
-//								),
-//								new ExprStat(0,null,
-//									new AssignExpr(0, AssignOperator.Assign,
-//										new AccessExpr(0,
-//											new AccessExpr(0,new ThisExpr(0),f,true),
-//											astT.resolveField(KString.from("pslot"))
-//										),
-//										new ConstNullExpr()
-//									)
 								)
 							}),
 							null
 						);
 					body.stats.append(p_st);
 				}
-				Statement ass_st = new ExprStat(f.pos,body,
+				Statement ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,f,true)
 									: new AccessExpr(f.pos,new ThisExpr(0),f,true),
@@ -303,38 +285,21 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 								new VarAccessExpr(0, value),
 								new ConstNullExpr()
 							),
-							new BlockStat(0,null,new Statement[]{
-								new ExprStat(0,null,
-									new AssignExpr(0, AssignOperator.Assign,
-										new AccessExpr(0,
-											new VarAccessExpr(0, value),
-											astT.resolveField(KString.from("parent"))
-										),
-										new ThisExpr()
-									)
-								),
-								new ExprStat(0,null,
-									new AssignExpr(0, AssignOperator.Assign,
-										new AccessExpr(0,
-											new VarAccessExpr(0, value),
-											astT.resolveField(KString.from("pslot"))
-										),
+							new ExprStat(0,
+								new ASTCallAccessExpression(0,
+									new VarAccessExpr(0, value),
+									KString.from("callbackAttached"),
+									new ENode[] {
+										new ThisExpr(),
 										new StaticFieldAccessExpr(f.pos, fatt)
-									)
-								),
-								new ExprStat(0,null,
-									new ASTCallAccessExpression(0,
-										new VarAccessExpr(0, value),
-										KString.from("callbackAttached"),
-										ENode.emptyArray
-									)
+									}
 								)
-							}),
+							),
 							null
 						);
 					body.stats.append(p_st);
 				}
-				body.stats.append(new ReturnStat(f.pos,body,null));
+				body.stats.append(new ReturnStat(f.pos,null));
 				set_var.body = body;
 			}
 			f.getMetaVirtual().set = set_var;
@@ -355,8 +320,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			s.addMethod(get_var);
 			FormPar self = get_var.getThisPar();
 			if( !f.isAbstract() ) {
-				BlockStat body = new BlockStat(f.pos,get_var,ENode.emptyArray);
-				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
+				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				body.stats.add(new ReturnStat(f.pos,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
 			}
 			f.getMetaVirtual().get = get_var;
@@ -371,48 +336,48 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	//	   PASS - rewrite code                        //
 	////////////////////////////////////////////////////
 
-	private void rewriteNode(ASTNode node, String id) {
+	private void rewriteNode(ASTNode node) {
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
 			Object val = node.getVal(attr.name);
-			rewrite(val, attr.name);
+			rewrite(val);
 		}
 	}
 	
-	public void rewrite(ASTNode:Object node, String id) {
+	public void rewrite(ASTNode:Object node) {
 		//System.out.println("ProcessVirtFld: rewrite "+node.getClass().getName()+" in "+id);
 		PassInfo.push(node);
 		try {
-			rewriteNode(node, id);
+			rewriteNode(node);
 		} finally { PassInfo.pop(node); }
 	}
 	
-	public void rewrite(NArr<ASTNode>:Object arr, String id) {
+	public void rewrite(NArr<ASTNode>:Object arr) {
 		//System.out.println("ProcessVirtFld: rewrite "+arr.getClass().getName()+" in "+id);
 		foreach (ASTNode n; arr) {
-			rewrite(n, id);
+			rewrite(n);
 		}
 	}
 
-	public void rewrite(Object:Object o, String id) {
+	public void rewrite(Object:Object o) {
 		//System.out.println("ProcessVirtFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
 		return;
 	}
 
-	public void rewrite(FileUnit:Object node, String id) {
+	public void rewrite(FileUnit:Object node) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
 		PassInfo.push(node);
 		try {
-			rewriteNode(node, id);
+			rewriteNode(node);
 		} finally { PassInfo.pop(node); }
 	}
 	
-	public void rewrite(AccessExpr:Object fa, String id) {
+	public void rewrite(AccessExpr:Object fa) {
 		//System.out.println("ProcessVirtFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		PassInfo.push(fa);
 		try {
 			Field f = fa.var;
 			if( !f.isVirtual() || fa.isAsField() ) {
-				rewriteNode(fa, id);
+				rewriteNode(fa);
 				return;
 			}
 			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
@@ -420,24 +385,24 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
 			if (PassInfo.method != null && PassInfo.method.name.equals(get_name)) {
 				fa.setAsField(true);
-				rewriteNode(fa, id);
+				rewriteNode(fa);
 				return;
 			}
 			// We rewrite by get$ method. set$ method is rewritten by AssignExpr
 			if (f.getMetaVirtual().get == null) {
 				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
-				rewriteNode(fa, id);
+				rewriteNode(fa);
 				return;
 			}
-			Expr ce = new CallExpr(fa.pos, fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
+			Expr ce = new CallExpr(fa.pos, (ENode)~fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
 			//ce = ce.resolveExpr(fa.getType());
-			fa.parent.replaceVal(id, fa, ce);
-			rewriteNode(ce, id);
+			fa.replaceWithNode(ce);
+			rewriteNode(ce);
 		} finally { PassInfo.pop(fa); }
 	}
 	
-	public void rewrite(AssignExpr:Object ae, String id) {
+	public void rewrite(AssignExpr:Object ae) {
 		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
 		PassInfo.push(ae);
 		try {
@@ -445,7 +410,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				AccessExpr fa = (AccessExpr)ae.lval;
 				Field f = fa.var;
 				if( !f.isVirtual() || fa.isAsField() ) {
-					rewriteNode(ae, id);
+					rewriteNode(ae);
 					return;
 				}
 				KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
@@ -453,20 +418,20 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		
 				if (PassInfo.method != null && PassInfo.method.name.equals(set_name)) {
 					fa.setAsField(true);
-					rewriteNode(ae, id);
+					rewriteNode(ae);
 					return;
 				}
 				// Rewrite by set$ method
 				if (f.getMetaVirtual().set == null) {
 					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
 					fa.setAsField(true);
-					rewriteNode(ae, id);
+					rewriteNode(ae);
 					return;
 				}
 				if (f.getMetaVirtual().get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
 					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 					fa.setAsField(true);
-					rewriteNode(ae, id);
+					rewriteNode(ae);
 					return;
 				}
 				BinaryOperator op = null;
@@ -483,50 +448,50 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
 				Expr expr;
 				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-					expr = new CallExpr(ae.pos, fa.obj, f.getMetaVirtual().set, new Expr[]{(Expr)ae.value});
+					expr = new CallExpr(ae.pos, (ENode)~fa.obj, f.getMetaVirtual().set, new ENode[]{(ENode)~ae.value});
 					expr.resolve(Type.tpVoid);
 				}
 				else {
-					BlockExpr be = new BlockExpr(ae.pos, ae.parent);
+					BlockExpr be = new BlockExpr(ae.pos);
 					Object acc;
 					if (fa.obj instanceof ThisExpr) {
-						acc = fa.obj;
+						acc = (ENode)~fa.obj;
 					}
 					else if (fa.obj instanceof VarAccessExpr) {
 						acc = ((VarAccessExpr)fa.obj).var;
 					}
 					else {
 						Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-						var.init = fa.obj;
+						var.init = (ENode)~fa.obj;
 						be.addSymbol(var);
 						acc = var;
 					}
-					Expr g;
+					ENode g;
 					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
-						g = new BinaryExpr(ae.pos, op, g, (Expr)ae.value);
+						g = new BinaryExpr(ae.pos, op, g, (ENode)~ae.value);
 					} else {
-						g = (Expr)ae.value;
+						g = (ENode)~ae.value;
 					}
-					g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
-					be.addStatement(new ExprStat(0, null, g));
+					g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
+					be.addStatement(new ExprStat(0, g));
 					if (!ae.isGenVoidExpr()) {
-						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
 						be.setExpr(g);
 					}
 					expr = be;
 					expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 				}
 				ae.replaceWithNode(expr);
-				rewrite(expr, id);
+				rewrite(expr);
 			}
 			else {
-				rewriteNode(ae, id);
+				rewriteNode(ae);
 			}
 		} finally { PassInfo.pop(ae); }
 	}
 	
-	public void rewrite(IncrementExpr:Object ie, String id) {
+	public void rewrite(IncrementExpr:Object ie) {
 		//System.out.println("ProcessVirtFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
 		PassInfo.push(ie);
 		try {
@@ -534,7 +499,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				AccessExpr fa = (AccessExpr)ie.lval;
 				Field f = fa.var;
 				if( !f.isVirtual() || fa.isAsField() ) {
-					rewriteNode(ie, id);
+					rewriteNode(ie);
 					return;
 				}
 				KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
@@ -544,20 +509,20 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		
 				if (PassInfo.method != null && (PassInfo.method.name.equals(set_name) || PassInfo.method.name.equals(get_name))) {
 					fa.setAsField(true);
-					rewriteNode(ie, id);
+					rewriteNode(ie);
 					return;
 				}
 				// Rewrite by set$ method
 				if (f.getMetaVirtual().set == null) {
 					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
 					fa.setAsField(true);
-					rewriteNode(ie, id);
+					rewriteNode(ie);
 					return;
 				}
 				if (f.getMetaVirtual().get == null) {
 					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
 					fa.setAsField(true);
-					rewriteNode(ie, id);
+					rewriteNode(ie);
 					return;
 				}
 				Expr expr;
@@ -571,7 +536,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					expr.setGenVoidExpr(true);
 				}
 				else {
-					BlockExpr be = new BlockExpr(ie.pos, ie.parent);
+					BlockExpr be = new BlockExpr(ie.pos);
 					Object acc;
 					if (fa.obj instanceof ThisExpr) {
 						acc = fa.obj;
@@ -600,7 +565,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
 					g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
-					be.addStatement(new ExprStat(0, null, g));
+					be.addStatement(new ExprStat(0, g));
 					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
 						be.setExpr(mkAccess(res));
 					else
@@ -609,17 +574,17 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 				}
 				ie.replaceWithNode(expr);
-				rewrite(expr, id);
+				rewrite(expr);
 			}
 			else {
-				rewriteNode(ie, id);
+				rewriteNode(ie);
 			}
 		} finally { PassInfo.pop(ie); }
 	}
 	
 	private Expr mkAccess(Object o) {
-		if (o instanceof Var) return new VarAccessExpr(0,null,(Var)o);
-		if (o instanceof ThisExpr) return new ThisExpr(0,null);
+		if (o instanceof Var) return new VarAccessExpr(0,(Var)o);
+		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}
 }

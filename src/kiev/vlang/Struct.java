@@ -88,7 +88,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		super(0,0);
 		this.name = name;
 		this.super_bound = new TypeRef();
-		this.meta = new MetaSet(this);
+		this.meta = new MetaSet();
 		this.acc = new Access(0);
 	}
 
@@ -96,7 +96,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		super(0,acc);
 		this.name = name;
 		this.super_bound = new TypeRef();
-		this.meta = new MetaSet(this);
+		this.meta = new MetaSet();
 		package_clazz = outer;
 		this.acc = new Access(0);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
@@ -668,7 +668,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public Expr accessTypeInfoField(int pos, ASTNode parent, Type t) {
+	public Expr accessTypeInfoField(int pos, Type t) {
 		if( t.isArgumented() ) {
 			Expr ti_access;
 			if( PassInfo.method == null || PassInfo.method.isStatic()) {
@@ -732,7 +732,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			KString ti_str = ((ConstStringExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
 			Expr e = new StaticFieldAccessExpr(pos,f);
-			e.parent = parent;
 			return e;
 		}
 		Type ftype = Type.tpTypeInfo;
@@ -752,14 +751,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		Constructor class_init = getClazzInitMethod();
 		if( PassInfo.method != null && PassInfo.method.name.equals(nameClassInit) ) {
 			class_init.addstats.insert(
-				new ExprStat(f.init.getPos(),class_init.body,
+				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init))
 				),0
 			);
 		} else {
 			class_init.addstats.insert(
-				new ExprStat(f.init.getPos(),class_init.body,
+				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
 						,new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init))
 				),0
@@ -767,7 +766,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		addField(f);
 		Expr e = new StaticFieldAccessExpr(pos,f);
-		e.parent = parent;
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");
 	}
@@ -831,14 +829,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ti_init_targs[arg] = Type.tpTypeInfo;
 				FormPar v = new FormPar(pos,t.getClazzName().short_name,Type.tpTypeInfo,0);
 				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
-				stats[arg] = new ExprStat(pos,null,
+				stats[arg] = new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
 						new AccessExpr(pos,new ThisExpr(pos),f),
 						new VarAccessExpr(pos,v)
 					)
 				);
 			}
-			BlockStat ti_init_body = new BlockStat(pos,null,stats);
+			BlockStat ti_init_body = new BlockStat(pos,stats);
 
 			// create typeinfo field
 			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
@@ -883,8 +881,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			// create method to get typeinfo field
 			MethodType tim_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpTypeInfo);
 			Method tim = addMethod(new Method(nameGetTypeInfo,tim_type,ACC_PUBLIC));
-			tim.body = new BlockStat(pos,tim,new ENode[]{
-				new ReturnStat(pos,null,new AccessExpr(pos,new ThisExpr(pos),tif))
+			tim.body = new BlockStat(pos,new ENode[]{
+				new ReturnStat(pos,new AccessExpr(pos,new ThisExpr(pos),tif))
 			});
 		}
 
@@ -1003,7 +1001,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						init.params.addAll(params);
 					}
 					init.pos = pos;
-					init.body = new BlockStat(pos,init);
+					init.body = new BlockStat(pos);
 					if( isEnum() )
 						init.setPrivate(true);
 					else
@@ -1025,7 +1023,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						abstr.setStatic(false);
 						abstr.setAbstract(true);
 						abstr.params.copyFrom(m.params);
-						members.replace(m, abstr);
+						m.replaceWithNode(abstr);
 	
 						// Make inner class name$default
 						if( defaults == null ) {
@@ -1095,7 +1093,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		Constructor class_init = new Constructor(MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
-		class_init.body = new BlockStat(pos,class_init);
+		class_init.body = new BlockStat(pos);
 		return class_init;
 	}
 
@@ -1134,7 +1132,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					if( class_init == null )
 						class_init = getClazzInitMethod();
 					class_init.body.addStatement(
-						new ExprStat(f.init.getPos(),class_init.body,
+						new ExprStat(f.init.getPos(),
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
 								new StaticFieldAccessExpr(f.pos,f),new ShadowExpr(f.init)
@@ -1148,7 +1146,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						instance_init.body = new BlockStat();
 					}
 					Statement init_stat;
-					init_stat = new ExprStat(f.init.getPos(),instance_init,
+					init_stat = new ExprStat(f.init.getPos(),
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
 								new AccessExpr(f.pos,new ThisExpr(0),f),
@@ -1269,7 +1267,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( this.type.args.length > 0 && super_type.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
-								call_super.args.append( new VarAccessExpr(m.pos,call_super,m.params[i]));
+								call_super.args.append( new VarAccessExpr(m.pos,m.params[i]));
 							}
 						}
 					}
@@ -1283,7 +1281,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				int p = 1;
 				if( package_clazz.isClazz() && !isStatic() ) {
 					stats.insert(
-						new ExprStat(pos,null,
+						new ExprStat(pos,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
 								new VarAccessExpr(pos,m.params[0])
@@ -1299,7 +1297,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( f == null )
 							throw new RuntimeException("Can't find field "+m.params[j].name.name);
 						stats.insert(
-							new ExprStat(pos,null,
+							new ExprStat(pos,
 								new AssignExpr(pos,AssignOperator.Assign,
 									new AccessExpr(pos,new ThisExpr(pos),f),
 									new VarAccessExpr(pos,m.params[j])
@@ -1320,7 +1318,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					}
 					assert(v != null);
 					stats.insert(
-						new ExprStat(pos,null,
+						new ExprStat(pos,
 							new AssignExpr(m.pos,AssignOperator.Assign,
 								new AccessExpr(m.pos,new ThisExpr(0),tif),
 								new VarAccessExpr(m.pos,v)
@@ -1443,29 +1441,29 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				}
 				if( m.type.ret != Type.tpVoid ) {
 					if( overwr.type.ret == Type.tpVoid )
-						br = new BlockStat(0,last_st,new ENode[]{
-							new ExprStat(0,null,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
-							new ReturnStat(0,null,new ConstNullExpr())
+						br = new BlockStat(0,new ENode[]{
+							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
+							new ReturnStat(0,new ConstNullExpr())
 						});
 					else {
 						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() ) {
 							CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,vae,true);
-							br = new ReturnStat(0,last_st,ce);
+							br = new ReturnStat(0,ce);
 							CastExpr.autoCastToReference(ce);
 						}
 						else
-							br = new ReturnStat(0,last_st,new CallExpr(0,new ThisExpr(true),overwr,vae,true));
+							br = new ReturnStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true));
 					}
 				} else {
-					br = new BlockStat(0,last_st,new ENode[]{
-						new ExprStat(0,null,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
-						new ReturnStat(0,null,null)
+					br = new BlockStat(0,new ENode[]{
+						new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
+						new ReturnStat(0,null)
 					});
 				}
 				last_st.elseSt = br;
 			}
 			if (st != null) {
-				BlockStat body = new BlockStat(0,mm);
+				BlockStat body = new BlockStat(0);
 				body.addStatement(st);
 				if (mm.body != null)
 					mm.body.stats.insert(0, body);
@@ -1487,8 +1485,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						for(int k=0; k < vae.length; k++) {
 							vae[k] = new VarAccessExpr(0,mm.params[k]);
 						}
-						nm.body = new BlockStat(0,nm,new ENode[]{
-							new ReturnStat(0,null,
+						nm.body = new BlockStat(0,new ENode[]{
+							new ReturnStat(0,
 								new CastExpr(0,rm.type.ret,
 									new CallExpr(0,new ThisExpr(true),mm,vae)))
 							});
@@ -1545,7 +1543,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
 					Expr tibe = new CallExpr(pos,
-						accessTypeInfoField(pos,this,t),
+						accessTypeInfoField(pos,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
 						new Expr[]{
@@ -1567,10 +1565,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				Statement st = new InlineMethodStat(mmt.uppers[i].m.pos,mm,mmt.uppers[i].m,mm);
-				br = new IfElseStat(0,null,cond,st,null);
+				Statement st = new InlineMethodStat(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
+				br = new IfElseStat(0,cond,st,null);
 			} else {
-				br = new IfElseStat(0,null,cond,makeDispatchStatInline(mm,mmt.uppers[i]),null);
+				br = new IfElseStat(0,cond,makeDispatchStatInline(mm,mmt.uppers[i]),null);
 			}
 			cond = null;
 			if( dsp == null ) dsp = br;
@@ -1582,7 +1580,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		if( mmt.m != mm && mmt.m != null) {
 			Statement br;
-			br = new InlineMethodStat(mmt.m.pos,mm,mmt.m,mm);
+			br = new InlineMethodStat(mmt.m.pos,mmt.m,mm);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 			st.elseSt = br;
@@ -1782,17 +1780,17 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				me.addMethod(proxy);
 				for(int p=1; p < m.params.length; p++)
 					proxy.params.add(new FormPar(0,KString.from("arg"+p),m.type.args[p],0));
-				BlockStat bs = new BlockStat(0,proxy,ENode.emptyArray);
+				BlockStat bs = new BlockStat(0,ENode.emptyArray);
 				Expr[] args = new Expr[m.type.args.length];
 				args[0] = new ThisExpr();
 				for(int k=1; k < args.length; k++)
 					args[k] = new VarAccessExpr(0,proxy.params[k-1]);
 				CallExpr ce = new CallExpr(0,null,m,args);
 				if( proxy.type.ret == Type.tpVoid ) {
-					bs.addStatement(new ExprStat(0,bs,ce));
-					bs.addStatement(new ReturnStat(0,bs,null));
+					bs.addStatement(new ExprStat(0,ce));
+					bs.addStatement(new ReturnStat(0,null));
 				} else {
-					bs.addStatement(new ReturnStat(0,bs,ce));
+					bs.addStatement(new ReturnStat(0,ce));
 				}
 				proxy.body = bs;
 			}
@@ -1820,7 +1818,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public DataFlow getDFlow() {
 		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
 		if (df == null) {
-			df = new DataFlowFixed(DFState.makeNewState());
+			DFState in = DFState.makeNewState();
+			df = new DataFlow(new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;
@@ -1858,7 +1857,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if (f.init instanceof TypeRef)
 							((TypeRef)f.init).toExpr(f.type);
 						if (f.init.getType() != f.type) {
-							f.init = new CastExpr(f.init.pos, f.type, f.init);
+							ENode finit = (ENode)~f.init;
+							f.init = new CastExpr(finit.pos, f.type, finit);
 							f.init.resolve(f.type);
 						}
 					} catch( Exception e ) {
@@ -2032,7 +2032,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								.append(proxy_fields[j].name).toKString();
 							m.params.append(new FormPar(m.pos,nm,proxy_fields[j].type,0));
 							((BlockStat)m.body).stats.insert(
-								new ExprStat(m.pos,m.body,
+								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,
 										new AccessExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
 										new VarAccessExpr(m.pos,m.params[par])

@@ -58,7 +58,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 	
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
-			replaceWithNode(new_closure);
+			replaceWithNode((Expr)~new_closure);
 			return;
 		}
 		ClazzName clname = ClazzName.fromBytecodeName(
@@ -74,7 +74,6 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		if( PassInfo.method==null || PassInfo.method.isStatic() ) clazz.setStatic(true);
-		clazz.parent = parent;
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		clazz.addAttr(sfa);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
@@ -90,6 +89,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		Type ret = rettype.getType();
 		clazz.type = ClosureType.newClosureType(clazz,types,ret);
 
+		BlockStat body = (BlockStat)~this.body;
 		if( ret != Type.tpRule ) {
 			if( ret.isReference() )
 				ret = Type.tpObject;
@@ -113,7 +113,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
 				Type celltp = Type.getProxyType(v.type);
-				val = new AccessExpr(v.getPos(),v,
+				val = new AccessExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
 						(Field)celltp.resolveName(nameCellVal)
 					);
@@ -121,13 +121,13 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				val = new CastExpr(v.getPos(),v.type,val,true);
 			}
 			v.init = val;
-			body.insertSymbol(v,i);
+			body.insertSymbol((Var)~v,i);
 		}
 		setResolved(true);
 
 		Kiev.runProcessorsOn(clazz);
 		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
-		replaceWithNodeResolve(reqType, new_closure);
+		replaceWithNodeResolve(reqType, (Expr)~new_closure);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

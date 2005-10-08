@@ -81,7 +81,10 @@ public class PrefixExpr extends UnresExpr {
 
 	public ENode toResolvedExpr() {
 		ENode e = expr;
-		if (e instanceof UnresExpr) e = ((UnresExpr)e).toResolvedExpr();
+		if (e instanceof UnresExpr)
+			e = ((UnresExpr)e).toResolvedExpr();
+		else
+			e.detach();
 		if (op instanceof CastOperator)
 			return new CastExpr(pos,((CastOperator)op).type,e,((CastOperator)op).reinterp);
 		return new UnaryExpr(0,op,e);
@@ -112,7 +115,10 @@ public class PostfixExpr extends UnresExpr {
 
 	public ENode toResolvedExpr() {
 		ENode e = expr;
-		if (e instanceof UnresExpr) e = ((UnresExpr)e).toResolvedExpr();
+		if (e instanceof UnresExpr)
+			e = ((UnresExpr)e).toResolvedExpr();
+		else
+			e.detach();
 		return new UnaryExpr(0,op,e);
 	}
 	
@@ -144,9 +150,15 @@ public class InfixExpr extends UnresExpr {
 	
 	public ENode toResolvedExpr() {
 		ENode e1 = expr1;
-		if (e1 instanceof UnresExpr) e1 = ((UnresExpr)e1).toResolvedExpr();
+		if (e1 instanceof UnresExpr)
+			e1 = ((UnresExpr)e1).toResolvedExpr();
+		else
+			e1.detach();
 		ENode e2 = expr2;
-		if (e2 instanceof UnresExpr) e2 = ((UnresExpr)e2).toResolvedExpr();
+		if (e2 instanceof UnresExpr)
+			e2 = ((UnresExpr)e2).toResolvedExpr();
+		else
+			e2.detach();
 		if (op instanceof AssignOperator)
 			return new AssignExpr(pos,(AssignOperator)op,e1,e2);
 		if (((BinaryOperator)op).is_boolean_op)
@@ -171,7 +183,8 @@ public class MultiExpr extends UnresExpr {
 
 	public MultiExpr(int pos, MultiOperator op, List<ENode> exprs) {
 		super(pos, op);
-		this.exprs.addAll(exprs.toArray());
+		foreach (ENode n; exprs)
+			this.exprs.add((ENode)~n);
 	}
 
 	public String toString() {
@@ -188,11 +201,20 @@ public class MultiExpr extends UnresExpr {
 	public ENode toResolvedExpr() {
 		if (op == MultiOperator.Conditional) {
 			ENode e1 = exprs[0];
-			if (e1 instanceof UnresExpr) e1 = ((UnresExpr)e1).toResolvedExpr();
+			if (e1 instanceof UnresExpr)
+				e1 = ((UnresExpr)e1).toResolvedExpr();
+			else
+				e1.detach();
 			ENode e2 = exprs[1];
-			if (e2 instanceof UnresExpr) e2 = ((UnresExpr)e2).toResolvedExpr();
+			if (e2 instanceof UnresExpr)
+				e2 = ((UnresExpr)e2).toResolvedExpr();
+			else
+				e2.detach();
 			ENode e3 = exprs[2];
-			if (e3 instanceof UnresExpr) e3 = ((UnresExpr)e3).toResolvedExpr();
+			if (e3 instanceof UnresExpr)
+				e3 = ((UnresExpr)e3).toResolvedExpr();
+			else
+				e3.detach();
 			return new ConditionalExpr(pos,e1,e2,e3);
 		}
 		throw new CompilerException(pos,"Multi-operators are not implemented");
@@ -243,11 +265,13 @@ public class UnresCallExpr extends UnresExpr {
 		for (int i=0; i < args.length; i++) {
 			if (args[i] instanceof UnresExpr)
 				args[i] = ((UnresExpr)args[i]).toResolvedExpr();
+			else
+				args[i].detach();
 		}
 		if (obj instanceof TypeRef) {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, obj, m, args);
+				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args);
 				m.makeArgs(ce.args, null);
 				return ce;
 			} else {
@@ -257,11 +281,11 @@ public class UnresCallExpr extends UnresExpr {
 		} else {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, obj, m, args, super_flag);
+				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args, super_flag);
 				m.makeArgs(ce.args, null);
 				return ce;
 			} else {
-				return new ClosureCallExpr(pos, obj, args);
+				return new ClosureCallExpr(pos, (ENode)~obj, args);
 			}
 		}
 	}

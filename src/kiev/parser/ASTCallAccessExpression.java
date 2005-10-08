@@ -97,7 +97,7 @@ public class ASTCallAccessExpression extends Expr {
 			info.leaveForward(sup);
 			if( info.isEmpty() ) {
 				Method meth = (Method)m;
-				CallExpr cae = new CallExpr(pos,sup,meth,args);
+				CallExpr cae = new CallExpr(pos,sup,meth,args.delToArray());
 				cae.super_flag = true;
 				replaceWithNode(cae);
 				meth.makeArgs(cae.args, tp);
@@ -146,11 +146,11 @@ public class ASTCallAccessExpression extends Expr {
 			ResInfo info = new ResInfo(res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(pos, obj, m, args.toArray());
+					res[si] = info.buildCall(pos, obj, m, args.delToArray());
 				else if (res_flags == 0)
-					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.toArray());
+					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
 				else
-					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.toArray());
+					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
 			}
 		}
 		int cnt = 0;

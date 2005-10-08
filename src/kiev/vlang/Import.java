@@ -188,8 +188,8 @@ public class Typedef extends DNode implements Named {
 	public Typedef() {
 	}
 	
-	public Typedef(int pos, ASTNode par, KString name) {
-		super(pos,par);
+	public Typedef(int pos, KString name) {
+		super(pos);
 		this.name = name;
 	}
 	

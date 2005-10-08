@@ -91,7 +91,7 @@ public class ASTAccessExpression extends Expr {
 				ASTNode@ v;
 				ResInfo info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
 				if (obj instanceof Expr && tp.resolveNameAccessR(v,info,ident.name) ) {
-					res[si] = makeExpr(v,info,obj);
+					res[si] = makeExpr(v,info,(ENode)~obj);
 				}
 				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name)) {
 					res[si] = makeExpr(v,info,tp.getStruct());
@@ -187,7 +187,7 @@ public class ASTAccessExpression extends Expr {
 				if (obj instanceof Expr &&
 					tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic|ResInfo.noImports),ident.name) )
 				{
-					res[si] = makeExpr(v,info,obj);
+					res[si] = makeExpr(v,info,(ENode)~obj);
 				}
 				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name))
 				{
@@ -224,7 +224,7 @@ public class ASTAccessExpression extends Expr {
 				obj = obj;
 				return;
 			}
-			this.replaceWithNodeResolve(reqType,res[idx]);
+			this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
 		} finally { PassInfo.pop(this); }
 	}
 

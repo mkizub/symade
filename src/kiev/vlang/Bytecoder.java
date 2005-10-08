@@ -112,11 +112,11 @@ public class Bytecoder implements Constants {
 		cl.members.delAll();
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
-			cl.members.append(readField(null,i));
+			readField(null,i);
 		}
 
 		for(int i=0; i < bcclazz.methods.length; i++) {
-			cl.members.append(readMethod(null,i));
+			readMethod(null,i);
 		}
 
 		kiev.bytecode.Attribute[] attrs = bcclazz.attrs;
@@ -146,7 +146,7 @@ public class Bytecoder implements Constants {
 					else if (at.name.equals(attrTypedef)) {
 						Type type = ((TypedefAttr)at).type;
 						KString name = ((TypedefAttr)at).type_name;
-						Typedef td = new Typedef(0,cl,name);
+						Typedef td = new Typedef(0,name);
 						td.type = new TypeRef(type);
 						cl.imported.add(td);
 					}
@@ -212,6 +212,7 @@ public class Bytecoder implements Constants {
 			f.setPackerField(true);
 		}
 		f.init = f_init;
+		cl.members.append(f);
 		return f;
 	}
 
@@ -287,7 +288,7 @@ public class Bytecoder implements Constants {
 				m = new Constructor(mtype,m_flags);
 			else
 				m = new Method(m_name,mtype,m_flags);
-			m.parent = cl;
+			cl.members.append(m);
 			for (int i=0; i < mtype.args.length; i++) {
 				FormPar fp = new FormPar(new ASTIdentifier(KString.from("arg"+1)),
 					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),0);
@@ -548,13 +549,17 @@ public class Bytecoder implements Constants {
 								break;
 							}
 						}
-						if (anon) {
+						if (anon || cn.package_name() != cl.name.name) {
 							inner[i] == null;
 						} else {
 							inner[i] = Env.getStruct(cn);
-							if( inner[i] == null )
-								throw new RuntimeException("Class "+cn+" not found");
-							cl.members.add(inner[i]);
+							if( inner[i] == cl ) {
+								Kiev.reportWarning(0,"Class "+cl+" is inner for itself");
+							} else {
+								if( inner[i] == null )
+									throw new RuntimeException("Class "+cn+" not found");
+								cl.members.addUniq(inner[i]);
+							}
 						}
 					} else {
 						inner[i] = null;

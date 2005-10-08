@@ -96,9 +96,9 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		 	valuestp = MethodType.newMethodType(null,Type.emptyArray,Type.newArrayType(clazz.type));
 			Method mvals = new Method(nameEnumValues,valuestp,ACC_PUBLIC | ACC_STATIC);
 			mvals.pos = pos;
-			mvals.body = new BlockStat(pos,mvals);
+			mvals.body = new BlockStat(pos);
 			((BlockStat)mvals.body).addStatement(
-				new ReturnStat(pos,mvals.body,
+				new ReturnStat(pos,
 					new StaticFieldAccessExpr(pos,clazz.resolveField(nameEnumValuesFld)) ) );
 			clazz.addMethod(mvals);
 		}
@@ -110,22 +110,22 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			Method tome = new Method(nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
-			tome.body = new BlockStat(pos,tome);
-			SwitchStat sw = new SwitchStat(pos,tome.body,new VarAccessExpr(pos,tome.params[0]),CaseLabel.emptyArray);
+			tome.body = new BlockStat(pos);
+			SwitchStat sw = new SwitchStat(pos,new VarAccessExpr(pos,tome.params[0]),CaseLabel.emptyArray);
 			//EnumAttr ea = (EnumAttr)clazz.getAttr(attrEnum);
 			//if( ea == null )
 			//	throw new RuntimeException("enum structure "+clazz+" without "+attrEnum+" attribute");
 			CaseLabel[] cases = new CaseLabel[ea.fields.length+1];
 			for(int i=0; i < ea.fields.length; i++) {
-				cases[i] = new CaseLabel(pos,sw,
+				cases[i] = new CaseLabel(pos,
 					new ConstIntExpr(ea.values[i]),
 					new ENode[]{
-						new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,ea.fields[i]))
+						new ReturnStat(pos,new StaticFieldAccessExpr(pos,ea.fields[i]))
 					});
 			}
-			cases[cases.length-1] = new CaseLabel(pos,sw,null,
+			cases[cases.length-1] = new CaseLabel(pos,null,
 					new ENode[]{
-						new ThrowStat(pos,null,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
+						new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
@@ -142,8 +142,8 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			Method tostr = new Method(KString.from("toString"),tostrt,acc_flags);
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
-			tostr.body = new BlockStat(pos,tostr);
-			SwitchStat sw = new SwitchStat(pos,tostr.body,
+			tostr.body = new BlockStat(pos);
+			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
 					(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")),
 					Expr.emptyArray),
@@ -156,14 +156,14 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					str = f.name.aliases.head();
 					str = str.substr(1,str.length()-1);
 				}
-				cases[i] = new CaseLabel(pos,sw,new ConstIntExpr(ea.values[i])	,
+				cases[i] = new CaseLabel(pos,new ConstIntExpr(ea.values[i])	,
 					new ENode[]{
-						new ReturnStat(pos,null,new ConstStringExpr(str))
+						new ReturnStat(pos,new ConstStringExpr(str))
 					});
 			}
-			cases[cases.length-1] = new CaseLabel(pos,sw,null,
+			cases[cases.length-1] = new CaseLabel(pos,null,
 					new ENode[]{
-						new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
+						new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
@@ -183,7 +183,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
 			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString,0));
-			fromstr.body = new BlockStat(pos,fromstr);
+			fromstr.body = new BlockStat(pos);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
 				new VarAccessExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
@@ -193,15 +193,15 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					),
 					Expr.emptyArray
 				));
-			((BlockStat)fromstr.body).addStatement(new ExprStat(pos,null,ae));
+			((BlockStat)fromstr.body).addStatement(new ExprStat(pos,ae));
 			for(int i=0; i < ea.fields.length; i++) {
 				Field f = ea.fields[i];
 				KString str = f.name.name;
-				IfElseStat ifst = new IfElseStat(pos,null,
+				IfElseStat ifst = new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.Equals,
 						new VarAccessExpr(pos,fromstr.params[0]),
 						new ConstStringExpr(str)),
-					new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,f)),
+					new ReturnStat(pos,new StaticFieldAccessExpr(pos,f)),
 					null
 					);
 				((BlockStat)fromstr.body).addStatement(ifst);
@@ -210,11 +210,11 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					if (str.byteAt(0) == (byte)'\"') {
 						str = str.substr(1,str.length()-1);
 						if (str != f.name.name) {
-							ifst = new IfElseStat(pos,null,
+							ifst = new IfElseStat(pos,
 								new BinaryBoolExpr(pos,BinaryOperator.Equals,
 									new VarAccessExpr(pos,fromstr.params[0]),
 									new ConstStringExpr(str)),
-									new ReturnStat(pos,null,new StaticFieldAccessExpr(pos,f)),
+									new ReturnStat(pos,new StaticFieldAccessExpr(pos,f)),
 									null
 									);
 							((BlockStat)fromstr.body).addStatement(ifst);
@@ -223,7 +223,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				}
 			}
 			((BlockStat)fromstr.body).addStatement(
-				new ThrowStat(pos,null,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
+				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
 				);
 			clazz.addMethod(fromstr);
 		}

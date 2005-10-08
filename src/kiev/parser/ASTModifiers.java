@@ -22,16 +22,15 @@ public class ASTModifiers extends ASTNode {
 	}
 
 	public MetaSet getMetas(MetaSet ms) {
-	next_annotation:
 		foreach (Meta v; annotations) {
 			try {
-				v = v.verify();
+				v.verify();
 			} catch (CompilerException e) {
 				Kiev.reportError(pos, e);
-				continue;
 			}
-			v = (Meta)v.copy();
-			ms.set(v);
+		}
+		foreach (Meta v; annotations) {
+			ms.set((Meta)v.copy());
 		}
 		return ms;
 	}

@@ -46,7 +46,7 @@ public class ASTNewExpression extends Expr {
 	public final NArr<ENode>		args;
 	
     @att
-	public final Struct				clazz;
+	public Struct				clazz;
 	
 	public boolean preResolve() {
 		// don't pre-resolve clazz
@@ -98,7 +98,7 @@ public class ASTNewExpression extends Expr {
 			}
 		}
 		if( clazz == null ) {
-			replaceWithNodeResolve(reqType, new NewExpr(pos,tp,args.toArray()));
+			replaceWithNodeResolve(reqType, new NewExpr(pos,tp,args.delToArray()));
 			return;
 		}
 		// Local anonymouse class
@@ -140,7 +140,7 @@ public class ASTNewExpression extends Expr {
 				Constructor init = new Constructor(mt,ACC_PUBLIC);
 				init.params.addAll(params);
 				init.pos = pos;
-				init.body = new BlockStat(pos,init);
+				init.body = new BlockStat(pos);
 				init.setPublic(true);
 				clazz.addMethod(init);
 			}
@@ -151,12 +151,11 @@ public class ASTNewExpression extends Expr {
 		Expr ne;
 		if( sup.isInstanceOf(Type.tpClosure) ) {
 			ne = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
-			ne.clazz = clazz;
+			ne.clazz = (Struct)~clazz;
 		} else {
 			ne = new NewExpr(pos,clazz.type,args.toArray());
-			ne.clazz = clazz;
+			ne.clazz = (Struct)~clazz;
 		}
-		ne.parent = parent;
 		replaceWithNodeResolve(reqType, ne);
 	}
 

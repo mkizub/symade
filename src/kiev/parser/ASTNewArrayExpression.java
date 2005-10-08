@@ -51,7 +51,7 @@ public class ASTNewArrayExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
-		replaceWithNodeResolve(reqType, new NewArrayExpr(pos,type,args.toArray(),dim));
+		replaceWithNodeResolve(reqType, new NewArrayExpr(pos,(TypeRef)~type,args.delToArray(),dim));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

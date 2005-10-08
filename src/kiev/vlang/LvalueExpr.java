@@ -70,23 +70,8 @@ public class AccessExpr extends LvalueExpr {
 		if (direct_access) setAsField(true);
 	}
 
-	public AccessExpr(int pos, ASTNode par, ENode obj, Field var) {
-		super(pos,par);
-		this.obj = obj;
-		this.var = var;
-		assert(obj != null && var != null);
-	}
-
 	public AccessExpr(int pos, ENode obj, Field var, int flags) {
 		super(pos);
-		this.obj = obj;
-		this.var = var;
-		setFlags(flags);
-		assert(obj != null && var != null);
-	}
-
-	public AccessExpr(int pos, ASTNode par, ENode obj, Field var, int flags) {
-		super(pos,par);
 		this.obj = obj;
 		this.var = var;
 		setFlags(flags);
@@ -480,9 +465,6 @@ public class ThisExpr extends LvalueExpr {
 	public ThisExpr(int pos) {
 		super(pos);
 	}
-	public ThisExpr(int pos, ASTNode par) {
-		super(pos,par);
-	}
 	public ThisExpr(boolean super_flag) {
 		this.super_flag = super_flag;
 	}
@@ -609,13 +591,6 @@ public class VarAccessExpr extends LvalueExpr {
 			throw new RuntimeException("Null var");
 		this.var = var;
 	}
-	public VarAccessExpr(int pos, ASTNode par, Var var) {
-		super(pos,par);
-		if( var == null )
-			throw new RuntimeException("Null var");
-		this.var = var;
-	}
-
 
 	public String toString() { return var.toString(); }
 
@@ -629,7 +604,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out(null).getNodeInfo(new DNode[]{var});
 		if( sni == null || sni.types.length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.types.clone();
@@ -876,11 +851,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	}
 	
 	public LocalPrologVarAccessExpr(int pos, Var var) {
-		this(pos, null, var);
-	}
-	
-	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
-		super(pos,par);
+		super(pos);
 		this.var = var;
 		RuleMethod rm = (RuleMethod)PassInfo.method;
 		int i = 0;
@@ -1043,7 +1014,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out(null).getNodeInfo(new DNode[]{var});
 		if( sni == null || sni.types.length == 0 )
 			types = new Type[]{var.type};
 		else

@@ -107,7 +107,7 @@ public class NewExpr extends Expr {
 				if( PassInfo.method==null || PassInfo.method.isStatic() )
 					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
 				Var th = PassInfo.method.getThisPar();
-				outer = new VarAccessExpr(pos,this,th);
+				outer = new VarAccessExpr(pos,th);
 				outer.resolve(null);
 			}
 			for(int i=0; i < args.length; i++)
@@ -122,14 +122,14 @@ public class NewExpr extends Expr {
 			}
 			if( type.args.length > 0 ) {
 				// Create static field for this type typeinfo
-				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,this,type);
+				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,type);
 			}
 			// Don't try to find constructor of argument type
 			if( !type.isArgument() ) {
 				if (tif_expr != null)
-					args.insert(tif_expr,0);
+					args.insert((ENode)tif_expr.copy(),0);
 				if (outer != null)
-					args.insert(outer,0);
+					args.insert((ENode)outer.copy(),0);
 				Type[] ta = new Type[args.length];
 				for (int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
@@ -139,9 +139,9 @@ public class NewExpr extends Expr {
 				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
 					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-						CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args);
+						CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
 						replaceWithNode(n);
-						m.makeArgs(args,type);
+						m.makeArgs(n.args,type);
 						n.setResolved(true);
 						return;
 					}
@@ -299,7 +299,7 @@ public class NewArrayExpr extends Expr {
 					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 						new CallExpr(pos,tie,
 							Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
-							new ENode[]{new ConstIntExpr(i),args[0]}
+							new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
 						),true));
 					return;
 				} else {
@@ -308,7 +308,7 @@ public class NewArrayExpr extends Expr {
 							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
 							new ENode[]{
 								new ConstIntExpr(i),
-								new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.toArray())
+								new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
 							}
 						),true));
 					return;

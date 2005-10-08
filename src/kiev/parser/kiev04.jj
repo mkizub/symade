@@ -314,7 +314,7 @@ public class kiev040 {
 		else
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
-			clazz.meta.set(m);
+			clazz.meta.set((Meta)m.copy());
 		return clazz;
 	}
 
@@ -336,7 +336,7 @@ public class kiev040 {
 		Constructor meth = new Constructor(tc, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -347,7 +347,7 @@ public class kiev040 {
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -361,7 +361,7 @@ public class kiev040 {
 		RuleMethod meth = new RuleMethod(id, tc, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			meth.meta.set(m);
+			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		return meth;
 	}
@@ -376,7 +376,7 @@ public class kiev040 {
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
-				f.meta.set(m);
+				f.meta.set((Meta)m.copy());
 		} else {
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
@@ -391,7 +391,7 @@ public class kiev040 {
 		f.pos = id.pos;
 		f.setEnumField(true);
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m);
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 
@@ -399,7 +399,7 @@ public class kiev040 {
 		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
-			f.meta.set(m);
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 	
@@ -408,10 +408,10 @@ public class kiev040 {
 			tp = (TypeRef)tp.copy();
 		Var v = new Var(id, tp, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet(v);
+			v.meta = new MetaSet();
 			if (first) {
 				foreach (Meta m; modifiers.annotations)
-					v.meta.set(m);
+					v.meta.set((Meta)m.copy());
 			} else {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
@@ -423,9 +423,9 @@ public class kiev040 {
 	private static FormPar mkFormPar(ASTIdentifier id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
-			v.meta = new MetaSet(v);
+			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
-				v.meta.set(m);
+				v.meta.set((Meta)m.copy());
 		}
 		return v;
 	}
@@ -434,7 +434,7 @@ public class kiev040 {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);
-		e.nodes.append(cond);
+		e.nodes.append((ENode)~cond);
 		return e;
 	}
 
@@ -1332,9 +1332,9 @@ MetaValueArray AnnotationValueValueArrayInitializer() :
 	{ v = new MetaValueArray(); }
 	"{"
 	[
-		n = AnnotationValueScalar() { v.values.add(n.value); }
+		n = AnnotationValueScalar() { v.values.add((ENode)~n.value); }
 		(	","
-			n = AnnotationValueScalar() { v.values.add(n.value); }
+			n = AnnotationValueScalar() { v.values.add((ENode)~n.value); }
 		)*
 	]
 	"}"
@@ -1361,7 +1361,7 @@ Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 {
 	id = Name()
 	{ f = mkField(id, modifiers, type, first); }
-	( t=<OPERATOR_LRBRACKETS> { f.ftype = new TypeExpr(f.ftype,t); } )*
+	( t=<OPERATOR_LRBRACKETS> { f.ftype = new TypeExpr((TypeRef)~f.ftype,t); } )*
 	[
 		(
 			"="
@@ -1388,7 +1388,7 @@ Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
 {
 	id = Name()
 	{ lv = mkVar(id, modifiers, type, first); }
-	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr(lv.vtype,t); } )*
+	( t=<OPERATOR_LRBRACKETS> { lv.vtype = new TypeExpr((TypeRef)~lv.vtype,t); } )*
 	[
 		(
 			"="
@@ -1766,7 +1766,7 @@ Initializer Initializer(ASTModifiers modifiers) :
 		n.setFlags(modifiers.getFlags());
 		/*{
 		foreach (Meta m; modifiers.annotations)
-			n.meta.set(m);
+			n.meta.set((Meta)m.copy());
 		}*/
 	}
 	{ presc = n; }
@@ -2287,8 +2287,8 @@ ENode AccessExpression() :
 		{ ASTNewAccessExpression ae = new ASTNewAccessExpression(); ae.obj = e; ae.setPos(t.getPos()); }
 		e = NewExpression()
         {
-			ae.type = ((ASTNewExpression)e).type;
-			/*{ foreach (ENode a; ((ASTNewExpression)e).args) ae.args += a; }*/
+			ae.type = (TypeRef)~((ASTNewExpression)e).type;
+			ae.args.moveFrom(((ASTNewExpression)e).args);
 			if (((ASTNewExpression)e).clazz != null)
 				throw new ParseException();
 			e = ae;

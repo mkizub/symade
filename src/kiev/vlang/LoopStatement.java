@@ -39,8 +39,8 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 	protected LoopStat() {
 	}
 
-	protected LoopStat(int pos, ASTNode parent) {
-		super(pos, parent);
+	protected LoopStat(int pos) {
+		super(pos);
 		setBreakTarget(true);
 	}
 
@@ -67,24 +67,23 @@ public class Label extends DNode {
 			return;
 		links = new List.Cons<DataFlow>(lnk, links);
 		DataFlow df = getDFlow();
-		if (df.df_out != null)
-			df.df_out.reset();
+		df.invalidate();
 	}
 
 	private boolean lock;
-	public DFState calcDFlowOut() {
+	public DFState calcDFlowOut(DFFunc flnk) {
 		DataFlow df = getDFlow();
-		DFState tmp = df.in();
+		DFState tmp = df.in(flnk);
 		if (lock)
-			throw new DFLoopException(df);
+			throw new DFLoopException(this);
 		lock = true;
 		try {
 			foreach (DataFlow lnk; links) {
 				try {
-					DFState s = lnk.jmp();
+					DFState s = lnk.jmp(flnk);
 					tmp = DFState.join(s,tmp);
 				} catch (DFLoopException e) {
-					if (e.label != df) throw e;
+					if (e.label != this) throw e;
 				}
 			}
 		} finally { lock = false; }
@@ -126,8 +125,8 @@ public class WhileStat extends LoopStat {
 		this.lblbrk = new Label();
 	}
 
-	public WhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
-		super(pos, parent);
+	public WhileStat(int pos, ENode cond, Statement body) {
+		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.cond = cond;
@@ -218,8 +217,8 @@ public class DoWhileStat extends LoopStat {
 		this.lblbrk = new Label();
 	}
 
-	public DoWhileStat(int pos, ASTNode parent, ENode cond, Statement body) {
-		super(pos,parent);
+	public DoWhileStat(int pos, ENode cond, Statement body) {
+		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.cond = cond;
@@ -374,8 +373,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.lblbrk = new Label();
 	}
 	
-	public ForStat(int pos, ASTNode parent, ENode init, Expr cond, Expr iter, Statement body) {
-		super(pos, parent);
+	public ForStat(int pos, ENode init, Expr cond, Expr iter, Statement body) {
+		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.init = init;
@@ -591,8 +590,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.lblbrk = new Label();
 	}
 	
-	public ForEachStat(int pos, ASTNode parent, Var var, ENode container, ENode cond, Statement body) {
-		super(pos, parent);
+	public ForEachStat(int pos, Var var, ENode container, ENode cond, Statement body) {
+		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
 		this.var = var;
@@ -759,7 +758,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 					nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				iter_cond = new CallExpr(	iter.pos,
-						new VarAccessExpr(iter.pos,this,iter),
+						new VarAccessExpr(iter.pos,iter),
 						moreelem,
 						Expr.emptyArray
 					);
@@ -803,10 +802,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 						Expr.emptyArray
 					);
 				if (!nextelem.type.ret.isInstanceOf(var.type))
-					var_init = new CastExpr(pos,var.type,var_init);
+					var_init = new CastExpr(pos,var.type,(ENode)~var_init);
 				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
 					new VarAccessExpr(var.pos,var),
-					var_init
+					(ENode)~var_init
 				);
 				break;
 			case RULE:

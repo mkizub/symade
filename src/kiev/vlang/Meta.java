@@ -39,10 +39,6 @@ public final class MetaSet extends ASTNode {
 	public MetaSet() {
 	}
 	
-	public MetaSet(ASTNode owner) {
-		super(0,owner);
-	}
-	
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
 			if (attr.name == "metas") parent.callbackChildChanged(pslot);
@@ -59,9 +55,7 @@ public final class MetaSet extends ASTNode {
 	public void verify() {
 		foreach (Meta m; metas) {
 			try {
-				Meta n = m.verify();
-				if (n != m)
-					set(n);
+				m.verify();
 			} catch (CompilerException e) {
 				Kiev.reportError(pos, e);
 				continue;
@@ -192,31 +186,27 @@ public class Meta extends ENode {
 		return values.length == 0;
 	}
 	
-	public Meta verify() {
+	public void verify() {
 		Type mt = type.getType();
 		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(pos, "Annotation name expected");
 		}
 		Meta m = this;
 		if (mt.getClazzName().name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
-			m = new MetaVirtual(new TypeRef(mt));
+			m = (Meta)this.copyTo(new MetaVirtual());
 		if (mt.getClazzName().name == MetaPacked.NAME && !(this instanceof MetaPacked))
-			m = new MetaPacked(new TypeRef(mt));
+			m = (Meta)this.copyTo(new MetaPacked());
 		if (mt.getClazzName().name == MetaPacker.NAME && !(this instanceof MetaPacker))
-			m = new MetaPacker(new TypeRef(mt));
+			m = (Meta)this.copyTo(new MetaPacker());
 		if (m != this) {
-			m.pos          = this.pos;
-			m.flags        = this.flags;
-			m.compileflags = this.compileflags;
-			m.type         = this.type;
+			this.replaceWithNode(m);
+			foreach (MetaValue v; values)
+				m.set((MetaValue)v.copy());
+			m.verify();
 		}
-		for (int i=0; i < values.length; i++) {
-			MetaValue v1 = values[i];
-			MetaValue v2 = v1.verify();
-			if (v1 != v2)
-				values[i] = v2;
-		}
-		return m;
+		foreach (MetaValue v; values)
+			v.verify();
+		return;
 	}
 	
 	public Meta resolve() {
@@ -242,7 +232,7 @@ public class Meta extends ENode {
 					ENode val = ((MetaValueScalar)v).value;
 					MetaValueArray mva = new MetaValueArray(v.type); 
 					values[n] = v = mva;
-					mva.values.add(val);
+					mva.values.add((ENode)~val);
 				}
 				
 				t = t.args[0];
@@ -442,10 +432,9 @@ public abstract class MetaValue extends ASTNode {
 
 	public abstract void resolve(Type reqType);
 	
-	public MetaValue verify() {
+	public void verify() {
 		if (type == null)
 			type = new MetaValueType(KString.from("value"));
-		return this;
 	}
 	
 	void resolveValue(Type reqType, ENode value) {
@@ -506,11 +495,10 @@ public class MetaValueScalar extends MetaValue {
 		this.value = value;
 	}
 
-	public MetaValue verify() {
+	public void verify() {
 		super.verify();
 		if (value instanceof Meta)
-			value = ((Meta)value).verify();
-		return this;
+			((Meta)value).verify();
 	}
 	
 	public void resolve(Type reqType) {
@@ -537,13 +525,12 @@ public class MetaValueArray extends MetaValue {
 		this.values.addAll(values);
 	}
 
-	public MetaValue verify() {
+	public void verify() {
 		super.verify();
 		for (int i=0; i < values.length; i++) {
 			if (values[i] instanceof Meta)
-				values[i] = ((Meta)values[i]).verify();
+				((Meta)values[i]).verify();
 		}
-		return this;
 	}
 	
 	public void resolve(Type reqType) {

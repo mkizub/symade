@@ -120,7 +120,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			MethodType mt = (MethodType)Type.fromSignature(signGetDFlowIn);
 			Method dfIn = new Method(nameGetDFlowIn,mt,ACC_PUBLIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, 0));
-			dfIn.body = new BlockStat(0,dfIn);
+			dfIn.body = new BlockStat(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
 			dfIn.body.addStatement(new VarDecl(var));
 			{
@@ -148,7 +148,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 							new VarAccessExpr(0, var),
 							new ConstStringExpr(fldnm)
 						),
-						new ReturnStat(0,null, ce),
+						new ReturnStat(0, ce),
 						null
 					)
 				);
@@ -158,7 +158,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			msg.appendArg(new VarAccessExpr(0, var));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			dfIn.body.addStatement(
-				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
+				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
 			);
 			s.addMethod(dfIn);
 		}
@@ -235,15 +235,15 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
 					dfIn = new Method(fname,mt,ACC_PRIVATE);
 				}
-				dfIn.body = new BlockStat(0,dfIn);
+				dfIn.body = new BlockStat(0);
 				if (isArr && seq) {
 					dfIn.body.addStatement(
-						new IfElseStat(0,null,
+						new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_prev,
 								new ConstNullExpr()
 							),
-							new ReturnStat(0,null,cae_prev),
+							new ReturnStat(0,cae_prev),
 							null
 						)
 					);
@@ -255,13 +255,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 								acc_fld,
 								new ConstNullExpr()
 							),
-							new ReturnStat(0,null,cae_tru),
-							new ReturnStat(0,null,cae_fls)
+							new ReturnStat(0,cae_tru),
+							new ReturnStat(0,cae_fls)
 						)
 					);
 				} else {
 					dfIn.body.addStatement(
-						new ReturnStat(0,null,cae_tru)
+						new ReturnStat(0,cae_tru)
 					);
 				}
 				s.addMethod(dfIn);
