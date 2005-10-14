@@ -1815,11 +1815,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+	public DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
 			DFState in = DFState.makeNewState();
-			df = new DataFlow(new DFFuncFixedState(in));
+			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;

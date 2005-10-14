@@ -98,22 +98,22 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		node ?= redir.new_var
 	}
 
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+	public DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < params_redir.length; i++) {
 				in = in.declNode(params_redir[i].new_var);
 				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 			}
-			df = new DataFlow(new DFFuncFixedState(in));
+			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;
 	}
 	
-	public DFState calcDFlowOut(DFFunc flnk) {
-		return parent.getDFlowFor(pslot.name).in(flnk);
+	public DFState calcDFlowOut() {
+		return parent.getDFlowFor(pslot.name).in();
 	}
 
 	public void resolve(Type reqType) {
@@ -302,17 +302,17 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 //		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
 //	}
 	
-	public DFState calcDFlowOut(DFFunc flnk) {
+	public DFState calcDFlowOut() {
 		Vector<Var> vars = new Vector<Var>();
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 		if (stats.length > 0) {
 			if (vars.length > 0)
-				return stats[stats.length-1].getDFlow().out(flnk).cleanInfoForVars(vars.toArray());
+				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
 			else
-				return stats[stats.length-1].getDFlow().out(flnk);
+				return stats[stats.length-1].getDFlow().out();
 		}
 		else {
-			return getDFlow().in(flnk);
+			return getDFlow().in();
 		}
 	}
 	

@@ -146,8 +146,8 @@ public class RuleMethod extends Method {
 		return this;
     }
 
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+	public DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
@@ -161,7 +161,7 @@ public class RuleMethod extends Method {
 			for(int i=0; i < localvars.length; i++) {
 				in = in.declNode(localvars[i]);
 			}
-			df = new DataFlow(new DFFuncFixedState(in));
+			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;

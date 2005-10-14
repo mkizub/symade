@@ -511,8 +511,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+	public DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
 			DFState in = DFState.makeNewState();
 			if (!isStatic()) {
@@ -523,7 +523,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Var p = params[i];
 				in = in.declNode(p);
 			}
-			df = new DataFlow(new DFFuncFixedState(in));
+			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
 			this.addNodeData(df);
 		}
 		return df;

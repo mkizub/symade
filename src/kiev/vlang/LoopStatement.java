@@ -54,7 +54,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 public class Label extends DNode {
 	
 	@ref(copyable=false)
-	public List<DataFlow>	links;
+	public List<DataFlowInfo>	links;
 	
 	CodeLabel				label;
 	
@@ -62,25 +62,23 @@ public class Label extends DNode {
 		links = List.Nil;
 	}
 	
-	public void addLink(DataFlow lnk) {
+	public void addLink(DataFlowInfo lnk) {
 		if (links.contains(lnk))
 			return;
-		links = new List.Cons<DataFlow>(lnk, links);
-		DataFlow df = getDFlow();
-		df.invalidate();
+		links = new List.Cons<DataFlowInfo>(lnk, links);
 	}
 
 	private boolean lock;
-	public DFState calcDFlowOut(DFFunc flnk) {
-		DataFlow df = getDFlow();
-		DFState tmp = df.in(flnk);
+	public DFState calcDFlowOut() {
+		DataFlowInfo df = getDFlow();
+		DFState tmp = df.in();
 		if (lock)
 			throw new DFLoopException(this);
 		lock = true;
 		try {
-			foreach (DataFlow lnk; links) {
+			foreach (DataFlowInfo lnk; links) {
 				try {
-					DFState s = lnk.jmp(flnk);
+					DFState s = lnk.jmp();
 					tmp = DFState.join(s,tmp);
 				} catch (DFLoopException e) {
 					if (e.label != this) throw e;

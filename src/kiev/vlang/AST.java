@@ -65,6 +65,8 @@ public abstract class NodeData {
 	public void dataAttached(ASTNode n) {}
 	public void nodeDetached(ASTNode n) {}
 	public void dataDetached(ASTNode n) {}
+	public void subnodeInserted(NArr<ASTNode> space, ASTNode n) {}
+	public void subnodeRemoved(NArr<ASTNode> space, ASTNode n) {}
 };
 
 @node
@@ -336,7 +338,11 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public void cleanDFlow() {
-		walkTree(fun (ASTNode n)->boolean {n.delNodeData(DataFlow.ID); return true;});
+		walkTree(fun (ASTNode n)->boolean {
+			n.delNodeData(DataFlowInfo.ID);
+			n.delNodeData(DataFlowSocket.ID);
+			return true;
+		});
 	}
 	
 	private java.lang.reflect.Field getDeclaredField(String name) {
@@ -351,27 +357,18 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	// build data flow for this node
-	public DataFlow getDFlow() {
-		DataFlow df = (DataFlow)getNodeData(DataFlow.ID);
+	public DataFlowInfo getDFlow() {
+		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
-			df = parent.getDFlowFor(pslot.name);
-			if (pslot.is_space) {
-				DataFlowSpace sdf = (DataFlowSpace)df;
-				if (sdf.is_seq)
-					df = new DataFlow(new DFFuncSpaceSeqNodeIn(this,new DFFuncFixedFunc(sdf.func_in)));
-				else
-					df = new DataFlow(new DFFuncFixedFunc(sdf.func_in));
-				this.addNodeData(df);
-			} else {
-				assert(getNodeData(DataFlow.ID) == df);
-			}
+			df = new DataFlowNodeInfo(this);
+			this.addNodeData(df);
 		}
 		return df;
 	}
 	
 	// build data flow for a child node
-	final DataFlow getDFlowFor(String name) {
-		DataFlow df = getDFlow().children.get(name);
+	final DataFlowSocket getDFlowFor(String name) {
+		DataFlowSocket df = getDFlow().children.get(name);
 		if (df == null) {
 			java.lang.reflect.Field jf = getDeclaredField(name);
 			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
@@ -386,23 +383,19 @@ public abstract class ASTNode implements Constants {
 			}
 			if (seq != "") {
 				assert (flnk == null || flnk.length == 0);
-				df = new DataFlowSpace((NArr<ASTNode>)getVal(name),fin,seq=="true");
+				df = new DataFlowSpaceSocket((NArr<ASTNode>)getVal(name),DFFunc.make(this,fin),seq=="true");
 			}
 			else if (flnk == null || flnk.length == 0) {
-				df = new DataFlow(DFFunc.make(this,fin));
+				df = new DataFlowChildSocket(this, name, DFFunc.make(this,fin));
 			}
 			else {
-				df = new DataFlow(new DFFuncLabel(DFFunc.make(this,fin),DFFunc.make(this,flnk)));
+				df = new DataFlowChildSocket(this, name, new DFFuncLabel(DFFunc.make(this,fin),DFFunc.make(this,flnk)));
 			}
 			getDFlow().children.put(name,df);
-		}
-		if !(df.isAttached()) {
-			Object obj = getVal(name);
-			if (obj instanceof ASTNode) {
-				ASTNode n = (ASTNode)obj;
-				n.delNodeData(DataFlow.ID);
-				n.addNodeData(df);
-			}
+			
+//			Object obj = getVal(name);
+//			if (obj instanceof ASTNode)
+//				df.attach((ASTNode)obj);
 		}
 		return df;
 	}
@@ -410,11 +403,11 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
-	public DFState calcDFlowJmp(DFFunc flnk) { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
-	public DFState calcDFlowOut(DFFunc flnk) { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
-	public DFState calcDFlowTru(DFFunc flnk) { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
-	public DFState calcDFlowFls(DFFunc flnk) { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
-	public DFState calcDFlowIn(DFFunc flnk)  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
+	public DFState calcDFlowJmp() { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
+	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
+	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
+	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
+	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
 
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }

@@ -352,7 +352,7 @@ public class AssignExpr extends LvalueExpr {
 				throw new RuntimeException("Value of type "+t2+" can't be assigned to "+lval);
 			}
 		}
-		getDFlow().out(null);
+		getDFlow().out();
 
 		// Set violation of the field
 		if( lval instanceof StaticFieldAccessExpr
@@ -375,8 +375,8 @@ public class AssignExpr extends LvalueExpr {
 		return this;
 	}
 
-	public DFState calcDFlowOut(DFFunc flnk) {
-		return addNodeTypeInfo(value.getDFlow().out(flnk));
+	public DFState calcDFlowOut() {
+		return addNodeTypeInfo(value.getDFlow().out());
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {
@@ -837,8 +837,12 @@ public class BinaryExpr extends Expr {
 }
 
 @node
+@dflow(out="args")
 public class StringConcatExpr extends Expr {
-	@att public final NArr<ENode>	args;
+
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -1148,23 +1152,23 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public DFState calcDFlowOut(DFFunc flnk) {
+	public DFState calcDFlowOut() {
 		Vector<Var> vars = new Vector<Var>();
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 		if (res != null) {
 			if (vars.length > 0)
-				return res.getDFlow().out(flnk).cleanInfoForVars(vars.toArray());
+				return res.getDFlow().out().cleanInfoForVars(vars.toArray());
 			else
-				return res.getDFlow().out(flnk);
+				return res.getDFlow().out();
 		}
 		else if (stats.length > 0) {
 			if (vars.length > 0)
-				return stats[stats.length-1].getDFlow().out(flnk).cleanInfoForVars(vars.toArray());
+				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
 			else
-				return stats[stats.length-1].getDFlow().out(flnk);
+				return stats[stats.length-1].getDFlow().out();
 		}
 		else {
-			return getDFlow().in(flnk);
+			return getDFlow().in();
 		}
 	}
 	

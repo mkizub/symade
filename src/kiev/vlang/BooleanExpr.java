@@ -208,7 +208,7 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 			BoolExpr.checkBool(expr1);
 			expr2.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(expr2);
-			getDFlow().out(null);
+			getDFlow().out();
 		} finally {
 			PassInfo.pop(this);
 		}
@@ -757,8 +757,8 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public DFState calcDFlowTru(DFFunc flnk) {
-		return addNodeTypeInfo(getDFlow().in(flnk));
+	public DFState calcDFlowTru() {
+		return addNodeTypeInfo(getDFlow().in());
 	}
 	
 	private DFState addNodeTypeInfo(DFState dfs) {

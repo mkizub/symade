@@ -36,14 +36,27 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+@dflow(out="args")
 public class NewExpr extends Expr {
 
-	@att public TypeRef				type;
-	@att public final NArr<ENode>	args;
-	@att public ENode				outer;
-	@att public ENode				tif_expr;	// TypeInfo field access expression
-	@att public final NArr<ENode>	outer_args;
-	@att public Struct				clazz; // if this new expression defines new class
+	@att
+	public TypeRef				type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
+	
+	@att
+	public ENode				outer;
+	
+	@att
+	public ENode				tif_expr;	// TypeInfo field access expression
+	
+	@att
+	public final NArr<ENode>	outer_args;
+	
+	@att
+	public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
 
@@ -246,10 +259,16 @@ public class NewExpr extends Expr {
 }
 
 @node
+@dflow(out="args")
 public class NewArrayExpr extends Expr {
 
-	@att public TypeRef				type;
-	@att public final NArr<ENode>	args;
+	@att
+	public TypeRef				type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
+	
 	public int						dim;
 	private Type					arrtype;
 
@@ -349,10 +368,16 @@ public class NewArrayExpr extends Expr {
 }
 
 @node
+@dflow(out="args")
 public class NewInitializedArrayExpr extends Expr {
 
-	@att public TypeRef				type;
-	@att public final NArr<ENode>	args;
+	@att
+	public TypeRef				type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
+	
 	public int						dim;
 	public int[]					dims;
 	private Type				arrtype;
@@ -446,11 +471,18 @@ public class NewInitializedArrayExpr extends Expr {
 }
 
 @node
+@dflow(out="args")
 public class NewClosure extends Expr {
 
-	@att public TypeClosureRef		type;
-	@att public final NArr<ENode>	args;
-	@att public Struct				clazz; // if this new expression defines new class
+	@att
+	public TypeClosureRef		type;
+	
+	@att
+	@dflow(in="", seq="true")
+	public final NArr<ENode>	args;
+	
+	@att
+	public Struct				clazz; // if this new expression defines new class
 
 	@ref public Method	func;
 

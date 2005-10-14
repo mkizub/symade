@@ -604,7 +604,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out(null).getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
 		if( sni == null || sni.types.length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.types.clone();
@@ -1014,7 +1014,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = getDFlow().out(null).getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
 		if( sni == null || sni.types.length == 0 )
 			types = new Type[]{var.type};
 		else
