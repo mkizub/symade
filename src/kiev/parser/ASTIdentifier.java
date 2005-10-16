@@ -36,6 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class ASTIdentifier extends ENode {
 	private static KString op_instanceof = KString.from("instanceof");
 	public KString name;

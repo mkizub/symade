@@ -33,10 +33,14 @@ import kiev.vlang.*;
  */
 
 @node
+@dflow(out="expr")
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
-	@att public ASTIdentifier	name;
-	@att public ENode			expr;
+	@att
+	public ASTIdentifier	name;
+	@att
+	@dflow(in="this:in")
+	public ENode			expr;
 
 	public boolean preResolve() {
 		PassInfo.push(this);

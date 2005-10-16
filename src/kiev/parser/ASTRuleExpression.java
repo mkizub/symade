@@ -33,11 +33,18 @@ import kiev.vlang.*;
  */
 
 @node
+@dflow(out="expr")
 public class ASTRuleExpression extends ASTRuleNode {
 
-	@att public ENode	expr;
-	@att public ENode	bt_expr;
-	boolean				while_mode;
+	@att
+	@dflow(in="this:in")
+	public ENode	expr;
+	
+	@att
+	@dflow(out="expr")
+	public ENode	bt_expr;
+	
+	boolean			while_mode;
 
     public void resolve(Type reqType) {
     	expr.resolve(null);

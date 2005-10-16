@@ -39,8 +39,11 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  */
 
 @node
+@dflow(out="nodes")
 public class ASTExpression extends Expr {
-	@att public final NArr<ENode>		nodes;
+	@att
+	@dflow(in="this:in")
+	public final NArr<ENode>		nodes;
 
 	public boolean preResolve() {
 		PassInfo.push(this);

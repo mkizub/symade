@@ -638,12 +638,17 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 }
 
 @node
+@dflow(out="body")
 public class CatchInfo extends Statement implements ScopeOfNames {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@att public Var			arg;
-	@att public Statement	body;
+	@att
+	@dflow(in="this:in")
+	public Var			arg;
+	@att
+	@dflow(in="arg")
+	public Statement	body;
 
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -711,6 +716,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 }
 
 @node
+@dflow(out="body")
 public class FinallyInfo extends CatchInfo {
 
 	@att public Var		ret_arg;
@@ -767,6 +773,7 @@ public class FinallyInfo extends CatchInfo {
 }
 
 @node
+@dflow(out="body")
 public class TryStat extends Statement/*defaults*/ {
 
 	@att
@@ -778,6 +785,7 @@ public class TryStat extends Statement/*defaults*/ {
 	public final NArr<CatchInfo>	catchers;
 	
 	@att
+	@dflow(in="")
 	public FinallyInfo				finally_catcher;
 
 	public CodeLabel	end_label;
@@ -907,11 +915,19 @@ public class TryStat extends Statement/*defaults*/ {
 }
 
 @node
+@dflow(out="body")
 public class SynchronizedStat extends Statement {
 
-	@att public Statement	body;
-	@att public ENode		expr;
-	@att public Var			expr_var;
+	@att
+	@dflow(in="this:in")
+	public ENode		expr;
+	@att
+	public Var			expr_var;
+	
+	@att
+	@dflow(in="expr")
+	public Statement	body;
+	
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
 	public CodeLabel	end_label;
@@ -987,11 +1003,19 @@ public class SynchronizedStat extends Statement {
 }
 
 @node
+@dflow(out="body")
 public class WithStat extends Statement {
 
-	@att public Statement	body;
-	@att public ENode		expr;
-	@ref public ASTNode		var_or_field;
+	@att
+	@dflow(in="this:in")
+	public ENode		expr;
+	
+	@att
+	@dflow(in="expr")
+	public Statement	body;
+	
+	@ref
+	public ASTNode		var_or_field;
 	public CodeLabel	end_label;
 
 	public WithStat() {

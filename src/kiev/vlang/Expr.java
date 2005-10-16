@@ -40,6 +40,7 @@ import syntax kiev.Syntax;
 
 
 @node
+@dflow(out="this:in")
 public class ShadowExpr extends Expr {
 	@ref public ENode expr;
 	
@@ -74,8 +75,11 @@ public class ShadowExpr extends Expr {
 }
 
 @node
+@dflow(out="array")
 public class ArrayLengthAccessExpr extends Expr {
-	@att public ENode		array;
+	@att
+	@dflow(in="this:in")
+	public ENode		array;
 
 	public ArrayLengthAccessExpr() {
 	}
@@ -130,8 +134,10 @@ public class ArrayLengthAccessExpr extends Expr {
 }
 
 @node
+@dflow(out="this:in")
 public class TypeClassExpr extends Expr {
-	@att public TypeRef		type;
+	@att
+	public TypeRef		type;
 
 	public TypeClassExpr() {
 	}
@@ -512,10 +518,18 @@ public class AssignExpr extends LvalueExpr {
 
 
 @node
+@dflow(out="expr2")
 public class BinaryExpr extends Expr {
-	@ref public BinaryOperator		op;
-	@att public ENode				expr1;
-	@att public ENode				expr2;
+	@ref
+	public BinaryOperator		op;
+	
+	@att
+	@dflow(in="this:in")
+	public ENode				expr1;
+	
+	@att
+	@dflow(in="expr1")
+	public ENode				expr2;
 
 	public BinaryExpr() {
 	}
@@ -975,10 +989,11 @@ public class StringConcatExpr extends Expr {
 }
 
 @node
-@dflow
+@dflow(out="exprs")
 public class CommaExpr extends Expr {
+	@att
 	@dflow(in="", seq="true")
-	@att public final NArr<ENode>	exprs;
+	public final NArr<ENode>	exprs;
 
 	public CommaExpr() {
 	}
@@ -1220,9 +1235,14 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
+@dflow(out="expr")
 public class UnaryExpr extends Expr {
-	@ref public Operator			op;
-	@att public ENode				expr;
+	@ref
+	public Operator			op;
+	
+	@att
+	@dflow(out="this:in")
+	public ENode				expr;
 
 	public UnaryExpr() {
 	}
@@ -1402,9 +1422,14 @@ public class UnaryExpr extends Expr {
 }
 
 @node
+@dflow(out="lval")
 public class IncrementExpr extends LvalueExpr {
-	@ref public Operator			op;
-	@att public ENode				lval;
+	@ref
+	public Operator				op;
+	
+	@att
+	@dflow(in="this:in")
+	public ENode				lval;
 
 	public IncrementExpr() {
 	}
@@ -1617,10 +1642,19 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="join expr1 expr2")
 public class ConditionalExpr extends Expr {
-	@att public ENode		cond;
-	@att public ENode		expr1;
-	@att public ENode		expr2;
+	@att
+	@dflow(in="this:in")
+	public ENode		cond;
+	
+	@att
+	@dflow(in="cond:true")
+	public ENode		expr1;
+	
+	@att
+	@dflow(in="cond:false")
+	public ENode		expr2;
 
 	public ConditionalExpr() {
 	}
@@ -1711,9 +1745,15 @@ public class ConditionalExpr extends Expr {
 }
 
 @node
+@dflow(out="expr")
 public class CastExpr extends Expr {
-	@att public TypeRef			type;
-	@att public ENode			expr;
+	@att
+	public TypeRef			type;
+	
+	@att
+	@dflow(in="this:in")
+	public ENode			expr;
+	
 	public boolean				explicit = false;
 	public boolean				reinterp = false;
 

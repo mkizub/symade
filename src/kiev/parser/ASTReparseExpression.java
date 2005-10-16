@@ -32,6 +32,7 @@ import kiev.vlang.*;
  */
 
 @node
+@dflow(out="this:in")
 public class ASTReparseExpression extends Expr {
 
 	public String	ref;

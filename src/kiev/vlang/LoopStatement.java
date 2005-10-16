@@ -539,8 +539,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 @dflow(out="lblbrk")
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
-	@att public ENode		container;
-
+	@att @dflow(in="")		public ENode		container;
 	@att @dflow(in="")		public Var			var;
 	@att @dflow(in="var")	public Var			iter;
 	@att @dflow(in="iter")	public Var			iter_array;

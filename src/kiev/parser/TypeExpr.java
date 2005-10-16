@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class TypeExpr extends TypeRef {
 	private static KString opPVar  = KString.from("@");
 	private static KString opRef   = KString.from("&");

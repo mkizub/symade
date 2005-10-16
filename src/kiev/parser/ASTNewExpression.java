@@ -37,6 +37,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="args")
 public class ASTNewExpression extends Expr {
 	@att
 	public TypeRef					type;

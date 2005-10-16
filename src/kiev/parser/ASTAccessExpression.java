@@ -36,13 +36,16 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="obj")
 public class ASTAccessExpression extends Expr {
 	private static KString nameWrapperSelf = KString.from("$self");
 	
-	@dflow
-	@att public ENode			obj;
+	@att
+	@dflow(out="this:in")
+	public ENode			obj;
 	
-	@att public ASTIdentifier	ident;
+	@att
+	public ASTIdentifier	ident;
 
 	public boolean preResolve() {
 		PassInfo.push(this);

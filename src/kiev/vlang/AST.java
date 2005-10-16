@@ -340,20 +340,8 @@ public abstract class ASTNode implements Constants {
 	public void cleanDFlow() {
 		walkTree(fun (ASTNode n)->boolean {
 			n.delNodeData(DataFlowInfo.ID);
-			n.delNodeData(DataFlowSocket.ID);
 			return true;
 		});
-	}
-	
-	private java.lang.reflect.Field getDeclaredField(String name) {
-		java.lang.Class cls = getClass();
-		while (cls != null) {
-			try {
-				return cls.getDeclaredField(name);
-			} catch (NoSuchFieldException e) {}
-			cls = cls.getSuperclass();
-		}
-		throw new RuntimeException("Internal error: no field "+name+" in "+getClass());
 	}
 	
 	// build data flow for this node
@@ -366,48 +354,12 @@ public abstract class ASTNode implements Constants {
 		return df;
 	}
 	
-	// build data flow for a child node
-	final DataFlowSocket getDFlowFor(String name) {
-		DataFlowSocket df = getDFlow().children.get(name);
-		if (df == null) {
-			java.lang.reflect.Field jf = getDeclaredField(name);
-			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
-			String fin = "";
-			String[] flnk = null;
-			String seq = "";
-			if (dfd != null) {
-				fin = dfd.in().intern();
-				flnk = dfd.links();
-				seq = dfd.seq().intern();
-				assert (seq=="true" || seq=="false" || seq=="");
-			}
-			if (seq != "") {
-				assert (flnk == null || flnk.length == 0);
-				df = new DataFlowSpaceSocket((NArr<ASTNode>)getVal(name),DFFunc.make(this,fin),seq=="true");
-			}
-			else if (flnk == null || flnk.length == 0) {
-				df = new DataFlowChildSocket(this, name, DFFunc.make(this,fin));
-			}
-			else {
-				df = new DataFlowChildSocket(this, name, new DFFuncLabel(DFFunc.make(this,fin),DFFunc.make(this,flnk)));
-			}
-			getDFlow().children.put(name,df);
-			
-//			Object obj = getVal(name);
-//			if (obj instanceof ASTNode)
-//				df.attach((ASTNode)obj);
-		}
-		return df;
-	}
-	
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
-	public DFState calcDFlowJmp() { throw new RuntimeException("calcDFlowJmp() for "+getClass()); }
 	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
 	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
 	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
-	public DFState calcDFlowIn()  { throw new RuntimeException("calcDFlowIn() for "+getClass()); }
 
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve()		{ return true; }
@@ -1225,6 +1177,7 @@ public abstract class DNode extends ASTNode {
  * type reference, and expressions themselves
  */
 @node
+@dflow(out="this:in")
 public /*abstract*/ class ENode extends ASTNode {
 
 	public static final ENode[] emptyArray = new ENode[0];
@@ -1313,6 +1266,7 @@ public final class VarDecl extends ENode implements Named {
 }
 
 @node
+@dflow(out="this:in")
 public final class LocalStructDecl extends ENode implements Named {
 
 	@att Struct clazz;
@@ -1373,9 +1327,12 @@ public abstract class Expr extends ENode {
 }
 
 @node
+@dflow(out="expr")
 public class NopExpr extends Expr {
 
-	@att public Expr		expr;
+	@att
+	@dflow(in="this:in")
+	public Expr		expr;
 	
 	public NopExpr() {
 	}
@@ -1443,6 +1400,7 @@ public abstract class Statement extends ENode {
 }
 
 @node
+@dflow(out="this:in")
 public class InitializerShadow extends Statement {
 
 	@ref Initializer init;
@@ -1468,6 +1426,7 @@ public class InitializerShadow extends Statement {
 
 
 @node
+@dflow(out="this:in")
 public class TypeRef extends ENode {
 	//@att KString						name;
 	@ref public virtual forward Type	lnk;

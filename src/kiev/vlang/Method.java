@@ -33,6 +33,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 
@@ -58,15 +59,20 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@att public Var						retvar;
 
 	/** Body of the method */
-	@att public BlockStat				body;
-	@att public PrescannedBody 			pbody;
+	@att
+	@dflow(in="this:in")
+	public BlockStat					body;
+	@att
+	public PrescannedBody 				pbody;
 
 	/** Array of attributes of this method
 	 */
 	public Attr[]						attrs = Attr.emptyArray;
 
 	/** Require & ensure clauses */
-	@att public final NArr<WBCCondition> conditions;
+	@att
+	@dflow(in="this:in")
+	public final NArr<WBCCondition> 	conditions;
 
 	/** Violated by method fields for normal methods, and checked fields
 	 *  for invariant method
@@ -715,6 +721,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 }
 
 @node
+@dflow
 public class Constructor extends Method {
 	@att public final NArr<Statement>	addstats;
 
@@ -740,9 +747,13 @@ public class Constructor extends Method {
 }
 
 @node
+@dflow(out="body")
 public class Initializer extends DNode implements SetBody, PreScanneable {
-	@att public BlockStat				body;
-	@att public PrescannedBody			pbody;
+	@att
+	@dflow(in="this:in")
+	public BlockStat				body;
+	@att
+	public PrescannedBody			pbody;
 
 	public Initializer() {
 	}
@@ -796,11 +807,18 @@ public enum WBCType {
 }
 
 @node
+@dflow(out="body")
 public class WBCCondition extends DNode {
 
 	public WBCType					cond;
-	@att public ASTIdentifier		name;
-	@att public Statement			body;
+	
+	@att
+	public ASTIdentifier			name;
+	
+	@att
+	@dflow(in="this:in")
+	public Statement				body;
+	
 	public CodeAttr					code;
 	@ref public Method				definer;
 

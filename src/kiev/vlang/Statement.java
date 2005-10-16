@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class ShadowStat extends Statement {
 	@ref public Statement stat;
 	
@@ -113,7 +114,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	}
 	
 	public DFState calcDFlowOut() {
-		return parent.getDFlowFor(pslot.name).in();
+		return parent.getDFlow().getSocket(pslot.name).calc(DataFlowSlots.IN);
 	}
 
 	public void resolve(Type reqType) {
@@ -141,7 +142,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			if( Kiev.verify )
 				generateArgumentCheck();
 			foreach (ParamRedir redir; params_redir)
-				redir.old_var.bcpos = redir.new_var.bcpos;
+				redir.old_var.setBCpos(redir.new_var.getBCpos());
 			((Statement)method.body).generate(reqType);
 		} finally { PassInfo.pop(this); }
 	}
@@ -385,6 +386,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 }
 
 @node
+@dflow(out="this:in")
 public class EmptyStat extends Statement {
 
 	public EmptyStat() {}
@@ -659,7 +661,7 @@ public class IfElseStat extends Statement {
 				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
 				if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 			}
-			else if (((ConstBoolExpr)cond).value) {
+			else if (cond.getConstValue() instanceof Boolean && ((Boolean)cond.getConstValue()).booleanValue()) {
 				if( thenSt.isAbrupted() ) setAbrupted(true);
 				if( thenSt.isMethodAbrupted() ) setMethodAbrupted(true);
 			}

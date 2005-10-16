@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow
 public class RuleMethod extends Method {
 
 	@att public final NArr<Var>		localvars;
@@ -377,9 +378,13 @@ public abstract class ASTRuleNode extends ENode {
 
 
 @node
+@dflow(out="node")
 public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
-	@att public ASTRuleNode	node;
+	@att
+	@dflow(in="this:in")
+	public ASTRuleNode	node;
+	
 	public StringBuffer	fields_buf;
 
 	public RuleBlock() {
@@ -478,6 +483,7 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 
 
 @node
+@dflow(out="rules")
 public final class RuleOrExpr extends ASTRuleNode {
 
 	@att
@@ -533,6 +539,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="rules")
 public final class RuleAndExpr extends ASTRuleNode {
 
 	@att
@@ -623,10 +630,15 @@ public final class RuleAndExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="expr")
 public final class RuleIstheExpr extends ASTRuleNode {
 
-	@ref public Var		var;		// variable of type PVar<...>
-	@att public ENode	expr;		// expression to check/unify
+	@ref
+	public Var		var;		// variable of type PVar<...>
+	
+	@att
+	@dflow(in="this:in")
+	public ENode	expr;		// expression to check/unify
 
 	public RuleIstheExpr() {
 	}
@@ -672,10 +684,16 @@ public final class RuleIstheExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="exprs")
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
-	@ref public final NArr<Var>		vars;		// variable of type PVar<...>
-	@att public final NArr<ENode>	exprs;		// expression to check/unify
+	@ref
+	public final NArr<Var>		vars;		// variable of type PVar<...>
+	
+	@att
+	@dflow(in="this:in", seq="true")
+	public final NArr<ENode>	exprs;		// expression to check/unify
+	
 	public int[]	iter_vars;	// iterator var
 
 	public static final int	ARRAY = 0;
@@ -844,6 +862,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="this:in")
 public final class RuleCutExpr extends ASTRuleNode {
 
 	public RuleCutExpr() {
@@ -872,13 +891,19 @@ public final class RuleCutExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="args")
 public final class RuleCallExpr extends ASTRuleNode {
 
-	@att public ENode				obj;
-	public Named					func;
 	@att
-	@dflow(in="", seq="true")
+	@dflow(in="this:in")
+	public ENode					obj;
+	
+	public Named					func;
+	
+	@att
+	@dflow(in="obj", seq="true")
 	public final NArr<ENode>		args;
+	
 	public boolean					super_flag;
 	public int						env_var;
 
@@ -968,9 +993,15 @@ public final class RuleCallExpr extends ASTRuleNode {
 }
 
 @node
+@dflow(out="expr")
 public abstract class RuleExprBase extends ASTRuleNode {
-	@att public ENode		expr;
-	@att public ENode		bt_expr;
+	@att
+	@dflow(in="this:in")
+	public ENode		expr;
+	
+	@att
+	@dflow(in="this:in")
+	public ENode		bt_expr;
 
 	public RuleExprBase() {
 	}
@@ -1008,6 +1039,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 }
 
 @node
+@dflow(out="expr")
 public final class RuleWhileExpr extends RuleExprBase {
 
 	public RuleWhileExpr() {
@@ -1057,6 +1089,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 }
 
 @node
+@dflow(out="expr")
 public final class RuleExpr extends RuleExprBase {
 
 	public RuleExpr() {

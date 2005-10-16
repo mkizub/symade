@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@dflow(out="args")
 public class ASTNewArrayExpression extends Expr {
 	@att
 	public TypeRef					type;

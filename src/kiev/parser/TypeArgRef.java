@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class TypeArgRef extends TypeRef {
 	
 	private static int anonymousCounter = 100;

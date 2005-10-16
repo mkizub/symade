@@ -344,11 +344,20 @@ public class CallExpr extends Expr {
 }
 
 @node
+@dflow(out="args")
 public class ClosureCallExpr extends Expr {
-	@att public ENode					expr;
-	@att public final NArr<ENode>		args;
-	@att public ENode					env_access;		// $env for rule closures
-	public boolean						is_a_call;
+	@att
+	@dflow(in="this:in")
+	public ENode					expr;
+
+	@att
+	@dflow(in="expr", seq="true")
+	public final NArr<ENode>		args;
+	
+	@att
+	public ENode					env_access;		// $env for rule closures
+	
+	public boolean					is_a_call;
 
 	@ref public Method	clone_it;
 	@ref public Method	call_it;

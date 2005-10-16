@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class TypeWithArgsRef extends TypeRef {
 
 	@att public TypeRef					base_type;

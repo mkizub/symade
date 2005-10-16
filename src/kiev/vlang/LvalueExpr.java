@@ -35,6 +35,7 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+@dflow(out="obj")
 public class AccessExpr extends LvalueExpr {
 
 	public static final int[] masks =
@@ -49,8 +50,12 @@ public class AccessExpr extends LvalueExpr {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	@att public ENode		obj;
-	@ref public Field		var;
+	@att
+	@dflow(in="this:in")
+	public ENode		obj;
+	
+	@ref
+	public Field		var;
 
 	public AccessExpr() {
 	}
@@ -241,10 +246,16 @@ public class AccessExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="index")
 public class ContainerAccessExpr extends LvalueExpr {
 
-	@att public ENode		obj;
-	@att public ENode		index;
+	@att
+	@dflow(in="this:in")
+	public ENode		obj;
+	
+	@att
+	@dflow(in="obj")
+	public ENode		index;
 
 	public ContainerAccessExpr() {
 	}
@@ -456,6 +467,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="this:in")
 public class ThisExpr extends LvalueExpr {
 
 	public boolean super_flag;
@@ -579,6 +591,7 @@ public class ThisExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="this:in")
 public class VarAccessExpr extends LvalueExpr {
 
 	@ref public Var		var;
@@ -841,6 +854,7 @@ public class VarAccessExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="this:in")
 public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
@@ -960,6 +974,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="this:in")
 public class StaticFieldAccessExpr extends LvalueExpr {
 
 	@ref public Field		var;
@@ -1086,6 +1101,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 }
 
 @node
+@dflow(out="this:in")
 public class OuterThisAccessExpr extends LvalueExpr {
 
 	@ref public Struct		outer;

@@ -35,6 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="exprs")
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att

@@ -32,6 +32,7 @@ import syntax kiev.Syntax;
  */
 
 @node
+@dflow(out="this:in")
 public class TypeNameRef extends TypeRef {
 	@att public ASTIdentifier			name;
 
