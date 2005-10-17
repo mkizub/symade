@@ -49,10 +49,16 @@ public class ASTNewExpression extends Expr {
     @att
 	public Struct				clazz;
 	
-	public boolean preResolve() {
+	public Type getType() {
+		return type.getType();
+	}
+	
+	public boolean preResolve(TransfProcessor proc) {
 		// don't pre-resolve clazz
-		type.preResolve();
-		foreach (ENode a; args) a.preResolve();
+		Type tp = type.getType();
+		tp.checkResolved();
+		proc.preResolve(type);
+		foreach (ENode a; args) proc.preResolve(a);
 		return false;
 	}
 	

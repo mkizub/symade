@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
@@ -44,6 +45,16 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	
 	public int dim;
 	
+	public void postResolve() {
+		Type tp = type.getType();
+		while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
+		if( !tp.isArray() )
+			throw new CompilerException(pos,"Type "+type+" is not an array type");
+        int dim = 0;
+        while( tp.isArray() ) { dim++; tp = tp.args[0]; }
+		replaceWithNode(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
+	}
+
 	public void resolve(Type reqType) {
 		Type tp;
 		if( type == null ) {

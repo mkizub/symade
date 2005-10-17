@@ -290,7 +290,7 @@ public class Bytecoder implements Constants {
 				m = new Method(m_name,mtype,m_flags);
 			cl.members.append(m);
 			for (int i=0; i < mtype.args.length; i++) {
-				FormPar fp = new FormPar(new ASTIdentifier(KString.from("arg"+1)),
+				FormPar fp = new FormPar(new NameRef(KString.from("arg"+1)),
 					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),0);
 				m.params.add(fp);
 			}
@@ -589,9 +589,9 @@ public class Bytecoder implements Constants {
 			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
 				Import imp = new Import();
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
-					imp.name = new ASTIdentifier(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
+					imp.name = new NameRef(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
 				} else {
-					imp.name = new ASTIdentifier(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
+					imp.name = new NameRef(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
 					imp.of_method = true;
 					KString sig = kia.getSignature(clazz);
 					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));

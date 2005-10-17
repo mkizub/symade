@@ -352,7 +352,7 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 						cae.pos = pos;
 						cae.obj = new VarAccessExpr(tmpvar.pos,tmpvar);
 						cae.obj.resolve(null);
-						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
+						cae.func = new NameRef(pos, nameGetCaseTag);
 					} else {
 						mode = TYPE_SWITCH;
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),

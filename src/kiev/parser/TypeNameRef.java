@@ -34,21 +34,21 @@ import syntax kiev.Syntax;
 @node
 @dflow(out="this:in")
 public class TypeNameRef extends TypeRef {
-	@att public ASTIdentifier			name;
+	@att public NameRef			name;
 
 	public TypeNameRef() {
 	}
 
 	public TypeNameRef(KString nm) {
-		name = new ASTIdentifier(nm);
+		name = new NameRef(nm);
 	}
 
-	public TypeNameRef(ASTIdentifier nm) {
+	public TypeNameRef(NameRef nm) {
 		this.pos = nm.getPos();
 		this.name = nm;
 	}
 
-	public TypeNameRef(ASTIdentifier nm, Type tp) {
+	public TypeNameRef(NameRef nm, Type tp) {
 		this.pos = nm.getPos();
 		this.name = nm;
 		this.lnk = tp;

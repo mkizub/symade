@@ -478,7 +478,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				||   op==BinaryOperator.GreaterEquals
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( op==BinaryOperator.BooleanOr ) {
@@ -505,7 +505,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				||  op==BinaryOperator.NotEquals
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			// Not a standard operator, find out overloaded
@@ -524,7 +524,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 	
-	private ASTNode postResolve(Type reqType) {
+	private ASTNode resolve2(Type reqType) {
 		Type t1 = expr1.getType();
 		Type t2 = expr2.getType();
 		if( !t1.equals(t2) ) {

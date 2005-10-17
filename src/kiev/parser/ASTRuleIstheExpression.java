@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
@@ -42,11 +43,11 @@ public class ASTRuleIstheExpression extends ASTRuleNode {
 	@dflow(in="this:in")
 	public ENode			expr;
 
-	public boolean preResolve() {
+	public boolean preResolve(TransfProcessor proc) {
 		PassInfo.push(this);
 		try {
 			// don't pre-resolve 'name'
-			expr.preResolve();
+			proc.preResolve(expr);
 		} finally { PassInfo.pop(this); }
 		return false;
 	}

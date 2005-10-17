@@ -209,6 +209,8 @@ public final class ConstStringExpr extends ConstExpr {
 @node
 public abstract class ConstExpr extends Expr {
 
+	public KString text_name;
+	
 	public ConstExpr() {
 		setResolved(true);
 	}
@@ -219,7 +221,7 @@ public abstract class ConstExpr extends Expr {
 	public boolean	isConstantExpr() { return true; }
 	public int		getPriority() { return 255; }
 
-	public final boolean preResolve() {
+	public final boolean preResolve(TransfProcessor proc) {
 		// already fully resolved
 		setResolved(true);
 		return false;

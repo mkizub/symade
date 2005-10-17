@@ -202,7 +202,7 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
-	public final void callbackDetached() {
+	public void callbackDetached() {
 		assert(isAttached());
 		NodeData nd = ndata;
 		while (nd != null) {
@@ -219,7 +219,7 @@ public abstract class ASTNode implements Constants {
 		parent.callbackChildChanged(pslot);
 	}
 	
-	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		assert(!isAttached());
 		assert(parent != null && parent != this);
 		this.parent = parent;
@@ -244,9 +244,11 @@ public abstract class ASTNode implements Constants {
 			NArr<ASTNode> space = (NArr<ASTNode>)parent.getVal(pslot.name);
 			int idx = space.indexOf(this);
 			assert(idx >= 0);
+			if (node.pos == 0) node.pos = this.pos;
 			space[idx] = node;
 		} else {
 			assert(parent.getVal(pslot.name) == this);
+			if (node != null && node.pos == 0) node.pos = this.pos;
 			parent.setVal(pslot.name, node);
 		}
 		assert(node == null || node.isAttached());
@@ -263,6 +265,7 @@ public abstract class ASTNode implements Constants {
 			space[idx] = (ASTNode)pslot.clazz.newInstance();
 			ASTNode n = fnode();
 			assert(n != null);
+			if (n.pos == 0) n.pos = this.pos;
 			space[idx] = n;
 			assert(n.isAttached());
 			return n;
@@ -270,6 +273,7 @@ public abstract class ASTNode implements Constants {
 			assert(parent.getVal(pslot.name) == this);
 			parent.setVal(pslot.name, pslot.clazz.newInstance());
 			ASTNode n = fnode();
+			if (n != null && n.pos == 0) n.pos = this.pos;
 			parent.setVal(pslot.name, n);
 			assert(n == null || n.isAttached());
 			return n;
@@ -362,7 +366,8 @@ public abstract class ASTNode implements Constants {
 	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
 
 	public boolean preGenerate()	{ return true; }
-	public boolean preResolve()		{ return true; }
+	public boolean preResolve(TransfProcessor proc)		{ return true; }
+	public void postResolve()		{}
 	
 	public void walkTree((ASTNode)->boolean exec) {
 		PassInfo.push(this);
@@ -381,6 +386,27 @@ public abstract class ASTNode implements Constants {
 					}
 				}
 			}
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void walkTree((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+		PassInfo.push(this);
+		try {
+			if (pre_exec(this)) {
+				foreach (AttrSlot attr; this.values(); attr.is_attr) {
+					Object val = this.getVal(attr.name);
+					if (val == null)
+						continue;
+					if (attr.is_space) {
+						foreach (ASTNode n; (NArr<ASTNode>)val)
+							n.walkTree(pre_exec, post_exec);
+					}
+					else if (val instanceof ASTNode) {
+						((ASTNode)val).walkTree(pre_exec, post_exec);
+					}
+				}
+			}
+			post_exec(this);
 		} finally { PassInfo.pop(this); }
 	}
 
@@ -1277,7 +1303,7 @@ public final class LocalStructDecl extends ENode implements Named {
 		clazz.setResolved(true);
 	}
 
-	public boolean preResolve() {
+	public boolean preResolve(TransfProcessor proc) {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
@@ -1461,7 +1487,7 @@ public class TypeRef extends ENode {
 		this.lnk = n;
 	}
 	
-	public final boolean preResolve() {
+	public final boolean preResolve(TransfProcessor proc) {
 		getType(); // calls resolving
 		return false;
 	}
@@ -1518,6 +1544,50 @@ public class TypeRef extends ENode {
 		Vector<Type> tmp = new Vector<Type>();
 		foreach (TypeRef tr; arr) { if (tr.lnk != null) tmp.append(tr.lnk); }
 		return tmp.elements();
+	}
+}
+
+@node
+@dflow(out="this:in")
+public class NameRef extends ASTNode {
+	public KString name;
+
+	public NameRef() {
+	}
+
+	public NameRef(KString name) {
+		this.name = name;
+	}
+
+	public NameRef(int pos, KString name) {
+		this.pos = pos;
+		this.name = name;
+	}
+
+	public void set(Token t) {
+		if (t.image.startsWith("ID#"))
+			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-1));
+		else
+			this.name = KString.from(t.image);
+        pos = t.getPos();
+	}
+	
+	public Type getType() {
+		return Type.tpVoid;
+	}
+
+	public boolean preResolve(TransfProcessor proc) { return false; }
+
+	public KString toKString() {
+		return name;
+	}
+    
+	public String toString() {
+		return name.toString();
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		return dmp.space().append(name).space();
 	}
 }
 

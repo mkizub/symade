@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@dflow
 public class ASTOperator extends ENode {
 
 	public KString		image;

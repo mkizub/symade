@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.parser.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
@@ -45,7 +46,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		IMPORT_SYNTAX;
 	}
 
-	@att public ASTIdentifier			name;
+	@att public NameRef					name;
 	@att public ImportMode				mode = ImportMode.IMPORT_CLASS;
          public boolean					star;
          public boolean					of_method;
@@ -74,7 +75,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean preResolve()		{ return false; }
+	public boolean preResolve(TransfProcessor proc)		{ return false; }
 
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
@@ -197,7 +198,7 @@ public class Typedef extends DNode implements Named {
 		return new NodeName(name);
 	}
 
-	public void set(ASTIdentifier id, ASTOperator op, TypeRef tp) {
+	public void set(NameRef id, ASTOperator op, TypeRef tp) {
 		typearg = new TypeArgRef(id.name);
 		name = op.image;
 
@@ -211,13 +212,13 @@ public class Typedef extends DNode implements Named {
 		return;
 	}
 	
-	public void set(TypeRef tp, ASTIdentifier id) {
+	public void set(TypeRef tp, NameRef id) {
 		type = tp;
 		name = id.name;
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean preResolve()		{ return false; }
+	public boolean preResolve(TransfProcessor proc)		{ return false; }
 
 	public String toString() {
 		if (typearg != null)

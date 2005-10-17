@@ -126,10 +126,10 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			{
 				ASTAccessExpression ae0 = new ASTAccessExpression();
 				ae0.obj = new VarAccessExpr(0,dfIn.params[0]);
-				ae0.ident = new ASTIdentifier(KString.from("pslot"));
+				ae0.ident = new NameRef(KString.from("pslot"));
 				ASTAccessExpression ae1 = new ASTAccessExpression();
 				ae1.obj = ae0;
-				ae1.ident = new ASTIdentifier(KString.from("name"));
+				ae1.ident = new NameRef(KString.from("name"));
 				var.init = ae1;
 			}
 			for(int i=0; i < aflds.length; i++) {
@@ -139,7 +139,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				KString fldnm = fld.name.name;
 				KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 				ASTCallExpression ce = new ASTCallExpression();
-				ce.func = new ASTIdentifier(fname);
+				ce.func = new NameRef(fname);
 				if (seq)
 					ce.args.add(new VarAccessExpr(0, dfIn.params[0]));
 				dfIn.body.addStatement(
@@ -206,24 +206,24 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					}
 					cae_tru = new ASTCallAccessExpression();
 					cae_tru.obj = new ASTIdentifier(acc_nm);
-					cae_tru.func = new ASTIdentifier(fun_nm);
+					cae_tru.func = new NameRef(fun_nm);
 					
 					if (seq) {
 						acc_prev = new ASTAccessExpression();
 						acc_prev.obj = new ASTIdentifier(KString.from("$child"));
-						acc_prev.ident = new ASTIdentifier(KString.from("pprev"));
+						acc_prev.ident = new NameRef(KString.from("pprev"));
 						cae_prev = new ASTCallAccessExpression();
 						cae_prev.obj = (ASTAccessExpression)acc_prev.copy();
-						cae_prev.func = new ASTIdentifier(KString.from("getDFlowOut"));
+						cae_prev.func = new NameRef(KString.from("getDFlowOut"));
 					}
 					
 					if (acc_nm != nameThis) {
 						acc_fld = new ASTAccessExpression();
 						acc_fld.obj = new ThisExpr();
-						acc_fld.ident = new ASTIdentifier(acc_nm);
+						acc_fld.ident = new NameRef(acc_nm);
 						cae_fls = new ASTCallAccessExpression();
 						cae_fls.obj = new ThisExpr();
-						cae_fls.func = new ASTIdentifier(KString.from("getDFlowIn$"+acc_nm));
+						cae_fls.func = new NameRef(KString.from("getDFlowIn$"+acc_nm));
 					}
 				}
 				Method dfIn;

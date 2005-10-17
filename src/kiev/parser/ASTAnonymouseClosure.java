@@ -34,14 +34,20 @@ import kiev.stdlib.*;
  */
 
 @node
+@dflow(out="this:in")
 public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
     @att public BlockStat					body;
-	@att public Expr						new_closure;
+	@att public NewClosure					new_closure;
+	@att public Struct						clazz;
 
   	public void set(Token t) {
     	pos = t.getPos();
+	}
+
+	public Type getType() {
+		return clazz.type;
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
@@ -52,15 +58,10 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public boolean preResolve() {
-		return false; // don't pre-resolve me
-	}
+	public boolean preResolve(TransfProcessor proc) {
+		proc.preResolve(rettype);
+		foreach (FormPar fp; params) proc.preResolve(fp);
 	
-	public void resolve(Type reqType) {
-		if( isResolved() ) {
-			replaceWithNode((Expr)~new_closure);
-			return;
-		}
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
 				.append_fast(PassInfo.clazz.name.bytecode_name)
@@ -69,7 +70,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				.toKString(),
 			false
 		);
-		Struct clazz = Env.newStruct(clname,PassInfo.clazz,flags,true);
+		clazz = Env.newStruct(clname,PassInfo.clazz,flags,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -81,15 +82,23 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		clazz.super_type = Type.tpClosureClazz.type;
 
 		Type[] types = new Type[params.length];
-		Var[] vars = new Var[params.length];
 		for(int i=0; i < types.length; i++) {
-			vars[i] = (Var)params[i];
-			types[i] = vars[i].type;
+			types[i] = params[i].type;
 		}
 		Type ret = rettype.getType();
 		clazz.type = ClosureType.newClosureType(clazz,types,ret);
 
+		return false; // don't pre-resolve me
+	}
+	
+	public void resolve(Type reqType) {
+		if( isResolved() ) {
+			replaceWithNode((Expr)~new_closure);
+			return;
+		}
 		BlockStat body = (BlockStat)~this.body;
+		ClosureType ct = (ClosureType)this.getType();
+		Type ret = ct.ret;
 		if( ret != Type.tpRule ) {
 			if( ret.isReference() )
 				ret = Type.tpObject;
@@ -106,8 +115,9 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 			clazz.members.add(md);
 		}
 
-		for(int i=0; i < vars.length; i++) {
-			Var v = vars[i];
+		FormPar[] params = this.params.delToArray();
+		for(int i=0; i < params.length; i++) {
+			FormPar v = params[i];
 			Expr val = new ContainerAccessExpr(pos,
 				new AccessExpr(pos,new ThisExpr(pos),(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
 				new ConstIntExpr(i));
@@ -121,12 +131,13 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				val = new CastExpr(v.getPos(),v.type,val,true);
 			}
 			v.init = val;
-			body.insertSymbol((Var)~v,i);
+			body.insertSymbol(v,i);
 		}
 		setResolved(true);
 
 		Kiev.runProcessorsOn(clazz);
 		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
+		new_closure.clazz = (Struct)~this.clazz;
 		replaceWithNodeResolve(reqType, (Expr)~new_closure);
 	}
 

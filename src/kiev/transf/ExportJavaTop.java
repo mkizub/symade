@@ -781,9 +781,11 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void preResolve(ASTNode node) {
-		node.walkTree(fun (ASTNode n)->boolean {
-			return n.preResolve();
-		});
+		TransfProcessor self = this;
+		node.walkTree(
+			fun (ASTNode n)->boolean { return n.preResolve(self); },
+			fun (ASTNode n)->void { n.postResolve(); }
+			);
 		return;
 	}
 

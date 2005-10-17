@@ -841,7 +841,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
 	@att
-	public ASTIdentifier	ident;
+	public NameRef			ident;
 	
 	@att(copyable=false)
 	@dflow(in="")
@@ -857,15 +857,6 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	
 	public NodeName getName() { return new NodeName(ident.name); }
 
-	public boolean preResolve() {
-		PassInfo.push(this);
-		try {
-			// don't pre-resolve 'ident'
-			stat.preResolve();
-		} finally { PassInfo.pop(this); }
-		return false;
-	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -901,7 +892,9 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 @dflow(jmp="this:in")
 public class BreakStat extends Statement {
 
-	@att public ASTIdentifier	ident;
+	@att public NameRef			ident;
+	
+	@ref public Label			dest;
 
 	public BreakStat() {
 	}
@@ -912,8 +905,20 @@ public class BreakStat extends Statement {
 //		setAbrupted(true);
 //	}
 
-	public boolean preResolve() {
+	public final void callbackDetached() {
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
+		super.callbackDetached();
+	}
+	
+	public boolean preResolve(TransfProcessor proc) {
 		ASTNode p;
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
 		if( ident == null ) {
 			for(p=parent; !(
 				p instanceof BreakTarget
@@ -925,8 +930,10 @@ public class BreakStat extends Statement {
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
-					if (l != null)
-						l.addLink(getDFlow());
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
 				}
 			}
 		} else {
@@ -950,8 +957,10 @@ public class BreakStat extends Statement {
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
-					if (l != null)
-						l.addLink(getDFlow());
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
 				}
 			}
 		}
@@ -961,12 +970,27 @@ public class BreakStat extends Statement {
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		ASTNode p;
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
 		if( ident == null ) {
 			for(p=parent; !(
 				p instanceof BreakTarget
 			 || p instanceof Method
 			 || (p instanceof BlockStat && p.isBreakTarget())
 			 				); p = p.parent );
+			if( p instanceof Method || p == null ) {
+				Kiev.reportError(pos,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getBrkLabel();
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
+				}
+			}
 		} else {
 	label_found:
 			for(p=parent; !(p instanceof Method) ; p=p.parent ) {
@@ -982,6 +1006,17 @@ public class BreakStat extends Statement {
 					}
 				}
 				p = pp;
+			}
+			if( p instanceof Method || p == null) {
+				Kiev.reportError(pos,"Break not within loop/switch statement");
+			} else {
+				if (p instanceof LoopStat) {
+					Label l = ((LoopStat)p).getBrkLabel();
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
+				}
 			}
 		}
 		if( p instanceof Method )
@@ -1027,7 +1062,9 @@ public class BreakStat extends Statement {
 @dflow(jmp="this:in")
 public class ContinueStat extends Statement/*defaults*/ {
 
-	@att public ASTIdentifier	ident;
+	@att public NameRef			ident;
+
+	@ref public Label			dest;
 
 	public ContinueStat() {
 	}
@@ -1038,8 +1075,20 @@ public class ContinueStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public boolean preResolve() {
+	public final void callbackDetached() {
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
+		super.callbackDetached();
+	}
+	
+	public boolean preResolve(TransfProcessor proc) {
 		ASTNode p;
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
 		if( ident == null ) {
 			for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
 			if( p instanceof Method || p == null ) {
@@ -1047,8 +1096,10 @@ public class ContinueStat extends Statement/*defaults*/ {
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getCntLabel();
-					if (l != null)
-						l.addLink(getDFlow());
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
 				}
 			}
 		} else {
@@ -1071,8 +1122,10 @@ public class ContinueStat extends Statement/*defaults*/ {
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getCntLabel();
-					if (l != null)
-						l.addLink(getDFlow());
+					if (l != null) {
+						dest = l;
+						l.addLink(this);
+					}
 				}
 			}
 		}
@@ -1118,7 +1171,9 @@ public class ContinueStat extends Statement/*defaults*/ {
 @dflow(jmp="this:in")
 public class GotoStat extends Statement/*defaults*/ {
 
-	@att public ASTIdentifier	ident;
+	@att public NameRef			ident;
+
+	@ref public Label			dest;
 
 	public GotoStat() {
 	}
@@ -1129,7 +1184,19 @@ public class GotoStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public boolean preResolve() {
+	public final void callbackDetached() {
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
+		super.callbackDetached();
+	}
+	
+	public boolean preResolve(TransfProcessor proc) {
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
 		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
@@ -1143,12 +1210,17 @@ public class GotoStat extends Statement/*defaults*/ {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return false;
 		}
-		stat.lbl.addLink(getDFlow());
+		dest = stat.lbl;
+		dest.addLink(this);
 		return false; // don't pre-resolve
 	}
 	
 	public void resolve(Type reqType) {
 		setAbrupted(true);
+		if (dest != null) {
+			dest.delLink(this);
+			dest = null;
+		}
 		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
@@ -1162,7 +1234,8 @@ public class GotoStat extends Statement/*defaults*/ {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return;
 		}
-		stat.lbl.addLink(getDFlow());
+		dest = stat.lbl;
+		dest.addLink(this);
 	}
 
 	public static LabeledStat[] resolveStat(KString name, ASTNode st, LabeledStat[] stats) {

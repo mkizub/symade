@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -54,7 +55,7 @@ public abstract class LoopStat extends Statement implements BreakTarget, Continu
 public class Label extends DNode {
 	
 	@ref(copyable=false)
-	public List<DataFlowInfo>	links;
+	public List<ASTNode>	links;
 	
 	CodeLabel				label;
 	
@@ -62,10 +63,14 @@ public class Label extends DNode {
 		links = List.Nil;
 	}
 	
-	public void addLink(DataFlowInfo lnk) {
+	public void addLink(ASTNode lnk) {
 		if (links.contains(lnk))
 			return;
-		links = new List.Cons<DataFlowInfo>(lnk, links);
+		links = new List.Cons<ASTNode>(lnk, links);
+	}
+
+	public void delLink(ASTNode lnk) {
+		links = links.diff(lnk);
 	}
 
 	private boolean lock;
@@ -76,9 +81,9 @@ public class Label extends DNode {
 			throw new DFLoopException(this);
 		lock = true;
 		try {
-			foreach (DataFlowInfo lnk; links) {
+			foreach (ASTNode lnk; links) {
 				try {
-					DFState s = lnk.jmp();
+					DFState s = lnk.getDFlow().jmp();
 					tmp = DFState.join(s,tmp);
 				} catch (DFLoopException e) {
 					if (e.label != this) throw e;
@@ -383,10 +388,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public Label getCntLabel() { return lblcnt; }
 	public Label getBrkLabel() { return lblbrk; }
-	
-	public boolean preResolve() {
-		return true;
-	}
 	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);

@@ -48,7 +48,7 @@ public class RuleMethod extends Method {
 	public RuleMethod() {
 	}
 
-	public RuleMethod(ASTIdentifier id, TypeCallRef t_ref, int fl) {
+	public RuleMethod(NameRef id, TypeCallRef t_ref, int fl) {
 		super(id.name,t_ref,(TypeCallRef)t_ref.copy(),fl | ACC_RULEMETHOD);
 		pos = id.pos;
 	}

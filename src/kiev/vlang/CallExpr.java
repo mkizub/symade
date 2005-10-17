@@ -116,6 +116,12 @@ public class CallExpr extends Expr {
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
 		}
+		if !(func.parent instanceof Struct) {
+			ASTNode n = func.parent;
+			while !(n instanceof Method) n = n.parent;
+			assert (n.parent instanceof Struct);
+			func = (Method)n;
+		}
 		setResolved(true);
 	}
 
@@ -371,12 +377,22 @@ public class ClosureCallExpr extends Expr {
 		super(pos);
 		this.expr = expr;
 		foreach(Expr e; args) this.args.append(e);
+		Type tp = expr.getType();
+		if (tp instanceof ClosureType)
+			is_a_call = tp.args.length==args.length;
+		else
+			is_a_call = true;
 	}
 
 	public ClosureCallExpr(int pos, ENode expr, NArr<ENode> args) {
 		super(pos);
 		this.expr = expr;
 		this.args.addAll(args);
+		Type tp = expr.getType();
+		if (tp instanceof ClosureType)
+			is_a_call = tp.args.length==args.length;
+		else
+			is_a_call = true;
 	}
 
 	public String toString() {

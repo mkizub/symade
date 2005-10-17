@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
@@ -45,6 +46,18 @@ public class ASTReparseStatement extends Statement {
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
+	public boolean preResolve(TransfProcessor proc) {
+		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
+		if( n==null ) {
+			throw new RuntimeException("Reparse node "+ref+" not found");
+		}
+		if( !(n instanceof ENode) ) {
+			throw new RuntimeException("Reparse node "+ref+" is not an e-node");
+		}
+		this.replaceWithNode((ENode)n);
+		return false;
+	}
+  
 	public void resolve(Type reqType) {
 		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {

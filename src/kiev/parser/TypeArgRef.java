@@ -37,22 +37,22 @@ public class TypeArgRef extends TypeRef {
 	
 	private static int anonymousCounter = 100;
 	
-	@att public ASTIdentifier			name;
+	@att public NameRef					name;
 	@att public TypeRef					super_bound;
 
 	public TypeArgRef() {
 	}
 
 	public TypeArgRef(KString nm) {
-		name = new ASTIdentifier(nm);
+		name = new NameRef(nm);
 	}
 
-	public TypeArgRef(ASTIdentifier nm) {
+	public TypeArgRef(NameRef nm) {
 		this.pos = nm.getPos();
 		this.name = nm;
 	}
 
-	public TypeArgRef(ASTIdentifier nm, TypeRef sup) {
+	public TypeArgRef(NameRef nm, TypeRef sup) {
 		this.pos = nm.getPos();
 		this.name = nm;
 		this.super_bound = sup;

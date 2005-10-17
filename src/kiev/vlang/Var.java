@@ -60,7 +60,7 @@ public class Var extends DNode implements Named, Typed {
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(ASTIdentifier id, TypeRef vtype, int flags) {
+	public Var(NameRef id, TypeRef vtype, int flags) {
 		super(id.pos,flags);
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
@@ -212,7 +212,7 @@ public class FormPar extends Var {
 		super(pos,name,type,flags);
 	}
 
-	public FormPar(ASTIdentifier id, TypeRef vtype, TypeRef stype, int flags) {
+	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int flags) {
 		super(id,vtype,flags);
 		this.stype = stype;
 	}
@@ -632,7 +632,7 @@ public interface DataFlowSlots {
 	public final int FLS = 3;
 	public final int JMP = 4;
 	
-	public final boolean ASSERT_MORE = false;
+	public final boolean ASSERT_MORE = true;
 }
 
 public abstract class DFSocket implements DataFlowSlots {

@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
@@ -38,7 +39,7 @@ public abstract class ASTAlias extends ASTNode {
 	
 	public abstract void attach(ASTNode n);
 
-	public boolean preResolve() {
+	public boolean preResolve(TransfProcessor proc) {
 		return false; // don't pre-resolve
 	}
 	
@@ -51,7 +52,7 @@ public abstract class ASTAlias extends ASTNode {
 @node
 public class ASTIdentifierAlias extends ASTAlias {
 
-	@att ASTIdentifier	name;
+	@att public NameRef		name;
 
 	public void attach(ASTNode n) {
 		switch(n) {

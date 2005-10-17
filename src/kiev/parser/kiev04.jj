@@ -275,7 +275,7 @@ public class kiev040 {
 	}
 	
 	/*{
-	private static Struct mkStruct(ASTIdentifier name, int flags, ASTModifiers modifiers, ASTNode parent) {
+	private static Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		ClazzName clname;
 		if (parent instanceof FileUnit) {
 			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
@@ -318,7 +318,7 @@ public class kiev040 {
 		return clazz;
 	}
 
-	private static TypeArgRef mkTypeArgRef(ASTIdentifier name, ASTNode parent) {
+	private static TypeArgRef mkTypeArgRef(NameRef name, ASTNode parent) {
 		TypeArgRef arg = new TypeArgRef(name);
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
@@ -330,7 +330,7 @@ public class kiev040 {
 		return arg;
 	}
 
-	private static Constructor mkConstructor(ASTIdentifier id, ASTModifiers modifiers) {
+	private static Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
 		TypeCallRef tc = new TypeCallRef();
 		tc.ret = new TypeRef(Type.tpVoid);
 		Constructor meth = new Constructor(tc, modifiers.getFlags());
@@ -341,7 +341,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static Method mkMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
+	private static Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
 		tc.ret = ret;
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
@@ -352,7 +352,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static RuleMethod mkRuleMethod(ASTIdentifier id, ASTModifiers modifiers, TypeRef ret) {
+	private static RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
 		if (ret == null)
 			tc.ret = new TypeRef(Type.tpVoid);
@@ -366,7 +366,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static Field mkField(ASTIdentifier id, ASTModifiers modifiers, TypeRef type, boolean first) {
+	private static Field mkField(NameRef id, ASTModifiers modifiers, TypeRef type, boolean first) {
 		if (!first)
 			type = (TypeRef)type.copy();
 		Field f = new Field(id.name,type,modifiers.getFlags());
@@ -386,7 +386,7 @@ public class kiev040 {
 		return f;
 	}
 
-	private static Field mkEnumField(ASTIdentifier id, ASTModifiers modifiers) {
+	private static Field mkEnumField(NameRef id, ASTModifiers modifiers) {
 		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
@@ -395,7 +395,7 @@ public class kiev040 {
 		return f;
 	}
 
-	private static Field mkCaseField(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp) {
+	private static Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
@@ -403,7 +403,7 @@ public class kiev040 {
 		return f;
 	}
 	
-	private static Var mkVar(ASTIdentifier id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+	private static Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
 			tp = (TypeRef)tp.copy();
 		Var v = new Var(id, tp, modifiers.getFlags());
@@ -420,7 +420,7 @@ public class kiev040 {
 		return v;
 	}
 	
-	private static FormPar mkFormPar(ASTIdentifier id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+	private static FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
@@ -901,14 +901,14 @@ ASTModifiers Modifiers() :
 }
 
 TypeNameRef Package() :
-{ ASTIdentifier qn; }
+{ NameRef qn; }
 {
 	"package"
 	qn = QName()
 	";"
 	{
 		TypeNameRef tr = new TypeNameRef(qn);
-		Struct pkg = Env.newPackage(qn.toKString());
+		Struct pkg = Env.newPackage(qn.name);
 		pkg.type = Type.Type.newRefType(pkg);
 		tr.lnk = pkg.type;
 		return tr;
@@ -967,7 +967,7 @@ Import Import() :
 }
 
 Typedef Typedef() :
-{ ASTIdentifier id; ASTOperator op; TypeRef tp; Typedef n = new Typedef(); }
+{ NameRef id; ASTOperator op; TypeRef tp; Typedef n = new Typedef(); }
 {
 	"typedef"
 	(
@@ -985,7 +985,7 @@ Typedef Typedef() :
 }
 
 Opdef Opdef() :
-{ ASTIdentifier id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
+{ NameRef id; ASTOperator op; ConstIntExpr ce; Opdef opd = new Opdef(); }
 {
 	"operator"
 	(
@@ -1002,7 +1002,7 @@ Opdef Opdef() :
 }
 
 Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; ASTIdentifier name; }
+{ Struct clazz; NameRef name; }
 {
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
@@ -1021,7 +1021,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; ASTIdentifier name; }
+{ Struct clazz; NameRef name; }
 {
 	(
 		"class"
@@ -1113,7 +1113,7 @@ void TypeBodyDeclaration(Struct clazz) :
 }
 
 Field EnumFieldDeclaration(ASTModifiers modifiers) :
-{ ASTIdentifier id; Field f; ConstStringExpr text; }
+{ NameRef id; Field f; ConstStringExpr text; }
 {
 	id = Name()
 	{
@@ -1131,7 +1131,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
-{ ASTIdentifier name; Struct clazz; }
+{ NameRef name; Struct clazz; }
 {
 	"case"
 	name = Name()
@@ -1171,7 +1171,7 @@ void ClazzArguments(ASTNode parent) :
 }
 
 void ArgumentDeclaration(ASTNode parent) :
-{ ASTIdentifier name; TypeArgRef arg; }
+{ NameRef name; TypeArgRef arg; }
 {
 	name      = Name()
 	{ arg = mkTypeArgRef(name,parent); }
@@ -1246,8 +1246,8 @@ int AccessSpec() :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
-ASTIdentifier KeywordAsName() :
-{ Token t; ASTIdentifier id; }
+NameRef KeywordAsName() :
+{ Token t; NameRef id; }
 {
 	(
 		t="virtual"
@@ -1256,14 +1256,14 @@ ASTIdentifier KeywordAsName() :
 	|	t="throws"
 	)
 	{
-		id = new ASTIdentifier();
+		id = new NameRef();
 		id.set(t);
 		return id;
 	}
 }
 
 Meta Annotation() :
-{ ASTIdentifier id; MetaValue v; }
+{ NameRef id; MetaValue v; }
 {
 	{ Meta n = new Meta(); }
 	"@"
@@ -1284,7 +1284,7 @@ Meta Annotation() :
 }
 
 void AnnotationValues(Meta m) :
-{ ASTIdentifier id; MetaValue v; }
+{ NameRef id; MetaValue v; }
 {
 	id = Name()
 	"="
@@ -1357,7 +1357,7 @@ void FieldDecls(ASTModifiers modifiers, Struct clazz) :
 }
 
 Field FieldDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; ASTIdentifier id; Field f; }
+{ Token t; NameRef id; Field f; }
 {
 	id = Name()
 	{ f = mkField(id, modifiers, type, first); }
@@ -1384,7 +1384,7 @@ void LocalVarDecls(ASTModifiers modifiers, RuleMethod meth) :
 }
 
 Var VarDecl(ASTModifiers modifiers, TypeRef type, boolean first) :
-{ Token t; ASTIdentifier id; Var lv; }
+{ Token t; NameRef id; Var lv; }
 {
 	id = Name()
 	{ lv = mkVar(id, modifiers, type, first); }
@@ -1428,7 +1428,7 @@ ENode ArrayInitializer() :
 }
 
 Field CaseTypeField(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; ASTIdentifier id; }
+{ Token t; TypeRef tp; NameRef id; }
 {
 	tp = Type()
 	id = Name()
@@ -1439,7 +1439,7 @@ Field CaseTypeField(ASTModifiers modifiers) :
 }
 
 Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; ASTIdentifier id; }
+{ Token t; TypeRef tp; NameRef id; }
 {
 	(
 		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals("_")) })
@@ -1453,7 +1453,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 }
 
 FormPar MethodFormalParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; TypeRef st=null; ASTIdentifier id; }
+{ Token t; TypeRef tp; TypeRef st=null; NameRef id; }
 {
 	tp = Type()
 	(
@@ -1466,7 +1466,7 @@ FormPar MethodFormalParameter(ASTModifiers modifiers) :
 }
 
 FormPar FormalParameter(ASTModifiers modifiers) :
-{ Token t; TypeRef tp; ASTIdentifier id; }
+{ Token t; TypeRef tp; NameRef id; }
 {
 	tp = Type()
 	id = Name()
@@ -1478,10 +1478,10 @@ MetaThrows Throws() :
 { MetaThrows n = new MetaThrows(); ASTIdentifier id; }
 {
 	"throws"
-	id = QName() { n.add(id); }
+	id = QIdentifier() { n.add(id); }
 	(
 		","
-		id = QName() { n.add(id); }
+		id = QIdentifier() { n.add(id); }
 	)*
 	{ return n; }
 }
@@ -1507,7 +1507,7 @@ ASTIdentifierAlias IdentifierAlias() :
 }
 
 ASTOperatorAlias OperatorAlias() :
-{ Token t = null; ASTIdentifier id; ASTOperator op; ConstIntExpr ce; ASTOperatorAlias a = new ASTOperatorAlias(); }
+{ Token t = null; NameRef id; ASTOperator op; ConstIntExpr ce; ASTOperatorAlias a = new ASTOperatorAlias(); }
 {
 	(	// temporary, for backward compatibility
 		"operator"
@@ -1570,7 +1570,7 @@ BlockStat MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m; TypeRef ret; ASTIdentifier id; MetaThrows thr; }
+{ Token t; Method m; TypeRef ret; NameRef id; MetaThrows thr; }
 {
 	ClazzArguments(null)
 	ret = Type()
@@ -1611,7 +1611,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 }
 
 Constructor ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; Constructor m; ASTIdentifier id; MetaThrows thr; }
+{ Token t; Constructor m; NameRef id; MetaThrows thr; }
 {
 	id = Name()
 	{
@@ -1723,7 +1723,7 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ RuleBlock bl; RuleMethod m; ASTIdentifier id; }
+{ RuleBlock bl; RuleMethod m; NameRef id; }
 {
 	"rule"
 	id = Name()
@@ -1814,7 +1814,7 @@ TypeRef TypeExpr() :
 }
 
 TypeRef TypeWithArgs() :
-{ ASTIdentifier id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
+{ NameRef id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
 {
 	id = QName() { res = new TypeNameRef(id); }
 	[	LOOKAHEAD(1, "<")
@@ -1887,7 +1887,37 @@ TypeRef ReparseType() :
 	}
 }
 
-ASTIdentifier Name() :
+NameRef Name() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		NameRef id = new NameRef();
+		id.set(t);
+		return id;
+	}
+}
+
+NameRef QName() :
+{ NameRef id; NameRef id2; }
+{
+	id = Name()
+	(
+		LOOKAHEAD(2)
+		"."
+		id2 = Name()
+		{
+			id.name = new KStringBuffer(id.name.len+1+id2.name.len)
+				.append_fast(id.name)
+				.append_fast((byte)'.')
+				.append_fast(id2.name)
+				.toKString();
+		}
+	)*
+	{ return id; }
+}
+
+ASTIdentifier Identifier() :
 { Token t; }
 {
 	t=<IDENTIFIER>
@@ -1898,14 +1928,14 @@ ASTIdentifier Name() :
 	}
 }
 
-ASTIdentifier QName() :
+ASTIdentifier QIdentifier() :
 { ASTIdentifier id; ASTIdentifier id2; }
 {
-	id = Name()
+	id = Identifier()
 	(
 		LOOKAHEAD(2)
 		"."
-		id2 = Name()
+		id2 = Identifier()
 		{
 			id.name = new KStringBuffer(id.name.len+1+id2.name.len)
 				.append_fast(id.name)
@@ -2002,7 +2032,7 @@ ASTRuleNode RuleExpression() :
 ASTRuleIstheExpression RuleIstheExpression() :
 { ASTRuleIstheExpression r = new ASTRuleIstheExpression(); }
 {
-	r.name = Name()
+	r.name = Identifier()
 	"?="
 	r.expr = AccessExpression()
 	{ return r; }
@@ -2011,14 +2041,14 @@ ASTRuleIstheExpression RuleIstheExpression() :
 ASTRuleIsoneofExpression RuleIsoneofExpression() :
 { ASTRuleIsoneofExpression r = new ASTRuleIsoneofExpression(); }
 {
-	r.names += Name() "@=" r.exprs += AccessExpression()
+	r.names += Identifier() "@=" r.exprs += AccessExpression()
 	(
 		LOOKAHEAD({
 			getToken(1).image.equals("&")
 		 && getToken(2).kind == IDENTIFIER
 		 && getToken(3).kind == IS_ONE_OF
 		})
-		"&" r.names += Name() "@=" r.exprs += AccessExpression()
+		"&" r.names += Identifier() "@=" r.exprs += AccessExpression()
 	)*
 	{ return r; }
 }
@@ -2175,7 +2205,7 @@ ENode Expression() :
 {
 	(
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("instanceof") })
-		e.nodes += Name()
+		e.nodes += Identifier()
 		e.nodes += Type()
 	|	LOOKAHEAD({ operatorLA(1) })
 		e.nodes += Operator()
@@ -2245,7 +2275,7 @@ ENode AccessExpression() :
 		e = CallExpression()
 	|
 		LOOKAHEAD(2)
-		e = Name()
+		e = Identifier()
 	|
 		LOOKAHEAD("new" NArrType() (<OPERATOR_LRBRACKETS>)+ "{" )
 		e = NewInitializedArrayExpression()
@@ -2789,7 +2819,7 @@ CaseLabel PizzaCase() :
 { Token t; ASTModifiers modifiers; CaseLabel c = new CaseLabel(); }
 {
 	"case"		{ c.pos = getToken(0).getPos(); }
-	c.val = QName()
+	c.val = QIdentifier()
 	"("
 	[
 		modifiers = Modifiers()
@@ -2930,7 +2960,7 @@ ENode ForInit() :
 }
 
 Statement GotoStatement() :
-{ Statement st; ENode expr; ASTIdentifier id; }
+{ Statement st; ENode expr; NameRef id; }
 {
 	"goto"
 	(

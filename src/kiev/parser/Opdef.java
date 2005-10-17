@@ -57,16 +57,16 @@ public class Opdef extends DNode {
 			image = ((ASTOperator)n).image;
 			return;
 		}
-		else if( n instanceof ASTIdentifier ) {
-			image = ((ASTIdentifier)n).name;
+		else if( n instanceof NameRef ) {
+			image = ((NameRef)n).name;
 			return;
 		}
 		throw new CompilerException(n.pos,"Bad operator definition");
 	}
 	
-	public void setMode(ASTIdentifier n) {
+	public void setMode(NameRef n) {
 		opmode = -1;
-		KString optype = ((ASTIdentifier)n).name;
+		KString optype = ((NameRef)n).name;
 		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
 			if( Operator.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;

@@ -854,7 +854,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				init.setNeedFieldInits(true);
 				ASTCallExpression call_super = new ASTCallExpression();
 				call_super.pos = pos;
-				call_super.func = new ASTIdentifier(pos, nameSuper);
+				call_super.func = new NameRef(pos, nameSuper);
 				ENode[] exprs = new ENode[super_type.args.length];
 				for (int arg=0; arg < super_type.args.length; arg++) {
 					Type t = super_type.args[arg];
@@ -1221,7 +1221,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						else
 							ce = es.expr;
 						if( ce instanceof ASTCallExpression ) {
-							ASTIdentifier nm = ((ASTCallExpression)ce).func;
+							NameRef nm = ((ASTCallExpression)ce).func;
 							if( !(nm.name.equals(nameThis) || nm.name.equals(nameSuper) ) )
 								gen_def_constr = true;
 							else if( nm.name.equals(nameSuper) )
@@ -1238,12 +1238,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								if( super_type.args.length > 0 ) {
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
-									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) )
+									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) ) {
+										if (!(cae.args[0] instanceof VarAccessExpr) || ((VarAccessExpr)cae.args[0]).var != m.params[0])
 										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[0]));
-									else
+									} else {
 										throw new RuntimeException("Don't know where to get "+typeinfo_clazz.type+" $typeinfo");
 								}
 							}
+						}
 						}
 						else
 							gen_def_constr = true;
@@ -1255,7 +1257,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					m.setNeedFieldInits(true);
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
-					call_super.func = new ASTIdentifier(pos, nameSuper);
+					call_super.func = new NameRef(pos, nameSuper);
 					if( super_type.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
@@ -1941,10 +1943,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		} finally { PassInfo.pop(this); }
 	}
 
-	public final boolean preResolve() {
+	public final boolean preResolve(TransfProcessor proc) {
 		this.resolveImports();
 		this.resolveFinalFields(false);
 		return !isLocal();
+	}
+	
+	public final void postResolve() {
+		cleanDFlow();
 	}
 	
 	public void resolveDecl() {

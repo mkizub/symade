@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -40,7 +41,7 @@ public class ASTCallAccessExpression extends Expr {
 	@dflow
 	@att public ENode					obj;
 
-	@att public ASTIdentifier			func;
+	@att public NameRef					func;
 
 	@dflow(in="obj", seq="true")
     @att public final NArr<ENode>		args;
@@ -50,143 +51,257 @@ public class ASTCallAccessExpression extends Expr {
 	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
 		super(pos);
 		this.obj = obj;
-		this.func = new ASTIdentifier(pos, func);
+		this.func = new NameRef(pos, func);
 		this.args.addAll(args);
 	}
 
-	public boolean preResolve() {
+	public void postResolve() {
 		PassInfo.push(this);
 		try {
-			// pre-resolve 'obj', but check it's not 'super.'
-			if (obj != null) {
-				if !( obj instanceof ASTIdentifier && ((ASTIdentifier)obj).name.equals(Constants.nameSuper) )
-					obj.preResolve();
+			if( obj instanceof ASTIdentifier
+			&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
+			&& !PassInfo.method.isStatic() )
+			{
+				ThisExpr te = new ThisExpr(obj.pos);
+				te.super_flag = true;
+				obj = te;
 			}
-			// don't pre-resolve 'func'
-			;
-			// pre-resolve arguments
-			foreach (ENode e; args) e.preResolve();
+			
+			if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
+				ASTNode@ m;
+				Type tp = null;
+				ResInfo info = new ResInfo();
+				info.enterForward(obj);
+				info.enterSuper();
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				MethodType mt = MethodType.newMethodType(null,ta,null);
+				if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
+					throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,null));
+				}
+				info.leaveSuper();
+				info.leaveForward(obj);
+				if( info.isEmpty() ) {
+					Method meth = (Method)m;
+					CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
+					cae.super_flag = true;
+					replaceWithNode(cae);
+					meth.makeArgs(cae.args, tp);
+					return;
+				}
+				throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+			}
+			
+			if !(obj instanceof Expr || obj instanceof TypeRef)
+				throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
+	
+			MethodType mt = null;
+			{
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				mt = MethodType.newMethodType(null,ta,null);
+			}
+			int res_flags = ResInfo.noStatic | ResInfo.noImports;
+			ENode[] res;
+			Type[] tps;
+		try_static:;
+			if( obj instanceof TypeRef ) {
+				Type tp = ((TypeRef)obj).getType();
+				tps = new Type[]{tp};
+				res = new ENode[1];
+				res_flags = 0;
+			} else {
+				tps = ((Expr)obj).getAccessTypes();
+				res = new ENode[tps.length];
+				for (int si=0; si < tps.length; si++) {
+					Type tp = tps[si];
+					if (func.name.byteAt(0) == '$') {
+						while (tp.isWrapper())
+							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+					}
+				}
+				// fall down
+			}
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				ASTNode@ m;
+				ResInfo info = new ResInfo(res_flags);
+				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+					if (tps.length == 1 && res_flags == 0)
+						res[si] = info.buildCall(pos, obj, m, args.delToArray());
+					else if (res_flags == 0)
+						res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
+					else
+						res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
+				}
+			}
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
+			}
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous methods:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
+			}
+			if (cnt == 0 && res_flags != 0) {
+				res_flags = 0;
+				goto try_static;
+			}
+			if (cnt == 0) {
+				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
+			}
+			ENode e = res[idx];
+			if (e instanceof UnresExpr)
+				e = ((UnresExpr)e).toResolvedExpr();
+			this.replaceWithNode( e );
 		} finally { PassInfo.pop(this); }
-		return false;
 	}
 	
 	public void resolve(Type reqType) {
-		for(int i=0; i < args.length; i++) {
-			args[i].resolve(null);
-		}
-		if( obj instanceof ASTIdentifier
-		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-		&& !PassInfo.method.isStatic() ) {
-			Type ret = reqType;
-			ASTNode@ m;
-	retry_with_null_ret:;
-			Type tp = null;
-			ResInfo info = new ResInfo();
-			ThisExpr sup = new ThisExpr();
-			info.enterForward(sup);
-			info.enterSuper();
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(null,ta,ret);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
-				if( ret != null ) { ret = null; goto retry_with_null_ret; }
-				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
+		PassInfo.push(this);
+		try {
+			for(int i=0; i < args.length; i++) {
+				args[i].resolve(null);
 			}
-			info.leaveSuper();
-			info.leaveForward(sup);
-			if( info.isEmpty() ) {
-				Method meth = (Method)m;
-				CallExpr cae = new CallExpr(pos,sup,meth,args.delToArray());
-				cae.super_flag = true;
-				replaceWithNode(cae);
-				meth.makeArgs(cae.args, tp);
-				cae.resolve(ret);
-				return;
+			
+			if( obj instanceof ASTIdentifier
+			&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
+			&& !PassInfo.method.isStatic() )
+			{
+				ThisExpr te = new ThisExpr(obj.pos);
+				te.super_flag = true;
+				obj = te;
 			}
-			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
-		}
-		
-		obj.resolve(null);
-		
-		if !(obj instanceof Expr || obj instanceof TypeRef)
-			throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
-
-		MethodType mt = null;
-		{
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			mt = MethodType.newMethodType(null,ta,null);
-		}
-		int res_flags = ResInfo.noStatic | ResInfo.noImports;
-		ENode[] res;
-		Type[] tps;
-	try_static:;
-		if( obj instanceof TypeRef ) {
-			Type tp = ((TypeRef)obj).getType();
-			tps = new Type[]{tp};
-			res = new ENode[1];
-			res_flags = 0;
-		} else {
-			tps = ((Expr)obj).getAccessTypes();
-			res = new ENode[tps.length];
+			
+			if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
+				Type ret = reqType;
+				ASTNode@ m;
+		retry_with_null_ret:;
+				Type tp = null;
+				ResInfo info = new ResInfo();
+				info.enterForward(obj);
+				info.enterSuper();
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				MethodType mt = MethodType.newMethodType(null,ta,ret);
+				if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
+					if( ret != null ) { ret = null; goto retry_with_null_ret; }
+					throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
+				}
+				info.leaveSuper();
+				info.leaveForward(obj);
+				if( info.isEmpty() ) {
+					Method meth = (Method)m;
+					CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
+					cae.super_flag = true;
+					replaceWithNode(cae);
+					meth.makeArgs(cae.args, tp);
+					cae.resolve(ret);
+					return;
+				}
+				throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+			}
+			
+			obj.resolve(null);
+			
+			if !(obj instanceof Expr || obj instanceof TypeRef)
+				throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
+	
+			MethodType mt = null;
+			{
+				Type[] ta = new Type[args.length];
+				for (int i=0; i < ta.length; i++)
+					ta[i] = args[i].getType();
+				mt = MethodType.newMethodType(null,ta,null);
+			}
+			int res_flags = ResInfo.noStatic | ResInfo.noImports;
+			ENode[] res;
+			Type[] tps;
+		try_static:;
+			if( obj instanceof TypeRef ) {
+				Type tp = ((TypeRef)obj).getType();
+				tps = new Type[]{tp};
+				res = new ENode[1];
+				res_flags = 0;
+			} else {
+				tps = ((Expr)obj).getAccessTypes();
+				res = new ENode[tps.length];
+				for (int si=0; si < tps.length; si++) {
+					Type tp = tps[si];
+					if (func.name.byteAt(0) == '$') {
+						while (tp.isWrapper())
+							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+					}
+				}
+				// fall down
+			}
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
-				if (func.name.byteAt(0) == '$') {
-					while (tp.isWrapper())
-						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				ASTNode@ m;
+				ResInfo info = new ResInfo(res_flags);
+				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+					if (tps.length == 1 && res_flags == 0)
+						res[si] = info.buildCall(pos, obj, m, args.delToArray());
+					else if (res_flags == 0)
+						res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
+					else
+						res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
 				}
 			}
-			// fall down
-		}
-		for (int si=0; si < tps.length; si++) {
-			Type tp = tps[si];
-			ASTNode@ m;
-			ResInfo info = new ResInfo(res_flags);
-			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
-				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(pos, obj, m, args.delToArray());
-				else if (res_flags == 0)
-					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
-				else
-					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
+			int cnt = 0;
+			int idx = -1;
+			for (int si=0; si < res.length; si++) {
+				if (res[si] != null) {
+					cnt ++;
+					if (idx < 0) idx = si;
+				}
 			}
-		}
-		int cnt = 0;
-		int idx = -1;
-		for (int si=0; si < res.length; si++) {
-			if (res[si] != null) {
-				cnt ++;
-				if (idx < 0) idx = si;
+			if (cnt > 1) {
+				StringBuffer msg = new StringBuffer("Umbigous methods:\n");
+				for(int si=0; si < res.length; si++) {
+					if (res[si] == null)
+						continue;
+					msg.append("\t").append(res[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
 			}
-		}
-		if (cnt > 1) {
-			StringBuffer msg = new StringBuffer("Umbigous methods:\n");
-			for(int si=0; si < res.length; si++) {
-				if (res[si] == null)
-					continue;
-				msg.append("\t").append(res[si]).append('\n');
+			if (cnt == 0 && res_flags != 0) {
+				res_flags = 0;
+				goto try_static;
 			}
-			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
-		}
-		if (cnt == 0 && res_flags != 0) {
-			res_flags = 0;
-			goto try_static;
-		}
-		if (cnt == 0) {
-			StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
-			for(int si=0; si < res.length; si++) {
-				if (tps[si] == null)
-					continue;
-				msg.append("\t").append(tps[si]).append('\n');
+			if (cnt == 0) {
+				StringBuffer msg = new StringBuffer("Unresolved method '"+Method.toString(func.name,mt)+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				throw new CompilerException(pos, msg.toString());
 			}
-			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
-			return;
-		}
-		this.replaceWithNodeResolve( reqType, res[idx] );
+			this.replaceWithNodeResolve( reqType, res[idx] );
+		} finally { PassInfo.pop(this); }
 	}
 
 	public int		getPriority() { return Constants.opCallPriority; }

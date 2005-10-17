@@ -293,7 +293,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
-				cae.func = new ASTIdentifier(0,KString.from("copyTo"));
+				cae.func = new NameRef(0,KString.from("copyTo"));
 				cae.args.append(new ASTIdentifier(0,KString.from("to$node")));
 				v.init = new CastExpr(0,s.type,cae);
 				((BlockStat)copyV.body).addSymbol(v);
@@ -318,13 +318,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (isArr) {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new AccessExpr(0,new VarAccessExpr(0,v),f);
-						cae.func = new ASTIdentifier(0, KString.from("copyFrom"));
+						cae.func = new NameRef(0, KString.from("copyFrom"));
 						cae.args.append(new AccessExpr(0,new ThisExpr(),f));
 						stats.append(new ExprStat(0,cae));
 					} else {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						cae.obj = new AccessExpr(0, new ThisExpr(),f);
-						cae.func = new ASTIdentifier(0, KString.from("copy"));
+						cae.func = new NameRef(0, KString.from("copy"));
 						stats.append( 
 							new IfElseStat(0,
 								new BinaryBoolExpr(0, BinaryOperator.NotEquals,

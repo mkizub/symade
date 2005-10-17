@@ -237,15 +237,15 @@ public class AssignExpr extends LvalueExpr {
 				((TypeRef)value).toExpr(et1);
 			Type et2 = value.getType();
 			if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( ( et1.isNumber() && et2.isNumber() ) &&
@@ -256,7 +256,7 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignMod
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
@@ -265,7 +265,7 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignUnsignedRightShift
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( ( et1.isInteger() && et2.isInteger() ) &&
@@ -274,7 +274,7 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignBitAnd
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			else if( ( et1.isBoolean() && et2.isBoolean() ) &&
@@ -283,7 +283,7 @@ public class AssignExpr extends LvalueExpr {
 				||   op==AssignOperator.AssignBitAnd
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			// Not a standard operator, find out overloaded
@@ -314,12 +314,12 @@ public class AssignExpr extends LvalueExpr {
 					return;
 				}
 			}
-			this.postResolve(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
+			this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 
 		} finally { PassInfo.pop(this); }
 	}
 
-	private ENode postResolve(Type reqType) {
+	private ENode resolve2(Type reqType) {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
@@ -632,7 +632,7 @@ public class BinaryExpr extends Expr {
 				||   op==BinaryOperator.Mod
 				)
 			) {
-				this.postResolve(null);
+				this.resolve2(null);
 				return;
 			}
 			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
@@ -641,7 +641,7 @@ public class BinaryExpr extends Expr {
 				||   op==BinaryOperator.UnsignedRightShift
 				)
 			) {
-				this.postResolve(null);
+				this.resolve2(null);
 				return;
 			}
 			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
@@ -650,7 +650,7 @@ public class BinaryExpr extends Expr {
 				||   op==BinaryOperator.BitAnd
 				)
 			) {
-				this.postResolve(null);
+				this.resolve2(null);
 				return;
 			}
 			// Not a standard operator, find out overloaded
@@ -683,12 +683,12 @@ public class BinaryExpr extends Expr {
 				resolve(reqType);
 				return;
 			}
-			postResolve(reqType);
+			resolve2(reqType);
 
 		} finally { PassInfo.pop(this); }
 	}
 
-	private void postResolve(Type reqType) {
+	private void resolve2(Type reqType) {
 		expr1.resolve(null);
 		expr2.resolve(null);
 
@@ -1302,11 +1302,11 @@ public class UnaryExpr extends Expr {
 				|| op==PrefixOperator.Neg
 				)
 			) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			if( et.isInteger() && op==PrefixOperator.BitNot ) {
-				this.postResolve(reqType);
+				this.resolve2(reqType);
 				return;
 			}
 			// Not a standard operator, find out overloaded
@@ -1331,11 +1331,11 @@ public class UnaryExpr extends Expr {
 				replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeWrappedAccess(expr)));
 				return;
 			}
-			postResolve(reqType);
+			resolve2(reqType);
 		} finally { PassInfo.pop(this); }
 	}
 
-	private void postResolve(Type reqType) {
+	private void resolve2(Type reqType) {
 		expr.resolve(null);
 		if( op==PrefixOperator.PreIncr
 		||  op==PrefixOperator.PreDecr
@@ -1833,15 +1833,15 @@ public class CastExpr extends Expr {
 				return;
 			}
 			else {
-				this.postResolve(type);
+				this.resolve2(type);
 				return;
 			}
 			if( extp.isCastableTo(type) ) {
-				this.postResolve(type);
+				this.resolve2(type);
 				return;
 			}
 			if( type == Type.tpInt && extp == Type.tpBoolean && reinterp ) {	
-				this.postResolve(type);
+				this.resolve2(type);
 				return;
 			}
 			throw new CompilerException(pos,"Expression "+expr+" of type "+extp+" is not castable to "+type);
@@ -1869,7 +1869,7 @@ public class CastExpr extends Expr {
 		return null;
 	}
 
-	private void postResolve(Type reqType) {
+	private void resolve2(Type reqType) {
 		Type type = this.type.getType();
 		expr.resolve(type);
 //		if( e instanceof Struct )

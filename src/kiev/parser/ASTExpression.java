@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 
@@ -42,17 +43,16 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 @dflow(out="nodes")
 public class ASTExpression extends Expr {
 	@att
-	@dflow(in="this:in")
+	@dflow(in="this:in", seq="true")
 	public final NArr<ENode>		nodes;
 
-	public boolean preResolve() {
+	public void postResolve() {
 		PassInfo.push(this);
 		try {
-			foreach (ENode n; nodes) n.preResolve();
 			if (nodes.length == 1 && nodes[0] instanceof Expr) {
 				ENode n = nodes[0];
 				this.replaceWithNode((ENode)~n);
-				return false;
+				return;
 			}
 			List<ENode> lst = List.Nil;
 			for (int i=nodes.length-1; i >=0; i--)
@@ -71,14 +71,14 @@ public class ASTExpression extends Expr {
 				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				Kiev.reportError(pos, msg.toString());
-				return false;
+				return;
 			}
 			if (results.length() > 1) {
 				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
 				foreach(ENode n; results)
 					msg.append(n).append("\n");
 				Kiev.reportError(pos, msg.toString());
-				return false;
+				return;
 			}
 			
 			ENode e = results.head();
@@ -88,7 +88,6 @@ public class ASTExpression extends Expr {
 				e.setPrimaryExpr(true);
 			this.replaceWithNode((ENode)~e);
 		} finally { PassInfo.pop(this); }
-		return false;
 	}
 	
 	public void resolve(Type reqType) {

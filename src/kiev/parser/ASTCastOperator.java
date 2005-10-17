@@ -33,6 +33,7 @@ import kiev.stdlib.*;
  */
 
 @node
+@dflow
 public class ASTCastOperator extends ASTOperator {
 
 	static final KString fakeImage = KString.from("$cast");

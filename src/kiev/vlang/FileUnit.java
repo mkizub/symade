@@ -24,6 +24,7 @@ import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.parser.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
@@ -120,7 +121,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		disabled_extensions[i] = !enabled;
 	}
 
-	public boolean preResolve() {
+	public boolean preResolve(TransfProcessor proc) {
 		this.resolveImports();
 		return true;
 	}

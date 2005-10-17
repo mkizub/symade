@@ -25,6 +25,7 @@ package kiev.parser;
 import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -45,16 +46,14 @@ public class ASTAccessExpression extends Expr {
 	public ENode			obj;
 	
 	@att
-	public ASTIdentifier	ident;
+	public NameRef			ident;
 
-	public boolean preResolve() {
+	public void postResolve() {
 		PassInfo.push(this);
 		try {
 			ASTNode[] res;
 			Type[] tps;
 
-			// pre-resolve access
-			obj.preResolve();
 			// pre-resolve result
 			if( obj instanceof TypeRef ) {
 				tps = new Type[]{ ((TypeRef)obj).getType() };
@@ -64,7 +63,8 @@ public class ASTAccessExpression extends Expr {
 			}
 			else {
 				ENode e = obj;
-				tps = new Type[]{e.getType()};
+				//tps = new Type[]{e.getType()};
+				tps = e.getAccessTypes();
 				res = new ASTNode[tps.length];
 				for (int si=0; si < tps.length; si++) {
 					Type tp = tps[si];
@@ -72,6 +72,11 @@ public class ASTAccessExpression extends Expr {
 						if (tp.isWrapper()) {
 							tps[si] = ((WrapperType)tp).getUnwrappedType();
 							res[si] = obj;
+						}
+						// compatibility with previois version
+						else if (tp.isInstanceOf(Type.tpPrologVar)) {
+							tps[si] = tp;
+							res[si] = (ENode)~obj;
 						}
 					}
 					else if (ident.name.byteAt(0) == '$') {
@@ -92,8 +97,10 @@ public class ASTAccessExpression extends Expr {
 					continue;
 				Type tp = tps[si];
 				ASTNode@ v;
-				ResInfo info = new ResInfo(ResInfo.noStatic | ResInfo.noImports);
-				if (obj instanceof Expr && tp.resolveNameAccessR(v,info,ident.name) ) {
+				ResInfo info;
+				if (obj instanceof Expr &&
+					tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic | ResInfo.noImports),ident.name) )
+				{
 					res[si] = makeExpr(v,info,(ENode)~obj);
 				}
 				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name)) {
@@ -119,21 +126,20 @@ public class ASTAccessExpression extends Expr {
 				throw new CompilerException(pos, msg.toString());
 			}
 			if (cnt == 0) {
-				//StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-				//for(int si=0; si < res.length; si++) {
-				//	if (tps[si] == null)
-				//		continue;
-				//	msg.append("\t").append(tps[si]).append('\n');
-				//}
-				//msg.append("while resolving ").append(this);
-				//throw new CompilerException(pos, msg.toString());
+				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+				for(int si=0; si < res.length; si++) {
+					if (tps[si] == null)
+						continue;
+					msg.append("\t").append(tps[si]).append('\n');
+				}
+				msg.append("while resolving ").append(this);
+				this.obj = this.obj;
+				throw new CompilerException(pos, msg.toString());
 				//Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
-				obj = obj;
-				return false;
+				//return;
 			}
 			this.replaceWithNode(res[idx]);
 		} finally { PassInfo.pop(this); }
-		return false;
 	}
 	
 	public void resolve(Type reqType) throws CompilerException {
@@ -223,9 +229,9 @@ public class ASTAccessExpression extends Expr {
 					msg.append("\t").append(tps[si]).append('\n');
 				}
 				msg.append("while resolving ").append(this);
+				this.obj = this.obj;
 				throw new CompilerException(pos, msg.toString());
-				obj = obj;
-				return;
+				//return;
 			}
 			this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
 		} finally { PassInfo.pop(this); }
@@ -239,19 +245,6 @@ public class ASTAccessExpression extends Expr {
 			TypeRef tr = new TypeRef(((Struct)v).type);
 			return tr;
 		}
-//		else if( v instanceof Method ) {
-//			if( v.isStatic() ) {
-//				return new CallExpr(pos,(Method)v,Expr.emptyArray);
-//			}
-//			if( info.isEmpty() ) {
-//				if( o instanceof Struct )
-//					throw new CompilerException(pos,"Static access to non-static method "+v);
-//				return new CallExpr(pos,(Expr)obj,(Method)v,Expr.emptyArray);
-//			} else {
-//				ENode e = info.buildCall(pos, (Expr)obj, v, Expr.emptyArray);
-//				return e;
-//			}
-//		}
 		else {
 			throw new CompilerException(pos,"Identifier "+ident+" must be a class's field");
 		}

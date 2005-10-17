@@ -813,7 +813,7 @@ public class WBCCondition extends DNode {
 	public WBCType					cond;
 	
 	@att
-	public ASTIdentifier			name;
+	public NameRef					name;
 	
 	@att
 	@dflow(in="this:in")
@@ -828,7 +828,7 @@ public class WBCCondition extends DNode {
 	public WBCCondition(int pos, WBCType cond, KString name, Statement body) {
 		super(pos);
 		if (name != null)
-			this.name = new ASTIdentifier(pos, name);
+			this.name = new NameRef(pos, name);
 		this.cond = cond;
 		this.body = body;
 	}

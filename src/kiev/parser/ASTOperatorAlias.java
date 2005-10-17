@@ -61,9 +61,9 @@ public class ASTOperatorAlias extends ASTAlias {
 		throw new CompilerException(n.pos,"Bad operator definition");
 	}
 	
-	public void setMode(ASTIdentifier n) {
+	public void setMode(NameRef n) {
 		opmode = -1;
-		KString optype = ((ASTIdentifier)n).name;
+		KString optype = n.name;
 		for(int i=0; i < Operator.orderAndArityNames.length; i++) {
 			if( Operator.orderAndArityNames[i].equals(optype) ) {
 				opmode = i;

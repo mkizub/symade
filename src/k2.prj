@@ -356,6 +356,7 @@ kiev.vlang.MethodCP kiev/vlang/MethodCP kiev\vlang\ConstPool.java
 kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
 kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
 kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
+kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java
 kiev.vlang.NameTypeCP kiev/vlang/NameTypeCP kiev\vlang\ConstPool.java
 kiev.vlang.Named kiev/vlang/Named kiev\vlang\PassInfo.java
 kiev.vlang.NewArrayExpr kiev/vlang/NewArrayExpr kiev\vlang\NewExpr.java
