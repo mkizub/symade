@@ -252,16 +252,16 @@ public class DFState {
 	public static final DFState[] emptyArray = new DFState[0];
 
 	private final List<ScopeNodeInfo> states;
-	private final boolean abrupted;
+	private final int abrupted;
 
-	private DFState(List<ScopeNodeInfo> states, boolean abrupted) {
+	private DFState(List<ScopeNodeInfo> states, int abrupted) {
 		this.states = states;
 		this.abrupted = abrupted;
 	}
 	
 	public static DFState makeNewState() {
 		List<ScopeNodeInfo> states = List.Nil;
-		return new DFState(states,false);
+		return new DFState(states,0);
 	}
 	
 	public ScopeNodeInfo getNodeInfo(DNode[] path) {
@@ -398,18 +398,16 @@ changed:;
 	}
 
 	public DFState setAbrupted() {
-		if (this.abrupted)
-			return this;
-		return new DFState(states,true);
+		return new DFState(states,this.abrupted+1);
 	}
 	
 	/** Joins two vectors by AND rule. I.e. initialized = 1.initialized && 2.initialized
 	 *  this used for then/else statements of 'if' and || boolean operator
 	 */
 	public static DFState join(DFState state1, DFState state2) {
-		if (state1.abrupted && !state2.abrupted)
+		if (state1.abrupted > state2.abrupted)
 			return state2;
-		if (state2.abrupted && !state1.abrupted)
+		if (state2.abrupted > state1.abrupted)
 			return state1;
 		List<ScopeNodeInfo> diff = List.Nil;
 		List<ScopeNodeInfo> base_states;
@@ -456,7 +454,8 @@ changed:;
 			trace( Kiev.debugNodeTypes, "types: joining "+sni1+" and "+ sni2+" => "+sni);
 		}
 		trace( Kiev.debugNodeTypes, "types: joined to "+states);
-		DFState dfs = new DFState(states,state1.abrupted && state2.abrupted);
+		assert (state1.abrupted == state2.abrupted);
+		DFState dfs = new DFState(states,state1.abrupted);
 		return dfs;
 	}
 
