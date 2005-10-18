@@ -381,11 +381,22 @@ public class AssignExpr extends LvalueExpr {
 		return this;
 	}
 
-	public DFState calcDFlowOut() {
-		return addNodeTypeInfo(value.getDFlow().out());
+	class AssignExprDFFunc extends DFFunc {
+		DFFunc f;
+		DFState res;
+		AssignExprDFFunc(DataFlowInfo dfi) {
+			f = new DFFuncChild(dfi.getSocket("value"), DataFlowSlots.OUT);
+		}
+		DFState calc() {
+			if (res != null) return res;
+			return res=AssignExpr.this.addNodeTypeInfo(f.calc());
+		}
+	}
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new AssignExprDFFunc(dfi);
 	}
 	
-	private DFState addNodeTypeInfo(DFState dfs) {
+	DFState addNodeTypeInfo(DFState dfs) {
 		if !(value instanceof Expr)
 			return dfs;
 		DNode[] path = null;
@@ -1167,24 +1178,24 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public DFState calcDFlowOut() {
-		Vector<Var> vars = new Vector<Var>();
-		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-		if (res != null) {
+	class BlockExprDFFunc extends DFFunc {
+		DFFunc f;
+		DFState res;
+		BlockExprDFFunc(DataFlowInfo dfi) {
+			f = new DFFuncChild(dfi.getSocket("res"), DataFlowSlots.OUT);
+		}
+		DFState calc() {
+			if (res != null) return res;
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)
-				return res.getDFlow().out().cleanInfoForVars(vars.toArray());
+				return res=f.calc().cleanInfoForVars(vars.toArray());
 			else
-				return res.getDFlow().out();
+				return res=f.calc();
 		}
-		else if (stats.length > 0) {
-			if (vars.length > 0)
-				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
-			else
-				return stats[stats.length-1].getDFlow().out();
-		}
-		else {
-			return getDFlow().in();
-		}
+	}
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new BlockExprDFFunc(dfi);
 	}
 	
 	public void generate(Type reqType) {
@@ -1942,7 +1953,7 @@ public class CastExpr extends Expr {
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
-					new AccessExpr(pos,expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
+					new AccessExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
 				));
 			return;
 		}

@@ -63,7 +63,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
-@dflow(out="this:out()")
+@dflow(in="this:in()", out="this:out()")
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {
@@ -99,22 +99,23 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		node ?= redir.new_var
 	}
 
-	public DataFlowInfo getDFlow() {
-		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
-		if (df == null) {
-			DFState in = DFState.makeNewState();
-			for(int i=0; i < params_redir.length; i++) {
-				in = in.declNode(params_redir[i].new_var);
-				in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
-			}
-			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
-			this.addNodeData(df);
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		DFState in = DFState.makeNewState();
+		for(int i=0; i < params_redir.length; i++) {
+			in = in.declNode(params_redir[i].new_var);
+			in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
 		}
-		return df;
+		return new DFFuncFixedState(in);
 	}
-	
-	public DFState calcDFlowOut() {
-		return parent.getDFlow().getSocket(pslot.name).calc(DataFlowSlots.IN);
+	class InlineMethodStatDFFunc extends DFFunc {
+		DFState res;
+		DFState calc() {
+			if (res != null) return res;
+			return res=parent.getDFlow().getSocket(pslot.name).calc(DataFlowSlots.IN);
+		}
+	}
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new InlineMethodStatDFFunc();
 	}
 
 	public void resolve(Type reqType) {
@@ -288,35 +289,26 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-//	public DFState getDFlowIn(ASTNode child) {
-//		String name = child.pslot.name;
-//		if (name == "stats") {
-//			for (int i=0; i < stats.length; i++) {
-//				if (stats[i] == child) {
-//					if (i == 0)
-//						return getDFlowIn();
-//					else
-//						return stats[i-1].getDFlowOut();
-//				}
-//			}
-//		}
-//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-//	}
-	
-	public DFState calcDFlowOut() {
-		Vector<Var> vars = new Vector<Var>();
-		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-		if (stats.length > 0) {
-			if (vars.length > 0)
-				return stats[stats.length-1].getDFlow().out().cleanInfoForVars(vars.toArray());
-			else
-				return stats[stats.length-1].getDFlow().out();
+	class BlockStatDFFunc extends DFFunc {
+		DFFunc f;
+		DFState res;
+		BlockStatDFFunc(DataFlowInfo dfi) {
+			f = new DFFuncChild(dfi.getSocket("stats"), DataFlowSlots.OUT);
 		}
-		else {
-			return getDFlow().in();
+		DFState calc() {
+			if (res != null) return res;
+			Vector<Var> vars = new Vector<Var>();
+			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+			if (vars.length > 0)
+				return res=f.calc().cleanInfoForVars(vars.toArray());
+			else
+				return res=f.calc();
 		}
 	}
-	
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new BlockStatDFFunc(dfi);
+	}
+
 	public static void resolveBlockStats(ENode self, NArr<ENode> stats) {
 		for(int i=0; i < stats.length; i++) {
 			try {

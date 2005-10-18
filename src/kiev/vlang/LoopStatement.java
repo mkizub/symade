@@ -79,26 +79,36 @@ public class Label extends DNode {
 		super.callbackRootChanged();
 	}
 	
-	private boolean lock;
-	public DFState calcDFlowOut() {
-		DataFlowInfo df = getDFlow();
-		DFState tmp = df.in();
-		if (lock)
-			throw new DFLoopException(this);
-		lock = true;
-		try {
-			foreach (ASTNode lnk; links) {
-				try {
-					DFState s = lnk.getDFlow().jmp();
-					tmp = DFState.join(s,tmp);
-				} catch (DFLoopException e) {
-					if (e.label != this) throw e;
+	class LabelDFFunc extends DFFunc {
+		DFState res;
+		private boolean lock;
+		DataFlowInfo dfi;
+		LabelDFFunc(DataFlowInfo dfi) {
+			this.dfi = dfi;
+		}
+		DFState calc() {
+			if (lock)
+				throw new DFLoopException(this);
+			if (res != null) return res;
+			DFState tmp = dfi.in();
+			lock = true;
+			try {
+				foreach (ASTNode lnk; links) {
+					try {
+						DFState s = lnk.getDFlow().jmp();
+						tmp = DFState.join(s,tmp);
+					} catch (DFLoopException e) {
+						if (e.label != this) throw e;
+					}
 				}
-			}
-		} finally { lock = false; }
-		return tmp;
+			} finally { lock = false; }
+			return res=tmp;
+		}
 	}
-	
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new LabelDFFunc(dfi);
+	}
+
 	public CodeLabel getCodeLabel() {
 		if( label == null ) label = Code.newLabel();
 		return label;

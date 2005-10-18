@@ -380,7 +380,7 @@ public abstract class ASTNode implements Constants {
 	public DataFlowInfo getDFlow() {
 		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
-			df = new DataFlowNodeInfo(this);
+			df = new DataFlowInfo(this);
 			this.addNodeData(df);
 		}
 		return df;
@@ -389,9 +389,10 @@ public abstract class ASTNode implements Constants {
 	// get outgoing data flow for this node
 	private static java.util.regex.Pattern join_pattern = java.util.regex.Pattern.compile("join ([\\:a-zA-Z_0-9\\(\\)]+) ([\\:a-zA-Z_0-9\\(\\)]+)");
 	
-	public DFState calcDFlowOut() { throw new RuntimeException("calcDFlowOut() for "+getClass()); }
-	public DFState calcDFlowTru() { throw new RuntimeException("calcDFlowTru() for "+getClass()); }
-	public DFState calcDFlowFls() { throw new RuntimeException("calcDFlowFls() for "+getClass()); }
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncIn() for "+getClass()); }
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncOut() for "+getClass()); }
+	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
+	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
 	public boolean preGenerate()	{ return true; }
 	public boolean preResolve(TransfProcessor proc)		{ return true; }

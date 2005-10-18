@@ -757,11 +757,22 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public DFState calcDFlowTru() {
-		return addNodeTypeInfo(getDFlow().in());
+	class InstanceofExprDFFunc extends DFFunc {
+		DFFunc f;
+		DFState res;
+		InstanceofExprDFFunc(DataFlowInfo dfi) {
+			f = new DFFuncChild(dfi.getSocket("expr"), DataFlowSlots.OUT);
+		}
+		DFState calc() {
+			if (res != null) return res;
+			return res=InstanceofExpr.this.addNodeTypeInfo(f.calc());
+		}
 	}
-	
-	private DFState addNodeTypeInfo(DFState dfs) {
+	public DFFunc newDFFuncTru(DataFlowInfo dfi) {
+		return new InstanceofExprDFFunc(dfi);
+	}
+
+	DFState addNodeTypeInfo(DFState dfs) {
 		DNode[] path = null;
 		switch(expr) {
 		case VarAccessExpr:

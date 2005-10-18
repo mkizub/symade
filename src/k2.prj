@@ -213,6 +213,7 @@ kiev.vlang.ArrayLengthAccessExpr kiev/vlang/ArrayLengthAccessExpr kiev\vlang\Exp
 kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java
 kiev.vlang.AsciiCP kiev/vlang/AsciiCP kiev\vlang\ConstPool.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
+kiev.vlang.AssignExpr.AssignExprDFFunc kiev/vlang/AssignExpr$AssignExprDFFunc kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.Attr kiev/vlang/Attr kiev\vlang\Attr.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
@@ -223,7 +224,9 @@ kiev.vlang.BinaryBooleanOrExpr kiev/vlang/BinaryBooleanOrExpr kiev\vlang\Boolean
 kiev.vlang.BinaryExpr kiev/vlang/BinaryExpr kiev\vlang\Expr.java
 kiev.vlang.BinaryOperator kiev/vlang/BinaryOperator kiev\vlang\Operator.java
 kiev.vlang.BlockExpr kiev/vlang/BlockExpr kiev\vlang\Expr.java
+kiev.vlang.BlockExpr.BlockExprDFFunc kiev/vlang/BlockExpr$BlockExprDFFunc kiev\vlang\Expr.java
 kiev.vlang.BlockStat kiev/vlang/BlockStat kiev\vlang\Statement.java
+kiev.vlang.BlockStat.BlockStatDFFunc kiev/vlang/BlockStat$BlockStatDFFunc kiev\vlang\Statement.java
 kiev.vlang.BoolExpr kiev/vlang/BoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BooleanNotExpr kiev/vlang/BooleanNotExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BreakStat kiev/vlang/BreakStat kiev\vlang\Statement.java
@@ -275,9 +278,6 @@ kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
 kiev.vlang.ContractAttr kiev/vlang/ContractAttr kiev\vlang\Attr.java
 kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java
 kiev.vlang.DFFuncAbrupt kiev/vlang/DFFuncAbrupt kiev\vlang\Var.java
-kiev.vlang.DFFuncCalcFls kiev/vlang/DFFuncCalcFls kiev\vlang\Var.java
-kiev.vlang.DFFuncCalcOut kiev/vlang/DFFuncCalcOut kiev\vlang\Var.java
-kiev.vlang.DFFuncCalcTru kiev/vlang/DFFuncCalcTru kiev\vlang\Var.java
 kiev.vlang.DFFuncChild kiev/vlang/DFFuncChild kiev\vlang\Var.java
 kiev.vlang.DFFuncFixedState kiev/vlang/DFFuncFixedState kiev\vlang\Var.java
 kiev.vlang.DFFuncJoin kiev/vlang/DFFuncJoin kiev\vlang\Var.java
@@ -290,8 +290,6 @@ kiev.vlang.DFSocketSpace kiev/vlang/DFSocketSpace kiev\vlang\Var.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java
-kiev.vlang.DataFlowNodeInfo kiev/vlang/DataFlowNodeInfo kiev\vlang\Var.java
-kiev.vlang.DataFlowRootInfo kiev/vlang/DataFlowRootInfo kiev\vlang\Var.java
 kiev.vlang.DataFlowSlots kiev/vlang/DataFlowSlots kiev\vlang\Var.java
 kiev.vlang.DefaultMetaAttr kiev/vlang/DefaultMetaAttr kiev\vlang\Attr.java
 kiev.vlang.DoWhileStat kiev/vlang/DoWhileStat kiev\vlang\LoopStatement.java
@@ -324,14 +322,17 @@ kiev.vlang.IncrementExpr kiev/vlang/IncrementExpr kiev\vlang\Expr.java
 kiev.vlang.Initializer kiev/vlang/Initializer kiev\vlang\Method.java
 kiev.vlang.InitializerShadow kiev/vlang/InitializerShadow kiev\vlang\AST.java
 kiev.vlang.InlineMethodStat kiev/vlang/InlineMethodStat kiev\vlang\Statement.java
+kiev.vlang.InlineMethodStat.InlineMethodStatDFFunc kiev/vlang/InlineMethodStat$InlineMethodStatDFFunc kiev\vlang\Statement.java
 kiev.vlang.InlineMethodStat.ParamRedir kiev/vlang/InlineMethodStat$ParamRedir kiev\vlang\Statement.java
 kiev.vlang.InnerClassesAttr kiev/vlang/InnerClassesAttr kiev\vlang\Attr.java
 kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
+kiev.vlang.InstanceofExpr.InstanceofExprDFFunc kiev/vlang/InstanceofExpr$InstanceofExprDFFunc kiev\vlang\BooleanExpr.java
 kiev.vlang.Instr kiev/vlang/Instr kiev\vlang\Instr.java
 kiev.vlang.InterfaceMethodCP kiev/vlang/InterfaceMethodCP kiev\vlang\ConstPool.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.KievAttr kiev/vlang/KievAttr kiev\vlang\Attr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
+kiev.vlang.Label.LabelDFFunc kiev/vlang/Label$LabelDFFunc kiev\vlang\LoopStatement.java
 kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
 kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vlang\LvalueExpr.java
@@ -442,6 +443,7 @@ kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java
 kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
+kiev.vlang.Var.VarDFFunc kiev/vlang/Var$VarDFFunc kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java

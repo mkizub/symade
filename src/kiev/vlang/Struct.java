@@ -37,6 +37,7 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
+@dflow(in="this:in()")
 public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	/** Variouse names of the class */
@@ -1817,24 +1818,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public DataFlowInfo getDFlow() {
-		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
-		if (df == null) {
-			DFState in = DFState.makeNewState();
-			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
-			this.addNodeData(df);
-		}
-		return df;
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new DFFuncFixedState(DFState.makeNewState());
 	}
-	
-//	public DFState getDFlowIn() {
-//		DataFlow df = getDFlow();
-//		return df.in;
-//	}
-//	
-//	public DFState getDFlowIn(ASTNode child) {
-//		return getDFlowIn();
-//	}
 	
 
 	/** This routine validates declaration of class, auto-generates

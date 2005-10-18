@@ -42,7 +42,7 @@ public class ASTAccessExpression extends Expr {
 	private static KString nameWrapperSelf = KString.from("$self");
 	
 	@att
-	@dflow(out="this:in")
+	@dflow(in="this:in")
 	public ENode			obj;
 	
 	@att

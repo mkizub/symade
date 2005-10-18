@@ -33,7 +33,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow
+@dflow(in="this:in()")
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 
@@ -517,44 +517,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
-	public DataFlowInfo getDFlow() {
-		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
-		if (df == null) {
-			DFState in = DFState.makeNewState();
-			if (!isStatic()) {
-				Var p = getThisPar();
-				in = in.declNode(p);
-			}
-			for(int i=0; i < params.length; i++) {
-				Var p = params[i];
-				in = in.declNode(p);
-			}
-			df = new DataFlowRootInfo(this,new DFFuncFixedState(in));
-			this.addNodeData(df);
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		DFState in = DFState.makeNewState();
+		if (!isStatic()) {
+			Var p = getThisPar();
+			in = in.declNode(p);
 		}
-		return df;
+		for(int i=0; i < params.length; i++) {
+			Var p = params[i];
+			in = in.declNode(p);
+		}
+		return new DFFuncFixedState(in);
 	}
-	
-//	public DFState getDFlowIn() {
-//		DataFlow df = getDFlow();
-//		return df.in;
-//	}
-//	
-//	public DFState getDFlowIn(ASTNode child) {
-//		String name = child.pslot.name;
-//		if (name == "body")
-//			return getDFlowIn();
-//		if (name == "conditions") {
-//			WBCCondition cond = (WBCCondition)child;
-//			if (cond.cond == WBCType.CondRequire)
-//				return getDFlowIn();
-//			else if (cond.cond == WBCType.CondEnsure)
-//				return body.getDFlowOut();
-//			else if (cond.cond == WBCType.CondInvariant)
-//				return getDFlowOut();
-//		}
-//		throw new CompilerException(pos,"Internal error: getDFlowIn("+name+") in "+this.getClass());
-//	}
 	
 	public void resolveDecl() {
 		if( isResolved() ) return;
