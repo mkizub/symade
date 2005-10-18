@@ -73,6 +73,12 @@ public class Label extends DNode {
 		links = links.diff(lnk);
 	}
 
+	public void callbackRootChanged() {
+		ASTNode root = this.proot;
+		links = links.filter(fun (ASTNode n)->boolean { return n.proot == root; });
+		super.callbackRootChanged();
+	}
+	
 	private boolean lock;
 	public DFState calcDFlowOut() {
 		DataFlowInfo df = getDFlow();

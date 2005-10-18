@@ -905,12 +905,12 @@ public class BreakStat extends Statement {
 //		setAbrupted(true);
 //	}
 
-	public final void callbackDetached() {
-		if (dest != null) {
+	public void callbackRootChanged() {
+		if (dest != null && dest.proot != this.proot) {
 			dest.delLink(this);
 			dest = null;
 		}
-		super.callbackDetached();
+		super.callbackRootChanged();
 	}
 	
 	public boolean preResolve(TransfProcessor proc) {
@@ -1075,12 +1075,12 @@ public class ContinueStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public final void callbackDetached() {
-		if (dest != null) {
+	public void callbackRootChanged() {
+		if (dest != null && dest.proot != this.proot) {
 			dest.delLink(this);
 			dest = null;
 		}
-		super.callbackDetached();
+		super.callbackRootChanged();
 	}
 	
 	public boolean preResolve(TransfProcessor proc) {
@@ -1184,12 +1184,12 @@ public class GotoStat extends Statement/*defaults*/ {
 //		setAbrupted(true);
 //	}
 
-	public final void callbackDetached() {
-		if (dest != null) {
+	public void callbackRootChanged() {
+		if (dest != null && dest.proot != this.proot) {
 			dest.delLink(this);
 			dest = null;
 		}
-		super.callbackDetached();
+		super.callbackRootChanged();
 	}
 	
 	public boolean preResolve(TransfProcessor proc) {

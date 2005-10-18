@@ -85,6 +85,8 @@ public abstract class ASTNode implements Constants {
 	public ASTNode			pprev;
 	@ref(copyable=false)
 	public ASTNode			pnext;
+	@ref(copyable=false)
+	public access:ro,ro,rw,rw ASTNode			proot;
 	
 	@ref(copyable=false)
 	public NodeData			ndata;
@@ -161,14 +163,17 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,31 boolean is_bad;
 
     public ASTNode() {
+		proot = this;
 	}
 
     public ASTNode(int pos) {
 		this.pos = pos;
+		proot = this;
 	}
 
 	public ASTNode(int pos, int fl) {
-		this(pos);
+		this.pos = pos;
+		proot = this;
 		flags = fl;
 	}
 
@@ -202,38 +207,61 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
-	public void callbackDetached() {
+	public final void callbackDetached() {
 		assert(isAttached());
+		// notify node data that we are detached
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
 			nd.nodeDetached(this);
 			nd = nx;
 		}
+		// do detcah
 		ASTNode parent = this.parent;
 		AttrSlot pslot = this.pslot;
 		this.parent = null;
 		this.pslot = null;
 		this.pprev = null;
 		this.pnext = null;
+		this.proot = this;
+		// set new root of the detached tree
+		ASTNode root = this;
+		walkTree(fun (ASTNode n)->boolean { n.proot = root; return true; });
+		// notify nodes about new root
+		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
+		// notify parent about the changed slot
 		parent.callbackChildChanged(pslot);
 	}
 	
-	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		assert(!isAttached());
 		assert(parent != null && parent != this);
+		// do attach
 		this.parent = parent;
 		this.pslot = pslot;
+		this.parent = parent;
+		this.proot = parent.proot;
+		// notify node data that we are attached
 		NodeData nd = ndata;
 		while (nd != null) {
 			NodeData nx = nd.next;
 			nd.nodeAttached(this);
 			nd = nx;
 		}
+		// set new root of the attached tree
+		ASTNode root = parent.proot;
+		walkTree(fun (ASTNode n)->boolean { n.proot = root; return true; });
+		// notify nodes about new root
+		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
+		// notify parent about the changed slot
 		parent.callbackChildChanged(pslot);
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
+		// by default do nothing
+	}
+	
+	public void callbackRootChanged() {
 		// by default do nothing
 	}
 	
