@@ -27,7 +27,7 @@ import java.io.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 182 $
  *
  */
 

@@ -1292,23 +1292,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						),p++
 					);
 				}
-				if( isPizzaCase() ) {
-					for(int j= package_clazz.isClazz() ? 1 : 0; j < m.params.length; j++ ) {
-						if( m.params[j].name.name == nameTypeInfo )
-							continue;
-						Field f = resolveField(m.params[j].name.name);
-						if( f == null )
-							throw new RuntimeException("Can't find field "+m.params[j].name.name);
-						stats.insert(
-							new ExprStat(pos,
-								new AssignExpr(pos,AssignOperator.Assign,
-									new AccessExpr(pos,new ThisExpr(pos),f),
-									new VarAccessExpr(pos,m.params[j])
-								)
-							),p++
-						);
-					}
-				}
 				if( type.args.length > 0
 				 && !type.isInstanceOf(Type.tpClosure)
 				 && m.isNeedFieldInits()
@@ -1818,9 +1801,23 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		return new DFFuncFixedState(DFState.makeNewState());
+	static class StructDFFunc extends DFFunc {
+		final int res_idx;
+		StructDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			res = DFState.makeNewState();
+			dfi.setResult(res_idx, res);
+			return res;
+		}
 	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new StructDFFunc(dfi);
+	}
+
 	
 
 	/** This routine validates declaration of class, auto-generates

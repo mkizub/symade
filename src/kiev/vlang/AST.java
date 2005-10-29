@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 211 $
  *
  */
 
@@ -380,7 +380,7 @@ public abstract class ASTNode implements Constants {
 	public DataFlowInfo getDFlow() {
 		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
 		if (df == null) {
-			df = new DataFlowInfo(this);
+			df = DataFlowInfo.newDataFlowInfo(this);
 			this.addNodeData(df);
 		}
 		return df;

@@ -3,7 +3,7 @@ package kiev.parser;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 182 $
  *
  */
 

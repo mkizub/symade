@@ -517,19 +517,33 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	
-	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		DFState in = DFState.makeNewState();
-		if (!isStatic()) {
-			Var p = getThisPar();
-			in = in.declNode(p);
+	static class MethodDFFunc extends DFFunc {
+		final int res_idx;
+		MethodDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
 		}
-		for(int i=0; i < params.length; i++) {
-			Var p = params[i];
-			in = in.declNode(p);
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			Method m = (Method)dfi.node;
+			DFState in = DFState.makeNewState();
+			if (!m.isStatic()) {
+				Var p = m.getThisPar();
+				in = in.declNode(p);
+			}
+			for(int i=0; i < m.params.length; i++) {
+				Var p = m.params[i];
+				in = in.declNode(p);
+			}
+			res = in;
+			dfi.setResult(res_idx, res);
+			return res;
 		}
-		return new DFFuncFixedState(in);
 	}
-	
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new MethodDFFunc(dfi);
+	}
+
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);

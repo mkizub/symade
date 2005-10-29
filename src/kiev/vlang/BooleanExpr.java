@@ -757,15 +757,19 @@ public class InstanceofExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	class InstanceofExprDFFunc extends DFFunc {
-		DFFunc f;
-		DFState res;
+	static class InstanceofExprDFFunc extends DFFunc {
+		final DFFunc f;
+		final int res_idx;
 		InstanceofExprDFFunc(DataFlowInfo dfi) {
-			f = new DFFuncChild(dfi.getSocket("expr"), DataFlowSlots.OUT);
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("expr"));
+			res_idx = dfi.allocResult(); 
 		}
-		DFState calc() {
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			return res=InstanceofExpr.this.addNodeTypeInfo(f.calc());
+			res = ((InstanceofExpr)dfi.node).addNodeTypeInfo(DFFunc.calc(f, dfi));
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) {

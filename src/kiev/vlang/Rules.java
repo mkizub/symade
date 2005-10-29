@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 211 $
  *
  */
 
@@ -147,20 +147,34 @@ public class RuleMethod extends Method {
 		return this;
     }
 
+	static class RuleMethodDFFunc extends DFFunc {
+		final int res_idx;
+		RuleMethodDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			RuleMethod m = (RuleMethod)dfi.node;
+			DFState in = DFState.makeNewState();
+			if (!m.isStatic()) {
+				Var p = m.getThisPar();
+				in = in.declNode(p);
+			}
+			for(int i=0; i < m.params.length; i++) {
+				Var p = m.params[i];
+				in = in.declNode(p);
+			}
+			for(int i=0; i < m.localvars.length; i++) {
+				in = in.declNode(m.localvars[i]);
+			}
+			res = in;
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
 	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		DFState in = DFState.makeNewState();
-		if (!isStatic()) {
-			Var p = getThisPar();
-			in = in.declNode(p);
-		}
-		for(int i=0; i < params.length; i++) {
-			Var p = params[i];
-			in = in.declNode(p);
-		}
-		for(int i=0; i < localvars.length; i++) {
-			in = in.declNode(localvars[i]);
-		}
-		return new DFFuncFixedState(in);
+		return new RuleMethodDFFunc(dfi);
 	}
 
 	public void resolveDecl() {

@@ -24,7 +24,7 @@ import kiev.stdlib.KString.KStringScanner;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 182 $
  *
  */
 

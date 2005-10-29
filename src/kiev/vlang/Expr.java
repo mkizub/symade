@@ -34,7 +34,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 211 $
  *
  */
 
@@ -381,15 +381,19 @@ public class AssignExpr extends LvalueExpr {
 		return this;
 	}
 
-	class AssignExprDFFunc extends DFFunc {
-		DFFunc f;
-		DFState res;
+	static class AssignExprDFFunc extends DFFunc {
+		final DFFunc f;
+		final int res_idx;
 		AssignExprDFFunc(DataFlowInfo dfi) {
-			f = new DFFuncChild(dfi.getSocket("value"), DataFlowSlots.OUT);
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("value"));
+			res_idx = dfi.allocResult(); 
 		}
-		DFState calc() {
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			return res=AssignExpr.this.addNodeTypeInfo(f.calc());
+			res = ((AssignExpr)dfi.node).addNodeTypeInfo(f.calc(dfi));
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
@@ -1178,20 +1182,25 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	class BlockExprDFFunc extends DFFunc {
-		DFFunc f;
-		DFState res;
+	static class BlockExprDFFunc extends DFFunc {
+		final DFFunc f;
+		final int res_idx;
 		BlockExprDFFunc(DataFlowInfo dfi) {
-			f = new DFFuncChild(dfi.getSocket("res"), DataFlowSlots.OUT);
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("res"));
+			res_idx = dfi.allocResult(); 
 		}
-		DFState calc() {
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
+			BlockExpr node = (BlockExpr)dfi.node;
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)
-				return res=f.calc().cleanInfoForVars(vars.toArray());
+				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
 			else
-				return res=f.calc();
+				res = DFFunc.calc(f, dfi);
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {

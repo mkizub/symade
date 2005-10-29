@@ -70,6 +70,21 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 			init.params.add(new FormPar(f.pos,f.name.name,f.type,0));
 		clazz.addMethod(init);
 		init.body = new BlockStat(clazz.pos);
+		int p = 0;
+		foreach (Field f; case_attr.casefields) {
+			Var v = null;
+			foreach (FormPar fp; init.params; fp.name.name == f.name.name) {
+				init.body.stats.insert(
+					new ExprStat(
+						new AssignExpr(f.pos,AssignOperator.Assign,
+							new AccessExpr(f.pos,new ThisExpr(f.pos),f),
+							new VarAccessExpr(f.pos,fp)
+						)
+					),p++
+				);
+				break;
+			}
+		}
 	}
 
 	public void preGenerate(ASTNode:ASTNode node) {

@@ -26,7 +26,7 @@ import kiev.vlang.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 182 $
  *
  */
 

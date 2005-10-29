@@ -30,7 +30,7 @@ import static kiev.vlang.Operator.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 208 $
  *
  */
 

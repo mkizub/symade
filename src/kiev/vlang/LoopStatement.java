@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 211 $
  *
  */
 
@@ -79,21 +79,21 @@ public class Label extends DNode {
 		super.callbackRootChanged();
 	}
 	
-	class LabelDFFunc extends DFFunc {
-		DFState res;
-		private boolean lock;
-		DataFlowInfo dfi;
+	static class LabelDFFunc extends DFFunc {
+		final int res_idx;
 		LabelDFFunc(DataFlowInfo dfi) {
-			this.dfi = dfi;
+			res_idx = dfi.allocResult(); 
 		}
-		DFState calc() {
-			if (lock)
+		DFState calc(DataFlowInfo dfi) {
+			if ((dfi.locks & 1) != 0)
 				throw new DFLoopException(this);
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			DFState tmp = dfi.in();
-			lock = true;
+			Label node = (Label)dfi.node;
+			DFState tmp = node.getDFlow().in();
+			dfi.locks |= 1;
 			try {
-				foreach (ASTNode lnk; links) {
+				foreach (ASTNode lnk; node.links) {
 					try {
 						DFState s = lnk.getDFlow().jmp();
 						tmp = DFState.join(s,tmp);
@@ -101,8 +101,10 @@ public class Label extends DNode {
 						if (e.label != this) throw e;
 					}
 				}
-			} finally { lock = false; }
-			return res=tmp;
+			} finally { dfi.locks &= ~1; }
+			res = tmp;
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {

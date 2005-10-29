@@ -29,7 +29,7 @@ import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 208 $
  *
  */
 

@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 211 $
  *
  */
 
@@ -99,23 +99,46 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		node ?= redir.new_var
 	}
 
-	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
-		DFState in = DFState.makeNewState();
-		for(int i=0; i < params_redir.length; i++) {
-			in = in.declNode(params_redir[i].new_var);
-			in = in.addNodeType(new DNode[]{params_redir[i].new_var},method.params[i].type);
+	static class InlineMethodStatDFFuncIn extends DFFunc {
+		final int res_idx;
+		InlineMethodStatDFFuncIn(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
 		}
-		return new DFFuncFixedState(in);
-	}
-	class InlineMethodStatDFFunc extends DFFunc {
-		DFState res;
-		DFState calc() {
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			return res=parent.getDFlow().getSocket(pslot.name).calc(DataFlowSlots.IN);
+			InlineMethodStat node = (InlineMethodStat)dfi.node;
+			DFState in = DFState.makeNewState();
+			for(int i=0; i < node.params_redir.length; i++) {
+				in = in.declNode(node.params_redir[i].new_var);
+				in = in.addNodeType(new DNode[]{node.params_redir[i].new_var},node.method.params[i].type);
+			}
+			res = in;
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new InlineMethodStatDFFuncIn(dfi);
+	}
+
+	static class InlineMethodStatDFFuncOut extends DFFunc {
+		final int res_idx;
+		InlineMethodStatDFFuncOut(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			InlineMethodStat node = (InlineMethodStat)dfi.node;
+			dfi = node.parent.getDFlow();
+			res = DFFunc.calc(dfi.getSocket(node.pslot.name).func_in, dfi);
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
-		return new InlineMethodStatDFFunc();
+		return new InlineMethodStatDFFuncOut(dfi);
 	}
 
 	public void resolve(Type reqType) {
@@ -289,20 +312,25 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	class BlockStatDFFunc extends DFFunc {
-		DFFunc f;
-		DFState res;
+	static class BlockStatDFFunc extends DFFunc {
+		final DFFunc f;
+		final int res_idx;
 		BlockStatDFFunc(DataFlowInfo dfi) {
-			f = new DFFuncChild(dfi.getSocket("stats"), DataFlowSlots.OUT);
+			f = new DFFunc.DFFuncChildOut(dfi.getSocket("stats"));
+			res_idx = dfi.allocResult(); 
 		}
-		DFState calc() {
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
+			BlockStat node = (BlockStat)dfi.node;
 			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)
-				return res=f.calc().cleanInfoForVars(vars.toArray());
+				res = DFFunc.calc(f, dfi).cleanInfoForVars(vars.toArray());
 			else
-				return res=f.calc();
+				res = DFFunc.calc(f, dfi);
+			dfi.setResult(res_idx, res);
+			return res;
 		}
 	}
 	public DFFunc newDFFuncOut(DataFlowInfo dfi) {

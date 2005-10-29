@@ -24,7 +24,7 @@ import kiev.stdlib.meta.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision$
+ * @version $Revision: 182 $
  *
  */
 
