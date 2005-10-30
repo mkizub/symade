@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
-@dflow(in="this:in()")
+@dflow(in="root()")
 public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	/** Variouse names of the class */

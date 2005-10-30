@@ -34,7 +34,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="stats")
+@dflow(in="this:in()", out="stats")
 public class CaseLabel extends ENode implements ScopeOfNames {
 
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
@@ -46,13 +46,13 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	public Type					type;
 	
 	@att
-	@dflow(in="", seq="false")
+	@dflow(in="", seq="true")
 	public final NArr<Var>		pattern;
 	
 	@att
-	@dflow(in="", seq="false")
+	@dflow(in="pattern", seq="true")
 	public final NArr<ENode>	stats;
-
+	
 	public CodeLabel	case_label;
 
 	public CaseLabel() {
@@ -62,6 +62,38 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		super(pos);
 		this.val = val;
 		this.stats.addAll(stats);
+	}
+
+	static class CaseLabelDFFuncIn extends DFFunc {
+		final int res_idx;
+		CaseLabelDFFuncIn(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			CaseLabel cl = (CaseLabel)dfi.node;
+			if (cl.parent instanceof SwitchStat) {
+				ENode sel = ((SwitchStat)cl.parent).sel;
+				if (sel != null)
+					res = sel.getDFlow().out();
+			}
+			if (cl.pprev != null) {
+				DFState prev = cl.pprev.getDFlow().out();
+				if (res != null)
+					res = DFState.join(res,prev);
+				else
+					res = prev;
+			}
+			if (res != null)
+				dfi.setResult(res_idx, res);
+			else
+				res = DFState.makeNewState();
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new CaseLabelDFFuncIn(dfi);
 	}
 
 	public String toString() {
@@ -85,22 +117,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		stats.insert(st,i);
 		return st;
 	}
-
-//	public void addSymbol(int idx, Named sym) {
-//		ENode decl;
-//		if (sym instanceof Var)
-//			decl = new VarDecl((Var)sym);
-//		else if (sym instanceof Struct)
-//			decl = new LocalStructDecl((Struct)sym);
-//		else
-//			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
-//		foreach(ASTNode n; stats) {
-//			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-//				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
-//			}
-//		}
-//		stats.insert(decl,idx);
-//	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;

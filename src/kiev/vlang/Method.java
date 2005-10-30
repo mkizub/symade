@@ -33,7 +33,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(in="this:in()")
+@dflow(in="root()")
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	public static Method[]	emptyArray = new Method[0];
 

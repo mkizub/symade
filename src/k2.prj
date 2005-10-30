@@ -236,6 +236,7 @@ kiev.vlang.CP kiev/vlang/CP kiev\vlang\ConstPool.java
 kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
 kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
+kiev.vlang.CaseLabel.CaseLabelDFFuncIn kiev/vlang/CaseLabel$CaseLabelDFFuncIn kiev\vlang\ComplexStatement.java
 kiev.vlang.CastExpr kiev/vlang/CastExpr kiev\vlang\Expr.java
 kiev.vlang.CastOperator kiev/vlang/CastOperator kiev\vlang\Operator.java
 kiev.vlang.CatchInfo kiev/vlang/CatchInfo kiev\vlang\ComplexStatement.java
@@ -292,6 +293,8 @@ kiev.vlang.DFLoopException kiev/vlang/DFLoopException kiev\vlang\Var.java
 kiev.vlang.DFSocket kiev/vlang/DFSocket kiev\vlang\Var.java
 kiev.vlang.DFSocketChild kiev/vlang/DFSocketChild kiev\vlang\Var.java
 kiev.vlang.DFSocketSpace kiev/vlang/DFSocketSpace kiev\vlang\Var.java
+kiev.vlang.DFSocketSpaceSeq kiev/vlang/DFSocketSpaceSeq kiev\vlang\Var.java
+kiev.vlang.DFSocketSpaceUnknown kiev/vlang/DFSocketSpaceUnknown kiev\vlang\Var.java
 kiev.vlang.DFState kiev/vlang/DFState kiev\vlang\Var.java
 kiev.vlang.DNode kiev/vlang/DNode kiev\vlang\AST.java
 kiev.vlang.DataFlowInfo kiev/vlang/DataFlowInfo kiev\vlang\Var.java

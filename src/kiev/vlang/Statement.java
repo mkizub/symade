@@ -63,7 +63,7 @@ public class ShadowStat extends Statement {
 }
 
 @node
-@dflow(in="this:in()", out="this:out()")
+@dflow(in="root()", out="this:out()")
 public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 	static class ParamRedir {

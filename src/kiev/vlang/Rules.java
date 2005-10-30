@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(in="this:in()")
+@dflow(in="root()")
 public class RuleMethod extends Method {
 
 	@att public final NArr<Var>		localvars;
