@@ -524,40 +524,39 @@ public class ReturnStat extends Statement/*defaults*/ {
 		try {
 			if( expr != null )
 				expr.generate(PassInfo.method.type.ret);
-			generateReturn();
+			generateReturn(this);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
 	}
 
-	public static void generateReturn() {
+	public static void generateReturn(ASTNode from) {
 		Var tmp_var = null;
-		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
-			if( PassInfo.path[i] instanceof Method ) break;
-			else if( PassInfo.path[i] instanceof FinallyInfo ) {
-				assert (PassInfo.path[i-1] instanceof TryStat && PassInfo.path[i].parent == PassInfo.path[i-1]);
-				i--;	// skip TryStat that is parent of FinallyInfo
+		for(ASTNode node = from; node != null; node = node.parent) {
+			if (node instanceof Method)
+				break;
+			else if (node instanceof FinallyInfo) {
+				assert (node.parent instanceof TryStat);
+				node = node.parent; // skip TryStat that is parent of FinallyInfo
 				continue;
 			}
-			else if( PassInfo.path[i] instanceof TryStat ) {
-				TryStat ts = (TryStat)PassInfo.path[i];
-				if( ts.finally_catcher != null ) {
+			else if (node instanceof TryStat) {
+				if( node.finally_catcher != null ) {
 					if( tmp_var==null /*&& Kiev.verify*/ && PassInfo.method.type.ret != Type.tpVoid ) {
 						tmp_var = new Var(0,KString.Empty,PassInfo.method.type.ret,0);
 						Code.addVar(tmp_var);
 						Code.addInstr(Instr.op_store,tmp_var);
 					}
-					Code.addInstr(Instr.op_jsr,((FinallyInfo)ts.finally_catcher).subr_label);
+					Code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
 			}
-			else if( PassInfo.path[i] instanceof SynchronizedStat ) {
-				SynchronizedStat ts = (SynchronizedStat)PassInfo.path[i];
+			else if (node instanceof SynchronizedStat) {
 				if( tmp_var==null /*&& Kiev.verify*/ && PassInfo.method.type.ret != Type.tpVoid ) {
 					tmp_var = new Var(0,KString.Empty,PassInfo.method.type.ret,0);
 					Code.addVar(tmp_var);
 					Code.addInstr(Instr.op_store,tmp_var);
 				}
-				Code.addInstr(Instr.op_load,ts.expr_var);
+				Code.addInstr(Instr.op_load,node.expr_var);
 				Code.addInstr(Instr.op_monitorexit);
 			}
 		}
@@ -718,7 +717,7 @@ public class IfElseStat extends Statement {
 					CodeLabel end_label = Code.newLabel();
 					if( !thenSt.isMethodAbrupted() ) {
 						if( isAutoReturnable() )
-							ReturnStat.generateReturn();
+							ReturnStat.generateReturn(this);
 						else if (!thenSt.isAbrupted())
 							Code.addInstr(Instr.op_goto,end_label);
 					}
@@ -1060,7 +1059,7 @@ public class BreakStat extends Statement {
 					Code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
-				ReturnStat.generateReturn();
+				ReturnStat.generateReturn(this);
 			else
 				Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
@@ -1541,14 +1540,15 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 
 	public void resolve(Type reqType) {
 		setAbrupted(true);
-		for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
-			if( PassInfo.path[i] instanceof SwitchStat ) {
-				sw = (SwitchStat)PassInfo.path[i];
+		for(ASTNode node = this.parent; node != null; node = node.parent) {
+			if (node instanceof SwitchStat) {
+				this.sw = (SwitchStat)node;
 				break;
 			}
-			if( PassInfo.path[i] instanceof Method ) break;
+			if (node instanceof Method)
+				break;
 		}
-		if( sw == null )
+		if( this.sw == null )
 			throw new CompilerException(pos,"goto case statement not within a switch statement");
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
@@ -1574,25 +1574,25 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			}
 
 			Var tmp_var = null;
-			for(int i=PassInfo.pathTop-1; i >= 0; i-- ) {
-				if( PassInfo.path[i] == sw ) break;
-				if( PassInfo.path[i] instanceof FinallyInfo ) {
-					i--;
+			for(ASTNode node = this.parent; node != null; node = node.parent) {
+				if (node == sw)
+					break;
+				if (node instanceof FinallyInfo) {
+					node = node.parent; // skip calling jsr if we are in it
 					continue;
 				}
-				if( PassInfo.path[i] instanceof TryStat ) {
-					TryStat ts = (TryStat)PassInfo.path[i];
-					if( ts.finally_catcher != null ) {
+				if (node instanceof TryStat) {
+					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
 							Code.addVar(tmp_var);
 							Code.addInstr(Instr.op_store,tmp_var);
 						}
-						Code.addInstr(Instr.op_jsr,((FinallyInfo)ts.finally_catcher).subr_label);
+						Code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
 				}
-				else if( PassInfo.path[i] instanceof SynchronizedStat ) {
-					Code.addInstr(Instr.op_load,((SynchronizedStat)PassInfo.path[i]).expr_var);
+				else if (node instanceof SynchronizedStat) {
+					Code.addInstr(Instr.op_load,node.expr_var);
 					Code.addInstr(Instr.op_monitorexit);
 				}
 			}

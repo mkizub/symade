@@ -143,6 +143,23 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return name.name.equals(cl.name.name);
 	}
 
+	public void pushMe() { PassInfo.pushStruct(this); }
+	public void popMe() { PassInfo.popStruct(this); }
+	
+	public void walkTree((ASTNode)->boolean exec) {
+		PassInfo.pushStruct(this);
+		try {
+			treeWalker(exec);
+		} finally { PassInfo.popStruct(this); }
+	}
+
+	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+		PassInfo.pushStruct(this);
+		try {
+			treeWalker(pre_exec, post_exec);
+		} finally { PassInfo.popStruct(this); }
+	}
+
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "members") {
 			if (type != null)
@@ -1408,11 +1425,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
 			IfElseStat st = null;
-			PassInfo.push(mm);
+			PassInfo.pushMethod(mm);
 			try {
 				st = makeDispatchStatInline(mm,mmt);
 			} finally {
-				PassInfo.pop(mm);
+				PassInfo.popMethod(mm);
 			}
 
 			if (overwr != null) {
@@ -1830,7 +1847,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public ASTNode resolveFinalFields(boolean cleanup) {
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 			// Resolve final values of class's fields
 			foreach (ASTNode n; members; n instanceof Field) {
@@ -1867,7 +1884,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				}
 			}
 		} finally {
-			PassInfo.pop(this);
+			PassInfo.popStruct(this);
 		}
 		return this;
 	}
@@ -1877,7 +1894,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	}
 	
 	public void resolveMetaDefaults() {
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 			if (isAnnotation()) {
 				foreach(ASTNode m; members; m instanceof Method) {
@@ -1894,11 +1911,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						sub_clazz[i].resolveMetaDefaults();
 				}
 			}
-		} finally { PassInfo.pop(this); }
+		} finally { PassInfo.popStruct(this); }
 	}
 
 	public void resolveMetaValues() {
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 			foreach (Meta m; meta)
 				m.resolve();
@@ -1923,7 +1940,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					sub_clazz[i].resolveMetaValues();
 				}
 			}
-		} finally { PassInfo.pop(this); }
+		} finally { PassInfo.popStruct(this); }
 	}
 
 	public final void preResolve() {
@@ -1942,10 +1959,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public void resolveDecl() {
 		if( isGenerated() ) return;
 		long curr_time;
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 			autoGenerateStatements();
-		} finally { PassInfo.pop(this); }
+		} finally { PassInfo.popStruct(this); }
 		try {
 			if( !isPackage() ) {
 				foreach (ASTNode n; members; n instanceof Struct) {
@@ -1967,7 +1984,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			}
 		}
 		foreach(Struct ps; pstruct)
-			PassInfo.push(ps);
+			PassInfo.pushStruct(ps);
 		try {
 			// Verify access
 			foreach(ASTNode n; members; n instanceof Field) {
@@ -2040,7 +2057,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		} finally {
 			pstruct = pstruct.reverse();
 			foreach(Struct ps; pstruct)
-				PassInfo.pop(ps);
+				PassInfo.popStruct(ps);
 		}
 		setGenerated(true);
 		diff_time = System.currentTimeMillis() - curr_time;
@@ -2105,7 +2122,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		Struct jthis = this;
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+jthis+"]");
 		if( Kiev.safe && isBad() ) return;
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 			if( !isPackage() ) {
 				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
@@ -2301,12 +2318,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Env.setProjectInfo(name, true);
 			ConstPool.reInit();
 			kiev.Main.runGC();
-		} finally { PassInfo.pop(this); }
+		} finally { PassInfo.popStruct(this); }
 //		setPassed_3(true);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
-		PassInfo.push(this);
+		PassInfo.pushStruct(this);
 		try {
 		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");
@@ -2370,7 +2387,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			m.toJavaDecl(dmp).newLine();
 		}
 		dmp.newLine(-1).append('}').newLine();
-		} finally { PassInfo.pop(this); }
+		} finally { PassInfo.popStruct(this); }
 		return dmp;
 	}
 

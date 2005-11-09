@@ -854,7 +854,7 @@ FileUnit FileUnit(String filename) :
 	}
 	(	Pragma(fu) )*
 	[	fu.pkg = Package()	]
-	{ PassInfo.push(fu.pkg.clazz); }
+	{ PassInfo.pushStruct(fu.pkg.clazz); }
 	try {
 		(	Pragma(fu) )*
 		(
@@ -875,7 +875,7 @@ FileUnit FileUnit(String filename) :
 	catch(ParseError e) { rpe("Bad modifiers",e); }
 	catch(Throwable e) { rperr(e); }
 	finally {
-		PassInfo.pop(fu.pkg.clazz);
+		PassInfo.popStruct(fu.pkg.clazz);
 		declMode = true;
 		Kiev.curFileUnit = old_fu;
 		return fu;
@@ -1006,13 +1006,15 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{
 		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
 	}
-	{ PassInfo.push(clazz); }
-	"{"
-	(
-		clazz.members += Typedef()
-	|	clazz.members += Opdef()
-	)*
-	"}"
+	{ PassInfo.pushStruct(clazz); }
+	try {
+		"{"
+		(
+			clazz.members += Typedef()
+		|	clazz.members += Opdef()
+		)*
+		"}"
+	} finally { PassInfo.popStruct(clazz); }
 	{ return clazz; }
 }
 
@@ -1063,10 +1065,10 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
 		}
 	)
-	{ PassInfo.push(clazz); }
+	{ PassInfo.pushStruct(clazz); }
 	try {
 		TypeBodyDeclaration(clazz)
-	} finally { PassInfo.pop(clazz); }
+	} finally { PassInfo.popStruct(clazz); }
 	{ return clazz; }
 }
 
@@ -2466,12 +2468,12 @@ ASTNewExpression NewExpression() :
 			old_mode = interface_only;
 			interface_only = false;
 			ne.clazz = clazz = mkStruct(null, 0, new ASTModifiers(), ne);
-			PassInfo.push(clazz);
+			PassInfo.pushStruct(clazz);
 		}
 		try {
 			TypeBodyDeclaration(clazz)
 		} finally {
-			interface_only = old_mode; PassInfo.pop(clazz);
+			interface_only = old_mode; PassInfo.popStruct(clazz);
 		}
 	]
 	{ return ne; }

@@ -400,64 +400,56 @@ public abstract class ASTNode implements Constants {
 	public void mainResolveOut() {}
 	public boolean	preGenerate()	{ return true; }
 	
-	public void walkTree((ASTNode)->boolean exec) {
-		PassInfo.push(this);
-		try {
-			if (exec(this)) {
-				foreach (AttrSlot attr; this.values(); attr.is_attr) {
-					Object val = this.getVal(attr.name);
-					if (val == null)
-						continue;
-					if (attr.is_space) {
-						foreach (ASTNode n; (NArr<ASTNode>)val)
-							n.walkTree(exec);
-					}
-					else if (val instanceof ASTNode) {
-						((ASTNode)val).walkTree(exec);
-					}
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void walkTreeVV((ASTNode)->void pre_exec, (ASTNode)->void post_exec) {
-		PassInfo.push(this);
-		try {
-			pre_exec(this);
+	
+	public final void treeWalker((ASTNode)->boolean exec) {
+		if (exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
 				Object val = this.getVal(attr.name);
 				if (val == null)
 					continue;
 				if (attr.is_space) {
 					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.walkTreeVV(pre_exec, post_exec);
+						n.walkTree(exec);
 				}
 				else if (val instanceof ASTNode) {
-					((ASTNode)val).walkTreeVV(pre_exec, post_exec);
+					((ASTNode)val).walkTree(exec);
 				}
 			}
-			post_exec(this);
+		}
+	}
+	
+	public final void treeWalker((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+		if (pre_exec(this)) {
+			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+				Object val = this.getVal(attr.name);
+				if (val == null)
+					continue;
+				if (attr.is_space) {
+					foreach (ASTNode n; (NArr<ASTNode>)val)
+						n.walkTreeZV(pre_exec, post_exec);
+				}
+				else if (val instanceof ASTNode) {
+					((ASTNode)val).walkTreeZV(pre_exec, post_exec);
+				}
+			}
+		}
+		post_exec(this);
+	}
+	
+	public void pushMe() { PassInfo.push(this); }
+	public void popMe() { PassInfo.pop(this); }
+	
+	public void walkTree((ASTNode)->boolean exec) {
+		PassInfo.push(this);
+		try {
+			treeWalker(exec);
 		} finally { PassInfo.pop(this); }
 	}
 
 	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
 		PassInfo.push(this);
 		try {
-			if (pre_exec(this)) {
-				foreach (AttrSlot attr; this.values(); attr.is_attr) {
-					Object val = this.getVal(attr.name);
-					if (val == null)
-						continue;
-					if (attr.is_space) {
-						foreach (ASTNode n; (NArr<ASTNode>)val)
-							n.walkTreeZV(pre_exec, post_exec);
-					}
-					else if (val instanceof ASTNode) {
-						((ASTNode)val).walkTreeZV(pre_exec, post_exec);
-					}
-				}
-			}
-			post_exec(this);
+			treeWalker(pre_exec, post_exec);
 		} finally { PassInfo.pop(this); }
 	}
 

@@ -669,17 +669,6 @@ public class Compiler {
 
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			for(int i=0; i < Kiev.files.length; i++) {
-				//try {
-				//	runGC();
-				//	diff_time = curr_time = System.currentTimeMillis();
-				//	Kiev.parseFile(Kiev.files[i]);
-				//	diff_time = System.currentTimeMillis() - curr_time;
-				//	Kiev.curFile = KString.Empty;
-				//} catch (Exception ioe) {
-				//	Kiev.reportParserError(0,ioe);
-				//}
-				//if( Kiev.verbose )
-				//	Kiev.reportInfo("Parsed file    "+args[i],diff_time);
 				runGC();
 				try {
 					Kiev.files[i].resolveDecl();

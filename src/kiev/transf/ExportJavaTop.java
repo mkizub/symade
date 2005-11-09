@@ -50,14 +50,14 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	
 	public void pass1(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
-		PassInfo.push(fu.pkg.clazz);
+		PassInfo.pushStruct(fu.pkg.clazz);
 		try {
 			foreach (ASTNode n; astn.members) {
 				try {
 					pass1(n);
 				} catch(Exception e ) { Kiev.reportError(n.getPos(),e); }
 			}
-		} finally { PassInfo.pop(fu.pkg.clazz); }
+		} finally { PassInfo.popStruct(fu.pkg.clazz); }
 	}
 
 	private void setSourceFile(Struct me) {
@@ -68,7 +68,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	}
 	
 	private void setupStructType(Struct me, boolean canHaveArgs) {
-		PassInfo.push(me);
+		PassInfo.pushStruct(me);
 		try {
 			/* Then may be class arguments - they are proceed here, but their
 			   inheritance - at pass2()
@@ -105,7 +105,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 
 			/* Generate type for this structure */
 			me.type = Type.newRefType(me,targs);
-		} finally { PassInfo.pop(me); }
+		} finally { PassInfo.popStruct(me); }
 
 	}
 
@@ -149,13 +149,13 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		}
 		
 		if( !me.isPackage() ) {
-			PassInfo.push(me);
+			PassInfo.pushStruct(me);
 			try {
 				// Process inner classes and cases
 				foreach (ASTNode n; me.members) {
 					pass1(n);
 				}
-			} finally { PassInfo.pop(me); }
+			} finally { PassInfo.popStruct(me); }
 		}
 	}
 
@@ -379,7 +379,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		Struct me = astn;
 		int pos = astn.pos;
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
-		PassInfo.push(me);
+		PassInfo.pushStruct(me);
 		try {
 			/* Process inheritance of class's arguments, if any */
 			Type[] targs = me.type.args;
@@ -403,7 +403,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 				foreach (ASTNode m; astn.members)
 					pass2(m);
 			}
-		} finally { PassInfo.pop(me); }
+		} finally { PassInfo.popStruct(me); }
 	}
 
 
@@ -450,7 +450,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		int pos = astn.pos;
 		Struct me = astn;
 		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
-		PassInfo.push(me);
+		PassInfo.pushStruct(me);
 		try {
 			/* Now, process 'extends' and 'implements' clauses */
 			if( me.isAnnotation() ) {
@@ -489,7 +489,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 				foreach (ASTNode m; astn.members)
 					pass2_2(m);
 			}
-		} finally { PassInfo.pop(me); }
+		} finally { PassInfo.popStruct(me); }
 
 	}
 
@@ -522,7 +522,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		if (me.isSyntax()) {
 			return;
 		}
-		PassInfo.push(me);
+		PassInfo.pushStruct(me);
 		try {
 			// Process members
 			ASTNode[] members = astn.members.toArray();
@@ -680,7 +680,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 				foreach (ASTNode n; me.members; n instanceof Struct)
 					pass3(n);
 			}
-		} finally { PassInfo.pop(me); }
+		} finally { PassInfo.popStruct(me); }
 	}
 
 
@@ -697,7 +697,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 			resolveMetaDecl(n);
 	}
 	public void resolveMetaDecl(Struct:ASTNode clazz) {
-		PassInfo.push(clazz);
+		PassInfo.pushStruct(clazz);
 		try {
 			if (clazz.isAnnotation()) {
 				foreach(ASTNode n; clazz.members) {
@@ -725,7 +725,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 			}
 			foreach (Struct sub; clazz.sub_clazz)
 				resolveMetaDecl(sub);
-		} finally { PassInfo.pop(clazz); }
+		} finally { PassInfo.popStruct(clazz); }
 	}
 
 	////////////////////////////////////////////////////

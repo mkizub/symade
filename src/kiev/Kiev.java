@@ -212,11 +212,7 @@ public final class Kiev {
 	public static void reportWarning(int pos, String msg) {
 		warnCount++;
 		if( debug ) {
-			try {
-				throw new Exception();
-			} catch( Exception e ) {
-				e.printStackTrace( /* */System.out /* */ );
-			}
+			new Exception().printStackTrace( /* */System.out /* */ );
 		}
 		if (!nowarn)
 			reportError( pos,"Warning",msg );
@@ -504,9 +500,7 @@ public final class Kiev {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
 					continue;
 				}
-				foreach(ASTNode nn; pl) {
-					PassInfo.push(nn);
-				}
+				foreach(ASTNode nn; pl) nn.pushMe();
 				BlockStat bl;
 				switch(b.mode) {
 				case PrescannedBody.BlockMode:
@@ -523,9 +517,7 @@ public final class Kiev {
 				}
 				b.replaceWithNode(null);
 				pl = pl.reverse();
-				foreach(ASTNode nn; pl) {
-					PassInfo.pop(nn);
-				}
+				foreach(ASTNode nn; pl) 	nn.popMe();
 			}
 		} finally {
 			f.bodies = PrescannedBody.emptyArray;
@@ -640,7 +632,7 @@ public final class Kiev {
 			KString curr_file = Kiev.curFile;
 			Kiev.curFile = fu.filename;
 			boolean[] exts = Kiev.getExtSet();
-			PassInfo.push(fu);
+			PassInfo.pushFileUnit(fu);
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
 				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
@@ -654,7 +646,7 @@ public final class Kiev {
 				}
 			}
 			finally {
-				PassInfo.pop(fu);
+				PassInfo.popFileUnit(fu);
 				Kiev.curFile = curr_file;
 				Kiev.setExtSet(exts);
 			}

@@ -123,7 +123,7 @@ public class RuleMethod extends Method {
 		}
 		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,ACC_FORWARD));
 		// push the method, because formal parameters may refer method's type args
-		PassInfo.push(this);
+		PassInfo.pushMethod(this);
 		try {
 			foreach (FormPar fp; params) {
 				fp.vtype.getType(); // resolve
@@ -137,7 +137,7 @@ public class RuleMethod extends Method {
 			foreach (Var lv; localvars)
 				lv.setLocalRuleVar(true);
 		} finally {
-			PassInfo.pop(this);
+			PassInfo.popMethod(this);
 		}
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has java type "+this.jtype);
 		foreach(ASTAlias al; aliases) al.attach(this);
@@ -180,7 +180,7 @@ public class RuleMethod extends Method {
 
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
-		PassInfo.push(this);
+		PassInfo.pushMethod(this);
 		try {
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
@@ -211,7 +211,7 @@ public class RuleMethod extends Method {
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			PassInfo.pop(this);
+			PassInfo.popMethod(this);
 		}
 		this.cleanDFlow();
 	}

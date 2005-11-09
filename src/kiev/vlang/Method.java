@@ -127,6 +127,23 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		acc.verifyAccessDecl(this);
 	}
 	
+	public void pushMe() { PassInfo.pushMethod(this); }
+	public void popMe() { PassInfo.popMethod(this); }
+	
+	public void walkTree((ASTNode)->boolean exec) {
+		PassInfo.pushMethod(this);
+		try {
+			treeWalker(exec);
+		} finally { PassInfo.popMethod(this); }
+	}
+
+	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+		PassInfo.pushMethod(this);
+		try {
+			treeWalker(pre_exec, post_exec);
+		} finally { PassInfo.popMethod(this); }
+	}
+
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.meta.get(MetaThrows.NAME);
 	}
@@ -460,7 +477,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 
 		// push the method, because formal parameters may refer method's type args
-		PassInfo.push(this);
+		PassInfo.pushMethod(this);
 		try {
 			foreach (FormPar fp; params) {
 				fp.vtype.getType(); // resolve
@@ -468,7 +485,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					fp.meta.verify();
 			}
 		} finally {
-			PassInfo.pop(this);
+			PassInfo.popMethod(this);
 		}
 		if( isVarArgs() ) {
 			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
@@ -550,7 +567,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
-		PassInfo.push(this);
+		PassInfo.pushMethod(this);
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -579,7 +596,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		} catch(Exception e ) {
 			Kiev.reportError(0/*body.getPos()*/,e);
 		} finally {
-			PassInfo.pop(this);
+			PassInfo.popMethod(this);
 		}
 		this.cleanDFlow();
 
@@ -588,7 +605,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public void generate() {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		PassInfo.push(this);
+		PassInfo.pushMethod(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
 			foreach(Field f; violated_fields; PassInfo.clazz.instanceOf((Struct)f.parent) ) {
@@ -603,11 +620,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 				cond.generate(Type.tpVoid);
-		} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
+		} finally { kiev.vlang.PassInfo.popMethod(this); kiev.vlang.Code.generation = false; }
 		if( !isAbstract() && body != null ) {
 			Code.reInit();
 			Code.generation = true;
-			PassInfo.push(this);
+			PassInfo.pushMethod(this);
 			try {
 				if( !isBad() ) {
 					if( !isStatic() ) Code.addVar(getThisPar());
@@ -670,7 +687,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				Code.generateCode();
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);
-			} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
+			} finally { kiev.vlang.PassInfo.popMethod(this); kiev.vlang.Code.generation = false; }
 		}
 	}
 

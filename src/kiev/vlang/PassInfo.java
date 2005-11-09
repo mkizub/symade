@@ -113,84 +113,157 @@ public class PassInfo {
 	public static Struct			clazz;
 	public static Method			method;
 	public static ASTNode[]			path	= new ASTNode[1024];
-//	public static int[]				snidepth= new int[1024];
 	public static int				pathTop = 0;
 
 
-	public static void push(ASTNode node) {
-		trace(Kiev.debugAST,"AST "+pathTop+" push '"+node+"'"+debugAt());
-//		snidepth[pathTop] = NodeInfoPass.getDepth();
+	public static void pushFileUnit(FileUnit node) {
+		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
         path[pathTop++] = node;
+		trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
+		file_unit = (FileUnit)node;
+		Code.setLinePos(node.getPosLine());
+	}
+	
+	public static void popFileUnit(FileUnit node) {
+		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
+    	if( node != path[pathTop-1] )
+    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
+		--pathTop;
+		file_unit = null;
+		for(int i=pathTop-1; i >= 0; i-- ) {
+			if( path[i] instanceof FileUnit ) {
+				file_unit = (FileUnit)path[i];
+				trace(Kiev.debugAST,AT()+" set file unit  '"+file_unit+"'"+debugAt());
+				break;
+			}
+		}
+	}
+	
+	public static void pushStruct(Struct node) {
+		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
+        path[pathTop++] = node;
+		trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
+		clazz = node;
+		Code.setLinePos(node.getPosLine());
+	}
+	
+	public static void popStruct(Struct node) {
+		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
+    	if( node != path[pathTop-1] )
+    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
+		--pathTop;
+		clazz = null;
+		for(int i=pathTop-1; i >= 0; i-- ) {
+			if( path[i] instanceof Struct ) {
+				clazz = (Struct)path[i];
+				trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
+				break;
+			}
+		}
+	}
+	
+	public static void pushMethod(Method node) {
+		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
+        path[pathTop++] = node;
+		trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
+		method = node;
+		Code.setLinePos(node.getPosLine());
+	}
+	
+	public static void popMethod(Method node) {
+		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
+    	if( node != path[pathTop-1] )
+    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
+		--pathTop;
+		method = null;
+		for(int i=pathTop-1; i >= 0; i-- ) {
+			if( path[i] instanceof Method ) {
+				method = (Method)path[i];
+				trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
+				break;
+			}
+		}
+	}
+	
+	public static void push(ASTNode node) {
+		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
 		if( node instanceof FileUnit ) {
-			trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
+			trace(Kiev.debugAST,AT()+" set file unit  '"+node+"'"+debugAt());
 			file_unit = (FileUnit)node;
+			path[pathTop++] = node;
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
 		}
 		else if( node instanceof Struct ) {
-			trace(Kiev.debugAST,"AST set clazz  '"+node+"'"+debugAt());
+			trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
 			clazz = (Struct)node;
+			path[pathTop++] = node;
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
 		}
 		else if( node instanceof Method ) {
-			trace(Kiev.debugAST,"AST set method '"+node+"'"+debugAt());
+			trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
 			method = (Method)node;
+			path[pathTop++] = node;
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
 		}
 		Code.setLinePos(node.getPosLine());
-//		{
-//			if( node instanceof Statement )
-//				Code.pushStackPos();
-//		}
-		if( node instanceof Scope ) {
-			trace(Kiev.debugAST,"AST enetred scope '"+node+"'"+debugAt());
-			enterScope((Scope)node);
-		}
 	}
 
 	public static void pop(ASTNode n) {
-		trace(Kiev.debugAST,"AST "+pathTop+" pop  '"+n+"'"+debugAt());
-    	if( n != path[pathTop-1] ) {
-    		if( n == path[pathTop-2] )
-    			pop( path[pathTop-1] );
-    		else
-	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
-    	}
-    	ASTNode node = path[--pathTop];
-    	if( n!=node )
-    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-        path[pathTop] = null;
-//		if (snidepth[pathTop] != NodeInfoPass.getDepth())
-//			throw new RuntimeException("PassInfo/SNI push/pop node "+n+" had sni depth "+snidepth[pathTop]+", but popped at "+NodeInfoPass.getDepth());
-		if( node instanceof FileUnit ) {
+		trace(Kiev.debugAST,AT()+" pop  '"+n+"'"+debugAt());
+//    	if( n != path[pathTop-1] ) {
+//    		if( n == path[pathTop-2] )
+//    			pop( path[pathTop-1] );
+//    		else
+//	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
+//    	}
+//    	ASTNode node = path[--pathTop];
+//    	if( n!=node )
+//    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+//      path[pathTop] = null;
+		if( n instanceof FileUnit ) {
+			ASTNode node = path[pathTop-1];
+			if (n != node)
+				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+			--pathTop;
 			file_unit = null;
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
 		}
 		else if( node instanceof Struct ) {
+			ASTNode node = path[pathTop-1];
+			if (n != node)
+				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+			--pathTop;
 			clazz = null;
 			for(int i=pathTop-1; i >= 0; i-- ) {
 				if( path[i] instanceof Struct ) {
 					clazz = (Struct)path[i];
-					trace(Kiev.debugAST,"AST set clazz  '"+clazz+"'"+debugAt());
+					trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
 					break;
 				}
 			}
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
 		}
 		else if( node instanceof Method ) {
+			ASTNode node = path[pathTop-1];
+			if (n != node)
+				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+			--pathTop;
 			method = null;
 			for(int i=pathTop-1; i >= 0; i-- ) {
 				if( path[i] instanceof Method ) {
 					method = (Method)path[i];
-					trace(Kiev.debugAST,"AST set method '"+method+"'"+debugAt());
+					trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
 					break;
 				}
 			}
-		}
-//		if( genPass && code != null ) {
-//			if( node instanceof Statement )
-//				code.popStackPos();
-//		}
-		if( node instanceof Scope ) {
-			trace(Kiev.debugAST,"AST leaved scope '"+node+"'"+debugAt());
-			leaveScope((Scope)node);
+			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
 		}
 	}
 
+	private static String SP =
+	"                                                                                   "+
+	"                                                                                   ";
+	private static String AT() { return "AST "+pathTop+SP.substring(0,pathTop); }
 	private static String debugAt() {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(4096);
 		new Exception().printStackTrace(new PrintStream(bos));
@@ -208,14 +281,6 @@ public class PassInfo {
 			if( msg[to] == '\n' ) break;
 		to--;
 		return new String(msg,0,from,to-from);
-	}
-
-	public static void enterScope(Scope sc) {
-		trace(Kiev.debugResolve,"Entered into scope "+sc);
-	}
-
-	public static void leaveScope(Scope scope) {
-		trace(Kiev.debugResolve,"Leave scope "+scope);
 	}
 
 	public static boolean checkClassName(ASTNode from, KString qname) {

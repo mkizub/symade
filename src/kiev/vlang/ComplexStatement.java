@@ -711,7 +711,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 						((FinallyInfo)((TryStat)parent).finally_catcher).subr_label);
 				}
 				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
+					ReturnStat.generateReturn(this);
 				else
 					Code.addInstr(Instr.op_goto,((TryStat)parent).end_label);
 			}
@@ -883,7 +883,7 @@ public class TryStat extends Statement/*defaults*/ {
 			}
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() ) {
-					ReturnStat.generateReturn();
+					ReturnStat.generateReturn(this);
 				} else {
 					if( finally_catcher != null )
 						Code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
@@ -989,7 +989,7 @@ public class SynchronizedStat extends Statement {
 			Code.addInstr(Instr.stop_catcher,code_catcher);
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
+					ReturnStat.generateReturn(this);
 				else {
 					Code.addInstr(Instr.op_load,expr_var);
 					Code.addInstr(Instr.op_monitorexit);
@@ -1092,7 +1092,7 @@ public class WithStat extends Statement {
 			}
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
+					ReturnStat.generateReturn(this);
 			}
 
 			Code.addInstr(Instr.set_label,end_label);

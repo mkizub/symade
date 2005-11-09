@@ -59,13 +59,13 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	public void verify(Struct:ASTNode s) {
-		PassInfo.push(s);
+		PassInfo.pushStruct(s);
 		try {
 			foreach (DNode n; s.members; n instanceof Field)
 				verify(n);
 			foreach (Struct sub; s.sub_clazz)
 				verify(sub);
-		} finally { PassInfo.pop(s); }
+		} finally { PassInfo.popStruct(s); }
 	}
 	
 	public void verify(Field:ASTNode f) {
@@ -184,10 +184,10 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	
 	public void rewrite(ASTNode:Object node) {
 		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
-		PassInfo.push(node);
+		node.pushMe();
 		try {
 			rewriteNode(node);
-		} finally { PassInfo.pop(node); }
+		} finally { node.popMe(); }
 	}
 	
 	public void rewrite(NArr<ASTNode>:Object arr) {
@@ -202,14 +202,6 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		return;
 	}
 
-	public void rewrite(FileUnit:Object node) {
-		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
-		PassInfo.push(node);
-		try {
-			rewriteNode(node);
-		} finally { PassInfo.pop(node); }
-	}
-	
 	public void rewrite(AccessExpr:Object fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		PassInfo.push(fa);
