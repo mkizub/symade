@@ -1926,13 +1926,16 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		} finally { PassInfo.pop(this); }
 	}
 
-	public final boolean preResolve(TransfProcessor proc) {
+	public final void preResolve() {
 		this.resolveImports();
+	}
+	
+	public final boolean mainResolveIn(TransfProcessor proc) {
 		this.resolveFinalFields(false);
 		return !isLocal();
 	}
 	
-	public final void postResolve() {
+	public void mainResolveOut() {
 		cleanDFlow();
 	}
 	

@@ -50,6 +50,8 @@ public class ResInfo {
 	// a real type of the method in Method.compare() call
 	MethodType			mt;
 	
+	ASTNode				space_prev;
+	
 	public boolean isStaticAllowed()   { return (flags & noStatic)   == 0; }
 	public boolean isImportsAllowed()  { return (flags & noImports)  == 0; }
 	public boolean isForwardsAllowed() { return (flags & noForwards) == 0; }

@@ -34,7 +34,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -1140,7 +1140,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this,this.stats),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof VarDecl,
 			((VarDecl)n).var.name.equals(name),
@@ -1154,7 +1154,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this,this.stats),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
 		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -1164,7 +1164,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this,this.stats),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
 		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)

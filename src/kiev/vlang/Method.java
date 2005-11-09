@@ -401,11 +401,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
 	;
-		!this.isStatic(),
+		!this.isStatic() && path.isForwardsAllowed(),
 		var ?= getThisPar(),
 		path.enterForward(var) : path.leaveForward(var),
 		var.type.resolveNameAccessR(node,path,name)
 	;
+		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
@@ -415,11 +416,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
-		!this.isStatic(),
+		!this.isStatic() && info.isForwardsAllowed(),
 		n ?= getThisPar(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	;
+		info.isForwardsAllowed(),
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),

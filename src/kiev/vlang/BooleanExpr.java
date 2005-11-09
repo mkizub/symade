@@ -364,63 +364,21 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public Operator getOp() { return op; }
 
-	private void initialResolve(Type reqType) {
-		setTryResolved(true);
-		resolveExprs();
+	public void mainResolveOut() {
 		Type et1 = expr1.getType();
 		Type et2 = expr2.getType();
-		if( ( et1.isNumber() && et2.isNumber() ) &&
-			(    op==BinaryOperator.LessThen
-			||   op==BinaryOperator.LessEquals
-			||   op==BinaryOperator.GreaterThen
-			||   op==BinaryOperator.GreaterEquals
-			)
-		) {
-			this.resolve(reqType);
-			return;
-		}
-		else if( op==BinaryOperator.BooleanOr ) {
+		if( op==BinaryOperator.BooleanOr ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,expr1,expr2));
+				replaceWithNode(new BinaryBooleanOrExpr(pos,expr1,expr2));
 				return;
 			}
 		}
 		else if( op==BinaryOperator.BooleanAnd ) {
 			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,expr1,expr2));
+				replaceWithNode(new BinaryBooleanAndExpr(pos,expr1,expr2));
 				return;
 			}
 		}
-		else if(
-			(	(et1.isNumber() && et2.isNumber())
-			 || (et1.isReference() && et2.isReference())
-			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
-			 || (et1.isEnum() && et2.isIntegerInCode())
-			 || (et1.isIntegerInCode() && et2.isEnum())
-			 || (et1.isEnum() && et2.isEnum() && et1 == et2)
-			) &&
-			(   op==BinaryOperator.Equals
-			||  op==BinaryOperator.NotEquals
-			)
-		) {
-			this.resolve(reqType);
-			return;
-		}
-		// Not a standard operator, find out overloaded
-		foreach(OpTypes opt; op.types ) {
-			Type[] tps = new Type[]{null,et1,et2};
-			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-			if( opt.match(tps,argsarr) ) {
-				Expr e;
-				if( opt.method.isStatic() )
-					e = new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2});
-				else
-					e = new CallExpr(pos,expr1,opt.method,new ENode[]{expr2});
-				replaceWithNodeResolve(reqType, e);
-				return;
-			}
-		}
-		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
 	private boolean resolveExprs() {
@@ -732,6 +690,7 @@ public class InstanceofExpr extends BoolExpr {
 				Type et = expr.getType();
 				if (!expr.isForWrapper() && et.isWrapper()) {
 					expr = et.makeWrappedAccess(expr);
+					expr.setForWrapper(true);
 					expr.resolve(null);
 				}
 			}
@@ -789,8 +748,15 @@ public class InstanceofExpr extends BoolExpr {
 			path = new DNode[]{((StaticFieldAccessExpr)expr).var};
 			break;
 		}
-		if (path != null)
-			return dfs.addNodeType(path,type.getType());
+		if (path != null) {
+			Type et = expr.getType();
+			Type tp = type.getType();
+			if (et.isWrapper() && !tp.isWrapper()) {
+				Type ut = ((WrapperType)et).getUnwrappedType();
+				tp = WrapperType.newWrapperType(Type.newRefType(ut,new Type[]{tp}));
+			}
+			return dfs.addNodeType(path,tp);
+		}
 		return dfs;
 	}
 

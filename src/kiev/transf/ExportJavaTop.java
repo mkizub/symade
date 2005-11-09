@@ -219,7 +219,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),name) ) {
+		if( !PassInfo.resolveQualifiedNameR(astn,v,new ResInfo(ResInfo.noForwards),name) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
 		}
 		ASTNode n = v;
@@ -782,9 +782,18 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 
 	public void preResolve(ASTNode node) {
 		TransfProcessor self = this;
-		node.walkTree(
-			fun (ASTNode n)->boolean { return n.preResolve(self); },
-			fun (ASTNode n)->void { n.postResolve(); }
+		node.walkTreeZV(
+			fun (ASTNode n)->boolean { return n.preResolveIn(this); },
+			fun (ASTNode n)->void { n.preResolveOut(); }
+			);
+		return;
+	}
+
+	public void mainResolve(ASTNode node) {
+		TransfProcessor self = this;
+		node.walkTreeZV(
+			fun (ASTNode n)->boolean { return n.mainResolveIn(self); },
+			fun (ASTNode n)->void { n.mainResolveOut(); }
 			);
 		return;
 	}

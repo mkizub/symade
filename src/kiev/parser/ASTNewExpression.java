@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -47,18 +47,26 @@ public class ASTNewExpression extends Expr {
 	public final NArr<ENode>		args;
 	
     @att
-	public Struct				clazz;
+	public Struct					clazz;
 	
 	public Type getType() {
 		return type.getType();
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
 		// don't pre-resolve clazz
 		Type tp = type.getType();
 		tp.checkResolved();
-		proc.preResolve(type);
 		foreach (ENode a; args) proc.preResolve(a);
+		return false;
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
+		// don't pre-resolve clazz
+		Type tp = type.getType();
+		tp.checkResolved();
+		proc.mainResolve(type);
+		foreach (ENode a; args) proc.mainResolve(a);
 		return false;
 	}
 	

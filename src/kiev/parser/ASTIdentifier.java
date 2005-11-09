@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -67,7 +67,7 @@ public class ASTIdentifier extends ENode {
 		return Type.tpVoid;
 	}
 
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
 		// predefined operators
 		if( name == op_instanceof ) {
 			ASTOperator op = new ASTOperator();
@@ -124,7 +124,7 @@ public class ASTIdentifier extends ENode {
 		// resolve in the path of scopes
 		ASTNode@ v;
 		ResInfo info = new ResInfo();
-		if( !PassInfo.resolveNameR(v,info,name) ) {
+		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 //			if( name.startsWith(Constants.nameDEF) ) {
 //				String prop = name.toString().substring(2);
 //				String val = Env.getProperty(prop);
@@ -193,7 +193,7 @@ public class ASTIdentifier extends ENode {
 		}
 		ASTNode@ v;
 		ResInfo info = new ResInfo();
-		if( !PassInfo.resolveNameR(v,info,name) ) {
+		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 			if( name.startsWith(Constants.nameDEF) ) {
 				String prop = name.toString().substring(2);
 				String val = Env.getProperty(prop);

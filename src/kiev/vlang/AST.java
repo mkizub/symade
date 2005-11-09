@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -394,9 +394,11 @@ public abstract class ASTNode implements Constants {
 	public DFFunc newDFFuncTru(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncTru() for "+getClass()); }
 	public DFFunc newDFFuncFls(DataFlowInfo dfi) { throw new RuntimeException("newDFFuncFls() for "+getClass()); }
 
-	public boolean preGenerate()	{ return true; }
-	public boolean preResolve(TransfProcessor proc)		{ return true; }
-	public void postResolve()		{}
+	public boolean preResolveIn(TransfProcessor proc) { return true; }
+	public void preResolveOut() {}
+	public boolean mainResolveIn(TransfProcessor proc) { return true; }
+	public void mainResolveOut() {}
+	public boolean	preGenerate()	{ return true; }
 	
 	public void walkTree((ASTNode)->boolean exec) {
 		PassInfo.push(this);
@@ -418,7 +420,27 @@ public abstract class ASTNode implements Constants {
 		} finally { PassInfo.pop(this); }
 	}
 
-	public void walkTree((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+	public void walkTreeVV((ASTNode)->void pre_exec, (ASTNode)->void post_exec) {
+		PassInfo.push(this);
+		try {
+			pre_exec(this);
+			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+				Object val = this.getVal(attr.name);
+				if (val == null)
+					continue;
+				if (attr.is_space) {
+					foreach (ASTNode n; (NArr<ASTNode>)val)
+						n.walkTreeVV(pre_exec, post_exec);
+				}
+				else if (val instanceof ASTNode) {
+					((ASTNode)val).walkTreeVV(pre_exec, post_exec);
+				}
+			}
+			post_exec(this);
+		} finally { PassInfo.pop(this); }
+	}
+
+	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
 		PassInfo.push(this);
 		try {
 			if (pre_exec(this)) {
@@ -428,10 +450,10 @@ public abstract class ASTNode implements Constants {
 						continue;
 					if (attr.is_space) {
 						foreach (ASTNode n; (NArr<ASTNode>)val)
-							n.walkTree(pre_exec, post_exec);
+							n.walkTreeZV(pre_exec, post_exec);
 					}
 					else if (val instanceof ASTNode) {
-						((ASTNode)val).walkTree(pre_exec, post_exec);
+						((ASTNode)val).walkTreeZV(pre_exec, post_exec);
 					}
 				}
 			}
@@ -1332,7 +1354,7 @@ public final class LocalStructDecl extends ENode implements Named {
 		clazz.setResolved(true);
 	}
 
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
 		if( PassInfo.method==null || PassInfo.method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
@@ -1504,6 +1526,8 @@ public class TypeRef extends ENode {
 	}
 
 	public Type getType() {
+//		if (lnk == null)
+//			throw new CompilerException(pos,"Type "+this+" is not found");
 		return lnk;
 	}
 	
@@ -1516,7 +1540,12 @@ public class TypeRef extends ENode {
 		this.lnk = n;
 	}
 	
-	public final boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
+		getType(); // calls resolving
+		return false;
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
 		getType(); // calls resolving
 		return false;
 	}
@@ -1604,8 +1633,6 @@ public class NameRef extends ASTNode {
 	public Type getType() {
 		return Type.tpVoid;
 	}
-
-	public boolean preResolve(TransfProcessor proc) { return false; }
 
 	public KString toKString() {
 		return name;

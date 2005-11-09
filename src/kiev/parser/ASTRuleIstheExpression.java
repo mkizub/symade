@@ -29,7 +29,7 @@ import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -38,23 +38,14 @@ import kiev.transf.*;
 public class ASTRuleIstheExpression extends ASTRuleNode {
 
 	@att
-	public ASTIdentifier	name;
+	public NameRef			name;
 	@att
 	@dflow(in="this:in")
 	public ENode			expr;
 
-	public boolean preResolve(TransfProcessor proc) {
-		PassInfo.push(this);
-		try {
-			// don't pre-resolve 'name'
-			proc.preResolve(expr);
-		} finally { PassInfo.pop(this); }
-		return false;
-	}
-	
     public void resolve(Type reqType) {
 		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),name.name) )
+		if( !PassInfo.resolveNameR(this,v,new ResInfo(),name.name) )
 			throw new CompilerException(pos,"Unresolved identifier "+name.name);
 		if( !(v instanceof Var) )
     		throw new CompilerException(name.getPos(),"Identifier is not a var");

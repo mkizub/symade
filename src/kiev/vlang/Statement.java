@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -131,8 +131,8 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
 			InlineMethodStat node = (InlineMethodStat)dfi.node;
-			dfi = node.parent.getDFlow();
-			res = DFFunc.calc(dfi.getSocket(node.pslot.name).func_in, dfi);
+			DataFlowInfo pdfi = node.parent.getDFlow();
+			res = DFFunc.calc(pdfi.getSocket(node.pslot.name).func_in, pdfi);
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -271,7 +271,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
-		n @= new SymbolIterator(this,this.stats),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		{
 			n instanceof VarDecl,
 			((VarDecl)n).var.name.equals(name),
@@ -285,7 +285,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		}
 	;
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this,this.stats),
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof VarDecl && ((VarDecl)n).var.isForward() && ((VarDecl)n).var.name.equals(name),
 		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		n.getType().resolveNameAccessR(node,info,name)
@@ -295,7 +295,8 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
-		n @= new SymbolIterator(this,this.stats),
+		info.space_prev != null && info.space_prev.pslot.name == "stats",
+		n @= new SymbolIterator(this.stats, info.space_prev),
 		n instanceof VarDecl && ((VarDecl)n).var.isForward(),
 		info.enterForward(((VarDecl)n).var) : info.leaveForward(((VarDecl)n).var),
 		((VarDecl)n).var.getType().resolveCallAccessR(node,info,name,mt)
@@ -933,7 +934,7 @@ public class BreakStat extends Statement {
 		super.callbackRootChanged();
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean mainResolveIn(TransfProcessor proc) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink(this);
@@ -1048,7 +1049,7 @@ public class BreakStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
 		PassInfo.push(this);
 		try {
-			Object[] lb = PassInfo.resolveBreakLabel(ident==null?null:ident.name);
+			Object[] lb = resolveBreakLabel();
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel ) {
@@ -1068,6 +1069,58 @@ public class BreakStat extends Statement {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
+	}
+
+	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
+	private Object[] resolveBreakLabel() {
+		KString name = ident==null?null:ident.name;
+		Object[] cl = new Object[0];
+		if( name == null || name.equals(KString.Empty) ) {
+			// Search for loop statements
+			for(ASTNode node = this.parent; node != null; node = node.parent) {
+				if( node instanceof TryStat ) {
+					if( node.finally_catcher != null )
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+				}
+				else if( node instanceof SynchronizedStat ) {
+					cl = (Object[])Arrays.append(cl,node.expr_var);
+				}
+				if( node instanceof Method ) break;
+				if( node instanceof BreakTarget || node instanceof BlockStat );
+				else continue;
+				if( node instanceof BreakTarget ) {
+					BreakTarget t = (BreakTarget)node;
+					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel());
+				}
+				else if( node instanceof BlockStat && node.isBreakTarget() ){
+					BlockStat t = (BlockStat)node;
+					return (Object[])Arrays.append(cl,t.getBreakLabel());
+				}
+			}
+			throw new RuntimeException("Break not within loop statement");
+		} else {
+			// Search for labels with loop/switch statement
+			for(ASTNode node = this.parent; node != null; node = node.parent) {
+				if( node instanceof TryStat ) {
+					if( node.finally_catcher != null )
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+				}
+				else if( node instanceof SynchronizedStat ) {
+					cl = (Object[])Arrays.append(cl,node.expr_var);
+				}
+				if( node instanceof Method ) break;
+				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
+					Statement st = node.stat;
+					if( st instanceof BreakTarget )
+						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel());
+					else if (st instanceof BlockStat)
+						return (Object[])Arrays.append(cl,st.getBreakLabel());
+					else
+						throw new RuntimeException("Label "+name+" does not refer to break target");
+				}
+			}
+		}
+		throw new RuntimeException("Label "+name+" unresolved or isn't a break target");
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1103,7 +1156,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 		super.callbackRootChanged();
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean mainResolveIn(TransfProcessor proc) {
 		ASTNode p;
 		if (dest != null) {
 			dest.delLink(this);
@@ -1161,7 +1214,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
 		PassInfo.push(this);
 		try {
-			Object[] lb = PassInfo.resolveContinueLabel(ident==null?null:ident.name);
+			Object[] lb = resolveContinueLabel();
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
@@ -1177,6 +1230,47 @@ public class ContinueStat extends Statement/*defaults*/ {
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
 		} finally { PassInfo.pop(this); }
+	}
+
+	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
+	private Object[] resolveContinueLabel() {
+		KString name = ident==null?null:ident.name;
+		Object[] cl = new Object[0];
+		if( name == null || name.equals(KString.Empty) ) {
+			// Search for loop statements
+			for(ASTNode node = this.parent; node != null; node = node.parent) {
+				if( node instanceof TryStat ) {
+					if( node.finally_catcher != null )
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+				}
+				else if( node instanceof SynchronizedStat ) {
+					cl = (Object[])Arrays.append(cl,node.expr_var);
+				}
+				if( node instanceof Method ) break;
+				if( node instanceof ContinueTarget )
+					return (Object[])Arrays.append(cl,node.getCntLabel().getCodeLabel());
+			}
+			throw new RuntimeException("Continue not within loop statement");
+		} else {
+			// Search for labels with loop statement
+			for(ASTNode node = this.parent; node != null; node = node.parent) {
+				if( node instanceof TryStat ) {
+					if( node.finally_catcher != null )
+						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
+				}
+				else if( node instanceof SynchronizedStat ) {
+					cl = (Object[])Arrays.append(cl,node.expr_var);
+				}
+				if( node instanceof Method ) break;
+				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
+					Statement st = node.stat;
+					if( st instanceof ContinueTarget )
+						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel());
+					throw new RuntimeException("Label "+name+" does not refer to continue target");
+				}
+			}
+		}
+		throw new RuntimeException("Label "+name+" unresolved or isn't a continue target");
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1212,7 +1306,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		super.callbackRootChanged();
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean mainResolveIn(TransfProcessor proc) {
 		if (dest != null) {
 			dest.delLink(this);
 			dest = null;
@@ -1511,7 +1605,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				if( sw.defCase != null )
 					lb = ((CaseLabel)sw.defCase).getLabel();
 				else
-					lb = sw.getBreakLabel();
+					lb = sw.getBrkLabel().getCodeLabel();
 			}
 			else if( !((Expr)expr).isConstantExpr() )
 				lb = sw.getCntLabel().getCodeLabel();
@@ -1530,7 +1624,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 					if( sw.defCase != null )
 						lb = ((CaseLabel)sw.defCase).getLabel();
 					else
-						lb = sw.getBreakLabel();
+						lb = sw.getBrkLabel().getCodeLabel();
 				}
 			}
 			Code.addInstr(Instr.op_goto,lb);

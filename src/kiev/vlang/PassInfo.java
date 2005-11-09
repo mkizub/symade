@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 201 $
+ * @version $Revision$
  *
  */
 
@@ -49,54 +49,56 @@ public interface Named {
 	public NodeName	getName();
 }
 
-public class PathEnumerator implements Enumeration<ASTNode> {
-	public int i;
-	public PathEnumerator() { i = PassInfo.pathTop; }
-	public boolean hasMoreElements() { return i > 0; }
-	public ASTNode nextElement() { return PassInfo.path[--i]; }
-}
-
-public class ParentEnumerator implements Enumeration<ASTNode> {
-	public ASTNode n;
+public final class ParentEnumerator implements Enumeration<ASTNode> {
+	ASTNode n, r;
 	public ParentEnumerator(ASTNode n) {
 		this.n = n;
 	}
-	public ParentEnumerator() {
-		if (PassInfo.pathTop > 0)
-			this.n = PassInfo.path[PassInfo.pathTop-1];
+	public boolean hasMoreElements() {
+		return n.parent != null;
 	}
-	public boolean hasMoreElements() { return n != null; }
-	public ASTNode nextElement() { ASTNode r = n; n = n.parent; return r; }
+	public ASTNode nextElement() {
+		if (r == null) {
+			r = n.parent;
+		} else {
+			n = r;
+			r = n.parent;
+		}
+		return r;
+	}
 }
 
 public class SymbolIterator implements Enumeration<ASTNode> {
-	int current;
 	NArr<ASTNode> stats;
 	ASTNode last_stat;
-	public SymbolIterator(ASTNode block, NArr<ASTNode> stats) {
+	public SymbolIterator(NArr<ASTNode> stats, ASTNode element) {
 		this.stats = stats;
-		for (int i=PassInfo.pathTop-1; i >= 0; i--) {
-			if (PassInfo.path[i] == block) {
-				last_stat = PassInfo.path[i+1];
-				return;
-			}
+		if (element != null && element.pslot == stats.getPSlot()) {
+			assert(stats.indexOf(element) >= 0);
+			last_stat = element;
+		} else {
+			if (stats.size() > 0)
+				last_stat = stats[stats.size()-1];
 		}
-		current = stats.length;
 	}
 	public boolean hasMoreElements() {
-		if (current >= stats.length)
-			return false;
-		if (stats[current] == last_stat)
-			return false;
-		return true;
+		return last_stat != null;
 	}
 	public ASTNode nextElement() {
-		if ( current < stats.length ) return stats[current++];
+		if ( last_stat != null ) {
+			ASTNode r = last_stat;
+			last_stat = last_stat.pprev;
+			return r;
+		}
 		throw new NoSuchElementException();
 	}
 	/// BUG BUG BUG ///
 	public Object nextElement() {
-		if ( current < stats.length ) return stats[current++];
+		if ( last_stat != null ) {
+			ASTNode r = last_stat;
+			last_stat = last_stat.pprev;
+			return r;
+		}
 		throw new NoSuchElementException();
 	}
 }
@@ -216,9 +218,9 @@ public class PassInfo {
 		trace(Kiev.debugResolve,"Leave scope "+scope);
 	}
 
-	public static boolean checkClassName(KString qname) {
+	public static boolean checkClassName(ASTNode from, KString qname) {
 		ASTNode@ node;
-		if (!resolveNameR(node,new ResInfo(),qname))
+		if (!resolveNameR(from, node,new ResInfo(),qname))
 			return false;
 		if (node instanceof Struct && !node.isPackage())
 			return true;
@@ -227,32 +229,52 @@ public class PassInfo {
 		return false;
 	}
 
-	public static rule resolveOperatorR(Operator@ op)
+	public static rule resolveOperatorR(ASTNode from, Operator@ op)
 		ASTNode@ p;
 	{
-		p @= new PathEnumerator(),
+		p @= new ParentEnumerator(from),
 		p instanceof ScopeOfOperators,
 		((ScopeOfOperators)p).resolveOperatorR(op)
 	}
 
-	public static rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public static rule resolveQualifiedNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
+		ParentEnumerator pe;
 	{
 		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
 		name.indexOf('.') > 0, $cut,
 		trace( Kiev.debugResolve, "PassInfo: name '"+name+"' is qualified"),
 		qname_head ?= name.substr(0,name.lastIndexOf('.')),
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,path,qname_head),
+		resolveQualifiedNameR(from,p,path,qname_head),
 		p instanceof Struct,
 		((Struct)p).resolveNameR(node,path,qname_tail)
 	;
-		p @= new PathEnumerator(),
+		pe = new ParentEnumerator(from),
+		p @= pe,
 		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
+		path.space_prev = pe.n,
+		((ScopeOfNames)p).resolveNameR(node,path,name)
+	}
+
+	public static rule resolveNameR(ASTNode from, ASTNode@ node, ResInfo path, KString name)
+		KString@ qname_head;
+		KString@ qname_tail;
+		ASTNode@ p;
+		ParentEnumerator pe;
+	{
+		trace( Kiev.debugResolve, "PassInfo: resolving name "+name),
+		assert(name.indexOf('.') < 0),
+		pe = new ParentEnumerator(from),
+		p @= pe,
+		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
+		p instanceof ScopeOfNames,
+		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
+		path.space_prev = pe.n,
 		((ScopeOfNames)p).resolveNameR(node,path,name)
 	}
 
@@ -425,123 +447,19 @@ public class PassInfo {
 		throw new RuntimeException(msg.toString());
 	}
 
-	public static rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public static rule resolveMethodR(ASTNode from, ASTNode@ node, ResInfo path, KString name, MethodType mt)
 		KString@ qname_head;
 		KString@ qname_tail;
 		ASTNode@ p;
+		ParentEnumerator pe;
 	{
-		name.indexOf('.') > 0, $cut,
-		qname_head ?= name.substr(0,name.lastIndexOf('.')),
-		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
-		resolveNameR(p,new ResInfo(),qname_head),
-		p instanceof Struct,
-		((Struct)p).type.resolveCallStaticR(node, info, qname_tail, mt)
-	;
-		p @= new PathEnumerator(), p instanceof ScopeOfMethods,
-		resolveBestMethodR((ScopeOfMethods)p,node,info,name,mt),
-		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+info+" found...")
-	}
-
-	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	public static Object[] resolveContinueLabel(KString name) {
-		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
-			// Search for loop statements
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof TryStat ) {
-					TryStat ts = (TryStat)path[i];
-					if( ts.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,((FinallyInfo)ts.finally_catcher).subr_label);
-				}
-				else if( path[i] instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,((SynchronizedStat)path[i]).expr_var);
-				}
-				if( path[i] instanceof Method ) break;
-				if( ! (path[i] instanceof ContinueTarget) ) continue;
-				ContinueTarget t = (ContinueTarget)path[i];
-				return (Object[])Arrays.append(cl,t.getCntLabel().getCodeLabel());
-			}
-			throw new RuntimeException("Continue not within loop statement");
-		} else {
-			// Search for labels with loop statement
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof TryStat ) {
-					TryStat ts = (TryStat)path[i];
-					if( ts.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,((FinallyInfo)ts.finally_catcher).subr_label);
-				}
-				else if( path[i] instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,((SynchronizedStat)path[i]).expr_var);
-				}
-				if( path[i] instanceof Method ) break;
-				if( path[i] instanceof LabeledStat && ((LabeledStat)path[i]).getName().equals(name) ) {
-					Statement st = ((LabeledStat)path[i]).stat;
-					if( ! (st instanceof ContinueTarget) )
-						throw new RuntimeException("Label "+name+" does not refer to continue target");
-					ContinueTarget t = (ContinueTarget)st;
-					return (Object[])Arrays.append(cl,t.getCntLabel().getCodeLabel());
-				}
-			}
-		}
-		throw new RuntimeException("Label "+name+" unresolved or isn't a continue target");
-	}
-
-	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	public static Object[] resolveBreakLabel(KString name) {
-		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
-			// Search for loop/switch statements
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof TryStat ) {
-					TryStat ts = (TryStat)path[i];
-					if( ts.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,((FinallyInfo)ts.finally_catcher).subr_label);
-				}
-				else if( path[i] instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,((SynchronizedStat)path[i]).expr_var);
-				}
-				if( path[i] instanceof Method ) break;
-				if( path[i] instanceof BreakTarget || path[i] instanceof BlockStat );
-				else continue;
-				if( path[i] instanceof BreakTarget ) {
-					BreakTarget t = (BreakTarget)path[i];
-					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel());
-				}
-				else if( path[i] instanceof BlockStat && path[i].isBreakTarget() ){
-					BlockStat t = (BlockStat)path[i];
-					return (Object[])Arrays.append(cl,t.getBreakLabel());
-				}
-			}
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof BreakTarget || path[i] instanceof BreakStat );
-				else continue;
-				System.out.println(path[i]+" is break target "+path[i].isBreakTarget());
-			}
-			throw new RuntimeException("Break not within loop statement");
-		} else {
-			// Search for labels with loop/switch statement
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof TryStat ) {
-					TryStat ts = (TryStat)path[i];
-					if( ts.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,((FinallyInfo)ts.finally_catcher).subr_label);
-				}
-				else if( path[i] instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,((SynchronizedStat)path[i]).expr_var);
-				}
-				if( path[i] instanceof Method ) break;
-				if( path[i] instanceof LabeledStat && ((LabeledStat)path[i]).getName().equals(name) ) {
-					Statement st = ((LabeledStat)path[i]).stat;
-					if( ! (st instanceof BreakTarget || st instanceof BlockStat) )
-						throw new RuntimeException("Label "+name+" does not refer to break target");
-					if( st instanceof BreakTarget )
-						return (Object[])Arrays.append(cl,((BreakTarget)st).getBrkLabel().getCodeLabel());
-					else
-						return (Object[])Arrays.append(cl,((BlockStat)st).getBreakLabel());
-				}
-			}
-		}
-		throw new RuntimeException("Label "+name+" unresolved or isn't a break target");
+		assert(name.indexOf('.') < 0),
+		pe = new ParentEnumerator(from),
+		p @= pe,
+		p instanceof ScopeOfMethods,
+		path.space_prev = pe.n,
+		resolveBestMethodR((ScopeOfMethods)p,node,path,name,mt),
+		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+path+" found...")
 	}
 
 	public static boolean checkException(Type exc) throws RuntimeException {

@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -121,7 +121,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		disabled_extensions[i] = !enabled;
 	}
 
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
 		this.resolveImports();
 		return true;
 	}

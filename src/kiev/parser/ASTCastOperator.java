@@ -25,10 +25,11 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -40,9 +41,35 @@ public class ASTCastOperator extends ASTOperator {
 	
 	@att public TypeRef	type;
 	public boolean  reinterp;
+	public boolean  sure;
 
 	public ASTCastOperator() {
 		image = fakeImage;
+	}
+	
+	public boolean preResolveIn(TransfProcessor proc) {
+		if (sure)
+			return true;
+		try {
+			type.getType();
+			return false;
+		} catch (CompilerException e) {
+			if !(type instanceof TypeNameRef)
+				throw e;
+		}
+		TypeNameRef tnr = (TypeNameRef)type;
+		String[] names = String.valueOf(tnr.name.name).split("\\.");
+		ENode e = new ASTIdentifier(type.pos, KString.from(names[0]));
+		for (int i=1; i < names.length; i++) {
+			ASTAccessExpression ae = new ASTAccessExpression();
+			ae.pos = type.pos;
+			ae.obj = e;
+			ae.ident = new NameRef(type.pos, KString.from(names[i]));
+			e = ae;
+		}
+		replaceWithNode(e);
+		proc.preResolve(e);
+		return false;
 	}
 	
 	public Operator resolveOperator() {

@@ -46,7 +46,7 @@ public class ASTExpression extends Expr {
 	@dflow(in="this:in", seq="true")
 	public final NArr<ENode>		nodes;
 
-	public void postResolve() {
+	public void preResolveOut() {
 		PassInfo.push(this);
 		try {
 			if (nodes.length == 1 && nodes[0] instanceof Expr) {
@@ -176,10 +176,10 @@ public class ASTExpression extends Expr {
 			trace( Kiev.debugOperators, "trying cast "+op)
 		;	expr.head() instanceof ASTOperator,
 			op ?= PrefixOperator.getOperator(((ASTOperator)expr.head()).image),
-			op.isStandard() || PassInfo.resolveOperatorR(op)
+			op.isStandard() || PassInfo.resolveOperatorR(this,op)
 		;	expr.head() instanceof ASTIdentifier,
 			op ?= PrefixOperator.getOperator(((ASTIdentifier)expr.head()).name),
-			op.isStandard() || PassInfo.resolveOperatorR(op),
+			op.isStandard() || PassInfo.resolveOperatorR(this,op),
 			trace( Kiev.debugOperators,"identifier as operator: "+op)
 		},
 		op.priority >= priority,
@@ -199,10 +199,10 @@ public class ASTExpression extends Expr {
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= PostfixOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-			op.isStandard() || PassInfo.resolveOperatorR(op)
+			op.isStandard() || PassInfo.resolveOperatorR(this,op)
 		;	expr.tail().head() instanceof ASTIdentifier,
 			op ?= PostfixOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-			op.isStandard() || PassInfo.resolveOperatorR(op),
+			op.isStandard() || PassInfo.resolveOperatorR(this,op),
 			trace( Kiev.debugOperators,"identifier as operator: "+op)
 		},
 		op.priority >= priority,
@@ -223,10 +223,10 @@ public class ASTExpression extends Expr {
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= BinaryOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-			op.isStandard() || PassInfo.resolveOperatorR(op)
+			op.isStandard() || PassInfo.resolveOperatorR(this,op)
 		;	expr.tail().head() instanceof ASTIdentifier,
 			op ?= BinaryOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-			op.isStandard() || PassInfo.resolveOperatorR(op),
+			op.isStandard() || PassInfo.resolveOperatorR(this,op),
 			trace( Kiev.debugOperators,"identifier as operator: "+op)
 		},
 		op.priority >= priority,
@@ -253,10 +253,10 @@ public class ASTExpression extends Expr {
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= AssignOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-			op.isStandard() || PassInfo.resolveOperatorR(op)
+			op.isStandard() || PassInfo.resolveOperatorR(this,op)
 		;	expr.tail().head() instanceof ASTIdentifier,
 			op ?= AssignOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-			op.isStandard() || PassInfo.resolveOperatorR(op),
+			op.isStandard() || PassInfo.resolveOperatorR(this,op),
 			trace( Kiev.debugOperators,"identifier as operator: "+op)
 		},
 		op.priority >= priority,
@@ -277,10 +277,10 @@ public class ASTExpression extends Expr {
 		{
 			expr.tail().head() instanceof ASTOperator,
 			op ?= MultiOperator.getOperator(((ASTOperator)expr.tail().head()).image),
-			op.isStandard() || PassInfo.resolveOperatorR(op)
+			op.isStandard() || PassInfo.resolveOperatorR(this,op)
 		;	expr.tail().head() instanceof ASTIdentifier,
 			op ?= MultiOperator.getOperator(((ASTIdentifier)expr.tail().head()).name),
-			op.isStandard() || PassInfo.resolveOperatorR(op),
+			op.isStandard() || PassInfo.resolveOperatorR(this,op),
 			trace( Kiev.debugOperators,"identifier as operator: "+op)
 		},
 		op.priority >= priority,

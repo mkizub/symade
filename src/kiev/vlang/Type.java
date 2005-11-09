@@ -160,7 +160,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 		if( clazz != null && clazz.type != null ) {
 			for(int i=0; i < args.length; i++) {
 				if( !args[i].isInstanceOf(clazz.type.args[i]) ) {
-					if( clazz.type.args[i].clazz.super_type == Type.tpObject && !args[i].isReference())
+					if( clazz.type.args[i].getSuperType() == Type.tpObject && !args[i].isReference())
 						;
 					else
 						throw new RuntimeException("Type "+args[i]+" must be an instance of "+clazz.type.args[i]);

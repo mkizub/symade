@@ -703,6 +703,10 @@ public final class Kiev {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.preResolve(node);
 		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.mainResolve(node);
+		}
 		if ( Kiev.passGreaterEquals(TopLevelPass.passVerify) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.verify(node);

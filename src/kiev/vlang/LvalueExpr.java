@@ -30,7 +30,7 @@ import static kiev.vlang.Instr.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 207 $
+ * @version $Revision$
  *
  */
 
@@ -618,9 +618,9 @@ public class VarAccessExpr extends LvalueExpr {
 
 	public Type[] getAccessTypes() {
 		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
-		if( sni == null || sni.types.length == 0 )
+		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
-		return (Type[])sni.types.clone();
+		return (Type[])sni.getTypes().clone();
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
@@ -1030,10 +1030,10 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		Type[] types;
 		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
-		if( sni == null || sni.types.length == 0 )
+		if( sni == null || sni.getTypes().length == 0 )
 			types = new Type[]{var.type};
 		else
-			types = (Type[])sni.types.clone();
+			types = (Type[])sni.getTypes().clone();
 		return types;
 	}
 

@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -97,11 +97,12 @@ public class RuleMethod extends Method {
 		var.name.equals(name),
 		node ?= var
 	;
-		!this.isStatic(),
+		!this.isStatic() && path.isForwardsAllowed(),
 		var ?= getThisPar(),
 		path.enterForward(var) : path.leaveForward(var),
 		var.type.resolveNameAccessR(node,path,name)
 	;
+		path.isForwardsAllowed(),
 		var @= params,
 		var.isForward(),
 		path.enterForward(var) : path.leaveForward(var),
@@ -388,7 +389,7 @@ public abstract class ASTRuleNode extends ENode {
 
 @node
 @dflow(out="node")
-public final class RuleBlock extends BlockStat implements ScopeOfNames {
+public final class RuleBlock extends BlockStat {
 
 	@att
 	@dflow(in="this:in")
@@ -404,22 +405,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		node = n;
 	}
 
-	public RuleBlock(int pos, ASTRuleNode n, NArr<ENode> stats) {
-		this(pos,n);
-		foreach (ENode st; stats)
-			this.stats.add(st);
-	}
-
-	public RuleBlock(int pos, ASTRuleNode n, ENode[] stats) {
-		this(pos,n);
-		foreach (ENode st; stats)
-			this.stats.add(st);
-	}
-
-//	public DFState getDFlowIn(ASTNode child) {
-//		return getDFlowIn();
-//	}
-	
 	public void resolve(Type reqType) {
 		PassInfo.push(this);
 		try {
@@ -479,13 +464,6 @@ public final class RuleBlock extends BlockStat implements ScopeOfNames {
 		} finally {
 			PassInfo.pop(this);
 		}
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
-	{
-		node @= stats,
-		node instanceof Var,
-		((Var)node).name.equals(name)
 	}
 
 }

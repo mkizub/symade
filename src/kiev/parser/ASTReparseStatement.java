@@ -29,7 +29,7 @@ import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -46,7 +46,7 @@ public class ASTReparseStatement extends Statement {
 			kiev.Kiev.k.jj_input_stream.adjustBeginLineColumn(n.getPosLine(),n.getPosColumn());
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean mainResolveIn(TransfProcessor proc) {
 		ASTNode n = (ASTNode)Kiev.parserAddresses.get(ref.substring(2));
 		if( n==null ) {
 			throw new RuntimeException("Reparse node "+ref+" not found");

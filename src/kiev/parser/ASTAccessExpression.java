@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -48,7 +48,7 @@ public class ASTAccessExpression extends Expr {
 	@att
 	public NameRef			ident;
 
-	public void postResolve() {
+	public void mainResolveOut() {
 		PassInfo.push(this);
 		try {
 			ASTNode[] res;

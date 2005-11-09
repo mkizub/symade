@@ -32,7 +32,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -63,7 +63,7 @@ public class ASTCallExpression extends Expr {
 		foreach (Expr e; args) this.args.append(e);
 	}
 
-	public void postResolve() {
+	public void mainResolveOut() {
 		PassInfo.push(this);
 		try {
 			// method of current class or first-order function
@@ -133,11 +133,11 @@ public class ASTCallExpression extends Expr {
 					ta[i] = args[i].getType();
 				mt = MethodType.newMethodType(null,ta,null);
 				ResInfo info = new ResInfo();
-				if( !PassInfo.resolveMethodR(m,info,func.name,mt) ) {
+				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 					// May be a closure
 					ASTNode@ closure;
 					ResInfo info = new ResInfo();
-					if( !PassInfo.resolveNameR(closure,info,func.name) ) {
+					if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 						throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,null));
 					}
 					try {
@@ -275,11 +275,11 @@ public class ASTCallExpression extends Expr {
 				mt = MethodType.newMethodType(null,ta,ret);
 			}
 			ResInfo info = new ResInfo();
-			if( !PassInfo.resolveMethodR(m,info,func.name,mt) ) {
+			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 				// May be a closure
 				ASTNode@ closure;
 				ResInfo info = new ResInfo();
-				if( !PassInfo.resolveNameR(closure,info,func.name) ) {
+				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
 				}

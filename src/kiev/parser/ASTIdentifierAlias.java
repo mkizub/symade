@@ -29,7 +29,7 @@ import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -39,14 +39,6 @@ public abstract class ASTAlias extends ASTNode {
 	
 	public abstract void attach(ASTNode n);
 
-	public boolean preResolve(TransfProcessor proc) {
-		return false; // don't pre-resolve
-	}
-	
-	public boolean preGenerate() {
-		return false; // don't pre-generate
-	}
-	
 }
 
 @node

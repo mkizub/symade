@@ -55,7 +55,7 @@ public class ASTCallAccessExpression extends Expr {
 		this.args.addAll(args);
 	}
 
-	public void postResolve() {
+	public void mainResolveOut() {
 		PassInfo.push(this);
 		try {
 			if( obj instanceof ASTIdentifier

@@ -29,7 +29,7 @@ import kiev.transf.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -45,7 +45,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
 	
 	public int dim;
 	
-	public void postResolve() {
+	public void mainResolveOut() {
 		Type tp = type.getType();
 		while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
 		if( !tp.isArray() )

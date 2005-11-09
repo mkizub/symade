@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -40,26 +40,17 @@ import syntax kiev.Syntax;
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att
-	public final NArr<ASTIdentifier>	names;
+	public final NArr<NameRef>			names;
 	
 	@att
 	@dflow(in="", seq="false")
 	public final NArr<ENode>			exprs;
 
-	public boolean preResolve(TransfProcessor proc) {
-		PassInfo.push(this);
-		try {
-			// don't pre-resolve 'names'
-			foreach (ENode e; exprs) proc.preResolve(e);
-		} finally { PassInfo.pop(this); }
-		return false;
-	}
-	
     public void resolve(Type reqType) {
     	Var[] vars = new Var[names.length];
     	for(int i=0; i < vars.length; i++ ) {
 			ASTNode@ v;
-			if( !PassInfo.resolveNameR(v,new ResInfo(),names[i].name) )
+			if( !PassInfo.resolveNameR(this,v,new ResInfo(),names[i].name) )
 				throw new CompilerException(pos,"Unresolved identifier "+names[i].name);
 			if( !(v instanceof Var) )
 	    		throw new CompilerException(names[i].getPos(),"Identifier is not a var");

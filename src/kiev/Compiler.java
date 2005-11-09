@@ -33,7 +33,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 205 $
+ * @version $Revision$
  *
  */
 
@@ -642,8 +642,9 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passResolveImports;
 			diff_time = curr_time = System.currentTimeMillis();
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preResolve(fu); });
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.mainResolve(fu); });
 			diff_time = System.currentTimeMillis() - curr_time;
-			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-resolved",diff_time);
+			if( Kiev.verbose ) Kiev.reportInfo("Class's members resolved",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
 			runGC();
 

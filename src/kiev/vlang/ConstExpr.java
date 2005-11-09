@@ -221,7 +221,7 @@ public abstract class ConstExpr extends Expr {
 	public boolean	isConstantExpr() { return true; }
 	public int		getPriority() { return 255; }
 
-	public final boolean preResolve(TransfProcessor proc) {
+	public final boolean mainResolveIn(TransfProcessor proc) {
 		// already fully resolved
 		setResolved(true);
 		return false;

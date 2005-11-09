@@ -176,7 +176,7 @@ public class kiev040 {
 		return false;
 	}
 
-	private static boolean castLA_Start() {
+	private static boolean maybeCastLA_Start() {
 		int i = 1;
 		Token t = getToken(i);
 		if (t.kind == IDENTIFIER) {
@@ -193,86 +193,82 @@ public class kiev040 {
 			default:
 				return false;
 			}
-			try {
-				if( PassInfo.checkClassName(KString.from(qname)) ) {
-					return true;
-				}
-			} catch( Exception e ) {}
-		}
-		return false;
-	}
-
-	private static boolean castLA() {
-		if( getToken(1).kind != LPAREN ) return false;
-		if( getToken(2).kind == CAST ) return true;
-		if( getToken(2).kind == REINTERP ) return true;
-		return castLA(1,LPAREN,RPAREN);
-	}
-
-	private static boolean castLA(int offs, int exp_kind1, int exp_kind2) {
-		if( getToken(offs).kind != exp_kind1 ) return false;
-		switch( getToken(offs+1).kind ) {
-		case BOOLEAN: case CHAR: case BYTE:
-		case SHORT: case INT: case LONG: case FLOAT:
-		case DOUBLE: case VOID:
 			return true;
-		case IDENTIFIER:
-			break;
-		case LPAREN:
-			// Skip until matched ')' and check for "->"
-			{
-				int i = offs+2;
-				int depth = 1;
-				while( depth != 0 ) {
-					switch(getToken(i++).kind) {
-					case LPAREN: depth++; break;
-					case RPAREN: depth--; break;
-					}
-				}
-				if( getToken(i).kind==ARROW ) {
-					return true;
-				} else {
-					return false;
-				}
-			}
-		default:
-			// TODO closure type
-			return false;
 		}
-		// Qualified name resolving to be a class name
-		String qname = getToken(offs+1).image;
-	scan_qname:
-		for(int i=offs+2; ; i+=2) {
-			if( getToken(i).kind == DOT && getToken(i+1).kind == IDENTIFIER )
-				qname = qname+"."+getToken(i+1).image;
-			else {
-				switch( getToken(i).kind ) {
-				case RPAREN:
-					if( exp_kind2 == RPAREN )  break scan_qname;
-					else return false;
-				case GT:
-					if( exp_kind2 == GT ) break scan_qname;
-					else return false;
-				case LT:
-					if( castLA(i,LT,GT) ) break scan_qname;
-					else return false;
-				case OPERATOR_LRBRACKETS:
-					return true;
-				case COMMA:
-					if( exp_kind1 == LT ) break scan_qname;
-					else return false;
-				default:
-					return false;
-				}
-			}
-		}
-		try {
-			if( PassInfo.checkClassName(KString.from(qname)) ) {
-				return true;
-			}
-		} catch( Exception e ) {}
 		return false;
 	}
+
+//	private static boolean castLA() {
+//		if( getToken(1).kind != LPAREN ) return false;
+//		if( getToken(2).kind == CAST ) return true;
+//		if( getToken(2).kind == REINTERP ) return true;
+//		return castLA(1,LPAREN,RPAREN);
+//	}
+//
+//	private static boolean castLA(int offs, int exp_kind1, int exp_kind2) {
+//		if( getToken(offs).kind != exp_kind1 ) return false;
+//		switch( getToken(offs+1).kind ) {
+//		case BOOLEAN: case CHAR: case BYTE:
+//		case SHORT: case INT: case LONG: case FLOAT:
+//		case DOUBLE: case VOID:
+//			return true;
+//		case IDENTIFIER:
+//			break;
+//		case LPAREN:
+//			// Skip until matched ')' and check for "->"
+//			{
+//				int i = offs+2;
+//				int depth = 1;
+//				while( depth != 0 ) {
+//					switch(getToken(i++).kind) {
+//					case LPAREN: depth++; break;
+//					case RPAREN: depth--; break;
+//					}
+//				}
+//				if( getToken(i).kind==ARROW ) {
+//					return true;
+//				} else {
+//					return false;
+//				}
+//			}
+//		default:
+//			// TODO closure type
+//			return false;
+//		}
+//		// Qualified name resolving to be a class name
+//		String qname = getToken(offs+1).image;
+//	scan_qname:
+//		for(int i=offs+2; ; i+=2) {
+//			if( getToken(i).kind == DOT && getToken(i+1).kind == IDENTIFIER )
+//				qname = qname+"."+getToken(i+1).image;
+//			else {
+//				switch( getToken(i).kind ) {
+//				case RPAREN:
+//					if( exp_kind2 == RPAREN )  break scan_qname;
+//					else return false;
+//				case GT:
+//					if( exp_kind2 == GT ) break scan_qname;
+//					else return false;
+//				case LT:
+//					if( castLA(i,LT,GT) ) break scan_qname;
+//					else return false;
+//				case OPERATOR_LRBRACKETS:
+//					return true;
+//				case COMMA:
+//					if( exp_kind1 == LT ) break scan_qname;
+//					else return false;
+//				default:
+//					return false;
+//				}
+//			}
+//		}
+//		try {
+//			if( PassInfo.checkClassName(KString.from(qname)) ) {
+//				return true;
+//			}
+//		} catch( Exception e ) {}
+//		return false;
+//	}
 	
 	/*{
 	private static Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
@@ -1475,13 +1471,13 @@ FormPar FormalParameter(ASTModifiers modifiers) :
 }
 
 MetaThrows Throws() :
-{ MetaThrows n = new MetaThrows(); ASTIdentifier id; }
+{ MetaThrows n = new MetaThrows(); NameRef id; }
 {
 	"throws"
-	id = QIdentifier() { n.add(id); }
+	id = QName() { n.add(id); }
 	(
 		","
-		id = QIdentifier() { n.add(id); }
+		id = QName() { n.add(id); }
 	)*
 	{ return n; }
 }
@@ -2032,7 +2028,7 @@ ASTRuleNode RuleExpression() :
 ASTRuleIstheExpression RuleIstheExpression() :
 { ASTRuleIstheExpression r = new ASTRuleIstheExpression(); }
 {
-	r.name = Identifier()
+	r.name = Name()
 	"?="
 	r.expr = AccessExpression()
 	{ return r; }
@@ -2041,14 +2037,14 @@ ASTRuleIstheExpression RuleIstheExpression() :
 ASTRuleIsoneofExpression RuleIsoneofExpression() :
 { ASTRuleIsoneofExpression r = new ASTRuleIsoneofExpression(); }
 {
-	r.names += Identifier() "@=" r.exprs += AccessExpression()
+	r.names += Name() "@=" r.exprs += AccessExpression()
 	(
 		LOOKAHEAD({
 			getToken(1).image.equals("&")
 		 && getToken(2).kind == IDENTIFIER
 		 && getToken(3).kind == IS_ONE_OF
 		})
-		"&" r.names += Identifier() "@=" r.exprs += AccessExpression()
+		"&" r.names += Name() "@=" r.exprs += AccessExpression()
 	)*
 	{ return r; }
 }
@@ -2159,7 +2155,7 @@ ASTOperator Operator() :
 	}
 }
 
-void CastOperatorLA() :
+void SureCastOperatorLA() :
 {}
 {
 	"("
@@ -2167,7 +2163,15 @@ void CastOperatorLA() :
 		<CAST>
 	|	<REINTERP>
 	|	PrimitiveType()
-	|	LOOKAHEAD(0,{ castLA_Start() }) Type() ")"
+	)
+}
+
+void MaybeCastOperatorLA() :
+{}
+{
+	"("
+	(	LOOKAHEAD(0,{ maybeCastLA_Start() })
+		Type() ")"
 		(
 			<IDENTIFIER>
 		|	"("
@@ -2180,8 +2184,8 @@ void CastOperatorLA() :
 	)
 }
 
-ENode CastOperator() :
-{ Token t; ASTCastOperator op = new ASTCastOperator(); }
+ENode CastOperator(boolean sure) :
+{ Token t; ASTCastOperator op = new ASTCastOperator(); op.sure = sure; }
 {
 	t="("
 	{ op.setPos(t.getPos()); }
@@ -2209,8 +2213,10 @@ ENode Expression() :
 		e.nodes += Type()
 	|	LOOKAHEAD({ operatorLA(1) })
 		e.nodes += Operator()
-	|	LOOKAHEAD( CastOperatorLA() )
-		e.nodes += CastOperator()
+	|	LOOKAHEAD( SureCastOperatorLA() )
+		e.nodes += CastOperator(true)
+	|	LOOKAHEAD( MaybeCastOperatorLA() )
+		e.nodes += CastOperator(false)
 	|	LOOKAHEAD(2)
 		e.nodes += AccessExpression()
 	)+
@@ -2819,7 +2825,7 @@ CaseLabel PizzaCase() :
 { Token t; ASTModifiers modifiers; CaseLabel c = new CaseLabel(); }
 {
 	"case"		{ c.pos = getToken(0).getPos(); }
-	c.val = QIdentifier()
+	c.val = TypeWithArgs()
 	"("
 	[
 		modifiers = Modifiers()

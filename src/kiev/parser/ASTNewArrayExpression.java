@@ -28,7 +28,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 207 $
+ * @version $Revision$
  *
  */
 
@@ -52,6 +52,7 @@ public class ASTNewArrayExpression extends Expr {
             	Kiev.reportError(pos,e);
             }
         }
+		type.getType(); // resolve the type
 		replaceWithNodeResolve(reqType, new NewArrayExpr(pos,(TypeRef)~type,args.delToArray(),dim));
 	}
 

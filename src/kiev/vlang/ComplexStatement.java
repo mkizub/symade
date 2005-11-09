@@ -29,7 +29,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -271,7 +271,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 
 @node
 @dflow(out="lblbrk")
-public class SwitchStat extends BlockStat implements BreakTarget {
+public class SwitchStat extends Statement implements BreakTarget {
 
 	@dflow
 	@att public ENode					sel;

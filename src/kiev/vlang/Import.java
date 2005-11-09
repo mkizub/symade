@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -75,7 +75,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean preResolve(TransfProcessor proc)		{ return false; }
+	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
@@ -91,7 +91,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
 		MethodType mt = MethodType.newMethodType(null,types,Type.tpAny);
-		if( !PassInfo.resolveMethodR(v,null,name.name,mt) )
+		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
 			throw new CompilerException(pos,"Unresolved method "+Method.toString(name.name,mt));
 		ASTNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
@@ -218,7 +218,7 @@ public class Typedef extends DNode implements Named {
 	}
 
 	public boolean preGenerate()	{ return false; }
-	public boolean preResolve(TransfProcessor proc)		{ return false; }
+	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 
 	public String toString() {
 		if (typearg != null)

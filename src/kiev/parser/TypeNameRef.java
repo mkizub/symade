@@ -64,7 +64,7 @@ public class TypeNameRef extends TypeRef {
 			return this.lnk;
 		KString nm = name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveNameR(v,new ResInfo(),nm) )
+		if( !PassInfo.resolveQualifiedNameR(this,v,new ResInfo(ResInfo.noForwards),nm) )
 			throw new CompilerException(pos,"Unresolved identifier "+nm);
 		if( v instanceof TypeRef ) {
 			this.lnk = ((TypeRef)v).getType();
@@ -75,6 +75,8 @@ public class TypeNameRef extends TypeRef {
 			bs.checkResolved();
 			this.lnk = bs.type;
 		}
+		if (this.lnk == null)
+			throw new CompilerException(pos,"Type "+this+" is not found");
 		return this.lnk;
 	}
 

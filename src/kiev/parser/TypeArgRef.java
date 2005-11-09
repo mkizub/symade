@@ -71,6 +71,8 @@ public class TypeArgRef extends TypeRef {
 			Struct s = (Struct)parent;
 			foreach (TypeArgRef pa; s.package_clazz.args; pa.name.name == name.name) {
 				this.lnk = pa.getType();
+				if (this.lnk == null)
+					throw new CompilerException(pos,"Type "+this+" is not found");
 				return this.lnk;
 			}
 			KString nm = KString.from(s.name.name+"$"+name.name);

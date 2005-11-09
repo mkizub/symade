@@ -161,8 +161,13 @@ public class InfixExpr extends UnresExpr {
 			e2.detach();
 		if (op instanceof AssignOperator)
 			return new AssignExpr(pos,(AssignOperator)op,e1,e2);
-		if (((BinaryOperator)op).is_boolean_op)
+		if (((BinaryOperator)op).is_boolean_op) {
+			if (op==BinaryOperator.BooleanOr)
+				return new BinaryBooleanOrExpr(pos,e1,e2);
+			if (op==BinaryOperator.BooleanAnd)
+				return new BinaryBooleanAndExpr(pos,e1,e2);
 			return new BinaryBoolExpr(pos,(BinaryOperator)op,e1,e2);
+		}
 		return new BinaryExpr(pos,(BinaryOperator)op,e1,e2);
 	}
 	

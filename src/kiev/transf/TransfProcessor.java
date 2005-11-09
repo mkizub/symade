@@ -72,6 +72,8 @@ public class TransfProcessor {
 	public void			autoGenerateMembers(ASTNode node)	{ return; }
 	// resolve vnodes
 	public void			preResolve(ASTNode node)			{ return; }
+	// resolve vnodes
+	public void			mainResolve(ASTNode node)			{ return; }
 	// verify resolved tree
 	public void			verify(ASTNode node)				{ return; }
 	

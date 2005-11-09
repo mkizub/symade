@@ -144,14 +144,14 @@ public class MetaThrows extends Meta {
 		super(type);
 	}
 	
-	public void add(ASTIdentifier thr) {
+	public void add(NameRef thr) {
 		if (size() == 0) {
 			MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpClass).signature);
-			MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{thr});
+			MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{new TypeNameRef(thr)});
 			set(mv);
 		} else {
 			MetaValueArray mv = (MetaValueArray)get(VALUE);
-			mv.values.append(thr);
+			mv.values.append(new TypeNameRef(thr));
 		}
 	}
 	

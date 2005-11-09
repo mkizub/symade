@@ -29,7 +29,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -58,9 +58,15 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		node ?= p
 	}
 	
-	public boolean preResolve(TransfProcessor proc) {
+	public boolean preResolveIn(TransfProcessor proc) {
 		proc.preResolve(rettype);
 		foreach (FormPar fp; params) proc.preResolve(fp);
+		return false; // don't pre-resolve me
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
+		proc.mainResolve(rettype);
+		foreach (FormPar fp; params) proc.mainResolve(fp);
 	
 		ClazzName clname = ClazzName.fromBytecodeName(
 			new KStringBuffer(PassInfo.clazz.name.bytecode_name.len+8)
