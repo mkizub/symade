@@ -773,13 +773,10 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		
-		PassInfo.push(this);
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(0,e);
-		} finally {
-			PassInfo.pop(this);
 		}
 
 		setResolved(true);
@@ -787,10 +784,8 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");
-		PassInfo.push(this);
-		try {
-			body.generate(reqType);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		body.generate(reqType);
 	}
 
 	public boolean setBody(Statement body) {
@@ -854,7 +849,6 @@ public class WBCCondition extends DNode {
 			Code.reInit();
 			Code.generation = true;
 			Code.cond_generation = true;
-			PassInfo.push(this);
 			Method m = (Method)PassInfo.method;
 			try {
 				if( !m.isStatic() ) Code.addVar(m.getThisPar());
@@ -868,7 +862,6 @@ public class WBCCondition extends DNode {
 			} catch(Exception e) {
 				Kiev.reportError(pos,e);
 			} finally {
-				PassInfo.pop(this);
 				Code.generation = false;
 				Code.cond_generation = false;
 			}

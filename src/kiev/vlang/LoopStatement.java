@@ -30,7 +30,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 211 $
+ * @version $Revision$
  *
  */
 
@@ -158,24 +158,21 @@ public class WhileStat extends LoopStat {
 	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		try {
-			try {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
-			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
-			try {
-				body.resolve(Type.tpVoid);
-			} catch(Exception e ) { Kiev.reportError(body.pos,e); }
-			if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-				setMethodAbrupted(true);
-			}
-		} finally { PassInfo.pop(this); }
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) { Kiev.reportError(body.pos,e); }
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
+			setMethodAbrupted(true);
+		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating WhileStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			lblcnt.label = Code.newLabel();
 			lblbrk.label = Code.newLabel();
@@ -198,7 +195,7 @@ public class WhileStat extends LoopStat {
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -250,28 +247,25 @@ public class DoWhileStat extends LoopStat {
 	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		try {
-			try {
-				body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
-			}
-			try {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
-			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
-			}
-			if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-				setMethodAbrupted(true);
-			}
-		} finally { PassInfo.pop(this); }
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(body.pos,e);
+		}
+		try {
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) {
+			Kiev.reportError(cond.pos,e);
+		}
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
+			setMethodAbrupted(true);
+		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating DoWhileStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			lblcnt.label = Code.newLabel();
 			lblbrk.label = Code.newLabel();
@@ -294,7 +288,7 @@ public class DoWhileStat extends LoopStat {
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -408,53 +402,50 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			if( init != null ) {
-				try {
-					if( init instanceof Statement )
-						((Statement)init).resolve(Type.tpVoid);
-					else if( init instanceof ForInit )
-						((ForInit)init).resolve(Type.tpVoid);
-					else if( init instanceof Expr )
-						init.resolve(Type.tpVoid);
-					else
-						throw new RuntimeException("Unknown type of for-init node "+init);
-					if (init instanceof Expr)
-						init.setGenVoidExpr(true);
-				} catch(Exception e ) {
-					Kiev.reportError(init.pos,e);
-				}
-			}
-			if( cond != null ) {
-				try {
-					cond.resolve(Type.tpBoolean);
-					BoolExpr.checkBool(cond);
-				} catch(Exception e ) {
-					Kiev.reportError(cond.pos,e);
-				}
-			}
+		if( init != null ) {
 			try {
-				body.resolve(Type.tpVoid);
+				if( init instanceof Statement )
+					((Statement)init).resolve(Type.tpVoid);
+				else if( init instanceof ForInit )
+					((ForInit)init).resolve(Type.tpVoid);
+				else if( init instanceof Expr )
+					init.resolve(Type.tpVoid);
+				else
+					throw new RuntimeException("Unknown type of for-init node "+init);
+				if (init instanceof Expr)
+					init.setGenVoidExpr(true);
 			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
+				Kiev.reportError(init.pos,e);
 			}
-			if( iter != null ) {
-				try {
-					iter.resolve(Type.tpVoid);
-					iter.setGenVoidExpr(true);
-				} catch(Exception e ) {
-					Kiev.reportError(iter.pos,e);
-				}
+		}
+		if( cond != null ) {
+			try {
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
+			} catch(Exception e ) {
+				Kiev.reportError(cond.pos,e);
 			}
-			if( ( cond==null
-				|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
-				)
-				&& !isBreaked()
-			) {
-				setMethodAbrupted(true);
+		}
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(body.pos,e);
+		}
+		if( iter != null ) {
+			try {
+				iter.resolve(Type.tpVoid);
+				iter.setGenVoidExpr(true);
+			} catch(Exception e ) {
+				Kiev.reportError(iter.pos,e);
 			}
-		} finally { PassInfo.pop(this); }
+		}
+		if( ( cond==null
+			|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
+			)
+			&& !isBreaked()
+		) {
+			setMethodAbrupted(true);
+		}
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
@@ -477,7 +468,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		CodeLabel body_label = Code.newLabel();
 		CodeLabel check_label = Code.newLabel();
 
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( init != null ) {
 				if( init instanceof Statement )
@@ -524,7 +515,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -620,245 +611,242 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public Label getBrkLabel() { return lblbrk; }
 	
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			// foreach( type x; container; cond) statement
-			// is equivalent to
-			// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
-			//		type x = container.nextElement();
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//	or if container is an array:
-			//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
-			//		type x = x$arr[ x$iter ];
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//	or if container is a rule:
-			//	for(rule $env=null; ($env=rule($env,...)) != null; ) {
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//
+		// foreach( type x; container; cond) statement
+		// is equivalent to
+		// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
+		//		type x = container.nextElement();
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//	or if container is an array:
+		//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
+		//		type x = x$arr[ x$iter ];
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//	or if container is a rule:
+		//	for(rule $env=null; ($env=rule($env,...)) != null; ) {
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//
 
+		container.resolve(null);
+
+		Type itype;
+		Type ctype = container.getType();
+		Method@ elems;
+		Method@ nextelem;
+		Method@ moreelem;
+		if (ctype.isWrapper()) {
+			container = ctype.makeWrappedAccess(container);
 			container.resolve(null);
+			ctype = container.getType();
+		}
+		if( ctype.isArray() ) {
+			itype = Type.tpInt;
+			mode = ARRAY;
+		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
+			itype = ctype;
+			mode = KENUM;
+		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
+			itype = ctype;
+			mode = JENUM;
+		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
+		) {
+			itype = Type.getRealType(ctype,elems.type.ret);
+			mode = ELEMS;
+		} else if( ctype == Type.tpRule &&
+			(
+			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
+			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() == Type.tpRule )
+			)
+		  ) {
+			itype = Type.tpRule;
+			mode = RULE;
+		} else {
+			throw new CompilerException(container.pos,"Container must be an array or an Enumeration "+
+				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
+		}
+		if( itype == Type.tpRule ) {
+			iter = new Var(pos,KString.from("$env"),itype,0);
+		}
+		else if( var != null ) {
+			iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
+			if (mode == ARRAY) {
+				iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
+			}
+		}
+		else {
+			iter = null;
+		}
 
-			Type itype;
-			Type ctype = container.getType();
-			Method@ elems;
-			Method@ nextelem;
-			Method@ moreelem;
-			if (ctype.isWrapper()) {
-				container = ctype.makeWrappedAccess(container);
-				container.resolve(null);
-				ctype = container.getType();
-			}
-			if( ctype.isArray() ) {
-				itype = Type.tpInt;
-				mode = ARRAY;
-			} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
-				itype = ctype;
-				mode = KENUM;
-			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-				itype = ctype;
-				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
-					nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
-			) {
-				itype = Type.getRealType(ctype,elems.type.ret);
-				mode = ELEMS;
-			} else if( ctype == Type.tpRule &&
-				(
-				   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
-				|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() == Type.tpRule )
-				)
-			  ) {
-				itype = Type.tpRule;
-				mode = RULE;
-			} else {
-				throw new CompilerException(container.pos,"Container must be an array or an Enumeration "+
-					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
-			}
-			if( itype == Type.tpRule ) {
-				iter = new Var(pos,KString.from("$env"),itype,0);
-			}
-			else if( var != null ) {
-				iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
-				if (mode == ARRAY) {
-					iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
-				}
-			}
-			else {
-				iter = null;
-			}
-
-			// Initialize iterator
-			switch( mode ) {
-			case ARRAY:
-				/* iter = 0; arr = container;*/
-				iter_init = new CommaExpr();
-				((CommaExpr)iter_init).exprs.add(
-					new AssignExpr(iter.pos,AssignOperator.Assign,
-						new VarAccessExpr(container.pos,iter_array),
-						new ShadowExpr(container)
-					));
-				((CommaExpr)iter_init).exprs.add(
-					new AssignExpr(iter.pos,AssignOperator.Assign,
-						new VarAccessExpr(iter.pos,iter),
-						new ConstIntExpr(0)
-					));
-				iter_init.resolve(Type.tpInt);
-				break;
-			case KENUM:
-				/* iter = container; */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
-					);
-				iter_init.resolve(iter.type);
-				break;
-			case JENUM:
-				/* iter = container; */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
-					);
-				iter_init.resolve(iter.type);
-				break;
-			case ELEMS:
-				/* iter = container.elements(); */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+		// Initialize iterator
+		switch( mode ) {
+		case ARRAY:
+			/* iter = 0; arr = container;*/
+			iter_init = new CommaExpr();
+			((CommaExpr)iter_init).exprs.add(
+				new AssignExpr(iter.pos,AssignOperator.Assign,
+					new VarAccessExpr(container.pos,iter_array),
+					new ShadowExpr(container)
+				));
+			((CommaExpr)iter_init).exprs.add(
+				new AssignExpr(iter.pos,AssignOperator.Assign,
 					new VarAccessExpr(iter.pos,iter),
-					new CallExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
-					);
-				iter_init.resolve(iter.type);
-				break;
-			case RULE:
-				/* iter = rule(iter,...); */
-				{
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ConstNullExpr()
-					);
-				iter_init.resolve(Type.tpVoid);
-				// Also, patch the rule argument
-				NArr<ENode> args = null;
-				if( container instanceof CallExpr ) {
-					args = ((CallExpr)container).args;
-				}
-				else if( container instanceof ClosureCallExpr ) {
-					args = ((ClosureCallExpr)container).args;
-				}
-				else
-					Debug.assert("Unknown type of rule - "+container.getClass());
-				args[0] = new VarAccessExpr(container.pos,iter);
-				args[0].resolve(Type.tpRule);
-				}
-				break;
-			}
-			iter_init.setGenVoidExpr(true);
-
-			// Check iterator condition
-
-			switch( mode ) {
-			case ARRAY:
-				/* iter < container.length */
-				iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
-					new VarAccessExpr(iter.pos,iter),
-					new ArrayLengthAccessExpr(iter.pos,new VarAccessExpr(0,iter_array))
-					);
-				break;
-			case KENUM:
-			case JENUM:
-			case ELEMS:
-				/* iter.hasMoreElements() */
-				if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
-					nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
-					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-				iter_cond = new CallExpr(	iter.pos,
-						new VarAccessExpr(iter.pos,iter),
-						moreelem,
-						Expr.emptyArray
-					);
-				break;
-			case RULE:
-				/* (iter = rule(iter, ...)) != null */
-				iter_cond = new BinaryBoolExpr(
-					container.pos,
-					BinaryOperator.NotEquals,
-					new AssignExpr(container.pos,AssignOperator.Assign,
-						new VarAccessExpr(container.pos,iter),
-						(Expr)container.copy()),
-					new ConstNullExpr()
-					);
-				break;
-			}
-			if( iter_cond != null ) {
-				iter_cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(iter_cond);
-			}
-
-			// Initialize value
-			switch( mode ) {
-			case ARRAY:
-				/* var = container[iter] */
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-					new VarAccessExpr(var.pos,var),
-					new ContainerAccessExpr(container.pos,new VarAccessExpr(0,iter_array),new VarAccessExpr(iter.pos,iter))
-					);
-				break;
-			case KENUM:
-			case JENUM:
-			case ELEMS:
-				/* var = iter.nextElement() */
-				if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
-					nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
-					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-					var_init = new CallExpr(iter.pos,
-						new VarAccessExpr(iter.pos,iter),
-						nextelem,
-						Expr.emptyArray
-					);
-				if (!nextelem.type.ret.isInstanceOf(var.type))
-					var_init = new CastExpr(pos,var.type,(ENode)~var_init);
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-					new VarAccessExpr(var.pos,var),
-					(ENode)~var_init
+					new ConstIntExpr(0)
+				));
+			iter_init.resolve(Type.tpInt);
+			break;
+		case KENUM:
+			/* iter = container; */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
 				);
-				break;
-			case RULE:
-				/* iter = rule(...); */
-				var_init = null;
-				break;
+			iter_init.resolve(iter.type);
+			break;
+		case JENUM:
+			/* iter = container; */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
+				);
+			iter_init.resolve(iter.type);
+			break;
+		case ELEMS:
+			/* iter = container.elements(); */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new VarAccessExpr(iter.pos,iter),
+				new CallExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
+				);
+			iter_init.resolve(iter.type);
+			break;
+		case RULE:
+			/* iter = rule(iter,...); */
+			{
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new VarAccessExpr(iter.pos,iter), new ConstNullExpr()
+				);
+			iter_init.resolve(Type.tpVoid);
+			// Also, patch the rule argument
+			NArr<ENode> args = null;
+			if( container instanceof CallExpr ) {
+				args = ((CallExpr)container).args;
 			}
-			if( var_init != null ) {
-				var_init.resolve(var.getType());
-				var_init.setGenVoidExpr(true);
+			else if( container instanceof ClosureCallExpr ) {
+				args = ((ClosureCallExpr)container).args;
 			}
+			else
+				Debug.assert("Unknown type of rule - "+container.getClass());
+			args[0] = new VarAccessExpr(container.pos,iter);
+			args[0].resolve(Type.tpRule);
+			}
+			break;
+		}
+		iter_init.setGenVoidExpr(true);
 
-			// Check condition, if any
-			if( cond != null ) {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
-			}
+		// Check iterator condition
 
-			// Process body
-			try {
-				body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
-			}
+		switch( mode ) {
+		case ARRAY:
+			/* iter < container.length */
+			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
+				new VarAccessExpr(iter.pos,iter),
+				new ArrayLengthAccessExpr(iter.pos,new VarAccessExpr(0,iter_array))
+				);
+			break;
+		case KENUM:
+		case JENUM:
+		case ELEMS:
+			/* iter.hasMoreElements() */
+			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+				nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
+				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
+			iter_cond = new CallExpr(	iter.pos,
+					new VarAccessExpr(iter.pos,iter),
+					moreelem,
+					Expr.emptyArray
+				);
+			break;
+		case RULE:
+			/* (iter = rule(iter, ...)) != null */
+			iter_cond = new BinaryBoolExpr(
+				container.pos,
+				BinaryOperator.NotEquals,
+				new AssignExpr(container.pos,AssignOperator.Assign,
+					new VarAccessExpr(container.pos,iter),
+					(Expr)container.copy()),
+				new ConstNullExpr()
+				);
+			break;
+		}
+		if( iter_cond != null ) {
+			iter_cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(iter_cond);
+		}
 
-			// Increment iterator
-			if( mode == ARRAY ) {
-				/* iter++ */
-				iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
-					new VarAccessExpr(iter.pos,iter)
-					);
-				iter_incr.resolve(Type.tpVoid);
-				iter_incr.setGenVoidExpr(true);
-			} else {
-				iter_incr = null;
-			}
-		} finally { PassInfo.pop(this); }
+		// Initialize value
+		switch( mode ) {
+		case ARRAY:
+			/* var = container[iter] */
+			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
+				new VarAccessExpr(var.pos,var),
+				new ContainerAccessExpr(container.pos,new VarAccessExpr(0,iter_array),new VarAccessExpr(iter.pos,iter))
+				);
+			break;
+		case KENUM:
+		case JENUM:
+		case ELEMS:
+			/* var = iter.nextElement() */
+			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+				nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
+				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
+				var_init = new CallExpr(iter.pos,
+					new VarAccessExpr(iter.pos,iter),
+					nextelem,
+					Expr.emptyArray
+				);
+			if (!nextelem.type.ret.isInstanceOf(var.type))
+				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
+			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
+				new VarAccessExpr(var.pos,var),
+				(ENode)~var_init
+			);
+			break;
+		case RULE:
+			/* iter = rule(...); */
+			var_init = null;
+			break;
+		}
+		if( var_init != null ) {
+			var_init.resolve(var.getType());
+			var_init.setGenVoidExpr(true);
+		}
+
+		// Check condition, if any
+		if( cond != null ) {
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		}
+
+		// Process body
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(body.pos,e);
+		}
+
+		// Increment iterator
+		if( mode == ARRAY ) {
+			/* iter++ */
+			iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
+				new VarAccessExpr(iter.pos,iter)
+				);
+			iter_incr.resolve(Type.tpVoid);
+			iter_incr.setGenVoidExpr(true);
+		} else {
+			iter_incr = null;
+		}
 	}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
@@ -886,7 +874,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		CodeLabel body_label = Code.newLabel();
 		CodeLabel check_label = Code.newLabel();
 
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( iter != null )
 				Code.addVar(iter);
@@ -931,7 +919,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {

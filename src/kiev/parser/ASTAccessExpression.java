@@ -49,192 +49,186 @@ public class ASTAccessExpression extends Expr {
 	public NameRef			ident;
 
 	public void mainResolveOut() {
-		PassInfo.push(this);
-		try {
-			ASTNode[] res;
-			Type[] tps;
+		ASTNode[] res;
+		Type[] tps;
 
-			// pre-resolve result
-			if( obj instanceof TypeRef ) {
-				tps = new Type[]{ ((TypeRef)obj).getType() };
-				res = new ASTNode[1];
-				if( ident.name.equals(nameThis) )
-					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-			}
-			else {
-				ENode e = obj;
-				//tps = new Type[]{e.getType()};
-				tps = e.getAccessTypes();
-				res = new ASTNode[tps.length];
-				for (int si=0; si < tps.length; si++) {
-					Type tp = tps[si];
-					if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
-						if (tp.isWrapper()) {
-							tps[si] = ((WrapperType)tp).getUnwrappedType();
-							res[si] = obj;
-						}
-						// compatibility with previois version
-						else if (tp.isInstanceOf(Type.tpPrologVar)) {
-							tps[si] = tp;
-							res[si] = (ENode)~obj;
-						}
-					}
-					else if (ident.name.byteAt(0) == '$') {
-						while (tp.isWrapper())
-							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-					}
-					else if( ident.name.equals("length") ) {
-						if( tp.isArray() ) {
-							tps[si] = Type.tpInt;
-							res[si] = new ArrayLengthAccessExpr(pos,(ENode)e.copy());
-						}
-					}
-				}
-				// fall down
-			}
+		// pre-resolve result
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ASTNode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			ENode e = obj;
+			//tps = new Type[]{e.getType()};
+			tps = e.getAccessTypes();
+			res = new ASTNode[tps.length];
 			for (int si=0; si < tps.length; si++) {
-				if (res[si] != null)
-					continue;
 				Type tp = tps[si];
-				ASTNode@ v;
-				ResInfo info;
-				if (obj instanceof Expr &&
-					tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic | ResInfo.noImports),ident.name) )
-				{
-					res[si] = makeExpr(v,info,(ENode)~obj);
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					// compatibility with previois version
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = (ENode)~obj;
+					}
 				}
-				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name)) {
-					res[si] = makeExpr(v,info,tp.getStruct());
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals("length") ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthAccessExpr(pos,(ENode)e.copy());
+					}
 				}
 			}
-			int cnt = 0;
-			int idx = -1;
-			for (int si=0; si < res.length; si++) {
-				if (res[si] != null) {
-					cnt ++;
-					if (idx < 0) idx = si;
-				}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			ASTNode@ v;
+			ResInfo info;
+			if (obj instanceof Expr &&
+				tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic | ResInfo.noImports),ident.name) )
+			{
+				res[si] = makeExpr(v,info,(ENode)~obj);
 			}
-			if (cnt > 1) {
-				StringBuffer msg = new StringBuffer("Umbigous access:\n");
-				for(int si=0; si < res.length; si++) {
-					if (res[si] == null)
-						continue;
-					msg.append("\t").append(res).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				throw new CompilerException(pos, msg.toString());
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name)) {
+				res[si] = makeExpr(v,info,tp.getStruct());
 			}
-			if (cnt == 0) {
-				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-				for(int si=0; si < res.length; si++) {
-					if (tps[si] == null)
-						continue;
-					msg.append("\t").append(tps[si]).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				this.obj = this.obj;
-				throw new CompilerException(pos, msg.toString());
-				//Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
-				//return;
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
 			}
-			this.replaceWithNode(res[idx]);
-		} finally { PassInfo.pop(this); }
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(pos, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(pos, msg.toString());
+			//Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
+			//return;
+		}
+		this.replaceWithNode(res[idx]);
 	}
 	
 	public void resolve(Type reqType) throws CompilerException {
-		PassInfo.push(this);
-		try {
-			ENode[] res;
-			Type[] tps;
+		ENode[] res;
+		Type[] tps;
 
-			// resolve access
-			obj.resolve(null);
+		// resolve access
+		obj.resolve(null);
 
-		try_static:
-			if( obj instanceof TypeRef ) {
-				tps = new Type[]{ ((TypeRef)obj).getType() };
-				res = new ENode[1];
-				if( ident.name.equals(nameThis) )
-					res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
-			}
-			else {
-				Expr e = (Expr)obj;
-				tps = e.getAccessTypes();
-				res = new ENode[tps.length];
-				for (int si=0; si < tps.length; si++) {
-					Type tp = tps[si];
-					if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
-						if (tp.isWrapper()) {
-							tps[si] = ((WrapperType)tp).getUnwrappedType();
-							res[si] = obj;
-						}
-						else if (tp.isInstanceOf(Type.tpPrologVar)) {
-							tps[si] = tp;
-							res[si] = obj;
-						}
-					}
-					else if (ident.name.byteAt(0) == '$') {
-						while (tp.isWrapper())
-							tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
-					}
-					else if( ident.name.equals("length") ) {
-						if( tp.isArray() ) {
-							tps[si] = Type.tpInt;
-							res[si] = new ArrayLengthAccessExpr(pos,(Expr)e.copy());
-						}
-					}
-				}
-				// fall down
-			}
+	try_static:
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ENode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			Expr e = (Expr)obj;
+			tps = e.getAccessTypes();
+			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
-				if (res[si] != null)
-					continue;
 				Type tp = tps[si];
-				ASTNode@ v;
-				ResInfo info;
-				if (obj instanceof Expr &&
-					tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic|ResInfo.noImports),ident.name) )
-				{
-					res[si] = makeExpr(v,info,(ENode)~obj);
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = obj;
+					}
 				}
-				else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name))
-				{
-					res[si] = makeExpr(v,info,tp.getStruct());
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals("length") ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthAccessExpr(pos,(Expr)e.copy());
+					}
 				}
 			}
-			int cnt = 0;
-			int idx = -1;
-			for (int si=0; si < res.length; si++) {
-				if (res[si] != null) {
-					cnt ++;
-					if (idx < 0) idx = si;
-				}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			ASTNode@ v;
+			ResInfo info;
+			if (obj instanceof Expr &&
+				tp.resolveNameAccessR(v,info=new ResInfo(ResInfo.noStatic|ResInfo.noImports),ident.name) )
+			{
+				res[si] = makeExpr(v,info,(ENode)~obj);
 			}
-			if (cnt > 1) {
-				StringBuffer msg = new StringBuffer("Umbigous access:\n");
-				for(int si=0; si < res.length; si++) {
-					if (res[si] == null)
-						continue;
-					msg.append("\t").append(res).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				throw new CompilerException(pos, msg.toString());
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(),ident.name))
+			{
+				res[si] = makeExpr(v,info,tp.getStruct());
 			}
-			if (cnt == 0) {
-				StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
-				for(int si=0; si < res.length; si++) {
-					if (tps[si] == null)
-						continue;
-					msg.append("\t").append(tps[si]).append('\n');
-				}
-				msg.append("while resolving ").append(this);
-				this.obj = this.obj;
-				throw new CompilerException(pos, msg.toString());
-				//return;
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
 			}
-			this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
-		} finally { PassInfo.pop(this); }
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(pos, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(pos, msg.toString());
+			//return;
+		}
+		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
 	}
 
 	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {

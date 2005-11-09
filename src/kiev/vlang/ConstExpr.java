@@ -52,31 +52,25 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
-		PassInfo.push(this);
-		try {
-			if( reqType != Type.tpVoid ) {
-				if( value )
-					Code.addConst(1);
-				else
-					Code.addConst(0);
-			}
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( reqType != Type.tpVoid ) {
+			if( value )
+				Code.addConst(1);
+			else
+				Code.addConst(0);
+		}
 	}
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_true "+this);
-		PassInfo.push(this);
-		try {
-			if( value ) Code.addInstr(op_goto,label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( value ) Code.addInstr(op_goto,label);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_false "+this);
-		PassInfo.push(this);
-		try {
-			if( !value ) Code.addInstr(op_goto,label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( !value ) Code.addInstr(op_goto,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -234,60 +228,58 @@ public abstract class ConstExpr extends Expr {
 	public void generate(Type reqType) {
 		Object value = getConstValue();
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
-		PassInfo.push(this);
-		try {
-			if( value == null ) {
-				// Special case for generation of parametriezed
-				// with primitive types classes
-				if( reqType != null && !reqType.isReference() ) {
-					switch(reqType.signature.byteAt(0)) {
-					case 'Z': case 'B': case 'S': case 'I': case 'C':
-						Code.addConst(0);
-						break;
-					case 'J':
-						Code.addConst(0L);
-						break;
-					case 'F':
-						Code.addConst(0.F);
-						break;
-					case 'D':
-						Code.addConst(0.D);
-						break;
-					default:
-						Code.addNullConst();
-						break;
-					}
-				}
-				else
+		Code.setLinePos(this.getPosLine());
+		if( value == null ) {
+			// Special case for generation of parametriezed
+			// with primitive types classes
+			if( reqType != null && !reqType.isReference() ) {
+				switch(reqType.signature.byteAt(0)) {
+				case 'Z': case 'B': case 'S': case 'I': case 'C':
+					Code.addConst(0);
+					break;
+				case 'J':
+					Code.addConst(0L);
+					break;
+				case 'F':
+					Code.addConst(0.F);
+					break;
+				case 'D':
+					Code.addConst(0.D);
+					break;
+				default:
 					Code.addNullConst();
+					break;
+				}
 			}
-			else if( value instanceof Byte ) {
-				Code.addConst(((Byte)value).intValue());
-			}
-			else if( value instanceof Short ) {
-				Code.addConst(((Short)value).intValue());
-			}
-			else if( value instanceof Integer ) {
-				Code.addConst(((Integer)value).intValue());
-			}
-			else if( value instanceof Character ) {
-				Code.addConst((int)((Character)value).charValue());
-			}
-			else if( value instanceof Long ) {
-				Code.addConst(((Long)value).longValue());
-			}
-			else if( value instanceof Float ) {
-				Code.addConst(((Float)value).floatValue());
-			}
-			else if( value instanceof Double ) {
-				Code.addConst(((Double)value).doubleValue());
-			}
-			else if( value instanceof KString ) {
-				Code.addConst((KString)value);
-			}
-			else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+			else
+				Code.addNullConst();
+		}
+		else if( value instanceof Byte ) {
+			Code.addConst(((Byte)value).intValue());
+		}
+		else if( value instanceof Short ) {
+			Code.addConst(((Short)value).intValue());
+		}
+		else if( value instanceof Integer ) {
+			Code.addConst(((Integer)value).intValue());
+		}
+		else if( value instanceof Character ) {
+			Code.addConst((int)((Character)value).charValue());
+		}
+		else if( value instanceof Long ) {
+			Code.addConst(((Long)value).longValue());
+		}
+		else if( value instanceof Float ) {
+			Code.addConst(((Float)value).floatValue());
+		}
+		else if( value instanceof Double ) {
+			Code.addConst(((Double)value).doubleValue());
+		}
+		else if( value instanceof KString ) {
+			Code.addConst((KString)value);
+		}
+		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper	toJava(Dumper dmp) {

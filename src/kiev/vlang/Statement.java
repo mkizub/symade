@@ -142,7 +142,6 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 	}
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		Type[] types = new Type[params_redir.length];
 		for (int i=0; i < params_redir.length; i++) {
 			types[i] = params_redir[i].new_var.type;
@@ -155,20 +154,17 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		} finally {
 			for (int i=0; i < params_redir.length; i++)
 				params_redir[i].new_var.vtype.lnk = types[i];
-			PassInfo.pop(this);
 		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating InlineMethodStat");
-		PassInfo.push(this);
-		try {
-			if( Kiev.verify )
-				generateArgumentCheck();
-			foreach (ParamRedir redir; params_redir)
-				redir.old_var.setBCpos(redir.new_var.getBCpos());
-			((Statement)method.body).generate(reqType);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( Kiev.verify )
+			generateArgumentCheck();
+		foreach (ParamRedir redir; params_redir)
+			redir.old_var.setBCpos(redir.new_var.getBCpos());
+		((Statement)method.body).generate(reqType);
 	}
 
 	public void generateArgumentCheck() {
@@ -305,12 +301,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	public void resolve(Type reqType) {
 		assert (!isResolved());
 		setResolved(true);
-		PassInfo.push(this);
-		try {
-			resolveBlockStats(this, stats);
-		} finally {
-			PassInfo.pop(this);
-		}
+		resolveBlockStats(this, stats);
 	}
 
 	static class BlockStatDFFunc extends DFFunc {
@@ -368,26 +359,24 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
-		PassInfo.push(this);
-		try {
-			break_label = Code.newLabel();
-			//Code.addVars(vars);
-			for(int i=0; i < stats.length; i++) {
-				try {
-					stats[i].generate(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(stats[i].getPos(),e);
-				}
+		Code.setLinePos(this.getPosLine());
+		break_label = Code.newLabel();
+		//Code.addVars(vars);
+		for(int i=0; i < stats.length; i++) {
+			try {
+				stats[i].generate(Type.tpVoid);
+			} catch(Exception e ) {
+				Kiev.reportError(stats[i].getPos(),e);
 			}
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			Code.removeVars(vars.toArray());
-			if( parent instanceof Method && Kiev.debugOutputC
-			 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
-				Code.stack_push(((Method)parent).type.ret);
-			}
-			Code.addInstr(Instr.set_label,break_label);
-		} finally { PassInfo.pop(this); }
+		}
+		Vector<Var> vars = new Vector<Var>();
+		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+		Code.removeVars(vars.toArray());
+		if( parent instanceof Method && Kiev.debugOutputC
+		 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
+			Code.stack_push(((Method)parent).type.ret);
+		}
+		Code.addInstr(Instr.set_label,break_label);
 	}
 
 	public CodeLabel getBreakLabel() throws RuntimeException {
@@ -452,23 +441,21 @@ public class ExprStat extends Statement {
 	}
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		try {
 			expr.resolve(Type.tpVoid);
 			expr.setGenVoidExpr(true);
 		} catch(Exception e ) {
 			Kiev.reportError(expr.getPos(),e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
-		PassInfo.push(this);
 		try {
 			expr.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(expr.getPos(),e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -498,36 +485,33 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
-		PassInfo.push(this);
-		try {
-			if( expr != null ) {
-				try {
-					expr.resolve(PassInfo.method.type.ret);
-				} catch(Exception e ) {
-					Kiev.reportError(expr.pos,e);
-				}
+		if( expr != null ) {
+			try {
+				expr.resolve(PassInfo.method.type.ret);
+			} catch(Exception e ) {
+				Kiev.reportError(expr.pos,e);
 			}
-			if( PassInfo.method.type.ret == Type.tpVoid ) {
-				if( expr != null ) throw new RuntimeException("Can't return value in void method");
-				expr = null;
-			} else {
-				if( expr == null ) {
-					throw new RuntimeException("Return must return a value in non-void method");
-				}
+		}
+		if( PassInfo.method.type.ret == Type.tpVoid ) {
+			if( expr != null ) throw new RuntimeException("Can't return value in void method");
+			expr = null;
+		} else {
+			if( expr == null ) {
+				throw new RuntimeException("Return must return a value in non-void method");
 			}
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( expr != null )
 				expr.generate(PassInfo.method.type.ret);
 			generateReturn(this);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public static void generateReturn(ASTNode from) {
@@ -599,28 +583,25 @@ public class ThrowStat extends Statement/*defaults*/ {
 
 	public void resolve(Type reqType) {
 		setMethodAbrupted(true);
-		PassInfo.push(this);
 		try {
-			try {
-				expr.resolve(Type.tpThrowable);
-			} catch(Exception e ) {
-				Kiev.reportError(expr.pos,e);
-			}
-			Type exc = expr.getType();
-			if( !PassInfo.checkException(exc) )
-				Kiev.reportWarning(pos,"Exception "+exc+" must be caught or declared to be thrown");
-		} finally { PassInfo.pop(this); }
+			expr.resolve(Type.tpThrowable);
+		} catch(Exception e ) {
+			Kiev.reportError(expr.pos,e);
+		}
+		Type exc = expr.getType();
+		if( !PassInfo.checkException(exc) )
+			Kiev.reportWarning(pos,"Exception "+exc+" must be caught or declared to be thrown");
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ThrowStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			expr.generate(null);
 			Code.addInstr(Instr.op_throw);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -655,47 +636,44 @@ public class IfElseStat extends Statement {
 	}
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) {
+			Kiev.reportError(cond.pos,e);
+		}
+	
+		try {
+			thenSt.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(thenSt.pos,e);
+		}
+		if( elseSt != null ) {
 			try {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
+				elseSt.resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
+				Kiev.reportError(elseSt.pos,e);
 			}
-		
-			try {
-				thenSt.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(thenSt.pos,e);
-			}
-			if( elseSt != null ) {
-				try {
-					elseSt.resolve(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(elseSt.pos,e);
-				}
-			}
+		}
 
-			if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
-				if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
-				if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
-			}
-			else if (cond.getConstValue() instanceof Boolean && ((Boolean)cond.getConstValue()).booleanValue()) {
-				if( thenSt.isAbrupted() ) setAbrupted(true);
-				if( thenSt.isMethodAbrupted() ) setMethodAbrupted(true);
-			}
-			else if (elseSt != null){
-				if( elseSt.isAbrupted() ) setAbrupted(true);
-				if( elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
-			}
-
-		} finally { PassInfo.pop(this); }
+		if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
+			if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
+			if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
+		}
+		else if (cond.getConstValue() instanceof Boolean && ((Boolean)cond.getConstValue()).booleanValue()) {
+			if( thenSt.isAbrupted() ) setAbrupted(true);
+			if( thenSt.isMethodAbrupted() ) setMethodAbrupted(true);
+		}
+		else if (elseSt != null){
+			if( elseSt.isAbrupted() ) setAbrupted(true);
+			if( elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
+		}
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
 				Expr cond = (Expr)this.cond;
@@ -730,7 +708,7 @@ public class IfElseStat extends Statement {
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -775,20 +753,17 @@ public class CondStat extends Statement {
 	}
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		try {
-			try {
-				cond.resolve(Type.tpBoolean);
-				BoolExpr.checkBool(cond);
-			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
-			}
-			try {
-				message.resolve(Type.tpString);
-			} catch(Exception e ) {
-				Kiev.reportError(message.pos,e);
-			}
-		} finally { PassInfo.pop(this); }
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) {
+			Kiev.reportError(cond.pos,e);
+		}
+		try {
+			message.resolve(Type.tpString);
+		} catch(Exception e ) {
+			Kiev.reportError(message.pos,e);
+		}
 	}
 
 	private KString getAssertMethodName() {
@@ -817,7 +792,7 @@ public class CondStat extends Statement {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if(cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
 				Expr cond = (Expr)this.cond;
@@ -843,7 +818,7 @@ public class CondStat extends Statement {
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -878,25 +853,24 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 	public NodeName getName() { return new NodeName(ident.name); }
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
 		try {
 			stat.resolve(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(stat.pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 		if( stat.isAbrupted() ) setAbrupted(true);
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			lbl.generate(Type.tpVoid);
 			stat.generate(Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(stat.getPos(),e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public CodeLabel getCodeLabel() {
@@ -1046,7 +1020,7 @@ public class BreakStat extends Statement {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			Object[] lb = resolveBreakLabel();
 			int i=0;
@@ -1067,7 +1041,7 @@ public class BreakStat extends Statement {
 			throw new RuntimeException(e.getMessage());
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
@@ -1211,7 +1185,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			Object[] lb = resolveContinueLabel();
 			int i=0;
@@ -1228,7 +1202,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 			throw new RuntimeException(e.getMessage());
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
@@ -1493,7 +1467,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		LabeledStat stat = stats[0];
 		if( stat == null )
 			throw new CompilerException(pos,"Label "+ident+" unresolved");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			Object[] lb = resolveLabelStat(stat);
 			int i=0;
@@ -1510,7 +1484,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			throw new RuntimeException(e.getMessage());
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1564,7 +1538,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
@@ -1632,7 +1606,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				Code.stack_pop();
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -31,7 +31,7 @@ import static kiev.vlang.Instr.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 206 $
+ * @version $Revision$
  *
  */
 
@@ -104,126 +104,121 @@ public class NewExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			if( type.isAnonymouseClazz() ) {
-				type.getStruct().resolveDecl();
+		if( type.isAnonymouseClazz() ) {
+			type.getStruct().resolveDecl();
+		}
+		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
+			throw new CompilerException(pos,"Abstract class "+type+" instantiation");
+		}
+		if( outer != null )
+			outer.resolve(null);
+		else if( (!type.isStaticClazz() && type.isLocalClazz())
+			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+		{
+			if( PassInfo.method==null || PassInfo.method.isStatic() )
+				throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
+			Var th = PassInfo.method.getThisPar();
+			outer = new VarAccessExpr(pos,th);
+			outer.resolve(null);
+		}
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(null);
+		if( type.isLocalClazz() ) {
+			Struct cl = (Struct)type.clazz;
+			foreach (ASTNode n; cl.members; n instanceof Field) {
+				Field f = (Field)n;
+				if( !f.isNeedProxy() ) continue;
+				outer_args.append(new AccessExpr(pos,new ThisExpr(pos),f));
 			}
-			if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-				throw new CompilerException(pos,"Abstract class "+type+" instantiation");
-			}
-			if( outer != null )
-				outer.resolve(null);
-			else if( (!type.isStaticClazz() && type.isLocalClazz())
-				  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
-			{
-				if( PassInfo.method==null || PassInfo.method.isStatic() )
-					throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
-				Var th = PassInfo.method.getThisPar();
-				outer = new VarAccessExpr(pos,th);
-				outer.resolve(null);
-			}
-			for(int i=0; i < args.length; i++)
-				args[i].resolve(null);
-			if( type.isLocalClazz() ) {
-				Struct cl = (Struct)type.clazz;
-				foreach (ASTNode n; cl.members; n instanceof Field) {
-					Field f = (Field)n;
-					if( !f.isNeedProxy() ) continue;
-					outer_args.append(new AccessExpr(pos,new ThisExpr(pos),f));
+		}
+		if( type.args.length > 0 ) {
+			// Create static field for this type typeinfo
+			tif_expr = PassInfo.clazz.accessTypeInfoField(pos,type);
+		}
+		// Don't try to find constructor of argument type
+		if( !type.isArgument() ) {
+			if (tif_expr != null)
+				args.insert((ENode)tif_expr.copy(),0);
+			if (outer != null)
+				args.insert((ENode)outer.copy(),0);
+			Type[] ta = new Type[args.length];
+			for (int i=0; i < ta.length; i++)
+				ta[i] = args[i].getType();
+			MethodType mt = MethodType.newMethodType(null,ta,type);
+			Method@ m;
+			// First try overloaded 'new', than real 'new'
+			if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
+				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+				if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
+					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
+					replaceWithNode(n);
+					m.makeArgs(n.args,type);
+					n.setResolved(true);
+					return;
 				}
 			}
-			if( type.args.length > 0 ) {
-				// Create static field for this type typeinfo
-				tif_expr = PassInfo.clazz.accessTypeInfoField(pos,type);
+			mt = MethodType.newMethodType(null,ta,Type.tpVoid);
+			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
+				func = m;
+				m.makeArgs(args,type);
 			}
-			// Don't try to find constructor of argument type
-			if( !type.isArgument() ) {
-				if (tif_expr != null)
-					args.insert((ENode)tif_expr.copy(),0);
-				if (outer != null)
-					args.insert((ENode)outer.copy(),0);
-				Type[] ta = new Type[args.length];
-				for (int i=0; i < ta.length; i++)
-					ta[i] = args[i].getType();
-				MethodType mt = MethodType.newMethodType(null,ta,type);
-				Method@ m;
-				// First try overloaded 'new', than real 'new'
-				if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
-					ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
-					if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
-						CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
-						replaceWithNode(n);
-						m.makeArgs(n.args,type);
-						n.setResolved(true);
-						return;
-					}
-				}
-				mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-				if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
-					func = m;
-					m.makeArgs(args,type);
-				}
-				else {
-					throw new RuntimeException("Can't find apropriative initializer for "+
-						Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
-				}
+			else {
+				throw new RuntimeException("Can't find apropriative initializer for "+
+					Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			if( type.isArgument() ) {
-				if( outer != null || args.length > 0 ) {
-					Kiev.reportError(pos,"Constructor with arguments for type argument is not supported");
-					return;
-				} else {
-					// If we have primitive type
-					if( !type.isReference() ) {
-						new ConstNullExpr().generate(type);
-						return;
-					}
-					int i;
-					for(i=0; i < PassInfo.clazz.type.args.length; i++)
-						if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
-					if( i >= PassInfo.clazz.type.args.length )
-						throw new CompilerException(pos,"Can't create an instance of argument type "+type);
-					Expr tie = new AccessExpr(pos,new ThisExpr(pos),PassInfo.clazz.resolveField(nameTypeInfo));
-					Expr e = new CastExpr(pos,type,
-						new CallExpr(pos,tie,
-							Type.tpTypeInfo.clazz.resolveMethod(
-								KString.from("newInstance"),
-								KString.from("(I)Ljava/lang/Object;")
-								),
-								new Expr[]{new ConstIntExpr(i)}),
-						true);
-					e.resolve(reqType);
-					e.generate(reqType);
+		Code.setLinePos(this.getPosLine());
+		if( type.isArgument() ) {
+			if( outer != null || args.length > 0 ) {
+				Kiev.reportError(pos,"Constructor with arguments for type argument is not supported");
+				return;
+			} else {
+				// If we have primitive type
+				if( !type.isReference() ) {
+					new ConstNullExpr().generate(type);
 					return;
 				}
+				int i;
+				for(i=0; i < PassInfo.clazz.type.args.length; i++)
+					if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
+				if( i >= PassInfo.clazz.type.args.length )
+					throw new CompilerException(pos,"Can't create an instance of argument type "+type);
+				Expr tie = new AccessExpr(pos,new ThisExpr(pos),PassInfo.clazz.resolveField(nameTypeInfo));
+				Expr e = new CastExpr(pos,type,
+					new CallExpr(pos,tie,
+						Type.tpTypeInfo.clazz.resolveMethod(
+							KString.from("newInstance"),
+							KString.from("(I)Ljava/lang/Object;")
+							),
+							new Expr[]{new ConstIntExpr(i)}),
+					true);
+				e.resolve(reqType);
+				e.generate(reqType);
+				return;
 			}
-			Code.addInstr(op_new,type);
-			// First arg ('this' pointer) is generated by 'op_dup'
-			if( reqType != Type.tpVoid )
-				Code.addInstr(op_dup);
-			// Constructor call args (first args 'this' skipped)
-			//if( outer != null )
-			//	outer.generate(null);
-			//if( tif_expr != null )
-			//	tif_expr.generate(null);
-			for(int i=0; i < args.length; i++)
-				args[i].generate(null);
-			// Now, fill proxyed fields (vars)
-			foreach (ENode n; outer_args)
-				n.generate(null);
-			Code.addInstr(op_call,func,false,type);
-		} finally { PassInfo.pop(this); }
+		}
+		Code.addInstr(op_new,type);
+		// First arg ('this' pointer) is generated by 'op_dup'
+		if( reqType != Type.tpVoid )
+			Code.addInstr(op_dup);
+		// Constructor call args (first args 'this' skipped)
+		//if( outer != null )
+		//	outer.generate(null);
+		//if( tif_expr != null )
+		//	tif_expr.generate(null);
+		for(int i=0; i < args.length; i++)
+			args[i].generate(null);
+		// Now, fill proxyed fields (vars)
+		foreach (ENode n; outer_args)
+			n.generate(null);
+		Code.addInstr(op_call,func,false,type);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
@@ -300,58 +295,53 @@ public class NewArrayExpr extends Expr {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			for(int i=0; i < args.length; i++)
-				if( args[i] != null )
-					args[i].resolve(Type.tpInt);
-			if( type.isArgument() ) {
-				if( PassInfo.method==null || PassInfo.method.isStatic() )
-					throw new CompilerException(pos,"Access to argument "+type+" from static method");
-				int i;
-				for(i=0; i < PassInfo.clazz.type.args.length; i++)
-					if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
-				if( i >= PassInfo.clazz.type.args.length )
-					throw new CompilerException(pos,"Can't create an array of argument type "+type);
-				Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
-				if( dim == 1 ) {
-					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-						new CallExpr(pos,tie,
-							Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
-							new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
-						),true));
-					return;
-				} else {
-					this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
-						new CallExpr(pos,tie,
-							Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
-							new ENode[]{
-								new ConstIntExpr(i),
-								new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
-							}
-						),true));
-					return;
-				}
+		for(int i=0; i < args.length; i++)
+			if( args[i] != null )
+				args[i].resolve(Type.tpInt);
+		if( type.isArgument() ) {
+			if( PassInfo.method==null || PassInfo.method.isStatic() )
+				throw new CompilerException(pos,"Access to argument "+type+" from static method");
+			int i;
+			for(i=0; i < PassInfo.clazz.type.args.length; i++)
+				if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
+			if( i >= PassInfo.clazz.type.args.length )
+				throw new CompilerException(pos,"Can't create an array of argument type "+type);
+			Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
+			if( dim == 1 ) {
+				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
+					new CallExpr(pos,tie,
+						Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
+						new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
+					),true));
+				return;
+			} else {
+				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
+					new CallExpr(pos,tie,
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
+						new ENode[]{
+							new ConstIntExpr(i),
+							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
+						}
+					),true));
+				return;
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			if( dim == 1 ) {
-				args[0].generate(null);
-				Code.addInstr(Instr.op_newarray,type);
-			} else {
-				for(int i=0; i < args.length; i++)
-					args[i].generate(null);
-				Code.addInstr(Instr.op_multianewarray,arrtype,args.length);
-			}
-			if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( dim == 1 ) {
+			args[0].generate(null);
+			Code.addInstr(Instr.op_newarray,type);
+		} else {
+			for(int i=0; i < args.length; i++)
+				args[i].generate(null);
+			Code.addInstr(Instr.op_multianewarray,arrtype,args.length);
+		}
+		if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
@@ -415,45 +405,40 @@ public class NewInitializedArrayExpr extends Expr {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			for(int i=0; i < args.length; i++)
-				args[i].resolve(arrtype.args[0]);
-			for(int i=1; i < dims.length; i++) {
-				int n;
-				for(int j=0; j < args.length; j++) {
-					if( args[j] instanceof NewInitializedArrayExpr )
-						n = ((NewInitializedArrayExpr)args[j]).getElementsNumber(i-1);
-					else
-						n = 1;
-					if( dims[i] < n ) dims[i] = n;
-				}
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(arrtype.args[0]);
+		for(int i=1; i < dims.length; i++) {
+			int n;
+			for(int j=0; j < args.length; j++) {
+				if( args[j] instanceof NewInitializedArrayExpr )
+					n = ((NewInitializedArrayExpr)args[j]).getElementsNumber(i-1);
+				else
+					n = 1;
+				if( dims[i] < n ) dims[i] = n;
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			if( dim == 1 ) {
-				Code.addConst(args.length);
-				Code.addInstr(Instr.op_newarray,type);
-			} else {
-				for(int i=0; i < dim; i++)
-					Code.addConst(dims[i]);
-				Code.addInstr(Instr.op_multianewarray,arrtype,dim);
-			}
-			for(int i=0; i < args.length; i++) {
-				Code.addInstr(Instr.op_dup);
-				Code.addConst(i);
-				args[i].generate(null);
-				Code.addInstr(Instr.op_arr_store);
-			}
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		if( dim == 1 ) {
+			Code.addConst(args.length);
+			Code.addInstr(Instr.op_newarray,type);
+		} else {
+			for(int i=0; i < dim; i++)
+				Code.addConst(dims[i]);
+			Code.addInstr(Instr.op_multianewarray,arrtype,dim);
+		}
+		for(int i=0; i < args.length; i++) {
+			Code.addInstr(Instr.op_dup);
+			Code.addConst(i);
+			args[i].generate(null);
+			Code.addInstr(Instr.op_arr_store);
+		}
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
@@ -524,57 +509,52 @@ public class NewClosure extends Expr {
 		if( isResolved() ) return;
 		if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) return;
 		ClosureType type = (ClosureType)this.type.getType();
-		PassInfo.push(this);
-		try {
-			if( Env.getStruct(Type.tpClosureClazz.name) == null )
-				throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-			type.getStruct().autoProxyMethods();
-			type.getStruct().resolveDecl();
-			Struct cl = type.getStruct();
-			KStringBuffer sign = new KStringBuffer().append('(');
-			if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
-				sign.append(((Struct)PassInfo.method.parent).type.signature);
-			}
-			sign.append('I');
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
-				if( !f.isNeedProxy() ) continue;
-				sign.append(f.type.signature);
-			}
-			sign.append(")V");
-			func = type.resolveMethod(nameInit,sign.toKString());
-			if( !((Struct)func.parent).equals(type.getStruct()) )
-				throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type);
-		} finally { PassInfo.pop(this); }
+		if( Env.getStruct(Type.tpClosureClazz.name) == null )
+			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
+		type.getStruct().autoProxyMethods();
+		type.getStruct().resolveDecl();
+		Struct cl = type.getStruct();
+		KStringBuffer sign = new KStringBuffer().append('(');
+		if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
+			sign.append(((Struct)PassInfo.method.parent).type.signature);
+		}
+		sign.append('I');
+		foreach (ASTNode n; cl.members; n instanceof Field) {
+			Field f = (Field)n;
+			if( !f.isNeedProxy() ) continue;
+			sign.append(f.type.signature);
+		}
+		sign.append(")V");
+		func = type.resolveMethod(nameInit,sign.toKString());
+		if( !((Struct)func.parent).equals(type.getStruct()) )
+			throw new RuntimeException("Can't find apropriative initializer for "+nameInit+sign+" for "+type+" class "+type);
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
 		ClosureType type = (ClosureType)this.type.getType();
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_new,type);
-			// First arg ('this' pointer) is generated by 'op_dup'
-			if( reqType != Type.tpVoid )
-				Code.addInstr(op_dup);
-			// Constructor call args (first args 'this' skipped)
-			if( PassInfo.method!=null && !PassInfo.method.isStatic() )
-				Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
-			if( type.args == null )
-				Code.addConst(0);
-			else
-				Code.addConst(type.args.length);
-			// Now, fill proxyed fields (vars)
-			Struct cl = (Struct)type.clazz;
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
-				if( !f.isNeedProxy() ) continue;
-				Var v = ((VarAccessExpr)f.init).var;
-				Code.addInstr(Instr.op_load,v);
-			}
-			Code.addInstr(op_call,func,false);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Code.addInstr(op_new,type);
+		// First arg ('this' pointer) is generated by 'op_dup'
+		if( reqType != Type.tpVoid )
+			Code.addInstr(op_dup);
+		// Constructor call args (first args 'this' skipped)
+		if( PassInfo.method!=null && !PassInfo.method.isStatic() )
+			Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
+		if( type.args == null )
+			Code.addConst(0);
+		else
+			Code.addConst(type.args.length);
+		// Now, fill proxyed fields (vars)
+		Struct cl = (Struct)type.clazz;
+		foreach (ASTNode n; cl.members; n instanceof Field) {
+			Field f = (Field)n;
+			if( !f.isNeedProxy() ) continue;
+			Var v = ((VarAccessExpr)f.init).var;
+			Code.addInstr(Instr.op_load,v);
+		}
+		Code.addInstr(op_call,func,false);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

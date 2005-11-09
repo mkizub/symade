@@ -120,35 +120,32 @@ public class Var extends DNode implements Named, Typed {
 
 	public void resolveDecl() {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
-				init = new NewExpr(pos,type,Expr.emptyArray);
-			if( init != null ) {
-				if (init instanceof TypeRef)
-					((TypeRef)init).toExpr(this.getType());
-				if (type.isWrapper() && !this.isInitWrapper())
-					init = new NewExpr(init.pos,type,new ENode[]{(ENode)~init});
-				try {
+		if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
+			init = new NewExpr(pos,type,Expr.emptyArray);
+		if( init != null ) {
+			if (init instanceof TypeRef)
+				((TypeRef)init).toExpr(this.getType());
+			if (type.isWrapper() && !this.isInitWrapper())
+				init = new NewExpr(init.pos,type,new ENode[]{(ENode)~init});
+			try {
+				init.resolve(this.type);
+				Type it = init.getType();
+				if( !it.isInstanceOf(this.type) ) {
+					init = new CastExpr(init.pos,this.type,(ENode)~init);
 					init.resolve(this.type);
-					Type it = init.getType();
-					if( !it.isInstanceOf(this.type) ) {
-						init = new CastExpr(init.pos,this.type,(ENode)~init);
-						init.resolve(this.type);
-					}
-				} catch(Exception e ) {
-					Kiev.reportError(pos,e);
 				}
+			} catch(Exception e ) {
+				Kiev.reportError(pos,e);
 			}
-			getDFlow().out();
-		} finally { PassInfo.pop(this); }
+		}
+		getDFlow().out();
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
-		PassInfo.push(this);
+		Code.setLinePos(this.getPosLine());
 		try {
 			if( init != null ) {
 				if( !this.isNeedRefProxy() ) {
@@ -172,7 +169,7 @@ public class Var extends DNode implements Named, Typed {
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {

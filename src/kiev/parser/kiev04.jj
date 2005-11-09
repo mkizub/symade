@@ -2620,7 +2620,6 @@ BlockStat Block() :
 	{
 		BlockStat bl = new BlockStat();
 		bl.setPos(getToken(1).getPos());
-		PassInfo.push(bl);
 		old_declMode = declMode;
 		declMode = false;
 	}
@@ -2628,7 +2627,7 @@ BlockStat Block() :
     	(
 			BlockStatement(bl.stats)
 		)*
-	} finally { declMode = old_declMode; PassInfo.pop(bl); }
+	} finally { declMode = old_declMode; }
     "}"
 	{ return bl; }
 }
@@ -2664,16 +2663,12 @@ RuleBlock RuleBlock() :
 	{
 		RuleBlock bl = new RuleBlock();
 		bl.setPos(getToken(1).getPos());
-		PassInfo.push(bl);
 		old_declMode = declMode;
 		declMode = false;
 	}
 	try {
 		bl.node = RuleOrExpression()
-	} finally {
-		declMode = old_declMode;
-		PassInfo.pop(bl);
-	}
+	} finally { declMode = old_declMode; }
 	"}"
 	{ return bl; }
 }
@@ -2684,19 +2679,16 @@ BlockStat CondBlock() :
 	{
 		BlockStat bl = new BlockStat();
 		bl.setPos(getToken(1).getPos());
-		PassInfo.push(bl);
 	}
-	try {
-		(
-			"{"
-				(
-					bl.stats += CondStatement()
-				)+
-			"}"
-		|
-			bl.stats += CondStatement()
-		)
-	} finally { {PassInfo.pop(bl); } }
+	(
+		"{"
+			(
+				bl.stats += CondStatement()
+			)+
+		"}"
+	|
+		bl.stats += CondStatement()
+	)
 	{ return bl; }
 }
 

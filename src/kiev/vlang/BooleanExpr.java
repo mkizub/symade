@@ -48,19 +48,17 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);
-		PassInfo.push(this);
-		try {
-			CodeLabel label_true = Code.newLabel();
-			CodeLabel label_false = Code.newLabel();
+		Code.setLinePos(this.getPosLine());
+		CodeLabel label_true = Code.newLabel();
+		CodeLabel label_false = Code.newLabel();
 
-			generate_iftrue(label_true);
-			Code.addConst(0);
-			Code.addInstr(Instr.op_goto,label_false);
-			Code.addInstr(Instr.set_label,label_true);
-			Code.addConst(1);
-			Code.addInstr(Instr.set_label,label_false);
-			if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
-		} finally { PassInfo.pop(this); }
+		generate_iftrue(label_true);
+		Code.addConst(0);
+		Code.addInstr(Instr.op_goto,label_false);
+		Code.addInstr(Instr.set_label,label_true);
+		Code.addConst(1);
+		Code.addInstr(Instr.set_label,label_false);
+		if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
 	}
 
 	public abstract void generate_iftrue(CodeLabel label);
@@ -93,54 +91,52 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if true): "+expr);
-		PassInfo.push(expr);
-		try {
-			if( expr.getType().isBoolean() ) {
-				boolean optimized = false;
-				if( expr instanceof BinaryExpr ) {
-					BinaryExpr be = (BinaryExpr)expr;
-					if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
-						Object ce = be.expr2.getConstValue();
-						if( ((Number)ce).intValue() == 0 ) {
-							optimized = true;
-							if( be.op == BinaryOperator.LessThen ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifge,label);
-							}
-							else if( be.op == BinaryOperator.LessEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifgt,label);
-							}
-							else if( be.op == BinaryOperator.GreaterThen ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifle,label);
-							}
-							else if( be.op == BinaryOperator.GreaterEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_iflt,label);
-							}
-							else if( be.op == BinaryOperator.Equals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifne,label);
-							}
-							else if( be.op == BinaryOperator.NotEquals ) {
-								be.expr1.generate(null);
-								Code.addInstr(Instr.op_ifeq,label);
-							}
-							else {
-								optimized = false;
-							}
+		Code.setLinePos(expr.getPosLine());
+		if( expr.getType().isBoolean() ) {
+			boolean optimized = false;
+			if( expr instanceof BinaryExpr ) {
+				BinaryExpr be = (BinaryExpr)expr;
+				if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
+					Object ce = be.expr2.getConstValue();
+					if( ((Number)ce).intValue() == 0 ) {
+						optimized = true;
+						if( be.op == BinaryOperator.LessThen ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_ifge,label);
+						}
+						else if( be.op == BinaryOperator.LessEquals ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_ifgt,label);
+						}
+						else if( be.op == BinaryOperator.GreaterThen ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_ifle,label);
+						}
+						else if( be.op == BinaryOperator.GreaterEquals ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_iflt,label);
+						}
+						else if( be.op == BinaryOperator.Equals ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_ifne,label);
+						}
+						else if( be.op == BinaryOperator.NotEquals ) {
+							be.expr1.generate(null);
+							Code.addInstr(Instr.op_ifeq,label);
+						}
+						else {
+							optimized = false;
 						}
 					}
 				}
-				if( !optimized ) {
-					expr.generate(Type.tpBoolean);
-					Code.addInstr(Instr.op_ifne,label);
-				}
 			}
-			else
-				throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-		} finally { PassInfo.pop(expr); }
+			if( !optimized ) {
+				expr.generate(Type.tpBoolean);
+				Code.addInstr(Instr.op_ifne,label);
+			}
+		}
+		else
+			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
 	}
 
 	public static void gen_iffalse(ENode expr, CodeLabel label) {
@@ -149,15 +145,13 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if false): "+expr);
-		PassInfo.push(expr);
-		try {
-			if( expr.getType().isBoolean() ) {
-				expr.generate(Type.tpBoolean);
-				Code.addInstr(Instr.op_ifeq,label);
-			}
-			else
-				throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-		} finally { PassInfo.pop(expr); }
+		Code.setLinePos(expr.getPosLine());
+		if( expr.getType().isBoolean() ) {
+			expr.generate(Type.tpBoolean);
+			Code.addInstr(Instr.op_ifeq,label);
+		}
+		else
+			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
 	}
 }
 
@@ -202,37 +196,28 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	public Operator getOp() { return BinaryOperator.BooleanOr; }
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			expr1.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(expr1);
-			expr2.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(expr2);
-			getDFlow().out();
-		} finally {
-			PassInfo.pop(this);
-		}
+		expr1.resolve(Type.tpBoolean);
+		BoolExpr.checkBool(expr1);
+		expr2.resolve(Type.tpBoolean);
+		BoolExpr.checkBool(expr2);
+		getDFlow().out();
 		setResolved(true);
 	}
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		PassInfo.push(this);
-		try {
-			BoolExpr.gen_iftrue(expr1, label);
-			BoolExpr.gen_iftrue(expr2, label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iftrue(expr1, label);
+		BoolExpr.gen_iftrue(expr2, label);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		PassInfo.push(this);
-		try {
-			CodeLabel label1 = Code.newLabel();
-			BoolExpr.gen_iftrue(expr1, label1);
-			BoolExpr.gen_iffalse(expr2, label);
-			Code.addInstr(Instr.set_label,label1);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		CodeLabel label1 = Code.newLabel();
+		BoolExpr.gen_iftrue(expr1, label1);
+		BoolExpr.gen_iffalse(expr2, label);
+		Code.addInstr(Instr.set_label,label1);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -287,36 +272,27 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	public Operator getOp() { return BinaryOperator.BooleanAnd; }
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			expr1.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(expr1);
-			expr2.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(expr2);
-		} finally {
-			PassInfo.pop(this);
-		}
+		expr1.resolve(Type.tpBoolean);
+		BoolExpr.checkBool(expr1);
+		expr2.resolve(Type.tpBoolean);
+		BoolExpr.checkBool(expr2);
 		setResolved(true);
 	}
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		PassInfo.push(this);
-		try {
-			CodeLabel label1 = Code.newLabel();
-			BoolExpr.gen_iffalse(expr1, label1);
-			BoolExpr.gen_iftrue(expr2, label);
-			Code.addInstr(Instr.set_label,label1);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		CodeLabel label1 = Code.newLabel();
+		BoolExpr.gen_iffalse(expr1, label1);
+		BoolExpr.gen_iftrue(expr2, label);
+		Code.addInstr(Instr.set_label,label1);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		PassInfo.push(this);
-		try {
-			BoolExpr.gen_iffalse(expr1, label);
-			BoolExpr.gen_iffalse(expr2, label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iffalse(expr1, label);
+		BoolExpr.gen_iffalse(expr2, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -424,61 +400,58 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			resolveExprs();
-			Type et1 = expr1.getType();
-			Type et2 = expr2.getType();
-			if( ( et1.isNumber() && et2.isNumber() ) &&
-				(    op==BinaryOperator.LessThen
-				||   op==BinaryOperator.LessEquals
-				||   op==BinaryOperator.GreaterThen
-				||   op==BinaryOperator.GreaterEquals
-				)
-			) {
-				this.resolve2(reqType);
+		resolveExprs();
+		Type et1 = expr1.getType();
+		Type et2 = expr2.getType();
+		if( ( et1.isNumber() && et2.isNumber() ) &&
+			(    op==BinaryOperator.LessThen
+			||   op==BinaryOperator.LessEquals
+			||   op==BinaryOperator.GreaterThen
+			||   op==BinaryOperator.GreaterEquals
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( op==BinaryOperator.BooleanOr ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,(ENode)~expr1,(ENode)~expr2));
 				return;
 			}
-			else if( op==BinaryOperator.BooleanOr ) {
-				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,(ENode)~expr1,(ENode)~expr2));
-					return;
-				}
-			}
-			else if( op==BinaryOperator.BooleanAnd ) {
-				if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
-					replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,(ENode)~expr1,(ENode)~expr2));
-					return;
-				}
-			}
-			else if(
-				(	(et1.isNumber() && et2.isNumber())
-				 || (et1.isReference() && et2.isReference())
-				 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
-				 || (et1.isEnum() && et2.isIntegerInCode())
-				 || (et1.isIntegerInCode() && et2.isEnum())
-				 || (et1.isEnum() && et2.isEnum() && et1 == et2)
-				) &&
-				(   op==BinaryOperator.Equals
-				||  op==BinaryOperator.NotEquals
-				)
-			) {
-				this.resolve2(reqType);
+		}
+		else if( op==BinaryOperator.BooleanAnd ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
+				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,(ENode)~expr1,(ENode)~expr2));
 				return;
 			}
-			// Not a standard operator, find out overloaded
-			foreach(OpTypes opt; op.types ) {
-				Type[] tps = new Type[]{null,et1,et2};
-				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-				if( opt.match(tps,argsarr) ) {
-					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{(ENode)~expr2}));
-					return;
-				}
+		}
+		else if(
+			(	(et1.isNumber() && et2.isNumber())
+			 || (et1.isReference() && et2.isReference())
+			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
+			 || (et1.isEnum() && et2.isIntegerInCode())
+			 || (et1.isIntegerInCode() && et2.isEnum())
+			 || (et1.isEnum() && et2.isEnum() && et1 == et2)
+			) &&
+			(   op==BinaryOperator.Equals
+			||  op==BinaryOperator.NotEquals
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		// Not a standard operator, find out overloaded
+		foreach(OpTypes opt; op.types ) {
+			Type[] tps = new Type[]{null,et1,et2};
+			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+			if( opt.match(tps,argsarr) ) {
+				if( opt.method.isStatic() )
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr1,(ENode)~expr2}));
+				else
+					replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{(ENode)~expr2}));
+				return;
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 	
@@ -527,108 +500,104 @@ public class BinaryBoolExpr extends BoolExpr {
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
-		PassInfo.push(this);
-		try {
-			if( expr2 instanceof ConstExpr ) {
-				ConstExpr ce = (ConstExpr)expr2;
-				Object cv = ce.getConstValue();
-				if( cv == null ) {
-					expr1.generate(Type.tpBoolean);
-					if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnull,label);
-					else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnonnull,label);
-					else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
+		Code.setLinePos(this.getPosLine());
+		if( expr2 instanceof ConstExpr ) {
+			ConstExpr ce = (ConstExpr)expr2;
+			Object cv = ce.getConstValue();
+			if( cv == null ) {
+				expr1.generate(Type.tpBoolean);
+				if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnull,label);
+				else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnonnull,label);
+				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
+				return;
+			}
+			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
+				expr1.generate(Type.tpBoolean);
+				if( op == BinaryOperator.Equals ) {
+					Code.addInstr(Instr.op_ifeq,label);
 					return;
 				}
-				else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-					expr1.generate(Type.tpBoolean);
-					if( op == BinaryOperator.Equals ) {
-						Code.addInstr(Instr.op_ifeq,label);
-						return;
-					}
-					else if( op == BinaryOperator.NotEquals ) {
-						Code.addInstr(Instr.op_ifne,label);
-						return;
-					}
-					else if( op == BinaryOperator.LessThen ) {
-						Code.addInstr(Instr.op_iflt,label);
-						return;
-					}
-					else if( op == BinaryOperator.LessEquals ) {
-						Code.addInstr(Instr.op_ifle,label);
-						return;
-					}
-					else if( op == BinaryOperator.GreaterThen ) {
-						Code.addInstr(Instr.op_ifgt,label);
-						return;
-					}
-					else if( op == BinaryOperator.GreaterEquals ) {
-						Code.addInstr(Instr.op_ifge,label);
-						return;
-					}
+				else if( op == BinaryOperator.NotEquals ) {
+					Code.addInstr(Instr.op_ifne,label);
+					return;
+				}
+				else if( op == BinaryOperator.LessThen ) {
+					Code.addInstr(Instr.op_iflt,label);
+					return;
+				}
+				else if( op == BinaryOperator.LessEquals ) {
+					Code.addInstr(Instr.op_ifle,label);
+					return;
+				}
+				else if( op == BinaryOperator.GreaterThen ) {
+					Code.addInstr(Instr.op_ifgt,label);
+					return;
+				}
+				else if( op == BinaryOperator.GreaterEquals ) {
+					Code.addInstr(Instr.op_ifge,label);
+					return;
 				}
 			}
-			expr1.generate(Type.tpBoolean);
-			expr2.generate(Type.tpBoolean);
-			if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpeq,label);
-			else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpne,label);
-			else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmplt,label);
-			else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmple,label);
-			else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmpgt,label);
-			else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmpge,label);
-		} finally { PassInfo.pop(this); }
+		}
+		expr1.generate(Type.tpBoolean);
+		expr2.generate(Type.tpBoolean);
+		if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmplt,label);
+		else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmple,label);
+		else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmpge,label);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if false): "+this);
-		PassInfo.push(this);
-		try {
-			if( expr2 instanceof ConstExpr ) {
-				ConstExpr ce = (ConstExpr)expr2;
-				Object cv = ce.getConstValue();
-				if( cv == null ) {
-					expr1.generate(Type.tpBoolean);
-					if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnonnull,label);
-					else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnull,label);
-					else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
+		Code.setLinePos(this.getPosLine());
+		if( expr2 instanceof ConstExpr ) {
+			ConstExpr ce = (ConstExpr)expr2;
+			Object cv = ce.getConstValue();
+			if( cv == null ) {
+				expr1.generate(Type.tpBoolean);
+				if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnonnull,label);
+				else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnull,label);
+				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
+				return;
+			}
+			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
+				expr1.generate(Type.tpBoolean);
+				if( op == BinaryOperator.Equals ) {
+					Code.addInstr(Instr.op_ifne,label);
 					return;
 				}
-				else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-					expr1.generate(Type.tpBoolean);
-					if( op == BinaryOperator.Equals ) {
-						Code.addInstr(Instr.op_ifne,label);
-						return;
-					}
-					else if( op == BinaryOperator.NotEquals ) {
-						Code.addInstr(Instr.op_ifeq,label);
-						return;
-					}
-					else if( op == BinaryOperator.LessThen ) {
-						Code.addInstr(Instr.op_ifge,label);
-						return;
-					}
-					else if( op == BinaryOperator.LessEquals ) {
-						Code.addInstr(Instr.op_ifgt,label);
-						return;
-					}
-					else if( op == BinaryOperator.GreaterThen ) {
-						Code.addInstr(Instr.op_ifle,label);
-						return;
-					}
-					else if( op == BinaryOperator.GreaterEquals ) {
-						Code.addInstr(Instr.op_iflt,label);
-						return;
-					}
+				else if( op == BinaryOperator.NotEquals ) {
+					Code.addInstr(Instr.op_ifeq,label);
+					return;
+				}
+				else if( op == BinaryOperator.LessThen ) {
+					Code.addInstr(Instr.op_ifge,label);
+					return;
+				}
+				else if( op == BinaryOperator.LessEquals ) {
+					Code.addInstr(Instr.op_ifgt,label);
+					return;
+				}
+				else if( op == BinaryOperator.GreaterThen ) {
+					Code.addInstr(Instr.op_ifle,label);
+					return;
+				}
+				else if( op == BinaryOperator.GreaterEquals ) {
+					Code.addInstr(Instr.op_iflt,label);
+					return;
 				}
 			}
-			expr1.generate(Type.tpBoolean);
-			expr2.generate(Type.tpBoolean);
-			if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpne,label);
-			else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpeq,label);
-			else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmpge,label);
-			else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmpgt,label);
-			else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmple,label);
-			else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmplt,label);
-		} finally { PassInfo.pop(this); }
+		}
+		expr1.generate(Type.tpBoolean);
+		expr2.generate(Type.tpBoolean);
+		if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmpge,label);
+		else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmple,label);
+		else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmplt,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -677,42 +646,39 @@ public class InstanceofExpr extends BoolExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			expr.resolve(null);
-			Type tp = null;
-			if( expr instanceof TypeRef )
-				tp = ((TypeRef)expr).getType();
-			if( tp != null ) {
-				replaceWithNode(new ConstBoolExpr(tp.isInstanceOf(type.getType())));
-				return;
-			} else {
-				Type et = expr.getType();
-				if (!expr.isForWrapper() && et.isWrapper()) {
-					expr = et.makeWrappedAccess(expr);
-					expr.setForWrapper(true);
-					expr.resolve(null);
-				}
+		expr.resolve(null);
+		Type tp = null;
+		if( expr instanceof TypeRef )
+			tp = ((TypeRef)expr).getType();
+		if( tp != null ) {
+			replaceWithNode(new ConstBoolExpr(tp.isInstanceOf(type.getType())));
+			return;
+		} else {
+			Type et = expr.getType();
+			if (!expr.isForWrapper() && et.isWrapper()) {
+				expr = et.makeWrappedAccess(expr);
+				expr.setForWrapper(true);
+				expr.resolve(null);
 			}
-			if( !expr.getType().isCastableTo(type.getType()) ) {
-				throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
-			}
-			if (expr.getType().isInstanceOf(type.getType())) {
-				replaceWithNodeResolve(reqType,
-					new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
-				return;
-			}
-			if (!type.isArray() && type.args.length > 0) {
-				replaceWithNodeResolve(reqType, new CallExpr(pos,
-						PassInfo.clazz.accessTypeInfoField(pos,type.getType()),
-						Type.tpTypeInfo.resolveMethod(
-							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
-						new ENode[]{(ENode)~expr}
-						)
-					);
-				return;
-			}
-		} finally { PassInfo.pop(this); }
+		}
+		if( !expr.getType().isCastableTo(type.getType()) ) {
+			throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
+		}
+		if (expr.getType().isInstanceOf(type.getType())) {
+			replaceWithNodeResolve(reqType,
+				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
+			return;
+		}
+		if (!type.isArray() && type.args.length > 0) {
+			replaceWithNodeResolve(reqType, new CallExpr(pos,
+					PassInfo.clazz.accessTypeInfoField(pos,type.getType()),
+					Type.tpTypeInfo.resolveMethod(
+						KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
+					new ENode[]{(ENode)~expr}
+					)
+				);
+			return;
+		}
 		setResolved(true);
 	}
 
@@ -762,22 +728,18 @@ public class InstanceofExpr extends BoolExpr {
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		PassInfo.push(this);
-		try {
-			expr.generate(Type.tpBoolean);
-			Code.addInstr(Instr.op_instanceof,type.getType());
-			Code.addInstr(Instr.op_ifne,label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		expr.generate(Type.tpBoolean);
+		Code.addInstr(Instr.op_instanceof,type.getType());
+		Code.addInstr(Instr.op_ifne,label);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		PassInfo.push(this);
-		try {
-			expr.generate(Type.tpBoolean);
-			Code.addInstr(Instr.op_instanceof,type.getType());
-			Code.addInstr(Instr.op_ifeq,label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		expr.generate(Type.tpBoolean);
+		Code.addInstr(Instr.op_instanceof,type.getType());
+		Code.addInstr(Instr.op_ifeq,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -813,33 +775,26 @@ public class BooleanNotExpr extends BoolExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			expr.resolve(Type.tpBoolean);
-			BoolExpr.checkBool(expr);
-			if( expr.isConstantExpr() ) {
-				replaceWithNode(new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue()));
-				return;
-			}
-		} finally { PassInfo.pop(this); }
+		expr.resolve(Type.tpBoolean);
+		BoolExpr.checkBool(expr);
+		if( expr.isConstantExpr() ) {
+			replaceWithNode(new ConstBoolExpr(!((Boolean)expr.getConstValue()).booleanValue()));
+			return;
+		}
 		setResolved(true);
 		return;
 	}
 
 	public void generate_iftrue(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);
-		PassInfo.push(this);
-		try {
-			BoolExpr.gen_iffalse(expr, label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iffalse(expr, label);
 	}
 
 	public void generate_iffalse(CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if false): "+this);
-		PassInfo.push(this);
-		try {
-			BoolExpr.gen_iftrue(expr, label);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iftrue(expr, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

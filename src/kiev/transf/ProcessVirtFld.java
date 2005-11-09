@@ -365,213 +365,204 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 
 	public void rewrite(AccessExpr:Object fa) {
 		//System.out.println("ProcessVirtFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
-		PassInfo.push(fa);
-		try {
-			Field f = fa.var;
-			if( !f.isVirtual() || fa.isAsField() ) {
-				rewriteNode(fa);
-				return;
-			}
-			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
-				append_fast(nameGet).append_fast(f.name.name).toKString();
-	
-			if (PassInfo.method != null && PassInfo.method.name.equals(get_name)) {
-				fa.setAsField(true);
-				rewriteNode(fa);
-				return;
-			}
-			// We rewrite by get$ method. set$ method is rewritten by AssignExpr
-			if (f.getMetaVirtual().get == null) {
-				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
-				fa.setAsField(true);
-				rewriteNode(fa);
-				return;
-			}
-			Expr ce = new CallExpr(fa.pos, (ENode)~fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
-			//ce = ce.resolveExpr(fa.getType());
-			fa.replaceWithNode(ce);
-			rewriteNode(ce);
-		} finally { PassInfo.pop(fa); }
+		Field f = fa.var;
+		if( !f.isVirtual() || fa.isAsField() ) {
+			rewriteNode(fa);
+			return;
+		}
+		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
+			append_fast(nameGet).append_fast(f.name.name).toKString();
+
+		if (PassInfo.method != null && PassInfo.method.name.equals(get_name)) {
+			fa.setAsField(true);
+			rewriteNode(fa);
+			return;
+		}
+		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
+		if (f.getMetaVirtual().get == null) {
+			Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+			fa.setAsField(true);
+			rewriteNode(fa);
+			return;
+		}
+		Expr ce = new CallExpr(fa.pos, (ENode)~fa.obj, f.getMetaVirtual().get, Expr.emptyArray);
+		//ce = ce.resolveExpr(fa.getType());
+		fa.replaceWithNode(ce);
+		rewriteNode(ce);
 	}
 	
 	public void rewrite(AssignExpr:Object ae) {
 		//System.out.println("ProcessVirtFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
-		PassInfo.push(ae);
-		try {
-			if (ae.lval instanceof AccessExpr) {
-				AccessExpr fa = (AccessExpr)ae.lval;
-				Field f = fa.var;
-				if( !f.isVirtual() || fa.isAsField() ) {
-					rewriteNode(ae);
-					return;
-				}
-				KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
-					append_fast(nameSet).append_fast(f.name.name).toKString();
-		
-				if (PassInfo.method != null && PassInfo.method.name.equals(set_name)) {
-					fa.setAsField(true);
-					rewriteNode(ae);
-					return;
-				}
-				// Rewrite by set$ method
-				if (f.getMetaVirtual().set == null) {
-					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
-					fa.setAsField(true);
-					rewriteNode(ae);
-					return;
-				}
-				if (f.getMetaVirtual().get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
-					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
-					fa.setAsField(true);
-					rewriteNode(ae);
-					return;
-				}
-				BinaryOperator op = null;
-				if      (ae.op == AssignOperator.AssignAdd)                  op = BinaryOperator.Add;
-				else if (ae.op == AssignOperator.AssignSub)                  op = BinaryOperator.Sub;
-				else if (ae.op == AssignOperator.AssignMul)                  op = BinaryOperator.Mul;
-				else if (ae.op == AssignOperator.AssignDiv)                  op = BinaryOperator.Div;
-				else if (ae.op == AssignOperator.AssignMod)                  op = BinaryOperator.Mod;
-				else if (ae.op == AssignOperator.AssignLeftShift)            op = BinaryOperator.LeftShift;
-				else if (ae.op == AssignOperator.AssignRightShift)           op = BinaryOperator.RightShift;
-				else if (ae.op == AssignOperator.AssignUnsignedRightShift)   op = BinaryOperator.UnsignedRightShift;
-				else if (ae.op == AssignOperator.AssignBitOr)                op = BinaryOperator.BitOr;
-				else if (ae.op == AssignOperator.AssignBitXor)               op = BinaryOperator.BitXor;
-				else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
-				Expr expr;
-				if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
-					expr = new CallExpr(ae.pos, (ENode)~fa.obj, f.getMetaVirtual().set, new ENode[]{(ENode)~ae.value});
-					expr.resolve(Type.tpVoid);
-				}
-				else {
-					BlockExpr be = new BlockExpr(ae.pos);
-					Object acc;
-					if (fa.obj instanceof ThisExpr) {
-						acc = (ENode)~fa.obj;
-					}
-					else if (fa.obj instanceof VarAccessExpr) {
-						acc = ((VarAccessExpr)fa.obj).var;
-					}
-					else {
-						Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-						var.init = (ENode)~fa.obj;
-						be.addSymbol(var);
-						acc = var;
-					}
-					ENode g;
-					if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
-						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
-						g = new BinaryExpr(ae.pos, op, g, (ENode)~ae.value);
-					} else {
-						g = (ENode)~ae.value;
-					}
-					g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
-					be.addStatement(new ExprStat(0, g));
-					if (!ae.isGenVoidExpr()) {
-						g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
-						be.setExpr(g);
-					}
-					expr = be;
-					expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-				}
-				ae.replaceWithNode(expr);
-				rewrite(expr);
+		if (ae.lval instanceof AccessExpr) {
+			AccessExpr fa = (AccessExpr)ae.lval;
+			Field f = fa.var;
+			if( !f.isVirtual() || fa.isAsField() ) {
+				rewriteNode(ae);
+				return;
+			}
+			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
+				append_fast(nameSet).append_fast(f.name.name).toKString();
+	
+			if (PassInfo.method != null && PassInfo.method.name.equals(set_name)) {
+				fa.setAsField(true);
+				rewriteNode(ae);
+				return;
+			}
+			// Rewrite by set$ method
+			if (f.getMetaVirtual().set == null) {
+				Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				rewriteNode(ae);
+				return;
+			}
+			if (f.getMetaVirtual().get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
+				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				rewriteNode(ae);
+				return;
+			}
+			BinaryOperator op = null;
+			if      (ae.op == AssignOperator.AssignAdd)                  op = BinaryOperator.Add;
+			else if (ae.op == AssignOperator.AssignSub)                  op = BinaryOperator.Sub;
+			else if (ae.op == AssignOperator.AssignMul)                  op = BinaryOperator.Mul;
+			else if (ae.op == AssignOperator.AssignDiv)                  op = BinaryOperator.Div;
+			else if (ae.op == AssignOperator.AssignMod)                  op = BinaryOperator.Mod;
+			else if (ae.op == AssignOperator.AssignLeftShift)            op = BinaryOperator.LeftShift;
+			else if (ae.op == AssignOperator.AssignRightShift)           op = BinaryOperator.RightShift;
+			else if (ae.op == AssignOperator.AssignUnsignedRightShift)   op = BinaryOperator.UnsignedRightShift;
+			else if (ae.op == AssignOperator.AssignBitOr)                op = BinaryOperator.BitOr;
+			else if (ae.op == AssignOperator.AssignBitXor)               op = BinaryOperator.BitXor;
+			else if (ae.op == AssignOperator.AssignBitAnd)               op = BinaryOperator.BitAnd;
+			Expr expr;
+			if (ae.isGenVoidExpr() && (ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2)) {
+				expr = new CallExpr(ae.pos, (ENode)~fa.obj, f.getMetaVirtual().set, new ENode[]{(ENode)~ae.value});
+				expr.resolve(Type.tpVoid);
 			}
 			else {
-				rewriteNode(ae);
+				BlockExpr be = new BlockExpr(ae.pos);
+				Object acc;
+				if (fa.obj instanceof ThisExpr) {
+					acc = (ENode)~fa.obj;
+				}
+				else if (fa.obj instanceof VarAccessExpr) {
+					acc = ((VarAccessExpr)fa.obj).var;
+				}
+				else {
+					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
+					var.init = (ENode)~fa.obj;
+					be.addSymbol(var);
+					acc = var;
+				}
+				ENode g;
+				if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
+					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+					g = new BinaryExpr(ae.pos, op, g, (ENode)~ae.value);
+				} else {
+					g = (ENode)~ae.value;
+				}
+				g = new CallExpr(ae.pos, mkAccess(acc), f.getMetaVirtual().set, new ENode[]{g});
+				be.addStatement(new ExprStat(0, g));
+				if (!ae.isGenVoidExpr()) {
+					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, ENode.emptyArray);
+					be.setExpr(g);
+				}
+				expr = be;
+				expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
 			}
-		} finally { PassInfo.pop(ae); }
+			ae.replaceWithNode(expr);
+			rewrite(expr);
+		}
+		else {
+			rewriteNode(ae);
+		}
 	}
 	
 	public void rewrite(IncrementExpr:Object ie) {
 		//System.out.println("ProcessVirtFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
-		PassInfo.push(ie);
-		try {
-			if (ie.lval instanceof AccessExpr) {
-				AccessExpr fa = (AccessExpr)ie.lval;
-				Field f = fa.var;
-				if( !f.isVirtual() || fa.isAsField() ) {
-					rewriteNode(ie);
-					return;
+		if (ie.lval instanceof AccessExpr) {
+			AccessExpr fa = (AccessExpr)ie.lval;
+			Field f = fa.var;
+			if( !f.isVirtual() || fa.isAsField() ) {
+				rewriteNode(ie);
+				return;
+			}
+			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
+				append_fast(nameSet).append_fast(f.name.name).toKString();
+			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
+				append_fast(nameGet).append_fast(f.name.name).toKString();
+	
+			if (PassInfo.method != null && (PassInfo.method.name.equals(set_name) || PassInfo.method.name.equals(get_name))) {
+				fa.setAsField(true);
+				rewriteNode(ie);
+				return;
+			}
+			// Rewrite by set$ method
+			if (f.getMetaVirtual().set == null) {
+				Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				rewriteNode(ie);
+				return;
+			}
+			if (f.getMetaVirtual().get == null) {
+				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+				fa.setAsField(true);
+				rewriteNode(ie);
+				return;
+			}
+			Expr expr;
+			if (ie.isGenVoidExpr()) {
+				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
+				} else {
+					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
 				}
-				KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
-					append_fast(nameSet).append_fast(f.name.name).toKString();
-				KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
-					append_fast(nameGet).append_fast(f.name.name).toKString();
-		
-				if (PassInfo.method != null && (PassInfo.method.name.equals(set_name) || PassInfo.method.name.equals(get_name))) {
-					fa.setAsField(true);
-					rewriteNode(ie);
-					return;
-				}
-				// Rewrite by set$ method
-				if (f.getMetaVirtual().set == null) {
-					Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
-					fa.setAsField(true);
-					rewriteNode(ie);
-					return;
-				}
-				if (f.getMetaVirtual().get == null) {
-					Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
-					fa.setAsField(true);
-					rewriteNode(ie);
-					return;
-				}
-				Expr expr;
-				if (ie.isGenVoidExpr()) {
-					if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
-						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
-					} else {
-						expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(-1));
-					}
-					expr.resolve(Type.tpVoid);
-					expr.setGenVoidExpr(true);
-				}
-				else {
-					BlockExpr be = new BlockExpr(ie.pos);
-					Object acc;
-					if (fa.obj instanceof ThisExpr) {
-						acc = fa.obj;
-					}
-					else if (fa.obj instanceof VarAccessExpr) {
-						acc = ((VarAccessExpr)fa.obj).var;
-					}
-					else {
-						Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
-						var.init = fa.obj;
-						be.addSymbol(var);
-						acc = var;
-					}
-					Var res = null;
-					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr) {
-						res = new Var(0,KString.from("tmp$res"),f.getType(),0);
-						be.addSymbol(res);
-					}
-					ConstExpr ce;
-					if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr)
-						ce = new ConstIntExpr(1);
-					else
-						ce = new ConstIntExpr(-1);
-					Expr g;
-					g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
-					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
-						g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
-					g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
-					be.addStatement(new ExprStat(0, g));
-					if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
-						be.setExpr(mkAccess(res));
-					else
-						be.setExpr(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray));
-					expr = be;
-					expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
-				}
-				ie.replaceWithNode(expr);
-				rewrite(expr);
+				expr.resolve(Type.tpVoid);
+				expr.setGenVoidExpr(true);
 			}
 			else {
-				rewriteNode(ie);
+				BlockExpr be = new BlockExpr(ie.pos);
+				Object acc;
+				if (fa.obj instanceof ThisExpr) {
+					acc = fa.obj;
+				}
+				else if (fa.obj instanceof VarAccessExpr) {
+					acc = ((VarAccessExpr)fa.obj).var;
+				}
+				else {
+					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
+					var.init = fa.obj;
+					be.addSymbol(var);
+					acc = var;
+				}
+				Var res = null;
+				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr) {
+					res = new Var(0,KString.from("tmp$res"),f.getType(),0);
+					be.addSymbol(res);
+				}
+				ConstExpr ce;
+				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr)
+					ce = new ConstIntExpr(1);
+				else
+					ce = new ConstIntExpr(-1);
+				Expr g;
+				g = new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray);
+				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
+					g = new AssignExpr(ie.pos, AssignOperator.Assign, mkAccess(res), g);
+				g = new CallExpr(ie.pos, mkAccess(acc), f.getMetaVirtual().set, new Expr[]{g});
+				be.addStatement(new ExprStat(0, g));
+				if (ie.op == PostfixOperator.PostIncr || ie.op == PostfixOperator.PostDecr)
+					be.setExpr(mkAccess(res));
+				else
+					be.setExpr(new CallExpr(0, mkAccess(acc), f.getMetaVirtual().get, Expr.emptyArray));
+				expr = be;
+				expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 			}
-		} finally { PassInfo.pop(ie); }
+			ie.replaceWithNode(expr);
+			rewrite(expr);
+		}
+		else {
+			rewriteNode(ie);
+		}
 	}
 	
 	private Expr mkAccess(Object o) {

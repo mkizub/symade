@@ -136,186 +136,184 @@ public class CallExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
-		PassInfo.push(this);
-		try {
-			func.acc.verifyReadAccess(func);
-			CodeLabel ok_label = null;
-			if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-				String fname = func.name.name.toString().toLowerCase();
-				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
-				if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
-			}
-			if( obj instanceof Expr) {
-				obj.generate(null);
-				generateCheckCastIfNeeded();
-			}
-			else if( !func.isStatic() ) {
-				if( !PassInfo.method.isStatic() )
-					Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
-				else
-					throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
-			}
-			// Very special case for rule call from inside of RuleMethod
-			if( func instanceof RuleMethod
-			 && parent instanceof AssignExpr
-			 && ((AssignExpr)parent).op == AssignOperator.Assign
-			 && ((AssignExpr)parent).lval.getType() == Type.tpRule
-			) {
-				((AssignExpr)parent).lval.generate(null);
-				for(int i=1; i < args.length; i++)
-					args[i].generate(null);
-			}
-			else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-				int i = 0;
-				int mode = 0;
-				String fname = func.name.name.toString().toLowerCase();
-				if( fname.indexOf("assert") >= 0 ) mode = 1;
-				else if( fname.indexOf("trace") >= 0 ) mode = 2;
-				if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
-					ok_label = Code.newLabel();
-					if( args[0] instanceof IBoolExpr ) {
-						if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
-						else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
-					} else {
-						args[0].generate(null);
-						if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
-						else Code.addInstr(Instr.op_ifeq,ok_label);
-					}
-					if( mode == 1 )
-						Code.addConst(0);
-					else
-						Code.addConst(1);
-					i++;
+		Code.setLinePos(this.getPosLine());
+		func.acc.verifyReadAccess(func);
+		CodeLabel ok_label = null;
+		if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
+			String fname = func.name.name.toString().toLowerCase();
+			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
+			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
+		}
+		if( obj instanceof Expr) {
+			obj.generate(null);
+			generateCheckCastIfNeeded();
+		}
+		else if( !func.isStatic() ) {
+			if( !PassInfo.method.isStatic() )
+				Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
+			else
+				throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
+		}
+		// Very special case for rule call from inside of RuleMethod
+		if( func instanceof RuleMethod
+		 && parent instanceof AssignExpr
+		 && ((AssignExpr)parent).op == AssignOperator.Assign
+		 && ((AssignExpr)parent).lval.getType() == Type.tpRule
+		) {
+			((AssignExpr)parent).lval.generate(null);
+			for(int i=1; i < args.length; i++)
+				args[i].generate(null);
+		}
+		else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
+			int i = 0;
+			int mode = 0;
+			String fname = func.name.name.toString().toLowerCase();
+			if( fname.indexOf("assert") >= 0 ) mode = 1;
+			else if( fname.indexOf("trace") >= 0 ) mode = 2;
+			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
+				ok_label = Code.newLabel();
+				if( args[0] instanceof IBoolExpr ) {
+					if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
+					else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
+				} else {
+					args[0].generate(null);
+					if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
+					else Code.addInstr(Instr.op_ifeq,ok_label);
 				}
-				for(; i < args.length; i++)
-					args[i].generate(null);
+				if( mode == 1 )
+					Code.addConst(0);
+				else
+					Code.addConst(1);
+				i++;
 			}
-			else {
-				for(int i=0; i < args.length; i++)
-					args[i].generate(null);
+			for(; i < args.length; i++)
+				args[i].generate(null);
+		}
+		else {
+			for(int i=0; i < args.length; i++)
+				args[i].generate(null);
+		}
+		// Special meaning of Object.equals and so on
+		// for parametriezed with primitive types classes
+		Type objt = obj.getType();
+		if( !objt.isReference() ) {
+			if( func.parent != Type.tpObject.clazz )
+				Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
+			if( func.name.name == nameObjEquals ) {
+				CodeLabel label_true = Code.newLabel();
+				CodeLabel label_false = Code.newLabel();
+				Code.addInstr(Instr.op_ifcmpeq,label_true);
+				Code.addConst(0);
+				Code.addInstr(Instr.op_goto,label_false);
+				Code.addInstr(Instr.set_label,label_true);
+				Code.addConst(1);
+				Code.addInstr(Instr.set_label,label_false);
 			}
-			// Special meaning of Object.equals and so on
-			// for parametriezed with primitive types classes
-			Type objt = obj.getType();
-			if( !objt.isReference() ) {
-				if( func.parent != Type.tpObject.clazz )
-					Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
-				if( func.name.name == nameObjEquals ) {
+			else if( func.name.name == nameObjGetClass ) {
+				Type reft = Type.getRefTypeForPrimitive(objt);
+				Field f = (Field)reft.clazz.resolveName(KString.from("TYPE"));
+				Code.addInstr(Instr.op_pop);
+				Code.addInstr(Instr.op_getstatic,f,reft);
+			}
+			else if( func.name.name == nameObjHashCode ) {
+				switch(objt.signature.byteAt(0)) {
+				case 'Z':
+					{
 					CodeLabel label_true = Code.newLabel();
 					CodeLabel label_false = Code.newLabel();
-					Code.addInstr(Instr.op_ifcmpeq,label_true);
-					Code.addConst(0);
+					Code.addInstr(Instr.op_ifne,label_true);
+					Code.addConst(1237);
 					Code.addInstr(Instr.op_goto,label_false);
 					Code.addInstr(Instr.set_label,label_true);
-					Code.addConst(1);
+					Code.addConst(1231);
 					Code.addInstr(Instr.set_label,label_false);
-				}
-				else if( func.name.name == nameObjGetClass ) {
-					Type reft = Type.getRefTypeForPrimitive(objt);
-					Field f = (Field)reft.clazz.resolveName(KString.from("TYPE"));
-					Code.addInstr(Instr.op_pop);
-					Code.addInstr(Instr.op_getstatic,f,reft);
-				}
-				else if( func.name.name == nameObjHashCode ) {
-					switch(objt.signature.byteAt(0)) {
-					case 'Z':
-						{
-						CodeLabel label_true = Code.newLabel();
-						CodeLabel label_false = Code.newLabel();
-						Code.addInstr(Instr.op_ifne,label_true);
-						Code.addConst(1237);
-						Code.addInstr(Instr.op_goto,label_false);
-						Code.addInstr(Instr.set_label,label_true);
-						Code.addConst(1231);
-						Code.addInstr(Instr.set_label,label_false);
-						}
-						break;
-					case 'B':
-					case 'S':
-					case 'I':
-					case 'C':
-						// the value is hashcode itself
-						break;
-					case 'J':
-						Code.addInstr(Instr.op_dup);
-						Code.addConst(32);
-						Code.addInstr(Instr.op_shl);
-						Code.addInstr(Instr.op_xor);
-						Code.addInstr(Instr.op_x2y,Type.tpInt);
-						break;
-					case 'F':
-						{
-						Method m = Type.tpFloatRef.clazz.resolveMethod(
-							KString.from("floatToIntBits"),
-							KString.from("(F)I")
-							);
-						Code.addInstr(op_call,m,false);
-						}
-						break;
-					case 'D':
-						{
-						Method m = Type.tpDoubleRef.clazz.resolveMethod(
-							KString.from("doubleToLongBits"),
-							KString.from("(D)J")
-							);
-						Code.addInstr(op_call,m,false);
-						Code.addInstr(Instr.op_dup);
-						Code.addConst(32);
-						Code.addInstr(Instr.op_shl);
-						Code.addInstr(Instr.op_xor);
-						Code.addInstr(Instr.op_x2y,Type.tpInt);
-						}
-						break;
 					}
-				}
-				else if( func.name.name == nameObjClone ) {
-					// Do nothing ;-)
-				}
-				else if( func.name.name == nameObjToString ) {
-					KString sign = null;
-					switch(objt.signature.byteAt(0)) {
-					case 'Z':
-						sign = KString.from("(Z)Ljava/lang/String;");
-						break;
-					case 'C':
-						sign = KString.from("(C)Ljava/lang/String;");
-						break;
-					case 'B':
-					case 'S':
-					case 'I':
-						sign = KString.from("(I)Ljava/lang/String;");
-						break;
-					case 'J':
-						sign = KString.from("(J)Ljava/lang/String;");
-						break;
-					case 'F':
-						sign = KString.from("(F)Ljava/lang/String;");
-						break;
-					case 'D':
-						sign = KString.from("(D)Ljava/lang/String;");
-						break;
-					}
-					Method m = Type.tpString.clazz.resolveMethod(
-						KString.from("valueOf"),sign);
+					break;
+				case 'B':
+				case 'S':
+				case 'I':
+				case 'C':
+					// the value is hashcode itself
+					break;
+				case 'J':
+					Code.addInstr(Instr.op_dup);
+					Code.addConst(32);
+					Code.addInstr(Instr.op_shl);
+					Code.addInstr(Instr.op_xor);
+					Code.addInstr(Instr.op_x2y,Type.tpInt);
+					break;
+				case 'F':
+					{
+					Method m = Type.tpFloatRef.clazz.resolveMethod(
+						KString.from("floatToIntBits"),
+						KString.from("(F)I")
+						);
 					Code.addInstr(op_call,m,false);
+					}
+					break;
+				case 'D':
+					{
+					Method m = Type.tpDoubleRef.clazz.resolveMethod(
+						KString.from("doubleToLongBits"),
+						KString.from("(D)J")
+						);
+					Code.addInstr(op_call,m,false);
+					Code.addInstr(Instr.op_dup);
+					Code.addConst(32);
+					Code.addInstr(Instr.op_shl);
+					Code.addInstr(Instr.op_xor);
+					Code.addInstr(Instr.op_x2y,Type.tpInt);
+					}
+					break;
 				}
-				else
-					Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
+			}
+			else if( func.name.name == nameObjClone ) {
+				// Do nothing ;-)
+			}
+			else if( func.name.name == nameObjToString ) {
+				KString sign = null;
+				switch(objt.signature.byteAt(0)) {
+				case 'Z':
+					sign = KString.from("(Z)Ljava/lang/String;");
+					break;
+				case 'C':
+					sign = KString.from("(C)Ljava/lang/String;");
+					break;
+				case 'B':
+				case 'S':
+				case 'I':
+					sign = KString.from("(I)Ljava/lang/String;");
+					break;
+				case 'J':
+					sign = KString.from("(J)Ljava/lang/String;");
+					break;
+				case 'F':
+					sign = KString.from("(F)Ljava/lang/String;");
+					break;
+				case 'D':
+					sign = KString.from("(D)Ljava/lang/String;");
+					break;
+				}
+				Method m = Type.tpString.clazz.resolveMethod(
+					KString.from("valueOf"),sign);
+				Code.addInstr(op_call,m,false);
 			}
 			else
-				Code.addInstr(op_call,func,super_flag,obj.getType());
-			if( func.type.ret != Type.tpVoid ) {
-				if( reqType==Type.tpVoid )
-					Code.addInstr(op_pop);
-				else if( Kiev.verify
-				 && getType().isReference()
-				 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
-				 	Code.addInstr(op_checkcast,getType());
-			}
-			if( ok_label != null ) {
-				Code.addInstr(Instr.set_label,ok_label);
-			}
-		} finally { PassInfo.pop(this); }
+				Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
+		}
+		else
+			Code.addInstr(op_call,func,super_flag,obj.getType());
+		if( func.type.ret != Type.tpVoid ) {
+			if( reqType==Type.tpVoid )
+				Code.addInstr(op_pop);
+			else if( Kiev.verify
+			 && getType().isReference()
+			 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
+				Code.addInstr(op_checkcast,getType());
+		}
+		if( ok_label != null ) {
+			Code.addInstr(Instr.set_label,ok_label);
+		}
 	}
 
 	public int		getPriority() { return Constants.opCallPriority; }
@@ -418,41 +416,38 @@ public class ClosureCallExpr extends Expr {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			expr.resolve(null);
-			if !(expr.getType() instanceof ClosureType)
-				throw new RuntimeException("Resolved item "+expr+" is not a closure");
-			ClosureType tp = (ClosureType)expr.getType();
-			if( reqType != null && reqType instanceof CallableType )
-				is_a_call = false;
-			else if( (reqType == null || !(reqType instanceof CallableType)) && tp.args.length==args.length )
-				is_a_call = true;
-			else
-				is_a_call = false;
-			func_tp = tp;
-			for(int i=0; i < args.length; i++)
-				args[i].resolve(tp.args[i]);
-			clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
-			KString call_it_name;
-			if( ((CallableType)tp).ret.isReference() )
-				call_it_name = KString.from("call_Object");
-			else
-				call_it_name = KString.from("call_"+((CallableType)tp).ret);
-			ASTNode@ callIt;
-			MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
-			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {
-				throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);
+		expr.resolve(null);
+		if !(expr.getType() instanceof ClosureType)
+			throw new RuntimeException("Resolved item "+expr+" is not a closure");
+		ClosureType tp = (ClosureType)expr.getType();
+		if( reqType != null && reqType instanceof CallableType )
+			is_a_call = false;
+		else if( (reqType == null || !(reqType instanceof CallableType)) && tp.args.length==args.length )
+			is_a_call = true;
+		else
+			is_a_call = false;
+		func_tp = tp;
+		for(int i=0; i < args.length; i++)
+			args[i].resolve(tp.args[i]);
+		clone_it = tp.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+		KString call_it_name;
+		if( ((CallableType)tp).ret.isReference() )
+			call_it_name = KString.from("call_Object");
+		else
+			call_it_name = KString.from("call_"+((CallableType)tp).ret);
+		ASTNode@ callIt;
+		MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
+		ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
+		if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {
+			throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);
+		} else {
+			call_it = (Method)callIt;
+			if( call_it.type.ret == Type.tpRule ) {
+				env_access = new ConstNullExpr();
 			} else {
-				call_it = (Method)callIt;
-				if( call_it.type.ret == Type.tpRule ) {
-					env_access = new ConstNullExpr();
-				} else {
-					trace(Kiev.debugResolve,"ClosureCallExpr "+this+" is not a rule call");
-				}
+				trace(Kiev.debugResolve,"ClosureCallExpr "+this+" is not a rule call");
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 	}
 
@@ -491,36 +486,34 @@ public class ClosureCallExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
-		PassInfo.push(this);
-		try {
-			// Load ref to closure
-			expr.generate(null);
-			// Clone it
-			if( args.length > 0 ) {
-				Code.addInstr(op_call,clone_it,false);
-				if( Kiev.verify )
-					Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
-				// Add arguments
-				for(int i=0; i < args.length; i++) {
-					args[i].generate(null);
-					Code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
-				}
+		Code.setLinePos(this.getPosLine());
+		// Load ref to closure
+		expr.generate(null);
+		// Clone it
+		if( args.length > 0 ) {
+			Code.addInstr(op_call,clone_it,false);
+			if( Kiev.verify )
+				Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
+			// Add arguments
+			for(int i=0; i < args.length; i++) {
+				args[i].generate(null);
+				Code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
 			}
-			// Check if we need to call
-			if( is_a_call ) {
-				if( env_access != null )
-					env_access.generate(null);
-				Code.addInstr(op_call,call_it,false);
-			}
-			if( call_it.type.ret != Type.tpVoid ) {
-				if( reqType==Type.tpVoid )
-					Code.addInstr(op_pop);
-				else if( Kiev.verify
-				 && call_it.type.ret.isReference()
-				 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
-				 	Code.addInstr(op_checkcast,getType());
-			}
-		} finally { PassInfo.pop(this); }
+		}
+		// Check if we need to call
+		if( is_a_call ) {
+			if( env_access != null )
+				env_access.generate(null);
+			Code.addInstr(op_call,call_it,false);
+		}
+		if( call_it.type.ret != Type.tpVoid ) {
+			if( reqType==Type.tpVoid )
+				Code.addInstr(op_pop);
+			else if( Kiev.verify
+			 && call_it.type.ret.isReference()
+			 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
+				Code.addInstr(op_checkcast,getType());
+		}
 	}
 
 	public int		getPriority() { return Constants.opCallPriority; }

@@ -103,23 +103,18 @@ public class ArrayLengthAccessExpr extends Expr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			array.resolve(null);
-			if !(array.getType().isArray())
-				throw new CompilerException(pos, "Access to array length for non-array type "+array.getType());
-		} finally { PassInfo.pop(this); }
+		array.resolve(null);
+		if !(array.getType().isArray())
+			throw new CompilerException(pos, "Access to array length for non-array type "+array.getType());
 		setResolved(true);
 	}
 
 	public void generate(Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerLengthExpr: "+this);
-		PassInfo.push(this);
-		try {
-			array.generate(null);
-			Code.addInstr(Instr.op_arrlength);
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		array.generate(null);
+		Code.addInstr(Instr.op_arrlength);
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -158,20 +153,15 @@ public class TypeClassExpr extends Expr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			type.getType();
-		} finally { PassInfo.pop(this); }
+		type.getType();
 		setResolved(true);
 	}
 
 	public void generate(Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addConst(type.getJavaType());
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Code.addConst(type.getJavaType());
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -223,100 +213,96 @@ public class AssignExpr extends LvalueExpr {
 		if( isResolved() )
 			return;
 		setTryResolved(true);
-		PassInfo.push(this);
-		try {
-			lval.resolve(reqType);
-			Type et1 = lval.getType();
-			if (op == AssignOperator.Assign && et1.isWrapper())
-				value.resolve(et1.getWrappedType());
-			else if (op == AssignOperator.Assign2 && et1.isWrapper())
-				value.resolve(((WrapperType)et1).getUnwrappedType());
-			else
-				value.resolve(et1);
-			if (value instanceof TypeRef)
-				((TypeRef)value).toExpr(et1);
-			Type et2 = value.getType();
-			if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
-				this.resolve2(reqType);
+		lval.resolve(reqType);
+		Type et1 = lval.getType();
+		if (op == AssignOperator.Assign && et1.isWrapper())
+			value.resolve(et1.getWrappedType());
+		else if (op == AssignOperator.Assign2 && et1.isWrapper())
+			value.resolve(((WrapperType)et1).getUnwrappedType());
+		else
+			value.resolve(et1);
+		if (value instanceof TypeRef)
+			((TypeRef)value).toExpr(et1);
+		Type et2 = value.getType();
+		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( ( et1.isNumber() && et2.isNumber() ) &&
+			(    op==AssignOperator.AssignAdd
+			||   op==AssignOperator.AssignSub
+			||   op==AssignOperator.AssignMul
+			||   op==AssignOperator.AssignDiv
+			||   op==AssignOperator.AssignMod
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
+			(    op==AssignOperator.AssignLeftShift
+			||   op==AssignOperator.AssignRightShift
+			||   op==AssignOperator.AssignUnsignedRightShift
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( ( et1.isInteger() && et2.isInteger() ) &&
+			(    op==AssignOperator.AssignBitOr
+			||   op==AssignOperator.AssignBitXor
+			||   op==AssignOperator.AssignBitAnd
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		else if( ( et1.isBoolean() && et2.isBoolean() ) &&
+			(    op==AssignOperator.AssignBitOr
+			||   op==AssignOperator.AssignBitXor
+			||   op==AssignOperator.AssignBitAnd
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		// Not a standard operator, find out overloaded
+		foreach(OpTypes opt; op.types ) {
+			Type[] tps = new Type[]{null,et1,et2};
+			ASTNode[] argsarr = new ASTNode[]{null,lval,value};
+			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+				replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~lval,opt.method,new ENode[]{(ENode)~value}));
 				return;
 			}
-			else if( op == AssignOperator.Assign2 && et1.isWrapper() && et2.isInstanceOf(et1)) {
-				this.resolve2(reqType);
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (op != AssignOperator.Assign2) {
+			if (et1.isWrapper() && et2.isWrapper()) {
+				lval = et1.makeWrappedAccess(lval);
+				value = et2.makeWrappedAccess(value);
+				resolve(reqType);
 				return;
 			}
-			else if( op == AssignOperator.AssignAdd && et1 == Type.tpString ) {
-				this.resolve2(reqType);
+			else if (et1.isWrapper()) {
+				lval = et1.makeWrappedAccess(lval);
+				resolve(reqType);
 				return;
 			}
-			else if( ( et1.isNumber() && et2.isNumber() ) &&
-				(    op==AssignOperator.AssignAdd
-				||   op==AssignOperator.AssignSub
-				||   op==AssignOperator.AssignMul
-				||   op==AssignOperator.AssignDiv
-				||   op==AssignOperator.AssignMod
-				)
-			) {
-				this.resolve2(reqType);
+			else if (et2.isWrapper()) {
+				value = et2.makeWrappedAccess(value);
+				resolve(reqType);
 				return;
 			}
-			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-				(    op==AssignOperator.AssignLeftShift
-				||   op==AssignOperator.AssignRightShift
-				||   op==AssignOperator.AssignUnsignedRightShift
-				)
-			) {
-				this.resolve2(reqType);
-				return;
-			}
-			else if( ( et1.isInteger() && et2.isInteger() ) &&
-				(    op==AssignOperator.AssignBitOr
-				||   op==AssignOperator.AssignBitXor
-				||   op==AssignOperator.AssignBitAnd
-				)
-			) {
-				this.resolve2(reqType);
-				return;
-			}
-			else if( ( et1.isBoolean() && et2.isBoolean() ) &&
-				(    op==AssignOperator.AssignBitOr
-				||   op==AssignOperator.AssignBitXor
-				||   op==AssignOperator.AssignBitAnd
-				)
-			) {
-				this.resolve2(reqType);
-				return;
-			}
-			// Not a standard operator, find out overloaded
-			foreach(OpTypes opt; op.types ) {
-				Type[] tps = new Type[]{null,et1,et2};
-				ASTNode[] argsarr = new ASTNode[]{null,lval,value};
-				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~lval,opt.method,new ENode[]{(ENode)~value}));
-					return;
-				}
-			}
-			// Not a standard and not overloaded, try wrapped classes
-			if (op != AssignOperator.Assign2) {
-				if (et1.isWrapper() && et2.isWrapper()) {
-					lval = et1.makeWrappedAccess(lval);
-					value = et2.makeWrappedAccess(value);
-					resolve(reqType);
-					return;
-				}
-				else if (et1.isWrapper()) {
-					lval = et1.makeWrappedAccess(lval);
-					resolve(reqType);
-					return;
-				}
-				else if (et2.isWrapper()) {
-					value = et2.makeWrappedAccess(value);
-					resolve(reqType);
-					return;
-				}
-			}
-			this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
-
-		} finally { PassInfo.pop(this); }
+		}
+		this.resolve2(reqType); //throw new CompilerException(pos,"Unresolved expression "+this);
 	}
 
 	private ENode resolve2(Type reqType) {
@@ -422,93 +408,79 @@ public class AssignExpr extends LvalueExpr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
-		PassInfo.push(this);
-		try {
-			Expr value = (Expr)this.value;
-			LvalueExpr lval = (LvalueExpr)this.lval;
-			if( reqType != Type.tpVoid ) {
-				if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-					lval.generateLoadDup();
-					value.generate(null);
-					Code.addInstr(op.instr);
-					lval.generateStoreDupValue();
-				} else {
-					lval.generateAccess();
-					value.generate(null);
-					lval.generateStoreDupValue();
-				}
+		Code.setLinePos(this.getPosLine());
+		Expr value = (Expr)this.value;
+		LvalueExpr lval = (LvalueExpr)this.lval;
+		if( reqType != Type.tpVoid ) {
+			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
+				lval.generateLoadDup();
+				value.generate(null);
+				Code.addInstr(op.instr);
+				lval.generateStoreDupValue();
 			} else {
-				if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-					lval.generateLoadDup();
-					value.generate(null);
-					Code.addInstr(op.instr);
-					lval.generateStore();
-				} else {
-					lval.generateAccess();
-					value.generate(null);
-					lval.generateStore();
-				}
+				lval.generateAccess();
+				value.generate(null);
+				lval.generateStoreDupValue();
 			}
-		} finally { PassInfo.pop(this); }
+		} else {
+			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
+				lval.generateLoadDup();
+				value.generate(null);
+				Code.addInstr(op.instr);
+				lval.generateStore();
+			} else {
+				lval.generateAccess();
+				value.generate(null);
+				lval.generateStore();
+			}
+		}
 	}
 
 	/** Just load value referenced by lvalue */
 	public void generateLoad() {
-		PassInfo.push(this);
-		try {
-			Expr value = (Expr)this.value;
-			LvalueExpr lval = (LvalueExpr)this.lval;
-			lval.generateLoadDup();
-			value.generate(null);
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-				Code.addInstr(op.instr);
-			lval.generateStoreDupValue();
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Expr value = (Expr)this.value;
+		LvalueExpr lval = (LvalueExpr)this.lval;
+		lval.generateLoadDup();
+		value.generate(null);
+		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+			Code.addInstr(op.instr);
+		lval.generateStoreDupValue();
 	}
 
 	/** Load value and dup info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while)
 	*/
 	public void generateLoadDup() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	public void generateAccess() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	/** Stores value using previously duped info */
 	public void generateStore() {
 		LvalueExpr lval = (LvalueExpr)this.lval;
-		PassInfo.push(this);
-		try {
-			Expr value = (Expr)this.value;
-			lval.generateLoadDup();
-			value.generate(null);
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-				Code.addInstr(op.instr);
-			lval.generateStore();
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Expr value = (Expr)this.value;
+		lval.generateLoadDup();
+		value.generate(null);
+		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+			Code.addInstr(op.instr);
+		lval.generateStore();
 	}
 
 	/** Stores value using previously duped info, and put stored value in stack */
 	public void generateStoreDupValue() {
-		PassInfo.push(this);
-		try {
-			Expr value = (Expr)this.value;
-			LvalueExpr lval = (LvalueExpr)this.lval;
-			lval.generateLoadDup();
-			value.generate(null);
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-				Code.addInstr(op.instr);
-			lval.generateStoreDupValue();
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Expr value = (Expr)this.value;
+		LvalueExpr lval = (LvalueExpr)this.lval;
+		lval.generateLoadDup();
+		value.generate(null);
+		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
+			Code.addInstr(op.instr);
+		lval.generateStoreDupValue();
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -610,97 +582,93 @@ public class BinaryExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			expr1.resolve(null);
-			expr2.resolve(null);
-			Type et1 = expr1.getType();
-			Type et2 = expr2.getType();
-			if( op == BinaryOperator.Add
-				&& ( et1 == Type.tpString || et2 == Type.tpString ||
-					(et1.isWrapper() && et1.getWrappedType() == Type.tpString) ||
-					(et2.isWrapper() && et2.getWrappedType() == Type.tpString)
-				   )
-			) {
-				if( expr1 instanceof StringConcatExpr ) {
-					StringConcatExpr sce = (StringConcatExpr)expr1;
-					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
-					replaceWithNodeResolve(Type.tpString, (ENode)~sce);
-				} else {
-					StringConcatExpr sce = new StringConcatExpr(pos);
-					if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
-					sce.appendArg(expr1);
-					if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
-					sce.appendArg(expr2);
-					trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
-					replaceWithNodeResolve(Type.tpString, sce);
-				}
+		expr1.resolve(null);
+		expr2.resolve(null);
+		Type et1 = expr1.getType();
+		Type et2 = expr2.getType();
+		if( op == BinaryOperator.Add
+			&& ( et1 == Type.tpString || et2 == Type.tpString ||
+				(et1.isWrapper() && et1.getWrappedType() == Type.tpString) ||
+				(et2.isWrapper() && et2.getWrappedType() == Type.tpString)
+			   )
+		) {
+			if( expr1 instanceof StringConcatExpr ) {
+				StringConcatExpr sce = (StringConcatExpr)expr1;
+				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+				sce.appendArg(expr2);
+				trace(Kiev.debugStatGen,"Adding "+expr2+" to StringConcatExpr, now ="+sce);
+				replaceWithNodeResolve(Type.tpString, (ENode)~sce);
+			} else {
+				StringConcatExpr sce = new StringConcatExpr(pos);
+				if (et1.isWrapper()) expr1 = et1.makeWrappedAccess(expr1);
+				sce.appendArg(expr1);
+				if (et2.isWrapper()) expr2 = et2.makeWrappedAccess(expr2);
+				sce.appendArg(expr2);
+				trace(Kiev.debugStatGen,"Rewriting "+expr1+"+"+expr2+" as StringConcatExpr");
+				replaceWithNodeResolve(Type.tpString, sce);
+			}
+			return;
+		}
+		else if( ( et1.isNumber() && et2.isNumber() ) &&
+			(    op==BinaryOperator.Add
+			||   op==BinaryOperator.Sub
+			||   op==BinaryOperator.Mul
+			||   op==BinaryOperator.Div
+			||   op==BinaryOperator.Mod
+			)
+		) {
+			this.resolve2(null);
+			return;
+		}
+		else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
+			(    op==BinaryOperator.LeftShift
+			||   op==BinaryOperator.RightShift
+			||   op==BinaryOperator.UnsignedRightShift
+			)
+		) {
+			this.resolve2(null);
+			return;
+		}
+		else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
+			(    op==BinaryOperator.BitOr
+			||   op==BinaryOperator.BitXor
+			||   op==BinaryOperator.BitAnd
+			)
+		) {
+			this.resolve2(null);
+			return;
+		}
+		// Not a standard operator, find out overloaded
+		foreach(OpTypes opt; op.types ) {
+			Type[] tps = new Type[]{null,et1,et2};
+			ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
+			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+				Expr e;
+				if( opt.method.isStatic() )
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2}));
+				else
+					replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{expr2}));
 				return;
 			}
-			else if( ( et1.isNumber() && et2.isNumber() ) &&
-				(    op==BinaryOperator.Add
-				||   op==BinaryOperator.Sub
-				||   op==BinaryOperator.Mul
-				||   op==BinaryOperator.Div
-				||   op==BinaryOperator.Mod
-				)
-			) {
-				this.resolve2(null);
-				return;
-			}
-			else if( ( et1.isInteger() && et2.isIntegerInCode() ) &&
-				(    op==BinaryOperator.LeftShift
-				||   op==BinaryOperator.RightShift
-				||   op==BinaryOperator.UnsignedRightShift
-				)
-			) {
-				this.resolve2(null);
-				return;
-			}
-			else if( ( (et1.isInteger() && et2.isInteger()) || (et1.isBoolean() && et2.isBoolean()) ) &&
-				(    op==BinaryOperator.BitOr
-				||   op==BinaryOperator.BitXor
-				||   op==BinaryOperator.BitAnd
-				)
-			) {
-				this.resolve2(null);
-				return;
-			}
-			// Not a standard operator, find out overloaded
-			foreach(OpTypes opt; op.types ) {
-				Type[] tps = new Type[]{null,et1,et2};
-				ASTNode[] argsarr = new ASTNode[]{null,expr1,expr2};
-				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					Expr e;
-					if( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{expr1,expr2}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,expr1,opt.method,new ENode[]{expr2}));
-					return;
-				}
-			}
-			// Not a standard and not overloaded, try wrapped classes
-			if (et1.isWrapper() && et2.isWrapper()) {
-				expr1 = et1.makeWrappedAccess(expr1);
-				expr2 = et1.makeWrappedAccess(expr2);
-				resolve(reqType);
-				return;
-			}
-			if (et1.isWrapper()) {
-				expr1 = et1.makeWrappedAccess(expr1);
-				resolve(reqType);
-				return;
-			}
-			if (et2.isWrapper()) {
-				expr2 = et1.makeWrappedAccess(expr2);
-				resolve(reqType);
-				return;
-			}
-			resolve2(reqType);
-
-		} finally { PassInfo.pop(this); }
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (et1.isWrapper() && et2.isWrapper()) {
+			expr1 = et1.makeWrappedAccess(expr1);
+			expr2 = et1.makeWrappedAccess(expr2);
+			resolve(reqType);
+			return;
+		}
+		if (et1.isWrapper()) {
+			expr1 = et1.makeWrappedAccess(expr1);
+			resolve(reqType);
+			return;
+		}
+		if (et2.isWrapper()) {
+			expr2 = et1.makeWrappedAccess(expr2);
+			resolve(reqType);
+			return;
+		}
+		resolve2(reqType);
 	}
 
 	private void resolve2(Type reqType) {
@@ -840,13 +808,11 @@ public class BinaryExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
-		PassInfo.push(this);
-		try {
-			expr1.generate(null);
-			expr2.generate(null);
-			Code.addInstr(op.instr);
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		expr1.generate(null);
+		expr2.generate(null);
+		Code.addInstr(op.instr);
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -916,11 +882,8 @@ public class StringConcatExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			foreach (ENode e; args)
-				e.resolve(null);
-		} finally { PassInfo.pop(this); }
+		foreach (ENode e; args)
+			e.resolve(null);
 		setResolved(true);
 	}
 
@@ -973,18 +936,16 @@ public class StringConcatExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_new,clazzStringBuffer.type);
-			Code.addInstr(op_dup);
-			Code.addInstr(op_call,clazzStringBufferInit,false);
-			for(int i=0; i < args.length; i++) {
-				args[i].generate(null);
-				Code.addInstr(op_call,getMethodFor(args[i]),false);
-			}
-			Code.addInstr(op_call,clazzStringBufferToString,false);
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		Code.addInstr(op_new,clazzStringBuffer.type);
+		Code.addInstr(op_dup);
+		Code.addInstr(op_call,clazzStringBufferInit,false);
+		for(int i=0; i < args.length; i++) {
+			args[i].generate(null);
+			Code.addInstr(op_call,getMethodFor(args[i]),false);
+		}
+		Code.addInstr(op_call,clazzStringBufferToString,false);
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1036,30 +997,25 @@ public class CommaExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			for(int i=0; i < exprs.length; i++) {
-				if( i < exprs.length-1) {
-					exprs[i].resolve(Type.tpVoid);
-					exprs[i].setGenVoidExpr(true);
-				} else {
-					exprs[i].resolve(reqType);
-				}
+		for(int i=0; i < exprs.length; i++) {
+			if( i < exprs.length-1) {
+				exprs[i].resolve(Type.tpVoid);
+				exprs[i].setGenVoidExpr(true);
+			} else {
+				exprs[i].resolve(reqType);
 			}
-		} finally { PassInfo.pop(this); }
+		}
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
-		PassInfo.push(this);
-		try {
-			for(int i=0; i < exprs.length; i++) {
-				if( i < exprs.length-1 )
-					exprs[i].generate(Type.tpVoid);
-				else
-					exprs[i].generate(reqType);
-			}
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		for(int i=0; i < exprs.length; i++) {
+			if( i < exprs.length-1 )
+				exprs[i].generate(Type.tpVoid);
+			else
+				exprs[i].generate(reqType);
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1171,14 +1127,9 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	}
 
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			BlockStat.resolveBlockStats(this, stats);
-			if (res != null) {
-				res.resolve(reqType);
-			}
-		} finally {
-			PassInfo.pop(this);
+		BlockStat.resolveBlockStats(this, stats);
+		if (res != null) {
+			res.resolve(reqType);
 		}
 	}
 
@@ -1209,26 +1160,24 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 	
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
-		PassInfo.push(this);
-		try {
-			for(int i=0; i < stats.length; i++) {
-				try {
-					stats[i].generate(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(stats[i].getPos(),e);
-				}
+		Code.setLinePos(this.getPosLine());
+		for(int i=0; i < stats.length; i++) {
+			try {
+				stats[i].generate(Type.tpVoid);
+			} catch(Exception e ) {
+				Kiev.reportError(stats[i].getPos(),e);
 			}
-			if (res != null) {
-				try {
-					res.generate(reqType);
-				} catch(Exception e ) {
-					Kiev.reportError(res.getPos(),e);
-				}
+		}
+		if (res != null) {
+			try {
+				res.generate(reqType);
+			} catch(Exception e ) {
+				Kiev.reportError(res.getPos(),e);
 			}
-			Vector<Var> vars = new Vector<Var>();
-			foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-			Code.removeVars(vars.toArray());
-		} finally { PassInfo.pop(this); }
+		}
+		Vector<Var> vars = new Vector<Var>();
+		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
+		Code.removeVars(vars.toArray());
 	}
 
 	public String toString() {
@@ -1294,65 +1243,62 @@ public class UnaryExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			setTryResolved(true);
-			expr.resolve(reqType);
-			Type et = expr.getType();
-			if( et.isNumber() &&
-				(  op==PrefixOperator.PreIncr
-				|| op==PrefixOperator.PreDecr
-				|| op==PostfixOperator.PostIncr
-				|| op==PostfixOperator.PostDecr
-				)
-			) {
-				replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,(ENode)~expr));
+		setTryResolved(true);
+		expr.resolve(reqType);
+		Type et = expr.getType();
+		if( et.isNumber() &&
+			(  op==PrefixOperator.PreIncr
+			|| op==PrefixOperator.PreDecr
+			|| op==PostfixOperator.PostIncr
+			|| op==PostfixOperator.PostDecr
+			)
+		) {
+			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,(ENode)~expr));
+			return;
+		}
+		if( et.isAutoCastableTo(Type.tpBoolean) &&
+			(  op==PrefixOperator.PreIncr
+			|| op==PrefixOperator.BooleanNot
+			)
+		) {
+			replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,(ENode)~expr));
+			return;
+		}
+		if( et.isNumber() &&
+			(  op==PrefixOperator.Pos
+			|| op==PrefixOperator.Neg
+			)
+		) {
+			this.resolve2(reqType);
+			return;
+		}
+		if( et.isInteger() && op==PrefixOperator.BitNot ) {
+			this.resolve2(reqType);
+			return;
+		}
+		// Not a standard operator, find out overloaded
+		foreach(OpTypes opt; op.types ) {
+			if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
+				if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+					continue;
+			}
+			Type[] tps = new Type[]{null,et};
+			ASTNode[] argsarr = new ASTNode[]{null,expr};
+			if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
+				Expr e;
+				if ( opt.method.isStatic() )
+					replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr}));
+				else
+					replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,opt.method,Expr.emptyArray));
 				return;
 			}
-			if( et.isAutoCastableTo(Type.tpBoolean) &&
-				(  op==PrefixOperator.PreIncr
-				|| op==PrefixOperator.BooleanNot
-				)
-			) {
-				replaceWithNodeResolve(Type.tpBoolean, new BooleanNotExpr(pos,(ENode)~expr));
-				return;
-			}
-			if( et.isNumber() &&
-				(  op==PrefixOperator.Pos
-				|| op==PrefixOperator.Neg
-				)
-			) {
-				this.resolve2(reqType);
-				return;
-			}
-			if( et.isInteger() && op==PrefixOperator.BitNot ) {
-				this.resolve2(reqType);
-				return;
-			}
-			// Not a standard operator, find out overloaded
-			foreach(OpTypes opt; op.types ) {
-				if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-					if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
-						continue;
-				}
-				Type[] tps = new Type[]{null,et};
-				ASTNode[] argsarr = new ASTNode[]{null,expr};
-				if( opt.match(tps,argsarr) && tps[0] != null && opt.method != null ) {
-					Expr e;
-					if ( opt.method.isStatic() )
-						replaceWithNodeResolve(reqType, new CallExpr(pos,null,opt.method,new ENode[]{(ENode)~expr}));
-					else
-						replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,opt.method,Expr.emptyArray));
-					return;
-				}
-			}
-			// Not a standard and not overloaded, try wrapped classes
-			if (et.isWrapper()) {
-				replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeWrappedAccess(expr)));
-				return;
-			}
-			resolve2(reqType);
-		} finally { PassInfo.pop(this); }
+		}
+		// Not a standard and not overloaded, try wrapped classes
+		if (et.isWrapper()) {
+			replaceWithNodeResolve(reqType, new UnaryExpr(pos,op,et.makeWrappedAccess(expr)));
+			return;
+		}
+		resolve2(reqType);
 	}
 
 	private void resolve2(Type reqType) {
@@ -1405,20 +1351,18 @@ public class UnaryExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		PassInfo.push(this);
-		try {
-			expr.generate(null);
-			if( op == PrefixOperator.BitNot ) {
-				if( expr.getType() == Type.tpLong )
-					Code.addConst(-1L);
-				else
-					Code.addConst(-1);
-				Code.addInstr(op_xor);
-			} else {
-				Code.addInstr(op.instr);
-			}
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		expr.generate(null);
+		if( op == PrefixOperator.BitNot ) {
+			if( expr.getType() == Type.tpLong )
+				Code.addConst(-1L);
+			else
+				Code.addConst(-1);
+			Code.addInstr(op_xor);
+		} else {
+			Code.addInstr(op.instr);
+		}
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1504,141 +1448,125 @@ public class IncrementExpr extends LvalueExpr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
-		PassInfo.push(this);
-		try {
-			LvalueExpr lval = (LvalueExpr)this.lval;
-			if( reqType != Type.tpVoid ) {
-				generateLoad();
-			} else {
-				if( lval instanceof VarAccessExpr ) {
-					VarAccessExpr va = (VarAccessExpr)lval;
-					if( va.var.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
-						if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
-							Code.addInstrIncr(va.var,1);
-							return;
-						}
-						else if( op==PrefixOperator.PreDecr || op==PostfixOperator.PostDecr ) {
-							Code.addInstrIncr(va.var,-1);
-							return;
-						}
-					}
-				}
-				lval.generateLoadDup();
-
-				if( op == PrefixOperator.PreIncr ) {
-					pushProperConstant(1);
-					Code.addInstr(op_add);
-					lval.generateStore();
-				}
-				else if( op == PrefixOperator.PreDecr ) {
-					pushProperConstant(-1);
-					Code.addInstr(op_add);
-					lval.generateStore();
-				}
-				else if( op == PostfixOperator.PostIncr ) {
-					pushProperConstant(1);
-					Code.addInstr(op_add);
-					lval.generateStore();
-				}
-				else if( op == PostfixOperator.PostDecr ) {
-					pushProperConstant(-1);
-					Code.addInstr(op_add);
-					lval.generateStore();
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
-		PassInfo.push(this);
-		try {
-			LvalueExpr lval = (LvalueExpr)this.lval;
+		Code.setLinePos(this.getPosLine());
+		LvalueExpr lval = (LvalueExpr)this.lval;
+		if( reqType != Type.tpVoid ) {
+			generateLoad();
+		} else {
 			if( lval instanceof VarAccessExpr ) {
 				VarAccessExpr va = (VarAccessExpr)lval;
 				if( va.var.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
-					if( op == PrefixOperator.PreIncr ) {
-						Code.addInstrIncr(va.var,1);
-						Code.addInstr(op_load,va.var);
-						return;
-					}
-					else if( op == PostfixOperator.PostIncr ) {
-						Code.addInstr(op_load,va.var);
+					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
 						Code.addInstrIncr(va.var,1);
 						return;
 					}
-					else if( op == PrefixOperator.PreDecr ) {
-						Code.addInstrIncr(va.var,-1);
-						Code.addInstr(op_load,va.var);
-						return;
-					}
-					else if( op == PostfixOperator.PostDecr ) {
-						Code.addInstr(op_load,va.var);
+					else if( op==PrefixOperator.PreDecr || op==PostfixOperator.PostDecr ) {
 						Code.addInstrIncr(va.var,-1);
 						return;
 					}
 				}
 			}
 			lval.generateLoadDup();
+
 			if( op == PrefixOperator.PreIncr ) {
 				pushProperConstant(1);
 				Code.addInstr(op_add);
-				lval.generateStoreDupValue();
+				lval.generateStore();
 			}
 			else if( op == PrefixOperator.PreDecr ) {
 				pushProperConstant(-1);
 				Code.addInstr(op_add);
-				lval.generateStoreDupValue();
+				lval.generateStore();
 			}
 			else if( op == PostfixOperator.PostIncr ) {
 				pushProperConstant(1);
 				Code.addInstr(op_add);
-				lval.generateStoreDupValue();
-				pushProperConstant(-1);
-				Code.addInstr(op_add);
+				lval.generateStore();
 			}
 			else if( op == PostfixOperator.PostDecr ) {
 				pushProperConstant(-1);
 				Code.addInstr(op_add);
-				lval.generateStoreDupValue();
-				pushProperConstant(1);
-				Code.addInstr(op_add);
+				lval.generateStore();
 			}
-		} finally { PassInfo.pop(this); }
+		}
+	}
+
+	/** Just load value referenced by lvalue */
+	public void generateLoad() {
+		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
+		Code.setLinePos(this.getPosLine());
+		LvalueExpr lval = (LvalueExpr)this.lval;
+		if( lval instanceof VarAccessExpr ) {
+			VarAccessExpr va = (VarAccessExpr)lval;
+			if( va.var.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+				if( op == PrefixOperator.PreIncr ) {
+					Code.addInstrIncr(va.var,1);
+					Code.addInstr(op_load,va.var);
+					return;
+				}
+				else if( op == PostfixOperator.PostIncr ) {
+					Code.addInstr(op_load,va.var);
+					Code.addInstrIncr(va.var,1);
+					return;
+				}
+				else if( op == PrefixOperator.PreDecr ) {
+					Code.addInstrIncr(va.var,-1);
+					Code.addInstr(op_load,va.var);
+					return;
+				}
+				else if( op == PostfixOperator.PostDecr ) {
+					Code.addInstr(op_load,va.var);
+					Code.addInstrIncr(va.var,-1);
+					return;
+				}
+			}
+		}
+		lval.generateLoadDup();
+		if( op == PrefixOperator.PreIncr ) {
+			pushProperConstant(1);
+			Code.addInstr(op_add);
+			lval.generateStoreDupValue();
+		}
+		else if( op == PrefixOperator.PreDecr ) {
+			pushProperConstant(-1);
+			Code.addInstr(op_add);
+			lval.generateStoreDupValue();
+		}
+		else if( op == PostfixOperator.PostIncr ) {
+			pushProperConstant(1);
+			Code.addInstr(op_add);
+			lval.generateStoreDupValue();
+			pushProperConstant(-1);
+			Code.addInstr(op_add);
+		}
+		else if( op == PostfixOperator.PostDecr ) {
+			pushProperConstant(-1);
+			Code.addInstr(op_add);
+			lval.generateStoreDupValue();
+			pushProperConstant(1);
+			Code.addInstr(op_add);
+		}
 	}
 
 	/** Load value and dup info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while)
 	*/
 	public void generateLoadDup() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	public void generateAccess() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	/** Stores value using previously duped info */
 	public void generateStore() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	/** Stores value using previously duped info, and put stored value in stack */
 	public void generateStoreDupValue() {
-		PassInfo.push(this);
-		try {
-			throw new RuntimeException("Too complex lvalue expression "+this);
-		} finally { PassInfo.pop(this); }
+		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1714,45 +1642,41 @@ public class ConditionalExpr extends Expr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		PassInfo.push(this);
-		try {
-			cond.resolve(Type.tpBoolean);
-			expr1.resolve(reqType);
-			expr2.resolve(reqType);
+		Code.setLinePos(this.getPosLine());
+		cond.resolve(Type.tpBoolean);
+		expr1.resolve(reqType);
+		expr2.resolve(reqType);
 
-			if( expr1.getType() != getType() ) {
-				expr1 = new CastExpr(expr1.pos,getType(),(ENode)~expr1);
-				expr1.resolve(getType());
-			}
-			if( expr2.getType() != getType() ) {
-				expr2 = new CastExpr(expr2.pos,getType(),(ENode)~expr2);
-				expr2.resolve(getType());
-			}
-		} finally { PassInfo.pop(this); }
+		if( expr1.getType() != getType() ) {
+			expr1 = new CastExpr(expr1.pos,getType(),(ENode)~expr1);
+			expr1.resolve(getType());
+		}
+		if( expr2.getType() != getType() ) {
+			expr2 = new CastExpr(expr2.pos,getType(),(ENode)~expr2);
+			expr2.resolve(getType());
+		}
 		setResolved(true);
 	}
 
 	public void generate(Type reqType) {
-		PassInfo.push(this);
-		try {
-			if( cond.isConstantExpr() ) {
-				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					expr1.generate(null);
-				} else {
-					expr2.generate(null);
-				}
-			} else {
-				CodeLabel elseLabel = Code.newLabel();
-				CodeLabel endLabel = Code.newLabel();
-				BoolExpr.gen_iffalse(cond, elseLabel);
+		Code.setLinePos(this.getPosLine());
+		if( cond.isConstantExpr() ) {
+			if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 				expr1.generate(null);
-				Code.addInstr(Instr.op_goto,endLabel);
-				Code.addInstr(Instr.set_label,elseLabel);
+			} else {
 				expr2.generate(null);
-				if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-				Code.addInstr(Instr.set_label,endLabel);
 			}
-		} finally { PassInfo.pop(this); }
+		} else {
+			CodeLabel elseLabel = Code.newLabel();
+			CodeLabel endLabel = Code.newLabel();
+			BoolExpr.gen_iffalse(cond, elseLabel);
+			expr1.generate(null);
+			Code.addInstr(Instr.op_goto,endLabel);
+			Code.addInstr(Instr.set_label,elseLabel);
+			expr2.generate(null);
+			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
+			Code.addInstr(Instr.set_label,endLabel);
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1819,53 +1743,50 @@ public class CastExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
-		PassInfo.push(this);
-		try {
-			expr.resolve(type);
-			if (expr instanceof TypeRef)
-				((TypeRef)expr).toExpr(type);
-			Type extp = Type.getRealType(type,expr.getType());
-			if( type == Type.tpBoolean && extp == Type.tpRule ) {
-				replaceWithNode(expr);
+		expr.resolve(type);
+		if (expr instanceof TypeRef)
+			((TypeRef)expr).toExpr(type);
+		Type extp = Type.getRealType(type,expr.getType());
+		if( type == Type.tpBoolean && extp == Type.tpRule ) {
+			replaceWithNode(expr);
+			return;
+		}
+		// Try to find $cast method
+		if( !extp.isAutoCastableTo(type) ) {
+			ENode ocast = tryOverloadedCast(extp);
+			if( ocast == this ) {
+				resolve(reqType);
 				return;
 			}
-			// Try to find $cast method
-			if( !extp.isAutoCastableTo(type) ) {
-				ENode ocast = tryOverloadedCast(extp);
-				if( ocast == this ) {
-					resolve(reqType);
-					return;
-				}
-				if (extp.isWrapper()) {
-					expr = extp.makeWrappedAccess(expr);
-					resolve(reqType);
-					return;
-				}
-			}
-			else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
-				ENode ocast = tryOverloadedCast(extp);
-				if( ocast == this ) {
-					resolve(reqType);
-					return;
-				}
+			if (extp.isWrapper()) {
 				expr = extp.makeWrappedAccess(expr);
 				resolve(reqType);
 				return;
 			}
-			else {
-				this.resolve2(type);
+		}
+		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
+			ENode ocast = tryOverloadedCast(extp);
+			if( ocast == this ) {
+				resolve(reqType);
 				return;
 			}
-			if( extp.isCastableTo(type) ) {
-				this.resolve2(type);
-				return;
-			}
-			if( type == Type.tpInt && extp == Type.tpBoolean && reinterp ) {	
-				this.resolve2(type);
-				return;
-			}
-			throw new CompilerException(pos,"Expression "+expr+" of type "+extp+" is not castable to "+type);
-		} finally { PassInfo.pop(this); 	}
+			expr = extp.makeWrappedAccess(expr);
+			resolve(reqType);
+			return;
+		}
+		else {
+			this.resolve2(type);
+			return;
+		}
+		if( extp.isCastableTo(type) ) {
+			this.resolve2(type);
+			return;
+		}
+		if( type == Type.tpInt && extp == Type.tpBoolean && reinterp ) {	
+			this.resolve2(type);
+			return;
+		}
+		throw new CompilerException(pos,"Expression "+expr+" of type "+extp+" is not castable to "+type);
 	}
 
 	public ENode tryOverloadedCast(Type et) {
@@ -2118,27 +2039,25 @@ public class CastExpr extends Expr {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);
-		PassInfo.push(this);
-		try {
-			expr.generate(null);
-			Type t = expr.getType();
-			if( t.isReference() ) {
-				if( t.isReference() != type.isReference() )
-					throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
-				if( type.isReference() )
-					Code.addInstr(Instr.op_checkcast,type.getType());
+		Code.setLinePos(this.getPosLine());
+		expr.generate(null);
+		Type t = expr.getType();
+		if( t.isReference() ) {
+			if( t.isReference() != type.isReference() )
+				throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
+			if( type.isReference() )
+				Code.addInstr(Instr.op_checkcast,type.getType());
+		} else {
+			if (reinterp) {
+				if (t.isIntegerInCode() && type.isIntegerInCode())
+					; //generate nothing, both values are int-s
+				else
+					throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
 			} else {
-			    if (reinterp) {
-			        if (t.isIntegerInCode() && type.isIntegerInCode())
-			            ; //generate nothing, both values are int-s
-			        else
-						throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
-			    } else {
-				    Code.addInstr(Instr.op_x2y,type.getType());
-				}
+				Code.addInstr(Instr.op_x2y,type.getType());
 			}
-			if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
-		} finally { PassInfo.pop(this); }
+		}
+		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {

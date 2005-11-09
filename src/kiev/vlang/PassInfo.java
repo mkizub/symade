@@ -186,78 +186,78 @@ public class PassInfo {
 	}
 	
 	public static void push(ASTNode node) {
-		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
-		if( node instanceof FileUnit ) {
-			trace(Kiev.debugAST,AT()+" set file unit  '"+node+"'"+debugAt());
-			file_unit = (FileUnit)node;
-			path[pathTop++] = node;
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-		}
-		else if( node instanceof Struct ) {
-			trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
-			clazz = (Struct)node;
-			path[pathTop++] = node;
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-		}
-		else if( node instanceof Method ) {
-			trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
-			method = (Method)node;
-			path[pathTop++] = node;
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-		}
-		Code.setLinePos(node.getPosLine());
+//		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
+//		if( node instanceof FileUnit ) {
+//			trace(Kiev.debugAST,AT()+" set file unit  '"+node+"'"+debugAt());
+//			file_unit = (FileUnit)node;
+//			path[pathTop++] = node;
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
+//		}
+//		else if( node instanceof Struct ) {
+//			trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
+//			clazz = (Struct)node;
+//			path[pathTop++] = node;
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
+//		}
+//		else if( node instanceof Method ) {
+//			trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
+//			method = (Method)node;
+//			path[pathTop++] = node;
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
+//		}
+//		Code.setLinePos(node.getPosLine());
 	}
 
 	public static void pop(ASTNode n) {
-		trace(Kiev.debugAST,AT()+" pop  '"+n+"'"+debugAt());
-//    	if( n != path[pathTop-1] ) {
-//    		if( n == path[pathTop-2] )
-//    			pop( path[pathTop-1] );
-//    		else
-//	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
-//    	}
-//    	ASTNode node = path[--pathTop];
-//    	if( n!=node )
-//    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-//      path[pathTop] = null;
-		if( n instanceof FileUnit ) {
-			ASTNode node = path[pathTop-1];
-			if (n != node)
-				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-			--pathTop;
-			file_unit = null;
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-		}
-		else if( node instanceof Struct ) {
-			ASTNode node = path[pathTop-1];
-			if (n != node)
-				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-			--pathTop;
-			clazz = null;
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof Struct ) {
-					clazz = (Struct)path[i];
-					trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
-					break;
-				}
-			}
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-		}
-		else if( node instanceof Method ) {
-			ASTNode node = path[pathTop-1];
-			if (n != node)
-				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-			--pathTop;
-			method = null;
-			for(int i=pathTop-1; i >= 0; i-- ) {
-				if( path[i] instanceof Method ) {
-					method = (Method)path[i];
-					trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
-					break;
-				}
-			}
-			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-		}
+//		trace(Kiev.debugAST,AT()+" pop  '"+n+"'"+debugAt());
+////    	if( n != path[pathTop-1] ) {
+////    		if( n == path[pathTop-2] )
+////    			pop( path[pathTop-1] );
+////    		else
+////	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
+////    	}
+////    	ASTNode node = path[--pathTop];
+////    	if( n!=node )
+////    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+////      path[pathTop] = null;
+//		if( n instanceof FileUnit ) {
+//			ASTNode node = path[pathTop-1];
+//			if (n != node)
+//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+//			--pathTop;
+//			file_unit = null;
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
+//		}
+//		else if( node instanceof Struct ) {
+//			ASTNode node = path[pathTop-1];
+//			if (n != node)
+//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+//			--pathTop;
+//			clazz = null;
+//			for(int i=pathTop-1; i >= 0; i-- ) {
+//				if( path[i] instanceof Struct ) {
+//					clazz = (Struct)path[i];
+//					trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
+//					break;
+//				}
+//			}
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
+//		}
+//		else if( node instanceof Method ) {
+//			ASTNode node = path[pathTop-1];
+//			if (n != node)
+//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
+//			--pathTop;
+//			method = null;
+//			for(int i=pathTop-1; i >= 0; i-- ) {
+//				if( path[i] instanceof Method ) {
+//					method = (Method)path[i];
+//					trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
+//					break;
+//				}
+//			}
+//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
+//		}
 	}
 
 	private static String SP =

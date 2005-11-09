@@ -436,21 +436,15 @@ public abstract class ASTNode implements Constants {
 		post_exec(this);
 	}
 	
-	public void pushMe() { PassInfo.push(this); }
-	public void popMe() { PassInfo.pop(this); }
+	public void pushMe() {}
+	public void popMe() {}
 	
 	public void walkTree((ASTNode)->boolean exec) {
-		PassInfo.push(this);
-		try {
-			treeWalker(exec);
-		} finally { PassInfo.pop(this); }
+		treeWalker(exec);
 	}
 
 	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		PassInfo.push(this);
-		try {
-			treeWalker(pre_exec, post_exec);
-		} finally { PassInfo.pop(this); }
+		treeWalker(pre_exec, post_exec);
 	}
 
 	public int setFlags(int fl) {
@@ -1425,12 +1419,10 @@ public abstract class LvalueExpr extends Expr {
 	public LvalueExpr(int pos) { super(pos); }
 
 	public void generate(Type reqType) {
-		PassInfo.push(this);
-		try {
-			generateLoad();
-			if( reqType == Type.tpVoid )
-				Code.addInstr(Instr.op_pop);
-		} finally { PassInfo.pop(this); }
+		Code.setLinePos(this.getPosLine());
+		generateLoad();
+		if( reqType == Type.tpVoid )
+			Code.addInstr(Instr.op_pop);
 	}
 
 	/** Just load value referenced by lvalue */

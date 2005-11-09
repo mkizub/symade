@@ -47,84 +47,78 @@ public class ASTExpression extends Expr {
 	public final NArr<ENode>		nodes;
 
 	public void preResolveOut() {
-		PassInfo.push(this);
-		try {
-			if (nodes.length == 1 && nodes[0] instanceof Expr) {
-				ENode n = nodes[0];
-				this.replaceWithNode((ENode)~n);
-				return;
-			}
-			List<ENode> lst = List.Nil;
-			for (int i=nodes.length-1; i >=0; i--)
-				lst = new List.Cons<ENode>(nodes[i], lst);
-			List<ENode> results = List.Nil;
-			ENode@ result;
-			List<ENode>@ rest;
-			trace( Kiev.debugOperators, "Expression: "+lst);
-			foreach( resolveExpr(result,rest,lst,0) ) {
-				trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
-				trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
-				results = new List.Cons<ENode>(result,results);
-			}
-			if (results.length() == 0) {
-				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
-				foreach(ENode n; results)
-					msg.append(n).append("\n");
-				Kiev.reportError(pos, msg.toString());
-				return;
-			}
-			if (results.length() > 1) {
-				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
-				foreach(ENode n; results)
-					msg.append(n).append("\n");
-				Kiev.reportError(pos, msg.toString());
-				return;
-			}
-			
-			ENode e = results.head();
-			if (e instanceof UnresExpr)
-				e = ((UnresExpr)e).toResolvedExpr();
-			if (isPrimaryExpr())
-				e.setPrimaryExpr(true);
-			this.replaceWithNode((ENode)~e);
-		} finally { PassInfo.pop(this); }
+		if (nodes.length == 1 && nodes[0] instanceof Expr) {
+			ENode n = nodes[0];
+			this.replaceWithNode((ENode)~n);
+			return;
+		}
+		List<ENode> lst = List.Nil;
+		for (int i=nodes.length-1; i >=0; i--)
+			lst = new List.Cons<ENode>(nodes[i], lst);
+		List<ENode> results = List.Nil;
+		ENode@ result;
+		List<ENode>@ rest;
+		trace( Kiev.debugOperators, "Expression: "+lst);
+		foreach( resolveExpr(result,rest,lst,0) ) {
+			trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
+			trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
+			results = new List.Cons<ENode>(result,results);
+		}
+		if (results.length() == 0) {
+			StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
+			foreach(ENode n; results)
+				msg.append(n).append("\n");
+			Kiev.reportError(pos, msg.toString());
+			return;
+		}
+		if (results.length() > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
+			foreach(ENode n; results)
+				msg.append(n).append("\n");
+			Kiev.reportError(pos, msg.toString());
+			return;
+		}
+		
+		ENode e = results.head();
+		if (e instanceof UnresExpr)
+			e = ((UnresExpr)e).toResolvedExpr();
+		if (isPrimaryExpr())
+			e.setPrimaryExpr(true);
+		this.replaceWithNode((ENode)~e);
 	}
 	
 	public void resolve(Type reqType) {
-		PassInfo.push(this);
-		try {
-			List<ENode> lst = List.Nil;
-			for (int i=nodes.length-1; i >=0; i--)
-				lst = new List.Cons<ENode>(nodes[i], lst);
-			List<ENode> results = List.Nil;
-			ENode@ result;
-			List<ENode>@ rest;
-			trace( Kiev.debugOperators, "Expression: "+lst);
-			foreach( resolveExpr(result,rest,lst,0) ) {
-				trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
-				trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
-				results = new List.Cons<ENode>(result,results);
-			}
-			if (results.length() == 0) {
-				StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
-				foreach(ENode n; results)
-					msg.append(n).append("\n");
-				throw new CompilerException(pos, msg.toString());
-			}
-			if (results.length() > 1) {
-				StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
-				foreach(ENode n; results)
-					msg.append(n).append("\n");
-				throw new CompilerException(pos, msg.toString());
-			}
-			
-			ENode e = results.head();
-			if (e instanceof UnresExpr)
-				e = ((UnresExpr)e).toResolvedExpr();
-			if (isPrimaryExpr())
-				e.setPrimaryExpr(true);
-			this.replaceWithNodeResolve(reqType, (ENode)~e);
-		} finally { PassInfo.pop(this); }
+		List<ENode> lst = List.Nil;
+		for (int i=nodes.length-1; i >=0; i--)
+			lst = new List.Cons<ENode>(nodes[i], lst);
+		List<ENode> results = List.Nil;
+		ENode@ result;
+		List<ENode>@ rest;
+		trace( Kiev.debugOperators, "Expression: "+lst);
+		foreach( resolveExpr(result,rest,lst,0) ) {
+			trace( Kiev.debugOperators, "May be resolved as: "+result+" and rest is "+rest);
+			trace( Kiev.debugOperators, "Add possible resolved expression: "+result);
+			results = new List.Cons<ENode>(result,results);
+		}
+		if (results.length() == 0) {
+			StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
+			foreach(ENode n; results)
+				msg.append(n).append("\n");
+			throw new CompilerException(pos, msg.toString());
+		}
+		if (results.length() > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
+			foreach(ENode n; results)
+				msg.append(n).append("\n");
+			throw new CompilerException(pos, msg.toString());
+		}
+		
+		ENode e = results.head();
+		if (e instanceof UnresExpr)
+			e = ((UnresExpr)e).toResolvedExpr();
+		if (isPrimaryExpr())
+			e.setPrimaryExpr(true);
+		this.replaceWithNodeResolve(reqType, (ENode)~e);
 	}
 
 	/**
