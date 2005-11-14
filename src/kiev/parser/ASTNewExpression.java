@@ -121,7 +121,7 @@ public class ASTNewExpression extends Expr {
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
-		clazz.setStatic(PassInfo.method==null || PassInfo.method.isStatic());
+		clazz.setStatic(pctx.method==null || pctx.method.isStatic());
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		clazz.addAttr(sfa);
 		if( sup.isInterface() ) {

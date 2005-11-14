@@ -159,7 +159,7 @@ public class Var extends DNode implements Named, Typed {
 					init.generate(this.type);
 					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
 					Method@ in;
-					PassInfo.resolveBestMethodR(prt,in,new ResInfo(ResInfo.noForwards),nameInit,mt);
+					PassInfo.resolveBestMethodR(prt,in,new ResInfo(this,ResInfo.noForwards),nameInit,mt);
 					Code.addInstr(Instr.op_call,in,false);
 					Code.addVar(this);
 					Code.addInstr(Instr.op_store,this);

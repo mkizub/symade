@@ -34,36 +34,32 @@ import static kiev.vlang.Instr.*;
  */
 
 public class Code implements Constants {
-	/** Max stack deepness
-	 */
+	
+	/** Current class we are generating */
+	static public Struct			clazz;
+	
+	/** Current method we are generating */
+	static public Method			method;
+	
+	/** Max stack deepness */
 	static public int				max_stack;
 
-	/** Code (JVM bytecode) - for code generation only
-	 */
+	/** Code (JVM bytecode) - for code generation only */
 	static public byte[]			code;
 
-	/** Variables of this code (method args & locals)
-	 */
+	/** Variables of this code (method args & locals) */
 	static public CodeVar[]			vars;
 
-	/** Current number of local vars (method args & local vars)
-	 */
+	/** Current number of local vars (method args & local vars) */
 	static private int				cur_locals;
 
-	/** Max locals (method args & local vars)
-	 */
+	/** Max locals (method args & local vars) */
 	static private int				max_locals;
 
-	/** Assembler pseudo-instructions
-	 */
-//	static public Instr[]			instr;
-
-	/** Stack of code - for code generation only
-	 */
+	/** Stack of code - for code generation only */
 	static public Type[]			stack;
 
-	/** Top of stack - for code generation only
-	 */
+	/** Top of stack - for code generation only */
 	static public int				top;
 
 	/** Max stack top of stack - for code generation only
@@ -71,8 +67,7 @@ public class Code implements Constants {
 	 */
 	static private int				max_stack_top;
 
-	/** PC - current code position - for code generation only
-	 */
+	/** PC - current code position - for code generation only */
 	static public int				pc;
 
 	/** Labels of code */
@@ -104,24 +99,13 @@ public class Code implements Constants {
 
 	static public boolean			reachable = true;
 
-	/** Intermidiate code representation.
-		Each bytecode is first byte of intCode array;
-		Bytecode args are in upper 3 bytes
-	*/
-//	static public int[]			intCode;
-
-	/** Each bytecode may have any number of attributes
-		(labels attached to it, line numbers, vars declared at
-		this point and so on;
-		These objects are stored in intCodeObjs list
-	*/
-//	static public List<Instr>[]	intCodeObjs;
-
 	static public boolean		generation = false;
 
 	static public boolean		cond_generation = false;
 
-	public static void reInit() {
+	public static void reInit(Struct s, Method m) {
+		clazz = s;
+		method = m;
 		attrs = Attr.emptyArray;
 		cur_locals = 0;
 		max_locals = 0;
@@ -623,7 +607,7 @@ public class Code implements Constants {
 
 	static public void generateReturn() {
 		try {
-			Type t = PassInfo.method.type.ret;
+			Type t = Code.method.type.ret;
 			if( t == Type.tpVoid )			add_opcode(opc_return);
 			else if( t.isIntegerInCode() )	add_opcode(opc_ireturn);
 			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
@@ -632,7 +616,7 @@ public class Code implements Constants {
 			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
 			else if( t.isReference() )		add_opcode(opc_areturn);
 			else
-				throw new RuntimeException("Unknown return type "+PassInfo.method.type.ret+" of method");
+				throw new RuntimeException("Unknown return type "+Code.method.type.ret+" of method");
 		} catch(Exception e) {
 			throw new RuntimeException("Unresolved type at generation phase: "+e);
 		}
@@ -1573,7 +1557,7 @@ public class Code implements Constants {
 
 
 	static public void generateCode() {
-		PassInfo.method.addAttr(generateCodeAttr(0));
+		Code.method.addAttr(generateCodeAttr(0));
 	}
 
 	static public void generateCode(WBCCondition wbc) {
@@ -1608,8 +1592,7 @@ public class Code implements Constants {
 			ca = new ContractAttr(cond,
 				max_stack,(max_locals+1),code,attrs);
 		else
-			ca = new CodeAttr(PassInfo.method,
-				max_stack,(max_locals+1),code,catchers,attrs);
+			ca = new CodeAttr(Code.method, max_stack,(max_locals+1),code,catchers,attrs);
 		ca.constants = (CP[])Arrays.cloneToSize(constants,constants_top);
 		ca.constants_pc = (int[])Arrays.cloneToSize(constants_pc,constants_top);
 

@@ -28,7 +28,7 @@ import static kiev.stdlib.Debug.*;
 /**
  * $Header$
  * @author Maxim Kizub
- * @version $Revision: 181 $
+ * @version $Revision$
  *
  */
 
@@ -168,9 +168,9 @@ public class Access implements Constants {
 		}
 	}
 
-	public void verifyReadAccess(ASTNode n) { verifyAccess(n,2); }
-	public void verifyWriteAccess(ASTNode n) { verifyAccess(n,1); }
-	public void verifyReadWriteAccess(ASTNode n) { verifyAccess(n,3); }
+	public void verifyReadAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,2); }
+	public void verifyWriteAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,1); }
+	public void verifyReadWriteAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,3); }
 
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
@@ -183,21 +183,21 @@ public class Access implements Constants {
 		return pkg;
 	}
 
-	public void verifyAccess(ASTNode n, int acc) {
+	private void verifyAccess(ASTNode from, ASTNode n, int acc) {
 		assert( n instanceof Accessable && ((Accessable)n).acc == this );
 
 		// Quick check for public access
 		if( ((flags>>>6) & acc) == acc ) return;
 
 		// Check for private access
-		if( PassInfo.clazz == getStructOf(n) ) {
-			if( (flags & acc) != acc ) throwAccessError(n,acc,"private");
+		if( from.pctx.clazz == getStructOf(n) ) {
+			if( (flags & acc) != acc ) throwAccessError(from,n,acc,"private");
 			return;
 		}
 
 		// Check for private access from inner class
 		if (n.isPrivate()) {
-			Struct outer1 = PassInfo.clazz;
+			Struct outer1 = from.pctx.clazz;
 			Struct outer2 = getStructOf(n);
 			while (!outer1.package_clazz.isPackage())
 				outer1 = outer1.package_clazz;
@@ -208,27 +208,27 @@ public class Access implements Constants {
 					n.setAccessedFromInner(true);
 					return;
 				}
-				throwAccessError(n,acc,"private");
+				throwAccessError(from,n,acc,"private");
 			}
 		}
 
 		// Check for default access
-		if( getPackageOf(PassInfo.clazz) == getPackageOf(n) ) {
-			if( ((flags>>>2) & acc) != acc ) throwAccessError(n,acc,"default");
+		if( getPackageOf(from.pctx.clazz) == getPackageOf(n) ) {
+			if( ((flags>>>2) & acc) != acc ) throwAccessError(from,n,acc,"default");
 			return;
 		}
 
 		// Check for protected access
-		if( PassInfo.clazz.instanceOf(getStructOf(n)) ) {
-			if( ((flags>>>4) & acc) != acc ) throwAccessError(n,acc,"protected");
+		if( from.pctx.clazz.instanceOf(getStructOf(n)) ) {
+			if( ((flags>>>4) & acc) != acc ) throwAccessError(from,n,acc,"protected");
 			return;
 		}
 
 		// Public was already checked, just throw an error
-		throwAccessError(n,acc,"public");
+		throwAccessError(from,n,acc,"public");
 	}
 
-	private void throwAccessError(ASTNode n, int acc, String astr) {
+	private void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');
 		if( acc == 2 ) sb.append("read");
@@ -240,7 +240,7 @@ public class Access implements Constants {
 		else if( n instanceof Struct ) sb.append("class ");
 		if( n instanceof Struct ) sb.append(n);
 		else sb.append(n.parent).append('.').append(n);
-		sb.append("\n\tfrom class ").append(PassInfo.clazz);
-		Kiev.reportError(0,new RuntimeException(sb.toString()));
+		sb.append("\n\tfrom class ").append(from.pctx.clazz);
+		Kiev.reportError(from.pos,new RuntimeException(sb.toString()));
 	}
 }

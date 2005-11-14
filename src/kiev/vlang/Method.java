@@ -118,6 +118,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		this.meta = new MetaSet();
 	}
 
+	public void setupContext() {
+		if (this.parent == null)
+			this.pctx = new NodeContext(this);
+		else
+			this.pctx = this.parent.pctx.enter(this);
+	}
+
 	@getter public Access get$acc() {
 		return acc;
 	}
@@ -566,7 +573,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
+		assert( pctx.clazz == parent || inlined_by_dispatcher );
 		PassInfo.pushMethod(this);
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
@@ -608,8 +615,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		PassInfo.pushMethod(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; PassInfo.clazz.instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; PassInfo.clazz.instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; pctx.clazz.instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; pctx.clazz.instanceOf((Struct)inv.parent) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
@@ -622,7 +629,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				cond.generate(Type.tpVoid);
 		} finally { kiev.vlang.PassInfo.popMethod(this); kiev.vlang.Code.generation = false; }
 		if( !isAbstract() && body != null ) {
-			Code.reInit();
+			Code.reInit(pctx.clazz, this);
 			Code.generation = true;
 			PassInfo.pushMethod(this);
 			try {
@@ -846,10 +853,10 @@ public class WBCCondition extends DNode {
 			Code.addInstr(Instr.op_return);
 		}
 		else if( code == null ) {
-			Code.reInit();
+			Code.reInit(pctx.clazz, pctx.method);
 			Code.generation = true;
 			Code.cond_generation = true;
-			Method m = (Method)PassInfo.method;
+			Method m = Code.method;
 			try {
 				if( !m.isStatic() ) Code.addVar(m.getThisPar());
 				if( m.params.length > 0 ) Code.addVars(m.params.toArray());

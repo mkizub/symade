@@ -57,17 +57,19 @@ public class ResInfo {
 	public boolean isForwardsAllowed() { return (flags & noForwards) == 0; }
 	public boolean isSuperAllowed()    { return (flags & noSuper)    == 0; }
 
-	public ResInfo() {
+	private ResInfo() {}
+	
+	public ResInfo(ASTNode from) {
 		flags_stack = new int[16];
 		forwards_stack = new ASTNode[16];
-		from_scope = PassInfo.clazz;
+		from_scope = from.pctx.clazz;
 	}
 	
-	public ResInfo(int fl) {
+	public ResInfo(ASTNode from, int fl) {
 		flags = fl;
 		flags_stack = new int[16];
 		forwards_stack = new ASTNode[16];
-		from_scope = PassInfo.clazz;
+		from_scope = from.pctx.clazz;
 	}
 	
 	public void enterMode(int fl) {
@@ -277,6 +279,7 @@ public class ResInfo {
 		ri.forwards_stack = (ASTNode[])this.forwards_stack.clone();
 		ri.forwards_p     = this.forwards_p;
 		ri.transforms     = this.transforms;
+		ri.from_scope     = this.from_scope;
 		return ri;
 	}
 

@@ -109,36 +109,12 @@ public class PassInfo {
 	private PassInfo() {}
 
 	// Pass info and global resolving section
-	public static FileUnit			file_unit;
 	public static Struct			clazz;
 	public static Method			method;
-	public static ASTNode[]			path	= new ASTNode[1024];
-	public static int				pathTop = 0;
+	private static final ASTNode[]	path	= new ASTNode[1024];
+	private static int				pathTop = 0;
 
 
-	public static void pushFileUnit(FileUnit node) {
-		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
-        path[pathTop++] = node;
-		trace(Kiev.debugAST,"AST set file unit  '"+node+"'"+debugAt());
-		file_unit = (FileUnit)node;
-		Code.setLinePos(node.getPosLine());
-	}
-	
-	public static void popFileUnit(FileUnit node) {
-		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
-    	if( node != path[pathTop-1] )
-    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
-		--pathTop;
-		file_unit = null;
-		for(int i=pathTop-1; i >= 0; i-- ) {
-			if( path[i] instanceof FileUnit ) {
-				file_unit = (FileUnit)path[i];
-				trace(Kiev.debugAST,AT()+" set file unit  '"+file_unit+"'"+debugAt());
-				break;
-			}
-		}
-	}
-	
 	public static void pushStruct(Struct node) {
 		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
         path[pathTop++] = node;
@@ -185,7 +161,7 @@ public class PassInfo {
 		}
 	}
 	
-	public static void push(ASTNode node) {
+//	public static void push(ASTNode node) {
 //		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
 //		if( node instanceof FileUnit ) {
 //			trace(Kiev.debugAST,AT()+" set file unit  '"+node+"'"+debugAt());
@@ -206,9 +182,9 @@ public class PassInfo {
 //			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
 //		}
 //		Code.setLinePos(node.getPosLine());
-	}
+//	}
 
-	public static void pop(ASTNode n) {
+//	public static void pop(ASTNode n) {
 //		trace(Kiev.debugAST,AT()+" pop  '"+n+"'"+debugAt());
 ////    	if( n != path[pathTop-1] ) {
 ////    		if( n == path[pathTop-2] )
@@ -258,7 +234,7 @@ public class PassInfo {
 //			}
 //			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
 //		}
-	}
+//	}
 
 	private static String SP =
 	"                                                                                   "+
@@ -285,7 +261,7 @@ public class PassInfo {
 
 	public static boolean checkClassName(ASTNode from, KString qname) {
 		ASTNode@ node;
-		if (!resolveNameR(from, node,new ResInfo(),qname))
+		if (!resolveNameR(from, node,new ResInfo(from),qname))
 			return false;
 		if (node instanceof Struct && !node.isPackage())
 			return true;
@@ -348,7 +324,7 @@ public class PassInfo {
 		Vector<Method>  methods, Vector<ResInfo> paths, Vector<MethodType> types)
 	{
 		trace(Kiev.debugResolve,"Candidate method "+m+" with path "+info+" found...");
-		if (m.isPrivate() && PassInfo.clazz != (Struct)m.parent)
+		if !(info.check(m))
 			return;
 		for (int i=0; i < methods.length; i++) {
 			if (methods[i] == m) {

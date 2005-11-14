@@ -133,15 +133,7 @@ public final class Kiev {
 		reportError(pos,"Error",msg);
 	}
 
-	private static int getPossiblePos(int i) {
-		if( i < 0 ) return 0;
-		int pos = PassInfo.path[i].getPos();
-		if( (pos >>> 11) == 0 ) return getPossiblePos(i-1);
-		return pos;
-	}
-
 	public static void reportError(int pos, String err, String msg) {
-		if( (pos >>> 11) == 0 ) pos = getPossiblePos(PassInfo.pathTop-1);
 		KString cf = KString.Empty;
 		if( curFile == null || curFile.equals(KString.Empty) ) {
 			if( maybeCurFile != null && !maybeCurFile.equals(KString.Empty) )
@@ -425,7 +417,6 @@ public final class Kiev {
 
 	// Scanning & parsing
 	public static kiev040				k;
-	public static FileUnit				curFileUnit;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 
@@ -448,15 +439,23 @@ public final class Kiev {
 		return ((int)pass_no) >= ((int)p);
 	}
 
-	public static BlockStat parseBlock(StringBuffer sb, int begLine, int begCol) {
+	public static BlockStat parseBlock(ASTNode from, StringBuffer sb) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
+		FileUnit oldFileUnit = k.curFileUnit;
+		Struct oldClazz = k.curClazz;
 		k.ReInit(is);
 		k.reparse_body = true;
-		k.reparse_pos = (begLine << 11) | (begCol & 0x3FF);
+		k.reparse_pos = from.pos;
+		k.curFileUnit = from.pctx.file_unit;
+		k.curClazz = from.pctx.clazz;
 		BlockStat body = null;
 		try {
 			body = k.Block();
-		} finally { k.reparse_body = false; }
+		} finally {
+			k.reparse_body = false;
+			k.curFileUnit = oldFileUnit;
+			k.curClazz = oldClazz;
+		}
 		return body;
 	}
 
@@ -489,6 +488,8 @@ public final class Kiev {
 			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
 			Kiev.k.ReInit(bis);
 			foreach(PrescannedBody b; f.bodies; b != null ) {
+				Kiev.k.curFileUnit = null;
+				Kiev.k.curClazz = null;
 				// callect parents of this block
 				List<ASTNode> pl = List.Nil;
 				ASTNode n = (ASTNode)b;
@@ -500,7 +501,12 @@ public final class Kiev {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
 					continue;
 				}
-				foreach(ASTNode nn; pl) nn.pushMe();
+				foreach(ASTNode nn; pl) {
+					if (nn instanceof FileUnit)
+						Kiev.k.curFileUnit = (FileUnit)nn;
+					else if (nn instanceof Struct)
+						Kiev.k.curClazz = (Struct)nn;
+				}
 				BlockStat bl;
 				switch(b.mode) {
 				case PrescannedBody.BlockMode:
@@ -517,9 +523,10 @@ public final class Kiev {
 				}
 				b.replaceWithNode(null);
 				pl = pl.reverse();
-				foreach(ASTNode nn; pl) 	nn.popMe();
 			}
 		} finally {
+			Kiev.k.curFileUnit = null;
+			Kiev.k.curClazz = null;
 			f.bodies = PrescannedBody.emptyArray;
 		}
 	}
@@ -632,7 +639,6 @@ public final class Kiev {
 			KString curr_file = Kiev.curFile;
 			Kiev.curFile = fu.filename;
 			boolean[] exts = Kiev.getExtSet();
-			PassInfo.pushFileUnit(fu);
 			try {
 				Kiev.setExtSet(fu.disabled_extensions);
 				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
@@ -646,7 +652,6 @@ public final class Kiev {
 				}
 			}
 			finally {
-				PassInfo.popFileUnit(fu);
 				Kiev.curFile = curr_file;
 				Kiev.setExtSet(exts);
 			}

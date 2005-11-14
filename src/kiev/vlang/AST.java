@@ -69,6 +69,52 @@ public abstract class NodeData {
 	public void subnodeRemoved(NArr<ASTNode> space, ASTNode n) {}
 };
 
+public final class NodeContext {
+	public final ASTNode	root;
+	public final FileUnit	file_unit;
+	public final Struct		clazz;
+	public final Struct		outer_clazz;
+	public final Method		method;
+	public final Method		outer_method;
+	private NodeContext(ASTNode root,
+						FileUnit file_unit,
+						Struct clazz,
+						Struct outer_clazz,
+						Method method,
+						Method outer_method)
+	{
+		this.root = root;
+		this.file_unit = file_unit;
+		this.clazz = clazz;
+		this.outer_clazz = outer_clazz;
+		this.method = method;
+		this.outer_method = outer_method;
+	}
+	public NodeContext(ASTNode root) {
+		this.root = root;
+	}
+	public NodeContext(FileUnit fu) {
+		this.root = fu;
+		this.file_unit = fu;
+	}
+	public NodeContext enter(Struct s) {
+		return new NodeContext(	this.root,
+								this.file_unit,
+								s,
+								this.clazz,
+								null,
+								this.method);
+	}
+	public NodeContext enter(Method m) {
+		return new NodeContext(	this.root,
+								this.file_unit,
+								this.clazz,
+								this.outer_clazz,
+								m,
+								this.outer_method);
+	}
+};
+
 @node
 public abstract class ASTNode implements Constants {
 
@@ -86,7 +132,7 @@ public abstract class ASTNode implements Constants {
 	@ref(copyable=false)
 	public ASTNode			pnext;
 	@ref(copyable=false)
-	public access:ro,ro,rw,rw ASTNode			proot;
+	public access:ro,ro,rw,rw NodeContext		pctx;
 	
 	@ref(copyable=false)
 	public NodeData			ndata;
@@ -163,18 +209,25 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,31 boolean is_bad;
 
     public ASTNode() {
-		proot = this;
+		this.setupContext();
 	}
 
     public ASTNode(int pos) {
 		this.pos = pos;
-		proot = this;
+		this.setupContext();
 	}
 
 	public ASTNode(int pos, int fl) {
 		this.pos = pos;
-		proot = this;
-		flags = fl;
+		this.flags = fl;
+		this.setupContext();
+	}
+	
+	public void setupContext() {
+		if (this.parent == null)
+			this.pctx = new NodeContext(this);
+		else
+			this.pctx = this.parent.pctx;
 	}
 
 	public void cleanup() {
@@ -223,10 +276,8 @@ public abstract class ASTNode implements Constants {
 		this.pslot = null;
 		this.pprev = null;
 		this.pnext = null;
-		this.proot = this;
 		// set new root of the detached tree
-		ASTNode root = this;
-		walkTree(fun (ASTNode n)->boolean { n.proot = root; return true; });
+		walkTree(fun (ASTNode n)->boolean { n.setupContext(); return true; });
 		// notify nodes about new root
 		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
 		// notify parent about the changed slot
@@ -240,7 +291,10 @@ public abstract class ASTNode implements Constants {
 		this.parent = parent;
 		this.pslot = pslot;
 		this.parent = parent;
-		this.proot = parent.proot;
+		// set new root of the attached tree
+		walkTree(fun (ASTNode n)->boolean { n.setupContext(); return true; });
+		// notify nodes about new root
+		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
 		// notify node data that we are attached
 		NodeData nd = ndata;
 		while (nd != null) {
@@ -248,11 +302,6 @@ public abstract class ASTNode implements Constants {
 			nd.nodeAttached(this);
 			nd = nx;
 		}
-		// set new root of the attached tree
-		ASTNode root = parent.proot;
-		walkTree(fun (ASTNode n)->boolean { n.proot = root; return true; });
-		// notify nodes about new root
-		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
 		// notify parent about the changed slot
 		parent.callbackChildChanged(pslot);
 	}
@@ -1341,7 +1390,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	}
 
 	public boolean preResolveIn(TransfProcessor proc) {
-		if( PassInfo.method==null || PassInfo.method.isStatic())
+		if( pctx.method==null || pctx.method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);

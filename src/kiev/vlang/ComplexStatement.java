@@ -366,7 +366,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						mode = TYPE_SWITCH;
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
-						PassInfo.clazz.addField(typehash);
+						pctx.clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new StaticFieldAccessExpr(pos,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
@@ -409,11 +409,11 @@ public class SwitchStat extends Statement implements BreakTarget {
 			for(int j=0; j < signs.length; j++)
 				signs[j] = new ConstStringExpr(typenames[j]);
 			if( defindex < 0 ) defindex = signs.length;
-			typehash.init = new NewExpr(PassInfo.clazz.pos,Type.tpTypeSwitchHash,
-				new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,new TypeRef(Type.tpString),1,signs),
+			typehash.init = new NewExpr(pctx.clazz.pos,Type.tpTypeSwitchHash,
+				new Expr[]{ new NewInitializedArrayExpr(pctx.clazz.pos,new TypeRef(Type.tpString),1,signs),
 					new ConstIntExpr(defindex)
 				});
-			Constructor clinit = PassInfo.clazz.getClazzInitMethod();
+			Constructor clinit = pctx.clazz.getClazzInitMethod();
 			clinit.body.addStatement(
 				new ExprStat(typehash.init.getPos(),
 					new AssignExpr(typehash.init.getPos(),AssignOperator.Assign

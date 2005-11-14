@@ -74,8 +74,8 @@ public class Label extends DNode {
 	}
 
 	public void callbackRootChanged() {
-		ASTNode root = this.proot;
-		links = links.filter(fun (ASTNode n)->boolean { return n.proot == root; });
+		ASTNode root = this.pctx.root;
+		links = links.filter(fun (ASTNode n)->boolean { return n.pctx.root == root; });
 		super.callbackRootChanged();
 	}
 	
@@ -652,7 +652,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 			itype = ctype;
 			mode = JENUM;
-		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
 		) {
 			itype = Type.getRealType(ctype,elems.type.ret);
@@ -759,7 +759,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case JENUM:
 		case ELEMS:
 			/* iter.hasMoreElements() */
-			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
@@ -798,7 +798,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case JENUM:
 		case ELEMS:
 			/* var = iter.nextElement() */
-			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
 				var_init = new CallExpr(iter.pos,

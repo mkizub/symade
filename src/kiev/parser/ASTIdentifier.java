@@ -91,8 +91,8 @@ public class ASTIdentifier extends ENode {
 		}
 		else if( name == Constants.nameMETHOD ) {
 			ConstExpr ce;
-			if( PassInfo.method != null )
-				ce = new ConstStringExpr(PassInfo.method.name.name);
+			if( pctx.method != null )
+				ce = new ConstStringExpr(pctx.method.name.name);
 			else
 				ce = new ConstStringExpr(nameInit);
 			ce.text_name = this.name;
@@ -123,7 +123,7 @@ public class ASTIdentifier extends ENode {
 
 		// resolve in the path of scopes
 		ASTNode@ v;
-		ResInfo info = new ResInfo();
+		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 //			if( name.startsWith(Constants.nameDEF) ) {
 //				String prop = name.toString().substring(2);
@@ -177,8 +177,8 @@ public class ASTIdentifier extends ENode {
 			return;
 		}
 		else if( name == Constants.nameMETHOD ) {
-			if( PassInfo.method != null )
-				replaceWithNode(new ConstStringExpr(PassInfo.method.name.name));
+			if( pctx.method != null )
+				replaceWithNode(new ConstStringExpr(pctx.method.name.name));
 			else
 				replaceWithNode(new ConstStringExpr(nameInit));
 			return;
@@ -192,7 +192,7 @@ public class ASTIdentifier extends ENode {
 			name = Constants.nameResultVar;
 		}
 		ASTNode@ v;
-		ResInfo info = new ResInfo();
+		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 			if( name.startsWith(Constants.nameDEF) ) {
 				String prop = name.toString().substring(2);

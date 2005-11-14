@@ -70,7 +70,7 @@ public class TypeExpr extends TypeRef {
 		if (op == Constants.nameArrayOp) {
 			tp = Type.newArrayType(tp);
 		} else {
-			if (!PassInfo.resolveNameR(this,v,new ResInfo(),op)) {
+			if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
 				if (op == opPVar) {
 					//Kiev.reportWarning(pos, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpPrologVar);
 					v = new TypeRef(WrapperType.tpWrappedPrologVar);

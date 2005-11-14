@@ -375,6 +375,7 @@ kiev.vlang.NewClosure kiev/vlang/NewClosure kiev\vlang\NewExpr.java
 kiev.vlang.NewExpr kiev/vlang/NewExpr kiev\vlang\NewExpr.java
 kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang\NewExpr.java
 kiev.vlang.NodeCP kiev/vlang/NodeCP kiev\vlang\ConstPool.java
+kiev.vlang.NodeContext kiev/vlang/NodeContext kiev\vlang\AST.java
 kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java
 kiev.vlang.NodeName kiev/vlang/NodeName kiev\vlang\ClazzName.java
 kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java

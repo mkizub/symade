@@ -671,7 +671,7 @@ public class InstanceofExpr extends BoolExpr {
 		}
 		if (!type.isArray() && type.args.length > 0) {
 			replaceWithNodeResolve(reqType, new CallExpr(pos,
-					PassInfo.clazz.accessTypeInfoField(pos,type.getType()),
+					pctx.clazz.accessTypeInfoField(this,type.getType()),
 					Type.tpTypeInfo.resolveMethod(
 						KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
 					new ENode[]{(ENode)~expr}

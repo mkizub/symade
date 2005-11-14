@@ -64,7 +64,7 @@ public class TypeNameRef extends TypeRef {
 			return this.lnk;
 		KString nm = name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveQualifiedNameR(this,v,new ResInfo(ResInfo.noForwards),nm) )
+		if( !PassInfo.resolveQualifiedNameR(this,v,new ResInfo(this,ResInfo.noForwards),nm) )
 			throw new CompilerException(pos,"Unresolved identifier "+nm);
 		if( v instanceof TypeRef ) {
 			this.lnk = ((TypeRef)v).getType();

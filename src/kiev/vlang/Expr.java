@@ -314,7 +314,7 @@ public class AssignExpr extends LvalueExpr {
 			Var var = ((VarAccessExpr)lval).var;
 			ASTNode p = var.parent;
 			while( !(p instanceof Struct) ) p = p.parent;
-			if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
+			if( !((Struct)p).equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
 		}
@@ -354,13 +354,13 @@ public class AssignExpr extends LvalueExpr {
 			 &&	((VarAccessExpr)((AccessExpr)lval).obj).var.name.equals(nameThis)
 			)
 		) {
-			if( PassInfo.method != null && PassInfo.method.isInvariantMethod() )
+			if( pctx.method != null && pctx.method.isInvariantMethod() )
 				Kiev.reportError(pos,"Side-effect in invariant condition");
-			if( PassInfo.method != null && !PassInfo.method.isInvariantMethod() ) {
+			if( pctx.method != null && !pctx.method.isInvariantMethod() ) {
 				if( lval instanceof StaticFieldAccessExpr )
-					PassInfo.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
+					pctx.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
 				else
-					PassInfo.method.addViolatedField( ((AccessExpr)lval).var );
+					pctx.method.addViolatedField( ((AccessExpr)lval).var );
 			}
 		}
 		setResolved(true);
@@ -1278,8 +1278,8 @@ public class UnaryExpr extends Expr {
 		}
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
-			if (PassInfo.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !PassInfo.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+			if (pctx.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
+				if ( !pctx.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -1424,7 +1424,7 @@ public class IncrementExpr extends LvalueExpr {
 			Var var = ((VarAccessExpr)lval).var;
 			ASTNode p = var.parent;
 			while( !(p instanceof Struct) ) p = p.parent;
-			if( !((Struct)p).equals(PassInfo.clazz) && !var.isNeedRefProxy() ) {
+			if( !((Struct)p).equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
 		}
@@ -1791,7 +1791,7 @@ public class CastExpr extends Expr {
 
 	public ENode tryOverloadedCast(Type et) {
 		ASTNode@ v;
-		ResInfo info = new ResInfo(ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
 		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
@@ -1799,7 +1799,7 @@ public class CastExpr extends Expr {
 			return this;
 		}
 		v.$unbind();
-		info = new ResInfo(ResInfo.noForwards|ResInfo.noImports);
+		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
 		mt = MethodType.newMethodType(null,new Type[]{expr.getType()},this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
@@ -1951,7 +1951,7 @@ public class CastExpr extends Expr {
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;
 			else
-				ex.replaceWithResolve(tp, fun ()->ENode {return new CastExpr(ex.pos,tp,(ENode)~ex);});
+				ex.replaceWith(fun ()->ENode {return new CastExpr(ex.pos,tp,(ENode)~ex);});
 		}
 	}
 

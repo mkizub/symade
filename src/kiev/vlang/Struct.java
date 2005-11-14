@@ -104,6 +104,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			+" as "+name.name+", member of "+outer);
 	}
 
+	public void setupContext() {
+		if (this.parent == null)
+			this.pctx = new NodeContext(this);
+		else
+			this.pctx = this.parent.pctx.enter(this);
+	}
+
 	public Object copy() {
 		throw new CompilerException(getPos(),"Struct node cannot be copied");
 	};
@@ -686,22 +693,22 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public Expr accessTypeInfoField(int pos, Type t) {
+	public Expr accessTypeInfoField(ASTNode from, Type t) {
 		if( t.isArgumented() ) {
 			Expr ti_access;
-			if( PassInfo.method == null || PassInfo.method.isStatic()) {
+			if( from.pctx.method == null || from.pctx.method.isStatic()) {
 				// check we have $typeinfo as first argument
-				if( PassInfo.method==null
-				 || PassInfo.method.params.length < 1
-				 || PassInfo.method.params[0].name.name != nameTypeInfo
-				 || !PassInfo.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
+				if( from.pctx.method==null
+				 || from.pctx.method.params.length < 1
+				 || from.pctx.method.params[0].name.name != nameTypeInfo
+				 || !from.pctx.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
 				 )
-					throw new CompilerException(pos,"$typeinfo cannot be accessed from "+PassInfo.method);
-				ti_access = new VarAccessExpr(pos,PassInfo.method.params[0]);
+					throw new CompilerException(from.pos,"$typeinfo cannot be accessed from "+from.pctx.method);
+				ti_access = new VarAccessExpr(from.pos,from.pctx.method.params[0]);
 			}
 			else {
 				Field ti = resolveField(nameTypeInfo);
-				ti_access = new AccessExpr(pos,new ThisExpr(pos),ti);
+				ti_access = new AccessExpr(from.pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
 			if( this.type.isInstanceOf(t.clazz.type) )
@@ -713,8 +720,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
-					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+PassInfo.method);
-				ti_access = new AccessExpr(pos,ti_access,ti_arg);
+					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.pctx.method);
+				ti_access = new AccessExpr(from.pos,ti_access,ti_arg);
 				return ti_access;
 			}
 		}
@@ -723,7 +730,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if ((PassInfo.method == null || PassInfo.method.name.name == nameClassInit) && PassInfo.clazz.isInterface()) {
+		if ((from.pctx.method == null || from.pctx.method.name.name == nameClassInit) && from.pctx.clazz.isInterface()) {
 			Type ftype = Type.tpTypeInfo;
 			if (t.args.length > 0) {
 				if (((Struct)t.clazz).typeinfo_clazz == null)
@@ -731,7 +738,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ftype = ((Struct)t.clazz).typeinfo_clazz.type;
 			}
 			Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
-			Expr e = new CastExpr(pos,ftype,new CallExpr(pos,null,
+			Expr e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
 					Type.tpTypeInfo.clazz.resolveMethod(
 						KString.from("newTypeInfo"),
 						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
@@ -749,7 +756,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			i++;
 			KString ti_str = ((ConstStringExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
-			Expr e = new StaticFieldAccessExpr(pos,f);
+			Expr e = new StaticFieldAccessExpr(from.pos,f);
 			return e;
 		}
 		Type ftype = Type.tpTypeInfo;
@@ -760,14 +767,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_PRIVATE|ACC_STATIC|ACC_FINAL);
 		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
-		f.init = new CastExpr(pos,ftype,new CallExpr(pos,null,
+		f.init = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
 				Type.tpTypeInfo.clazz.resolveMethod(
 					KString.from("newTypeInfo"),
 					KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 				), ti_args));
 		// Add initialization in <clinit>
 		Constructor class_init = getClazzInitMethod();
-		if( PassInfo.method != null && PassInfo.method.name.equals(nameClassInit) ) {
+		if( from.pctx.method != null && from.pctx.method.name.equals(nameClassInit) ) {
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
@@ -783,7 +790,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			);
 		}
 		addField(f);
-		Expr e = new StaticFieldAccessExpr(pos,f);
+		Expr e = new StaticFieldAccessExpr(from.pos,f);
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");
 	}
@@ -1118,7 +1125,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public void autoGenerateStatements() {
 
 		if( Kiev.debug ) System.out.println("AutoGenerating statements for "+this);
-		assert( PassInfo.clazz == this );
 		// <clinit> & common$init, if need
 		Constructor class_init = null;
 		Initializer instance_init = null;
@@ -1546,7 +1552,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
 					Expr tibe = new CallExpr(pos,
-						accessTypeInfoField(pos,t),
+						accessTypeInfoField(mmt.m,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
 						new Expr[]{
@@ -1992,7 +1998,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				try {
 					f.type.checkResolved();
 					if (f.type.isStruct())
-						f.type.getStruct().acc.verifyReadWriteAccess(f.type.getStruct());
+						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}
 			foreach(ASTNode n; members; n instanceof Method) {
@@ -2000,11 +2006,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				try {
 					m.type.ret.checkResolved();
 					if (m.type.ret.isStruct())
-						m.type.ret.getStruct().acc.verifyReadWriteAccess(m.type.ret.getStruct());
+						m.type.ret.getStruct().acc.verifyReadWriteAccess(this,m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
 						t.checkResolved();
 						if (t.isStruct())
-							t.getStruct().acc.verifyReadWriteAccess(t.getStruct());
+							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(pos,e); }
 			}

@@ -112,7 +112,6 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	public void pass1(Struct:ASTNode astn) {
 		trace(Kiev.debugResolve,"Pass 1 for struct "+astn);
 
-		Struct piclz = PassInfo.clazz;
 		Struct me = astn;
 		me.setResolved(true);
 		setSourceFile(me);
@@ -219,7 +218,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
 		ASTNode@ v;
-		if( !PassInfo.resolveQualifiedNameR(astn,v,new ResInfo(ResInfo.noForwards),name) ) {
+		if( !PassInfo.resolveQualifiedNameR(astn,v,new ResInfo(astn,ResInfo.noForwards),name) ) {
 			Kiev.reportError(astn.pos,"Unresolved identifier "+name);
 		}
 		ASTNode n = v;

@@ -58,7 +58,7 @@ public class ASTCallAccessExpression extends Expr {
 	public void mainResolveOut() {
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-		&& !PassInfo.method.isStatic() )
+		&& !pctx.method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
 			te.super_flag = true;
@@ -68,14 +68,14 @@ public class ASTCallAccessExpression extends Expr {
 		if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
 			ASTNode@ m;
 			Type tp = null;
-			ResInfo info = new ResInfo();
+			ResInfo info = new ResInfo(this);
 			info.enterForward(obj);
 			info.enterSuper();
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,null);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,null));
 			}
 			info.leaveSuper();
@@ -125,7 +125,7 @@ public class ASTCallAccessExpression extends Expr {
 		for (int si=0; si < tps.length; si++) {
 			Type tp = tps[si];
 			ASTNode@ m;
-			ResInfo info = new ResInfo(res_flags);
+			ResInfo info = new ResInfo(this,res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
 					res[si] = info.buildCall(pos, obj, m, args.delToArray());
@@ -180,7 +180,7 @@ public class ASTCallAccessExpression extends Expr {
 		
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-		&& !PassInfo.method.isStatic() )
+		&& !pctx.method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
 			te.super_flag = true;
@@ -192,14 +192,14 @@ public class ASTCallAccessExpression extends Expr {
 			ASTNode@ m;
 	retry_with_null_ret:;
 			Type tp = null;
-			ResInfo info = new ResInfo();
+			ResInfo info = new ResInfo(this);
 			info.enterForward(obj);
 			info.enterSuper();
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,ret);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,func.name,mt) ) {
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
 				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
 			}
@@ -253,7 +253,7 @@ public class ASTCallAccessExpression extends Expr {
 		for (int si=0; si < tps.length; si++) {
 			Type tp = tps[si];
 			ASTNode@ m;
-			ResInfo info = new ResInfo(res_flags);
+			ResInfo info = new ResInfo(this,res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
 					res[si] = info.buildCall(pos, obj, m, args.delToArray());

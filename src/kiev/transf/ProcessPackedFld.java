@@ -175,45 +175,25 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		f ?= ff
 	}
 
-	private void rewriteNode(ASTNode node) {
-		foreach (AttrSlot attr; node.values(); attr.is_attr) {
-			Object val = node.getVal(attr.name);
-			rewrite(val);
-		}
+	public void rewriteNode(ASTNode fu) {
+		ProcessPackedFld ppf = this;
+		fu.walkTree(fun (ASTNode n)->boolean { return ppf.rewrite(n); });
 	}
 	
-	public void rewrite(ASTNode:Object node) {
-		//System.out.println("ProcessPackedFld: rewrite "+node.getClass().getName()+" in "+id);
-		node.pushMe();
-		try {
-			rewriteNode(node);
-		} finally { node.popMe(); }
-	}
-	
-	public void rewrite(NArr<ASTNode>:Object arr) {
-		//System.out.println("ProcessPackedFld: rewrite "+arr.getClass().getName()+" in "+id);
-		foreach (ASTNode n; arr) {
-			rewrite(n);
-		}
-	}
-
-	public void rewrite(Object:Object o) {
+	boolean rewrite(ASTNode:ASTNode n) {
 		//System.out.println("ProcessPackedFld: rewrite "+(o==null?"null":o.getClass().getName())+" in "+id);
-		return;
+		return true;
 	}
 
-	public void rewrite(AccessExpr:Object fa) {
+	boolean rewrite(AccessExpr:ASTNode fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;
-		if( !f.isPackedField() ) {
-			rewriteNode(fa);
-			return;
-		}
+		if( !f.isPackedField() )
+			return true;
 		MetaPacked mp = f.getMetaPacked();
-	if( mp == null || mp.packer == null ) {
+		if( mp == null || mp.packer == null ) {
 			Kiev.reportError(fa.pos, "Internal error: packed field "+f+" has no packer");
-			rewriteNode(fa);
-			return;
+			return true;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		AccessExpr ae = (AccessExpr)fa.copy();
@@ -235,20 +215,17 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 
 		fa.replaceWithNode(expr);
 		rewriteNode(expr);
+		return false;
 	}
 	
-	public void rewrite(AssignExpr:Object ae) {
+	boolean rewrite(AssignExpr:ASTNode ae) {
 		//System.out.println("ProcessPackedFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
-		if !(ae.lval instanceof AccessExpr) {
-			rewriteNode(ae);
-			return;
-		}
+		if !(ae.lval instanceof AccessExpr)
+			return true;
 		AccessExpr fa = (AccessExpr)ae.lval;
 		Field f = fa.var;
-		if( !f.isPackedField() ) {
-			rewriteNode(ae);
-			return;
-		}
+		if( !f.isPackedField() )
+			return true;
 		BlockExpr be = new BlockExpr(ae.pos);
 		Object acc;
 		if (fa.obj instanceof ThisExpr) {
@@ -310,21 +287,18 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		}
 		ae.replaceWithNode(be);
 		be.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
-		rewrite(be);
+		rewriteNode(be);
+		return false;
 	}
 	
-	public void rewrite(IncrementExpr:Object ie) {
+	boolean rewrite(IncrementExpr:ASTNode ie) {
 		//System.out.println("ProcessPackedFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
-		if !(ie.lval instanceof AccessExpr) {
-			rewriteNode(ie);
-			return;
-		}
+		if !(ie.lval instanceof AccessExpr)
+			return true;
 		AccessExpr fa = (AccessExpr)ie.lval;
 		Field f = fa.var;
-		if( !f.isPackedField() ) {
-			rewriteNode(ie);
-			return;
-		}
+		if( !f.isPackedField() )
+			return true;
 		MetaPacked mp = f.getMetaPacked();
 		Expr expr;
 		if (ie.isGenVoidExpr()) {
@@ -404,7 +378,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
 		}
 		ie.replaceWithNode(expr);
-		rewrite(expr);
+		rewriteNode(expr);
+		return false;
 	}
 	
 	private Expr mkAccess(Object o) {

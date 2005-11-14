@@ -487,12 +487,12 @@ public class ReturnStat extends Statement/*defaults*/ {
 		setMethodAbrupted(true);
 		if( expr != null ) {
 			try {
-				expr.resolve(PassInfo.method.type.ret);
+				expr.resolve(pctx.method.type.ret);
 			} catch(Exception e ) {
 				Kiev.reportError(expr.pos,e);
 			}
 		}
-		if( PassInfo.method.type.ret == Type.tpVoid ) {
+		if( pctx.method.type.ret == Type.tpVoid ) {
 			if( expr != null ) throw new RuntimeException("Can't return value in void method");
 			expr = null;
 		} else {
@@ -507,7 +507,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 		Code.setLinePos(this.getPosLine());
 		try {
 			if( expr != null )
-				expr.generate(PassInfo.method.type.ret);
+				expr.generate(Code.method.type.ret);
 			generateReturn(this);
 		} catch(Exception e ) {
 			Kiev.reportError(pos,e);
@@ -526,8 +526,8 @@ public class ReturnStat extends Statement/*defaults*/ {
 			}
 			else if (node instanceof TryStat) {
 				if( node.finally_catcher != null ) {
-					if( tmp_var==null /*&& Kiev.verify*/ && PassInfo.method.type.ret != Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,PassInfo.method.type.ret,0);
+					if( tmp_var==null /*&& Kiev.verify*/ && Code.method.type.ret != Type.tpVoid ) {
+						tmp_var = new Var(0,KString.Empty,Code.method.type.ret,0);
 						Code.addVar(tmp_var);
 						Code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -535,8 +535,8 @@ public class ReturnStat extends Statement/*defaults*/ {
 				}
 			}
 			else if (node instanceof SynchronizedStat) {
-				if( tmp_var==null /*&& Kiev.verify*/ && PassInfo.method.type.ret != Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,PassInfo.method.type.ret,0);
+				if( tmp_var==null /*&& Kiev.verify*/ && Code.method.type.ret != Type.tpVoid ) {
+					tmp_var = new Var(0,KString.Empty,Code.method.type.ret,0);
 					Code.addVar(tmp_var);
 					Code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -548,9 +548,9 @@ public class ReturnStat extends Statement/*defaults*/ {
 			Code.addInstr(Instr.op_load,tmp_var);
 			Code.removeVar(tmp_var);
 		}
-		if( PassInfo.method.isGenPostCond() ) {
-			Code.addInstr(Instr.op_goto,PassInfo.method.getBreakLabel());
-			if( PassInfo.method.type.ret != Type.tpVoid )
+		if( Code.method.isGenPostCond() ) {
+			Code.addInstr(Instr.op_goto,Code.method.getBreakLabel());
+			if( Code.method.type.ret != Type.tpVoid )
 				Code.stack_pop();
 		} else
 			Code.addInstr(Instr.op_return);
@@ -900,7 +900,7 @@ public class BreakStat extends Statement {
 //	}
 
 	public void callbackRootChanged() {
-		if (dest != null && dest.proot != this.proot) {
+		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1122,7 +1122,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 //	}
 
 	public void callbackRootChanged() {
-		if (dest != null && dest.proot != this.proot) {
+		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1272,7 +1272,7 @@ public class GotoStat extends Statement/*defaults*/ {
 //	}
 
 	public void callbackRootChanged() {
-		if (dest != null && dest.proot != this.proot) {
+		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1284,7 +1284,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			dest.delLink(this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return false;
@@ -1308,7 +1308,7 @@ public class GotoStat extends Statement/*defaults*/ {
 			dest.delLink(this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(pos,"Label "+ident+" unresolved");
 			return;
@@ -1459,7 +1459,7 @@ public class GotoStat extends Statement/*defaults*/ {
 
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
-		LabeledStat[] stats = resolveStat(ident.name,(Statement)PassInfo.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,Code.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 )
 			throw new CompilerException(pos,"Label "+ident+" unresolved");
 		if( stats.length > 1 )

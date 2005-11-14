@@ -66,61 +66,63 @@ public class ASTCallExpression extends Expr {
 	public void mainResolveOut() {
 		// method of current class or first-order function
 		ASTNode@ m;
-		Type tp = PassInfo.clazz.type;
+		Type tp = pctx.clazz.type;
 		if( func.name.equals(nameThis) ) {
-			Method mmm = PassInfo.method;
-			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
+			Method mmm = pctx.method;
+			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.type),0);
+					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
+			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
 			if( info.isEmpty() ) {
+				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				((Method)m).makeArgs(args,st);
 				return;
 			}
 			throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			Method mmm = PassInfo.method;
-			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_type.args.length > 0 ) {
+			Method mmm = pctx.method;
+			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[1]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.super_type),0);
+					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
-			if(  PassInfo.clazz.super_type.getStruct().package_clazz.isClazz()
-			 && !PassInfo.clazz.super_type.getStruct().isStatic()
+			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
+			 && !pctx.clazz.super_type.getStruct().isStatic()
 			) {
-				if( PassInfo.clazz.isStatic() )
+				if( pctx.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
-				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[0]),0);
+				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
+			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
 			if( info.isEmpty() ) {
+				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				((Method)m).makeArgs(args,st);
 				return;
 			}
 			throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
@@ -130,11 +132,11 @@ public class ASTCallExpression extends Expr {
 			for(int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			mt = MethodType.newMethodType(null,ta,null);
-			ResInfo info = new ResInfo();
+			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 				// May be a closure
 				ASTNode@ closure;
-				ResInfo info = new ResInfo();
+				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,null));
 				}
@@ -199,64 +201,66 @@ public class ASTCallExpression extends Expr {
         }
 		// method of current class or first-order function
 		ASTNode@ m;
-		Type tp = PassInfo.clazz.type;
+		Type tp = pctx.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
-			Method mmm = PassInfo.method;
-			if( mmm.name.equals(nameInit) && PassInfo.clazz.type.args.length > 0 ) {
+			Method mmm = pctx.method;
+			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.type),0);
+					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.type,m,info,PassInfo.method.name.name,mt) )
+			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
+				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				((Method)m).makeArgs(args,st);
 				ce.resolve(ret);
 				return;
 			}
 			throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			Method mmm = PassInfo.method;
-			if( mmm.name.equals(nameInit) && PassInfo.clazz.super_type.args.length > 0 ) {
+			Method mmm = pctx.method;
+			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
 					args.insert(new VarAccessExpr(pos,mmm.params[1]),0);
 				else
-					args.insert(PassInfo.clazz.accessTypeInfoField(pos,PassInfo.clazz.super_type),0);
+					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
 			}
 			// If we extend inner non-static class - pass this$N as first argument
-			if(  PassInfo.clazz.super_type.getStruct().package_clazz.isClazz()
-			 && !PassInfo.clazz.super_type.getStruct().isStatic()
+			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
+			 && !pctx.clazz.super_type.getStruct().isStatic()
 			) {
-				if( PassInfo.clazz.isStatic() )
+				if( pctx.clazz.isStatic() )
 					throw new CompilerException(pos,"Non-static inner super-class of static class");
-				args.insert(new VarAccessExpr(pos,(Var)PassInfo.method.params[0]),0);
+				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-			ResInfo info = new ResInfo(ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(PassInfo.clazz.super_type,m,info,PassInfo.method.name.name,mt) )
+			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
+			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
 				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
+				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,PassInfo.clazz.super_type);
+				((Method)m).makeArgs(args,st);
 				ce.resolve(ret);
 				return;
 			}
@@ -271,11 +275,11 @@ public class ASTCallExpression extends Expr {
 					ta[i] = args[i].getType();
 				mt = MethodType.newMethodType(null,ta,ret);
 			}
-			ResInfo info = new ResInfo();
+			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 				// May be a closure
 				ASTNode@ closure;
-				ResInfo info = new ResInfo();
+				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));

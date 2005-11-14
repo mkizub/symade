@@ -50,6 +50,8 @@ typedef NArr<ENode> NArrENodes;
 
 public class kiev040 {
 
+	public static FileUnit	curFileUnit;
+	public static Struct	curClazz;
 	public static boolean	interface_only = false;
 	public static boolean	reparse_body = false;
 	public static int		reparse_pos = 0;
@@ -198,78 +200,6 @@ public class kiev040 {
 		return false;
 	}
 
-//	private static boolean castLA() {
-//		if( getToken(1).kind != LPAREN ) return false;
-//		if( getToken(2).kind == CAST ) return true;
-//		if( getToken(2).kind == REINTERP ) return true;
-//		return castLA(1,LPAREN,RPAREN);
-//	}
-//
-//	private static boolean castLA(int offs, int exp_kind1, int exp_kind2) {
-//		if( getToken(offs).kind != exp_kind1 ) return false;
-//		switch( getToken(offs+1).kind ) {
-//		case BOOLEAN: case CHAR: case BYTE:
-//		case SHORT: case INT: case LONG: case FLOAT:
-//		case DOUBLE: case VOID:
-//			return true;
-//		case IDENTIFIER:
-//			break;
-//		case LPAREN:
-//			// Skip until matched ')' and check for "->"
-//			{
-//				int i = offs+2;
-//				int depth = 1;
-//				while( depth != 0 ) {
-//					switch(getToken(i++).kind) {
-//					case LPAREN: depth++; break;
-//					case RPAREN: depth--; break;
-//					}
-//				}
-//				if( getToken(i).kind==ARROW ) {
-//					return true;
-//				} else {
-//					return false;
-//				}
-//			}
-//		default:
-//			// TODO closure type
-//			return false;
-//		}
-//		// Qualified name resolving to be a class name
-//		String qname = getToken(offs+1).image;
-//	scan_qname:
-//		for(int i=offs+2; ; i+=2) {
-//			if( getToken(i).kind == DOT && getToken(i+1).kind == IDENTIFIER )
-//				qname = qname+"."+getToken(i+1).image;
-//			else {
-//				switch( getToken(i).kind ) {
-//				case RPAREN:
-//					if( exp_kind2 == RPAREN )  break scan_qname;
-//					else return false;
-//				case GT:
-//					if( exp_kind2 == GT ) break scan_qname;
-//					else return false;
-//				case LT:
-//					if( castLA(i,LT,GT) ) break scan_qname;
-//					else return false;
-//				case OPERATOR_LRBRACKETS:
-//					return true;
-//				case COMMA:
-//					if( exp_kind1 == LT ) break scan_qname;
-//					else return false;
-//				default:
-//					return false;
-//				}
-//			}
-//		}
-//		try {
-//			if( PassInfo.checkClassName(KString.from(qname)) ) {
-//				return true;
-//			}
-//		} catch( Exception e ) {}
-//		return false;
-//	}
-	
 	/*{
 	private static Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		ClazzName clname;
@@ -277,13 +207,13 @@ public class kiev040 {
 			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
 		}
 		else if (parent instanceof Struct) {
-			clname = ClazzName.fromOuterAndName(PassInfo.clazz,name.name,false,true);
+			clname = ClazzName.fromOuterAndName(curClazz,name.name,false,true);
 		}
 		else if (name != null) {
 			// Construct name of local class
 			KString bytecode_name =
-				KString.from(PassInfo.clazz.name.bytecode_name
-					+"$"+PassInfo.clazz.countAnonymouseInnerStructs()
+				KString.from(curClazz.name.bytecode_name
+					+"$"+curClazz.countAnonymouseInnerStructs()
 					+"$"+name.name);
 			KString fixname = bytecode_name.replace('/','.');
 			clname = new ClazzName(fixname,name.name,bytecode_name,false,false);
@@ -291,11 +221,11 @@ public class kiev040 {
 		else {
 			// Local anonymouse class
 			KString bytecode_name =
-				KString.from(PassInfo.clazz.name.bytecode_name
-					+"$"+PassInfo.clazz.countAnonymouseInnerStructs());
+				KString.from(curClazz.name.bytecode_name
+					+"$"+curClazz.countAnonymouseInnerStructs());
 			clname = ClazzName.fromBytecodeName(bytecode_name, false);
 		}
-		Struct clazz = Env.newStruct(clname,PassInfo.clazz,flags|modifiers.getFlags(),true);
+		Struct clazz = Env.newStruct(clname,curClazz,flags|modifiers.getFlags(),true);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
@@ -841,20 +771,21 @@ TOKEN : /* OPERATORS */
  */
 
 FileUnit FileUnit(String filename) :
-{ FileUnit old_fu; }
+{ FileUnit oldFileUnit; Struct oldClazz; }
 {
 	{
-		old_fu = Kiev.curFileUnit;
+		oldFileUnit = curFileUnit;
 		FileUnit fu = new FileUnit();
-		Kiev.curFileUnit = fu;
+		curFileUnit = fu;
 		fu.filename = KString.from(filename);
 		fu.setPos(0);
 		declMode = true;
 		ASTModifiers modifiers;
+		oldClazz = curClazz;
 	}
 	(	Pragma(fu) )*
 	[	fu.pkg = Package()	]
-	{ PassInfo.pushStruct(fu.pkg.clazz); }
+	{ curClazz = fu.pkg.clazz; }
 	try {
 		(	Pragma(fu) )*
 		(
@@ -875,9 +806,9 @@ FileUnit FileUnit(String filename) :
 	catch(ParseError e) { rpe("Bad modifiers",e); }
 	catch(Throwable e) { rperr(e); }
 	finally {
-		PassInfo.popStruct(fu.pkg.clazz);
+		curClazz = oldClazz;
+		curFileUnit = oldFileUnit;
 		declMode = true;
-		Kiev.curFileUnit = old_fu;
 		return fu;
 	}
 }
@@ -998,7 +929,7 @@ Opdef Opdef() :
 }
 
 Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; NameRef name; }
+{ Struct clazz; NameRef name; Struct oldClazz; }
 {
 	LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("syntax") })
 	<IDENTIFIER>	// "syntax"
@@ -1006,7 +937,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	{
 		clazz = mkStruct(name, ACC_SYNTAX|ACC_PRIVATE|ACC_ABSTRACT, modifiers, parent);
 	}
-	{ PassInfo.pushStruct(clazz); }
+	{ oldClazz = curClazz; curClazz = clazz; }
 	try {
 		"{"
 		(
@@ -1014,12 +945,12 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		|	clazz.members += Opdef()
 		)*
 		"}"
-	} finally { PassInfo.popStruct(clazz); }
+	} finally { curClazz = oldClazz; }
 	{ return clazz; }
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; NameRef name; }
+{ Struct clazz; NameRef name; Struct oldClazz; }
 {
 	(
 		"class"
@@ -1065,10 +996,10 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz = mkStruct(name, ACC_ENUM|ACC_STATIC, modifiers, parent);
 		}
 	)
-	{ PassInfo.pushStruct(clazz); }
+	{ oldClazz = curClazz; curClazz = clazz; }
 	try {
 		TypeBodyDeclaration(clazz)
-	} finally { PassInfo.popStruct(clazz); }
+	} finally { curClazz = oldClazz; }
 	{ return clazz; }
 }
 
@@ -1545,7 +1476,7 @@ BlockStat MaybeSkipBlock() :
 		{
 			Token tk = getToken(0);
 			PrescannedBody pbody = new PrescannedBody(tk.beginLine,tk.beginColumn);
-			Kiev.curFileUnit.addPrescannedBody(pbody);
+			curFileUnit.addPrescannedBody(pbody);
 			int depth = 1;
 			do {
 				tk = getNextToken();
@@ -1613,7 +1544,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 {
 	id = Name()
 	{
-		if( !id.name.equals(PassInfo.clazz.name.short_name) )
+		if( !id.name.equals(curClazz.name.short_name) )
 			Kiev.reportError(id.pos,"Return type missed or bad constructor name "+id);
 		else
 			id.name = Constants.nameInit;
@@ -2452,7 +2383,7 @@ ASTNewExpression NewExpression() :
 {
 	Token t;
 	boolean old_mode;
-	Struct clazz;
+	Struct clazz, oldClazz;
 	ASTNewExpression ne = new ASTNewExpression();
 }
 {
@@ -2468,12 +2399,14 @@ ASTNewExpression NewExpression() :
 			old_mode = interface_only;
 			interface_only = false;
 			ne.clazz = clazz = mkStruct(null, 0, new ASTModifiers(), ne);
-			PassInfo.pushStruct(clazz);
+			oldClazz = curClazz;
+			curClazz = clazz;
 		}
 		try {
 			TypeBodyDeclaration(clazz)
 		} finally {
-			interface_only = old_mode; PassInfo.popStruct(clazz);
+			interface_only = old_mode;
+			curClazz = oldClazz;
 		}
 	]
 	{ return ne; }

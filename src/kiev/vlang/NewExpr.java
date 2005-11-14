@@ -115,9 +115,9 @@ public class NewExpr extends Expr {
 		else if( (!type.isStaticClazz() && type.isLocalClazz())
 			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
 		{
-			if( PassInfo.method==null || PassInfo.method.isStatic() )
+			if( pctx.method==null || pctx.method.isStatic() )
 				throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
-			Var th = PassInfo.method.getThisPar();
+			Var th = pctx.method.getThisPar();
 			outer = new VarAccessExpr(pos,th);
 			outer.resolve(null);
 		}
@@ -133,7 +133,7 @@ public class NewExpr extends Expr {
 		}
 		if( type.args.length > 0 ) {
 			// Create static field for this type typeinfo
-			tif_expr = PassInfo.clazz.accessTypeInfoField(pos,type);
+			tif_expr = pctx.clazz.accessTypeInfoField(this,type);
 		}
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
@@ -147,21 +147,25 @@ public class NewExpr extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,type);
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
-			if( (PassInfo.method==null || !PassInfo.method.name.equals(nameNewOp)) ) {
-				ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
+			if( (pctx.method==null || !pctx.method.name.equals(nameNewOp)) ) {
+				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 				if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
 					replaceWithNode(n);
 					m.makeArgs(n.args,type);
+					for(int i=0; i < n.args.length; i++)
+						n.args[i].resolve(null);
 					n.setResolved(true);
 					return;
 				}
 			}
 			mt = MethodType.newMethodType(null,ta,Type.tpVoid);
-			ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
+			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;
 				m.makeArgs(args,type);
+				for(int i=0; i < args.length; i++)
+					args[i].resolve(null);
 			}
 			else {
 				throw new RuntimeException("Can't find apropriative initializer for "+
@@ -186,11 +190,11 @@ public class NewExpr extends Expr {
 					return;
 				}
 				int i;
-				for(i=0; i < PassInfo.clazz.type.args.length; i++)
-					if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
-				if( i >= PassInfo.clazz.type.args.length )
+				for(i=0; i < Code.clazz.type.args.length; i++)
+					if( type.string_equals(Code.clazz.type.args[i]) ) break;
+				if( i >= Code.clazz.type.args.length )
 					throw new CompilerException(pos,"Can't create an instance of argument type "+type);
-				Expr tie = new AccessExpr(pos,new ThisExpr(pos),PassInfo.clazz.resolveField(nameTypeInfo));
+				Expr tie = new AccessExpr(pos,new ThisExpr(pos),Code.clazz.resolveField(nameTypeInfo));
 				Expr e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -299,14 +303,14 @@ public class NewArrayExpr extends Expr {
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
 		if( type.isArgument() ) {
-			if( PassInfo.method==null || PassInfo.method.isStatic() )
+			if( pctx.method==null || pctx.method.isStatic() )
 				throw new CompilerException(pos,"Access to argument "+type+" from static method");
 			int i;
-			for(i=0; i < PassInfo.clazz.type.args.length; i++)
-				if( type.string_equals(PassInfo.clazz.type.args[i]) ) break;
-			if( i >= PassInfo.clazz.type.args.length )
+			for(i=0; i < pctx.clazz.type.args.length; i++)
+				if( type.string_equals(pctx.clazz.type.args[i]) ) break;
+			if( i >= pctx.clazz.type.args.length )
 				throw new CompilerException(pos,"Can't create an array of argument type "+type);
-			Expr tie = new AccessExpr(pos,new ThisExpr(0),PassInfo.clazz.resolveField(nameTypeInfo));
+			Expr tie = new AccessExpr(pos,new ThisExpr(0),pctx.clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,
@@ -515,8 +519,8 @@ public class NewClosure extends Expr {
 		type.getStruct().resolveDecl();
 		Struct cl = type.getStruct();
 		KStringBuffer sign = new KStringBuffer().append('(');
-		if( PassInfo.method!=null && !PassInfo.method.isStatic() ) {
-			sign.append(((Struct)PassInfo.method.parent).type.signature);
+		if( pctx.method!=null && !pctx.method.isStatic() ) {
+			sign.append(pctx.clazz.type.signature);
 		}
 		sign.append('I');
 		foreach (ASTNode n; cl.members; n instanceof Field) {
@@ -540,8 +544,8 @@ public class NewClosure extends Expr {
 		if( reqType != Type.tpVoid )
 			Code.addInstr(op_dup);
 		// Constructor call args (first args 'this' skipped)
-		if( PassInfo.method!=null && !PassInfo.method.isStatic() )
-			Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
+		if( Code.method!=null && !Code.method.isStatic() )
+			Code.addInstr(Instr.op_load,Code.method.getThisPar());
 		if( type.args == null )
 			Code.addConst(0);
 		else

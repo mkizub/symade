@@ -358,14 +358,14 @@ public abstract class ASTRuleNode extends ENode {
 	public String createTextBacktrack(boolean load) {
 		if (!jn.more_back)
 			return "return null;\n";	// return false - no more solutions
-		assert( ((RuleMethod)PassInfo.method).base != 1 || load==false);
+		assert( ((RuleMethod)pctx.method).base != 1 || load==false);
 		if (jn.next_back!=null && jn.jump_to_back) {
 			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+jn.next_back.idx+";\n";
 			return "goto enter$"+jn.next_back.idx+";\n";
 		}
 		if (load)
 			return "bt$ = $env.bt$"+depth+"; goto case bt$;\n"; // backtrack to saved address
-		if (((RuleMethod)PassInfo.method).base == 1)
+		if (((RuleMethod)pctx.method).base == 1)
 			return "return null;\n";
 		return "goto case bt$;\n"; // backtrack to saved address
 	}
@@ -415,7 +415,7 @@ public final class RuleBlock extends BlockStat {
 		String tmpClassName = "frame$$";
 		sb.append("static class ").append(tmpClassName).append(" extends rule{\n");
 		sb.append("int bt$;\n");
-		RuleMethod rule_method = (RuleMethod)PassInfo.method;
+		RuleMethod rule_method = (RuleMethod)pctx.method;
 		// Backtrace holders
 		for (int i=0; i < rule_method.max_depth; i++)
 			sb.append("int bt$").append(i).append(";\n");
@@ -456,8 +456,8 @@ public final class RuleBlock extends BlockStat {
 			sb.append("}\nreturn null;\n");
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
-		BlockStat mbody = Kiev.parseBlock(sb,getPosLine(),getPosColumn());
-		PassInfo.method.body = mbody;
+		BlockStat mbody = Kiev.parseBlock(this,sb);
+		pctx.method.body = mbody;
 		mbody.stats.addAll(stats);
 	}
 
@@ -504,7 +504,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 		JumpNodes j;
-		int depth = ((RuleMethod)PassInfo.method).state_depth;
+		int depth = ((RuleMethod)pctx.method).state_depth;
 		int max_depth = depth;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
@@ -512,11 +512,11 @@ public final class RuleOrExpr extends ASTRuleNode {
 			} else {
 				j = new JumpNodes(jn.more_check, jn.next_check, jn.more_back, jn.next_back, jn.jump_to_back);
 			}
-			((RuleMethod)PassInfo.method).set_depth(depth);
+			((RuleMethod)pctx.method).set_depth(depth);
 			rules[i].resolve1(j);
-			max_depth = Math.max(max_depth,((RuleMethod)PassInfo.method).state_depth);
+			max_depth = Math.max(max_depth,((RuleMethod)pctx.method).state_depth);
 		}
-		((RuleMethod)PassInfo.method).set_depth(max_depth);
+		((RuleMethod)pctx.method).set_depth(max_depth);
 	}
 }
 
@@ -633,9 +633,9 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
-		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
-		depth = ((RuleMethod)PassInfo.method).push();
+		idx = ++((RuleMethod)pctx.method).index;
+		base = ((RuleMethod)pctx.method).allocNewBase(1);
+		depth = ((RuleMethod)pctx.method).push();
 	}
 
 	public void createText(StringBuffer sb) {
@@ -697,9 +697,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
-		base = ((RuleMethod)PassInfo.method).allocNewBase(2);
-		depth = ((RuleMethod)PassInfo.method).push();
+		idx = ++((RuleMethod)pctx.method).index;
+		base = ((RuleMethod)pctx.method).allocNewBase(2);
+		depth = ((RuleMethod)pctx.method).push();
 		iter_vars = new int[vars.length];
 		itypes = new Type[vars.length];
 		modes = new int[vars.length];
@@ -716,7 +716,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
 				itypes[i] = ctype;
 				modes[i] = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(ResInfo.noStatic|ResInfo.noImports),
+			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 					nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
 			) {
 				itypes[i] = Type.getRealType(ctype,elems.type.ret);
@@ -725,7 +725,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				throw new CompilerException(exprs[i].pos,"Container must be an array or an Enumeration "+
 					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 			}
-			iter_vars[i] = ((RuleMethod)PassInfo.method).add_iterator_var();
+			iter_vars[i] = ((RuleMethod)pctx.method).add_iterator_var();
 			ASTNode rb = this.parent;
 			while( rb!=null && !(rb instanceof RuleBlock)) {
 				Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
@@ -859,7 +859,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
+		idx = ++((RuleMethod)pctx.method).index;
 	}
 
 	public void createText(StringBuffer sb) {
@@ -920,10 +920,10 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
-		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
-		depth = ((RuleMethod)PassInfo.method).push();
-		env_var = ((RuleMethod)PassInfo.method).add_iterator_var();
+		idx = ++((RuleMethod)pctx.method).index;
+		base = ((RuleMethod)pctx.method).allocNewBase(1);
+		depth = ((RuleMethod)pctx.method).push();
+		env_var = ((RuleMethod)pctx.method).add_iterator_var();
 		ASTNode rb = this.parent;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
@@ -1046,9 +1046,9 @@ public final class RuleWhileExpr extends RuleExprBase {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
-		base = ((RuleMethod)PassInfo.method).allocNewBase(1);
-		depth = ((RuleMethod)PassInfo.method).push();
+		idx = ++((RuleMethod)pctx.method).index;
+		base = ((RuleMethod)pctx.method).allocNewBase(1);
+		depth = ((RuleMethod)pctx.method).push();
 	}
 
 	public void createText(StringBuffer sb) {
@@ -1100,10 +1100,10 @@ public final class RuleExpr extends RuleExprBase {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)PassInfo.method).index;
+		idx = ++((RuleMethod)pctx.method).index;
 		if (bt_expr != null) {
-			base = ((RuleMethod)PassInfo.method).allocNewBase(1);
-			depth = ((RuleMethod)PassInfo.method).push();
+			base = ((RuleMethod)pctx.method).allocNewBase(1);
+			depth = ((RuleMethod)pctx.method).push();
 		}
 	}
 

@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 	@att public KString					filename = KString.Empty;
 	@att public TypeNameRef				pkg;
 	@att public final NArr<DNode>		syntax;
@@ -58,6 +58,10 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
+	public void setupContext() {
+		pctx = new NodeContext(this);
+	}
+
 	public void addPrescannedBody(PrescannedBody b) {
 		bodies = (PrescannedBody[])Arrays.append(bodies,b);
 	}
@@ -66,26 +70,8 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public String toString() { return /*getClass()+":="+*/filename.toString(); }
 
-	public void pushMe() { PassInfo.pushFileUnit(this); }
-	public void popMe() { PassInfo.popFileUnit(this); }
-	
-	public void walkTree((ASTNode)->boolean exec) {
-		PassInfo.pushFileUnit(this);
-		try {
-			treeWalker(exec);
-		} finally { PassInfo.popFileUnit(this); }
-	}
-
-	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		PassInfo.pushFileUnit(this);
-		try {
-			treeWalker(pre_exec, post_exec);
-		} finally { PassInfo.popFileUnit(this); }
-	}
-
 	public void resolveMetaDefaults() {
 		trace(Kiev.debugResolve,"Resolving meta defaults in file "+filename);
-		PassInfo.pushFileUnit(this);
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -98,12 +84,11 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 					Kiev.reportError(n.pos,e);
 				}
 			}
-		} finally { PassInfo.popFileUnit(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
 	}
 
 	public void resolveMetaValues() {
 		trace(Kiev.debugResolve,"Resolving meta values in file "+filename);
-		PassInfo.pushFileUnit(this);
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -116,7 +101,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 					Kiev.reportError(n.pos,e);
 				}
 			}
-		} finally { PassInfo.popFileUnit(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
+		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
 	}
 
 	public void setPragma(ASTPragma pr) {
@@ -160,7 +145,6 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving file "+filename);
-		PassInfo.pushFileUnit(this);
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -173,12 +157,11 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 					Kiev.reportError(members[i].pos,e);
 				}
 			}
-		} finally { PassInfo.popFileUnit(this); Kiev.curFile = curr_file; Kiev.setExtSet(exts); /*RuleNode.curr = RuleNode.curr.joinUp();*/ }
+		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
 	}
 
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
-		PassInfo.pushFileUnit(this);
 		KString cur_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		boolean[] exts = Kiev.getExtSet();
@@ -191,7 +174,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+members[i],diff_time);
 			}
-		} finally { PassInfo.popFileUnit(this); Kiev.curFile = cur_file; Kiev.setExtSet(exts); }
+		} finally { Kiev.curFile = cur_file; Kiev.setExtSet(exts); }
 	}
 
 	private boolean debugTryResolveIn(KString name, String msg) {
@@ -270,7 +253,6 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 
 	public void cleanup() {
         Kiev.parserAddresses.clear();
-		Kiev.curFileUnit = null;
 		Kiev.k.presc = null;
 		foreach(ASTNode n; syntax) n.cleanup();
 		foreach(ASTNode n; members) n.cleanup();
@@ -280,7 +262,6 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 	}
 
 	public void toJava(String output_dir) {
-		PassInfo.pushFileUnit(this);
 		KString curr_file = Kiev.curFile;
 		Kiev.curFile = filename;
 		try {
@@ -291,7 +272,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 					Kiev.reportError(members[i].pos,e);
 				}
 			}
-		} finally { PassInfo.popFileUnit(this); Kiev.curFile = curr_file; }
+		} finally { Kiev.curFile = curr_file; }
 	}
 
 	public void toJava(String output_dir, Struct cl) {
@@ -304,10 +285,7 @@ public class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfM
 			if (syntax[j] != null) dmp.append(syntax[j]);
 		}
 
-		PassInfo.pushFileUnit(this);
-		try {
-			cl.toJavaDecl(dmp);
-		} finally { PassInfo.popFileUnit(this); }
+		cl.toJavaDecl(dmp);
 
 		try {
 			File f;

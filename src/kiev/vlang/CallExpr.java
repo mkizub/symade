@@ -137,7 +137,7 @@ public class CallExpr extends Expr {
 	public void generate(Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
 		Code.setLinePos(this.getPosLine());
-		func.acc.verifyReadAccess(func);
+		func.acc.verifyReadAccess(this,func);
 		CodeLabel ok_label = null;
 		if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 			String fname = func.name.name.toString().toLowerCase();
@@ -149,10 +149,10 @@ public class CallExpr extends Expr {
 			generateCheckCastIfNeeded();
 		}
 		else if( !func.isStatic() ) {
-			if( !PassInfo.method.isStatic() )
-				Code.addInstr(Instr.op_load,PassInfo.method.getThisPar());
+			if( !Code.method.isStatic() )
+				Code.addInstr(Instr.op_load,Code.method.getThisPar());
 			else
-				throw new RuntimeException("Non-static method "+func+" is called from static method "+PassInfo.method);
+				throw new RuntimeException("Non-static method "+func+" is called from static method "+Code.method);
 		}
 		// Very special case for rule call from inside of RuleMethod
 		if( func instanceof RuleMethod
@@ -437,7 +437,7 @@ public class ClosureCallExpr extends Expr {
 			call_it_name = KString.from("call_"+((CallableType)tp).ret);
 		ASTNode@ callIt;
 		MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
-		ResInfo info = new ResInfo(ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
+		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
 		if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {
 			throw new RuntimeException("Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);
 		} else {
