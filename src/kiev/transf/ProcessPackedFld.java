@@ -173,8 +173,9 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 
 	public void rewriteNode(ASTNode fu) {
-		ProcessPackedFld ppf = this;
-		fu.walkTree(fun (ASTNode n)->boolean { return ppf.rewrite(n); });
+		fu.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return ProcessPackedFld.this.rewrite(n); }
+		});
 	}
 	
 	boolean rewrite(ASTNode:ASTNode n) {

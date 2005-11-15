@@ -331,8 +331,9 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void rewriteNode(ASTNode node) {
-		ProcessVirtFld pvf = this;
-		node.walkTree(fun (ASTNode n)->boolean { return pvf.rewrite(n); });
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return ProcessVirtFld.this.rewrite(n); }
+		});
 	}
 	
 	boolean rewrite(ASTNode:ASTNode o) {

@@ -115,6 +115,12 @@ public final class NodeContext {
 	}
 };
 
+
+public class TreeWalker {
+	public boolean pre_exec(ASTNode n) { return true; }
+	public void post_exec(ASTNode n) {}
+}
+
 @node
 public abstract class ASTNode implements Constants {
 
@@ -277,9 +283,13 @@ public abstract class ASTNode implements Constants {
 		this.pprev = null;
 		this.pnext = null;
 		// set new root of the detached tree
-		walkTree(fun (ASTNode n)->boolean { n.setupContext(); return true; });
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
+		});
 		// notify nodes about new root
-		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+		});
 		// notify parent about the changed slot
 		parent.callbackChildChanged(pslot);
 	}
@@ -292,9 +302,13 @@ public abstract class ASTNode implements Constants {
 		this.pslot = pslot;
 		this.parent = parent;
 		// set new root of the attached tree
-		walkTree(fun (ASTNode n)->boolean { n.setupContext(); return true; });
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
+		});
 		// notify nodes about new root
-		walkTree(fun (ASTNode n)->boolean { n.callbackRootChanged(); return true; });
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+		});
 		// notify node data that we are attached
 		NodeData nd = ndata;
 		while (nd != null) {
@@ -419,9 +433,8 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public void cleanDFlow() {
-		walkTree(fun (ASTNode n)->boolean {
-			n.delNodeData(DataFlowInfo.ID);
-			return true;
+		walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { n.delNodeData(DataFlowInfo.ID); return true; }
 		});
 	}
 	
@@ -450,39 +463,22 @@ public abstract class ASTNode implements Constants {
 	public boolean	preGenerate()	{ return true; }
 	
 	
-	public final void walkTree((ASTNode)->boolean exec) {
-		if (exec(this)) {
+	public final void walkTree(TreeWalker walker) {
+		if (walker.pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
 				Object val = this.getVal(attr.name);
 				if (val == null)
 					continue;
 				if (attr.is_space) {
 					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.walkTree(exec);
+						n.walkTree(walker);
 				}
 				else if (val instanceof ASTNode) {
-					((ASTNode)val).walkTree(exec);
+					((ASTNode)val).walkTree(walker);
 				}
 			}
 		}
-	}
-
-	public final void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		if (pre_exec(this)) {
-			foreach (AttrSlot attr; this.values(); attr.is_attr) {
-				Object val = this.getVal(attr.name);
-				if (val == null)
-					continue;
-				if (attr.is_space) {
-					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.walkTreeZV(pre_exec, post_exec);
-				}
-				else if (val instanceof ASTNode) {
-					((ASTNode)val).walkTreeZV(pre_exec, post_exec);
-				}
-			}
-		}
-		post_exec(this);
+		walker.post_exec(this);
 	}
 
 	public int setFlags(int fl) {

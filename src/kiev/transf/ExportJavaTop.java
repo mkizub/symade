@@ -755,20 +755,18 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void preResolve(ASTNode node) {
-		TransfProcessor self = this;
-		node.walkTreeZV(
-			fun (ASTNode n)->boolean { return n.preResolveIn(this); },
-			fun (ASTNode n)->void { n.preResolveOut(); }
-			);
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return n.preResolveIn(TransfProcessor.this); }
+			public void post_exec(ASTNode n) { n.preResolveOut(); }
+		});
 		return;
 	}
 
 	public void mainResolve(ASTNode node) {
-		TransfProcessor self = this;
-		node.walkTreeZV(
-			fun (ASTNode n)->boolean { return n.mainResolveIn(self); },
-			fun (ASTNode n)->void { n.mainResolveOut(); }
-			);
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return n.mainResolveIn(TransfProcessor.this); }
+			public void post_exec(ASTNode n) { n.mainResolveOut(); }
+		});
 		return;
 	}
 
@@ -779,8 +777,8 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	////////////////////////////////////////////////////
 
 	public void preGenerate(ASTNode node) {
-		node.walkTree(fun (ASTNode n)->boolean {
-			return n.preGenerate();
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 		});
 	}
 
