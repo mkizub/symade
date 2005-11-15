@@ -32,7 +32,7 @@ import static kiev.vlang.Operator.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -58,7 +58,7 @@ public class ASTOperatorAlias extends ASTAlias {
 			image = ((ASTIdentifier)n).name;
 			return;
 		}
-		throw new CompilerException(n.pos,"Bad operator definition");
+		throw new CompilerException(n,"Bad operator definition");
 	}
 	
 	public void setMode(NameRef n) {
@@ -71,62 +71,18 @@ public class ASTOperatorAlias extends ASTAlias {
 			}
 		}
 		if( opmode < 0 )
-			throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
 		return;
 	}
 	
 	public void setPriority(ConstIntExpr n) {
 		prior = n.value;
 		if( prior < 0 || prior > 255 )
-			throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
+			throw new CompilerException(n,"Operator priority must have value from 0 to 255");
 		pos = n.getPos();
 		return;
 	}
-/*	
-	public void jjtAddChild(ASTNode n, int i) {
-		if (xfix != XFIX_UNKNOWN) i = 2;
-		switch(i) {
-		case 0:
-			if( n instanceof ConstExpr ) {
-				Object val = ((ConstExpr)n).getConstValue();
-				if( val == null || !( val instanceof Number) )
-					throw new CompilerException(n.getPos(),"Priority must be of int type, but found "+n);
-				prior = ((Number)val).intValue();
-				if( prior < 0 || prior > 255 )
-					throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
-				pos = n.getPos();
-				return;
-			}
-			break;
-		case 1:
-			opmode = -1;
-			if( n instanceof ASTIdentifier ) {
-				KString optype = ((ASTIdentifier)n).name;
-				for(int i=0; i < Operator.orderAndArityNames.length; i++) {
-					if( Operator.orderAndArityNames[i].equals(optype) ) {
-						opmode = i;
-						break;
-					}
-				}
-				if( opmode < 0 )
-					throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
-				return;
-			}
-			break;
-		case 2:
-			if( n instanceof ASTOperator ) {
-				image = ((ASTOperator)n).image;
-				return;
-			}
-			else if( n instanceof ASTIdentifier ) {
-				image = ((ASTIdentifier)n).name;
-				return;
-			}
-			break;
-		}
-		throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n);
-    }
-*/
+
   	public void set(Token t) {
   		if (t.image.equals("prefix"))		xfix = XFIX_PREFIX;
   		else if (t.image.equals("suffix"))	xfix = XFIX_POSTFIX;
@@ -144,12 +100,11 @@ public class ASTOperatorAlias extends ASTAlias {
     	while( pkg != null && !pkg.isPackage() ) pkg = pkg.package_clazz;
     	if( pkg == null || pkg == Env.root ) return;
     	foreach(ASTNode n; pkg.imported; n == m ) return;
-    	//Kiev.reportWarning(0,"Static public method "+m+" with operator alias must be imported by package");
     }
 
 	public void attach(ASTNode n) {
 		if( !(n instanceof Method) )
-			throw new CompilerException(pos,"Node of type "+n.getClass()+" cannot be aliased with operator");
+			throw new CompilerException(this,"Node of type "+n.getClass()+" cannot be aliased with operator");
 		Method m = (Method)n;
 		iopt = null;
 
@@ -159,26 +114,26 @@ public class ASTOperatorAlias extends ASTAlias {
 			case XFIX_INFIX:
 				op = BinaryOperator.getOperator(image);
 				if (op == null)
-					throw new CompilerException(pos,"Infix operator "+image+" not known");
+					throw new CompilerException(this,"Infix operator "+image+" not known");
 				opmode = op.mode;
 				prior = op.priority;
 				break;
 			case XFIX_PREFIX:
 				op = PrefixOperator.getOperator(image);
 				if (op == null)
-					throw new CompilerException(pos,"Prefix operator "+image+" not known");
+					throw new CompilerException(this,"Prefix operator "+image+" not known");
 				opmode = op.mode;
 				prior = op.priority;
 				break;
 			case XFIX_POSTFIX:
 				op = PostfixOperator.getOperator(image);
 				if (op == null)
-					throw new CompilerException(pos,"Postfix operator "+image+" not known");
+					throw new CompilerException(this,"Postfix operator "+image+" not known");
 				opmode = op.mode;
 				prior = op.priority;
 				break;
 			default:
-				throw new CompilerException(pos,"Internal error: xfix "+xfix+" unknown");
+				throw new CompilerException(this,"Internal error: xfix "+xfix+" unknown");
 			}
 		}
 
@@ -188,20 +143,20 @@ public class ASTOperatorAlias extends ASTAlias {
 				// Special case fo "[]" and "new" operators
 				if( image.equals(nameArrayOp) ) {
 					if( m.isStatic() )
-						throw new CompilerException(pos,"'[]' operator can't be static");
+						throw new CompilerException(this,"'[]' operator can't be static");
 					if( m.type.args.length != 2 )
-						throw new CompilerException(pos,"Method "+m+" must be virtual and have 2 arguments");
+						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
 					if( m.type.ret != m.type.args[1] )
-						throw new CompilerException(pos,"Method "+m+" must return "+m.type.args[1]);
+						throw new CompilerException(this,"Method "+m+" must return "+m.type.args[1]);
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
 				}
 				if( image.equals(nameNewOp) ) {
 					if( !m.isStatic() )
-						throw new CompilerException(pos,"'new' operator must be static");
+						throw new CompilerException(this,"'new' operator must be static");
 					if( m.type.ret != ((Struct)m.parent).type )
-						throw new CompilerException(pos,"Method "+m+" must return "+((Struct)m.parent).type);
+						throw new CompilerException(this,"Method "+m+" must return "+((Struct)m.parent).type);
 					m.name.addAlias(nameNewOp);
 					if( Kiev.verbose ) System.out.println("Attached operator new to method "+m);
 					return;
@@ -210,13 +165,13 @@ public class ASTOperatorAlias extends ASTAlias {
 				Type opret = m.type.ret;
 				Type oparg1, oparg2;
 				if( prior != Constants.opAssignPriority )
-					throw new CompilerException(pos,"Assign operator must have priority "+Constants.opAssignPriority);
+					throw new CompilerException(this,"Assign operator must have priority "+Constants.opAssignPriority);
 				if( m.isStatic() )
-					throw new CompilerException(pos,"Assign operator can't be static");
+					throw new CompilerException(this,"Assign operator can't be static");
 				else if( !m.isStatic() && m.type.args.length == 1 )
 					{ oparg1 = ((Struct)m.parent).type; oparg2 = m.type.args[0]; }
 				else
-					throw new CompilerException(pos,"Method "+m+" must be virtual and have 1 argument");
+					throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 				AssignOperator op = AssignOperator.newAssignOperator(
 					image,m.name.name,null,false
 					);
@@ -234,11 +189,11 @@ public class ASTOperatorAlias extends ASTAlias {
 				// Special case fo "[]" and "new" operators
 				if( image.equals(nameArrayOp) ) {
 					if( m.isStatic() )
-						throw new CompilerException(pos,"'[]' operator can't be static");
+						throw new CompilerException(this,"'[]' operator can't be static");
 					if( m.type.args.length != 1 )
-						throw new CompilerException(pos,"Method "+m+" must be virtual and have 1 argument");
+						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
 					if( m.type.ret == Type.tpVoid )
-						throw new CompilerException(pos,"Method "+m+" must not return void");
+						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
 					return;
@@ -255,7 +210,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 2 )
 					{ oparg1 = ((Struct)m.parent).type; oparg2 = m.type.args[1]; }
 				else
-					throw new CompilerException(pos,"Method "+m+" must have 2 arguments");
+					throw new CompilerException(this,"Method "+m+" must have 2 arguments");
 				BinaryOperator op = BinaryOperator.newBinaryOperator(
 					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
@@ -271,11 +226,11 @@ public class ASTOperatorAlias extends ASTAlias {
 				// Special case fo "$cast" operator
 				if( image.equals(nameCastOp) ) {
 					if( m.isStatic() && m.type.args.length != 1 )
-						throw new CompilerException(pos,"Static cast method "+m+" must have 1 argument");
+						throw new CompilerException(this,"Static cast method "+m+" must have 1 argument");
 					else if( !m.isStatic() && m.type.args.length != 0 )
-						throw new CompilerException(pos,"Virtual scast method "+m+" must have no arguments");
+						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
 					if( m.type.ret == Type.tpVoid )
-						throw new CompilerException(pos,"Method "+m+" must not return void");
+						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameCastOp);
 					return;
 				}
@@ -294,9 +249,9 @@ public class ASTOperatorAlias extends ASTAlias {
 					oparg = ((Struct)m.parent).type;
 				else {
 					if (m.isStatic())
-						throw new CompilerException(pos,"Static method "+m+" must have 1 argument");
+						throw new CompilerException(this,"Static method "+m+" must have 1 argument");
 					else
-						throw new CompilerException(pos,"Non-static method "+m+" must have 0 or 1 argument");
+						throw new CompilerException(this,"Non-static method "+m+" must have 0 or 1 argument");
 				}
 				PrefixOperator op = PrefixOperator.newPrefixOperator(
 					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
@@ -321,7 +276,7 @@ public class ASTOperatorAlias extends ASTAlias {
 				else if( !m.isStatic() && m instanceof RuleMethod && m.type.args.length == 1 )
 					oparg = ((Struct)m.parent).type;
 				else
-					throw new CompilerException(pos,"Method "+m+" must have 1 argument");
+					throw new CompilerException(this,"Method "+m+" must have 1 argument");
 				PostfixOperator op = PostfixOperator.newPostfixOperator(
 					prior,image,m.name.name,null,Operator.orderAndArityNames[opmode],false
 					);
@@ -332,9 +287,9 @@ public class ASTOperatorAlias extends ASTAlias {
 			}
 			break;
 		case Operator.XFXFY:
-			throw new CompilerException(pos,"Multioperators are not supported yet");
+			throw new CompilerException(this,"Multioperators are not supported yet");
 		default:
-			throw new CompilerException(pos,"Unknown operator mode "+opmode);
+			throw new CompilerException(this,"Unknown operator mode "+opmode);
 		}
 		checkPublicAccess(m);
 		iopt.method = m;

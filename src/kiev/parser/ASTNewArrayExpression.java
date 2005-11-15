@@ -49,7 +49,7 @@ public class ASTNewArrayExpression extends Expr {
         	try {
             	args[i].resolve(Type.tpInt);
             } catch(Exception e) {
-            	Kiev.reportError(pos,e);
+            	Kiev.reportError(args[i],e);
             }
         }
 		type.getType(); // resolve the type

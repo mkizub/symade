@@ -108,157 +108,6 @@ public class PassInfo {
 	// No instances
 	private PassInfo() {}
 
-	// Pass info and global resolving section
-	public static Struct			clazz;
-	public static Method			method;
-	private static final ASTNode[]	path	= new ASTNode[1024];
-	private static int				pathTop = 0;
-
-
-	public static void pushStruct(Struct node) {
-		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
-        path[pathTop++] = node;
-		trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
-		clazz = node;
-		Code.setLinePos(node.getPosLine());
-	}
-	
-	public static void popStruct(Struct node) {
-		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
-    	if( node != path[pathTop-1] )
-    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
-		--pathTop;
-		clazz = null;
-		for(int i=pathTop-1; i >= 0; i-- ) {
-			if( path[i] instanceof Struct ) {
-				clazz = (Struct)path[i];
-				trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
-				break;
-			}
-		}
-	}
-	
-	public static void pushMethod(Method node) {
-		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
-        path[pathTop++] = node;
-		trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
-		method = node;
-		Code.setLinePos(node.getPosLine());
-	}
-	
-	public static void popMethod(Method node) {
-		trace(Kiev.debugAST,AT()+" pop  '"+node+"'"+debugAt());
-    	if( node != path[pathTop-1] )
-    		throw new RuntimeException("PassInfo push/pop node "+node+" and node "+path[pathTop-1]+" missmatch");
-		--pathTop;
-		method = null;
-		for(int i=pathTop-1; i >= 0; i-- ) {
-			if( path[i] instanceof Method ) {
-				method = (Method)path[i];
-				trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
-				break;
-			}
-		}
-	}
-	
-//	public static void push(ASTNode node) {
-//		trace(Kiev.debugAST,AT()+" push '"+node+"'"+debugAt());
-//		if( node instanceof FileUnit ) {
-//			trace(Kiev.debugAST,AT()+" set file unit  '"+node+"'"+debugAt());
-//			file_unit = (FileUnit)node;
-//			path[pathTop++] = node;
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-//		}
-//		else if( node instanceof Struct ) {
-//			trace(Kiev.debugAST,AT()+" set clazz  '"+node+"'"+debugAt());
-//			clazz = (Struct)node;
-//			path[pathTop++] = node;
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-//		}
-//		else if( node instanceof Method ) {
-//			trace(Kiev.debugAST,AT()+" set method '"+node+"'"+debugAt());
-//			method = (Method)node;
-//			path[pathTop++] = node;
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" push '"+node.getClass()+"'"+debugAt());
-//		}
-//		Code.setLinePos(node.getPosLine());
-//	}
-
-//	public static void pop(ASTNode n) {
-//		trace(Kiev.debugAST,AT()+" pop  '"+n+"'"+debugAt());
-////    	if( n != path[pathTop-1] ) {
-////    		if( n == path[pathTop-2] )
-////    			pop( path[pathTop-1] );
-////    		else
-////	    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+path[pathTop-1]+" missmatch");
-////    	}
-////    	ASTNode node = path[--pathTop];
-////    	if( n!=node )
-////    		throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-////      path[pathTop] = null;
-//		if( n instanceof FileUnit ) {
-//			ASTNode node = path[pathTop-1];
-//			if (n != node)
-//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-//			--pathTop;
-//			file_unit = null;
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-//		}
-//		else if( node instanceof Struct ) {
-//			ASTNode node = path[pathTop-1];
-//			if (n != node)
-//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-//			--pathTop;
-//			clazz = null;
-//			for(int i=pathTop-1; i >= 0; i-- ) {
-//				if( path[i] instanceof Struct ) {
-//					clazz = (Struct)path[i];
-//					trace(Kiev.debugAST,AT()+" set clazz  '"+clazz+"'"+debugAt());
-//					break;
-//				}
-//			}
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-//		}
-//		else if( node instanceof Method ) {
-//			ASTNode node = path[pathTop-1];
-//			if (n != node)
-//				throw new RuntimeException("PassInfo push/pop node "+n+" and node "+node+" missmatch");
-//			--pathTop;
-//			method = null;
-//			for(int i=pathTop-1; i >= 0; i-- ) {
-//				if( path[i] instanceof Method ) {
-//					method = (Method)path[i];
-//					trace(Kiev.debugAST,AT()+" set method '"+method+"'"+debugAt());
-//					break;
-//				}
-//			}
-//			Kiev.reportError(node.pos, "Unoptimized "+AT()+" pop '"+node.getClass()+"'"+debugAt());
-//		}
-//	}
-
-	private static String SP =
-	"                                                                                   "+
-	"                                                                                   ";
-	private static String AT() { return "AST "+pathTop+SP.substring(0,pathTop); }
-	private static String debugAt() {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(4096);
-		new Exception().printStackTrace(new PrintStream(bos));
-		byte[] msg = bos.toByteArray();
-		int from;
-		int to;
-		int cnt = 0;
-		for(from=0; from < msg.length; from++) {
-			if( msg[from] == '\n' ) {
-				from++; cnt++;
-				if( ++cnt >= 5 ) break;
-			}
-		}
-		for(to=from; to < msg.length; to++)
-			if( msg[to] == '\n' ) break;
-		to--;
-		return new String(msg,0,from,to-from);
-	}
-
 	public static boolean checkClassName(ASTNode from, KString qname) {
 		ASTNode@ node;
 		if (!resolveNameR(from, node,new ResInfo(from),qname))
@@ -461,24 +310,6 @@ public class PassInfo {
 			return true;
 		}
 		
-//		// Check that all methods in list are multimethods
-//		// and all path-es are the same
-//		boolean all_multi = true;
-//		Method m_multi = lm.head();
-//		ResInfo p_multi = lp.head();
-//		for(; lm != List.Nil; lm = lm.tail(), lp = lp.tail()) {
-//			if( !lm.head().isMultiMethod() ) { all_multi=false; break; }
-//			if( !lp.head().equals(p_multi) ) { all_multi=false; break; }
-//			if (!lm.head().isPrivate()) {
-//				m_multi = lm.head();
-//				p_multi = lp.head();
-//			}
-//		}
-//		if( all_multi ) {
-//			node = m_multi;
-//			info.set(p_multi);
-//			return true;
-//		}
 		StringBuffer msg = new StringBuffer("Umbigous methods:\n");
 		for(int i=0; i < methods.length; i++) {
 			msg.append("\t").append(methods[i].parent).append('.');
@@ -503,18 +334,18 @@ public class PassInfo {
 		trace(Kiev.debugResolve,"Best method is "+node+" with path/transform "+path+" found...")
 	}
 
-	public static boolean checkException(Type exc) throws RuntimeException {
+	public static boolean checkException(ASTNode from, Type exc) throws RuntimeException {
 		if( !exc.isInstanceOf(Type.tpThrowable) )
-			throw new RuntimeException("A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
+			throw new CompilerException(from,"A class of object for throw statement must be a subclass of "+Type.tpThrowable+" but type "+exc+" found");
 		if( exc.isInstanceOf(Type.tpError) || exc.isInstanceOf(Type.tpRuntimeException) ) return true;
-		for(int i=pathTop-1; i >= 0; i-- ) {
-			if( path[i] instanceof TryStat ) {
-				TryStat trySt = (TryStat)path[i];
+		for (; from != null; from = from.parent) {
+			if( from instanceof TryStat ) {
+				TryStat trySt = (TryStat)from;
 				for(int j=0; j < trySt.catchers.length; j++)
-					if( exc.isInstanceOf(((CatchInfo)trySt.catchers[j]).arg.type) ) return true;
+					if( exc.isInstanceOf(trySt.catchers[j].arg.type) ) return true;
 			}
-			else if( path[i] instanceof Method ) {
-				Method m = (Method)path[i];
+			else if( from instanceof Method ) {
+				Method m = (Method)from;
                 ExceptionsAttr a = (ExceptionsAttr)m.getAttr(Constants.attrExceptions);
 				for(int j=0; a!=null && j < a.exceptions.length; j++)
 					if( exc.isInstanceOf(a.exceptions[j]) ) return true;

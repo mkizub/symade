@@ -111,7 +111,7 @@ public class RuleMethod extends Method {
 
     public ASTNode pass3() {
 		if !( parent instanceof Struct )
-			throw new CompilerException(pos,"Method must be declared on class level only");
+			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = (Struct)parent;
 		// TODO: check flags for fields
 		if( clazz.isPackage() ) setStatic(true);
@@ -123,22 +123,17 @@ public class RuleMethod extends Method {
 		}
 		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,ACC_FORWARD));
 		// push the method, because formal parameters may refer method's type args
-		PassInfo.pushMethod(this);
-		try {
-			foreach (FormPar fp; params) {
-				fp.vtype.getType(); // resolve
-				if (fp.meta != null)
-					fp.meta.verify();
-			}
-			if( isVarArgs() ) {
-				FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
-				params.append(va);
-			}
-			foreach (Var lv; localvars)
-				lv.setLocalRuleVar(true);
-		} finally {
-			PassInfo.popMethod(this);
+		foreach (FormPar fp; params) {
+			fp.vtype.getType(); // resolve
+			if (fp.meta != null)
+				fp.meta.verify();
 		}
+		if( isVarArgs() ) {
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			params.append(va);
+		}
+		foreach (Var lv; localvars)
+			lv.setLocalRuleVar(true);
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has java type "+this.jtype);
 		foreach(ASTAlias al; aliases) al.attach(this);
 
@@ -180,7 +175,6 @@ public class RuleMethod extends Method {
 
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
-		PassInfo.pushMethod(this);
 		try {
 			Var penv = params[0];
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
@@ -205,13 +199,11 @@ public class RuleMethod extends Method {
 					((BlockStat)body).stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
-					Kiev.reportError(pos,"Return requared");
+					Kiev.reportError(body,"Return requared");
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(0/*body.getPos()*/,e);
-		} finally {
-			PassInfo.popMethod(this);
+			Kiev.reportError(body,e);
 		}
 		this.cleanDFlow();
 	}
@@ -348,7 +340,7 @@ public abstract class ASTRuleNode extends ENode {
 	@setter public void set$idx(int i) { idx = i; }
 
 	public void resolve(Type tp) {
-		throw new CompilerException(pos,"Resolving of ASTRuleNode");
+		throw new CompilerException(this,"Resolving of ASTRuleNode");
 	}
 
 	public String createTextUnification(Var var) {
@@ -722,7 +714,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 				itypes[i] = Type.getRealType(ctype,elems.type.ret);
 				modes[i] = ELEMS;
 			} else {
-				throw new CompilerException(exprs[i].pos,"Container must be an array or an Enumeration "+
+				throw new CompilerException(exprs[i],"Container must be an array or an Enumeration "+
 					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 			}
 			iter_vars[i] = ((RuleMethod)pctx.method).add_iterator_var();
@@ -1039,7 +1031,7 @@ public final class RuleWhileExpr extends RuleExprBase {
 		super.resolve(reqType);
 		if (pslot == null) return; // check we were replaced
 		if (!expr.getType().equals(Type.tpBoolean))
-			throw new CompilerException(expr.pos,"Boolean expression is requared");
+			throw new CompilerException(expr,"Boolean expression is requared");
 		if (bt_expr != null)
 			bt_expr.resolve(null);
 	}
@@ -1089,11 +1081,11 @@ public final class RuleExpr extends RuleExprBase {
 		super.resolve(reqType);
 		if (pslot == null) {
 			if (bt_expr != null)
-				throw new CompilerException(bt_expr.pos,"Backtrace expression ignored for rule-call");
+				throw new CompilerException(bt_expr,"Backtrace expression ignored for rule-call");
 			return;
 		}
 		if (bt_expr != null && expr.getType().equals(Type.tpBoolean))
-			throw new CompilerException(bt_expr.pos,"Backtrace expression in boolean rule");
+			throw new CompilerException(bt_expr,"Backtrace expression in boolean rule");
 		if (bt_expr != null)
 			bt_expr.resolve(null);
 	}

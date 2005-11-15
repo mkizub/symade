@@ -112,7 +112,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"Struct node cannot be copied");
+		throw new CompilerException(this,"Struct node cannot be copied");
 	};
 
 	public String toString() { return name.name.toString(); }
@@ -148,23 +148,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public boolean equals(Struct cl) {
 		if( cl == null ) return false;
 		return name.name.equals(cl.name.name);
-	}
-
-	public void pushMe() { PassInfo.pushStruct(this); }
-	public void popMe() { PassInfo.popStruct(this); }
-	
-	public void walkTree((ASTNode)->boolean exec) {
-		PassInfo.pushStruct(this);
-		try {
-			treeWalker(exec);
-		} finally { PassInfo.popStruct(this); }
-	}
-
-	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		PassInfo.pushStruct(this);
-		try {
-			treeWalker(pre_exec, post_exec);
-		} finally { PassInfo.popStruct(this); }
 	}
 
 	public void callbackChildChanged(AttrSlot attr) {
@@ -294,23 +277,19 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
-			try {
-				if( this.equals(Env.root) ) {
-					clname = ClazzName.fromToplevelName(name,false);
-					cl = Env.getStruct(clname);
-				} else {
-					KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
-					ksb.append(this.name.name).append('.').append(name);
-					clname = ClazzName.fromToplevelName(ksb.toKString(),false);
-					cl = Env.getStruct(clname);
-				}
-				if( cl != null ) return cl;
-				trace(Kiev.debugResolve,"Class "+clname.name
-					+" with bytecode name "+clname.bytecode_name+" not found in "
-					+this);
-			} catch(Exception e ) {
-				Kiev.reportError(0,e);
+			if( this.equals(Env.root) ) {
+				clname = ClazzName.fromToplevelName(name,false);
+				cl = Env.getStruct(clname);
+			} else {
+				KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
+				ksb.append(this.name.name).append('.').append(name);
+				clname = ClazzName.fromToplevelName(ksb.toKString(),false);
+				cl = Env.getStruct(clname);
 			}
+			if( cl != null ) return cl;
+			trace(Kiev.debugResolve,"Class "+clname.name
+				+" with bytecode name "+clname.bytecode_name+" not found in "
+				+this);
 		}
 		return null;
 	}
@@ -395,27 +374,23 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( isPackage() ) {
 			Struct cl;
 			ClazzName clname = ClazzName.Empty;
-			try {
-				if( this.equals(Env.root) ) {
-					clname = ClazzName.fromToplevelName(name,false);
-					cl = Env.getStruct(clname);
-				} else {
-					KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
-					ksb.append(this.name.name).append('.').append(name);
-					clname = ClazzName.fromToplevelName(ksb.toKString(),false);
-					cl = Env.getStruct(clname);
-				}
-				if( cl != null ) {
-					trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
-					node = cl;
-					return true;
-				} else {
-					trace(Kiev.debugResolve,"Class "+clname.name
-						+" with bytecode name "+clname.bytecode_name+" not found in "
-						+this);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(0,e);
+			if( this.equals(Env.root) ) {
+				clname = ClazzName.fromToplevelName(name,false);
+				cl = Env.getStruct(clname);
+			} else {
+				KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
+				ksb.append(this.name.name).append('.').append(name);
+				clname = ClazzName.fromToplevelName(ksb.toKString(),false);
+				cl = Env.getStruct(clname);
+			}
+			if( cl != null ) {
+				trace(Kiev.debugResolve,"Struct "+cl+" found in "+this);
+				node = cl;
+				return true;
+			} else {
+				trace(Kiev.debugResolve,"Class "+clname.name
+					+" with bytecode name "+clname.bytecode_name+" not found in "
+					+this);
 			}
 		}
 		node = null;
@@ -703,7 +678,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				 || from.pctx.method.params[0].name.name != nameTypeInfo
 				 || !from.pctx.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
 				 )
-					throw new CompilerException(from.pos,"$typeinfo cannot be accessed from "+from.pctx.method);
+					throw new CompilerException(from,"$typeinfo cannot be accessed from "+from.pctx.method);
 				ti_access = new VarAccessExpr(from.pos,from.pctx.method.params[0]);
 			}
 			else {
@@ -807,11 +782,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			if (wf == null)
 				wf = (Field)n;
 			else
-				throw new CompilerException(n.pos,"Wrapper class with multiple forward fields");
+				throw new CompilerException(n,"Wrapper class with multiple forward fields");
 		}
 		if ( wf == null ) {
 			if (required)
-				throw new CompilerException(this.pos,"Wrapper class "+this+" has no forward field");
+				throw new CompilerException(this,"Wrapper class "+this+" has no forward field");
 			return null;
 		}
 		if( Kiev.verbose ) System.out.println("Class "+this+" is a wrapper for field "+wf);
@@ -1431,12 +1406,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
 			IfElseStat st = null;
-			PassInfo.pushMethod(mm);
-			try {
-				st = makeDispatchStatInline(mm,mmt);
-			} finally {
-				PassInfo.popMethod(mm);
-			}
+			st = makeDispatchStatInline(mm,mmt);
 
 			if (overwr != null) {
 				IfElseStat last_st = st;
@@ -1694,7 +1664,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				Method m = (Method)n;
 				m.setBad(true);
 				this.setBad(true);
-				Kiev.reportError(m.pos,"Static method cannot be declared abstract");
+				Kiev.reportError(m,"Static method cannot be declared abstract");
 			}
 		}
 
@@ -1738,7 +1708,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 									Type.getRealType(me.type,mj.type)+
 									" and "+mi.name+Type.getRealType(me.type,mi.type)+" equals");
 							if( !mj.isPublic() ) {
-								Kiev.reportWarning(0,"Method "+s+"."+mj+" must be declared public");
+								Kiev.reportWarning(me,"Method "+s+"."+mj+" must be declared public");
 								mj.setPublic(true);
 							}
 							found = true;
@@ -1815,7 +1785,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					me.addMethod(proxy);
 				}
 				else if( !m.name.equals(nameGetTypeInfo) )
-					Kiev.reportWarning(me.pos,"Method "+m+" of interface "+this+" not implemented in "+me);
+					Kiev.reportWarning(me,"Method "+m+" of interface "+this+" not implemented in "+me);
 			}
 		}
 		// Check all sub-interfaces
@@ -1853,44 +1823,39 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public ASTNode resolveFinalFields(boolean cleanup) {
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
-		PassInfo.pushStruct(this);
-		try {
-			// Resolve final values of class's fields
-			foreach (ASTNode n; members; n instanceof Field) {
-				Field f = (Field)n;
-				if( f == null || f.init == null ) continue;
-				if( /*f.isStatic() &&*/ f.init != null ) {
-					try {
+		// Resolve final values of class's fields
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field f = (Field)n;
+			if( f == null || f.init == null ) continue;
+			if( /*f.isStatic() &&*/ f.init != null ) {
+				try {
+					f.init.resolve(f.type);
+					if (f.init instanceof TypeRef)
+						((TypeRef)f.init).toExpr(f.type);
+					if (f.init.getType() != f.type) {
+						ENode finit = (ENode)~f.init;
+						f.init = new CastExpr(finit.pos, f.type, finit);
 						f.init.resolve(f.type);
-						if (f.init instanceof TypeRef)
-							((TypeRef)f.init).toExpr(f.type);
-						if (f.init.getType() != f.type) {
-							ENode finit = (ENode)~f.init;
-							f.init = new CastExpr(finit.pos, f.type, finit);
-							f.init.resolve(f.type);
-						}
-					} catch( Exception e ) {
-						Kiev.reportError(f.init.pos,e);
 					}
-					trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
-							(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
+				} catch( Exception e ) {
+					Kiev.reportError(f.init,e);
 				}
-				if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
-					f.init = null;
-				}
-				if( f.isStatic() && f.init!=null && f.init.isConstantExpr() && f.init.getConstValue()!=null ) {
-					if( f.getAttr(attrConstantValue) != null )
-						f.addAttr(new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()) ));
-				}
+				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
+						(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 			}
-			// Process inner classes and cases
-			if( !isPackage() ) {
-				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					sub_clazz[i].resolveFinalFields(cleanup);
-				}
+			if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
+				f.init = null;
 			}
-		} finally {
-			PassInfo.popStruct(this);
+			if( f.isStatic() && f.init!=null && f.init.isConstantExpr() && f.init.getConstValue()!=null ) {
+				if( f.getAttr(attrConstantValue) != null )
+					f.addAttr(new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()) ));
+			}
+		}
+		// Process inner classes and cases
+		if( !isPackage() ) {
+			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
+				sub_clazz[i].resolveFinalFields(cleanup);
+			}
 		}
 		return this;
 	}
@@ -1900,53 +1865,47 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	}
 	
 	public void resolveMetaDefaults() {
-		PassInfo.pushStruct(this);
-		try {
-			if (isAnnotation()) {
-				foreach(ASTNode m; members; m instanceof Method) {
-					try {
-						((Method)m).resolveMetaDefaults();
-					} catch(Exception e) {
-						Kiev.reportError(m.pos,e);
-					}
+		if (isAnnotation()) {
+			foreach(ASTNode m; members; m instanceof Method) {
+				try {
+					((Method)m).resolveMetaDefaults();
+				} catch(Exception e) {
+					Kiev.reportError(m,e);
 				}
 			}
-			if( !isPackage() ) {
-				for(int i=0; i < sub_clazz.length; i++) {
-					if( !sub_clazz[i].isAnonymouse() )
-						sub_clazz[i].resolveMetaDefaults();
-				}
+		}
+		if( !isPackage() ) {
+			for(int i=0; i < sub_clazz.length; i++) {
+				if( !sub_clazz[i].isAnonymouse() )
+					sub_clazz[i].resolveMetaDefaults();
 			}
-		} finally { PassInfo.popStruct(this); }
+		}
 	}
 
 	public void resolveMetaValues() {
-		PassInfo.pushStruct(this);
-		try {
-			foreach (Meta m; meta)
-				m.resolve();
-			foreach(DNode dn; members) {
-				if (dn.meta != null) {
-					foreach (Meta m; dn.meta)
-						m.resolve();
-				}
-				if (dn instanceof Method) {
-					Method meth = (Method)dn;
-					foreach (Var p; meth.params) {
-						if (p.meta != null) {
-							foreach (Meta m; p.meta)
-								m.resolve();
-						}
+		foreach (Meta m; meta)
+			m.resolve();
+		foreach(DNode dn; members) {
+			if (dn.meta != null) {
+				foreach (Meta m; dn.meta)
+					m.resolve();
+			}
+			if (dn instanceof Method) {
+				Method meth = (Method)dn;
+				foreach (Var p; meth.params) {
+					if (p.meta != null) {
+						foreach (Meta m; p.meta)
+							m.resolve();
 					}
 				}
 			}
-			
-			if( !isPackage() ) {
-				for(int i=0; i < sub_clazz.length; i++) {
-					sub_clazz[i].resolveMetaValues();
-				}
+		}
+		
+		if( !isPackage() ) {
+			for(int i=0; i < sub_clazz.length; i++) {
+				sub_clazz[i].resolveMetaValues();
 			}
-		} finally { PassInfo.popStruct(this); }
+		}
 	}
 
 	public final void preResolve() {
@@ -1965,32 +1924,19 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public void resolveDecl() {
 		if( isGenerated() ) return;
 		long curr_time;
-		PassInfo.pushStruct(this);
-		try {
-			autoGenerateStatements();
-		} finally { PassInfo.popStruct(this); }
-		try {
-			if( !isPackage() ) {
-				foreach (ASTNode n; members; n instanceof Struct) {
+		autoGenerateStatements();
+		if( !isPackage() ) {
+			foreach (ASTNode n; members; n instanceof Struct) {
+				try {
 					Struct ss = (Struct)n;
 					ss.resolveDecl();
+				} catch(Exception e ) {
+					Kiev.reportError(n,e);
 				}
 			}
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
 		}
 
 		long diff_time = curr_time = System.currentTimeMillis();
-		List<Struct> pstruct = new List.Cons<Struct>(this,List.Nil);
-		if( !(isLocal() || isAnonymouse()) ) {
-			ASTNode p = parent;
-			while( p != null ) {
-				if( p instanceof Struct ) pstruct = new List.Cons<Struct>((Struct)p,pstruct);
-				p = p.parent;
-			}
-		}
-		foreach(Struct ps; pstruct)
-			PassInfo.pushStruct(ps);
 		try {
 			// Verify access
 			foreach(ASTNode n; members; n instanceof Field) {
@@ -1999,7 +1945,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					f.type.checkResolved();
 					if (f.type.isStruct())
 						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
-				} catch(Exception e ) { Kiev.reportError(pos,e); }
+				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
 			foreach(ASTNode n; members; n instanceof Method) {
 				Method m = (Method)n;
@@ -2012,7 +1958,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if (t.isStruct())
 							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
 					}
-				} catch(Exception e ) { Kiev.reportError(pos,e); }
+				} catch(Exception e ) { Kiev.reportError(m,e); }
 			}
 
 			foreach(DNode n; members; n instanceof Method || n instanceof Initializer) {
@@ -2059,11 +2005,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally {
-			pstruct = pstruct.reverse();
-			foreach(Struct ps; pstruct)
-				PassInfo.popStruct(ps);
+			Kiev.reportError(this,e);
 		}
 		setGenerated(true);
 		diff_time = System.currentTimeMillis() - curr_time;
@@ -2128,16 +2070,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		Struct jthis = this;
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+jthis+"]");
 		if( Kiev.safe && isBad() ) return;
-		PassInfo.pushStruct(this);
-		try {
-			if( !isPackage() ) {
-				for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-					Struct s = sub_clazz[i];
-					s.generate();
-				}
+		if( !isPackage() ) {
+			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
+				Struct s = sub_clazz[i];
+				s.generate();
 			}
+		}
 
-			// Check all methods
+		// Check all methods
 //			if( !isAbstract() && isClazz() ) {
 //				List<Method> ms = List.Nil;
 //				ms = collectVTmethods(ms);
@@ -2147,190 +2087,187 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 ////				}
 //			}
 
-			ConstPool.reInit();
-			ConstPool.addClazzCP(jthis.type.signature);
-			ConstPool.addClazzCP(jthis.type.java_signature);
-			if( super_type != null ) {
-				super_type.clazz.checkResolved();
-				ConstPool.addClazzCP(jthis.super_type.signature);
-				ConstPool.addClazzCP(jthis.super_type.java_signature);
+		ConstPool.reInit();
+		ConstPool.addClazzCP(jthis.type.signature);
+		ConstPool.addClazzCP(jthis.type.java_signature);
+		if( super_type != null ) {
+			super_type.clazz.checkResolved();
+			ConstPool.addClazzCP(jthis.super_type.signature);
+			ConstPool.addClazzCP(jthis.super_type.java_signature);
+		}
+		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
+			interfaces[i].clazz.checkResolved();
+			ConstPool.addClazzCP(jthis.interfaces[i].signature);
+			ConstPool.addClazzCP(jthis.interfaces[i].java_signature);
+		}
+		if( !isPackage() ) {
+			for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
+				jthis.sub_clazz[i].checkResolved();
+				ConstPool.addClazzCP(jthis.sub_clazz[i].type.signature);
+				ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
 			}
-			for(int i=0; interfaces!=null && i < interfaces.length; i++) {
-				interfaces[i].clazz.checkResolved();
-				ConstPool.addClazzCP(jthis.interfaces[i].signature);
-				ConstPool.addClazzCP(jthis.interfaces[i].java_signature);
+		}
+		
+		if( !isPackage() && sub_clazz!=null && sub_clazz.length > 0 ) {
+			InnerClassesAttr a = new InnerClassesAttr();
+			Struct[] inner = new Struct[sub_clazz.length];
+			Struct[] outer = new Struct[sub_clazz.length];
+			short[] inner_access = new short[sub_clazz.length];
+			for(int j=0; j < sub_clazz.length; j++) {
+				inner[j] = sub_clazz[j];
+				outer[j] = this;
+				inner_access[j] = sub_clazz[j].getJavaFlags();
+				ConstPool.addClazzCP(inner[j].type.signature);
 			}
-			if( !isPackage() ) {
-				for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
-					jthis.sub_clazz[i].checkResolved();
-					ConstPool.addClazzCP(jthis.sub_clazz[i].type.signature);
-					ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
-				}
-			}
-			
-			if( !isPackage() && sub_clazz!=null && sub_clazz.length > 0 ) {
-				InnerClassesAttr a = new InnerClassesAttr();
-				Struct[] inner = new Struct[sub_clazz.length];
-				Struct[] outer = new Struct[sub_clazz.length];
-				short[] inner_access = new short[sub_clazz.length];
-				for(int j=0; j < sub_clazz.length; j++) {
-					inner[j] = sub_clazz[j];
-					outer[j] = this;
-					inner_access[j] = sub_clazz[j].getJavaFlags();
-					ConstPool.addClazzCP(inner[j].type.signature);
-				}
-				a.inner = inner;
-				a.outer = outer;
-				a.acc = inner_access;
-				addAttr(a);
-			}
+			a.inner = inner;
+			a.outer = outer;
+			a.acc = inner_access;
+			addAttr(a);
+		}
 
-			if( countPackedFields() > 0 ) {
-				addAttr(new PackedFieldsAttr(this));
-			}
+		if( countPackedFields() > 0 ) {
+			addAttr(new PackedFieldsAttr(this));
+		}
 
-			if( isSyntax() ) { // || isPackage()
-				for(int i=0; i < imported.length; i++) {
-					ASTNode node = imported[i];
-					if (node instanceof Typedef)
-						addAttr(new TypedefAttr((Typedef)node));
-					else if (node instanceof Opdef)
-						addAttr(new OperatorAttr(((Opdef)node).resolved));
+		if( isSyntax() ) { // || isPackage()
+			for(int i=0; i < imported.length; i++) {
+				ASTNode node = imported[i];
+				if (node instanceof Typedef)
+					addAttr(new TypedefAttr((Typedef)node));
+				else if (node instanceof Opdef)
+					addAttr(new OperatorAttr(((Opdef)node).resolved));
 //					else if (node instanceof Import)
 //						addAttr(new ImportAlias(node));
 //					else
 //						addAttr(new ImportAttr(imported[i]));
-				}
 			}
+		}
 
-			{
-				int flags = 0;
+		{
+			int flags = 0;
 //				if( jthis.isWrapper() ) flags |= 1;
-				if( jthis.isSyntax()  ) flags |= 2;
+			if( jthis.isSyntax()  ) flags |= 2;
 
-				if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
+			if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
+		}
+
+		if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
+		
+		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
+		foreach (ASTNode n; members; n instanceof Field) {
+			Field f = (Field)n;
+			ConstPool.addAsciiCP(f.name.name);
+			ConstPool.addAsciiCP(f.type.signature);
+			ConstPool.addAsciiCP(f.type.java_signature);
+
+			int flags = 0;
+			if( f.isVirtual() ) flags |= 2;
+			if( f.isForward() ) flags |= 8;
+			if( f.isAccessedFromInner()) {
+				flags |= (f.acc.flags << 24);
+				f.setPrivate(false);
 			}
+			else if( f.isPublic() && f.acc.flags != 0xFF) flags |= (f.acc.flags << 24);
+			else if( f.isProtected() && f.acc.flags != 0x3F) flags |= (f.acc.flags << 24);
+			else if( f.isPrivate() && f.acc.flags != 0x03) flags |= (f.acc.flags << 24);
+			else if( !f.isPublic() && !f.isProtected() && !f.isPrivate() && f.acc.flags != 0x0F) flags |= (f.acc.flags << 24);
 
-			if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
-			
-			for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
-			foreach (ASTNode n; members; n instanceof Field) {
-				Field f = (Field)n;
-				ConstPool.addAsciiCP(f.name.name);
-				ConstPool.addAsciiCP(f.type.signature);
-				ConstPool.addAsciiCP(f.type.java_signature);
+			if( flags != 0 ) f.addAttr(new FlagsAttr(flags) );
+			if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
+			if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
+
+			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+
+			for(int j=0; f.attrs != null && j < f.attrs.length; j++)
+				f.attrs[j].generate();
+		}
+		foreach (ASTNode m; members; m instanceof Method)
+			((Method)m).type.checkJavaSignature();
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			ConstPool.addAsciiCP(m.name.name);
+			ConstPool.addAsciiCP(m.type.signature);
+			ConstPool.addAsciiCP(m.type.java_signature);
+			if( m.jtype != null )
+				ConstPool.addAsciiCP(m.jtype.java_signature);
+
+			try {
+				m.generate();
 
 				int flags = 0;
-				if( f.isVirtual() ) flags |= 2;
-				if( f.isForward() ) flags |= 8;
-				if( f.isAccessedFromInner()) {
-					flags |= (f.acc.flags << 24);
-					f.setPrivate(false);
+				if( m.isMultiMethod() ) flags |= 1;
+				if( m.isVarArgs() ) flags |= 4;
+				if( m.isRuleMethod() ) flags |= 16;
+				if( m.isInvariantMethod() ) flags |= 32;
+				if( m.isAccessedFromInner()) {
+					flags |= (m.acc.flags << 24);
+					m.setPrivate(false);
 				}
-				else if( f.isPublic() && f.acc.flags != 0xFF) flags |= (f.acc.flags << 24);
-				else if( f.isProtected() && f.acc.flags != 0x3F) flags |= (f.acc.flags << 24);
-				else if( f.isPrivate() && f.acc.flags != 0x03) flags |= (f.acc.flags << 24);
-				else if( !f.isPublic() && !f.isProtected() && !f.isPrivate() && f.acc.flags != 0x0F) flags |= (f.acc.flags << 24);
 
-				if( flags != 0 ) f.addAttr(new FlagsAttr(flags) );
-				if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
-				if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
+				if( flags != 0 ) m.addAttr(new FlagsAttr(flags) );
+				if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
 
-				if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+				if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
+					m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
+				}
 
-				for(int j=0; f.attrs != null && j < f.attrs.length; j++)
-					f.attrs[j].generate();
-			}
-			foreach (ASTNode m; members; m instanceof Method)
-				((Method)m).type.checkJavaSignature();
-			foreach (ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
-				ConstPool.addAsciiCP(m.name.name);
-				ConstPool.addAsciiCP(m.type.signature);
-				ConstPool.addAsciiCP(m.type.java_signature);
-				if( m.jtype != null )
-					ConstPool.addAsciiCP(m.jtype.java_signature);
-
-				try {
-					m.generate();
-
-					int flags = 0;
-					if( m.isMultiMethod() ) flags |= 1;
-					if( m.isVarArgs() ) flags |= 4;
-					if( m.isRuleMethod() ) flags |= 16;
-					if( m.isInvariantMethod() ) flags |= 32;
-					if( m.isAccessedFromInner()) {
-						flags |= (m.acc.flags << 24);
-						m.setPrivate(false);
-					}
-
-					if( flags != 0 ) m.addAttr(new FlagsAttr(flags) );
-					if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
-
-					if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
-						m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
-					}
-
-					for(int j=0; j < m.conditions.length; j++) {
-						if( m.conditions[j].definer == m ) {
-							m.addAttr(m.conditions[j].code);
-						}
-					}
-
-					if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
-					boolean has_pmeta = false; 
-					foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
-						has_pmeta = true;
-					}
-					if (has_pmeta) {
-						MetaSet[] mss;
-						mss = new MetaSet[m.params.length];
-						for (int i=0; i < mss.length; i++)
-							mss[i] = m.params[i].meta;
-						m.addAttr(new RVParMetaAttr(mss));
-					}
-					if (m.annotation_default != null)
-						m.addAttr(new DefaultMetaAttr(m.annotation_default));
-
-					for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-						m.attrs[j].generate();
-					}
-				} catch(Exception e ) {
-					Kiev.reportError(m.pos,"Compilation error: "+e);
-					m.generate();
-					for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-						m.attrs[j].generate();
+				for(int j=0; j < m.conditions.length; j++) {
+					if( m.conditions[j].definer == m ) {
+						m.addAttr(m.conditions[j].code);
 					}
 				}
-				if( Kiev.safe && isBad() ) return;
-			}
-			ConstPool.generate();
-			foreach (ASTNode n; members; n instanceof Method) {
-				Method m = (Method)n;
-				CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
-				if( ca != null ) {
-					trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
-					Code.generateCode2(ca);
+
+				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
+				boolean has_pmeta = false; 
+				foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
+					has_pmeta = true;
+				}
+				if (has_pmeta) {
+					MetaSet[] mss;
+					mss = new MetaSet[m.params.length];
+					for (int i=0; i < mss.length; i++)
+						mss[i] = m.params[i].meta;
+					m.addAttr(new RVParMetaAttr(mss));
+				}
+				if (m.annotation_default != null)
+					m.addAttr(new DefaultMetaAttr(m.annotation_default));
+
+				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
+					m.attrs[j].generate();
+				}
+			} catch(Exception e ) {
+				Kiev.reportError(m,"Compilation error: "+e);
+				m.generate();
+				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
+					m.attrs[j].generate();
 				}
 			}
 			if( Kiev.safe && isBad() ) return;
-			Bytecoder bc = new Bytecoder(this,null);
-			bc.kievmode = true;
-			byte[] dump = bc.writeClazz();
-			Attr ka = addAttr(new KievAttr(dump));
-			ka.generate();
-			if( Kiev.safe && isBad() ) return;
-			FileUnit.toBytecode(this);
-			Env.setProjectInfo(name, true);
-			ConstPool.reInit();
-			kiev.Main.runGC();
-		} finally { PassInfo.popStruct(this); }
+		}
+		ConstPool.generate();
+		foreach (ASTNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
+			if( ca != null ) {
+				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
+				Code.generateCode2(ca);
+			}
+		}
+		if( Kiev.safe && isBad() ) return;
+		Bytecoder bc = new Bytecoder(this,null);
+		bc.kievmode = true;
+		byte[] dump = bc.writeClazz();
+		Attr ka = addAttr(new KievAttr(dump));
+		ka.generate();
+		if( Kiev.safe && isBad() ) return;
+		FileUnit.toBytecode(this);
+		Env.setProjectInfo(name, true);
+		ConstPool.reInit();
+		kiev.Main.runGC();
 //		setPassed_3(true);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
-		PassInfo.pushStruct(this);
-		try {
 		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");
 		Env.toJavaModifiers(dmp,getJavaFlags());
@@ -2393,7 +2330,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			m.toJavaDecl(dmp).newLine();
 		}
 		dmp.newLine(-1).append('}').newLine();
-		} finally { PassInfo.popStruct(this); }
 		return dmp;
 	}
 

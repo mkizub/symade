@@ -134,23 +134,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		acc.verifyAccessDecl(this);
 	}
 	
-	public void pushMe() { PassInfo.pushMethod(this); }
-	public void popMe() { PassInfo.popMethod(this); }
-	
-	public void walkTree((ASTNode)->boolean exec) {
-		PassInfo.pushMethod(this);
-		try {
-			treeWalker(exec);
-		} finally { PassInfo.popMethod(this); }
-	}
-
-	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		PassInfo.pushMethod(this);
-		try {
-			treeWalker(pre_exec, post_exec);
-		} finally { PassInfo.popMethod(this); }
-	}
-
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.meta.get(MetaThrows.NAME);
 	}
@@ -454,7 +437,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
     public ASTNode pass3() {
 		if !( parent instanceof Struct )
-			throw new CompilerException(pos,"Method must be declared on class level only");
+			throw new CompilerException(this,"Method must be declared on class level only");
 		Struct clazz = (Struct)parent;
 		// TODO: check flags for methods
 		if( clazz.isPackage() ) setStatic(true);
@@ -472,27 +455,22 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 //		}
 
 		if (clazz.isAnnotation() && params.length > 0) {
-			Kiev.reportError(pos, "Annotation methods may not have arguments");
+			Kiev.reportError(this, "Annotation methods may not have arguments");
 			params.delAll();
 			setVarArgs(false);
 		}
 
 		if (clazz.isAnnotation() && (body != null || pbody != null)) {
-			Kiev.reportError(pos, "Annotation methods may not have bodies");
+			Kiev.reportError(this, "Annotation methods may not have bodies");
 			body = null;
 			pbody = null;
 		}
 
 		// push the method, because formal parameters may refer method's type args
-		PassInfo.pushMethod(this);
-		try {
-			foreach (FormPar fp; params) {
-				fp.vtype.getType(); // resolve
-				if (fp.meta != null)
-					fp.meta.verify();
-			}
-		} finally {
-			PassInfo.popMethod(this);
+		foreach (FormPar fp; params) {
+			fp.vtype.getType(); // resolve
+			if (fp.meta != null)
+				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
 			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
@@ -537,7 +515,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (t.isReference()) {
 				t.checkResolved();
 				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
-					throw new CompilerException(pos, "Bad annotation value type "+tp);
+					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);
 		}
@@ -574,7 +552,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
 		assert( pctx.clazz == parent || inlined_by_dispatcher );
-		PassInfo.pushMethod(this);
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);
@@ -591,9 +568,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 						body.setAbrupted(true);
 					}
 					else if !(isInvariantMethod())
-						Kiev.reportError(pos,"Return requared");
+						Kiev.reportError(this,"Return requared");
 				} else {
-					Kiev.reportError(pos,"Return requared");
+					Kiev.reportError(this,"Return requared");
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
@@ -601,9 +578,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				cond.resolve(Type.tpVoid);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(0/*body.getPos()*/,e);
-		} finally {
-			PassInfo.popMethod(this);
+			Kiev.reportError(this,e);
 		}
 		this.cleanDFlow();
 
@@ -612,7 +587,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public void generate() {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		PassInfo.pushMethod(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
 			foreach(Field f; violated_fields; pctx.clazz.instanceOf((Struct)f.parent) ) {
@@ -627,11 +601,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 				cond.generate(Type.tpVoid);
-		} finally { kiev.vlang.PassInfo.popMethod(this); kiev.vlang.Code.generation = false; }
+		} finally { kiev.vlang.Code.generation = false; }
 		if( !isAbstract() && body != null ) {
 			Code.reInit(pctx.clazz, this);
 			Code.generation = true;
-			PassInfo.pushMethod(this);
 			try {
 				if( !isBad() ) {
 					if( !isStatic() ) Code.addVar(getThisPar());
@@ -693,8 +666,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 				Code.generateCode();
 			} catch(Exception e) {
-				Kiev.reportError(pos,e);
-			} finally { kiev.vlang.PassInfo.popMethod(this); kiev.vlang.Code.generation = false; }
+				Kiev.reportError(this,e);
+			} finally { kiev.vlang.Code.generation = false; }
 		}
 	}
 
@@ -783,7 +756,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(0,e);
+			Kiev.reportError(this,e);
 		}
 
 		setResolved(true);
@@ -867,7 +840,7 @@ public class WBCCondition extends DNode {
 				if( !m.isStatic() ) Code.removeVar(m.getThisPar());
 				Code.generateCode(this);
 			} catch(Exception e) {
-				Kiev.reportError(pos,e);
+				Kiev.reportError(this,e);
 			} finally {
 				Code.generation = false;
 				Code.cond_generation = false;

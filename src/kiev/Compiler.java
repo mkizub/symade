@@ -427,7 +427,7 @@ public class Compiler {
 					try {
 						args = addExpansion(args,a);
 					} catch( IOException e ) {
-						Kiev.reportError(0,"Error in arguments: "+e);
+						Kiev.reportError("Error in arguments: "+e);
 					}
 				}
 			}
@@ -453,7 +453,7 @@ public class Compiler {
 		try {
 			args = parseArgs(args);
 		} catch( Exception e) {
-			Kiev.reportError(0,e);
+			Kiev.reportError(e);
 			goto stop;
 		}
 		
@@ -481,7 +481,7 @@ public class Compiler {
 			}
 
 		} catch( Exception e) {
-			Kiev.reportError(0,e);
+			Kiev.reportError(e);
 			goto stop;
 		}
 
@@ -673,7 +673,7 @@ public class Compiler {
 				try {
 					Kiev.files[i].resolveDecl();
 				} catch (Exception rte) {
-					Kiev.reportError(0,rte);
+					Kiev.reportError(rte);
 				}
 				runGC();
 				try {
@@ -681,14 +681,14 @@ public class Compiler {
 					if (tp != null)
 						tp.rewriteNode(Kiev.files[i]);
 				} catch (Exception rte) {
-					Kiev.reportError(0,rte);
+					Kiev.reportError(rte);
 				}
 				try {
 					ProcessPackedFld tp = (ProcessPackedFld)Kiev.getProcessor(Kiev.Ext.PackedFields);
 					if (tp != null)
 						tp.rewriteNode(Kiev.files[i]);
 				} catch (Exception rte) {
-					Kiev.reportError(0,rte);
+					Kiev.reportError(rte);
 				}
 				runGC();
 				if( Kiev.source_only ) {
@@ -698,11 +698,11 @@ public class Compiler {
 						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+args[i]+" into "+Kiev.output_dir+" dir");
 					try {
 						Kiev.files[i].toJava(Kiev.output_dir);
-					} catch (Exception rte) { Kiev.reportError(0,rte); }
+					} catch (Exception rte) { Kiev.reportError(rte); }
 				} else {
 					try {
 						Kiev.files[i].generate();
-					} catch (Exception rte) { Kiev.reportError(0,rte); }
+					} catch (Exception rte) { Kiev.reportError(rte); }
 				}
 				Kiev.files[i].cleanup();
 				Kiev.files[i] = null;
@@ -712,7 +712,7 @@ public class Compiler {
 			if( e.getMessage() != null && e.getMessage().equals("Compilation terminated") ) {
 				Env.dumpProjectFile();
 			}
-			Kiev.reportError(0,e);
+			Kiev.reportError(e);
 			goto stop;
 		}
 

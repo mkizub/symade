@@ -55,12 +55,12 @@ public class TypeWithArgsRef extends TypeRef {
 			return this.lnk;
 		Type tp = base_type.getType();
 		if (tp == null)
-			throw new CompilerException(pos,"Type "+base_type+" is not found");
+			throw new CompilerException(this,"Type "+base_type+" is not found");
 		Type[] atypes = new Type[args.length];
 		for(int i=0; i < atypes.length; i++) {
 			atypes[i] = args[i].getType();
 			if (atypes[i] == null)
-				throw new CompilerException(pos,"Type "+args[i]+" is not found");
+				throw new CompilerException(this,"Type "+args[i]+" is not found");
 		}
 		this.lnk = Type.newRefType(tp,atypes);
 		return this.lnk;

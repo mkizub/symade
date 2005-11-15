@@ -82,7 +82,7 @@ public class ASTCallExpression extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 			if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
@@ -90,7 +90,7 @@ public class ASTCallExpression extends Expr {
 				((Method)m).makeArgs(args,st);
 				return;
 			}
-			throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
+			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = pctx.method;
@@ -108,7 +108,7 @@ public class ASTCallExpression extends Expr {
 			 && !pctx.clazz.super_type.getStruct().isStatic()
 			) {
 				if( pctx.clazz.isStatic() )
-					throw new CompilerException(pos,"Non-static inner super-class of static class");
+					throw new CompilerException(this,"Non-static inner super-class of static class");
 				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
@@ -117,7 +117,7 @@ public class ASTCallExpression extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 			if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
@@ -125,7 +125,7 @@ public class ASTCallExpression extends Expr {
 				((Method)m).makeArgs(args,st);
 				return;
 			}
-			throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
+			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
 			MethodType mt;
 			Type[] ta = new Type[args.length];
@@ -138,19 +138,19 @@ public class ASTCallExpression extends Expr {
 				ASTNode@ closure;
 				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
-					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,null));
+					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
 				}
 				try {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
-						replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.delToArray()));
+						replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 						return;
 					}
 				} catch(Exception eee) {
-					Kiev.reportError(pos,eee);
+					Kiev.reportError(this,eee);
 				}
-				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
+				throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 			}
 //				if( reqType instanceof CallableType ) {
 //					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
@@ -183,7 +183,7 @@ public class ASTCallExpression extends Expr {
 				if( m.isStatic() )
 					assert (info.isEmpty());
 				((Method)m).makeArgs(args,tp);
-				ENode e = info.buildCall(pos,null,m,args.toArray());
+				ENode e = info.buildCall(this,null,m,args.toArray());
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
 				this.replaceWithNode(e);
@@ -193,11 +193,7 @@ public class ASTCallExpression extends Expr {
 	
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
-//			try {
-				args[i].resolve(null);
-//			} catch(Exception e) {
-//				Kiev.reportError(args[i].getPos(),e);
-//			}
+			args[i].resolve(null);
         }
 		// method of current class or first-order function
 		ASTNode@ m;
@@ -219,7 +215,7 @@ public class ASTCallExpression extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
@@ -228,7 +224,7 @@ public class ASTCallExpression extends Expr {
 				ce.resolve(ret);
 				return;
 			}
-			throw new CompilerException(getPos(),"Constructor call via forwarding is not allowed");
+			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
 			Method mmm = pctx.method;
@@ -246,7 +242,7 @@ public class ASTCallExpression extends Expr {
 			 && !pctx.clazz.super_type.getStruct().isStatic()
 			) {
 				if( pctx.clazz.isStatic() )
-					throw new CompilerException(pos,"Non-static inner super-class of static class");
+					throw new CompilerException(this,"Non-static inner super-class of static class");
 				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
@@ -255,7 +251,7 @@ public class ASTCallExpression extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(pos,"Method "+Method.toString(func.name,args)+" unresolved");
+				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
@@ -264,7 +260,7 @@ public class ASTCallExpression extends Expr {
 				ce.resolve(ret);
 				return;
 			}
-			throw new CompilerException(getPos(),"Super-constructor call via forwarding is not allowed");
+			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
 			MethodType mt;
 			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
@@ -282,20 +278,20 @@ public class ASTCallExpression extends Expr {
 				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
-					throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args,ret));
+					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
 				try {
 					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
 					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
-						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(pos,closure),args.delToArray()));
+						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 						return;
 					}
 				} catch(Exception eee) {
-					Kiev.reportError(pos,eee);
+					Kiev.reportError(this,eee);
 				}
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
-				throw new CompilerException(pos,"Unresolved method "+Method.toString(func.name,args));
+				throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 			}
 			if( reqType instanceof CallableType ) {
 				ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
@@ -328,7 +324,7 @@ public class ASTCallExpression extends Expr {
 				if( m.isStatic() )
 					assert (info.isEmpty());
 				((Method)m).makeArgs(args,tp);
-				ENode e = info.buildCall(pos,null,m,args.toArray());
+				ENode e = info.buildCall(this,null,m,args.toArray());
 				this.replaceWithNodeResolve( reqType, e );
 			}
 		}

@@ -77,7 +77,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				verify(sub);
 		}
 		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
-			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
+			Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
 		}
 		else {
@@ -87,7 +87,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				Meta fmatt = f.meta.get(mnAtt);
 				Meta fmref = f.meta.get(mnRef);
 				if (fmatt != null || fmref != null) {
-					Kiev.reportError(f.pos,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
+					Kiev.reportError(f,"Field "+f+" of non-@node class "+f.parent+" may not be @att or @ref");
 				}
 			}
 		}
@@ -99,18 +99,18 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		//if (fmatt != null || fmref != null) {
 		//	System.out.println("process @node: field "+f+" has @att="+fmatt+" and @ref="+fmref);
 		if (fmatt != null && fmref != null) {
-			Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" marked both @att and @ref");
+			Kiev.reportError(f,"Field "+f.parent+"."+f+" marked both @att and @ref");
 		}
 		if (fmatt != null || fmref != null) {
 			if (f.isStatic())
-				Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" is static and cannot have @att or @ref");
+				Kiev.reportError(f,"Field "+f.parent+"."+f+" is static and cannot have @att or @ref");
 			boolean isArr = false;
 			Meta fsm;
 			{
 				Type ft = f.type;
 				if (ft.isInstanceOf(tpNArr)) {
 					if (!f.isFinal()) {
-						Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be final");
+						Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be final");
 						f.setFinal(true);
 					}
 					isArr = true;
@@ -121,7 +121,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (fmatt != null) {
 				if (isArr) {
 					if (f.init != null)
-						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+						Kiev.reportError(f,"Field "+f.parent+"."+f+" may not have initializer");
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Struct fs = (Struct)f.parent;
 					Field fatt = fs.resolveField(fname);
@@ -137,16 +137,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			else if (fmref != null) {
 				if (isArr) {
 					if (f.init != null)
-						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
+						Kiev.reportError(f,"Field "+f.parent+"."+f+" may not have initializer");
 					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstNullExpr()});
 				}
 			}
 		}
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
-				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 			else if (f.type.getStructMeta().get(mnNode) != null)
-				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
+				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
 	
@@ -180,7 +180,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
 		if (tpNArr == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			Kiev.reportError(s,"Cannot find class "+nameNArr);
 			return;
 		}
 		if (!s.isClazz())
@@ -203,7 +203,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			}
 		}
 		if (hasField(s, nameEnumValuesFld)) {
-			Kiev.reportWarning(s.pos,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
+			Kiev.reportWarning(s,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
 			return;
 		}
 		Type atp = Type.fromSignature(KString.from("Lkiev/vlang/AttrSlot;"));
@@ -228,7 +228,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
 			MethodType et = (MethodType)Type.fromSignature(sigValues);
 			Method elems = new Method(nameEnumValues,et,ACC_PUBLIC);
@@ -268,7 +268,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			// node is not copyable
 		}
 		else if (hasMethod(s, KString.from("copy"))) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
@@ -282,7 +282,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		}
 		// copyTo(Object)
 		if (hasMethod(s, KString.from("copyTo"))) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopyTo);
 			Method copyV = new Method(KString.from("copyTo"),copyVt,ACC_PUBLIC);
@@ -357,7 +357,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		}
 		// setVal(String, Object)
 		if (hasMethod(s, KString.from("setVal"))) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
 			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
 			Method setV = new Method(KString.from("setVal"),setVt,ACC_PUBLIC);

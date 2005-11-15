@@ -98,71 +98,71 @@ public class Access implements Constants {
 
 		if( r_public || w_public ) {
 			if( !n.isPublic() ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" needs to be declared public");
+				Kiev.reportWarning(n,"Node "+n+" needs to be declared public");
 				n.setPublic(true);
 			}
 		}
 		else if( r_protected || w_protected ) {
 			if( !(n.isPublic() || n.isProtected()) ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" needs to be declared protected or public");
+				Kiev.reportWarning(n,"Node "+n+" needs to be declared protected or public");
 				n.setProtected(true);
 			}
 		}
 		else if( r_default || w_default ) {
 			if( n.isPrivate() ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" needs to be declared with default/protected or public access");
+				Kiev.reportWarning(n,"Node "+n+" needs to be declared with default/protected or public access");
 				n.setPrivate(false);
 			}
 		}
 		if( r_public ) {
 			if( !r_protected ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have protected read access");
+				Kiev.reportWarning(n,"Node "+n+" should have protected read access");
 				r_protected = true;
 			}
 			if( !r_default ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have default (package) read access");
+				Kiev.reportWarning(n,"Node "+n+" should have default (package) read access");
 				r_default = true;
 			}
 			if( !r_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private read access");
+				Kiev.reportWarning(n,"Node "+n+" should have private read access");
 				r_private = true;
 			}
 		}
 		if( r_protected ) {
 			if( !r_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private read access");
+				Kiev.reportWarning(n,"Node "+n+" should have private read access");
 				r_private = true;
 			}
 		}
 		if( r_default ) {
 			if( !r_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private read access");
+				Kiev.reportWarning(n,"Node "+n+" should have private read access");
 				r_private = true;
 			}
 		}
 		if( w_public ) {
 			if( !w_protected ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have protected write access");
+				Kiev.reportWarning(n,"Node "+n+" should have protected write access");
 				w_protected = true;
 			}
 			if( !w_default ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have default (package) write access");
+				Kiev.reportWarning(n,"Node "+n+" should have default (package) write access");
 				w_default = true;
 			}
 			if( !w_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private write access");
+				Kiev.reportWarning(n,"Node "+n+" should have private write access");
 				w_private = true;
 			}
 		}
 		if( w_protected ) {
 			if( !w_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private write access");
+				Kiev.reportWarning(n,"Node "+n+" should have private write access");
 				w_private = true;
 			}
 		}
 		if( w_default ) {
 			if( !w_private ) {
-				Kiev.reportWarning(n.pos,"Node "+n+" should have private write access");
+				Kiev.reportWarning(n,"Node "+n+" should have private write access");
 				w_private = true;
 			}
 		}
@@ -241,6 +241,6 @@ public class Access implements Constants {
 		if( n instanceof Struct ) sb.append(n);
 		else sb.append(n.parent).append('.').append(n);
 		sb.append("\n\tfrom class ").append(from.pctx.clazz);
-		Kiev.reportError(from.pos,new RuntimeException(sb.toString()));
+		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
 }

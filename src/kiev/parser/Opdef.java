@@ -30,7 +30,7 @@ import static kiev.vlang.Operator.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
@@ -61,7 +61,7 @@ public class Opdef extends DNode {
 			image = ((NameRef)n).name;
 			return;
 		}
-		throw new CompilerException(n.pos,"Bad operator definition");
+		throw new CompilerException(n,"Bad operator definition");
 	}
 	
 	public void setMode(NameRef n) {
@@ -74,14 +74,14 @@ public class Opdef extends DNode {
 			}
 		}
 		if( opmode < 0 )
-			throw new CompilerException(n.getPos(),"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
+			throw new CompilerException(n,"Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
 		return;
 	}
 	
 	public void setPriority(ConstIntExpr n) {
 		prior = n.value;
 		if( prior < 0 || prior > 255 )
-			throw new CompilerException(n.getPos(),"Operator priority must have value from 0 to 255");
+			throw new CompilerException(n,"Operator priority must have value from 0 to 255");
 		pos = n.getPos();
 		return;
 	}

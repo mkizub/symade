@@ -108,7 +108,7 @@ public class NewExpr extends Expr {
 			type.getStruct().resolveDecl();
 		}
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
-			throw new CompilerException(pos,"Abstract class "+type+" instantiation");
+			throw new CompilerException(this,"Abstract class "+type+" instantiation");
 		}
 		if( outer != null )
 			outer.resolve(null);
@@ -116,7 +116,7 @@ public class NewExpr extends Expr {
 			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
 		{
 			if( pctx.method==null || pctx.method.isStatic() )
-				throw new CompilerException(pos,"'new' for inner class requares outer instance specification");
+				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			Var th = pctx.method.getThisPar();
 			outer = new VarAccessExpr(pos,th);
 			outer.resolve(null);
@@ -181,7 +181,7 @@ public class NewExpr extends Expr {
 		Code.setLinePos(this.getPosLine());
 		if( type.isArgument() ) {
 			if( outer != null || args.length > 0 ) {
-				Kiev.reportError(pos,"Constructor with arguments for type argument is not supported");
+				Kiev.reportError(this,"Constructor with arguments for type argument is not supported");
 				return;
 			} else {
 				// If we have primitive type
@@ -193,7 +193,7 @@ public class NewExpr extends Expr {
 				for(i=0; i < Code.clazz.type.args.length; i++)
 					if( type.string_equals(Code.clazz.type.args[i]) ) break;
 				if( i >= Code.clazz.type.args.length )
-					throw new CompilerException(pos,"Can't create an instance of argument type "+type);
+					throw new CompilerException(this,"Can't create an instance of argument type "+type);
 				Expr tie = new AccessExpr(pos,new ThisExpr(pos),Code.clazz.resolveField(nameTypeInfo));
 				Expr e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
@@ -304,12 +304,12 @@ public class NewArrayExpr extends Expr {
 				args[i].resolve(Type.tpInt);
 		if( type.isArgument() ) {
 			if( pctx.method==null || pctx.method.isStatic() )
-				throw new CompilerException(pos,"Access to argument "+type+" from static method");
+				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;
 			for(i=0; i < pctx.clazz.type.args.length; i++)
 				if( type.string_equals(pctx.clazz.type.args[i]) ) break;
 			if( i >= pctx.clazz.type.args.length )
-				throw new CompilerException(pos,"Can't create an array of argument type "+type);
+				throw new CompilerException(this,"Can't create an array of argument type "+type);
 			Expr tie = new AccessExpr(pos,new ThisExpr(0),pctx.clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,

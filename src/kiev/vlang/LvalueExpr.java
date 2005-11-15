@@ -138,9 +138,9 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
 		obj.generate(null);
@@ -154,9 +154,9 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
 		obj.generate(null);
@@ -171,7 +171,7 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
 		obj.generate(null);
 		generateCheckCastIfNeeded();
 	}
@@ -180,9 +180,9 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_putfield,var,obj.getType());
 	}
@@ -191,9 +191,9 @@ public class AccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(pos, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(pos, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_dup_x);
 		Code.addInstr(op_putfield,var,obj.getType());
@@ -276,7 +276,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
@@ -345,7 +345,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt));
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			obj.generate(null);
 			index.generate(null);
 			Method func = (Method)v;
@@ -366,7 +366,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			Code.addInstr(op_dup2);
 			Code.addInstr(Instr.op_arr_load);
 		} else {
-			throw new CompilerException(pos,"Too complex expression for overloaded operator '[]'");
+			throw new CompilerException(this,"Too complex expression for overloaded operator '[]'");
 		}
 	}
 
@@ -393,7 +393,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
-				throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
 			Code.addInstr(Instr.op_call,(Method)v,false,objType);
 			// Pop return value
 			Code.addInstr(Instr.op_pop);
@@ -412,13 +412,13 @@ public class ContainerAccessExpr extends LvalueExpr {
 			// We need to get the type of object in stack
 			Type t = Code.stack_at(0);
 			if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
-				throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
+				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt));
+				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
 			Code.addInstr(Instr.op_call,func,false,obj.getType());
@@ -467,7 +467,7 @@ public class ThisExpr extends LvalueExpr {
 				pctx.clazz.type.getSuperType();
 			return pctx.clazz.type;
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
@@ -478,7 +478,7 @@ public class ThisExpr extends LvalueExpr {
 			pctx.method.isStatic() &&
 			!pctx.clazz.name.short_name.equals(nameIdefault)
 		)
-			Kiev.reportError(pos,"Access '"+toString()+"' in static context");
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
 	}
 
@@ -490,7 +490,7 @@ public class ThisExpr extends LvalueExpr {
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_load,Code.method.params[0]);
 		else {
-			Kiev.reportError(pos,"Access '"+toString()+"' in static context");
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			Code.addNullConst();
 		}
 	}
@@ -503,7 +503,7 @@ public class ThisExpr extends LvalueExpr {
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_load,Code.method.params[0]);
 		else {
-			Kiev.reportError(pos,"Access '"+toString()+"' in static context");
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			Code.addNullConst();
 		}
 		Code.addInstr(op_dup);
@@ -521,7 +521,7 @@ public class ThisExpr extends LvalueExpr {
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_store,Code.method.params[0]);
 		else {
-			Kiev.reportError(pos,"Access '"+toString()+"' in static context");
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			Code.addInstr(op_pop);
 		}
 	}
@@ -535,7 +535,7 @@ public class ThisExpr extends LvalueExpr {
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_store,Code.method.params[0]);
 		else {
-			Kiev.reportError(pos,"Access '"+toString()+"' in static context");
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			Code.addInstr(op_pop);
 		}
 	}
@@ -566,7 +566,7 @@ public class VarAccessExpr extends LvalueExpr {
 		try {
 			return var.type;
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
@@ -603,7 +603,7 @@ public class VarAccessExpr extends LvalueExpr {
 	public Field resolveProxyVar() {
 		Field proxy_var = (Field)Code.clazz.resolveName(var.name.name);
 		if( proxy_var == null && Code.method.isStatic() && !Code.method.isVirtualStatic() )
-			throw new CompilerException(pos,"Proxyed var cannot be referenced from static context");
+			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
 	}
 
@@ -664,7 +664,7 @@ public class VarAccessExpr extends LvalueExpr {
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
@@ -686,7 +686,7 @@ public class VarAccessExpr extends LvalueExpr {
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
@@ -736,7 +736,7 @@ public class VarAccessExpr extends LvalueExpr {
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
@@ -761,7 +761,7 @@ public class VarAccessExpr extends LvalueExpr {
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_dup);
 			Code.addInstr(op_store,var);
 		} else {
@@ -819,7 +819,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 			return var.type;
 //			return Rule.getTypeOfVar(var);
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
@@ -830,7 +830,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 		for(; i < rm.localvars.length; i++)
 			if( rm.localvars[i].name.equals(var.name) ) break;
 		if( i >= rm.localvars.length )
-			throw new CompilerException(pos,"Local prolog var "+var+" not found in "+rm);
+			throw new CompilerException(this,"Local prolog var "+var+" not found in "+rm);
 		setResolved(true);
 	}
 
@@ -852,7 +852,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 				return vd.var;
 			}
 		}
-		Kiev.reportError(pos, "Cannot find "+namePEnv);
+		Kiev.reportError(this, "Cannot find "+namePEnv);
 		return rm.params[0];
 	}
 
@@ -954,7 +954,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 		try {
 			return var.type;
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}

@@ -105,7 +105,7 @@ public class ArrayLengthAccessExpr extends Expr {
 	public void resolve(Type reqType) {
 		array.resolve(null);
 		if !(array.getType().isArray())
-			throw new CompilerException(pos, "Access to array length for non-array type "+array.getType());
+			throw new CompilerException(this, "Access to array length for non-array type "+array.getType());
 		setResolved(true);
 	}
 
@@ -328,7 +328,7 @@ public class AssignExpr extends LvalueExpr {
 		else if (value instanceof TypeRef)
 			((TypeRef)value).toExpr(t1);
 		else
-			throw new CompilerException(value.pos, "Can't opeerate on "+value);
+			throw new CompilerException(value, "Can't opeerate on "+value);
 		Type t2 = value.getType();
 		if( op==AssignOperator.AssignLeftShift || op==AssignOperator.AssignRightShift || op==AssignOperator.AssignUnsignedRightShift ) {
 			if( !t2.isIntegerInCode() ) {
@@ -355,7 +355,7 @@ public class AssignExpr extends LvalueExpr {
 			)
 		) {
 			if( pctx.method != null && pctx.method.isInvariantMethod() )
-				Kiev.reportError(pos,"Side-effect in invariant condition");
+				Kiev.reportError(this,"Side-effect in invariant condition");
 			if( pctx.method != null && !pctx.method.isInvariantMethod() ) {
 				if( lval instanceof StaticFieldAccessExpr )
 					pctx.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
@@ -574,7 +574,7 @@ public class BinaryExpr extends Expr {
 		resolve(null);
 		return getType();
 //		if( e == null )
-//			Kiev.reportError(pos,"Type of binary operation "+op.image+" between "+expr1+" and "+expr2+" unknown, types are "+t1+" and "+t2);
+//			Kiev.reportError(this,"Type of binary operation "+op.image+" between "+expr1+" and "+expr2+" unknown, types are "+t1+" and "+t2);
 //		else
 //			return e.getType();
 //		return Type.tpVoid;
@@ -930,7 +930,7 @@ public class StringConcatExpr extends Expr {
 		}
 		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),sig);
 		if( m == null )
-			Kiev.reportError(expr.pos,"Unknown method for StringBuffer");
+			Kiev.reportError(expr,"Unknown method for StringBuffer");
 		return m;
 	}
 
@@ -1064,7 +1064,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
 		foreach(ENode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
 		stats.append(decl);
@@ -1080,7 +1080,7 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
 		foreach(ASTNode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
 		stats.insert(decl,idx);
@@ -1165,14 +1165,14 @@ public class BlockExpr extends Expr implements ScopeOfNames, ScopeOfMethods {
 			try {
 				stats[i].generate(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i].getPos(),e);
+				Kiev.reportError(stats[i],e);
 			}
 		}
 		if (res != null) {
 			try {
 				res.generate(reqType);
 			} catch(Exception e ) {
-				Kiev.reportError(res.getPos(),e);
+				Kiev.reportError(res,e);
 			}
 		}
 		Vector<Var> vars = new Vector<Var>();
@@ -1786,7 +1786,7 @@ public class CastExpr extends Expr {
 			this.resolve2(type);
 			return;
 		}
-		throw new CompilerException(pos,"Expression "+expr+" of type "+extp+" is not castable to "+type);
+		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
 	}
 
 	public ENode tryOverloadedCast(Type et) {
@@ -1795,7 +1795,7 @@ public class CastExpr extends Expr {
 		v.$unbind();
 		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			expr = info.buildCall(pos,(ENode)~expr,(Method)v,ENode.emptyArray);
+			expr = info.buildCall(this,(ENode)~expr,(Method)v,ENode.emptyArray);
 			return this;
 		}
 		v.$unbind();
@@ -1862,9 +1862,9 @@ public class CastExpr extends Expr {
 
 		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
 			if( !et.isReference() && type.isArgument() )
-				Kiev.reportWarning(pos,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
+				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			else if (!et.isEnum())
-				throw new CompilerException(pos,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
+				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
 		if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
 			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
 		}
@@ -2044,7 +2044,7 @@ public class CastExpr extends Expr {
 		Type t = expr.getType();
 		if( t.isReference() ) {
 			if( t.isReference() != type.isReference() )
-				throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
+				throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
 			if( type.isReference() )
 				Code.addInstr(Instr.op_checkcast,type.getType());
 		} else {
@@ -2052,7 +2052,7 @@ public class CastExpr extends Expr {
 				if (t.isIntegerInCode() && type.isIntegerInCode())
 					; //generate nothing, both values are int-s
 				else
-					throw new CompilerException(pos,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
+					throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
 			} else {
 				Code.addInstr(Instr.op_x2y,type.getType());
 			}

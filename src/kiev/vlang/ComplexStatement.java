@@ -135,22 +135,22 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 				if( val instanceof TypeRef)
 					;
 				else if !( val instanceof Expr )
-					throw new CompilerException(pos,"Unknown node of class "+val.getClass());
+					throw new CompilerException(this,"Unknown node of class "+val.getClass());
 				if( val instanceof Expr )	{
 					if( sw.mode == SwitchStat.ENUM_SWITCH ) {
 						if( !(val instanceof StaticFieldAccessExpr) )
-							throw new CompilerException(pos,"Wrong case in enum switch");
+							throw new CompilerException(this,"Wrong case in enum switch");
 						StaticFieldAccessExpr f = (StaticFieldAccessExpr)val;
 						Type et = sw.sel.getType();
 						if( f.var.type != et )
-							throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
+							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						if (et.isEnum())
 							val = new ConstIntExpr(et.getStruct().getValueForEnumField(f.var));
 						else
 							val = (Expr)f.var.init.copy();
 					}
 					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
-						throw new CompilerException(pos,"Wrong case in normal switch");
+						throw new CompilerException(this,"Wrong case in normal switch");
 				}
 				else if( val instanceof TypeRef ) {
 					this.type = Type.getRealType(sw.tmpvar.type,val.getType());
@@ -158,7 +158,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					Struct cas = this.type.getStruct();
 					if( cas.isPizzaCase() ) {
 						if( sw.mode != SwitchStat.PIZZA_SWITCH )
-							throw new CompilerException(pos,"Pizza case type in non-pizza switch");
+							throw new CompilerException(this,"Pizza case type in non-pizza switch");
 						PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 						val = new ConstIntExpr(case_attr.caseno);
 						if( pattern.length > 0 ) {
@@ -182,7 +182,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						}
 					} else {
 						if( sw.mode != SwitchStat.TYPE_SWITCH )
-							throw new CompilerException(pos,"Type case in non-type switch");
+							throw new CompilerException(this,"Type case in non-type switch");
 						if( val.getType() == Type.tpObject ) {
 							val = null;
 							sw.defCase = this;
@@ -192,13 +192,13 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					}
 				}
 				else
-					throw new CompilerException(pos,"Unknown node of class "+val.getClass());
+					throw new CompilerException(this,"Unknown node of class "+val.getClass());
 			} else {
 				sw.defCase = this;
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
 					this.type = Type.tpObject;
 			}
-		} catch(Exception e ) { Kiev.reportError(pos,e); }
+		} catch(Exception e ) { Kiev.reportError(this,e); }
 
 		BlockStat.resolveBlockStats(this, stats);
 
@@ -229,7 +229,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 				else
 					throw new RuntimeException("Case label "+v+" must be of integer type");
 			}
-		} catch(Exception e ) { Kiev.reportError(pos,e); }
+		} catch(Exception e ) { Kiev.reportError(this,e); }
 		Vector<Var> vars = null;
 		if (pattern.length > 0) {
 			vars = new Vector<Var>();
@@ -242,7 +242,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			try {
 				stats[i].generate(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i].getPos(),e);
+				Kiev.reportError(stats[i],e);
 			}
 		}
 		if (vars != null)
@@ -375,7 +375,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						sel = cae;
 					}
 				}
-			} catch(Exception e ) { Kiev.reportError(sel.getPos(),e); }
+			} catch(Exception e ) { Kiev.reportError(sel,e); }
 			if( me != null ) {
 				me.resolve(reqType);
 				return;
@@ -390,7 +390,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 				if( typehash != null ) {
 					CaseLabel c = (CaseLabel)cases[i];
 					if( c.type == null || !c.type.isReference() )
-						throw new CompilerException(c.pos,"Mixed switch and typeswitch cases");
+						throw new CompilerException(c,"Mixed switch and typeswitch cases");
 					KString name = c.type.getClazzName().name;
 					typenames = (KString[])Arrays.append(typenames,name);
 					if( c.val != null )
@@ -399,9 +399,9 @@ public class SwitchStat extends Statement implements BreakTarget {
 						defindex = i;
 				}
 			}
-			catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
+			catch(Exception e ) { Kiev.reportError(cases[i],e); }
 			if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
-				Kiev.reportWarning(cases[i+1].pos, "Fall through to switch case");
+				Kiev.reportWarning(cases[i+1], "Fall through to switch case");
 			}
 		}
 		if( mode == TYPE_SWITCH ) {
@@ -598,7 +598,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 			lblbrk.generate(null);
 			Code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -671,7 +671,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
-			Kiev.reportError(body.pos,e);
+			Kiev.reportError(body,e);
 		}
 	}
 
@@ -694,7 +694,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 			}
 			Code.addInstr(Instr.exit_catch_handler,code_catcher);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		} finally {
 			Code.removeVar(arg);
 		}
@@ -752,7 +752,7 @@ public class FinallyInfo extends CatchInfo {
 
 			body.generate(Type.tpVoid);
 			Code.addInstr(Instr.op_ret,ret_arg);
-		} catch(Exception e ) { Kiev.reportError(pos,e);
+		} catch(Exception e ) { Kiev.reportError(this,e);
 		} finally { Code.removeVar(arg); }
 	}
 
@@ -789,20 +789,20 @@ public class TryStat extends Statement/*defaults*/ {
 			try {
 				catchers[i].resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(catchers[i].pos,e);
+				Kiev.reportError(catchers[i],e);
 			}
 		}
 		if(finally_catcher != null) {
 			try {
 				finally_catcher.resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(finally_catcher.pos,e);
+				Kiev.reportError(finally_catcher,e);
 			}
 		}
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 		// Check if abrupted
 		if( finally_catcher!= null && finally_catcher.isMethodAbrupted())
@@ -848,7 +848,7 @@ public class TryStat extends Statement/*defaults*/ {
 					body.setAutoReturnable(true);
 				body.generate(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
+				Kiev.reportError(this,e);
 			}
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() ) {
@@ -869,7 +869,7 @@ public class TryStat extends Statement/*defaults*/ {
 				try {
 					catchers[i].generate(Type.tpVoid);
 				} catch(Exception e ) {
-					Kiev.reportError(catchers[i].pos,e);
+					Kiev.reportError(catchers[i],e);
 				}
 			}
 			if(finally_catcher != null) {
@@ -877,7 +877,7 @@ public class TryStat extends Statement/*defaults*/ {
 					Code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
 					finally_catcher.generate(Type.tpVoid);
 				} catch(Exception e ) {
-					Kiev.reportError(finally_catcher.pos,e);
+					Kiev.reportError(finally_catcher,e);
 				}
 			}
 			Code.addInstr(Instr.set_label,end_label);
@@ -923,10 +923,10 @@ public class SynchronizedStat extends Statement {
 		try {
 			expr.resolve(null);
 			expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
-		} catch(Exception e ) { Kiev.reportError(pos,e); }
+		} catch(Exception e ) { Kiev.reportError(this,e); }
 		try {
 			body.resolve(Type.tpVoid);
-		} catch(Exception e ) { Kiev.reportError(pos,e); }
+		} catch(Exception e ) { Kiev.reportError(this,e); }
 		setAbrupted(body.isAbrupted());
 		setMethodAbrupted(body.isMethodAbrupted());
 	}
@@ -947,7 +947,7 @@ public class SynchronizedStat extends Statement {
 					body.setAutoReturnable(true);
 				body.generate(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
+				Kiev.reportError(this,e);
 			}
 			Code.addInstr(Instr.stop_catcher,code_catcher);
 			if( !body.isMethodAbrupted() ) {
@@ -1011,13 +1011,13 @@ public class WithStat extends Statement {
 			case AssignExpr:				e = ((AssignExpr)e).lval;							goto case e;
 			}
 			if (var_or_field == null) {
-				Kiev.reportError(pos,"With statement needs variable or field argument");
+				Kiev.reportError(this,"With statement needs variable or field argument");
 				this.replaceWithNode(body);
 				body.resolve(Type.tpVoid);
 				return;
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return;
 		}
 
@@ -1026,7 +1026,7 @@ public class WithStat extends Statement {
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		} finally {
 			if (!is_forward) var_or_field.setForward(false);
 		}
@@ -1044,7 +1044,7 @@ public class WithStat extends Statement {
 				body.setAutoReturnable(true);
 			body.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 		if( !body.isMethodAbrupted() ) {
 			if( isAutoReturnable() )

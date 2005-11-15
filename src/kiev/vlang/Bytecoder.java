@@ -31,14 +31,14 @@ import static kiev.vlang.Operator.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
 public class Bytecoder implements Constants {
 	public Struct								cl;
 	public kiev.bytecode.Clazz					bcclazz;
-	public kiev.bytecode.KievAttributeClazz		kaclazz;
+	public kiev.bytecode.KievAttributeClazz	kaclazz;
 	public boolean								kievmode;
 
 	public Bytecoder(Struct cl, kiev.bytecode.Clazz bcclazz) {
@@ -554,7 +554,7 @@ public class Bytecoder implements Constants {
 						} else {
 							inner[i] = Env.getStruct(cn);
 							if( inner[i] == cl ) {
-								Kiev.reportWarning(0,"Class "+cl+" is inner for itself");
+								Kiev.reportWarning("Class "+cl+" is inner for itself");
 							} else {
 								if( inner[i] == null )
 									throw new RuntimeException("Class "+cn+" not found");
@@ -572,7 +572,7 @@ public class Bytecoder implements Constants {
 //					}
 					access[i] = (short)ica.cp_inner_flags[i];
 				} catch(Exception e ) {
-					Kiev.reportError(0,e);
+					Kiev.reportError(null,e);
 				}
 			}
 			a = new InnerClassesAttr();
@@ -585,7 +585,7 @@ public class Bytecoder implements Constants {
 			KString clname = kia.getClazzName(clazz);
 			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname,false));
 			if( s == null )
-				Kiev.reportWarning(0,"Bytecode imports a member from unknown class "+clname);
+				Kiev.reportWarning("Bytecode imports a member from unknown class "+clname);
 			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
 				Import imp = new Import();
 				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
@@ -607,7 +607,7 @@ public class Bytecoder implements Constants {
 					node = s.resolveMethod(kia.getNodeName(clazz),kia.getSignature(clazz));
 				}
 				if( node == null )
-					Kiev.reportWarning(0,"Package bytecode imports unknown method / field "+
+					Kiev.reportWarning("Package bytecode imports unknown method / field "+
 						kia.getNodeName(clazz)+" "+kia.getSignature(clazz)+" from class "+s);
 				cl.imported.add(node);
 			}

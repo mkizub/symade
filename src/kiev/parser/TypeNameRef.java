@@ -65,18 +65,18 @@ public class TypeNameRef extends TypeRef {
 		KString nm = name.name;
 		ASTNode@ v;
 		if( !PassInfo.resolveQualifiedNameR(this,v,new ResInfo(this,ResInfo.noForwards),nm) )
-			throw new CompilerException(pos,"Unresolved identifier "+nm);
+			throw new CompilerException(this,"Unresolved identifier "+nm);
 		if( v instanceof TypeRef ) {
 			this.lnk = ((TypeRef)v).getType();
 		} else {
 			if( !(v instanceof Struct) )
-				throw new CompilerException(pos,"Type name "+nm+" is not a structure, but "+v);
+				throw new CompilerException(this,"Type name "+nm+" is not a structure, but "+v);
 			Struct bs = (Struct)v;
 			bs.checkResolved();
 			this.lnk = bs.type;
 		}
 		if (this.lnk == null)
-			throw new CompilerException(pos,"Type "+this+" is not found");
+			throw new CompilerException(this,"Type "+this+" is not found");
 		return this.lnk;
 	}
 

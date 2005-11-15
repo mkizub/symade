@@ -59,25 +59,22 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	public void verify(Struct:ASTNode s) {
-		PassInfo.pushStruct(s);
-		try {
-			foreach (DNode n; s.members; n instanceof Field)
-				verify(n);
-			foreach (Struct sub; s.sub_clazz)
-				verify(sub);
-		} finally { PassInfo.popStruct(s); }
+		foreach (DNode n; s.members; n instanceof Field)
+			verify(n);
+		foreach (Struct sub; s.sub_clazz)
+			verify(sub);
 	}
 	
 	public void verify(Field:ASTNode f) {
 		MetaPacked mp = f.getMetaPacked();
 		if !(f.isPackedField() ) {
 			if (mp != null)
-				Kiev.reportError(f.pos, "Non-packed field has @packed attribute");
+				Kiev.reportError(f, "Non-packed field has @packed attribute");
 			return;
 		}
 		if (mp == null) {
 			if (mp != null)
-				Kiev.reportError(f.pos, "Packed field has no @packed attribute");
+				Kiev.reportError(f, "Packed field has no @packed attribute");
 			return;
 		}
 		Struct s = (Struct)f.parent;
@@ -85,11 +82,11 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		if( mp_in != null && mp_in.len > 0 ) {
 			Field p = s.resolveField(mp_in);
 			if( p == null ) {
-				Kiev.reportError(f.pos,"Packer field "+mp_in+" not found");
+				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;
 			}
 			if( p.type != Type.tpInt ) {
-				Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
+				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
 			mp.packer = p;
@@ -118,13 +115,13 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				if( mp_in != null && mp_in.len > 0 ) {
 					Field p = s.resolveField(mp_in);
 					if( p == null ) {
-						Kiev.reportError(f.pos,"Packer field "+mp_in+" not found");
+						Kiev.reportError(f,"Packer field "+mp_in+" not found");
 						f.meta.unset(mp);
 						f.setPackedField(false);
 						continue;
 					}
 					if( p.type != Type.tpInt ) {
-						Kiev.reportError(f.pos,"Packer field "+p+" is not of 'int' type");
+						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 						f.meta.unset(mp);
 						f.setPackedField(false);
 						continue;
@@ -192,7 +189,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			return true;
 		MetaPacked mp = f.getMetaPacked();
 		if( mp == null || mp.packer == null ) {
-			Kiev.reportError(fa.pos, "Internal error: packed field "+f+" has no packer");
+			Kiev.reportError(fa, "Internal error: packed field "+f+" has no packer");
 			return true;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);

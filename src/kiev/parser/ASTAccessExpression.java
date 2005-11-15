@@ -121,7 +121,7 @@ public class ASTAccessExpression extends Expr {
 				msg.append("\t").append(res).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0) {
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
@@ -132,9 +132,7 @@ public class ASTAccessExpression extends Expr {
 			}
 			msg.append("while resolving ").append(this);
 			this.obj = this.obj;
-			throw new CompilerException(pos, msg.toString());
-			//Kiev.reportWarning(pos, "Cannot pre-resolve "+this);
-			//return;
+			throw new CompilerException(this, msg.toString());
 		}
 		this.replaceWithNode(res[idx]);
 	}
@@ -214,7 +212,7 @@ public class ASTAccessExpression extends Expr {
 				msg.append("\t").append(res).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0) {
 			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
@@ -225,7 +223,7 @@ public class ASTAccessExpression extends Expr {
 			}
 			msg.append("while resolving ").append(this);
 			this.obj = this.obj;
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 			//return;
 		}
 		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
@@ -233,14 +231,14 @@ public class ASTAccessExpression extends Expr {
 
 	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
 		if( v instanceof Field ) {
-			return info.buildAccess(pos, o, v);
+			return info.buildAccess(this, o, v);
 		}
 		else if( v instanceof Struct ) {
 			TypeRef tr = new TypeRef(((Struct)v).type);
 			return tr;
 		}
 		else {
-			throw new CompilerException(pos,"Identifier "+ident+" must be a class's field");
+			throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
 		}
 	}
 

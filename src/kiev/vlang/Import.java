@@ -92,10 +92,10 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 			types[j] = args[i].getType();
 		MethodType mt = MethodType.newMethodType(null,types,Type.tpAny);
 		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
-			throw new CompilerException(pos,"Unresolved method "+Method.toString(name.name,mt));
+			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
 		ASTNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
-			throw new CompilerException(pos,"Identifier "+name+" is not a method");
+			throw new CompilerException(this,"Identifier "+name+" is not a method");
 		resolved = n;
 		return this;
 	}

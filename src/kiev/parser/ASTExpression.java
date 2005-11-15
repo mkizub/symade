@@ -68,14 +68,14 @@ public class ASTExpression extends Expr {
 			StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			Kiev.reportError(pos, msg.toString());
+			Kiev.reportError(this, msg.toString());
 			return;
 		}
 		if (results.length() > 1) {
 			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			Kiev.reportError(pos, msg.toString());
+			Kiev.reportError(this, msg.toString());
 			return;
 		}
 		
@@ -104,13 +104,13 @@ public class ASTExpression extends Expr {
 			StringBuffer msg = new StringBuffer("Expression: '"+this+"' may not be resolved using defined operators");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		if (results.length() > 1) {
 			StringBuffer msg = new StringBuffer("Umbigous expression: '"+this+"'\nmay be reolved as:\n");
 			foreach(ENode n; results)
 				msg.append(n).append("\n");
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		
 		ENode e = results.head();
@@ -319,7 +319,7 @@ public class ASTExpression extends Expr {
 	}
 
 	public ENode getExpr(Object:Object expr) {
-		throw new CompilerException(pos,"Node of type "+expr.getClass()+" cannot be an expression");
+		throw new CompilerException(this,"Node of type "+expr.getClass()+" cannot be an expression");
 	}
 
 	public int		getPriority() { return 256; }

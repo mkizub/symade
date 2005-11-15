@@ -51,17 +51,17 @@ public class ASTRuleIsoneofExpression extends ASTRuleNode {
     	for(int i=0; i < vars.length; i++ ) {
 			ASTNode@ v;
 			if( !PassInfo.resolveNameR(this,v,new ResInfo(this),names[i].name) )
-				throw new CompilerException(pos,"Unresolved identifier "+names[i].name);
+				throw new CompilerException(this,"Unresolved identifier "+names[i].name);
 			if( !(v instanceof Var) )
-	    		throw new CompilerException(names[i].getPos(),"Identifier is not a var");
+	    		throw new CompilerException(names[i],"Identifier is not a var");
 			vars[i] = (Var)v;
 			exprs[i].resolve(null);
 		}
     	replaceWithNode(new RuleIsoneofExpr(getPos(),vars,exprs.delToArray()));
     }
 
-	public void	createText(StringBuffer sb) { throw new CompilerException(pos,"Internal error"); }
-	public void	resolve1(JumpNodes jn) { throw new CompilerException(pos,"Internal error"); }
+	public void	createText(StringBuffer sb) { throw new CompilerException(this,"Internal error"); }
+	public void	resolve1(JumpNodes jn) { throw new CompilerException(this,"Internal error"); }
 
 }
 

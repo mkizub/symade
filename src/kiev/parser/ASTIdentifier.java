@@ -106,7 +106,7 @@ public class ASTIdentifier extends ENode {
 			return false;
 		}
 		else if( name == Constants.nameReturnVar ) {
-			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
+			Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
 			name = Constants.nameResultVar;
 		}
 		else if( name == Constants.nameThis ) {
@@ -147,7 +147,7 @@ public class ASTIdentifier extends ENode {
 //					return new ConstBoolExpr(false);
 //				return new ConstNullExpr();
 //			}
-			throw new CompilerException(pos,"Unresolved identifier "+name);
+			throw new CompilerException(this,"Unresolved identifier "+name);
 		}
 		if( v instanceof Struct ) {
 			Struct s = (Struct)v;
@@ -158,7 +158,7 @@ public class ASTIdentifier extends ENode {
 			replaceWithNode((TypeRef)v);
 		}
 		else {
-			replaceWithNode(info.buildAccess(pos, null, v));
+			replaceWithNode(info.buildAccess(this, null, v));
 		}
 		return false;
 	}
@@ -188,7 +188,7 @@ public class ASTIdentifier extends ENode {
 			return;
 		}
 		else if( name == Constants.nameReturnVar ) {
-			Kiev.reportWarning(pos,"Keyword '$return' is deprecated. Replace with 'Result', please");
+			Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
 			name = Constants.nameResultVar;
 		}
 		ASTNode@ v;
@@ -226,7 +226,7 @@ public class ASTIdentifier extends ENode {
 					replaceWithNode(new ConstNullExpr());
 				return;
 			}
-			throw new CompilerException(pos,"Unresolved identifier "+name);
+			throw new CompilerException(this,"Unresolved identifier "+name);
 		}
 		if( v instanceof Struct ) {
 			Struct s = (Struct)v;
@@ -247,7 +247,7 @@ public class ASTIdentifier extends ENode {
 			replaceWithNode((TypeRef)v);
 			return;
 		}
-		replaceWithNodeResolve(reqType, info.buildAccess(pos, null, v));
+		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));
 	}
 
 	public int		getPriority() { return 256; }

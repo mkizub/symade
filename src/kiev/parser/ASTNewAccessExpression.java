@@ -28,7 +28,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 207 $
+ * @version $Revision$
  *
  */
 
@@ -51,7 +51,7 @@ public class ASTNewAccessExpression extends Expr {
         	try {
             	args[i].resolve(null);
             } catch(Exception e) {
-            	Kiev.reportError(pos,e);
+            	Kiev.reportError(args[i],e);
             }
         }
 		replaceWithNodeResolve(reqType, new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));

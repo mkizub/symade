@@ -3,8 +3,8 @@ kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
 kiev.Kiev.CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
-kiev.Kiev.profInfo kiev/Kiev$profInfo kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
+kiev.SeverError kiev/SeverError kiev\Errors.java
 kiev.Syntax kiev/Syntax kiev\Syntax.java
 kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java

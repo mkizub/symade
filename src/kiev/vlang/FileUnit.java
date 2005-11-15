@@ -81,7 +81,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				try {
 					((Struct)n).resolveMetaDefaults();
 				} catch(Exception e) {
-					Kiev.reportError(n.pos,e);
+					Kiev.reportError(n,e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
@@ -98,7 +98,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				try {
 					((Struct)n).resolveMetaValues();
 				} catch(Exception e) {
-					Kiev.reportError(n.pos,e);
+					Kiev.reportError(n,e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
@@ -106,20 +106,20 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 
 	public void setPragma(ASTPragma pr) {
 		foreach (ConstStringExpr e; pr.options)
-			setExtension(e.pos,pr.enable,e.value.toString());
+			setExtension(e,pr.enable,e.value.toString());
 	}
 
-	private void setExtension(int pos, boolean enabled, String s) {
+	private void setExtension(ASTNode at, boolean enabled, String s) {
 		Ext ext;
 		try {
 			ext = Ext.fromString(s);
 		} catch(RuntimeException e) {
-			Kiev.reportWarning(pos,"Unknown pragma '"+s+"'");
+			Kiev.reportWarning(at,"Unknown pragma '"+s+"'");
 			return;
 		}
 		int i = ((int)ext)-1;
 		if (enabled && Kiev.getCmdLineExtSet()[i])
-			Kiev.reportError(pos,"Extension '"+s+"' was disabled from command line");
+			Kiev.reportError(this,"Extension '"+s+"' was disabled from command line");
 		disabled_extensions[i] = !enabled;
 	}
 
@@ -138,7 +138,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 					((Struct)dn).resolveImports();
 				}
 			} catch(Exception e ) {
-				Kiev.reportError/*Warning*/(members[i].getPos(),e);
+				Kiev.reportError/*Warning*/(members[i],e);
 			}
 		}
 	}
@@ -154,7 +154,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				try {
 					members[i].resolveDecl();
 				} catch(Exception e) {
-					Kiev.reportError(members[i].pos,e);
+					Kiev.reportError(members[i],e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
@@ -269,7 +269,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				try {
 					toJava(output_dir, (Struct)members[i]);
 				} catch(Exception e) {
-					Kiev.reportError(members[i].pos,e);
+					Kiev.reportError(members[i],e);
 				}
 			}
 		} finally { Kiev.curFile = curr_file; }
@@ -309,92 +309,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 			System.out.println("Create/write error while Kiev-to-Java exporting: "+e);
 		}
 	}
-
-	private void dumpFile(String output_dir, String out_file, String ext, Dumper dmp, boolean patch) {
-		try {
-			make_output_dir(output_dir,out_file);
-			File f = new File(output_dir,out_file+ext);
-			File bk = new File(output_dir,out_file+ext+".bak");
-			if (patch && f.exists()) {
-				if (bk.exists())
-					bk.delete();
-				f.renameTo(bk);
-			}
-			BufferedWriter out;
-			BufferedReader in = null;
-			try {
-				out = new BufferedWriter(new FileWriter(f));
-				if (patch && bk.exists())
-					in = new BufferedReader(new FileReader(bk));
-			} catch( java.io.FileNotFoundException e ) {
-				System.gc();
-				System.runFinalization();
-				System.gc();
-				System.runFinalization();
-				out = new BufferedWriter(new FileWriter(f));
-				if (patch && bk.exists())
-					in = new BufferedReader(new FileReader(bk));
-			}
-			if (patch && in != null) {
-				write_patched(out,new BufferedReader(new StringReader(dmp.toString())),in);
-			} else {
-				out.write(dmp.toString());
-			}
-			out.close();
-		} catch( IOException e ) {
-			System.out.println("Create/write error while Kiev-to-"+ext+" exporting: "+e);
-		}
-	}
-
-	private void write_patched(BufferedWriter out, BufferedReader in, BufferedReader pin) {
-		Vector<String> src = new Vector<String>();
-		Vector<String> patch = new Vector<String>();
-		// analyze source and patch
-		for (;;) {
-			String line = in.readLine();
-			if (line == null)
-				break;
-			src.append(line);
-		}
-		for (;;) {
-			String ptch = pin.readLine();
-			if (ptch == null)
-				break;
-			patch.append(ptch);
-		}
-		for (int i=0; i < src.size(); i++) {
-			String line = src[i];
-			out.write(line);
-			out.newLine();
-			if (line.trim().startsWith("//{")) {
-				// need to patch!
-				for (int j=0; j < patch.size(); j++) {
-					if (line.equals(patch[j])) {
-						patch[j] = "!!!moved";
-						for(j++; !patch[j].trim().startsWith("//} end of your code"); j++) {
-							out.write(patch[j]);
-							out.newLine();
-							patch[j] = "!!!moved";
-						}
-						patch[j] = "!!!moved";
-					}
-				}
-			}
-		}
-		// check that we've moved all parts
-		for (int i=0; i < patch.size(); i++) {
-			if (patch[i].trim().startsWith("//{")) {
-				if (!patch[i+1].trim().startsWith("//} end of your code")) {
-					Kiev.reportWarning(0,"C++ patching - not moved chank started with\n"+patch[i]);
-				}
-				for (; i < patch.size(); i++) {
-					if (patch[i].trim().startsWith("//} end of your code"))
-						break;
-				}
-			}
-		}
-	}
-
 
 	public static void toBytecode(Struct cl) {
 		Struct jcl = cl;

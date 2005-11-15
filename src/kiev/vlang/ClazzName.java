@@ -27,7 +27,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -123,19 +123,14 @@ public class ClazzName extends NodeName implements Constants {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = isInn ? "$" : "/" ;
 		KString bytecode_name;
-		try {
-			if( outer.isPackage() ) {
-				assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
-				if( !outer.name.name.equals(KString.Empty) )
-					bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-				else
-					bytecode_name = short_name;
-			} else {
-				assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+		if( outer.isPackage() ) {
+			assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+			if( !outer.name.name.equals(KString.Empty) )
 				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-			}
-		} catch(Exception e) {
-			Kiev.reportError(0,e);
+			else
+				bytecode_name = short_name;
+		} else {
+			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
 			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 		}
 		delim = "."; //isInn ? "$" : "." ;

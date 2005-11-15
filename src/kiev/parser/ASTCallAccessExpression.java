@@ -76,7 +76,7 @@ public class ASTCallAccessExpression extends Expr {
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,null);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
-				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,null));
+				throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
 			}
 			info.leaveSuper();
 			info.leaveForward(obj);
@@ -88,11 +88,11 @@ public class ASTCallAccessExpression extends Expr {
 				meth.makeArgs(cae.args, tp);
 				return;
 			}
-			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 		}
 		
 		if !(obj instanceof Expr || obj instanceof TypeRef)
-			throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
+			throw new CompilerException(obj,"Resolved object "+obj+" is not an expression or type name");
 
 		MethodType mt = null;
 		{
@@ -128,11 +128,11 @@ public class ASTCallAccessExpression extends Expr {
 			ResInfo info = new ResInfo(this,res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(pos, obj, m, args.delToArray());
+					res[si] = info.buildCall(this, obj, m, args.delToArray());
 				else if (res_flags == 0)
-					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
+					res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
 				else
-					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
+					res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
 			}
 		}
 		int cnt = 0;
@@ -151,7 +151,7 @@ public class ASTCallAccessExpression extends Expr {
 				msg.append("\t").append(res[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0 && res_flags != 0) {
 			res_flags = 0;
@@ -165,7 +165,7 @@ public class ASTCallAccessExpression extends Expr {
 				msg.append("\t").append(tps[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		ENode e = res[idx];
 		if (e instanceof UnresExpr)
@@ -201,7 +201,7 @@ public class ASTCallAccessExpression extends Expr {
 			MethodType mt = MethodType.newMethodType(null,ta,ret);
 			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
 				if( ret != null ) { ret = null; goto retry_with_null_ret; }
-				throw new CompilerException(obj.getPos(),"Unresolved method "+Method.toString(func.name,args,ret));
+				throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,ret));
 			}
 			info.leaveSuper();
 			info.leaveForward(obj);
@@ -214,13 +214,13 @@ public class ASTCallAccessExpression extends Expr {
 				cae.resolve(ret);
 				return;
 			}
-			throw new CompilerException(obj.getPos(),"Super-call via forwarding is not allowed");
+			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 		}
 		
 		obj.resolve(null);
 		
 		if !(obj instanceof Expr || obj instanceof TypeRef)
-			throw new CompilerException(obj.getPos(),"Resolved object "+obj+" is not an expression or type name");
+			throw new CompilerException(obj,"Resolved object "+obj+" is not an expression or type name");
 
 		MethodType mt = null;
 		{
@@ -256,11 +256,11 @@ public class ASTCallAccessExpression extends Expr {
 			ResInfo info = new ResInfo(this,res_flags);
 			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(pos, obj, m, args.delToArray());
+					res[si] = info.buildCall(this, obj, m, args.delToArray());
 				else if (res_flags == 0)
-					res[si] = info.buildCall(pos, new TypeRef(tps[si]), m, args.delToArray());
+					res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
 				else
-					res[si] = info.buildCall(pos, (ENode)obj.copy(), m, args.delToArray());
+					res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
 			}
 		}
 		int cnt = 0;
@@ -279,7 +279,7 @@ public class ASTCallAccessExpression extends Expr {
 				msg.append("\t").append(res[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		if (cnt == 0 && res_flags != 0) {
 			res_flags = 0;
@@ -293,7 +293,7 @@ public class ASTCallAccessExpression extends Expr {
 				msg.append("\t").append(tps[si]).append('\n');
 			}
 			msg.append("while resolving ").append(this);
-			throw new CompilerException(pos, msg.toString());
+			throw new CompilerException(this, msg.toString());
 		}
 		this.replaceWithNodeResolve( reqType, res[idx] );
 	}

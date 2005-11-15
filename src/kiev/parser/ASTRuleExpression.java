@@ -28,7 +28,7 @@ import kiev.vlang.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 207 $
+ * @version $Revision$
  *
  */
 
@@ -56,7 +56,7 @@ public class ASTRuleExpression extends ASTRuleNode {
     		replaceWithNodeResolve(new RuleExpr((ENode)~expr,bt_expr==null?null:(ENode)~bt_expr));
     }
 
-	public void	createText(StringBuffer sb) { throw new CompilerException(getPos(),"Internal error"); }
-	public void	resolve1(JumpNodes jn) { throw new CompilerException(getPos(),"Internal error"); }
+	public void	createText(StringBuffer sb) { throw new CompilerException(this,"Internal error"); }
+	public void	resolve1(JumpNodes jn) { throw new CompilerException(this,"Internal error"); }
 
 }

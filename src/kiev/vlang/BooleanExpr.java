@@ -378,7 +378,7 @@ public class BinaryBoolExpr extends BoolExpr {
 	public void getExprByStruct(Struct cas) {
 		if( cas.isPizzaCase() ) {
 			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
-				throw new CompilerException(pos,"Undefined operation "+op.image+" on cased class");
+				throw new CompilerException(this,"Undefined operation "+op.image+" on cased class");
 			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
 			expr2 = new ConstIntExpr(ca.caseno);
 			expr2.resolve(Type.tpInt);
@@ -394,7 +394,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,Expr.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
-			throw new CompilerException(pos,"Class "+cas+" is not a cased class");
+			throw new CompilerException(this,"Class "+cas+" is not a cased class");
 		}
 	}
 
@@ -452,7 +452,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				return;
 			}
 		}
-		throw new CompilerException(pos,"Unresolved expression "+this);
+		throw new CompilerException(this,"Unresolved expression "+this);
 	}
 	
 	private ASTNode resolve2(Type reqType) {
@@ -662,7 +662,7 @@ public class InstanceofExpr extends BoolExpr {
 			}
 		}
 		if( !expr.getType().isCastableTo(type.getType()) ) {
-			throw new CompilerException(pos,"Type "+expr.getType()+" is not castable to "+type);
+			throw new CompilerException(this,"Type "+expr.getType()+" is not castable to "+type);
 		}
 		if (expr.getType().isInstanceOf(type.getType())) {
 			replaceWithNodeResolve(reqType,

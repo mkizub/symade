@@ -55,7 +55,7 @@ public class ASTIdentifierAlias extends ASTAlias {
 			((Field)n).name.addAlias(name.name);
 			break;
 		default:
-			throw new CompilerException(pos,"Node of type "+n.getClass()+" cannot have aliases");
+			throw new CompilerException(this,"Node of type "+n.getClass()+" cannot have aliases");
 		}
 	}
 

@@ -65,7 +65,7 @@ public class Tree extends ASTNode {
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"Tree node cannot be copied");
+		throw new CompilerException(this,"Tree node cannot be copied");
 	};
 
 }

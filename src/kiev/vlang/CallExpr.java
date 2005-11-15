@@ -198,7 +198,7 @@ public class CallExpr extends Expr {
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
 			if( func.parent != Type.tpObject.clazz )
-				Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
+				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name.name == nameObjEquals ) {
 				CodeLabel label_true = Code.newLabel();
 				CodeLabel label_false = Code.newLabel();
@@ -299,7 +299,7 @@ public class CallExpr extends Expr {
 				Code.addInstr(op_call,m,false);
 			}
 			else
-				Kiev.reportError(pos,"Call to unknown method "+func+" of type "+objt);
+				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 		}
 		else
 			Code.addInstr(op_call,func,super_flag,obj.getType());
@@ -480,7 +480,7 @@ public class ClosureCallExpr extends Expr {
 		}
 		Method m = Type.tpClosureClazz.resolveMethod(KString.from("addArg"),sig);
 		if( m == null )
-			Kiev.reportError(expr.pos,"Unknown method for kiev.vlang.closure");
+			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;
 	}
 

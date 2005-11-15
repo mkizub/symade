@@ -52,6 +52,7 @@ public class kiev040 {
 
 	public static FileUnit	curFileUnit;
 	public static Struct	curClazz;
+	public static Method	curMethod;
 	public static boolean	interface_only = false;
 	public static boolean	reparse_body = false;
 	public static int		reparse_pos = 0;
@@ -1499,12 +1500,13 @@ BlockStat MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m; TypeRef ret; NameRef id; MetaThrows thr; }
+{ Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; }
 {
 	ClazzArguments(null)
 	ret = Type()
 	id = Name()
-	{ m = mkMethod(id,modifiers,ret); }
+	{ m = mkMethod(id,modifiers,ret); oldMethod = curMethod; curMethod = m; }
+	try {
 	"("
 		[
 			modifiers = Modifiers()
@@ -1536,20 +1538,24 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 		m.body = MaybeSkipBlock() [ ";" ]
 	|	[ "default" m.annotation_default = AnnotationValueAny() ] ";"
 	)
+	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
 Constructor ConstructorDeclaration(ASTModifiers modifiers) :
-{ Token t; Constructor m; NameRef id; MetaThrows thr; }
+{ Token t; Constructor m; NameRef id; MetaThrows thr; Method oldMethod; }
 {
 	id = Name()
 	{
 		if( !id.name.equals(curClazz.name.short_name) )
-			Kiev.reportError(id.pos,"Return type missed or bad constructor name "+id);
+			Kiev.reportError(id,"Return type missed or bad constructor name "+id);
 		else
 			id.name = Constants.nameInit;
 		m = mkConstructor(id,modifiers); 
+		oldMethod = curMethod;
+		curMethod = m;
 	}
+	try {
 	"("
 		[
 			modifiers = Modifiers()
@@ -1580,6 +1586,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 		m.body = MaybeSkipBlock() [ ";" ]
 	|	";"
 	)
+	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
@@ -1652,11 +1659,12 @@ WBCCondition InvariantDeclaration(ASTModifiers modifiers) :
 }
 
 RuleMethod RuleDeclaration(ASTModifiers modifiers) :
-{ RuleBlock bl; RuleMethod m; NameRef id; }
+{ RuleBlock bl; RuleMethod m; NameRef id; Method oldMethod; }
 {
 	"rule"
 	id = Name()
-	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); }
+	{ m = mkRuleMethod(id, modifiers, new TypeRef(Type.tpRule)); oldMethod = curMethod; curMethod = m; }
+	try {
 	"("
 		[
 			modifiers = Modifiers()
@@ -1685,6 +1693,7 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 		m.body = MaybeSkipBlock() [ ";" ]
 	|	";"
 	)
+	} finally { curMethod = oldMethod; }
 	{ return m; }
 }
 
@@ -2532,8 +2541,7 @@ BlockStat PrescannedBlock(PrescannedBody b) :
 		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
 			break;
 		if( tk.kind == EOF ) {
-			throw new CompilerException(
-				(b.lineno <<11) | (b.columnno & 0x3FF),
+			throw new CompilerException(b,
 				"Expected to find start of block after scanning. Have you changed the file?"
 			);
 		}
@@ -2575,8 +2583,7 @@ RuleBlock PrescannedRuleBlock(PrescannedBody b) :
 		if( tk.beginLine==b.lineno && tk.beginColumn==b.columnno )
 			break;
 		if( tk.kind == EOF ) {
-			throw new CompilerException(
-				(b.lineno <<11) | (b.columnno & 0x3FF),
+			throw new CompilerException(b,
 				"Expected to find start of block after scanning. Have you changed the file?"
 			);
 		}

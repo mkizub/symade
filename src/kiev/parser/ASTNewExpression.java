@@ -100,7 +100,7 @@ public class ASTNewExpression extends Expr {
 				}
 			}
 			if( !found )
-				throw new CompilerException(pos,"Class "+tp+" do not have constructors with "+args.length+" arguments");
+				throw new CompilerException(this,"Class "+tp+" do not have constructors with "+args.length+" arguments");
 		}
 		for(int i=0; i < args.length; i++) {
 			try {
@@ -109,7 +109,7 @@ public class ASTNewExpression extends Expr {
 				else
 					args[i].resolve(null);
 			} catch(Exception e) {
-				Kiev.reportError(pos,e);
+				Kiev.reportError(args[i],e);
 			}
 		}
 		if( clazz == null ) {

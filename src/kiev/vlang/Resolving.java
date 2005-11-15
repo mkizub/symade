@@ -155,35 +155,35 @@ public class ResInfo {
 		return true;
 	}
 	
-	public Expr buildVarAccess(int pos, Var var) {
+	public Expr buildVarAccess(ASTNode at, Var var) {
 		if (var.isLocalRuleVar()) {
-			return new LocalPrologVarAccessExpr(pos, var);
+			return new LocalPrologVarAccessExpr(at.pos, var);
 		}
 		else if (var.name.name == Constants.nameThis) {
-			return new ThisExpr(pos);
+			return new ThisExpr(at.pos);
 		}
-		return new VarAccessExpr(pos, var);
+		return new VarAccessExpr(at.pos, var);
 	}
 
-	public Expr buildAccess(int pos, ASTNode from) {
+	public Expr buildAccess(ASTNode at, ASTNode from) {
 		if (isEmpty())
-			return buildAccess(pos, null, from);
+			return buildAccess(at, null, from);
 			//throw new CompilerException(pos, "Empty access build requested");
 		else
-			return buildAccess(pos, from, forwards_stack[--forwards_p]);
+			return buildAccess(at, from, forwards_stack[--forwards_p]);
 	}
 	
-	public Expr buildAccess(int pos, ASTNode from, ASTNode node) {
+	public Expr buildAccess(ASTNode at, ASTNode from, ASTNode node) {
 		trace(Kiev.debugResolve,"Building access from "+from+" to "+node+" via "+this);
 		if (from == null && isEmpty()) {
 			// var or static field
 			if (node instanceof Field) {
 				if (node.isStatic())
-					return new StaticFieldAccessExpr(pos,(Field)node);
-				throw new CompilerException(pos, "Static access to an instance field "+node);
+					return new StaticFieldAccessExpr(at.pos,(Field)node);
+				throw new CompilerException(at, "Static access to an instance field "+node);
 			}
 			if (node instanceof Var) {
-				return buildVarAccess(pos, (Var)node);
+				return buildVarAccess(at, (Var)node);
 			}
 		}
 		int n = 0;
@@ -195,13 +195,13 @@ public class ResInfo {
 				// static field access
 				if (isEmpty() && node instanceof Field) {
 					if (node.isStatic())
-						return new StaticFieldAccessExpr(pos,(Field)node);
-					throw new CompilerException(pos, "Static access to an instance field "+node);
+						return new StaticFieldAccessExpr(at.pos,(Field)node);
+					throw new CompilerException(at, "Static access to an instance field "+node);
 				}
 				else if (forwards_stack[0] instanceof Field) {
 					if (!forwards_stack[0].isStatic())
-						throw new CompilerException(pos, "Static access to an instance field "+forwards_stack[0]);
-					e = new StaticFieldAccessExpr(pos,(Field)forwards_stack[0]);
+						throw new CompilerException(at, "Static access to an instance field "+forwards_stack[0]);
+					e = new StaticFieldAccessExpr(at.pos,(Field)forwards_stack[0]);
 					n++;
 				}
 			}
@@ -212,55 +212,55 @@ public class ResInfo {
 		} else {
 			// first node must be a var, and we are not empty
 			if !(forwards_stack[n] instanceof Var)
-				throw new CompilerException(pos, "Access must be done through a var, but for "+node+" is dove via "+this);
-			e = buildVarAccess(pos, (Var)forwards_stack[n]);
+				throw new CompilerException(at, "Access must be done through a var, but for "+node+" is dove via "+this);
+			e = buildVarAccess(at, (Var)forwards_stack[n]);
 			n++;
 		}
 		if (e != null && node instanceof Field) {
 			for (; n < forwards_p; n++) {
 				if !(forwards_stack[n] instanceof Field)
-					throw new CompilerException(pos, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+forwards_stack[n]);
+					throw new CompilerException(at, "Don't know how to build access to field "+node+" through "+e+" via "+this+" because of "+forwards_stack[n]);
 				Field f = (Field)forwards_stack[n];
 				if (f.isStatic())
-					throw new CompilerException(pos, "Non-static access to static field "+f+" via "+this);
-				e = new AccessExpr(pos, e, f);
+					throw new CompilerException(at, "Non-static access to static field "+f+" via "+this);
+				e = new AccessExpr(at.pos, e, f);
 			}
-			e = new AccessExpr(pos, e, (Field)node);
+			e = new AccessExpr(at.pos, e, (Field)node);
 			return e;
 		}
-		throw new CompilerException(pos, "Don't know how to build access to "+node+" from "+from+" via "+this);
+		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public ENode buildCall(int pos, ENode from, ASTNode node, ENode[] args) {
+	public ENode buildCall(ASTNode at, ENode from, ASTNode node, ENode[] args) {
 		if (node instanceof Method) {
 			Method meth = (Method)node;
 			if (from == null && forwards_p == 0) {
 				if !(meth.isStatic())
-					throw new CompilerException(pos, "Don't know how to build call of "+meth+" via "+this);
+					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
 				//return new CallExpr(pos,meth,args);
-				return new UnresCallExpr(pos, new TypeRef(((Struct)meth.parent).type), meth, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(((Struct)meth.parent).type), meth, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
-				expr = buildAccess(pos, from, forwards_stack[--forwards_p]);
-			return new UnresCallExpr(pos,expr,meth,args,false);
+				expr = buildAccess(at, from, forwards_stack[--forwards_p]);
+			return new UnresCallExpr(at.pos,expr,meth,args,false);
 		}
 		else if (node instanceof Field) {
 			Field f = (Field)node;
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
-					throw new CompilerException(pos, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(pos,new TypeRef(((Struct)f.parent).type),f,args,false);
+					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
+				return new UnresCallExpr(at.pos,new TypeRef(((Struct)f.parent).type),f,args,false);
 			}
-			Expr expr = buildAccess(pos, from, f);
-			return new UnresCallExpr(pos,expr,f,args,false);
+			Expr expr = buildAccess(at, from, f);
+			return new UnresCallExpr(at.pos,expr,f,args,false);
 		}
 		else if (node instanceof Var) {
 			Var var = (Var)node;
-			Expr expr = buildAccess(pos, from, var);
-			return new UnresCallExpr(pos,expr,var,args,false);
+			Expr expr = buildAccess(at, from, var);
+			return new UnresCallExpr(at.pos,expr,var,args,false);
 		}
-		throw new CompilerException(pos, "Don't know how to call "+node+" via "+this);
+		throw new CompilerException(at, "Don't know how to call "+node+" via "+this);
 	}
 	
 	public boolean isEmpty() {

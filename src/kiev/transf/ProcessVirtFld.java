@@ -52,12 +52,9 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(Struct:ASTNode s) {
-		PassInfo.pushStruct(s);
-		try {
-			addAbstractFields(s);
-			foreach(Struct sub; s.sub_clazz)
-				autoGenerateMembers(sub);
-		} finally { PassInfo.popStruct(s); }
+		addAbstractFields(s);
+		foreach(Struct sub; s.sub_clazz)
+			autoGenerateMembers(sub);
 	}
 	
 	public void addAbstractFields(Struct s) {
@@ -180,25 +177,22 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	public void preGenerate(Struct:ASTNode s) {
-		PassInfo.pushStruct(s);
-		try {
-			foreach(ASTNode n; s.members; n instanceof Field)
-				addMethodsForVirtualField(s, (Field)n);
-			foreach(ASTNode n; s.members; n instanceof Field) {
-				Field f = (Field)n;
-				if (!f.isVirtual())
-					continue;
-				if (s.isInterface() && !n.isAbstract())
-					f.setAbstract(true);
-			}
-			foreach(Struct sub; s.sub_clazz)
-				preGenerate(sub);
-		} finally { PassInfo.popStruct(s); }
+		foreach(ASTNode n; s.members; n instanceof Field)
+			addMethodsForVirtualField(s, (Field)n);
+		foreach(ASTNode n; s.members; n instanceof Field) {
+			Field f = (Field)n;
+			if (!f.isVirtual())
+				continue;
+			if (s.isInterface() && !n.isAbstract())
+				f.setAbstract(true);
+		}
+		foreach(Struct sub; s.sub_clazz)
+			preGenerate(sub);
 	}
 	
 	private static void addMethodsForVirtualField(Struct s, Field f) {
 		if( f.isStatic() && f.isVirtual() ) {
-			Kiev.reportError(f.pos,"Static fields can't be virtual");
+			Kiev.reportError(f,"Static fields can't be virtual");
 			f.setVirtual(false);
 		}
 		if( s.isInterface() && f.isVirtual() ) f.setAbstract(true);
@@ -305,7 +299,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.getMetaVirtual().set = set_var;
 		}
 		else if( set_found && !f.acc.writeable() ) {
-			Kiev.reportError(f.pos,"Virtual set$ method for non-writeable field");
+			Kiev.reportError(f,"Virtual set$ method for non-writeable field");
 		}
 
 		if (!f.isVirtual())
@@ -327,7 +321,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.getMetaVirtual().get = get_var;
 		}
 		else if( get_found && !f.acc.readable() ) {
-			Kiev.reportError(f.pos,"Virtual get$ method for non-readable field");
+			Kiev.reportError(f,"Virtual get$ method for non-readable field");
 		}
 	}
 
@@ -360,7 +354,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		}
 		// We rewrite by get$ method. set$ method is rewritten by AssignExpr
 		if (f.getMetaVirtual().get == null) {
-			Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+			Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 			fa.setAsField(true);
 			return true;
 		}
@@ -387,12 +381,12 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			}
 			// Rewrite by set$ method
 			if (f.getMetaVirtual().set == null) {
-				Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
+				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
 			if (f.getMetaVirtual().get == null && (!ae.isGenVoidExpr() || !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2))) {
-				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
@@ -468,12 +462,12 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			}
 			// Rewrite by set$ method
 			if (f.getMetaVirtual().set == null) {
-				Kiev.reportError(fa.pos, "Setter method for virtual field "+f+" not found");
+				Kiev.reportError(fa, "Setter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}
 			if (f.getMetaVirtual().get == null) {
-				Kiev.reportError(fa.pos, "Getter method for virtual field "+f+" not found");
+				Kiev.reportError(fa, "Getter method for virtual field "+f+" not found");
 				fa.setAsField(true);
 				return true;
 			}

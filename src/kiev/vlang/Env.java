@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 194 $
+ * @version $Revision$
  *
  */
 
@@ -62,7 +62,7 @@ public class ProjectFile extends ASTNode {
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"ProjectFile node cannot be copied");
+		throw new CompilerException(this,"ProjectFile node cannot be copied");
 	};
 
     public Dumper toJava(Dumper dmp) { return dmp; }
@@ -106,7 +106,7 @@ public class Env extends Struct {
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"Env node cannot be copied");
+		throw new CompilerException(this,"Env node cannot be copied");
 	};
 
 	public static void setProperty(String prop, String value) {
@@ -145,7 +145,7 @@ public class Env extends Struct {
 		Struct bcl = classHash.get(name.name);
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
-				throw new CompilerException(0, "Cannot create struct "+name);
+				throw new CompilerException("Cannot create struct "+name);
 			Struct cl = (Struct)bcl;
 			if( cleanup ) {
 				cl.flags = access;
@@ -190,7 +190,7 @@ public class Env extends Struct {
 		Struct bcl = classHash.get(name);
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
-				throw new CompilerException(0, "Cannot create struct "+name);
+				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			return (Struct)bcl;
 		}
@@ -202,7 +202,7 @@ public class Env extends Struct {
 		Struct bcl = classHash.get(name.name);
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
-				throw new CompilerException(0, "Cannot create struct "+name);
+				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			return (Struct)bcl;
 		}
@@ -315,7 +315,7 @@ public class Env extends Struct {
 			} catch (EOFException e) {
 				// OK
 			} catch (IOException e) {
-				Kiev.reportWarning(0,"Error while project file reading: "+e);
+				Kiev.reportWarning("Error while project file reading: "+e);
 			}
 		}
 
@@ -340,7 +340,7 @@ public class Env extends Struct {
 			sortStrings(sarr);
 			foreach(String s; sarr) out.println(s);
 		} catch (IOException e) {
-			Kiev.reportWarning(0,"Error while project file writing: "+e);
+			Kiev.reportWarning("Error while project file writing: "+e);
 		}
 	}
 
@@ -545,7 +545,7 @@ public class Env extends Struct {
 			try {
 				fin.close();
 			} catch (IOException ioe) {
-				Kiev.reportError(0,ioe.getMessage());
+				Kiev.reportError(ioe);
 			}
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
@@ -555,11 +555,11 @@ public class Env extends Struct {
 				Kiev.runProcessorsOn(fu);
 				fu = null;
 			} catch(Exception e ) {
-				Kiev.reportError(0,e);
+				Kiev.reportError(e);
 			}
 			System.gc();
 		} catch ( ParseException e ) {
-			Kiev.reportError(0,e);
+			Kiev.reportError(e);
 		} catch ( ParseError e ) {
 			System.out.println("Error while scanning input file:"+filename+":"+e);
 		} finally {

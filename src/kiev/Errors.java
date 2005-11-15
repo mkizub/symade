@@ -33,5 +33,9 @@ import kiev.parser.*;
 public enum CError {
 	E000;
 }
-
+public enum SeverError {
+	Warning,
+	Error,
+	InternalError
+}
 

@@ -135,7 +135,7 @@ public class Var extends DNode implements Named, Typed {
 					init.resolve(this.type);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
+				Kiev.reportError(this,e);
 			}
 		}
 		getDFlow().out();
@@ -168,7 +168,7 @@ public class Var extends DNode implements Named, Typed {
 				Code.addVar(this);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 

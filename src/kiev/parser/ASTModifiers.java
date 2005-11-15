@@ -26,7 +26,7 @@ public class ASTModifiers extends ASTNode {
 			try {
 				v.verify();
 			} catch (CompilerException e) {
-				Kiev.reportError(pos, e);
+				Kiev.reportError(this, e);
 			}
 		}
 		foreach (Meta v; annotations) {

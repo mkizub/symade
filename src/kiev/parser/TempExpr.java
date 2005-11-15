@@ -222,7 +222,7 @@ public class MultiExpr extends UnresExpr {
 				e3.detach();
 			return new ConditionalExpr(pos,e1,e2,e3);
 		}
-		throw new CompilerException(pos,"Multi-operators are not implemented");
+		throw new CompilerException(this,"Multi-operators are not implemented");
 	}
 }
 

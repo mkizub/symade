@@ -161,10 +161,10 @@ public class WhileStat extends LoopStat {
 		try {
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
-		} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
+		} catch(Exception e ) { Kiev.reportError(cond,e); }
 		try {
 			body.resolve(Type.tpVoid);
-		} catch(Exception e ) { Kiev.reportError(body.pos,e); }
+		} catch(Exception e ) { Kiev.reportError(body,e); }
 		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
 			setMethodAbrupted(true);
 		}
@@ -194,7 +194,7 @@ public class WhileStat extends LoopStat {
 			}
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -250,13 +250,13 @@ public class DoWhileStat extends LoopStat {
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body.pos,e);
+			Kiev.reportError(body,e);
 		}
 		try {
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
 		} catch(Exception e ) {
-			Kiev.reportError(cond.pos,e);
+			Kiev.reportError(cond,e);
 		}
 		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
 			setMethodAbrupted(true);
@@ -287,7 +287,7 @@ public class DoWhileStat extends LoopStat {
 			}
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -415,7 +415,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				if (init instanceof Expr)
 					init.setGenVoidExpr(true);
 			} catch(Exception e ) {
-				Kiev.reportError(init.pos,e);
+				Kiev.reportError(init,e);
 			}
 		}
 		if( cond != null ) {
@@ -423,20 +423,20 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				cond.resolve(Type.tpBoolean);
 				BoolExpr.checkBool(cond);
 			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
+				Kiev.reportError(cond,e);
 			}
 		}
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body.pos,e);
+			Kiev.reportError(body,e);
 		}
 		if( iter != null ) {
 			try {
 				iter.resolve(Type.tpVoid);
 				iter.setGenVoidExpr(true);
 			} catch(Exception e ) {
-				Kiev.reportError(iter.pos,e);
+				Kiev.reportError(iter,e);
 			}
 		}
 		if( ( cond==null
@@ -514,7 +514,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -666,7 +666,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			itype = Type.tpRule;
 			mode = RULE;
 		} else {
-			throw new CompilerException(container.pos,"Container must be an array or an Enumeration "+
+			throw new CompilerException(container,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
 		if( itype == Type.tpRule ) {
@@ -761,7 +761,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
-				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
+				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
 					new VarAccessExpr(iter.pos,iter),
 					moreelem,
@@ -800,7 +800,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
-				throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
+				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 				var_init = new CallExpr(iter.pos,
 					new VarAccessExpr(iter.pos,iter),
 					nextelem,
@@ -833,7 +833,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		try {
 			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(body.pos,e);
+			Kiev.reportError(body,e);
 		}
 
 		// Increment iterator
@@ -918,7 +918,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 
 			lblbrk.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 

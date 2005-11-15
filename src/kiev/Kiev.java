@@ -46,113 +46,118 @@ public final class Kiev {
 	public static int		errCount = 0;
 	public static int		warnCount = 0;
 	public static KString	curFile = KString.Empty;
-	public static KString	maybeCurFile = KString.Empty;
 
-   	public static void reportError(int pos, Throwable e) {
+   	public static void reportError(Throwable e) {
+		reportError(null, e);
+	}
+	
+   	public static void reportError(ASTNode from, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		int p = pos;
-		if( e instanceof CompilerException  ) {
-			if( ((CompilerException)e).pos != 0 )
-				p = ((CompilerException)e).pos;
-			if( ((CompilerException)e).clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)((CompilerException)e).clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) maybeCurFile = sfa.filename;
-			}
+		if (e instanceof CompilerException) {
+			if (e.from != null)
+				from = e.from;
 		}
-		errCount++;
-		if( e.getMessage() == null )
-			reportError(p,"Error",e.getClass().toString());
-		else
-			reportError(p,"Error",e.getMessage());
+		if( debug ) e.printStackTrace(System.out);
+		int pos = 0;
+		if (from != null) {
+			pos = from.pos;
+			if( e.getMessage() == null )
+				report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,e.getClass().getName());
+			else
+				report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,e.getMessage());
+		} else {
+			if( e.getMessage() == null )
+				report(0,null,null,null,SeverError.Error,e.getClass().getName());
+			else
+				report(0,null,null,null,SeverError.Error,e.getMessage());
+		}
 		if (testError != null) {
 			if !(e instanceof CompilerException) {
 				System.out.println("FAILED: expected CompilerException");
 				System.exit(1);
 			}
-			else if ((p>>>11) != testErrorLine || (p&0x3FF) != testErrorOffs) {
-				System.out.println("FAILED: expected position "+(p>>>11)+":"+(p&0x3FF));
+			else if ((pos>>>11) != testErrorLine || (pos&0x3FF) != testErrorOffs) {
+				System.out.println("FAILED: expected position "+(pos>>>11)+":"+(pos&0x3FF));
 				System.exit(1);
 			}
 			else if (((CompilerException)e).err_id != testError) {
 				System.out.println("FAILED: expected error "+testError);
 				System.exit(1);
 			}
-			System.out.println("SUCCESS: found expected error "+testError+" at "+(p>>>11)+":"+(p&0x3FF));
+			System.out.println("SUCCESS: found expected error "+testError+" at "+(pos>>>11)+":"+(pos&0x3FF));
 			System.exit(0);
 		}
 	}
 
    	public static void reportParserError(int pos, String msg) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;
-		errCount++;
-		reportError( pos, "Error", msg);
-//        System.exit(1);
+		if( debug ) new Exception().printStackTrace(System.out);
+		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, String msg, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
+		if (e instanceof ParseException)
+			pos = ((ParseException)e).currentToken.next.getPos();
         errorPrompt = false;
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		errCount++;
-		reportError( pos, "Error", msg);
-//        System.exit(1);
+		if( debug ) e.printStackTrace(System.out);
+		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
+		if (e instanceof ParseException)
+			pos = ((ParseException)e).currentToken.next.getPos();
         errorPrompt = false;
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		int p = pos;
-		if( e instanceof CompilerException  ) {
-			if( ((CompilerException)e).pos != 0 )
-				p = ((CompilerException)e).pos;
-			if( ((CompilerException)e).clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)((CompilerException)e).clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) maybeCurFile = sfa.filename;
-			}
-		}
-		reportError( p,e );
+		if( debug ) e.printStackTrace(System.out);
+		if( e.getMessage() == null )
+			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getClass().getName());
+		else
+			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getMessage());
 	}
 
-	public static void reportError(int pos, String msg) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
-		errCount++;
-		reportError(pos,"Error",msg);
+   	public static void reportError(String msg) {
+		reportError(null, msg);
+	}
+	
+	public static void reportError(ASTNode from, String msg) {
+		if( debug ) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,msg);
+		} else {
+			report(0,null,null,null,SeverError.Error,msg);
+		}
 	}
 
-	public static void reportError(int pos, String err, String msg) {
-		KString cf = KString.Empty;
-		if( curFile == null || curFile.equals(KString.Empty) ) {
-			if( maybeCurFile != null && !maybeCurFile.equals(KString.Empty) )
-				cf = maybeCurFile;
-			else if( PassInfo.clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)PassInfo.clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) cf = sfa.filename;
+	private static void report(int pos, FileUnit file_unit, Struct clazz, Method method, SeverError err, String msg) {
+		if (err == SeverError.Warning) {
+			warnCount++;
+		} else {
+			errCount++;
+			if( method != null ) method.setBad(true);
+			if( clazz != null ) clazz.setBad(true);
+		}
+		KString cf = null;
+		if (file_unit != null) {
+			cf = file_unit.filename;
+			if (javacerrors) {
+				String fn = new File(cf.toString()).getAbsolutePath();
+				System.out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
+			}
+			else if (pos > 0) {
+				System.out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+err+": "+msg);
+			}
+			else {
+				System.out.println(err+": "+msg);
 			}
 		} else {
-			cf = curFile;
+			System.out.println(err+": "+msg);
 		}
-		maybeCurFile = KString.Empty;
-		if (javacerrors) {
-			String fn = new File(cf.toString()).getAbsolutePath();
-			System./*err*/out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
-		} else {
-			System./*err*/out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+err+": "+msg);
-		}
-		if( (verbose || Kiev.javaMode) && (pos >>> 11) != 0 ) {
+		if( cf != null && (verbose || Kiev.javaMode) && (pos >>> 11) != 0 ) {
 			File f = new File(cf.toString());
 			if( f.exists() && f.canRead() ) {
 				int lineno = pos>>>11;
@@ -201,13 +206,27 @@ public final class Kiev {
 		}
 	}
 
-	public static void reportWarning(int pos, String msg) {
-		warnCount++;
-		if( debug ) {
-			new Exception().printStackTrace( /* */System.out /* */ );
+	public static void reportCodeWarning(String msg) {
+		if (nowarn)
+			return;
+		if( debug && verbose) new Exception().printStackTrace(System.out);
+		report(Code.last_lineno<<11, Code.clazz.pctx.file_unit, Code.clazz, Code.method, SeverError.Warning, msg);
+	}
+	
+	public static void reportWarning(String msg) {
+		reportWarning(null, msg);
+	}
+	
+	public static void reportWarning(ASTNode from, String msg) {
+		if (nowarn)
+			return;
+		if( debug && verbose) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Warning,msg);
+		} else {
+			report(0,null,null,null,SeverError.Warning,msg);
 		}
-		if (!nowarn)
-			reportError( pos,"Warning",msg );
 	}
 
     private static char[] emptyString = new char[80];
@@ -224,22 +243,6 @@ public final class Kiev {
 		System./*err*/out.println(sb.toString());
 		System./*err*/out.flush();
 	}
-
-			static class profInfo {
-				Class cl;
-				int max_instances;
-				int curr_instances;
-				int total_instances;
-				profInfo(Class cl, int mi, int ci, int ti) {
-					this.cl = cl;
-					max_instances = mi;
-					curr_instances = ci;
-					total_instances = ti;
-				}
-				public String toString() {
-					return cl+"\t"+curr_instances+"\t"+max_instances+"\t"+total_instances;
-				}
-			}
 
 	public static void reportTotals() {
 		if( errCount > 0 )
@@ -335,86 +338,6 @@ public final class Kiev {
 	public static int    testErrorLine		= 0;
 	public static int    testErrorOffs		= 0;
 
-    // New primitive objects section
-//	public static final Byte[]		byteArray	= new Byte[256];
-//	public static final java.lang.Character[]	charArray	= new java.lang.Character[128];
-//	public static final Short[]		shortArray	= new Short[256+1];
-//	public static final Integer[]	intArray	= new Integer[256*2+1];
-//	public static final Long[]		longArray	= new Long[128+1];
-//	public static final Float[]		floatArray	= new Float[4];
-//	public static final Double[]	doubleArray = new Double[4];
-//
-//	static {
-//		// Fill hash arrays
-//		for(int i=0; i < byteArray.length; i++) {
-//			byteArray[i] = new Byte((byte)(i-128));
-//		}
-//		for(int i=0; i < charArray.length; i++) {
-//			charArray[i] = new java.lang.Character((char)i);
-//		}
-//		for(int i=0; i < shortArray.length; i++) {
-//			shortArray[i] = new Short((short)(i-128));
-//		}
-//		for(int i=0; i < intArray.length; i++) {
-//			intArray[i] = new Integer(i-256);
-//		}
-//		for(int i=0; i < longArray.length; i++) {
-//			longArray[i] = new Long((long)(i-64));
-//		}
-//		for(int i=0; i < floatArray.length; i++) {
-//			floatArray[i] = new Float((float)(i-1));
-//		}
-//		for(int i=0; i < doubleArray.length; i++) {
-//			doubleArray[i] = new Double((double)(i-1));
-//		}
-//	}
-//
-//	public static Byte newByte(int n) {
-//		byte b = (byte)n;
-//		n = (int)b;
-//		return byteArray[n+128];
-//	}
-//	public static java.lang.Character newCharacter(int n) {
-//		if( n >= 0 && n <= 127 )
-//			return charArray[n];
-//		else
-//			return new java.lang.Character((char)n);
-//	}
-//	public static Short newShort(int n) {
-//		int i = n+128;
-//		if( i >= 0 && i <= 256 )
-//			return shortArray[i];
-//		else
-//			return new Short((short)n);
-//	}
-//	public static Integer newInteger(int n) {
-//		if( n >= -256 && n <= 256 )
-//			return intArray[n+256];
-//		else
-//			return new Integer(n);
-//	}
-//	public static Long newLong(long n) {
-//		long i = n+64;
-//		if( i >= 0 && i <= 128 )
-//			return longArray[(int)i];
-//		else
-//			return new Long(n);
-//	}
-//	public static Float newFloat(float n) {
-//		if( n == -1.f ) return floatArray[0];
-//		if( n == 0.f ) return floatArray[1];
-//		if( n == 1.f ) return floatArray[2];
-//		if( n == 2.f ) return floatArray[3];
-//		return new Float(n);
-//	}
-//	public static Double newDouble(double n) {
-//		if( n == -1.d ) return doubleArray[0];
-//		if( n == 0.d ) return doubleArray[1];
-//		if( n == 1.d ) return doubleArray[2];
-//		if( n == 2.d ) return doubleArray[3];
-//		return new Double(n);
-//	}
-
 	// Scanning & parsing
 	public static kiev040				k;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
@@ -443,11 +366,13 @@ public final class Kiev {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
 		FileUnit oldFileUnit = k.curFileUnit;
 		Struct oldClazz = k.curClazz;
+		Method oldMethod = k.curMethod;
 		k.ReInit(is);
 		k.reparse_body = true;
 		k.reparse_pos = from.pos;
 		k.curFileUnit = from.pctx.file_unit;
 		k.curClazz = from.pctx.clazz;
+		k.curMethod = from.pctx.method;
 		BlockStat body = null;
 		try {
 			body = k.Block();
@@ -455,6 +380,7 @@ public final class Kiev {
 			k.reparse_body = false;
 			k.curFileUnit = oldFileUnit;
 			k.curClazz = oldClazz;
+			k.curMethod = oldMethod;
 		}
 		return body;
 	}
@@ -478,7 +404,7 @@ public final class Kiev {
 				}
 			}
 		} catch( Exception e ) {
-			reportError(0,e);
+			reportError(f,e);
 			return;
 		} finally {
 			file_reader.close();
@@ -490,6 +416,7 @@ public final class Kiev {
 			foreach(PrescannedBody b; f.bodies; b != null ) {
 				Kiev.k.curFileUnit = null;
 				Kiev.k.curClazz = null;
+				Kiev.k.curMethod = null;
 				// callect parents of this block
 				List<ASTNode> pl = List.Nil;
 				ASTNode n = (ASTNode)b;
@@ -498,7 +425,7 @@ public final class Kiev {
 					n = n.parent;
 				}
 				if( pl.head() != f ) {
-					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
+					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
 					continue;
 				}
 				foreach(ASTNode nn; pl) {
@@ -506,6 +433,8 @@ public final class Kiev {
 						Kiev.k.curFileUnit = (FileUnit)nn;
 					else if (nn instanceof Struct)
 						Kiev.k.curClazz = (Struct)nn;
+					else if (nn instanceof Method)
+						Kiev.k.curMethod = (Method)nn;
 				}
 				BlockStat bl;
 				switch(b.mode) {
@@ -519,7 +448,7 @@ public final class Kiev {
 					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
 				}
 				if( !((SetBody)b.parent).setBody(bl) ) {
-					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body does not math");
+					reportError(b,"Prescanned body does not math");
 				}
 				b.replaceWithNode(null);
 				pl = pl.reverse();
@@ -593,10 +522,10 @@ public final class Kiev {
 		return !disabled_extensions[idx];
 	}
 	
-	public static void check(int pos, Ext ext) {
-		if (!enabled(ext))
-			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
-	}
+//	public static void check(int pos, Ext ext) {
+//		if (!enabled(ext))
+//			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
+//	}
 	
 	public static boolean[] getCmdLineExtSet() {
 		return (boolean[])command_line_disabled_extensions.clone();
@@ -619,7 +548,7 @@ public final class Kiev {
 		try {
 			ext = Ext.fromString(s);
 		} catch(RuntimeException e) {
-			Kiev.reportWarning(0,"Unknown pragma '"+s+"'");
+			Kiev.reportWarning("Unknown pragma '"+s+"'");
 			return;
 		}
 		int i = (int)ext;
@@ -647,7 +576,7 @@ public final class Kiev {
 							step(tp,fu);
 					}
 					catch (Exception e) {
-						Kiev.reportError(0,e);
+						Kiev.reportError(fu,e);
 					}
 				}
 			}

@@ -394,8 +394,10 @@ public abstract class ConstExpr extends Expr {
 		} catch( NumberFormatException e ) {
 			throw new ParseException(t.image);
 		}
-		if (ce == null)
-			throw new CompilerException(t.getPos(),"Unknown term "+t.image);
+		if (ce == null) {
+			Kiev.reportParserError(t.getPos(), "Unknown term "+t.image);
+			ce = new ConstNullExpr();
+		}
 		ce.pos = t.getPos();
 		return ce;
 	}

@@ -49,7 +49,7 @@ public class ASTNewInitializedArrayExpression extends Expr {
 		Type tp = type.getType();
 		while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
 		if( !tp.isArray() )
-			throw new CompilerException(pos,"Type "+type+" is not an array type");
+			throw new CompilerException(this,"Type "+type+" is not an array type");
         int dim = 0;
         while( tp.isArray() ) { dim++; tp = tp.args[0]; }
 		replaceWithNode(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
@@ -64,12 +64,12 @@ public class ASTNewInitializedArrayExpression extends Expr {
 			while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
 		}
 		if( !tp.isArray() )
-			throw new CompilerException(pos,"Type "+type+" is not an array type");
+			throw new CompilerException(this,"Type "+type+" is not an array type");
     	for(int i=0; i < args.length; i++) {
         	try {
 				args[i].resolve(tp.args[0]);
             } catch(Exception e) {
-            	Kiev.reportError(pos,e);
+            	Kiev.reportError(args[i],e);
             }
         }
         int dim = 0;

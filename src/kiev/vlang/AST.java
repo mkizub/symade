@@ -249,7 +249,7 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public /*abstract*/ Object copy() {
-		throw new CompilerException(getPos(),"Internal error: method copy() is not implemented");
+		throw new CompilerException(this,"Internal error: method copy() is not implemented");
 	};
 
 	public /*abstract*/ Object copyTo(Object to$node) {
@@ -450,7 +450,7 @@ public abstract class ASTNode implements Constants {
 	public boolean	preGenerate()	{ return true; }
 	
 	
-	public final void treeWalker((ASTNode)->boolean exec) {
+	public final void walkTree((ASTNode)->boolean exec) {
 		if (exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
 				Object val = this.getVal(attr.name);
@@ -466,8 +466,8 @@ public abstract class ASTNode implements Constants {
 			}
 		}
 	}
-	
-	public final void treeWalker((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
+
+	public final void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
 		if (pre_exec(this)) {
 			foreach (AttrSlot attr; this.values(); attr.is_attr) {
 				Object val = this.getVal(attr.name);
@@ -483,17 +483,6 @@ public abstract class ASTNode implements Constants {
 			}
 		}
 		post_exec(this);
-	}
-	
-	public void pushMe() {}
-	public void popMe() {}
-	
-	public void walkTree((ASTNode)->boolean exec) {
-		treeWalker(exec);
-	}
-
-	public void walkTreeZV((ASTNode)->boolean pre_exec, (ASTNode)->void post_exec) {
-		treeWalker(pre_exec, post_exec);
 	}
 
 	public int setFlags(int fl) {
@@ -1302,13 +1291,13 @@ public /*abstract*/ class ENode extends ASTNode {
 	}
 
 	public void resolve(Type reqType) {
-		throw new CompilerException(pos,"Resolve call for e-node "+getClass());
+		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 	
 	public void generate(Type reqType) {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
-		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
+		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
 	}
 
 	public int getPriority() { return 255; }
@@ -1504,7 +1493,7 @@ public abstract class Statement extends ENode {
 	public void		generate(Type reqType) {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
-		throw new CompilerException(pos,"Unresolved node ("+this.getClass()+") generation, stat: "+dmp.toString());
+		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, stat: "+dmp.toString());
 	}
 
 }
@@ -1560,7 +1549,7 @@ public class TypeRef extends ENode {
 
 	public Type getType() {
 //		if (lnk == null)
-//			throw new CompilerException(pos,"Type "+this+" is not found");
+//			throw new CompilerException(this,"Type "+this+" is not found");
 		return lnk;
 	}
 	
@@ -1614,9 +1603,9 @@ public class TypeRef extends ENode {
 				throw new RuntimeException("Internal error - can't find case_attr");
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
-				throw new CompilerException(pos,"Pizza case "+tp+" cannot be casted to type "+reqType);
+				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
 			if (case_attr.casefields.length != 0)
-				throw new CompilerException(pos,"Empty constructor for pizza case "+tp+" not found");
+				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
 				Expr expr = new ConstIntExpr(case_attr.caseno);
 				if( reqType != Type.tpInt )
@@ -1628,7 +1617,7 @@ public class TypeRef extends ENode {
 			replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,Expr.emptyArray);});
 			return;
 		}
-		throw new CompilerException(pos,"Type "+this+" is not a class's case with no fields");
+		throw new CompilerException(this,"Type "+this+" is not a class's case with no fields");
 	}
 	
 	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {
@@ -1685,19 +1674,19 @@ public interface SetBody {
 }
 
 public class CompilerException extends RuntimeException {
-	public int		pos;
-	public Struct	clazz;
+	public ASTNode	from;
 	public CError	err_id;
-	public CompilerException(int pos, String msg) {
+	public CompilerException(String msg) {
 		super(msg);
-		this.pos = pos;
-		this.clazz = PassInfo.clazz;
 	}
-	public CompilerException(int pos, CError err_id, String msg) {
+	public CompilerException(ASTNode from, String msg) {
 		super(msg);
-		this.pos = pos;
+		this.from = from;
+	}
+	public CompilerException(ASTNode from, CError err_id, String msg) {
+		super(msg);
+		this.from = from;
 		this.err_id = err_id;
-		this.clazz = PassInfo.clazz;
 	}
 }
 

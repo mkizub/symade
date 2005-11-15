@@ -84,13 +84,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
 		if (tpNArr == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			Kiev.reportError(null,"Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpNode == null)
 			tpNode = Env.getStruct(nameNode).type;
 		if (tpNode == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNode);
+			Kiev.reportError(null,"Cannot find class "+nameNode);
 			return;
 		}
 		if (!s.isClazz())
@@ -115,7 +115,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		}
 		// DFState getDFlowIn(ASTNode $child)
 		if (hasMethod(s, nameGetDFlowIn)) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
 			MethodType mt = (MethodType)Type.fromSignature(signGetDFlowIn);
 			Method dfIn = new Method(nameGetDFlowIn,mt,ACC_PUBLIC);
@@ -172,7 +172,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			KString src = meta.getS(KString.from("in"));
 			boolean seq = isArr && meta.getZ(KString.from("seq"));
 			if (hasMethod(s, fname)) {
-				Kiev.reportWarning(s.pos,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
+				Kiev.reportWarning(s,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
 			} else {
 				ASTAccessExpression acc_fld = null;
 				ASTAccessExpression acc_prev = null;
@@ -201,7 +201,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 						fun_nm = KString.from("getDFlowFls");
 					}
 					else {
-						Kiev.reportError(fld.pos,"Bad @dflow in(): "+src);
+						Kiev.reportError(fld,"Bad @dflow in(): "+src);
 						continue;
 					}
 					cae_tru = new ASTCallAccessExpression();

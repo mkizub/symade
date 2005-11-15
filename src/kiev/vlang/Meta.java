@@ -57,7 +57,7 @@ public final class MetaSet extends ASTNode {
 			try {
 				m.verify();
 			} catch (CompilerException e) {
-				Kiev.reportError(pos, e);
+				Kiev.reportError(m, e);
 				continue;
 			}
 		}
@@ -189,7 +189,7 @@ public class Meta extends ENode {
 	public void verify() {
 		Type mt = type.getType();
 		if (mt == null || !mt.isAnnotation()) {
-			throw new CompilerException(pos, "Annotation name expected");
+			throw new CompilerException(this, "Annotation name expected");
 		}
 		Meta m = this;
 		if (mt.getClazzName().name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
@@ -223,7 +223,7 @@ public class Meta extends ENode {
 				}
 			}
 			if (m == null)
-				throw new CompilerException(v.pos, "Unresolved method "+v.type.name+" in class "+s);
+				throw new CompilerException(v, "Unresolved method "+v.type.name+" in class "+s);
 			Type tp = m.type.ret;
 			v.type.signature = tp.signature;
 			Type t = tp;
@@ -240,7 +240,7 @@ public class Meta extends ENode {
 			if (t.isReference()) {
 				t.checkResolved();
 				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
-					throw new CompilerException(m.pos, "Bad annotation value type "+tp);
+					throw new CompilerException(m, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);
 		}
@@ -268,7 +268,7 @@ public class Meta extends ENode {
 				}
 				continue;
 			}
-			throw new CompilerException(m.pos, "Annotation value "+m.name.name+" is not specified");
+			throw new CompilerException(m, "Annotation value "+m.name.name+" is not specified");
 		}
 		return this;
 	}
@@ -451,7 +451,7 @@ public abstract class MetaValue extends ASTNode {
 				((TypeRef)value).getType();
 				return false;
 			} else {
-				throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
+				throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+
 					value+" ("+value.getClass()+")");
 			}
 		}
@@ -460,7 +460,7 @@ public abstract class MetaValue extends ASTNode {
 			return false;
 		}
 		else if (!v.isConstantExpr())
-			throw new CompilerException(pos, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
+			throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = value.getType();
 		if (vt != reqType) {
 			v.replaceWith(fun ()->ENode {return new CastExpr(v.pos, reqType, v);});
@@ -469,10 +469,10 @@ public abstract class MetaValue extends ASTNode {
 		if (value instanceof Expr) {
 			Expr v = (Expr)value;
 			if (!v.isConstantExpr())
-				throw new CompilerException(pos, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
+				throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
 			Type vt = v.getType();
 			if (vt != reqType)
-				throw new CompilerException(pos, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
+				throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		}
 		return false;
 	}

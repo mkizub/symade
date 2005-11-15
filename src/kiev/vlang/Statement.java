@@ -242,7 +242,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
 		foreach(ENode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
 		stats.append(decl);
@@ -258,7 +258,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			throw new RuntimeException("Expected e-node declaration, but got "+sym+" ("+sym.getClass()+")");
 		foreach(ASTNode n; stats) {
 			if (n instanceof Named && ((Named)n).getName().equals(sym.getName()) ) {
-				Kiev.reportError(decl.pos,"Symbol "+sym.getName()+" already declared in this scope");
+				Kiev.reportError(decl,"Symbol "+sym.getName()+" already declared in this scope");
 			}
 		}
 		stats.insert(decl,idx);
@@ -351,7 +351,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 					stats[i].resolve(Type.tpVoid);
 				}
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i].pos,e);
+				Kiev.reportError(stats[i],e);
 			}
 		}
 	}
@@ -366,7 +366,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 			try {
 				stats[i].generate(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(stats[i].getPos(),e);
+				Kiev.reportError(stats[i],e);
 			}
 		}
 		Vector<Var> vars = new Vector<Var>();
@@ -445,7 +445,7 @@ public class ExprStat extends Statement {
 			expr.resolve(Type.tpVoid);
 			expr.setGenVoidExpr(true);
 		} catch(Exception e ) {
-			Kiev.reportError(expr.getPos(),e);
+			Kiev.reportError(expr,e);
 		}
 	}
 
@@ -454,7 +454,7 @@ public class ExprStat extends Statement {
 		try {
 			expr.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(expr.getPos(),e);
+			Kiev.reportError(expr,e);
 		}
 	}
 
@@ -489,7 +489,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 			try {
 				expr.resolve(pctx.method.type.ret);
 			} catch(Exception e ) {
-				Kiev.reportError(expr.pos,e);
+				Kiev.reportError(expr,e);
 			}
 		}
 		if( pctx.method.type.ret == Type.tpVoid ) {
@@ -510,7 +510,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 				expr.generate(Code.method.type.ret);
 			generateReturn(this);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -586,11 +586,11 @@ public class ThrowStat extends Statement/*defaults*/ {
 		try {
 			expr.resolve(Type.tpThrowable);
 		} catch(Exception e ) {
-			Kiev.reportError(expr.pos,e);
+			Kiev.reportError(expr,e);
 		}
 		Type exc = expr.getType();
-		if( !PassInfo.checkException(exc) )
-			Kiev.reportWarning(pos,"Exception "+exc+" must be caught or declared to be thrown");
+		if( !PassInfo.checkException(this,exc) )
+			Kiev.reportWarning(this,"Exception "+exc+" must be caught or declared to be thrown");
 	}
 
 	public void generate(Type reqType) {
@@ -600,7 +600,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 			expr.generate(null);
 			Code.addInstr(Instr.op_throw);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -641,19 +641,19 @@ public class IfElseStat extends Statement {
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
 		} catch(Exception e ) {
-			Kiev.reportError(cond.pos,e);
+			Kiev.reportError(cond,e);
 		}
 	
 		try {
 			thenSt.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(thenSt.pos,e);
+			Kiev.reportError(thenSt,e);
 		}
 		if( elseSt != null ) {
 			try {
 				elseSt.resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(elseSt.pos,e);
+				Kiev.reportError(elseSt,e);
 			}
 		}
 
@@ -707,7 +707,7 @@ public class IfElseStat extends Statement {
 				}
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -757,12 +757,12 @@ public class CondStat extends Statement {
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
 		} catch(Exception e ) {
-			Kiev.reportError(cond.pos,e);
+			Kiev.reportError(cond,e);
 		}
 		try {
 			message.resolve(Type.tpString);
 		} catch(Exception e ) {
-			Kiev.reportError(message.pos,e);
+			Kiev.reportError(message,e);
 		}
 	}
 
@@ -817,7 +817,7 @@ public class CondStat extends Statement {
 				Code.addInstr(Instr.set_label,else_label);
 			}
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -856,7 +856,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		try {
 			stat.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(stat.pos,e);
+			Kiev.reportError(stat,e);
 		}
 		if( stat.isAbrupted() ) setAbrupted(true);
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
@@ -869,7 +869,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 			lbl.generate(Type.tpVoid);
 			stat.generate(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(stat.getPos(),e);
+			Kiev.reportError(stat,e);
 		}
 	}
 
@@ -920,7 +920,7 @@ public class BreakStat extends Statement {
 			 || (p instanceof BlockStat && p.isBreakTarget())
 			 				); p = p.parent );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(pos,"Break not within loop/switch statement");
+				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
@@ -947,7 +947,7 @@ public class BreakStat extends Statement {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(pos,"Break not within loop/switch statement");
+				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
@@ -975,7 +975,7 @@ public class BreakStat extends Statement {
 			 || (p instanceof BlockStat && p.isBreakTarget())
 			 				); p = p.parent );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(pos,"Break not within loop/switch statement");
+				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
@@ -1002,7 +1002,7 @@ public class BreakStat extends Statement {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(pos,"Break not within loop/switch statement");
+				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getBrkLabel();
@@ -1014,7 +1014,7 @@ public class BreakStat extends Statement {
 			}
 		}
 		if( p instanceof Method )
-			Kiev.reportError(pos,"Break not within loop/switch statement");
+			Kiev.reportError(this,"Break not within loop/switch statement");
 		p.setBreaked(true);
 	}
 
@@ -1037,10 +1037,8 @@ public class BreakStat extends Statement {
 			else
 				Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
 		}
 	}
 
@@ -1138,7 +1136,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 		if( ident == null ) {
 			for(p=parent; !(p instanceof LoopStat || p instanceof Method); p = p.parent );
 			if( p instanceof Method || p == null ) {
-				Kiev.reportError(pos,"Continue not within loop statement");
+				Kiev.reportError(this,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getCntLabel();
@@ -1164,7 +1162,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 				p = pp;
 			}
 			if( p instanceof Method || p == null) {
-				Kiev.reportError(pos,"Continue not within loop statement");
+				Kiev.reportError(this,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
 					Label l = ((LoopStat)p).getCntLabel();
@@ -1198,10 +1196,8 @@ public class ContinueStat extends Statement/*defaults*/ {
 				}
 			Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
 		}
 	}
 
@@ -1286,15 +1282,15 @@ public class GotoStat extends Statement/*defaults*/ {
 		}
 		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
-			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
 		}
 		if( stats.length > 1 ) {
-			Kiev.reportError(pos,"Umbigouse label "+ident+" in goto statement");
+			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
 		}
 		LabeledStat stat = stats[0];
 		if( stat == null ) {
-			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
 		}
 		dest = stat.lbl;
@@ -1310,15 +1306,15 @@ public class GotoStat extends Statement/*defaults*/ {
 		}
 		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
-			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return;
 		}
 		if( stats.length > 1 ) {
-			Kiev.reportError(pos,"Umbigouse label "+ident+" in goto statement");
+			Kiev.reportError(this,"Umbigouse label "+ident+" in goto statement");
 		}
 		LabeledStat stat = stats[0];
 		if( stat == null ) {
-			Kiev.reportError(pos,"Label "+ident+" unresolved");
+			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return;
 		}
 		dest = stat.lbl;
@@ -1408,7 +1404,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		case BreakStat:			break;
 		case ContinueStat:		break;
 		default:
-			Kiev.reportWarning(st.pos,"Unknown statement in label lookup: "+st.getClass());
+			Kiev.reportWarning(st,"Unknown statement in label lookup: "+st.getClass());
 		}
 		return stats;
 	}
@@ -1461,12 +1457,12 @@ public class GotoStat extends Statement/*defaults*/ {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
 		LabeledStat[] stats = resolveStat(ident.name,Code.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 )
-			throw new CompilerException(pos,"Label "+ident+" unresolved");
+			throw new CompilerException(this,"Label "+ident+" unresolved");
 		if( stats.length > 1 )
-			throw new CompilerException(pos,"Umbigouse label "+ident+" in goto statement");
+			throw new CompilerException(this,"Umbigouse label "+ident+" in goto statement");
 		LabeledStat stat = stats[0];
 		if( stat == null )
-			throw new CompilerException(pos,"Label "+ident+" unresolved");
+			throw new CompilerException(this,"Label "+ident+" unresolved");
 		Code.setLinePos(this.getPosLine());
 		try {
 			Object[] lb = resolveLabelStat(stat);
@@ -1480,10 +1476,10 @@ public class GotoStat extends Statement/*defaults*/ {
 				}
 			Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
@@ -1523,7 +1519,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				break;
 		}
 		if( this.sw == null )
-			throw new CompilerException(pos,"goto case statement not within a switch statement");
+			throw new CompilerException(this,"goto case statement not within a switch statement");
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = new AssignExpr(pos,AssignOperator.Assign,
@@ -1594,7 +1590,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 					}
 				}
 				if( lb == null ) {
-					Kiev.reportWarning(pos,"'goto case "+expr+"' not found, replaced by "+(sw.defCase!=null?"'goto default'":"'break"));
+					Kiev.reportWarning(this,"'goto case "+expr+"' not found, replaced by "+(sw.defCase!=null?"'goto default'":"'break"));
 					if( sw.defCase != null )
 						lb = ((CaseLabel)sw.defCase).getLabel();
 					else
@@ -1605,7 +1601,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
 				Code.stack_pop();
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 		}
 	}
 
