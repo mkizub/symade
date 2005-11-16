@@ -346,13 +346,31 @@ public final class Kiev {
 	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
 	private static int		parserAddrIdx;
 
-	public static String parserAddr(Object obj) {
+	private static String parserAddr(Object obj) {
 		String addr = Integer.toHexString(++parserAddrIdx);
 		while( addr.length() < 8 ) {
 			addr = '0'+addr;
 		}
 		Kiev.parserAddresses.put(addr,obj);
 		return addr;
+	}
+
+	public static String reparseExpr(ENode e, boolean copy) {
+		if (copy)
+			return "#expr"+parserAddr(e.copy())+"#".toLowerCase();
+		else
+			return "#expr"+parserAddr(e)+"#".toLowerCase();
+	}
+
+	public static String reparseStat(Statement s, boolean copy) {
+		if (copy)
+			return "#stat"+parserAddr(s.copy())+"#".toLowerCase();
+		else
+			return "#stat"+parserAddr(s)+"#".toLowerCase();
+	}
+
+	public static String reparseType(Type tp) {
+		return "#type"+parserAddr(tp)+"#".toLowerCase();
 	}
 
 	public static boolean passLessThen(TopLevelPass p) {

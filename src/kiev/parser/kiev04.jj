@@ -579,21 +579,24 @@ TOKEN : /* LITERALS */
   < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
 |
   < REPARSE_EXPRESSION:
-      "#" ["E","e"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+      "#expr"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
   >
 |
   < REPARSE_STATEMENT:
-      "#" ["S","s"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+      "#stat"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
   >
 |
   < REPARSE_TYPE:
-      "#" ["T","t"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
-       ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"] ["0"-"9","a"-"f","A"-"F"]
+      "#type"
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+       ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"] ["0"-"9","a"-"f"]
+	   "#"
   >
 }
 
@@ -1820,7 +1823,7 @@ TypeRef ReparseType() :
 {
 	t=<REPARSE_TYPE>
 	{
-		Type tp = (Type)Kiev.parserAddresses.get(t.image.substring(2));
+		Type tp = (Type)Kiev.parserAddresses.get(t.image.substring(5,5+8));
 		return new TypeRef(tp);
 	}
 }
@@ -1979,15 +1982,9 @@ ASTRuleIstheExpression RuleIstheExpression() :
 ASTRuleIsoneofExpression RuleIsoneofExpression() :
 { ASTRuleIsoneofExpression r = new ASTRuleIsoneofExpression(); }
 {
-	r.names += Name() "@=" r.exprs += AccessExpression()
-	(
-		LOOKAHEAD({
-			getToken(1).image.equals("&")
-		 && getToken(2).kind == IDENTIFIER
-		 && getToken(3).kind == IS_ONE_OF
-		})
-		"&" r.names += Name() "@=" r.exprs += AccessExpression()
-	)*
+	r.name = Name()
+	"@="
+	r.expr = AccessExpression()
 	{ return r; }
 }
 
@@ -2166,12 +2163,11 @@ ENode Expression() :
 }
 
 ENode ReparseExpression() :
-{ Token t; ASTReparseExpression e = new ASTReparseExpression(); }
+{ Token t; }
 {
 	t=<REPARSE_EXPRESSION>
 	{
-		e.set(t);
-		return e;
+		return (ENode)Kiev.parserAddresses.get(t.image.substring(5,5+8));
 	}
 }
 
@@ -2514,9 +2510,7 @@ Statement ReparseStatement() :
 {
 	t=<REPARSE_STATEMENT>
 	{
-		ASTReparseStatement st = new ASTReparseStatement();
-		st.set(t);
-		return st;
+		return (Statement)Kiev.parserAddresses.get(t.image.substring(5,5+8));
 	}
 }
 

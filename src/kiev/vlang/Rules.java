@@ -413,11 +413,11 @@ public final class RuleBlock extends BlockStat {
 			sb.append("int bt$").append(i).append(";\n");
 		// Local variables
 		foreach(Var v; rule_method.localvars) {
-			String tp = Kiev.parserAddr(v.type);
+			String tp = Kiev.reparseType(v.type);
 			if( v.type.isWrapper() )
-				sb.append("#t"+tp+' '+v.name.name+" := new #t"+tp+"();\n");
+				sb.append(tp+' '+v.name.name+" := new "+tp+"();\n");
 			else
-				sb.append("#t"+tp+' '+v.name.name+";\n");
+				sb.append(tp+' '+v.name.name+";\n");
 		}
 		// tmp variables inserted here
 		sb.append(fields_buf.toString());
@@ -636,7 +636,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 				createTextUnification(var)+
 
 			// Unbound
-				createTextVarAccess(var)+".$bind(#e"+Kiev.parserAddr(expr.copy())+");\n"+
+				createTextVarAccess(var)+".$bind("+Kiev.reparseExpr(expr,true)+");\n"+
 				"if( !"+createTextVarAccess(var)+".$is_bound ) {\n"+
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
@@ -649,7 +649,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 			// Already bound
 			"bound$"+idx+":;\n"+
-				"if( !"+createTextVarAccess(var)+".equals(#e"+Kiev.parserAddr(expr.copy())+") ) {\n"+	// check
+				"if( ! "+createTextVarAccess(var)+".equals("+Kiev.reparseExpr(expr,true)+") ) {\n"+	// check
 					createTextBacktrack(false)+					// backtrack, bt$ already loaded
 				"}\n"+
 				createTextMoreCheck(false)							// check next
@@ -658,33 +658,33 @@ public final class RuleIstheExpr extends ASTRuleNode {
 }
 
 @node
-@dflow(out="exprs")
+@dflow(out="expr")
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@ref
-	public final NArr<Var>		vars;		// variable of type PVar<...>
+	public final Var		var;		// variable of type PVar<...>
 	
 	@att
-	@dflow(in="this:in", seq="true")
-	public final NArr<ENode>	exprs;		// expression to check/unify
+	@dflow(in="this:in")
+	public ENode			expr;		// expression to check/unify
 	
-	public int[]	iter_vars;	// iterator var
+	public int				iter_var;	// iterator var
 
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
 	public static final int	JENUM = 2;
 	public static final int	ELEMS = 3;
 
-	public Type[]		itypes;
-	public int[]		modes;
+	public Type			itype;
+	public int			mode;
 
 	public RuleIsoneofExpr() {
 	}
 
-	public RuleIsoneofExpr(int pos, Var[] vars, ENode[] exprs) {
+	public RuleIsoneofExpr(int pos, Var var, ENode expr) {
 		super(pos);
-		this.vars.addAll(vars);
-		this.exprs.addAll(exprs);
+		this.var = var;
+		this.expr = expr;
 	}
 
 	public void resolve1(JumpNodes jn) {
@@ -692,116 +692,88 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		idx = ++((RuleMethod)pctx.method).index;
 		base = ((RuleMethod)pctx.method).allocNewBase(2);
 		depth = ((RuleMethod)pctx.method).push();
-		iter_vars = new int[vars.length];
-		itypes = new Type[vars.length];
-		modes = new int[vars.length];
-		for(int i=0; i < vars.length; i++) {
-			exprs[i].resolve(null);
-			Type ctype = exprs[i].getType();
-			Method@ elems;
-			if( ctype.isArray() ) {
-				itypes[i] = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
-				modes[i] = ARRAY;
-			} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
-				itypes[i] = ctype;
-				modes[i] = KENUM;
-			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-				itypes[i] = ctype;
-				modes[i] = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-					nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
-			) {
-				itypes[i] = Type.getRealType(ctype,elems.type.ret);
-				modes[i] = ELEMS;
-			} else {
-				throw new CompilerException(exprs[i],"Container must be an array or an Enumeration "+
-					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
-			}
-			iter_vars[i] = ((RuleMethod)pctx.method).add_iterator_var();
-			ASTNode rb = this.parent;
-			while( rb!=null && !(rb instanceof RuleBlock)) {
-				Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
-				rb = rb.parent;
-			}
-			Debug.assert(rb != null);
-			Debug.assert(rb instanceof RuleBlock);
-			((RuleBlock)rb).fields_buf.append(itypes[i])
-				.append(' ').append("$iter$").append(iter_vars[i]).append(";\n");
+		expr.resolve(null);
+		Type ctype = expr.getType();
+		Method@ elems;
+		if( ctype.isArray() ) {
+			itype = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
+			mode = ARRAY;
+		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
+			itype = ctype;
+			mode = KENUM;
+		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
+			itype = ctype;
+			mode = JENUM;
+		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
+		) {
+			itype = Type.getRealType(ctype,elems.type.ret);
+			mode = ELEMS;
+		} else {
+			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
+				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
+		iter_var = ((RuleMethod)pctx.method).add_iterator_var();
+		ASTNode rb = this.parent;
+		while( rb!=null && !(rb instanceof RuleBlock)) {
+			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
+			rb = rb.parent;
+		}
+		Debug.assert(rb != null);
+		Debug.assert(rb instanceof RuleBlock);
+		((RuleBlock)rb).fields_buf.append(itype)
+			.append(' ').append("$iter$").append(iter_var).append(";\n");
 	}
 
 	private String createTextCheckUnbinded() {
-		String s = "";
-		for(int i=0; i < vars.length; i++ )
-			s = s + "("+createTextVarAccess(vars[i])+".$is_bound)"+
-				( i < vars.length-1 ? " || " : "" );
-		return s;
+		return "("+createTextVarAccess(var)+".$is_bound)";
 	}
 
 	private String createTextUnification() {
-		if( vars.length > 1 ) {
-			return
-				"if( "+createTextCheckUnbinded()+" ) {\n"+
-					"throw new RuntimeException(\"All vars must be unbinded\");\n"+
-				"}\n"
-			;
-		} else {
-			return createTextUnification(vars[0]);
-		}
+		return createTextUnification(var);
 	}
 
-	private String createTextNewIterator(int i) {
-		switch( modes[i] ) {
+	private String createTextNewIterator() {
+		switch( mode ) {
 		case ARRAY:
-			return "new "+itypes[i]+"(#e"+Kiev.parserAddr(exprs[i].copy())+")";
+			return "new "+itype+"("+Kiev.reparseExpr(expr,true)+")";
 		case KENUM:
-			return "#e"+Kiev.parserAddr(exprs[i].copy());
+			return Kiev.reparseExpr(expr,true);
 		case JENUM:
-			return "#e"+Kiev.parserAddr(exprs[i].copy());
+			return Kiev.reparseExpr(expr,true);
 		case ELEMS:
-			return "(#e"+Kiev.parserAddr(exprs[i].copy())+").elements()";
+			return "("+Kiev.reparseExpr(expr,true)+").elements()";
 		default:
-			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
+			throw new RuntimeException("Unknown mode of iterator "+mode);
 		}
 	}
 
 	private String createTextNewIterators() {
-		String s = "";
-		for(int i=0; i < vars.length; i++ )
-			s += "$env.$iter$"+iter_vars[i]+"="+createTextNewIterator(i)+";\n";
-		return s;
+		return "$env.$iter$"+iter_var+"="+createTextNewIterator()+";\n";
 	}
 
 	private String createTextUnbindVars() {
-		String s = "";
-		for(int i=0; i < vars.length; i++ ) {
-			s = s + "$env.$iter$"+iter_vars[i]+"=null;\n";
-			s = s + createTextVarAccess(vars[i])+".$unbind();\n";
-		}
-		return s;
+		return "$env.$iter$"+iter_var+"=null;\n"+
+				createTextVarAccess(var)+".$unbind();\n";
 	}
 
 	private String createTextCheckNext() {
-		String s = "";
-		for(int i=0; i < vars.length; i++ )
-			s = s + "($env.$iter$"+iter_vars[i]+".hasMoreElements()"+
-				" && "+createTextVarAccess(vars[i])+".$rebind_chk($env.$iter$"+iter_vars[i]+".nextElement()))"+
-				( i < vars.length-1 ? " && " : "" );
-		return s;
+		return "($env.$iter$"+iter_var+".hasMoreElements()"+
+				" && "+createTextVarAccess(var)+".$rebind_chk($env.$iter$"+iter_var+".nextElement()))";
 	}
 
-	private String createTextContaince(int i) {
-		switch( modes[i] ) {
+	private String createTextContaince() {
+		switch( mode ) {
 		case ARRAY:
-			return "kiev.stdlib.ArrayEnumerator.contains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
+			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
 		case KENUM:
-			return "kiev.stdlib.PEnv.contains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.contains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
 		case JENUM:
-			return "kiev.stdlib.PEnv.jcontains(#e"+Kiev.parserAddr(exprs[i].copy())+","+vars[i].name+".$var)";
+			return "kiev.stdlib.PEnv.jcontains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
 		case ELEMS:
-			return "#e"+Kiev.parserAddr(exprs[i].copy())+".contains("+vars[i].name+".$var)";
+			return Kiev.reparseExpr(expr,true)+".contains("+var.name+".$var)";
 		default:
-			throw new RuntimeException("Unknown mode of iterator "+modes[i]);
+			throw new RuntimeException("Unknown mode of iterator "+mode);
 		}
 	}
 
@@ -826,7 +798,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			"bound$"+idx+":;\n"+
 				"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 				"bt$ = "+(base+1)+";\n"+						// set new backtrack state to point itself
-				"if( "+createTextContaince(0)+" ) {\n"+			// check
+				"if( "+createTextContaince()+" ) {\n"+			// check
 					createTextMoreCheck(true)+
 				"}\n"+
 			"case "+(base+1)+":\n"+
@@ -935,7 +907,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 				assert (obj instanceof ThisExpr);
 				sb.append("super.");
 			} else {
-				sb.append("#e").append(Kiev.parserAddr(obj.copy())).append('.');
+				sb.append(Kiev.reparseExpr(obj,true)).append('.');
 			}
 		}
 		else if (super_flag) {
@@ -943,9 +915,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		}
 		sb.append(func.getName()).append('(');
 		for(int i=1; i < args.length; i++) {
-			String pa = Kiev.parserAddr(args[i].copy());
-			sb.append("#e"+pa);
-			trace(Kiev.debugRules,"#e"+pa+" is "+args[i]);
+			sb.append(Kiev.reparseExpr(args[i],true));
 			if( i < args.length-1) sb.append(',');
 		}
 		sb.append("))");
@@ -1052,9 +1022,9 @@ public final class RuleWhileExpr extends RuleExprBase {
 			"case "+base+":\n"+
 				(bt_expr == null ?
 					""
-				:	"#e"+Kiev.parserAddr(bt_expr.copy())+";\n"
+				:	Kiev.reparseExpr(bt_expr,true)+";\n"
 				)+
-				"if ( !#e"+Kiev.parserAddr(expr.copy())+" ) {\n"+
+				"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
 					createTextBacktrack(true)+						// backtrack, bt$ may needs to be loaded
 				"}\n"+
 				createTextMoreCheck(false)
@@ -1104,20 +1074,20 @@ public final class RuleExpr extends RuleExprBase {
 			// No unification need
 			"enter$"+idx+":;\n"+
 				( expr.getType().equals(Type.tpBoolean) ?
-					"if ( ! #e"+Kiev.parserAddr(expr.copy())+" ) {\n"+
+					"if ( ! "+Kiev.reparseExpr(expr,true)+" ) {\n"+
 						createTextBacktrack(false)+					// backtrack, bt$ already loaded
 					"}\n"+
 					createTextMoreCheck(false)
 				: bt_expr == null ?
-					"#e"+Kiev.parserAddr(expr.copy())+";\n"+
+					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(false)
 				:
 					"$env.bt$"+depth+" = bt$;\n"+					// store a state to backtrack
 					"bt$ = "+base+";\n"+							// set new backtrack state to point itself
-					"#e"+Kiev.parserAddr(expr.copy())+";\n"+
+					Kiev.reparseExpr(expr,true)+";\n"+
 					createTextMoreCheck(true)+
 			"case "+base+":\n"+
-					"#e"+Kiev.parserAddr(bt_expr.copy())+";\n"+
+					Kiev.reparseExpr(bt_expr,true)+";\n"+
 					createTextBacktrack(true)						// backtrack, bt$ needs to be loaded
 				)
 		);

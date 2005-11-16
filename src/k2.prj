@@ -96,8 +96,6 @@ kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayE
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
-kiev.parser.ASTReparseExpression kiev/parser/ASTReparseExpression kiev\parser\ASTReparseExpression.java
-kiev.parser.ASTReparseStatement kiev/parser/ASTReparseStatement kiev\parser\ASTReparseStatement.java
 kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
 kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
 kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java

@@ -36,28 +36,25 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="exprs")
+@dflow(out="expr")
 public class ASTRuleIsoneofExpression extends ASTRuleNode {
 
 	@att
-	public final NArr<NameRef>			names;
+	public NameRef			name;
 	
 	@att
-	@dflow(in="", seq="false")
-	public final NArr<ENode>			exprs;
+	@dflow(in="")
+	public ENode			expr;
 
     public void resolve(Type reqType) {
-    	Var[] vars = new Var[names.length];
-    	for(int i=0; i < vars.length; i++ ) {
-			ASTNode@ v;
-			if( !PassInfo.resolveNameR(this,v,new ResInfo(this),names[i].name) )
-				throw new CompilerException(this,"Unresolved identifier "+names[i].name);
-			if( !(v instanceof Var) )
-	    		throw new CompilerException(names[i],"Identifier is not a var");
-			vars[i] = (Var)v;
-			exprs[i].resolve(null);
-		}
-    	replaceWithNode(new RuleIsoneofExpr(getPos(),vars,exprs.delToArray()));
+		ASTNode@ v;
+		if( !PassInfo.resolveNameR(this,v,new ResInfo(this),name.name) )
+			throw new CompilerException(this,"Unresolved identifier "+name.name);
+		if( !(v instanceof Var) )
+			throw new CompilerException(name,"Identifier is not a var");
+    	Var var = (Var)v;
+		expr.resolve(null);
+    	replaceWithNode(new RuleIsoneofExpr(getPos(),var,(ENode)~expr));
     }
 
 	public void	createText(StringBuffer sb) { throw new CompilerException(this,"Internal error"); }
