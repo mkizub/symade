@@ -339,7 +339,6 @@ kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java
 kiev.vlang.Label.LabelDFFunc kiev/vlang/Label$LabelDFFunc kiev\vlang\LoopStatement.java
 kiev.vlang.LabeledStat kiev/vlang/LabeledStat kiev\vlang\Statement.java
 kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
-kiev.vlang.LocalPrologVarAccessExpr kiev/vlang/LocalPrologVarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.LocalStructDecl kiev/vlang/LocalStructDecl kiev\vlang\AST.java
 kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
@@ -452,9 +451,8 @@ kiev.vlang.TypedefAttr kiev/vlang/TypedefAttr kiev\vlang\Attr.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.Var.VarDFFunc kiev/vlang/Var$VarDFFunc kiev\vlang\Var.java
-kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
-kiev.vlang.VarRef kiev/vlang/VarRef kiev\vlang\AST.java
+kiev.vlang.VarExpr kiev/vlang/VarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java

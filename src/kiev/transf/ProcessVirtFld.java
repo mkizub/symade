@@ -267,7 +267,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						f.isStatic()? new StaticFieldAccessExpr(f.pos,f,true)
 									: new AccessExpr(f.pos,new ThisExpr(0),f,true),
-						new VarAccessExpr(f.pos,value)
+						new VarExpr(f.pos,value)
 					)
 				);
 				body.stats.append(ass_st);
@@ -276,12 +276,12 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 					Field fatt = ((Struct)f.parent).resolveField(fname);
 					Statement p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
-								new VarAccessExpr(0, value),
+								new VarExpr(0, value),
 								new ConstNullExpr()
 							),
 							new ExprStat(0,
 								new ASTCallAccessExpression(0,
-									new VarAccessExpr(0, value),
+									new VarExpr(0, value),
 									KString.from("callbackAttached"),
 									new ENode[] {
 										new ThisExpr(),
@@ -413,8 +413,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				if (fa.obj instanceof ThisExpr) {
 					acc = (ENode)~fa.obj;
 				}
-				else if (fa.obj instanceof VarAccessExpr) {
-					acc = ((VarAccessExpr)fa.obj).var;
+				else if (fa.obj instanceof VarExpr) {
+					acc = ((VarExpr)fa.obj).getVar();
 				}
 				else {
 					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
@@ -486,8 +486,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 				if (fa.obj instanceof ThisExpr) {
 					acc = fa.obj;
 				}
-				else if (fa.obj instanceof VarAccessExpr) {
-					acc = ((VarAccessExpr)fa.obj).var;
+				else if (fa.obj instanceof VarExpr) {
+					acc = ((VarExpr)fa.obj).getVar();
 				}
 				else {
 					Var var = new Var(0,KString.from("tmp$virt"),fa.obj.getType(),0);
@@ -527,8 +527,8 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	}
 	
 	private Expr mkAccess(Object o) {
-		if (o instanceof Var) return new VarAccessExpr(0,(Var)o);
-		if (o instanceof VarRef) return new VarAccessExpr(0,((VarRef)o).getVar());
+		if (o instanceof Var) return new VarExpr(0,(Var)o);
+		if (o instanceof VarExpr) return new VarExpr(0,o.getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}

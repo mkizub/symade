@@ -153,7 +153,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						throw new CompilerException(this,"Wrong case in normal switch");
 				}
 				else if( val instanceof TypeRef ) {
-					this.type = Type.getRealType(sw.tmpvar.type,val.getType());
+					this.type = Type.getRealType(sw.tmpvar.getType(),val.getType());
 					pizza_case = true;
 					Struct cas = this.type.getStruct();
 					if( cas.isPizzaCase() ) {
@@ -168,12 +168,12 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 								Var p = pattern[i];
 								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
-								Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
+								Type tp = Type.getRealType(sw.tmpvar.getType(),case_attr.casefields[i].type);
 								if( !p.type.equals(tp) )
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new AccessExpr(p.pos,
-										new CastExpr(p.pos,Type.getRealType(sw.tmpvar.type,cas.type),
-											(Expr)new VarAccessExpr(p.pos,sw.tmpvar.getVar())),
+										new CastExpr(p.pos,Type.getRealType(sw.tmpvar.getType(),cas.type),
+											(Expr)new VarExpr(p.pos,sw.tmpvar.getVar())),
 										case_attr.casefields[i]
 									);
 //									addSymbol(j++,p);
@@ -273,7 +273,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 	@dflow(in="sel", seq="false")
 	@att public final NArr<CaseLabel>	cases;
 
-	@att public VarRef					tmpvar;
+	@att public VarExpr					tmpvar;
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
@@ -346,12 +346,12 @@ public class SwitchStat extends Statement implements BreakTarget {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
-					tmpvar = new VarRef(sel.pos, new Var(sel.pos,KString.from(
+					tmpvar = new VarExpr(sel.pos, new Var(sel.pos,KString.from(
 						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
 					me = new BlockStat(pos);
 					this.replaceWithNode(me);
 					ENode old_sel = (ENode)~this.sel;
-					tmpvar.init = old_sel;
+					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
 					me.addStatement(this);
 					if( tp.isHasCases() ) {
@@ -359,7 +359,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						sel = cae;
 						cae.pos = pos;
-						cae.obj = new VarAccessExpr(tmpvar.pos,tmpvar.getVar());
+						cae.obj = new VarExpr(tmpvar.pos,tmpvar.getVar());
 						cae.obj.resolve(null);
 						cae.func = new NameRef(pos, nameGetCaseTag);
 					} else {
@@ -370,7 +370,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						CallExpr cae = new CallExpr(pos,
 							new StaticFieldAccessExpr(pos,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
-							new Expr[]{new VarAccessExpr(pos,tmpvar.getVar())}
+							new Expr[]{new VarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
 					}
@@ -1004,8 +1004,7 @@ public class WithStat extends Statement {
 			expr.resolve(null);
 			ENode e = expr;
 			switch (e) {
-			case VarAccessExpr:				var_or_field = ((VarAccessExpr)e).var;				break;
-			case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)e).var;	break;
+			case VarExpr:					var_or_field = ((VarExpr)e).getVar();				break;
 			case AccessExpr:				var_or_field = ((AccessExpr)e).var;				break;
 			case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)e).var;		break;
 			case AssignExpr:				e = ((AssignExpr)e).lval;							goto case e;

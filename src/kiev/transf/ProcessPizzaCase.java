@@ -78,7 +78,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 					new ExprStat(
 						new AssignExpr(f.pos,AssignOperator.Assign,
 							new AccessExpr(f.pos,new ThisExpr(f.pos),f),
-							new VarAccessExpr(f.pos,fp)
+							new VarExpr(f.pos,fp)
 						)
 					),p++
 				);

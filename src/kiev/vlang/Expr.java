@@ -309,9 +309,9 @@ public class AssignExpr extends LvalueExpr {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.getVar().isNeedProxy() ) {
+		if( (lval instanceof VarExpr) && ((VarExpr)lval).getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var.getVar();
+			Var var = ((VarExpr)lval).getVar();
 			if( var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
@@ -348,8 +348,8 @@ public class AssignExpr extends LvalueExpr {
 		if( lval instanceof StaticFieldAccessExpr
 		 || (
 				lval instanceof AccessExpr
-			 && ((AccessExpr)lval).obj instanceof VarAccessExpr
-			 &&	((VarAccessExpr)((AccessExpr)lval).obj).var.name.equals(nameThis)
+			 && ((AccessExpr)lval).obj instanceof VarExpr
+			 &&	((VarExpr)((AccessExpr)lval).obj).name.equals(nameThis)
 			)
 		) {
 			if( pctx.method != null && pctx.method.isInvariantMethod() )
@@ -389,8 +389,8 @@ public class AssignExpr extends LvalueExpr {
 			return dfs;
 		DNode[] path = null;
 		switch(lval) {
-		case VarAccessExpr:
-			path = new DNode[]{((VarAccessExpr)lval).var.getVar()};
+		case VarExpr:
+			path = new DNode[]{((VarExpr)lval).getVar()};
 			break;
 		case AccessExpr:
 			path = ((AccessExpr)lval).getAccessPath();
@@ -1417,9 +1417,9 @@ public class IncrementExpr extends LvalueExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.getVar().isNeedProxy() ) {
+		if( (lval instanceof VarExpr) && ((VarExpr)lval).getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var.getVar();
+			Var var = ((VarExpr)lval).getVar();
 			if( !var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
@@ -1449,15 +1449,15 @@ public class IncrementExpr extends LvalueExpr {
 		if( reqType != Type.tpVoid ) {
 			generateLoad();
 		} else {
-			if( lval instanceof VarAccessExpr ) {
-				VarAccessExpr va = (VarAccessExpr)lval;
-				if( va.var.getType().isIntegerInCode() && !va.var.getVar().isNeedProxy() || va.isUseNoProxy() ) {
+			if( lval instanceof VarExpr ) {
+				VarExpr va = (VarExpr)lval;
+				if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
-						Code.addInstrIncr(va.var,1);
+						Code.addInstrIncr(va,1);
 						return;
 					}
 					else if( op==PrefixOperator.PreDecr || op==PostfixOperator.PostDecr ) {
-						Code.addInstrIncr(va.var,-1);
+						Code.addInstrIncr(va,-1);
 						return;
 					}
 				}
@@ -1492,27 +1492,27 @@ public class IncrementExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
 		Code.setLinePos(this.getPosLine());
 		LvalueExpr lval = (LvalueExpr)this.lval;
-		if( lval instanceof VarAccessExpr ) {
-			VarAccessExpr va = (VarAccessExpr)lval;
-			if( va.var.getType().isIntegerInCode() && !va.var.getVar().isNeedProxy() || va.isUseNoProxy() ) {
+		if( lval instanceof VarExpr ) {
+			VarExpr va = (VarExpr)lval;
+			if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 				if( op == PrefixOperator.PreIncr ) {
-					Code.addInstrIncr(va.var,1);
-					Code.addInstr(op_load,va.var);
+					Code.addInstrIncr(va,1);
+					Code.addInstr(op_load,va);
 					return;
 				}
 				else if( op == PostfixOperator.PostIncr ) {
-					Code.addInstr(op_load,va.var);
-					Code.addInstrIncr(va.var,1);
+					Code.addInstr(op_load,va);
+					Code.addInstrIncr(va,1);
 					return;
 				}
 				else if( op == PrefixOperator.PreDecr ) {
-					Code.addInstrIncr(va.var,-1);
-					Code.addInstr(op_load,va.var);
+					Code.addInstrIncr(va,-1);
+					Code.addInstr(op_load,va);
 					return;
 				}
 				else if( op == PostfixOperator.PostDecr ) {
-					Code.addInstr(op_load,va.var);
-					Code.addInstrIncr(va.var,-1);
+					Code.addInstr(op_load,va);
+					Code.addInstrIncr(va,-1);
 					return;
 				}
 			}

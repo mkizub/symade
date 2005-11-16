@@ -679,7 +679,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				 || !from.pctx.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
 				 )
 					throw new CompilerException(from,"$typeinfo cannot be accessed from "+from.pctx.method);
-				ti_access = new VarAccessExpr(from.pos,from.pctx.method.params[0]);
+				ti_access = new VarExpr(from.pos,from.pctx.method.params[0]);
 			}
 			else {
 				Field ti = resolveField(nameTypeInfo);
@@ -832,7 +832,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				stats[arg] = new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
 						new AccessExpr(pos,new ThisExpr(pos),f),
-						new VarAccessExpr(pos,v)
+						new VarExpr(pos,v)
 					)
 				);
 			}
@@ -1238,8 +1238,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) ) {
-										if (!(cae.args[0] instanceof VarAccessExpr) || ((VarAccessExpr)cae.args[0]).var.getVar() != m.params[0])
-										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[0]));
+										if (!(cae.args[0] instanceof VarExpr) || ((VarExpr)cae.args[0]).getVar() != m.params[0])
+										cae.args.insert(0,new VarExpr(cae.pos,m.params[0]));
 									} else {
 										throw new RuntimeException("Don't know where to get "+typeinfo_clazz.type+" $typeinfo");
 								}
@@ -1268,7 +1268,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( this.type.args.length > 0 && super_type.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
-								call_super.args.append( new VarAccessExpr(m.pos,m.params[i]));
+								call_super.args.append( new VarExpr(m.pos,m.params[i]));
 							}
 						}
 					}
@@ -1285,7 +1285,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						new ExprStat(pos,
 							new AssignExpr(pos,AssignOperator.Assign,
 								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
-								new VarAccessExpr(pos,m.params[0])
+								new VarExpr(pos,m.params[0])
 							)
 						),p++
 					);
@@ -1305,7 +1305,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						new ExprStat(pos,
 							new AssignExpr(m.pos,AssignOperator.Assign,
 								new AccessExpr(m.pos,new ThisExpr(0),tif),
-								new VarAccessExpr(m.pos,v)
+								new VarExpr(m.pos,v)
 							)),
 						p++);
 				}
@@ -1416,7 +1416,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ENode[] vae = new ENode[mm.params.length];
 				for(int k=0; k < vae.length; k++) {
 					vae[k] = new CastExpr(0,mm.type.args[k],
-						new VarAccessExpr(0,mm.params[k]), Kiev.verify);
+						new VarExpr(0,mm.params[k]), Kiev.verify);
 				}
 				if( m.type.ret != Type.tpVoid ) {
 					if( overwr.type.ret == Type.tpVoid )
@@ -1462,7 +1462,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						nm.params.addAll(rm.params);
 						Expr[] vae = new Expr[mm.params.length];
 						for(int k=0; k < vae.length; k++) {
-							vae[k] = new VarAccessExpr(0,mm.params[k]);
+							vae[k] = new VarExpr(0,mm.params[k]);
 						}
 						nm.body = new BlockStat(0,new ENode[]{
 							new ReturnStat(0,
@@ -1516,7 +1516,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				Expr be = null;
 				if( mmt.m != null && !t.clazz.equals(mmt.m.type.args[j].clazz) )
 					be = new InstanceofExpr(pos,
-						new VarAccessExpr(pos,mm.params[j]),
+						new VarExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !t.isInstanceOf(Type.tpClosure) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
@@ -1526,9 +1526,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
 						new Expr[]{
-							new VarAccessExpr(pos,mm.params[j]),
+							new VarExpr(pos,mm.params[j]),
 							new AccessExpr(pos,
-								new CastExpr(pos,t,new VarAccessExpr(pos,mm.params[j])),
+								new CastExpr(pos,t,new VarExpr(pos,mm.params[j])),
 								t.clazz.resolveField(nameTypeInfo))
 						});
 					if( be == null )
@@ -1763,7 +1763,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				Expr[] args = new Expr[m.type.args.length];
 				args[0] = new ThisExpr();
 				for(int k=1; k < args.length; k++)
-					args[k] = new VarAccessExpr(0,proxy.params[k-1]);
+					args[k] = new VarExpr(0,proxy.params[k-1]);
 				CallExpr ce = new CallExpr(0,null,m,args);
 				if( proxy.type.ret == Type.tpVoid ) {
 					bs.addStatement(new ExprStat(0,ce));
@@ -1996,7 +1996,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								new ExprStat(m.pos,
 									new AssignExpr(m.pos,AssignOperator.Assign,
 										new AccessExpr(m.pos,new ThisExpr(0),proxy_fields[j]),
-										new VarAccessExpr(m.pos,m.params[par])
+										new VarExpr(m.pos,m.params[par])
 									)
 								),1
 							);

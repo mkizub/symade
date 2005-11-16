@@ -118,7 +118,7 @@ public class NewExpr extends Expr {
 			if( pctx.method==null || pctx.method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			Var th = pctx.method.getThisPar();
-			outer = new VarAccessExpr(pos,th);
+			outer = new VarExpr(pos,th);
 			outer.resolve(null);
 		}
 		for(int i=0; i < args.length; i++)
@@ -555,7 +555,7 @@ public class NewClosure extends Expr {
 		foreach (ASTNode n; cl.members; n instanceof Field) {
 			Field f = (Field)n;
 			if( !f.isNeedProxy() ) continue;
-			Var v = ((VarAccessExpr)f.init).var.getVar();
+			Var v = ((VarExpr)f.init).getVar();
 			Code.addInstr(Instr.op_load,v);
 		}
 		Code.addInstr(op_call,func,false);

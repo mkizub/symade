@@ -1177,7 +1177,7 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstrIncr(VarRef vv, int val) {
+	static public void addInstrIncr(VarExpr vv, int val) {
 		addInstrIncr(vv.getVar(), val);
 	}
 	
@@ -1231,7 +1231,7 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstr(Instr i, VarRef v) {
+	static public void addInstr(Instr i, VarExpr v) {
 		addInstr(i,v.getVar());
 	}
 	

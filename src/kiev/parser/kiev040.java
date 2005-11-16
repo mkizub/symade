@@ -2358,10 +2358,10 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public VarRef Var() throws ParseException {
+  static final public VarExpr Var() throws ParseException {
   Token t;
     t= jj_consume_token(IDENTIFIER);
-                VarRef id = new VarRef();
+                VarExpr id = new VarExpr();
                 id.set(t);
                 {if (true) return id;}
     throw new Error("Missing return statement in function");

@@ -173,6 +173,17 @@ public class RuleMethod extends Method {
 		return new RuleMethodDFFunc(dfi);
 	}
 
+	public boolean preGenerate() {
+		Var penv = params[0];
+		assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+		if( body instanceof RuleBlock ) {
+			body.preGenerate();
+			Kiev.runProcessorsOn(body);
+			body.cleanDFlow();
+		}
+		return true;
+	}
+	
 	public void resolveDecl() {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		try {
@@ -180,19 +191,7 @@ public class RuleMethod extends Method {
 			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
 				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-				if( body instanceof RuleBlock ) {
-					body.resolve(Type.tpVoid);
-					body.cleanDFlow();
-					boolean[] exts = Kiev.getExtSet();
-					try {
-						Kiev.enable(Ext.GotoCase);
-						Kiev.enable(Ext.Goto);
-						Kiev.runProcessorsOn(body);
-						body.resolve(Type.tpVoid);
-					} finally { Kiev.setExtSet(exts); }
-				} else {
-					body.resolve(Type.tpVoid);
-				}
+				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
 				if( type.ret == Type.tpVoid ) {
@@ -339,11 +338,14 @@ public abstract class ASTRuleNode extends ENode {
 	@getter public int get$idx() { return idx; }
 	@setter public void set$idx(int i) { idx = i; }
 
+	public boolean preGenerate() {
+		throw new CompilerException(this,"preGenerate of ASTRuleNode");
+	}
 	public void resolve(Type tp) {
 		throw new CompilerException(this,"Resolving of ASTRuleNode");
 	}
 
-	public String createTextUnification(VarRef var) {
+	public String createTextUnification(VarExpr var) {
 		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
 	}
 
@@ -371,7 +373,7 @@ public abstract class ASTRuleNode extends ENode {
 		return "";
 	}
 
-	public String createTextVarAccess(VarRef v) {
+	public String createTextVarAccess(VarExpr v) {
 		if( !v.getVar().isLocalRuleVar() ) return v.name.toString();
 		return "$env."+v;
 	}
@@ -397,7 +399,10 @@ public final class RuleBlock extends BlockStat {
 		node = n;
 	}
 
-	public void resolve(Type reqType) {
+	public void resolve(Type tp) {
+		throw new CompilerException(this,"Resolving of RuleBlock");
+	}
+	public boolean preGenerate() {
 		node.resolve(Type.tpVoid);
 		fields_buf = new StringBuffer();
 		node.resolve1(new JumpNodes(false,null,false,null,false));
@@ -451,6 +456,7 @@ public final class RuleBlock extends BlockStat {
 		BlockStat mbody = Kiev.parseBlock(this,sb);
 		pctx.method.body = mbody;
 		mbody.stats.addAll(stats);
+		return false;
 	}
 
 }
@@ -608,7 +614,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	@att
-	public VarRef	var;		// variable of type PVar<...>
+	public VarExpr	var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -617,7 +623,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	public RuleIstheExpr() {
 	}
 
-	public RuleIstheExpr(int pos, VarRef var, ENode expr) {
+	public RuleIstheExpr(int pos, VarExpr var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
@@ -667,7 +673,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@att
-	public VarRef			var;		// variable of type PVar<...>
+	public VarExpr			var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -686,7 +692,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public RuleIsoneofExpr() {
 	}
 
-	public RuleIsoneofExpr(int pos, VarRef var, ENode expr) {
+	public RuleIsoneofExpr(int pos, VarExpr var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
@@ -877,8 +883,8 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(ClosureCallExpr expr) {
 		super(expr.pos);
 		this.obj = (ENode)~expr.expr;
-		if( expr.expr instanceof VarAccessExpr )
-			this.func = ((VarAccessExpr)expr.expr).var.getVar();
+		if( expr.expr instanceof VarExpr )
+			this.func = ((VarExpr)expr.expr).getVar();
 		else if( expr.expr instanceof StaticFieldAccessExpr )
 			this.func = ((StaticFieldAccessExpr)expr.expr).var;
 		else if( expr.expr instanceof AccessExpr ) {

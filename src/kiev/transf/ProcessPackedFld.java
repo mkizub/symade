@@ -229,8 +229,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		if (fa.obj instanceof ThisExpr) {
 			acc = fa.obj;
 		}
-		else if (fa.obj instanceof VarAccessExpr) {
-			acc = ((VarAccessExpr)fa.obj).var;
+		else if (fa.obj instanceof VarExpr) {
+			acc = ((VarExpr)fa.obj).getVar();
 		}
 		else {
 			Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
@@ -314,8 +314,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			if (fa.obj instanceof ThisExpr) {
 				acc = fa.obj;
 			}
-			else if (fa.obj instanceof VarAccessExpr) {
-				acc = ((VarAccessExpr)fa.obj).var;
+			else if (fa.obj instanceof VarExpr) {
+				acc = ((VarExpr)fa.obj).getVar();
 			}
 			else {
 				Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
@@ -381,8 +381,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	private Expr mkAccess(Object o) {
-		if (o instanceof Var) return new VarAccessExpr(0,(Var)o);
-		if (o instanceof VarRef) return new VarAccessExpr(0,((VarRef)o).getVar());
+		if (o instanceof Var) return new VarExpr(0,(Var)o);
+		if (o instanceof VarExpr) return new VarExpr(0,o.getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}

@@ -1828,12 +1828,12 @@ TypeRef ReparseType() :
 	}
 }
 
-VarRef Var() :
+VarExpr Var() :
 { Token t; }
 {
 	t=<IDENTIFIER>
 	{
-		VarRef id = new VarRef();
+		VarExpr id = new VarExpr();
 		id.set(t);
 		return id;
 	}

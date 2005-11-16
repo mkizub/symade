@@ -22,6 +22,8 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.transf.*;
+import kiev.parser.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
@@ -97,10 +99,10 @@ public class AccessExpr extends LvalueExpr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public DNode[] getAccessPath() {
-		if (obj instanceof VarAccessExpr) {
-			VarAccessExpr va = (VarAccessExpr)obj;
-			if (va.var.isFinal() && va.var.isForward())
-				return new DNode[]{va.var.getVar(), this.var};
+		if (obj instanceof VarExpr) {
+			VarExpr va = (VarExpr)obj;
+			if (va.getVar().isFinal() && va.getVar().isForward())
+				return new DNode[]{va.getVar(), this.var};
 			return null;
 		}
 		if (obj instanceof AccessExpr) {
@@ -120,7 +122,7 @@ public class AccessExpr extends LvalueExpr {
 
 		// Set violation of the field
 		if( pctx.method != null
-		 && obj instanceof VarAccessExpr && ((VarAccessExpr)obj).var.name.equals(nameThis)
+		 && obj instanceof VarExpr && ((VarExpr)obj).name.equals(nameThis)
 		)
 			pctx.method.addViolatedField(var);
 
@@ -388,7 +390,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			ASTNode@ v;
 			// We need to get the type of object in stack
 			Type t = Code.stack_at(0);
-			Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
+			Expr o = new VarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -413,7 +415,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			Type t = Code.stack_at(0);
 			if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			Expr o = new VarAccessExpr(pos,new Var(pos,KString.Empty,t,0));
+			Expr o = new VarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -547,31 +549,41 @@ public class ThisExpr extends LvalueExpr {
 
 @node
 @dflow(out="this:in")
-public class VarAccessExpr extends LvalueExpr {
+public class VarExpr extends LvalueExpr {
 
-	@att public VarRef		var;
+	static final KString namePEnv = KString.from("$env");
 
-	public VarAccessExpr() {
+	@att public KString		name;
+	@ref private Var		var;
+
+	public VarExpr() {
 	}
-	public VarAccessExpr(int pos, Var var) {
+	public VarExpr(int pos, Var var) {
 		super(pos);
-		if( var == null )
-			throw new RuntimeException("Null var");
-		this.var = new VarRef(pos,var);
+		this.var = var;
+		this.name = var.name.name;
 	}
-	public VarAccessExpr(int pos, VarRef var) {
+	public VarExpr(int pos, KString name) {
 		super(pos);
-		if( var == null )
-			throw new RuntimeException("Null var");
-		this.var = var;
+		this.name = name;
 	}
-	public VarAccessExpr(VarRef var) {
-		if( var == null )
-			throw new RuntimeException("Null var");
-		this.var = var;
+	public VarExpr(KString name) {
+		this.name = name;
 	}
 
-	public String toString() { return var.toString(); }
+	public void set(Token t) {
+		if (t.image.startsWith("ID#"))
+			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-1));
+		else
+			this.name = KString.from(t.image);
+        pos = t.getPos();
+	}
+	
+	public String toString() {
+		if (var == null)
+			return name.toString();
+		return var.toString();
+	}
 
 	public Type getType() {
 		try {
@@ -583,24 +595,72 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var.getVar()});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.getTypes().clone();
 	}
 
+	public Var getVar() {
+		if (var != null)
+			return var;
+		ASTNode@ v;
+		ResInfo info = new ResInfo(this);
+		if( !PassInfo.resolveNameR(this,v,info,name) )
+			throw new CompilerException(this,"Unresolved var "+name);
+		if !(v instanceof Var)
+			throw new CompilerException(this,"Expected "+name+" to be a var");
+		var = (Var)v;
+		return var;
+	}
+
+	public boolean preResolveIn(TransfProcessor proc) {
+		getVar(); // calls resolving
+		return false;
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
+		getVar(); // calls resolving
+		return false;
+	}
+	
+	public boolean preGenerate() {
+		if (getVar().isLocalRuleVar()) {
+			RuleMethod rm = (RuleMethod)pctx.method;
+			assert(rm.params[0].type == Type.tpRule);
+			Var pEnv = null;
+			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
+				VarDecl vd = (VarDecl)n;
+				if (vd.var.name.equals(namePEnv)) {
+					assert(vd.var.type.isInstanceOf(Type.tpRule));
+					pEnv = vd.var;
+					break;
+				}
+			}
+			if (pEnv == null) {
+				Kiev.reportError(this, "Cannot find "+namePEnv);
+				return false;
+			}
+			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
+			Field f = s.resolveField(name);
+			assert(f != null);
+			replaceWithNode(new AccessExpr(pos, new VarExpr(pos, pEnv), f));
+		}
+		return true;
+	}
+	
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
 		if( pctx.clazz.isLocal() ) {
-			if( var.getVar().pctx.clazz != this.pctx.clazz ) {
-				var.getVar().setNeedProxy(true);
+			if( getVar().pctx.clazz != this.pctx.clazz ) {
+				var.setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = (Field)pctx.clazz.resolveName(var.name)) == null ) {
+				if( (vf = (Field)pctx.clazz.resolveName(name)) == null ) {
 					// Add field
-					vf = pctx.clazz.addField(new Field(var.name,var.type,ACC_PUBLIC));
+					vf = pctx.clazz.addField(new Field(name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = (Expr)this.copy();
 				}
@@ -610,7 +670,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Field resolveProxyVar() {
-		Field proxy_var = (Field)Code.clazz.resolveName(var.name);
+		Field proxy_var = (Field)Code.clazz.resolveName(name);
 		if( proxy_var == null && Code.method.isStatic() && !Code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
@@ -626,19 +686,19 @@ public class VarAccessExpr extends LvalueExpr {
 	public void resolveVarForConditions() {
 		if( Code.cond_generation ) {
 			// Bind the correct var
-			if( var.getVar().parent != Code.method ) {
-				assert( var.getVar().parent instanceof Method, "Non-parametrs var in condition" );
-				if( var.name==nameResultVar ) var.lnk = Code.method.getRetVar();
+			if( getVar().parent != Code.method ) {
+				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
+				if( name==nameResultVar ) var = Code.method.getRetVar();
 				else for(int i=0; i < Code.method.params.length; i++) {
 					Var v = Code.method.params[i];
 					if( !v.name.equals(var.name) ) continue;
 					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
-					var.lnk = v;
+					var = v;
 					break;
 				}
 				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
 			}
-			assert( var.getVar().parent == Code.method, "Can't find var for condition" );
+			assert( var.parent == Code.method, "Can't find var for condition" );
 //			assert( var.name==nameResultVar && var == Code.method.getRetVar()
 //			 || var == Code.method.params[var.getBCpos()], "Missplaced var "+var );
 		}
@@ -648,8 +708,8 @@ public class VarAccessExpr extends LvalueExpr {
 		if( !Kiev.verify ) return;
 		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
-		if( var.getVar().parent instanceof Method ) {
-			Method m = (Method)var.getVar().parent;
+		if( getVar().parent instanceof Method ) {
+			Method m = (Method)var.parent;
 			for(int i=0; i < m.params.length; i++) {
 				if( var == m.params[i] ) {
 //					if( m.isStatic() ) chtp = m.jtype.args[i];
@@ -668,10 +728,10 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
+		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
@@ -682,7 +742,7 @@ public class VarAccessExpr extends LvalueExpr {
 			} else {
 				Code.addInstr(op_load,var);
 			}
-			if( var.getVar().isNeedRefProxy() ) {
+			if( var.isNeedRefProxy() ) {
 				Code.addInstr(op_getfield,resolveVarVal(),Code.clazz.type);
 			}
 		}
@@ -690,17 +750,17 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
+		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_load,Code.method.getThisPar());
-				if( var.getVar().isNeedRefProxy() ) {
+				if( var.isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
 				} else {
@@ -711,7 +771,7 @@ public class VarAccessExpr extends LvalueExpr {
 				Code.addInstr(op_load,var);
 				Code.addInstr(op_dup);
 			}
-			if( var.getVar().isNeedRefProxy() ) {
+			if( var.isNeedRefProxy() ) {
 				Code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar().getType());
 			}
 		}
@@ -719,43 +779,43 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - access only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
+		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_load,Code.method.getThisPar());
-				if( var.getVar().isNeedRefProxy() ) {
+				if( var.isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
 				} else {
 					Code.addInstr(op_dup);
 				}
 			} else {
-				if( var.getVar().isNeedRefProxy() )
+				if( var.isNeedRefProxy() )
 					Code.addInstr(op_load,var);
 			}
 		}
 	}
 
 	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
+		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				if( !var.getVar().isNeedRefProxy() ) {
+				if( !var.isNeedRefProxy() ) {
 					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
 				}
 			} else {
-				if( !var.getVar().isNeedRefProxy() ) {
+				if( !var.isNeedRefProxy() ) {
 					Code.addInstr(op_store,var);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
@@ -765,10 +825,10 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
+		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_dup);
@@ -776,13 +836,13 @@ public class VarAccessExpr extends LvalueExpr {
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_dup_x);
-				if( !var.getVar().isNeedRefProxy() ) {
+				if( !var.isNeedRefProxy() ) {
 					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
 				}
 			} else {
-				if( !var.getVar().isNeedRefProxy() ) {
+				if( !var.isNeedRefProxy() ) {
 					Code.addInstr(op_dup);
 					Code.addInstr(op_store,var);
 				} else {
@@ -799,122 +859,6 @@ public class VarAccessExpr extends LvalueExpr {
 		dmp.append(var);
 		if( var.isNeedRefProxy() )
 			dmp.append(".val");
-		return dmp.space();
-	}
-}
-
-@node
-@dflow(out="this:in")
-public class LocalPrologVarAccessExpr extends LvalueExpr {
-
-	static final KString namePEnv = KString.from("$env");
-	
-	@att public VarRef		var;
-
-	public LocalPrologVarAccessExpr() {
-	}
-	
-	public LocalPrologVarAccessExpr(int pos, Var var) {
-		super(pos);
-		this.var = new VarRef(pos,var);
-	}
-
-	public LocalPrologVarAccessExpr(int pos, VarRef var) {
-		super(pos);
-		this.var = var;
-	}
-
-	public String toString() {
-		return "$env."+var.name;
-	}
-
-	public Type getType() {
-		try {
-			return var.type;
-//			return Rule.getTypeOfVar(var);
-		} catch(Exception e) {
-			Kiev.reportError(this,e);
-			return Type.tpVoid;
-		}
-	}
-
-	public void resolve(Type reqType) {
-		RuleMethod rm = (RuleMethod)pctx.method;
-		int i = 0;
-		for(; i < rm.localvars.length; i++)
-			if( rm.localvars[i].name.equals(var.name) ) break;
-		if( i >= rm.localvars.length )
-			throw new CompilerException(this,"Local prolog var "+var+" not found in "+rm);
-		setResolved(true);
-	}
-
-	public Field resolveFieldForLocalPrologVar() {
-		RuleMethod rm = (RuleMethod)Code.method;
-		Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
-		Field f = s.resolveField(var.name);
-		assert(f != null);
-		return f;
-	}
-
-	public Var resolveFrameForLocalPrologVar() {
-		RuleMethod rm = (RuleMethod)Code.method;
-		assert(rm.params[0].type == Type.tpRule);
-		foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
-			VarDecl vd = (VarDecl)n;
-			if (vd.var.name.equals(namePEnv)) {
-				assert(vd.var.type.isInstanceOf(Type.tpRule));
-				return vd.var;
-			}
-		}
-		Kiev.reportError(this, "Cannot find "+namePEnv);
-		return rm.params[0];
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating LocalPrologVarAccessExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-		Code.addInstr(op_getfield,resolveFieldForLocalPrologVar(),var.getType());
-		if( Kiev.verify && !var.type.equals(Type.tpObject) )
-			Code.addInstr(Instr.op_checkcast,var.type);
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating LocalPrologVarAccessExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-		Code.addInstr(op_dup);
-		Code.addInstr(op_getfield,resolveFieldForLocalPrologVar(),var.getType());
-		if( Kiev.verify && !var.type.equals(Type.tpObject) )
-			Code.addInstr(Instr.op_checkcast,var.type);
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - access only: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Kiev.verify && !var.type.equals(Type.tpObject) )
-			Code.addInstr(Instr.op_checkcast,var.type);
-		Code.addInstr(op_putfield,resolveFieldForLocalPrologVar(),var.getType());
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Kiev.verify && !var.type.equals(Type.tpObject) )
-			Code.addInstr(Instr.op_checkcast,var.type);
-		Code.addInstr(op_dup_x);
-		Code.addInstr(op_putfield,resolveFieldForLocalPrologVar(),var.getType());
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.space();
-		dmp.append("$env.").append(var.name);
 		return dmp.space();
 	}
 }

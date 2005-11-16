@@ -111,7 +111,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,0));
 			tome.body = new BlockStat(pos);
-			SwitchStat sw = new SwitchStat(pos,new VarAccessExpr(pos,tome.params[0]),CaseLabel.emptyArray);
+			SwitchStat sw = new SwitchStat(pos,new VarExpr(pos,tome.params[0]),CaseLabel.emptyArray);
 			//EnumAttr ea = (EnumAttr)clazz.getAttr(attrEnum);
 			//if( ea == null )
 			//	throw new RuntimeException("enum structure "+clazz+" without "+attrEnum+" attribute");
@@ -185,9 +185,9 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			fromstr.params.add(new FormPar(pos,KString.from("val"),Type.tpString,0));
 			fromstr.body = new BlockStat(pos);
 			AssignExpr ae = new AssignExpr(pos,AssignOperator.Assign,
-				new VarAccessExpr(pos,fromstr.params[0]),
+				new VarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
-					new VarAccessExpr(pos,fromstr.params[0]),
+					new VarExpr(pos,fromstr.params[0]),
 					Type.tpString.clazz.resolveMethod(
 						KString.from("intern"),KString.from("()Ljava/lang/String;"),true
 					),
@@ -199,7 +199,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				KString str = f.name.name;
 				IfElseStat ifst = new IfElseStat(pos,
 					new BinaryBoolExpr(pos,BinaryOperator.Equals,
-						new VarAccessExpr(pos,fromstr.params[0]),
+						new VarExpr(pos,fromstr.params[0]),
 						new ConstStringExpr(str)),
 					new ReturnStat(pos,new StaticFieldAccessExpr(pos,f)),
 					null
@@ -212,7 +212,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 						if (str != f.name.name) {
 							ifst = new IfElseStat(pos,
 								new BinaryBoolExpr(pos,BinaryOperator.Equals,
-									new VarAccessExpr(pos,fromstr.params[0]),
+									new VarExpr(pos,fromstr.params[0]),
 									new ConstStringExpr(str)),
 									new ReturnStat(pos,new StaticFieldAccessExpr(pos,f)),
 									null

@@ -125,7 +125,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			dfIn.body.addStatement(new VarDecl(var));
 			{
 				ASTAccessExpression ae0 = new ASTAccessExpression();
-				ae0.obj = new VarAccessExpr(0,dfIn.params[0]);
+				ae0.obj = new VarExpr(0,dfIn.params[0]);
 				ae0.ident = new NameRef(KString.from("pslot"));
 				ASTAccessExpression ae1 = new ASTAccessExpression();
 				ae1.obj = ae0;
@@ -141,11 +141,11 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				ASTCallExpression ce = new ASTCallExpression();
 				ce.func = new NameRef(fname);
 				if (seq)
-					ce.args.add(new VarAccessExpr(0, dfIn.params[0]));
+					ce.args.add(new VarExpr(0, dfIn.params[0]));
 				dfIn.body.addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
-							new VarAccessExpr(0, var),
+							new VarExpr(0, var),
 							new ConstStringExpr(fldnm)
 						),
 						new ReturnStat(0, ce),
@@ -155,7 +155,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			}
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
-			msg.appendArg(new VarAccessExpr(0, var));
+			msg.appendArg(new VarExpr(0, var));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			dfIn.body.addStatement(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))

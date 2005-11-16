@@ -156,13 +156,9 @@ public class ResInfo {
 	}
 	
 	public Expr buildVarAccess(ASTNode at, Var var) {
-		if (var.isLocalRuleVar()) {
-			return new LocalPrologVarAccessExpr(at.pos, var);
-		}
-		else if (var.name.name == Constants.nameThis) {
+		if (var.name.name == Constants.nameThis)
 			return new ThisExpr(at.pos);
-		}
-		return new VarAccessExpr(at.pos, var);
+		return new VarExpr(at.pos, var);
 	}
 
 	public Expr buildAccess(ASTNode at, ASTNode from) {

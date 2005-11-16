@@ -72,7 +72,7 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
+					args.insert(new VarExpr(pos,mmm.params[0]),0);
 				else
 					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
 			}
@@ -97,9 +97,9 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
+					args.insert(new VarExpr(pos,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[1]),0);
+					args.insert(new VarExpr(pos,mmm.params[1]),0);
 				else
 					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
 			}
@@ -109,7 +109,7 @@ public class ASTCallExpression extends Expr {
 			) {
 				if( pctx.clazz.isStatic() )
 					throw new CompilerException(this,"Non-static inner super-class of static class");
-				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
+				args.insert(new VarExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -162,7 +162,7 @@ public class ASTCallExpression extends Expr {
 //					ENode[] oldargs = args.toArray();
 //					Expr[] cargs = new Expr[ac.params.length];
 //					for(int i=0; i < cargs.length; i++)
-//						cargs[i] = new VarAccessExpr(pos,(Var)ac.params[i]);
+//						cargs[i] = new VarExpr(pos,(Var)ac.params[i]);
 //					args.delAll();
 //					foreach (Expr e; cargs)
 //						args.add(e);
@@ -205,7 +205,7 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
 				// Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
+					args.insert(new VarExpr(pos,mmm.params[0]),0);
 				else
 					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
 			}
@@ -231,9 +231,9 @@ public class ASTCallExpression extends Expr {
 			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
 				// no // Insert our-generated typeinfo, or from childs class?
 				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[0]),0);
+					args.insert(new VarExpr(pos,mmm.params[0]),0);
 				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarAccessExpr(pos,mmm.params[1]),0);
+					args.insert(new VarExpr(pos,mmm.params[1]),0);
 				else
 					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
 			}
@@ -243,7 +243,7 @@ public class ASTCallExpression extends Expr {
 			) {
 				if( pctx.clazz.isStatic() )
 					throw new CompilerException(this,"Non-static inner super-class of static class");
-				args.insert(new VarAccessExpr(pos,(Var)pctx.method.params[0]),0);
+				args.insert(new VarExpr(pos,(Var)pctx.method.params[0]),0);
 			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -303,7 +303,7 @@ public class ASTCallExpression extends Expr {
 				ENode[] oldargs = args.toArray();
 				Expr[] cargs = new Expr[ac.params.length];
 				for(int i=0; i < cargs.length; i++)
-					cargs[i] = new VarAccessExpr(pos,(Var)ac.params[i]);
+					cargs[i] = new VarExpr(pos,(Var)ac.params[i]);
 				args.delAll();
 				foreach (Expr e; cargs)
 					args.add(e);
