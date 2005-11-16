@@ -309,12 +309,10 @@ public class AssignExpr extends LvalueExpr {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.isNeedProxy() ) {
+		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var;
-			ASTNode p = var.parent;
-			while( !(p instanceof Struct) ) p = p.parent;
-			if( !((Struct)p).equals(pctx.clazz) && !var.isNeedRefProxy() ) {
+			Var var = ((VarAccessExpr)lval).var.getVar();
+			if( var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
 		}
@@ -392,7 +390,7 @@ public class AssignExpr extends LvalueExpr {
 		DNode[] path = null;
 		switch(lval) {
 		case VarAccessExpr:
-			path = new DNode[]{((VarAccessExpr)lval).var};
+			path = new DNode[]{((VarAccessExpr)lval).var.getVar()};
 			break;
 		case AccessExpr:
 			path = ((AccessExpr)lval).getAccessPath();
@@ -1419,12 +1417,10 @@ public class IncrementExpr extends LvalueExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.isNeedProxy() ) {
+		if( (lval instanceof VarAccessExpr) && ((VarAccessExpr)lval).var.getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarAccessExpr)lval).var;
-			ASTNode p = var.parent;
-			while( !(p instanceof Struct) ) p = p.parent;
-			if( !((Struct)p).equals(pctx.clazz) && !var.isNeedRefProxy() ) {
+			Var var = ((VarAccessExpr)lval).var.getVar();
+			if( !var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
 		}
@@ -1455,7 +1451,7 @@ public class IncrementExpr extends LvalueExpr {
 		} else {
 			if( lval instanceof VarAccessExpr ) {
 				VarAccessExpr va = (VarAccessExpr)lval;
-				if( va.var.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+				if( va.var.getType().isIntegerInCode() && !va.var.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
 						Code.addInstrIncr(va.var,1);
 						return;
@@ -1498,7 +1494,7 @@ public class IncrementExpr extends LvalueExpr {
 		LvalueExpr lval = (LvalueExpr)this.lval;
 		if( lval instanceof VarAccessExpr ) {
 			VarAccessExpr va = (VarAccessExpr)lval;
-			if( va.var.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
+			if( va.var.getType().isIntegerInCode() && !va.var.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 				if( op == PrefixOperator.PreIncr ) {
 					Code.addInstrIncr(va.var,1);
 					Code.addInstr(op_load,va.var);

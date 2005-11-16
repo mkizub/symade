@@ -100,7 +100,7 @@ public class AccessExpr extends LvalueExpr {
 		if (obj instanceof VarAccessExpr) {
 			VarAccessExpr va = (VarAccessExpr)obj;
 			if (va.var.isFinal() && va.var.isForward())
-				return new DNode[]{va.var, this.var};
+				return new DNode[]{va.var.getVar(), this.var};
 			return null;
 		}
 		if (obj instanceof AccessExpr) {
@@ -549,12 +549,23 @@ public class ThisExpr extends LvalueExpr {
 @dflow(out="this:in")
 public class VarAccessExpr extends LvalueExpr {
 
-	@ref public Var		var;
+	@att public VarRef		var;
 
 	public VarAccessExpr() {
 	}
 	public VarAccessExpr(int pos, Var var) {
 		super(pos);
+		if( var == null )
+			throw new RuntimeException("Null var");
+		this.var = new VarRef(pos,var);
+	}
+	public VarAccessExpr(int pos, VarRef var) {
+		super(pos);
+		if( var == null )
+			throw new RuntimeException("Null var");
+		this.var = var;
+	}
+	public VarAccessExpr(VarRef var) {
 		if( var == null )
 			throw new RuntimeException("Null var");
 		this.var = var;
@@ -572,7 +583,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var.getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.getTypes().clone();
@@ -581,17 +592,15 @@ public class VarAccessExpr extends LvalueExpr {
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
 		if( pctx.clazz.isLocal() ) {
-			ASTNode p = var.parent;
-			while( !(p instanceof Struct) ) p = p.parent;
-			if( p != pctx.clazz ) {
-				var.setNeedProxy(true);
+			if( var.getVar().pctx.clazz != this.pctx.clazz ) {
+				var.getVar().setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = (Field)pctx.clazz.resolveName(var.name.name)) == null ) {
+				if( (vf = (Field)pctx.clazz.resolveName(var.name)) == null ) {
 					// Add field
-					vf = pctx.clazz.addField(new Field(var.name.name,var.type,ACC_PUBLIC));
+					vf = pctx.clazz.addField(new Field(var.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = (Expr)this.copy();
 				}
@@ -601,7 +610,7 @@ public class VarAccessExpr extends LvalueExpr {
 	}
 
 	public Field resolveProxyVar() {
-		Field proxy_var = (Field)Code.clazz.resolveName(var.name.name);
+		Field proxy_var = (Field)Code.clazz.resolveName(var.name);
 		if( proxy_var == null && Code.method.isStatic() && !Code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
@@ -617,19 +626,19 @@ public class VarAccessExpr extends LvalueExpr {
 	public void resolveVarForConditions() {
 		if( Code.cond_generation ) {
 			// Bind the correct var
-			if( var.parent != Code.method ) {
-				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-				if( var.name==nameResultVar ) var = Code.method.getRetVar();
+			if( var.getVar().parent != Code.method ) {
+				assert( var.getVar().parent instanceof Method, "Non-parametrs var in condition" );
+				if( var.name==nameResultVar ) var.lnk = Code.method.getRetVar();
 				else for(int i=0; i < Code.method.params.length; i++) {
 					Var v = Code.method.params[i];
 					if( !v.name.equals(var.name) ) continue;
 					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
-					var = v;
+					var.lnk = v;
 					break;
 				}
 				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
 			}
-			assert( var.parent == Code.method, "Can't find var for condition" );
+			assert( var.getVar().parent == Code.method, "Can't find var for condition" );
 //			assert( var.name==nameResultVar && var == Code.method.getRetVar()
 //			 || var == Code.method.params[var.getBCpos()], "Missplaced var "+var );
 		}
@@ -639,8 +648,8 @@ public class VarAccessExpr extends LvalueExpr {
 		if( !Kiev.verify ) return;
 		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
-		if( var.parent instanceof Method ) {
-			Method m = (Method)var.parent;
+		if( var.getVar().parent instanceof Method ) {
+			Method m = (Method)var.getVar().parent;
 			for(int i=0; i < m.params.length; i++) {
 				if( var == m.params[i] ) {
 //					if( m.isStatic() ) chtp = m.jtype.args[i];
@@ -662,7 +671,7 @@ public class VarAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
@@ -673,7 +682,7 @@ public class VarAccessExpr extends LvalueExpr {
 			} else {
 				Code.addInstr(op_load,var);
 			}
-			if( var.isNeedRefProxy() ) {
+			if( var.getVar().isNeedRefProxy() ) {
 				Code.addInstr(op_getfield,resolveVarVal(),Code.clazz.type);
 			}
 		}
@@ -684,14 +693,14 @@ public class VarAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_load,Code.method.getThisPar());
-				if( var.isNeedRefProxy() ) {
+				if( var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
 				} else {
@@ -702,7 +711,7 @@ public class VarAccessExpr extends LvalueExpr {
 				Code.addInstr(op_load,var);
 				Code.addInstr(op_dup);
 			}
-			if( var.isNeedRefProxy() ) {
+			if( var.getVar().isNeedRefProxy() ) {
 				Code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar().getType());
 			}
 		}
@@ -713,18 +722,18 @@ public class VarAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_load,Code.method.getThisPar());
-				if( var.isNeedRefProxy() ) {
+				if( var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
 				} else {
 					Code.addInstr(op_dup);
 				}
 			} else {
-				if( var.isNeedRefProxy() )
+				if( var.getVar().isNeedRefProxy() )
 					Code.addInstr(op_load,var);
 			}
 		}
@@ -734,19 +743,19 @@ public class VarAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				if( !var.isNeedRefProxy() ) {
+				if( !var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
 				}
 			} else {
-				if( !var.isNeedRefProxy() ) {
+				if( !var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_store,var);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
@@ -759,7 +768,7 @@ public class VarAccessExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if( !var.getVar().isNeedProxy() || isUseNoProxy() ) {
 			if( Code.vars[var.getBCpos()] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
 			Code.addInstr(op_dup);
@@ -767,13 +776,13 @@ public class VarAccessExpr extends LvalueExpr {
 		} else {
 			if( isAsField() ) {
 				Code.addInstr(op_dup_x);
-				if( !var.isNeedRefProxy() ) {
+				if( !var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
 				} else {
 					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
 				}
 			} else {
-				if( !var.isNeedRefProxy() ) {
+				if( !var.getVar().isNeedRefProxy() ) {
 					Code.addInstr(op_dup);
 					Code.addInstr(op_store,var);
 				} else {
@@ -800,12 +809,17 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
 	
-	@ref public Var		var;
+	@att public VarRef		var;
 
 	public LocalPrologVarAccessExpr() {
 	}
 	
 	public LocalPrologVarAccessExpr(int pos, Var var) {
+		super(pos);
+		this.var = new VarRef(pos,var);
+	}
+
+	public LocalPrologVarAccessExpr(int pos, VarRef var) {
 		super(pos);
 		this.var = var;
 	}
@@ -837,7 +851,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 	public Field resolveFieldForLocalPrologVar() {
 		RuleMethod rm = (RuleMethod)Code.method;
 		Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
-		Field f = s.resolveField(var.name.name);
+		Field f = s.resolveField(var.name);
 		assert(f != null);
 		return f;
 	}
@@ -900,7 +914,7 @@ public class LocalPrologVarAccessExpr extends LvalueExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
-		dmp.append("$env.").append(var.name.name);
+		dmp.append("$env.").append(var.name);
 		return dmp.space();
 	}
 }

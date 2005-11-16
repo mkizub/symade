@@ -705,7 +705,7 @@ public class InstanceofExpr extends BoolExpr {
 		DNode[] path = null;
 		switch(expr) {
 		case VarAccessExpr:
-			path = new DNode[]{((VarAccessExpr)expr).var};
+			path = new DNode[]{((VarAccessExpr)expr).var.getVar()};
 			break;
 		case AccessExpr:
 			path = ((AccessExpr)expr).getAccessPath();

@@ -555,7 +555,7 @@ public class NewClosure extends Expr {
 		foreach (ASTNode n; cl.members; n instanceof Field) {
 			Field f = (Field)n;
 			if( !f.isNeedProxy() ) continue;
-			Var v = ((VarAccessExpr)f.init).var;
+			Var v = ((VarAccessExpr)f.init).var.getVar();
 			Code.addInstr(Instr.op_load,v);
 		}
 		Code.addInstr(op_call,func,false);

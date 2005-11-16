@@ -528,6 +528,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
 	private Expr mkAccess(Object o) {
 		if (o instanceof Var) return new VarAccessExpr(0,(Var)o);
+		if (o instanceof VarRef) return new VarAccessExpr(0,((VarRef)o).getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}

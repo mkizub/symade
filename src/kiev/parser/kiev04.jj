@@ -1828,6 +1828,17 @@ TypeRef ReparseType() :
 	}
 }
 
+VarRef Var() :
+{ Token t; }
+{
+	t=<IDENTIFIER>
+	{
+		VarRef id = new VarRef();
+		id.set(t);
+		return id;
+	}
+}
+
 NameRef Name() :
 { Token t; }
 {
@@ -1952,7 +1963,7 @@ ASTRuleNode RuleExpression() :
 	|
 		LOOKAHEAD({getToken(1).kind == WHILE})
 		"while"
-		{ r = new ASTRuleExpression(); r.while_mode = true; }
+		{ r = new RuleWhileExpr(); }
 		r.expr = Expression() 
 		[
 			":"
@@ -1960,7 +1971,7 @@ ASTRuleNode RuleExpression() :
 		]
 	|
 		LOOKAHEAD(0)
-		{ r = new ASTRuleExpression(); }
+		{ r = new RuleExpr(); }
 		r.expr = ExpressionNT(noColonTokenSet)
 		[
 			":"
@@ -1970,20 +1981,20 @@ ASTRuleNode RuleExpression() :
 	{ return r; }
 }
 
-ASTRuleIstheExpression RuleIstheExpression() :
-{ ASTRuleIstheExpression r = new ASTRuleIstheExpression(); }
+RuleIstheExpr RuleIstheExpression() :
+{ Token t; RuleIstheExpr r = new RuleIstheExpr(); }
 {
-	r.name = Name()
-	"?="
+	r.var = Var()
+	t = "?=" { r.pos = t.getPos(); }
 	r.expr = AccessExpression()
 	{ return r; }
 }
 
-ASTRuleIsoneofExpression RuleIsoneofExpression() :
-{ ASTRuleIsoneofExpression r = new ASTRuleIsoneofExpression(); }
+RuleIsoneofExpr RuleIsoneofExpression() :
+{ Token t; RuleIsoneofExpr r = new RuleIsoneofExpr(); }
 {
-	r.name = Name()
-	"@="
+	r.var = Var()
+	t = "@=" { r.pos = t.getPos(); }
 	r.expr = AccessExpression()
 	{ return r; }
 }

@@ -1177,6 +1177,10 @@ public class Code implements Constants {
 	    }
 	}
 
+	static public void addInstrIncr(VarRef vv, int val) {
+		addInstrIncr(vv.getVar(), val);
+	}
+	
 	/** Add pseude-instruction for this code.
 	 */
 	static public void addInstrIncr(Var vv, int val) {
@@ -1227,6 +1231,10 @@ public class Code implements Constants {
 	    }
 	}
 
+	static public void addInstr(Instr i, VarRef v) {
+		addInstr(i,v.getVar());
+	}
+	
 	/** Add pseude-instruction with var for this code.
 	 */
 	static public void addInstr(Instr i, Var v) {

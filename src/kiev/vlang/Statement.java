@@ -1523,7 +1523,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = new AssignExpr(pos,AssignOperator.Assign,
-					new VarAccessExpr(pos,sw.tmpvar),(ENode)~expr);
+					new VarAccessExpr(pos,sw.tmpvar.getVar()),(ENode)~expr);
 				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			} else {

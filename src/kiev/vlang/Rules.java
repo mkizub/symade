@@ -343,7 +343,7 @@ public abstract class ASTRuleNode extends ENode {
 		throw new CompilerException(this,"Resolving of ASTRuleNode");
 	}
 
-	public String createTextUnification(Var var) {
+	public String createTextUnification(VarRef var) {
 		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
 	}
 
@@ -371,8 +371,8 @@ public abstract class ASTRuleNode extends ENode {
 		return "";
 	}
 
-	public String createTextVarAccess(Var v) {
-		if( !v.isLocalRuleVar() ) return v.name.toString();
+	public String createTextVarAccess(VarRef v) {
+		if( !v.getVar().isLocalRuleVar() ) return v.name.toString();
 		return "$env."+v;
 	}
 
@@ -607,8 +607,8 @@ public final class RuleAndExpr extends ASTRuleNode {
 @dflow(out="expr")
 public final class RuleIstheExpr extends ASTRuleNode {
 
-	@ref
-	public Var		var;		// variable of type PVar<...>
+	@att
+	public VarRef	var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -617,11 +617,16 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	public RuleIstheExpr() {
 	}
 
-	public RuleIstheExpr(int pos, Var var, ENode expr) {
+	public RuleIstheExpr(int pos, VarRef var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
 	}
+
+    public void resolve(Type reqType) {
+		var.resolve(null);
+		expr.resolve(var.getVar().type.args[0]);
+    }
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
@@ -661,8 +666,8 @@ public final class RuleIstheExpr extends ASTRuleNode {
 @dflow(out="expr")
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
-	@ref
-	public final Var		var;		// variable of type PVar<...>
+	@att
+	public VarRef			var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -681,11 +686,16 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public RuleIsoneofExpr() {
 	}
 
-	public RuleIsoneofExpr(int pos, Var var, ENode expr) {
+	public RuleIsoneofExpr(int pos, VarRef var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
 	}
+
+    public void resolve(Type reqType) {
+		var.resolve(null);
+		expr.resolve(null);
+    }
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
@@ -868,7 +878,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 		super(expr.pos);
 		this.obj = (ENode)~expr.expr;
 		if( expr.expr instanceof VarAccessExpr )
-			this.func = ((VarAccessExpr)expr.expr).var;
+			this.func = ((VarAccessExpr)expr.expr).var.getVar();
 		else if( expr.expr instanceof StaticFieldAccessExpr )
 			this.func = ((StaticFieldAccessExpr)expr.expr).var;
 		else if( expr.expr instanceof AccessExpr ) {

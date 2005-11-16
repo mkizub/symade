@@ -96,9 +96,6 @@ kiev.parser.ASTNewInitializedArrayExpression kiev/parser/ASTNewInitializedArrayE
 kiev.parser.ASTOperator kiev/parser/ASTOperator kiev\parser\ASTOperator.java
 kiev.parser.ASTOperatorAlias kiev/parser/ASTOperatorAlias kiev\parser\ASTOperatorAlias.java
 kiev.parser.ASTPragma kiev/parser/ASTPragma kiev\parser\ASTPragma.java
-kiev.parser.ASTRuleExpression kiev/parser/ASTRuleExpression kiev\parser\ASTRuleExpression.java
-kiev.parser.ASTRuleIsoneofExpression kiev/parser/ASTRuleIsoneofExpression kiev\parser\ASTRuleIsoneofExpression.java
-kiev.parser.ASTRuleIstheExpression kiev/parser/ASTRuleIstheExpression kiev\parser\ASTRuleIstheExpression.java
 kiev.parser.InfixExpr kiev/parser/InfixExpr kiev\parser\TempExpr.java
 kiev.parser.JavaCharStream kiev/parser/JavaCharStream kiev\parser\JavaCharStream.java
 kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
@@ -457,6 +454,7 @@ kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.Var.VarDFFunc kiev/vlang/Var$VarDFFunc kiev\vlang\Var.java
 kiev.vlang.VarAccessExpr kiev/vlang/VarAccessExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.VarDecl kiev/vlang/VarDecl kiev\vlang\AST.java
+kiev.vlang.VarRef kiev/vlang/VarRef kiev\vlang\AST.java
 kiev.vlang.WBCCondition kiev/vlang/WBCCondition kiev\vlang\Method.java
 kiev.vlang.WBCType kiev/vlang/WBCType kiev\vlang\Method.java
 kiev.vlang.WhileStat kiev/vlang/WhileStat kiev\vlang\LoopStatement.java

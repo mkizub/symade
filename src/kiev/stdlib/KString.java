@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -231,7 +231,7 @@ public final class KString {
 	}
 	
 	public final boolean equals(KString nm) {
-		return	this.index == nm.index /* this.offset == nm.offset && this.len == nm.len */;
+		return	nm != null && this.index == nm.index /* this.offset == nm.offset && this.len == nm.len */;
 	}
 
 	public final boolean equals(Object nm) {

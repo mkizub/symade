@@ -1238,7 +1238,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 									CallExpr cae = (CallExpr)es.expr;
 									// Insert our-generated typeinfo, or from childs class?
 									if( m.type.args.length > 0 && m.type.args[0].isInstanceOf(typeinfo_clazz.type) ) {
-										if (!(cae.args[0] instanceof VarAccessExpr) || ((VarAccessExpr)cae.args[0]).var != m.params[0])
+										if (!(cae.args[0] instanceof VarAccessExpr) || ((VarAccessExpr)cae.args[0]).var.getVar() != m.params[0])
 										cae.args.insert(0,new VarAccessExpr(cae.pos,m.params[0]));
 									} else {
 										throw new RuntimeException("Don't know where to get "+typeinfo_clazz.type+" $typeinfo");

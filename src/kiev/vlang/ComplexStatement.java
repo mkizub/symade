@@ -173,7 +173,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new AccessExpr(p.pos,
 										new CastExpr(p.pos,Type.getRealType(sw.tmpvar.type,cas.type),
-											(Expr)new VarAccessExpr(p.pos,sw.tmpvar)),
+											(Expr)new VarAccessExpr(p.pos,sw.tmpvar.getVar())),
 										case_attr.casefields[i]
 									);
 //									addSymbol(j++,p);
@@ -273,7 +273,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 	@dflow(in="sel", seq="false")
 	@att public final NArr<CaseLabel>	cases;
 
-	@ref public Var						tmpvar;
+	@att public VarRef					tmpvar;
 	@ref public ASTNode					defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
@@ -346,20 +346,20 @@ public class SwitchStat extends Statement implements BreakTarget {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
-					tmpvar = new Var(sel.getPos(),KString.from(
-						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
+					tmpvar = new VarRef(sel.pos, new Var(sel.pos,KString.from(
+						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
 					me = new BlockStat(pos);
 					this.replaceWithNode(me);
 					ENode old_sel = (ENode)~this.sel;
 					tmpvar.init = old_sel;
-					me.addSymbol(tmpvar);
+					me.addSymbol(tmpvar.getVar());
 					me.addStatement(this);
 					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						sel = cae;
 						cae.pos = pos;
-						cae.obj = new VarAccessExpr(tmpvar.pos,tmpvar);
+						cae.obj = new VarAccessExpr(tmpvar.pos,tmpvar.getVar());
 						cae.obj.resolve(null);
 						cae.func = new NameRef(pos, nameGetCaseTag);
 					} else {
@@ -370,7 +370,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						CallExpr cae = new CallExpr(pos,
 							new StaticFieldAccessExpr(pos,typehash),
 							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
-							new Expr[]{new VarAccessExpr(pos,tmpvar)}
+							new Expr[]{new VarAccessExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
 					}
@@ -640,10 +640,10 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 
 	@att
 	@dflow(in="this:in")
-	public Var			arg;
+	public Var				arg;
 	@att
 	@dflow(in="arg")
-	public Statement	body;
+	public Statement		body;
 
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
