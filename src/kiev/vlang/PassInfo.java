@@ -188,15 +188,7 @@ public class PassInfo {
 		}
 		methods.append(m);
 		paths.append(info.copy());
-		if (!m.isRuleMethod()) {
-			types.append(info.mt);
-		} else {
-			Type[] ta = new Type[info.mt.args.length-1];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = info.mt.args[i+1];
-			MethodType mt1 = MethodType.newMethodType(null,ta,info.mt.ret);
-			types.append(mt1);
-		}
+		types.append(info.mt);
 	}
 	
 	public static boolean resolveBestMethodR(
@@ -263,8 +255,6 @@ public class PassInfo {
 				trace(Kiev.debugResolve,"Compare "+m1+" and "+m2+" to be more specific for "+Method.toString(name,mt));
 
 				Type b;
-				int m1_arg_offs = m1.isRuleMethod() ? 1 : 0;
-				int m2_arg_offs = m2.isRuleMethod() ? 1 : 0;
 				
 				if (p1.getTransforms() > p2.getTransforms()) {
 					trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because of path");

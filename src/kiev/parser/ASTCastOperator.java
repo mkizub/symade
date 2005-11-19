@@ -61,11 +61,7 @@ public class ASTCastOperator extends ASTOperator {
 		String[] names = String.valueOf(tnr.name.name).split("\\.");
 		ENode e = new ASTIdentifier(type.pos, KString.from(names[0]));
 		for (int i=1; i < names.length; i++) {
-			ASTAccessExpression ae = new ASTAccessExpression();
-			ae.pos = type.pos;
-			ae.obj = e;
-			ae.ident = new NameRef(type.pos, KString.from(names[i]));
-			e = ae;
+			e = new AccessExpr(type.pos, e, new NameRef(type.pos, KString.from(names[i])));
 		}
 		replaceWithNode(e);
 		proc.preResolve(e);

@@ -27,7 +27,7 @@ import java.io.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -917,8 +917,8 @@ public abstract class MetaAttr extends Attr {
 		else if (value instanceof TypeRef) {
 			ConstPool.addClazzCP(((TypeRef)value).getType().java_signature);
 		}
-		else if (value instanceof StaticFieldAccessExpr) {
-			StaticFieldAccessExpr ae = (StaticFieldAccessExpr)value;
+		else if (value instanceof SFldExpr) {
+			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.parent;
 			ConstPool.addAsciiCP(s.type.java_signature);
@@ -1004,8 +1004,8 @@ public abstract class MetaAttr extends Attr {
 			ev.class_info_index = ConstPool.getClazzCP(((TypeRef)value).getType().java_signature).pos;
 			return ev;
 		}
-		else if (value instanceof StaticFieldAccessExpr) {
-			StaticFieldAccessExpr ae = (StaticFieldAccessExpr)value;
+		else if (value instanceof SFldExpr) {
+			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.parent;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 

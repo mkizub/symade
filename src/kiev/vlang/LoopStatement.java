@@ -689,12 +689,12 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			iter_init = new CommaExpr();
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
-					new VarExpr(container.pos,iter_array),
+					new LVarExpr(container.pos,iter_array),
 					new ShadowExpr(container)
 				));
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
-					new VarExpr(iter.pos,iter),
+					new LVarExpr(iter.pos,iter),
 					new ConstIntExpr(0)
 				));
 			iter_init.resolve(Type.tpInt);
@@ -702,44 +702,44 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case KENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new VarExpr(iter.pos,iter), new ShadowExpr(container)
+				new LVarExpr(iter.pos,iter), new ShadowExpr(container)
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new VarExpr(iter.pos,iter), new ShadowExpr(container)
+				new LVarExpr(iter.pos,iter), new ShadowExpr(container)
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case ELEMS:
 			/* iter = container.elements(); */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new VarExpr(iter.pos,iter),
+				new LVarExpr(iter.pos,iter),
 				new CallExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case RULE:
-			/* iter = rule(iter,...); */
+			/* iter = rule(iter/hidden,...); */
 			{
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new VarExpr(iter.pos,iter), new ConstNullExpr()
+				new LVarExpr(iter.pos,iter), new ConstNullExpr()
 				);
 			iter_init.resolve(Type.tpVoid);
-			// Also, patch the rule argument
-			NArr<ENode> args = null;
-			if( container instanceof CallExpr ) {
-				args = ((CallExpr)container).args;
-			}
-			else if( container instanceof ClosureCallExpr ) {
-				args = ((ClosureCallExpr)container).args;
-			}
-			else
-				Debug.assert("Unknown type of rule - "+container.getClass());
-			args[0] = new VarExpr(container.pos,iter);
-			args[0].resolve(Type.tpRule);
+//			// now is hidden // Also, patch the rule argument
+//			NArr<ENode> args = null;
+//			if( container instanceof CallExpr ) {
+//				args = ((CallExpr)container).args;
+//			}
+//			else if( container instanceof ClosureCallExpr ) {
+//				args = ((ClosureCallExpr)container).args;
+//			}
+//			else
+//				Debug.assert("Unknown type of rule - "+container.getClass());
+//			args[0] = new LVarExpr(container.pos,iter);
+//			args[0].resolve(Type.tpRule);
 			}
 			break;
 		}
@@ -751,8 +751,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ARRAY:
 			/* iter < container.length */
 			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
-				new VarExpr(iter.pos,iter),
-				new ArrayLengthAccessExpr(iter.pos,new VarExpr(0,iter_array))
+				new LVarExpr(iter.pos,iter),
+				new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
 				);
 			break;
 		case KENUM:
@@ -763,7 +763,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
-					new VarExpr(iter.pos,iter),
+					new LVarExpr(iter.pos,iter),
 					moreelem,
 					Expr.emptyArray
 				);
@@ -774,7 +774,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				container.pos,
 				BinaryOperator.NotEquals,
 				new AssignExpr(container.pos,AssignOperator.Assign,
-					new VarExpr(container.pos,iter),
+					new LVarExpr(container.pos,iter),
 					(Expr)container.copy()),
 				new ConstNullExpr()
 				);
@@ -790,8 +790,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ARRAY:
 			/* var = container[iter] */
 			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new VarExpr(var.pos,var),
-				new ContainerAccessExpr(container.pos,new VarExpr(0,iter_array),new VarExpr(iter.pos,iter))
+				new LVarExpr(var.pos,var),
+				new ContainerAccessExpr(container.pos,new LVarExpr(0,iter_array),new LVarExpr(iter.pos,iter))
 				);
 			break;
 		case KENUM:
@@ -802,14 +802,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 				var_init = new CallExpr(iter.pos,
-					new VarExpr(iter.pos,iter),
+					new LVarExpr(iter.pos,iter),
 					nextelem,
 					Expr.emptyArray
 				);
 			if (!nextelem.type.ret.isInstanceOf(var.type))
 				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
 			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-				new VarExpr(var.pos,var),
+				new LVarExpr(var.pos,var),
 				(ENode)~var_init
 			);
 			break;
@@ -840,7 +840,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		if( mode == ARRAY ) {
 			/* iter++ */
 			iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
-				new VarExpr(iter.pos,iter)
+				new LVarExpr(iter.pos,iter)
 				);
 			iter_incr.resolve(Type.tpVoid);
 			iter_incr.setGenVoidExpr(true);

@@ -24,7 +24,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -357,6 +357,7 @@ public interface Constants extends AccessFlags {
 	public final static KString nameSuper		= KString.from("super");
 	public final static KString nameInit		= KString.from("<init>");
 	public final static KString nameClassInit	= KString.from("<clinit>");
+	public final static KString nameLength		= KString.from("length");
 	public final static KString nameFinalize	= KString.from("finalize");
 	public final static KString nameFinalizeSig	= KString.from("()V");
 	public final static KString nameIdefault	= KString.from("default");

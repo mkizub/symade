@@ -281,7 +281,7 @@ public class UnresCallExpr extends UnresExpr {
 				return ce;
 			} else {
 				Field f = (Field)func;
-				return new ClosureCallExpr(pos, new StaticFieldAccessExpr(pos, f), args);
+				return new ClosureCallExpr(pos, new SFldExpr(pos, f), args);
 			}
 		} else {
 			if (func instanceof Method) {

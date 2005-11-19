@@ -456,7 +456,7 @@ public abstract class MetaValue extends ASTNode {
 			}
 		}
 		Expr v = (Expr)value;
-		if (v instanceof StaticFieldAccessExpr && ((StaticFieldAccessExpr)v).var.isEnumField()) {
+		if (v instanceof SFldExpr && ((SFldExpr)v).var.isEnumField()) {
 			return false;
 		}
 		else if (!v.isConstantExpr())

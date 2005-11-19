@@ -215,17 +215,30 @@ public class Var extends DNode implements Named, Typed {
 @node
 @dflow(out="this:out()")
 public class FormPar extends Var {
+	
+	public static final int PARAM_NORMAL       = 0;
+	public static final int PARAM_THIS         = 1;
+	public static final int PARAM_OUTER_THIS   = 2;
+	public static final int PARAM_RULE_ENV     = 3;
+	public static final int PARAM_TYPEINFO     = 4;
+	public static final int PARAM_VARARGS      = 5;
+	public static final int PARAM_LVAR_PROXY   = 6;
+	
 	@att public TypeRef		stype;
+	public int kind;
 
 	public FormPar() {
 	}
 
-	public FormPar(int pos, KString name, Type type, int flags) {
+	public FormPar(int pos, KString name, Type type, int kind, int flags) {
 		super(pos,name,type,flags);
+		this.kind = kind;
+		this.stype = new TypeRef(type.getJavaType());
 	}
 
-	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int flags) {
+	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
 		super(id,vtype,flags);
+		this.kind = kind;
 		this.stype = stype;
 	}
 

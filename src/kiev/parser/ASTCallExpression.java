@@ -68,14 +68,14 @@ public class ASTCallExpression extends Expr {
 		ASTNode@ m;
 		Type tp = pctx.clazz.type;
 		if( func.name.equals(nameThis) ) {
-			Method mmm = pctx.method;
-			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
-				// Insert our-generated typeinfo, or from childs class?
-				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[0]),0);
-				else
-					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
-			}
+//			Method mmm = pctx.method;
+//			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
+//				// Insert our-generated typeinfo, or from childs class?
+//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
+//				else
+//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
+//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -87,30 +87,30 @@ public class ASTCallExpression extends Expr {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,st);
+				((Method)m).makeArgs(ce.args,st);
 				return;
 			}
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			Method mmm = pctx.method;
-			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
-				// no // Insert our-generated typeinfo, or from childs class?
-				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[0]),0);
-				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[1]),0);
-				else
-					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
-			}
-			// If we extend inner non-static class - pass this$N as first argument
-			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
-			 && !pctx.clazz.super_type.getStruct().isStatic()
-			) {
-				if( pctx.clazz.isStatic() )
-					throw new CompilerException(this,"Non-static inner super-class of static class");
-				args.insert(new VarExpr(pos,(Var)pctx.method.params[0]),0);
-			}
+//			Method mmm = pctx.method;
+//			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
+//				// no // Insert our-generated typeinfo, or from childs class?
+//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
+//				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[1]),0);
+//				else
+//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
+//			}
+//			// If we extend inner non-static class - pass this$N as first argument
+//			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
+//			 && !pctx.clazz.super_type.getStruct().isStatic()
+//			) {
+//				if( pctx.clazz.isStatic() )
+//					throw new CompilerException(this,"Non-static inner super-class of static class");
+//				args.insert(new LVarExpr(pos,(Var)pctx.method.params[0]),0);
+//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -122,7 +122,7 @@ public class ASTCallExpression extends Expr {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,st);
+				((Method)m).makeArgs(ce.args,st);
 				return;
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
@@ -162,7 +162,7 @@ public class ASTCallExpression extends Expr {
 //					ENode[] oldargs = args.toArray();
 //					Expr[] cargs = new Expr[ac.params.length];
 //					for(int i=0; i < cargs.length; i++)
-//						cargs[i] = new VarExpr(pos,(Var)ac.params[i]);
+//						cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
 //					args.delAll();
 //					foreach (Expr e; cargs)
 //						args.add(e);
@@ -201,14 +201,14 @@ public class ASTCallExpression extends Expr {
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
-			Method mmm = pctx.method;
-			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
-				// Insert our-generated typeinfo, or from childs class?
-				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[0]),0);
-				else
-					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
-			}
+//			Method mmm = pctx.method;
+//			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
+//				// Insert our-generated typeinfo, or from childs class?
+//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
+//				else
+//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
+//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -220,31 +220,31 @@ public class ASTCallExpression extends Expr {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,st);
+				((Method)m).makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			Method mmm = pctx.method;
-			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
-				// no // Insert our-generated typeinfo, or from childs class?
-				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[0]),0);
-				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-					args.insert(new VarExpr(pos,mmm.params[1]),0);
-				else
-					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
-			}
-			// If we extend inner non-static class - pass this$N as first argument
-			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
-			 && !pctx.clazz.super_type.getStruct().isStatic()
-			) {
-				if( pctx.clazz.isStatic() )
-					throw new CompilerException(this,"Non-static inner super-class of static class");
-				args.insert(new VarExpr(pos,(Var)pctx.method.params[0]),0);
-			}
+//			Method mmm = pctx.method;
+//			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
+//				// no // Insert our-generated typeinfo, or from childs class?
+//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
+//				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
+//					args.insert(new LVarExpr(pos,mmm.params[1]),0);
+//				else
+//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
+//			}
+//			// If we extend inner non-static class - pass this$N as first argument
+//			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
+//			 && !pctx.clazz.super_type.getStruct().isStatic()
+//			) {
+//				if( pctx.clazz.isStatic() )
+//					throw new CompilerException(this,"Non-static inner super-class of static class");
+//				args.insert(new LVarExpr(pos,(Var)pctx.method.params[0]),0);
+//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -256,7 +256,7 @@ public class ASTCallExpression extends Expr {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(args,st);
+				((Method)m).makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
@@ -298,12 +298,12 @@ public class ASTCallExpression extends Expr {
 				ac.pos = pos;
 				ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
 				for (int i=0; i < ac.params.length; i++)
-					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
+					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
 				Expr[] cargs = new Expr[ac.params.length];
 				for(int i=0; i < cargs.length; i++)
-					cargs[i] = new VarExpr(pos,(Var)ac.params[i]);
+					cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
 				args.delAll();
 				foreach (Expr e; cargs)
 					args.add(e);

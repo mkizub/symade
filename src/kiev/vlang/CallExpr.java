@@ -48,6 +48,8 @@ public class CallExpr extends Expr {
 	@dflow(in="obj", seq="true")
 	public final NArr<ENode>	args;
 	
+	@att private ENode			temp_expr;
+
 	public boolean				super_flag;
 
 	public CallExpr() {
@@ -106,13 +108,34 @@ public class CallExpr extends Expr {
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		obj.resolve(null);
-		if( func.type.ret == Type.tpRule ) {
-			if( args.length == 0 || args[0].getType() != Type.tpRule )
-				args.insert(0, new ConstNullExpr());
-		} else {
-			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
+//		if (func.type.ret == Type.tpRule) {
+//			if( args.length == 0 || args[0].getType() != Type.tpRule )
+//				args.insert(0, new ConstNullExpr());
+//		} else {
+//			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
+//		}
+		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
+			Method mmm = pctx.method;
+			Type tp = mmm.pctx.clazz != func.pctx.clazz ? pctx.clazz.super_type : pctx.clazz.type;
+			assert(pctx.method.name.equals(nameInit));
+			assert(tp.args.length > 0);
+			// Insert our-generated typeinfo, or from childs class?
+			if (mmm.getTypeInfoParam() != null)
+				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
+			else
+				temp_expr = pctx.clazz.accessTypeInfoField(this,tp);
+			temp_expr.resolve(null);
+			temp_expr = null;
 		}
-		if (args != null) {
+		if (func.isVarArgs()) {
+			int i=0;
+			for(; i < func.type.args.length; i++)
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+			Type varg_tp = Type.getRealType(obj.getType(),func.getVarArgParam().type);
+			assert(varg_tp.isArray());
+			for(; i < args.length; i++)
+				args[i].resolve(varg_tp.args[0]);
+		} else {
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
 		}
@@ -150,22 +173,22 @@ public class CallExpr extends Expr {
 		}
 		else if( !func.isStatic() ) {
 			if( !Code.method.isStatic() )
-				Code.addInstr(Instr.op_load,Code.method.getThisPar());
+				Code.addInstrLoadThis();
 			else
 				throw new RuntimeException("Non-static method "+func+" is called from static method "+Code.method);
 		}
-		// Very special case for rule call from inside of RuleMethod
-		if( func instanceof RuleMethod
-		 && parent instanceof AssignExpr
-		 && ((AssignExpr)parent).op == AssignOperator.Assign
-		 && ((AssignExpr)parent).lval.getType() == Type.tpRule
-		) {
-			((AssignExpr)parent).lval.generate(null);
-			for(int i=1; i < args.length; i++)
-				args[i].generate(null);
+		int i = 0;
+		if( func instanceof RuleMethod ) {
+			// Very special case for rule call from inside of RuleMethod
+			if (parent instanceof AssignExpr
+				&& ((AssignExpr)parent).op == AssignOperator.Assign
+				&& ((AssignExpr)parent).lval.getType() == Type.tpRule
+				)
+				((AssignExpr)parent).lval.generate(null);
+			else
+				Code.addNullConst();
 		}
 		else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-			int i = 0;
 			int mode = 0;
 			String fname = func.name.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
@@ -186,13 +209,50 @@ public class CallExpr extends Expr {
 					Code.addConst(1);
 				i++;
 			}
-			for(; i < args.length; i++)
-				args[i].generate(null);
 		}
 		else {
-			for(int i=0; i < args.length; i++)
-				args[i].generate(null);
+			if( func.name.equals(nameInit) && func.getOuterThisParam() != null) {
+				FormPar fp = Code.method.getOuterThisParam();
+				if (fp == null) {
+					Kiev.reportError(this, "Cannot find outer this parameter");
+					Code.addNullConst();
+				} else {
+					Code.addInstr(Instr.op_load,fp);
+				}
+			}
+			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
+				Method mmm = pctx.method;
+				Type tp = mmm.pctx.clazz != func.pctx.clazz ? pctx.clazz.super_type : pctx.clazz.type;
+				assert(pctx.method.name.equals(nameInit));
+				assert(tp.args.length > 0);
+				// Insert our-generated typeinfo, or from childs class?
+				if (mmm.getTypeInfoParam() != null)
+					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
+				else
+					temp_expr = pctx.clazz.accessTypeInfoField(this,tp);
+				temp_expr.generate(null);
+				temp_expr = null;
+			}
 		}
+		if !(func.isVarArgs()) {
+			for(; i < args.length; i++)
+				args[i].generate(null);
+		} else {
+			int N = func.params.length-1;
+			for(; i < N; i++)
+				args[i].generate(null);
+			Type type = func.jtype.args[N];
+			assert(type.isArray());
+			Code.addConst(args.length-N);
+			Code.addInstr(Instr.op_newarray,type.args[0]);
+			for(int j=0; i < args.length; i++, j++) {
+				Code.addInstr(Instr.op_dup);
+				Code.addConst(j);
+				args[i].generate(null);
+				Code.addInstr(Instr.op_arr_store);
+			}
+		}
+		
 		// Special meaning of Object.equals and so on
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();

@@ -1641,11 +1641,11 @@ public class NameRef extends ASTNode {
 	}
 
 	public void set(Token t) {
-		if (t.image.startsWith("ID#"))
-			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-1));
+        pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2));
 		else
 			this.name = KString.from(t.image);
-        pos = t.getPos();
 	}
 	
 	public Type getType() {

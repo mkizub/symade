@@ -515,7 +515,7 @@ public class Compiler {
 							}
 						}
 					} finally {
-						file_reader.close();
+						if (file_reader != null) file_reader.close();
 					}
 					java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
 					kiev040.interface_only = true;

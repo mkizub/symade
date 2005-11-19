@@ -604,7 +604,7 @@ public class Type implements StdTypes, AccessFlags, Named {
 	public boolean isStaticClazz()			{ return clazz.isStatic(); }
 	public boolean isStruct()				{ return clazz instanceof Struct; }
 	public boolean isAnonymouseClazz()		{ return clazz.isAnonymouse(); }
-	public boolean isLocalClazz()			{ return clazz.isAnonymouse(); }
+	public boolean isLocalClazz()			{ return clazz.isAnonymouse() || clazz.pctx.method != null || clazz.pctx.outer_method != null; }
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
 	public boolean isWrapper()						{ return false; }
@@ -1022,7 +1022,7 @@ public class WrapperType extends Type {
 	}
 	
 	public final boolean isWrapper()					{ return true; }
-	public final Expr makeWrappedAccess(ASTNode from)	{ return new AccessExpr(from.pos,(Expr)~from, wrapped_field); } 
+	public final Expr makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(Expr)~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); }
 	
 	public Type getUnwrappedType()						{ return Type.fromSignature(signature.substr(1)); }

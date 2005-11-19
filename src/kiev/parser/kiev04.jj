@@ -348,7 +348,7 @@ public class kiev040 {
 	}
 	
 	private static FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
+		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
@@ -635,7 +635,7 @@ TOKEN : /* LITERALS */
 <DEFAULT>
 TOKEN : /* IDENTIFIERS */
 {
-  < IDENTIFIER: ( <LETTER> (<LETTER>|<DIGIT>)* | "ID#" <ID_STRING_LITERAL> ) >
+  < IDENTIFIER: ( <LETTER> (<LETTER>|<DIGIT>)* | "#id" <ID_STRING_LITERAL> "#" ) >
 |
   < #LETTER:
       [
@@ -1828,12 +1828,12 @@ TypeRef ReparseType() :
 	}
 }
 
-VarExpr Var() :
+LVarExpr Var() :
 { Token t; }
 {
 	t=<IDENTIFIER>
 	{
-		VarExpr id = new VarExpr();
+		LVarExpr id = new LVarExpr();
 		id.set(t);
 		return id;
 	}
@@ -2257,7 +2257,7 @@ ENode AccessExpression() :
 	|
 		LOOKAHEAD(3)
 		t="."
-		{ ASTAccessExpression ae = new ASTAccessExpression(); ae.obj = e; ae.setPos(t.getPos()); }
+		{ AccessExpr ae = new AccessExpr(); ae.obj = e; ae.setPos(t.getPos()); }
 		ae.ident = Name()
         { e = ae; }
 	|	LOOKAHEAD(2)

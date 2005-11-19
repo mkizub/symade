@@ -149,7 +149,7 @@ public class ASTNewExpression extends Expr {
 					args[i].resolve(null);
 					Type at = args[i].getType();
 					targs = (Type[])Arrays.append(targs,at);
-					params.append(new FormPar(pos,KString.from("arg$"+i),at,0));
+					params.append(new FormPar(pos,KString.from("arg$"+i),at,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				}
 				mt = MethodType.newMethodType(null,targs,Type.tpVoid);
 				Constructor init = new Constructor(mt,ACC_PUBLIC);

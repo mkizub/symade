@@ -75,25 +75,25 @@ public class ShadowExpr extends Expr {
 }
 
 @node
-@dflow(out="array")
-public class ArrayLengthAccessExpr extends Expr {
-	@att
-	@dflow(in="this:in")
-	public ENode		array;
+@dflow(out="obj")
+public class ArrayLengthExpr extends AccessExpr {
 
-	public ArrayLengthAccessExpr() {
+	public ArrayLengthExpr() {
 	}
 
-	public ArrayLengthAccessExpr(int pos, ENode array) {
-		super(pos);
-		this.array = array;
+	public ArrayLengthExpr(int pos, ENode obj) {
+		super(pos, obj, new NameRef(pos,nameLength));
+	}
+	public ArrayLengthExpr(int pos, ENode obj, NameRef length) {
+		super(pos, obj, length);
+		assert(length.name == nameLength);
 	}
 
 	public String toString() {
-		if( array.getPriority() < opAccessPriority )
-			return "("+array.toString()+").length";
+		if( obj.getPriority() < opAccessPriority )
+			return "("+obj.toString()+").length";
 		else
-			return array.toString()+".length";
+			return obj.toString()+".length";
 	}
 
 	public Type getType() {
@@ -103,26 +103,26 @@ public class ArrayLengthAccessExpr extends Expr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
-		array.resolve(null);
-		if !(array.getType().isArray())
-			throw new CompilerException(this, "Access to array length for non-array type "+array.getType());
+		obj.resolve(null);
+		if !(obj.getType().isArray())
+			throw new CompilerException(this, "Access to array length for non-array type "+obj.getType());
 		setResolved(true);
 	}
 
 	public void generate(Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerLengthExpr: "+this);
 		Code.setLinePos(this.getPosLine());
-		array.generate(null);
+		obj.generate(null);
 		Code.addInstr(Instr.op_arrlength);
 		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		if( array.getPriority() < opAccessPriority ) {
+		if( obj.getPriority() < opAccessPriority ) {
 			dmp.append('(');
-			array.toJava(dmp).append(").length").space();
+			obj.toJava(dmp).append(").length").space();
 		} else {
-			array.toJava(dmp).append(".length").space();
+			obj.toJava(dmp).append(".length").space();
 		}
 		return dmp;
 	}
@@ -309,9 +309,9 @@ public class AssignExpr extends LvalueExpr {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		if( (lval instanceof VarExpr) && ((VarExpr)lval).getVar().isNeedProxy() ) {
+		if( (lval instanceof LVarExpr) && ((LVarExpr)lval).getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarExpr)lval).getVar();
+			Var var = ((LVarExpr)lval).getVar();
 			if( var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
@@ -345,20 +345,20 @@ public class AssignExpr extends LvalueExpr {
 		getDFlow().out();
 
 		// Set violation of the field
-		if( lval instanceof StaticFieldAccessExpr
+		if( lval instanceof SFldExpr
 		 || (
-				lval instanceof AccessExpr
-			 && ((AccessExpr)lval).obj instanceof VarExpr
-			 &&	((VarExpr)((AccessExpr)lval).obj).name.equals(nameThis)
+				lval instanceof IFldExpr
+			 && ((IFldExpr)lval).obj instanceof LVarExpr
+			 &&	((LVarExpr)((IFldExpr)lval).obj).ident.equals(nameThis)
 			)
 		) {
 			if( pctx.method != null && pctx.method.isInvariantMethod() )
 				Kiev.reportError(this,"Side-effect in invariant condition");
 			if( pctx.method != null && !pctx.method.isInvariantMethod() ) {
-				if( lval instanceof StaticFieldAccessExpr )
-					pctx.method.addViolatedField( ((StaticFieldAccessExpr)lval).var );
+				if( lval instanceof SFldExpr )
+					pctx.method.addViolatedField( ((SFldExpr)lval).var );
 				else
-					pctx.method.addViolatedField( ((AccessExpr)lval).var );
+					pctx.method.addViolatedField( ((IFldExpr)lval).var );
 			}
 		}
 		setResolved(true);
@@ -389,14 +389,14 @@ public class AssignExpr extends LvalueExpr {
 			return dfs;
 		DNode[] path = null;
 		switch(lval) {
-		case VarExpr:
-			path = new DNode[]{((VarExpr)lval).getVar()};
+		case LVarExpr:
+			path = new DNode[]{((LVarExpr)lval).getVar()};
 			break;
-		case AccessExpr:
-			path = ((AccessExpr)lval).getAccessPath();
+		case IFldExpr:
+			path = ((IFldExpr)lval).getAccessPath();
 			break;
-		case StaticFieldAccessExpr:
-			path = new DNode[]{((StaticFieldAccessExpr)lval).var};
+		case SFldExpr:
+			path = new DNode[]{((SFldExpr)lval).var};
 			break;
 		}
 		if (path != null)
@@ -1417,9 +1417,9 @@ public class IncrementExpr extends LvalueExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if( (lval instanceof VarExpr) && ((VarExpr)lval).getVar().isNeedProxy() ) {
+		if( (lval instanceof LVarExpr) && ((LVarExpr)lval).getVar().isNeedProxy() ) {
 			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((VarExpr)lval).getVar();
+			Var var = ((LVarExpr)lval).getVar();
 			if( !var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
 				throw new RuntimeException("Unsupported operation");
 			}
@@ -1449,8 +1449,8 @@ public class IncrementExpr extends LvalueExpr {
 		if( reqType != Type.tpVoid ) {
 			generateLoad();
 		} else {
-			if( lval instanceof VarExpr ) {
-				VarExpr va = (VarExpr)lval;
+			if( lval instanceof LVarExpr ) {
+				LVarExpr va = (LVarExpr)lval;
 				if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
 						Code.addInstrIncr(va,1);
@@ -1492,8 +1492,8 @@ public class IncrementExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
 		Code.setLinePos(this.getPosLine());
 		LvalueExpr lval = (LvalueExpr)this.lval;
-		if( lval instanceof VarExpr ) {
-			VarExpr va = (VarExpr)lval;
+		if( lval instanceof LVarExpr ) {
+			LVarExpr va = (LVarExpr)lval;
 			if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
 				if( op == PrefixOperator.PreIncr ) {
 					Code.addInstrIncr(va,1);
@@ -1879,7 +1879,7 @@ public class CastExpr extends Expr {
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
-					new AccessExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
+					new IFldExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
 				));
 			return;
 		}

@@ -83,24 +83,20 @@ public class RuleMethod extends Method {
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
+		checkRebuildTypes(),
 		var @= localvars,
 		var.name.equals(name),
 		node ?= var
 	;
 		inlined_by_dispatcher,$cut,false
 	;
-		!this.isStatic(),
-		name.equals(nameThis),
-		node ?= getThisPar()
-	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
-		var ?= getThisPar(),
-		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path,name)
+		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
+		this.pctx.clazz.type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -121,15 +117,17 @@ public class RuleMethod extends Method {
 			setPublic(true);
 			if( pbody == null ) setAbstract(true);
 		}
-		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,ACC_FORWARD));
+		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,FormPar.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL));
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
+			if (fp.stype == null)
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getJavaType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		foreach (Var lv; localvars)
@@ -153,10 +151,6 @@ public class RuleMethod extends Method {
 			if (res != null) return res;
 			RuleMethod m = (RuleMethod)dfi.node;
 			DFState in = DFState.makeNewState();
-			if (!m.isStatic()) {
-				Var p = m.getThisPar();
-				in = in.declNode(p);
-			}
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];
 				in = in.declNode(p);
@@ -208,49 +202,49 @@ public class RuleMethod extends Method {
 	}
 
 
-	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
-		if( !this.name.equals(name) ) return false;
-		int type_len = this.type.args.length - 1;
-		int args_len = mt.args.length;
-		if( type_len != args_len ) {
-			if( !isVarArgs() ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" differ in number of params: "+type_len+" != "+args_len);
-				return false;
-			} else if( type_len-1 > args_len ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" not match in number of params: "+type_len+" != "+args_len);
-				return false;
-			}
-		}
-		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
-		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" differ in param # "+i+": "+rt.args[i+1]+" != "+mt.args[i]);
-				return false;
-			}
-			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i+1]) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
-					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i+1]);
-				return false;
-			}
-		}
-		boolean match = false;
-		if( mt.ret == Type.tpAny )
-			match = true;
-		else if( exact &&  rt.ret.equals(mt.ret) )
-			match = true;
-		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
-			match = true;
-		else
-			match = false;
-		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
-		if (info != null && match)
-			info.mt = rt;
-		return match;
-	}
+//	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
+//		if( !this.name.equals(name) ) return false;
+//		int type_len = this.type.args.length - 1;
+//		int args_len = mt.args.length;
+//		if( type_len != args_len ) {
+//			if( !isVarArgs() ) {
+//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+//					+" differ in number of params: "+type_len+" != "+args_len);
+//				return false;
+//			} else if( type_len-1 > args_len ) {
+//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+//					+" not match in number of params: "+type_len+" != "+args_len);
+//				return false;
+//			}
+//		}
+//		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
+//		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+//		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
+//			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
+//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+//					+" differ in param # "+i+": "+rt.args[i+1]+" != "+mt.args[i]);
+//				return false;
+//			}
+//			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i+1]) ) {
+//				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+//					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i+1]);
+//				return false;
+//			}
+//		}
+//		boolean match = false;
+//		if( mt.ret == Type.tpAny )
+//			match = true;
+//		else if( exact &&  rt.ret.equals(mt.ret) )
+//			match = true;
+//		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
+//			match = true;
+//		else
+//			match = false;
+//		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
+//		if (info != null && match)
+//			info.mt = rt;
+//		return match;
+//	}
 
 }
 
@@ -345,7 +339,7 @@ public abstract class ASTRuleNode extends ENode {
 		throw new CompilerException(this,"Resolving of ASTRuleNode");
 	}
 
-	public String createTextUnification(VarExpr var) {
+	public String createTextUnification(LVarExpr var) {
 		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
 	}
 
@@ -373,8 +367,8 @@ public abstract class ASTRuleNode extends ENode {
 		return "";
 	}
 
-	public String createTextVarAccess(VarExpr v) {
-		if( !v.getVar().isLocalRuleVar() ) return v.name.toString();
+	public String createTextVarAccess(LVarExpr v) {
+		if( !v.getVar().isLocalRuleVar() ) return v.ident.toString();
 		return "$env."+v;
 	}
 
@@ -614,7 +608,7 @@ public final class RuleAndExpr extends ASTRuleNode {
 public final class RuleIstheExpr extends ASTRuleNode {
 
 	@att
-	public VarExpr	var;		// variable of type PVar<...>
+	public LVarExpr	var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -623,7 +617,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	public RuleIstheExpr() {
 	}
 
-	public RuleIstheExpr(int pos, VarExpr var, ENode expr) {
+	public RuleIstheExpr(int pos, LVarExpr var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
@@ -673,7 +667,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	@att
-	public VarExpr			var;		// variable of type PVar<...>
+	public LVarExpr			var;		// variable of type PVar<...>
 	
 	@att
 	@dflow(in="this:in")
@@ -692,7 +686,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	public RuleIsoneofExpr() {
 	}
 
-	public RuleIsoneofExpr(int pos, VarExpr var, ENode expr) {
+	public RuleIsoneofExpr(int pos, LVarExpr var, ENode expr) {
 		super(pos);
 		this.var = var;
 		this.expr = expr;
@@ -781,13 +775,13 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	private String createTextContaince() {
 		switch( mode ) {
 		case ARRAY:
-			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
+			return "kiev.stdlib.ArrayEnumerator.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case KENUM:
-			return "kiev.stdlib.PEnv.contains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
+			return "kiev.stdlib.PEnv.contains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case JENUM:
-			return "kiev.stdlib.PEnv.jcontains("+Kiev.reparseExpr(expr,true)+","+var.name+".$var)";
+			return "kiev.stdlib.PEnv.jcontains("+Kiev.reparseExpr(expr,true)+","+var.ident+".$var)";
 		case ELEMS:
-			return Kiev.reparseExpr(expr,true)+".contains("+var.name+".$var)";
+			return Kiev.reparseExpr(expr,true)+".contains("+var.ident+".$var)";
 		default:
 			throw new RuntimeException("Unknown mode of iterator "+mode);
 		}
@@ -883,13 +877,13 @@ public final class RuleCallExpr extends ASTRuleNode {
 	public RuleCallExpr(ClosureCallExpr expr) {
 		super(expr.pos);
 		this.obj = (ENode)~expr.expr;
-		if( expr.expr instanceof VarExpr )
-			this.func = ((VarExpr)expr.expr).getVar();
-		else if( expr.expr instanceof StaticFieldAccessExpr )
-			this.func = ((StaticFieldAccessExpr)expr.expr).var;
-		else if( expr.expr instanceof AccessExpr ) {
-			this.func = ((AccessExpr)expr.expr).var;
-			this.obj = (ENode)~((AccessExpr)expr.expr).obj;
+		if( expr.expr instanceof LVarExpr )
+			this.func = ((LVarExpr)expr.expr).getVar();
+		else if( expr.expr instanceof SFldExpr )
+			this.func = ((SFldExpr)expr.expr).var;
+		else if( expr.expr instanceof IFldExpr ) {
+			this.func = ((IFldExpr)expr.expr).var;
+			this.obj = (ENode)~((IFldExpr)expr.expr).obj;
 		}
 		this.args.addAll(expr.args.delToArray());
 		this.args.insert(0,expr.env_access);
@@ -930,7 +924,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 			sb.append("super.");
 		}
 		sb.append(func.getName()).append('(');
-		for(int i=1; i < args.length; i++) {
+		for(int i=0; i < args.length; i++) {
 			sb.append(Kiev.reparseExpr(args[i],true));
 			if( i < args.length-1) sb.append(',');
 		}

@@ -413,7 +413,7 @@ public class EmptyStat extends Statement {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(';');
+		return dmp.append(';').newLine();
 	}
 }
 
@@ -462,7 +462,7 @@ public class ExprStat extends Statement {
 		if( isHidden() ) dmp.append("/* ");
 		expr.toJava(dmp).append(';');
 		if( isHidden() ) dmp.append(" */");
-		return dmp;
+		return dmp.newLine();
 	}
 }
 
@@ -560,7 +560,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 		dmp.append("return");
 		if( expr != null )
 			dmp.space().append(expr);
-		return dmp.append(';');
+		return dmp.append(';').newLine();
 	}
 }
 
@@ -605,7 +605,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append("throw").space().append(expr).append(';');
+		return dmp.append("throw").space().append(expr).append(';').newLine();
 	}
 }
 
@@ -1098,7 +1098,7 @@ public class BreakStat extends Statement {
 		dmp.append("break");
 		if( ident != null && !ident.name.equals(KString.Empty) )
 			dmp.space().append(ident);
-		return dmp.append(';');
+		return dmp.append(';').newLine();
 	}
 }
 
@@ -1246,7 +1246,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 		dmp.append("continue");
 		if( ident != null && !ident.name.equals(KString.Empty) )
 			dmp.space().append(ident);
-		return dmp.append(';');
+		return dmp.append(';').newLine();
 	}
 }
 
@@ -1484,7 +1484,7 @@ public class GotoStat extends Statement/*defaults*/ {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append("goto").space().append(ident).append(';');
+		return dmp.append("goto").space().append(ident).append(';').newLine();
 	}
 }
 
@@ -1523,7 +1523,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		if( expr != null ) {
 			if( sw.mode == SwitchStat.TYPE_SWITCH ) {
 				expr = new AssignExpr(pos,AssignOperator.Assign,
-					new VarExpr(pos,sw.tmpvar.getVar()),(ENode)~expr);
+					new LVarExpr(pos,sw.tmpvar.getVar()),(ENode)~expr);
 				expr.resolve(Type.tpVoid);
 				expr.setGenVoidExpr(true);
 			} else {
@@ -1611,7 +1611,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 			dmp.append(" case ").append(expr);
 		else
 			dmp.space().append("default");
-		return dmp.append(';');
+		return dmp.append(';').newLine();
 	}
 }
 

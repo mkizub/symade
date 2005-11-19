@@ -2358,10 +2358,10 @@ public class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public VarExpr Var() throws ParseException {
+  static final public LVarExpr Var() throws ParseException {
   Token t;
     t= jj_consume_token(IDENTIFIER);
-                VarExpr id = new VarExpr();
+                LVarExpr id = new LVarExpr();
                 id.set(t);
                 {if (true) return id;}
     throw new Error("Missing return statement in function");
@@ -3092,7 +3092,7 @@ public class kiev040 implements kiev040Constants {
         e = CallAccessExpression(e);
       } else if (jj_2_70(3)) {
         t= jj_consume_token(DOT);
-                  ASTAccessExpression ae = new ASTAccessExpression(); ae.obj = e; ae.setPos(t.getPos());
+                  AccessExpr ae = new AccessExpr(); ae.obj = e; ae.setPos(t.getPos());
         ae.ident = Name();
           e = ae;
       } else if (jj_2_71(2)) {
@@ -8912,7 +8912,7 @@ public class kiev040 implements kiev040Constants {
 	}
 	
 	private static FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		FormPar v = new FormPar(id, vt, st, modifiers.getFlags());
+		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)

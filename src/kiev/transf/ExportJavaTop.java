@@ -678,7 +678,7 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 			foreach(ASTNode n; clazz.members) {
 				if( n instanceof Method ) {
 					Method m = (Method)n;
-					if (m.params.length > 0)
+					if (m.params.length != 0)
 						Kiev.reportError(m, "Annotation methods may not have arguments");
 					if (m.body != null || m.pbody != null)
 						Kiev.reportError(m, "Annotation methods may not have bodies");

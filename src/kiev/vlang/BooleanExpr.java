@@ -704,14 +704,14 @@ public class InstanceofExpr extends BoolExpr {
 	DFState addNodeTypeInfo(DFState dfs) {
 		DNode[] path = null;
 		switch(expr) {
-		case VarExpr:
-			path = new DNode[]{((VarExpr)expr).getVar()};
+		case LVarExpr:
+			path = new DNode[]{((LVarExpr)expr).getVar()};
 			break;
-		case AccessExpr:
-			path = ((AccessExpr)expr).getAccessPath();
+		case IFldExpr:
+			path = ((IFldExpr)expr).getAccessPath();
 			break;
-		case StaticFieldAccessExpr:
-			path = new DNode[]{((StaticFieldAccessExpr)expr).var};
+		case SFldExpr:
+			path = new DNode[]{((SFldExpr)expr).var};
 			break;
 		}
 		if (path != null) {

@@ -39,6 +39,236 @@ import static kiev.vlang.Instr.*;
 @node
 @dflow(out="obj")
 public class AccessExpr extends LvalueExpr {
+	private static KString nameWrapperSelf = KString.from("$self");
+	
+	@att
+	@dflow(in="this:in")
+	public ENode			obj;
+	
+	@att
+	public NameRef			ident;
+
+	public AccessExpr() {}
+
+	public AccessExpr(int pos) {
+		super(pos);
+	}
+	
+	public AccessExpr(int pos, ENode obj, NameRef ident) {
+		super(pos);
+		this.obj = obj;
+		this.ident = ident;
+	}
+
+	public void mainResolveOut() {
+		ASTNode[] res;
+		Type[] tps;
+
+		// pre-resolve result
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ASTNode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			ENode e = obj;
+			//tps = new Type[]{e.getType()};
+			tps = e.getAccessTypes();
+			res = new ASTNode[tps.length];
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					// compatibility with previois version
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = (ENode)~obj;
+					}
+				}
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals(nameLength) ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+					}
+				}
+			}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			ASTNode@ v;
+			ResInfo info;
+			if (obj instanceof Expr &&
+				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
+			{
+				res[si] = makeExpr(v,info,(ENode)~obj);
+			}
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name)) {
+				res[si] = makeExpr(v,info,tp.getStruct());
+			}
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(this, msg.toString());
+		}
+		this.replaceWithNode(res[idx]);
+	}
+	
+	public void resolve(Type reqType) throws CompilerException {
+		ENode[] res;
+		Type[] tps;
+
+		// resolve access
+		obj.resolve(null);
+
+	try_static:
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ENode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			Expr e = (Expr)obj;
+			tps = e.getAccessTypes();
+			res = new ENode[tps.length];
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = obj;
+					}
+				}
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals(nameLength) ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthExpr(pos,(Expr)e.copy(), (NameRef)ident.copy());
+					}
+				}
+			}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			ASTNode@ v;
+			ResInfo info;
+			if (obj instanceof Expr &&
+				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
+			{
+				res[si] = makeExpr(v,info,(ENode)~obj);
+			}
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
+			{
+				res[si] = makeExpr(v,info,tp.getStruct());
+			}
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(this, msg.toString());
+			//return;
+		}
+		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
+	}
+
+	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+		if( v instanceof Field ) {
+			return info.buildAccess(this, o, v);
+		}
+		else if( v instanceof Struct ) {
+			TypeRef tr = new TypeRef(((Struct)v).type);
+			return tr;
+		}
+		else {
+			throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
+		}
+	}
+
+	public int		getPriority() { return Constants.opAccessPriority; }
+
+	public String toString() {
+    	return obj+"."+ident;
+	}
+
+	public Dumper toJava(Dumper dmp) {
+    	dmp.append(obj).append('.').append(ident.name);
+		return dmp;
+	}
+}
+
+@node
+@dflow(out="obj")
+public class IFldExpr extends AccessExpr {
 
 	public static final int[] masks =
 		{	0,
@@ -52,34 +282,32 @@ public class AccessExpr extends LvalueExpr {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	@att
-	@dflow(in="this:in")
-	public ENode		obj;
-	
-	@ref
-	public Field		var;
+	@ref public Field		var;
 
-	public AccessExpr() {
+	public IFldExpr() {
 	}
 
-	public AccessExpr(int pos, ENode obj, Field var) {
-		super(pos);
-		this.obj = obj;
+	public IFldExpr(int pos, ENode obj, NameRef ident, Field var) {
+		super(pos, obj, ident);
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, ENode obj, Field var, boolean direct_access) {
-		super(pos);
-		this.obj = obj;
+	public IFldExpr(int pos, ENode obj, Field var) {
+		super(pos, obj, new NameRef(pos,var.name.name));
+		this.var = var;
+		assert(obj != null && var != null);
+	}
+
+	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
+		super(pos, obj, new NameRef(pos,var.name.name));
 		this.var = var;
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
 	}
 
-	public AccessExpr(int pos, ENode obj, Field var, int flags) {
-		super(pos);
-		this.obj = obj;
+	public IFldExpr(int pos, ENode obj, Field var, int flags) {
+		super(pos, obj, new NameRef(pos,var.name.name));
 		this.var = var;
 		setFlags(flags);
 		assert(obj != null && var != null);
@@ -99,14 +327,14 @@ public class AccessExpr extends LvalueExpr {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public DNode[] getAccessPath() {
-		if (obj instanceof VarExpr) {
-			VarExpr va = (VarExpr)obj;
+		if (obj instanceof LVarExpr) {
+			LVarExpr va = (LVarExpr)obj;
 			if (va.getVar().isFinal() && va.getVar().isForward())
 				return new DNode[]{va.getVar(), this.var};
 			return null;
 		}
-		if (obj instanceof AccessExpr) {
-			AccessExpr ae = (AccessExpr)obj;
+		if (obj instanceof IFldExpr) {
+			IFldExpr ae = (IFldExpr)obj;
 			if !(ae.var.isFinal() || ae.var.isForward())
 				return null;
 			DNode[] path = ae.getAccessPath();
@@ -122,7 +350,7 @@ public class AccessExpr extends LvalueExpr {
 
 		// Set violation of the field
 		if( pctx.method != null
-		 && obj instanceof VarExpr && ((VarExpr)obj).name.equals(nameThis)
+		 && obj instanceof LVarExpr && ((LVarExpr)obj).ident.equals(nameThis)
 		)
 			pctx.method.addViolatedField(var);
 
@@ -137,12 +365,12 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
 		obj.generate(null);
@@ -153,12 +381,12 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
 		obj.generate(null);
@@ -170,32 +398,32 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - access only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		obj.generate(null);
 		generateCheckCastIfNeeded();
 	}
 
 	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_putfield,var,obj.getType());
 	}
 
 	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "AccessExpr: Generating virtual field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
-			Kiev.reportError(this, "AccessExpr: Generating packed field "+var+" directly");
+			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_dup_x);
 		Code.addInstr(op_putfield,var,obj.getType());
@@ -390,7 +618,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			ASTNode@ v;
 			// We need to get the type of object in stack
 			Type t = Code.stack_at(0);
-			Expr o = new VarExpr(pos,new Var(pos,KString.Empty,t,0));
+			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -415,7 +643,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			Type t = Code.stack_at(0);
 			if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			Expr o = new VarExpr(pos,new Var(pos,KString.Empty,t,0));
+			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -446,6 +674,8 @@ public class ContainerAccessExpr extends LvalueExpr {
 @dflow(out="this:in")
 public class ThisExpr extends LvalueExpr {
 
+	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+	
 	public boolean super_flag;
 	
 	public ThisExpr() {
@@ -488,7 +718,7 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if (!Code.method.isStatic())
-			Code.addInstr(op_load,Code.method.getThisPar());
+			Code.addInstrLoadThis();
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_load,Code.method.params[0]);
 		else {
@@ -501,7 +731,7 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if (!Code.method.isStatic())
-			Code.addInstr(op_load,Code.method.getThisPar());
+			Code.addInstrLoadThis();
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_load,Code.method.params[0]);
 		else {
@@ -519,7 +749,7 @@ public class ThisExpr extends LvalueExpr {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if (!Code.method.isStatic())
-			Code.addInstr(op_store,Code.method.getThisPar());
+			Code.addInstrStoreThis();
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_store,Code.method.params[0]);
 		else {
@@ -533,7 +763,7 @@ public class ThisExpr extends LvalueExpr {
 		Code.setLinePos(this.getPosLine());
 		Code.addInstr(op_dup);
 		if (!Code.method.isStatic())
-			Code.addInstr(op_store,Code.method.getThisPar());
+			Code.addInstrStoreThis();
 		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
 			Code.addInstr(op_store,Code.method.params[0]);
 		else {
@@ -549,39 +779,41 @@ public class ThisExpr extends LvalueExpr {
 
 @node
 @dflow(out="this:in")
-public class VarExpr extends LvalueExpr {
+public class LVarExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
 
-	@att public KString		name;
-	@ref private Var		var;
+	@att
+	public NameRef		ident;
+	@ref
+	private Var			var;
 
-	public VarExpr() {
+	public LVarExpr() {
 	}
-	public VarExpr(int pos, Var var) {
+	public LVarExpr(int pos, Var var) {
 		super(pos);
 		this.var = var;
-		this.name = var.name.name;
+		this.ident = new NameRef(pos, var.name.name);
 	}
-	public VarExpr(int pos, KString name) {
+	public LVarExpr(int pos, KString name) {
 		super(pos);
-		this.name = name;
+		this.ident = new NameRef(pos, name);
 	}
-	public VarExpr(KString name) {
-		this.name = name;
+	public LVarExpr(KString name) {
+		this.ident = new NameRef(name);
 	}
 
 	public void set(Token t) {
-		if (t.image.startsWith("ID#"))
-			this.name = ConstExpr.source2ascii(t.image.substring(4,t.image.length()-1));
-		else
-			this.name = KString.from(t.image);
         pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			this.ident = new NameRef(pos, ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2)));
+		else
+			this.ident = new NameRef(pos, KString.from(t.image));
 	}
 	
 	public String toString() {
 		if (var == null)
-			return name.toString();
+			return ident.toString();
 		return var.toString();
 	}
 
@@ -606,10 +838,10 @@ public class VarExpr extends LvalueExpr {
 			return var;
 		ASTNode@ v;
 		ResInfo info = new ResInfo(this);
-		if( !PassInfo.resolveNameR(this,v,info,name) )
-			throw new CompilerException(this,"Unresolved var "+name);
+		if( !PassInfo.resolveNameR(this,v,info,ident.name) )
+			throw new CompilerException(this,"Unresolved var "+ident);
 		if !(v instanceof Var)
-			throw new CompilerException(this,"Expected "+name+" to be a var");
+			throw new CompilerException(this,"Expected "+ident+" to be a var");
 		var = (Var)v;
 		return var;
 	}
@@ -642,9 +874,9 @@ public class VarExpr extends LvalueExpr {
 				return false;
 			}
 			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
-			Field f = s.resolveField(name);
+			Field f = s.resolveField(ident.name);
 			assert(f != null);
-			replaceWithNode(new AccessExpr(pos, new VarExpr(pos, pEnv), f));
+			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), (NameRef)~ident, f));
 		}
 		return true;
 	}
@@ -658,9 +890,9 @@ public class VarExpr extends LvalueExpr {
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = (Field)pctx.clazz.resolveName(name)) == null ) {
+				if( (vf = (Field)pctx.clazz.resolveName(ident.name)) == null ) {
 					// Add field
-					vf = pctx.clazz.addField(new Field(name,var.type,ACC_PUBLIC));
+					vf = pctx.clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = (Expr)this.copy();
 				}
@@ -670,7 +902,7 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public Field resolveProxyVar() {
-		Field proxy_var = (Field)Code.clazz.resolveName(name);
+		Field proxy_var = (Field)Code.clazz.resolveName(ident.name);
 		if( proxy_var == null && Code.method.isStatic() && !Code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
@@ -688,7 +920,7 @@ public class VarExpr extends LvalueExpr {
 			// Bind the correct var
 			if( getVar().parent != Code.method ) {
 				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-				if( name==nameResultVar ) var = Code.method.getRetVar();
+				if( ident.name==nameResultVar ) var = Code.method.getRetVar();
 				else for(int i=0; i < Code.method.params.length; i++) {
 					Var v = Code.method.params[i];
 					if( !v.name.equals(var.name) ) continue;
@@ -699,8 +931,6 @@ public class VarExpr extends LvalueExpr {
 				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
 			}
 			assert( var.parent == Code.method, "Can't find var for condition" );
-//			assert( var.name==nameResultVar && var == Code.method.getRetVar()
-//			 || var == Code.method.params[var.getBCpos()], "Missplaced var "+var );
 		}
 	}
 
@@ -712,9 +942,7 @@ public class VarExpr extends LvalueExpr {
 			Method m = (Method)var.parent;
 			for(int i=0; i < m.params.length; i++) {
 				if( var == m.params[i] ) {
-//					if( m.isStatic() ) chtp = m.jtype.args[i];
-//					else chtp = m.jtype.args[i-1];
-					chtp = m.type.args[i];
+					chtp = m.jtype.args[i];
 					break;
 				}
 			}
@@ -728,7 +956,7 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - load only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
@@ -737,7 +965,7 @@ public class VarExpr extends LvalueExpr {
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
-				Code.addInstr(op_load,Code.method.getThisPar());
+				Code.addInstrLoadThis();
 				Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 			} else {
 				Code.addInstr(op_load,var);
@@ -750,7 +978,7 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - load & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
@@ -759,7 +987,7 @@ public class VarExpr extends LvalueExpr {
 			Code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
-				Code.addInstr(op_load,Code.method.getThisPar());
+				Code.addInstrLoadThis();
 				if( var.isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
@@ -779,13 +1007,13 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - access only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 		} else {
 			if( isAsField() ) {
-				Code.addInstr(op_load,Code.method.getThisPar());
+				Code.addInstrLoadThis();
 				if( var.isNeedRefProxy() ) {
 					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
 					Code.addInstr(op_dup);
@@ -800,7 +1028,7 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - store only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
@@ -825,7 +1053,7 @@ public class VarExpr extends LvalueExpr {
 	}
 
 	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		if( Code.cond_generation ) resolveVarForConditions();
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
@@ -865,20 +1093,24 @@ public class VarExpr extends LvalueExpr {
 
 @node
 @dflow(out="this:in")
-public class StaticFieldAccessExpr extends LvalueExpr {
+public class SFldExpr extends AccessExpr {
 
 	@ref public Field		var;
 
-	public StaticFieldAccessExpr() {
+	public SFldExpr() {
 	}
 
-	public StaticFieldAccessExpr(int pos, Field var) {
+	public SFldExpr(int pos, Field var) {
 		super(pos);
+		this.obj = new TypeRef(pos,((Struct)var.parent).type);
+		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 	}
 
-	public StaticFieldAccessExpr(int pos, Field var, boolean direct_access) {
+	public SFldExpr(int pos, Field var, boolean direct_access) {
 		super(pos);
+		this.obj = new TypeRef(pos,((Struct)var.parent).type);
+		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		if (direct_access) setAsField(true);
 	}
@@ -936,32 +1168,32 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 	}
 
 	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - load only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
 		var.acc.verifyReadAccess(this,var);
 		Code.addInstr(op_getstatic,var,Code.clazz.type);
 	}
 
 	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - load & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		var.acc.verifyReadAccess(this,var);
 		Code.addInstr(op_getstatic,var,Code.clazz.type);
 	}
 
 	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - access only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - access only: "+this);
 	}
 
 	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - store only: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		Code.setLinePos(this.getPosLine());
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_putstatic,var,Code.clazz.type);
 	}
 
 	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - store & dup: "+this);
+		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
 		Code.setLinePos(this.getPosLine());
 		var.acc.verifyWriteAccess(this,var);
 		Code.addInstr(op_dup);
@@ -980,7 +1212,7 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 
 @node
 @dflow(out="this:in")
-public class OuterThisAccessExpr extends LvalueExpr {
+public class OuterThisAccessExpr extends AccessExpr {
 
 	@ref public Struct		outer;
 	public Field[]			outer_refs = Field.emptyArray;
@@ -990,6 +1222,8 @@ public class OuterThisAccessExpr extends LvalueExpr {
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
 		super(pos);
+		this.obj = new TypeRef(pos,outer.type);
+		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
 	}
 
@@ -1039,7 +1273,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	public void generateLoad() {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
 		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,Code.method.getThisPar());
+		Code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
 			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
 	}
@@ -1047,7 +1281,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	public void generateLoadDup() {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
 		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,Code.method.getThisPar());
+		Code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
 			if( i == outer_refs.length-1 ) Code.addInstr(op_dup);
 			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
@@ -1057,7 +1291,7 @@ public class OuterThisAccessExpr extends LvalueExpr {
 	public void generateAccess() {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
 		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_load,Code.method.getThisPar());
+		Code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
 			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
 		}

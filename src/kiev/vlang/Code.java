@@ -547,7 +547,7 @@ public class Code implements Constants {
 			trace(Kiev.debugInstrGen,"\t\tgenerating static call to method: "+m);
 			call_static = true;
 		}
-		MethodType mtype = (MethodType)Type.getRealType(tp,m.type);
+		MethodType mtype = (MethodType)Type.getRealType(tp,m.dtype);
 		for(int i=0; mtype.args!=null && i < mtype.args.length; i++) {
 			try {
 				Type t1 = stack_at(mtype.args.length-i-1);
@@ -1177,7 +1177,7 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstrIncr(VarExpr vv, int val) {
+	static public void addInstrIncr(LVarExpr vv, int val) {
 		addInstrIncr(vv.getVar(), val);
 	}
 	
@@ -1231,7 +1231,19 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstr(Instr i, VarExpr v) {
+	static public void addInstrLoadThis() {
+       	if( method.isStatic() )
+       		throw new RuntimeException("Generation of load 'this' in a static method");
+		generateLoadVar(0);
+	}
+
+	static public void addInstrStoreThis() {
+       	if( method.isStatic() )
+       		throw new RuntimeException("Generation of load 'this' in a static method");
+		generateStoreVar(0);
+	}
+
+	static public void addInstr(Instr i, LVarExpr v) {
 		addInstr(i,v.getVar());
 	}
 	

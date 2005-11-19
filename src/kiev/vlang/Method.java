@@ -23,6 +23,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.transf.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -86,8 +87,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	 */
 	public boolean						inlined_by_dispatcher;
 	
-	@att protected FormPar				this_var;
-
 	private boolean		invalid_types;
 	
 	@virtual public virtual abstract access:ro MethodType type; 
@@ -103,6 +102,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public Method(KString name, MethodType mt, MethodType dmt, int fl) {
 		this(name,new TypeCallRef(mt),new TypeCallRef(dmt),fl);
+		invalid_types = true;
 	}
 	public Method(KString name, TypeCallRef type_ref, TypeCallRef dtype_ref, int fl) {
 		super(0,fl);
@@ -116,11 +116,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		this.acc = new Access(0);
 		this.meta = new MetaSet();
+		invalid_types = true;
 	}
 
 	public void setupContext() {
 		if (this.parent == null)
-			this.pctx = new NodeContext(this);
+			this.pctx = new NodeContext(this).enter(this);
 		else
 			this.pctx = this.parent.pctx.enter(this);
 	}
@@ -138,48 +139,98 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return (MetaThrows)this.meta.get(MetaThrows.NAME);
 	}
 
+	public final void checkRebuildTypes() {
+		if (invalid_types) rebuildTypes();
+	}
+	
 	private void rebuildTypes() {
 		type_ref.args.delAll();
 		dtype_ref.args.delAll();
 		foreach (FormPar fp; params) {
-			type_ref.args.add((TypeRef)fp.vtype.copy());
-			if (fp.stype != null)
-				dtype_ref.args.add((TypeRef)fp.stype.copy());
-//			else if (fp.type.isPizzaCase())
-//				dtype_ref.args.add(new TypeRef(fp.vtype.getSuperType()));
-			else
+			switch (fp.kind) {
+			case FormPar.PARAM_NORMAL:
+				type_ref.args.add((TypeRef)fp.vtype.copy());
+				if (fp.stype != null)
+					dtype_ref.args.add((TypeRef)fp.stype.copy());
+				else
+					dtype_ref.args.add((TypeRef)fp.vtype.copy());
+				break;
+			case FormPar.PARAM_OUTER_THIS:
+				assert(this instanceof Constructor);
+				assert(!this.isStatic());
+				assert(fp.isForward());
+				assert(fp.isFinal());
+				assert(fp.name.name == nameThisDollar);
+				assert(fp.type == this.pctx.clazz.package_clazz.type);
+				dtype_ref.args.add(new TypeRef(this.pctx.clazz.package_clazz.type));
+				break;
+			case FormPar.PARAM_RULE_ENV:
+				assert(this instanceof RuleMethod);
+				assert(fp.isForward());
+				assert(fp.isFinal());
+				assert(fp.type == Type.tpRule);
+				assert(fp.name.name == namePEnv);
+				dtype_ref.args.add(new TypeRef(Type.tpRule));
+				break;
+			case FormPar.PARAM_TYPEINFO:
+				assert(this instanceof Constructor || (this.isStatic() && this.name.equals(nameNewOp)));
+				assert(fp.isFinal());
+				assert(fp.stype == null || fp.stype.getType() == fp.vtype.getType());
 				dtype_ref.args.add((TypeRef)fp.vtype.copy());
+				break;
+			case FormPar.PARAM_VARARGS:
+				assert(fp.isFinal());
+				assert(fp.type.isArray());
+				dtype_ref.args.add((TypeRef)fp.vtype.copy());
+				break;
+			case FormPar.PARAM_LVAR_PROXY:
+				assert(this instanceof Constructor);
+				assert(fp.isFinal());
+				dtype_ref.args.add((TypeRef)fp.vtype.copy());
+				break;
+			default:
+				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
+			}
 		}
 		invalid_types = false;
 	}
 	
+	public FormPar getOuterThisParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_OUTER_THIS)
+			return fp;
+		return null;
+	}
+	
+	public FormPar getTypeInfoParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_TYPEINFO)
+			return fp;
+		return null;
+	}
+	
+	public FormPar getVarArgParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_VARARGS)
+			return fp;
+		return null;
+	}
+	
 	@getter public MethodType get$type()	{
-		if (invalid_types) rebuildTypes();
+		checkRebuildTypes();
 		return type_ref.getMType();
 	} 
 	@getter public MethodType get$jtype()	{
-		if (invalid_types) rebuildTypes();
+		checkRebuildTypes();
 		return (MethodType)dtype.getJavaType();
 	}
 	@getter public MethodType get$dtype()	{
-		if (invalid_types) rebuildTypes();
+		checkRebuildTypes();
 		if (dtype_ref == null)
 			dtype_ref = new TypeCallRef(type_ref.getMType());
 		return dtype_ref.getMType();
 	}
 	
-	public FormPar getThisPar() {
-		if (isStatic()) {
-			this_var = null;
-		}
-		else if (this_var == null) {
-			ASTNode p = parent;
-			while !(p instanceof Struct) p = p.parent;
-			this_var = new FormPar(pos,Constants.nameThis,((Struct)p).type,ACC_FORWARD|ACC_FINAL);
-		}
-		return this_var;
-	}
-
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
 			if      (attr.name == "params") {
@@ -190,7 +241,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			else if (attr.name == "annotation_default")
 				parent.callbackChildChanged(pslot);
 		}
-		if (attr.name == "params")
+		if (attr.name == "params" || attr.name == "flags")
 			invalid_types = true;
 	}
 	
@@ -267,26 +318,41 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public void makeArgs(NArr<ENode> args, Type t) {
+		checkRebuildTypes();
 		assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
-			int j;
-			for(j=0; j < type.args.length-1; j++)
-				CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
-			NArr<ENode> varargs = new NArr<ENode>();
-			while(j < args.length) {
-				CastExpr.autoCastToReference(args[j]);
-				varargs.append(args[j]);
-				args.del(j);
+			int i=0;
+			for(; i < type.args.length-1; i++) {
+				Type ptp = Type.getRealType(t,type.args[i]);
+				if !(args[i].getType().isInstanceOf(ptp))
+					CastExpr.autoCast(args[i],ptp);
 			}
-			NewInitializedArrayExpr nae =
-				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs.toArray());
-			args.append(nae);
+			Type varg_tp = Type.getRealType(t,params[params.length-1].type);
+			assert(varg_tp.isArray());
+			for(; i < args.length; i++) {
+				if !(args[i].getType().isInstanceOf(varg_tp.args[0])) {
+					CastExpr.autoCastToReference(args[i]);
+					CastExpr.autoCast(args[i],varg_tp.args[0]);
+				}
+			}
+//			int j;
+//			for(j=0; j < type.args.length-1; j++)
+//				CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
+//			NArr<ENode> varargs = new NArr<ENode>();
+//			while(j < args.length) {
+//				CastExpr.autoCastToReference(args[j]);
+//				varargs.append(args[j]);
+//				args.del(j);
+//			}
+//			NewInitializedArrayExpr nae =
+//				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs.toArray());
+//			args.append(nae);
 		} else {
-			int i = 0;
-			int j = 0;
-			if( this instanceof RuleMethod ) j++;
-			for(; i < args.length; i++, j++)
-				CastExpr.autoCast(args[i],Type.getRealType(t,type.args[j]));
+			for(int i=0; i < type.args.length; i++) {
+				Type ptp = Type.getRealType(t,type.args[i]);
+				if !(args[i].getType().isInstanceOf(ptp))
+					CastExpr.autoCast(args[i],ptp);
+			}
 		}
 	}
 
@@ -374,7 +440,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		for(int i=0; i < params.length; i++) {
 			if (params[i].isFinal()) dmp.append("final").forsed_space();
 			if (params[i].isForward()) dmp.append("forward").forsed_space();
-			params[i].toJavaDecl(dmp,type_ref.args[i].getType());
+			params[i].toJavaDecl(dmp,dtype_ref.args[i].getType());
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
@@ -392,26 +458,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		FormPar@ var;
 		Type@ t;
 	{
+		checkRebuildTypes(),
 		inlined_by_dispatcher,$cut,false
-	;
-		!this.isStatic(),
-		name.equals(nameThis),
-		node ?= getThisPar()
 	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
-//	;
-//		t @= type.fargs,
-//		t.getClazzName().short_name.equals(name),
-//		node ?= new TypeRef(t)
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
-		var ?= getThisPar(),
-		path.enterForward(var) : path.leaveForward(var),
-		var.type.resolveNameAccessR(node,path,name)
+		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
+		this.pctx.clazz.type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -423,16 +481,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
-		!this.isStatic() && info.isForwardsAllowed(),
-		n ?= getThisPar(),
-		info.enterForward(n) : info.leaveForward(n),
-		n.getType().resolveCallAccessR(node,info,name,mt)
-	;
+		checkRebuildTypes(),
 		info.isForwardsAllowed(),
+	{
+		!this.isStatic(),
+		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
+		this.pctx.clazz.type.resolveCallAccessR(node,info,name,mt)
+	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
 		n.getType().resolveCallAccessR(node,info,name,mt)
+	}
 	}
 
     public ASTNode pass3() {
@@ -454,7 +514,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 //				ftypes[i] = argtypes[i].getType();
 //		}
 
-		if (clazz.isAnnotation() && params.length > 0) {
+		if (clazz.isAnnotation() && params.length != 0) {
 			Kiev.reportError(this, "Annotation methods may not have arguments");
 			params.delAll();
 			setVarArgs(false);
@@ -469,13 +529,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		// push the method, because formal parameters may refer method's type args
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
+			if (fp.stype == null)
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getJavaType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),0);
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
+		checkRebuildTypes();
 		type_ref.getMType(); // resolve
 		dtype_ref.getMType(); // resolve
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
@@ -531,10 +594,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (res != null) return res;
 			Method m = (Method)dfi.node;
 			DFState in = DFState.makeNewState();
-			if (!m.isStatic()) {
-				Var p = m.getThisPar();
-				in = in.declNode(p);
-			}
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];
 				in = in.declNode(p);
@@ -548,6 +607,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return new MethodDFFunc(dfi);
 	}
 
+	public boolean preResolveIn(TransfProcessor proc) {
+		checkRebuildTypes();
+		return true;
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
+		checkRebuildTypes();
+		return true;
+	}
+	
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
@@ -607,7 +676,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			Code.generation = true;
 			try {
 				if( !isBad() ) {
-					if( !isStatic() ) Code.addVar(getThisPar());
+					FormPar thisPar = null;
+					if( !isStatic() ) {
+						thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+						Code.addVar(thisPar);
+					}
 					if( params.length > 0 ) Code.addVars(params.toArray());
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck();
@@ -618,7 +691,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
 								if( !cond.parent.isStatic() )
-									Code.addInstr(Instr.op_load,getThisPar());
+									Code.addInstrLoadThis();
 								Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							}
 							setGenPostCond(true);
@@ -638,7 +711,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !cond.parent.isStatic() )
-								Code.addInstr(Instr.op_load,getThisPar());
+								Code.addInstrLoadThis();
 							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
 						}
@@ -653,7 +726,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 						}
 					}
 					if( params.length > 0 ) Code.removeVars(params.toArray());
-					if( !isStatic() ) Code.removeVar(getThisPar());
+					if( thisPar != null ) Code.removeVar(thisPar);
 				} else {
 					Code.addInstr(Instr.op_new,Type.tpError);
 					Code.addInstr(Instr.op_dup);
@@ -676,14 +749,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public void generateArgumentCheck() {
-//		if( jtype == null ) return;
-		int i=0;
-		for(; i < type.args.length; i++) {
+		for(int i=0; i < params.length; i++) {
 			Type tp1 = jtype.args[i];
 			Type tp2 = params[i].type;
-			if( !tp1.equals(tp2) ) {
+			if !(tp2.getJavaType().isInstanceOf(tp1)) {
 				Code.addInstr(Instr.op_load,params[i]);
-				Code.addInstr(Instr.op_checkcast,type_ref.args[i].getType());
+				Code.addInstr(Instr.op_checkcast,tp1);
 				Code.addInstr(Instr.op_store,params[i]);
 			}
 		}
@@ -831,13 +902,17 @@ public class WBCCondition extends DNode {
 			Code.cond_generation = true;
 			Method m = Code.method;
 			try {
-				if( !m.isStatic() ) Code.addVar(m.getThisPar());
+				FormPar thisPar = null;
+				if( !isStatic() ) {
+					thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+					Code.addVar(thisPar);
+				}
 				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
 				body.generate(Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
 				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
-				if( !m.isStatic() ) Code.removeVar(m.getThisPar());
+				if( thisPar != null ) Code.removeVar(thisPar);
 				Code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(this,e);

@@ -183,7 +183,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		return true;
 	}
 
-	boolean rewrite(AccessExpr:ASTNode fa) {
+	boolean rewrite(IFldExpr:ASTNode fa) {
 		//System.out.println("ProcessPackedFld: rewrite "+fa.getClass().getName()+" "+fa+" in "+id);
 		Field f = fa.var;
 		if( !f.isPackedField() )
@@ -194,7 +194,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			return true;
 		}
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-		AccessExpr ae = (AccessExpr)fa.copy();
+		IFldExpr ae = (IFldExpr)fa.copy();
 		ae.var = mp.packer;
 		Expr expr = ae;
 		if (mp.offset > 0) {
@@ -218,9 +218,9 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	
 	boolean rewrite(AssignExpr:ASTNode ae) {
 		//System.out.println("ProcessPackedFld: rewrite "+ae.getClass().getName()+" "+ae+" in "+id);
-		if !(ae.lval instanceof AccessExpr)
+		if !(ae.lval instanceof IFldExpr)
 			return true;
-		AccessExpr fa = (AccessExpr)ae.lval;
+		IFldExpr fa = (IFldExpr)ae.lval;
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return true;
@@ -229,8 +229,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		if (fa.obj instanceof ThisExpr) {
 			acc = fa.obj;
 		}
-		else if (fa.obj instanceof VarExpr) {
-			acc = ((VarExpr)fa.obj).getVar();
+		else if (fa.obj instanceof LVarExpr) {
+			acc = ((LVarExpr)fa.obj).getVar();
 		}
 		else {
 			Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
@@ -240,7 +240,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		}
 		Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
 		MetaPacked mp = f.getMetaPacked();
-		fval.init = new AccessExpr(fa.pos, mkAccess(acc), mp.packer);
+		fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
 		be.addSymbol(fval);
 		Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
 		be.addSymbol(tmp);
@@ -276,7 +276,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
 			Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 			expr = new AssignExpr(fa.pos, AssignOperator.Assign,
-				new AccessExpr(fa.pos, mkAccess(acc), mp.packer),
+				new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 				expr);
 			be.addStatement(new ExprStat(fa.pos, expr));
 		}
@@ -291,9 +291,9 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	
 	boolean rewrite(IncrementExpr:ASTNode ie) {
 		//System.out.println("ProcessPackedFld: rewrite "+ie.getClass().getName()+" "+ie+" in "+id);
-		if !(ie.lval instanceof AccessExpr)
+		if !(ie.lval instanceof IFldExpr)
 			return true;
-		AccessExpr fa = (AccessExpr)ie.lval;
+		IFldExpr fa = (IFldExpr)ie.lval;
 		Field f = fa.var;
 		if( !f.isPackedField() )
 			return true;
@@ -314,8 +314,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			if (fa.obj instanceof ThisExpr) {
 				acc = fa.obj;
 			}
-			else if (fa.obj instanceof VarExpr) {
-				acc = ((VarExpr)fa.obj).getVar();
+			else if (fa.obj instanceof LVarExpr) {
+				acc = ((LVarExpr)fa.obj).getVar();
 			}
 			else {
 				Var var = new Var(0,KString.from("tmp$acc"),fa.obj.getType(),0);
@@ -324,7 +324,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				acc = var;
 			}
 			Var fval = new Var(0,KString.from("tmp$fldval"),Type.tpInt,0);
-			fval.init = new AccessExpr(fa.pos, mkAccess(acc), mp.packer);
+			fval.init = new IFldExpr(fa.pos, mkAccess(acc), mp.packer);
 			be.addSymbol(fval);
 			Var tmp = new Var(0,KString.from("tmp$val"),Type.tpInt,0);
 			be.addSymbol(tmp);
@@ -365,7 +365,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
 				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
-					new AccessExpr(fa.pos, mkAccess(acc), mp.packer),
+					new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 					expr);
 				be.addStatement(new ExprStat(fa.pos, expr));
 			}
@@ -381,8 +381,8 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	}
 	
 	private Expr mkAccess(Object o) {
-		if (o instanceof Var) return new VarExpr(0,(Var)o);
-		if (o instanceof VarExpr) return new VarExpr(0,o.getVar());
+		if (o instanceof Var) return new LVarExpr(0,(Var)o);
+		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}

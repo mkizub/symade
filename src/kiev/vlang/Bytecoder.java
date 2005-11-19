@@ -291,7 +291,7 @@ public class Bytecoder implements Constants {
 			cl.members.append(m);
 			for (int i=0; i < mtype.args.length; i++) {
 				FormPar fp = new FormPar(new NameRef(KString.from("arg"+1)),
-					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),0);
+					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_NORMAL,0);
 				m.params.add(fp);
 			}
 			trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));

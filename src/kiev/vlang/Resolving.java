@@ -158,7 +158,7 @@ public class ResInfo {
 	public Expr buildVarAccess(ASTNode at, Var var) {
 		if (var.name.name == Constants.nameThis)
 			return new ThisExpr(at.pos);
-		return new VarExpr(at.pos, var);
+		return new LVarExpr(at.pos, var);
 	}
 
 	public Expr buildAccess(ASTNode at, ASTNode from) {
@@ -175,7 +175,7 @@ public class ResInfo {
 			// var or static field
 			if (node instanceof Field) {
 				if (node.isStatic())
-					return new StaticFieldAccessExpr(at.pos,(Field)node);
+					return new SFldExpr(at.pos,(Field)node);
 				throw new CompilerException(at, "Static access to an instance field "+node);
 			}
 			if (node instanceof Var) {
@@ -191,13 +191,13 @@ public class ResInfo {
 				// static field access
 				if (isEmpty() && node instanceof Field) {
 					if (node.isStatic())
-						return new StaticFieldAccessExpr(at.pos,(Field)node);
+						return new SFldExpr(at.pos,(Field)node);
 					throw new CompilerException(at, "Static access to an instance field "+node);
 				}
 				else if (forwards_stack[0] instanceof Field) {
 					if (!forwards_stack[0].isStatic())
 						throw new CompilerException(at, "Static access to an instance field "+forwards_stack[0]);
-					e = new StaticFieldAccessExpr(at.pos,(Field)forwards_stack[0]);
+					e = new SFldExpr(at.pos,(Field)forwards_stack[0]);
 					n++;
 				}
 			}
@@ -219,9 +219,9 @@ public class ResInfo {
 				Field f = (Field)forwards_stack[n];
 				if (f.isStatic())
 					throw new CompilerException(at, "Non-static access to static field "+f+" via "+this);
-				e = new AccessExpr(at.pos, e, f);
+				e = new IFldExpr(at.pos, e, f);
 			}
-			e = new AccessExpr(at.pos, e, (Field)node);
+			e = new IFldExpr(at.pos, e, (Field)node);
 			return e;
 		}
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);

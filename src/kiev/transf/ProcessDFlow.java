@@ -119,17 +119,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		} else {
 			MethodType mt = (MethodType)Type.fromSignature(signGetDFlowIn);
 			Method dfIn = new Method(nameGetDFlowIn,mt,ACC_PUBLIC);
-			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, 0));
+			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new BlockStat(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
 			dfIn.body.addStatement(new VarDecl(var));
 			{
-				ASTAccessExpression ae0 = new ASTAccessExpression();
-				ae0.obj = new VarExpr(0,dfIn.params[0]);
-				ae0.ident = new NameRef(KString.from("pslot"));
-				ASTAccessExpression ae1 = new ASTAccessExpression();
-				ae1.obj = ae0;
-				ae1.ident = new NameRef(KString.from("name"));
+				AccessExpr ae0 = new AccessExpr(0, new LVarExpr(0,dfIn.params[0]), new NameRef(KString.from("pslot")));
+				AccessExpr ae1 = new AccessExpr(0, ae0, new NameRef(KString.from("name")));
 				var.init = ae1;
 			}
 			for(int i=0; i < aflds.length; i++) {
@@ -141,11 +137,11 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				ASTCallExpression ce = new ASTCallExpression();
 				ce.func = new NameRef(fname);
 				if (seq)
-					ce.args.add(new VarExpr(0, dfIn.params[0]));
+					ce.args.add(new LVarExpr(0, dfIn.params[0]));
 				dfIn.body.addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,
-							new VarExpr(0, var),
+							new LVarExpr(0, var),
 							new ConstStringExpr(fldnm)
 						),
 						new ReturnStat(0, ce),
@@ -155,7 +151,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			}
 			StringConcatExpr msg = new StringConcatExpr();
 			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
-			msg.appendArg(new VarExpr(0, var));
+			msg.appendArg(new LVarExpr(0, var));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			dfIn.body.addStatement(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
@@ -174,8 +170,8 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			if (hasMethod(s, fname)) {
 				Kiev.reportWarning(s,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
 			} else {
-				ASTAccessExpression acc_fld = null;
-				ASTAccessExpression acc_prev = null;
+				AccessExpr acc_fld = null;
+				AccessExpr acc_prev = null;
 				ASTCallAccessExpression cae_prev = null;
 				ASTCallAccessExpression cae_tru = null;
 				ASTCallAccessExpression cae_fls = null;
@@ -209,16 +205,16 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 					cae_tru.func = new NameRef(fun_nm);
 					
 					if (seq) {
-						acc_prev = new ASTAccessExpression();
+						acc_prev = new AccessExpr();
 						acc_prev.obj = new ASTIdentifier(KString.from("$child"));
 						acc_prev.ident = new NameRef(KString.from("pprev"));
 						cae_prev = new ASTCallAccessExpression();
-						cae_prev.obj = (ASTAccessExpression)acc_prev.copy();
+						cae_prev.obj = (AccessExpr)acc_prev.copy();
 						cae_prev.func = new NameRef(KString.from("getDFlowOut"));
 					}
 					
 					if (acc_nm != nameThis) {
-						acc_fld = new ASTAccessExpression();
+						acc_fld = new AccessExpr();
 						acc_fld.obj = new ThisExpr();
 						acc_fld.ident = new NameRef(acc_nm);
 						cae_fls = new ASTCallAccessExpression();
@@ -230,7 +226,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				if (seq) {
 					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInSeq);
 					dfIn = new Method(fname,mt,ACC_PRIVATE);
-					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, 0));
+					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
 					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
 					dfIn = new Method(fname,mt,ACC_PRIVATE);

@@ -67,7 +67,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		Constructor init = new Constructor(mt,ACC_PUBLIC);
 		init.pos = clazz.pos;
 		foreach (Field f; case_attr.casefields)
-			init.params.add(new FormPar(f.pos,f.name.name,f.type,0));
+			init.params.add(new FormPar(f.pos,f.name.name,f.type,FormPar.PARAM_NORMAL,0));
 		clazz.addMethod(init);
 		init.body = new BlockStat(clazz.pos);
 		int p = 0;
@@ -77,8 +77,8 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				init.body.stats.insert(
 					new ExprStat(
 						new AssignExpr(f.pos,AssignOperator.Assign,
-							new AccessExpr(f.pos,new ThisExpr(f.pos),f),
-							new VarExpr(f.pos,fp)
+							new IFldExpr(f.pos,new ThisExpr(f.pos),f),
+							new LVarExpr(f.pos,fp)
 						)
 					),p++
 				);
@@ -111,7 +111,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
-				new ReturnStat(gettag.pos,new StaticFieldAccessExpr(ftag.pos,ftag))
+				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
 			);
 			clazz.addMethod(gettag);
 		}
