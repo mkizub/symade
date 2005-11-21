@@ -478,6 +478,12 @@ public final class Kiev {
 		}
 	}
 
+	
+	// Backends
+	static public enum Backend {
+		Java15					: "java15"
+	};
+	public static Backend useBackend = Backend.Java15;
 
 	// Extensions settings
 	public static boolean javaMode			= false;
@@ -606,6 +612,28 @@ public final class Kiev {
 		return (Kiev.errCount > 0); // true if failed
 	}
 	
+	public static void runProcessors(FileUnit fu, (TransfProcessor)->void step) {
+		KString curr_file = Kiev.curFile;
+		Kiev.curFile = fu.filename;
+		boolean[] exts = Kiev.getExtSet();
+		try {
+			Kiev.setExtSet(fu.disabled_extensions);
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+				try {
+					if (tp.isEnabled() )
+						step(tp);
+				}
+				catch (Exception e) {
+					Kiev.reportError(fu,e);
+				}
+			}
+		}
+		finally {
+			Kiev.curFile = curr_file;
+			Kiev.setExtSet(exts);
+		}
+	}
+	
 	public static void runProcessorsOn(ASTNode node) {
 		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
@@ -656,8 +684,14 @@ public final class Kiev {
 				if (tp.isEnabled()) tp.verify(node);
 		}
 		if ( Kiev.passGreaterEquals(TopLevelPass.passPreGenerate) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.preGenerate(node);
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+				if !(tp.isEnabled())
+					continue;
+				BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+				if (bep == null)
+					continue;
+				bep.preGenerate(node);
+			}
 		}
 	}
 

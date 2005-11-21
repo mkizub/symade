@@ -34,6 +34,8 @@ import syntax kiev.Syntax;
  */
 
 public final class ExportJavaTop extends TransfProcessor implements Constants {
+
+	private JavaBackend javaBackend = new JavaBackend();
 	
 	public ExportJavaTop(Kiev.Ext ext) {
 		super(ext);
@@ -776,12 +778,51 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 	//												   //
 	////////////////////////////////////////////////////
 
+	public BackendProcessor getBackend(Kiev.Backend backend) {
+		if (backend == Kiev.Backend.Java15)
+			return javaBackend;
+		return null;
+	}
+	
+}
+
+final class JavaBackend extends BackendProcessor {
+	public JavaBackend() {
+		super(Kiev.Backend.Java15);
+	}
+	
 	public void preGenerate(ASTNode node) {
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 		});
 	}
 
+	// resolve back-end
+	public void resolve(ASTNode node) {
+		if (node instanceof ENode)
+			node.resolve(null);
+		else if (node instanceof DNode)
+			node.resolveDecl();
+	}
+
+	// generate back-end
+	public void generate(ASTNode node) {
+		if (node instanceof FileUnit) {
+			if( Kiev.source_only ) {
+				if( Kiev.output_dir == null )
+					if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node);
+				else
+					if( Kiev.verbose ) System.out.println("Dumping to Java source file "+node+" into "+Kiev.output_dir+" dir");
+				try {
+					node.toJava(Kiev.output_dir);
+				} catch (Exception rte) { Kiev.reportError(rte); }
+			} else {
+				try {
+					node.generate();
+				} catch (Exception rte) { Kiev.reportError(rte); }
+			}
+		}
+	}
 }
 
 

@@ -83,7 +83,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	/** Array of methods defined in this structure */
 	@att
 	@dflow(in="", seq="false")
-	public final NArr<DNode>					members;
+	public final NArr<DNode>						members;
+	
+	/** JClass for java backend */
+	//@ref public kiev.backend.java15.JClass			jclass;
 
 	protected Struct(ClazzName name) {
 		super(0,0);

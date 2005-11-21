@@ -163,9 +163,7 @@ public class ASTIdentifier extends ENode {
 		return false;
 	}
 	
-	public boolean preGenerate() {
-		return false;
-	}
+	public boolean preGenerate() { /*Kiev.reportError(this,"preGenerate of ASTIdentifier");*/ return false; }
 	
 	public void resolve(Type reqType) {
 		if( name == Constants.nameFILE ) {

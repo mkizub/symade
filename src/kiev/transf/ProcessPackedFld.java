@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.transf;
 
 import kiev.Kiev;
@@ -34,18 +14,8 @@ import static kiev.stdlib.Debug.*;
 
 public final class ProcessPackedFld extends TransfProcessor implements Constants {
 	
-	private static final int[] masks =
-		{	0,
-			0x1       ,0x3       ,0x7       ,0xF       ,
-			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
-			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
-			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
-			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
-			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
-			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
-			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
-		};
-
+	private JavaPackedFldBackend javaBackend = new JavaPackedFldBackend();
+	
 	public ProcessPackedFld(Kiev.Ext ext) {
 		super(ext);
 	}
@@ -92,6 +62,31 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 			mp.packer = p;
 			assert( mp.offset >= 0 && mp.offset+mp.size <= 32 );
 		}
+	}
+	
+	public BackendProcessor getBackend(Kiev.Backend backend) {
+		if (backend == Kiev.Backend.Java15)
+			return javaBackend;
+		return null;
+	}
+	
+}
+
+final class JavaPackedFldBackend extends BackendProcessor implements Constants {
+	private static final int[] masks =
+		{	0,
+			0x1       ,0x3       ,0x7       ,0xF       ,
+			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
+			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
+			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
+			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
+			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
+			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
+			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
+		};
+
+	public JavaPackedFldBackend() {
+		super(Kiev.Backend.Java15);
 	}
 	
 	public void preGenerate(ASTNode:ASTNode node) {
@@ -174,7 +169,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 
 	public void rewriteNode(ASTNode fu) {
 		fu.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return ProcessPackedFld.this.rewrite(n); }
+			public boolean pre_exec(ASTNode n) { return JavaPackedFldBackend.this.rewrite(n); }
 		});
 	}
 	
@@ -386,4 +381,5 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}
+
 }

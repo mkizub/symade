@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.transf;
 
 import kiev.Kiev;
@@ -33,6 +13,8 @@ import static kiev.stdlib.Debug.*;
  */
 
 public final class ProcessVirtFld extends TransfProcessor implements Constants {
+	
+	private JavaVirtFldBackend javaBackend = new JavaVirtFldBackend();
 	
 	public ProcessVirtFld(Kiev.Ext ext) {
 		super(ext);
@@ -163,6 +145,21 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		f.acc.verifyAccessDecl(f);
 	}
 	
+	public BackendProcessor getBackend(Kiev.Backend backend) {
+		if (backend == Kiev.Backend.Java15)
+			return javaBackend;
+		return null;
+	}
+	
+}
+
+final class JavaVirtFldBackend extends BackendProcessor implements Constants {
+
+	public JavaVirtFldBackend() {
+		super(Kiev.Backend.Java15);
+	}
+	
+
 	////////////////////////////////////////////////////
 	//	   PASS - preGenerate                         //
 	////////////////////////////////////////////////////
@@ -328,7 +325,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 
 	public void rewriteNode(ASTNode node) {
 		node.walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { return ProcessVirtFld.this.rewrite(n); }
+			public boolean pre_exec(ASTNode n) { return JavaVirtFldBackend.this.rewrite(n); }
 		});
 	}
 	
@@ -528,4 +525,5 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 		if (o instanceof ThisExpr) return new ThisExpr(0);
 		throw new RuntimeException("Unknown accessor "+o);
 	}
+
 }

@@ -80,11 +80,7 @@ public class TransfProcessor {
 	///////////////////////////////////////////////////////////////////////
 	///////////////////////    Back-end    ////////////////////////////////
 	///////////////////////////////////////////////////////////////////////
-	// create back-end nodes
-	public void			preGenerate(ASTNode node)			{ return; }
-	// resolve back-end
-	public void			resolve(ASTNode node)				{ return; }
-	// generate back-end
-	public void			generate(ASTNode node)				{ return; }
+	
+	public BackendProcessor getBackend(Kiev.Backend backend) { return null; }
 }
 

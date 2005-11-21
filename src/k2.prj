@@ -1,6 +1,7 @@
 kiev.CError kiev/CError kiev\Errors.java
 kiev.Compiler kiev/Compiler kiev\Compiler.java
 kiev.Kiev kiev/Kiev kiev\Kiev.java
+kiev.Kiev.Backend kiev/Kiev$Backend kiev\Kiev.java
 kiev.Kiev.CompilationAbortError kiev/Kiev$CompilationAbortError kiev\Kiev.java
 kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
@@ -187,7 +188,12 @@ kiev.stdlib.meta.packer kiev/stdlib/meta/packer kiev\stdlib\meta\packed.java
 kiev.stdlib.meta.setter kiev/stdlib/meta/setter kiev\stdlib\meta\virtual.java
 kiev.stdlib.meta.throws kiev/stdlib/meta/throws kiev\stdlib\meta\throws.java
 kiev.stdlib.meta.virtual kiev/stdlib/meta/virtual kiev\stdlib\meta\virtual.java
+kiev.transf.BackendProcessor kiev/transf/BackendProcessor kiev\transf\BackendProcessor.java
 kiev.transf.ExportJavaTop kiev/transf/ExportJavaTop kiev\transf\ExportJavaTop.java
+kiev.transf.JavaBackend kiev/transf/JavaBackend kiev\transf\ExportJavaTop.java
+kiev.transf.JavaPackedFldBackend kiev/transf/JavaPackedFldBackend kiev\transf\ProcessPackedFld.java
+kiev.transf.JavaVirtFldBackend kiev/transf/JavaVirtFldBackend kiev\transf\ProcessVirtFld.java
+kiev.transf.PizzaCaseBackend kiev/transf/PizzaCaseBackend kiev\transf\ProcessPizzaCase.java
 kiev.transf.ProcessDFlow kiev/transf/ProcessDFlow kiev\transf\ProcessDFlow.java
 kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java
 kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java

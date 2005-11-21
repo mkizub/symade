@@ -87,11 +87,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	 */
 	public boolean						inlined_by_dispatcher;
 	
-	private boolean		invalid_types;
+	private boolean						invalid_types;
 	
 	@virtual public virtual abstract access:ro MethodType type; 
 	@virtual public virtual abstract access:ro MethodType jtype; 
 	@virtual public virtual abstract access:ro MethodType dtype; 
+	
+	/** JMethod for java backend */
+	//@ref public kiev.backend.java15.JMethod	jmethod;
 	
 	public Method() {
 	}

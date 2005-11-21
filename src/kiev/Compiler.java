@@ -662,49 +662,38 @@ public class Compiler {
 
 			Kiev.pass_no = TopLevelPass.passPreGenerate;
 			diff_time = curr_time = System.currentTimeMillis();
-			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.preGenerate(fu); });
+			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void {
+				BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+				if (bep != null) bep.preGenerate(fu);
+			});
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-generated",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
+			runGC();
 
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			for(int i=0; i < Kiev.files.length; i++) {
-				runGC();
-				try {
-					Kiev.files[i].resolveDecl();
-				} catch (Exception rte) {
-					Kiev.reportError(rte);
+				final int errCount = Kiev.errCount;
+				final FileUnit fu = Kiev.files[i];
+				if (Kiev.errCount == errCount) {
+					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
+						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+						if (bep != null) bep.resolve(fu);
+					});
 				}
-				runGC();
-				try {
-					ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
-					if (tp != null)
-						tp.rewriteNode(Kiev.files[i]);
-				} catch (Exception rte) {
-					Kiev.reportError(rte);
+				if (Kiev.errCount == errCount) {
+					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
+						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+						if (bep != null) bep.rewriteNode(fu);
+					});
 				}
-				try {
-					ProcessPackedFld tp = (ProcessPackedFld)Kiev.getProcessor(Kiev.Ext.PackedFields);
-					if (tp != null)
-						tp.rewriteNode(Kiev.files[i]);
-				} catch (Exception rte) {
-					Kiev.reportError(rte);
+				if (Kiev.errCount == errCount) {
+					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
+						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+						if (bep != null) bep.generate(fu);
+					});
 				}
-				runGC();
-				if( Kiev.source_only ) {
-					if( Kiev.output_dir == null )
-						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+args[i]);
-					else
-						if( Kiev.verbose ) System.out.println("Dumping to Java source file "+args[i]+" into "+Kiev.output_dir+" dir");
-					try {
-						Kiev.files[i].toJava(Kiev.output_dir);
-					} catch (Exception rte) { Kiev.reportError(rte); }
-				} else {
-					try {
-						Kiev.files[i].generate();
-					} catch (Exception rte) { Kiev.reportError(rte); }
-				}
-				Kiev.files[i].cleanup();
+				fu.cleanup();
 				Kiev.files[i] = null;
 				runGC();
 			}

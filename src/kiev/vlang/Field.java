@@ -56,6 +56,9 @@ public class Field extends DNode implements Named, Typed, Accessable {
 
 	@ref public abstract virtual access:ro Type	type;
 	
+	/** JField for java backend */
+	//@ref public kiev.backend.java15.JField			jfield;
+
 	public Field() {
 	}
 	

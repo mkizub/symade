@@ -332,12 +332,9 @@ public abstract class ASTRuleNode extends ENode {
 	@getter public int get$idx() { return idx; }
 	@setter public void set$idx(int i) { idx = i; }
 
-	public boolean preGenerate() {
-		throw new CompilerException(this,"preGenerate of ASTRuleNode");
-	}
-	public void resolve(Type tp) {
-		throw new CompilerException(this,"Resolving of ASTRuleNode");
-	}
+	public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
+	
+	public void resolve(Type tp) { Kiev.reportError(this,"Resolving of ASTRuleNode"); }
 
 	public String createTextUnification(LVarExpr var) {
 		return "if( "+createTextVarAccess(var)+".$is_bound ) goto bound$"+idx+";\n";
