@@ -33,8 +33,8 @@ import static kiev.vlang.Instr.*;
  */
 
 public interface IBoolExpr {
-	public abstract void generate_iftrue(CodeLabel label);
-	public abstract void generate_iffalse(CodeLabel label);
+	public abstract void generate_iftrue(Code code, CodeLabel label);
+	public abstract void generate_iffalse(Code code, CodeLabel label);
 }
 
 @node
@@ -46,23 +46,23 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 
 	public Type getType() { return Type.tpBoolean; }
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);
-		Code.setLinePos(this.getPosLine());
-		CodeLabel label_true = Code.newLabel();
-		CodeLabel label_false = Code.newLabel();
+		code.setLinePos(this.getPosLine());
+		CodeLabel label_true = code.newLabel();
+		CodeLabel label_false = code.newLabel();
 
-		generate_iftrue(label_true);
-		Code.addConst(0);
-		Code.addInstr(Instr.op_goto,label_false);
-		Code.addInstr(Instr.set_label,label_true);
-		Code.addConst(1);
-		Code.addInstr(Instr.set_label,label_false);
-		if( reqType == Type.tpVoid ) Code.addInstr(Instr.op_pop);
+		generate_iftrue(code,label_true);
+		code.addConst(0);
+		code.addInstr(Instr.op_goto,label_false);
+		code.addInstr(Instr.set_label,label_true);
+		code.addConst(1);
+		code.addInstr(Instr.set_label,label_false);
+		if( reqType == Type.tpVoid ) code.addInstr(Instr.op_pop);
 	}
 
-	public abstract void generate_iftrue(CodeLabel label);
-	public abstract void generate_iffalse(CodeLabel label);
+	public abstract void generate_iftrue(Code code, CodeLabel label);
+	public abstract void generate_iffalse(Code code, CodeLabel label);
 	
 	public static void checkBool(ENode e) {
 		if( e.getType().isBoolean() ) {
@@ -85,13 +85,13 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 		throw new RuntimeException("Expression "+e+" must be of boolean type, but found "+e.getType());
 	}
 	
-	public static void gen_iftrue(ENode expr, CodeLabel label) {
+	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iftrue(label);
+			((IBoolExpr)expr).generate_iftrue(code,label);
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if true): "+expr);
-		Code.setLinePos(expr.getPosLine());
+		code.setLinePos(expr.getPosLine());
 		if( expr.getType().isBoolean() ) {
 			boolean optimized = false;
 			if( expr instanceof BinaryExpr ) {
@@ -101,28 +101,28 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 					if( ((Number)ce).intValue() == 0 ) {
 						optimized = true;
 						if( be.op == BinaryOperator.LessThen ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_ifge,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_ifge,label);
 						}
 						else if( be.op == BinaryOperator.LessEquals ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_ifgt,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_ifgt,label);
 						}
 						else if( be.op == BinaryOperator.GreaterThen ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_ifle,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_ifle,label);
 						}
 						else if( be.op == BinaryOperator.GreaterEquals ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_iflt,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_iflt,label);
 						}
 						else if( be.op == BinaryOperator.Equals ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_ifne,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_ifne,label);
 						}
 						else if( be.op == BinaryOperator.NotEquals ) {
-							be.expr1.generate(null);
-							Code.addInstr(Instr.op_ifeq,label);
+							be.expr1.generate(code,null);
+							code.addInstr(Instr.op_ifeq,label);
 						}
 						else {
 							optimized = false;
@@ -131,24 +131,24 @@ public abstract class BoolExpr extends Expr implements IBoolExpr {
 				}
 			}
 			if( !optimized ) {
-				expr.generate(Type.tpBoolean);
-				Code.addInstr(Instr.op_ifne,label);
+				expr.generate(code,Type.tpBoolean);
+				code.addInstr(Instr.op_ifne,label);
 			}
 		}
 		else
 			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
 	}
 
-	public static void gen_iffalse(ENode expr, CodeLabel label) {
+	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iffalse(label);
+			((IBoolExpr)expr).generate_iffalse(code, label);
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if false): "+expr);
-		Code.setLinePos(expr.getPosLine());
+		code.setLinePos(expr.getPosLine());
 		if( expr.getType().isBoolean() ) {
-			expr.generate(Type.tpBoolean);
-			Code.addInstr(Instr.op_ifeq,label);
+			expr.generate(code,Type.tpBoolean);
+			code.addInstr(Instr.op_ifeq,label);
 		}
 		else
 			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
@@ -204,20 +204,20 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		Code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iftrue(expr1, label);
-		BoolExpr.gen_iftrue(expr2, label);
+		code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iftrue(code, expr1, label);
+		BoolExpr.gen_iftrue(code, expr2, label);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		Code.setLinePos(this.getPosLine());
-		CodeLabel label1 = Code.newLabel();
-		BoolExpr.gen_iftrue(expr1, label1);
-		BoolExpr.gen_iffalse(expr2, label);
-		Code.addInstr(Instr.set_label,label1);
+		code.setLinePos(this.getPosLine());
+		CodeLabel label1 = code.newLabel();
+		BoolExpr.gen_iftrue(code, expr1, label1);
+		BoolExpr.gen_iffalse(code, expr2, label);
+		code.addInstr(Instr.set_label,label1);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -279,20 +279,20 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		Code.setLinePos(this.getPosLine());
-		CodeLabel label1 = Code.newLabel();
-		BoolExpr.gen_iffalse(expr1, label1);
-		BoolExpr.gen_iftrue(expr2, label);
-		Code.addInstr(Instr.set_label,label1);
+		code.setLinePos(this.getPosLine());
+		CodeLabel label1 = code.newLabel();
+		BoolExpr.gen_iffalse(code, expr1, label1);
+		BoolExpr.gen_iftrue(code, expr2, label);
+		code.addInstr(Instr.set_label,label1);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		Code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iffalse(expr1, label);
-		BoolExpr.gen_iffalse(expr2, label);
+		code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iffalse(code, expr1, label);
+		BoolExpr.gen_iffalse(code, expr2, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -498,106 +498,106 @@ public class BinaryBoolExpr extends BoolExpr {
 		return this;
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( expr2 instanceof ConstExpr ) {
 			ConstExpr ce = (ConstExpr)expr2;
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
-				expr1.generate(Type.tpBoolean);
-				if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnull,label);
-				else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnonnull,label);
+				expr1.generate(code,Type.tpBoolean);
+				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnull,label);
+				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnonnull,label);
 				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
 				return;
 			}
 			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-				expr1.generate(Type.tpBoolean);
+				expr1.generate(code,Type.tpBoolean);
 				if( op == BinaryOperator.Equals ) {
-					Code.addInstr(Instr.op_ifeq,label);
+					code.addInstr(Instr.op_ifeq,label);
 					return;
 				}
 				else if( op == BinaryOperator.NotEquals ) {
-					Code.addInstr(Instr.op_ifne,label);
+					code.addInstr(Instr.op_ifne,label);
 					return;
 				}
 				else if( op == BinaryOperator.LessThen ) {
-					Code.addInstr(Instr.op_iflt,label);
+					code.addInstr(Instr.op_iflt,label);
 					return;
 				}
 				else if( op == BinaryOperator.LessEquals ) {
-					Code.addInstr(Instr.op_ifle,label);
+					code.addInstr(Instr.op_ifle,label);
 					return;
 				}
 				else if( op == BinaryOperator.GreaterThen ) {
-					Code.addInstr(Instr.op_ifgt,label);
+					code.addInstr(Instr.op_ifgt,label);
 					return;
 				}
 				else if( op == BinaryOperator.GreaterEquals ) {
-					Code.addInstr(Instr.op_ifge,label);
+					code.addInstr(Instr.op_ifge,label);
 					return;
 				}
 			}
 		}
-		expr1.generate(Type.tpBoolean);
-		expr2.generate(Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmplt,label);
-		else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmpge,label);
+		expr1.generate(code,Type.tpBoolean);
+		expr2.generate(code,Type.tpBoolean);
+		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmplt,label);
+		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmple,label);
+		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmpge,label);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if false): "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( expr2 instanceof ConstExpr ) {
 			ConstExpr ce = (ConstExpr)expr2;
 			Object cv = ce.getConstValue();
 			if( cv == null ) {
-				expr1.generate(Type.tpBoolean);
-				if( op == BinaryOperator.Equals) Code.addInstr(Instr.op_ifnonnull,label);
-				else if( op == BinaryOperator.NotEquals ) Code.addInstr(Instr.op_ifnull,label);
+				expr1.generate(code,Type.tpBoolean);
+				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnonnull,label);
+				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnull,label);
 				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
 				return;
 			}
 			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-				expr1.generate(Type.tpBoolean);
+				expr1.generate(code,Type.tpBoolean);
 				if( op == BinaryOperator.Equals ) {
-					Code.addInstr(Instr.op_ifne,label);
+					code.addInstr(Instr.op_ifne,label);
 					return;
 				}
 				else if( op == BinaryOperator.NotEquals ) {
-					Code.addInstr(Instr.op_ifeq,label);
+					code.addInstr(Instr.op_ifeq,label);
 					return;
 				}
 				else if( op == BinaryOperator.LessThen ) {
-					Code.addInstr(Instr.op_ifge,label);
+					code.addInstr(Instr.op_ifge,label);
 					return;
 				}
 				else if( op == BinaryOperator.LessEquals ) {
-					Code.addInstr(Instr.op_ifgt,label);
+					code.addInstr(Instr.op_ifgt,label);
 					return;
 				}
 				else if( op == BinaryOperator.GreaterThen ) {
-					Code.addInstr(Instr.op_ifle,label);
+					code.addInstr(Instr.op_ifle,label);
 					return;
 				}
 				else if( op == BinaryOperator.GreaterEquals ) {
-					Code.addInstr(Instr.op_iflt,label);
+					code.addInstr(Instr.op_iflt,label);
 					return;
 				}
 			}
 		}
-		expr1.generate(Type.tpBoolean);
-		expr2.generate(Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				Code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.NotEquals )		Code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.LessThen )		Code.addInstr(Instr.op_ifcmpge,label);
-		else if( op == BinaryOperator.LessEquals )	Code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterThen )	Code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterEquals )	Code.addInstr(Instr.op_ifcmplt,label);
+		expr1.generate(code,Type.tpBoolean);
+		expr2.generate(code,Type.tpBoolean);
+		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpne,label);
+		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpeq,label);
+		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmpge,label);
+		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmpgt,label);
+		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmple,label);
+		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmplt,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -726,20 +726,20 @@ public class InstanceofExpr extends BoolExpr {
 		return dfs;
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		Code.setLinePos(this.getPosLine());
-		expr.generate(Type.tpBoolean);
-		Code.addInstr(Instr.op_instanceof,type.getType());
-		Code.addInstr(Instr.op_ifne,label);
+		code.setLinePos(this.getPosLine());
+		expr.generate(code,Type.tpBoolean);
+		code.addInstr(Instr.op_instanceof,type.getType());
+		code.addInstr(Instr.op_ifne,label);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		Code.setLinePos(this.getPosLine());
-		expr.generate(Type.tpBoolean);
-		Code.addInstr(Instr.op_instanceof,type.getType());
-		Code.addInstr(Instr.op_ifeq,label);
+		code.setLinePos(this.getPosLine());
+		expr.generate(code,Type.tpBoolean);
+		code.addInstr(Instr.op_instanceof,type.getType());
+		code.addInstr(Instr.op_ifeq,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -785,16 +785,16 @@ public class BooleanNotExpr extends BoolExpr {
 		return;
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);
-		Code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iffalse(expr, label);
+		code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iffalse(code, expr, label);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if false): "+this);
-		Code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iftrue(expr, label);
+		code.setLinePos(this.getPosLine());
+		BoolExpr.gen_iftrue(code, expr, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

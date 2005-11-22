@@ -23,10 +23,10 @@ options {
 //  DEBUG_LOOKAHEAD = true;
 //  DEBUG_TOKEN_MANAGER = true;
 //  BUILD_PARSER = false;
-  JAVA_UNICODE_ESCAPE = true;
+//  JAVA_UNICODE_ESCAPE = true;
 //  UNICODE_INPUT = true;
 //  USER_CHAR_STREAM = true;
-  STATIC = true;
+  STATIC = false;
   ERROR_REPORTING = false;
   CACHE_TOKENS = true;
 }
@@ -38,6 +38,7 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.Kiev.Ext;
 import kiev.vlang.*;
+import java.io.Reader;
 
 /*{
 
@@ -48,20 +49,36 @@ typedef NArr<ENode> NArrENodes;
 
 }*/ 
 
-public class kiev040 {
+public final class Parser extends kiev040 {
+	public Parser(Reader r) {
+		super(r,1,1);
+	}
+}
 
-	public static FileUnit	curFileUnit;
-	public static Struct	curClazz;
-	public static Method	curMethod;
-	public static boolean	interface_only = false;
-	public static boolean	reparse_body = false;
-	public static int		reparse_pos = 0;
-	public static PreScanneable		presc = null;
+public interface ParserConstants extends kiev040Constants {
+}
 
-	public static boolean	declMode = true;
+public abstract class kiev040 {
 
-    /** Report Parser Error (Exception) */
-	public static void rpe(String msg, ParseError e) {
+	public FileUnit			curFileUnit;
+	public Struct			curClazz;
+	public Method			curMethod;
+	public boolean			interface_only = false;
+	public boolean			reparse_body = false;
+	public int				reparse_pos = 0;
+	public PreScanneable	presc = null;
+
+	public boolean			declMode = true;
+
+	public kiev040(java.io.Reader stream, int line, int pos) {
+		jj_input_stream = new SimpleCharStream(stream, line, pos);
+		token_source = new kiev040TokenManager(jj_input_stream, this);
+		token = new Token();
+		token.next = jj_nt = token_source.getNextToken();
+	}
+
+	/** Report Parser Error (Exception) */
+	private void rpe(String msg, ParseError e) {
 		int pos;
 		if( token==null ) pos = 0;
 		else if( token.next==null ) pos = token.getPos();
@@ -74,7 +91,7 @@ public class kiev040 {
 	}
 
     /** Report other Error (Exception) */
-	public static void rperr(Throwable e) throws Throwable {
+	private void rperr(Throwable e) throws Throwable {
 		int pos;
 		if( token==null ) pos = 0;
 		else if( token.next==null ) pos = token.getPos();
@@ -87,15 +104,15 @@ public class kiev040 {
 		throw e;
 	}
 
-	private static boolean checkNoSpace(Token t1, Token t2) {
+	private boolean checkNoSpace(Token t1, Token t2) {
 		return t1.endLine == t2.beginLine && t1.endColumn+1 == t2.beginColumn;
 	}
 
-	public static final int[] noColonTokenSet = new int[]{COLON};
+	private static final int[] noColonTokenSet = new int[]{COLON};
 
-	public static int[] no_tokens;
+	private int[] no_tokens;
 
-	private static boolean notAToken(Token t) {
+	private boolean notAToken(Token t) {
 		if( no_tokens == null ) return true;
 		for(int i=0; i < no_tokens.length; i++) {
 			if( t.kind == no_tokens[i] ) return false;
@@ -103,7 +120,7 @@ public class kiev040 {
 		return true;
 	}
 
-	private static boolean labledStatementLA() {
+	private boolean labledStatementLA() {
 		for(int idx=1; ;idx+=2) {
 			if (getToken(idx).kind != IDENTIFIER || getToken(idx+1).kind != COLON)
 				return false;
@@ -130,7 +147,7 @@ public class kiev040 {
 		}
 	}
 
-	private static boolean operatorLA(int tk) {
+	private boolean operatorLA(int tk) {
 		switch( getToken(tk).kind ) {
 		case ASSIGN:
 		case ASSIGN2:
@@ -179,7 +196,7 @@ public class kiev040 {
 		return false;
 	}
 
-	private static boolean maybeCastLA_Start() {
+	private boolean maybeCastLA_Start() {
 		int i = 1;
 		Token t = getToken(i);
 		if (t.kind == IDENTIFIER) {
@@ -202,7 +219,7 @@ public class kiev040 {
 	}
 
 	/*{
-	private static Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
+	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		ClazzName clname;
 		if (parent instanceof FileUnit) {
 			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
@@ -245,7 +262,7 @@ public class kiev040 {
 		return clazz;
 	}
 
-	private static TypeArgRef mkTypeArgRef(NameRef name, ASTNode parent) {
+	private TypeArgRef mkTypeArgRef(NameRef name, ASTNode parent) {
 		TypeArgRef arg = new TypeArgRef(name);
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
@@ -257,7 +274,7 @@ public class kiev040 {
 		return arg;
 	}
 
-	private static Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
+	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
 		TypeCallRef tc = new TypeCallRef();
 		tc.ret = new TypeRef(Type.tpVoid);
 		Constructor meth = new Constructor(tc, modifiers.getFlags());
@@ -268,7 +285,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
+	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
 		tc.ret = ret;
 		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
@@ -279,7 +296,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
+	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
 		TypeCallRef tc = new TypeCallRef();
 		if (ret == null)
 			tc.ret = new TypeRef(Type.tpVoid);
@@ -293,7 +310,7 @@ public class kiev040 {
 		return meth;
 	}
 	
-	private static Field mkField(NameRef id, ASTModifiers modifiers, TypeRef type, boolean first) {
+	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef type, boolean first) {
 		if (!first)
 			type = (TypeRef)type.copy();
 		Field f = new Field(id.name,type,modifiers.getFlags());
@@ -313,7 +330,7 @@ public class kiev040 {
 		return f;
 	}
 
-	private static Field mkEnumField(NameRef id, ASTModifiers modifiers) {
+	private Field mkEnumField(NameRef id, ASTModifiers modifiers) {
 		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
@@ -322,7 +339,7 @@ public class kiev040 {
 		return f;
 	}
 
-	private static Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
+	private Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
 		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
 		f.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
@@ -330,7 +347,7 @@ public class kiev040 {
 		return f;
 	}
 	
-	private static Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
+	private Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
 			tp = (TypeRef)tp.copy();
 		Var v = new Var(id, tp, modifiers.getFlags());
@@ -347,7 +364,7 @@ public class kiev040 {
 		return v;
 	}
 	
-	private static FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
+	private FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
 		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, modifiers.getFlags());
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
@@ -357,7 +374,7 @@ public class kiev040 {
 		return v;
 	}
 	
-	private static ENode mkNotExpr(ASTOperator not, ENode cond) {
+	private ENode mkNotExpr(ASTOperator not, ENode cond) {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
 		e.nodes.append(not);
@@ -375,7 +392,14 @@ PARSER_END(kiev040)
 
 TOKEN_MGR_DECLS :
 {
-  static int skip_depth = 0;
+	final kiev040 parser;
+	public kiev040TokenManager(SimpleCharStream stream, kiev040 parser)
+	{
+		if (SimpleCharStream.staticFlag)
+			throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
+		this.parser = parser;
+		this.input_stream = stream;
+	}
 }
 
 <DEFAULT,IN_PRAGMA>
@@ -483,39 +507,39 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 //| < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < ARROW: "->" >
 | < FUNCTION: "fun" >
-| < VIRTUAL: "virtual" > { if(Kiev.javaMode || Kiev.disabled(Ext.VirtualFields) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < VIRTUAL: "virtual" > { if(Kiev.javaMode || Kiev.disabled(Ext.VirtualFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 | < VARARGS: "..." >
-| < FORWARD: "forward" > { if(Kiev.javaMode || Kiev.disabled(Ext.Forward) /*|| !kiev040.declMode*/) matchedToken.kind=IDENTIFIER; }
+| < FORWARD: "forward" > { if(Kiev.javaMode || Kiev.disabled(Ext.Forward) /*|| !parser.declMode*/) matchedToken.kind=IDENTIFIER; }
 | < RULE: "rule" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
 | < PCUT: "$cut" > { if(Kiev.javaMode || Kiev.disabled(Ext.Logic) ) matchedToken.kind=IDENTIFIER; }
 | < CAST: "$cast" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < REINTERP: "$reinterp" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
-| < ALIAS: "alias" > { if(Kiev.javaMode || Kiev.disabled(Ext.Alias)  || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < ALIAS: "alias" > { if(Kiev.javaMode || Kiev.disabled(Ext.Alias)  || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 | < OPERATOR_ID: "operator" > { if(Kiev.javaMode || Kiev.disabled(Ext.Operator) ) matchedToken.kind=IDENTIFIER; }
-| < TYPEDEF: "typedef" > { if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < TYPEDEF: "typedef" > { if(Kiev.javaMode || Kiev.disabled(Ext.Typedef)  || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 | < ENUM: "enum" >
 
-| < REQUIRE: "require" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
-| < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
-| < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < REQUIRE: "require" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < ENSURE: "ensure" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
-| < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+| < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+| < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
-< ACCESS: "access:" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+< ACCESS: "access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
 }
 
 <IN_ACCESS>
 TOKEN :
 {
-   < READ_ONLY: "ro" | "r" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
- | < WRITE_ONLY: "wo" | "w"> { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
- | < READ_WRITE: "rw" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
- | < NO_READ_WRITE: "n" | "no" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; }
+   < READ_ONLY: "ro" | "r" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < WRITE_ONLY: "wo" | "w"> { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < READ_WRITE: "rw" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
+ | < NO_READ_WRITE: "n" | "no" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
  | < COMMA1: "," >
 }
 <IN_ACCESS>
@@ -531,13 +555,13 @@ SKIP :
 
 TOKEN :
 {
-< PRAGMA: "pragma" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; } : IN_PRAGMA
+< PRAGMA: "pragma" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_PRAGMA
 }
 <IN_PRAGMA>
 TOKEN :
 {
-   < PRAGMA_ENABLE:  "enable" > { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
- | < PRAGMA_DISABLE: "disable"> { if(Kiev.javaMode || !kiev040.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
+   < PRAGMA_ENABLE:  "enable" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
+ | < PRAGMA_DISABLE: "disable"> { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : DEFAULT
 }
 
 

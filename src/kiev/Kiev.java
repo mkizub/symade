@@ -206,11 +206,11 @@ public final class Kiev {
 		}
 	}
 
-	public static void reportCodeWarning(String msg) {
+	public static void reportCodeWarning(Code code, String msg) {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(Code.last_lineno<<11, Code.clazz.pctx.file_unit, Code.clazz, Code.method, SeverError.Warning, msg);
+		report(code.last_lineno<<11, code.clazz.pctx.file_unit, code.clazz, code.method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {
@@ -339,7 +339,7 @@ public final class Kiev {
 	public static int    testErrorOffs		= 0;
 
 	// Scanning & parsing
-	public static kiev040				k;
+	public static Parser				k;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
 
@@ -427,7 +427,7 @@ public final class Kiev {
 		} finally {
 			file_reader.close();
 		}
-		kiev040.interface_only = false;
+		Kiev.k.interface_only = false;
 		try {
 			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
 			Kiev.k.ReInit(bis);

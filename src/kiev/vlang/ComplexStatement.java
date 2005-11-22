@@ -210,15 +210,15 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public CodeLabel getLabel() {
-		if( case_label == null ) case_label = Code.newLabel();
+	public CodeLabel getLabel(Code code) {
+		if (case_label == null || case_label.code != code) case_label = code.newLabel();
 		return case_label;
 	}
 
-	public void generate(Type reqType) {
-		case_label = getLabel();
+	public void generate(Code code, Type reqType) {
+		case_label = getLabel(code);
 		try {
-			Code.addInstr(Instr.set_label,case_label);
+			code.addInstr(Instr.set_label,case_label);
 			if( val == null ) ((SwitchStat)parent).cosw.addDefault(case_label);
 			else {
 				Object v = ((Expr)val).getConstValue();
@@ -235,18 +235,18 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			vars = new Vector<Var>();
 			foreach (Var p; pattern; p.vtype != null && !(p.name.name.len == 1 && p.name.name.byteAt(0) == '_')) {
 				vars.append(p);
-				p.generate(Type.tpVoid);
+				p.generate(code,Type.tpVoid);
 			}
 		}
 		for(int i=0; i < stats.length; i++) {
 			try {
-				stats[i].generate(Type.tpVoid);
+				stats[i].generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}
 		}
 		if (vars != null)
-			Code.removeVars(vars.toArray());
+			code.removeVars(vars.toArray());
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -533,7 +533,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 		return lblbrk;
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		int lo = Integer.MAX_VALUE;
 		int hi = Integer.MIN_VALUE;
 
@@ -566,35 +566,35 @@ public class SwitchStat extends Statement implements BreakTarget {
 
 		try {
 			if( mode == TYPE_SWITCH ) {
-				lblcnt.generate(null);
-				sel.generate(null);
+				lblcnt.generate(code,null);
+				sel.generate(code,null);
 			} else {
-				sel.generate(null);
-				lblcnt.generate(null);
+				sel.generate(code,null);
+				lblcnt.generate(code,null);
 			}
 			if( tabswitch ) {
-				cosw = Code.newTableSwitch(lo,hi);
-				Code.addInstr(Instr.op_tableswitch,cosw);
+				cosw = code.newTableSwitch(lo,hi);
+				code.addInstr(Instr.op_tableswitch,cosw);
 			} else {
 				qsort(tags,0,tags.length-1);
-				cosw = Code.newLookupSwitch(tags);
-				Code.addInstr(Instr.op_lookupswitch,cosw);
+				cosw = code.newLookupSwitch(tags);
+				code.addInstr(Instr.op_lookupswitch,cosw);
 			}
 			
 			for(int i=0; i < cases.length; i++) {
 				if( isAutoReturnable() )
 					cases[i].setAutoReturnable(true);
-				((CaseLabel)cases[i]).generate(Type.tpVoid);
+				((CaseLabel)cases[i]).generate(code,Type.tpVoid);
 			}
 			Vector<Var> vars = new Vector<Var>();
 			for(int i=0; i < cases.length; i++) {
 				foreach (ENode n; cases[i].stats; n instanceof VarDecl)
 					vars.append(((VarDecl)n).var);
 			}
-			Code.removeVars(vars.toArray());
+			code.removeVars(vars.toArray());
 
-			lblbrk.generate(null);
-			Code.addInstr(Instr.switch_close,cosw);
+			lblbrk.generate(code,null);
+			code.addInstr(Instr.switch_close,cosw);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
@@ -673,28 +673,28 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		}
 	}
 
-	public void generate(Type reqType) {
-		Code.addVar(arg);
+	public void generate(Code code, Type reqType) {
+		code.addVar(arg);
 		try {
 			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.enter_catch_handler,code_catcher);
-			Code.addInstr(Instr.op_store,arg);
-			body.generate(Type.tpVoid);
+			code.addInstr(Instr.enter_catch_handler,code_catcher);
+			code.addInstr(Instr.op_store,arg);
+			body.generate(code,Type.tpVoid);
 			if( !body.isMethodAbrupted() ) {
 				if( ((TryStat)parent).finally_catcher != null ) {
-					Code.addInstr(Instr.op_jsr,
+					code.addInstr(Instr.op_jsr,
 						((FinallyInfo)((TryStat)parent).finally_catcher).subr_label);
 				}
 				if( isAutoReturnable() )
-					ReturnStat.generateReturn(this);
+					ReturnStat.generateReturn(code,this);
 				else
-					Code.addInstr(Instr.op_goto,((TryStat)parent).end_label);
+					code.addInstr(Instr.op_goto,((TryStat)parent).end_label);
 			}
-			Code.addInstr(Instr.exit_catch_handler,code_catcher);
+			code.addInstr(Instr.exit_catch_handler,code_catcher);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		} finally {
-			Code.removeVar(arg);
+			code.removeVar(arg);
 		}
 	}
 
@@ -730,28 +730,28 @@ public class FinallyInfo extends CatchInfo {
 		super.resolve(reqType);
 	}
 	
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		try {
 			CodeCatchInfo null_ci = null;
 			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.set_label,handler);
-			Code.addInstr(Instr.enter_catch_handler,null_ci);
-			Code.addVar(arg);
-			Code.addInstr(Instr.op_store,arg);
-			Code.addInstr(Instr.op_jsr,subr_label);
-			Code.addInstr(Instr.op_load,arg);
-			Code.addInstr(Instr.op_throw);
-			Code.addInstr(Instr.exit_catch_handler,null_ci);
+			code.addInstr(Instr.set_label,handler);
+			code.addInstr(Instr.enter_catch_handler,null_ci);
+			code.addVar(arg);
+			code.addInstr(Instr.op_store,arg);
+			code.addInstr(Instr.op_jsr,subr_label);
+			code.addInstr(Instr.op_load,arg);
+			code.addInstr(Instr.op_throw);
+			code.addInstr(Instr.exit_catch_handler,null_ci);
 
 			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.set_label,subr_label);
-			Code.addInstr(Instr.enter_catch_handler,null_ci);
-			Code.addInstr(Instr.op_store,ret_arg);
+			code.addInstr(Instr.set_label,subr_label);
+			code.addInstr(Instr.enter_catch_handler,null_ci);
+			code.addInstr(Instr.op_store,ret_arg);
 
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.op_ret,ret_arg);
+			body.generate(code,Type.tpVoid);
+			code.addInstr(Instr.op_ret,ret_arg);
 		} catch(Exception e ) { Kiev.reportError(this,e);
-		} finally { Code.removeVar(arg); }
+		} finally { code.removeVar(arg); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -823,65 +823,65 @@ public class TryStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		// Generate labels for handlers
 		if(finally_catcher != null) {
-			Code.addVar(finally_catcher.ret_arg);
-			finally_catcher.handler = Code.newLabel();
-			finally_catcher.subr_label = Code.newLabel();
+			code.addVar(finally_catcher.ret_arg);
+			finally_catcher.handler = code.newLabel();
+			finally_catcher.subr_label = code.newLabel();
 			finally_catcher.subr_label.check = false;
-			finally_catcher.code_catcher = Code.newCatcher(finally_catcher.handler,null);
-			Code.addInstr(Instr.start_catcher,finally_catcher.code_catcher);
+			finally_catcher.code_catcher = code.newCatcher(finally_catcher.handler,null);
+			code.addInstr(Instr.start_catcher,finally_catcher.code_catcher);
 		}
 		for(int i= catchers.length-1; i >= 0 ; i--) {
-			catchers[i].handler = Code.newLabel();
-			catchers[i].code_catcher = Code.newCatcher(catchers[i].handler,catchers[i].arg.type);
-			Code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
+			catchers[i].handler = code.newLabel();
+			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.type);
+			code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
 		}
-		end_label = Code.newLabel();
+		end_label = code.newLabel();
 
 		try {
 			try {
 				if( isAutoReturnable() )
 					body.setAutoReturnable(true);
-				body.generate(Type.tpVoid);
+				body.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() ) {
-					ReturnStat.generateReturn(this);
+					ReturnStat.generateReturn(code,this);
 				} else {
 					if( finally_catcher != null )
-						Code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
-					Code.addInstr(Instr.op_goto,end_label);
+						code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
+					code.addInstr(Instr.op_goto,end_label);
 				}
 			}
 			for(int i=0; i < catchers.length; i++) {
-				Code.addInstr(Instr.stop_catcher,catchers[i].code_catcher);
+				code.addInstr(Instr.stop_catcher,catchers[i].code_catcher);
 			}
 
 			for(int i=0; i < catchers.length; i++) {
 				if( isAutoReturnable() )
 					catchers[i].setAutoReturnable(true);
 				try {
-					catchers[i].generate(Type.tpVoid);
+					catchers[i].generate(code,Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(catchers[i],e);
 				}
 			}
 			if(finally_catcher != null) {
 				try {
-					Code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
-					finally_catcher.generate(Type.tpVoid);
+					code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
+					finally_catcher.generate(code,Type.tpVoid);
 				} catch(Exception e ) {
 					Kiev.reportError(finally_catcher,e);
 				}
 			}
-			Code.addInstr(Instr.set_label,end_label);
+			code.addInstr(Instr.set_label,end_label);
 		} finally {
 			if(finally_catcher != null)
-				Code.removeVar(finally_catcher.ret_arg);
+				code.removeVar(finally_catcher.ret_arg);
 		}
 	}
 
@@ -929,44 +929,44 @@ public class SynchronizedStat extends Statement {
 		setMethodAbrupted(body.isMethodAbrupted());
 	}
 
-	public void generate(Type reqType) {
-		expr.generate(null);
+	public void generate(Code code, Type reqType) {
+		expr.generate(code,null);
 		try {
-			Code.addVar(expr_var);
-			Code.addInstr(Instr.op_dup);
-			Code.addInstr(Instr.op_store,expr_var);
-			Code.addInstr(Instr.op_monitorenter);
-			handler = Code.newLabel();
-			end_label = Code.newLabel();
-			code_catcher = Code.newCatcher(handler,null);
-			Code.addInstr(Instr.start_catcher,code_catcher);
+			code.addVar(expr_var);
+			code.addInstr(Instr.op_dup);
+			code.addInstr(Instr.op_store,expr_var);
+			code.addInstr(Instr.op_monitorenter);
+			handler = code.newLabel();
+			end_label = code.newLabel();
+			code_catcher = code.newCatcher(handler,null);
+			code.addInstr(Instr.start_catcher,code_catcher);
 			try {
 				if( isAutoReturnable() )
 					body.setAutoReturnable(true);
-				body.generate(Type.tpVoid);
+				body.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
 			}
-			Code.addInstr(Instr.stop_catcher,code_catcher);
+			code.addInstr(Instr.stop_catcher,code_catcher);
 			if( !body.isMethodAbrupted() ) {
 				if( isAutoReturnable() )
-					ReturnStat.generateReturn(this);
+					ReturnStat.generateReturn(code,this);
 				else {
-					Code.addInstr(Instr.op_load,expr_var);
-					Code.addInstr(Instr.op_monitorexit);
-					Code.addInstr(Instr.op_goto,end_label);
+					code.addInstr(Instr.op_load,expr_var);
+					code.addInstr(Instr.op_monitorexit);
+					code.addInstr(Instr.op_goto,end_label);
 				}
 			}
 
-			Code.addInstr(Instr.set_label,handler);
-			Code.stack_push(Type.tpThrowable);
-			Code.addInstr(Instr.op_load,expr_var);
-			Code.addInstr(Instr.op_monitorexit);
-			Code.addInstr(Instr.op_throw);
+			code.addInstr(Instr.set_label,handler);
+			code.stack_push(Type.tpThrowable);
+			code.addInstr(Instr.op_load,expr_var);
+			code.addInstr(Instr.op_monitorexit);
+			code.addInstr(Instr.op_throw);
 
-			Code.addInstr(Instr.set_label,end_label);
+			code.addInstr(Instr.set_label,end_label);
 		} finally {
-			Code.removeVar(expr_var);
+			code.removeVar(expr_var);
 		}
 	}
 
@@ -1032,23 +1032,23 @@ public class WithStat extends Statement {
 		setMethodAbrupted(body.isMethodAbrupted());
 	}
 
-	public void generate(Type reqType) {
-		end_label = Code.newLabel();
+	public void generate(Code code, Type reqType) {
+		end_label = code.newLabel();
 		try {
 			if (expr instanceof AssignExpr)
-				expr.generate(Type.tpVoid);
+				expr.generate(code,Type.tpVoid);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
+			body.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
 		if( !body.isMethodAbrupted() ) {
 			if( isAutoReturnable() )
-				ReturnStat.generateReturn(this);
+				ReturnStat.generateReturn(code,this);
 		}
 
-		Code.addInstr(Instr.set_label,end_label);
+		code.addInstr(Instr.set_label,end_label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

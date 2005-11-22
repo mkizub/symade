@@ -111,13 +111,12 @@ public class Label extends DNode {
 		return new LabelDFFunc(dfi);
 	}
 
-	public CodeLabel getCodeLabel() {
-		if( label == null ) label = Code.newLabel();
+	public CodeLabel getCodeLabel(Code code) {
+		if( label == null  || label.code != code) label = code.newLabel();
 		return label;
 	}
-	public void generate(Type reqType) {
-		if( label == null ) label = Code.newLabel();
-		Code.addInstr(Instr.set_label,getCodeLabel());
+	public void generate(Code code, Type reqType) {
+		code.addInstr(Instr.set_label,getCodeLabel(code));
 	}
 }
 
@@ -170,29 +169,29 @@ public class WhileStat extends LoopStat {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating WhileStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			lblcnt.label = Code.newLabel();
-			lblbrk.label = Code.newLabel();
-			CodeLabel body_label = Code.newLabel();
+			lblcnt.label = code.newLabel();
+			lblbrk.label = code.newLabel();
+			CodeLabel body_label = code.newLabel();
 
-			Code.addInstr(Instr.op_goto,lblcnt.label);
-			Code.addInstr(Instr.set_label,body_label);
+			code.addInstr(Instr.op_goto,lblcnt.label);
+			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
-			lblcnt.generate(Type.tpVoid);
+			body.generate(code,Type.tpVoid);
+			lblcnt.generate(code,Type.tpVoid);
 
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					Code.addInstr(Instr.op_goto,body_label);
+					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				BoolExpr.gen_iftrue(cond, body_label);
+				BoolExpr.gen_iftrue(code, cond, body_label);
 			}
-			lblbrk.generate(Type.tpVoid);
+			lblbrk.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
@@ -263,29 +262,29 @@ public class DoWhileStat extends LoopStat {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating DoWhileStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			lblcnt.label = Code.newLabel();
-			lblbrk.label = Code.newLabel();
-			CodeLabel body_label = Code.newLabel();
+			lblcnt.label = code.newLabel();
+			lblbrk.label = code.newLabel();
+			CodeLabel body_label = code.newLabel();
 
-// Differ from WhileStat in this:	Code.addInstr(Instr.op_goto,continue_label);
-			Code.addInstr(Instr.set_label,body_label);
+// Differ from WhileStat in this:	code.addInstr(Instr.op_goto,continue_label);
+			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
-			lblcnt.generate(Type.tpVoid);
+			body.generate(code,Type.tpVoid);
+			lblcnt.generate(code,Type.tpVoid);
 
 			if( cond.isConstantExpr() ) {
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					Code.addInstr(Instr.op_goto,body_label);
+					code.addInstr(Instr.op_goto,body_label);
 				}
 			} else {
-				BoolExpr.gen_iftrue(cond, body_label);
+				BoolExpr.gen_iftrue(code, cond, body_label);
 			}
-			lblbrk.generate(Type.tpVoid);
+			lblbrk.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
@@ -461,56 +460,56 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		((ForInit)init).resolveMethodR(node,info,name,mt)
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForStat");
-		lblcnt.label = Code.newLabel();
-		lblbrk.label = Code.newLabel();
-		CodeLabel body_label = Code.newLabel();
-		CodeLabel check_label = Code.newLabel();
+		lblcnt.label = code.newLabel();
+		lblbrk.label = code.newLabel();
+		CodeLabel body_label = code.newLabel();
+		CodeLabel check_label = code.newLabel();
 
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( init != null ) {
 				if( init instanceof Statement )
-					((Statement)init).generate(Type.tpVoid);
+					((Statement)init).generate(code,Type.tpVoid);
 				else if( init instanceof Expr )
-					((Expr)init).generate(Type.tpVoid);
+					((Expr)init).generate(code,Type.tpVoid);
 				else if( init instanceof ForInit ) {
 					ForInit fi = (ForInit)init;
 					foreach (Var var; fi.decls) {
-						var.generate(Type.tpVoid);
+						var.generate(code,Type.tpVoid);
 					}
 				}
 			}
 
 			if( cond != null ) {
-				Code.addInstr(Instr.op_goto,check_label);
+				code.addInstr(Instr.op_goto,check_label);
 			}
 
-			Code.addInstr(Instr.set_label,body_label);
+			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
 				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
+			body.generate(code,Type.tpVoid);
 
-			lblcnt.generate(Type.tpVoid);
+			lblcnt.generate(code,Type.tpVoid);
 			if( iter != null )
-				iter.generate(Type.tpVoid);
+				iter.generate(code,Type.tpVoid);
 
-			Code.addInstr(Instr.set_label,check_label);
+			code.addInstr(Instr.set_label,check_label);
 			if( cond != null ) {
 				if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() )
-					Code.addInstr(Instr.op_goto,body_label);
+					code.addInstr(Instr.op_goto,body_label);
 				else if( cond.isConstantExpr() && !((Boolean)cond.getConstValue()).booleanValue() );
-				else BoolExpr.gen_iftrue(cond, body_label);
+				else BoolExpr.gen_iftrue(code, cond, body_label);
 			} else {
-				Code.addInstr(Instr.op_goto,body_label);
+				code.addInstr(Instr.op_goto,body_label);
 			}
-			lblbrk.generate(Type.tpVoid);
+			lblbrk.generate(code,Type.tpVoid);
 
 			if( init != null && init instanceof ForInit ) {
 				ForInit fi = (ForInit)init;
 				for(int i=fi.decls.length-1; i >= 0; i--) {
-					Code.removeVar(fi.decls[i]);
+					code.removeVar(fi.decls[i]);
 				}
 			}
 		} catch(Exception e ) {
@@ -867,56 +866,56 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ForEachStat");
-		lblcnt.label = Code.newLabel();
-		lblbrk.label = Code.newLabel();
-		CodeLabel body_label = Code.newLabel();
-		CodeLabel check_label = Code.newLabel();
+		lblcnt.label = code.newLabel();
+		lblbrk.label = code.newLabel();
+		CodeLabel body_label = code.newLabel();
+		CodeLabel check_label = code.newLabel();
 
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( iter != null )
-				Code.addVar(iter);
+				code.addVar(iter);
 			if( var != null )
-				Code.addVar(var);
+				code.addVar(var);
 			if( iter_array != null )
-				Code.addVar(iter_array);
+				code.addVar(iter_array);
 
 			// Init iterator
-			iter_init.generate(Type.tpVoid);
+			iter_init.generate(code,Type.tpVoid);
 
 			// Goto check
-			Code.addInstr(Instr.op_goto,check_label);
+			code.addInstr(Instr.op_goto,check_label);
 
 			// Start body - set var, check cond, do body
-			Code.addInstr(Instr.set_label,body_label);
+			code.addInstr(Instr.set_label,body_label);
 
 			if( var_init != null)
-				var_init.generate(Type.tpVoid);
+				var_init.generate(code,Type.tpVoid);
 			if( cond != null )
-				BoolExpr.gen_iffalse(cond, lblcnt.label);
+				BoolExpr.gen_iffalse(code, cond, lblcnt.label);
 
-			body.generate(Type.tpVoid);
+			body.generate(code,Type.tpVoid);
 
 			// Continue - iterate iterator and check iterator condition
-			lblcnt.generate(Type.tpVoid);
+			lblcnt.generate(code,Type.tpVoid);
 			if( iter_incr != null )
-				iter_incr.generate(Type.tpVoid);
+				iter_incr.generate(code,Type.tpVoid);
 
 			// Just check iterator condition
-			Code.addInstr(Instr.set_label,check_label);
+			code.addInstr(Instr.set_label,check_label);
 			if( iter_cond != null )
-				BoolExpr.gen_iftrue(iter_cond, body_label);
+				BoolExpr.gen_iftrue(code, iter_cond, body_label);
 
 			if( iter_array != null )
-				Code.removeVar(iter_array);
+				code.removeVar(iter_array);
 			if( var != null )
-				Code.removeVar(var);
+				code.removeVar(var);
 			if( iter != null )
-				Code.removeVar(iter);
+				code.removeVar(iter);
 
-			lblbrk.generate(Type.tpVoid);
+			lblbrk.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}

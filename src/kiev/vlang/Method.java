@@ -657,7 +657,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		setResolved(true);
 	}
 
-	public void generate() {
+	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
@@ -670,32 +670,30 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 		}
-		try {
-			foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
-				cond.generate(Type.tpVoid);
-		} finally { kiev.vlang.Code.generation = false; }
+		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
+			cond.generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
-			Code.reInit(pctx.clazz, this);
-			Code.generation = true;
+			Code code = new Code(pctx.clazz, this, constPool);
+			code.generation = true;
 			try {
 				if( !isBad() ) {
 					FormPar thisPar = null;
 					if( !isStatic() ) {
 						thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
-						Code.addVar(thisPar);
+						code.addVar(thisPar);
 					}
-					if( params.length > 0 ) Code.addVars(params.toArray());
+					if( params.length > 0 ) code.addVars(params.toArray());
 					if( Kiev.verify /*&& jtype != null*/ )
-						generateArgumentCheck();
+						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
-							Code.importCode(cond.code);
+							code.importCode(cond.code_attr);
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
 								if( !cond.parent.isStatic() )
-									Code.addInstrLoadThis();
-								Code.addInstr(Instr.op_call,(Method)cond.parent,false);
+									code.addInstrLoadThis();
+								code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							}
 							setGenPostCond(true);
 						}
@@ -706,44 +704,44 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 							}
 						}
 					}
-					body.generate(Type.tpVoid);
+					body.generate(code,Type.tpVoid);
 					if( Kiev.debugOutputC && isGenPostCond() ) {
 						if( type.ret != Type.tpVoid ) {
-							Code.addVar(getRetVar());
-							Code.addInstr(Instr.op_store,getRetVar());
+							code.addVar(getRetVar());
+							code.addInstr(Instr.op_store,getRetVar());
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !cond.parent.isStatic() )
-								Code.addInstrLoadThis();
-							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
+								code.addInstrLoadThis();
+							code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
-							Code.importCode(cond.code);
+							code.importCode(cond.code_attr);
 						if( type.ret != Type.tpVoid ) {
-							Code.addInstr(Instr.op_load,getRetVar());
-							Code.addInstr(Instr.op_return);
-							Code.removeVar(getRetVar());
+							code.addInstr(Instr.op_load,getRetVar());
+							code.addInstr(Instr.op_return);
+							code.removeVar(getRetVar());
 						} else {
-							Code.addInstr(Instr.op_return);
+							code.addInstr(Instr.op_return);
 						}
 					}
-					if( params.length > 0 ) Code.removeVars(params.toArray());
-					if( thisPar != null ) Code.removeVar(thisPar);
+					if( params.length > 0 ) code.removeVars(params.toArray());
+					if( thisPar != null ) code.removeVar(thisPar);
 				} else {
-					Code.addInstr(Instr.op_new,Type.tpError);
-					Code.addInstr(Instr.op_dup);
+					code.addInstr(Instr.op_new,Type.tpError);
+					code.addInstr(Instr.op_dup);
 					KString msg = KString.from("Compiled with errors");
-					ConstPool.addStringCP(msg);
-					Code.addConst(msg);
+					constPool.addStringCP(msg);
+					code.addConst(msg);
 					Method func = Type.tpError.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
-					Code.addInstr(Instr.op_call,func,false);
-					Code.addInstr(Instr.op_throw);
+					code.addInstr(Instr.op_call,func,false);
+					code.addInstr(Instr.op_throw);
 				}
-				Code.generateCode();
+				code.generateCode();
 			} catch(Exception e) {
 				Kiev.reportError(this,e);
-			} finally { kiev.vlang.Code.generation = false; }
+			}
 		}
 	}
 
@@ -751,14 +749,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return ((BlockStat)body).getBreakLabel();
 	}
 
-	public void generateArgumentCheck() {
+	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params.length; i++) {
 			Type tp1 = jtype.args[i];
 			Type tp2 = params[i].type;
 			if !(tp2.getJavaType().isInstanceOf(tp1)) {
-				Code.addInstr(Instr.op_load,params[i]);
-				Code.addInstr(Instr.op_checkcast,tp1);
-				Code.addInstr(Instr.op_store,params[i]);
+				code.addInstr(Instr.op_load,params[i]);
+				code.addInstr(Instr.op_checkcast,tp1);
+				code.addInstr(Instr.op_store,params[i]);
 			}
 		}
 	}
@@ -836,10 +834,10 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		setResolved(true);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Initializer");
-		Code.setLinePos(this.getPosLine());
-		body.generate(reqType);
+		code.setLinePos(this.getPosLine());
+		body.generate(code,reqType);
 	}
 
 	public boolean setBody(Statement body) {
@@ -875,7 +873,7 @@ public class WBCCondition extends DNode {
 	@dflow(in="this:in")
 	public Statement				body;
 	
-	public CodeAttr					code;
+	public CodeAttr					code_attr;
 	@ref public Method				definer;
 
 	public WBCCondition() {
@@ -890,42 +888,40 @@ public class WBCCondition extends DNode {
 	}
 
 	public void resolve(Type reqType) {
-		if( code != null ) return;
+		if( code_attr != null ) return;
 		body.resolve(Type.tpVoid);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(ConstPool constPool, Type reqType) {
+		Code code = new Code(pctx.clazz, pctx.method, constPool);
+		code.generation = true;
+		code.cond_generation = true;
 		if( cond == WBCType.CondInvariant ) {
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.op_return);
+			body.generate(code,Type.tpVoid);
+			code.addInstr(Instr.op_return);
+			return;
 		}
-		else if( code == null ) {
-			Code.reInit(pctx.clazz, pctx.method);
-			Code.generation = true;
-			Code.cond_generation = true;
-			Method m = Code.method;
+		if( code_attr == null ) {
+			Method m = code.method;
 			try {
 				FormPar thisPar = null;
 				if( !isStatic() ) {
 					thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
-					Code.addVar(thisPar);
+					code.addVar(thisPar);
 				}
-				if( m.params.length > 0 ) Code.addVars(m.params.toArray());
-				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
-				body.generate(Type.tpVoid);
-				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
-				if( m.params.length > 0 ) Code.removeVars(m.params.toArray());
-				if( thisPar != null ) Code.removeVar(thisPar);
-				Code.generateCode(this);
+				if( m.params.length > 0 ) code.addVars(m.params.toArray());
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.addVar(m.getRetVar());
+				body.generate(code,Type.tpVoid);
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.removeVar(m.getRetVar());
+				if( m.params.length > 0 ) code.removeVars(m.params.toArray());
+				if( thisPar != null ) code.removeVar(thisPar);
+				code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(this,e);
-			} finally {
-				Code.generation = false;
-				Code.cond_generation = false;
 			}
-		} else {
-			code.generate();
+			return;
 		}
+		code_attr.generate(constPool);
 	}
 
 	public boolean setBody(Statement body) {

@@ -52,8 +52,8 @@ public class ShadowStat extends Statement {
 		setResolved(true);
 	}
 
-	public void generate(Type reqType) {
-		stat.generate(reqType);
+	public void generate(Code code, Type reqType) {
+		stat.generate(code,reqType);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -157,23 +157,23 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating InlineMethodStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( Kiev.verify )
-			generateArgumentCheck();
+			generateArgumentCheck(code);
 		foreach (ParamRedir redir; params_redir)
 			redir.old_var.setBCpos(redir.new_var.getBCpos());
-		((Statement)method.body).generate(reqType);
+		((Statement)method.body).generate(code,reqType);
 	}
 
-	public void generateArgumentCheck() {
+	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params_redir.length; i++) {
 			ParamRedir redir = params_redir[i];
 			if( !redir.new_var.type.equals(method.params[i].type) ) {
-				Code.addInstr(Instr.op_load,redir.new_var);
-				Code.addInstr(Instr.op_checkcast,method.params[i].type);
-				Code.addInstr(Instr.op_store,redir.new_var);
+				code.addInstr(Instr.op_load,redir.new_var);
+				code.addInstr(Instr.op_checkcast,method.params[i].type);
+				code.addInstr(Instr.op_store,redir.new_var);
 			}
 		}
 	}
@@ -357,26 +357,26 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 	}
 
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
-		Code.setLinePos(this.getPosLine());
-		break_label = Code.newLabel();
-		//Code.addVars(vars);
+		code.setLinePos(this.getPosLine());
+		break_label = code.newLabel();
+		//code.addVars(vars);
 		for(int i=0; i < stats.length; i++) {
 			try {
-				stats[i].generate(Type.tpVoid);
+				stats[i].generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(stats[i],e);
 			}
 		}
 		Vector<Var> vars = new Vector<Var>();
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-		Code.removeVars(vars.toArray());
+		code.removeVars(vars.toArray());
 		if( parent instanceof Method && Kiev.debugOutputC
 		 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
-			Code.stack_push(((Method)parent).type.ret);
+			code.stack_push(((Method)parent).type.ret);
 		}
-		Code.addInstr(Instr.set_label,break_label);
+		code.addInstr(Instr.set_label,break_label);
 	}
 
 	public CodeLabel getBreakLabel() throws RuntimeException {
@@ -406,10 +406,10 @@ public class EmptyStat extends Statement {
 	public void resolve(Type reqType) {
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating EmptyStat");
-//		Code.setPos(pos);
-//		Code.addInstr(Instr.op_nop);
+//		code.setPos(pos);
+//		code.addInstr(Instr.op_nop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -449,10 +449,10 @@ public class ExprStat extends Statement {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
 		try {
-			expr.generate(Type.tpVoid);
+			expr.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(expr,e);
 		}
@@ -502,19 +502,19 @@ public class ReturnStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( expr != null )
-				expr.generate(Code.method.type.ret);
-			generateReturn(this);
+				expr.generate(code,code.method.type.ret);
+			generateReturn(code,this);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
 	}
 
-	public static void generateReturn(ASTNode from) {
+	public static void generateReturn(Code code, ASTNode from) {
 		Var tmp_var = null;
 		for(ASTNode node = from; node != null; node = node.parent) {
 			if (node instanceof Method)
@@ -526,34 +526,34 @@ public class ReturnStat extends Statement/*defaults*/ {
 			}
 			else if (node instanceof TryStat) {
 				if( node.finally_catcher != null ) {
-					if( tmp_var==null /*&& Kiev.verify*/ && Code.method.type.ret != Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,Code.method.type.ret,0);
-						Code.addVar(tmp_var);
-						Code.addInstr(Instr.op_store,tmp_var);
+					if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
+						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
+						code.addVar(tmp_var);
+						code.addInstr(Instr.op_store,tmp_var);
 					}
-					Code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
+					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
 			}
 			else if (node instanceof SynchronizedStat) {
-				if( tmp_var==null /*&& Kiev.verify*/ && Code.method.type.ret != Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,Code.method.type.ret,0);
-					Code.addVar(tmp_var);
-					Code.addInstr(Instr.op_store,tmp_var);
+				if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
+					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
+					code.addVar(tmp_var);
+					code.addInstr(Instr.op_store,tmp_var);
 				}
-				Code.addInstr(Instr.op_load,node.expr_var);
-				Code.addInstr(Instr.op_monitorexit);
+				code.addInstr(Instr.op_load,node.expr_var);
+				code.addInstr(Instr.op_monitorexit);
 			}
 		}
 		if( tmp_var != null ) {
-			Code.addInstr(Instr.op_load,tmp_var);
-			Code.removeVar(tmp_var);
+			code.addInstr(Instr.op_load,tmp_var);
+			code.removeVar(tmp_var);
 		}
-		if( Code.method.isGenPostCond() ) {
-			Code.addInstr(Instr.op_goto,Code.method.getBreakLabel());
-			if( Code.method.type.ret != Type.tpVoid )
-				Code.stack_pop();
+		if( code.method.isGenPostCond() ) {
+			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
+			if( code.method.type.ret != Type.tpVoid )
+				code.stack_pop();
 		} else
-			Code.addInstr(Instr.op_return);
+			code.addInstr(Instr.op_return);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -593,12 +593,12 @@ public class ThrowStat extends Statement/*defaults*/ {
 			Kiev.reportWarning(this,"Exception "+exc+" must be caught or declared to be thrown");
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ThrowStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			expr.generate(null);
-			Code.addInstr(Instr.op_throw);
+			expr.generate(code,null);
+			code.addInstr(Instr.op_throw);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}
@@ -636,7 +636,6 @@ public class IfElseStat extends Statement {
 	}
 
 	public void resolve(Type reqType) {
-		Code.setLinePos(this.getPosLine());
 		try {
 			cond.resolve(Type.tpBoolean);
 			BoolExpr.checkBool(cond);
@@ -671,39 +670,39 @@ public class IfElseStat extends Statement {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
 				Expr cond = (Expr)this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
-					thenSt.generate(Type.tpVoid);
+					thenSt.generate(code,Type.tpVoid);
 				}
 				else if( elseSt != null ) {
 					if( isAutoReturnable() )
 						elseSt.setAutoReturnable(true);
-					elseSt.generate(Type.tpVoid);
+					elseSt.generate(code,Type.tpVoid);
 				}
 			} else {
-				CodeLabel else_label = Code.newLabel();
-				BoolExpr.gen_iffalse(cond, else_label);
-				thenSt.generate(Type.tpVoid);
+				CodeLabel else_label = code.newLabel();
+				BoolExpr.gen_iffalse(code, cond, else_label);
+				thenSt.generate(code,Type.tpVoid);
 				if( elseSt != null ) {
-					CodeLabel end_label = Code.newLabel();
+					CodeLabel end_label = code.newLabel();
 					if( !thenSt.isMethodAbrupted() ) {
 						if( isAutoReturnable() )
-							ReturnStat.generateReturn(this);
+							ReturnStat.generateReturn(code,this);
 						else if (!thenSt.isAbrupted())
-							Code.addInstr(Instr.op_goto,end_label);
+							code.addInstr(Instr.op_goto,end_label);
 					}
-					Code.addInstr(Instr.set_label,else_label);
-					elseSt.generate(Type.tpVoid);
-					Code.addInstr(Instr.set_label,end_label);
+					code.addInstr(Instr.set_label,else_label);
+					elseSt.generate(code,Type.tpVoid);
+					code.addInstr(Instr.set_label,end_label);
 				} else {
-					Code.addInstr(Instr.set_label,else_label);
+					code.addInstr(Instr.set_label,else_label);
 				}
 			}
 		} catch(Exception e ) {
@@ -784,37 +783,37 @@ public class CondStat extends Statement {
 			return nameAssertNameSignature;
 	}
 
-	private void generateAssertName() {
+	private void generateAssertName(Code code) {
 		WBCCondition wbc = (WBCCondition)parent.parent;
 		if( wbc.name == null ) return;
-		Code.addConst((KString)wbc.name.name);
+		code.addConst((KString)wbc.name.name);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if(cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
 				Expr cond = (Expr)this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() );
 				else {
-					generateAssertName();
-					message.generate(Type.tpString);
+					generateAssertName(code);
+					message.generate(code,Type.tpString);
 					Method func = Type.tpDebug.resolveMethod(
 						getAssertMethodName(),
 						getAssertMethodSignature());
-					Code.addInstr(Instr.op_call,func,false);
+					code.addInstr(Instr.op_call,func,false);
 				}
 			} else {
-				CodeLabel else_label = Code.newLabel();
-				BoolExpr.gen_iftrue(cond, else_label);
-				generateAssertName();
-				message.generate(Type.tpString);
+				CodeLabel else_label = code.newLabel();
+				BoolExpr.gen_iftrue(code, cond, else_label);
+				generateAssertName(code);
+				message.generate(code,Type.tpString);
 				Method func = Type.tpDebug.resolveMethod(
 					getAssertMethodName(),
 					getAssertMethodSignature());
-				Code.addInstr(Instr.op_call,func,false);
-				Code.addInstr(Instr.set_label,else_label);
+				code.addInstr(Instr.op_call,func,false);
+				code.addInstr(Instr.set_label,else_label);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
@@ -862,19 +861,19 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			lbl.generate(Type.tpVoid);
-			stat.generate(Type.tpVoid);
+			lbl.generate(code,Type.tpVoid);
+			stat.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(stat,e);
 		}
 	}
 
-	public CodeLabel getCodeLabel() {
-		return lbl.getCodeLabel();
+	public CodeLabel getCodeLabel(Code code) {
+		return lbl.getCodeLabel(code);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1018,24 +1017,24 @@ public class BreakStat extends Statement {
 		p.setBreaked(true);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			Object[] lb = resolveBreakLabel();
+			Object[] lb = resolveBreakLabel(code);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel ) {
-					Code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
+					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				}
 				else {
-					Code.addInstr(Instr.op_load,(Var)lb[i]);
-					Code.addInstr(Instr.op_monitorexit);
+					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
-				ReturnStat.generateReturn(this);
+				ReturnStat.generateReturn(code,this);
 			else
-				Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
+				code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
@@ -1043,7 +1042,7 @@ public class BreakStat extends Statement {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveBreakLabel() {
+	private Object[] resolveBreakLabel(Code code) {
 		KString name = ident==null?null:ident.name;
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
@@ -1061,7 +1060,7 @@ public class BreakStat extends Statement {
 				else continue;
 				if( node instanceof BreakTarget ) {
 					BreakTarget t = (BreakTarget)node;
-					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel());
+					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
 				}
 				else if( node instanceof BlockStat && node.isBreakTarget() ){
 					BlockStat t = (BlockStat)node;
@@ -1083,7 +1082,7 @@ public class BreakStat extends Statement {
 				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
 					Statement st = node.stat;
 					if( st instanceof BreakTarget )
-						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel());
+						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
 					else if (st instanceof BlockStat)
 						return (Object[])Arrays.append(cl,st.getBreakLabel());
 					else
@@ -1181,20 +1180,20 @@ public class ContinueStat extends Statement/*defaults*/ {
 		// TODO: check label or loop statement available
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			Object[] lb = resolveContinueLabel();
+			Object[] lb = resolveContinueLabel(code);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
-					Code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
+					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					Code.addInstr(Instr.op_load,(Var)lb[i]);
-					Code.addInstr(Instr.op_monitorexit);
+					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_monitorexit);
 				}
-			Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
+			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
@@ -1202,7 +1201,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 	}
 
 	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveContinueLabel() {
+	private Object[] resolveContinueLabel(Code code) {
 		KString name = ident==null?null:ident.name;
 		Object[] cl = new Object[0];
 		if( name == null || name.equals(KString.Empty) ) {
@@ -1217,7 +1216,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 				}
 				if( node instanceof Method ) break;
 				if( node instanceof ContinueTarget )
-					return (Object[])Arrays.append(cl,node.getCntLabel().getCodeLabel());
+					return (Object[])Arrays.append(cl,node.getCntLabel().getCodeLabel(code));
 			}
 			throw new RuntimeException("Continue not within loop statement");
 		} else {
@@ -1234,7 +1233,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
 					Statement st = node.stat;
 					if( st instanceof ContinueTarget )
-						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel());
+						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));
 					throw new RuntimeException("Label "+name+" does not refer to continue target");
 				}
 			}
@@ -1409,7 +1408,7 @@ public class GotoStat extends Statement/*defaults*/ {
 		return stats;
 	}
 
-	public Object[] resolveLabelStat(LabeledStat stat) {
+	public Object[] resolveLabelStat(Code code, LabeledStat stat) {
 		Object[] cl1 = new CodeLabel[0];
 		Object[] cl2 = new CodeLabel[0];
 		ASTNode st = stat;
@@ -1449,13 +1448,13 @@ public class GotoStat extends Statement/*defaults*/ {
 			if( cl1[i] != cl2[i] ) break;
 		Object[] cl3 = new Object[ cl2.length - i + 1 ];
 		System.arraycopy(cl2,i,cl3,0,cl3.length-1);
-		cl3[cl3.length-1] = stat.getCodeLabel();
+		cl3[cl3.length-1] = stat.getCodeLabel(code);
 		return cl3;
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
-		LabeledStat[] stats = resolveStat(ident.name,Code.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,code.method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 )
 			throw new CompilerException(this,"Label "+ident+" unresolved");
 		if( stats.length > 1 )
@@ -1463,18 +1462,18 @@ public class GotoStat extends Statement/*defaults*/ {
 		LabeledStat stat = stats[0];
 		if( stat == null )
 			throw new CompilerException(this,"Label "+ident+" unresolved");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
-			Object[] lb = resolveLabelStat(stat);
+			Object[] lb = resolveLabelStat(code,stat);
 			int i=0;
 			for(; i < lb.length-1; i++)
 				if( lb[i] instanceof CodeLabel )
-					Code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
+					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					Code.addInstr(Instr.op_load,(Var)lb[i]);
-					Code.addInstr(Instr.op_monitorexit);
+					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_monitorexit);
 				}
-			Code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
+			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 			throw new RuntimeException(e.getMessage());
@@ -1532,15 +1531,15 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
-					expr.generate(Type.tpVoid);
+					expr.generate(code,Type.tpVoid);
 				else
-					expr.generate(null);
+					expr.generate(code,null);
 			}
 
 			Var tmp_var = null;
@@ -1555,51 +1554,51 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
-							Code.addVar(tmp_var);
-							Code.addInstr(Instr.op_store,tmp_var);
+							code.addVar(tmp_var);
+							code.addInstr(Instr.op_store,tmp_var);
 						}
-						Code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
+						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
 				}
 				else if (node instanceof SynchronizedStat) {
-					Code.addInstr(Instr.op_load,node.expr_var);
-					Code.addInstr(Instr.op_monitorexit);
+					code.addInstr(Instr.op_load,node.expr_var);
+					code.addInstr(Instr.op_monitorexit);
 				}
 			}
 			if( tmp_var != null ) {
-				Code.addInstr(Instr.op_load,tmp_var);
-				Code.removeVar(tmp_var);
+				code.addInstr(Instr.op_load,tmp_var);
+				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;
 			if !( expr instanceof Expr ) {
 				if( sw.defCase != null )
-					lb = ((CaseLabel)sw.defCase).getLabel();
+					lb = ((CaseLabel)sw.defCase).getLabel(code);
 				else
-					lb = sw.getBrkLabel().getCodeLabel();
+					lb = sw.getBrkLabel().getCodeLabel(code);
 			}
 			else if( !((Expr)expr).isConstantExpr() )
-				lb = sw.getCntLabel().getCodeLabel();
+				lb = sw.getCntLabel().getCodeLabel(code);
 			else {
 				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
 				foreach(ASTNode an; sw.cases) {
 					CaseLabel cl = (CaseLabel)an;
 					int case_value = ((Number)((ConstExpr)cl.val).getConstValue()).intValue();
 					if( goto_value == case_value ) {
-						lb = cl.getLabel();
+						lb = cl.getLabel(code);
 						break;
 					}
 				}
 				if( lb == null ) {
 					Kiev.reportWarning(this,"'goto case "+expr+"' not found, replaced by "+(sw.defCase!=null?"'goto default'":"'break"));
 					if( sw.defCase != null )
-						lb = ((CaseLabel)sw.defCase).getLabel();
+						lb = ((CaseLabel)sw.defCase).getLabel(code);
 					else
-						lb = sw.getBrkLabel().getCodeLabel();
+						lb = sw.getBrkLabel().getCodeLabel(code);
 				}
 			}
-			Code.addInstr(Instr.op_goto,lb);
+			code.addInstr(Instr.op_goto,lb);
 			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
-				Code.stack_pop();
+				code.stack_pop();
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);
 		}

@@ -148,18 +148,18 @@ public class CallExpr extends Expr {
 		setResolved(true);
 	}
 
-	public void generateCheckCastIfNeeded() {
+	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
 		if( !ot.isStructInstanceOf((Struct)func.parent) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
-			Code.addInstr(Instr.op_checkcast,((Struct)func.parent).type);
+			code.addInstr(Instr.op_checkcast,((Struct)func.parent).type);
 		}
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		func.acc.verifyReadAccess(this,func);
 		CodeLabel ok_label = null;
 		if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
@@ -168,14 +168,14 @@ public class CallExpr extends Expr {
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
 		if( obj instanceof Expr) {
-			obj.generate(null);
-			generateCheckCastIfNeeded();
+			obj.generate(code,null);
+			generateCheckCastIfNeeded(code);
 		}
 		else if( !func.isStatic() ) {
-			if( !Code.method.isStatic() )
-				Code.addInstrLoadThis();
+			if( !code.method.isStatic() )
+				code.addInstrLoadThis();
 			else
-				throw new RuntimeException("Non-static method "+func+" is called from static method "+Code.method);
+				throw new RuntimeException("Non-static method "+func+" is called from static method "+code.method);
 		}
 		int i = 0;
 		if( func instanceof RuleMethod ) {
@@ -184,9 +184,9 @@ public class CallExpr extends Expr {
 				&& ((AssignExpr)parent).op == AssignOperator.Assign
 				&& ((AssignExpr)parent).lval.getType() == Type.tpRule
 				)
-				((AssignExpr)parent).lval.generate(null);
+				((AssignExpr)parent).lval.generate(code,null);
 			else
-				Code.addNullConst();
+				code.addNullConst();
 		}
 		else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
@@ -194,30 +194,30 @@ public class CallExpr extends Expr {
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
 			else if( fname.indexOf("trace") >= 0 ) mode = 2;
 			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
-				ok_label = Code.newLabel();
+				ok_label = code.newLabel();
 				if( args[0] instanceof IBoolExpr ) {
-					if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(ok_label);
-					else ((IBoolExpr)args[0]).generate_iffalse(ok_label);
+					if( mode == 1 ) ((IBoolExpr)args[0]).generate_iftrue(code,ok_label);
+					else ((IBoolExpr)args[0]).generate_iffalse(code,ok_label);
 				} else {
-					args[0].generate(null);
-					if( mode == 1 ) Code.addInstr(Instr.op_ifne,ok_label);
-					else Code.addInstr(Instr.op_ifeq,ok_label);
+					args[0].generate(code,null);
+					if( mode == 1 ) code.addInstr(Instr.op_ifne,ok_label);
+					else code.addInstr(Instr.op_ifeq,ok_label);
 				}
 				if( mode == 1 )
-					Code.addConst(0);
+					code.addConst(0);
 				else
-					Code.addConst(1);
+					code.addConst(1);
 				i++;
 			}
 		}
 		else {
 			if( func.name.equals(nameInit) && func.getOuterThisParam() != null) {
-				FormPar fp = Code.method.getOuterThisParam();
+				FormPar fp = code.method.getOuterThisParam();
 				if (fp == null) {
 					Kiev.reportError(this, "Cannot find outer this parameter");
-					Code.addNullConst();
+					code.addNullConst();
 				} else {
-					Code.addInstr(Instr.op_load,fp);
+					code.addInstr(Instr.op_load,fp);
 				}
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
@@ -230,26 +230,26 @@ public class CallExpr extends Expr {
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
 				else
 					temp_expr = pctx.clazz.accessTypeInfoField(this,tp);
-				temp_expr.generate(null);
+				temp_expr.generate(code,null);
 				temp_expr = null;
 			}
 		}
 		if !(func.isVarArgs()) {
 			for(; i < args.length; i++)
-				args[i].generate(null);
+				args[i].generate(code,null);
 		} else {
 			int N = func.params.length-1;
 			for(; i < N; i++)
-				args[i].generate(null);
+				args[i].generate(code,null);
 			Type type = func.jtype.args[N];
 			assert(type.isArray());
-			Code.addConst(args.length-N);
-			Code.addInstr(Instr.op_newarray,type.args[0]);
+			code.addConst(args.length-N);
+			code.addInstr(Instr.op_newarray,type.args[0]);
 			for(int j=0; i < args.length; i++, j++) {
-				Code.addInstr(Instr.op_dup);
-				Code.addConst(j);
-				args[i].generate(null);
-				Code.addInstr(Instr.op_arr_store);
+				code.addInstr(Instr.op_dup);
+				code.addConst(j);
+				args[i].generate(code,null);
+				code.addInstr(Instr.op_arr_store);
 			}
 		}
 		
@@ -260,33 +260,33 @@ public class CallExpr extends Expr {
 			if( func.parent != Type.tpObject.clazz )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name.name == nameObjEquals ) {
-				CodeLabel label_true = Code.newLabel();
-				CodeLabel label_false = Code.newLabel();
-				Code.addInstr(Instr.op_ifcmpeq,label_true);
-				Code.addConst(0);
-				Code.addInstr(Instr.op_goto,label_false);
-				Code.addInstr(Instr.set_label,label_true);
-				Code.addConst(1);
-				Code.addInstr(Instr.set_label,label_false);
+				CodeLabel label_true = code.newLabel();
+				CodeLabel label_false = code.newLabel();
+				code.addInstr(Instr.op_ifcmpeq,label_true);
+				code.addConst(0);
+				code.addInstr(Instr.op_goto,label_false);
+				code.addInstr(Instr.set_label,label_true);
+				code.addConst(1);
+				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name.name == nameObjGetClass ) {
 				Type reft = Type.getRefTypeForPrimitive(objt);
 				Field f = (Field)reft.clazz.resolveName(KString.from("TYPE"));
-				Code.addInstr(Instr.op_pop);
-				Code.addInstr(Instr.op_getstatic,f,reft);
+				code.addInstr(Instr.op_pop);
+				code.addInstr(Instr.op_getstatic,f,reft);
 			}
 			else if( func.name.name == nameObjHashCode ) {
 				switch(objt.signature.byteAt(0)) {
 				case 'Z':
 					{
-					CodeLabel label_true = Code.newLabel();
-					CodeLabel label_false = Code.newLabel();
-					Code.addInstr(Instr.op_ifne,label_true);
-					Code.addConst(1237);
-					Code.addInstr(Instr.op_goto,label_false);
-					Code.addInstr(Instr.set_label,label_true);
-					Code.addConst(1231);
-					Code.addInstr(Instr.set_label,label_false);
+					CodeLabel label_true = code.newLabel();
+					CodeLabel label_false = code.newLabel();
+					code.addInstr(Instr.op_ifne,label_true);
+					code.addConst(1237);
+					code.addInstr(Instr.op_goto,label_false);
+					code.addInstr(Instr.set_label,label_true);
+					code.addConst(1231);
+					code.addInstr(Instr.set_label,label_false);
 					}
 					break;
 				case 'B':
@@ -296,11 +296,11 @@ public class CallExpr extends Expr {
 					// the value is hashcode itself
 					break;
 				case 'J':
-					Code.addInstr(Instr.op_dup);
-					Code.addConst(32);
-					Code.addInstr(Instr.op_shl);
-					Code.addInstr(Instr.op_xor);
-					Code.addInstr(Instr.op_x2y,Type.tpInt);
+					code.addInstr(Instr.op_dup);
+					code.addConst(32);
+					code.addInstr(Instr.op_shl);
+					code.addInstr(Instr.op_xor);
+					code.addInstr(Instr.op_x2y,Type.tpInt);
 					break;
 				case 'F':
 					{
@@ -308,7 +308,7 @@ public class CallExpr extends Expr {
 						KString.from("floatToIntBits"),
 						KString.from("(F)I")
 						);
-					Code.addInstr(op_call,m,false);
+					code.addInstr(op_call,m,false);
 					}
 					break;
 				case 'D':
@@ -317,12 +317,12 @@ public class CallExpr extends Expr {
 						KString.from("doubleToLongBits"),
 						KString.from("(D)J")
 						);
-					Code.addInstr(op_call,m,false);
-					Code.addInstr(Instr.op_dup);
-					Code.addConst(32);
-					Code.addInstr(Instr.op_shl);
-					Code.addInstr(Instr.op_xor);
-					Code.addInstr(Instr.op_x2y,Type.tpInt);
+					code.addInstr(op_call,m,false);
+					code.addInstr(Instr.op_dup);
+					code.addConst(32);
+					code.addInstr(Instr.op_shl);
+					code.addInstr(Instr.op_xor);
+					code.addInstr(Instr.op_x2y,Type.tpInt);
 					}
 					break;
 				}
@@ -356,23 +356,23 @@ public class CallExpr extends Expr {
 				}
 				Method m = Type.tpString.clazz.resolveMethod(
 					KString.from("valueOf"),sign);
-				Code.addInstr(op_call,m,false);
+				code.addInstr(op_call,m,false);
 			}
 			else
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 		}
 		else
-			Code.addInstr(op_call,func,super_flag,obj.getType());
+			code.addInstr(op_call,func,super_flag,obj.getType());
 		if( func.type.ret != Type.tpVoid ) {
 			if( reqType==Type.tpVoid )
-				Code.addInstr(op_pop);
+				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
 			 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
-				Code.addInstr(op_checkcast,getType());
+				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null ) {
-			Code.addInstr(Instr.set_label,ok_label);
+			code.addInstr(Instr.set_label,ok_label);
 		}
 	}
 
@@ -544,35 +544,35 @@ public class ClosureCallExpr extends Expr {
 		return m;
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		// Load ref to closure
-		expr.generate(null);
+		expr.generate(code,null);
 		// Clone it
 		if( args.length > 0 ) {
-			Code.addInstr(op_call,clone_it,false);
+			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
-				Code.addInstr(op_checkcast,Type.tpClosureClazz.type);
+				code.addInstr(op_checkcast,Type.tpClosureClazz.type);
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
-				args[i].generate(null);
-				Code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
+				args[i].generate(code,null);
+				code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
 			}
 		}
 		// Check if we need to call
 		if( is_a_call ) {
 			if( env_access != null )
-				env_access.generate(null);
-			Code.addInstr(op_call,call_it,false);
+				env_access.generate(code,null);
+			code.addInstr(op_call,call_it,false);
 		}
 		if( call_it.type.ret != Type.tpVoid ) {
 			if( reqType==Type.tpVoid )
-				Code.addInstr(op_pop);
+				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && call_it.type.ret.isReference()
 			 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
-				Code.addInstr(op_checkcast,getType());
+				code.addInstr(op_checkcast,getType());
 		}
 	}
 

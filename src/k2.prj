@@ -102,10 +102,13 @@ kiev.parser.MultiExpr kiev/parser/MultiExpr kiev\parser\TempExpr.java
 kiev.parser.Opdef kiev/parser/Opdef kiev\parser\Opdef.java
 kiev.parser.ParseError kiev/parser/ParseError kiev\parser\ParseError.java
 kiev.parser.ParseException kiev/parser/ParseException kiev\parser\ParseException.java
+kiev.parser.Parser kiev/parser/Parser kiev\parser\kiev040.java
+kiev.parser.ParserConstants kiev/parser/ParserConstants kiev\parser\kiev040.java
 kiev.parser.PostfixExpr kiev/parser/PostfixExpr kiev\parser\TempExpr.java
 kiev.parser.PreScanneable kiev/parser/PreScanneable kiev\parser\PreScanneable.java
 kiev.parser.PrefixExpr kiev/parser/PrefixExpr kiev\parser\TempExpr.java
 kiev.parser.PrescannedBody kiev/parser/PrescannedBody kiev\parser\PrescannedBody.java
+kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleCharStream.java
 kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java

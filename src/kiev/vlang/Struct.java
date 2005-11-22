@@ -2091,24 +2091,24 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 ////				}
 //			}
 
-		ConstPool.reInit();
-		ConstPool.addClazzCP(jthis.type.signature);
-		ConstPool.addClazzCP(jthis.type.java_signature);
+		ConstPool constPool = new ConstPool();
+		constPool.addClazzCP(jthis.type.signature);
+		constPool.addClazzCP(jthis.type.java_signature);
 		if( super_type != null ) {
 			super_type.clazz.checkResolved();
-			ConstPool.addClazzCP(jthis.super_type.signature);
-			ConstPool.addClazzCP(jthis.super_type.java_signature);
+			constPool.addClazzCP(jthis.super_type.signature);
+			constPool.addClazzCP(jthis.super_type.java_signature);
 		}
 		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
 			interfaces[i].clazz.checkResolved();
-			ConstPool.addClazzCP(jthis.interfaces[i].signature);
-			ConstPool.addClazzCP(jthis.interfaces[i].java_signature);
+			constPool.addClazzCP(jthis.interfaces[i].signature);
+			constPool.addClazzCP(jthis.interfaces[i].java_signature);
 		}
 		if( !isPackage() ) {
 			for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
 				jthis.sub_clazz[i].checkResolved();
-				ConstPool.addClazzCP(jthis.sub_clazz[i].type.signature);
-				ConstPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
+				constPool.addClazzCP(jthis.sub_clazz[i].type.signature);
+				constPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
 			}
 		}
 		
@@ -2121,7 +2121,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				inner[j] = sub_clazz[j];
 				outer[j] = this;
 				inner_access[j] = sub_clazz[j].getJavaFlags();
-				ConstPool.addClazzCP(inner[j].type.signature);
+				constPool.addClazzCP(inner[j].type.signature);
 			}
 			a.inner = inner;
 			a.outer = outer;
@@ -2157,12 +2157,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
 		
-		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate();
+		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (ASTNode n; members; n instanceof Field) {
 			Field f = (Field)n;
-			ConstPool.addAsciiCP(f.name.name);
-			ConstPool.addAsciiCP(f.type.signature);
-			ConstPool.addAsciiCP(f.type.java_signature);
+			constPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(f.type.signature);
+			constPool.addAsciiCP(f.type.java_signature);
 
 			int flags = 0;
 			if( f.isVirtual() ) flags |= 2;
@@ -2183,20 +2183,20 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 
 			for(int j=0; f.attrs != null && j < f.attrs.length; j++)
-				f.attrs[j].generate();
+				f.attrs[j].generate(constPool);
 		}
 		foreach (ASTNode m; members; m instanceof Method)
 			((Method)m).type.checkJavaSignature();
 		foreach (ASTNode n; members; n instanceof Method) {
 			Method m = (Method)n;
-			ConstPool.addAsciiCP(m.name.name);
-			ConstPool.addAsciiCP(m.type.signature);
-			ConstPool.addAsciiCP(m.type.java_signature);
+			constPool.addAsciiCP(m.name.name);
+			constPool.addAsciiCP(m.type.signature);
+			constPool.addAsciiCP(m.type.java_signature);
 			if( m.jtype != null )
-				ConstPool.addAsciiCP(m.jtype.java_signature);
+				constPool.addAsciiCP(m.jtype.java_signature);
 
 			try {
-				m.generate();
+				m.generate(constPool);
 
 				int flags = 0;
 				if( m.isMultiMethod() ) flags |= 1;
@@ -2217,7 +2217,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 				for(int j=0; j < m.conditions.length; j++) {
 					if( m.conditions[j].definer == m ) {
-						m.addAttr(m.conditions[j].code);
+						m.addAttr(m.conditions[j].code_attr);
 					}
 				}
 
@@ -2237,36 +2237,35 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					m.addAttr(new DefaultMetaAttr(m.annotation_default));
 
 				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate();
+					m.attrs[j].generate(constPool);
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(m,"Compilation error: "+e);
-				m.generate();
+				m.generate(constPool);
 				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate();
+					m.attrs[j].generate(constPool);
 				}
 			}
 			if( Kiev.safe && isBad() ) return;
 		}
-		ConstPool.generate();
+		constPool.generate();
 		foreach (ASTNode n; members; n instanceof Method) {
 			Method m = (Method)n;
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
 				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
-				Code.generateCode2(ca);
+				Code.patchCodeConstants(ca);
 			}
 		}
 		if( Kiev.safe && isBad() ) return;
-		Bytecoder bc = new Bytecoder(this,null);
+		Bytecoder bc = new Bytecoder(this,null,constPool);
 		bc.kievmode = true;
 		byte[] dump = bc.writeClazz();
 		Attr ka = addAttr(new KievAttr(dump));
-		ka.generate();
+		ka.generate(constPool);
 		if( Kiev.safe && isBad() ) return;
-		FileUnit.toBytecode(this);
+		FileUnit.toBytecode(this,constPool);
 		Env.setProjectInfo(name, true);
-		ConstPool.reInit();
 		kiev.Main.runGC();
 //		setPassed_3(true);
 	}

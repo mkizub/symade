@@ -310,7 +310,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		}
 	}
 
-	public static void toBytecode(Struct cl) {
+	public static void toBytecode(Struct cl, ConstPool constPool) {
 		Struct jcl = cl;
 		String output_dir = Kiev.output_dir;
 		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
@@ -333,7 +333,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 				System.runFinalization();
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			}
-			byte[] dump = new Bytecoder(cl,null).writeClazz();
+			byte[] dump = new Bytecoder(cl,null,constPool).writeClazz();
 			out.write(dump);
 			out.close();
 //			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+cl+"]");

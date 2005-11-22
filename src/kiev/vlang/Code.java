@@ -33,82 +33,86 @@ import static kiev.vlang.Instr.*;
  *
  */
 
-public class Code implements Constants {
+public final class Code implements Constants {
 	
 	/** Current class we are generating */
-	static public Struct			clazz;
+	public Struct			clazz;
 	
 	/** Current method we are generating */
-	static public Method			method;
+	public Method			method;
+	
+	/** Current ConstPool of the class we are generating */
+	public ConstPool		constPool;
 	
 	/** Current position (for error reporting) from setLinePos */
-	static public int				last_lineno;
+	public int				last_lineno;
 	
 	/** Max stack deepness */
-	static public int				max_stack;
+	public int				max_stack;
 
 	/** Code (JVM bytecode) - for code generation only */
-	static public byte[]			code;
+	public byte[]			bcode;
 
 	/** Variables of this code (method args & locals) */
-	static public CodeVar[]			vars;
+	public CodeVar[]		vars;
 
 	/** Current number of local vars (method args & local vars) */
-	static private int				cur_locals;
+	private int				cur_locals;
 
 	/** Max locals (method args & local vars) */
-	static private int				max_locals;
+	private int				max_locals;
 
 	/** Stack of code - for code generation only */
-	static public Type[]			stack;
+	public Type[]			stack;
 
 	/** Top of stack - for code generation only */
-	static public int				top;
+	public int				top;
 
 	/** Max stack top of stack - for code generation only
 		double & long types increment/decrement it by 2
 	 */
-	static private int				max_stack_top;
+	private int				max_stack_top;
 
 	/** PC - current code position - for code generation only */
-	static public int				pc;
+	public int				pc;
 
 	/** Labels of code */
-	static public CodeLabel[]		labels;
-	static public int[]				labels_pc;
-	static public int				labels_top = 0;
+	public CodeLabel[]		labels;
+	public int[]			labels_pc;
+	public int				labels_top = 0;
 
 	/** ConstPool pointers */
-	static public CP[]				constants;
-	static public int[]				constants_pc;
-	static public int				constants_top = 0;
+	public CP[]				constants;
+	public int[]			constants_pc;
+	public int				constants_top = 0;
 
 	/** Catch info */
-	static public CodeCatchInfo[]	catchers = CodeCatchInfo.emptyArray;
+	public CodeCatchInfo[]	catchers = CodeCatchInfo.emptyArray;
 
 	/** Code attributes (local var table, line number info, etc. */
-	static public Attr[]			attrs = Attr.emptyArray;
+	public Attr[]			attrs = Attr.emptyArray;
 
 	/** Line number table. Each element containce a pair of
 		((pc & 0xFFFF) << 16) | (line_no & 0xFFFF)
 	 */
-	static public int[]				linetable;
+	public int[]			linetable;
 
 	/** Index of last filled linetable entry */
-	static public int				line_top = -1;
+	public int				line_top = -1;
 
 	/** Local var table (attribute) */
-	static public LocalVarTableAttr	lvta;
+	public LocalVarTableAttr	lvta;
 
-	static public boolean			reachable = true;
+	public boolean			reachable = true;
 
-	static public boolean		generation = false;
+	public boolean			generation = false;
 
-	static public boolean		cond_generation = false;
+	public boolean			cond_generation = false;
 
-	public static void reInit(Struct s, Method m) {
+	public Code(Struct s, Method m, ConstPool cp) {
 		clazz = s;
 		method = m;
+		constPool = cp;
 		attrs = Attr.emptyArray;
 		cur_locals = 0;
 		max_locals = 0;
@@ -121,7 +125,7 @@ public class Code implements Constants {
 		max_stack_top = 0;
 
 		// Initialize code
-		code = new byte[1024];
+		bcode = new byte[1024];
 		pc = 0;
 
 		// Initialize local var table
@@ -146,11 +150,11 @@ public class Code implements Constants {
 
 	}
 
-	static public void pushStackPos() {};
+	public void pushStackPos() {};
 
-	static public void popStackPos() {};
+	public void popStackPos() {};
 
-	static public void setLinePos(int lineno) {
+	public void setLinePos(int lineno) {
 		if( !generation ) return;
 		last_lineno = lineno;
 		lineno = lineno & 0xFFFF;
@@ -169,7 +173,7 @@ public class Code implements Constants {
 		Automatically calculates max_stack value
 		Automatically expand stack array if needed
 	 */
-	static public void stack_push(Type type) {
+	public void stack_push(Type type) {
 		if( stack.length <= (top + 2) ) stack = (Type[])Arrays.cloneToSize(stack,stack.length*2);
 		if( type==Type.tpLong || type==Type.tpDouble ) max_stack_top += 2;
 		else max_stack_top++;
@@ -184,7 +188,7 @@ public class Code implements Constants {
 
 	/** Pop value from stack.
 	 */
-	static public void stack_pop() {
+	public void stack_pop() {
 		Type type = stack[--top];
 		if( type==Type.tpLong || type==Type.tpDouble ) max_stack_top -= 2;
 		else max_stack_top--;
@@ -197,7 +201,7 @@ public class Code implements Constants {
 		}
 	}
 
-	static public Type stack_at(int i) {
+	public Type stack_at(int i) {
 		try {
 			return stack[top-i-1];
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -205,7 +209,7 @@ public class Code implements Constants {
 		}
 	}
 
-	static public void set_stack_at(Type tp, int i) {
+	public void set_stack_at(Type tp, int i) {
 		try {
 			stack[top-i-1] = tp;
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -214,29 +218,29 @@ public class Code implements Constants {
 	}
 
 	/** Add 1 byte to bytecode */
-	static public void add_code_byte(int b) {
-		if( code.length <= pc+1 ) code = (byte[])Arrays.cloneToSize(code, code.length+256);
-		code[pc++] = (byte)b;
+	public void add_code_byte(int b) {
+		if( bcode.length <= pc+1 ) bcode = (byte[])Arrays.cloneToSize(bcode, bcode.length+256);
+		bcode[pc++] = (byte)b;
 	}
 	/** Add 2 byte to bytecode */
-	static public void add_code_short(int s) {
-		if( code.length <= pc+2 ) code = (byte[])Arrays.cloneToSize(code, code.length+256);
-		code[pc++] = (byte)(s >>> 8);
-		code[pc++] = (byte)(s & 0xFF);
+	public void add_code_short(int s) {
+		if( bcode.length <= pc+2 ) bcode = (byte[])Arrays.cloneToSize(bcode, bcode.length+256);
+		bcode[pc++] = (byte)(s >>> 8);
+		bcode[pc++] = (byte)(s & 0xFF);
 	}
 	/** Add 4 byte to bytecode */
-	static public void add_code_int(int i) {
-		if( code.length <= pc+4 ) code = (byte[])Arrays.cloneToSize(code, code.length+256);
-		code[pc++] = (byte)(i >>> 24);
-		code[pc++] = (byte)(i >>> 16);
-		code[pc++] = (byte)(i >>> 8);
-		code[pc++] = (byte)(i & 0xFF);
+	public void add_code_int(int i) {
+		if( bcode.length <= pc+4 ) bcode = (byte[])Arrays.cloneToSize(bcode, bcode.length+256);
+		bcode[pc++] = (byte)(i >>> 24);
+		bcode[pc++] = (byte)(i >>> 16);
+		bcode[pc++] = (byte)(i >>> 8);
+		bcode[pc++] = (byte)(i & 0xFF);
 	}
 
 	/** Add java native opcode to bytecode
 		verify and update stack info
 	 */
-	static private void add_opcode(int op) {
+	private void add_opcode(int op) {
 		trace(Kiev.debugInstrGen,"\tadd opcode "+opcNames[op]);
 		Type[] types = OpCodeRules.op_input_types[op];	// get argument types
 		for(int i=0,j=types.length-1; i < types.length; i++,j--) {
@@ -268,7 +272,7 @@ public class Code implements Constants {
 
 	/** Add java native opcode with one-byte argument
 	 */
-	static private void add_opcode_and_byte(int op, int arg) {
+	private void add_opcode_and_byte(int op, int arg) {
 		add_opcode(op);
 		add_code_byte(arg);
 		trace(Kiev.debugInstrGen,"\t\topcode arg is byte "+arg);
@@ -276,7 +280,7 @@ public class Code implements Constants {
 
 	/** Add java native opcode with two-byte argument
 	 */
-	static private void add_opcode_and_short(int op, int arg) {
+	private void add_opcode_and_short(int op, int arg) {
 		add_opcode(op);
 		add_code_short(arg);
 		trace(Kiev.debugInstrGen,"\t\topcode arg is short "+arg);
@@ -284,7 +288,7 @@ public class Code implements Constants {
 
 	/** Add java native opcode with four-byte argument
 	 */
-	static private void add_opcode_and_int(int op, int arg) {
+	private void add_opcode_and_int(int op, int arg) {
 		add_opcode(op);
 		add_code_int(arg);
 		trace(Kiev.debugInstrGen,"\t\topcode arg is int "+arg);
@@ -292,11 +296,11 @@ public class Code implements Constants {
 
 	/** Add java native opcode with ContPool constant pointer
 	 */
-	static private void add_opcode_and_CP(int op, CP arg) {
+	private void add_opcode_and_CP(int op, CP arg) {
 		if( !cond_generation && (op == opc_ldc || op == opc_ldc_w) ) {
-			if( arg.pos<=0 && ConstPool.hwm < 256 && (arg instanceof NumberCP || arg instanceof StringCP) ) {
-				arg.pos = ConstPool.hwm;
-				ConstPool.pool[ConstPool.hwm++] = arg;
+			if( arg.pos<=0 && constPool.hwm < 256 && (arg instanceof NumberCP || arg instanceof StringCP) ) {
+				arg.pos = constPool.hwm;
+				constPool.pool[constPool.hwm++] = arg;
 			}
 			if( arg.pos >0 && arg.pos < 256 ) {
 				add_opcode(op=opc_ldc);
@@ -324,7 +328,7 @@ public class Code implements Constants {
 
 	/** Add jump/opcode (cond & uncond) with label it use to jump to
 	 */
-	static private void add_opcode_and_label(int op, CodeLabel arg) {
+	private void add_opcode_and_label(int op, CodeLabel arg) {
 		add_opcode(op);
 		arg.addInstr();
 		if( arg.pc >= 0 )
@@ -344,11 +348,11 @@ public class Code implements Constants {
 
 	/** Add jump/opcode (cond & uncond) with label it use to jump to
 	 */
-	static private void add_opcode_dump(byte[] dump) {
+	private void add_opcode_dump(byte[] dump) {
 		assert( top == 0 , "Add code dump while stack is not empty");
-		while( code.length <= pc+dump.length )
-			code = (byte[])Arrays.cloneToSize(code, code.length+256);
-		System.arraycopy(dump,0,code,pc,dump.length);
+		while( bcode.length <= pc+dump.length )
+			bcode = (byte[])Arrays.cloneToSize(bcode, bcode.length+256);
+		System.arraycopy(dump,0,bcode,pc,dump.length);
 		pc += dump.length;
 		trace(Kiev.debugInstrGen,"\t\tadd opcode dump of length "+dump.length);
 	}
@@ -358,7 +362,7 @@ public class Code implements Constants {
 		structure's constant pool, then selects apropriative
 		java bytecode from array
 	 */
-//	static private void add_opcode(int[] ops, CP c) {
+//	private void add_opcode(int[] ops, CP c) {
 //		short index = c.pos;
 //		if( index >= Byte.MIN_VALUE && index <= Byte.MAX_VALUE ) {
 //			add_opcode_and_byte(ops[0],index);
@@ -373,7 +377,7 @@ public class Code implements Constants {
 		if possible, otherwise put constant in the structure's pool
 		and load it by reference
 	 */
-	static private void generatePushConst(Object value) {
+	private void generatePushConst(Object value) {
 		if( value == null ) {
 			add_opcode(opc_aconst_null);
 			stack_push(Type.tpNull);
@@ -386,7 +390,7 @@ public class Code implements Constants {
 			if( val == 0L )			add_opcode(opc_lconst_0);
 			else if( val == 1L )	add_opcode(opc_lconst_1);
 			else {
-				CP c = ConstPool.addNumberCP((Number)value);
+				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc2_w,c);
 				stack_push(Type.tpLong);
 			}
@@ -397,7 +401,7 @@ public class Code implements Constants {
 			else if( val == 1.0f )	add_opcode(opc_fconst_1);
 			else if( val == 2.0f )	add_opcode(opc_fconst_1);
 			else {
-				CP c = ConstPool.addNumberCP((Number)value);
+				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc,c);
 				stack_push(Type.tpFloat);
 			}
@@ -407,13 +411,13 @@ public class Code implements Constants {
 			if( val == 0.0D )		add_opcode(opc_dconst_0);
 			else if( val == 1.0D )	add_opcode(opc_dconst_1);
 			else {
-				CP c = ConstPool.addNumberCP((Number)value);
+				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc2_w,c);
 				stack_push(Type.tpDouble);
 			}
 		}
 		else if( value instanceof KString ) {
-			CP c = ConstPool.addStringCP((KString)value);
+			CP c = constPool.addStringCP((KString)value);
 			add_opcode_and_CP(opc_ldc,c);
 			stack_push(Type.tpString);
 		}
@@ -435,7 +439,7 @@ public class Code implements Constants {
 					add_opcode_and_short(opc_sipush,val);
 				}
 				else {
-					CP c = ConstPool.addNumberCP((Number)value);
+					CP c = constPool.addNumberCP((Number)value);
 					add_opcode_and_CP(opc_ldc,c);
 					stack_push(Type.tpInt);
 				}
@@ -448,7 +452,7 @@ public class Code implements Constants {
 	/** Pop out value from
 		Check whether two-word or one-word value is popped
 	 */
-	static private void generatePop() {
+	private void generatePop() {
 		Type t = stack_at(0);
 		if( t.isDoubleSize() ) add_opcode(opc_pop2);
 		else add_opcode(opc_pop);
@@ -460,7 +464,7 @@ public class Code implements Constants {
 		one var. No (int1,int2)->(int1,int2,int1,in2),
 		only (long1)->(long1,long1) for two-word duplication
 	 */
-	static private void generateDup() {
+	private void generateDup() {
 		Type t = stack_at(0);
 		if( t.isDoubleSize() ) add_opcode(opc_dup2);
 		else add_opcode(opc_dup);
@@ -471,7 +475,7 @@ public class Code implements Constants {
 		This version is restricted to duplicate only
 		one var (like in generateDup).
 	 */
-	static private void generateDupX() {
+	private void generateDupX() {
 		Type type1 = stack_at(0);
 		Type type2 = stack_at(1);
 		if( type1.isDoubleSize() ) {
@@ -492,7 +496,7 @@ public class Code implements Constants {
 		This version is restricted to duplicate only over 2 vars of int/object type
 		(to dup over long/double var use generateDupX).
 	 */
-	static private void generateDupX2() {
+	private void generateDupX2() {
 		Type type1 = stack_at(0);
 		Type type2 = stack_at(1);
 		Type type3 = stack_at(2);
@@ -513,7 +517,7 @@ public class Code implements Constants {
 
 	/** Duplicate 2 values both of 4 bytes length
 	 */
-	static private void generateDup2() {
+	private void generateDup2() {
 		Type t1 = stack_at(0);
 		Type t2 = stack_at(1);
 		if( t1.isDoubleSize() || t2.isDoubleSize() )
@@ -525,7 +529,7 @@ public class Code implements Constants {
 
 	/** Swap values on the top of stack (both must be 4 byte length)
 	 */
-	static private void generateSwap() {
+	private void generateSwap() {
 		Type t1 = stack_at(0);
 		Type t2 = stack_at(1);
 		if( t1.isDoubleSize() || t2.isDoubleSize() )
@@ -538,7 +542,7 @@ public class Code implements Constants {
 
 	/** Call method. Find out args from method, check args's types
 	 */
-	static private void generateCall(Method m, boolean super_flag, Type tp) {
+	private void generateCall(Method m, boolean super_flag, Type tp) {
 		boolean call_static;
 		if( !m.isStatic() ) {
 			trace(Kiev.debugInstrGen,"\t\tgenerating non-static call to method: "+m);
@@ -565,10 +569,10 @@ public class Code implements Constants {
 		sign = m.jtype.java_signature;
 		CP cpm;
 		if( ((Struct)m.parent).isInterface() )
-			cpm = ConstPool.addInterfaceMethodCP(ttt.java_signature,
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,
 				m.name.name,sign);
 		else
-			cpm = ConstPool.addMethodCP(ttt.java_signature,
+			cpm = constPool.addMethodCP(ttt.java_signature,
 				m.name.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
@@ -601,9 +605,9 @@ public class Code implements Constants {
 			stack_push(mtype.ret);
 	}
 
-	static public void generateReturn() {
+	public void generateReturn() {
 		try {
-			Type t = Code.method.type.ret;
+			Type t = this.method.type.ret;
 			if( t == Type.tpVoid )			add_opcode(opc_return);
 			else if( t.isIntegerInCode() )	add_opcode(opc_ireturn);
 			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
@@ -612,7 +616,7 @@ public class Code implements Constants {
 			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
 			else if( t.isReference() )		add_opcode(opc_areturn);
 			else
-				throw new RuntimeException("Unknown return type "+Code.method.type.ret+" of method");
+				throw new RuntimeException("Unknown return type "+this.method.type.ret+" of method");
 		} catch(Exception e) {
 			throw new RuntimeException("Unresolved type at generation phase: "+e);
 		}
@@ -620,7 +624,7 @@ public class Code implements Constants {
 	}
 
 	/** Get (load, push in stack) length of array. */
-	static public void generateLengthOfArray() {
+	public void generateLengthOfArray() {
 		Type tp1 = stack_at(0);
 
 		if( !tp1.isArray() )
@@ -630,7 +634,7 @@ public class Code implements Constants {
 	}
 
 	/** Get (load, push in stack) element of array. */
-	static public void generateLoadElement() {
+	public void generateLoadElement() {
 		Type tp1 = stack_at(1);
 		Type tp2 = stack_at(0);
 
@@ -658,7 +662,7 @@ public class Code implements Constants {
 	}
 
 	/** Get (load, push in stack) element of array. */
-	static public void generateStoreElement() {
+	public void generateStoreElement() {
 		Type tp1 = stack_at(2);
 		Type tp2 = stack_at(1);
 		Type tp3 = stack_at(0);
@@ -699,7 +703,7 @@ public class Code implements Constants {
 
 	/** This method pushes var (loads) from locals (args and auto vars)
 	 */
-	static private void generateLoadVar(int vv) {
+	private void generateLoadVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
 		Type t = v.var.type;
@@ -735,7 +739,7 @@ public class Code implements Constants {
 
 	/** This method pops var (stores) into locals (args and auto vars)
 	 */
-	static private void generateStoreVar(int vv) {
+	private void generateStoreVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
 		Type t = v.var.type;
@@ -777,7 +781,7 @@ public class Code implements Constants {
 	/** Unary operation. Choose native bytecode depending
 		on operand's (in stack) type from input array
 	 */
-	static private void generateUnaryOp(int[] ops) {
+	private void generateUnaryOp(int[] ops) {
 		Type pt1 = stack_at(0);
 		int op;
 
@@ -793,7 +797,7 @@ public class Code implements Constants {
 	/** Binary operation. Choose native bytecode depending
 		on operand's (in stack) types from input array
 	 */
-	static private void generateBinaryOp(int[] ops) {
+	private void generateBinaryOp(int[] ops) {
 		Type pt1 = stack_at(0);
 		Type pt2 = stack_at(1);
 		int op;
@@ -811,7 +815,7 @@ public class Code implements Constants {
 	/** Binary shift operation. Choose native bytecode depending
 		on operand's (in stack) types from input array
 	 */
-	static private void generateShiftOp(int[] ops) {
+	private void generateShiftOp(int[] ops) {
 		Type pt1 = stack_at(1);
 		Type pt2 = stack_at(0);
 		int op;
@@ -829,7 +833,7 @@ public class Code implements Constants {
 
 	/** Binary operation instanceof.
 	 */
-	static private void generateInstanceofOp(Type type) {
+	private void generateInstanceofOp(Type type) {
 		Type pt1 = stack_at(0);
 		Type pt2 = type;
 
@@ -837,13 +841,13 @@ public class Code implements Constants {
             throw new RuntimeException("Instanceof operation on primitive type: "+pt1);
 		if( !pt2.isReference() )
             throw new RuntimeException("Type of instanceof operation is primtive type: "+pt2);
-		CP cpi = ConstPool.addClazzCP(type.java_signature);
+		CP cpi = constPool.addClazzCP(type.java_signature);
 		add_opcode_and_CP(opc_instanceof,cpi);
 	}
 
 	/** Boolean operations.
 	 */
-	static private void generateCompareOp(Instr instr, CodeLabel l) {
+	private void generateCompareOp(Instr instr, CodeLabel l) {
 		Type pt1 = stack_at(1);
 		Type pt2 = stack_at(0);
 		int op;
@@ -921,7 +925,7 @@ public class Code implements Constants {
 	}
 
 	/** New one-dimension array */
-	static public void generateNewArray(Type type) {
+	public void generateNewArray(Type type) {
 		Type dim = stack_at(0);
 		if( !dim.isIntegerInCode() )
 			throw new RuntimeException("Array dimention must be of integer type, but "+dim+" found");
@@ -934,7 +938,7 @@ public class Code implements Constants {
 		else if( type == Type.tpFloat )		add_opcode_and_byte(opc_newarray,6);
 		else if( type == Type.tpDouble )	add_opcode_and_byte(opc_newarray,7);
 		else if( type.isReference() ) {
-			ClazzCP cpc = ConstPool.addClazzCP(type.java_signature);
+			ClazzCP cpc = constPool.addClazzCP(type.java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
 		stack_push(Type.newArrayType(type));
@@ -942,12 +946,12 @@ public class Code implements Constants {
 
 
 	/** New multi-dimension array */
-	static public void generateNewMultiArray(int dim, Type arrtype) {
+	public void generateNewMultiArray(int dim, Type arrtype) {
 		for(int i=0; i < dim; i++ )
 			if( !stack_at(i).isIntegerInCode() )
 				throw new RuntimeException("Array dimention must be of integer type, but "
 					+stack_at(i)+" found at "+(dim-i)+" dimension of multidimension array");
-		ClazzCP cpc = ConstPool.addClazzCP(arrtype.java_signature);
+		ClazzCP cpc = constPool.addClazzCP(arrtype.java_signature);
 		add_opcode_and_CP(opc_multianewarray,cpc);
 		add_code_byte(dim);
 		for(int i=0; i < dim; i++ ) stack_pop();
@@ -955,7 +959,7 @@ public class Code implements Constants {
 	}
 
 	/** Casts (converts) primitive bytecode types */
-	static public void generatePrimitiveCast(Type to) {
+	public void generatePrimitiveCast(Type to) {
 		Type from = stack_at(0);
 		if( to.equals(from) ) return;
 		if( to == Type.tpBoolean || to == Type.tpByte ) {
@@ -1013,7 +1017,7 @@ public class Code implements Constants {
 	/** Add local var for this code.
 		For debug version automatically generates debug info
 	 */
-	static public CodeVar addVar(Var v) {
+	public CodeVar addVar(Var v) {
 		trace(Kiev.debugInstrGen,"Code add var "+v);
 		int pos = cur_locals;
 		v.setBCpos(pos);
@@ -1032,7 +1036,7 @@ public class Code implements Constants {
 
 	/** Remove local var for this code.
 	 */
-	static public void removeVar(Var v) {
+	public void removeVar(Var v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.getBCpos()+" "+vars[v.getBCpos()]);
 		Type t = v.type;
 		if( !v.name.equals(KString.Empty) ) {
@@ -1057,40 +1061,40 @@ public class Code implements Constants {
 	/** Add local vars for this code.
 		For debug version automatically generates debug info
 	 */
-	static public void addVars(Var[] v) {
+	public void addVars(Var[] v) {
 		for(int i=0; i < v.length; i++) addVar(v[i]);
 	}
 
 	/** Remove local vars for this code (i.e. on block end)
 	 */
-	static public void removeVars(Var[] v) {
+	public void removeVars(Var[] v) {
 		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
 	}
 
 	/** Create new label and return it */
-	static public CodeLabel newLabel() {
-		CodeLabel l = new CodeLabel();
+	public CodeLabel newLabel() {
+		CodeLabel l = new CodeLabel(this);
 //		labels = (CodeLabel[])Arrays.append(labels,l);
 		return l;
 	}
 
 	/** Create new catcher and return it */
-	static public CodeCatchInfo newCatcher(CodeLabel handler, Type type) {
+	public CodeCatchInfo newCatcher(CodeLabel handler, Type type) {
 		CodeCatchInfo catcher = new CodeCatchInfo(handler,type);
 		catchers = (CodeCatchInfo[])Arrays.insert(catchers,catcher,0);
 		return catcher;
 	}
 
-	static public CodeTableSwitch newTableSwitch(int lo, int hi) {
-		return new CodeTableSwitch(lo,hi);
+	public CodeTableSwitch newTableSwitch(int lo, int hi) {
+		return new CodeTableSwitch(this,lo,hi);
 	}
 
-	static public CodeLookupSwitch newLookupSwitch(int[] tags) {
-		return new CodeLookupSwitch(tags);
+	public CodeLookupSwitch newLookupSwitch(int[] tags) {
+		return new CodeLookupSwitch(this,tags);
 	}
 
 	/** Create new switch table */
-	static public void generateTableSwitch(CodeTableSwitch sw) {
+	public void generateTableSwitch(CodeTableSwitch sw) {
 		sw.pc = pc;
 		add_opcode(opc_tableswitch);
 		while( (pc % 4) != 0 ) add_code_byte(0);
@@ -1102,7 +1106,7 @@ public class Code implements Constants {
 	}
 
 	/** Create new lookup switch table */
-	static public void generateLookupSwitch(CodeLookupSwitch sw) {
+	public void generateLookupSwitch(CodeLookupSwitch sw) {
 		sw.pc = pc;
 		add_opcode(opc_lookupswitch);
 		while( (pc % 4) != 0 ) add_code_byte(0);
@@ -1115,7 +1119,7 @@ public class Code implements Constants {
 		}
 	}
 
-	public static boolean isInfoInstr(Instr instr) {
+	public boolean isInfoInstr(Instr instr) {
 		switch( instr ) {
 		case set_lineno:
 		case set_label:
@@ -1135,10 +1139,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction for this code.
 	 */
-	static public void addInstr(Instr i) {
+	public void addInstr(Instr i) {
 		trace(Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1177,16 +1181,16 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstrIncr(LVarExpr vv, int val) {
+	public void addInstrIncr(LVarExpr vv, int val) {
 		addInstrIncr(vv.getVar(), val);
 	}
 	
 	/** Add pseude-instruction for this code.
 	 */
-	static public void addInstrIncr(Var vv, int val) {
+	public void addInstrIncr(Var vv, int val) {
 		trace(Kiev.debugInstrGen,pc+": op_incr "+vv+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\"op_incr\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\"op_incr\" ingnored as unreachable");
 			return;
 		}
 		CodeVar v = vars[vv.getBCpos()];
@@ -1196,10 +1200,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with label for this code.
 	 */
-	static public void addInstr(Instr i, CodeLabel l) {
+	public void addInstr(Instr i, CodeLabel l) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+l);
 		if( !reachable && !isInfoInstr(i) ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1231,28 +1235,28 @@ public class Code implements Constants {
 	    }
 	}
 
-	static public void addInstrLoadThis() {
+	public void addInstrLoadThis() {
        	if( method.isStatic() )
        		throw new RuntimeException("Generation of load 'this' in a static method");
 		generateLoadVar(0);
 	}
 
-	static public void addInstrStoreThis() {
+	public void addInstrStoreThis() {
        	if( method.isStatic() )
        		throw new RuntimeException("Generation of load 'this' in a static method");
 		generateStoreVar(0);
 	}
 
-	static public void addInstr(Instr i, LVarExpr v) {
+	public void addInstr(Instr i, LVarExpr v) {
 		addInstr(i,v.getVar());
 	}
 	
 	/** Add pseude-instruction with var for this code.
 	 */
-	static public void addInstr(Instr i, Var v) {
+	public void addInstr(Instr i, Var v) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+vars[v.getBCpos()].var);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1277,22 +1281,22 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with field for this code.
 	 */
-//	static public void addInstr(Instr i, Field f) {
+//	public void addInstr(Instr i, Field f) {
 //		addInstr(i,f,null);
 //	}
 	/** Add pseude-instruction with field for this code.
 	 */
-	static public void addInstr(Instr i, Field f, Type tp) {
+	public void addInstr(Instr i, Field f, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+f);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		Type ttt = Type.getRealType(tp.getInitialType(),((Struct)f.parent).type);
 //		Type ttt = ((Struct)f.parent).type;
 		KString struct_sig = ttt.java_signature;
 		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).java_signature;
-		FieldCP cpf = ConstPool.addFieldCP(struct_sig,f.name.name,field_sig);
+		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
@@ -1320,10 +1324,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with type for this code.
 	 */
-	static public void addInstr(Instr i, Type type) {
+	public void addInstr(Instr i, Type type) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+type);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1334,9 +1338,9 @@ public class Code implements Constants {
 			if( !type.isReference() )
 				throw new RuntimeException("New on non-reference type "+type);
 			if( type.clazz.super_type != null && type.clazz.super_type.clazz == Type.tpClosureClazz )
-				add_opcode_and_CP(opc_new,ConstPool.getClazzCP(type.clazz.name.signature()));
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.clazz.name.signature()));
 			else
-				add_opcode_and_CP(opc_new,ConstPool.getClazzCP(type.java_signature));
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.java_signature));
 			stack_push(type);
 			break;
 		case op_newarray:
@@ -1347,7 +1351,7 @@ public class Code implements Constants {
 				throw new RuntimeException("Type "+type+" must be a reference for cast checking");
 			if( !type.isReference() )
 				break;
-			add_opcode_and_CP(opc_checkcast,ConstPool.addClazzCP(type.java_signature));
+			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(type.java_signature));
 			stack_push(type);
 			break;
 		case op_instanceof:
@@ -1360,10 +1364,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with type for this code.
 	 */
-	static public void addInstr(Instr i, Type type, int dim) {
+	public void addInstr(Instr i, Type type, int dim) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" "+dim+" -> "+type);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		switch(i) {
@@ -1377,15 +1381,15 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with method call for this code.
 	 */
-	static public void addInstr(Instr i, Method method, boolean super_flag) {
+	public void addInstr(Instr i, Method method, boolean super_flag) {
 		addInstr(i,method,super_flag,method.type);
 	}
 	/** Add pseude-instruction with method call for this code.
 	 */
-	static public void addInstr(Instr i, Method method, boolean super_flag, Type tp) {
+	public void addInstr(Instr i, Method method, boolean super_flag, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1399,10 +1403,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with method reference for this code.
 	 */
-	static public void addInstr(Instr i, Method method, int nargs, Type tp) {
+	public void addInstr(Instr i, Method method, int nargs, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+method);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
        	throw new RuntimeException("Bad call-use instruction");
@@ -1410,10 +1414,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with switch table for this code.
 	 */
-	static public void addInstr(Instr i, CodeSwitch sw) {
+	public void addInstr(Instr i, CodeSwitch sw) {
 		trace(Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1433,10 +1437,10 @@ public class Code implements Constants {
 
 	/** Add pseude-instruction with try/catch for this code.
 	 */
-	static public void addInstr(Instr i, CodeCatchInfo catcher) {
+	public void addInstr(Instr i, CodeCatchInfo catcher) {
 		trace(Kiev.debugInstrGen,pc+": "+i);
 		if( !reachable && !isInfoInstr(i) ) {
-			Kiev.reportCodeWarning("\""+i+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
@@ -1464,10 +1468,10 @@ public class Code implements Constants {
 	}
 
 
-	static public void addConst(int val) {
+	public void addConst(int val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_iconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_iconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_iconst+"\" ingnored as unreachable");
 			return;
 		}
 		switch(val) {
@@ -1486,85 +1490,85 @@ public class Code implements Constants {
 				add_opcode_and_short(opc_sipush,val);
 			}
 			else {
-				CP c = ConstPool.addNumberCP(Integer.valueOf(val));
+				CP c = constPool.addNumberCP(Integer.valueOf(val));
 				add_opcode_and_CP(opc_ldc,c);
 				stack_push(Type.tpInt);
 			}
 		}
 	}
 
-	static public void addConst(long val) {
+	public void addConst(long val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_lconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_lconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_lconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0L )			add_opcode(opc_lconst_0);
 		else if( val == 1L )	add_opcode(opc_lconst_1);
 		else {
-			CP c = ConstPool.addNumberCP(Long.valueOf(val));
+			CP c = constPool.addNumberCP(Long.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
 			stack_push(Type.tpLong);
 		}
 	}
 
-	static public void addConst(float val) {
+	public void addConst(float val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_fconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_fconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_fconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0.0f )		add_opcode(opc_fconst_0);
 		else if( val == 1.0f )	add_opcode(opc_fconst_1);
 		else if( val == 2.0f )	add_opcode(opc_fconst_2);
 		else {
-			CP c = ConstPool.addNumberCP(Float.valueOf(val));
+			CP c = constPool.addNumberCP(Float.valueOf(val));
 			add_opcode_and_CP(opc_ldc,c);
 			stack_push(Type.tpFloat);
 		}
 	}
 
-	static public void addConst(double val) {
+	public void addConst(double val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_dconst+" "+val);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_dconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_dconst+"\" ingnored as unreachable");
 			return;
 		}
 		if( val == 0.0D )		add_opcode(opc_dconst_0);
 		else if( val == 1.0D )	add_opcode(opc_dconst_1);
 		else {
-			CP c = ConstPool.addNumberCP(Double.valueOf(val));
+			CP c = constPool.addNumberCP(Double.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
 			stack_push(Type.tpDouble);
 		}
 	}
 
-	static public void addConst(KString val) {
+	public void addConst(KString val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_sconst+" \""+val+"\"");
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_sconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_sconst+"\" ingnored as unreachable");
 			return;
 		}
-		CP c = ConstPool.addStringCP(val);
+		CP c = constPool.addStringCP(val);
 		add_opcode_and_CP(opc_ldc,c);
 		stack_push(Type.tpString);
 	}
 
-	static public void addConst(Type val) {
+	public void addConst(Type val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_tconst+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_tconst+"\" ingnored as unreachable");
 			return;
 		}
-		CP c = ConstPool.addClazzCP(val.java_signature);
+		CP c = constPool.addClazzCP(val.java_signature);
 		add_opcode_and_CP(opc_ldc,c);
 		stack_push(Type.tpClass);
 	}
 
-	static public void addNullConst() {
+	public void addNullConst() {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_null);
 		if( !reachable ) {
-			Kiev.reportCodeWarning("\""+Instr.op_push_null+"\" ingnored as unreachable");
+			Kiev.reportCodeWarning(this,"\""+Instr.op_push_null+"\" ingnored as unreachable");
 			return;
 		}
 		add_opcode(opc_aconst_null);
@@ -1572,16 +1576,16 @@ public class Code implements Constants {
 	}
 
 
-	static public void generateCode() {
-		Code.method.addAttr(generateCodeAttr(0));
+	public void generateCode() {
+		this.method.addAttr(generateCodeAttr(0));
 	}
 
-	static public void generateCode(WBCCondition wbc) {
-		wbc.code = generateCodeAttr(wbc.cond);
+	public void generateCode(WBCCondition wbc) {
+		wbc.code_attr = generateCodeAttr(wbc.cond);
 	}
 
-	static private CodeAttr generateCodeAttr(int cond) {
-		code = (byte[])Arrays.cloneToSize(code,pc);
+	private CodeAttr generateCodeAttr(int cond) {
+		bcode = (byte[])Arrays.cloneToSize(bcode,pc);
 		for(int i=0; i < cur_locals; i++) {
 			if( vars[i] == null ) continue;
 			if( vars[i].end_pc == -1) vars[i].end_pc = pc;
@@ -1605,10 +1609,9 @@ public class Code implements Constants {
 
 		CodeAttr ca;
 		if( cond == 1 || cond == 2 )
-			ca = new ContractAttr(cond,
-				max_stack,(max_locals+1),code,attrs);
+			ca = new ContractAttr(cond, max_stack,(max_locals+1),bcode,attrs);
 		else
-			ca = new CodeAttr(Code.method, max_stack,(max_locals+1),code,catchers,attrs);
+			ca = new CodeAttr(method, max_stack,(max_locals+1),bcode,catchers,attrs);
 		ca.constants = (CP[])Arrays.cloneToSize(constants,constants_top);
 		ca.constants_pc = (int[])Arrays.cloneToSize(constants_pc,constants_top);
 
@@ -1623,7 +1626,7 @@ public class Code implements Constants {
 		return ca;
 	}
 
-	static void importCode(CodeAttr ca) {
+	void importCode(CodeAttr ca) {
 		while( constants.length < constants_top+2+ca.constants.length ) {
 			constants = (CP[])Arrays.ensureSize(constants,constants.length*2);
 			constants_pc = (int[])Arrays.ensureSize(constants_pc,constants.length);
@@ -1635,22 +1638,24 @@ public class Code implements Constants {
 		}
 		if( max_locals < ca.max_locals ) max_locals = ca.max_locals;
 		if( max_stack < ca.max_stack ) max_stack = ca.max_stack;
-		add_opcode_dump(ca.code);
+		add_opcode_dump(ca.bcode);
 		return;
 	}
 
-	static public void generateCode2(CodeAttr ca) {
-		code = ca.code;
-		constants = ca.constants;
-		constants_pc = ca.constants_pc;
+	public static void patchCodeConstants(CodeAttr ca) {
+		final byte[] bcode = ca.bcode;
+		final CP[]   constants = ca.constants;
+		final int[]  constants_pc = ca.constants_pc;
 		// Process all constants
 		for(int i=0; i < constants.length; i++) {
 			CP cp = constants[i];
-			if( cp.pos < 1 )
+			int cppos = cp.pos;
+			if( cppos < 1 )
 				throw new RuntimeException("Constant referenced, but not generated");
-			pc = constants_pc[i];
-			trace(Kiev.debugInstrGen,pc+": ref CP to pos "+cp.pos+": "+cp);
-			add_code_short(cp.pos);
+			int pc = constants_pc[i];
+			trace(Kiev.debugInstrGen,pc+": ref CP to pos "+cppos+": "+cp);
+			bcode[pc+0] = (byte)(cppos >>> 8);
+			bcode[pc+1] = (byte)cppos;
 		}
 	}
 

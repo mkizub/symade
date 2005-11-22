@@ -495,6 +495,7 @@ public class Compiler {
 			ExportJavaTop exporter = (ExportJavaTop)Kiev.getProcessor(Kiev.Ext.JavaOnly);
 
 			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
+			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
 				try {
 					Kiev.curFile = KString.from(args[i]);
@@ -518,13 +519,10 @@ public class Compiler {
 						if (file_reader != null) file_reader.close();
 					}
 					java.io.CharArrayReader bis = new java.io.CharArrayReader(file_chars, 0, file_sz);
-					kiev040.interface_only = true;
+					Kiev.k.interface_only = true;
 					runGC();
 					diff_time = curr_time = System.currentTimeMillis();
-					if( Kiev.k == null )
-						Kiev.k = new kiev040(bis);
-					else
-						Kiev.k.ReInit(bis);
+					Kiev.k.ReInit(bis);
 					FileUnit fu = Kiev.k.FileUnit(args[i]);
 					Kiev.files.append(fu);
 					diff_time = System.currentTimeMillis() - curr_time;

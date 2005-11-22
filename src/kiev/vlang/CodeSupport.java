@@ -28,13 +28,15 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
 public class CodeLabel implements Constants {
 	public static CodeLabel[] emptyArray = new CodeLabel[0];
 
+	public final Code	code;
+	
 	/** PC position of this label */
 	public int			pc = -1;
 
@@ -47,8 +49,9 @@ public class CodeLabel implements Constants {
 	/** If check state does not allowed */
 	public boolean	check = true;
 
-	public CodeLabel() {
-		stack = null;
+	public CodeLabel(Code code) {
+		this.code = code;
+		this.stack = null;
 	}
 
 	public String toString() {
@@ -66,88 +69,88 @@ public class CodeLabel implements Constants {
 		// so, we must set instruction's PC at current PC-2-1
 		// (short argument of offset to jump plus the instruction itself)
 //		if( instrs == null ) {
-//			instrs = new short[]{(short)Code.pc};
+//			instrs = new short[]{(short)code.pc};
 //		} else {
 //			short[] newinstrs = new short[instrs.length+1];
 //			for(int j=0; j < instrs.length; j++) newinstrs[j] = instrs[j];
-//			newinstrs[instrs.length] = (short)Code.pc;
+//			newinstrs[instrs.length] = (short)code.pc;
 //			instrs = newinstrs;
 //		}
 		if( !check ) return;
 		if( stack == null ) {
-			if( Code.top == 0 )
+			if( code.top == 0 )
 				stack = Type.emptyArray;
 			else
-				stack = (Type[])Arrays.cloneToSize(Code.stack,Code.top);
+				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
 		} else {
-			if( stack.length != Code.top )
-				throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+Code.top+")");
+			if( stack.length != code.top )
+				throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+code.top+")");
 			for(int i=0; i < stack.length; i++) {
-				if( stack[stack.length-i-1] != Code.stack_at(i) ) {
+				if( stack[stack.length-i-1] != code.stack_at(i) ) {
 					Type tl = stack[stack.length-i-1];
-					Type tc = Code.stack_at(i);
+					Type tc = code.stack_at(i);
 					// Check for object/null, or one is child of other
 					if( tl.isReference() && tc.isReference() ) {
 						if( tl == Type.tpNull || tl.isInstanceOf(tc) ) continue;
 						if( tc == Type.tpNull || tc.isInstanceOf(tl) ) {
-							Code.set_stack_at(tl,i);
+							code.set_stack_at(tl,i);
 							continue;
 						}
 					}
-					throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+Code.stack_at(i)+")");
+					throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+code.stack_at(i)+")");
 				}
 			}
 		}
 	}
 
 	public void attachPosition() {
-		pc = Code.pc;
+		pc = code.pc;
 		if( !check ) return;
 		// Check if we at unreachable Code (after goto, return, throw)
-		if( !Code.reachable ) {
+		if( !code.reachable ) {
 			// This point is unreachable by normal flow control,
 			// just setup stack to be correct
 			if( stack == null ) {
 				trace(Kiev.debugInstrGen,"Stack state at unreacheable code is undefined, assuming current");
-				stack = (Type[])Arrays.cloneToSize(Code.stack,Code.top);
+				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
 			} else {
 				trace(Kiev.debugInstrGen,"Attaching label at unreachable code, stack depth is "+stack.length);
-				Code.top = stack.length;
-				System.arraycopy(stack,0,Code.stack,0,stack.length);
-				for(int i=Code.top; i < Code.stack.length; i++) {
-					if( Code.stack[i] == null ) break;
-					Code.stack[i] = null;
+				code.top = stack.length;
+				System.arraycopy(stack,0,code.stack,0,stack.length);
+				for(int i=code.top; i < code.stack.length; i++) {
+					if( code.stack[i] == null ) break;
+					code.stack[i] = null;
 				}
 			}
 		} else {
 			// This point is reachable by normal flow control, check stack state
 			if( stack == null ) {
-				stack = (Type[])Arrays.cloneToSize(Code.stack,Code.top);
+				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
 			} else {
-				if( stack.length != Code.top )
-					throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+Code.top+")");
+				if( stack.length != code.top )
+					throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+code.top+")");
 				for(int i=0; i < stack.length; i++) {
-					if( !stack[stack.length-i-1].equals(Code.stack_at(i)) ) {
+					if( !stack[stack.length-i-1].equals(code.stack_at(i)) ) {
 						Type tl = stack[stack.length-i-1];
-						Type tc = Code.stack_at(i);
+						Type tc = code.stack_at(i);
 						// Check for object/null, or one is child of other
 						if( tl.isReference() && tc.isReference() ) {
 							if( tl == Type.tpNull || tl.isInstanceOf(tc) ) continue;
 							if( tc == Type.tpNull || tc.isInstanceOf(tl) ) {
-								Code.set_stack_at(tl,i);
+								code.set_stack_at(tl,i);
 								continue;
 							}
 							Type lct = Type.leastCommonType(tl,tc);
 							if( lct != null ) {
-								Code.set_stack_at(lct,i);
+								code.set_stack_at(lct,i);
 								continue;
 							}
 						}
 						else if( tl.isIntegerInCode() && tc.isIntegerInCode() ) {
-							Code.set_stack_at(Type.tpInt,i);
+							code.set_stack_at(Type.tpInt,i);
 							continue;
 						}
-						throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+Code.stack_at(i)+")");
+						throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+code.stack_at(i)+")");
 					}
 				}
 			}
@@ -156,6 +159,8 @@ public class CodeLabel implements Constants {
 }
 
 public abstract class CodeSwitch {
+	public final Code code;
+	CodeSwitch(Code code) { this.code = code; }
 	public abstract void addCase(int val, CodeLabel l) throws RuntimeException;
 	public abstract void addDefault(CodeLabel l) throws RuntimeException;
 	public abstract void close() ;
@@ -172,11 +177,12 @@ public class CodeTableSwitch extends CodeSwitch {
 	public CodeLabel   def_case;	// default case
 	public CodeLabel   end_label;	// end of switch
 
-	public CodeTableSwitch(int lo, int hi) {
+	public CodeTableSwitch(Code code, int lo, int hi) {
+		super(code);
 		this.lo = lo;
 		this.hi = hi;
 		cases = new CodeLabel[hi-lo+1];
-		end_label = Code.newLabel();
+		end_label = code.newLabel();
 	}
 
 	public void addCase(int val, CodeLabel l) {
@@ -199,19 +205,19 @@ public class CodeTableSwitch extends CodeSwitch {
 		if( def_case == null ) {
 			def_case = end_label;
 		}
-		int code_pc = Code.pc;
+		int code_pc = code.pc;
 		end_label.pc = code_pc;
-		Code.pc = def_pc;
-		Code.add_code_int( def_case.pc-this.pc );
-		Code.add_code_int( lo );
-		Code.add_code_int( hi );
+		code.pc = def_pc;
+		code.add_code_int( def_case.pc-this.pc );
+		code.add_code_int( lo );
+		code.add_code_int( hi );
 		trace(Kiev.debugAsmGen,"\ttable switch: from "+lo+" to "+hi+" default pc="+def_case.pc);
 		for(int i=0; i <= hi-lo; i++)
 			if( cases[i] != null )
-				Code.add_code_int( cases[i].pc-this.pc );
+				code.add_code_int( cases[i].pc-this.pc );
 			else
-				Code.add_code_int( def_case.pc-this.pc );
-		Code.pc = code_pc;
+				code.add_code_int( def_case.pc-this.pc );
+		code.pc = code_pc;
 	}
 }
 
@@ -223,10 +229,11 @@ public class CodeLookupSwitch extends CodeSwitch {
 	public CodeLabel   def_case;	// default case
 	public CodeLabel   end_label;	// end of switch
 
-	public CodeLookupSwitch(int[] tags) {
+	public CodeLookupSwitch(Code code, int[] tags) {
+		super(code);
 		this.tags = tags;
 		cases = new CodeLabel[tags.length];
-		end_label = Code.newLabel();
+		end_label = code.newLabel();
 	}
 
 	public void addCase(int val, CodeLabel l) {
@@ -248,19 +255,19 @@ public class CodeLookupSwitch extends CodeSwitch {
 	public void close() {
 		end_label.attachPosition();
 		if( def_case == null ) def_case = end_label;
-		int code_pc = Code.pc;
+		int code_pc = code.pc;
 		end_label.pc = code_pc;
-		Code.pc = def_pc;
-		Code.add_code_int( def_case.pc-this.pc );
-		Code.add_code_int( tags.length );
+		code.pc = def_pc;
+		code.add_code_int( def_case.pc-this.pc );
+		code.add_code_int( tags.length );
 		for(int i=0; i < tags.length; i++) {
-			Code.add_code_int(tags[i]);
+			code.add_code_int(tags[i]);
 			if( cases[i] != null )
-				Code.add_code_int( cases[i].pc-this.pc );
+				code.add_code_int( cases[i].pc-this.pc );
 			else
-				Code.add_code_int( def_case.pc-this.pc );
+				code.add_code_int( def_case.pc-this.pc );
 		}
-		Code.pc = code_pc;
+		code.pc = code_pc;
 	}
 }
 

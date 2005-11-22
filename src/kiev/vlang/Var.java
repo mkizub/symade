@@ -142,30 +142,30 @@ public class Var extends DNode implements Named, Typed {
 		setResolved(true);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		try {
 			if( init != null ) {
 				if( !this.isNeedRefProxy() ) {
-					init.generate(this.type);
-					Code.addVar(this);
-					Code.addInstr(Instr.op_store,this);
+					init.generate(code,this.type);
+					code.addVar(this);
+					code.addInstr(Instr.op_store,this);
 				} else {
 					Type prt = Type.getProxyType(this.type);
-					Code.addInstr(Instr.op_new,prt);
-					Code.addInstr(Instr.op_dup);
-					init.generate(this.type);
+					code.addInstr(Instr.op_new,prt);
+					code.addInstr(Instr.op_dup);
+					init.generate(code,this.type);
 					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
 					Method@ in;
 					PassInfo.resolveBestMethodR(prt,in,new ResInfo(this,ResInfo.noForwards),nameInit,mt);
-					Code.addInstr(Instr.op_call,in,false);
-					Code.addVar(this);
-					Code.addInstr(Instr.op_store,this);
+					code.addInstr(Instr.op_call,in,false);
+					code.addVar(this);
+					code.addInstr(Instr.op_store,this);
 				}
 			} else {
-				Code.addVar(this);
+				code.addVar(this);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

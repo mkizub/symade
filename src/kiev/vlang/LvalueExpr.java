@@ -357,76 +357,76 @@ public class IFldExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generateCheckCastIfNeeded() {
+	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
 		if( !ot.isStructInstanceOf((Struct)var.parent) )
-			Code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
+			code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
-		obj.generate(null);
-		generateCheckCastIfNeeded();
-		Code.addInstr(op_getfield,f,obj.getType());
+		obj.generate(code,null);
+		generateCheckCastIfNeeded(code);
+		code.addInstr(op_getfield,f,obj.getType());
 		if( Kiev.verify && f.type.isArgument() && getType().isReference() )
-			Code.addInstr(op_checkcast,getType());
+			code.addInstr(op_checkcast,getType());
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		Field f = (Field)var;
 		var.acc.verifyReadAccess(this,var);
-		obj.generate(null);
-		generateCheckCastIfNeeded();
-		Code.addInstr(op_dup);
-		Code.addInstr(op_getfield,f,obj.getType());
+		obj.generate(code,null);
+		generateCheckCastIfNeeded(code);
+		code.addInstr(op_dup);
+		code.addInstr(op_getfield,f,obj.getType());
 		if( Kiev.verify && f.type.isArgument() && getType().isReference() )
-			Code.addInstr(op_checkcast,getType());
+			code.addInstr(op_checkcast,getType());
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - access only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		obj.generate(null);
-		generateCheckCastIfNeeded();
+		obj.generate(code,null);
+		generateCheckCastIfNeeded(code);
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
-		Code.addInstr(op_putfield,var,obj.getType());
+		code.addInstr(op_putfield,var,obj.getType());
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( var.isVirtual() && !isAsField() )
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
 		var.acc.verifyWriteAccess(this,var);
-		Code.addInstr(op_dup_x);
-		Code.addInstr(op_putfield,var,obj.getType());
+		code.addInstr(op_dup_x);
+		code.addInstr(op_putfield,var,obj.getType());
 	}
 
 	public boolean	isConstantExpr() {
@@ -562,13 +562,13 @@ public class ContainerAccessExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( obj.getType().isArray() ) {
-			obj.generate(null);
-			index.generate(null);
-			Code.addInstr(Instr.op_arr_load);
+			obj.generate(code,null);
+			index.generate(code,null);
+			code.addInstr(Instr.op_arr_load);
 		} else {
 			// Resolve overloaded access method
 			ASTNode@ v;
@@ -576,72 +576,72 @@ public class ContainerAccessExpr extends LvalueExpr {
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
-			obj.generate(null);
-			index.generate(null);
+			obj.generate(code,null);
+			index.generate(code,null);
 			Method func = (Method)v;
-			Code.addInstr(Instr.op_call,func,false,obj.getType());
+			code.addInstr(Instr.op_call,func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
-				Code.addInstr(op_checkcast,getType());
+				code.addInstr(op_checkcast,getType());
 		}
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( obj.getType().isArray() ) {
-			obj.generate(null);
-			index.generate(null);
-			Code.addInstr(op_dup2);
-			Code.addInstr(Instr.op_arr_load);
+			obj.generate(code,null);
+			index.generate(code,null);
+			code.addInstr(op_dup2);
+			code.addInstr(Instr.op_arr_load);
 		} else {
 			throw new CompilerException(this,"Too complex expression for overloaded operator '[]'");
 		}
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
-		Code.setLinePos(this.getPosLine());
-		obj.generate(null);
-		index.generate(null);
+		code.setLinePos(this.getPosLine());
+		obj.generate(code,null);
+		index.generate(code,null);
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		Type objType = obj.getType();
 		if( objType.isArray() ) {
-			Code.addInstr(Instr.op_arr_store);
+			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
 			ASTNode@ v;
 			// We need to get the type of object in stack
-			Type t = Code.stack_at(0);
+			Type t = code.stack_at(0);
 			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.clazz;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
-			Code.addInstr(Instr.op_call,(Method)v,false,objType);
+			code.addInstr(Instr.op_call,(Method)v,false,objType);
 			// Pop return value
-			Code.addInstr(Instr.op_pop);
+			code.addInstr(Instr.op_pop);
 		}
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( obj.getType().isArray() ) {
-			Code.addInstr(op_dup_x2);
-			Code.addInstr(Instr.op_arr_store);
+			code.addInstr(op_dup_x2);
+			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
 			ASTNode@ v;
 			// We need to get the type of object in stack
-			Type t = Code.stack_at(0);
-			if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
+			Type t = code.stack_at(0);
+			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().clazz;
@@ -651,11 +651,11 @@ public class ContainerAccessExpr extends LvalueExpr {
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
-			Code.addInstr(Instr.op_call,func,false,obj.getType());
+			code.addInstr(Instr.op_call,func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
-				Code.addInstr(op_checkcast,getType());
+				code.addInstr(op_checkcast,getType());
 		}
 	}
 
@@ -714,61 +714,61 @@ public class ThisExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if (!Code.method.isStatic())
-			Code.addInstrLoadThis();
-		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
-			Code.addInstr(op_load,Code.method.params[0]);
+		code.setLinePos(this.getPosLine());
+		if (!code.method.isStatic())
+			code.addInstrLoadThis();
+		else if (code.method.isStatic() && code.method.isVirtualStatic())
+			code.addInstr(op_load,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			Code.addNullConst();
+			code.addNullConst();
 		}
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		if (!Code.method.isStatic())
-			Code.addInstrLoadThis();
-		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
-			Code.addInstr(op_load,Code.method.params[0]);
+		code.setLinePos(this.getPosLine());
+		if (!code.method.isStatic())
+			code.addInstrLoadThis();
+		else if (code.method.isStatic() && code.method.isVirtualStatic())
+			code.addInstr(op_load,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			Code.addNullConst();
+			code.addNullConst();
 		}
-		Code.addInstr(op_dup);
+		code.addInstr(op_dup);
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - access only: "+this);
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if (!Code.method.isStatic())
-			Code.addInstrStoreThis();
-		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
-			Code.addInstr(op_store,Code.method.params[0]);
+		code.setLinePos(this.getPosLine());
+		if (!code.method.isStatic())
+			code.addInstrStoreThis();
+		else if (code.method.isStatic() && code.method.isVirtualStatic())
+			code.addInstr(op_store,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			Code.addInstr(op_pop);
+			code.addInstr(op_pop);
 		}
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstr(op_dup);
-		if (!Code.method.isStatic())
-			Code.addInstrStoreThis();
-		else if (Code.method.isStatic() && Code.method.isVirtualStatic())
-			Code.addInstr(op_store,Code.method.params[0]);
+		code.setLinePos(this.getPosLine());
+		code.addInstr(op_dup);
+		if (!code.method.isStatic())
+			code.addInstrStoreThis();
+		else if (code.method.isStatic() && code.method.isVirtualStatic())
+			code.addInstr(op_store,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			Code.addInstr(op_pop);
+			code.addInstr(op_pop);
 		}
 	}
 
@@ -901,9 +901,9 @@ public class LVarExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public Field resolveProxyVar() {
-		Field proxy_var = (Field)Code.clazz.resolveName(ident.name);
-		if( proxy_var == null && Code.method.isStatic() && !Code.method.isVirtualStatic() )
+	public Field resolveProxyVar(Code code) {
+		Field proxy_var = (Field)code.clazz.resolveName(ident.name);
+		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
 	}
@@ -915,14 +915,14 @@ public class LVarExpr extends LvalueExpr {
 		return var_valf;
 	}
 
-	public void resolveVarForConditions() {
-		if( Code.cond_generation ) {
+	public void resolveVarForConditions(Code code) {
+		if( code.cond_generation ) {
 			// Bind the correct var
-			if( getVar().parent != Code.method ) {
+			if( getVar().parent != code.method ) {
 				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-				if( ident.name==nameResultVar ) var = Code.method.getRetVar();
-				else for(int i=0; i < Code.method.params.length; i++) {
-					Var v = Code.method.params[i];
+				if( ident.name==nameResultVar ) var = code.method.getRetVar();
+				else for(int i=0; i < code.method.params.length; i++) {
+					Var v = code.method.params[i];
 					if( !v.name.equals(var.name) ) continue;
 					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
 					var = v;
@@ -930,11 +930,11 @@ public class LVarExpr extends LvalueExpr {
 				}
 				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
 			}
-			assert( var.parent == Code.method, "Can't find var for condition" );
+			assert( var.parent == code.method, "Can't find var for condition" );
 		}
 	}
 
-	public void generateVerifyCheckCast() {
+	public void generateVerifyCheckCast(Code code) {
 		if( !Kiev.verify ) return;
 		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
@@ -950,136 +950,136 @@ public class LVarExpr extends LvalueExpr {
 		if( chtp == null )
 			chtp = var.type.getJavaType();
 		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
-			Code.addInstr(op_checkcast,var.type);
+			code.addInstr(op_checkcast,var.type);
 			return;
 		}
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Code.cond_generation ) resolveVarForConditions();
+		code.setLinePos(this.getPosLine());
+		if( code.cond_generation ) resolveVarForConditions(code);
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-			Code.addInstr(op_load,var);
+			if( code.vars[var.getBCpos()] == null )
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
+			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
-				Code.addInstrLoadThis();
-				Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
+				code.addInstrLoadThis();
+				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
 			} else {
-				Code.addInstr(op_load,var);
+				code.addInstr(op_load,var);
 			}
 			if( var.isNeedRefProxy() ) {
-				Code.addInstr(op_getfield,resolveVarVal(),Code.clazz.type);
+				code.addInstr(op_getfield,resolveVarVal(),code.clazz.type);
 			}
 		}
-		generateVerifyCheckCast();
+		generateVerifyCheckCast(code);
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Code.cond_generation ) resolveVarForConditions();
+		code.setLinePos(this.getPosLine());
+		if( code.cond_generation ) resolveVarForConditions(code);
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-			Code.addInstr(op_load,var);
+			if( code.vars[var.getBCpos()] == null )
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
+			code.addInstr(op_load,var);
 		} else {
 			if( isAsField() ) {
-				Code.addInstrLoadThis();
+				code.addInstrLoadThis();
 				if( var.isNeedRefProxy() ) {
-					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
-					Code.addInstr(op_dup);
+					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
+					code.addInstr(op_dup);
 				} else {
-					Code.addInstr(op_dup);
-					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
+					code.addInstr(op_dup);
+					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
 				}
 			} else {
-				Code.addInstr(op_load,var);
-				Code.addInstr(op_dup);
+				code.addInstr(op_load,var);
+				code.addInstr(op_dup);
 			}
 			if( var.isNeedRefProxy() ) {
-				Code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar().getType());
+				code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar(code).getType());
 			}
 		}
-		generateVerifyCheckCast();
+		generateVerifyCheckCast(code);
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - access only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Code.cond_generation ) resolveVarForConditions();
+		code.setLinePos(this.getPosLine());
+		if( code.cond_generation ) resolveVarForConditions(code);
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
 		} else {
 			if( isAsField() ) {
-				Code.addInstrLoadThis();
+				code.addInstrLoadThis();
 				if( var.isNeedRefProxy() ) {
-					Code.addInstr(op_getfield,resolveProxyVar(),Code.clazz.type);
-					Code.addInstr(op_dup);
+					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
+					code.addInstr(op_dup);
 				} else {
-					Code.addInstr(op_dup);
+					code.addInstr(op_dup);
 				}
 			} else {
 				if( var.isNeedRefProxy() )
-					Code.addInstr(op_load,var);
+					code.addInstr(op_load,var);
 			}
 		}
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Code.cond_generation ) resolveVarForConditions();
+		code.setLinePos(this.getPosLine());
+		if( code.cond_generation ) resolveVarForConditions(code);
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-			Code.addInstr(op_store,var);
+			if( code.vars[var.getBCpos()] == null )
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
+			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
 				if( !var.isNeedRefProxy() ) {
-					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
+					code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.type);
 				} else {
-					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
+					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
 				}
 			} else {
 				if( !var.isNeedRefProxy() ) {
-					Code.addInstr(op_store,var);
+					code.addInstr(op_store,var);
 				} else {
-					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
+					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
 				}
 			}
 		}
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		if( Code.cond_generation ) resolveVarForConditions();
+		code.setLinePos(this.getPosLine());
+		if( code.cond_generation ) resolveVarForConditions(code);
 		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( Code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-			Code.addInstr(op_dup);
-			Code.addInstr(op_store,var);
+			if( code.vars[var.getBCpos()] == null )
+				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
+			code.addInstr(op_dup);
+			code.addInstr(op_store,var);
 		} else {
 			if( isAsField() ) {
-				Code.addInstr(op_dup_x);
+				code.addInstr(op_dup_x);
 				if( !var.isNeedRefProxy() ) {
-					Code.addInstr(op_putfield,resolveProxyVar(),Code.clazz.type);
+					code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.type);
 				} else {
-					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
+					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
 				}
 			} else {
 				if( !var.isNeedRefProxy() ) {
-					Code.addInstr(op_dup);
-					Code.addInstr(op_store,var);
+					code.addInstr(op_dup);
+					code.addInstr(op_store,var);
 				} else {
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_putfield,resolveVarVal(),Code.clazz.type);
+					code.addInstr(op_dup_x);
+					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
 				}
 			}
 		}
-		generateVerifyCheckCast();
+		generateVerifyCheckCast(code);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1167,37 +1167,37 @@ public class SFldExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		var.acc.verifyReadAccess(this,var);
-		Code.addInstr(op_getstatic,var,Code.clazz.type);
+		code.addInstr(op_getstatic,var,code.clazz.type);
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		var.acc.verifyReadAccess(this,var);
-		Code.addInstr(op_getstatic,var,Code.clazz.type);
+		code.addInstr(op_getstatic,var,code.clazz.type);
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - access only: "+this);
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		var.acc.verifyWriteAccess(this,var);
-		Code.addInstr(op_putstatic,var,Code.clazz.type);
+		code.addInstr(op_putstatic,var,code.clazz.type);
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		var.acc.verifyWriteAccess(this,var);
-		Code.addInstr(op_dup);
-		Code.addInstr(op_putstatic,var,Code.clazz.type);
+		code.addInstr(op_dup);
+		code.addInstr(op_putstatic,var,code.clazz.type);
 	}
 
 	public Operator getOp() { return BinaryOperator.Access; }
@@ -1270,42 +1270,42 @@ public class OuterThisAccessExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad() {
+	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstrLoadThis();
+		code.setLinePos(this.getPosLine());
+		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
-			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
 	}
 
-	public void generateLoadDup() {
+	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstrLoadThis();
+		code.setLinePos(this.getPosLine());
+		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
-			if( i == outer_refs.length-1 ) Code.addInstr(op_dup);
-			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
+			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
 		}
 	}
 
-	public void generateAccess() {
+	public void generateAccess(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
-		Code.setLinePos(this.getPosLine());
-		Code.addInstrLoadThis();
+		code.setLinePos(this.getPosLine());
+		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
-			Code.addInstr(op_getfield,outer_refs[i],Code.clazz.type);
+			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
 		}
 	}
 
-	public void generateStore() {
+	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		Code.addInstr(op_putfield,outer_refs[outer_refs.length-1],Code.clazz.type);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.type);
 	}
 
-	public void generateStoreDupValue() {
+	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
-		Code.addInstr(op_dup_x);
-		Code.addInstr(op_putfield,outer_refs[outer_refs.length-1],Code.clazz.type);
+		code.addInstr(op_dup_x);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.type);
 	}
 
 	public Operator getOp() { return BinaryOperator.Access; }

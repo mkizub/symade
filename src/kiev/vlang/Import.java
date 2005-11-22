@@ -102,7 +102,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 
 	public void resolveDecl() {}
 
-	public void generate() {}
+	public void generate(Code code) {}
 
 	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
 		Struct@ s;

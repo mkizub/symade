@@ -37,13 +37,15 @@ import static kiev.vlang.Operator.*;
 
 public class Bytecoder implements Constants {
 	public Struct								cl;
+	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
 	public kiev.bytecode.KievAttributeClazz	kaclazz;
 	public boolean								kievmode;
 
-	public Bytecoder(Struct cl, kiev.bytecode.Clazz bcclazz) {
+	public Bytecoder(Struct cl, kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		this.cl = cl;
 		this.bcclazz = bcclazz;
+		this.constPool = constPool;
 	}
 
 	/** Reads class from DataInputStream
@@ -261,7 +263,7 @@ public class Bytecoder implements Constants {
 					wbc.cond = WBCType.CondRequire;
 				else
 					wbc.cond = WBCType.CondEnsure;
-				wbc.code = (ContractAttr)at;
+				wbc.code_attr = (ContractAttr)at;
 				if( m == null ) {
 					if( conditions == null )
 						conditions = new WBCCondition[]{wbc};
@@ -638,12 +640,12 @@ public class Bytecoder implements Constants {
 			int constants_top = 0;
 			CP[] constants = new CP[32];
 			int[] constants_pc = new int[32];
-			while( pc < ca.code.length ) {
+			while( pc < ca.bcode.length ) {
 				cp = 0;
-				trace(Kiev.debugBytecodeRead,pc+": opc: "+Constants.opcNames[0xFF&ca.code[pc]]);
-				switch( 0xFF & ca.code[pc] ) {
+				trace(Kiev.debugBytecodeRead,pc+": opc: "+Constants.opcNames[0xFF&ca.bcode[pc]]);
+				switch( 0xFF & ca.bcode[pc] ) {
 				case opc_ldc:
-					cp = 0xFF & ca.code[pc+1];
+					cp = 0xFF & ca.bcode[pc+1];
 					break;
 				case opc_ldc_w:
 				case opc_ldc2_w:
@@ -660,10 +662,10 @@ public class Bytecoder implements Constants {
 				case opc_multianewarray:
 				case opc_checkcast:
 				case opc_instanceof:
-					cp = ((0xFF & ca.code[pc+1]) << 8) | (0xFF & ca.code[pc+2]);
+					cp = ((0xFF & ca.bcode[pc+1]) << 8) | (0xFF & ca.bcode[pc+2]);
 					break;
 				default:
-					pc += Constants.opcLengths[0xFF & ca.code[pc]];
+					pc += Constants.opcLengths[0xFF & ca.bcode[pc]];
 					continue;
 				}
 				if( constants_top == constants.length ) {
@@ -678,14 +680,14 @@ public class Bytecoder implements Constants {
 					{
 					kiev.bytecode.Utf8PoolConstant upc = (kiev.bytecode.Utf8PoolConstant)
 						clazz.pool[((kiev.bytecode.ClazzPoolConstant)pcp).ref];
-					constants[constants_top] = new ClazzCP(new AsciiCP(upc.value));
+					constants[constants_top] = new ClazzCP(constPool,new AsciiCP(constPool,upc.value));
 					}
 					break;
 				case kiev.bytecode.StringPoolConstant:
 					{
 					kiev.bytecode.Utf8PoolConstant upc = (kiev.bytecode.Utf8PoolConstant)
 						clazz.pool[((kiev.bytecode.StringPoolConstant)pcp).ref];
-					constants[constants_top] = new StringCP(new AsciiCP(upc.value));
+					constants[constants_top] = new StringCP(constPool,new AsciiCP(constPool,upc.value));
 					}
 					break;
 				case kiev.bytecode.FieldPoolConstant:
@@ -695,10 +697,14 @@ public class Bytecoder implements Constants {
 					kiev.bytecode.NameAndTypePoolConstant ntpc = (kiev.bytecode.NameAndTypePoolConstant)
 						clazz.pool[((kiev.bytecode.FieldPoolConstant)pcp).ref_nametype];
 					constants[constants_top] = new FieldCP(
-						new ClazzCP(new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
+						constPool,
+						new ClazzCP(
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
 						new NameTypeCP(
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
 					);
 					}
 					break;
@@ -709,10 +715,14 @@ public class Bytecoder implements Constants {
 					kiev.bytecode.NameAndTypePoolConstant ntpc = (kiev.bytecode.NameAndTypePoolConstant)
 						clazz.pool[((kiev.bytecode.MethodPoolConstant)pcp).ref_nametype];
 					constants[constants_top] = new MethodCP(
-						new ClazzCP(new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
+						constPool,
+						new ClazzCP(
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
 						new NameTypeCP(
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
 					);
 					}
 					break;
@@ -723,23 +733,28 @@ public class Bytecoder implements Constants {
 					kiev.bytecode.NameAndTypePoolConstant ntpc = (kiev.bytecode.NameAndTypePoolConstant)
 						clazz.pool[((kiev.bytecode.InterfaceMethodPoolConstant)pcp).ref_nametype];
 					constants[constants_top] = new InterfaceMethodCP(
-						new ClazzCP(new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
+						constPool,
+						new ClazzCP(
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[clpc.ref]).value)),
 						new NameTypeCP(
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
-							new AsciiCP(((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
+							constPool,
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_name]).value),
+							new AsciiCP(constPool,((kiev.bytecode.Utf8PoolConstant)clazz.pool[ntpc.ref_type]).value))
 					);
 					}
 					break;
 				case kiev.bytecode.NumberPoolConstant:
 					constants[constants_top] = new NumberCP(
+						constPool,
 						((kiev.bytecode.NumberPoolConstant)pcp).getValue());
 					break;
 				default:
-					throw new RuntimeException("Bad pool constant "+clazz.pool[cp]+" of opcode "+Constants.opcNames[0xFF&ca.code[pc]]);
+					throw new RuntimeException("Bad pool constant "+clazz.pool[cp]+" of opcode "+Constants.opcNames[0xFF&ca.bcode[pc]]);
 				}
 				trace(Kiev.debugBytecodeRead,pc+": CP: "+constants[constants_top]);
 				constants_top++;
-				pc += Constants.opcLengths[0xFF & ca.code[pc]];
+				pc += Constants.opcLengths[0xFF & ca.bcode[pc]];
 			}
 			ca.constants = (CP[])Arrays.cloneToSize(constants,constants_top);
 			ca.constants_pc = (int[])Arrays.cloneToSize(constants_pc,constants_top);
@@ -758,7 +773,7 @@ public class Bytecoder implements Constants {
 		Struct jcl = cl;
 		if( kievmode ) {
 		    bcclazz = new kiev.bytecode.KievAttributeClazz(null);
-		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = ConstPool.java_hwm;
+		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = constPool.java_hwm;
 		} else {
 		    bcclazz = new kiev.bytecode.Clazz();
 		}
@@ -778,13 +793,13 @@ public class Bytecoder implements Constants {
 		else
 			cl_sig = jcl.type.java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
-		bcclazz.cp_clazz = ConstPool.getClazzCP(cl_sig).pos;
+		bcclazz.cp_clazz = constPool.getClazzCP(cl_sig).pos;
 	    // This class's superclass name
 	    if( cl.super_type != null ) {
 		    KString sup_sig = kievmode ?
 					jcl.super_type.signature
 				  : jcl.super_type.java_signature;
-		    bcclazz.cp_super_clazz = ConstPool.getClazzCP(sup_sig).pos;
+		    bcclazz.cp_super_clazz = constPool.getClazzCP(sup_sig).pos;
 		} else {
 			bcclazz.cp_super_clazz = 0;
 		}
@@ -794,7 +809,7 @@ public class Bytecoder implements Constants {
 		    KString interf_sig = kievmode ?
 				jcl.interfaces[i].signature
 			  : jcl.interfaces[i].java_signature;
-			bcclazz.cp_interfaces[i] = ConstPool.getClazzCP(interf_sig).pos;
+			bcclazz.cp_interfaces[i] = constPool.getClazzCP(interf_sig).pos;
 		}
 
 		{
@@ -840,23 +855,23 @@ public class Bytecoder implements Constants {
 
 	public kiev.bytecode.PoolConstant[] writeConstPool() {
 		// Write constant pool
-		for(int i=0; i < ConstPool.hwm; i++)
-			if( ConstPool.pool[i] != null )
-				ConstPool.pool[i].pos = i;
+		for(int i=0; i < constPool.hwm; i++)
+			if( constPool.pool[i] != null )
+				constPool.pool[i].pos = i;
 		int hwm, lwm;
 		kiev.bytecode.PoolConstant[] bcpool;
 		if( kievmode ) {
-			hwm = ConstPool.hwm;
-			lwm = ConstPool.java_hwm;
+			hwm = constPool.hwm;
+			lwm = constPool.java_hwm;
 		} else {
-			hwm = ConstPool.java_hwm;
+			hwm = constPool.java_hwm;
 			lwm = 1;
 			bcpool = new kiev.bytecode.PoolConstant[hwm];
 		}
 		bcpool = new kiev.bytecode.PoolConstant[hwm];
 		bcpool[0] = new kiev.bytecode.VoidPoolConstant();
 		for(int i=1; i < hwm; i++) {
-			CP c = ConstPool.pool[i];
+			CP c = constPool.pool[i];
 			switch( c ) {
 			case AsciiCP:
 				bcpool[i] = new kiev.bytecode.Utf8PoolConstant();
@@ -914,7 +929,7 @@ public class Bytecoder implements Constants {
 				((kiev.bytecode.NameAndTypePoolConstant)bcpool[i]).ref_type = ((NameTypeCP)c).type_cp.pos;
 				continue;
 			default:
-				throw new RuntimeException("Unknown tag in ConstantPool "+ConstPool.pool[i]);
+				throw new RuntimeException("Unknown tag in ConstantPool "+constPool.pool[i]);
 			}
 		}
 		return bcpool;
@@ -923,13 +938,13 @@ public class Bytecoder implements Constants {
 	public kiev.bytecode.Field writeField(Field f) {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
-		bcf.cp_name = ConstPool.getAsciiCP(f.name.name).pos;
+		bcf.cp_name = constPool.getAsciiCP(f.name.name).pos;
 		if( !kievmode ) {
 			Type tp = f.type;
-			bcf.cp_type = ConstPool.getAsciiCP(tp.java_signature).pos;
+			bcf.cp_type = constPool.getAsciiCP(tp.java_signature).pos;
 		}
 		else
-			bcf.cp_type = ConstPool.getAsciiCP(f.type.signature).pos;
+			bcf.cp_type = constPool.getAsciiCP(f.type.signature).pos;
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
 		if( !kievmode ) {
@@ -951,11 +966,11 @@ public class Bytecoder implements Constants {
 		Struct jcl = cl;
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
-		bcm.cp_name = ConstPool.getAsciiCP(m.name.name).pos;
+		bcm.cp_name = constPool.getAsciiCP(m.name.name).pos;
 		if( !kievmode )
-			bcm.cp_type = ConstPool.getAsciiCP(m.jtype.java_signature).pos;
+			bcm.cp_type = constPool.getAsciiCP(m.jtype.java_signature).pos;
 		else
-			bcm.cp_type = ConstPool.getAsciiCP(m.type.signature).pos;
+			bcm.cp_type = constPool.getAsciiCP(m.type.signature).pos;
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
 		if( !kievmode ) {
@@ -974,7 +989,7 @@ public class Bytecoder implements Constants {
     }
 
 	public kiev.bytecode.Attribute writeAttr(Attr a) {
-		kiev.bytecode.Attribute kba = a.write();
+		kiev.bytecode.Attribute kba = a.write(constPool);
 		return kba;
 	}
 }

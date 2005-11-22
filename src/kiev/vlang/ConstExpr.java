@@ -50,27 +50,27 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
 	public Type		getType()			{ return Type.tpBoolean; }
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( reqType != Type.tpVoid ) {
 			if( value )
-				Code.addConst(1);
+				code.addConst(1);
 			else
-				Code.addConst(0);
+				code.addConst(0);
 		}
 	}
 
-	public void generate_iftrue(CodeLabel label) {
+	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_true "+this);
-		Code.setLinePos(this.getPosLine());
-		if( value ) Code.addInstr(op_goto,label);
+		code.setLinePos(this.getPosLine());
+		if( value ) code.addInstr(op_goto,label);
 	}
 
-	public void generate_iffalse(CodeLabel label) {
+	public void generate_iffalse(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_false "+this);
-		Code.setLinePos(this.getPosLine());
-		if( !value ) Code.addInstr(op_goto,label);
+		code.setLinePos(this.getPosLine());
+		if( !value ) code.addInstr(op_goto,label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -225,61 +225,61 @@ public abstract class ConstExpr extends Expr {
 		setResolved(true);
 	}
 
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		Object value = getConstValue();
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
-		Code.setLinePos(this.getPosLine());
+		code.setLinePos(this.getPosLine());
 		if( value == null ) {
 			// Special case for generation of parametriezed
 			// with primitive types classes
 			if( reqType != null && !reqType.isReference() ) {
 				switch(reqType.signature.byteAt(0)) {
 				case 'Z': case 'B': case 'S': case 'I': case 'C':
-					Code.addConst(0);
+					code.addConst(0);
 					break;
 				case 'J':
-					Code.addConst(0L);
+					code.addConst(0L);
 					break;
 				case 'F':
-					Code.addConst(0.F);
+					code.addConst(0.F);
 					break;
 				case 'D':
-					Code.addConst(0.D);
+					code.addConst(0.D);
 					break;
 				default:
-					Code.addNullConst();
+					code.addNullConst();
 					break;
 				}
 			}
 			else
-				Code.addNullConst();
+				code.addNullConst();
 		}
 		else if( value instanceof Byte ) {
-			Code.addConst(((Byte)value).intValue());
+			code.addConst(((Byte)value).intValue());
 		}
 		else if( value instanceof Short ) {
-			Code.addConst(((Short)value).intValue());
+			code.addConst(((Short)value).intValue());
 		}
 		else if( value instanceof Integer ) {
-			Code.addConst(((Integer)value).intValue());
+			code.addConst(((Integer)value).intValue());
 		}
 		else if( value instanceof Character ) {
-			Code.addConst((int)((Character)value).charValue());
+			code.addConst((int)((Character)value).charValue());
 		}
 		else if( value instanceof Long ) {
-			Code.addConst(((Long)value).longValue());
+			code.addConst(((Long)value).longValue());
 		}
 		else if( value instanceof Float ) {
-			Code.addConst(((Float)value).floatValue());
+			code.addConst(((Float)value).floatValue());
 		}
 		else if( value instanceof Double ) {
-			Code.addConst(((Double)value).doubleValue());
+			code.addConst(((Double)value).doubleValue());
 		}
 		else if( value instanceof KString ) {
-			Code.addConst((KString)value);
+			code.addConst((KString)value);
 		}
 		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-		if( reqType == Type.tpVoid ) Code.addInstr(op_pop);
+		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 	public Dumper	toJava(Dumper dmp) {
@@ -328,7 +328,7 @@ public abstract class ConstExpr extends Expr {
 		try
 		{
 			switch(t.kind) {
-			case kiev040Constants.INTEGER_LITERAL:
+			case ParserConstants.INTEGER_LITERAL:
 			{
 				String image;
 				int radix;
@@ -339,7 +339,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstIntExpr((int)i);
 				break;
 			}
-			case kiev040Constants.LONG_INTEGER_LITERAL:
+			case ParserConstants.LONG_INTEGER_LITERAL:
 			{
 				String image;
 				int radix;
@@ -350,7 +350,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstLongExpr(l);
 				break;
 			}
-			case kiev040Constants.FLOATING_POINT_LITERAL:
+			case ParserConstants.FLOATING_POINT_LITERAL:
 			{
 				String image;
 				if( t.image.endsWith("f") || t.image.endsWith("F") ) image = t.image.substring(0,t.image.length()-1);
@@ -359,7 +359,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstFloatExpr(f);
 				break;
 			}
-			case kiev040Constants.DOUBLE_POINT_LITERAL:
+			case ParserConstants.DOUBLE_POINT_LITERAL:
 			{
 				String image;
 				if( t.image.endsWith("d") || t.image.endsWith("D") ) image = t.image.substring(0,t.image.length()-1);
@@ -368,7 +368,7 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstDoubleExpr(d);
 				break;
 			}
-			case kiev040Constants.CHARACTER_LITERAL:
+			case ParserConstants.CHARACTER_LITERAL:
 			{
 				char c;
 				if( t.image.length() == 3 )
@@ -378,16 +378,16 @@ public abstract class ConstExpr extends Expr {
 				ce = new ConstCharExpr(c);
 				break;
 			}
-			case kiev040Constants.STRING_LITERAL:
+			case ParserConstants.STRING_LITERAL:
 				ce = new ConstStringExpr(source2ascii(t.image.substring(1,t.image.length()-1)));
 				break;
-			case kiev040Constants.TRUE:
+			case ParserConstants.TRUE:
 				ce = new ConstBoolExpr(true);
 				break;
-			case kiev040Constants.FALSE:
+			case ParserConstants.FALSE:
 				ce = new ConstBoolExpr(false);
 				break;
-			case kiev040Constants.NULL:
+			case ParserConstants.NULL:
 				ce = new ConstNullExpr();
 				break;
 			}

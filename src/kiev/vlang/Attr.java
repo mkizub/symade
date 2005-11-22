@@ -46,15 +46,15 @@ public class Attr implements Constants {
 		this.name = name;
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 //		kiev.bytecode.Attribute a = new kiev.bytecode.Attribute();
 //		a.cp_name = ConstPool.getAsciiCP(name).pos;
 //		a.data = new byte[0];
 //		return a;
 		throw new RuntimeException("Unknown attribute generation: "+name);
 	}
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 	}
 }
 
@@ -65,27 +65,27 @@ public class CodeAttr extends Attr {
 	public int		max_locals;
 	CodeCatchInfo[]	catchers;
 	Attr[]			code_attrs;
-	public byte[]	code;
+	public byte[]	bcode;
 	public CP[]		constants;
 	public int[]	constants_pc;
 
-	public CodeAttr(Method m, int max_st,int max_locs, byte[] code,
+	public CodeAttr(Method m, int max_st,int max_locs, byte[] bcode,
 			CodeCatchInfo[] catchers, Attr[] code_attrs) {
 		super(attrCode);
-		method = m;
-		this.code = code;
-		max_stack = max_st;
-		max_locals = max_locs;
+		this.method = m;
+		this.bcode = bcode;
+		this.max_stack = max_st;
+		this.max_locals = max_locs;
 		this.catchers = catchers;
 		this.code_attrs = code_attrs;
 	}
 
-	protected CodeAttr(KString nm, int max_st,int max_locs, byte[] code, Attr[] code_attrs) {
+	protected CodeAttr(KString nm, int max_st,int max_locs, byte[] bcode, Attr[] code_attrs) {
 		super(nm);
-		method = null;
-		this.code = code;
-		max_stack = max_st;
-		max_locals = max_locs;
+		this.method = null;
+		this.bcode = bcode;
+		this.max_stack = max_st;
+		this.max_locals = max_locs;
 		this.catchers = null;
 		this.code_attrs = code_attrs;
 	}
@@ -98,24 +98,24 @@ public class CodeAttr extends Attr {
 		return null;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; code_attrs!=null && i < code_attrs.length; i++)
-			code_attrs[i].generate();
+			code_attrs[i].generate(constPool);
 		for(int i=0; catchers!=null && i < catchers.length; i++) {
 			if(catchers[i].type != null) {
-				ClazzCP cl_cp = ConstPool.addClazzCP(catchers[i].type.java_signature);
-				ConstPool.addAsciiCP(cl_cp.asc.value);
+				ClazzCP cl_cp = constPool.addClazzCP(catchers[i].type.java_signature);
+				constPool.addAsciiCP(cl_cp.asc.value);
 			}
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.CodeAttribute ca = new kiev.bytecode.CodeAttribute();
-		ca.cp_name = ConstPool.getAsciiCP(name).pos;
+		ca.cp_name = constPool.getAsciiCP(name).pos;
 		ca.max_stack = max_stack;
 		ca.max_locals = max_locals;
-		ca.code = code;
+		ca.code = bcode;
 		int clen = catchers.length;
 		ca.catchers_start_pc = new int[clen];
 		ca.catchers_end_pc = new int[clen];
@@ -126,11 +126,11 @@ public class CodeAttr extends Attr {
 			ca.catchers_end_pc[i] = catchers[i].end_pc;
 			ca.catchers_handler_pc[i] = catchers[i].handler.pc;
 			if(catchers[i].type != null)
-				ca.catchers_cp_signature[i] = ConstPool.getClazzCP(catchers[i].type.java_signature).pos;
+				ca.catchers_cp_signature[i] = constPool.getClazzCP(catchers[i].type.java_signature).pos;
 		}
 		ca.attrs = new kiev.bytecode.Attribute[code_attrs.length];
 		for(int i=0; i < code_attrs.length; i++) {
-			ca.attrs[i] = code_attrs[i].write();
+			ca.attrs[i] = code_attrs[i].write(constPool);
 		}
 		return ca;
 	}
@@ -147,15 +147,15 @@ public class SourceFileAttr extends Attr {
 		this.filename = KString.from((new java.io.File(filename.toString())).getName());
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
-		ConstPool.addAsciiCP(filename);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		constPool.addAsciiCP(filename);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.SourceFileAttribute sfa = new kiev.bytecode.SourceFileAttribute();
-		sfa.cp_name = ConstPool.getAsciiCP(name).pos;
-		sfa.cp_filename = ConstPool.getAsciiCP(filename).pos;
+		sfa.cp_name = constPool.getAsciiCP(name).pos;
+		sfa.cp_filename = constPool.getAsciiCP(filename).pos;
 		return sfa;
 	}
 }
@@ -175,21 +175,21 @@ public class LocalVarTableAttr extends Attr {
 		var.index = vars.length-1;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
 			Var v = vars[i].var;
-			ConstPool.addAsciiCP(v.name.name);
+			constPool.addAsciiCP(v.name.name);
 			if( v.isNeedRefProxy() )
-				ConstPool.addAsciiCP(Type.getProxyType(v.type).java_signature);
+				constPool.addAsciiCP(Type.getProxyType(v.type).java_signature);
 			else
-				ConstPool.addAsciiCP(v.type.java_signature);
+				constPool.addAsciiCP(v.type.java_signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.LocalVariableTableAttribute lvta = new kiev.bytecode.LocalVariableTableAttribute();
-		lvta.cp_name = ConstPool.getAsciiCP(name).pos;
+		lvta.cp_name = constPool.getAsciiCP(name).pos;
 		int len = vars.length;
 		lvta.start_pc = new int[len];
 		lvta.length_pc = new int[len];
@@ -206,8 +206,8 @@ public class LocalVarTableAttr extends Attr {
 
 			lvta.start_pc[i] = vars[i].start_pc;
 			lvta.length_pc[i] = vars[i].end_pc-vars[i].start_pc;
-			lvta.cp_varname[i] = ConstPool.getAsciiCP(v.name.name).pos;
-			lvta.cp_signature[i] = ConstPool.getAsciiCP(sign).pos;
+			lvta.cp_varname[i] = constPool.getAsciiCP(v.name.name).pos;
+			lvta.cp_signature[i] = constPool.getAsciiCP(sign).pos;
 			lvta.slot[i] = vars[i].stack_pos;
 		}
 		return lvta;
@@ -225,9 +225,9 @@ public class LinenoTableAttr extends Attr {
 		table = new int[0];
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.LineNumberTableAttribute lnta = new kiev.bytecode.LineNumberTableAttribute();
-		lnta.cp_name = ConstPool.getAsciiCP(name).pos;
+		lnta.cp_name = constPool.getAsciiCP(name).pos;
 		int len = table.length;
 		lnta.start_pc = new int[len];
 		lnta.lineno = new int[len];
@@ -250,18 +250,18 @@ public class ExceptionsAttr extends Attr {
 		exceptions = new Type[0];
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < exceptions.length; i++)
-			ConstPool.addClazzCP(exceptions[i].java_signature);
+			constPool.addClazzCP(exceptions[i].java_signature);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.ExceptionsAttribute ea = new kiev.bytecode.ExceptionsAttribute();
-		ea.cp_name = ConstPool.getAsciiCP(name).pos;
+		ea.cp_name = constPool.getAsciiCP(name).pos;
 		ea.cp_exceptions = new int[exceptions.length];
 		for(int i=0; i < exceptions.length; i++)
-			ea.cp_exceptions[i] = ConstPool.getClazzCP(exceptions[i].java_signature).pos;
+			ea.cp_exceptions[i] = constPool.getClazzCP(exceptions[i].java_signature).pos;
 		return ea;
 	}
 }
@@ -282,21 +282,21 @@ public class InnerClassesAttr extends Attr {
 		acc = new short[0];
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				ConstPool.addClazzCP(((Type)inner[i].type).java_signature);
+				constPool.addClazzCP(((Type)inner[i].type).java_signature);
 			}
 			if( outer[i] != null ) {
-				ConstPool.addClazzCP(((Type)outer[i].type).java_signature);
+				constPool.addClazzCP(((Type)outer[i].type).java_signature);
 			}
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.InnerClassesAttribute ica = new kiev.bytecode.InnerClassesAttribute();
-		ica.cp_name = ConstPool.getAsciiCP(name).pos;
+		ica.cp_name = constPool.getAsciiCP(name).pos;
 		int len = inner.length;
 		ica.cp_inners = new int[len];
 		ica.cp_outers = new int[len];
@@ -304,13 +304,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).pos;
+				ica.cp_inners[i] = constPool.getClazzCP(((Type)inner[i].type).java_signature).pos;
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = ConstPool.getClazzCP(((Type)outer[i].type).java_signature).pos;
+				ica.cp_outers[i] = constPool.getClazzCP(((Type)outer[i].type).java_signature).pos;
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = ConstPool.getClazzCP(((Type)inner[i].type).java_signature).asc.pos;
+				ica.cp_inner_names[i] = constPool.getClazzCP(((Type)inner[i].type).java_signature).asc.pos;
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}
@@ -328,35 +328,35 @@ public class ConstantValueAttr extends Attr {
 		value = val.getConstValue();
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		if( value instanceof Number )
-			ConstPool.addNumberCP((Number)value);
+			constPool.addNumberCP((Number)value);
 		else if( value instanceof Character )
-			ConstPool.addNumberCP(Integer.valueOf((int)((Character)value).charValue()));
+			constPool.addNumberCP(Integer.valueOf((int)((Character)value).charValue()));
 		else if( value instanceof KString )
-			ConstPool.addStringCP((KString)value);
+			constPool.addStringCP((KString)value);
 		else if( value instanceof Boolean ) {
 			Integer i = Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 );
-			ConstPool.addNumberCP(i);
+			constPool.addNumberCP(i);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.ConstantValueAttribute cva = new kiev.bytecode.ConstantValueAttribute();
-		cva.cp_name = ConstPool.getAsciiCP(name).pos;
+		cva.cp_name = constPool.getAsciiCP(name).pos;
 		switch( value ) {
 		case Boolean:
-			cva.cp_value = ConstPool.getNumberCP(Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 )).pos;
+			cva.cp_value = constPool.getNumberCP(Integer.valueOf(((Boolean)value).booleanValue()? 1: 0 )).pos;
 			break;
 		case Character:
-			cva.cp_value = ConstPool.getNumberCP(Integer.valueOf((int)((Character)value).charValue())).pos;
+			cva.cp_value = constPool.getNumberCP(Integer.valueOf((int)((Character)value).charValue())).pos;
 			break;
 		case Number:
-			cva.cp_value = ConstPool.getNumberCP((Number)value).pos;
+			cva.cp_value = constPool.getNumberCP((Number)value).pos;
 			break;
 		case KString:
-			cva.cp_value = ConstPool.getStringCP((KString)value).pos;
+			cva.cp_value = constPool.getStringCP((KString)value).pos;
 			break;
 		default:
 			throw new RuntimeException("Bad type for ConstantValueAttr: "+value.getClass());
@@ -382,20 +382,20 @@ public class PizzaCaseAttr extends Attr {
 		super(attrPizzaCase);
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < casefields.length; i++) {
-			ConstPool.addNameTypeCP(casefields[i].name.name,((Type)casefields[i].type).java_signature);
+			constPool.addNameTypeCP(casefields[i].name.name,((Type)casefields[i].type).java_signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievCaseAttribute kca = new kiev.bytecode.KievCaseAttribute();
-		kca.cp_name = ConstPool.getAsciiCP(name).pos;
+		kca.cp_name = constPool.getAsciiCP(name).pos;
 		kca.caseno = caseno;
 		kca.cp_casefields = new int[casefields.length];
 		for(int i=0; i < casefields.length; i++) {
-			kca.cp_casefields[i] = ConstPool.getNameTypeCP(casefields[i].name.name,
+			kca.cp_casefields[i] = constPool.getNameTypeCP(casefields[i].name.name,
 				((Type)casefields[i].type).java_signature).pos;
 		}
 		return kca;
@@ -417,23 +417,23 @@ public class ClassArgumentsAttr extends Attr {
 		argno= new short[0];
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < args.length; i++) {
-			ConstPool.addAsciiCP(args[i].signature);
-			ConstPool.addAsciiCP(args[i].getSuperType().signature);
+			constPool.addAsciiCP(args[i].signature);
+			constPool.addAsciiCP(args[i].getSuperType().signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievClassArgumentsAttribute kaa = new kiev.bytecode.KievClassArgumentsAttribute();
-		kaa.cp_name = ConstPool.getAsciiCP(name).pos;
+		kaa.cp_name = constPool.getAsciiCP(name).pos;
 		kaa.cp_argname = new int[args.length];
 		kaa.cp_supername = new int[args.length];
 		kaa.argno = new int[args.length];
 		for(int i=0; i < args.length; i++) {
-			kaa.cp_argname[i] = ConstPool.getAsciiCP(args[i].signature).pos;
-			kaa.cp_supername[i] = ConstPool.getAsciiCP(args[i].getSuperType().signature).pos;
+			kaa.cp_argname[i] = constPool.getAsciiCP(args[i].signature).pos;
+			kaa.cp_supername[i] = constPool.getAsciiCP(args[i].getSuperType().signature).pos;
 			kaa.argno[i] = argno[i];
 		}
 		return kaa;
@@ -454,13 +454,13 @@ public class KievAttr extends Attr {
 		this.dump = dump;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.Attribute ka = new kiev.bytecode.Attribute();
-		ka.cp_name = ConstPool.getAsciiCP(name).pos;
+		ka.cp_name = constPool.getAsciiCP(name).pos;
 		Debug.assert( dump != null, "Null data in KievAttr" );
 		ka.data = dump;
 		return ka;
@@ -482,13 +482,13 @@ public class FlagsAttr extends Attr {
 		flags = fl;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievFlagsAttribute kfa = new kiev.bytecode.KievFlagsAttribute();
-		kfa.cp_name = ConstPool.getAsciiCP(name).pos;
+		kfa.cp_name = constPool.getAsciiCP(name).pos;
 		kfa.flags = flags;
 		return kfa;
 	}
@@ -506,20 +506,20 @@ public class AliasAttr extends Attr {
 		nname = nm;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
-		ConstPool.addAsciiCP(nname.name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		constPool.addAsciiCP(nname.name);
 		foreach(KString n; nname.aliases)
-			ConstPool.addAsciiCP(n);
+			constPool.addAsciiCP(n);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievAliasAttribute kaa = new kiev.bytecode.KievAliasAttribute();
-		kaa.cp_name = ConstPool.getAsciiCP(name).pos;
+		kaa.cp_name = constPool.getAsciiCP(name).pos;
 		int len = nname.aliases.length();
 		kaa.cp_alias = new int[len];
 		for(int i=0; i < len; i++) {
-			kaa.cp_alias[i] = ConstPool.getAsciiCP(nname.aliases.at(i)).pos;
+			kaa.cp_alias[i] = constPool.getAsciiCP(nname.aliases.at(i)).pos;
 		}
 		return kaa;
 	}
@@ -545,17 +545,17 @@ public class TypedefAttr extends Attr {
 		this.type_name = type_name;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
-		ConstPool.addAsciiCP(type.signature);
-		ConstPool.addAsciiCP(type_name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		constPool.addAsciiCP(type.signature);
+		constPool.addAsciiCP(type_name);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievTypedefAttribute ktda = new kiev.bytecode.KievTypedefAttribute();
-		ktda.cp_name = ConstPool.getAsciiCP(name).pos;
-		ktda.cp_type = ConstPool.getAsciiCP(type.signature).pos;
-		ktda.cp_tpnm = ConstPool.getAsciiCP(type_name).pos;
+		ktda.cp_name = constPool.getAsciiCP(name).pos;
+		ktda.cp_type = constPool.getAsciiCP(type.signature).pos;
+		ktda.cp_tpnm = constPool.getAsciiCP(type_name).pos;
 		return ktda;
 	}
 }
@@ -572,18 +572,18 @@ public class OperatorAttr extends Attr {
 		this.op = op;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
-		ConstPool.addAsciiCP(Operator.orderAndArityNames[op.mode]);
-		ConstPool.addAsciiCP(op.image);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		constPool.addAsciiCP(Operator.orderAndArityNames[op.mode]);
+		constPool.addAsciiCP(op.image);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievOperatorAttribute koa = new kiev.bytecode.KievOperatorAttribute();
-		koa.cp_name = ConstPool.getAsciiCP(name).pos;
+		koa.cp_name = constPool.getAsciiCP(name).pos;
 		koa.priority = op.priority;
-		koa.cp_optype = ConstPool.getAsciiCP(Operator.orderAndArityNames[op.mode]).pos;
-		koa.cp_image = ConstPool.getAsciiCP(op.image).pos;
+		koa.cp_optype = constPool.getAsciiCP(Operator.orderAndArityNames[op.mode]).pos;
+		koa.cp_image = constPool.getAsciiCP(op.image).pos;
 		return koa;
 	}
 }
@@ -600,31 +600,31 @@ public class ImportAttr extends Attr {
 		this.node = node;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		if( node instanceof Field ) {
 			Field f = (Field)node;
-			ConstPool.addFieldCP(((Struct)f.parent).type.signature,
+			constPool.addFieldCP(((Struct)f.parent).type.signature,
 				f.name.name,f.type.signature);
 		}
 		else if( node instanceof Method ) {
 			Method m = (Method)node;
-			ConstPool.addMethodCP(((Struct)m.parent).type.signature,
+			constPool.addMethodCP(((Struct)m.parent).type.signature,
 				m.name.name,m.type.signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievImportAttribute kia = new kiev.bytecode.KievImportAttribute();
-		kia.cp_name = ConstPool.getAsciiCP(name).pos;
+		kia.cp_name = constPool.getAsciiCP(name).pos;
 		if( node instanceof Field ) {
 			Field f = (Field)node;
-			kia.cp_ref = ConstPool.getFieldCP(((Struct)f.parent).type.signature,
+			kia.cp_ref = constPool.getFieldCP(((Struct)f.parent).type.signature,
 				f.name.name,f.type.signature).pos;
 		}
 		else if( node instanceof Method ) {
 			Method m = (Method)node;
-			kia.cp_ref = ConstPool.addMethodCP(((Struct)m.parent).type.signature,
+			kia.cp_ref = constPool.addMethodCP(((Struct)m.parent).type.signature,
 				m.name.name,m.type.signature).pos;
 		}
 		else
@@ -647,20 +647,20 @@ public class EnumAttr extends Attr {
 		this.values = values;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach(Field f; fields)
-			ConstPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(f.name.name);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievEnumAttribute kea = new kiev.bytecode.KievEnumAttribute();
-		kea.cp_name = ConstPool.getAsciiCP(name).pos;
+		kea.cp_name = constPool.getAsciiCP(name).pos;
 		int len = fields.length;
 		kea.fields = new int[len];
 		kea.values = new int[len];
 		for(int i=0; i < len; i++) {
-			kea.fields[i] = ConstPool.getAsciiCP(fields[i].name.name).pos;
+			kea.fields[i] = constPool.getAsciiCP(fields[i].name.name).pos;
 			kea.values[i] = values[i];
 		}
 		return kea;
@@ -680,22 +680,22 @@ public class CheckFieldsAttr extends Attr {
 		this.fields = fields;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach(Field f; fields) {
-			ConstPool.addFieldCP(((Struct)f.parent).type.signature,
+			constPool.addFieldCP(((Struct)f.parent).type.signature,
 				f.name.name,f.type.signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievCheckFieldsAttribute cfa = new kiev.bytecode.KievCheckFieldsAttribute();
-		cfa.cp_name = ConstPool.getAsciiCP(name).pos;
+		cfa.cp_name = constPool.getAsciiCP(name).pos;
 		int len = fields.length;
 		cfa.fields = new int[len];
 		for(int i=0; i < len; i++) {
 			Field f = fields[i];
-			cfa.fields[i] = ConstPool.getFieldCP(((Struct)f.parent).type.signature,
+			cfa.fields[i] = constPool.getFieldCP(((Struct)f.parent).type.signature,
 				f.name.name,f.type.signature).pos;
 		}
 		return cfa;
@@ -716,22 +716,23 @@ public class ContractAttr extends CodeAttr {
 		this.cond = cond;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		for(int i=0; i < constants.length; i++) {
 			CP cp = constants[i];
 			switch(cp) {
 			case AsciiCP:
-				constants[i] = AsciiCP.newAsciiCP( ((AsciiCP)cp).value );
+				constants[i] = AsciiCP.newAsciiCP(constPool, ((AsciiCP)cp).value );
 				continue;
 			case ClazzCP:
-				constants[i] = ClazzCP.newClazzCP( ((ClazzCP)cp).sig );
+				constants[i] = ClazzCP.newClazzCP(constPool, ((ClazzCP)cp).sig );
 				continue;
 			case NameTypeCP:
-				constants[i] = NameTypeCP.newNameTypeCP( ((NameTypeCP)cp).name_cp.value, ((NameTypeCP)cp).type_cp.value );
+				constants[i] = NameTypeCP.newNameTypeCP(constPool, ((NameTypeCP)cp).name_cp.value, ((NameTypeCP)cp).type_cp.value );
 				continue;
 			case FieldCP:
 				constants[i] = FieldCP.newFieldCP(
+					constPool,
 					((FieldCP)cp).clazz_cp.sig,
 					((FieldCP)cp).nt_cp.name_cp.value,
 					((FieldCP)cp).nt_cp.type_cp.value
@@ -739,6 +740,7 @@ public class ContractAttr extends CodeAttr {
 				continue;
 			case MethodCP:
 				constants[i] = MethodCP.newMethodCP(
+					constPool,
 					((MethodCP)cp).clazz_cp.sig,
 					((MethodCP)cp).nt_cp.name_cp.value,
 					((MethodCP)cp).nt_cp.type_cp.value
@@ -746,38 +748,39 @@ public class ContractAttr extends CodeAttr {
 				continue;
 			case InterfaceMethodCP:
 				constants[i] = InterfaceMethodCP.newInterfaceMethodCP(
+					constPool,
 					((InterfaceMethodCP)cp).clazz_cp.sig,
 					((InterfaceMethodCP)cp).nt_cp.name_cp.value,
 					((InterfaceMethodCP)cp).nt_cp.type_cp.value
 				);
 				continue;
 			case NumberCP:
-				constants[i] = NumberCP.newNumberCP( ((NumberCP)cp).value );
+				constants[i] = NumberCP.newNumberCP(constPool, ((NumberCP)cp).value );
 				continue;
 			case StringCP:
-				constants[i] = StringCP.newStringCP( ((StringCP)cp).asc.value );
+				constants[i] = StringCP.newStringCP(constPool, ((StringCP)cp).asc.value );
 				continue;
 			}
 		}
-		foreach(Attr a; code_attrs) a.generate();
+		foreach(Attr a; code_attrs) a.generate(constPool);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		for(int i=0; i < constants.length; i++) {
 			int s = constants[i].pos;
 			if( s < 1 )	throw new RuntimeException("Constant referenced, but not generated");
 			int pc = constants_pc[i];
-			code[pc] = (byte)(s >>> 8);
-			code[pc+1] = (byte)(s & 0xFF);
+			bcode[pc] = (byte)(s >>> 8);
+			bcode[pc+1] = (byte)(s & 0xFF);
 		}
 		kiev.bytecode.KievContractAttribute ca = new kiev.bytecode.KievContractAttribute();
-		ca.cp_name = ConstPool.getAsciiCP(name).pos;
+		ca.cp_name = constPool.getAsciiCP(name).pos;
 		ca.max_stack = max_stack;
 		ca.max_locals = max_locals;
-		ca.code = code;
+		ca.code = bcode;
 		ca.attrs = new kiev.bytecode.Attribute[code_attrs.length];
 		for(int i=0; i < code_attrs.length; i++) {
-			ca.attrs[i] = code_attrs[i].write();
+			ca.attrs[i] = code_attrs[i].write(constPool);
 		}
 		return ca;
 	}
@@ -795,19 +798,19 @@ public class GenerationsAttr extends Attr {
 		this.gens = gens;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach(Type t; gens)
-			ConstPool.addAsciiCP(t.java_signature);
+			constPool.addAsciiCP(t.java_signature);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievGenerationsAttribute kea = new kiev.bytecode.KievGenerationsAttribute();
-		kea.cp_name = ConstPool.getAsciiCP(name).pos;
+		kea.cp_name = constPool.getAsciiCP(name).pos;
 		int len = gens.length;
 		kea.gens = new int[len];
 		for(int i=0; i < len; i++) {
-			kea.gens[i] = ConstPool.getAsciiCP(gens[i].java_signature).pos;
+			kea.gens[i] = constPool.getAsciiCP(gens[i].java_signature).pos;
 		}
 		return kea;
 	}
@@ -825,22 +828,22 @@ public class PackedFieldsAttr extends Attr {
 		this.struct = s;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach(ASTNode n; struct.members; n instanceof Field && ((Field)n).isPackedField() ) {
 			Field f = (Field)n;
 			MetaPacked mp = f.getMetaPacked();
 			if (mp == null)
 				continue;
-			ConstPool.addAsciiCP(f.name.name);
-			ConstPool.addAsciiCP(mp.packer.name.name);
-			ConstPool.addAsciiCP(f.type.signature);
+			constPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(mp.packer.name.name);
+			constPool.addAsciiCP(f.type.signature);
 		}
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievPackedFieldsAttribute kea = new kiev.bytecode.KievPackedFieldsAttribute();
-		kea.cp_name = ConstPool.getAsciiCP(name).pos;
+		kea.cp_name = constPool.getAsciiCP(name).pos;
 		int len = struct.countPackedFields();
 		kea.fields = new int[len];
 		kea.signatures = new int[len];
@@ -852,9 +855,9 @@ public class PackedFieldsAttr extends Attr {
 			Field f = (Field)n;
 			MetaPacked mp = f.getMetaPacked();
 			if( !f.isPackedField() || mp == null ) continue;
-			kea.fields[j] = ConstPool.getAsciiCP(f.name.name).pos;
-			kea.signatures[j] = ConstPool.getAsciiCP(f.type.signature).pos;
-			kea.packers[j] = ConstPool.getAsciiCP(mp.packer.name.name).pos;
+			kea.fields[j] = constPool.getAsciiCP(f.name.name).pos;
+			kea.signatures[j] = constPool.getAsciiCP(f.type.signature).pos;
+			kea.packers[j] = constPool.getAsciiCP(mp.packer.name.name).pos;
 			kea.sizes[j] = mp.size;
 			kea.offsets[j] = mp.offset;
 			j++;
@@ -880,13 +883,13 @@ public class PackerFieldAttr extends Attr {
 		this.size = size;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 	}
 
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.KievPackerFieldAttribute kea = new kiev.bytecode.KievPackerFieldAttribute();
-		kea.cp_name = ConstPool.getAsciiCP(name).pos;
+		kea.cp_name = constPool.getAsciiCP(name).pos;
 		if( field != null )
 			kea.size = field.getMetaPacked().size;
 		else
@@ -901,107 +904,107 @@ public abstract class MetaAttr extends Attr {
 		super(name);
 	}
 	
-	protected final void generateValue(ASTNode value) {
+	protected final void generateValue(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
 			Object v = ((ConstExpr)value).getConstValue();
-			if     ( v instanceof Boolean )			ConstPool.addNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0));
-			else if( v instanceof Byte )			ConstPool.addNumberCP((Byte)v);
-			else if( v instanceof Short )			ConstPool.addNumberCP((Short)v);
-			else if( v instanceof Integer )			ConstPool.addNumberCP((Integer)v);
-			else if( v instanceof Character )		ConstPool.addNumberCP(Integer.valueOf((int)((Character)v).charValue()));
-			else if( v instanceof Long )			ConstPool.addNumberCP((Long)v);
-			else if( v instanceof Float )			ConstPool.addNumberCP((Float)v);
-			else if( v instanceof Double )			ConstPool.addNumberCP((Double)v);
-			else if( v instanceof KString )			ConstPool.addAsciiCP((KString)v);
+			if     ( v instanceof Boolean )			constPool.addNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0));
+			else if( v instanceof Byte )			constPool.addNumberCP((Byte)v);
+			else if( v instanceof Short )			constPool.addNumberCP((Short)v);
+			else if( v instanceof Integer )			constPool.addNumberCP((Integer)v);
+			else if( v instanceof Character )		constPool.addNumberCP(Integer.valueOf((int)((Character)v).charValue()));
+			else if( v instanceof Long )			constPool.addNumberCP((Long)v);
+			else if( v instanceof Float )			constPool.addNumberCP((Float)v);
+			else if( v instanceof Double )			constPool.addNumberCP((Double)v);
+			else if( v instanceof KString )			constPool.addAsciiCP((KString)v);
 		}
 		else if (value instanceof TypeRef) {
-			ConstPool.addClazzCP(((TypeRef)value).getType().java_signature);
+			constPool.addClazzCP(((TypeRef)value).getType().java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.parent;
-			ConstPool.addAsciiCP(s.type.java_signature);
-			ConstPool.addAsciiCP(f.name.name);
+			constPool.addAsciiCP(s.type.java_signature);
+			constPool.addAsciiCP(f.name.name);
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
-			ConstPool.addAsciiCP(m.type.getType().java_signature);
+			constPool.addAsciiCP(m.type.getType().java_signature);
 			foreach (MetaValue v; m) {
-				generateValue(v);
+				generateValue(constPool,v);
 			}
 		}
 		else if (value instanceof MetaValueScalar) {
-			ConstPool.addAsciiCP(value.type.name);
-			generateValue(((MetaValueScalar)value).value);
+			constPool.addAsciiCP(value.type.name);
+			generateValue(constPool,((MetaValueScalar)value).value);
 		}
 		else if (value instanceof MetaValueArray) {
-			ConstPool.addAsciiCP(value.type.name);
+			constPool.addAsciiCP(value.type.name);
 			MetaValueArray va = (MetaValueArray)value; 
 			foreach (ASTNode n; va.values)
-				generateValue(n);
+				generateValue(constPool,n);
 		}
 	}
 
-	public kiev.bytecode.Annotation.element_value write_values(ASTNode[] values) {
+	public kiev.bytecode.Annotation.element_value write_values(ConstPool constPool, ASTNode[] values) {
 		ASTNode[] arr = values;
 		kiev.bytecode.Annotation.element_value_array ev = new kiev.bytecode.Annotation.element_value_array();
 		ev.tag = (byte)'[';
 		ev.values = new kiev.bytecode.Annotation.element_value[arr.length];
 		int n = 0;
 		foreach (ASTNode node; arr) {
-			ev.values[n] = write_value(node);
+			ev.values[n] = write_value(constPool, node);
 			n++;
 		}
 		return ev;
 	}
 	
-	public kiev.bytecode.Annotation.element_value write_value(ASTNode value) {
+	public kiev.bytecode.Annotation.element_value write_value(ConstPool constPool, ASTNode value) {
 		if (value instanceof ConstExpr) {
 			kiev.bytecode.Annotation.element_value_const ev = new kiev.bytecode.Annotation.element_value_const(); 
 			Object v = ((ConstExpr)value).getConstValue();
 			if     ( v instanceof Boolean ) {
 				ev.tag = (byte)'Z';
-				ev.const_value_index = ConstPool.getNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0)).pos;
+				ev.const_value_index = constPool.getNumberCP(Integer.valueOf(((Boolean)v).booleanValue() ? 1 : 0)).pos;
 			}
 			else if( v instanceof Byte ) {
 				ev.tag = (byte)'B';
-				ev.const_value_index = ConstPool.getNumberCP((Byte)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Byte)v).pos;
 			}
 			else if( v instanceof Short ) {
 				ev.tag = (byte)'S';
-				ev.const_value_index = ConstPool.getNumberCP((Short)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Short)v).pos;
 			}
 			else if( v instanceof Integer ) {
 				ev.tag = (byte)'I';
-				ev.const_value_index = ConstPool.getNumberCP((Integer)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Integer)v).pos;
 			}
 			else if( v instanceof Character ) {
 				ev.tag = (byte)'C';
-				ev.const_value_index = ConstPool.getNumberCP(Integer.valueOf((int)((Character)v).charValue())).pos;
+				ev.const_value_index = constPool.getNumberCP(Integer.valueOf((int)((Character)v).charValue())).pos;
 			}
 			else if( v instanceof Long ) {
 				ev.tag = (byte)'J';
-				ev.const_value_index = ConstPool.getNumberCP((Long)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Long)v).pos;
 			}
 			else if( v instanceof Float ) {
 				ev.tag = (byte)'F';
-				ev.const_value_index = ConstPool.getNumberCP((Float)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Float)v).pos;
 			}
 			else if( v instanceof Double ) {
 				ev.tag = (byte)'D';
-				ev.const_value_index = ConstPool.getNumberCP((Double)v).pos;
+				ev.const_value_index = constPool.getNumberCP((Double)v).pos;
 			}
 			else if( v instanceof KString ) {
 				ev.tag = (byte)'s';
-				ev.const_value_index = ConstPool.getAsciiCP((KString)v).pos;
+				ev.const_value_index = constPool.getAsciiCP((KString)v).pos;
 			}
 			return ev;
 		}
 		else if (value instanceof TypeRef) {
 			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
 			ev.tag = (byte)'c';
-			ev.class_info_index = ConstPool.getClazzCP(((TypeRef)value).getType().java_signature).pos;
+			ev.class_info_index = constPool.getClazzCP(((TypeRef)value).getType().java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
@@ -1010,8 +1013,8 @@ public abstract class MetaAttr extends Attr {
 			Struct s = (Struct)f.parent;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
-			ev.type_name_index = ConstPool.getAsciiCP(s.type.java_signature).pos;
-			ev.const_name_index = ConstPool.getAsciiCP(f.name.name).pos;
+			ev.type_name_index = constPool.getAsciiCP(s.type.java_signature).pos;
+			ev.const_name_index = constPool.getAsciiCP(f.name.name).pos;
 			return ev;
 		}
 		else if (value instanceof Meta) {
@@ -1019,24 +1022,24 @@ public abstract class MetaAttr extends Attr {
 			kiev.bytecode.Annotation.element_value_annotation ev = new kiev.bytecode.Annotation.element_value_annotation(); 
 			ev.tag = (byte)'@';
 			ev.annotation_value = new kiev.bytecode.Annotation.annotation();
-			write_annotation(m, ev.annotation_value);
+			write_annotation(constPool, m, ev.annotation_value);
 			return ev;
 		}
 		throw new RuntimeException("value is: "+(value==null?"null":String.valueOf(value.getClass())));
 	}
 
-	public void write_annotation(Meta m, kiev.bytecode.Annotation.annotation a) {
-		a.type_index = ConstPool.getAsciiCP(m.type.getType().java_signature).pos;
+	public void write_annotation(ConstPool constPool, Meta m, kiev.bytecode.Annotation.annotation a) {
+		a.type_index = constPool.getAsciiCP(m.type.getType().java_signature).pos;
 		a.names = new int[m.size()];
 		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
 		int n = 0;
 		foreach (MetaValue v; m) {
-			a.names[n] = ConstPool.addAsciiCP(v.type.name).pos;
+			a.names[n] = constPool.addAsciiCP(v.type.name).pos;
 			if (v instanceof MetaValueScalar) {
-				a.values[n] = write_value(((MetaValueScalar)v).value);
+				a.values[n] = write_value(constPool, ((MetaValueScalar)v).value);
 			} else {
 				MetaValueArray mva = (MetaValueArray)v;
-				a.values[n] = write_values(mva.values.toArray());
+				a.values[n] = write_values(constPool, mva.values.toArray());
 			}
 			n++;
 		}
@@ -1051,10 +1054,10 @@ public abstract class RMetaAttr extends MetaAttr {
 		this.ms = ms;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach (Meta m; ms) {
-			generateValue(m);
+			generateValue(constPool, m);
 		}
 	}
 	
@@ -1064,14 +1067,14 @@ public class RVMetaAttr extends RMetaAttr {
 	public RVMetaAttr(MetaSet metas) {
 		super(Constants.attrRVAnnotations, metas);
 	}
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.RVAnnotations a = new kiev.bytecode.RVAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[ms.size()];
-		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		a.cp_name = constPool.getAsciiCP(name).pos;
 		int n = 0;
 		foreach (Meta m; ms) {
 			a.annotations[n] = new kiev.bytecode.Annotation.annotation();
-			write_annotation(m, a.annotations[n]);
+			write_annotation(constPool, m, a.annotations[n]);
 			n++;
 		}
 		return a;
@@ -1093,11 +1096,11 @@ public abstract class ParMetaAttr extends MetaAttr {
 		this.mss = mss;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
 		foreach (MetaSet ms; mss; ms != null) {
 			foreach (Meta m; ms) {
-				generateValue(m);
+				generateValue(constPool, m);
 			}
 		}
 	}
@@ -1108,10 +1111,10 @@ public class RVParMetaAttr extends ParMetaAttr {
 	public RVParMetaAttr(MetaSet[] metas) {
 		super(Constants.attrRVParAnnotations, metas);
 	}
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.RVParAnnotations a = new kiev.bytecode.RVParAnnotations();
 		a.annotations = new kiev.bytecode.Annotation.annotation[mss.length][];
-		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		a.cp_name = constPool.getAsciiCP(name).pos;
 		for (int i=0; i < mss.length; i++) {
 			MetaSet ms = mss[i];
 			if (ms != null) {
@@ -1119,7 +1122,7 @@ public class RVParMetaAttr extends ParMetaAttr {
 				a.annotations[i] = new kiev.bytecode.Annotation.annotation[ms.size()];
 				foreach (Meta m; ms) {
 					a.annotations[i][n] = new kiev.bytecode.Annotation.annotation();
-					write_annotation(m, a.annotations[i][n]);
+					write_annotation(constPool, m, a.annotations[i][n]);
 					n++;
 				}
 			}
@@ -1137,18 +1140,18 @@ public class DefaultMetaAttr extends MetaAttr {
 		this.mv = mv;
 	}
 
-	public void generate() {
-		ConstPool.addAsciiCP(name);
-		generateValue(mv);
+	public void generate(ConstPool constPool) {
+		constPool.addAsciiCP(name);
+		generateValue(constPool, mv);
 	}
 	
-	public kiev.bytecode.Attribute write() {
+	public kiev.bytecode.Attribute write(ConstPool constPool) {
 		kiev.bytecode.AnnotationDefault a = new kiev.bytecode.AnnotationDefault();
-		a.cp_name = ConstPool.getAsciiCP(name).pos;
+		a.cp_name = constPool.getAsciiCP(name).pos;
 		if (mv instanceof MetaValueScalar)
-			a.value = write_value(((MetaValueScalar)mv).value);
+			a.value = write_value(constPool, ((MetaValueScalar)mv).value);
 		else
-			a.value = write_values(((MetaValueArray)mv).values.toArray());
+			a.value = write_values(constPool, ((MetaValueArray)mv).values.toArray());
 		return a;
 	}
 }

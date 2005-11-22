@@ -1290,7 +1290,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 	
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
 		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
@@ -1352,8 +1352,8 @@ public final class VarDecl extends ENode implements Named {
 	}
 
 	public NodeName getName() { return var.name; }
-	public void generate(Type reqType) {
-		var.generate(Type.tpVoid);
+	public void generate(Code code, Type reqType) {
+		var.generate(code,Type.tpVoid);
 	}
 	public Dumper toJava(Dumper dmp) {
 		var.toJavaDecl(dmp);
@@ -1388,7 +1388,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	}
 
 	public NodeName getName() { return clazz.name; }
-	public void generate(Type reqType) {
+	public void generate(Code code, Type reqType) {
 		// don't generate here
 	}
 	public Dumper toJava(Dumper dmp) {
@@ -1452,29 +1452,29 @@ public abstract class LvalueExpr extends Expr {
 
 	public LvalueExpr(int pos) { super(pos); }
 
-	public void generate(Type reqType) {
-		Code.setLinePos(this.getPosLine());
-		generateLoad();
+	public void generate(Code code, Type reqType) {
+		code.setLinePos(this.getPosLine());
+		generateLoad(code);
 		if( reqType == Type.tpVoid )
-			Code.addInstr(Instr.op_pop);
+			code.addInstr(Instr.op_pop);
 	}
 
 	/** Just load value referenced by lvalue */
-	public abstract void generateLoad();
+	public abstract void generateLoad(Code code);
 
 	/** Load value and dup info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateLoadDup();
+	public abstract void generateLoadDup(Code code);
 
 	/** Load info needed for generateStore or generateStoreDupValue
 		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateAccess();
+	public abstract void generateAccess(Code code);
 
 	/** Stores value using previously duped info */
-	public abstract void generateStore();
+	public abstract void generateStore(Code code);
 
 	/** Stores value using previously duped info, and put stored value in stack */
-	public abstract void generateStoreDupValue();
+	public abstract void generateStoreDupValue(Code code);
 }
 
 @node
@@ -1508,8 +1508,8 @@ public class InitializerShadow extends Statement {
 	public void resolve(Type reqType) {
 	}
 
-	public void generate(Type reqType) {
-		init.generate(reqType);
+	public void generate(Code code, Type reqType) {
+		init.generate(code,reqType);
 	}
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("/* ");

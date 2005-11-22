@@ -51,7 +51,7 @@ public class TypeExpr extends TypeRef {
 
 	public TypeExpr(TypeRef arg, Token op) {
 		this.arg = arg;
-		if (op.kind == kiev040Constants.OPERATOR_LRBRACKETS)
+		if (op.kind == ParserConstants.OPERATOR_LRBRACKETS)
 			this.op = Constants.nameArrayOp;
 		else
 			this.op = KString.from(op.image);

@@ -27,31 +27,28 @@ import java.io.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
 public class ConstPool {
 
 	/** Constant Pool Hash */
-	public static Hash<CP>	poolHash;
+	public final Hash<CP>	poolHash = new Hash<CP>();
 
 	/** Constant Pool Array */
-	public static CP[]		pool = new CP[256];
+	public CP[]		pool = new CP[260];
 
 	/** Constant Pool number of constants */
-	public static int		hwm = 1;
+	public int		hwm = 1;
 
 	/** Constant Pool number of java constants */
-	public static int		java_hwm = 1;
+	public int		java_hwm = 1;
 
-	static public void reInit() {
-		poolHash = new Hash<CP>();
-		java_hwm = hwm = 1;
-		pool = new CP[260];
+	public void ConstPool() {
 	}
 
-	static private int putCPinPool(CP newcp) {
+	private int putCPinPool(CP newcp) {
 		if( hwm >= pool.length-2 ) {
 			pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
 		}
@@ -65,7 +62,7 @@ public class ConstPool {
 		return newcp.pos;
 	}
 
-	static private CP getAnyCP(CP get_cp) {
+	private CP getAnyCP(CP get_cp) {
 //		if( get_cp.pos != 0 && pool[get_cp.pos]!=null && pool[get_cp.pos].equals(get_cp) ) {
 //			pool[get_cp.pos].pos = get_cp.pos;
 //			return pool[get_cp.pos];
@@ -82,7 +79,7 @@ public class ConstPool {
 		return get_cp;
 	}
 
-	static private int addAnyCP(CP newcp) {
+	private int addAnyCP(CP newcp) {
 //		int pos;
 //		CP cl_cp = getAnyCP(newcp);
 //		if( cl_cp == null || cl_cp.pos == 0 ) {
@@ -95,72 +92,72 @@ public class ConstPool {
 		return newcp.pos;
 	}
 
-	static public AsciiCP getAsciiCP(KString asc) {
-		AsciiCP cp = (AsciiCP)getAnyCP(AsciiCP.newAsciiCP(asc));
+	public AsciiCP getAsciiCP(KString asc) {
+		AsciiCP cp = (AsciiCP)getAnyCP(AsciiCP.newAsciiCP(this,asc));
 		if( cp == null )
 			throw new RuntimeException("Can't find AsciiCP "+asc);
 		return cp;
 	}
-	static public AsciiCP addAsciiCP(KString asc) {
+	public AsciiCP addAsciiCP(KString asc) {
 //		int pos = addAnyCP( AsciiCP.newAsciiCP(asc));
 //		return (AsciiCP)pool[pos];
-		return AsciiCP.newAsciiCP(asc);
+		return AsciiCP.newAsciiCP(this,asc);
 	}
 
-	static public ClazzCP getClazzCP(KString sig) {
-		ClazzCP cp = (ClazzCP)getAnyCP( ClazzCP.newClazzCP(sig) );
+	public ClazzCP getClazzCP(KString sig) {
+		ClazzCP cp = (ClazzCP)getAnyCP( ClazzCP.newClazzCP(this,sig) );
 		if( cp == null )
 			throw new RuntimeException("Can't find ClazzCP from signature "+sig);
 		return cp;
 	}
-	static public ClazzCP addClazzCP(KString sig) {
-		ClazzCP cl_cp = ClazzCP.newClazzCP(sig);
+	public ClazzCP addClazzCP(KString sig) {
+		ClazzCP cl_cp = ClazzCP.newClazzCP(this,sig);
 		return cl_cp;
 	}
 
-	static public FieldCP getFieldCP(KString clazz_sig, KString name, KString sig) {
-		return (FieldCP)getAnyCP( FieldCP.newFieldCP(clazz_sig,name,sig) );
+	public FieldCP getFieldCP(KString clazz_sig, KString name, KString sig) {
+		return (FieldCP)getAnyCP( FieldCP.newFieldCP(this,clazz_sig,name,sig) );
 	}
-	static public FieldCP addFieldCP(KString clazz_sig, KString name, KString sig) {
-		return FieldCP.newFieldCP(clazz_sig,name,sig);
-	}
-
-	static public MethodCP getMethodCP(KString clazz_sig, KString name, KString sig) {
-		return (MethodCP)getAnyCP( MethodCP.newMethodCP(clazz_sig,name,sig) );
-	}
-	static public MethodCP addMethodCP(KString clazz_sig, KString name, KString sig) {
-		return MethodCP.newMethodCP(clazz_sig,name,sig);
+	public FieldCP addFieldCP(KString clazz_sig, KString name, KString sig) {
+		return FieldCP.newFieldCP(this,clazz_sig,name,sig);
 	}
 
-	static public InterfaceMethodCP getInterfaceMethodCP(KString clazz_sig, KString name, KString sig) {
-		return (InterfaceMethodCP)getAnyCP( InterfaceMethodCP.newInterfaceMethodCP(clazz_sig,name,sig) );
+	public MethodCP getMethodCP(KString clazz_sig, KString name, KString sig) {
+		return (MethodCP)getAnyCP( MethodCP.newMethodCP(this,clazz_sig,name,sig) );
 	}
-	static public InterfaceMethodCP addInterfaceMethodCP(KString clazz_sig, KString name, KString sig) {
-		return InterfaceMethodCP.newInterfaceMethodCP(clazz_sig,name,sig);
-	}
-
-	static public NameTypeCP getNameTypeCP(KString name, KString sig) {
-		return (NameTypeCP)getAnyCP( NameTypeCP.newNameTypeCP(name,sig) );
-	}
-	static public NameTypeCP addNameTypeCP(KString name, KString sig) {
-		return NameTypeCP.newNameTypeCP(name,sig);
+	public MethodCP addMethodCP(KString clazz_sig, KString name, KString sig) {
+		return MethodCP.newMethodCP(this,clazz_sig,name,sig);
 	}
 
-	static public NumberCP getNumberCP(Number val) {
-		return (NumberCP)getAnyCP( NumberCP.newNumberCP(val) );
+	public InterfaceMethodCP getInterfaceMethodCP(KString clazz_sig, KString name, KString sig) {
+		return (InterfaceMethodCP)getAnyCP( InterfaceMethodCP.newInterfaceMethodCP(this,clazz_sig,name,sig) );
 	}
-	static public NumberCP addNumberCP(Number val) {
-		return NumberCP.newNumberCP(val);
-	}
-
-	static public StringCP getStringCP(KString val) {
-		return (StringCP)getAnyCP( StringCP.newStringCP(val) );
-	}
-	static public StringCP addStringCP(KString val) {
-		return StringCP.newStringCP(val);
+	public InterfaceMethodCP addInterfaceMethodCP(KString clazz_sig, KString name, KString sig) {
+		return InterfaceMethodCP.newInterfaceMethodCP(this,clazz_sig,name,sig);
 	}
 
-	static public void generate() {
+	public NameTypeCP getNameTypeCP(KString name, KString sig) {
+		return (NameTypeCP)getAnyCP( NameTypeCP.newNameTypeCP(this,name,sig) );
+	}
+	public NameTypeCP addNameTypeCP(KString name, KString sig) {
+		return NameTypeCP.newNameTypeCP(this,name,sig);
+	}
+
+	public NumberCP getNumberCP(Number val) {
+		return (NumberCP)getAnyCP( NumberCP.newNumberCP(this,val) );
+	}
+	public NumberCP addNumberCP(Number val) {
+		return NumberCP.newNumberCP(this,val);
+	}
+
+	public StringCP getStringCP(KString val) {
+		return (StringCP)getAnyCP( StringCP.newStringCP(this,val) );
+	}
+	public StringCP addStringCP(KString val) {
+		return StringCP.newStringCP(this,val);
+	}
+
+	public void generate() {
 
 //		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
 //			CP cp = e.nextElement();
@@ -311,8 +308,13 @@ public class ConstPool {
 }
 
 public abstract class CP {
-	public int			pos = -1;
+	public int				pos = -1;
+	public final ConstPool constPool;
 
+	public CP(ConstPool constPool) {
+		this.constPool = constPool;
+	}
+	
 	public abstract String toString();
 	public abstract int hashCode();
 	public abstract boolean equals(Object obj);
@@ -321,19 +323,19 @@ public abstract class CP {
 
 public class AsciiCP extends CP {
 	KString value;
-	public static AsciiCP newAsciiCP(KString value) {
-		AsciiCP old = (AsciiCP)ConstPool.poolHash.get(value.hashCode(), fun (CP asc)->boolean {
+	public static AsciiCP newAsciiCP(ConstPool constPool, KString value) {
+		AsciiCP old = (AsciiCP)constPool.poolHash.get(value.hashCode(), fun (CP asc)->boolean {
 			return (asc instanceof AsciiCP) && ((AsciiCP)asc).value.equals(value);
 		});
 		if( old != null ) return old;
-		return new AsciiCP(value);
+		return new AsciiCP(constPool,value);
 	}
-	public AsciiCP(KString value) {
+	public AsciiCP(ConstPool constPool, KString value) {
+		super(constPool);
 		if( value==null )
 			throw new RuntimeException("Null as AsciiCP's value in constant pool");
 		this.value = value;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "AsciiCP: \""+"#"+pos+" -> "+value.toString()+'\"'; }
 	public int hashCode() { return value.hashCode(); }
@@ -352,8 +354,8 @@ public class ClazzCP extends CP {
 	public KString			sig;
 	public AsciiCP			asc;
 
-	public static ClazzCP newClazzCP(KString sig) {
-		ClazzCP old = (ClazzCP)ConstPool.poolHash.get(sig.hashCode(), fun (CP cl)->boolean {
+	public static ClazzCP newClazzCP(ConstPool constPool, KString sig) {
+		ClazzCP old = (ClazzCP)constPool.poolHash.get(sig.hashCode(), fun (CP cl)->boolean {
 			return (cl instanceof ClazzCP) && ((ClazzCP)cl).sig.equals(sig);
 		});
 		if( old != null ) return old;
@@ -363,9 +365,10 @@ public class ClazzCP extends CP {
 		else if( sig.len == 1 );
 		else
 			throw new RuntimeException("Bad kiev signature "+sig);
-		return new ClazzCP(sig);
+		return new ClazzCP(constPool,sig);
 	}
-	public ClazzCP(AsciiCP asc) {
+	public ClazzCP(ConstPool constPool, AsciiCP asc) {
+		super(constPool);
 		this.asc = asc;
 		if( asc.value.charAt(0) == '[' || asc.value.charAt(0) == '&' )
 			sig = asc.value;
@@ -375,7 +378,8 @@ public class ClazzCP extends CP {
 				.append_fast((byte)';').toKString();
 		}
 	}
-	public ClazzCP(KString sig) {
+	public ClazzCP(ConstPool constPool, KString sig) {
+		super(constPool);
 		this.sig = sig;
 		if( sig.charAt(0) == 'L' ) {
 			KStringBuffer ksb = new KStringBuffer(sig.len-2);
@@ -384,12 +388,11 @@ public class ClazzCP extends CP {
 			char c;
 			while( (c=ksc.nextChar()) != ';' ) ksb.append(c); // copy until ';'
 			while( ksc.hasMoreChars() ) ksb.append(ksc.nextChar());
-			asc = AsciiCP.newAsciiCP(ksb.toKString());
+			asc = AsciiCP.newAsciiCP(constPool,ksb.toKString());
 		} else
-			asc = AsciiCP.newAsciiCP(sig);
+			asc = AsciiCP.newAsciiCP(constPool,sig);
 //		System.out.println("...new ClazzCP: "+sig+" -> "+asc.value);
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() {
 		return "Class: "+"#"+pos+" -> "+asc.value+"#"+asc.pos;
@@ -411,26 +414,26 @@ public class NameTypeCP extends CP {
 	AsciiCP name_cp;
 	AsciiCP	type_cp;
 
-	public static NameTypeCP newNameTypeCP(KString name,KString sig) {
-		NameTypeCP old = (NameTypeCP)ConstPool.poolHash.get(name.hashCode() * sig.hashCode(), fun (CP nt)->boolean {
+	public static NameTypeCP newNameTypeCP(ConstPool constPool, KString name,KString sig) {
+		NameTypeCP old = (NameTypeCP)constPool.poolHash.get(name.hashCode() * sig.hashCode(), fun (CP nt)->boolean {
 			return (nt instanceof NameTypeCP)
 				&& ((NameTypeCP)nt).name_cp.value.equals(name)
 				&& ((NameTypeCP)nt).type_cp.value.equals(sig);
 		});
 		if( old != null ) return old;
-		return new NameTypeCP(name,sig);
+		return new NameTypeCP(constPool,name,sig);
 	}
-	public NameTypeCP(AsciiCP name_cp, AsciiCP type_cp) {
+	public NameTypeCP(ConstPool constPool, AsciiCP name_cp, AsciiCP type_cp) {
+		super(constPool);
 		this.name_cp = name_cp;
 		this.type_cp = type_cp;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
-	public NameTypeCP(KString name,KString sig) {
-		name_cp = AsciiCP.newAsciiCP(name);
-		type_cp = AsciiCP.newAsciiCP(sig);
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+	public NameTypeCP(ConstPool constPool, KString name,KString sig) {
+		super(constPool);
+		name_cp = AsciiCP.newAsciiCP(constPool,name);
+		type_cp = AsciiCP.newAsciiCP(constPool,sig);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "NameTypeCP: "+"#"+pos+" -> "
 		+name_cp.value+"#"+name_cp.pos+", "+type_cp.value+"#"+type_cp.pos; }
@@ -450,25 +453,28 @@ public class NameTypeCP extends CP {
 public abstract class NodeCP extends CP {
 	ClazzCP		clazz_cp;
 	NameTypeCP	nt_cp;
+	public NodeCP(ConstPool constPool) {
+		super(constPool);
+	}
 }
 
 public class FieldCP extends NodeCP {
-	public static FieldCP newFieldCP(KString clazz_sig, KString name, KString sig) {
-		ClazzCP clazz_cp = ClazzCP.newClazzCP(clazz_sig);
-		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(name,sig);
-		FieldCP old = (FieldCP)ConstPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
+	public static FieldCP newFieldCP(ConstPool constPool, KString clazz_sig, KString name, KString sig) {
+		ClazzCP clazz_cp = ClazzCP.newClazzCP(constPool,clazz_sig);
+		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(constPool,name,sig);
+		FieldCP old = (FieldCP)constPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
 			return (fld instanceof FieldCP)
 				&& ((FieldCP)fld).clazz_cp.equals(clazz_cp)
 				&& ((FieldCP)fld).nt_cp.equals(nt_cp);
 		});
 		if( old != null ) return old;
-		return new FieldCP(clazz_cp,nt_cp);
+		return new FieldCP(constPool,clazz_cp,nt_cp);
 	}
-	public FieldCP(ClazzCP clazz_cp, NameTypeCP nt_cp) {
+	public FieldCP(ConstPool constPool, ClazzCP clazz_cp, NameTypeCP nt_cp) {
+		super(constPool);
 		this.clazz_cp = clazz_cp;
 		this.nt_cp = nt_cp;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "FieldCP: "+"#"+pos+" -> "+clazz_cp+", "+nt_cp; }
 	public int hashCode() { return clazz_cp.hashCode() * nt_cp.hashCode(); }
@@ -484,22 +490,22 @@ public class FieldCP extends NodeCP {
 }
 
 public class MethodCP extends NodeCP {
-	public static MethodCP newMethodCP(KString clazz_sig, KString name, KString sig) {
-		ClazzCP clazz_cp = ClazzCP.newClazzCP(clazz_sig);
-		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(name,sig);
-		MethodCP old = (MethodCP)ConstPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
+	public static MethodCP newMethodCP(ConstPool constPool, KString clazz_sig, KString name, KString sig) {
+		ClazzCP clazz_cp = ClazzCP.newClazzCP(constPool,clazz_sig);
+		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(constPool,name,sig);
+		MethodCP old = (MethodCP)constPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
 			return (fld instanceof MethodCP)
 				&& ((MethodCP)fld).clazz_cp.equals(clazz_cp)
 				&& ((MethodCP)fld).nt_cp.equals(nt_cp);
 		});
 		if( old != null ) return old;
-		return new MethodCP(clazz_cp,nt_cp);
+		return new MethodCP(constPool,clazz_cp,nt_cp);
 	}
-	public MethodCP(ClazzCP clazz_cp, NameTypeCP nt_cp) {
+	public MethodCP(ConstPool constPool, ClazzCP clazz_cp, NameTypeCP nt_cp) {
+		super(constPool);
 		this.clazz_cp = clazz_cp;
 		this.nt_cp = nt_cp;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "MethodCP: "+"#"+pos+" -> "+clazz_cp+", "+nt_cp; }
 	public int hashCode() { return clazz_cp.hashCode() * nt_cp.hashCode(); }
@@ -515,22 +521,22 @@ public class MethodCP extends NodeCP {
 }
 
 public class InterfaceMethodCP extends NodeCP {
-	public static InterfaceMethodCP newInterfaceMethodCP(KString clazz_sig, KString name, KString sig) {
-		ClazzCP clazz_cp = ClazzCP.newClazzCP(clazz_sig);
-		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(name,sig);
-		InterfaceMethodCP old = (InterfaceMethodCP)ConstPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
+	public static InterfaceMethodCP newInterfaceMethodCP(ConstPool constPool, KString clazz_sig, KString name, KString sig) {
+		ClazzCP clazz_cp = ClazzCP.newClazzCP(constPool,clazz_sig);
+		NameTypeCP nt_cp = NameTypeCP.newNameTypeCP(constPool,name,sig);
+		InterfaceMethodCP old = (InterfaceMethodCP)constPool.poolHash.get(clazz_cp.hashCode() * nt_cp.hashCode(), fun (CP fld)->boolean {
 			return (fld instanceof InterfaceMethodCP)
 				&& ((InterfaceMethodCP)fld).clazz_cp.equals(clazz_cp)
 				&& ((InterfaceMethodCP)fld).nt_cp.equals(nt_cp);
 		});
 		if( old != null ) return old;
-		return new InterfaceMethodCP(clazz_cp,nt_cp);
+		return new InterfaceMethodCP(constPool,clazz_cp,nt_cp);
 	}
-	public InterfaceMethodCP(ClazzCP clazz_cp, NameTypeCP nt_cp) {
+	public InterfaceMethodCP(ConstPool constPool, ClazzCP clazz_cp, NameTypeCP nt_cp) {
+		super(constPool);
 		this.clazz_cp = clazz_cp;
 		this.nt_cp = nt_cp;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "InterfaceMethodCP: "+"#"+pos+" -> "+clazz_cp+", "+nt_cp; }
 	public int hashCode() { return clazz_cp.hashCode() * nt_cp.hashCode(); }
@@ -548,17 +554,17 @@ public class InterfaceMethodCP extends NodeCP {
 public class NumberCP extends CP {
 	Number					value;
 
-	public static NumberCP newNumberCP(Number value) {
-		NumberCP old = (NumberCP)ConstPool.poolHash.get(value.hashCode(), fun (CP cl)->boolean {
+	public static NumberCP newNumberCP(ConstPool constPool, Number value) {
+		NumberCP old = (NumberCP)constPool.poolHash.get(value.hashCode(), fun (CP cl)->boolean {
 			return (cl instanceof NumberCP) && ((NumberCP)cl).value.equals(value);
 		});
 		if( old != null ) return old;
-		return new NumberCP(value);
+		return new NumberCP(constPool,value);
 	}
-	public NumberCP(Number value) {
+	public NumberCP(ConstPool constPool, Number value) {
+		super(constPool);
 		this.value = value;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "Number("+value.getClass()+"): "+"#"+pos+" -> "+value; }
 	public int hashCode() { return value.hashCode(); }
@@ -581,23 +587,23 @@ public class NumberCP extends CP {
 public class StringCP extends CP {
 	public AsciiCP			asc;
 
-	public static StringCP newStringCP(KString value) {
-		StringCP old = (StringCP)ConstPool.poolHash.get(value.hashCode(), fun (CP cl)->boolean {
+	public static StringCP newStringCP(ConstPool constPool, KString value) {
+		StringCP old = (StringCP)constPool.poolHash.get(value.hashCode(), fun (CP cl)->boolean {
 			return (cl instanceof StringCP)
 				&& ((StringCP)cl).asc.value.equals(value);
 		});
 		if( old != null ) return old;
-		return new StringCP(value);
+		return new StringCP(constPool,value);
 	}
-	public StringCP(AsciiCP asc) {
+	public StringCP(ConstPool constPool, AsciiCP asc) {
+		super(constPool);
 		this.asc = asc;
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+		constPool.poolHash.put(this);
 	}
-	public StringCP(KString value) {
-		asc = AsciiCP.newAsciiCP(value);
-		if( ConstPool.poolHash != null  )
-			ConstPool.poolHash.put(this);
+	public StringCP(ConstPool constPool, KString value) {
+		super(constPool);
+		asc = AsciiCP.newAsciiCP(constPool,value);
+		constPool.poolHash.put(this);
 	}
 	public String toString() { return "String: "+"#"+pos+" -> "+asc.value; }
 	public int hashCode() { return asc.value.hashCode(); }

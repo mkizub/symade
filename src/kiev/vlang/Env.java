@@ -22,7 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.kiev040;
+import kiev.parser.Parser;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
 import kiev.transf.*;
@@ -489,7 +489,7 @@ public class Env extends Struct {
 				if( cl == null )
 					cl = newStruct(name,false);
 			}
-			cl = new Bytecoder(cl,clazz).readClazz();
+			cl = new Bytecoder(cl,clazz,null).readClazz();
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose )
 				Kiev.reportInfo("Loaded "+(
@@ -525,6 +525,7 @@ public class Env extends Struct {
 		}
 		if (file == null)
 			return null;
+		Parser k = Kiev.k;
 		try {
 			diff_time = curr_time = System.currentTimeMillis();
 			FileInputStream fin;
@@ -537,8 +538,7 @@ public class Env extends Struct {
 				System.runFinalization();
 				fin = new FileInputStream(file);
 			}
-			kiev040 k = Kiev.k;
-			kiev040.interface_only = true;
+			k.interface_only = true;
 			k.ReInit(fin);
 			FileUnit fu = k.FileUnit(Kiev.curFile.toString());
 			fu.scanned_for_interface_only = true;
@@ -563,7 +563,7 @@ public class Env extends Struct {
 		} catch ( ParseError e ) {
 			System.out.println("Error while scanning input file:"+filename+":"+e);
 		} finally {
-			kiev040.interface_only = Kiev.interface_only;
+			k.interface_only = Kiev.interface_only;
 			Kiev.curFile = cur_file;
 		}
 		Struct cl = (Struct)classHash.get(name.name);
