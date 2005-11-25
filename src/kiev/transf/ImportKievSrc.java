@@ -33,11 +33,11 @@ import syntax kiev.Syntax;
  *
  */
 
-public final class ExportJavaTop extends TransfProcessor implements Constants {
+public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	private JavaBackend javaBackend = new JavaBackend();
 	
-	public ExportJavaTop(Kiev.Ext ext) {
+	public ImportKievSrc(Kiev.Ext ext) {
 		super(ext);
 	}
 	/////////////////////////////////////////////////////
@@ -787,11 +787,16 @@ public final class ExportJavaTop extends TransfProcessor implements Constants {
 }
 
 final class JavaBackend extends BackendProcessor {
+	
+	//JPackage root;
+	
 	public JavaBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	
 	public void preGenerate(ASTNode node) {
+		//root = new JPackage(KString.Empty);
+		//root.importSubTree();
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 		});

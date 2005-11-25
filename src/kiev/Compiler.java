@@ -492,8 +492,6 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
 			Kiev.files.cleanup();
 			
-			ExportJavaTop exporter = (ExportJavaTop)Kiev.getProcessor(Kiev.Ext.JavaOnly);
-
 			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
 			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {

@@ -518,7 +518,7 @@ public final class Kiev {
 	
 	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
 	static {
-		transfProcessors[(int)Ext.JavaOnly]		= new ExportJavaTop(Ext.JavaOnly);
+		transfProcessors[(int)Ext.JavaOnly]		= new ImportKievSrc(Ext.JavaOnly);
 		transfProcessors[(int)Ext.VirtualFields]	= new ProcessVirtFld(Ext.VirtualFields);
 		transfProcessors[(int)Ext.PackedFields]	= new ProcessPackedFld(Ext.PackedFields);
 		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);

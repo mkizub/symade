@@ -9,6 +9,64 @@ import kiev.transf.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+
+@node(copyable=false)
+@dflow(in="root()")
+public class JPackage extends DNode implements Named, ScopeOfNames {
+	@att KString			name;
+	@att NArr<JPackage>		sub_package;
+	@att NArr<JClazz>		sub_clazz;
+	
+	private Struct			vstruct;
+	private KString			qname;
+	
+	public JPackage(KString name) {
+		this.name = name;
+	}
+	
+	public Struct getStruct() {
+		if (vstruct == null)
+			vstruct = Env.newPackage(getQName());
+		return vstruct;
+	}
+	
+	public JPackage getParentPackage() {
+		return (JPackage)parent;
+	}
+	
+	public KString getQName() {
+		if (qname != null)
+			return qname;
+		JPackage p = getParentPackage();
+		if (p == null || p.name == KString.Empty)
+			qname = name;
+		else
+			qname = KString.from(p.getQName()+"."+name);
+		return qname;
+	}
+	
+	public void callbackRootChanged() {
+		super.callbackRootChanged();
+		qname = null;
+		vstruct = null;
+	}
+	
+	public void importSubTree() {
+		Struct s = getStruct();
+		foreach (DNode d; s.members; d instanceof Struct) {
+			if (d.isPackage()) {
+				JPackage jp = new JPackage(d.name.short_name);
+				sub_package.append(jp);
+				jp.importSubTree();
+			} else {
+				JClazz jc = new JClazz(d.name);
+				sub_clazz.append(jc);
+				jc.importSubTree();
+			}
+		}
+	}
+}
+
 @node(copyable=false)
 @dflow(in="root()")
 public class JClass extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, Accessable {
@@ -38,19 +96,16 @@ public class JClass extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	/** Array of attributes of this structure */
 	public Attr[]							attrs = Attr.emptyArray;
 	
-	public JClass(Struct vclazz) {
-		super(vclazz.pos);
-		this.vclazz = vclazz;
-		foreach (ASTNode n; vclazz.members; n instanceof Field) {
-			JField jf = new JField((Field)n);
-			fields.append(jf);
-		}
-		foreach (ASTNode n; vclazz.members; n instanceof Method) {
-			JMethod jm = new JMethod((Method)n);
-			methods.append(jm);
-		}
+	public JClass(KString name) {
+		this.name = name;
 	}
 
+	public Struct getStruct() {
+		if (vclazz == null)
+			vclazz = Env.getStruct(getQName());
+		return vclazz;
+	}
+	
 	public Object copy() {
 		throw new CompilerException(this,"JClass node cannot be copied");
 	};
@@ -70,4 +125,18 @@ public class JClass extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return dmp;
 	}
 	
+	public void importSubTree() {
+		Struct s = getStruct();
+		foreach (DNode d; s.members; d instanceof Struct) {
+			if (d.isPackage()) {
+				JPackage jp = new JPackage(d.name.short_name);
+				sub_package.append(jp);
+				jp.importSubTree();
+			} else {
+				JClazz jc = new JClazz(d.name);
+				sub_clazz.append(jc);
+				jc.importSubTree();
+			}
+		}
+	}
 }
