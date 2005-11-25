@@ -145,6 +145,8 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					mpr.size += mp.size;
 				}
 			}
+			foreach(ASTNode n; s.members; n instanceof Struct)
+				this.preGenerate(n);
 		}
 	}
 

@@ -24,6 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import kiev.backend.java15.JPackage;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -788,15 +789,25 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 final class JavaBackend extends BackendProcessor {
 	
-	//JPackage root;
+	JPackage root;
 	
 	public JavaBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	
+	public void preGenerate() {
+		if (root == null)
+			root = new JPackage(Env.root);
+		root.importSubTree();
+//		root.toJavaDecl("jsrc");
+		foreach (FileUnit fu; Kiev.files) {
+			fu.walkTree(new TreeWalker() {
+				public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
+			});
+		}
+	}
+
 	public void preGenerate(ASTNode node) {
-		//root = new JPackage(KString.Empty);
-		//root.importSubTree();
 		node.walkTree(new TreeWalker() {
 			public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 		});

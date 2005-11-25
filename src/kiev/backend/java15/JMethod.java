@@ -9,19 +9,18 @@ import kiev.transf.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-@node
+@node(copyable=false)
 @dflow(in="root()")
-public class JMethod extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,Accessable {
+class JMethod extends JDNode {
 	
-	@ref
-	public final Method			vmethod;
-	
-	public JMethod() {}
-	
-	public JMethod(Method vmethod) {
-		super(vmethod.pos);
-		this.vmethod = vmethod;
+	JMethod(Method vmethod) {
+		super(vmethod);
 	}
+
+	Method getVMethod() {
+		return (Method)dnode;
+	}
+	
 }
 
 

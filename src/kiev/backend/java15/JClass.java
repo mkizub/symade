@@ -6,79 +6,125 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
+import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+@node(copyable=false)
+@dflow(in="root()")
+abstract class JStruct extends JDNode {
+	@att
+	@dflow(in="", seq="false")
+	final NArr<JClazz>		sub_clazz;
+	@att
+	final KString	qname; // fully qualified name
+	@att
+	final KString	sname; // short name
+	
+	JStruct(Struct vpkg) {
+		super(vpkg);
+		this.qname = vpkg.name.name;
+		this.sname = vpkg.name.short_name;
+	}
+	Struct getVStruct() {
+		return (Struct)dnode;
+	}
+	public int hashCode() {
+		return getVStruct().hashCode();
+	}
+
+}
 
 @node(copyable=false)
 @dflow(in="root()")
-public class JPackage extends DNode implements Named, ScopeOfNames {
-	@att KString			name;
-	@att NArr<JPackage>		sub_package;
-	@att NArr<JClazz>		sub_clazz;
+public final class JPackage extends JStruct {
+	@att
+	@dflow(in="", seq="false")
+	final NArr<JPackage>	sub_package;
 	
-	private Struct			vstruct;
-	private KString			qname;
-	
-	public JPackage(KString name) {
-		this.name = name;
+	public static JPackage newJPackage(Struct vpkg)
+		alias operator(240,lfy,new)
+	{
+		JPackage jp;
+		JDNodeInfo jdi = (JDNodeInfo)vpkg.getNodeData(JDNodeInfo.ID);
+		if (jdi == null) {
+			jp = new JPackage(vpkg);
+			if (jp.getVStruct() != Env.root)
+				newJPackage(jp.getVStruct().package_clazz).sub_package.appendUniq(jp);
+		} else {
+			jp = (JPackage)jdi.jdnode;
+		}
+		return jp;
 	}
 	
-	public Struct getStruct() {
-		if (vstruct == null)
-			vstruct = Env.newPackage(getQName());
-		return vstruct;
-	}
-	
-	public JPackage getParentPackage() {
-		return (JPackage)parent;
-	}
-	
-	public KString getQName() {
-		if (qname != null)
-			return qname;
-		JPackage p = getParentPackage();
-		if (p == null || p.name == KString.Empty)
-			qname = name;
-		else
-			qname = KString.from(p.getQName()+"."+name);
-		return qname;
-	}
-	
-	public void callbackRootChanged() {
-		super.callbackRootChanged();
-		qname = null;
-		vstruct = null;
+	private JPackage(Struct vpkg) {
+		super(vpkg);
+		assert(vpkg.isPackage());
 	}
 	
 	public void importSubTree() {
-		Struct s = getStruct();
-		foreach (DNode d; s.members; d instanceof Struct) {
+		foreach (DNode d; getVStruct().sub_clazz; d instanceof Struct) {
 			if (d.isPackage()) {
-				JPackage jp = new JPackage(d.name.short_name);
-				sub_package.append(jp);
+				JPackage jp = new JPackage((Struct)d);
 				jp.importSubTree();
 			} else {
-				JClazz jc = new JClazz(d.name);
-				sub_clazz.append(jc);
+				JClazz jc = new JClazz((Struct)d);
 				jc.importSubTree();
 			}
 		}
+	}
+
+	public void toJavaDecl(String output_dir) {
+		foreach (JPackage jp; sub_package) {
+			try {
+				jp.toJavaDecl(output_dir);
+			} catch(Exception e) {
+				Kiev.reportError(jp,e);
+			}
+		}
+		foreach (JClazz jc; sub_clazz) {
+			try {
+				this.toJavaDecl(output_dir, jc);
+			} catch(Exception e) {
+				Kiev.reportError(jc,e);
+			}
+		}
+	}
+
+	public void toJavaDecl(String output_dir, JClazz cl) {
+		if( output_dir == null ) output_dir = "jsrc";
+		Dumper dmp = new Dumper();
+		if( cl.parent != Env.root ) {
+			dmp.append("package ").append(((JPackage)cl.parent).qname).append(';').newLine();
+		}
+
+		cl.toJavaDecl(dmp);
+
+		try {
+			File f;
+			String out_file = cl.qname.replace('.',File.separatorChar).toString();
+			make_output_dir(output_dir,out_file);
+			f = new File(output_dir,out_file+".java");
+			Writer out = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
+			out.write(dmp.toString());
+			out.close();
+		} catch( IOException e ) {
+			System.out.println("Create/write error while Kiev-to-Java exporting: "+e);
+		}
+	}
+
+	private static void make_output_dir(String top_dir, String filename) throws IOException {
+		File dir;
+		dir = new File(top_dir,filename);
+		dir = new File(dir.getParent());
+		dir.mkdirs();
+		if( !dir.exists() || !dir.isDirectory() ) throw new RuntimeException("Can't create output dir "+dir);
 	}
 }
 
 @node(copyable=false)
 @dflow(in="root()")
-public class JClass extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, Accessable {
-	/** Struct of vlang that produced this java class */
-	@ref
-	public final Struct						vclazz;
-
-	/** Array of subclasses of this class */
-	@att
-	@dflow(in="", seq="false")
-	public final NArr<JClass>				sub_clazz;
-
+public final class JClazz extends JStruct {
 	/** Array of fields of this class */
 	@att
 	@dflow(in="", seq="false")
@@ -89,54 +135,48 @@ public class JClass extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	@dflow(in="", seq="false")
 	public final NArr<JMethod>				methods;
 
-	/** Class' access */
-	@virtual
-	public virtual abstract Access			acc;
-
-	/** Array of attributes of this structure */
-	public Attr[]							attrs = Attr.emptyArray;
-	
-	public JClass(KString name) {
-		this.name = name;
+	public static JClazz newJClazz(Struct vcls)
+		alias operator(240,lfy,new)
+	{
+		JClazz jc;
+		JDNodeInfo jdi = (JDNodeInfo)vcls.getNodeData(JDNodeInfo.ID);
+		if (jdi == null) {
+			jc = new JClazz(vcls);
+			if (vcls.package_clazz.isPackage())
+				JPackage.newJPackage(vcls.package_clazz).sub_clazz.appendUniq(jc);
+			else
+				newJClazz(vcls.package_clazz).sub_clazz.appendUniq(jc);
+		} else {
+			jc = (JClazz)jdi.jdnode;
+		}
+		return jc;
 	}
-
-	public Struct getStruct() {
-		if (vclazz == null)
-			vclazz = Env.getStruct(getQName());
-		return vclazz;
+	
+	private JClazz(Struct vclazz) {
+		super(vclazz);
 	}
-	
-	public Object copy() {
-		throw new CompilerException(this,"JClass node cannot be copied");
-	};
-
-	@getter public Access get$acc() { return vclazz.get$acc(); }
-	@setter public void set$acc(Access a) { vclazz.set$acc(a); }
-	public NodeName getName() { return vclazz.name; }
-	
-	public int hashCode() { return getName().hashCode(); }
 
 	public Dumper toJava(Dumper dmp) {
-		ClazzName name = vclazz.name;
 		if (isArgument() || isLocal())
-			dmp.append(name.short_name);
+			dmp.append(sname);
 		else
-			dmp.append(name);
+			dmp.append(qname);
 		return dmp;
 	}
 	
+	public Dumper toJavaDecl(Dumper dmp) {
+		Struct jthis = getVStruct();
+		if( Kiev.verbose ) System.out.println("[ Dumping class "+this+"]");
+		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		dmp.append("class").forsed_space().append(qname).append(';').newLine();
+		return dmp;
+	}
+
 	public void importSubTree() {
-		Struct s = getStruct();
-		foreach (DNode d; s.members; d instanceof Struct) {
-			if (d.isPackage()) {
-				JPackage jp = new JPackage(d.name.short_name);
-				sub_package.append(jp);
-				jp.importSubTree();
-			} else {
-				JClazz jc = new JClazz(d.name);
-				sub_clazz.append(jc);
-				jc.importSubTree();
-			}
+		foreach (DNode d; getVStruct().members; d instanceof Struct) {
+			JClazz jc = new JClazz((Struct)d);
+			jc.importSubTree();
 		}
 	}
 }
+

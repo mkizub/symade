@@ -658,10 +658,7 @@ public class Compiler {
 
 			Kiev.pass_no = TopLevelPass.passPreGenerate;
 			diff_time = curr_time = System.currentTimeMillis();
-			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void {
-				BackendProcessor bep = tp.getBackend(Kiev.useBackend);
-				if (bep != null) bep.preGenerate(fu);
-			});
+			Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(); });
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Class's members pre-generated",diff_time);
 			if( Kiev.errCount > 0 ) goto stop;
@@ -671,24 +668,12 @@ public class Compiler {
 			for(int i=0; i < Kiev.files.length; i++) {
 				final int errCount = Kiev.errCount;
 				final FileUnit fu = Kiev.files[i];
-				if (Kiev.errCount == errCount) {
-					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
-						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
-						if (bep != null) bep.resolve(fu);
-					});
-				}
-				if (Kiev.errCount == errCount) {
-					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
-						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
-						if (bep != null) bep.rewriteNode(fu);
-					});
-				}
-				if (Kiev.errCount == errCount) {
-					Kiev.runProcessors(fu, fun (TransfProcessor tp)->void {
-						BackendProcessor bep = tp.getBackend(Kiev.useBackend);
-						if (bep != null) bep.generate(fu);
-					});
-				}
+				if (Kiev.errCount == errCount)
+					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(fu); });
+				if (Kiev.errCount == errCount)
+					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.rewriteNode(fu); });
+				if (Kiev.errCount == errCount)
+					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.generate(fu); });
 				fu.cleanup();
 				Kiev.files[i] = null;
 				runGC();

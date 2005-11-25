@@ -24,7 +24,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -37,7 +37,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public int				flags;
 	public int				cp_clazz;
 	public int				cp_super_clazz;
-	public int[]				cp_interfaces;
+	public int[]			cp_interfaces;
 	public Field[]			fields;
 	public Method[]			methods;
 	public Attribute[]		attrs;

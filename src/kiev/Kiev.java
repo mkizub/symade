@@ -587,6 +587,17 @@ public final class Kiev {
 		}
 	}
 	
+	public static boolean runBackends((BackendProcessor)->void step) {
+		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+			if (!tp.isEnabled() )
+				continue;
+			BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+			if (bep != null)
+				try { step(bep); } catch (Exception e) { Kiev.reportError(e); }
+		}
+		return (Kiev.errCount > 0); // true if failed
+	}
+	
 	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
 		foreach (FileUnit fu; Kiev.files) {
 			KString curr_file = Kiev.curFile;
@@ -610,28 +621,6 @@ public final class Kiev {
 			}
 		}
 		return (Kiev.errCount > 0); // true if failed
-	}
-	
-	public static void runProcessors(FileUnit fu, (TransfProcessor)->void step) {
-		KString curr_file = Kiev.curFile;
-		Kiev.curFile = fu.filename;
-		boolean[] exts = Kiev.getExtSet();
-		try {
-			Kiev.setExtSet(fu.disabled_extensions);
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
-				try {
-					if (tp.isEnabled() )
-						step(tp);
-				}
-				catch (Exception e) {
-					Kiev.reportError(fu,e);
-				}
-			}
-		}
-		finally {
-			Kiev.curFile = curr_file;
-			Kiev.setExtSet(exts);
-		}
 	}
 	
 	public static void runProcessorsOn(ASTNode node) {

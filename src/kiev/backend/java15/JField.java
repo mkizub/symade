@@ -9,18 +9,17 @@ import kiev.transf.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-@node
-public class JField extends DNode implements Named, Typed, Accessable {
+@node(copyable=false)
+class JField extends JDNode {
 	
-	@ref
-	public final Field			vfield;
-	
-	public JField() {}
-	
-	public JField(Field vfield) {
-		super(vfield.pos);
-		this.vfield = vfield;
+	JField(Field vfield) {
+		super(vfield);
 	}
+
+	Field getVField() {
+		return (Field)dnode;
+	}
+	
 }
 
 

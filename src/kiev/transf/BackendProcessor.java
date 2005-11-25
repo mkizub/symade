@@ -21,12 +21,13 @@ public class BackendProcessor {
 	}
 	
 	// create back-end nodes
-	public void			preGenerate(ASTNode node)			{ return; }
+	public void		preGenerate()				{ foreach (FileUnit fu; Kiev.files) preGenerate(fu); }
+	public void		preGenerate(ASTNode node)	{ return; }
 	// resolve back-end
-	public void			resolve(ASTNode node)				{ return; }
+	public void		resolve(ASTNode node)		{ return; }
 	// rewrite back-end nodes
-	public void			rewriteNode(ASTNode node)			{ return; }
+	public void		rewriteNode(ASTNode node)	{ return; }
 	// generate back-end
-	public void			generate(ASTNode node)				{ return; }
+	public void		generate(ASTNode node)		{ return; }
 }
 
