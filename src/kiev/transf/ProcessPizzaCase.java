@@ -35,25 +35,29 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				this.pass3(dn);
 			return;
 		}
-		PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
-		case_attr.casefields = Field.emptyArray;
+		MetaPizzaCase meta = clazz.getMetaPizzaCase();
+		Field[] flds = Field.emptyArray;
+//		PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
+//		case_attr.casefields = Field.emptyArray;
 		foreach (DNode dn; clazz.members; dn instanceof Field) {
 			Field f = (Field)dn;
-			case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
+//			case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
+			flds = (Field[])Arrays.append(flds,f);
+			meta.add(f);
 		}
 		// Create constructor for pizza case
 		Vector<Type> targs = new Vector<Type>();
-		foreach (Field f; case_attr.casefields)
+		foreach (Field f; flds/*case_attr.casefields*/)
 			targs.append(f.type);
 		MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
 		Constructor init = new Constructor(mt,ACC_PUBLIC);
 		init.pos = clazz.pos;
-		foreach (Field f; case_attr.casefields)
+		foreach (Field f; flds/*case_attr.casefields*/)
 			init.params.add(new FormPar(f.pos,f.name.name,f.type,FormPar.PARAM_NORMAL,0));
 		clazz.addMethod(init);
 		init.body = new BlockStat(clazz.pos);
 		int p = 0;
-		foreach (Field f; case_attr.casefields) {
+		foreach (Field f; flds/*case_attr.casefields*/) {
 			Var v = null;
 			foreach (FormPar fp; init.params; fp.name.name == f.name.name) {
 				init.body.stats.insert(
@@ -97,10 +101,12 @@ final class PizzaCaseBackend extends BackendProcessor implements Constants {
 			this.preGenerate(dn);
 		}
 		if( clazz.isPizzaCase() ) {
-			PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
+			MetaPizzaCase meta = clazz.getMetaPizzaCase();
+			//PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
 			Field ftag = clazz.addField(new Field(
 				nameCaseTag,Type.tpInt,ACC_PUBLIC|ACC_FINAL|ACC_STATIC) );
-			ConstExpr ce = new ConstIntExpr(case_attr.caseno);
+			//ConstExpr ce = new ConstIntExpr(case_attr.caseno);
+			ConstExpr ce = new ConstIntExpr(meta.getTag());
 			ftag.init = ce;
 
 			Method gettag = new Method(nameGetCaseTag,

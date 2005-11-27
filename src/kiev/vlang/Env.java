@@ -277,7 +277,7 @@ public class Env extends Struct {
 	public static void InitializeEnv(String path) {
 		if( path == null ) path = System.getProperty("java.class.path");
 		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
-		stdClassLoader.addHandler(new kiev.bytecode.KievAttributeHandler());
+//		stdClassLoader.addHandler(new kiev.bytecode.KievAttributeHandler());
 
 		if( Kiev.project_file != null && Kiev.project_file.exists() ) {
 			try {

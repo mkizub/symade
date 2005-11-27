@@ -163,4 +163,37 @@ public class MetaThrows extends Meta {
 	}
 }
 
+@node
+public class MetaPizzaCase extends Meta {
+	public static final KString NAME = KString.from("kiev.stdlib.meta.pcase");
+	public static final KString TAG = KString.from("tag");
+	public static final KString FIELDS = KString.from("fields");
+
+	public MetaPizzaCase() {
+		this(new TypeNameRef(NAME));
+	}
+
+	public MetaPizzaCase(TypeRef type) {
+		super(type);
+		setI(TAG, 0);
+		MetaValueType mvt = new MetaValueType(FIELDS, Type.newArrayType(Type.tpString).signature);
+		MetaValueArray mv = new MetaValueArray(mvt, ENode.emptyArray);
+		set(mv);
+	}
+	
+	public void add(Field f) {
+		MetaValueArray mv = (MetaValueArray)get(FIELDS);
+		mv.values.append(new ConstStringExpr(f.name.name));
+	}
+	
+	public ENode[] getFields() {
+		MetaValueArray mv = (MetaValueArray)get(FIELDS);
+		if (mv == null)
+			return ENode.emptyArray;
+		return mv.values.toArray();
+	}
+	
+	public int getTag() { return getI(TAG); }
+	public void setTag(int tag) { setI(TAG, tag); }
+}
 

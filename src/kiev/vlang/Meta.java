@@ -34,7 +34,7 @@ import static kiev.stdlib.Debug.*;
 // Meta information about a node
 @node
 public final class MetaSet extends ASTNode {
-	@att private final NArr<Meta> metas;
+	@att public final NArr<Meta> metas;
 	
 	public MetaSet() {
 	}

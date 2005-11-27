@@ -33,28 +33,28 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 	public static boolean	traceWrite = false;
 	public static boolean	traceRules = false;
 
-	public PoolConstant[]	pool;
-	public int				flags;
-	public int				cp_clazz;
-	public int				cp_super_clazz;
-	public int[]			cp_interfaces;
-	public Field[]			fields;
-	public Method[]			methods;
-	public Attribute[]		attrs;
+	public PoolConstant[]			pool;
+	public int						flags;
+	public ClazzPoolConstant		cp_clazz;
+	public ClazzPoolConstant		cp_super_clazz;
+	public ClazzPoolConstant[]		cp_interfaces;
+	public Field[]					fields;
+	public Method[]					methods;
+	public Attribute[]				attrs;
 
 	public KString getClazzName() {
-		return ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_clazz]).ref]).value;
+		return cp_clazz.ref.value;
 	}
 
 	public KString getSuperClazzName() {
-		if( cp_super_clazz == 0 ) return null;
-		return ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_super_clazz]).ref]).value;
+		if( cp_super_clazz == null ) return null;
+		return cp_super_clazz.ref.value;
 	}
 
 	public KString[] getInterfaceNames() {
 		KString[] names = new KString[cp_interfaces.length];
 		for(int i=0; i < names.length; i++)
-			names[i] = ((Utf8PoolConstant)pool[((ClazzPoolConstant)pool[cp_interfaces[i]]).ref]).value;
+			names[i] = cp_interfaces[i].ref.value;
 		return names;
 	}
 
@@ -106,6 +106,7 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		return size;
 	}
 	public void read(ReadContext cont) {
+		int idx;
 		assert(cont.offset == 0, "Read class not from offset 0");
 		int magic = cont.readInt();
 		trace(traceRead,cont.offset+": JAVA_MAGIC = 0x"+Integer.toHexString(magic));
@@ -121,24 +122,34 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 
 		flags = cont.readShort();
 		trace(traceRead,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
-		cp_clazz = cont.readShort();
-		assert(cp_clazz > 0 && cp_clazz < pool.length ,"Class name index "+cp_clazz+" out of range");
-		assert(pool[cp_clazz].constant_type == CONSTANT_CLASS ,"Class name index "+cp_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceRead,cont.offset+": class name "+cp_clazz+" = "+((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[cp_clazz]).ref]).value);
-		cp_super_clazz = cont.readShort();
-		assert(cp_super_clazz >= 0 && cp_super_clazz < pool.length ,"Super-Class name index "+cp_super_clazz+" out of range");
-		assert(cp_super_clazz==0 || pool[cp_super_clazz].constant_type == CONSTANT_CLASS ,"Super-Class name index "+cp_super_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceRead,cont.offset+": super-class name "+cp_super_clazz+" = "+(cp_super_clazz==0?"":((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[cp_super_clazz]).ref]).value.toString()));
+		
+		// class
+		idx = cont.readShort();
+		assert(idx > 0 && idx < pool.length ,"Class name index "+idx+" out of range");
+		assert(pool[idx].constant_type() == CONSTANT_CLASS ,"Class name index "+idx+" does not points to CONSTANT_CLASS");
+		cp_clazz = (ClazzPoolConstant)pool[idx];
+		trace(traceRead,cont.offset+": class name "+idx+" = "+cp_clazz.ref.value);
+		
+		// super-class
+		idx = cont.readShort();
+		assert(idx >= 0 && idx < pool.length ,"Super-Class name index "+idx+" out of range");
+		assert(idx==0 || pool[idx].constant_type() == CONSTANT_CLASS ,"Super-Class name index "+idx+" does not points to CONSTANT_CLASS");
+		if (idx == 0)
+			cp_super_clazz = null;
+		else
+			cp_super_clazz = (ClazzPoolConstant)pool[idx];
+		trace(traceRead,cont.offset+": super-class name "+idx+" = "+(idx==0?"":cp_super_clazz.ref.value));
 
 		int num = cont.readShort();
 		trace(traceRead,cont.offset+": number of interfaces is "+num);
 		assert(num*2 <= cont.data.length+cont.offset ,"Too big number of interfaces "+num);
-		cp_interfaces = new int[num];
+		cp_interfaces = new ClazzPoolConstant[num];
 		for(int i=0; i < num; i++) {
-			cp_interfaces[i] = cont.readShort();
-			assert(cp_interfaces[i] > 0 && cp_interfaces[i] < pool.length ,"Interface "+i+" name index "+cp_interfaces[i]+" out of range");
-			assert(pool[cp_interfaces[i]].constant_type == CONSTANT_CLASS ,"Interface "+i+" name index "+cp_interfaces[i]+" does not points to CONSTANT_CLASS");
-			trace(traceRead,cont.offset+": inetrface "+i+" name "+cp_interfaces[i]+" = "+((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[cp_interfaces[i]]).ref]).value);
+			idx = cont.readShort();
+			assert(idx > 0 && idx < pool.length ,"Interface "+i+" name index "+idx+" out of range");
+			assert(pool[idx].constant_type() == CONSTANT_CLASS ,"Interface "+i+" name index "+idx+" does not points to CONSTANT_CLASS");
+			cp_interfaces[i] = (ClazzPoolConstant)pool[idx];
+			trace(traceRead,cont.offset+": inetrface "+i+" name "+idx+" = "+cp_interfaces[i].ref.value);
 		}
 
 		num = cont.readShort();
@@ -188,21 +199,25 @@ public class Clazz implements BytecodeElement,BytecodeFileConstants {
 		assert(cont.data.length-cont.offset > 8, "Write into too small buffer");
 		trace(traceWrite,cont.offset+": class flags = 0x"+Integer.toHexString(flags));
 		cont.writeShort(flags);
-		assert(cp_clazz > 0 && cp_clazz < pool.length ,"Class name index "+cp_clazz+" out of range");
-		assert(pool[cp_clazz].constant_type == CONSTANT_CLASS ,"Class name index "+cp_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceWrite,cont.offset+": class name "+cp_clazz+" = "+((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[cp_clazz]).ref]).value);
-		cont.writeShort(cp_clazz);
-		assert(cp_super_clazz >= 0 && cp_super_clazz < pool.length ,"Super-Class name index "+cp_super_clazz+" out of range");
-		assert(cp_super_clazz == 0 || pool[cp_super_clazz].constant_type == CONSTANT_CLASS ,"Super-Class name index "+cp_super_clazz+" does not points to CONSTANT_CLASS");
-		trace(traceWrite,cont.offset+": super-class name "+cp_super_clazz+" = "+(cp_super_clazz==0?"":((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[cp_super_clazz]).ref]).value.toString()));
-		cont.writeShort(cp_super_clazz);
+		
+		// class
+		assert(cp_clazz.idx > 0 && cp_clazz.idx < pool.length ,"Class name index "+cp_clazz.idx+" out of range");
+		assert(pool[cp_clazz.idx].constant_type() == CONSTANT_CLASS ,"Class name index "+cp_clazz+" does not points to CONSTANT_CLASS");
+		trace(traceWrite,cont.offset+": class name "+cp_clazz+" = "+cp_clazz.ref.value);
+		cont.writeShort(cp_clazz.idx);
+		
+		// super-class
+		assert(cp_super_clazz == null || (cp_super_clazz.idx > 0 && cp_super_clazz.idx < pool.length) ,"Super-Class name index "+cp_super_clazz.idx+" out of range");
+		assert(cp_super_clazz == null || pool[cp_super_clazz.idx].constant_type() == CONSTANT_CLASS ,"Super-Class name index "+cp_super_clazz+" does not points to CONSTANT_CLASS");
+		trace(traceWrite,cont.offset+": super-class name "+cp_super_clazz+" = "+(cp_super_clazz==null?"":cp_super_clazz.ref.value));
+		cont.writeShort(cp_super_clazz==null ? 0 : cp_super_clazz.idx);
 
 		int num = cp_interfaces.length;
 		cont.writeShort(num);
 		for(int i=0; i < num; i++) {
-			assert(cp_interfaces[i] > 0 && cp_interfaces[i] < pool.length ,"Interface "+i+" name index "+cp_interfaces[i]+" out of range");
-			assert(pool[cp_interfaces[i]].constant_type == CONSTANT_CLASS ,"Interface "+i+" name index "+cp_interfaces[i]+" does not points to CONSTANT_CLASS");
-			cont.writeShort(cp_interfaces[i]);
+			assert(cp_interfaces[i].idx > 0 && cp_interfaces[i].idx < pool.length ,"Interface "+i+" name index "+cp_interfaces[i].idx+" out of range");
+			assert(pool[cp_interfaces[i].idx].constant_type() == CONSTANT_CLASS ,"Interface "+i+" name index "+cp_interfaces[i].idx+" does not points to CONSTANT_CLASS");
+			cont.writeShort(cp_interfaces[i].idx);
 		}
 
 		num = fields.length;
@@ -264,6 +279,12 @@ public class ReadContext {
 		int ch1 = data[offset++];
 		int ch2 = data[offset++];
 		return (short)(((ch1 & 0xFF) << 8 ) | (ch2 & 0xFF));
+	}
+
+	public int readUShort() {
+		int ch1 = data[offset++];
+		int ch2 = data[offset++];
+		return ((ch1 & 0xFF) << 8 ) | (ch2 & 0xFF);
 	}
 
 	public int readInt() {

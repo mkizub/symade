@@ -238,7 +238,7 @@ public class ConstPool {
 			else continue;
 		}
 
-		AsciiCP k = addAsciiCP(Constants.attrKiev);
+//		AsciiCP k = addAsciiCP(Constants.attrKiev);
 
 		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
 			if( hwm >= pool.length )
@@ -253,16 +253,16 @@ public class ConstPool {
 
 		java_hwm = hwm;
 
-		boolean kievKiev = false;
-		// Generate kiev-only part of constant pool
-		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
-			if( hwm >= pool.length )
-				pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-			CP cp = e.nextElement();
-			if( cp.pos > 0 ) continue;
-			pool[hwm] = cp;
-			cp.pos = hwm++;
-		}
+//		boolean kievKiev = false;
+//		// Generate kiev-only part of constant pool
+//		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
+//			if( hwm >= pool.length )
+//				pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
+//			CP cp = e.nextElement();
+//			if( cp.pos > 0 ) continue;
+//			pool[hwm] = cp;
+//			cp.pos = hwm++;
+//		}
 
 		for(int i=0; i < len; i++) {
 			if( hwm >= pool.length-1 )

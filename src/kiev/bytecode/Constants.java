@@ -43,11 +43,11 @@ public interface BytecodeFileConstants {
 	public static final int CONSTANT_INTEGER			= 3;
 	public static final int CONSTANT_FLOAT				= 4;
 	public static final int CONSTANT_LONG				= 5;
-	public static final int CONSTANT_DOUBLE				= 6;
+	public static final int CONSTANT_DOUBLE			= 6;
 	public static final int CONSTANT_CLASS				= 7;
-	public static final int CONSTANT_STRING				= 8;
+	public static final int CONSTANT_STRING			= 8;
 	public static final int CONSTANT_FIELD				= 9;
-	public static final int CONSTANT_METHOD				= 10;
+	public static final int CONSTANT_METHOD			= 10;
 	public static final int CONSTANT_INTERFACEMETHOD	= 11;
 	public static final int CONSTANT_NAMEANDTYPE		= 12;
 
@@ -346,29 +346,28 @@ public interface ClazzSignatures {
 
 public interface BytecodeAttributeNames {
 
-	public final static KString attrCode			= KString.from("Code");
-	public final static KString attrSourceFile		= KString.from("SourceFile");
-	public final static KString attrLocalVarTable	= KString.from("LocalVariableTable");
+	public final static KString attrCode				= KString.from("Code");
+	public final static KString attrSourceFile			= KString.from("SourceFile");
+	public final static KString attrLocalVarTable		= KString.from("LocalVariableTable");
 	public final static KString attrLinenoTable		= KString.from("LineNumberTable");
-	public final static KString attrExceptions		= KString.from("Exceptions");
-	public final static KString attrInnerClasses	= KString.from("InnerClasses");
-	public final static KString attrConstantValue	= KString.from("ConstantValue");
-	public final static KString attrClassArguments	= KString.from("kiev.ClassArguments");
-	public final static KString attrPizzaCase		= KString.from("kiev.PizzaCase");
-	public final static KString attrKiev			= KString.from("kiev.Kiev");
-	public final static KString attrFlags			= KString.from("kiev.Flags");
-	public final static KString attrAlias			= KString.from("kiev.Alias");
-	public final static KString attrTypedef			= KString.from("kiev.Typedef");
-	public final static KString attrOperator		= KString.from("kiev.Operator");
-	public final static KString attrImport			= KString.from("kiev.Import");
-	public final static KString attrEnum			= KString.from("kiev.Enum");
+	public final static KString attrExceptions			= KString.from("Exceptions");
+	public final static KString attrInnerClasses		= KString.from("InnerClasses");
+	public final static KString attrConstantValue		= KString.from("ConstantValue");
+//	public final static KString attrClassArguments		= KString.from("kiev.ClassArguments");
+//	public final static KString attrPizzaCase			= KString.from("kiev.PizzaCase");
+//	public final static KString attrKiev				= KString.from("kiev.Kiev");
+//	public final static KString attrFlags				= KString.from("kiev.Flags");
+//	public final static KString attrAlias				= KString.from("kiev.Alias");
+//	public final static KString attrTypedef			= KString.from("kiev.Typedef");
+//	public final static KString attrOperator			= KString.from("kiev.Operator");
+//	public final static KString attrImport				= KString.from("kiev.Import");
+//	public final static KString attrEnum				= KString.from("kiev.Enum");
 	public final static KString attrRequire			= KString.from("kiev.Require");
-	public final static KString attrEnsure			= KString.from("kiev.Ensure");
-	public final static KString attrCheckFields		= KString.from("kiev.CheckFields");
-	public final static KString attrGenerations		= KString.from("kiev.Generations");
-	public final static KString attrPackedFields	= KString.from("kiev.PackedFields");
-	public final static KString attrPackerField		= KString.from("kiev.PackerField");
-
+	public final static KString attrEnsure				= KString.from("kiev.Ensure");
+//	public final static KString attrCheckFields		= KString.from("kiev.CheckFields");
+//	public final static KString attrGenerations		= KString.from("kiev.Generations");
+//	public final static KString attrPackedFields		= KString.from("kiev.PackedFields");
+//	public final static KString attrPackerField		= KString.from("kiev.PackerField");
 	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
 	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
 	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");

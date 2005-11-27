@@ -145,7 +145,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						if( f.var.type != et )
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						if (et.isEnum())
-							val = new ConstIntExpr(et.getStruct().getValueForEnumField(f.var));
+							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
 						else
 							val = (Expr)f.var.init.copy();
 					}
@@ -159,22 +159,30 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					if( cas.isPizzaCase() ) {
 						if( sw.mode != SwitchStat.PIZZA_SWITCH )
 							throw new CompilerException(this,"Pizza case type in non-pizza switch");
-						PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-						val = new ConstIntExpr(case_attr.caseno);
+						//PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
+						MetaPizzaCase meta = cas.getMetaPizzaCase();
+						//val = new ConstIntExpr(case_attr.caseno);
+						val = new ConstIntExpr(meta.getTag());
 						if( pattern.length > 0 ) {
-							if( pattern.length != case_attr.casefields.length )
-								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
+							ENode[] fields = meta.getFields();
+//							if( pattern.length != case_attr.casefields.length )
+//								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
+							if( pattern.length != fields.length )
+								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
 								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
-								Type tp = Type.getRealType(sw.tmpvar.getType(),case_attr.casefields[i].type);
+								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value, true);
+								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.equals(tp) )
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
-										new CastExpr(p.pos,Type.getRealType(sw.tmpvar.getType(),cas.type),
-											(Expr)new LVarExpr(p.pos,sw.tmpvar.getVar())),
-										case_attr.casefields[i]
+										new CastExpr(p.pos,
+											Type.getRealType(sw.tmpvar.getType(),cas.type),
+											(Expr)new LVarExpr(p.pos,sw.tmpvar.getVar())
+										),
+										f
 									);
 //									addSymbol(j++,p);
 								p.resolveDecl();
@@ -461,9 +469,8 @@ public class SwitchStat extends Statement implements BreakTarget {
 					}
 					if( !has_unabrupted_case ) {
 						Type tp = sel.getType();
-						EnumAttr ea = null;
-						ea = (EnumAttr)tp.getStruct().getAttr(attrEnum);
-						if( ea.fields.length == cases.length )
+						Field[] eflds = tp.getStruct().getEnumFields();
+						if (eflds.length == cases.length)
 							setMethodAbrupted(true);
 					}
 				}
@@ -490,14 +497,17 @@ public class SwitchStat extends Statement implements BreakTarget {
 					if( tmpvar != null ) {
 						if( !has_unabrupted_case ) {
 							Type tp = tmpvar.getType();
-							PizzaCaseAttr case_attr;
+							//PizzaCaseAttr case_attr;
 							int caseno = 0;
 							Struct tpclz = tp.getStruct();
 							for(int i=0; i < tpclz.sub_clazz.length; i++) {
 								if( tpclz.sub_clazz[i].isPizzaCase() ) {
-									case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);
-									if( case_attr!=null && case_attr.caseno > caseno )
-										caseno = case_attr.caseno;
+//									case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);
+//									if( case_attr!=null && case_attr.caseno > caseno )
+//										caseno = case_attr.caseno;
+									MetaPizzaCase meta = tpclz.sub_clazz[i].getMetaPizzaCase();
+									if( meta!=null && meta.getTag() > caseno )
+										caseno = meta.getTag();
 								}
 							}
 							if( caseno == cases.length ) setMethodAbrupted(true);

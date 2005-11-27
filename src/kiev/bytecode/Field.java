@@ -32,16 +32,16 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 	public static final Field[]	emptyArray = new Field[0];
 
 	public int					flags;
-	public int					cp_name;
-	public int					cp_type;
+	public Utf8PoolConstant		cp_name;
+	public Utf8PoolConstant		cp_type;
 	public Attribute[]			attrs;
 
 	public KString getName(Clazz clazz) {
-		return ((Utf8PoolConstant)clazz.pool[cp_name]).value;
+		return cp_name.value;
 	}
 
 	public KString getSignature(Clazz clazz) {
-		return ((Utf8PoolConstant)clazz.pool[cp_type]).value;
+		return cp_type.value;
 	}
 
 	public int size() {
@@ -53,24 +53,31 @@ public class Field implements BytecodeElement,BytecodeFileConstants {
 		return size;
 	}
 	public void read(ReadContext cont) {
+		int idx;
+		
 		flags = cont.readShort();
-		cp_name = cont.readShort();
-		assert(cp_name > 0 && cp_name < cont.clazz.pool.length ,"Field name index "+cp_name+" out of range");
-		assert(cont.clazz.pool[cp_name].constant_type == CONSTANT_UTF8 ,"Field name index dos not points to CONSTANT_UTF8");
-		trace(Clazz.traceRead,cont.offset+": field name "+cp_name+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value);
-		cp_type = cont.readShort();
-		assert(cp_type > 0 && cp_type < cont.clazz.pool.length ,"Field signature index "+cp_type+" out of range");
-		assert(cont.clazz.pool[cp_type].constant_type == CONSTANT_UTF8 ,"Field signature index dos not points to CONSTANT_UTF8");
-		trace(Clazz.traceRead,cont.offset+": field signature "+cp_type+" = "+((Utf8PoolConstant)cont.clazz.pool[cp_type]).value);
+		
+		idx = cont.readShort();
+		assert(idx > 0 && idx < cont.clazz.pool.length ,"Field name index "+idx+" out of range");
+		assert(cont.clazz.pool[idx].constant_type() == CONSTANT_UTF8 ,"Field name index dos not points to CONSTANT_UTF8");
+		cp_name = (Utf8PoolConstant)cont.clazz.pool[idx];
+		trace(Clazz.traceRead,cont.offset+": field name "+idx+" = "+cp_name.value);
+		
+		idx = cont.readShort();
+		assert(idx > 0 && idx < cont.clazz.pool.length ,"Field signature index "+idx+" out of range");
+		assert(cont.clazz.pool[idx].constant_type() == CONSTANT_UTF8 ,"Field signature index dos not points to CONSTANT_UTF8");
+		cp_type = (Utf8PoolConstant)cont.clazz.pool[idx];
+		trace(Clazz.traceRead,cont.offset+": field signature "+idx+" = "+cp_type.value);
+		
 		attrs = Attribute.readAttributes(cont);
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": field flags=0x"+Integer.toHexString(flags)
-			+" ref_name="+cp_name+", name="+((Utf8PoolConstant)cont.clazz.pool[cp_name]).value
-			+" ref_type="+cp_type+", signature="+((Utf8PoolConstant)cont.clazz.pool[cp_type]).value);
+			+" ref_name="+cp_name.idx+", name="+cp_name.value
+			+" ref_type="+cp_type.idx+", signature="+cp_type.value);
 		cont.writeShort(flags);
-		cont.writeShort(cp_name);
-		cont.writeShort(cp_type);
+		cont.writeShort(cp_name.idx);
+		cont.writeShort(cp_type.idx);
 		trace(Clazz.traceWrite,cont.offset+": number of attrs is "+attrs.length);
 		cont.writeShort(attrs.length);
 		for(int i=0; i < attrs.length; i++) {

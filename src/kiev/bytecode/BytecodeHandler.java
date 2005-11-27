@@ -27,7 +27,7 @@ import kiev.stdlib.meta.*;
  * @version $Revision: 182 $
  *
  */
-
+/*
 public interface BytecodeHandler {
 	public static final int PreprocessStage					= 10;
 	public static final int InheritanceResolveStage			= 20;
@@ -44,4 +44,4 @@ public interface AttributeHandler extends BytecodeHandler {
 	@virtual
 	virtual abstract KString			aname;
 }
-
+*/

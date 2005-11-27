@@ -177,7 +177,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otTheType(opret),otTheType(oparg1),otType(oparg2));
-				m.addAttr(new OperatorAttr(op));
+//				m.addAttr(new OperatorAttr(op));
 				if( Kiev.verbose ) System.out.println("Attached assign "+op+" to method "+m);
 			}
 			break;
@@ -216,7 +216,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg1),otType(oparg2));
-				m.addAttr(new OperatorAttr(op));
+//				m.addAttr(new OperatorAttr(op));
 				if( Kiev.verbose ) System.out.println("Attached binary "+op+" to method "+m);
 			}
 			break;
@@ -258,7 +258,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
-				m.addAttr(new OperatorAttr(op));
+//				m.addAttr(new OperatorAttr(op));
 				if( Kiev.verbose ) System.out.println("Attached prefix "+op+" to method "+m);
 			}
 			break;
@@ -282,7 +282,7 @@ public class ASTOperatorAlias extends ASTAlias {
 					);
 				iopt=new OpTypes();
 				op.addTypes(otType(opret),otType(oparg));
-				m.addAttr(new OperatorAttr(op));
+//				m.addAttr(new OperatorAttr(op));
 				if( Kiev.verbose ) System.out.println("Attached postfix "+op+" to method "+m);
 			}
 			break;

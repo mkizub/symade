@@ -130,15 +130,15 @@ public class Field extends DNode implements Named, Typed, Accessable {
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
-		if( !(a.name==attrOperator || a.name==attrImport
-			|| a.name==attrRequire || a.name==attrEnsure) ) {
+//		if( !(a.name==attrOperator || a.name==attrImport
+//			|| a.name==attrRequire || a.name==attrEnsure) ) {
 			for(int i=0; i < attrs.length; i++) {
 				if(attrs[i].name == a.name) {
 					attrs[i] = a;
 					return a;
 				}
 			}
-		}
+//		}
 		attrs = (Attr[])Arrays.append(attrs,a);
 		return a;
 	}

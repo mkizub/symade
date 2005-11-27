@@ -379,8 +379,10 @@ public class BinaryBoolExpr extends BoolExpr {
 		if( cas.isPizzaCase() ) {
 			if( !(op==BinaryOperator.Equals || op==BinaryOperator.NotEquals) )
 				throw new CompilerException(this,"Undefined operation "+op.image+" on cased class");
-			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-			expr2 = new ConstIntExpr(ca.caseno);
+//			PizzaCaseAttr ca = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
+//			expr2 = new ConstIntExpr(ca.caseno);
+			MetaPizzaCase meta = cas.getMetaPizzaCase();
+			expr2 = new ConstIntExpr(meta.getTag());
 			expr2.resolve(Type.tpInt);
 			Type tp = expr1.getType();
 			if (tp.isWrapper()) {

@@ -153,6 +153,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return name.name.equals(cl.name.name);
 	}
 
+	public MetaPizzaCase getMetaPizzaCase() {
+//		return (MetaPizzaCase)this.meta.get(MetaPizzaCase.NAME);
+		foreach (Meta m; meta.metas; m instanceof MetaPizzaCase)
+			return (MetaPizzaCase)m;
+		return null;
+	}
+
 	public void callbackChildChanged(AttrSlot attr) {
 		if (attr.name == "members") {
 			if (type != null)
@@ -176,15 +183,29 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 	
-	public int getValueForEnumField(Field f) {
+	public Field[] getEnumFields() {
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
-		EnumAttr ea = (EnumAttr)getAttr(attrEnum);
-		if( ea == null )
-			throw new RuntimeException("enum structure "+this+" without "+attrEnum+" attribute");
-		for(int i=0; i < ea.fields.length; i++) {
-			if( !ea.fields[i].name.equals(f.name) ) continue;
-			return ea.values[i];
+		int idx = 0;
+		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField())
+			idx++;
+		Field[] eflds = new Field[idx];
+		idx = 0;
+		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField()) {
+			eflds[idx] = (Field)n;
+			idx ++;
+		}
+		return eflds;
+	}
+
+	public int getIndexOfEnumField(Field f) {
+		if( !isEnum() )
+			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
+		int idx = 0;
+		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField()) {
+			if (f == n)
+				return idx;
+			idx++;
 		}
 		throw new RuntimeException("Enum value for field "+f+" not found in "+this);
 	}
@@ -485,15 +506,15 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
-		if( !(a.name==attrOperator || a.name==attrImport
-			|| a.name==attrRequire || a.name==attrEnsure) ) {
+//		if( !(a.name==attrOperator || a.name==attrImport
+//			|| a.name==attrRequire || a.name==attrEnsure) ) {
 			for(int i=0; i < attrs.length; i++) {
 				if(attrs[i].name == a.name) {
 					attrs[i] = a;
 					return a;
 				}
 			}
-		}
+//		}
 		attrs = (Attr[])Arrays.append(attrs,a);
 		return a;
 	}
@@ -594,21 +615,31 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public Struct addCase(Struct cas) {
 		setHasCases(true);
 		int caseno = 0;
-		PizzaCaseAttr case_attr = null;
+//		PizzaCaseAttr case_attr = null;
 		foreach (ASTNode n; members; n instanceof Struct && n.isPizzaCase()) {
 			Struct s = (Struct)n;
-			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-			if( case_attr!=null && case_attr.caseno > caseno )
-				caseno = case_attr.caseno;
+//			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+//			if( case_attr!=null && case_attr.caseno > caseno )
+//				caseno = case_attr.caseno;
+			MetaPizzaCase meta = s.getMetaPizzaCase();
+			if (meta != null && meta.getTag() > caseno)
+				caseno = meta.getTag();
 		}
-		case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-		if( case_attr == null ) {
-			case_attr = new PizzaCaseAttr();
-			cas.addAttr(case_attr);
+		MetaPizzaCase meta = cas.getMetaPizzaCase();
+		if (meta == null) {
+			meta = new MetaPizzaCase();
+			cas.meta.set(meta);
 		}
-		case_attr.caseno = caseno + 1;
-		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "
-			+this+" as case # "+case_attr.caseno);
+		meta.setTag(caseno + 1);
+		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
+//		case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
+//		if( case_attr == null ) {
+//			case_attr = new PizzaCaseAttr();
+//			cas.addAttr(case_attr);
+//		}
+//		case_attr.caseno = caseno + 1;
+//		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "
+//			+this+" as case # "+case_attr.caseno);
 		return cas;
 	}
 
@@ -1969,16 +2000,16 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				n.resolveDecl();
 			}
 			
-			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
-				ClassArgumentsAttr a = new ClassArgumentsAttr();
-				short[] argno = new short[type.args.length];
-				for(int j=0; j < type.args.length; j++) {
-					argno[j] = (short)j; // ((Argument)type.args[j].clazz).argno;
-				}
-				a.args = type.args;
-				a.argno = argno;
-				addAttr(a);
-			}
+//			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+//				ClassArgumentsAttr a = new ClassArgumentsAttr();
+//				short[] argno = new short[type.args.length];
+//				for(int j=0; j < type.args.length; j++) {
+//					argno[j] = (short)j; // ((Argument)type.args[j].clazz).argno;
+//				}
+//				a.args = type.args;
+//				a.argno = argno;
+//				addAttr(a);
+//			}
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {
 				Field[] proxy_fields = Field.emptyArray;
@@ -2129,31 +2160,31 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			addAttr(a);
 		}
 
-		if( countPackedFields() > 0 ) {
-			addAttr(new PackedFieldsAttr(this));
-		}
-
-		if( isSyntax() ) { // || isPackage()
-			for(int i=0; i < imported.length; i++) {
-				ASTNode node = imported[i];
-				if (node instanceof Typedef)
-					addAttr(new TypedefAttr((Typedef)node));
-				else if (node instanceof Opdef)
-					addAttr(new OperatorAttr(((Opdef)node).resolved));
-//					else if (node instanceof Import)
-//						addAttr(new ImportAlias(node));
-//					else
-//						addAttr(new ImportAttr(imported[i]));
-			}
-		}
-
-		{
-			int flags = 0;
-//				if( jthis.isWrapper() ) flags |= 1;
-			if( jthis.isSyntax()  ) flags |= 2;
-
-			if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
-		}
+//		if( countPackedFields() > 0 ) {
+//			addAttr(new PackedFieldsAttr(this));
+//		}
+//
+//		if( isSyntax() ) { // || isPackage()
+//			for(int i=0; i < imported.length; i++) {
+//				ASTNode node = imported[i];
+//				if (node instanceof Typedef)
+//					addAttr(new TypedefAttr((Typedef)node));
+//				else if (node instanceof Opdef)
+//					addAttr(new OperatorAttr(((Opdef)node).resolved));
+////					else if (node instanceof Import)
+////						addAttr(new ImportAlias(node));
+////					else
+////						addAttr(new ImportAttr(imported[i]));
+//			}
+//		}
+//
+//		{
+//			int flags = 0;
+////				if( jthis.isWrapper() ) flags |= 1;
+//			if( jthis.isSyntax()  ) flags |= 2;
+//
+//			if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
+//		}
 
 		if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
 		
@@ -2164,21 +2195,21 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			constPool.addAsciiCP(f.type.signature);
 			constPool.addAsciiCP(f.type.java_signature);
 
-			int flags = 0;
-			if( f.isVirtual() ) flags |= 2;
-			if( f.isForward() ) flags |= 8;
+//			int flags = 0;
+//			if( f.isVirtual() ) flags |= 2;
+//			if( f.isForward() ) flags |= 8;
 			if( f.isAccessedFromInner()) {
-				flags |= (f.acc.flags << 24);
+//				flags |= (f.acc.flags << 24);
 				f.setPrivate(false);
 			}
-			else if( f.isPublic() && f.acc.flags != 0xFF) flags |= (f.acc.flags << 24);
-			else if( f.isProtected() && f.acc.flags != 0x3F) flags |= (f.acc.flags << 24);
-			else if( f.isPrivate() && f.acc.flags != 0x03) flags |= (f.acc.flags << 24);
-			else if( !f.isPublic() && !f.isProtected() && !f.isPrivate() && f.acc.flags != 0x0F) flags |= (f.acc.flags << 24);
+//			else if( f.isPublic() && f.acc.flags != 0xFF) flags |= (f.acc.flags << 24);
+//			else if( f.isProtected() && f.acc.flags != 0x3F) flags |= (f.acc.flags << 24);
+//			else if( f.isPrivate() && f.acc.flags != 0x03) flags |= (f.acc.flags << 24);
+//			else if( !f.isPublic() && !f.isProtected() && !f.isPrivate() && f.acc.flags != 0x0F) flags |= (f.acc.flags << 24);
 
-			if( flags != 0 ) f.addAttr(new FlagsAttr(flags) );
-			if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
-			if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
+//			if( flags != 0 ) f.addAttr(new FlagsAttr(flags) );
+//			if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
+//			if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
 
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 
@@ -2198,22 +2229,22 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			try {
 				m.generate(constPool);
 
-				int flags = 0;
-				if( m.isMultiMethod() ) flags |= 1;
-				if( m.isVarArgs() ) flags |= 4;
-				if( m.isRuleMethod() ) flags |= 16;
-				if( m.isInvariantMethod() ) flags |= 32;
+//				int flags = 0;
+//				if( m.isMultiMethod() ) flags |= 1;
+//				if( m.isVarArgs() ) flags |= 4;
+//				if( m.isRuleMethod() ) flags |= 16;
+//				if( m.isInvariantMethod() ) flags |= 32;
 				if( m.isAccessedFromInner()) {
-					flags |= (m.acc.flags << 24);
+//					flags |= (m.acc.flags << 24);
 					m.setPrivate(false);
 				}
 
-				if( flags != 0 ) m.addAttr(new FlagsAttr(flags) );
-				if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
-
-				if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
-					m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
-				}
+//				if( flags != 0 ) m.addAttr(new FlagsAttr(flags) );
+//				if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
+//
+//				if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
+//					m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
+//				}
 
 				for(int j=0; j < m.conditions.length; j++) {
 					if( m.conditions[j].definer == m ) {
@@ -2258,12 +2289,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			}
 		}
 		if( Kiev.safe && isBad() ) return;
-		Bytecoder bc = new Bytecoder(this,null,constPool);
-		bc.kievmode = true;
-		byte[] dump = bc.writeClazz();
-		Attr ka = addAttr(new KievAttr(dump));
-		ka.generate(constPool);
-		if( Kiev.safe && isBad() ) return;
+//		Bytecoder bc = new Bytecoder(this,null,constPool);
+//		bc.kievmode = true;
+//		byte[] dump = bc.writeClazz();
+//		Attr ka = addAttr(new KievAttr(dump));
+//		ka.generate(constPool);
+//		if( Kiev.safe && isBad() ) return;
 		FileUnit.toBytecode(this,constPool);
 		Env.setProjectInfo(name, true);
 		kiev.Main.runGC();
@@ -2359,10 +2390,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		this.attrs = Attr.emptyArray;
 		for(int j=0; j < ats.length; j++) {
 			if( ats[j].name.equals(attrSourceFile)
-			||	ats[j].name.equals(attrPizzaCase)
-			||	ats[j].name.equals(attrEnum)
-			||	ats[j].name.equals(attrRequire)
-			||	ats[j].name.equals(attrEnsure)
+//			||	ats[j].name.equals(attrPizzaCase)
+//			||	ats[j].name.equals(attrEnum)
+//			||	ats[j].name.equals(attrRequire)
+//			||	ats[j].name.equals(attrEnsure)
 			)
 				addAttr(ats[j]);
 		}

@@ -231,9 +231,14 @@ public class ASTIdentifier extends ENode {
 			s.checkResolved();
 			if( reqType != null && reqType.equals(Type.tpInt) ) {
 				if( s.isPizzaCase() ) {
-					PizzaCaseAttr case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-					if( case_attr != null ) {
-						replaceWithNodeResolve(reqType, new ConstIntExpr(case_attr.caseno));
+//					PizzaCaseAttr case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+//					if( case_attr != null ) {
+//						replaceWithNodeResolve(reqType, new ConstIntExpr(case_attr.caseno));
+//						return;
+//					}
+					MetaPizzaCase meta = s.getMetaPizzaCase();
+					if( meta != null ) {
+						replaceWithNodeResolve(reqType, new ConstIntExpr(meta.getTag()));
 						return;
 					}
 				}

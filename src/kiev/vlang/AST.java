@@ -1593,17 +1593,22 @@ public class TypeRef extends ENode {
 		if (st.isPizzaCase()) {
 			Struct s = st.getStruct();
 			// Pizza case may be casted to int or to itself or super-class
-			PizzaCaseAttr case_attr;
-			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-			if (case_attr == null)
-				throw new RuntimeException("Internal error - can't find case_attr");
+//			PizzaCaseAttr case_attr;
+//			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
+//			if (case_attr == null)
+//				throw new RuntimeException("Internal error - can't find case_attr");
+			MetaPizzaCase meta = s.getMetaPizzaCase();
+			if (meta == null)
+				throw new RuntimeException("Internal error - can't find pizza case meta attr");
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
-			if (case_attr.casefields.length != 0)
+//			if (case_attr.casefields.length != 0)
+			if (meta.getFields().length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
-				Expr expr = new ConstIntExpr(case_attr.caseno);
+//				Expr expr = new ConstIntExpr(case_attr.caseno);
+				Expr expr = new ConstIntExpr(meta.getTag());
 				if( reqType != Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);
