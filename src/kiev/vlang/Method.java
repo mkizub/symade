@@ -580,7 +580,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
+				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
 					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);

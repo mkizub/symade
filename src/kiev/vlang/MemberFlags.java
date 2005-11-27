@@ -45,7 +45,7 @@ public interface AccessFlags {
 	public static final int ACC_STRICT				= 1 << 11; // strict math
 	public static final int ACC_SYNTHETIC			= 1 << 12;
 	public static final int ACC_ANNOTATION			= 1 << 13;
-	public static final int ACC_JAVA_ENUM			= 1 << 14; // enum classes and fields of enum classes
+	public static final int ACC_ENUM				= 1 << 14; // enum classes and fields of enum classes
 
 	// Valid for bytecode mask
 	public static final int JAVA_ACC_MASK		= 0xFFFF;
@@ -68,7 +68,7 @@ public interface AccessFlags {
 	public static final int ACC_PACKAGE			= 1 << 16;
 	public static final int ACC_ARGUMENT			= 1 << 17;
 	public static final int ACC_PIZZACASE			= 1 << 18;
-	public static final int ACC_ENUM				= 1 << 19;
+	//public static final int ACC_ENUM				= 1 << 19;
 	public static final int ACC_SYNTAX			= 1 << 20;
 	public static final int ACC_WRAPPER			= 1 << 21;
 

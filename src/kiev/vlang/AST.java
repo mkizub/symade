@@ -147,7 +147,7 @@ public abstract class ASTNode implements Constants {
 	public int				compileflags;
 	
 	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
-	@virtual public virtual packed:1,flags,14 boolean is_struct_java_enum;  // struct
+	@virtual public virtual packed:1,flags,14 boolean is_struct_enum;       // struct
 	@virtual public virtual packed:1,flags,14 boolean is_fld_enum;        // field
 	// Flags temporary used with java flags
 	@virtual public virtual packed:1,flags,16 boolean is_forward;         // var/field
@@ -159,7 +159,6 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,flags,16 boolean is_struct_package;    // struct
 	@virtual public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
 	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
-	@virtual public virtual packed:1,flags,19 boolean is_struct_enum;       // struct
 	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
 //	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
 
@@ -661,19 +660,6 @@ public abstract class ASTNode implements Constants {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
-	// kiev enum
-	@getter public final boolean get$is_struct_enum()  alias isEnum  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_enum;
-	}
-	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		assert(!on || (!isPackage() && !isInterface() && !isSyntax()));
-		if (this.is_struct_enum != on) {
-			this.is_struct_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
 	// kiev annotation
 	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
 		assert(this instanceof Struct,"For node "+this.getClass());
@@ -689,14 +675,14 @@ public abstract class ASTNode implements Constants {
 		}
 	}
 	// java enum
-	@getter public final boolean get$is_struct_java_enum()  alias isJavaEnum  {
+	@getter public final boolean get$is_struct_enum()  alias isEnum {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_java_enum;
+		return this.is_struct_enum;
 	}
-	@setter public final void set$is_struct_java_enum(boolean on) alias setJavaEnum {
+	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
 		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_java_enum != on) {
-			this.is_struct_java_enum = on;
+		if (this.is_struct_enum != on) {
+			this.is_struct_enum = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}

@@ -434,7 +434,8 @@ public interface StdTypes {
 //		tpDynamicClazz.type		= tpDynamic;
 //		typeHash.put(tpDynamic);
 
-		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enum;")),kiev_stdlib,ACC_PUBLIC | ACC_ABSTRACT);
+//		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enum;")),kiev_stdlib,ACC_PUBLIC | ACC_ABSTRACT);
+		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Enum;")),java_lang,ACC_PUBLIC | ACC_ABSTRACT);
 		tpEnum					= new BaseType(tpEnumClazz);
 		tpEnumClazz.type		= tpEnum;
 		typeHash.put(tpEnum);

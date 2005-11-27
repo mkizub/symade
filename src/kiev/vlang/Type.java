@@ -596,7 +596,6 @@ public class Type implements StdTypes, AccessFlags, Named {
 	public boolean isAnnotation()			{ return clazz.isAnnotation(); }
 	public boolean isAbstract()				{ return clazz.isAbstract(); }
 	public boolean isEnum()					{ return clazz.isEnum(); }
-	public boolean isJavaEnum()				{ return clazz.isJavaEnum(); }
 	public boolean isInterface()			{ return clazz.isInterface(); }
 	public boolean isClazz()				{ return clazz.isClazz(); }
 	public boolean isHasCases()				{ return clazz.isHasCases(); }
@@ -788,7 +787,6 @@ public class ArrayType extends Type {
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return false; }
 	public boolean isEnum()							{ return false; }
-	public boolean isJavaEnum()						{ return false; }
 	public boolean isInterface()					{ return false; }
 	public boolean isClazz()						{ return false; }
 	public boolean isHasCases()						{ return false; }
@@ -887,7 +885,6 @@ public class ArgumentType extends Type {
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return super_type.isAbstract(); }
 	public boolean isEnum()							{ return false; }
-	public boolean isJavaEnum()						{ return false; }
 	public boolean isInterface()					{ return false; }
 	public boolean isClazz()						{ return false; }
 	public boolean isHasCases()						{ return super_type.isHasCases(); }

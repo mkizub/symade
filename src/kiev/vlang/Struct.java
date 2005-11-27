@@ -1024,10 +1024,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						if( isEnum() ) {
 							targs = (Type[])Arrays.append(targs,Type.tpString);
 							targs = (Type[])Arrays.append(targs,Type.tpInt);
-							targs = (Type[])Arrays.append(targs,Type.tpString);
+							//targs = (Type[])Arrays.append(targs,Type.tpString);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,0));
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameEnumOrdinal,Type.tpInt,FormPar.PARAM_NORMAL,0));
-							params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,0));
+							//params = (FormPar[])Arrays.append(params,new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,0));
 						}
 						mt = MethodType.newMethodType(targs,Type.tpVoid);
 						init = new Constructor(mt,ACC_PUBLIC);
@@ -1308,7 +1308,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					else if( isEnum() ) {
 						call_super.args.add(new ASTIdentifier(pos, KString.from("name")));
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
-						call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
+						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
 					stats.insert(new ExprStat(call_super),0);
 				}

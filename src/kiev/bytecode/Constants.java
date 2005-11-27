@@ -67,7 +67,7 @@ public interface BytecodeFileConstants {
 	public static final int ACC_STRICT					= 1 << 11; // strict math
 	public static final int ACC_SYNTHETIC				= 1 << 12;
 	public static final int ACC_ANNOTATION				= 1 << 13;
-	public static final int ACC_JAVA_ENUM				= 1 << 14; // enum classes and fields of enum classes
+	public static final int ACC_ENUM					= 1 << 14; // enum classes and fields of enum classes
 	
 }
 

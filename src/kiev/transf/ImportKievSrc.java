@@ -555,8 +555,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 				f.init = new NewExpr(f.pos,me.type,new Expr[]{
 							new ConstStringExpr(f.name.name),
-							new ConstIntExpr(next_enum_val),
-							new ConstStringExpr(text)
+							new ConstIntExpr(next_enum_val)
+							//new ConstStringExpr(text)
 				});
 				next_enum_val++;
 			}

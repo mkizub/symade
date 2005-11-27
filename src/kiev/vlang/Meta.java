@@ -239,7 +239,7 @@ public class Meta extends ENode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isJavaEnum()))
+				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
 					throw new CompilerException(m, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);
