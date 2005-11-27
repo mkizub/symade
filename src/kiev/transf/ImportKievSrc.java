@@ -24,7 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
-import kiev.backend.java15.JPackage;
+import kiev.backend.java15.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -210,11 +210,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1_1(Import:ASTNode astn) {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
-		ASTNode@ v;
+		DNode@ v;
 		if( !PassInfo.resolveQualifiedNameR(astn,v,new ResInfo(astn,ResInfo.noForwards),name) ) {
 			Kiev.reportError(astn,"Unresolved identifier "+name);
 		}
-		ASTNode n = v;
+		DNode n = v;
 		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn,"Identifier "+name+" is not a class or package");
 		else if (astn.mode == Import.ImportMode.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
@@ -789,22 +789,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 final class JavaBackend extends BackendProcessor {
 	
-	JPackage root;
-	
 	public JavaBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	
 	public void preGenerate() {
-		if (root == null)
-			root = new JPackage(Env.root);
-		root.importSubTree();
-//		root.toJavaDecl("jsrc");
+		JPackage jroot = (JPackage)new TreeMapper().mapStruct(Env.root);
 		foreach (FileUnit fu; Kiev.files) {
 			fu.walkTree(new TreeWalker() {
 				public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 			});
 		}
+		//jroot.toJavaDecl("jsrc");
 	}
 
 	public void preGenerate(ASTNode node) {

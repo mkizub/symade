@@ -52,12 +52,12 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
          public boolean					of_method;
 	@att public final NArr<TypeRef>		args;
 
-    @ref public ASTNode		resolved;
+    @ref public DNode					resolved;
 
 	public Import() {
 	}
 
-	public Import(ASTNode node, ImportMode mode, boolean star) {
+	public Import(DNode node, ImportMode mode, boolean star) {
 		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
@@ -79,7 +79,6 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 
 	public ASTNode resolveImports() {
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
-		ASTNode@ v;
 		int i = 0;
 		Type[] types;
 		if( args.length > 0 && args[0]==Type.tpRule) {
@@ -90,10 +89,11 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		}
 		for(int j=0; j < types.length; j++,i++)
 			types[j] = args[i].getType();
+		DNode@ v;
 		MethodType mt = MethodType.newMethodType(null,types,Type.tpAny);
 		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
 			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
-		ASTNode n = v;
+		DNode n = v;
 		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
 			throw new CompilerException(this,"Identifier "+name+" is not a method");
 		resolved = n;

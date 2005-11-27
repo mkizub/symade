@@ -279,8 +279,8 @@ public class SwitchStat extends Statement implements BreakTarget {
 	@dflow(in="sel", seq="false")
 	@att public final NArr<CaseLabel>	cases;
 
-	@att public LVarExpr					tmpvar;
-	@ref public ASTNode					defCase;
+	@att public LVarExpr				tmpvar;
+	@ref public CaseLabel				defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
 	@att
@@ -1001,7 +1001,7 @@ public class WithStat extends Statement {
 	public Statement	body;
 	
 	@ref
-	public ASTNode		var_or_field;
+	public DNode		var_or_field;
 	public CodeLabel	end_label;
 
 	public WithStat() {

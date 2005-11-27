@@ -24,6 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
+import kiev.backend.java15.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -39,6 +40,7 @@ public class Bytecoder implements Constants {
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
+	public JStruct								jclazz;
 //	public kiev.bytecode.KievAttributeClazz	kaclazz;
 //	public boolean								kievmode;
 
@@ -112,6 +114,7 @@ public class Bytecoder implements Constants {
 		}
 
 		cl.members.delAll();
+		jclazz = new JStruct(cl);
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
@@ -215,6 +218,7 @@ public class Bytecoder implements Constants {
 		}
 		f.init = f_init;
 		cl.members.append(f);
+		jclazz.addMember(new JField(f));
 		return f;
 	}
 
@@ -384,6 +388,7 @@ public class Bytecoder implements Constants {
 		 && cl.name.short_name.equals(nameIdefault)
 		)
 			m.setVirtualStatic(true);
+		jclazz.addMember(new JMethod(m));
 		return m;
 	}
 

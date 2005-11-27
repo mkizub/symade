@@ -1669,6 +1669,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public boolean preGenerate() {
 		autoProxyMethods();
+		new kiev.backend.java15.TreeMapper().mapStruct(this);
 		return true;
 	}
 	

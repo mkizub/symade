@@ -32,4 +32,11 @@ abstract class JDNode extends DNode {
 		assert(dnode.getNodeData(JDNodeInfo.ID) == null);
 		dnode.addNodeData(new JDNodeInfo(this));
 	}
+	
+	public static JDNode findJDNode(DNode d) {
+		JDNodeInfo jdi = (JDNodeInfo)d.getNodeData(JDNodeInfo.ID);
+		if (jdi == null)
+			return null;
+		return jdi.jdnode;
+	}
 }

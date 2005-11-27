@@ -12,14 +12,33 @@ import syntax kiev.Syntax;
 
 @node(copyable=false)
 @dflow(in="root()")
-abstract class JStruct extends JDNode {
+public /*abstract*/ class JStruct extends JDNode {
 	@att
 	@dflow(in="", seq="false")
-	final NArr<JClazz>		sub_clazz;
+	final NArr<JStruct>				sub_clazz;
 	@att
 	final KString	qname; // fully qualified name
 	@att
 	final KString	sname; // short name
+	/** Array of members of this class, except inner classes */
+	@att
+	@dflow(in="", seq="false")
+	public final NArr<JDNode>		members;
+
+	
+	public static JStruct newJStruct(Struct vs)
+		alias operator(240,lfy,new)
+	{
+		if (vs.isPackage())
+			return JPackage.newJPackage(vs);
+		else if (vs.isAnnotation())
+			return JAnnotation.newJAnnotation(vs);
+		else if (vs.isInterface())
+			return JInterface.newJInterface(vs);
+		else if (vs.isEnum())
+			return JEnum.newJEnum(vs);
+		return JClazz.newJClazz(vs);
+	}
 	
 	JStruct(Struct vpkg) {
 		super(vpkg);
@@ -29,10 +48,20 @@ abstract class JStruct extends JDNode {
 	Struct getVStruct() {
 		return (Struct)dnode;
 	}
+	public String toString() {
+		return qname.toString();
+	}
 	public int hashCode() {
 		return getVStruct().hashCode();
 	}
-
+	public void addMember(JDNode jd) {
+		if (jd instanceof JPackage)
+			Kiev.reportError(jd, "Java classes may not have sub-packages");
+		else if (jd instanceof JStruct)
+			sub_clazz.addUniq((JStruct)jd);
+		else
+			members.addUniq(jd);
+	}
 }
 
 @node(copyable=false)
@@ -45,33 +74,27 @@ public final class JPackage extends JStruct {
 	public static JPackage newJPackage(Struct vpkg)
 		alias operator(240,lfy,new)
 	{
-		JPackage jp;
-		JDNodeInfo jdi = (JDNodeInfo)vpkg.getNodeData(JDNodeInfo.ID);
-		if (jdi == null) {
+		assert(vpkg.isPackage());
+		JPackage jp = (JPackage)findJDNode(vpkg);
+		if (jp == null)
 			jp = new JPackage(vpkg);
-			if (jp.getVStruct() != Env.root)
-				newJPackage(jp.getVStruct().package_clazz).sub_package.appendUniq(jp);
-		} else {
-			jp = (JPackage)jdi.jdnode;
-		}
 		return jp;
 	}
 	
 	private JPackage(Struct vpkg) {
 		super(vpkg);
 		assert(vpkg.isPackage());
+		if (getVStruct() != Env.root)
+			newJPackage(getVStruct().package_clazz).addMember(this);
 	}
 	
-	public void importSubTree() {
-		foreach (DNode d; getVStruct().sub_clazz; d instanceof Struct) {
-			if (d.isPackage()) {
-				JPackage jp = new JPackage((Struct)d);
-				jp.importSubTree();
-			} else {
-				JClazz jc = new JClazz((Struct)d);
-				jc.importSubTree();
-			}
-		}
+	public void addMember(JDNode jd) {
+		if (jd instanceof JPackage)
+			sub_package.addUniq((JPackage)jd);
+		else if (jd instanceof JStruct)
+			sub_clazz.addUniq((JStruct)jd);
+		else
+			Kiev.reportError(jd, "Java package may only have sub-packages and classes");
 	}
 
 	public void toJavaDecl(String output_dir) {
@@ -82,7 +105,7 @@ public final class JPackage extends JStruct {
 				Kiev.reportError(jp,e);
 			}
 		}
-		foreach (JClazz jc; sub_clazz) {
+		foreach (JStruct jc; sub_clazz) {
 			try {
 				this.toJavaDecl(output_dir, jc);
 			} catch(Exception e) {
@@ -91,7 +114,7 @@ public final class JPackage extends JStruct {
 		}
 	}
 
-	public void toJavaDecl(String output_dir, JClazz cl) {
+	public void toJavaDecl(String output_dir, JStruct cl) {
 		if( output_dir == null ) output_dir = "jsrc";
 		Dumper dmp = new Dumper();
 		if( cl.parent != Env.root ) {
@@ -125,35 +148,19 @@ public final class JPackage extends JStruct {
 @node(copyable=false)
 @dflow(in="root()")
 public final class JClazz extends JStruct {
-	/** Array of fields of this class */
-	@att
-	@dflow(in="", seq="false")
-	public final NArr<JField>				fields;
-
-	/** Array of methods of this class */
-	@att
-	@dflow(in="", seq="false")
-	public final NArr<JMethod>				methods;
 
 	public static JClazz newJClazz(Struct vcls)
 		alias operator(240,lfy,new)
 	{
-		JClazz jc;
-		JDNodeInfo jdi = (JDNodeInfo)vcls.getNodeData(JDNodeInfo.ID);
-		if (jdi == null) {
+		JClazz jc = (JClazz)findJDNode(vcls);
+		if (jc == null)
 			jc = new JClazz(vcls);
-			if (vcls.package_clazz.isPackage())
-				JPackage.newJPackage(vcls.package_clazz).sub_clazz.appendUniq(jc);
-			else
-				newJClazz(vcls.package_clazz).sub_clazz.appendUniq(jc);
-		} else {
-			jc = (JClazz)jdi.jdnode;
-		}
 		return jc;
 	}
 	
 	private JClazz(Struct vclazz) {
 		super(vclazz);
+		JStruct.newJStruct(vclazz.package_clazz).addMember(this);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -168,15 +175,120 @@ public final class JClazz extends JStruct {
 		Struct jthis = getVStruct();
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+this+"]");
 		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
-		dmp.append("class").forsed_space().append(qname).append(';').newLine();
+		dmp.append("class").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		dmp.newLine(-1).append('}').newLine();
+		return dmp;
+	}
+}
+
+@node(copyable=false)
+@dflow(in="root()")
+public final class JInterface extends JStruct {
+
+	public static JInterface newJInterface(Struct vcls)
+		alias operator(240,lfy,new)
+	{
+		JInterface jc = (JInterface)findJDNode(vcls);
+		if (jc == null)
+			jc = new JInterface(vcls);
+		return jc;
+	}
+	
+	private JInterface(Struct vclazz) {
+		super(vclazz);
+		JStruct.newJStruct(vclazz.package_clazz).addMember(this);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		if (isArgument() || isLocal())
+			dmp.append(sname);
+		else
+			dmp.append(qname);
+		return dmp;
+	}
+	
+	public Dumper toJavaDecl(Dumper dmp) {
+		Struct jthis = getVStruct();
+		if( Kiev.verbose ) System.out.println("[ Dumping iface "+this+"]");
+		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		dmp.append("interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
 
-	public void importSubTree() {
-		foreach (DNode d; getVStruct().members; d instanceof Struct) {
-			JClazz jc = new JClazz((Struct)d);
-			jc.importSubTree();
-		}
+}
+
+@node(copyable=false)
+@dflow(in="root()")
+public final class JAnnotation extends JStruct {
+
+	public static JAnnotation newJAnnotation(Struct vcls)
+		alias operator(240,lfy,new)
+	{
+		JAnnotation jc = (JAnnotation)findJDNode(vcls);
+		if (jc == null)
+			jc = new JAnnotation(vcls);
+		return jc;
 	}
+	
+	private JAnnotation(Struct vclazz) {
+		super(vclazz);
+		JStruct.newJStruct(vclazz.package_clazz).addMember(this);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		if (isArgument() || isLocal())
+			dmp.append(sname);
+		else
+			dmp.append(qname);
+		return dmp;
+	}
+	
+	public Dumper toJavaDecl(Dumper dmp) {
+		Struct jthis = getVStruct();
+		if( Kiev.verbose ) System.out.println("[ Dumping meta  "+this+"]");
+		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		dmp.append("@interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		dmp.newLine(-1).append('}').newLine();
+		return dmp;
+	}
+
+}
+
+@node(copyable=false)
+@dflow(in="root()")
+public final class JEnum extends JStruct {
+
+	public static JEnum newJEnum(Struct vcls)
+		alias operator(240,lfy,new)
+	{
+		JEnum jc = (JEnum)findJDNode(vcls);
+		if (jc == null)
+			jc = new JEnum(vcls);
+		return jc;
+	}
+	
+	private JEnum(Struct vclazz) {
+		super(vclazz);
+		JStruct.newJStruct(vclazz.package_clazz).addMember(this);
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		if (isArgument() || isLocal())
+			dmp.append(sname);
+		else
+			dmp.append(qname);
+		return dmp;
+	}
+	
+	public Dumper toJavaDecl(Dumper dmp) {
+		Struct jthis = getVStruct();
+		if( Kiev.verbose ) System.out.println("[ Dumping enum  "+this+"]");
+		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		dmp.append("enum").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		dmp.newLine(-1).append('}').newLine();
+		return dmp;
+	}
+
 }
 
