@@ -26,6 +26,13 @@ abstract class JDNode extends DNode {
 	/** Array of attributes of this structure */
 	Attr[] attrs = Attr.emptyArray;
 	
+	public static JDNode findJDNode(DNode d) {
+		JDNodeInfo jdi = (JDNodeInfo)d.getNodeData(JDNodeInfo.ID);
+		if (jdi == null)
+			return null;
+		return jdi.jdnode;
+	}
+
 	JDNode(DNode dnode) {
 		super(dnode.pos);
 		this.flags = dnode.flags;
@@ -36,10 +43,21 @@ abstract class JDNode extends DNode {
 		dnode.addNodeData(new JDNodeInfo(this));
 	}
 	
-	public static JDNode findJDNode(DNode d) {
-		JDNodeInfo jdi = (JDNodeInfo)d.getNodeData(JDNodeInfo.ID);
-		if (jdi == null)
-			return null;
-		return jdi.jdnode;
+	Dumper toJavaModifiers(Dumper dmp) {
+		if (meta != null) {
+			foreach (Meta m; meta)
+				m.toJavaDecl(dmp);
+		}
+		if( (flags & ACC_PUBLIC		) != 0 ) dmp.append("public ");
+		if( (flags & ACC_PRIVATE	) != 0 ) dmp.append("private ");
+		if( (flags & ACC_PROTECTED	) != 0 ) dmp.append("protected ");
+		if( (flags & ACC_FINAL		) != 0 ) dmp.append("final ");
+		if( (flags & ACC_STATIC		) != 0 ) dmp.append("static ");
+		if( (flags & ACC_ABSTRACT	) != 0 ) dmp.append("abstract ");
+		if( (flags & ACC_NATIVE		) != 0 ) dmp.append("native ");
+		if( (flags & ACC_SYNCHRONIZED) != 0 ) dmp.append("synchronized ");
+		if( (flags & ACC_VOLATILE	) != 0 ) dmp.append("volatile ");
+		if( (flags & ACC_TRANSIENT	) != 0 ) dmp.append("transient ");
+		return dmp;
 	}
 }

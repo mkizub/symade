@@ -161,6 +161,7 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
 	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
 //	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
+	@virtual public virtual packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
 
 	// Structures	
 	@virtual public virtual packed:1,compileflags,16 boolean is_struct_local;
@@ -698,6 +699,15 @@ public abstract class ASTNode implements Constants {
 			this.is_struct_syntax = on;
 			this.callbackChildChanged(nodeattr$flags);
 		}
+	}
+	// structure was loaded from bytecode
+	@getter public final boolean get$is_struct_bytecode()  alias isLoadedFromBytecode  {
+		assert(this instanceof Struct || this instanceof kiev.backend.java15.JStruct,"For node "+this.getClass());
+		return this.is_struct_bytecode;
+	}
+	@setter public final void set$is_struct_bytecode(boolean on) alias setLoadedFromBytecode {
+		assert(this instanceof Struct || this instanceof kiev.backend.java15.JStruct,"For node "+this.getClass());
+		this.is_struct_bytecode = on;
 	}
 
 	//

@@ -115,6 +115,7 @@ public class Bytecoder implements Constants {
 
 		cl.members.delAll();
 		jclazz = new JStruct(cl);
+		jclazz.setLoadedFromBytecode(true);
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);

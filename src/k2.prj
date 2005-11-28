@@ -8,7 +8,6 @@ kiev.Main kiev/Main kiev\Main.java
 kiev.SeverError kiev/SeverError kiev\Errors.java
 kiev.Syntax kiev/Syntax kiev\Syntax.java
 kiev.backend.java15.JAnnotation kiev/backend/java15/JAnnotation kiev\backend\java15\JClass.java
-kiev.backend.java15.JArgType kiev/backend/java15/JArgType kiev\backend\java15\JType.java
 kiev.backend.java15.JClazz kiev/backend/java15/JClazz kiev\backend\java15\JClass.java
 kiev.backend.java15.JConstructor kiev/backend/java15/JConstructor kiev\backend\java15\JMethod.java
 kiev.backend.java15.JDNode kiev/backend/java15/JDNode kiev\backend\java15\JDNode.java
@@ -21,7 +20,7 @@ kiev.backend.java15.JMethod kiev/backend/java15/JMethod kiev\backend\java15\JMet
 kiev.backend.java15.JPackage kiev/backend/java15/JPackage kiev\backend\java15\JClass.java
 kiev.backend.java15.JRuleMethod kiev/backend/java15/JRuleMethod kiev\backend\java15\JMethod.java
 kiev.backend.java15.JStruct kiev/backend/java15/JStruct kiev\backend\java15\JClass.java
-kiev.backend.java15.JType kiev/backend/java15/JType kiev\backend\java15\JType.java
+kiev.backend.java15.JVar kiev/backend/java15/JVar kiev\backend\java15\JVar.java
 kiev.backend.java15.TreeMapper kiev/backend/java15/TreeMapper kiev\backend\java15\TreeMapper.java
 kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java

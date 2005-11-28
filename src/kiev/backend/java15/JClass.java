@@ -124,7 +124,7 @@ public final class JPackage extends JStruct {
 				Kiev.reportError(jp,e);
 			}
 		}
-		foreach (JStruct jc; sub_clazz) {
+		foreach (JStruct jc; sub_clazz; !jc.isLoadedFromBytecode()) {
 			try {
 				this.toJavaDecl(output_dir, jc);
 			} catch(Exception e) {
@@ -196,6 +196,8 @@ public final class JClazz extends JStruct {
 		toJavaModifiers(dmp);
 		dmp.append("class").forsed_space().append(sname).forsed_space().append('{').newLine(1);
 		toJavaDeclSubClazz(dmp);
+		foreach (JDNode jd; members)
+			jd.toJavaDecl(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -233,6 +235,8 @@ public final class JInterface extends JStruct {
 		toJavaModifiers(dmp);
 		dmp.append("interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
 		toJavaDeclSubClazz(dmp);
+		foreach (JDNode jd; members)
+			jd.toJavaDecl(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -271,6 +275,8 @@ public final class JAnnotation extends JStruct {
 		toJavaModifiers(dmp);
 		dmp.append("@interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
 		toJavaDeclSubClazz(dmp);
+		foreach (JDNode jd; members)
+			jd.toJavaDecl(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -308,6 +314,8 @@ public final class JEnum extends JStruct {
 		if( Kiev.verbose ) System.out.println("[ Dumping enum  "+this+"]");
 		toJavaModifiers(dmp);
 		dmp.append("enum").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		foreach (JDNode jd; members)
+			jd.toJavaDecl(dmp);
 		toJavaDeclSubClazz(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;

@@ -13,6 +13,11 @@ import syntax kiev.Syntax;
 @dflow(in="root()")
 public class JMethod extends JDNode {
 	
+	MethodType		type;
+	KString			name;
+	JVar[]			params;
+	ENode			body;
+
 	public static JMethod newJMethode(Method vm)
 		alias operator(240,lfy,new)
 	{
@@ -30,12 +35,39 @@ public class JMethod extends JDNode {
 	
 	JMethod(Method vmethod) {
 		super(vmethod);
+		this.type = vmethod.dtype;
+		this.name = vmethod.name.name;
+		this.params = new JVar[vmethod.params.length];
+		for (int i=0; i < this.params.length; i++)
+			this.params[i] = new JVar(vmethod.params[i]);
+		this.body = vmethod.body;
 	}
 
 	Method getVMethod() {
 		return (Method)dnode;
 	}
+
+	protected Dumper toJavaTypeName(Dumper dmp) {
+		return dmp.space().append(type.ret).forsed_space().append(name);
+	}
 	
+	public Dumper toJavaDecl(Dumper dmp) {
+		toJavaModifiers(dmp);
+		toJavaTypeName(dmp);
+		dmp.append('(');
+		for(int i=0; i < params.length; i++) {
+			params[i].toJavaDecl(dmp);
+			if( i < (params.length-1) ) dmp.append(",");
+		}
+		dmp.append(')').space();
+		if (isAbstract())
+			dmp.append(';');
+		else if (body == null)
+			dmp.append("{ ... }");
+		else
+			dmp.append(body);
+		return dmp.newLine();
+	}
 }
 
 @node(copyable=false)
@@ -50,6 +82,22 @@ public class JConstructor extends JMethod {
 		return (Constructor)dnode;
 	}
 	
+	protected Dumper toJavaTypeName(Dumper dmp) {
+		return dmp.append(((JStruct)parent).sname);
+	}
+	
+	public Dumper toJavaDecl(Dumper dmp) {
+		if (name != nameClassInit) {
+			super.toJavaDecl(dmp);
+		} else {
+			dmp.append("static ");
+			if (body == null)
+				dmp.append("{ ... }");
+			else
+				dmp.append(body);
+		}
+		return dmp.newLine();
+	}
 }
 
 @node(copyable=false)
