@@ -1283,7 +1283,7 @@ public /*abstract*/ class ENode extends ASTNode {
 	}
 
 	public int getPriority() { return 255; }
-
+	public boolean valueEquals(Object o) { return false; }
 	public boolean isConstantExpr() { return false; }
 	public Object	getConstValue() {
 		throw new RuntimeException("Request for constant value of non-constant expression");

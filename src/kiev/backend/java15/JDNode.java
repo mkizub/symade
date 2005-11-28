@@ -28,7 +28,10 @@ abstract class JDNode extends DNode {
 	
 	JDNode(DNode dnode) {
 		super(dnode.pos);
+		this.flags = dnode.flags;
 		this.dnode = dnode;
+		if (dnode.meta != null)
+			this.meta = (MetaSet)dnode.meta.copy();
 		assert(dnode.getNodeData(JDNodeInfo.ID) == null);
 		dnode.addNodeData(new JDNodeInfo(this));
 	}

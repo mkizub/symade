@@ -800,7 +800,7 @@ final class JavaBackend extends BackendProcessor {
 				public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 			});
 		}
-		//jroot.toJavaDecl("jsrc");
+		jroot.toJavaDecl("jsrc");
 	}
 
 	public void preGenerate(ASTNode node) {

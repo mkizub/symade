@@ -62,6 +62,25 @@ public /*abstract*/ class JStruct extends JDNode {
 		else
 			members.addUniq(jd);
 	}
+	Dumper toJavaModifiers(Dumper dmp) {
+		if (meta != null) {
+			foreach (Meta m; meta)
+				m.toJavaDecl(dmp);
+		}
+		if( (flags & ACC_PUBLIC		) != 0 ) dmp.append("public ");
+		if( (flags & ACC_PRIVATE	) != 0 ) dmp.append("private ");
+		if( (flags & ACC_PROTECTED	) != 0 ) dmp.append("protected ");
+		if( (flags & ACC_FINAL		) != 0 ) dmp.append("final ");
+		if( (flags & ACC_STATIC		) != 0 ) dmp.append("static ");
+		if( (flags & ACC_ABSTRACT	) != 0 ) dmp.append("abstract ");
+		if( (flags & ACC_NATIVE		) != 0 ) dmp.append("native ");
+		return dmp;
+	}
+	Dumper toJavaDeclSubClazz(Dumper dmp) {
+		foreach (JStruct js; sub_clazz)
+			js.toJavaDecl(dmp).newLine();
+		return dmp;
+	}
 }
 
 @node(copyable=false)
@@ -174,8 +193,9 @@ public final class JClazz extends JStruct {
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = getVStruct();
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+this+"]");
-		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		toJavaModifiers(dmp);
 		dmp.append("class").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		toJavaDeclSubClazz(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -210,8 +230,9 @@ public final class JInterface extends JStruct {
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = getVStruct();
 		if( Kiev.verbose ) System.out.println("[ Dumping iface "+this+"]");
-		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		toJavaModifiers(dmp);
 		dmp.append("interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		toJavaDeclSubClazz(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -247,8 +268,9 @@ public final class JAnnotation extends JStruct {
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = getVStruct();
 		if( Kiev.verbose ) System.out.println("[ Dumping meta  "+this+"]");
-		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		toJavaModifiers(dmp);
 		dmp.append("@interface").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		toJavaDeclSubClazz(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
@@ -284,8 +306,9 @@ public final class JEnum extends JStruct {
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = getVStruct();
 		if( Kiev.verbose ) System.out.println("[ Dumping enum  "+this+"]");
-		Env.toJavaModifiers(dmp,jthis.getJavaFlags());
+		toJavaModifiers(dmp);
 		dmp.append("enum").forsed_space().append(sname).forsed_space().append('{').newLine(1);
+		toJavaDeclSubClazz(dmp);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}

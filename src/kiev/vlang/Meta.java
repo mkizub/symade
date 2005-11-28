@@ -415,6 +415,38 @@ public class Meta extends ENode {
 		};
 	}
 
+	public Dumper toJavaDecl(Dumper dmp) {
+		return this.toJava(dmp).newLine();
+	}
+
+	public Dumper toJava(Dumper dmp) {
+		dmp.append('@').append(type.getType().getStruct().name.short_name);
+		boolean need_lp = true;
+		boolean need_comma = false;
+		if (values.length != 0) {
+			Struct s = type.getType().getStruct();
+			s.checkResolved();
+			foreach (ASTNode n; s.members; n instanceof Method) {
+				Method m = (Method)n;
+				MetaValue v = get(m.name.name);
+				if (v.valueEquals(m.annotation_default))
+					continue;
+				if (need_lp) {
+					dmp.append('(');
+					need_lp = false;
+				}
+				else if (need_comma) {
+					dmp.append(',');
+				}
+				dmp.append(v.type.name).append('=');
+				v.toJava(dmp);
+				need_comma = true;
+			}
+			if (!need_lp)
+				dmp.append(')');
+		}
+		return dmp;
+	}
 }
 
 @node
@@ -476,6 +508,10 @@ public abstract class MetaValue extends ASTNode {
 		}
 		return false;
 	}
+
+	public abstract Dumper toJavaDecl(Dumper dmp);
+	public abstract Dumper toJava(Dumper dmp);
+	public abstract boolean valueEquals(MetaValue mv);
 }
 
 @node
@@ -505,6 +541,19 @@ public class MetaValueScalar extends MetaValue {
 		resolveValue(reqType, this.value);
 		while (checkValue(reqType, this.value))
 			resolveValue(reqType, this.value);
+	}
+
+	public Dumper toJavaDecl(Dumper dmp) {
+		return value.toJava(dmp);
+	}
+	public Dumper toJava(Dumper dmp) {
+		return value.toJava(dmp);
+	}
+	public boolean valueEquals(MetaValue mv) {
+		if (mv instanceof MetaValueScalar) {
+			return this.value.valueEquals(mv.value);
+		}
+		return false;
 	}
 }
 
@@ -539,6 +588,34 @@ public class MetaValueArray extends MetaValue {
 			while (checkValue(reqType, this.values[i]))
 				resolveValue(reqType, this.values[i]);
 		}
+	}
+
+	public Dumper toJavaDecl(Dumper dmp) {
+		return toJava(dmp);
+	}
+	public Dumper toJava(Dumper dmp) {
+		dmp.append('{');
+		for (int i=0; i < values.length; i++) {
+			ENode v = values[i];
+			v.toJava(dmp);
+			if (i < values.length-1)
+				dmp.append(',');
+		}
+		dmp.append('}');
+		return dmp;
+	}
+	public boolean valueEquals(MetaValue mv) {
+		if (mv instanceof MetaValueArray) {
+			MetaValueArray mva = (MetaValueArray)mv;
+			if (values.length != mva.values.length)
+				return false;
+			for (int i=0; i < values.length; i++) {
+				if (!values[i].valueEquals(mva.values[i]))
+					return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }
 

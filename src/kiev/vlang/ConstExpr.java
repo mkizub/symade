@@ -49,6 +49,12 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
 	public Type		getType()			{ return Type.tpBoolean; }
+	
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstBoolExpr)
+			return o.value == this.value;
+		return false;
+	}
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
@@ -88,6 +94,12 @@ public final class ConstNullExpr extends ConstExpr {
 	public String	toString()			{ return "null"; }
 	public Object	getConstValue()		{ return null; }
 	public Type		getType()			{ return Type.tpNull; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstNullExpr)
+			return true;
+		return false;
+	}
 }
 
 @node
@@ -101,6 +113,12 @@ public final class ConstByteExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
 	public Type		getType()			{ return Type.tpByte; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstByteExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 @node
@@ -114,6 +132,12 @@ public final class ConstShortExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Short.valueOf(value); }
 	public Type		getType()			{ return Type.tpShort; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstShortExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 @node
@@ -127,6 +151,12 @@ public final class ConstIntExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
 	public Type		getType()			{ return Type.tpInt; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstIntExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 @node
@@ -140,6 +170,12 @@ public final class ConstLongExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value)+"L"; }
 	public Object	getConstValue()		{ return Long.valueOf(value); }
 	public Type		getType()			{ return Type.tpLong; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstLongExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 @node
@@ -153,6 +189,12 @@ public final class ConstCharExpr extends ConstExpr {
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
 	public Object	getConstValue()		{ return Character.valueOf(value); }
 	public Type		getType()			{ return Type.tpChar; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstCharExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 
@@ -167,6 +209,12 @@ public final class ConstFloatExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value)+"F"; }
 	public Object	getConstValue()		{ return Float.valueOf(value); }
 	public Type		getType()			{ return Type.tpFloat; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstFloatExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 
@@ -181,6 +229,12 @@ public final class ConstDoubleExpr extends ConstExpr {
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 	public Object	getConstValue()		{ return Double.valueOf(value); }
 	public Type		getType()			{ return Type.tpDouble; }
+
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstDoubleExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 @node
@@ -196,6 +250,11 @@ public final class ConstStringExpr extends ConstExpr {
 	public Object	getConstValue()		{ return value; }
 	public Type		getType()			{ return Type.tpString; }
 
+	public boolean valueEquals(Object o) {
+		if (o instanceof ConstStringExpr)
+			return o.value == this.value;
+		return false;
+	}
 }
 
 
