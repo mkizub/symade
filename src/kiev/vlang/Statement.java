@@ -799,7 +799,7 @@ public class CondStat extends Statement {
 				else {
 					generateAssertName(code);
 					message.generate(code,Type.tpString);
-					Method func = Type.tpDebug.resolveMethod(
+					Method func = Type.tpDebug.clazz.resolveMethod(
 						getAssertMethodName(),
 						getAssertMethodSignature());
 					code.addInstr(Instr.op_call,func,false);
@@ -809,7 +809,7 @@ public class CondStat extends Statement {
 				BoolExpr.gen_iftrue(code, cond, else_label);
 				generateAssertName(code);
 				message.generate(code,Type.tpString);
-				Method func = Type.tpDebug.resolveMethod(
+				Method func = Type.tpDebug.clazz.resolveMethod(
 					getAssertMethodName(),
 					getAssertMethodSignature());
 				code.addInstr(Instr.op_call,func,false);

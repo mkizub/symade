@@ -899,7 +899,7 @@ public class StringConcatExpr extends Expr {
 	static final KString sigStr = KString.from("(Ljava/lang/String;)Ljava/lang/StringBuffer;");
 	static final KString sigArrC = KString.from("([C)Ljava/lang/StringBuffer;");
 	public Method getMethodFor(ENode expr) {
-		Type t = expr.getType();
+		JType t = expr.getType().getJType();
 		KString sig = null;
 		switch(t.java_signature.byteAt(0)) {
 		case 'B':
@@ -1834,15 +1834,14 @@ public class CastExpr extends Expr {
 		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
-			Method cm = null;
-			cm = type.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
+			Method cm = ((BaseType)type).clazz.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{(ENode)~expr}));
 			return;
 		}
 		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
-			Method cf = (Method)Type.tpEnum.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I"));
 			replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,cf,Expr.emptyArray));
 			return;
 		}

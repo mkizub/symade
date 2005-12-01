@@ -62,6 +62,9 @@ public final class Kiev {
 		int pos = 0;
 		if (from != null) {
 			pos = from.pos;
+			ASTNode f = from;
+			for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+				pos = f.pos;
 			if( e.getMessage() == null )
 				report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,e.getClass().getName());
 			else

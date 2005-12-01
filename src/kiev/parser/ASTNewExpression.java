@@ -131,14 +131,7 @@ public class ASTNewExpression extends Expr {
 			clazz.super_type = sup;
 		}
 
-		if( sup.isInstanceOf(Type.tpClosure) ) {
-			assert (false);
-//			ASTMethodDeclaration md = (ASTMethodDeclaration)members[0];
-//			members.delAll();
-//			me.type = Type.newRefType(me,Type.emptyArray);
-//			Method m = (Method)md.pass3();
-//			me.type = MethodType.newMethodType(me,null,m.type.args,m.type.ret);
-		} else {
+		{
 			clazz.type = Type.newRefType(clazz,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
 			if( args.length > 0 ) {
@@ -163,14 +156,8 @@ public class ASTNewExpression extends Expr {
 
         // Process inner classes and cases
 		Kiev.runProcessorsOn(clazz);
-		Expr ne;
-		if( sup.isInstanceOf(Type.tpClosure) ) {
-			ne = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
-			ne.clazz = (Struct)~clazz;
-		} else {
-			ne = new NewExpr(pos,clazz.type,args.toArray());
-			ne.clazz = (Struct)~clazz;
-		}
+		Expr ne = new NewExpr(pos,clazz.type,args.toArray());
+		ne.clazz = (Struct)~clazz;
 		replaceWithNodeResolve(reqType, ne);
 	}
 

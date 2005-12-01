@@ -28,7 +28,7 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -46,6 +46,7 @@ public interface StdTypes {
 	public static final int flBoolean			=  256;
 	public static final int flArgumented		=  512;
 	public static final int flWrapper			= 1024;
+	public static final int flCallable			= 2048;
 
 	public static final BaseType tpEnv;
 	public static final BaseType tpAny;
@@ -89,9 +90,9 @@ public interface StdTypes {
 	public static final BaseType tpEnum;
 	public static final BaseType tpAnnotation;
 	public static final BaseType tpClosure;
-	public static final BaseType tpMethod;
+//	public static final BaseType tpMethod;
 	public static final Struct tpClosureClazz;
-	public static final Struct tpMethodClazz;
+//	public static final Struct tpMethodClazz;
 
 	public static final BaseType tpPrologVar;
 	public static final BaseType tpRefProxy;
@@ -108,7 +109,7 @@ public interface StdTypes {
 		tpEnvClazz.type		= tpEnv;
 		tpEnv.flags			= flResolved;
 		tpEnv.signature		= KString.from("<root>");
-		tpEnv.java_signature	= KString.from("<root>");
+//		tpEnv.java_signature	= KString.from("<root>");
 		typeHash.put(tpEnv);
 
 		Struct tpAnyClazz = Env.newStruct(new ClazzName(
@@ -122,7 +123,7 @@ public interface StdTypes {
 		tpAnyClazz.setResolved(true);
 		tpAny.flags			= flResolved;
 		tpAny.signature		= KString.from("?");
-		tpAny.java_signature	= KString.from("?");
+//		tpAny.java_signature	= KString.from("?");
 		typeHash.put(tpAny);
 
 		Struct tpRuleClazz = Env.newStruct(new ClazzName(
@@ -136,7 +137,7 @@ public interface StdTypes {
 		tpRuleClazz.setResolved(true);
 		tpRule.flags			= flResolved | flReference;
 		tpRule.signature		= KString.from("R");
-		tpRule.java_signature	= KString.from("Lkiev/stdlib/RuleFrame;");
+//		tpRule.java_signature	= KString.from("Lkiev/stdlib/RuleFrame;");
 		typeHash.put(tpRule);
 
 		Struct tpBooleanClazz = Env.newStruct(new ClazzName(
@@ -150,7 +151,7 @@ public interface StdTypes {
 		tpBooleanClazz.setResolved(true);
 		tpBoolean.flags			= flResolved | flIntegerInCode | flBoolean;
 		tpBoolean.signature		= KString.from("Z");
-		tpBoolean.java_signature		= KString.from("Z");
+//		tpBoolean.java_signature		= KString.from("Z");
 		typeHash.put(tpBoolean);
 
 		Struct tpByteClazz = Env.newStruct(new ClazzName(
@@ -164,7 +165,7 @@ public interface StdTypes {
 		tpByteClazz.setResolved(true);
 		tpByte.flags			= flResolved | flInteger | flIntegerInCode ;
 		tpByte.signature		= KString.from("B");
-		tpByte.java_signature		= KString.from("B");
+//		tpByte.java_signature		= KString.from("B");
 		typeHash.put(tpByte);
 
 		Struct tpCharClazz = Env.newStruct(new ClazzName(
@@ -178,7 +179,7 @@ public interface StdTypes {
 		tpCharClazz.setResolved(true);
 		tpChar.flags			= flResolved | flInteger | flIntegerInCode ;
 		tpChar.signature		= KString.from("C");
-		tpChar.java_signature		= KString.from("C");
+//		tpChar.java_signature		= KString.from("C");
 		typeHash.put(tpChar);
 
 		Struct tpShortClazz = Env.newStruct(new ClazzName(
@@ -192,7 +193,7 @@ public interface StdTypes {
 		tpShortClazz.setResolved(true);
 		tpShort.flags			= flResolved | flInteger | flIntegerInCode ;
 		tpShort.signature		= KString.from("S");
-		tpShort.java_signature		= KString.from("S");
+//		tpShort.java_signature		= KString.from("S");
 		typeHash.put(tpShort);
 
 		Struct tpIntClazz = Env.newStruct(new ClazzName(
@@ -206,7 +207,7 @@ public interface StdTypes {
 		tpIntClazz.setResolved(true);
 		tpInt.flags			= flResolved | flInteger | flIntegerInCode ;
 		tpInt.signature		= KString.from("I");
-		tpInt.java_signature		= KString.from("I");
+//		tpInt.java_signature		= KString.from("I");
 		typeHash.put(tpInt);
 
 		Struct tpLongClazz = Env.newStruct(new ClazzName(
@@ -220,7 +221,7 @@ public interface StdTypes {
 		tpLongClazz.setResolved(true);
 		tpLong.flags			= flResolved | flInteger | flDoubleSize;
 		tpLong.signature		= KString.from("J");
-		tpLong.java_signature		= KString.from("J");
+//		tpLong.java_signature		= KString.from("J");
 		typeHash.put(tpLong);
 
 		Struct tpFloatClazz = Env.newStruct(new ClazzName(
@@ -234,7 +235,7 @@ public interface StdTypes {
 		tpFloatClazz.setResolved(true);
 		tpFloat.flags			= flResolved | flFloat ;
 		tpFloat.signature		= KString.from("F");
-		tpFloat.java_signature		= KString.from("F");
+//		tpFloat.java_signature		= KString.from("F");
 		typeHash.put(tpFloat);
 
 		Struct tpDoubleClazz = Env.newStruct(new ClazzName(
@@ -248,7 +249,7 @@ public interface StdTypes {
 		tpDoubleClazz.setResolved(true);
 		tpDouble.flags			= flResolved | flFloat | flDoubleSize;
 		tpDouble.signature		= KString.from("D");
-		tpDouble.java_signature		= KString.from("D");
+//		tpDouble.java_signature		= KString.from("D");
 		typeHash.put(tpDouble);
 
 		Struct tpVoidClazz = Env.newStruct(new ClazzName(
@@ -262,7 +263,7 @@ public interface StdTypes {
 		tpVoidClazz.setResolved(true);
 		tpVoid.flags			= flResolved;
 		tpVoid.signature		= KString.from("V");
-		tpVoid.java_signature		= KString.from("V");
+//		tpVoid.java_signature		= KString.from("V");
 		typeHash.put(tpVoid);
 
 		Struct java_lang = Env.newPackage(KString.from("java.lang"));
@@ -440,12 +441,12 @@ public interface StdTypes {
 		tpEnumClazz.type		= tpEnum;
 		typeHash.put(tpEnum);
 
-		tpMethodClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/method;")),kiev_stdlib,ACC_PUBLIC);
-        tpMethodClazz.setResolved(true);
-		tpMethod		= new BaseType(tpMethodClazz);
-//		 new MethodType(tpMethodClazz,Type.tpVoid,Type.emptyArray,Type.emptyArray);
-		tpMethodClazz.type	= tpMethod;
-        tpMethod.flags = flResolved;
+//		tpMethodClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/method;")),kiev_stdlib,ACC_PUBLIC);
+//		tpMethodClazz.setResolved(true);
+//		tpMethod		= new BaseType(tpMethodClazz);
+////		 new MethodType(tpMethodClazz,Type.tpVoid,Type.emptyArray,Type.emptyArray);
+//		tpMethodClazz.type	= tpMethod;
+//		tpMethod.flags = flResolved;
 
 		tpClosureClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/closure;")),kiev_stdlib,ACC_PUBLIC);
 		tpClosure				= new BaseType(tpClosureClazz);

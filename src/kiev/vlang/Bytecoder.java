@@ -785,12 +785,12 @@ public class Bytecoder implements Constants {
 //		if (kievmode)
 //			cl_sig = jcl.type.signature;
 //		else
-			cl_sig = jcl.type.java_signature;
+			cl_sig = jcl.type.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
 	    if( cl.super_type != null ) {
-		    KString sup_sig = jcl.super_type.java_signature;
+		    KString sup_sig = jcl.super_type.getJType().java_signature;
 //				kievmode ?
 //					jcl.super_type.signature
 //				  : jcl.super_type.java_signature;
@@ -801,7 +801,7 @@ public class Bytecoder implements Constants {
 
 	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.interfaces.length];
 		for(int i=0; i < cl.interfaces.length; i++) {
-		    KString interf_sig = jcl.interfaces[i].java_signature;
+		    KString interf_sig = jcl.interfaces[i].getJType().java_signature;
 //				kievmode ?
 //				jcl.interfaces[i].signature
 //			  : jcl.interfaces[i].java_signature;
@@ -958,7 +958,7 @@ public class Bytecoder implements Constants {
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.name.name).pos];
 //		if( !kievmode ) {
-			Type tp = f.type;
+			JType tp = f.type.getJType();
 			bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 //		}
 //		else
@@ -986,7 +986,7 @@ public class Bytecoder implements Constants {
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.name.name).pos];
 //		if( !kievmode )
-			bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.java_signature).pos];
+			bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.getJType().java_signature).pos];
 //		else
 //			bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.type.signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;

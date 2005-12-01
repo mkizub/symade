@@ -104,7 +104,7 @@ public class CodeAttr extends Attr {
 			code_attrs[i].generate(constPool);
 		for(int i=0; catchers!=null && i < catchers.length; i++) {
 			if(catchers[i].type != null) {
-				ClazzCP cl_cp = constPool.addClazzCP(catchers[i].type.java_signature);
+				ClazzCP cl_cp = constPool.addClazzCP(catchers[i].type.getJType().java_signature);
 				constPool.addAsciiCP(cl_cp.asc.value);
 			}
 		}
@@ -125,7 +125,7 @@ public class CodeAttr extends Attr {
 			ca.catchers[i].handler_pc = catchers[i].handler.pc;
 			if(catchers[i].type != null)
 				ca.catchers[i].cp_signature = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[
-						constPool.getClazzCP(catchers[i].type.java_signature).pos];
+						constPool.getClazzCP(catchers[i].type.getJType().java_signature).pos];
 		}
 		ca.attrs = new kiev.bytecode.Attribute[code_attrs.length];
 		for(int i=0; i < code_attrs.length; i++) {
@@ -180,9 +180,9 @@ public class LocalVarTableAttr extends Attr {
 			Var v = vars[i].var;
 			constPool.addAsciiCP(v.name.name);
 			if( v.isNeedRefProxy() )
-				constPool.addAsciiCP(Type.getProxyType(v.type).java_signature);
+				constPool.addAsciiCP(Type.getProxyType(v.type).getJType().java_signature);
 			else
-				constPool.addAsciiCP(v.type.java_signature);
+				constPool.addAsciiCP(v.type.getJType().java_signature);
 		}
 	}
 
@@ -195,9 +195,9 @@ public class LocalVarTableAttr extends Attr {
 			Var v = vars[i].var;
 			KString sign;
 			if( v.isNeedRefProxy() )
-				sign = Type.getProxyType(v.type).java_signature;
+				sign = Type.getProxyType(v.type).getJType().java_signature;
 			else
-				sign = v.type.java_signature;
+				sign = v.type.getJType().java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
@@ -249,7 +249,7 @@ public class ExceptionsAttr extends Attr {
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < exceptions.length; i++)
-			constPool.addClazzCP(exceptions[i].java_signature);
+			constPool.addClazzCP(exceptions[i].getJType().java_signature);
 	}
 
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
@@ -258,7 +258,7 @@ public class ExceptionsAttr extends Attr {
 		ea.cp_exceptions = new kiev.bytecode.ClazzPoolConstant[exceptions.length];
 		for(int i=0; i < exceptions.length; i++)
 			ea.cp_exceptions[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[
-				constPool.getClazzCP(exceptions[i].java_signature).pos];
+				constPool.getClazzCP(exceptions[i].getJType().java_signature).pos];
 		return ea;
 	}
 }
@@ -283,10 +283,10 @@ public class InnerClassesAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				constPool.addClazzCP(((Type)inner[i].type).java_signature);
+				constPool.addClazzCP(((Type)inner[i].type).getJType().java_signature);
 			}
 			if( outer[i] != null ) {
-				constPool.addClazzCP(((Type)outer[i].type).java_signature);
+				constPool.addClazzCP(((Type)outer[i].type).getJType().java_signature);
 			}
 		}
 	}
@@ -301,13 +301,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).java_signature).pos];
+				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).getJType().java_signature).pos];
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)outer[i].type).java_signature).pos];
+				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)outer[i].type).getJType().java_signature).pos];
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).java_signature).asc.pos];
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).getJType().java_signature).asc.pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}
@@ -915,18 +915,18 @@ public abstract class MetaAttr extends Attr {
 			else if( v instanceof KString )			constPool.addAsciiCP((KString)v);
 		}
 		else if (value instanceof TypeRef) {
-			constPool.addClazzCP(((TypeRef)value).getType().java_signature);
+			constPool.addClazzCP(((TypeRef)value).getType().getJType().java_signature);
 		}
 		else if (value instanceof SFldExpr) {
 			SFldExpr ae = (SFldExpr)value;
 			Field f = ae.var;
 			Struct s = (Struct)f.parent;
-			constPool.addAsciiCP(s.type.java_signature);
+			constPool.addAsciiCP(s.type.getJType().java_signature);
 			constPool.addAsciiCP(f.name.name);
 		}
 		else if (value instanceof Meta) {
 			Meta m = (Meta)value;
-			constPool.addAsciiCP(m.type.getType().java_signature);
+			constPool.addAsciiCP(m.type.getType().getJType().java_signature);
 			foreach (MetaValue v; m) {
 				generateValue(constPool,v);
 			}
@@ -1001,7 +1001,7 @@ public abstract class MetaAttr extends Attr {
 		else if (value instanceof TypeRef) {
 			kiev.bytecode.Annotation.element_value_class_info ev = new kiev.bytecode.Annotation.element_value_class_info(); 
 			ev.tag = (byte)'c';
-			ev.class_info_index = constPool.getClazzCP(((TypeRef)value).getType().java_signature).pos;
+			ev.class_info_index = constPool.getClazzCP(((TypeRef)value).getType().getJType().java_signature).pos;
 			return ev;
 		}
 		else if (value instanceof SFldExpr) {
@@ -1010,7 +1010,7 @@ public abstract class MetaAttr extends Attr {
 			Struct s = (Struct)f.parent;
 			kiev.bytecode.Annotation.element_value_enum_const ev = new kiev.bytecode.Annotation.element_value_enum_const(); 
 			ev.tag = (byte)'e';
-			ev.type_name_index = constPool.getAsciiCP(s.type.java_signature).pos;
+			ev.type_name_index = constPool.getAsciiCP(s.type.getJType().java_signature).pos;
 			ev.const_name_index = constPool.getAsciiCP(f.name.name).pos;
 			return ev;
 		}
@@ -1026,7 +1026,7 @@ public abstract class MetaAttr extends Attr {
 	}
 
 	public void write_annotation(ConstPool constPool, Meta m, kiev.bytecode.Annotation.annotation a) {
-		a.type_index = constPool.getAsciiCP(m.type.getType().java_signature).pos;
+		a.type_index = constPool.getAsciiCP(m.type.getType().getJType().java_signature).pos;
 		a.names = new int[m.size()];
 		a.values = new kiev.bytecode.Annotation.element_value[m.size()];
 		int n = 0;

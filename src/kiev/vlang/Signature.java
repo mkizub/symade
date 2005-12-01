@@ -25,7 +25,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -41,8 +41,7 @@ public class Signature {
 		KStringBuffer ksb = new KStringBuffer();
 		if( ret != null ) {
 			// Closure or method.
-			if( clazz == MethodType.tpMethodClazz ) ;// Method
-			else if( clazz.instanceOf(Type.tpClosureClazz) ) {
+			if( clazz != null ) {
 				ksb.append('&'); // Closure
 				if( clazz != Type.tpClosureClazz )
 					ksb.append(clazz.name.signature());
@@ -148,8 +147,9 @@ public class Signature {
 					fargs = (Type[])Arrays.append(fargs,getType(sc));
 				sc.nextChar();
 			}
-			if( ch == '(' ) clazz = MethodType.tpMethodClazz;
-			else {
+			if( ch == '(' ) {
+				clazz = null;
+			} else {
 				ch = sc.peekChar();
 				if( ch == '(' )
 					clazz = Type.tpClosureClazz;
@@ -167,7 +167,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			if (clazz == MethodType.tpMethodClazz)
+			if (clazz == null)
 				return MethodType.newMethodType(fargs,args,ret);
 			return ClosureType.newClosureType(clazz,args,ret);
 		}

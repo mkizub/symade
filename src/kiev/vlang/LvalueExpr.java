@@ -909,9 +909,8 @@ public class LVarExpr extends LvalueExpr {
 	}
 
 	public Field resolveVarVal() {
-		Type prt = Type.getProxyType(var.type);
-		Field var_valf =
-			(Field)prt.resolveName(nameCellVal);
+		BaseType prt = Type.getProxyType(var.type);
+		Field var_valf = prt.clazz.resolveField(nameCellVal);
 		return var_valf;
 	}
 

@@ -375,7 +375,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						pctx.clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
-							Type.tpTypeSwitchHash.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
+							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
 							new Expr[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;

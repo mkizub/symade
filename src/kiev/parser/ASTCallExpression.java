@@ -81,8 +81,10 @@ public class ASTCallExpression extends Expr {
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+			try {
+				if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
+					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
@@ -116,8 +118,10 @@ public class ASTCallExpression extends Expr {
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
-				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+			try {
+				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
+					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
@@ -133,25 +137,28 @@ public class ASTCallExpression extends Expr {
 				ta[i] = args[i].getType();
 			mt = MethodType.newMethodType(null,ta,null);
 			ResInfo info = new ResInfo(this);
-			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
-				// May be a closure
-				ASTNode@ closure;
-				ResInfo info = new ResInfo(this);
-				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
-					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
-				}
-				try {
-					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
-					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
-					) {
-						replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
-						return;
+			try {
+				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
+					// May be a closure
+					ASTNode@ closure;
+					ResInfo info = new ResInfo(this);
+					try {
+						if( !PassInfo.resolveNameR(this,closure,info,func.name) )
+							throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
+					} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
+					try {
+						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
+						) {
+							replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
+							return;
+						}
+					} catch(Exception eee) {
+						Kiev.reportError(this,eee);
 					}
-				} catch(Exception eee) {
-					Kiev.reportError(this,eee);
+					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 				}
-				throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
-			}
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 //				if( reqType instanceof CallableType ) {
 //					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
 //					ac.pos = pos;

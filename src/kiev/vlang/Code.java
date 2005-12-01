@@ -566,13 +566,13 @@ public final class Code implements Constants {
 		}
 		KString sign;
 		Type ttt = Type.getRealType(tp,((Struct)m.parent).type);
-		sign = m.jtype.java_signature;
+		sign = m.jtype.getJType().java_signature;
 		CP cpm;
 		if( ((Struct)m.parent).isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,
+			cpm = constPool.addInterfaceMethodCP(ttt.getJType().java_signature,
 				m.name.name,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.java_signature,
+			cpm = constPool.addMethodCP(ttt.getJType().java_signature,
 				m.name.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
@@ -841,7 +841,7 @@ public final class Code implements Constants {
             throw new RuntimeException("Instanceof operation on primitive type: "+pt1);
 		if( !pt2.isReference() )
             throw new RuntimeException("Type of instanceof operation is primtive type: "+pt2);
-		CP cpi = constPool.addClazzCP(type.java_signature);
+		CP cpi = constPool.addClazzCP(type.getJType().java_signature);
 		add_opcode_and_CP(opc_instanceof,cpi);
 	}
 
@@ -938,7 +938,7 @@ public final class Code implements Constants {
 		else if( type == Type.tpFloat )		add_opcode_and_byte(opc_newarray,6);
 		else if( type == Type.tpDouble )	add_opcode_and_byte(opc_newarray,7);
 		else if( type.isReference() ) {
-			ClazzCP cpc = constPool.addClazzCP(type.java_signature);
+			ClazzCP cpc = constPool.addClazzCP(type.getJType().java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
 		stack_push(Type.newArrayType(type));
@@ -951,7 +951,7 @@ public final class Code implements Constants {
 			if( !stack_at(i).isIntegerInCode() )
 				throw new RuntimeException("Array dimention must be of integer type, but "
 					+stack_at(i)+" found at "+(dim-i)+" dimension of multidimension array");
-		ClazzCP cpc = constPool.addClazzCP(arrtype.java_signature);
+		ClazzCP cpc = constPool.addClazzCP(arrtype.getJType().java_signature);
 		add_opcode_and_CP(opc_multianewarray,cpc);
 		add_code_byte(dim);
 		for(int i=0; i < dim; i++ ) stack_pop();
@@ -1294,8 +1294,8 @@ public final class Code implements Constants {
 		}
 		Type ttt = Type.getRealType(tp.getInitialType(),((Struct)f.parent).type);
 //		Type ttt = ((Struct)f.parent).type;
-		KString struct_sig = ttt.java_signature;
-		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).java_signature;
+		KString struct_sig = ttt.getJType().java_signature;
+		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name.name,field_sig);
 	    switch(i) {
         case op_getstatic:
@@ -1340,7 +1340,7 @@ public final class Code implements Constants {
 			if( type.clazz.super_type != null && type.clazz.super_type.clazz == Type.tpClosureClazz )
 				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.clazz.name.signature()));
 			else
-				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.java_signature));
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
 			stack_push(type);
 			break;
 		case op_newarray:
@@ -1351,7 +1351,7 @@ public final class Code implements Constants {
 				throw new RuntimeException("Type "+type+" must be a reference for cast checking");
 			if( !type.isReference() )
 				break;
-			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(type.java_signature));
+			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(type.getJType().java_signature));
 			stack_push(type);
 			break;
 		case op_instanceof:
@@ -1560,7 +1560,7 @@ public final class Code implements Constants {
 			Kiev.reportCodeWarning(this,"\""+Instr.op_push_tconst+"\" ingnored as unreachable");
 			return;
 		}
-		CP c = constPool.addClazzCP(val.java_signature);
+		CP c = constPool.addClazzCP(val.getJType().java_signature);
 		add_opcode_and_CP(opc_ldc,c);
 		stack_push(Type.tpClass);
 	}

@@ -314,7 +314,7 @@ public class ASTExpression extends Expr {
 		return expr;
 	}
 
-	public ENode getExpr(Object@:Object expr) {
+	public ENode getExpr(PVar<ENode>:Object expr) {
 		return getExpr(expr.$var);
 	}
 

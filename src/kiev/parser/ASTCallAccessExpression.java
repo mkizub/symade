@@ -75,9 +75,10 @@ public class ASTCallAccessExpression extends Expr {
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,null);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
-				throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
-			}
+			try {
+				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) )
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
@@ -126,14 +127,16 @@ public class ASTCallAccessExpression extends Expr {
 			Type tp = tps[si];
 			ASTNode@ m;
 			ResInfo info = new ResInfo(this,res_flags);
-			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
-				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(this, obj, m, args.delToArray());
-				else if (res_flags == 0)
-					res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
-				else
-					res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
-			}
+			try {
+				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+					if (tps.length == 1 && res_flags == 0)
+						res[si] = info.buildCall(this, obj, m, args.delToArray());
+					else if (res_flags == 0)
+						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
+					else
+						res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
+				}
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 		}
 		int cnt = 0;
 		int idx = -1;
@@ -199,10 +202,12 @@ public class ASTCallAccessExpression extends Expr {
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,ret);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
-				if( ret != null ) { ret = null; goto retry_with_null_ret; }
-				throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,ret));
-			}
+			try {
+				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
+					if( ret != null ) { ret = null; goto retry_with_null_ret; }
+					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,ret));
+				}
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
 			info.leaveForward(obj);
 			if( info.isEmpty() ) {
@@ -254,14 +259,16 @@ public class ASTCallAccessExpression extends Expr {
 			Type tp = tps[si];
 			ASTNode@ m;
 			ResInfo info = new ResInfo(this,res_flags);
-			if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
-				if (tps.length == 1 && res_flags == 0)
-					res[si] = info.buildCall(this, obj, m, args.delToArray());
-				else if (res_flags == 0)
-					res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
-				else
-					res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
-			}
+			try {
+				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
+					if (tps.length == 1 && res_flags == 0)
+						res[si] = info.buildCall(this, obj, m, args.delToArray());
+					else if (res_flags == 0)
+						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
+					else
+						res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
+				}
+			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 		}
 		int cnt = 0;
 		int idx = -1;

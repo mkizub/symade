@@ -336,6 +336,7 @@ kiev.vlang.InstanceofExpr kiev/vlang/InstanceofExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.InstanceofExpr.InstanceofExprDFFunc kiev/vlang/InstanceofExpr$InstanceofExprDFFunc kiev\vlang\BooleanExpr.java
 kiev.vlang.Instr kiev/vlang/Instr kiev\vlang\Instr.java
 kiev.vlang.InterfaceMethodCP kiev/vlang/InterfaceMethodCP kiev\vlang\ConstPool.java
+kiev.vlang.JType kiev/vlang/JType kiev\vlang\Type.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.Label kiev/vlang/Label kiev\vlang\LoopStatement.java

@@ -830,7 +830,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	private void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
 			return;
-		if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+		if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -988,7 +988,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
-					if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+					if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
@@ -1017,7 +1017,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 							targs = (Type[])Arrays.append(targs,package_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
-						if( !isInterface() && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+						if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
@@ -1324,7 +1324,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					);
 				}
 				if( type.args.length > 0
-				 && !type.isInstanceOf(Type.tpClosure)
+				 && !(type instanceof ClosureType)
 				 && m.isNeedFieldInits()
 				) {
 					Field tif = resolveField(nameTypeInfo);
@@ -1553,7 +1553,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					be = new InstanceofExpr(pos,
 						new LVarExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
-				if( t.args.length > 0 && !t.isArray() && !t.isInstanceOf(Type.tpClosure) ) {
+				if( t.args.length > 0 && !t.isArray() && !(t instanceof ClosureType) ) {
 					if (((Struct)t.clazz).typeinfo_clazz == null)
 						((Struct)t.clazz).autoGenerateTypeinfoClazz();
 					Expr tibe = new CallExpr(pos,
@@ -2001,7 +2001,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				n.resolveDecl();
 			}
 			
-//			if( type.args != null && type.args.length > 0 && !type.isInstanceOf(Type.tpClosure) ) {
+//			if( type.args != null && type.args.length > 0 && !(type instanceof ClosureType) ) {
 //				ClassArgumentsAttr a = new ClassArgumentsAttr();
 //				short[] argno = new short[type.args.length];
 //				for(int j=0; j < type.args.length; j++) {
@@ -2125,22 +2125,22 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		ConstPool constPool = new ConstPool();
 		constPool.addClazzCP(jthis.type.signature);
-		constPool.addClazzCP(jthis.type.java_signature);
+		constPool.addClazzCP(jthis.type.getJType().java_signature);
 		if( super_type != null ) {
 			super_type.clazz.checkResolved();
 			constPool.addClazzCP(jthis.super_type.signature);
-			constPool.addClazzCP(jthis.super_type.java_signature);
+			constPool.addClazzCP(jthis.super_type.getJType().java_signature);
 		}
 		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
 			interfaces[i].clazz.checkResolved();
 			constPool.addClazzCP(jthis.interfaces[i].signature);
-			constPool.addClazzCP(jthis.interfaces[i].java_signature);
+			constPool.addClazzCP(jthis.interfaces[i].getJType().java_signature);
 		}
 		if( !isPackage() ) {
 			for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
 				jthis.sub_clazz[i].checkResolved();
 				constPool.addClazzCP(jthis.sub_clazz[i].type.signature);
-				constPool.addClazzCP(jthis.sub_clazz[i].type.java_signature);
+				constPool.addClazzCP(jthis.sub_clazz[i].type.getJType().java_signature);
 			}
 		}
 		
@@ -2194,7 +2194,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Field f = (Field)n;
 			constPool.addAsciiCP(f.name.name);
 			constPool.addAsciiCP(f.type.signature);
-			constPool.addAsciiCP(f.type.java_signature);
+			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 //			int flags = 0;
 //			if( f.isVirtual() ) flags |= 2;
@@ -2223,9 +2223,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Method m = (Method)n;
 			constPool.addAsciiCP(m.name.name);
 			constPool.addAsciiCP(m.type.signature);
-			constPool.addAsciiCP(m.type.java_signature);
+			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.jtype != null )
-				constPool.addAsciiCP(m.jtype.java_signature);
+				constPool.addAsciiCP(m.jtype.getJType().java_signature);
 
 			try {
 				m.generate(constPool);

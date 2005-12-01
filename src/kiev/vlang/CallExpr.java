@@ -520,10 +520,9 @@ public class ClosureCallExpr extends Expr {
 	static final KString sigF = KString.from("(F)Lkiev/stdlib/closure;");
 	static final KString sigD = KString.from("(D)Lkiev/stdlib/closure;");
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Lkiev/stdlib/closure;");
-	public Method getMethodFor(Type tp) {
-		Type t = tp;
+	public Method getMethodFor(JType tp) {
 		KString sig = null;
-		switch(t.java_signature.byteAt(0)) {
+		switch(tp.java_signature.byteAt(0)) {
 		case 'B': sig = sigB; break;
 		case 'S': sig = sigS; break;
 		case 'I': sig = sigI; break;
@@ -557,7 +556,7 @@ public class ClosureCallExpr extends Expr {
 			// Add arguments
 			for(int i=0; i < args.length; i++) {
 				args[i].generate(code,null);
-				code.addInstr(op_call,getMethodFor(func_tp.args[i]),false);
+				code.addInstr(op_call,getMethodFor(func_tp.args[i].getJType()),false);
 			}
 		}
 		// Check if we need to call

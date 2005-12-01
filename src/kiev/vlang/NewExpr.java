@@ -328,7 +328,7 @@ public class NewArrayExpr extends Expr {
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,
-						Type.tpTypeInfo.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
 						new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
 					),true));
 				return;

@@ -392,7 +392,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			}
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
-			Method m = tp.resolveMethod(nameGetCaseTag,KString.from("()I"));
+			Method m = ((BaseType)tp).clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
 			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,Expr.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
@@ -674,7 +674,7 @@ public class InstanceofExpr extends BoolExpr {
 		if (!type.isArray() && type.args.length > 0) {
 			replaceWithNodeResolve(reqType, new CallExpr(pos,
 					pctx.clazz.accessTypeInfoField(this,type.getType()),
-					Type.tpTypeInfo.resolveMethod(
+					Type.tpTypeInfo.clazz.resolveMethod(
 						KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
 					new ENode[]{(ENode)~expr}
 					)

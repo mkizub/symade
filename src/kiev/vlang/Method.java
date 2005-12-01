@@ -734,7 +734,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					KString msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					Method func = Type.tpError.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
+					Method func = Type.tpError.clazz.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,false);
 					code.addInstr(Instr.op_throw);
 				}
