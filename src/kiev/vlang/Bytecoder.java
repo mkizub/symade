@@ -59,31 +59,6 @@ public class Bytecoder implements Constants {
 			throw new RuntimeException("Expected to load class "+cl.name.bytecode_name
 				+" but class "+bcclazz.getClazzName()+" found");
 		}
-		cl.setResolved(true);
-		cl.setMembersGenerated(true);
-		cl.setStatementsGenerated(true);
-
-//		foreach(kiev.bytecode.Attribute kba; bcclazz.attrs; kba.getName(bcclazz)==attrKiev) {
-//			kaclazz = new kiev.bytecode.KievAttribute(bcclazz,kba).clazz;
-//			break;
-//		}
-
-//		if( kaclazz != null ) {
-//			trace(Kiev.debugBytecodeRead,"Clazz type "+kaclazz.getClazzName());
-//			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(kaclazz.getClazzName()));
-//		} else {
-			trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-			cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
-//		}
-
-		// This class's superclass name (load if not loaded)
-		if( bcclazz.getSuperClazzName() != null ) {
-			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
-			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(((BaseType)cl.super_type).clazz.name) == null )
-				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
-		}
 
 		int fl = cl.getFlags();
 		// Clean java flags
@@ -100,6 +75,18 @@ public class Bytecoder implements Constants {
 		cl.setResolved(true);
 		cl.setMembersGenerated(true);
 		cl.setStatementsGenerated(true);
+
+		trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
+		cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
+
+		// This class's superclass name (load if not loaded)
+		if( bcclazz.getSuperClazzName() != null ) {
+			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
+			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
+		    cl.super_type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+			if( Env.getStruct(((BaseType)cl.super_type).clazz.name) == null )
+				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
+		}
 
 		// Read interfaces
 		KString[] interfs = bcclazz.getInterfaceNames(); //kaclazz==null? bcclazz.getInterfaceNames() : kaclazz.getInterfaceNames();
@@ -132,38 +119,6 @@ public class Bytecoder implements Constants {
 				cl.addAttr(at);
 			}
 		}
-//		if( kaclazz != null ) {
-//			attrs = kaclazz.attrs;
-//			for(int i=0; i < attrs.length; i++) {
-//				Attr at = readAttr(kaclazz.attrs[i],kaclazz);
-//				if( at != null ) {
-//					cl.addAttr(at);
-//					if( at.name.equals(attrFlags) ) {
-//						int flags = ((FlagsAttr)at).flags;
-//						if ((flags & 1) == 1) {
-////							if (Kiev.verbose) System.out.println("Class "+cl+" is a wrapper class");
-////							cl.setWrapper(true);
-//						}
-//						else if ((flags & 2) == 2) {
-//							if (Kiev.verbose) System.out.println("Class "+cl+" is a syntax class");
-//							cl.setSyntax(true);
-//						}
-//					}
-//					else if (at.name.equals(attrTypedef)) {
-//						Type type = ((TypedefAttr)at).type;
-//						KString name = ((TypedefAttr)at).type_name;
-//						Typedef td = new Typedef(0,name);
-//						td.type = new TypeRef(type);
-//						cl.imported.add(td);
-//					}
-//					else if( at.name.equals(attrOperator) ) {
-//						Operator op = ((OperatorAttr)at).op;
-//						cl.imported.add(new Opdef(op));
-//					}
-//				}
-//			}
-//		}
-
 		ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
 		if (tp != null)
 			tp.addAbstractFields(cl);
@@ -187,24 +142,6 @@ public class Bytecoder implements Constants {
 				ConstantValueAttr a = (ConstantValueAttr)at;
 				f_init = ConstExpr.fromConst(a.value);
 			}
-//			else if( at.name.equals(attrPackerField) ) {
-//				packer_size = ((PackerFieldAttr)at).size;
-//			}
-//			else if( at.name.equals(attrAlias) ) {
-//				nm = ((AliasAttr)at).nname;
-//			}
-//			else if( at.name.equals(attrFlags) ) {
-//				int flags = ((FlagsAttr)at).flags;
-//				if( f==null ) {
-//					if( (flags & 2) != 0 ) f_flags |= ACC_VIRTUAL;
-//					if( (flags & 8) != 0 ) f_flags |= ACC_FORWARD;
-//					if( (flags & 0xFF000000) != 0 ) acc = new Access(flags >>> 24);
-//				} else {
-//					f.setVirtual( (flags & 2) != 0  );
-//					f.setForward( (flags & 8) != 0  );
-//					f.acc = new Access(flags >>> 24);
-//				}
-//			}
 		}
 		Type ftype = Signature.getType(new KString.KStringScanner(f_type));
 		f = new Field(f_name,ftype,f_flags);
@@ -242,26 +179,6 @@ public class Bytecoder implements Constants {
 				else
 					attrs = (Attr[])Arrays.append(attrs,at);
 			}
-//			else if( at.name.equals(attrAlias) ) {
-//				nm = ((AliasAttr)at).nname;
-//			}
-//			else if( at.name.equals(attrOperator) ) {
-//				op = ((OperatorAttr)at).op;
-//			}
-//			else if( at.name.equals(attrFlags) ) {
-//				int flags = ((FlagsAttr)at).flags;
-//				if( m==null ) {
-//					if( (flags & 1) != 0  ) m_flags |= ACC_MULTIMETHOD;
-//					if( (flags & 4) != 0  ) m_flags |= ACC_VARARGS;
-//					if( (flags & 16) != 0  ) m_flags |= ACC_RULEMETHOD;
-//					if( (flags & 32) != 0  ) m_flags |= ACC_INVARIANT_METHOD;
-//				} else {
-//					m.setMultiMethod( (flags & 1) != 0  );
-//					m.setVarArgs( (flags & 4) != 0  );
-//					m.setRuleMethod( (flags & 16) != 0  );
-//			    	m.setInvariantMethod( (flags & 32) != 0 );
-//				}
-//			}
 			else if( at.name.equals(attrRequire) || at.name.equals(attrEnsure) ) {
 				WBCCondition wbc = new WBCCondition();
 				if (at.name.equals(attrRequire))
@@ -281,11 +198,7 @@ public class Bytecoder implements Constants {
 			}
 		}
 		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
-		MethodType jtype;
-//		if( kaclazz != null )
-//			jtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type_java));
-//		else
-			jtype = mtype;
+		MethodType jtype = mtype;
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
 				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
@@ -400,85 +313,6 @@ public class Bytecoder implements Constants {
 		if( name.equals(attrSourceFile) ) {
 			a = new SourceFileAttr(((kiev.bytecode.SourceFileAttribute)bca).getFileName(clazz));
 		}
-//		else if( name.equals(attrFlags) ) {
-//			a = new FlagsAttr(((kiev.bytecode.KievFlagsAttribute)bca).flags);
-//		}
-//		else if( name.equals(attrAlias) ) {
-//			NodeName nm = new NodeName(KString.Empty);
-//			kiev.bytecode.KievAliasAttribute aa = (kiev.bytecode.KievAliasAttribute)bca;
-//			for(int i=0; i < aa.cp_alias.length; i++)
-//				nm.addAlias( aa.getAlias(i,clazz));
-//			a = new AliasAttr(nm);
-//		}
-//		else if( name.equals(attrTypedef) ) {
-//			kiev.bytecode.KievTypedefAttribute tda = (kiev.bytecode.KievTypedefAttribute)bca;
-//			KString sign = tda.getType(clazz);
-//			KString name = tda.getTypeName(clazz);
-//			a = new TypedefAttr(Type.fromSignature(sign),name);
-//		}
-//		else if( name.equals(attrOperator) ) {
-//			kiev.bytecode.KievOperatorAttribute oa = (kiev.bytecode.KievOperatorAttribute)bca;
-//			int prior = oa.priority;
-//			KString optype = oa.getOpType(clazz);
-//			KString image = oa.getImage(clazz);
-//			int opmode = -1;
-//			for(int i=0; i < Operator.orderAndArityNames.length; i++) {
-//				if( Operator.orderAndArityNames[i].equals(optype) ) {
-//					opmode = i;
-//					break;
-//				}
-//			}
-//			if( opmode < 0 )
-//				throw new RuntimeException("Operator mode must be one of "+Arrays.toString(Operator.orderAndArityNames));
-//			Operator op = null;
-//			switch(opmode) {
-//			case Operator.LFY:
-//				op = AssignOperator.newAssignOperator(image,KString.Empty,null,false);
-//				break;
-//			case Operator.XFX:
-//			case Operator.YFX:
-//			case Operator.XFY:
-//			case Operator.YFY:
-//				op = BinaryOperator.newBinaryOperator(prior,image,KString.Empty,null,optype,false);
-//				break;
-//			case Operator.FX:
-//			case Operator.FY:
-//				op = PrefixOperator.newPrefixOperator(prior,image,KString.Empty,null,optype,false);
-//				break;
-//			case Operator.XF:
-//			case Operator.YF:
-//				op = PostfixOperator.newPostfixOperator(prior,image,KString.Empty,null,optype,false);
-//				break;
-//			case Operator.XFXFY:
-//				throw new RuntimeException("Multioperators are not supported yet");
-//			default:
-//				throw new RuntimeException("Unknown operator mode "+opmode);
-//			}
-//			a = new OperatorAttr(op);
-//		}
-//		else if( name.equals(attrPizzaCase) ) {
-//			kiev.bytecode.KievCaseAttribute kca = (kiev.bytecode.KievCaseAttribute)bca;
-//			int caseno = kca.caseno;
-//			int casefieldsno = kca.cp_casefields.length;
-//			Field[] casefields = new Field[casefieldsno];
-//			for(int j=0; j < casefieldsno; j++) {
-//				kiev.bytecode.NameAndTypePoolConstant nat =
-//					(kiev.bytecode.NameAndTypePoolConstant)clazz.pool[kca.cp_casefields[j]];
-//				KString f_name = nat.ref_name.value;
-//				foreach (ASTNode n; cl.members; n instanceof Field) {
-//					Field f = (Field)n;
-//					if( f.name.equals(f_name) ) {
-//						casefields[j] = f;
-//						break;
-//					}
-//				}
-//			}
-//			cl.setPizzaCase(true);
-//			cl.super_type.clazz.setHasCases(true);
-//			a = new PizzaCaseAttr();
-//			((PizzaCaseAttr)a).caseno = caseno;
-//			((PizzaCaseAttr)a).casefields = casefields;
-//		}
 		else if( name.equals(attrExceptions) ) {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			Type[] exceptions = new Type[ea.cp_exceptions.length];
@@ -489,43 +323,6 @@ public class Bytecoder implements Constants {
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
 		}
-//		else if( name.equals(attrEnum) ) {
-//			cl.setEnum(true);
-//			kiev.bytecode.KievEnumAttribute ea = (kiev.bytecode.KievEnumAttribute)bca;
-//			Vector<Field> vf = new Vector<Field>();
-//			int i = 0;
-//			foreach (ASTNode n; cl.members; n instanceof Field && n.isEnumField()) {
-//				Field f = (Field)n;
-//				// Values and fields must be in the same order, as fields of struct
-//				if( ea.getFieldName(i,clazz) != f.name.name )
-//					throw new RuntimeException("Invalid entry "+i+" in "+attrEnum+" attribute");
-//				vf.append(f);
-//				i++;
-//			}
-//			a = new EnumAttr(vf.copyIntoArray(),ea.values);
-//		}
-//		else if( name.equals(attrPackerField) ) {
-//			a = new PackerFieldAttr(((kiev.bytecode.KievPackerFieldAttribute)bca).size);
-//		}
-//		else if( name.equals(attrPackedFields) ) {
-//			kiev.bytecode.KievPackedFieldsAttribute pf = (kiev.bytecode.KievPackedFieldsAttribute)bca;
-//			for(int i=0; i < pf.fields.length; i++) {
-//				Field f = new Field(
-//					pf.getFieldName(i,clazz),
-//					Signature.getType(new KString.KStringScanner(pf.getSignature(i,clazz))),
-//					ACC_PUBLIC
-//					);
-//				cl.addField(f);
-//				MetaPacked mp = new MetaPacked();
-//				mp.size = pf.sizes[i];
-//				mp.offset = pf.offsets[i];
-//				mp.packer = cl.resolveField(pf.getPackerName(i,clazz));
-//				mp.fld = mp.packer.name.name;
-//				f.meta.set(mp);
-//				f.setPackedField(true);
-//			}
-//			a = null;
-//		}
 		else if( name.equals(attrInnerClasses) ) {
 			kiev.bytecode.InnerClassesAttribute ica = (kiev.bytecode.InnerClassesAttribute)bca;
 			int elen = ica.cp_inners.length;
@@ -588,39 +385,6 @@ public class Bytecoder implements Constants {
 			((InnerClassesAttr)a).outer = outer;
 			((InnerClassesAttr)a).acc = access;
 		}
-//		else if( name.equals(attrImport) ) {
-//			kiev.bytecode.KievImportAttribute kia = (kiev.bytecode.KievImportAttribute)bca;
-//			KString clname = kia.getClazzName(clazz);
-//			Struct s = Env.getStruct(ClazzName.fromBytecodeName(clname,false));
-//			if( s == null )
-//				Kiev.reportWarning("Bytecode imports a member from unknown class "+clname);
-//			else if( Kiev.passLessThen(TopLevelPass.passResolveImports) ) {
-//				Import imp = new Import();
-//				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
-//					imp.name = new NameRef(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
-//				} else {
-//					imp.name = new NameRef(KString.from(s.name.name+"."+kia.getNodeName(clazz)));
-//					imp.of_method = true;
-//					KString sig = kia.getSignature(clazz);
-//					MethodType mt = (MethodType)Signature.getType(new KString.KStringScanner(sig));
-//					foreach (Type t; mt.args)
-//						imp.args.append(new TypeRef(t));
-//				}
-//				cl.imported.add(imp);
-//			} else {
-//				ASTNode node;
-//				if( clazz.pool[kia.cp_ref] instanceof kiev.bytecode.FieldPoolConstant ) {
-//					node = s.resolveName(kia.getNodeName(clazz));
-//				} else {
-//					node = s.resolveMethod(kia.getNodeName(clazz),kia.getSignature(clazz));
-//				}
-//				if( node == null )
-//					Kiev.reportWarning("Package bytecode imports unknown method / field "+
-//						kia.getNodeName(clazz)+" "+kia.getSignature(clazz)+" from class "+s);
-//				cl.imported.add(node);
-//			}
-//			a = null;
-//		}
 		else if( name.equals(attrConstantValue) ) {
 			kiev.bytecode.ConstantValueAttribute ca = (kiev.bytecode.ConstantValueAttribute)bca;
 			ConstExpr ce = ConstExpr.fromConst(ca.getValue(bcclazz));
@@ -765,12 +529,7 @@ public class Bytecoder implements Constants {
 	 */
 	public byte[] writeClazz() {
 		Struct jcl = cl;
-//		if( kievmode ) {
-//		    bcclazz = new kiev.bytecode.KievAttributeClazz(null);
-//		    ((kiev.bytecode.KievAttributeClazz)bcclazz).pool_offset = constPool.java_hwm;
-//		} else {
-		    bcclazz = new kiev.bytecode.Clazz();
-//		}
+	    bcclazz = new kiev.bytecode.Clazz();
 
 	    // Constant pool
 		bcclazz.pool = writeConstPool();
@@ -781,19 +540,12 @@ public class Bytecoder implements Constants {
 		bcclazz.flags = cl.getJavaFlags();
 
 		// This class name
-		KString cl_sig;
-//		if (kievmode)
-//			cl_sig = jcl.type.signature;
-//		else
-			cl_sig = jcl.type.getJType().java_signature;
+		KString cl_sig = jcl.type.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
 	    if( cl.super_type != null ) {
 		    KString sup_sig = jcl.super_type.getJType().java_signature;
-//				kievmode ?
-//					jcl.super_type.signature
-//				  : jcl.super_type.java_signature;
 		    bcclazz.cp_super_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(sup_sig).pos];
 		} else {
 			bcclazz.cp_super_clazz = null;
@@ -802,9 +554,6 @@ public class Bytecoder implements Constants {
 	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.interfaces.length];
 		for(int i=0; i < cl.interfaces.length; i++) {
 		    KString interf_sig = jcl.interfaces[i].getJType().java_signature;
-//				kievmode ?
-//				jcl.interfaces[i].signature
-//			  : jcl.interfaces[i].java_signature;
 			bcclazz.cp_interfaces[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
 		}
 
@@ -829,23 +578,13 @@ public class Bytecoder implements Constants {
 		}
 
 	    // Number of class attributes
-//	    if( !kievmode ) {
-	    	int len = 0;
-	    	foreach(Attr a; cl.attrs; !a.isKiev) len++;
-		    bcclazz.attrs = new kiev.bytecode.Attribute[len];
-			for(int i=0, j=0; i < cl.attrs.length; i++) {
-				if( cl.attrs[i].isKiev ) continue;
-				bcclazz.attrs[j++] = writeAttr(cl.attrs[i]);
-			}
-//		} else {
-//	    	int len = 0;
-//	    	foreach(Attr a; cl.attrs; a.isKiev) len++;
-//		    bcclazz.attrs = new kiev.bytecode.Attribute[len];
-//			for(int i=0, j=0; i < cl.attrs.length; i++) {
-//				if( !cl.attrs[i].isKiev ) continue;
-//				bcclazz.attrs[j++] = writeAttr(cl.attrs[i]);
-//			}
-//		}
+		int len = 0;
+		foreach(Attr a; cl.attrs; !a.isKiev) len++;
+		bcclazz.attrs = new kiev.bytecode.Attribute[len];
+		for(int i=0, j=0; i < cl.attrs.length; i++) {
+			if( cl.attrs[i].isKiev ) continue;
+			bcclazz.attrs[j++] = writeAttr(cl.attrs[i]);
+		}
 		return bcclazz.writeClazz();
 	}
 
@@ -856,14 +595,8 @@ public class Bytecoder implements Constants {
 				constPool.pool[i].pos = i;
 		int hwm, lwm;
 		kiev.bytecode.PoolConstant[] bcpool;
-//		if( kievmode ) {
-//			hwm = constPool.hwm;
-//			lwm = constPool.java_hwm;
-//		} else {
-			hwm = constPool.java_hwm;
-			lwm = 1;
-			bcpool = new kiev.bytecode.PoolConstant[hwm];
-//		}
+		hwm = constPool.java_hwm;
+		lwm = 1;
 		bcpool = new kiev.bytecode.PoolConstant[hwm];
 		bcpool[0] = new kiev.bytecode.VoidPoolConstant(0);
 		for(int i=1; i < hwm; i++) {
@@ -957,26 +690,13 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Field bcf = new kiev.bytecode.Field();
 		bcf.flags = f.getJavaFlags();
 		bcf.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.name.name).pos];
-//		if( !kievmode ) {
-			JType tp = f.type.getJType();
-			bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
-//		}
-//		else
-//			bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(f.type.signature).pos];
+		JType tp = f.type.getJType();
+		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-//		if( !kievmode ) {
-			bcf.attrs = new kiev.bytecode.Attribute[f.attrs.length];
-			for(int i=0; i < f.attrs.length; i++)
-				bcf.attrs[i] = writeAttr(f.attrs[i]);
-//		} else {
-//			for(int i=0; i < f.attrs.length; i++) {
-//				if( f.attrs[i].name.equals(attrFlags) ) {
-//					bcf.attrs = new kiev.bytecode.Attribute[]{writeAttr(f.attrs[i])};
-//					break;
-//				}
-//			}
-//		}
+		bcf.attrs = new kiev.bytecode.Attribute[f.attrs.length];
+		for(int i=0; i < f.attrs.length; i++)
+			bcf.attrs[i] = writeAttr(f.attrs[i]);
 		return bcf;
 	}
 
@@ -985,24 +705,12 @@ public class Bytecoder implements Constants {
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.name.name).pos];
-//		if( !kievmode )
-			bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.getJType().java_signature).pos];
-//		else
-//			bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.type.signature).pos];
+		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-//		if( !kievmode ) {
-			bcm.attrs = new kiev.bytecode.Attribute[m.attrs.length];
-			for(int i=0; i < m.attrs.length; i++)
-				bcm.attrs[i] = writeAttr(m.attrs[i]);
-//		} else {
-//			for(int i=0; i < m.attrs.length; i++) {
-//				if( m.attrs[i].name.equals(attrFlags) ) {
-//					bcm.attrs = new kiev.bytecode.Attribute[]{writeAttr(m.attrs[i])};
-//					break;
-//				}
-//			}
-//		}
+		bcm.attrs = new kiev.bytecode.Attribute[m.attrs.length];
+		for(int i=0; i < m.attrs.length; i++)
+			bcm.attrs[i] = writeAttr(m.attrs[i]);
 		return bcm;
     }
 
@@ -1011,3 +719,4 @@ public class Bytecoder implements Constants {
 		return kba;
 	}
 }
+

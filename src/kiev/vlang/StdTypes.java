@@ -104,166 +104,119 @@ public interface StdTypes {
 		Hash<Type> typeHash = Type.typeHash;
 
 		Struct tpEnvClazz = Env.root;
-		tpEnv				= new BaseType();
-		tpEnv.clazz			= tpEnvClazz;
+		tpEnv				= new BaseType(KString.from("<root>"), tpEnvClazz);
 		tpEnvClazz.type		= tpEnv;
 		tpEnv.flags			= flResolved;
-		tpEnv.signature		= KString.from("<root>");
-//		tpEnv.java_signature	= KString.from("<root>");
 		typeHash.put(tpEnv);
 
 		Struct tpAnyClazz = Env.newStruct(new ClazzName(
 							KString.from("<any>"),
 							KString.from("<any>"),
 							KString.from("?"),false,false),null,ACC_PUBLIC);
-		tpAny				= new BaseType();
-		tpAny.clazz			= tpAnyClazz;
-//		typeHash.remove(tpAnyClazz.type);
+		tpAny				= new BaseType(KString.from("?"), tpAnyClazz);
 		tpAnyClazz.type		= tpAny;
 		tpAnyClazz.setResolved(true);
 		tpAny.flags			= flResolved;
-		tpAny.signature		= KString.from("?");
-//		tpAny.java_signature	= KString.from("?");
 		typeHash.put(tpAny);
 
 		Struct tpRuleClazz = Env.newStruct(new ClazzName(
 							KString.from("rule"),
 							KString.from("rule"),
 							KString.from("R"),false,false),null,ACC_PUBLIC);
-		tpRule					= new BaseType();
-		tpRule.clazz			= tpRuleClazz;
-//		typeHash.remove(tpRuleClazz.type);
+		tpRule					= new BaseType(KString.from("R"), tpRuleClazz);
 		tpRuleClazz.type		= tpRule;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags			= flResolved | flReference;
-		tpRule.signature		= KString.from("R");
-//		tpRule.java_signature	= KString.from("Lkiev/stdlib/RuleFrame;");
 		typeHash.put(tpRule);
 
 		Struct tpBooleanClazz = Env.newStruct(new ClazzName(
 							KString.from("boolean"),
 							KString.from("boolean"),
 							KString.from("Z"),false,false),null,ACC_PUBLIC);
-		tpBoolean				= new BaseType();
-		tpBoolean.clazz			= tpBooleanClazz;
-//		typeHash.remove(tpBooleanClazz.type);
+		tpBoolean				= new BaseType(KString.from("Z"), tpBooleanClazz);
 		tpBooleanClazz.type		= tpBoolean;
 		tpBooleanClazz.setResolved(true);
 		tpBoolean.flags			= flResolved | flIntegerInCode | flBoolean;
-		tpBoolean.signature		= KString.from("Z");
-//		tpBoolean.java_signature		= KString.from("Z");
 		typeHash.put(tpBoolean);
 
 		Struct tpByteClazz = Env.newStruct(new ClazzName(
 							KString.from("byte"),
 							KString.from("byte"),
 							KString.from("B"),false,false),null,ACC_PUBLIC);
-		tpByte					= new BaseType();
-		tpByte.clazz			= tpByteClazz;
-//		typeHash.remove(tpByteClazz.type);
+		tpByte					= new BaseType(KString.from("B"), tpByteClazz);
 		tpByteClazz.type		= tpByte;
 		tpByteClazz.setResolved(true);
 		tpByte.flags			= flResolved | flInteger | flIntegerInCode ;
-		tpByte.signature		= KString.from("B");
-//		tpByte.java_signature		= KString.from("B");
 		typeHash.put(tpByte);
 
 		Struct tpCharClazz = Env.newStruct(new ClazzName(
 							KString.from("char"),
 							KString.from("char"),
 							KString.from("C"),false,false),null,ACC_PUBLIC);
-		tpChar					= new BaseType();
-		tpChar.clazz			= tpCharClazz;
-//		typeHash.remove(tpCharClazz.type);
+		tpChar					= new BaseType(KString.from("C"), tpCharClazz);
 		tpCharClazz.type		= tpChar;
 		tpCharClazz.setResolved(true);
 		tpChar.flags			= flResolved | flInteger | flIntegerInCode ;
-		tpChar.signature		= KString.from("C");
-//		tpChar.java_signature		= KString.from("C");
 		typeHash.put(tpChar);
 
 		Struct tpShortClazz = Env.newStruct(new ClazzName(
 							KString.from("short"),
 							KString.from("short"),
 							KString.from("S"),false,false),null,ACC_PUBLIC);
-		tpShort					= new BaseType();
-		tpShort.clazz			= tpShortClazz;
-//		typeHash.remove(tpShortClazz.type);
+		tpShort					= new BaseType(KString.from("S"), tpShortClazz);
 		tpShortClazz.type		= tpShort;
 		tpShortClazz.setResolved(true);
 		tpShort.flags			= flResolved | flInteger | flIntegerInCode ;
-		tpShort.signature		= KString.from("S");
-//		tpShort.java_signature		= KString.from("S");
 		typeHash.put(tpShort);
 
 		Struct tpIntClazz = Env.newStruct(new ClazzName(
 							KString.from("int"),
 							KString.from("int"),
 							KString.from("I"),false,false),null,ACC_PUBLIC);
-		tpInt					= new BaseType();
-		tpInt.clazz			= tpIntClazz;
-//		typeHash.remove(tpIntClazz.type);
+		tpInt					= new BaseType(KString.from("I"), tpIntClazz);
 		tpIntClazz.type		= tpInt;
 		tpIntClazz.setResolved(true);
 		tpInt.flags			= flResolved | flInteger | flIntegerInCode ;
-		tpInt.signature		= KString.from("I");
-//		tpInt.java_signature		= KString.from("I");
 		typeHash.put(tpInt);
 
 		Struct tpLongClazz = Env.newStruct(new ClazzName(
 							KString.from("long"),
 							KString.from("long"),
 							KString.from("J"),false,false),null,ACC_PUBLIC);
-		tpLong					= new BaseType();
-		tpLong.clazz			= tpLongClazz;
-//		typeHash.remove(tpLongClazz.type);
+		tpLong					= new BaseType(KString.from("J"), tpLongClazz);
 		tpLongClazz.type		= tpLong;
 		tpLongClazz.setResolved(true);
 		tpLong.flags			= flResolved | flInteger | flDoubleSize;
-		tpLong.signature		= KString.from("J");
-//		tpLong.java_signature		= KString.from("J");
 		typeHash.put(tpLong);
 
 		Struct tpFloatClazz = Env.newStruct(new ClazzName(
 							KString.from("float"),
 							KString.from("float"),
 							KString.from("F"),false,false),null,ACC_PUBLIC);
-		tpFloat					= new BaseType();
-		tpFloat.clazz			= tpFloatClazz;
-//		typeHash.remove(tpFloatClazz.type);
+		tpFloat					= new BaseType(KString.from("F"), tpFloatClazz);
 		tpFloatClazz.type		= tpFloat;
 		tpFloatClazz.setResolved(true);
 		tpFloat.flags			= flResolved | flFloat ;
-		tpFloat.signature		= KString.from("F");
-//		tpFloat.java_signature		= KString.from("F");
 		typeHash.put(tpFloat);
 
 		Struct tpDoubleClazz = Env.newStruct(new ClazzName(
 							KString.from("double"),
 							KString.from("double"),
 							KString.from("D"),false,false),null,ACC_PUBLIC);
-		tpDouble				= new BaseType();
-		tpDouble.clazz			= tpDoubleClazz;
-//		typeHash.remove(tpDoubleClazz.type);
+		tpDouble				= new BaseType(KString.from("D"), tpDoubleClazz);
 		tpDoubleClazz.type		= tpDouble;
 		tpDoubleClazz.setResolved(true);
 		tpDouble.flags			= flResolved | flFloat | flDoubleSize;
-		tpDouble.signature		= KString.from("D");
-//		tpDouble.java_signature		= KString.from("D");
 		typeHash.put(tpDouble);
 
 		Struct tpVoidClazz = Env.newStruct(new ClazzName(
 							KString.from("void"),
 							KString.from("void"),
 							KString.from("V"),false,false),null,ACC_PUBLIC);
-		tpVoid					= new BaseType();
-		tpVoid.clazz			= tpVoidClazz;
-//		typeHash.remove(tpVoidClazz.type);
+		tpVoid					= new BaseType(KString.from("V"), tpVoidClazz);
 		tpVoidClazz.type		= tpVoid;
 		tpVoidClazz.setResolved(true);
 		tpVoid.flags			= flResolved;
-		tpVoid.signature		= KString.from("V");
-//		tpVoid.java_signature		= KString.from("V");
 		typeHash.put(tpVoid);
 
 		Struct java_lang = Env.newPackage(KString.from("java.lang"));
