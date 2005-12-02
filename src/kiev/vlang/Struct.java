@@ -51,7 +51,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	/** Bound super-class for class arguments */
 	@virtual
-	@ref public virtual abstract Type				super_type;
+	@ref public virtual abstract BaseType			super_type;
 
 	/** SuperInterface types */
 	@att public final NArr<TypeRef>					interfaces;
@@ -129,11 +129,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		acc.verifyAccessDecl(this);
 	}
 	
-	@getter public Type get$super_type() {
-		return super_bound.lnk;
+	@getter public BaseType get$super_type() {
+		return (BaseType)super_bound.lnk;
 	}
 
-	@setter public void set$super_type(Type tp) {
+	@setter public void set$super_type(BaseType tp) {
 		super_bound = new TypeRef(super_bound.pos, tp);
 	}
 
@@ -260,11 +260,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	public boolean instanceOf(Struct cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( super_bound.lnk != null && super_bound.lnk.clazz.instanceOf(cl) )
+		if( super_bound.lnk != null && super_type.clazz.instanceOf(cl) )
 			return true;
 		if( cl.isInterface() ) {
 			for(int i=0; i < interfaces.length; i++) {
-				if( interfaces[i].clazz.instanceOf(cl) ) return true;
+				if( interfaces[i].getStruct().instanceOf(cl) ) return true;
 			}
 		}
 		return false;
@@ -284,37 +284,6 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( super_type != null ) return super_type.getStruct().resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
-		return null;
-	}
-
-	public ASTNode resolveName(KString name) {
-		checkResolved();
-		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return f;
-		foreach(Type t; type.args; t.getClazzName().short_name.equals(name) ) return t.clazz;
-		foreach(ASTNode s; members; s instanceof Struct && ((Struct)s).name.short_name.equals(name) ) return s;
-		if (isPackage())
-			foreach(Struct s; sub_clazz; s.name.short_name.equals(name) ) return s;
-		if( this.name.short_name.equals(nameIdefault) ) {
-			ASTNode n = package_clazz.resolveName(name);
-			if( n != null ) return n;
-		}
-		if( isPackage() ) {
-			Struct cl;
-			ClazzName clname = ClazzName.Empty;
-			if( this.equals(Env.root) ) {
-				clname = ClazzName.fromToplevelName(name,false);
-				cl = Env.getStruct(clname);
-			} else {
-				KStringBuffer ksb = new KStringBuffer(this.name.name.len+name.len+1);
-				ksb.append(this.name.name).append('.').append(name);
-				clname = ClazzName.fromToplevelName(ksb.toKString(),false);
-				cl = Env.getStruct(clname);
-			}
-			if( cl != null ) return cl;
-			trace(Kiev.debugResolve,"Class "+clname.name
-				+" with bytecode name "+clname.bytecode_name+" not found in "
-				+this);
-		}
 		return null;
 	}
 
@@ -387,10 +356,10 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	{
 			{	sup ?= super_type,
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name)
+				sup.getStruct().resolveNameR(node,info,name)
 			;	sup @= TypeRef.linked_elements(interfaces),
 				info.enterSuper() : info.leaveSuper(),
-				sup.clazz.resolveNameR(node,info,name)
+				sup.getStruct().resolveNameR(node,info,name)
 			}
 	}
 
@@ -445,7 +414,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		;	info.isSuperAllowed(),
 			sup ?= super_type,
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	isInterface(),
 			member @= members,
 			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
@@ -455,7 +424,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.clazz.resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		}
 	}
 
@@ -494,8 +463,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( super_type != null )
 			m = super_type.clazz.resolveMethod(name,sign,where,fatal);
 		if( m != null ) return m;
-		foreach(Type interf; interfaces) {
-			m = interf.clazz.resolveMethod(name,sign,where,fatal);
+		foreach(TypeRef interf; interfaces) {
+			m = interf.getStruct().resolveMethod(name,sign,where,fatal);
 			if( m != null ) return m;
 		}
 		if (fatal)
@@ -687,7 +656,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
-			sb.append(t.clazz.name.bytecode_name.toString().replace('/','.'));
+			sb.append(t.getClazzName().bytecode_name.toString().replace('/','.'));
 			sb.append('<');
 			for(int i=0; i < t.args.length; i++) {
 				Type ta = t.args[i];
@@ -698,7 +667,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			sb.append('>');
 			return sb.toString();
 		} else {
-			return t.clazz.name.bytecode_name.toString().replace('/','.');
+			return t.getClazzName().bytecode_name.toString().replace('/','.');
 		}
 	}
 
@@ -720,13 +689,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
-			if( this.type.isInstanceOf(t.clazz.type) )
+			if( this.type.isInstanceOf(t.getInitialType()) )
 				return ti_access;
 
 			if (t.isArgument()) {
 				// Get corresponded type argument
-				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.clazz.name.short_name.length())
-						.append(nameTypeInfo).append('$').append(t.clazz.name.short_name).toKString();
+				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
+						.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
 					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.pctx.method);
@@ -740,11 +709,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
 		if ((from.pctx.method == null || from.pctx.method.name.name == nameClassInit) && from.pctx.clazz.isInterface()) {
-			Type ftype = Type.tpTypeInfo;
+			BaseType ftype = Type.tpTypeInfo;
 			if (t.args.length > 0) {
-				if (((Struct)t.clazz).typeinfo_clazz == null)
-					((Struct)t.clazz).autoGenerateTypeinfoClazz();
-				ftype = ((Struct)t.clazz).typeinfo_clazz.type;
+				if (t.getStruct().typeinfo_clazz == null)
+					t.getStruct().autoGenerateTypeinfoClazz();
+				ftype = t.getStruct().typeinfo_clazz.type;
 			}
 			Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
 			Expr e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
@@ -768,11 +737,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Expr e = new SFldExpr(from.pos,f);
 			return e;
 		}
-		Type ftype = Type.tpTypeInfo;
+		BaseType ftype = Type.tpTypeInfo;
 		if (t.args.length > 0) {
-			if (((Struct)t.clazz).typeinfo_clazz == null)
-				((Struct)t.clazz).autoGenerateTypeinfoClazz();
-			ftype = ((Struct)t.clazz).typeinfo_clazz.type;
+			if (t.getStruct().typeinfo_clazz == null)
+				t.getStruct().autoGenerateTypeinfoClazz();
+			ftype = t.getStruct().typeinfo_clazz.type;
 		}
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
@@ -932,8 +901,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			super_type.clazz.autoGenerateMembers();
 		}
 		for(int i=0; i < interfaces.length; i++) {
-			if( !interfaces[i].clazz.isMembersGenerated() )
-				interfaces[i].clazz.autoGenerateMembers();
+			if( !interfaces[i].getStruct().isMembersGenerated() )
+				interfaces[i].getStruct().autoGenerateMembers();
 		}
 
 		if( Kiev.debug ) System.out.println("AutoGenerating members for "+this);
@@ -1523,9 +1492,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Method m = null;
 			if( super_type != null )
 				m = super_type.clazz.getOverwrittenMethod(this.type,mi);
-			foreach(Type si; interfaces ) {
-				if( m == null ) m = si.clazz.getOverwrittenMethod(this.type,mi);
-				else si.clazz.getOverwrittenMethod(this.type,mi);
+			foreach(TypeRef si; interfaces ) {
+				if( m == null )
+					m = si.getStruct().getOverwrittenMethod(this.type,mi);
+				else
+					si.getStruct().getOverwrittenMethod(this.type,mi);
 			}
 			if( m != null ) {
 				for (int i=0; i < m.params.length; i++) {
@@ -1554,8 +1525,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						new LVarExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof ClosureType) ) {
-					if (((Struct)t.clazz).typeinfo_clazz == null)
-						((Struct)t.clazz).autoGenerateTypeinfoClazz();
+					if (t.getStruct().typeinfo_clazz == null)
+						t.getStruct().autoGenerateTypeinfoClazz();
 					Expr tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -1564,7 +1535,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 							new LVarExpr(pos,mm.params[j]),
 							new IFldExpr(pos,
 								new CastExpr(pos,t,new LVarExpr(pos,mm.params[j])),
-								t.clazz.resolveField(nameTypeInfo))
+								t.getStruct().resolveField(nameTypeInfo))
 						});
 					if( be == null )
 						be = tibe;
@@ -1681,8 +1652,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			super_type.clazz.autoProxyMethods();
 		}
 		for(int i=0; i < interfaces.length; i++)
-			if( !interfaces[i].clazz.isMembersPreGenerated() ) {
-				interfaces[i].clazz.autoProxyMethods();
+			if( !interfaces[i].getStruct().isMembersPreGenerated() ) {
+				interfaces[i].getStruct().autoProxyMethods();
 			}
 		ASTNode fu = parent;
 		while( fu != null && !(fu instanceof FileUnit))
@@ -1691,7 +1662,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			Kiev.curFile = ((FileUnit)fu).filename;
 
 		for(int i=0; i < interfaces.length; i++) {
-			((Struct)interfaces[i].clazz).autoProxyMethods(this);
+			interfaces[i].getStruct().autoProxyMethods(this);
 		}
 
 		if( isClazz() ) {
@@ -1826,7 +1797,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		// Check all sub-interfaces
 		for(int i=0; i < interfaces.length; i++) {
-			((Struct)interfaces[i].clazz).autoProxyMethods(me);
+			interfaces[i].getStruct().autoProxyMethods(me);
 		}
 	}
 
@@ -2132,7 +2103,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			constPool.addClazzCP(jthis.super_type.getJType().java_signature);
 		}
 		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
-			interfaces[i].clazz.checkResolved();
+			interfaces[i].checkResolved();
 			constPool.addClazzCP(jthis.interfaces[i].signature);
 			constPool.addClazzCP(jthis.interfaces[i].getJType().java_signature);
 		}
@@ -2342,7 +2313,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			if( interfaces!=null && interfaces.length > 0 ) {
 				dmp.space().append("implements").forsed_space();
 				for(int i=0; i < interfaces.length; i++) {
-					dmp.append(this.interfaces[i].clazz);
+					dmp.append(this.interfaces[i]);
 					if( i < (interfaces.length-1) ) dmp.append(',').space();
 				}
 			}

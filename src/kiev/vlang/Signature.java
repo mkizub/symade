@@ -154,7 +154,7 @@ public class Signature {
 				if( ch == '(' )
 					clazz = Type.tpClosureClazz;
 				else if( ch == 'L')
-					clazz = getType(sc).clazz;
+					clazz = ((BaseType)getType(sc)).clazz;
 				else
 					throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' or 'L' expected");
 				ch = sc.nextChar();

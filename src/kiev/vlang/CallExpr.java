@@ -270,8 +270,8 @@ public class CallExpr extends Expr {
 				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name.name == nameObjGetClass ) {
-				Type reft = Type.getRefTypeForPrimitive(objt);
-				Field f = (Field)reft.clazz.resolveName(KString.from("TYPE"));
+				BaseType reft = Type.getRefTypeForPrimitive(objt);
+				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f,reft);
 			}

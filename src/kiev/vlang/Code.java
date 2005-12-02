@@ -1337,8 +1337,8 @@ public final class Code implements Constants {
 		case op_new:
 			if( !type.isReference() )
 				throw new RuntimeException("New on non-reference type "+type);
-			if( type.clazz.super_type != null && type.clazz.super_type.clazz == Type.tpClosureClazz )
-				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.clazz.name.signature()));
+			if( type instanceof ClosureType )
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getClazzName().signature()));
 			else
 				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
 			stack_push(type);

@@ -50,7 +50,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 		Struct s = (Struct)f.parent;
 		KString mp_in = mp.fld;
 		if( mp_in != null && mp_in.len > 0 ) {
-			Field p = s.resolveField(mp_in);
+			Field p = s.resolveField(mp_in,false);
 			if( p == null ) {
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;
@@ -108,7 +108,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			if( mp.packer == null ) {
 				KString mp_in = mp.fld;
 				if( mp_in != null && mp_in.len > 0 ) {
-					Field p = s.resolveField(mp_in);
+					Field p = s.resolveField(mp_in,false);
 					if( p == null ) {
 						Kiev.reportError(f,"Packer field "+mp_in+" not found");
 						f.meta.unset(mp);
@@ -160,7 +160,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		ASTNode@ n;
 		Field ff;
 	{
-		s.super_type != null && s.super_type.clazz instanceof Struct,
+		s.super_type != null,
 		locatePackerField(f,size,(Struct)s.super_type.clazz)
 	;	n @= s.members,
 		n instanceof Field && n.isPackerField(),

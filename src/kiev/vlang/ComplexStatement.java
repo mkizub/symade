@@ -173,7 +173,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 								Var p = pattern[i];
 								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
-								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value, true);
+								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.equals(tp) )
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");

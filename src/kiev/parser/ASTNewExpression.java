@@ -117,7 +117,7 @@ public class ASTNewExpression extends Expr {
 			return;
 		}
 		// Local anonymouse class
-		Type sup  = tp;
+		BaseType sup  = (BaseType)tp;
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);

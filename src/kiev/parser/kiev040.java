@@ -219,7 +219,7 @@ public abstract class kiev040 implements kiev040Constants {
     default:
       ;
     }
-          curClazz = fu.pkg.clazz;
+          curClazz = fu.pkg.getStruct();
     try {
       label_2:
       while (true) {
@@ -8764,7 +8764,7 @@ public abstract class kiev040 implements kiev040Constants {
 	private Struct mkStruct(NameRef name, int flags, ASTModifiers modifiers, ASTNode parent) {
 		ClazzName clname;
 		if (parent instanceof FileUnit) {
-			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.clazz,name.name,false,false);
+			clname = ClazzName.fromOuterAndName(((FileUnit)parent).pkg.getStruct(),name.name,false,false);
 		}
 		else if (parent instanceof Struct) {
 			clname = ClazzName.fromOuterAndName(curClazz,name.name,false,true);

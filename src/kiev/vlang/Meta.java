@@ -97,7 +97,7 @@ public final class MetaSet extends ASTNode {
 			throw new NullPointerException();
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().clazz.name.name == name) {
+			if (((BaseType)metas[i].type.getType()).clazz.name.name == name) {
 				Meta m = metas[i];
 				metas.del(i);
 				return m;

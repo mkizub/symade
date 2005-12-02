@@ -720,7 +720,7 @@ public class InstanceofExpr extends BoolExpr {
 			Type et = expr.getType();
 			Type tp = type.getType();
 			if (et.isWrapper() && !tp.isWrapper()) {
-				Type ut = ((WrapperType)et).getUnwrappedType();
+				BaseType ut = ((WrapperType)et).getUnwrappedType();
 				tp = WrapperType.newWrapperType(Type.newRefType(ut,new Type[]{tp}));
 			}
 			return dfs.addNodeType(path,tp);

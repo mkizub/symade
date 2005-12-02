@@ -221,17 +221,11 @@ public class NewExpr extends Expr {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
-		// Now, fill proxyed fields (vars)
-//		foreach (ENode n; outer_args)
-//			n.generate(code,null);
 		if( type.isLocalClazz() ) {
-			Struct cl = (Struct)type.clazz;
+			Struct cl = ((BaseType)type).clazz;
 			foreach (ASTNode n; cl.members; n instanceof Field) {
 				Field f = (Field)n;
 				if( !f.isNeedProxy() ) continue;
-//				temp_expr = new IFldExpr(pos,new ThisExpr(pos),f);
-//				temp_expr.generate(code,null);
-//				temp_expr = null;
 				Var v = ((LVarExpr)f.init).getVar();
 				code.addInstr(Instr.op_load,v);
 			}
@@ -242,7 +236,7 @@ public class NewExpr extends Expr {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		Type tp = type.getType();
+		BaseType tp = (BaseType)type.getType();
 		if( !tp.isReference() ) {
 			return dmp.append('0');
 		}
@@ -250,7 +244,7 @@ public class NewExpr extends Expr {
 			dmp.append("new ").append(tp).append('(');
 		} else {
 			if( tp.clazz.interfaces.length > 0 )
-				dmp.append("new ").append(tp.clazz.interfaces[0].clazz.name).append('(');
+				dmp.append("new ").append(tp.clazz.interfaces[0].getStruct().name).append('(');
 			else
 				dmp.append("new ").append(tp.clazz.super_type.clazz.name).append('(');
 		}
@@ -261,7 +255,7 @@ public class NewExpr extends Expr {
 		}
 		dmp.append(')');
 		if( tp.clazz.isAnonymouse() ) {
-			Struct cl = (Struct)type.clazz;
+			Struct cl = tp.clazz;
 			dmp.space().append('{').newLine(1);
 			foreach (DNode n; cl.members)
 				n.toJavaDecl(dmp).newLine();
@@ -552,7 +546,8 @@ public class NewClosure extends Expr {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		Struct cl = (Struct)type.clazz;
+		ClosureType type = (ClosureType)this.type.getType();
+		Struct cl = type.clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);

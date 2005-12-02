@@ -425,7 +425,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass2_2(Typedef:ASTNode astn) {
 		if (astn.type == null) {
 			if (astn.typearg != null) {
-				astn.type = new TypeRef(astn.type.getType().clazz.type);
+				astn.type = new TypeRef(((BaseType)astn.type.getType()).clazz.type);
 			} else {
 				astn.type = new TypeRef(astn.type.getType());
 			}
@@ -585,7 +585,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						f.meta.unset(pack);
 					}
 					else if( !ftype.isIntegerInCode() ) {
-						if( ftype.clazz.instanceOf(Type.tpEnum.clazz) ) {
+						if( ftype.isEnum() ) {
 							Kiev.reportError(fdecl,"Packing of enum is not implemented yet");
 						} else {
 							Kiev.reportError(fdecl,"Packing of reference type is not allowed");

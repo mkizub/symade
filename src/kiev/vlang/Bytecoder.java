@@ -80,8 +80,8 @@ public class Bytecoder implements Constants {
 		if( bcclazz.getSuperClazzName() != null ) {
 			KString cl_super_name = bcclazz.getSuperClazzName(); //kaclazz==null? bcclazz.getSuperClazzName() : kaclazz.getSuperClazzName() ;
 			trace(Kiev.debugBytecodeRead,"Super-class is "+cl_super_name);
-		    cl.super_type = Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
-			if( Env.getStruct(cl.super_type.clazz.name) == null )
+		    cl.super_type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(cl_super_name));
+			if( Env.getStruct(((BaseType)cl.super_type).clazz.name) == null )
 				throw new RuntimeException("Class "+cl.super_type.clazz.name+" not found");
 		}
 
@@ -105,9 +105,9 @@ public class Bytecoder implements Constants {
 		KString[] interfs = bcclazz.getInterfaceNames(); //kaclazz==null? bcclazz.getInterfaceNames() : kaclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
-			Type interf = Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
-			if( Env.getStruct(interf.clazz.name) == null )
-				throw new RuntimeException("Class "+interf.clazz.name+" not found");
+			BaseType interf = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
+			if( Env.getStruct(((BaseType)interf).clazz.name) == null )
+				throw new RuntimeException("Class "+interf+" not found");
 			if( !interf.isInterface() )
 				throw new RuntimeException("Class "+interf+" is not an interface");
 			cl.interfaces.append(new TypeRef(interf));

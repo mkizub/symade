@@ -54,7 +54,7 @@ public class TypeWithArgsRef extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp = base_type.getType();
-		if (tp == null)
+		if (tp == null || !(tp instanceof BaseType))
 			throw new CompilerException(this,"Type "+base_type+" is not found");
 		Type[] atypes = new Type[args.length];
 		for(int i=0; i < atypes.length; i++) {
@@ -62,7 +62,7 @@ public class TypeWithArgsRef extends TypeRef {
 			if (atypes[i] == null)
 				throw new CompilerException(this,"Type "+args[i]+" is not found");
 		}
-		this.lnk = Type.newRefType(tp,atypes);
+		this.lnk = Type.newRefType((BaseType)tp,atypes);
 		return this.lnk;
 	}
 

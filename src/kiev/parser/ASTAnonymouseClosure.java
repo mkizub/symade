@@ -125,13 +125,13 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		for(int i=0; i < params.length; i++) {
 			FormPar v = params[i];
 			Expr val = new ContainerAccessExpr(pos,
-				new IFldExpr(pos,new ThisExpr(pos),(Field)Type.tpClosureClazz.resolveName(nameClosureArgs)),
+				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
 				BaseType celltp = BaseType.getProxyType(v.type);
 				val = new IFldExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
-						celltp.clazz.resolveField(nameCellVal,true)
+						celltp.clazz.resolveField(nameCellVal)
 					);
 			} else {
 				val = new CastExpr(v.getPos(),v.type,val,true);

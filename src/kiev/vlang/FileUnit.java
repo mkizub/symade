@@ -216,7 +216,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	;
 		pkg != null,
 		trace( Kiev.debugResolve, "In file package: "+pkg),
-		pkg.clazz.resolveNameR(node,path,name)
+		((BaseType)pkg.getType()).clazz.resolveNameR(node,path,name)
 	;
 		syn @= syntax,
 		syn instanceof Import,

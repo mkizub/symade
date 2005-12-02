@@ -516,7 +516,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 		if( t.isArray() ) {
 			return new Type[]{Type.getRealType(t,t.args[0])};
 		} else {
-			Struct s = t.clazz;
+			Struct s = t.getStruct();
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
@@ -540,9 +540,9 @@ public class ContainerAccessExpr extends LvalueExpr {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		obj.resolve(null);
-		if( !obj.getType().isArray() ) {
+		if( obj.getType().getStruct() != null ) {
 			// May be an overloaded '[]' operator, ensure overriding
-			Struct s = obj.getType().clazz;
+			Struct s = obj.getType().getStruct();
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
@@ -582,7 +582,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			code.addInstr(Instr.op_call,func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
+			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -619,7 +619,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			// We need to get the type of object in stack
 			Type t = code.stack_at(0);
 			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
-			Struct s = objType.clazz;
+			Struct s = objType.getStruct();
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
@@ -644,7 +644,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
-			Struct s = obj.getType().clazz;
+			Struct s = obj.getType().getStruct();
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
@@ -654,7 +654,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			code.addInstr(Instr.op_call,func,false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.clazz) || getType().isArray() ) )
+			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -875,7 +875,6 @@ public class LVarExpr extends LvalueExpr {
 			}
 			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
 			Field f = s.resolveField(ident.name);
-			assert(f != null);
 			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), (NameRef)~ident, f));
 		}
 		return true;
@@ -890,7 +889,7 @@ public class LVarExpr extends LvalueExpr {
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = (Field)pctx.clazz.resolveName(ident.name)) == null ) {
+				if( (vf = pctx.clazz.resolveField(ident.name,false)) == null ) {
 					// Add field
 					vf = pctx.clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
@@ -902,7 +901,7 @@ public class LVarExpr extends LvalueExpr {
 	}
 
 	public Field resolveProxyVar(Code code) {
-		Field proxy_var = (Field)code.clazz.resolveName(ident.name);
+		Field proxy_var = code.clazz.resolveField(ident.name,false);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var;
