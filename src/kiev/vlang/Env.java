@@ -48,7 +48,7 @@ public class ProjectFile extends ASTNode {
 	public boolean		bad = true;
 
 	public ProjectFile(ClazzName clname, File f) {
-		super(0,0);
+		super(0);
 		name = clname;
 		file = f;
 	}

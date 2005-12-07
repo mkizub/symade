@@ -24,7 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
-import kiev.backend.java15.*;
+//import kiev.backend.java15.*;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -40,7 +40,7 @@ public class Bytecoder implements Constants {
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
-	public JStruct								jclazz;
+//	public JStruct								jclazz;
 //	public kiev.bytecode.KievAttributeClazz	kaclazz;
 //	public boolean								kievmode;
 
@@ -101,8 +101,8 @@ public class Bytecoder implements Constants {
 		}
 
 		cl.members.delAll();
-		jclazz = new JStruct(cl);
-		jclazz.setLoadedFromBytecode(true);
+//		jclazz = new JStruct(cl);
+//		jclazz.setLoadedFromBytecode(true);
 		
 		for(int i=0; i < bcclazz.fields.length; i++) {
 			readField(null,i);
@@ -131,7 +131,7 @@ public class Bytecoder implements Constants {
 		KString f_name = bcf.getName(bcclazz);
 		KString f_type = bcf.getSignature(bcclazz); //kaclazz==null? bcf.getSignature(bcclazz) : kaclazz.fields[index].getSignature(kaclazz);
 		Attr[] attrs = Attr.emptyArray;
-		Expr f_init = null;
+		ENode f_init = null;
 		NodeName nm = null;
 		int packer_size = -1;
 		Access acc = null;
@@ -156,7 +156,7 @@ public class Bytecoder implements Constants {
 		}
 		f.init = f_init;
 		cl.members.append(f);
-		jclazz.addMember(new JField(f));
+//		jclazz.addMember(new JField(f));
 		return f;
 	}
 
@@ -302,7 +302,7 @@ public class Bytecoder implements Constants {
 		 && cl.name.short_name.equals(nameIdefault)
 		)
 			m.setVirtualStatic(true);
-		jclazz.addMember(new JMethod(m));
+//		jclazz.addMember(new JMethod(m));
 		return m;
 	}
 

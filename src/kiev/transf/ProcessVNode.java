@@ -125,7 +125,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
 					Struct fs = (Struct)f.parent;
 					Field fatt = fs.resolveField(fname);
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
+					f.init = new NewExpr(f.pos, f.getType(), new ENode[]{
 						new ThisExpr(),
 						new SFldExpr(f.pos, fatt)
 					});
@@ -138,7 +138,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstNullExpr()});
+					f.init = new NewExpr(f.pos, f.getType(), new ENode[]{new ThisExpr(), new ConstNullExpr()});
 				}
 			}
 		}
@@ -194,7 +194,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (ASTNode n; ss.members; n instanceof Field && !n.isStatic() && ((Field)n).meta.get(mnAtt) != null) {
+				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && n.meta.get(mnAtt) != null) {
 					Field f = (Field)n;
 					aflds.insert(p, f);
 					p++;
@@ -207,13 +207,13 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			return;
 		}
 		Type atp = Type.fromSignature(KString.from("Lkiev/vlang/AttrSlot;"));
-		Expr[] vals_init = new Expr[aflds.size()];
+		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			boolean isAtt = (aflds[i].meta.get(mnAtt) != null);
 			boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
 			Type clz_tp = isArr ? aflds[i].getType().args[0] : aflds[i].getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
-			Expr e = new NewExpr(0, atp, new Expr[]{
+			ENode e = new NewExpr(0, atp, new ENode[]{
 				new ConstStringExpr(aflds[i].name.name),
 				new ConstBoolExpr(isAtt),
 				new ConstBoolExpr(isArr),
@@ -259,7 +259,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			msg.appendArg(new LVarExpr(0, getV.params[0]));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			((BlockStat)getV.body).addStatement(
-				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
+				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(getV);
 		}
@@ -277,7 +277,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0, KString.from("node"),s.type,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
-				KString.from("copyTo"),	new Expr[]{new NewExpr(0,s.type,Expr.emptyArray)})));
+				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.type,ENode.emptyArray)})));
 			s.addMethod(copyV);
 		}
 		// copyTo(Object)
@@ -381,7 +381,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 							new LVarExpr(0, setV.params[0]),
 							new ConstStringExpr(aflds[i].name.name)
 							),
-						new BlockStat(0, new Statement[]{
+						new BlockStat(0, new ENode[]{
 							new ExprStat(0,
 								new AssignExpr(0,AssignOperator.Assign,
 									new IFldExpr(0,new ThisExpr(0),aflds[i]),
@@ -399,7 +399,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			msg.appendArg(new LVarExpr(0, setV.params[0]));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			((BlockStat)setV.body).addStatement(
-				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
+				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(setV);
 		}

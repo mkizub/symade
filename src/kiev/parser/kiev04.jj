@@ -262,8 +262,8 @@ public abstract class kiev040 {
 		return clazz;
 	}
 
-	private TypeArgRef mkTypeArgRef(NameRef name, ASTNode parent) {
-		TypeArgRef arg = new TypeArgRef(name);
+	private TypeArgDef mkTypeArgDef(NameRef name, ASTNode parent) {
+		TypeArgDef arg = new TypeArgDef(name);
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
 			s.args += arg;
@@ -921,8 +921,8 @@ Import Import() :
 	{ return imp; }
 }
 
-Typedef Typedef() :
-{ NameRef id; ASTOperator op; TypeRef tp; Typedef n = new Typedef(); }
+TypeDefOp Typedef() :
+{ NameRef id; ASTOperator op; TypeRef tp; TypeDefOp n = new TypeDefOp(); }
 {
 	"typedef"
 	(
@@ -1128,10 +1128,10 @@ void ClazzArguments(ASTNode parent) :
 }
 
 void ArgumentDeclaration(ASTNode parent) :
-{ NameRef name; TypeArgRef arg; }
+{ NameRef name; TypeArgDef arg; }
 {
 	name      = Name()
-	{ arg = mkTypeArgRef(name,parent); }
+	{ arg = mkTypeArgDef(name,parent); }
 	[
 		"extends"
 		arg.super_bound = NArrType()
@@ -2512,8 +2512,8 @@ ASTNewInitializedArrayExpression NewInitializedArrayExpression() :
  * Statement syntax follows.
  */
 
-Statement Statement() :
-{ Statement st; }
+ENode Statement() :
+{ ENode st; }
 {
 	(
 	  LOOKAHEAD({labledStatementLA()})
@@ -2540,16 +2540,16 @@ Statement Statement() :
 	{ return st; }
 }
 
-Statement ReparseStatement() :
+ENode ReparseStatement() :
 { Token t; }
 {
 	t=<REPARSE_STATEMENT>
 	{
-		return (Statement)Kiev.parserAddresses.get(t.image.substring(5,5+8));
+		return (ENode)Kiev.parserAddresses.get(t.image.substring(5,5+8));
 	}
 }
 
-Statement LabeledStatement() :
+ENode LabeledStatement() :
 { LabeledStat st = new LabeledStat(); }
 {
 	st.ident = Name()
@@ -2725,7 +2725,7 @@ CondStat CondStatement() :
 	{ return st; }
 }
 
-Statement EmptyStatement() :
+ENode EmptyStatement() :
 { Token t; EmptyStat st = new EmptyStat(); }
 {
 	t=";"
@@ -2735,7 +2735,7 @@ Statement EmptyStatement() :
 	}
 }
 
-Statement StatementExpression() :
+ENode StatementExpression() :
 { ExprStat st = new ExprStat(); }
 {
 	st.expr = ExpressionNT(null)
@@ -2928,8 +2928,8 @@ ENode ForInit() :
 	{ return n; }
 }
 
-Statement GotoStatement() :
-{ Statement st; ENode expr; NameRef id; }
+ENode GotoStatement() :
+{ ENode st; ENode expr; NameRef id; }
 {
 	"goto"
 	(

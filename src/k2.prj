@@ -7,21 +7,6 @@ kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
 kiev.SeverError kiev/SeverError kiev\Errors.java
 kiev.Syntax kiev/Syntax kiev\Syntax.java
-kiev.backend.java15.JAnnotation kiev/backend/java15/JAnnotation kiev\backend\java15\JClass.java
-kiev.backend.java15.JClazz kiev/backend/java15/JClazz kiev\backend\java15\JClass.java
-kiev.backend.java15.JConstructor kiev/backend/java15/JConstructor kiev\backend\java15\JMethod.java
-kiev.backend.java15.JDNode kiev/backend/java15/JDNode kiev\backend\java15\JDNode.java
-kiev.backend.java15.JDNodeInfo kiev/backend/java15/JDNodeInfo kiev\backend\java15\JDNode.java
-kiev.backend.java15.JEnum kiev/backend/java15/JEnum kiev\backend\java15\JClass.java
-kiev.backend.java15.JField kiev/backend/java15/JField kiev\backend\java15\JField.java
-kiev.backend.java15.JInitializer kiev/backend/java15/JInitializer kiev\backend\java15\JField.java
-kiev.backend.java15.JInterface kiev/backend/java15/JInterface kiev\backend\java15\JClass.java
-kiev.backend.java15.JMethod kiev/backend/java15/JMethod kiev\backend\java15\JMethod.java
-kiev.backend.java15.JPackage kiev/backend/java15/JPackage kiev\backend\java15\JClass.java
-kiev.backend.java15.JRuleMethod kiev/backend/java15/JRuleMethod kiev\backend\java15\JMethod.java
-kiev.backend.java15.JStruct kiev/backend/java15/JStruct kiev\backend\java15\JClass.java
-kiev.backend.java15.JVar kiev/backend/java15/JVar kiev\backend\java15\JVar.java
-kiev.backend.java15.TreeMapper kiev/backend/java15/TreeMapper kiev\backend\java15\TreeMapper.java
 kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value kiev/bytecode/Annotation$element_value kiev\bytecode\Attribute.java
@@ -112,7 +97,7 @@ kiev.parser.SimpleCharStream kiev/parser/SimpleCharStream kiev\parser\SimpleChar
 kiev.parser.Token kiev/parser/Token kiev\parser\Token.java
 kiev.parser.TokenManager kiev/parser/TokenManager kiev\parser\TokenManager.java
 kiev.parser.TokenMgrError kiev/parser/TokenMgrError kiev\parser\TokenMgrError.java
-kiev.parser.TypeArgRef kiev/parser/TypeArgRef kiev\parser\TypeArgRef.java
+kiev.parser.TypeArgDef kiev/parser/TypeArgDef kiev\parser\TypeArgRef.java
 kiev.parser.TypeCallRef kiev/parser/TypeCallRef kiev\parser\TypeCallRef.java
 kiev.parser.TypeClosureRef kiev/parser/TypeClosureRef kiev\parser\TypeClosure.java
 kiev.parser.TypeExpr kiev/parser/TypeExpr kiev\parser\TypeExpr.java
@@ -308,7 +293,6 @@ kiev.vlang.ENode kiev/vlang/ENode kiev\vlang\AST.java
 kiev.vlang.EmptyStat kiev/vlang/EmptyStat kiev\vlang\Statement.java
 kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 kiev.vlang.ExceptionsAttr kiev/vlang/ExceptionsAttr kiev\vlang\Attr.java
-kiev.vlang.Expr kiev/vlang/Expr kiev\vlang\AST.java
 kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 kiev.vlang.Field kiev/vlang/Field kiev\vlang\Field.java
 kiev.vlang.FieldCP kiev/vlang/FieldCP kiev\vlang\ConstPool.java
@@ -349,6 +333,7 @@ kiev.vlang.LinenoTableAttr kiev/vlang/LinenoTableAttr kiev\vlang\Attr.java
 kiev.vlang.LocalStructDecl kiev/vlang/LocalStructDecl kiev\vlang\AST.java
 kiev.vlang.LocalVarTableAttr kiev/vlang/LocalVarTableAttr kiev\vlang\Attr.java
 kiev.vlang.LoopStat kiev/vlang/LoopStat kiev\vlang\LoopStatement.java
+kiev.vlang.LvalDNode kiev/vlang/LvalDNode kiev\vlang\AST.java
 kiev.vlang.LvalueExpr kiev/vlang/LvalueExpr kiev\vlang\AST.java
 kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
@@ -430,7 +415,6 @@ kiev.vlang.ShadowExpr kiev/vlang/ShadowExpr kiev\vlang\Expr.java
 kiev.vlang.ShadowStat kiev/vlang/ShadowStat kiev\vlang\Statement.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
 kiev.vlang.SourceFileAttr kiev/vlang/SourceFileAttr kiev\vlang\Attr.java
-kiev.vlang.Statement kiev/vlang/Statement kiev\vlang\AST.java
 kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
 kiev.vlang.StringCP kiev/vlang/StringCP kiev\vlang\ConstPool.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
@@ -448,9 +432,10 @@ kiev.vlang.TreeWalker kiev/vlang/TreeWalker kiev\vlang\AST.java
 kiev.vlang.TryStat kiev/vlang/TryStat kiev\vlang\ComplexStatement.java
 kiev.vlang.Type kiev/vlang/Type kiev\vlang\Type.java
 kiev.vlang.TypeClassExpr kiev/vlang/TypeClassExpr kiev\vlang\Expr.java
+kiev.vlang.TypeDef kiev/vlang/TypeDef kiev\vlang\AST.java
+kiev.vlang.TypeDefOp kiev/vlang/TypeDefOp kiev\vlang\Import.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
-kiev.vlang.Typedef kiev/vlang/Typedef kiev\vlang\Import.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java
 kiev.vlang.Var kiev/vlang/Var kiev\vlang\Var.java
 kiev.vlang.Var.VarDFFunc kiev/vlang/Var$VarDFFunc kiev\vlang\Var.java

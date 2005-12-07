@@ -122,7 +122,7 @@ public class ASTIdentifier extends ENode {
 		}
 
 		// resolve in the path of scopes
-		ASTNode@ v;
+		DNode@ v;
 		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 //			if( name.startsWith(Constants.nameDEF) ) {
@@ -149,13 +149,10 @@ public class ASTIdentifier extends ENode {
 //			}
 			throw new CompilerException(this,"Unresolved identifier "+name);
 		}
-		if( v instanceof Struct ) {
-			Struct s = (Struct)v;
-			s.checkResolved();
-			replaceWithNode(new TypeRef(s.type));
-		}
-		else if( v instanceof TypeRef ) {
-			replaceWithNode((TypeRef)v);
+		if( v instanceof TypeDef ) {
+			TypeDef td = (TypeDef)v;
+			td.checkResolved();
+			replaceWithNode(new TypeRef(td.getType()));
 		}
 		else {
 			replaceWithNode(info.buildAccess(this, null, v));
@@ -189,7 +186,7 @@ public class ASTIdentifier extends ENode {
 			Kiev.reportWarning(this,"Keyword '$return' is deprecated. Replace with 'Result', please");
 			name = Constants.nameResultVar;
 		}
-		ASTNode@ v;
+		DNode@ v;
 		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR(this,v,info,name) ) {
 			if( name.startsWith(Constants.nameDEF) ) {
@@ -246,8 +243,8 @@ public class ASTIdentifier extends ENode {
 			replaceWithNode(new TypeNameRef(new NameRef(pos,name),s.type));
 			return;
 		}
-		else if( v instanceof TypeRef ) {
-			replaceWithNode((TypeRef)v);
+		else if( v instanceof TypeDef ) {
+			replaceWithNode(new TypeRef(((TypeDef)v).getType()));
 			return;
 		}
 		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));

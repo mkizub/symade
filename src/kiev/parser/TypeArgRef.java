@@ -33,32 +33,43 @@ import syntax kiev.Syntax;
 
 @node
 @dflow(out="this:in")
-public class TypeArgRef extends TypeRef {
+public class TypeArgDef extends TypeDef {
 	
 	private static int anonymousCounter = 100;
 	
 	@att public NameRef					name;
 	@att public TypeRef					super_bound;
+	private Type						lnk;
 
-	public TypeArgRef() {
+	public TypeArgDef() {
 	}
 
-	public TypeArgRef(KString nm) {
+	public TypeArgDef(KString nm) {
 		name = new NameRef(nm);
 	}
 
-	public TypeArgRef(NameRef nm) {
+	public TypeArgDef(NameRef nm) {
 		this.pos = nm.getPos();
 		this.name = nm;
 	}
 
-	public TypeArgRef(NameRef nm, TypeRef sup) {
+	public TypeArgDef(NameRef nm, TypeRef sup) {
 		this.pos = nm.getPos();
 		this.name = nm;
 		this.super_bound = sup;
 	}
 
+	public NodeName getName() {
+		return new NodeName(name.name);
+	}
 
+	public boolean checkResolved() {
+		Type t = this.getType();
+		if (t != null && t.getStruct() != null)
+			return t.getStruct().checkResolved();
+		return true;
+	}
+	
 	public boolean isBound() {
 		return true;
 	}
@@ -69,7 +80,7 @@ public class TypeArgRef extends TypeRef {
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
-			foreach (TypeArgRef pa; s.package_clazz.args; pa.name.name == name.name) {
+			foreach (TypeArgDef pa; s.package_clazz.args; pa.name.name == name.name) {
 				this.lnk = pa.getType();
 				if (this.lnk == null)
 					throw new CompilerException(this,"Type "+this+" is not found");

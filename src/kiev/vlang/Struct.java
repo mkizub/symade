@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 
 @node(copyable=false)
 @dflow(in="root()")
-public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 
 	/** Variouse names of the class */
 	public ClazzName								name;
@@ -57,7 +57,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	@att public final NArr<TypeRef>					interfaces;
 
 	/** Class' type arguments */
-	@att public final NArr<TypeArgRef>				args;
+	@att public final NArr<TypeArgDef>				args;
 	
 	/** Class' access */
 	@virtual
@@ -75,7 +75,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	@ref public final NArr<Struct>					sub_clazz;
 
 	/** Array of imported classes,fields and methods */
-	@ref public final NArr<ASTNode>					imported;
+	@ref public final NArr<DNode>					imported;
 
 	/** Array of attributes of this structure */
 	public Attr[]									attrs = Attr.emptyArray;
@@ -137,6 +137,166 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		super_bound = new TypeRef(super_bound.pos, tp);
 	}
 
+	//
+	// Struct specific
+	//
+	public boolean isClazz()		{
+		return !isPackage() && !isInterface() && ! isArgument();
+	}
+	
+	// package	
+	@getter public final boolean get$is_struct_package()  alias isPackage  {
+		return this.is_struct_package;
+	}
+	@setter public final void set$is_struct_package(boolean on) alias setPackage {
+		assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
+		if (this.is_struct_package != on) {
+			this.is_struct_package = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a class's argument	
+	@getter public final boolean get$is_struct_argument()  alias isArgument  {
+		return this.is_struct_argument;
+	}
+	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
+		if (this.is_struct_argument != on) {
+			this.is_struct_argument = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a class's argument	
+	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
+		return this.is_struct_pizza_case;
+	}
+	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
+		if (this.is_struct_pizza_case != on) {
+			this.is_struct_pizza_case = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a local (in method) class	
+	@getter public final boolean get$is_struct_local()  alias isLocal  {
+		return this.is_struct_local;
+	}
+	@setter public final void set$is_struct_local(boolean on) alias setLocal {
+		if (this.is_struct_local != on) {
+			this.is_struct_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// an anonymouse (unnamed) class	
+	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
+		return this.is_struct_anomymouse;
+	}
+	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
+		if (this.is_struct_anomymouse != on) {
+			this.is_struct_anomymouse = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// has pizza cases
+	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
+		return this.is_struct_has_pizza_cases;
+	}
+	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
+		if (this.is_struct_has_pizza_cases != on) {
+			this.is_struct_has_pizza_cases = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// verified
+	@getter public final boolean get$is_struct_verified()  alias isVerified  {
+		return this.is_struct_verified;
+	}
+	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
+		if (this.is_struct_verified != on) {
+			this.is_struct_verified = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that structure members were generated
+	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
+		return this.is_struct_members_generated;
+	}
+	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
+		if (this.is_struct_members_generated != on) {
+			this.is_struct_members_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that structure members were pre-generated
+	@getter public final boolean get$is_struct_pre_generated()  alias isMembersPreGenerated  {
+		return this.is_struct_pre_generated;
+	}
+	@setter public final void set$is_struct_pre_generated(boolean on) alias setMembersPreGenerated {
+		if (this.is_struct_pre_generated != on) {
+			this.is_struct_pre_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	
+	// indicates that statements in code were generated
+	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
+		return this.is_struct_statements_generated;
+	}
+	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
+		if (this.is_struct_statements_generated != on) {
+			this.is_struct_statements_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// indicates that the structrue was generared (from template)
+	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
+		return this.is_struct_generated;
+	}
+	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
+		if (this.is_struct_generated != on) {
+			this.is_struct_generated = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// kiev annotation
+	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
+		return this.is_struct_annotation;
+	}
+	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
+		assert(!on || (!isPackage() && !isSyntax()));
+		if (this.is_struct_annotation != on) {
+			this.is_struct_annotation = on;
+			if (on) this.setInterface(true);
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// java enum
+	@getter public final boolean get$is_struct_enum()  alias isEnum {
+		return this.is_struct_enum;
+	}
+	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
+		if (this.is_struct_enum != on) {
+			this.is_struct_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// kiev syntax
+	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
+		return this.is_struct_syntax;
+	}
+	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
+		assert(!on || (!isPackage() && ! isEnum()));
+		if (this.is_struct_syntax != on) {
+			this.is_struct_syntax = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// structure was loaded from bytecode
+	@getter public final boolean get$is_struct_bytecode()  alias isLoadedFromBytecode  {
+		return this.is_struct_bytecode;
+	}
+	@setter public final void set$is_struct_bytecode(boolean on) alias setLoadedFromBytecode {
+		this.is_struct_bytecode = on;
+	}
+
 	public NodeName getName() { return name; }
 	
 	/** hashCode of structure is a hash code
@@ -187,11 +347,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField())
+		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField())
 			idx++;
 		Field[] eflds = new Field[idx];
 		idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField()) {
+		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField()) {
 			eflds[idx] = (Field)n;
 			idx ++;
 		}
@@ -202,7 +362,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
 		int idx = 0;
-		foreach (ASTNode n; this.members; n instanceof Field && n.isEnumField()) {
+		foreach (ASTNode n; this.members; n instanceof Field && ((Field)n).isEnumField()) {
 			if (f == n)
 				return idx;
 			idx++;
@@ -233,13 +393,13 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public int countPackedFields() {
 		int i = 0;
-		foreach (ASTNode n; members; n instanceof Field && n.isPackedField()) i++;
+		foreach (DNode n; members; n instanceof Field && ((Field)n).isPackedField()) i++;
 		return i;
 	}
 
 	public int countAbstractFields() {
 		int i = 0;
-		foreach (ASTNode n; members; n instanceof Field && n.isAbstract()) i++;
+		foreach (DNode n; members; n instanceof Field && n.isAbstract()) i++;
 		return i;
 	}
 
@@ -302,7 +462,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
 	{
 		info.isStaticAllowed(),
 		trace(Kiev.debugResolve,"Struct: Resolving name "+name+" in "+this),
@@ -329,8 +489,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			$cut
 		}
 	}
-	protected rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
-		TypeArgRef@ arg;
+	protected rule resolveNameR_1(DNode@ node, ResInfo info, KString name)
+		TypeArgDef@ arg;
 	{
 			this.name.short_name.equals(name), node ?= this
 		;	arg @= args,
@@ -344,14 +504,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			node @= sub_clazz,
 			((Struct)node).name.short_name.equals(name)
 	}
-	protected rule resolveNameR_2(ASTNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_2(DNode@ node, ResInfo info, KString name)
 	{
 			node @= imported,
-			{	node instanceof Field && node.isStatic() && ((Field)node).name.equals(name)
-			;	node instanceof Typedef && ((Typedef)node).name.equals(name)
+			{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
+			;	node instanceof TypeDefOp && ((TypeDefOp)node).name.equals(name)
 			}
 	}
-	protected rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+	protected rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
 			{	sup ?= super_type,
@@ -390,12 +550,12 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return false;
 	}
 
-	final public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
 		resolveStructMethodR(node, info, name, mt, this.type)
 	}
 
-	protected rule resolveStructMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
+	protected rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
 		ASTNode@ member;
 		Type@ sup;
 	{
@@ -417,7 +577,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	isInterface(),
 			member @= members,
-			member instanceof Struct && member.isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
+			member instanceof Struct && ((Struct)member).isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
 			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	info.isSuperAllowed(),
@@ -445,7 +605,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 		if( isInterface() ) {
 			Struct defaults = null;
-			foreach(ASTNode n; members; n instanceof Struct && n.isClazz() && ((Struct)n).name.short_name.equals(nameIdefault) ) {
+			foreach(ASTNode n; members; n instanceof Struct && ((Struct)n).isClazz() && ((Struct)n).name.short_name.equals(nameIdefault) ) {
 				defaults = (Struct)n;
 				break;
 			}
@@ -585,7 +745,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		setHasCases(true);
 		int caseno = 0;
 //		PizzaCaseAttr case_attr = null;
-		foreach (ASTNode n; members; n instanceof Struct && n.isPizzaCase()) {
+		foreach (DNode n; members; n instanceof Struct && ((Struct)n).isPizzaCase()) {
 			Struct s = (Struct)n;
 //			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
 //			if( case_attr!=null && case_attr.caseno > caseno )
@@ -612,7 +772,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		return cas;
 	}
 
-	public Type getType() { return Type.tpVoid; }
+	public Type getType() { return this.type; }
 
 /*
  TypeInfo has three modes - first, it's an unparametriezed
@@ -671,9 +831,9 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		}
 	}
 
-	public Expr accessTypeInfoField(ASTNode from, Type t) {
+	public ENode accessTypeInfoField(ASTNode from, Type t) {
 		if( t.isArgumented() ) {
-			Expr ti_access;
+			ENode ti_access;
 			if( from.pctx.method == null || from.pctx.method.isStatic()) {
 				// check we have $typeinfo as first argument
 				if( from.pctx.method==null
@@ -715,8 +875,8 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 					t.getStruct().autoGenerateTypeinfoClazz();
 				ftype = t.getStruct().typeinfo_clazz.type;
 			}
-			Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
-			Expr e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
+			ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
+			ENode e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
 					Type.tpTypeInfo.clazz.resolveMethod(
 						KString.from("newTypeInfo"),
 						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
@@ -727,14 +887,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		// Lookup and create if need as $typeinfo$N
 		int i = 0;
 	next_field:
-		foreach(ASTNode n; members; n instanceof Field && n.isStatic()) {
+		foreach(DNode n; members; n instanceof Field && n.isStatic()) {
 			Field f = (Field)n;
 			if (f.init == null || !f.name.name.startsWith(nameTypeInfo) || f.name.name.equals(nameTypeInfo))
 				continue;
 			i++;
 			KString ti_str = ((ConstStringExpr)((CallExpr)((CastExpr)f.init).expr).args[0]).value;
 			if( !ts.equals(ti_str) ) continue;
-			Expr e = new SFldExpr(from.pos,f);
+			ENode e = new SFldExpr(from.pos,f);
 			return e;
 		}
 		BaseType ftype = Type.tpTypeInfo;
@@ -744,7 +904,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			ftype = t.getStruct().typeinfo_clazz.type;
 		}
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_STATIC|ACC_FINAL); // package-private for inner classes
-		Expr[] ti_args = new Expr[]{new ConstStringExpr(ts)};
+		ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
 		f.init = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
 				Type.tpTypeInfo.clazz.resolveMethod(
 					KString.from("newTypeInfo"),
@@ -768,7 +928,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				),0
 			);
 		}
-		Expr e = new SFldExpr(from.pos,f);
+		ENode e = new SFldExpr(from.pos,f);
 		return e;
 //		System.out.println("Field "+f+" of type "+f.init+" added");
 	}
@@ -781,7 +941,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				return wf;
 		}
 		Field wf = null;
-		foreach(ASTNode n; members; n instanceof Field && n.isForward()) {
+		foreach(ASTNode n; members; n instanceof Field && ((Field)n).isForward()) {
 			if (wf == null)
 				wf = (Field)n;
 			else
@@ -870,7 +1030,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 								KString.from("newTypeInfo"),
 								KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 							),
-							new Expr[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
+							new ENode[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
 						);
 						//ce.type_of_static = this.type;
 						exprs[arg] = ce;
@@ -1106,7 +1266,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		Constructor class_init = null;
 		Initializer instance_init = null;
 
-		foreach (ASTNode n; members; n instanceof Field || n instanceof Initializer) {
+		foreach (DNode n; members; n instanceof Field || n instanceof Initializer) {
 			if( isInterface() && !n.isAbstract() ) {
 				n.setStatic(true);
 				n.setFinal(true);
@@ -1146,7 +1306,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						instance_init.pos = f.init.pos;
 						instance_init.body = new BlockStat();
 					}
-					Statement init_stat;
+					ENode init_stat;
 					init_stat = new ExprStat(f.init.getPos(),
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
@@ -1312,7 +1472,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						p++);
 				}
 				if( instance_init != null && m.isNeedFieldInits() ) {
-					stats.insert((Statement)instance_init.body.copy(),p++);
+					stats.insert((ENode)instance_init.body.copy(),p++);
 				}
 			}
 		}
@@ -1412,7 +1572,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 			if (overwr != null) {
 				IfElseStat last_st = st;
-				Statement br;
+				ENode br;
 				while (last_st.elseSt != null)
 					last_st = (IfElseStat)last_st.elseSt;
 				ENode[] vae = new ENode[mm.params.length];
@@ -1462,7 +1622,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 						nm.pos = rm.pos;
 						nm.name = rm.name;
 						nm.params.addAll(rm.params);
-						Expr[] vae = new Expr[mm.params.length];
+						ENode[] vae = new ENode[mm.params.length];
 						for(int k=0; k < vae.length; k++) {
 							vae[k] = new LVarExpr(0,mm.params[k]);
 						}
@@ -1512,14 +1672,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	IfElseStat makeDispatchStatInline(Method mm, MMTree mmt) {
 		Type.tpNull.checkResolved();
 		IfElseStat dsp = null;
-		Expr cond = null;
+		ENode cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
 			if( mmt.uppers[i] == null ) continue;
 			Method m = mmt.uppers[i].m;
 			for(int j=0; j < m.type.args.length; j++) {
 				Type t = m.type.args[j];
 				if( mmt.m != null && t.equals(mmt.m.type.args[j]) ) continue;
-				Expr be = null;
+				ENode be = null;
 				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) )
 					be = new InstanceofExpr(pos,
 						new LVarExpr(pos,mm.params[j]),
@@ -1527,11 +1687,11 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				if( t.args.length > 0 && !t.isArray() && !(t instanceof ClosureType) ) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
-					Expr tibe = new CallExpr(pos,
+					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t),
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
-						new Expr[]{
+						new ENode[]{
 							new LVarExpr(pos,mm.params[j]),
 							new IFldExpr(pos,
 								new CastExpr(pos,t,new LVarExpr(pos,mm.params[j])),
@@ -1550,7 +1710,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				Statement st = new InlineMethodStat(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
+				ENode st = new InlineMethodStat(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
 				br = new IfElseStat(0,cond,st,null);
 			} else {
 				br = new IfElseStat(0,cond,makeDispatchStatInline(mm,mmt.uppers[i]),null);
@@ -1564,7 +1724,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 			}
 		}
 		if( mmt.m != mm && mmt.m != null) {
-			Statement br;
+			ENode br;
 			br = new InlineMethodStat(mmt.m.pos,mmt.m,mm);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
@@ -1640,7 +1800,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 	public boolean preGenerate() {
 		autoProxyMethods();
-		new kiev.backend.java15.TreeMapper().mapStruct(this);
+//		new kiev.backend.java15.TreeMapper().mapStruct(this);
 		return true;
 	}
 	
@@ -1667,7 +1827,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 
 		if( isClazz() ) {
 			boolean make_abstract = false;
-			foreach(ASTNode n; members; n instanceof Method && n.isAbstract() && n.isStatic()) {
+			foreach(DNode n; members; n instanceof Method && n.isAbstract() && n.isStatic()) {
 				Method m = (Method)n;
 				m.setBad(true);
 				this.setBad(true);
@@ -1693,14 +1853,14 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 	// if not and method is VirtualStatic - add proxy method to 'me'
 	public void autoProxyMethods(Struct me) {
 		Struct defaults = null;
-		foreach(ASTNode n; members; n instanceof Struct && n.isClazz()) {
+		foreach(ASTNode n; members; n instanceof Struct && ((Struct)n).isClazz()) {
 			Struct s = (Struct)n;
 			if (s.name.short_name.equals(nameIdefault) ) {
 				defaults = s;
 				break;
 			}
 		}
-		foreach (ASTNode n; members; n instanceof Method && !n.isStatic()) {
+		foreach (DNode n; members; n instanceof Method && !n.isStatic()) {
 			Method mi = (Method)n;
 			Struct s = me;
 			boolean found = false;
@@ -1767,7 +1927,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 				for(int p=1; p < m.params.length; p++)
 					proxy.params.add(new FormPar(0,m.params[p].name.name,m.type.args[p],m.params[p].kind,0));
 				BlockStat bs = new BlockStat(0,ENode.emptyArray);
-				Expr[] args = new Expr[m.type.args.length];
+				ENode[] args = new ENode[m.type.args.length];
 				args[0] = new ThisExpr();
 				for(int k=1; k < args.length; k++)
 					args[k] = new LVarExpr(0,proxy.params[k-1]);
@@ -2372,7 +2532,7 @@ public class Struct extends DNode implements Named, ScopeOfNames, ScopeOfMethods
 		//typeinfo_related = null;
 	}
 
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		if( !isPizzaCase() ) return false;
 		Method init = (Method)members[0];
 		if (init.body != null)

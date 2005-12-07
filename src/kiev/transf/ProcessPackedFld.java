@@ -100,7 +100,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 	
 	public void preGenerate(Struct:ASTNode s) {
 		// Setup packed/packer fields
-		foreach(ASTNode n; s.members; n instanceof Field && n.isPackedField() ) {
+		foreach(DNode n; s.members; n instanceof Field && ((Field)n).isPackedField() ) {
 			Field f = (Field)n;
 			Field@ packer;
 			// Locate or create nearest packer field that can hold this one
@@ -152,7 +152,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 
 	private int countPackerFields(Struct s) {
 		int i = 0;
-		foreach (ASTNode n; s.members; n instanceof Field && n.isPackerField()) i++;
+		foreach (DNode n; s.members; n instanceof Field && ((Field)n).isPackerField()) i++;
 		return i;
 	}
 
@@ -163,7 +163,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		s.super_type != null,
 		locatePackerField(f,size,(Struct)s.super_type.clazz)
 	;	n @= s.members,
-		n instanceof Field && n.isPackerField(),
+		n instanceof Field && ((Field)n).isPackerField(),
 		ff = (Field)n : ff = null,
 		(32-ff.getMetaPacked().size) >= size,
 		f ?= ff
@@ -193,7 +193,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
 		IFldExpr ae = (IFldExpr)fa.copy();
 		ae.var = mp.packer;
-		Expr expr = ae;
+		ENode expr = ae;
 		if (mp.offset > 0) {
 			ConstExpr sexpr = new ConstIntExpr(mp.offset);
 			expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
@@ -243,7 +243,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		be.addSymbol(tmp);
 		if !(ae.op == AssignOperator.Assign || ae.op == AssignOperator.Assign2) {
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-			Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
+			ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
 			if (mp.offset > 0) {
 				ConstExpr sexpr = new ConstIntExpr(mp.offset);
 				expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
@@ -264,14 +264,14 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		
 		{
 			ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-			Expr expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
+			ENode expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(tmp), mexpr);
 			if (mp.offset > 0) {
 				ConstExpr sexpr = new ConstIntExpr(mp.offset);
 				expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
 			}
 			ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
-			Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
-			Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
+			ENode expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
+			ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 			expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 				new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 				expr);
@@ -295,7 +295,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		if( !f.isPackedField() )
 			return true;
 		MetaPacked mp = f.getMetaPacked();
-		Expr expr;
+		ENode expr;
 		if (ie.isGenVoidExpr()) {
 			if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
 				expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
@@ -327,7 +327,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			be.addSymbol(tmp);
 			{
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
+				ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), mexpr);
 				if (mp.offset > 0) {
 					ConstExpr sexpr = new ConstIntExpr(mp.offset);
 					expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
@@ -347,7 +347,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 
 			{
 				ConstExpr mexpr = new ConstIntExpr(masks[mp.size]);
-				Expr expr_l;
+				ENode expr_l;
 				if (ie.op == PostfixOperator.PostIncr)
 					expr_l = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, new BinaryExpr(0,BinaryOperator.Add,mkAccess(tmp),new ConstIntExpr(1)), mexpr);
 				else if (ie.op == PostfixOperator.PostDecr)
@@ -359,8 +359,8 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					expr_l = new BinaryExpr(fa.pos, BinaryOperator.LeftShift, expr_l, sexpr);
 				}
 				ConstExpr clear = new ConstIntExpr(~(masks[mp.size]<<mp.offset));
-				Expr expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
-				Expr expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
+				ENode expr_r = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, mkAccess(fval), clear);
+				ENode expr = new BinaryExpr(fa.pos, BinaryOperator.BitOr, expr_r, expr_l);
 				expr = new AssignExpr(fa.pos, AssignOperator.Assign,
 					new IFldExpr(fa.pos, mkAccess(acc), mp.packer),
 					expr);
@@ -377,7 +377,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 		return false;
 	}
 	
-	private Expr mkAccess(Object o) {
+	private ENode mkAccess(Object o) {
 		if (o instanceof Var) return new LVarExpr(0,(Var)o);
 		if (o instanceof LVarExpr) return new LVarExpr(0,o.getVar());
 		if (o instanceof ThisExpr) return new ThisExpr(0);

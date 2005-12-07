@@ -260,7 +260,7 @@ public final class ConstStringExpr extends ConstExpr {
 
 
 @node
-public abstract class ConstExpr extends Expr {
+public abstract class ConstExpr extends ENode {
 
 	public KString text_name;
 	

@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 
 @node
 @dflow(out="args")
-public class ASTCallExpression extends Expr {
+public class ASTCallExpression extends ENode {
 
 	@att public NameRef					func;
 
@@ -51,7 +51,7 @@ public class ASTCallExpression extends Expr {
 	public ASTCallExpression(int pos, KString func, ENode[] args) {
 		super(pos);
 		this.func = new NameRef(pos, func);
-		foreach (Expr e; args) {
+		foreach (ENode e; args) {
 			this.args.append(e);
 		}
 	}
@@ -60,12 +60,12 @@ public class ASTCallExpression extends Expr {
 		super(pos);
 		this.func = new NameRef(pos, func);
 		this.args = args;
-		foreach (Expr e; args) this.args.append(e);
+		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public void mainResolveOut() {
 		// method of current class or first-order function
-		ASTNode@ m;
+		DNode@ m;
 		Type tp = pctx.clazz.type;
 		if( func.name.equals(nameThis) ) {
 //			Method mmm = pctx.method;
@@ -140,7 +140,7 @@ public class ASTCallExpression extends Expr {
 			try {
 				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 					// May be a closure
-					ASTNode@ closure;
+					DNode@ closure;
 					ResInfo info = new ResInfo(this);
 					try {
 						if( !PassInfo.resolveNameR(this,closure,info,func.name) )
@@ -171,7 +171,7 @@ public class ASTCallExpression extends Expr {
 //					for(int i=0; i < cargs.length; i++)
 //						cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
 //					args.delAll();
-//					foreach (Expr e; cargs)
+//					foreach (ENode e; cargs)
 //						args.add(e);
 //					if( ac.rettype.getType() == Type.tpVoid ) {
 //						bs.addStatement(new ExprStat(pos,this));
@@ -203,7 +203,7 @@ public class ASTCallExpression extends Expr {
 			args[i].resolve(null);
         }
 		// method of current class or first-order function
-		ASTNode@ m;
+		Method@ m;
 		Type tp = pctx.clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
@@ -225,9 +225,9 @@ public class ASTCallExpression extends Expr {
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
+				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(ce.args,st);
+				m.makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
@@ -261,9 +261,9 @@ public class ASTCallExpression extends Expr {
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = pctx.clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
+				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(ce.args,st);
+				m.makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
@@ -281,7 +281,7 @@ public class ASTCallExpression extends Expr {
 			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
 				// May be a closure
-				ASTNode@ closure;
+				DNode@ closure;
 				ResInfo info = new ResInfo(this);
 				if( !PassInfo.resolveNameR(this,closure,info,func.name) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
@@ -308,11 +308,11 @@ public class ASTCallExpression extends Expr {
 					ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				BlockStat bs = new BlockStat(pos,ENode.emptyArray);
 				ENode[] oldargs = args.toArray();
-				Expr[] cargs = new Expr[ac.params.length];
+				ENode[] cargs = new ENode[ac.params.length];
 				for(int i=0; i < cargs.length; i++)
 					cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
 				args.delAll();
-				foreach (Expr e; cargs)
+				foreach (ENode e; cargs)
 					args.add(e);
 				if( ac.rettype.getType() == Type.tpVoid ) {
 					bs.addStatement(new ExprStat(pos,this));

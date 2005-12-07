@@ -22,7 +22,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.kiev.backend.java15.JStruct;
+//import kiev.kiev.backend.java15.JStruct;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -188,28 +188,28 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 		// called when clazz was changed
 	}
 	
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
 		Type@ st;
 	{
 		st @= getDirectSuperTypes(),
 		st.resolveStaticNameR(node, info, name)
 	}
 	
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 		Type@ st;
 	{
 		st @= getDirectSuperTypes(),
 		st.resolveNameAccessR(node, info, name)
 	}
 
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Type@ st;
 	{
 		st @= getDirectSuperTypes(),
 		st.resolveCallStaticR(node, info, name, mt)
 	}
 	
-	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Type@ st;
 	{
 		st @= getDirectSuperTypes(),
@@ -449,7 +449,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 	public boolean isStructInstanceOf(Struct s)	{ return false; }
 	
 	public boolean isWrapper()						{ return false; }
-	public Expr makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
+	public ENode makeWrappedAccess(ASTNode from)	{ throw new RuntimeException("Type "+this+" is not a wrapper"); } 
 	public Type getWrappedType()					{ throw new RuntimeException("Type "+this+" is not a wrapper"); }
 	
 	public abstract Type[] getDirectSuperTypes();
@@ -567,11 +567,11 @@ public class JType extends Type {
 }
 
 public class JBaseType extends JType {
-	public final JStruct			jstruct;
+//	public final JStruct			jstruct;
 	
 	JBaseType(KString java_signature, BaseType type) {
 		super(java_signature);
-		this.jstruct = new JStruct(type.getStruct());
+//		this.jstruct = new JStruct(type.getStruct());
 	}
 }
 
@@ -642,12 +642,12 @@ public class BaseType extends Type {
 	public boolean isLocalClazz()			{ return clazz.isAnonymouse() || clazz.pctx.method != null || clazz.pctx.outer_method != null; }
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
 	{
 		clazz.resolveNameR(node, info, name)
 	}
 	
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 	{
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in "+this),
 		checkResolved(),
@@ -665,13 +665,13 @@ public class BaseType extends Type {
 			$cut
 		}
 	}
-	private rule resolveNameR_1(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_1(DNode@ node, ResInfo info, KString name)
 	{
 		clazz instanceof Struct,
 		node @= getStruct().members,
 		node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 	}
-	private rule resolveNameR_3(ASTNode@ node, ResInfo info, KString name)
+	private rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
 		sup @= getDirectSuperTypes(),
@@ -679,22 +679,22 @@ public class BaseType extends Type {
 		Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
 	}
 
-	private rule resolveNameR_4(ASTNode@ node, ResInfo info, KString name)
-		ASTNode@ forw;
+	private rule resolveNameR_4(DNode@ node, ResInfo info, KString name)
+		DNode@ forw;
 	{
 			forw @= getStruct().members,
-			forw instanceof Field && forw.isForward() && !forw.isStatic(),
+			forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
 			info.enterForward(forw) : info.leaveForward(forw),
 			Type.getRealType(this,((Field)forw).type).resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
 		clazz.resolveStructMethodR(node, info, name, mt, this)
 	}
 	
-	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
-		ASTNode@ member;
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
+		DNode@ member;
 		Type@ sup;
 		Field@ forw;
 		MethodType mtype;
@@ -717,7 +717,7 @@ public class BaseType extends Type {
 		;
 			info.isForwardsAllowed() && clazz instanceof Struct,
 			member @= getStruct().members,
-			member instanceof Field && member.isForward(),
+			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mtype)
 		}
@@ -743,8 +743,7 @@ public class BaseType extends Type {
 	}
 
 	public boolean checkResolved() {
-		clazz.checkResolved();
-		return true;
+		return clazz.checkResolved();
 	}
 
 	public boolean isInstanceOf(Type _t2) {
@@ -834,8 +833,7 @@ public class AnnotationType extends BaseType {
 	}
 
 	public boolean checkResolved() {
-		clazz.checkResolved();
-		return true;
+		return clazz.checkResolved();
 	}
 
 	public boolean isInstanceOf(Type t2) {
@@ -905,12 +903,12 @@ public class ArrayType extends Type {
 	public MetaSet getStructMeta()					{ return tpObject.getStructMeta(); }
 	public Type[] getDirectSuperTypes()			{ return new Type[] {tpObject, tpCloneable}; }
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
 	{
 		false
 	}
 	
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
 		false
 	}
@@ -1003,10 +1001,10 @@ public class ArgumentType extends Type {
 	public MetaSet getStructMeta()					{ return super_type.getStructMeta(); }
 	public Type[] getDirectSuperTypes()			{ return super_type.getDirectSuperTypes(); }
 	
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name) { super_type.resolveNameAccessR(node, info, name) }
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt) { super_type.resolveCallAccessR(node, info, name, mt) }
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { super_type.resolveNameAccessR(node, info, name) }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { super_type.resolveCallAccessR(node, info, name, mt) }
 	
 	public Type getJavaType() {
 		if (super_type == null)
@@ -1015,8 +1013,7 @@ public class ArgumentType extends Type {
 	}
 
 	public boolean checkResolved() {
-		super_type.checkResolved();
-		return true;
+		return super_type.checkResolved();
 	}
 
 	public String toString() {
@@ -1082,7 +1079,7 @@ public class WrapperType extends Type {
 	public boolean isStructInstanceOf(Struct s)	{ return getUnwrappedType().isStructInstanceOf(s); }
 
 	public final boolean isWrapper()					{ return true; }
-	public final Expr makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(Expr)~from, wrapped_field); } 
+	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
 	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); }
 	
 	public BaseType getUnwrappedType()					{ return unwrapped_type; }
@@ -1095,8 +1092,8 @@ public class WrapperType extends Type {
 	public Type getInitialType()		{ return getUnwrappedType().getInitialType(); }
 	public Type getInitialSuperType()	{ return getUnwrappedType().getInitialSuperType(); }
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 	{
 		info.isForwardsAllowed(),$cut,
 		trace(Kiev.debugResolve,"Type: Resolving name "+name+" in wrapper type "+this),
@@ -1111,8 +1108,8 @@ public class WrapperType extends Type {
 	;
 		getUnwrappedType().resolveNameAccessR(node, info, name)
 	}
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		MethodType mtype;
 	{
 		info.isForwardsAllowed(),$cut,
@@ -1267,10 +1264,10 @@ public class MethodType extends Type implements CallableType {
 	@getter public Type[]	get$args()	{ return args; }
 	@getter public Type		get$ret()	{ return ret; }
 
-	public rule resolveStaticNameR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(ASTNode@ node, ResInfo info, KString name) { false }
-	public rule resolveCallStaticR(ASTNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(ASTNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 
 	public JType getJType() {
 		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));

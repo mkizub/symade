@@ -197,15 +197,15 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
-		ASTNode@ syn;
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+		DNode@ syn;
 	{
 		syn @= syntax,
 		{
-			syn instanceof Typedef,
+			syn instanceof TypeDefOp,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			name.equals(((Typedef)syn).name),
-			node ?= ((Typedef)syn).type
+			name.equals(((TypeDefOp)syn).name),
+			node ?= syn
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
 			((Import)syn).resolveNameR(node,path,name)
@@ -234,7 +234,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		Env.root.resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt)
 		ASTNode@ syn;
 	{
 		pkg != null,

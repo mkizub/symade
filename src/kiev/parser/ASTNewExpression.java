@@ -38,7 +38,7 @@ import syntax kiev.Syntax;
 
 @node
 @dflow(out="args")
-public class ASTNewExpression extends Expr {
+public class ASTNewExpression extends ENode {
 	@att
 	public TypeRef					type;
 	
@@ -156,7 +156,7 @@ public class ASTNewExpression extends Expr {
 
         // Process inner classes and cases
 		Kiev.runProcessorsOn(clazz);
-		Expr ne = new NewExpr(pos,clazz.type,args.toArray());
+		ENode ne = new NewExpr(pos,clazz.type,args.toArray());
 		ne.clazz = (Struct)~clazz;
 		replaceWithNodeResolve(reqType, ne);
 	}

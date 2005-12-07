@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
  * Base class to represent unresolved, temporary created expressions.
  */
 @node
-public abstract class UnresExpr extends Expr {
+public abstract class UnresExpr extends ENode {
 
 	public Operator			op;
 	

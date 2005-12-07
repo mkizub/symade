@@ -85,7 +85,7 @@ public class Access implements Constants {
 		return sb.toString();
 	}
 
-	public void verifyAccessDecl(ASTNode n) {
+	public void verifyAccessDecl(DNode n) {
 
 		flags &= 0xFFFF0000;
 		flags |= (flags >>> 16);
@@ -168,9 +168,9 @@ public class Access implements Constants {
 		}
 	}
 
-	public void verifyReadAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,2); }
-	public void verifyWriteAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,1); }
-	public void verifyReadWriteAccess(ASTNode from, ASTNode n) { verifyAccess(from,n,3); }
+	public void verifyReadAccess(ASTNode from, DNode n) { verifyAccess(from,n,2); }
+	public void verifyWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,1); }
+	public void verifyReadWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,3); }
 
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
@@ -183,7 +183,7 @@ public class Access implements Constants {
 		return pkg;
 	}
 
-	private void verifyAccess(ASTNode from, ASTNode n, int acc) {
+	private void verifyAccess(ASTNode from, DNode n, int acc) {
 		assert( n instanceof Accessable && ((Accessable)n).acc == this );
 
 		// Quick check for public access
@@ -228,7 +228,7 @@ public class Access implements Constants {
 		throwAccessError(from,n,acc,"public");
 	}
 
-	private void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
+	private void throwAccessError(ASTNode from, DNode n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');
 		if( acc == 2 ) sb.append("read");

@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 @node
 @dflow(out="args")
-public class CallExpr extends Expr {
+public class CallExpr extends ENode {
 	@att
 	@dflow(in="")
 	public ENode				obj;
@@ -167,7 +167,7 @@ public class CallExpr extends Expr {
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
-		if( obj instanceof Expr) {
+		if !(obj instanceof TypeRef) {
 			obj.generate(code,null);
 			generateCheckCastIfNeeded(code);
 		}
@@ -409,7 +409,7 @@ public class CallExpr extends Expr {
 
 @node
 @dflow(out="args")
-public class ClosureCallExpr extends Expr {
+public class ClosureCallExpr extends ENode {
 	@att
 	@dflow(in="this:in")
 	public ENode					expr;
@@ -434,7 +434,7 @@ public class ClosureCallExpr extends Expr {
 	public ClosureCallExpr(int pos, ENode expr, ENode[] args) {
 		super(pos);
 		this.expr = expr;
-		foreach(Expr e; args) this.args.append(e);
+		foreach(ENode e; args) this.args.append(e);
 		Type tp = expr.getType();
 		if (tp instanceof ClosureType)
 			is_a_call = tp.args.length==args.length;
@@ -495,7 +495,7 @@ public class ClosureCallExpr extends Expr {
 			call_it_name = KString.from("call_Object");
 		else
 			call_it_name = KString.from("call_"+((CallableType)tp).ret);
-		ASTNode@ callIt;
+		Method@ callIt;
 		MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
 		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
 		if( !PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt) ) {

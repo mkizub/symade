@@ -34,7 +34,7 @@ import kiev.stdlib.*;
 
 @node
 @dflow(out="args")
-public class ASTNewAccessExpression extends Expr {
+public class ASTNewAccessExpression extends ENode {
 	@att
 	@dflow(out="this:in")
 	public ENode				obj;

@@ -38,7 +38,7 @@ public interface IBoolExpr {
 }
 
 @node
-public abstract class BoolExpr extends Expr implements IBoolExpr {
+public abstract class BoolExpr extends ENode implements IBoolExpr {
 
 	public BoolExpr() {}
 
@@ -393,7 +393,7 @@ public class BinaryBoolExpr extends BoolExpr {
 			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = ((BaseType)tp).clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
-			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,Expr.emptyArray);
+			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,ENode.emptyArray);
 			expr1.resolve(Type.tpInt);
 		} else {
 			throw new CompilerException(this,"Class "+cas+" is not a cased class");
@@ -704,16 +704,16 @@ public class InstanceofExpr extends BoolExpr {
 	}
 
 	DFState addNodeTypeInfo(DFState dfs) {
-		DNode[] path = null;
+		LvalDNode[] path = null;
 		switch(expr) {
 		case LVarExpr:
-			path = new DNode[]{((LVarExpr)expr).getVar()};
+			path = new LvalDNode[]{((LVarExpr)expr).getVar()};
 			break;
 		case IFldExpr:
 			path = ((IFldExpr)expr).getAccessPath();
 			break;
 		case SFldExpr:
-			path = new DNode[]{((SFldExpr)expr).var};
+			path = new LvalDNode[]{((SFldExpr)expr).var};
 			break;
 		}
 		if (path != null) {

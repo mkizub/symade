@@ -63,9 +63,9 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			clazz.super_type = Type.tpEnum;
 			Field vals = clazz.addField(new Field(nameEnumValuesFld,
 				Type.newArrayType(clazz.type), ACC_PRIVATE|ACC_STATIC|ACC_FINAL));
-			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.type), 1, Expr.emptyArray);
+			vals.init = new NewInitializedArrayExpr(pos, new TypeRef(clazz.type), 1, ENode.emptyArray);
 			for(int i=0; i < eflds.length; i++) {
-				Expr e = new SFldExpr(eflds[i].pos,eflds[i]);
+				ENode e = new SFldExpr(eflds[i].pos,eflds[i]);
 				((NewInitializedArrayExpr)vals.init).args.append(e);
 			}
 		}
@@ -107,7 +107,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			}
 			cases[cases.length-1] = new CaseLabel(pos,null,
 					new ENode[]{
-						new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,Expr.emptyArray))
+						new ThrowStat(pos,new NewExpr(pos,Type.tpCastException,ENode.emptyArray))
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
@@ -128,7 +128,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
 					(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")),
-					Expr.emptyArray),
+					ENode.emptyArray),
 				CaseLabel.emptyArray);
 			CaseLabel[] cases = new CaseLabel[eflds.length+1];
 			for(int i=0; i < eflds.length; i++) {
@@ -145,7 +145,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			}
 			cases[cases.length-1] = new CaseLabel(pos,null,
 					new ENode[]{
-						new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
+						new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
 					});
 			foreach (CaseLabel c; cases)
 				sw.cases.add(c);
@@ -173,7 +173,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 					Type.tpString.clazz.resolveMethod(
 						KString.from("intern"),KString.from("()Ljava/lang/String;"),true
 					),
-					Expr.emptyArray
+					ENode.emptyArray
 				));
 			((BlockStat)fromstr.body).addStatement(new ExprStat(pos,ae));
 			for(int i=0; i < eflds.length; i++) {
@@ -205,7 +205,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				}
 			}
 			((BlockStat)fromstr.body).addStatement(
-				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,Expr.emptyArray))
+				new ThrowStat(pos,new NewExpr(pos,Type.tpRuntimeException,ENode.emptyArray))
 				);
 			clazz.addMethod(fromstr);
 		}

@@ -36,12 +36,12 @@ import syntax kiev.Syntax;
 
 @node
 @dflow(out="this:in")
-public class ShadowStat extends Statement {
-	@ref public Statement stat;
+public class ShadowStat extends ENode {
+	@ref public ENode stat;
 	
 	public ShadowStat() {
 	}
-	public ShadowStat(Statement stat) {
+	public ShadowStat(ENode stat) {
 		super(0);
 		this.stat = stat;
 	}
@@ -64,7 +64,7 @@ public class ShadowStat extends Statement {
 
 @node
 @dflow(in="root()", out="this:out()")
-public class InlineMethodStat extends Statement implements ScopeOfNames {
+public class InlineMethodStat extends ENode implements ScopeOfNames {
 
 	static class ParamRedir {
 		FormPar		old_var;
@@ -90,7 +90,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		ParamRedir@	redir;
 	{
 		redir @= params_redir,
@@ -111,7 +111,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < node.params_redir.length; i++) {
 				in = in.declNode(node.params_redir[i].new_var);
-				in = in.addNodeType(new DNode[]{node.params_redir[i].new_var},node.method.params[i].type);
+				in = in.addNodeType(new LvalDNode[]{node.params_redir[i].new_var},node.method.params[i].type);
 			}
 			res = in;
 			dfi.setResult(res_idx, res);
@@ -164,7 +164,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 			generateArgumentCheck(code);
 		foreach (ParamRedir redir; params_redir)
 			redir.old_var.setBCpos(redir.new_var.getBCpos());
-		((Statement)method.body).generate(code,reqType);
+		method.body.generate(code,reqType);
 	}
 
 	public void generateArgumentCheck(Code code) {
@@ -197,7 +197,7 @@ public class InlineMethodStat extends Statement implements ScopeOfNames {
 
 @node
 @dflow(out="this:out()")
-public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods {
+public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 	@dflow(in="", seq="true")
 	@att public final NArr<ENode>		stats;
@@ -264,7 +264,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		stats.insert(decl,idx);
 	}
 	
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
 		ASTNode@ n;
 	{
 		n @= new SymbolIterator(this.stats, info.space_prev),
@@ -275,9 +275,9 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		;	n instanceof LocalStructDecl,
 			name.equals(((LocalStructDecl)n).clazz.name.short_name),
 			node ?= ((LocalStructDecl)n).clazz
-		;	n instanceof Typedef,
-			name.equals(((Typedef)n).name),
-			node ?= ((Typedef)n).type
+		;	n instanceof TypeDefOp,
+			name.equals(((TypeDefOp)n).name),
+			node ?= ((TypeDefOp)n)
 		}
 	;
 		info.isForwardsAllowed(),
@@ -287,7 +287,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		n.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ n;
 	{
 		info.isForwardsAllowed(),
@@ -340,10 +340,10 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 				if( self.isAbrupted() ) {
 					//Kiev.reportWarning(stats[i].pos,"Possible unreachable statement");
 				}
-				if( stats[i] instanceof Statement ) {
-					Statement st = (Statement)stats[i];
+				if( stats[i] instanceof ENode ) {
+					ENode st = stats[i];
 					st.resolve(Type.tpVoid);
-					st = (Statement)stats[i];
+					st = stats[i];
 					if( st.isAbrupted() && !self.isBreaked() ) self.setAbrupted(true);
 					if( st.isMethodAbrupted() && !self.isBreaked() ) self.setMethodAbrupted(true);
 				}
@@ -373,7 +373,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 		code.removeVars(vars.toArray());
 		if( parent instanceof Method && Kiev.debugOutputC
-		 && parent.isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
+		 && ((Method)parent).isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
 			code.stack_push(((Method)parent).type.ret);
 		}
 		code.addInstr(Instr.set_label,break_label);
@@ -397,7 +397,7 @@ public class BlockStat extends Statement implements ScopeOfNames, ScopeOfMethods
 
 @node
 @dflow(out="this:in")
-public class EmptyStat extends Statement {
+public class EmptyStat extends ENode {
 
 	public EmptyStat() {}
 
@@ -419,7 +419,7 @@ public class EmptyStat extends Statement {
 
 @node
 @dflow(out="expr")
-public class ExprStat extends Statement {
+public class ExprStat extends ENode {
 
 	@dflow
 	@att public ENode		expr;
@@ -468,7 +468,7 @@ public class ExprStat extends Statement {
 
 @node
 @dflow(jmp="expr")
-public class ReturnStat extends Statement/*defaults*/ {
+public class ReturnStat extends ENode {
 
 	@att
 	@dflow(in="this:in")
@@ -566,7 +566,7 @@ public class ReturnStat extends Statement/*defaults*/ {
 
 @node
 @dflow(jmp="expr")
-public class ThrowStat extends Statement/*defaults*/ {
+public class ThrowStat extends ENode {
 
 	@att
 	@dflow(in="")
@@ -575,7 +575,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 	public ThrowStat() {
 	}
 
-	public ThrowStat(int pos, Expr expr) {
+	public ThrowStat(int pos, ENode expr) {
 		super(pos);
 		this.expr = expr;
 		setMethodAbrupted(true);
@@ -611,7 +611,7 @@ public class ThrowStat extends Statement/*defaults*/ {
 
 @node
 @dflow(out="join thenSt elseSt")
-public class IfElseStat extends Statement {
+public class IfElseStat extends ENode {
 
 	@att
 	@dflow
@@ -619,16 +619,16 @@ public class IfElseStat extends Statement {
 	
 	@att
 	@dflow(in="cond:true")
-	public Statement	thenSt;
+	public ENode		thenSt;
 	
 	@att
 	@dflow(in="cond:false")
-	public Statement	elseSt;
+	public ENode		elseSt;
 
 	public IfElseStat() {
 	}
 	
-	public IfElseStat(int pos, Expr cond, Statement thenSt, Statement elseSt) {
+	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
 		super(pos);
 		this.cond = cond;
 		this.thenSt = thenSt;
@@ -656,7 +656,7 @@ public class IfElseStat extends Statement {
 			}
 		}
 
-		if (!(cond instanceof Expr) || !((Expr)cond).isConstantExpr()) {
+		if (!cond.isConstantExpr()) {
 			if( thenSt.isAbrupted() && elseSt!=null && elseSt.isAbrupted() ) setAbrupted(true);
 			if( thenSt.isMethodAbrupted() && elseSt!=null && elseSt.isMethodAbrupted() ) setMethodAbrupted(true);
 		}
@@ -674,8 +674,8 @@ public class IfElseStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
 		code.setLinePos(this.getPosLine());
 		try {
-			if( cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
-				Expr cond = (Expr)this.cond;
+			if( cond.isConstantExpr() ) {
+				ENode cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
 						thenSt.setAutoReturnable(true);
@@ -732,7 +732,7 @@ public class IfElseStat extends Statement {
 
 @node
 @dflow(out="cond:true")
-public class CondStat extends Statement {
+public class CondStat extends ENode {
 
 	@att
 	@dflow(in="")
@@ -793,8 +793,8 @@ public class CondStat extends Statement {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
 		code.setLinePos(this.getPosLine());
 		try {
-			if(cond instanceof Expr && ((Expr)cond).isConstantExpr() ) {
-				Expr cond = (Expr)this.cond;
+			if(cond.isConstantExpr() ) {
+				ENode cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() );
 				else {
 					generateAssertName(code);
@@ -830,7 +830,7 @@ public class CondStat extends Statement {
 
 @node
 @dflow(out="stat")
-public class LabeledStat extends Statement/*defaults*/ implements Named {
+public class LabeledStat extends ENode implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
@@ -843,7 +843,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 	@att
 	@dflow(in="lbl")
-	public Statement		stat;
+	public ENode			stat;
 
 	public LabeledStat() {
 		lbl = new Label();
@@ -883,7 +883,7 @@ public class LabeledStat extends Statement/*defaults*/ implements Named {
 
 @node
 @dflow(jmp="this:in")
-public class BreakStat extends Statement {
+public class BreakStat extends ENode {
 
 	@att public NameRef			ident;
 	
@@ -916,7 +916,7 @@ public class BreakStat extends Statement {
 			for(p=parent; !(
 				p instanceof BreakTarget
 			 || p instanceof Method
-			 || (p instanceof BlockStat && p.isBreakTarget())
+			 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
 			 				); p = p.parent );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
@@ -971,7 +971,7 @@ public class BreakStat extends Statement {
 			for(p=parent; !(
 				p instanceof BreakTarget
 			 || p instanceof Method
-			 || (p instanceof BlockStat && p.isBreakTarget())
+			 || (p instanceof BlockStat && ((BlockStat)p).isBreakTarget())
 			 				); p = p.parent );
 			if( p instanceof Method || p == null ) {
 				Kiev.reportError(this,"Break not within loop/switch statement");
@@ -1014,7 +1014,7 @@ public class BreakStat extends Statement {
 		}
 		if( p instanceof Method )
 			Kiev.reportError(this,"Break not within loop/switch statement");
-		p.setBreaked(true);
+		((ENode)p).setBreaked(true);
 	}
 
 	public void generate(Code code, Type reqType) {
@@ -1062,7 +1062,7 @@ public class BreakStat extends Statement {
 					BreakTarget t = (BreakTarget)node;
 					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
 				}
-				else if( node instanceof BlockStat && node.isBreakTarget() ){
+				else if( node instanceof BlockStat && ((BlockStat)node).isBreakTarget() ){
 					BlockStat t = (BlockStat)node;
 					return (Object[])Arrays.append(cl,t.getBreakLabel());
 				}
@@ -1080,7 +1080,7 @@ public class BreakStat extends Statement {
 				}
 				if( node instanceof Method ) break;
 				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
-					Statement st = node.stat;
+					ENode st = node.stat;
 					if( st instanceof BreakTarget )
 						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
 					else if (st instanceof BlockStat)
@@ -1103,7 +1103,7 @@ public class BreakStat extends Statement {
 
 @node
 @dflow(jmp="this:in")
-public class ContinueStat extends Statement/*defaults*/ {
+public class ContinueStat extends ENode {
 
 	@att public NameRef			ident;
 
@@ -1231,7 +1231,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 				}
 				if( node instanceof Method ) break;
 				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
-					Statement st = node.stat;
+					ENode st = node.stat;
 					if( st instanceof ContinueTarget )
 						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));
 					throw new RuntimeException("Label "+name+" does not refer to continue target");
@@ -1251,7 +1251,7 @@ public class ContinueStat extends Statement/*defaults*/ {
 
 @node
 @dflow(jmp="this:in")
-public class GotoStat extends Statement/*defaults*/ {
+public class GotoStat extends ENode {
 
 	@att public NameRef			ident;
 
@@ -1489,7 +1489,7 @@ public class GotoStat extends Statement/*defaults*/ {
 
 @node
 @dflow(jmp="expr")
-public class GotoCaseStat extends Statement/*defaults*/ {
+public class GotoCaseStat extends ENode {
 
 	@att
 	@dflow(in="")
@@ -1501,7 +1501,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 	public GotoCaseStat() {
 	}
 	
-//	public GotoCaseStat(int pos, ASTNode parent, Expr expr) {
+//	public GotoCaseStat(int pos, ASTNode parent, ENode expr) {
 //		super(pos, parent);
 //		this.expr = expr;
 //		setAbrupted(true);
@@ -1535,7 +1535,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
 		code.setLinePos(this.getPosLine());
 		try {
-			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
+			if( !expr.isConstantExpr() ) {
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
 					expr.generate(code,Type.tpVoid);
 				else
@@ -1552,7 +1552,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				}
 				if (node instanceof TryStat) {
 					if( node.finally_catcher != null ) {
-						if( tmp_var==null && Kiev.verify && expr instanceof Expr && !((Expr)expr).isConstantExpr() ) {
+						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
@@ -1570,13 +1570,13 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;
-			if !( expr instanceof Expr ) {
+			if !( expr instanceof ENode ) {
 				if( sw.defCase != null )
 					lb = ((CaseLabel)sw.defCase).getLabel(code);
 				else
 					lb = sw.getBrkLabel().getCodeLabel(code);
 			}
-			else if( !((Expr)expr).isConstantExpr() )
+			else if( !expr.isConstantExpr() )
 				lb = sw.getCntLabel().getCodeLabel(code);
 			else {
 				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
@@ -1597,7 +1597,7 @@ public class GotoCaseStat extends Statement/*defaults*/ {
 				}
 			}
 			code.addInstr(Instr.op_goto,lb);
-			if( expr instanceof Expr && !((Expr)expr).isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
+			if( !expr.isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
 				code.stack_pop();
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

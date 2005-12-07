@@ -104,10 +104,10 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 
 	public void generate(Code code) {}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Struct@ s;
 		Struct@ sub;
-		ASTNode@ tmp;
+		DNode@ tmp;
 	{
 		this.resolved instanceof Method, $cut, false
 	;
@@ -148,15 +148,15 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
 			((Field)tmp).name.equals(name),
 			node ?= tmp
-		;	tmp instanceof Typedef,
+		;	tmp instanceof TypeDefOp,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((Typedef)tmp).name.equals(name),
-			node ?= ((Typedef)tmp).type
+			((TypeDefOp)tmp).name.equals(name),
+			node ?= ((TypeDefOp)tmp)
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt)
 	{
 		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
 		((Method)this.resolved).equalsByCast(name,mt,null,path),
@@ -178,28 +178,44 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 
 
 @node
-public class Typedef extends DNode implements Named {
+public class TypeDefOp extends TypeDef implements Named {
 
-	public static Typedef[]	emptyArray = new Typedef[0];
+	public static TypeDefOp[]		emptyArray = new TypeDefOp[0];
 
 	@att public KString		name;
 	@att public TypeRef		type;
-	@att public TypeArgRef	typearg;
+	@att public TypeArgDef	typearg;
 
-	public Typedef() {
+	public TypeDefOp() {
 	}
 	
-	public Typedef(int pos, KString name) {
+	public TypeDefOp(int pos, KString name) {
 		super(pos);
 		this.name = name;
+	}
+	
+	public TypeDefOp(Type tp, KString name) {
+		this.type = new TypeRef(tp);
+		this.name = name;
+	}
+	
+	public boolean checkResolved() {
+		Type t = type.getType();
+		if (t != null && t.getStruct() != null)
+			return t.getStruct().checkResolved();
+		return true;
 	}
 	
 	public NodeName	getName() {
 		return new NodeName(name);
 	}
+	
+	public Type getType() {
+		return type.getType();
+	}
 
 	public void set(NameRef id, ASTOperator op, TypeRef tp) {
-		typearg = new TypeArgRef(id.name);
+		typearg = new TypeArgDef(id.name);
 		name = op.image;
 
 		TypeWithArgsRef natp = (TypeWithArgsRef)tp;

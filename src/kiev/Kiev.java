@@ -365,7 +365,7 @@ public final class Kiev {
 			return "#expr"+parserAddr(e)+"#".toLowerCase();
 	}
 
-	public static String reparseStat(Statement s, boolean copy) {
+	public static String reparseStat(ENode s, boolean copy) {
 		if (copy)
 			return "#stat"+parserAddr(s.copy())+"#".toLowerCase();
 		else

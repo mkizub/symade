@@ -105,7 +105,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (ASTNode n; ss.members; n instanceof Field && !n.isStatic() && ((Field)n).meta.get(mnNode) != null) {
+				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && n.meta.get(mnNode) != null) {
 					Field f = (Field)n;
 					aflds.insert(p, f);
 					p++;
@@ -154,7 +154,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 			msg.appendArg(new LVarExpr(0, var));
 			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
 			dfIn.body.addStatement(
-				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
+				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(dfIn);
 		}

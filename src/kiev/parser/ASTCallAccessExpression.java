@@ -37,7 +37,7 @@ import syntax kiev.Syntax;
 
 @node
 @dflow(out="args")
-public class ASTCallAccessExpression extends Expr {
+public class ASTCallAccessExpression extends ENode {
 	@dflow
 	@att public ENode					obj;
 
@@ -66,7 +66,7 @@ public class ASTCallAccessExpression extends Expr {
 		}
 		
 		if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
-			ASTNode@ m;
+			Method@ m;
 			Type tp = null;
 			ResInfo info = new ResInfo(this);
 			info.enterForward(obj);
@@ -92,9 +92,6 @@ public class ASTCallAccessExpression extends Expr {
 			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
 		}
 		
-		if !(obj instanceof Expr || obj instanceof TypeRef)
-			throw new CompilerException(obj,"Resolved object "+obj+" is not an expression or type name");
-
 		MethodType mt = null;
 		{
 			Type[] ta = new Type[args.length];
@@ -112,7 +109,7 @@ public class ASTCallAccessExpression extends Expr {
 			res = new ENode[1];
 			res_flags = 0;
 		} else {
-			tps = ((Expr)obj).getAccessTypes();
+			tps = obj.getAccessTypes();
 			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
@@ -125,7 +122,7 @@ public class ASTCallAccessExpression extends Expr {
 		}
 		for (int si=0; si < tps.length; si++) {
 			Type tp = tps[si];
-			ASTNode@ m;
+			Method@ m;
 			ResInfo info = new ResInfo(this,res_flags);
 			try {
 				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
@@ -192,7 +189,7 @@ public class ASTCallAccessExpression extends Expr {
 		
 		if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
 			Type ret = reqType;
-			ASTNode@ m;
+			Method@ m;
 	retry_with_null_ret:;
 			Type tp = null;
 			ResInfo info = new ResInfo(this);
@@ -224,9 +221,6 @@ public class ASTCallAccessExpression extends Expr {
 		
 		obj.resolve(null);
 		
-		if !(obj instanceof Expr || obj instanceof TypeRef)
-			throw new CompilerException(obj,"Resolved object "+obj+" is not an expression or type name");
-
 		MethodType mt = null;
 		{
 			Type[] ta = new Type[args.length];
@@ -244,7 +238,7 @@ public class ASTCallAccessExpression extends Expr {
 			res = new ENode[1];
 			res_flags = 0;
 		} else {
-			tps = ((Expr)obj).getAccessTypes();
+			tps = obj.getAccessTypes();
 			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
 				Type tp = tps[si];
@@ -257,7 +251,7 @@ public class ASTCallAccessExpression extends Expr {
 		}
 		for (int si=0; si < tps.length; si++) {
 			Type tp = tps[si];
-			ASTNode@ m;
+			Method@ m;
 			ResInfo info = new ResInfo(this,res_flags);
 			try {
 				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {

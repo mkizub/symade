@@ -34,7 +34,7 @@ import static kiev.stdlib.Debug.*;
 
 @node
 @dflow(out="this:out()")
-public class Var extends DNode implements Named, Typed {
+public class Var extends LvalDNode implements Named, Typed {
 
 	public static Var[]	emptyArray = new Var[0];
 
@@ -73,6 +73,60 @@ public class Var extends DNode implements Named, Typed {
 		return vtype.getType();
 	}
 	
+	// Var specific
+	
+	// need a reference proxy access 
+	@getter public final boolean get$is_var_need_ref_proxy()  alias isNeedRefProxy  {
+		return this.is_var_need_ref_proxy;
+	}
+	@setter public final void set$is_var_need_ref_proxy(boolean on) alias setNeedRefProxy {
+		if (this.is_var_need_ref_proxy != on) {
+			this.is_var_need_ref_proxy = on;
+			if (on) this.is_need_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// is a local var in a rule 
+	@getter public final boolean get$is_var_local_rule_var()  alias isLocalRuleVar  {
+		return this.is_var_local_rule_var;
+	}
+	@setter public final void set$is_var_local_rule_var(boolean on) alias setLocalRuleVar {
+		if (this.is_var_local_rule_var != on) {
+			this.is_var_local_rule_var = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// closure proxy
+	@getter public final boolean get$is_var_closure_proxy()  alias isClosureProxy  {
+		return this.is_var_closure_proxy;
+	}
+	@setter public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
+		if (this.is_var_closure_proxy != on) {
+			this.is_var_closure_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// "this" var
+	@getter public final boolean get$is_var_this()  alias isVarThis  {
+		return this.is_var_this;
+	}
+	@setter public final void set$is_var_this(boolean on) alias setVarThis {
+		if (this.is_var_this != on) {
+			this.is_var_this = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// "super" var
+	@getter public final boolean get$is_var_super()  alias isVarSuper {
+		return this.is_var_super;
+	}
+	@setter public final void set$is_var_super(boolean on) alias setVarSuper {
+		if (this.is_var_super != on) {
+			this.is_var_super = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
 			if      (attr.name == "vtype")
@@ -108,7 +162,7 @@ public class Var extends DNode implements Named, Typed {
 			DFState out = DFFunc.calc(f, dfi);
 			out = out.declNode(node);
 			if( node.init != null && node.init.getType() != Type.tpVoid )
-				out = out.setNodeValue(new DNode[]{node},node.init);
+				out = out.setNodeValue(new LvalDNode[]{node},node.init);
 			res = out;
 			dfi.setResult(res_idx, res);
 			return res;
@@ -121,7 +175,7 @@ public class Var extends DNode implements Named, Typed {
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		if( init == null && !type.isArray() && type.isWrapper() && !this.isInitWrapper())
-			init = new NewExpr(pos,type,Expr.emptyArray);
+			init = new NewExpr(pos,type,ENode.emptyArray);
 		if( init != null ) {
 			if (init instanceof TypeRef)
 				((TypeRef)init).toExpr(this.getType());
@@ -289,7 +343,7 @@ public class DFState {
 		return new DFState(states,0);
 	}
 	
-	public ScopeNodeInfo getNodeInfo(DNode[] path) {
+	public ScopeNodeInfo getNodeInfo(LvalDNode[] path) {
 		foreach(ScopeNodeInfo sni; states; sni.match(path)) {
 			trace( Kiev.debugNodeTypes, "types: getinfo for node "+Arrays.toString(path)+" is "+sni);
 			return sni;
@@ -297,7 +351,7 @@ public class DFState {
 		return null;
 	}
 
-	private static ScopeNodeInfo makeNode(DNode[] path) {
+	private static ScopeNodeInfo makeNode(LvalDNode[] path) {
 		ScopeNodeInfo sni;
 		if (path.length == 1) {
 			if (path[0] instanceof Var)
@@ -329,7 +383,7 @@ public class DFState {
 		return dfs;
 	}
 
-	public DFState addNodeType(DNode[] path, Type type) {
+	public DFState addNodeType(LvalDNode[] path, Type type) {
 		ScopeNodeInfo sni = getNodeInfo(path);
 		if (sni == null) sni = makeNode(path);
 		if (sni == null) return this;
@@ -349,7 +403,7 @@ changed:;
 		return dfs;
 	}
 
-	public DFState setNodeValue(DNode[] path, ENode expr) {
+	public DFState setNodeValue(LvalDNode[] path, ENode expr) {
 		Type tp = expr.getType();
 		if( tp == Type.tpNull && tp == Type.tpVoid )
 			return this;
@@ -482,8 +536,8 @@ public abstract class ScopeNodeInfo implements Cloneable {
 	private Type[]	types;
 	private ScopeNodeInfo j1, j2;
 	public abstract Type getDeclType();
-	public abstract boolean match(DNode[] path);
-	public abstract DNode[] getPath();
+	public abstract boolean match(LvalDNode[] path);
+	public abstract LvalDNode[] getPath();
 	
 	protected final void setupDeclType() {
 		types = new Type[]{getDeclType()};
@@ -533,8 +587,8 @@ public class ScopeVarInfo extends ScopeNodeInfo {
 		return "sni:{var "+var+","+Arrays.toString(getTypes())+"}";
 	}
 
-	public DNode[] getPath() {
-		return new DNode[]{var};
+	public LvalDNode[] getPath() {
+		return new LvalDNode[]{var};
 	}
 	
 	public boolean equals(Object obj) {
@@ -543,7 +597,7 @@ public class ScopeVarInfo extends ScopeNodeInfo {
 		return var == ((ScopeVarInfo)obj).var;
 	}
 	
-	public boolean match(DNode[] path) {
+	public boolean match(LvalDNode[] path) {
 		return path.length==1 && path[0] == var;
 	}
 }
@@ -566,8 +620,8 @@ public class ScopeStaticFieldInfo extends ScopeNodeInfo {
 		return "sni:{static fld "+fld+","+Arrays.toString(getTypes())+"}";
 	}
 
-	public DNode[] getPath() {
-		return new DNode[]{fld};
+	public LvalDNode[] getPath() {
+		return new LvalDNode[]{fld};
 	}
 	
 	public boolean equals(Object obj) {
@@ -576,23 +630,23 @@ public class ScopeStaticFieldInfo extends ScopeNodeInfo {
 		return fld == ((ScopeStaticFieldInfo)obj).fld;
 	}
 	
-	public boolean match(DNode[] path) {
+	public boolean match(LvalDNode[] path) {
 		return path.length==1 && path[0] == fld;
 	}
 }
 
 public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 
-	public DNode[] path;
+	public LvalDNode[] path;
 
-	public ScopeForwardFieldInfo(DNode[] path) {
+	public ScopeForwardFieldInfo(LvalDNode[] path) {
 		assert(path.length > 1);
 		assert(checkForwards(path));
 		this.path = path;
 		setupDeclType();
 	}
 	
-	public static boolean checkForwards(DNode[] path) {
+	public static boolean checkForwards(LvalDNode[] path) {
 		if !(path[0] instanceof Var)
 			return false;
 		if !(path[0].isForward())
@@ -627,7 +681,7 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 		return "sni:{forward fld "+sb.toString()+","+Arrays.toString(getTypes())+"}";
 	}
 
-	public DNode[] getPath() {
+	public LvalDNode[] getPath() {
 		return path;
 	}
 	
@@ -638,7 +692,7 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 		return match(ffi.path);
 	}
 
-	public boolean match(DNode[] path) {
+	public boolean match(LvalDNode[] path) {
 		if (this.path.length != path.length)
 			return false;
 		for(int i=0; i < path.length; i++) {

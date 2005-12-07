@@ -66,24 +66,27 @@ public class TypeExpr extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 	    Type tp = arg.getType();
-		ASTNode@ v;
+		DNode@ v;
 		if (op == Constants.nameArrayOp) {
 			tp = Type.newArrayType(tp);
 		} else {
+			Type t;
 			if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
 				if (op == opPVar) {
-					v = new TypeRef(WrapperType.tpWrappedPrologVar);
+					t = WrapperType.tpWrappedPrologVar;
 				}
 				else if (op == opRef) {
 					Kiev.reportWarning(this, "Typedef for "+op+" not found, assuming wrapper of "+Type.tpRefProxy);
-					v = new TypeRef(WrapperType.tpWrappedRefProxy);
+					t = WrapperType.tpWrappedRefProxy;
 				}
 				else
 					throw new CompilerException(this,"Typedef for type operator "+op+" not found");
+			} else {
+				if (v instanceof TypeDef)
+					t = ((TypeDef)v).getType();
+				else
+					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 			}
-			if !(v instanceof TypeRef)
-				throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
-			Type t = ((TypeRef)v).getType();
 			if (t.args.length != 1)
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			t.checkResolved();

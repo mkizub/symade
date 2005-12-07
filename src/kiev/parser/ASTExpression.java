@@ -41,13 +41,13 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
 
 @node
 @dflow(out="nodes")
-public class ASTExpression extends Expr {
+public class ASTExpression extends ENode {
 	@att
 	@dflow(in="this:in", seq="true")
 	public final NArr<ENode>		nodes;
 
 	public void preResolveOut() {
-		if (nodes.length == 1 && nodes[0] instanceof Expr) {
+		if (nodes.length == 1) {
 			ENode n = nodes[0];
 			this.replaceWithNode((ENode)~n);
 			return;

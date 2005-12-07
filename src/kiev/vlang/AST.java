@@ -134,35 +134,17 @@ public abstract class ASTNode implements Constants {
 	@ref(copyable=false)
 	public access:ro,ro,ro,rw AttrSlot			pslot;
 	@ref(copyable=false)
-	public ASTNode			pprev;
+	public ASTNode								pprev;
 	@ref(copyable=false)
-	public ASTNode			pnext;
+	public ASTNode								pnext;
 	@ref(copyable=false)
 	public access:ro,ro,rw,rw NodeContext		pctx;
 	
 	@ref(copyable=false)
 	public NodeData			ndata;
 
-	public int				flags;
 	public int				compileflags;
 	
-	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
-	@virtual public virtual packed:1,flags,14 boolean is_struct_enum;       // struct
-	@virtual public virtual packed:1,flags,14 boolean is_fld_enum;        // field
-	// Flags temporary used with java flags
-	@virtual public virtual packed:1,flags,16 boolean is_forward;         // var/field
-	@virtual public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
-	@virtual public virtual packed:1,flags,16 boolean is_mth_multimethod; // method
-	@virtual public virtual packed:1,flags,17 boolean is_mth_varargs;     // method
-	@virtual public virtual packed:1,flags,18 boolean is_mth_rule;        // method
-	@virtual public virtual packed:1,flags,19 boolean is_mth_invariant;   // method
-	@virtual public virtual packed:1,flags,16 boolean is_struct_package;    // struct
-	@virtual public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
-	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
-	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
-//	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
-	@virtual public virtual packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
-
 	// Structures	
 	@virtual public virtual packed:1,compileflags,16 boolean is_struct_local;
 	@virtual public virtual packed:1,compileflags,17 boolean is_struct_anomymouse;
@@ -180,6 +162,12 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
 	@virtual public virtual packed:1,compileflags,20 boolean is_expr_for_wrapper;
 	@virtual public virtual packed:1,compileflags,21 boolean is_expr_primary;
+	// Statement flags
+	@virtual public virtual packed:1,compileflags,22 boolean is_stat_abrupted;
+	@virtual public virtual packed:1,compileflags,23 boolean is_stat_breaked;
+	@virtual public virtual packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+	@virtual public virtual packed:1,compileflags,25 boolean is_stat_auto_returnable;
+	@virtual public virtual packed:1,compileflags,26 boolean is_stat_break_target;
 	
 	// Method flags
 	@virtual public virtual packed:1,compileflags,17 boolean is_mth_virtual_static;
@@ -202,12 +190,6 @@ public abstract class ASTNode implements Constants {
 	@virtual public virtual packed:1,compileflags,18 boolean is_fld_packer;
 	@virtual public virtual packed:1,compileflags,19 boolean is_fld_packed;
 
-	// Statement flags
-	@virtual public virtual packed:1,compileflags,16 boolean is_stat_abrupted;
-	@virtual public virtual packed:1,compileflags,17 boolean is_stat_breaked;
-	@virtual public virtual packed:1,compileflags,18 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-	@virtual public virtual packed:1,compileflags,19 boolean is_stat_auto_returnable;
-	@virtual public virtual packed:1,compileflags,20 boolean is_stat_break_target;
 	// General flags
 	@virtual public virtual packed:1,compileflags,28 boolean is_accessed_from_inner;
 	@virtual public virtual packed:1,compileflags,29 boolean is_resolved;
@@ -223,12 +205,6 @@ public abstract class ASTNode implements Constants {
 		this.setupContext();
 	}
 
-	public ASTNode(int pos, int fl) {
-		this.pos = pos;
-		this.flags = fl;
-		this.setupContext();
-	}
-	
 	public void setupContext() {
 		if (this.parent == null)
 			this.pctx = new NodeContext(this);
@@ -261,7 +237,7 @@ public abstract class ASTNode implements Constants {
 	public /*abstract*/ Object copyTo(Object to$node) {
         ASTNode node = (ASTNode)to$node;
 		node.pos			= this.pos;
-		node.flags			= this.flags;
+//		node.flags			= this.flags;
 		node.compileflags	= this.compileflags;
 		return node;
 	};
@@ -481,649 +457,6 @@ public abstract class ASTNode implements Constants {
 		walker.post_exec(this);
 	}
 
-	public int setFlags(int fl) {
-		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
-		flags = fl;
-		if( this instanceof Struct ) {
-			Struct self = (Struct)this;
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		else if( this instanceof Method ) {
-			Method self = (Method)this;
-			self.setStatic((fl & ACC_STATIC) != 0);
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		else if( this instanceof Field ) {
-			Field self = (Field)this;
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		this.callbackChildChanged(nodeattr$flags);
-		return flags;
-	}
-	public int getFlags() { return flags; }
-	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
-
-	public boolean isPublic()		{ return (flags & ACC_PUBLIC) != 0; }
-	public boolean isPrivate()		{ return (flags & ACC_PRIVATE) != 0; }
-	public boolean isProtected()	{ return (flags & ACC_PROTECTED) != 0; }
-	public boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
-	public boolean isStatic()		{ return (flags & ACC_STATIC) != 0; }
-	public boolean isFinal()		{ return (flags & ACC_FINAL) != 0; }
-	public boolean isSynchronized()	{ return (flags & ACC_SYNCHRONIZED) != 0; }
-	public boolean isVolatile()		{ return (flags & ACC_VOLATILE) != 0; }
-	public boolean isTransient()	{ return (flags & ACC_TRANSIENT) != 0; }
-	public boolean isNative()		{ return (flags & ACC_NATIVE) != 0; }
-	public boolean isInterface()	{ return (flags & ACC_INTERFACE) != 0; }
-	public boolean isAbstract()		{ return (flags & ACC_ABSTRACT) != 0; }
-	public boolean isSuper()		{ return (flags & ACC_SUPER) != 0; }
-
-	//
-	// Struct specific
-	//
-	public boolean isClazz()		{
-		return !isPackage() && !isInterface() && ! isArgument();
-	}
-	
-	// package	
-	@getter public final boolean get$is_struct_package()  alias isPackage  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_package;
-	}
-	@setter public final void set$is_struct_package(boolean on) alias setPackage {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
-		if (this.is_struct_package != on) {
-			this.is_struct_package = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a class's argument	
-	@getter public final boolean get$is_struct_argument()  alias isArgument  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_argument;
-	}
-	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_argument != on) {
-			this.is_struct_argument = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a class's argument	
-	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_pizza_case;
-	}
-	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_pizza_case != on) {
-			this.is_struct_pizza_case = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a local (in method) class	
-	@getter public final boolean get$is_struct_local()  alias isLocal  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_local;
-	}
-	@setter public final void set$is_struct_local(boolean on) alias setLocal {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_local != on) {
-			this.is_struct_local = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// an anonymouse (unnamed) class	
-	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_anomymouse;
-	}
-	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_anomymouse != on) {
-			this.is_struct_anomymouse = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// has pizza cases
-	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_has_pizza_cases;
-	}
-	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_has_pizza_cases != on) {
-			this.is_struct_has_pizza_cases = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// verified
-	@getter public final boolean get$is_struct_verified()  alias isVerified  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_verified;
-	}
-	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_verified != on) {
-			this.is_struct_verified = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// indicates that structure members were generated
-	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_members_generated;
-	}
-	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_members_generated != on) {
-			this.is_struct_members_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// indicates that structure members were pre-generated
-	@getter public final boolean get$is_struct_pre_generated()  alias isMembersPreGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_pre_generated;
-	}
-	@setter public final void set$is_struct_pre_generated(boolean on) alias setMembersPreGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_pre_generated != on) {
-			this.is_struct_pre_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	
-	// indicates that statements in code were generated
-	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_statements_generated;
-	}
-	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_statements_generated != on) {
-			this.is_struct_statements_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// indicates that the structrue was generared (from template)
-	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_generated;
-	}
-	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_generated != on) {
-			this.is_struct_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// kiev annotation
-	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_annotation;
-	}
-	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		assert(!on || (!isPackage() && !isSyntax()));
-		if (this.is_struct_annotation != on) {
-			this.is_struct_annotation = on;
-			if (on) this.setInterface(true);
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// java enum
-	@getter public final boolean get$is_struct_enum()  alias isEnum {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_enum;
-	}
-	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		if (this.is_struct_enum != on) {
-			this.is_struct_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// kiev syntax
-	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		return this.is_struct_syntax;
-	}
-	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		assert(!on || (!isPackage() && ! isEnum()));
-		if (this.is_struct_syntax != on) {
-			this.is_struct_syntax = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// structure was loaded from bytecode
-	@getter public final boolean get$is_struct_bytecode()  alias isLoadedFromBytecode  {
-		assert(this instanceof Struct || this instanceof kiev.backend.java15.JStruct,"For node "+this.getClass());
-		return this.is_struct_bytecode;
-	}
-	@setter public final void set$is_struct_bytecode(boolean on) alias setLoadedFromBytecode {
-		assert(this instanceof Struct || this instanceof kiev.backend.java15.JStruct,"For node "+this.getClass());
-		this.is_struct_bytecode = on;
-	}
-
-	//
-	// Method specific
-	//
-
-	// multimethod	
-	@getter public final boolean get$is_mth_multimethod()  alias isMultiMethod  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_multimethod;
-	}
-	@setter public final void set$is_mth_multimethod(boolean on) alias setMultiMethod {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_multimethod != on) {
-			this.is_mth_multimethod = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// virtual static method	
-	@getter public final boolean get$is_mth_virtual_static()  alias isVirtualStatic  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_virtual_static;
-	}
-	@setter public final void set$is_mth_virtual_static(boolean on) alias setVirtualStatic {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_virtual_static != on) {
-			this.is_mth_virtual_static = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// method with variable number of arguments	
-	@getter public final boolean get$is_mth_varargs()  alias isVarArgs  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_varargs;
-	}
-	@setter public final void set$is_mth_varargs(boolean on) alias setVarArgs {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_varargs != on) {
-			this.is_mth_varargs = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// logic rule method	
-	@getter public final boolean get$is_mth_rule()  alias isRuleMethod  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_rule;
-	}
-	@setter public final void set$is_mth_rule(boolean on) alias setRuleMethod {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_rule != on) {
-			this.is_mth_rule = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// method with attached operator	
-	@getter public final boolean get$is_mth_operator()  alias isOperatorMethod  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_operator;
-	}
-	@setter public final void set$is_mth_operator(boolean on) alias setOperatorMethod {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_operator != on) {
-			this.is_mth_operator = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// needs to call post-condition before return	
-	@getter public final boolean get$is_mth_gen_post_cond()  alias isGenPostCond  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_gen_post_cond;
-	}
-	@setter public final void set$is_mth_gen_post_cond(boolean on) alias setGenPostCond {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_gen_post_cond != on) {
-			this.is_mth_gen_post_cond = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// need fields initialization	
-	@getter public final boolean get$is_mth_need_fields_init()  alias isNeedFieldInits  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_need_fields_init;
-	}
-	@setter public final void set$is_mth_need_fields_init(boolean on) alias setNeedFieldInits {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_need_fields_init != on) {
-			this.is_mth_need_fields_init = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a method generated as invariant	
-	@getter public final boolean get$is_mth_invariant()  alias isInvariantMethod  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_invariant;
-	}
-	@setter public final void set$is_mth_invariant(boolean on) alias setInvariantMethod {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_invariant != on) {
-			this.is_mth_invariant = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// a local method (closure code or inner method)	
-	@getter public final boolean get$is_mth_local()  alias isLocalMethod  {
-		assert(this instanceof Method,"For node "+this.getClass());
-		return this.is_mth_local;
-	}
-	@setter public final void set$is_mth_local(boolean on) alias setLocalMethod {
-		assert(this instanceof Method,"For node "+this.getClass());
-		if (this.is_mth_local != on) {
-			this.is_mth_local = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
-	//
-	// Var/field
-	//
-	
-	// use no proxy	
-	@getter public final boolean get$is_forward()  alias isForward  {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		return this.is_forward;
-	}
-	@setter public final void set$is_forward(boolean on) alias setForward {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		if (this.is_forward != on) {
-			this.is_forward = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// init wrapper
-	@getter public final boolean get$is_init_wrapper()  alias isInitWrapper  {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		return this.is_init_wrapper;
-	}
-	@setter public final void set$is_init_wrapper(boolean on) alias setInitWrapper {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		if (this.is_init_wrapper != on) {
-			this.is_init_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// need a proxy access 
-	@getter public final boolean get$is_need_proxy()  alias isNeedProxy  {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		return this.is_need_proxy;
-	}
-	@setter public final void set$is_need_proxy(boolean on) alias setNeedProxy {
-		assert(this instanceof Var || this instanceof Field,"For node "+this.getClass());
-		if (this.is_need_proxy != on) {
-			this.is_need_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
-	// Var specific
-	
-	// need a reference proxy access 
-	@getter public final boolean get$is_var_need_ref_proxy()  alias isNeedRefProxy  {
-		assert(this instanceof Var,"For node "+this.getClass());
-		return this.is_var_need_ref_proxy;
-	}
-	@setter public final void set$is_var_need_ref_proxy(boolean on) alias setNeedRefProxy {
-		assert(this instanceof Var,"For node "+this.getClass());
-		if (this.is_var_need_ref_proxy != on) {
-			this.is_var_need_ref_proxy = on;
-			if (on) this.is_need_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// is a local var in a rule 
-	@getter public final boolean get$is_var_local_rule_var()  alias isLocalRuleVar  {
-		assert(this instanceof Var,"For node "+this.getClass());
-		return this.is_var_local_rule_var;
-	}
-	@setter public final void set$is_var_local_rule_var(boolean on) alias setLocalRuleVar {
-		assert(this instanceof Var,"For node "+this.getClass());
-		if (this.is_var_local_rule_var != on) {
-			this.is_var_local_rule_var = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// closure proxy
-	@getter public final boolean get$is_var_closure_proxy()  alias isClosureProxy  {
-		assert(this instanceof Var,"For node "+this.getClass());
-		return this.is_var_closure_proxy;
-	}
-	@setter public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
-		assert(this instanceof Var,"For node "+this.getClass());
-		if (this.is_var_closure_proxy != on) {
-			this.is_var_closure_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// "this" var
-	@getter public final boolean get$is_var_this()  alias isVarThis  {
-		assert(this instanceof Var,"For node "+this.getClass());
-		return this.is_var_this;
-	}
-	@setter public final void set$is_var_this(boolean on) alias setVarThis {
-		assert(this instanceof Var,"For node "+this.getClass());
-		if (this.is_var_this != on) {
-			this.is_var_this = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// "super" var
-	@getter public final boolean get$is_var_super()  alias isVarSuper {
-		assert(this instanceof Var,"For node "+this.getClass());
-		return this.is_var_super;
-	}
-	@setter public final void set$is_var_super(boolean on) alias setVarSuper {
-		assert(this instanceof Var,"For node "+this.getClass());
-		if (this.is_var_super != on) {
-			this.is_var_super = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
-	//
-	// Field specific
-	//
-
-	// is a virtual field
-	@getter public final boolean get$is_fld_virtual()  alias isVirtual  {
-		assert(this instanceof Field,"For node "+this.getClass());
-		return this.is_fld_virtual;
-	}
-	@setter public final void set$is_fld_virtual(boolean on) alias setVirtual {
-		assert(this instanceof Field,"For node "+this.getClass());
-		if (this.is_fld_virtual != on) {
-			this.is_fld_virtual = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// is a field of enum
-	@getter public final boolean get$is_fld_enum()  alias isEnumField  {
-		assert(this instanceof Field,"For node "+this.getClass());
-		return this.is_fld_enum;
-	}
-	@setter public final void set$is_fld_enum(boolean on) alias setEnumField {
-		assert(this instanceof Field,"For node "+this.getClass());
-		if (this.is_fld_enum != on) {
-			this.is_fld_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// packer field (auto-generated for packed fields)
-	@getter public final boolean get$is_fld_packer()  alias isPackerField  {
-		assert(this instanceof Field,"For node "+this.getClass());
-		return this.is_fld_packer;
-	}
-	@setter public final void set$is_fld_packer(boolean on) alias setPackerField {
-		assert(this instanceof Field,"For node "+this.getClass());
-		if (this.is_fld_packer != on) {
-			this.is_fld_packer = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// packed field
-	@getter public final boolean get$is_fld_packed()  alias isPackedField  {
-		assert(this instanceof Field,"For node "+this.getClass());
-		return this.is_fld_packed;
-	}
-	@setter public final void set$is_fld_packed(boolean on) alias setPackedField {
-		assert(this instanceof Field,"For node "+this.getClass());
-		if (this.is_fld_packed != on) {
-			this.is_fld_packed = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
-	//
-	// Expr specific
-	//
-
-	// use no proxy	
-	@getter public final boolean get$is_expr_use_no_proxy()  alias isUseNoProxy  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_use_no_proxy;
-	}
-	@setter public final void set$is_expr_use_no_proxy(boolean on) alias setUseNoProxy {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_use_no_proxy != on) {
-			this.is_expr_use_no_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// use as field (disable setter/getter calls for virtual fields)
-	@getter public final boolean get$is_expr_as_field()  alias isAsField  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_as_field;
-	}
-	@setter public final void set$is_expr_as_field(boolean on) alias setAsField {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_as_field != on) {
-			this.is_expr_as_field = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// expression will generate void value
-	@getter public final boolean get$is_expr_gen_void()  alias isGenVoidExpr  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_gen_void;
-	}
-	@setter public final void set$is_expr_gen_void(boolean on) alias setGenVoidExpr {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_gen_void != on) {
-			this.is_expr_gen_void = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// tried to be resolved
-	@getter public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_try_resolved;
-	}
-	@setter public final void set$is_expr_try_resolved(boolean on) alias setTryResolved {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_try_resolved != on) {
-			this.is_expr_try_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// used bt for()
-	@getter public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		return this.is_expr_for_wrapper;
-	}
-	@setter public final void set$is_expr_for_wrapper(boolean on) alias setForWrapper {
-		assert(this instanceof Expr,"For node "+this.getClass());
-		if (this.is_expr_for_wrapper != on) {
-			this.is_expr_for_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// used for primary expressions, i.e. (a+b)
-	@getter public final boolean get$is_expr_primary()  alias isPrimaryExpr  {
-		assert(this instanceof ENode,"For node "+this.getClass());
-		return this.is_expr_primary;
-	}
-	@setter public final void set$is_expr_primary(boolean on) alias setPrimaryExpr {
-		assert(this instanceof ENode,"For node "+this.getClass());
-		if (this.is_expr_primary != on) {
-			this.is_expr_primary = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
-	//
-	// Statement specific flags
-	//
-	
-	// abrupted
-	@getter public final boolean get$is_stat_abrupted()  alias isAbrupted  {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		return this.is_stat_abrupted;
-	}
-	@setter public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		if (this.is_stat_abrupted != on) {
-			this.is_stat_abrupted = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// breaked
-	@getter public final boolean get$is_stat_breaked()  alias isBreaked  {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		return this.is_stat_breaked;
-	}
-	@setter public final void set$is_stat_breaked(boolean on) alias setBreaked {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		if (this.is_stat_breaked != on) {
-			this.is_stat_breaked = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// method-abrupted
-	@getter public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		return this.is_stat_method_abrupted;
-	}
-	@setter public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		if (this.is_stat_method_abrupted != on) {
-			this.is_stat_method_abrupted = on;
-			if (on) this.is_stat_abrupted = true;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// auto-returnable
-	@getter public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		return this.is_stat_auto_returnable;
-	}
-	@setter public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		if (this.is_stat_auto_returnable != on) {
-			this.is_stat_auto_returnable = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// break target
-	@getter public final boolean get$is_stat_break_target()  alias isBreakTarget  {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		return this.is_stat_break_target;
-	}
-	@setter public final void set$is_stat_break_target(boolean on) alias setBreakTarget {
-		assert(this instanceof Statement || this instanceof BlockExpr || this instanceof CaseLabel,"For node "+this.getClass());
-		if (this.is_stat_break_target != on) {
-			this.is_stat_break_target = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-
 	//
 	// General flags
 	//
@@ -1168,6 +501,84 @@ public abstract class ASTNode implements Constants {
 			this.callbackChildChanged(nodeattr$flags);
 		}
 	}
+
+}
+
+/**
+ * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
+ */
+@node
+public abstract class DNode extends ASTNode {
+
+	public static final DNode[] emptyArray = new DNode[0];
+	
+	public int				flags;
+	
+	/** Meta-information (annotations) of this structure */
+	@att public MetaSet								meta;
+
+	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
+	@virtual public virtual packed:1,flags,14 boolean is_struct_enum;       // struct
+	@virtual public virtual packed:1,flags,14 boolean is_fld_enum;        // field
+	// Flags temporary used with java flags
+	@virtual public virtual packed:1,flags,16 boolean is_forward;         // var/field
+	@virtual public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
+	@virtual public virtual packed:1,flags,16 boolean is_mth_multimethod; // method
+	@virtual public virtual packed:1,flags,17 boolean is_mth_varargs;     // method
+	@virtual public virtual packed:1,flags,18 boolean is_mth_rule;        // method
+	@virtual public virtual packed:1,flags,19 boolean is_mth_invariant;   // method
+	@virtual public virtual packed:1,flags,16 boolean is_struct_package;    // struct
+	@virtual public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
+	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
+	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
+//	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
+	@virtual public virtual packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
+
+	public DNode() {}
+	public DNode(int pos) { super(pos); }
+	public DNode(int pos, int fl) { super(pos); this.flags = fl; }
+
+	public abstract void resolveDecl();
+	public abstract Dumper toJavaDecl(Dumper dmp);
+
+	public int setFlags(int fl) {
+		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
+		flags = fl;
+		if( this instanceof Struct ) {
+			Struct self = (Struct)this;
+			self.acc = new Access(0);
+			self.acc.verifyAccessDecl(self);
+		}
+		else if( this instanceof Method ) {
+			Method self = (Method)this;
+			self.setStatic((fl & ACC_STATIC) != 0);
+			self.acc = new Access(0);
+			self.acc.verifyAccessDecl(self);
+		}
+		else if( this instanceof Field ) {
+			Field self = (Field)this;
+			self.acc = new Access(0);
+			self.acc.verifyAccessDecl(self);
+		}
+		this.callbackChildChanged(nodeattr$flags);
+		return flags;
+	}
+	public int getFlags() { return flags; }
+	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
+
+	public boolean isPublic()		{ return (flags & ACC_PUBLIC) != 0; }
+	public boolean isPrivate()		{ return (flags & ACC_PRIVATE) != 0; }
+	public boolean isProtected()	{ return (flags & ACC_PROTECTED) != 0; }
+	public boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
+	public boolean isStatic()		{ return (flags & ACC_STATIC) != 0; }
+	public boolean isFinal()		{ return (flags & ACC_FINAL) != 0; }
+	public boolean isSynchronized()	{ return (flags & ACC_SYNCHRONIZED) != 0; }
+	public boolean isVolatile()		{ return (flags & ACC_VOLATILE) != 0; }
+	public boolean isTransient()	{ return (flags & ACC_TRANSIENT) != 0; }
+	public boolean isNative()		{ return (flags & ACC_NATIVE) != 0; }
+	public boolean isInterface()	{ return (flags & ACC_INTERFACE) != 0; }
+	public boolean isAbstract()		{ return (flags & ACC_ABSTRACT) != 0; }
+	public boolean isSuper()		{ return (flags & ACC_SUPER) != 0; }
 
 	public void setPublic(boolean on) {
 		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
@@ -1247,23 +658,52 @@ public abstract class ASTNode implements Constants {
 }
 
 /**
- * A node that is a declaration: class, formal parameters and vars, methods, fields, etc.
+ * An lvalue dnode (var or field)
  */
 @node
-public abstract class DNode extends ASTNode {
+public abstract class LvalDNode extends DNode {
 
-	public static final DNode[] emptyArray = new DNode[0];
+	public LvalDNode() {}
+	public LvalDNode(int pos) { super(pos); }
+	public LvalDNode(int pos, int fl) { super(pos,fl); }
+
+	//
+	// Var/field
+	//
 	
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet								meta;
+	// use no proxy	
+	@getter public final boolean get$is_forward()  alias isForward  {
+		return this.is_forward;
+	}
+	@setter public final void set$is_forward(boolean on) alias setForward {
+		if (this.is_forward != on) {
+			this.is_forward = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// init wrapper
+	@getter public final boolean get$is_init_wrapper()  alias isInitWrapper  {
+		return this.is_init_wrapper;
+	}
+	@setter public final void set$is_init_wrapper(boolean on) alias setInitWrapper {
+		if (this.is_init_wrapper != on) {
+			this.is_init_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// need a proxy access 
+	@getter public final boolean get$is_need_proxy()  alias isNeedProxy  {
+		return this.is_need_proxy;
+	}
+	@setter public final void set$is_need_proxy(boolean on) alias setNeedProxy {
+		if (this.is_need_proxy != on) {
+			this.is_need_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
 
-	public DNode() {}
-	public DNode(int pos) { super(pos); }
-	public DNode(int pos, int fl) { super(pos,fl); }
-
-	public abstract void resolveDecl();
-	public abstract Dumper toJavaDecl(Dumper dmp);
 }
+
 
 /**
  * A node that may be part of expression: statements, declarations, operators,
@@ -1292,13 +732,22 @@ public /*abstract*/ class ENode extends ASTNode {
 		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
 	}
 
-	public int getPriority() { return 255; }
+	public Operator getOp() { return null; }
+	public int getPriority() {
+		if (isPrimaryExpr())
+			return 255;
+		Operator op = getOp();
+		if (op == null)
+			return 255;
+		return op.priority;
+	}
+
 	public boolean valueEquals(Object o) { return false; }
 	public boolean isConstantExpr() { return false; }
 	public Object	getConstValue() {
 		throw new RuntimeException("Request for constant value of non-constant expression");
     }
-	
+
 	public final void replaceWithNodeResolve(Type reqType, ENode node) {
 		assert(isAttached());
 		ASTNode n = this.replaceWithNode(node);
@@ -1327,6 +776,127 @@ public /*abstract*/ class ENode extends ASTNode {
 		ASTNode n = this.replaceWith(fnode);
 		assert(n.isAttached());
 		((ENode)n).resolve(null);
+	}
+
+	//
+	// Expr specific
+	//
+
+	// use no proxy	
+	@getter public final boolean get$is_expr_use_no_proxy()  alias isUseNoProxy  {
+		return this.is_expr_use_no_proxy;
+	}
+	@setter public final void set$is_expr_use_no_proxy(boolean on) alias setUseNoProxy {
+		if (this.is_expr_use_no_proxy != on) {
+			this.is_expr_use_no_proxy = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// use as field (disable setter/getter calls for virtual fields)
+	@getter public final boolean get$is_expr_as_field()  alias isAsField  {
+		return this.is_expr_as_field;
+	}
+	@setter public final void set$is_expr_as_field(boolean on) alias setAsField {
+		if (this.is_expr_as_field != on) {
+			this.is_expr_as_field = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// expression will generate void value
+	@getter public final boolean get$is_expr_gen_void()  alias isGenVoidExpr  {
+		return this.is_expr_gen_void;
+	}
+	@setter public final void set$is_expr_gen_void(boolean on) alias setGenVoidExpr {
+		if (this.is_expr_gen_void != on) {
+			this.is_expr_gen_void = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// tried to be resolved
+	@getter public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
+		return this.is_expr_try_resolved;
+	}
+	@setter public final void set$is_expr_try_resolved(boolean on) alias setTryResolved {
+		if (this.is_expr_try_resolved != on) {
+			this.is_expr_try_resolved = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// used bt for()
+	@getter public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
+		return this.is_expr_for_wrapper;
+	}
+	@setter public final void set$is_expr_for_wrapper(boolean on) alias setForWrapper {
+		if (this.is_expr_for_wrapper != on) {
+			this.is_expr_for_wrapper = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// used for primary expressions, i.e. (a+b)
+	@getter public final boolean get$is_expr_primary()  alias isPrimaryExpr  {
+		return this.is_expr_primary;
+	}
+	@setter public final void set$is_expr_primary(boolean on) alias setPrimaryExpr {
+		if (this.is_expr_primary != on) {
+			this.is_expr_primary = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	//
+	// Statement specific flags
+	//
+	
+	// abrupted
+	@getter public final boolean get$is_stat_abrupted()  alias isAbrupted  {
+		return this.is_stat_abrupted;
+	}
+	@setter public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
+		if (this.is_stat_abrupted != on) {
+			this.is_stat_abrupted = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// breaked
+	@getter public final boolean get$is_stat_breaked()  alias isBreaked  {
+		return this.is_stat_breaked;
+	}
+	@setter public final void set$is_stat_breaked(boolean on) alias setBreaked {
+		if (this.is_stat_breaked != on) {
+			this.is_stat_breaked = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// method-abrupted
+	@getter public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
+		return this.is_stat_method_abrupted;
+	}
+	@setter public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
+		if (this.is_stat_method_abrupted != on) {
+			this.is_stat_method_abrupted = on;
+			if (on) this.is_stat_abrupted = true;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// auto-returnable
+	@getter public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
+		return this.is_stat_auto_returnable;
+	}
+	@setter public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
+		if (this.is_stat_auto_returnable != on) {
+			this.is_stat_auto_returnable = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// break target
+	@getter public final boolean get$is_stat_break_target()  alias isBreakTarget  {
+		return this.is_stat_break_target;
+	}
+	@setter public final void set$is_stat_break_target(boolean on) alias setBreakTarget {
+		if (this.is_stat_break_target != on) {
+			this.is_stat_break_target = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
 	}
 
 }
@@ -1395,41 +965,16 @@ public final class LocalStructDecl extends ENode implements Named {
 
 
 @node
-public abstract class Expr extends ENode {
-
-	public static Expr[] emptyArray = new Expr[0];
-
-	public Expr() {}
-
-	public Expr(int pos) { super(pos); }
-
-	public Operator getOp() { return null; }
-
-	public int getPriority() {
-		if (isPrimaryExpr())
-			return 255;
-		Operator op = getOp();
-		if (op == null)
-			return 255;
-		return op.priority;
-	}
-
-	public Object	getConstValue() {
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-    }
-}
-
-@node
 @dflow(out="expr")
-public class NopExpr extends Expr {
+public class NopExpr extends ENode {
 
 	@att
 	@dflow(in="this:in")
-	public Expr		expr;
+	public ENode	expr;
 	
 	public NopExpr() {
 	}
-	public NopExpr(Expr expr) {
+	public NopExpr(ENode expr) {
 		this.pos = expr.pos;
 		this.expr = expr;
 	}
@@ -1442,7 +987,7 @@ public class NopExpr extends Expr {
 }
 
 @node
-public abstract class LvalueExpr extends Expr {
+public abstract class LvalueExpr extends ENode {
 
 	public LvalueExpr() {}
 
@@ -1474,25 +1019,8 @@ public abstract class LvalueExpr extends Expr {
 }
 
 @node
-public abstract class Statement extends ENode {
-
-	public static Statement[] emptyArray = new Statement[0];
-
-	public Statement() {}
-
-	public Statement(int pos) { super(pos); }
-
-	public void		generate(Type reqType) {
-		Dumper dmp = new Dumper();
-		dmp.append(this);
-		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, stat: "+dmp.toString());
-	}
-
-}
-
-@node
 @dflow(out="this:in")
-public class InitializerShadow extends Statement {
+public class InitializerShadow extends ENode {
 
 	@ref Initializer init;
 	
@@ -1513,6 +1041,22 @@ public class InitializerShadow extends Statement {
 		dmp.append(" */");
 		return dmp;
 	}
+}
+
+
+@node
+public abstract class TypeDef extends DNode implements Named {
+	public TypeDef() {}
+	
+	public TypeDef(int pos) {
+		super(pos);
+	}
+	public TypeDef(int pos, int fl) {
+		super(pos, fl);
+	}
+
+	public abstract NodeName	getName();
+	public abstract boolean		checkResolved();
 }
 
 
@@ -1603,15 +1147,15 @@ public class TypeRef extends ENode {
 			if (meta.getFields().length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
-//				Expr expr = new ConstIntExpr(case_attr.caseno);
-				Expr expr = new ConstIntExpr(meta.getTag());
+//				ENode expr = new ConstIntExpr(case_attr.caseno);
+				ENode expr = new ConstIntExpr(meta.getTag());
 				if( reqType != Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);
 				return;
 			}
 			// Now, check we need add type arguments
-			replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,Expr.emptyArray);});
+			replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,ENode.emptyArray);});
 			return;
 		}
 		throw new CompilerException(this,"Type "+this+" is not a class's case with no fields");
@@ -1667,7 +1211,7 @@ public class NameRef extends ASTNode {
 }
 
 public interface SetBody {
-	public boolean setBody(Statement body);
+	public boolean setBody(ENode body);
 }
 
 public class CompilerException extends RuntimeException {

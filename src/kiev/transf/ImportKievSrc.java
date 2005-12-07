@@ -24,7 +24,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
-import kiev.backend.java15.*;
+//import kiev.backend.java15.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -83,7 +83,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			// Inner classes's arguments have to be arguments of outer classes
 			// BUG BUG BUG - need to follow java scheme
 			for(int i=0; i < me.args.length; i++) {
-				TypeArgRef arg = me.args[i];
+				TypeArgDef arg = me.args[i];
 				Type[] outer_args = astnp.type.args;
 				if( outer_args == null || outer_args.length <= i)
 					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
@@ -137,7 +137,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 		// assign type of enum fields
 		if (me.isEnum()) {
-			foreach (ASTNode n; me.members; n instanceof Field && n.isEnumField()) {
+			foreach (ASTNode n; me.members; n instanceof Field && ((Field)n).isEnumField()) {
 				Field f = (Field)n;
 				f.ftype = new TypeRef(me.type);
 			}
@@ -221,13 +221,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Kiev.reportError(astn,"Identifier "+name+" is not a package");
 		else if (astn.mode == Import.ImportMode.IMPORT_STATIC && !(astn.star || (n instanceof Field)))
 			Kiev.reportError(astn,"Identifier "+name+" is not a field");
-		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof Struct && n.isSyntax()))
+		else if (astn.mode == Import.ImportMode.IMPORT_SYNTAX && !(n instanceof Struct && ((Struct)n).isSyntax()))
 			Kiev.reportError(astn,"Identifier "+name+" is not a syntax");
 		else
 			astn.resolved = n;
 	}
 
-	public void pass1_1(Typedef:ASTNode astn) {
+	public void pass1_1(TypeDefOp:ASTNode astn) {
 		try {
 			if (astn.typearg != null) {
 				astn.type = new TypeRef(astn.type.getType().getInitialType());
@@ -247,7 +247,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			for (int i=0; i < me.members.length; i++) {
 				ASTNode n = me.members[i];
 				try {
-					if (n instanceof Typedef) {
+					if (n instanceof TypeDefOp) {
 						pass1_1(n);
 						me.imported.add(me.members[i]);
 						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
@@ -373,7 +373,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		/* Process inheritance of class's arguments, if any */
 		Type[] targs = me.type.args;
 		for(int i=0; i < astn.args.length; i++) {
-			TypeArgRef arg = astn.args[i];
+			TypeArgDef arg = astn.args[i];
 			if( arg.super_bound != null ) {
 				Type sup = arg.super_bound.getType();
 				if( !sup.isReference() ) {
@@ -422,7 +422,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			pass2_2(n);
 	}
 
-	public void pass2_2(Typedef:ASTNode astn) {
+	public void pass2_2(TypeDefOp:ASTNode astn) {
 		if (astn.type == null) {
 			if (astn.typearg != null) {
 				astn.type = new TypeRef(((BaseType)astn.type.getType()).clazz.type);
@@ -539,7 +539,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 				m.acc.verifyAccessDecl(m);
 			}
-			else if (members[i] instanceof Field && members[i].isEnumField()) {
+			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
 				KString text = f.name.name;
 				MetaAlias al = f.getMetaAlias();
@@ -553,7 +553,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						}
 					}
 				}
-				f.init = new NewExpr(f.pos,me.type,new Expr[]{
+				f.init = new NewExpr(f.pos,me.type,new ENode[]{
 							new ConstStringExpr(f.name.name),
 							new ConstIntExpr(next_enum_val)
 							//new ConstStringExpr(text)
@@ -619,7 +619,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					f.setPackedField(true);
 				if (fdecl.init == null && !ftype.isArray()) {
 					if(ftype.isWrapper()) {
-						f.init = new NewExpr(fdecl.pos,ftype,Expr.emptyArray);
+						f.init = new NewExpr(fdecl.pos,ftype,ENode.emptyArray);
 						f.setInitWrapper(true);
 					}
 				} else {
@@ -649,7 +649,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			// Inner classes and cases after all methods and fields, skip now
 			else if( members[i] instanceof Struct );
 			else if( members[i] instanceof Import ) {
-				me.imported.add(members[i]);
+				me.imported.add((Import)members[i]);
 			}
 			else {
 				throw new CompilerException(members[i],"Unknown type if structure member: "+members[i]);
@@ -794,7 +794,7 @@ final class JavaBackend extends BackendProcessor {
 	}
 	
 	public void preGenerate() {
-		JPackage jroot = (JPackage)new TreeMapper().mapStruct(Env.root);
+//		JPackage jroot = (JPackage)new TreeMapper().mapStruct(Env.root);
 		foreach (FileUnit fu; Kiev.files) {
 //			foreach (DNode d; fu.members; d instanceof Struct) {
 //				new JStruct((Struct)d).preGenerate();

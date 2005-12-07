@@ -35,7 +35,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
+public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
 
 	protected LoopStat() {
 	}
@@ -134,7 +134,7 @@ public class WhileStat extends LoopStat {
 	
 	@att
 	@dflow(in="cond:true")
-	public Statement	body;
+	public ENode		body;
 	
 	@att(copyable=false)
 	@dflow(in="cond:false")
@@ -145,7 +145,7 @@ public class WhileStat extends LoopStat {
 		this.lblbrk = new Label();
 	}
 
-	public WhileStat(int pos, ENode cond, Statement body) {
+	public WhileStat(int pos, ENode cond, ENode body) {
 		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
@@ -215,7 +215,7 @@ public class DoWhileStat extends LoopStat {
 
 	@att
 	@dflow(in="", links="cond:true")
-	public Statement	body;
+	public ENode		body;
 
 	@att(copyable=false)
 	@dflow(in="body")
@@ -234,7 +234,7 @@ public class DoWhileStat extends LoopStat {
 		this.lblbrk = new Label();
 	}
 
-	public DoWhileStat(int pos, ENode cond, Statement body) {
+	public DoWhileStat(int pos, ENode cond, ENode body) {
 		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
@@ -319,7 +319,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		super(pos);
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
 		Var@ var;
 	{
 		var @= decls,
@@ -331,7 +331,7 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		var.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ var;
 	{
 		var @= decls,
@@ -368,7 +368,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@att
 	@dflow(in="cond:true")
-	public Statement	body;
+	public ENode		body;
 
 	@att(copyable=false)
 	@dflow(in="body")
@@ -387,7 +387,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		this.lblbrk = new Label();
 	}
 	
-	public ForStat(int pos, ENode init, Expr cond, Expr iter, Statement body) {
+	public ForStat(int pos, ENode init, ENode cond, ENode iter, ENode body) {
 		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
@@ -403,16 +403,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	public void resolve(Type reqType) {
 		if( init != null ) {
 			try {
-				if( init instanceof Statement )
-					((Statement)init).resolve(Type.tpVoid);
-				else if( init instanceof ForInit )
-					((ForInit)init).resolve(Type.tpVoid);
-				else if( init instanceof Expr )
-					init.resolve(Type.tpVoid);
-				else
-					throw new RuntimeException("Unknown type of for-init node "+init);
-				if (init instanceof Expr)
-					init.setGenVoidExpr(true);
+				init.resolve(Type.tpVoid);
+				init.setGenVoidExpr(true);
 			} catch(Exception e ) {
 				Kiev.reportError(init,e);
 			}
@@ -447,13 +439,13 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		init instanceof ForInit,
 		((ForInit)init).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
@@ -470,15 +462,13 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		code.setLinePos(this.getPosLine());
 		try {
 			if( init != null ) {
-				if( init instanceof Statement )
-					((Statement)init).generate(code,Type.tpVoid);
-				else if( init instanceof Expr )
-					((Expr)init).generate(code,Type.tpVoid);
-				else if( init instanceof ForInit ) {
+				if( init instanceof ForInit ) {
 					ForInit fi = (ForInit)init;
 					foreach (Var var; fi.decls) {
 						var.generate(code,Type.tpVoid);
 					}
+				} else {
+					init.generate(code,Type.tpVoid);
 				}
 			}
 
@@ -519,7 +509,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("for").space().append('(');
-		if( init != null && init instanceof Statement ) dmp.append(init);
+		if( init != null && init instanceof ENode ) dmp.append(init);
 		else if( init != null ) {
 			dmp.append(init).append(';');
 		} else {
@@ -569,7 +559,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public ENode								cond;
 	@att
 	@dflow(in="cond:true")
-	public Statement							body;
+	public ENode								body;
 
 	@att(copyable=false)
 	@dflow(in="body", links="cond:false")
@@ -596,7 +586,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		this.lblbrk = new Label();
 	}
 	
-	public ForEachStat(int pos, Var var, ENode container, ENode cond, Statement body) {
+	public ForEachStat(int pos, Var var, ENode container, ENode cond, ENode body) {
 		super(pos);
 		this.lblcnt = new Label();
 		this.lblbrk = new Label();
@@ -716,7 +706,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			/* iter = container.elements(); */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
 				new LVarExpr(iter.pos,iter),
-				new CallExpr(container.pos,(Expr)container.copy(),elems,Expr.emptyArray)
+				new CallExpr(container.pos,(ENode)container.copy(),elems,ENode.emptyArray)
 				);
 			iter_init.resolve(iter.type);
 			break;
@@ -764,7 +754,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			iter_cond = new CallExpr(	iter.pos,
 					new LVarExpr(iter.pos,iter),
 					moreelem,
-					Expr.emptyArray
+					ENode.emptyArray
 				);
 			break;
 		case RULE:
@@ -774,7 +764,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				BinaryOperator.NotEquals,
 				new AssignExpr(container.pos,AssignOperator.Assign,
 					new LVarExpr(container.pos,iter),
-					(Expr)container.copy()),
+					(ENode)container.copy()),
 				new ConstNullExpr()
 				);
 			break;
@@ -803,7 +793,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 				var_init = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),
 					nextelem,
-					Expr.emptyArray
+					ENode.emptyArray
 				);
 			if (!nextelem.type.ret.isInstanceOf(var.type))
 				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
@@ -848,14 +838,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		{	n ?= var

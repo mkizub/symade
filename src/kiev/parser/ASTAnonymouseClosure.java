@@ -35,7 +35,7 @@ import kiev.stdlib.*;
 
 @node
 @dflow(out="this:in")
-public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
+public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
     @att public BlockStat					body;
@@ -50,7 +50,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		return clazz.type;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Var@ p;
 	{
 		p @= params,
@@ -76,7 +76,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 				.toKString(),
 			false
 		);
-		clazz = Env.newStruct(clname,pctx.clazz,flags,true);
+		clazz = Env.newStruct(clname,pctx.clazz,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -99,7 +99,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 	
 	public void resolve(Type reqType) {
 		if( isResolved() ) {
-			replaceWithNode((Expr)~new_closure);
+			replaceWithNode((ENode)~new_closure);
 			return;
 		}
 		BlockStat body = (BlockStat)~this.body;
@@ -124,7 +124,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		FormPar[] params = this.params.delToArray();
 		for(int i=0; i < params.length; i++) {
 			FormPar v = params[i];
-			Expr val = new ContainerAccessExpr(pos,
+			ENode val = new ContainerAccessExpr(pos,
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
@@ -144,7 +144,7 @@ public class ASTAnonymouseClosure extends Expr implements ScopeOfNames {
 		Kiev.runProcessorsOn(clazz);
 		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
 		new_closure.clazz = (Struct)~this.clazz;
-		replaceWithNodeResolve(reqType, (Expr)~new_closure);
+		replaceWithNodeResolve(reqType, (ENode)~new_closure);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

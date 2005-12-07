@@ -44,9 +44,9 @@ public class OpTypes {
 	public static Type getExprType(Object n, Type tp) {
 		Type t = null;
 		switch(n) {
-		case Expr:
+		case ENode:
 		{
-			Expr e = (Expr)n;
+			ENode e = (ENode)n;
 			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
 			if( !e.isResolved() ) {
 				NopExpr we = new NopExpr();

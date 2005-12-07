@@ -478,8 +478,8 @@ public abstract class MetaValue extends ASTNode {
 	}
 
 	boolean checkValue(Type reqType, ENode value) {
-		if !(value instanceof Expr) {
-			if (reqType == Type.tpClass && value instanceof TypeRef) {
+		if (value instanceof TypeRef) {
+			if (reqType == Type.tpClass) {
 				((TypeRef)value).getType();
 				return false;
 			} else {
@@ -487,7 +487,7 @@ public abstract class MetaValue extends ASTNode {
 					value+" ("+value.getClass()+")");
 			}
 		}
-		Expr v = (Expr)value;
+		ENode v = value;
 		if (v instanceof SFldExpr && ((SFldExpr)v).var.isEnumField()) {
 			return false;
 		}
@@ -498,14 +498,12 @@ public abstract class MetaValue extends ASTNode {
 			v.replaceWith(fun ()->ENode {return new CastExpr(v.pos, reqType, v);});
 			return true;
 		}
-		if (value instanceof Expr) {
-			Expr v = (Expr)value;
-			if (!v.isConstantExpr())
-				throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
-			Type vt = v.getType();
-			if (vt != reqType)
-				throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
-		}
+		ENode v = value;
+		if (!v.isConstantExpr())
+			throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
+		Type vt = v.getType();
+		if (vt != reqType)
+			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		return false;
 	}
 

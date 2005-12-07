@@ -510,8 +510,8 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Typedef Typedef() throws ParseException {
-  NameRef id; ASTOperator op; TypeRef tp; Typedef n = new Typedef();
+  final public TypeDefOp Typedef() throws ParseException {
+  NameRef id; ASTOperator op; TypeRef tp; TypeDefOp n = new TypeDefOp();
     jj_consume_token(TYPEDEF);
     if (jj_2_4(3) && (checkNoSpace(getToken(1),getToken(2)))) {
       id = Name();
@@ -896,9 +896,9 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public void ArgumentDeclaration(ASTNode parent) throws ParseException {
-  NameRef name; TypeArgRef arg;
+  NameRef name; TypeArgDef arg;
     name      = Name();
-          arg = mkTypeArgRef(name,parent);
+          arg = mkTypeArgDef(name,parent);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
@@ -3423,8 +3423,8 @@ public abstract class kiev040 implements kiev040Constants {
 /*
  * Statement syntax follows.
  */
-  final public Statement Statement() throws ParseException {
-  Statement st;
+  final public ENode Statement() throws ParseException {
+  ENode st;
     if (labledStatementLA()) {
       st = LabeledStatement();
     } else {
@@ -3493,14 +3493,14 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Statement ReparseStatement() throws ParseException {
+  final public ENode ReparseStatement() throws ParseException {
   Token t;
     t= jj_consume_token(REPARSE_STATEMENT);
-                {if (true) return (Statement)Kiev.parserAddresses.get(t.image.substring(5,5+8));}
+                {if (true) return (ENode)Kiev.parserAddresses.get(t.image.substring(5,5+8));}
     throw new Error("Missing return statement in function");
   }
 
-  final public Statement LabeledStatement() throws ParseException {
+  final public ENode LabeledStatement() throws ParseException {
   LabeledStat st = new LabeledStat();
     st.ident = Name();
     jj_consume_token(COLON);
@@ -3694,7 +3694,7 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Statement EmptyStatement() throws ParseException {
+  final public ENode EmptyStatement() throws ParseException {
   Token t; EmptyStat st = new EmptyStat();
     t= jj_consume_token(SEMICOLON);
                 st.setPos(t.getPos());
@@ -3702,7 +3702,7 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Statement StatementExpression() throws ParseException {
+  final public ENode StatementExpression() throws ParseException {
   ExprStat st = new ExprStat();
     st.expr = ExpressionNT(null);
     jj_consume_token(SEMICOLON);
@@ -3981,8 +3981,8 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Statement GotoStatement() throws ParseException {
-  Statement st; ENode expr; NameRef id;
+  final public ENode GotoStatement() throws ParseException {
+  ENode st; ENode expr; NameRef id;
     jj_consume_token(GOTO);
     switch (jj_nt.kind) {
     case CASE:
@@ -8804,8 +8804,8 @@ public abstract class kiev040 implements kiev040Constants {
 		return clazz;
 	}
 
-	private TypeArgRef mkTypeArgRef(NameRef name, ASTNode parent) {
-		TypeArgRef arg = new TypeArgRef(name);
+	private TypeArgDef mkTypeArgDef(NameRef name, ASTNode parent) {
+		TypeArgDef arg = new TypeArgDef(name);
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
 			s.args += arg;

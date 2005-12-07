@@ -118,7 +118,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		return st;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
 		var @= pattern,
@@ -132,27 +132,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		try {
 			if( val != null ) {
 				val.resolve(null);
-				if( val instanceof TypeRef)
-					;
-				else if !( val instanceof Expr )
-					throw new CompilerException(this,"Unknown node of class "+val.getClass());
-				if( val instanceof Expr )	{
-					if( sw.mode == SwitchStat.ENUM_SWITCH ) {
-						if( !(val instanceof SFldExpr) )
-							throw new CompilerException(this,"Wrong case in enum switch");
-						SFldExpr f = (SFldExpr)val;
-						Type et = sw.sel.getType();
-						if( f.var.type != et )
-							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
-						if (et.isEnum())
-							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
-						else
-							val = (Expr)f.var.init.copy();
-					}
-					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
-						throw new CompilerException(this,"Wrong case in normal switch");
-				}
-				else if( val instanceof TypeRef ) {
+				if( val instanceof TypeRef ) {
 					this.type = Type.getRealType(sw.tmpvar.getType(),val.getType());
 					pizza_case = true;
 					Struct cas = this.type.getStruct();
@@ -180,7 +160,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
 											Type.getRealType(sw.tmpvar.getType(),cas.type),
-											(Expr)new LVarExpr(p.pos,sw.tmpvar.getVar())
+											new LVarExpr(p.pos,sw.tmpvar.getVar())
 										),
 										f
 									);
@@ -198,9 +178,22 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 							val = new ConstIntExpr(0);
 						}
 					}
+				} else {
+					if( sw.mode == SwitchStat.ENUM_SWITCH ) {
+						if( !(val instanceof SFldExpr) )
+							throw new CompilerException(this,"Wrong case in enum switch");
+						SFldExpr f = (SFldExpr)val;
+						Type et = sw.sel.getType();
+						if( f.var.type != et )
+							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
+						if (et.isEnum())
+							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
+						else
+							val = (ENode)f.var.init.copy();
+					}
+					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
+						throw new CompilerException(this,"Wrong case in normal switch");
 				}
-				else
-					throw new CompilerException(this,"Unknown node of class "+val.getClass());
 			} else {
 				sw.defCase = this;
 				if( sw.mode == SwitchStat.TYPE_SWITCH )
@@ -211,9 +204,9 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		BlockStat.resolveBlockStats(this, stats);
 
 		if( val != null ) {
-			if( !((Expr)val).isConstantExpr() )
+			if( !val.isConstantExpr() )
 				throw new RuntimeException("Case label "+val+" must be a constant expression but "+val.getClass()+" found");
-			if( !((Expr)val).getType().isIntegerInCode() )
+			if( !val.getType().isIntegerInCode() )
 				throw new RuntimeException("Case label "+val+" must be of integer type");
 		}
 	}
@@ -229,7 +222,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			code.addInstr(Instr.set_label,case_label);
 			if( val == null ) ((SwitchStat)parent).cosw.addDefault(case_label);
 			else {
-				Object v = ((Expr)val).getConstValue();
+				Object v = val.getConstValue();
 				if( v instanceof Number )
 					((SwitchStat)parent).cosw.addCase( ((Number)v).intValue(), case_label);
 				else if( v instanceof java.lang.Character )
@@ -271,7 +264,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 
 @node
 @dflow(out="lblbrk")
-public class SwitchStat extends Statement implements BreakTarget {
+public class SwitchStat extends ENode implements BreakTarget {
 
 	@dflow
 	@att public ENode					sel;
@@ -376,7 +369,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
 							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
-							new Expr[]{new LVarExpr(pos,tmpvar.getVar())}
+							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
 					}
@@ -416,7 +409,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 				signs[j] = new ConstStringExpr(typenames[j]);
 			if( defindex < 0 ) defindex = signs.length;
 			typehash.init = new NewExpr(pctx.clazz.pos,Type.tpTypeSwitchHash,
-				new Expr[]{ new NewInitializedArrayExpr(pctx.clazz.pos,new TypeRef(Type.tpString),1,signs),
+				new ENode[]{ new NewInitializedArrayExpr(pctx.clazz.pos,new TypeRef(Type.tpString),1,signs),
 					new ConstIntExpr(defindex)
 				});
 			Constructor clinit = pctx.clazz.getClazzInitMethod();
@@ -429,8 +422,8 @@ public class SwitchStat extends Statement implements BreakTarget {
 		}
 		for(int i=0; i < cases.length; i++) {
 			for(int j=0; j < i; j++) {
-				Expr vi = (Expr)((CaseLabel)cases[i]).val;
-				Expr vj = (Expr)((CaseLabel)cases[j]).val;
+				ENode vi = cases[i].val;
+				ENode vj = cases[j].val;
 				if( i != j &&  vi != null && vj != null
 				 && vi.getConstValue().equals(vj.getConstValue()) )
 					throw new RuntimeException("Duplicate value "+vi+" and "+vj+" in switch statement");
@@ -523,7 +516,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 			}
 		}
 		if( isMethodAbrupted() && defCase==null ) {
-			Statement thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,Expr.emptyArray));
+			ENode thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,ENode.emptyArray));
 			CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
 			cases.insert(dc,0);
 			dc.resolve(Type.tpVoid);
@@ -553,7 +546,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 		for (int i=0, j=0; i < cases.length; i++) {
 			if (((CaseLabel)cases[i]).val != null) {
 				int val;
-				Object v = ((Expr)((CaseLabel)cases[i]).val).getConstValue();
+				Object v = cases[i].val.getConstValue();
 				if( v instanceof Number )
 					val = ((Number)v).intValue();
 				else if( v instanceof java.lang.Character )
@@ -642,7 +635,7 @@ public class SwitchStat extends Statement implements BreakTarget {
 
 @node
 @dflow(out="body")
-public class CatchInfo extends Statement implements ScopeOfNames {
+public class CatchInfo extends ENode implements ScopeOfNames {
 
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
@@ -651,7 +644,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public Var				arg;
 	@att
 	@dflow(in="arg")
-	public Statement		body;
+	public ENode			body;
 
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -659,7 +652,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 	public CatchInfo() {
 	}
 
-//	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
+//	public CatchInfo(int pos, ASTNode parent, Var arg, ENode body) {
 //		super(pos, parent);
 //		this.arg = arg;
 //		this.body = body;
@@ -669,7 +662,7 @@ public class CatchInfo extends Statement implements ScopeOfNames {
 		return "catch( "+arg+" )";
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}
@@ -725,7 +718,7 @@ public class FinallyInfo extends CatchInfo {
 	public FinallyInfo() {
 	}
 
-//	public FinallyInfo(int pos, ASTNode parent, Statement body) {
+//	public FinallyInfo(int pos, ASTNode parent, ENode body) {
 //		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
 //		ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
 //	}
@@ -773,11 +766,11 @@ public class FinallyInfo extends CatchInfo {
 
 @node
 @dflow(out="body")
-public class TryStat extends Statement/*defaults*/ {
+public class TryStat extends ENode {
 
 	@att
 	@dflow(in="")
-	public Statement				body;
+	public ENode					body;
 	
 	@att
 	@dflow(in="", seq="false")
@@ -908,7 +901,7 @@ public class TryStat extends Statement/*defaults*/ {
 
 @node
 @dflow(out="body")
-public class SynchronizedStat extends Statement {
+public class SynchronizedStat extends ENode {
 
 	@att
 	@dflow(in="this:in")
@@ -918,7 +911,7 @@ public class SynchronizedStat extends Statement {
 	
 	@att
 	@dflow(in="expr")
-	public Statement	body;
+	public ENode		body;
 	
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -990,7 +983,7 @@ public class SynchronizedStat extends Statement {
 
 @node
 @dflow(out="body")
-public class WithStat extends Statement {
+public class WithStat extends ENode {
 
 	@att
 	@dflow(in="this:in")
@@ -998,10 +991,10 @@ public class WithStat extends Statement {
 	
 	@att
 	@dflow(in="expr")
-	public Statement	body;
+	public ENode		body;
 	
 	@ref
-	public DNode		var_or_field;
+	public LvalDNode	var_or_field;
 	public CodeLabel	end_label;
 
 	public WithStat() {

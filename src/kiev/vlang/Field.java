@@ -27,12 +27,12 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 205 $
+ * @version $Revision$
  *
  */
 
 @node
-public class Field extends DNode implements Named, Typed, Accessable {
+public class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
 	/** Field' access */
@@ -92,6 +92,51 @@ public class Field extends DNode implements Named, Typed, Accessable {
 		acc.verifyAccessDecl(this);
 	}
 	
+	//
+	// Field specific
+	//
+
+	// is a virtual field
+	@getter public final boolean get$is_fld_virtual()  alias isVirtual  {
+		return this.is_fld_virtual;
+	}
+	@setter public final void set$is_fld_virtual(boolean on) alias setVirtual {
+		if (this.is_fld_virtual != on) {
+			this.is_fld_virtual = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// is a field of enum
+	@getter public final boolean get$is_fld_enum()  alias isEnumField  {
+		return this.is_fld_enum;
+	}
+	@setter public final void set$is_fld_enum(boolean on) alias setEnumField {
+		if (this.is_fld_enum != on) {
+			this.is_fld_enum = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// packer field (auto-generated for packed fields)
+	@getter public final boolean get$is_fld_packer()  alias isPackerField  {
+		return this.is_fld_packer;
+	}
+	@setter public final void set$is_fld_packer(boolean on) alias setPackerField {
+		if (this.is_fld_packer != on) {
+			this.is_fld_packer = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// packed field
+	@getter public final boolean get$is_fld_packed()  alias isPackedField  {
+		return this.is_fld_packed;
+	}
+	@setter public final void set$is_fld_packed(boolean on) alias setPackedField {
+		if (this.is_fld_packed != on) {
+			this.is_fld_packed = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	public MetaVirtual getMetaVirtual() {
 		return (MetaVirtual)this.meta.get(MetaVirtual.NAME);
 	}
@@ -156,8 +201,7 @@ public class Field extends DNode implements Named, Typed, Accessable {
 		if( init != null ) {
 			if (init instanceof TypeRef)
 				((TypeRef)init).toExpr(type);
-			if( init instanceof Expr )
-				init.resolve(type);
+			init.resolve(type);
 			if (init.getType() != type) {
 				init = new CastExpr(init.pos, type, init);
 				init.resolve(type);

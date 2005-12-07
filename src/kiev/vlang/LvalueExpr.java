@@ -106,16 +106,12 @@ public class AccessExpr extends LvalueExpr {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			ASTNode@ v;
+			DNode@ v;
 			ResInfo info;
-			if (obj instanceof Expr &&
-				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
-			{
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
 				res[si] = makeExpr(v,info,(ENode)~obj);
-			}
-			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name)) {
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
 				res[si] = makeExpr(v,info,tp.getStruct());
-			}
 		}
 		int cnt = 0;
 		int idx = -1;
@@ -164,7 +160,7 @@ public class AccessExpr extends LvalueExpr {
 				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
 		}
 		else {
-			Expr e = (Expr)obj;
+			ENode e = obj;
 			tps = e.getAccessTypes();
 			res = new ENode[tps.length];
 			for (int si=0; si < tps.length; si++) {
@@ -186,7 +182,7 @@ public class AccessExpr extends LvalueExpr {
 				else if( ident.name.equals(nameLength) ) {
 					if( tp.isArray() ) {
 						tps[si] = Type.tpInt;
-						res[si] = new ArrayLengthExpr(pos,(Expr)e.copy(), (NameRef)ident.copy());
+						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
 					}
 				}
 			}
@@ -196,17 +192,13 @@ public class AccessExpr extends LvalueExpr {
 			if (res[si] != null)
 				continue;
 			Type tp = tps[si];
-			ASTNode@ v;
+			DNode@ v;
 			ResInfo info;
-			if (obj instanceof Expr &&
+			if (!(obj instanceof TypeRef) &&
 				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
-			{
 				res[si] = makeExpr(v,info,(ENode)~obj);
-			}
 			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
-			{
 				res[si] = makeExpr(v,info,tp.getStruct());
-			}
 		}
 		int cnt = 0;
 		int idx = -1;
@@ -306,13 +298,6 @@ public class IFldExpr extends AccessExpr {
 		if (direct_access) setAsField(true);
 	}
 
-	public IFldExpr(int pos, ENode obj, Field var, int flags) {
-		super(pos, obj, new NameRef(pos,var.name.name));
-		this.var = var;
-		setFlags(flags);
-		assert(obj != null && var != null);
-	}
-
 	public String toString() {
 		if( obj.getPriority() < opAccessPriority )
 			return "("+obj.toString()+")."+var.toString();
@@ -326,21 +311,21 @@ public class IFldExpr extends AccessExpr {
 
 	public Operator getOp() { return BinaryOperator.Access; }
 
-	public DNode[] getAccessPath() {
+	public LvalDNode[] getAccessPath() {
 		if (obj instanceof LVarExpr) {
 			LVarExpr va = (LVarExpr)obj;
 			if (va.getVar().isFinal() && va.getVar().isForward())
-				return new DNode[]{va.getVar(), this.var};
+				return new LvalDNode[]{va.getVar(), this.var};
 			return null;
 		}
 		if (obj instanceof IFldExpr) {
 			IFldExpr ae = (IFldExpr)obj;
 			if !(ae.var.isFinal() || ae.var.isForward())
 				return null;
-			DNode[] path = ae.getAccessPath();
+			LvalDNode[] path = ae.getAccessPath();
 			if (path == null)
 				return null;
-			return (DNode[])Arrays.append(path, var);
+			return (LvalDNode[])Arrays.append(path, var);
 		}
 		return null;
 	}
@@ -498,7 +483,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			}
 			else {
 				// Resolve overloaded access method
-				ASTNode@ v;
+				Method@ v;
 				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
@@ -571,7 +556,7 @@ public class ContainerAccessExpr extends LvalueExpr {
 			code.addInstr(Instr.op_arr_load);
 		} else {
 			// Resolve overloaded access method
-			ASTNode@ v;
+			Method@ v;
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
@@ -615,10 +600,10 @@ public class ContainerAccessExpr extends LvalueExpr {
 			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
-			ASTNode@ v;
+			Method@ v;
 			// We need to get the type of object in stack
 			Type t = code.stack_at(0);
-			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
+			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.getStruct();
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -638,12 +623,12 @@ public class ContainerAccessExpr extends LvalueExpr {
 			code.addInstr(Instr.op_arr_store);
 		} else {
 			// Resolve overloaded set method
-			ASTNode@ v;
+			Method@ v;
 			// We need to get the type of object in stack
 			Type t = code.stack_at(0);
 			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			Expr o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
+			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().getStruct();
 			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
@@ -827,7 +812,7 @@ public class LVarExpr extends LvalueExpr {
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{getVar()});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new LvalDNode[]{getVar()});
 		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
 		return (Type[])sni.getTypes().clone();
@@ -836,13 +821,11 @@ public class LVarExpr extends LvalueExpr {
 	public Var getVar() {
 		if (var != null)
 			return var;
-		ASTNode@ v;
+		Var@ v;
 		ResInfo info = new ResInfo(this);
 		if( !PassInfo.resolveNameR(this,v,info,ident.name) )
 			throw new CompilerException(this,"Unresolved var "+ident);
-		if !(v instanceof Var)
-			throw new CompilerException(this,"Expected "+ident+" to be a var");
-		var = (Var)v;
+		var = v;
 		return var;
 	}
 
@@ -893,7 +876,7 @@ public class LVarExpr extends LvalueExpr {
 					// Add field
 					vf = pctx.clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
-					vf.init = (Expr)this.copy();
+					vf.init = (ENode)this.copy();
 				}
 			}
 		}
@@ -1149,7 +1132,7 @@ public class SFldExpr extends AccessExpr {
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new DNode[]{var});
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new LvalDNode[]{var});
 		if( sni == null || sni.getTypes().length == 0 )
 			types = new Type[]{var.type};
 		else

@@ -129,15 +129,16 @@ public class ResInfo {
 			return true;
 		}
 		else if (n instanceof Field || n instanceof Method) {
+			DNode d = (DNode)n;
 			if (!isStaticAllowed()) {
-				if (n.isStatic())
+				if (d.isStatic())
 					return false;
 			}
 			if (isStaticAllowed()) {
-				if (!n.isStatic())
+				if (!d.isStatic())
 					return false;
 			}
-			if (n.isPrivate()) {
+			if (d.isPrivate()) {
 				// check visibility of this or inner classes
 				Struct s = from_scope;
 				while (s != null && s != n.parent && s.package_clazz.isClazz())
@@ -155,13 +156,13 @@ public class ResInfo {
 		return true;
 	}
 	
-	public Expr buildVarAccess(ASTNode at, Var var) {
+	public ENode buildVarAccess(ASTNode at, Var var) {
 		if (var.name.name == Constants.nameThis)
 			return new ThisExpr(at.pos);
 		return new LVarExpr(at.pos, var);
 	}
 
-	public Expr buildAccess(ASTNode at, ASTNode from) {
+	public ENode buildAccess(ASTNode at, ASTNode from) {
 		if (isEmpty())
 			return buildAccess(at, null, from);
 			//throw new CompilerException(pos, "Empty access build requested");
@@ -169,7 +170,7 @@ public class ResInfo {
 			return buildAccess(at, from, forwards_stack[--forwards_p]);
 	}
 	
-	public Expr buildAccess(ASTNode at, ASTNode from, ASTNode node) {
+	public ENode buildAccess(ASTNode at, ASTNode from, ASTNode node) {
 		trace(Kiev.debugResolve,"Building access from "+from+" to "+node+" via "+this);
 		if (from == null && isEmpty()) {
 			// var or static field
@@ -183,7 +184,7 @@ public class ResInfo {
 			}
 		}
 		int n = 0;
-		Expr e = null;
+		ENode e = null;
 		if (from != null) {
 			if (from instanceof TypeRef)
 				from = ((TypeRef)from).getType().getStruct();
@@ -195,15 +196,15 @@ public class ResInfo {
 					throw new CompilerException(at, "Static access to an instance field "+node);
 				}
 				else if (forwards_stack[0] instanceof Field) {
-					if (!forwards_stack[0].isStatic())
-						throw new CompilerException(at, "Static access to an instance field "+forwards_stack[0]);
-					e = new SFldExpr(at.pos,(Field)forwards_stack[0]);
+					Field ff = (Field)forwards_stack[0];
+					if (!ff.isStatic())
+						throw new CompilerException(at, "Static access to an instance field "+ff);
+					e = new SFldExpr(at.pos,ff);
 					n++;
 				}
-			}
-			else if (from instanceof Expr) {
+			} else {
 				// access from something
-				e = (Expr)from;
+				e = (ENode)from;
 			}
 		} else {
 			// first node must be a var, and we are not empty
@@ -248,12 +249,12 @@ public class ResInfo {
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
 				return new UnresCallExpr(at.pos,new TypeRef(((Struct)f.parent).type),f,args,false);
 			}
-			Expr expr = buildAccess(at, from, f);
+			ENode expr = buildAccess(at, from, f);
 			return new UnresCallExpr(at.pos,expr,f,args,false);
 		}
 		else if (node instanceof Var) {
 			Var var = (Var)node;
-			Expr expr = buildAccess(at, from, var);
+			ENode expr = buildAccess(at, from, var);
 			return new UnresCallExpr(at.pos,expr,var,args,false);
 		}
 		throw new CompilerException(at, "Don't know how to call "+node+" via "+this);
@@ -313,11 +314,11 @@ public interface Scope {
 }
 
 public interface ScopeOfNames extends Scope {
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name);
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name);
 }
 
 public interface ScopeOfMethods extends Scope {
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, MethodType mt);
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt);
 }
 
 public interface ScopeOfOperators extends ScopeOfNames {

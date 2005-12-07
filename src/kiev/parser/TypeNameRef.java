@@ -25,6 +25,7 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 
 import syntax kiev.Syntax;
+import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
@@ -63,17 +64,13 @@ public class TypeNameRef extends TypeRef {
 		if (this.lnk != null)
 			return this.lnk;
 		KString nm = name.name;
-		ASTNode@ v;
+		DNode@ v;
 		if( !PassInfo.resolveQualifiedNameR(this,v,new ResInfo(this,ResInfo.noForwards),nm) )
 			throw new CompilerException(this,"Unresolved identifier "+nm);
-		if( v instanceof TypeRef ) {
-			this.lnk = ((TypeRef)v).getType();
-		} else {
-			if( !(v instanceof Struct) )
-				throw new CompilerException(this,"Type name "+nm+" is not a structure, but "+v);
-			Struct bs = (Struct)v;
-			bs.checkResolved();
-			this.lnk = bs.type;
+		if( v instanceof TypeDef ) {
+			TypeDef td = (TypeDef)v;
+			td.checkResolved();
+			this.lnk = td.getType();
 		}
 		if (this.lnk == null)
 			throw new CompilerException(this,"Type "+this+" is not found");

@@ -529,7 +529,7 @@ public class TypedefAttr extends Attr {
 	public boolean get$isKiev() { return true; }
 
 	// Constructor for bytecode reader and raw field creation
-	public TypedefAttr(Typedef td) {
+	public TypedefAttr(TypeDefOp td) {
 		super(attrTypedef);
 		this.type = td.type.getType();
 		this.type_name = td.name;

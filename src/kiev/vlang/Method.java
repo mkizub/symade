@@ -138,6 +138,101 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		acc.verifyAccessDecl(this);
 	}
 	
+	//
+	// Method specific
+	//
+
+	// multimethod	
+	@getter public final boolean get$is_mth_multimethod()  alias isMultiMethod  {
+		return this.is_mth_multimethod;
+	}
+	@setter public final void set$is_mth_multimethod(boolean on) alias setMultiMethod {
+		if (this.is_mth_multimethod != on) {
+			this.is_mth_multimethod = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// virtual static method	
+	@getter public final boolean get$is_mth_virtual_static()  alias isVirtualStatic  {
+		return this.is_mth_virtual_static;
+	}
+	@setter public final void set$is_mth_virtual_static(boolean on) alias setVirtualStatic {
+		if (this.is_mth_virtual_static != on) {
+			this.is_mth_virtual_static = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// method with variable number of arguments	
+	@getter public final boolean get$is_mth_varargs()  alias isVarArgs  {
+		return this.is_mth_varargs;
+	}
+	@setter public final void set$is_mth_varargs(boolean on) alias setVarArgs {
+		if (this.is_mth_varargs != on) {
+			this.is_mth_varargs = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// logic rule method	
+	@getter public final boolean get$is_mth_rule()  alias isRuleMethod  {
+		return this.is_mth_rule;
+	}
+	@setter public final void set$is_mth_rule(boolean on) alias setRuleMethod {
+		if (this.is_mth_rule != on) {
+			this.is_mth_rule = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// method with attached operator	
+	@getter public final boolean get$is_mth_operator()  alias isOperatorMethod  {
+		return this.is_mth_operator;
+	}
+	@setter public final void set$is_mth_operator(boolean on) alias setOperatorMethod {
+		if (this.is_mth_operator != on) {
+			this.is_mth_operator = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// needs to call post-condition before return	
+	@getter public final boolean get$is_mth_gen_post_cond()  alias isGenPostCond  {
+		return this.is_mth_gen_post_cond;
+	}
+	@setter public final void set$is_mth_gen_post_cond(boolean on) alias setGenPostCond {
+		if (this.is_mth_gen_post_cond != on) {
+			this.is_mth_gen_post_cond = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// need fields initialization	
+	@getter public final boolean get$is_mth_need_fields_init()  alias isNeedFieldInits  {
+		return this.is_mth_need_fields_init;
+	}
+	@setter public final void set$is_mth_need_fields_init(boolean on) alias setNeedFieldInits {
+		if (this.is_mth_need_fields_init != on) {
+			this.is_mth_need_fields_init = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a method generated as invariant	
+	@getter public final boolean get$is_mth_invariant()  alias isInvariantMethod  {
+		return this.is_mth_invariant;
+	}
+	@setter public final void set$is_mth_invariant(boolean on) alias setInvariantMethod {
+		if (this.is_mth_invariant != on) {
+			this.is_mth_invariant = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+	// a local method (closure code or inner method)	
+	@getter public final boolean get$is_mth_local()  alias isLocalMethod  {
+		return this.is_mth_local;
+	}
+	@setter public final void set$is_mth_local(boolean on) alias setLocalMethod {
+		if (this.is_mth_local != on) {
+			this.is_mth_local = on;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.meta.get(MetaThrows.NAME);
 	}
@@ -457,7 +552,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return dmp;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		FormPar@ var;
 		Type@ t;
 	{
@@ -481,7 +576,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, MethodType mt)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		checkRebuildTypes(),
@@ -689,9 +784,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
 							code.importCode(cond.code_attr);
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
+							assert( cond.parent instanceof Method && ((Method)cond.parent).isInvariantMethod() );
 							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
-								if( !cond.parent.isStatic() )
+								if( !((DNode)cond.parent).isStatic() )
 									code.addInstrLoadThis();
 								code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							}
@@ -711,7 +806,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 							code.addInstr(Instr.op_store,getRetVar());
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							if( !cond.parent.isStatic() )
+							if( !((DNode)cond.parent).isStatic() )
 								code.addInstrLoadThis();
 							code.addInstr(Instr.op_call,(Method)cond.parent,false);
 							setGenPostCond(true);
@@ -761,7 +856,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
 			this.body = (BlockStat)body;
@@ -782,7 +877,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 @node
 @dflow
 public class Constructor extends Method {
-	@att public final NArr<Statement>	addstats;
+	@att public final NArr<ENode>	addstats;
 
 	public Constructor() {
 	}
@@ -797,10 +892,10 @@ public class Constructor extends Method {
 
 	public void resolveDecl() {
 		super.resolveDecl();
-		Statement[] addstats = this.addstats.delToArray();
+		ENode[] addstats = this.addstats.delToArray();
 		for(int i=0; i < addstats.length; i++) {
 			body.stats.insert(addstats[i],i);
-			trace(Kiev.debugResolve,"Statement added to constructor: "+addstats[i]);
+			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
 	}
 }
@@ -840,7 +935,7 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		body.generate(code,reqType);
 	}
 
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
 		if (this.body == null) {
 			this.body = (BlockStat)body;
@@ -871,7 +966,7 @@ public class WBCCondition extends DNode {
 	
 	@att
 	@dflow(in="this:in")
-	public Statement				body;
+	public ENode					body;
 	
 	public CodeAttr					code_attr;
 	@ref public Method				definer;
@@ -879,7 +974,7 @@ public class WBCCondition extends DNode {
 	public WBCCondition() {
 	}
 
-	public WBCCondition(int pos, WBCType cond, KString name, Statement body) {
+	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
 		super(pos);
 		if (name != null)
 			this.name = new NameRef(pos, name);
@@ -924,7 +1019,7 @@ public class WBCCondition extends DNode {
 		code_attr.generate(constPool);
 	}
 
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		this.body = body;
 		return true;
 	}

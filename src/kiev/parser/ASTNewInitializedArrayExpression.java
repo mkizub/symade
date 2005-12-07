@@ -35,7 +35,7 @@ import kiev.transf.*;
 
 @node
 @dflow(out="args")
-public class ASTNewInitializedArrayExpression extends Expr {
+public class ASTNewInitializedArrayExpression extends ENode {
 	@att
 	public TypeRef					type;
 	

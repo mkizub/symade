@@ -37,7 +37,7 @@ import static kiev.vlang.Instr.*;
 
 @node
 @dflow(out="args")
-public class NewExpr extends Expr {
+public class NewExpr extends ENode {
 
 	@att
 	public TypeRef				type;
@@ -67,13 +67,13 @@ public class NewExpr extends Expr {
 	public NewExpr(int pos, Type type, ENode[] args) {
 		super(pos);
 		this.type = new TypeRef(type);
-		foreach (Expr e; args) this.args.append(e);
+		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
 		super(pos);
 		this.type = type;
-		foreach (Expr e; args) this.args.append(e);
+		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, Type type, ENode[] args, ENode outer) {
@@ -192,14 +192,14 @@ public class NewExpr extends Expr {
 					if( type.string_equals(code.clazz.type.args[i]) ) break;
 				if( i >= code.clazz.type.args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
-				Expr tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.resolveField(nameTypeInfo));
-				Expr e = new CastExpr(pos,type,
+				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.resolveField(nameTypeInfo));
+				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
 						Type.tpTypeInfo.clazz.resolveMethod(
 							KString.from("newInstance"),
 							KString.from("(I)Ljava/lang/Object;")
 							),
-							new Expr[]{new ConstIntExpr(i)}),
+							new ENode[]{new ConstIntExpr(i)}),
 					true);
 				e.resolve(reqType);
 				e.generate(code,reqType);
@@ -267,7 +267,7 @@ public class NewExpr extends Expr {
 
 @node
 @dflow(out="args")
-public class NewArrayExpr extends Expr {
+public class NewArrayExpr extends ENode {
 
 	@att
 	public TypeRef				type;
@@ -285,7 +285,7 @@ public class NewArrayExpr extends Expr {
 	public NewArrayExpr(int pos, TypeRef type, ENode[] args, int dim) {
 		super(pos);
 		this.type = type;
-		foreach (Expr e; args) this.args.append(e);
+		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
 		arrtype = Type.newArrayType(type.getType());
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
@@ -318,7 +318,7 @@ public class NewArrayExpr extends Expr {
 				if( type.string_equals(pctx.clazz.type.args[i]) ) break;
 			if( i >= pctx.clazz.type.args.length )
 				throw new CompilerException(this,"Can't create an array of argument type "+type);
-			Expr tie = new IFldExpr(pos,new ThisExpr(0),pctx.clazz.resolveField(nameTypeInfo));
+			ENode tie = new IFldExpr(pos,new ThisExpr(0),pctx.clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,
@@ -371,7 +371,7 @@ public class NewArrayExpr extends Expr {
 
 @node
 @dflow(out="args")
-public class NewInitializedArrayExpr extends Expr {
+public class NewInitializedArrayExpr extends ENode {
 
 	@att
 	public TypeRef				type;
@@ -391,7 +391,7 @@ public class NewInitializedArrayExpr extends Expr {
 		super(pos);
 		this.type = type;
 		this.dim = dim;
-		foreach (Expr e; args) this.args.append(e);
+		foreach (ENode e; args) this.args.append(e);
 		arrtype = Type.newArrayType(type.getType());
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
 		dims = new int[dim];
@@ -469,7 +469,7 @@ public class NewInitializedArrayExpr extends Expr {
 
 @node
 @dflow(out="this:in")
-public class NewClosure extends Expr {
+public class NewClosure extends ENode {
 
 	@att
 	public TypeClosureRef		type;
