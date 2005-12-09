@@ -403,6 +403,11 @@ public final class ExportJavaTop implements Constants {
 	public ASTNode pass1_1(ASTStructDeclaration:ASTNode astn, ASTNode pn) {
 		// Attach meta-data to the new structure
 		astn.modifiers.getMetas(astn.me.meta);
+        // Process inner classes and cases
+       	if( !astn.me.isPackage() ) {
+			foreach (ASTNode m; astn.members; m instanceof ASTStructDeclaration)
+				pass1_1(m, astn.me);
+		}
 		return astn.me;
 	}
 	
