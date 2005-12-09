@@ -32,8 +32,9 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="this:in")
 public class TypeWithArgsRef extends TypeRef {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	@att public TypeRef					base_type;
 	@att public final NArr<TypeRef>		args;

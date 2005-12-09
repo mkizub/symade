@@ -34,8 +34,10 @@ import kiev.stdlib.*;
  */
 
 @node
-@dflow(out="this:in")
 public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
     @att public final NArr<FormPar>		params;
     @att public TypeRef						rettype;
     @att public BlockStat					body;

@@ -40,8 +40,10 @@ import syntax kiev.Syntax;
 
 
 @node
-@dflow(out="this:in")
 public class ShadowExpr extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	@ref public ENode expr;
 	
 	public ShadowExpr() {
@@ -75,9 +77,12 @@ public class ShadowExpr extends ENode {
 }
 
 @node
-@dflow(out="obj")
 public class ArrayLengthExpr extends AccessExpr {
-
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
+	
 	public ArrayLengthExpr() {
 	}
 
@@ -129,10 +134,11 @@ public class ArrayLengthExpr extends AccessExpr {
 }
 
 @node
-@dflow(out="this:in")
 public class TypeClassExpr extends ENode {
-	@att
-	public TypeRef		type;
+	
+	@dflow(out="this:in") private static class DFI {}
+	
+	@att public TypeRef		type;
 
 	public TypeClassExpr() {
 	}
@@ -171,14 +177,16 @@ public class TypeClassExpr extends ENode {
 }
 
 @node
-@dflow(out="this:out()")
 public class AssignExpr extends LvalueExpr {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in")	ENode			lval;
+	@dflow(in="lval")		ENode			value;
+	}
 	
 	@ref public AssignOperator	op;
 	
-	@dflow(in="")
 	@att public ENode			lval;
-	@dflow(in="lval")
 	@att public ENode			value;
 
 	public AssignExpr() {
@@ -502,18 +510,18 @@ public class AssignExpr extends LvalueExpr {
 
 
 @node
-@dflow(out="expr2")
 public class BinaryExpr extends ENode {
-	@ref
-	public BinaryOperator		op;
 	
-	@att
-	@dflow(in="this:in")
-	public ENode				expr1;
+	@dflow(out="expr2") private static class DFI {
+	@dflow(in="this:in")	ENode				expr1;
+	@dflow(in="expr1")		ENode				expr2;
+	}
 	
-	@att
-	@dflow(in="expr1")
-	public ENode				expr2;
+	@ref public BinaryOperator		op;
+	
+	@att public ENode				expr1;
+	
+	@att public ENode				expr2;
 
 	public BinaryExpr() {
 	}
@@ -829,12 +837,13 @@ public class BinaryExpr extends ENode {
 }
 
 @node
-@dflow(out="args")
 public class StringConcatExpr extends ENode {
+	
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]	args;
+	}
 
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<ENode>	args;
+	@att public final NArr<ENode>	args;
 
 	public static Struct clazzStringBuffer;
 	public static Method clazzStringBufferToString;
@@ -962,11 +971,13 @@ public class StringConcatExpr extends ENode {
 }
 
 @node
-@dflow(out="exprs")
 public class CommaExpr extends ENode {
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<ENode>	exprs;
+	
+	@dflow(out="exprs") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]	exprs;
+	}
+
+	@att public final NArr<ENode>	exprs;
 
 	public CommaExpr() {
 	}
@@ -1026,13 +1037,15 @@ public class CommaExpr extends ENode {
 }
 
 @node
-@dflow(out="this:out()")
 public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		stats;
+	@dflow(in="stats")					ENode		res;
+	}
 
-	@dflow(in="", seq="true")
 	@att public final NArr<ENode>		stats;
 	
-	@dflow(in="stats")
 	@att public       ENode				res;
 
 	public BlockExpr() {
@@ -1201,14 +1214,15 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-@dflow(out="expr")
 public class UnaryExpr extends ENode {
-	@ref
-	public Operator			op;
 	
-	@att
-	@dflow(out="this:in")
-	public ENode				expr;
+	@dflow(out="expr") private static class DFI {
+	@dflow(out="this:in")			ENode		expr;
+	}
+
+	@ref public Operator			op;
+	
+	@att public ENode				expr;
 
 	public UnaryExpr() {
 	}
@@ -1383,14 +1397,15 @@ public class UnaryExpr extends ENode {
 }
 
 @node
-@dflow(out="lval")
 public class IncrementExpr extends LvalueExpr {
-	@ref
-	public Operator				op;
 	
-	@att
-	@dflow(in="this:in")
-	public ENode				lval;
+	@dflow(out="lval") private static class DFI {
+	@dflow(in="this:in")	ENode			lval;
+	}
+
+	@ref public Operator			op;
+	
+	@att public ENode				lval;
 
 	public IncrementExpr() {
 	}
@@ -1585,19 +1600,19 @@ public class IncrementExpr extends LvalueExpr {
 }
 
 @node
-@dflow(out="join expr1 expr2")
 public class ConditionalExpr extends ENode {
-	@att
-	@dflow(in="this:in")
-	public ENode		cond;
 	
-	@att
-	@dflow(in="cond:true")
-	public ENode		expr1;
+	@dflow(out="join expr1 expr2") private static class DFI {
+	@dflow(in="this:in")	ENode		cond;
+	@dflow(in="cond:true")	ENode		expr1;
+	@dflow(in="cond:false")	ENode		expr2;
+	}
+
+	@att public ENode		cond;
 	
-	@att
-	@dflow(in="cond:false")
-	public ENode		expr2;
+	@att public ENode		expr1;
+	
+	@att public ENode		expr2;
 
 	public ConditionalExpr() {
 	}
@@ -1683,17 +1698,18 @@ public class ConditionalExpr extends ENode {
 }
 
 @node
-@dflow(out="expr")
 public class CastExpr extends ENode {
-	@att
-	public TypeRef			type;
 	
-	@att
-	@dflow(in="this:in")
-	public ENode			expr;
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
+
+	@att public TypeRef			type;
 	
-	public boolean				explicit = false;
-	public boolean				reinterp = false;
+	@att public ENode			expr;
+	
+	public boolean				explicit;
+	public boolean				reinterp;
 
 	public CastExpr() {
 	}

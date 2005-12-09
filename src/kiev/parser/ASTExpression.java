@@ -40,10 +40,15 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  */
 
 @node
-@dflow(out="nodes")
 public class ASTExpression extends ENode {
+
+	@dflow(out="nodes") private static class DFI {
+	@dflow(in="this:in", seq="true")		ENode[]		nodes;
+	}
+	
+	
 	@att
-	@dflow(in="this:in", seq="true")
+	
 	public final NArr<ENode>		nodes;
 
 	public void preResolveOut() {

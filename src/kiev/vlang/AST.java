@@ -710,8 +710,9 @@ public abstract class LvalDNode extends DNode {
  * type reference, and expressions themselves
  */
 @node
-@dflow(out="this:in")
 public /*abstract*/ class ENode extends ASTNode {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
@@ -902,10 +903,13 @@ public /*abstract*/ class ENode extends ASTNode {
 }
 
 @node
-@dflow(out="var")
 public final class VarDecl extends ENode implements Named {
 
-	@att @dflow Var var;
+	@dflow(out="var") private static class DFI {
+	@dflow(in="this:in")	Var		var;
+	}
+
+	@att Var var;
 	
 	public VarDecl() {}
 	
@@ -929,8 +933,9 @@ public final class VarDecl extends ENode implements Named {
 }
 
 @node
-@dflow(out="this:in")
 public final class LocalStructDecl extends ENode implements Named {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	@att Struct clazz;
 	
@@ -965,11 +970,13 @@ public final class LocalStructDecl extends ENode implements Named {
 
 
 @node
-@dflow(out="expr")
 public class NopExpr extends ENode {
 
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode	expr;
+	}
+
 	@att
-	@dflow(in="this:in")
 	public ENode	expr;
 	
 	public NopExpr() {
@@ -1019,8 +1026,9 @@ public abstract class LvalueExpr extends ENode {
 }
 
 @node
-@dflow(out="this:in")
 public class InitializerShadow extends ENode {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	@ref Initializer init;
 	
@@ -1061,9 +1069,10 @@ public abstract class TypeDef extends DNode implements Named {
 
 
 @node
-@dflow(out="this:in")
 public class TypeRef extends ENode {
-	//@att KString						name;
+
+	@dflow(out="this:in") private static class DFI {}
+
 	@ref public virtual forward Type	lnk;
 	
 	public TypeRef() {}
@@ -1169,8 +1178,10 @@ public class TypeRef extends ENode {
 }
 
 @node
-@dflow(out="this:in")
 public class NameRef extends ASTNode {
+
+	@dflow(out="this:in") private static class DFI {}
+
 	public KString name;
 
 	public NameRef() {

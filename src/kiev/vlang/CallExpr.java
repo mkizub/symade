@@ -35,22 +35,22 @@ import syntax kiev.Syntax;
  *
  */
 @node
-@dflow(out="args")
 public class CallExpr extends ENode {
-	@att
-	@dflow(in="")
-	public ENode				obj;
 	
-	@ref
-	public Method				func;
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in")				ENode		obj;
+	@dflow(in="obj", seq="true")		ENode[]		args;
+	}
 	
-	@att
-	@dflow(in="obj", seq="true")
-	public final NArr<ENode>	args;
+	@att public ENode				obj;
 	
-	@att private ENode			temp_expr;
+	@ref public Method				func;
+	
+	@att public final NArr<ENode>	args;
+	
+	@att private ENode				temp_expr;
 
-	public boolean				super_flag;
+	public boolean					super_flag;
 
 	public CallExpr() {
 	}
@@ -408,18 +408,18 @@ public class CallExpr extends ENode {
 }
 
 @node
-@dflow(out="args")
 public class ClosureCallExpr extends ENode {
-	@att
-	@dflow(in="this:in")
-	public ENode					expr;
-
-	@att
-	@dflow(in="expr", seq="true")
-	public final NArr<ENode>		args;
 	
-	@att
-	public ENode					env_access;		// $env for rule closures
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in")				ENode		expr;
+	@dflow(in="expr", seq="true")		ENode[]		args;
+	}
+	
+	@att public ENode					expr;
+
+	@att public final NArr<ENode>		args;
+	
+	@att public ENode					env_access;		// $env for rule closures
 	
 	public boolean					is_a_call;
 

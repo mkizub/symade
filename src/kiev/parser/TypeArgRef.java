@@ -32,9 +32,10 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="this:in")
 public class TypeArgDef extends TypeDef {
-	
+
+	@dflow(out="this:in") private static class DFI {}
+
 	private static int anonymousCounter = 100;
 	
 	@att public NameRef					name;

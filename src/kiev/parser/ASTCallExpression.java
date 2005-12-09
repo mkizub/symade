@@ -37,12 +37,14 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="args")
 public class ASTCallExpression extends ENode {
+
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")		ENode[]		args;
+	}
 
 	@att public NameRef					func;
 
-	@dflow(in="", seq="true")
     @att public final NArr<ENode>		args;
 
 	public ASTCallExpression() {

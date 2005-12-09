@@ -39,8 +39,10 @@ import syntax kiev.Syntax;
 
 
 @node
-@dflow(out="this:in")
 public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public boolean value;
 
 	public ConstBoolExpr() {}
@@ -85,8 +87,10 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstNullExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public byte		value;
 
 	public ConstNullExpr() {}
@@ -103,8 +107,10 @@ public final class ConstNullExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstByteExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public byte		value;
 
 	public ConstByteExpr() {}
@@ -122,8 +128,10 @@ public final class ConstByteExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstShortExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public short		value;
 
 	public ConstShortExpr() {}
@@ -141,8 +149,10 @@ public final class ConstShortExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstIntExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public int			value;
 
 	public ConstIntExpr() {}
@@ -160,8 +170,10 @@ public final class ConstIntExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstLongExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public long			value;
 
 	public ConstLongExpr() {}
@@ -179,8 +191,10 @@ public final class ConstLongExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstCharExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public char			value;
 
 	public ConstCharExpr() {}
@@ -199,8 +213,10 @@ public final class ConstCharExpr extends ConstExpr {
 
 
 @node
-@dflow(out="this:in")
 public final class ConstFloatExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public float			value;
 
 	public ConstFloatExpr() {}
@@ -219,8 +235,10 @@ public final class ConstFloatExpr extends ConstExpr {
 
 
 @node
-@dflow(out="this:in")
 public final class ConstDoubleExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public double			value;
 
 	public ConstDoubleExpr() {}
@@ -238,8 +256,10 @@ public final class ConstDoubleExpr extends ConstExpr {
 }
 
 @node
-@dflow(out="this:in")
 public final class ConstStringExpr extends ConstExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public KString			value;
 
 	public ConstStringExpr() {}

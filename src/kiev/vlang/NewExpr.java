@@ -36,18 +36,17 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
-@dflow(out="args")
 public class NewExpr extends ENode {
+	
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		args;
+	}
 
-	@att
-	public TypeRef				type;
+	@att public TypeRef				type;
 	
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<ENode>	args;
+	@att public final NArr<ENode>	args;
 	
-	@att
-	public ENode				outer;
+	@att public ENode				outer;
 	
 //	@att
 //	public ENode				tif_expr;	// TypeInfo field access expression
@@ -266,15 +265,15 @@ public class NewExpr extends ENode {
 }
 
 @node
-@dflow(out="args")
 public class NewArrayExpr extends ENode {
-
-	@att
-	public TypeRef				type;
 	
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<ENode>	args;
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		args;
+	}
+
+	@att public TypeRef				type;
+	
+	@att public final NArr<ENode>	args;
 	
 	public int						dim;
 	private Type					arrtype;
@@ -370,15 +369,15 @@ public class NewArrayExpr extends ENode {
 }
 
 @node
-@dflow(out="args")
 public class NewInitializedArrayExpr extends ENode {
-
-	@att
-	public TypeRef				type;
 	
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<ENode>	args;
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		args;
+	}
+
+	@att public TypeRef				type;
+	
+	@att public final NArr<ENode>	args;
 	
 	public int						dim;
 	public int[]					dims;
@@ -468,8 +467,9 @@ public class NewInitializedArrayExpr extends ENode {
 }
 
 @node
-@dflow(out="this:in")
 public class NewClosure extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
 
 	@att
 	public TypeClosureRef		type;

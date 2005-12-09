@@ -37,8 +37,11 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
-@dflow(in="root()")
 public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+	
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="false")	DNode[]		members;
+	}
 
 	/** Variouse names of the class */
 	public ClazzName								name;
@@ -81,9 +84,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public Attr[]									attrs = Attr.emptyArray;
 	
 	/** Array of methods defined in this structure */
-	@att
-	@dflow(in="", seq="false")
-	public final NArr<DNode>						members;
+	@att public final NArr<DNode>					members;
 	
 	/** JClass for java backend */
 	//@ref public kiev.backend.java15.JClass			jclass;

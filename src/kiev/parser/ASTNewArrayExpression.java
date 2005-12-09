@@ -33,13 +33,16 @@ import kiev.stdlib.*;
  */
 
 @node
-@dflow(out="args")
 public class ASTNewArrayExpression extends ENode {
+
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in", seq="true")		ENode[]		args;
+	}
+	
 	@att
 	public TypeRef					type;
 	
 	@att
-	@dflow(in="", seq="true")
 	public final NArr<ENode>		args;
 	
 	public int dim;

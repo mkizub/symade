@@ -33,8 +33,10 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-@dflow(out="this:in")
 public class TypeNameRef extends TypeRef {
+
+	@dflow(out="this:in") private static class DFI {}
+
 	@att public NameRef			name;
 
 	public TypeNameRef() {

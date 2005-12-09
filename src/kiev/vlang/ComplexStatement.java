@@ -34,24 +34,22 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(in="this:in()", out="stats")
 public class CaseLabel extends ENode implements ScopeOfNames {
-
+	
+	@dflow(in="this:in()", out="stats") private static class DFI {
+	@dflow(in="this:in", seq="true") Var[]		pattern;
+	@dflow(in="pattern", seq="true") ENode[]	stats;
+	}
+	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att
-	public ENode				val;
+	@att public ENode				val;
 	
-	@ref
-	public Type					type;
+	@ref public Type				type;
 	
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<Var>		pattern;
+	@att public final NArr<Var>		pattern;
 	
-	@att
-	@dflow(in="pattern", seq="true")
-	public final NArr<ENode>	stats;
+	@att public final NArr<ENode>	stats;
 	
 	public CodeLabel	case_label;
 
@@ -263,26 +261,26 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 }
 
 @node
-@dflow(out="lblbrk")
 public class SwitchStat extends ENode implements BreakTarget {
-
-	@dflow
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="false")	CaseLabel[]		cases;
+	@dflow(in="cases")				Label			lblcnt;
+	@dflow(in="cases")				Label			lblbrk;
+	}
+	
 	@att public ENode					sel;
 
-	@dflow(in="sel", seq="false")
 	@att public final NArr<CaseLabel>	cases;
 
 	@att public LVarExpr				tmpvar;
 	@ref public CaseLabel				defCase;
 	@ref private Field					typehash; // needed for re-resolving
 
-	@att
-	@dflow(in="cases")
-	public Label						lblcnt;
+	@att public Label					lblcnt;
 
-	@att
-	@dflow(in="cases")
-	public Label						lblbrk;
+	@att public Label					lblbrk;
 
 	public CodeSwitch	cosw;
 	
@@ -634,17 +632,18 @@ public class SwitchStat extends ENode implements BreakTarget {
 }
 
 @node
-@dflow(out="body")
 public class CatchInfo extends ENode implements ScopeOfNames {
-
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	Var				arg;
+	@dflow(in="arg")		ENode			body;
+	}
+	
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@att
-	@dflow(in="this:in")
-	public Var				arg;
-	@att
-	@dflow(in="arg")
-	public ENode			body;
+	@att public Var				arg;
+	
+	@att public ENode			body;
 
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -709,9 +708,13 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 }
 
 @node
-@dflow(out="body")
 public class FinallyInfo extends CatchInfo {
-
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	Var				arg;
+	@dflow(in="arg")		ENode			body;
+	}
+	
 	@att public Var		ret_arg;
 	public CodeLabel	subr_label;
 
@@ -765,20 +768,19 @@ public class FinallyInfo extends CatchInfo {
 }
 
 @node
-@dflow(out="body")
 public class TryStat extends ENode {
-
-	@att
-	@dflow(in="")
-	public ENode					body;
 	
-	@att
-	@dflow(in="", seq="false")
-	public final NArr<CatchInfo>	catchers;
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")				ENode			body;
+	@dflow(in="this:in", seq="false")	CatchInfo[]		catchers;
+	@dflow(in="this:in")				FinallyInfo		finally_catcher;
+	}
 	
-	@att
-	@dflow(in="")
-	public FinallyInfo				finally_catcher;
+	@att public ENode					body;
+	
+	@att public final NArr<CatchInfo>	catchers;
+	
+	@att public FinallyInfo				finally_catcher;
 
 	public CodeLabel	end_label;
 
@@ -902,16 +904,15 @@ public class TryStat extends ENode {
 @node
 @dflow(out="body")
 public class SynchronizedStat extends ENode {
-
-	@att
-	@dflow(in="this:in")
-	public ENode		expr;
-	@att
-	public Var			expr_var;
 	
-	@att
-	@dflow(in="expr")
-	public ENode		body;
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	@dflow(in="expr")		ENode		body;
+	}
+	
+	@att public ENode		expr;
+	@att public Var			expr_var;
+	@att public ENode		body;
 	
 	public CodeLabel		handler;
 	public CodeCatchInfo	code_catcher;
@@ -982,16 +983,15 @@ public class SynchronizedStat extends ENode {
 }
 
 @node
-@dflow(out="body")
 public class WithStat extends ENode {
 
-	@att
-	@dflow(in="this:in")
-	public ENode		expr;
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	@dflow(in="expr")		ENode		body;
+	}
 	
-	@att
-	@dflow(in="expr")
-	public ENode		body;
+	@att	public ENode		expr;
+	@att	public ENode		body;
 	
 	@ref
 	public LvalDNode	var_or_field;

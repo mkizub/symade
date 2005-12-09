@@ -37,6 +37,9 @@ import syntax kiev.Syntax;
 @node
 public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
 
+	@att(copyable=false)	public Label		lblcnt = new Label();
+	@att(copyable=false)	public Label		lblbrk = new Label();
+
 	protected LoopStat() {
 	}
 
@@ -45,15 +48,16 @@ public abstract class LoopStat extends ENode implements BreakTarget, ContinueTar
 		setBreakTarget(true);
 	}
 
-	public abstract Label getCntLabel();
-	public abstract Label getBrkLabel();
+	public final Label getCntLabel() { return lblcnt; }
+	public final Label getBrkLabel() { return lblbrk; }
 }
 
 
 @node
-@dflow(out="this:out()")
 public class Label extends DNode {
 	
+	@dflow(out="this:out()") private static class DFI {}
+
 	@ref(copyable=false)
 	public List<ASTNode>	links;
 	
@@ -121,41 +125,28 @@ public class Label extends DNode {
 }
 
 @node
-@dflow(out="lblbrk")
 public class WhileStat extends LoopStat {
-
-	@att(copyable=false)
-	@dflow(in="", links="body")
-	public Label		lblcnt;
-
-	@att
-	@dflow(in="lblcnt")
-	public ENode		cond;
 	
-	@att
-	@dflow(in="cond:true")
-	public ENode		body;
-	
-	@att(copyable=false)
-	@dflow(in="cond:false")
-	public Label		lblbrk;
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in", links="body")		Label		lblcnt;
+	@dflow(in="lblcnt")						ENode		cond;
+	@dflow(in="cond:true")					ENode		body;
+	@dflow(in="cond:false")					Label		lblbrk;
+	}
 
+	@att public ENode		cond;
+	
+	@att public ENode		body;
+	
 	public WhileStat() {
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 	}
 
 	public WhileStat(int pos, ENode cond, ENode body) {
 		super(pos);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getCntLabel() { return lblcnt; }
-	public Label getBrkLabel() { return lblbrk; }
-	
 	public void resolve(Type reqType) {
 		try {
 			cond.resolve(Type.tpBoolean);
@@ -210,41 +201,28 @@ public class WhileStat extends LoopStat {
 }
 
 @node
-@dflow(out="lblbrk")
 public class DoWhileStat extends LoopStat {
-
-	@att
-	@dflow(in="", links="cond:true")
-	public ENode		body;
-
-	@att(copyable=false)
-	@dflow(in="body")
-	public Label		lblcnt;
-
-	@att
-	@dflow(in="lblcnt")
-	public ENode		cond;
 	
-	@att(copyable=false)
-	@dflow(in="cond:false")
-	public Label		lblbrk;
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in", links="cond:true")	ENode		body;
+	@dflow(in="body")							Label		lblcnt;
+	@dflow(in="lblcnt")							ENode		cond;
+	@dflow(in="cond:false")						Label		lblbrk;
+	}
 
+	@att public ENode		body;
+
+	@att public ENode		cond;
+	
 	public DoWhileStat() {
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 	}
 
 	public DoWhileStat(int pos, ENode cond, ENode body) {
 		super(pos);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getCntLabel() { return lblcnt; }
-	public Label getBrkLabel() { return lblbrk; }
-	
 	public void resolve(Type reqType) {
 		try {
 			body.resolve(Type.tpVoid);
@@ -305,12 +283,13 @@ public class DoWhileStat extends LoopStat {
 }
 
 @node
-@dflow(out="decls")
 public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="decls") private static class DFI {
+	@dflow(in="", seq="true")	Var[]		decls;
+	}
 
-	@att
-	@dflow(in="", seq="true")
-	public final NArr<Var>		decls;
+	@att public final NArr<Var>		decls;
 
 	public ForInit() {
 	}
@@ -355,51 +334,36 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-@dflow(out="lblbrk")
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
-
-	@att
-	@dflow(in="")
-	public ENode		init;
-
-	@att
-	@dflow(in="init", links="iter")
-	public ENode		cond;
 	
-	@att
-	@dflow(in="cond:true")
-	public ENode		body;
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")				ENode		init;
+	@dflow(in="init", links="iter")		ENode		cond;
+	@dflow(in="cond:true")				ENode		body;
+	@dflow(in="body")					Label		lblcnt;
+	@dflow(in="lblcnt")					ENode		iter;
+	@dflow(in="cond:false")				Label		lblbrk;
+	}
 
-	@att(copyable=false)
-	@dflow(in="body")
-	public Label		lblcnt;
+	@att public ENode		init;
 
-	@att
-	@dflow(in="lblcnt")
-	public ENode		iter;
+	@att public ENode		cond;
 	
-	@att(copyable=false)
-	@dflow(in="cond:false")
-	public Label		lblbrk;
+	@att public ENode		body;
 
+	@att public ENode		iter;
+	
 	public ForStat() {
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 	}
 	
 	public ForStat(int pos, ENode init, ENode cond, ENode iter, ENode body) {
 		super(pos);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 		this.init = init;
 		this.cond = cond;
 		this.iter = iter;
 		this.body = body;
 	}
 
-	public Label getCntLabel() { return lblcnt; }
-	public Label getBrkLabel() { return lblbrk; }
-	
 	public void resolve(Type reqType) {
 		if( init != null ) {
 			try {
@@ -535,43 +499,37 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-@dflow(out="lblbrk")
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
-
-	@att @dflow(in="")		public ENode		container;
-	@att @dflow(in="")		public Var			var;
-	@att @dflow(in="var")	public Var			iter;
-	@att @dflow(in="iter")	public Var			iter_array;
 	
-	@att
-	@dflow(in="iter_array")
-	public ENode								iter_init;
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")						ENode		container;
+	@dflow(in="this:in")						Var			var;
+	@dflow(in="var")							Var			iter;
+	@dflow(in="iter")							Var			iter_array;
+	@dflow(in="iter_array")						ENode		iter_init;
+	@dflow(in="iter_init", links="iter_incr")	ENode		iter_cond;
+	@dflow(in="iter_cond:true")					ENode		var_init;
+	@dflow(in="var_init")						ENode		cond;
+	@dflow(in="cond:true")						ENode		body;
+	@dflow(in="body", links="cond:false")		Label		lblcnt;
+	@dflow(in="lblcnt")							ENode		iter_incr;
+	@dflow(in="iter_cond:false")				Label		lblbrk;
+	}
+
+	@att public ENode		container;
+	@att public Var			var;
+	@att public Var			iter;
+	@att public Var			iter_array;
 	
-	@att
-	@dflow(in="iter_init", links="iter_incr")
-	public ENode								iter_cond;
+	@att public ENode		iter_init;
 	
-	@att
-	@dflow(in="iter_cond:true")
-	public ENode								var_init;
-	@att
-	@dflow(in="var_init")
-	public ENode								cond;
-	@att
-	@dflow(in="cond:true")
-	public ENode								body;
+	@att public ENode		iter_cond;
+	
+	@att public ENode		var_init;
+	@att public ENode		cond;
+	@att public ENode		body;
 
-	@att(copyable=false)
-	@dflow(in="body", links="cond:false")
-	public Label								lblcnt;
-
-	@att
-	@dflow(in="lblcnt")
-	public ENode								iter_incr;
-
-	@att(copyable=false)
-	@dflow(in="iter_cond:false")
-	public Label								lblbrk;
+	@att public ENode		iter_incr;
 
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
@@ -582,23 +540,16 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public int			mode;
 
 	public ForEachStat() {
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 	}
 	
 	public ForEachStat(int pos, Var var, ENode container, ENode cond, ENode body) {
 		super(pos);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
 		this.var = var;
 		this.container = container;
 		this.cond = cond;
 		this.body = body;
 	}
 
-	public Label getCntLabel() { return lblcnt; }
-	public Label getBrkLabel() { return lblbrk; }
-	
 	public void resolve(Type reqType) {
 		// foreach( type x; container; cond) statement
 		// is equivalent to

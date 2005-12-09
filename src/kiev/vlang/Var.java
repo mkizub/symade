@@ -33,19 +33,19 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-@dflow(out="this:out()")
 public class Var extends LvalDNode implements Named, Typed {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in")	ENode			init;
+	}
 
 	public static Var[]	emptyArray = new Var[0];
 
 	public NodeName			name;
 	
-	@att
-	public TypeRef			vtype;
+	@att public TypeRef			vtype;
 	
-	@att
-	@dflow(in="this:in")
-	public ENode			init;
+	@att public ENode			init;
 	
 	private int				bcpos = -1;
 
@@ -267,8 +267,11 @@ public class Var extends LvalDNode implements Named, Typed {
 }
 
 @node
-@dflow(out="this:out()")
 public class FormPar extends Var {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in")	ENode			init;
+	}
 	
 	public static final int PARAM_NORMAL       = 0;
 	public static final int PARAM_THIS         = 1;
@@ -777,8 +780,7 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 		Hashtable<String,kiev.vlang.dflow> dflows = new Hashtable<String,kiev.vlang.dflow>();
 		int attach_idx = 0;
 		foreach (AttrSlot attr; node.values(); attr.is_attr) {
-			java.lang.reflect.Field jf = getDeclaredField(attr.name);
-			kiev.vlang.dflow dfd = (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+			kiev.vlang.dflow dfd = getFieldAnnotation(attr.name);
 			if (dfd != null) {
 				String seq = dfd.seq().intern();
 				if (ASSERT_MORE) assert (seq=="true" || seq=="false" || seq=="");
@@ -811,7 +813,7 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 			}
 		}
 		{
-			kiev.vlang.dflow dfd = (kiev.vlang.dflow)node.getClass().getAnnotation(kiev.vlang.dflow.class);
+			kiev.vlang.dflow dfd = getClassAnnotation();
 			String fin = dfd.in().intern();
 			String fout = dfd.out().intern();
 			String fjmp = dfd.jmp().intern();
@@ -879,16 +881,31 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 		throw new RuntimeException("Bad data flow info slot "+slot);
 	}
 
-
-	private java.lang.reflect.Field getDeclaredField(String name) {
-		java.lang.Class cls = node.getClass();
-		while (cls != null) {
-			try {
-				return cls.getDeclaredField(name);
-			} catch (NoSuchFieldException e) {}
-			cls = cls.getSuperclass();
+	private kiev.vlang.dflow getClassAnnotation() {
+		try {
+			java.lang.Class cls = Class.forName(node.getClass().getName()+"$DFI");
+			kiev.vlang.dflow dfd = (kiev.vlang.dflow)cls.getAnnotation(kiev.vlang.dflow.class);
+			if (dfd == null)
+				throw new Error("Internal error: no @dflow in "+node.getClass()+"$DFI");
+			return dfd;
+		} catch (ClassNotFoundException e) {
+			throw new Error("Internal error: no class "+node.getClass()+"$DFI");
 		}
-		throw new RuntimeException("Internal error: no field "+name+" in "+getClass());
+		
+	}
+
+	private kiev.vlang.dflow getFieldAnnotation(String name) {
+		try {
+			java.lang.Class cls = Class.forName(node.getClass().getName()+"$DFI");
+			java.lang.reflect.Field jf = cls.getDeclaredField(name);
+			return (kiev.vlang.dflow)jf.getAnnotation(kiev.vlang.dflow.class);
+		} catch (NoSuchFieldException e) {
+			return null;
+			//throw new Error("Internal error: no field "+name+" in "+getClass()+"$DFI");
+		} catch (ClassNotFoundException e) {
+			throw new Error("Internal error: no class "+node.getClass()+"$DFI");
+		}
+		
 	}
 	
 	// build data flow for a child node

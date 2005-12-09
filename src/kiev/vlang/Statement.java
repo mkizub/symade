@@ -35,8 +35,10 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="this:in")
 public class ShadowStat extends ENode {
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	@ref public ENode stat;
 	
 	public ShadowStat() {
@@ -63,8 +65,9 @@ public class ShadowStat extends ENode {
 }
 
 @node
-@dflow(in="root()", out="this:out()")
 public class InlineMethodStat extends ENode implements ScopeOfNames {
+	
+	@dflow(in="root()", out="this:out()") private static class DFI {}
 
 	static class ParamRedir {
 		FormPar		old_var;
@@ -196,10 +199,12 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 }
 
 @node
-@dflow(out="this:out()")
 public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="this:out()") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]		stats;
+	}
 
-	@dflow(in="", seq="true")
 	@att public final NArr<ENode>		stats;
 	
 	private int resolve_pos;
@@ -396,9 +401,10 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 }
 
 @node
-@dflow(out="this:in")
 public class EmptyStat extends ENode {
-
+	
+	@dflow(out="this:in") private static class DFI {}
+	
 	public EmptyStat() {}
 
 	public EmptyStat(int pos) { super(pos); }
@@ -418,10 +424,12 @@ public class EmptyStat extends ENode {
 }
 
 @node
-@dflow(out="expr")
 public class ExprStat extends ENode {
+	
+	@dflow(out="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
 
-	@dflow
 	@att public ENode		expr;
 
 	public ExprStat() {
@@ -467,12 +475,13 @@ public class ExprStat extends ENode {
 }
 
 @node
-@dflow(jmp="expr")
 public class ReturnStat extends ENode {
+	
+	@dflow(jmp="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
 
-	@att
-	@dflow(in="this:in")
-	public ENode		expr;
+	@att public ENode		expr;
 
 	public ReturnStat() {
 	}
@@ -565,12 +574,13 @@ public class ReturnStat extends ENode {
 }
 
 @node
-@dflow(jmp="expr")
 public class ThrowStat extends ENode {
+	
+	@dflow(jmp="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
 
-	@att
-	@dflow(in="")
-	public ENode		expr;
+	@att public ENode		expr;
 
 	public ThrowStat() {
 	}
@@ -610,20 +620,19 @@ public class ThrowStat extends ENode {
 }
 
 @node
-@dflow(out="join thenSt elseSt")
 public class IfElseStat extends ENode {
+	
+	@dflow(out="join thenSt elseSt") private static class DFI {
+	@dflow(in="this:in")	ENode		cond;
+	@dflow(in="cond:true")	ENode		thenSt;
+	@dflow(in="cond:false")	ENode		elseSt;
+	}
 
-	@att
-	@dflow
-	public ENode		cond;
+	@att public ENode		cond;
 	
-	@att
-	@dflow(in="cond:true")
-	public ENode		thenSt;
+	@att public ENode		thenSt;
 	
-	@att
-	@dflow(in="cond:false")
-	public ENode		elseSt;
+	@att public ENode		elseSt;
 
 	public IfElseStat() {
 	}
@@ -731,16 +740,16 @@ public class IfElseStat extends ENode {
 }
 
 @node
-@dflow(out="cond:true")
 public class CondStat extends ENode {
-
-	@att
-	@dflow(in="")
-	public ENode			cond;
 	
-	@att
-	@dflow(in="cond:false")
-	public ENode			message;
+	@dflow(out="cond:true") private static class DFI {
+	@dflow(in="this:in")		ENode		cond;
+	@dflow(in="cond:false")		ENode		message;
+	}
+
+	@att public ENode			cond;
+	
+	@att public ENode			message;
 
 	public CondStat() {
 	}
@@ -829,8 +838,12 @@ public class CondStat extends ENode {
 }
 
 @node
-@dflow(out="stat")
 public class LabeledStat extends ENode implements Named {
+	
+	@dflow(out="stat") private static class DFI {
+	@dflow(in="this:in")	Label			lbl;
+	@dflow(in="lbl")		ENode			stat;
+	}
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
@@ -838,11 +851,9 @@ public class LabeledStat extends ENode implements Named {
 	public NameRef			ident;
 	
 	@att(copyable=false)
-	@dflow(in="")
 	public Label			lbl;
 
 	@att
-	@dflow(in="lbl")
 	public ENode			stat;
 
 	public LabeledStat() {
@@ -882,8 +893,9 @@ public class LabeledStat extends ENode implements Named {
 }
 
 @node
-@dflow(jmp="this:in")
 public class BreakStat extends ENode {
+	
+	@dflow(jmp="this:in") private static class DFI {}
 
 	@att public NameRef			ident;
 	
@@ -1102,8 +1114,9 @@ public class BreakStat extends ENode {
 }
 
 @node
-@dflow(jmp="this:in")
 public class ContinueStat extends ENode {
+	
+	@dflow(jmp="this:in") private static class DFI {}
 
 	@att public NameRef			ident;
 
@@ -1250,8 +1263,9 @@ public class ContinueStat extends ENode {
 }
 
 @node
-@dflow(jmp="this:in")
 public class GotoStat extends ENode {
+	
+	@dflow(jmp="this:in") private static class DFI {}
 
 	@att public NameRef			ident;
 
@@ -1488,15 +1502,15 @@ public class GotoStat extends ENode {
 }
 
 @node
-@dflow(jmp="expr")
 public class GotoCaseStat extends ENode {
-
-	@att
-	@dflow(in="")
-	public ENode		expr;
 	
-	@ref
-	public SwitchStat	sw;
+	@dflow(jmp="expr") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	}
+
+	@att public ENode		expr;
+	
+	@ref public SwitchStat	sw;
 
 	public GotoCaseStat() {
 	}

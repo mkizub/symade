@@ -156,15 +156,15 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 }
 
 @node
-@dflow(tru="join expr1:true expr2:true", fls="expr2:false")
 public class BinaryBooleanOrExpr extends BoolExpr {
-	@att
-	@dflow
-	public ENode			expr1;
+
+	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
+	@dflow(in="this:in")			ENode			expr1;
+	@dflow(in="expr1:false")		ENode			expr2;
+	}
 	
-	@att
-	@dflow(in="expr1:false")
-	public ENode			expr2;
+	@att public ENode			expr1;
+	@att public ENode			expr2;
 
 	public BinaryBooleanOrExpr() {
 	}
@@ -238,12 +238,14 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 
 
 @node
-@dflow(fls="join expr1:false expr2:false", tru="expr2:true")
 public class BinaryBooleanAndExpr extends BoolExpr {
-	@dflow
-	@att public ENode			expr1;
+
+	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
+	@dflow(in="this:in")		ENode			expr1;
+	@dflow(in="expr1:true")		ENode			expr2;
+	}
 	
-	@dflow(in="expr1:true")
+	@att public ENode			expr1;
 	@att public ENode			expr2;
 
 	public BinaryBooleanAndExpr() {
@@ -312,14 +314,17 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 }
 
 @node
-@dflow(out="expr2")
+
 public class BinaryBoolExpr extends BoolExpr {
+	
+	@dflow(out="expr2") private static class DFI {
+	@dflow(in="this:in")		ENode			expr1;
+	@dflow(in="expr1")			ENode			expr2;
+	}
 	
 	@ref public BinaryOperator		op;
 	
-	@dflow(in="")
 	@att public ENode				expr1;
-	@dflow(in="expr1")
 	@att public ENode				expr2;
 
 	public BinaryBoolExpr() {
@@ -619,9 +624,12 @@ public class BinaryBoolExpr extends BoolExpr {
 }
 
 @node
-@dflow(tru="this:tru()", fls="expr")
 public class InstanceofExpr extends BoolExpr {
-	@dflow(in="")
+
+	@dflow(tru="this:tru()", fls="expr") private static class DFI {
+	@dflow(in="this:in")		ENode			expr;
+	}
+	
 	@att public ENode		expr;
 	@att public TypeRef		type;
 
@@ -752,10 +760,12 @@ public class InstanceofExpr extends BoolExpr {
 }
 
 @node
-@dflow(fls="expr:true", tru="expr:false")
 public class BooleanNotExpr extends BoolExpr {
 	
-	@dflow(in="")
+	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
+	@dflow(in="this:in")		ENode			expr;
+	}
+	
 	@att public ENode				expr;
 
 	public BooleanNotExpr() {

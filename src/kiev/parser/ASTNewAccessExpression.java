@@ -33,17 +33,20 @@ import kiev.stdlib.*;
  */
 
 @node
-@dflow(out="args")
 public class ASTNewAccessExpression extends ENode {
+
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in")				ENode		obj;
+	@dflow(in="obj", seq="true")		ENode[]		args;
+	}
+	
 	@att
-	@dflow(out="this:in")
 	public ENode				obj;
 	
 	@att
 	public TypeRef				type;
 	
 	@att
-	@dflow(in="obj", seq="true")
 	public final NArr<ENode>	args;
 
 	public void resolve(Type reqType) {

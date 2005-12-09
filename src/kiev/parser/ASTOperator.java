@@ -28,13 +28,14 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 208 $
+ * @version $Revision$
  *
  */
 
 @node
-@dflow
 public class ASTOperator extends ENode {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	public KString		image;
 

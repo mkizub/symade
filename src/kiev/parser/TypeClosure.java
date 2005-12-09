@@ -32,8 +32,10 @@ import kiev.vlang.*;
  */
 
 @node
-@dflow(out="this:in")
 public class TypeClosureRef extends TypeRef {
+
+	@dflow(out="this:in") private static class DFI {}
+
     @att public final NArr<TypeRef>	types;
 
 	TypeClosureRef() {}

@@ -34,8 +34,13 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(in="root()")
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
+	
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in")	BlockStat		body;
+	@dflow(in="this:in")	WBCCondition[] 	conditions;
+	}
+
 	public static Method[]	emptyArray = new Method[0];
 
 	/** Method's access */
@@ -60,20 +65,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@att public Var						retvar;
 
 	/** Body of the method */
-	@att
-	@dflow(in="this:in")
-	public BlockStat					body;
-	@att
-	public PrescannedBody 				pbody;
+	@att public BlockStat				body;
+	@att public PrescannedBody 			pbody;
 
 	/** Array of attributes of this method
 	 */
 	public Attr[]						attrs = Attr.emptyArray;
 
 	/** Require & ensure clauses */
-	@att
-	@dflow(in="this:in")
-	public final NArr<WBCCondition> 	conditions;
+	@att public final NArr<WBCCondition> 	conditions;
 
 	/** Violated by method fields for normal methods, and checked fields
 	 *  for invariant method
@@ -875,8 +875,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 }
 
 @node
-@dflow
 public class Constructor extends Method {
+	
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]			addstats;
+	@dflow(in="this:in")				BlockStat		body;
+	@dflow(in="this:in")				WBCCondition[] 	conditions;
+	}
+
 	@att public final NArr<ENode>	addstats;
 
 	public Constructor() {
@@ -901,13 +907,14 @@ public class Constructor extends Method {
 }
 
 @node
-@dflow(out="body")
 public class Initializer extends DNode implements SetBody, PreScanneable {
-	@att
-	@dflow(in="this:in")
-	public BlockStat				body;
-	@att
-	public PrescannedBody			pbody;
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")				BlockStat		body;
+	}
+
+	@att public BlockStat				body;
+	@att public PrescannedBody			pbody;
 
 	public Initializer() {
 	}
@@ -956,21 +963,21 @@ public enum WBCType {
 }
 
 @node
-@dflow(out="body")
 public class WBCCondition extends DNode {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")			ENode		body;
+	}
 
 	public WBCType					cond;
 	
-	@att
-	public NameRef					name;
+	@att public NameRef				name;
 	
-	@att
-	@dflow(in="this:in")
-	public ENode					body;
+	@att public ENode				body;
 	
-	public CodeAttr					code_attr;
 	@ref public Method				definer;
-
+	public CodeAttr					code_attr;
+	
 	public WBCCondition() {
 	}
 

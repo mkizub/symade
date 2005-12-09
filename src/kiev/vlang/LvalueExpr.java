@@ -37,16 +37,17 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
-@dflow(out="obj")
 public class AccessExpr extends LvalueExpr {
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
+
 	private static KString nameWrapperSelf = KString.from("$self");
 	
-	@att
-	@dflow(in="this:in")
-	public ENode			obj;
+	@att public ENode			obj;
 	
-	@att
-	public NameRef			ident;
+	@att public NameRef			ident;
 
 	public AccessExpr() {}
 
@@ -259,8 +260,11 @@ public class AccessExpr extends LvalueExpr {
 }
 
 @node
-@dflow(out="obj")
 public class IFldExpr extends AccessExpr {
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
 
 	public static final int[] masks =
 		{	0,
@@ -448,16 +452,16 @@ public class IFldExpr extends AccessExpr {
 }
 
 @node
-@dflow(out="index")
 public class ContainerAccessExpr extends LvalueExpr {
-
-	@att
-	@dflow(in="this:in")
-	public ENode		obj;
 	
-	@att
-	@dflow(in="obj")
-	public ENode		index;
+	@dflow(out="index") private static class DFI {
+	@dflow(in="this:in")	ENode		obj;
+	@dflow(in="obj")		ENode		index;
+	}
+
+	@att public ENode		obj;
+	
+	@att public ENode		index;
 
 	public ContainerAccessExpr() {
 	}
@@ -656,8 +660,9 @@ public class ContainerAccessExpr extends LvalueExpr {
 }
 
 @node
-@dflow(out="this:in")
 public class ThisExpr extends LvalueExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
 	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 	
@@ -763,8 +768,9 @@ public class ThisExpr extends LvalueExpr {
 }
 
 @node
-@dflow(out="this:in")
 public class LVarExpr extends LvalueExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
 	static final KString namePEnv = KString.from("$env");
 
@@ -1073,8 +1079,9 @@ public class LVarExpr extends LvalueExpr {
 }
 
 @node
-@dflow(out="this:in")
 public class SFldExpr extends AccessExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
 	@ref public Field		var;
 
@@ -1192,8 +1199,9 @@ public class SFldExpr extends AccessExpr {
 }
 
 @node
-@dflow(out="this:in")
 public class OuterThisAccessExpr extends AccessExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
 	@ref public Struct		outer;
 	public Field[]			outer_refs = Field.emptyArray;

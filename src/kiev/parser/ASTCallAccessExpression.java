@@ -36,14 +36,17 @@ import syntax kiev.Syntax;
  */
 
 @node
-@dflow(out="args")
 public class ASTCallAccessExpression extends ENode {
-	@dflow
+	
+	@dflow(out="args") private static class DFI {
+	@dflow(in="this:in")				ENode		obj;
+	@dflow(in="obj", seq="true")		ENode[]		args;
+	}
+	
 	@att public ENode					obj;
 
 	@att public NameRef					func;
 
-	@dflow(in="obj", seq="true")
     @att public final NArr<ENode>		args;
 
 	public ASTCallAccessExpression() {}

@@ -34,8 +34,9 @@ import kiev.transf.*;
  */
 
 @node
-@dflow
 public class ASTCastOperator extends ASTOperator {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	static final KString fakeImage = KString.from("$cast");
 	
