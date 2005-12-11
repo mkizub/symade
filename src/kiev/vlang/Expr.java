@@ -2433,7 +2433,7 @@ public class CastExpr extends Expr {
 			if( at.isReference() && !tp.isReference() && Type.getRefTypeForPrimitive(tp).equals(at) )
 				return autoCastToPrimitive(ex);
 			else if( !at.isReference() && tp.isReference() && Type.getRefTypeForPrimitive(at).equals(tp) )
-				return autoCastToReference(ex);
+				return autoCastToReference(ex,true);
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				return ex;
 			else
@@ -2442,7 +2442,7 @@ public class CastExpr extends Expr {
 		return ex;
 	}
 
-	public static Expr autoCastToReference(Expr ex) {
+	public static Expr autoCastToReference(Expr ex, boolean resolv) {
 		Type tp = ex.getType();
 		if( tp.isReference() ) return ex;
 		Expr ex1;
@@ -2465,7 +2465,10 @@ public class CastExpr extends Expr {
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
 		ex1.parent = ex.parent;
-		return (Expr)ex1.resolve(null);
+		if (resolv)
+			return (Expr)ex1.resolve(null);
+		else
+			return ex1;
 	}
 
 	public static Expr autoCastToPrimitive(Expr ex) {

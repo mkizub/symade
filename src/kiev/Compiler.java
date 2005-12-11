@@ -602,6 +602,7 @@ public class Compiler {
 					Kiev.reportError(0,e); Kiev.files_scanned[i] = null; delayed_stop = true;
 				}
 			}
+			
 			runGC();
 
 
@@ -630,6 +631,9 @@ public class Compiler {
 					Kiev.reportError(0,e); delayed_stop = true;
 				}
 			}
+			ProcessVNode noder = new ProcessVNode();
+			noder.verify();
+
 			runGC();
 
 
@@ -658,9 +662,6 @@ public class Compiler {
 				foreach(ASTNode fu; Kiev.files_scanned; fu != null)
 					Kiev.files.append(((ASTFileUnit)fu).file_unit);
 
-			ProcessVNode noder = new ProcessVNode();
-			noder.verify();
-			
 			Kiev.pass_no = TopLevelPass.passGenerate;
 			Kiev.file_unit.cleanup();
 			Kiev.files_scanned.cleanup();

@@ -247,6 +247,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 						if( !f.isAbstract() ) me.addField(f);
 						if( f.isVirtual() ) {
 							abstr_fields = abstr_fields.concat(f);
+							if( f.isAbstract() )
+								me.virtual_fields.add(f);
 						}
 						if (fdecl.init == null && fdecl.dim==0) {
 							if(type.clazz.isWrapper()) {

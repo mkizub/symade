@@ -672,6 +672,19 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		return f;
 	}
 
+	/** Remove information about new method that belongs to this class */
+	public void removeField(Field f) {
+		int i = 0;
+		for(i=0; i < fields.length; i++) {
+			if( fields[i].equals(f) ) {
+				fields.del(i);
+				trace(Kiev.debugMembers,"Field "+f+" removed from class "+this);
+				return;
+			}
+		}
+		throw new RuntimeException("Field "+f+" do not exists in class "+this);
+	}
+
 	/** Add information about new pizza case of this class */
 	public Struct addCase(Struct cas) {
 		setHasCases(true);
@@ -1692,6 +1705,12 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		
 		new ProcessVNode().autoGenerateMembers(this);
 		//new ProcessDFlow().autoGenerateMembers(this);
+		for (int i=0; i < fields.length; i++) {
+			if (fields[i].isAbstract()) {
+				removeField(fields[i]);
+				i--;
+			}
+		}
 	}
 
 	public Method getOverwrittenMethod(Type base, Method m) {
@@ -2068,7 +2087,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 					else {
 						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() )
 							br = new ReturnStat(0,last_st,CastExpr.autoCastToReference(
-								new CallExpr(0,overwr,vae,true)));
+								new CallExpr(0,overwr,vae,true),false));
 						else
 							br = new ReturnStat(0,last_st,new CallExpr(0,overwr,vae,true));
 					}
@@ -2575,6 +2594,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				foreach (Meta m; meta)
 					m.resolve();
 				foreach(Field f; fields) {
+					foreach (Meta m; f.meta)
+						m.resolve();
+				}
+				foreach(Field f; virtual_fields) {
 					foreach (Meta m; f.meta)
 						m.resolve();
 				}

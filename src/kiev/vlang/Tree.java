@@ -35,6 +35,10 @@ import static kiev.stdlib.Debug.*;
 public @interface node {
 	boolean copyable() default true;
 }
+// syntax-tree node data
+public @interface nodedata {}
+// syntax-tree node view
+public @interface nodeview {}
 // syntax-tree attribute field
 public @interface att {
 	boolean copyable() default true;

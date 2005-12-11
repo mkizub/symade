@@ -35,6 +35,7 @@ import static kiev.stdlib.Debug.*;
 public final class ProcessVNode implements Constants {
 
 	public static final KString mnNode = KString.from("kiev.vlang.node"); 
+	public static final KString mnNodeView = KString.from("kiev.vlang.nodeview"); 
 	public static final KString mnAtt  = KString.from("kiev.vlang.att"); 
 	public static final KString mnRef  = KString.from("kiev.vlang.ref"); 
 	public static final KString nameNArr  = KString.from("kiev.vlang.NArr"); 
@@ -53,11 +54,20 @@ public final class ProcessVNode implements Constants {
 
 	public boolean verify() {
 		boolean failed = false;
-		for (int i=0; i < Kiev.files.length; i++) {
-			FileUnit fu = Kiev.files[i]; 
+		for(int i=0; i < Kiev.file_unit.length; i++) {
+			ASTFileUnit fu = Kiev.file_unit[i]; 
 			if( fu == null ) continue;
 			try {
-				verify(fu);
+				verify(fu.file_unit);
+			} catch (Exception e) {
+				Kiev.reportError(0,e); failed = true;
+			}
+		}
+		for(int i=0; i < Kiev.files_scanned.length; i++) {
+			ASTFileUnit fu = Kiev.files_scanned[i]; 
+			if( fu == null ) continue;
+			try {
+				verify(fu.file_unit);
 			} catch (Exception e) {
 				Kiev.reportError(0,e); failed = true;
 			}
@@ -96,8 +106,13 @@ public final class ProcessVNode implements Constants {
 			}
 		}
 		else if (s.super_clazz != null && s.super_clazz.clazz.meta.get(mnNode) != null) {
-			Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_clazz);
+			if (s.meta.get(mnNodeView) == null)
+				Kiev.reportError(s.pos,"Class "+s+" must be marked with @node: it extends @node "+s.super_clazz);
 			return;
+		}
+		if (!s.isPackage()) {
+			foreach (Struct n; s.sub_clazz)
+				verify(n);
 		}
 	}
 	
@@ -132,14 +147,16 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
-					Struct fs = (Struct)f.parent;
-					Field fatt = fs.resolveField(fname);
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
-						new ThisExpr(),
-						new StaticFieldAccessExpr(f.pos, fs, fatt)
-					});
-					f.init.parent = f;
+					if (!f.isAbstract()) {
+						KString fname = new KStringBuffer().append("nodeattr$").append(f.name.name).toKString();
+						Struct fs = (Struct)f.parent;
+						Field fatt = fs.resolveField(fname);
+						f.init = new NewExpr(f.pos, f.getType(), new Expr[]{
+							new ThisExpr(),
+							new StaticFieldAccessExpr(f.pos, fs, fatt)
+						});
+						f.init.parent = f;
+					}
 				} else {
 					f.setVirtual(true);
 					((Struct)f.parent).addMethodsForVirtualField(f);
@@ -149,15 +166,17 @@ public final class ProcessVNode implements Constants {
 				if (isArr) {
 					if (f.init != null)
 						Kiev.reportError(f.pos,"Field "+f.parent+"."+f+" may not have initializer");
-					f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
-					f.init.parent = f;
+					if (!f.isAbstract()) {
+						f.init = new NewExpr(f.pos, f.getType(), new Expr[]{new ThisExpr(), new ConstExpr(f.pos, null)});
+						f.init.parent = f;
+					}
 				}
 			}
 		} else {
 			Struct fs = (Struct)f.type.clazz;
 			if (fs.name.name == nameNArr)
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
-			else if (fs.type.clazz.meta.get(mnNode) != null)
+			else if (fs.type != null && fs.type.clazz.meta.get(mnNode) != null)
 				Kiev.reportWarning(f.pos,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
@@ -189,11 +208,10 @@ public final class ProcessVNode implements Constants {
 		{
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
-				int p = 0;
-				foreach (Field f; ss.fields; !f.isStatic() && f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null) {
-					aflds.insert(p, f);
-					p++;
-				}
+				foreach (Field f; ss.fields; !f.isStatic() && (f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null))
+					aflds.append(f);
+				foreach (Field f; ss.virtual_fields; !f.isStatic() && (f.meta.get(mnAtt) != null || f.meta.get(mnRef) != null))
+					aflds.append(f);
 				ss = ss.super_clazz.clazz;
 			}
 		}
@@ -249,7 +267,7 @@ public final class ProcessVNode implements Constants {
 							new VarAccessExpr(0, getV.params[1]),
 							new ConstExpr(0, aflds[i].name.name)
 						),
-						new ReturnStat(0,null, new AccessExpr(0,new ThisExpr(0),aflds[i])),
+						new ReturnStat(0,null, CastExpr.autoCastToReference(new AccessExpr(0,new ThisExpr(0),aflds[i]),false)),
 						null
 					)
 				);
@@ -378,7 +396,7 @@ public final class ProcessVNode implements Constants {
 			setV.body = new BlockStat(0,setV);
 			for(int i=0; i < aflds.length; i++) {
 				boolean isArr = (aflds[i].getType().clazz.name.name == nameNArr);
-				if (isArr || aflds[i].isFinal())
+				if (isArr || aflds[i].isFinal() || !aflds[i].acc.writeable())
 					continue;
 				{	// check if we may not set the field
 					Meta fmeta = aflds[i].meta.get(mnAtt);
@@ -387,6 +405,11 @@ public final class ProcessVNode implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
+				Expr ee;
+				if (aflds[i].getType().isReference())
+					ee = new CastExpr(0,aflds[i].getType(),new VarAccessExpr(0, setV.params[2]));
+				else
+					ee = CastExpr.autoCastToPrimitive(new CastExpr(0,Type.getRefTypeForPrimitive(aflds[i].getType()),new VarAccessExpr(0, setV.params[2])));
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBooleanExpr(0, BinaryOperator.Equals,
@@ -397,7 +420,7 @@ public final class ProcessVNode implements Constants {
 							new ExprStat(0,null,
 								new AssignExpr(0,AssignOperator.Assign,
 									new AccessExpr(0,new ThisExpr(0),aflds[i]),
-									new CastExpr(0,aflds[i].getType(),new VarAccessExpr(0, setV.params[2]))
+									ee
 								)
 							),
 							new ReturnStat(0,null)

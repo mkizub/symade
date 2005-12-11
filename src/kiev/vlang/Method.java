@@ -203,7 +203,7 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 				varargs[j] = CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
 			Expr[] varargs2 = new Expr[args.length - varargs.length + 1];
 			for(int k=0; k < varargs2.length; j++,k++) {
-				varargs2[k] = CastExpr.autoCastToReference(args[j]);
+				varargs2[k] = CastExpr.autoCastToReference(args[j],true);
 			}
 			NewInitializedArrayExpr nae =
 				new NewInitializedArrayExpr(getPos(),Type.tpObject,1,varargs2);

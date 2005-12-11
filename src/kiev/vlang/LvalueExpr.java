@@ -135,17 +135,22 @@ public class AccessExpr extends LvalueExpr {
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
 					append_fast(nameSet).append_fast(var.name.name).toKString();
 
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
+				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
+				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
+				{
 				 	setAsField(true);
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
 					PVar<Method> fsg;
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),ResolveFlags.NoForwards);
 					fset = fsg;
+//					if (fset == null && var.acc.writeable())
+//						Kiev.reportError(pos, "Unresolved method "+set_name);
 					fsg = null;
 					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),obj.getType(),ResolveFlags.NoForwards);
 					fget = fsg;
+//					if (fget == null && var.acc.readable())
+//						Kiev.reportError(pos, "Unresolved method "+get_name);
 				}
 			}
 
@@ -1184,8 +1189,9 @@ public class FieldAccessExpr extends LvalueExpr {
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
 					append_fast(nameSet).append_fast(var.name.name).toKString();
 
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
+				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
+				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
+				{
 				 	setAsField(true);
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
@@ -1485,8 +1491,9 @@ public class StaticFieldAccessExpr extends LvalueExpr {
 				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
 					append_fast(nameSet).append_fast(var.name.name).toKString();
 
-				if( PassInfo.method.name.equals(get_name)
-				 || PassInfo.method.name.equals(set_name) ) {
+				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
+				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
+				{
 				 	setAsField(true);
 				} else {
 					// We return get$ method. set$ method must be checked by AssignExpr
