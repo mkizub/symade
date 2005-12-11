@@ -39,93 +39,168 @@ public class Var extends LvalDNode implements Named, Typed {
 	@dflow(in="this:in")	ENode			init;
 	}
 
+	@node
+	public static class VarImpl extends LvalDNodeImpl {
+		public VarImpl() {}
+		public VarImpl(int pos) { super(pos); }
+		public VarImpl(int pos, int fl) { super(pos, fl); }
+
+		     NodeName		name;
+		@att TypeRef		vtype;
+		@att ENode			init;
+		     int			bcpos = -1;
+	}
+	@nodeview
+	public static class VarView extends LvalDNodeView {
+		final VarImpl impl;
+		public VarView(VarImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+
+		@getter public final NodeName				get$name()			{ return this.impl.name; }
+		@getter public final TypeRef				get$vtype()			{ return this.impl.vtype; }
+		@getter public final ENode					get$init()			{ return this.impl.init; }
+		@getter public final int					get$bcpos()			{ return this.impl.bcpos; }
+
+		@setter public final void set$name(NodeName val)				{ this.impl.name = val; }
+		@setter public final void set$vtype(TypeRef val)				{ this.impl.vtype = val; }
+		@setter public final void set$init(ENode val)					{ this.impl.init = val; }
+		@setter public final void set$bcpos(int val)					{ this.impl.bcpos = val; }
+
+		@getter public final Type get$type() {
+			if (this.impl.vtype == null)
+				return Type.tpVoid;
+			return this.impl.vtype.getType();
+		}
+		
+		// need a reference proxy access 
+		public final boolean isNeedRefProxy() {
+			return this.impl.is_var_need_ref_proxy;
+		}
+		public final void setNeedRefProxy(boolean on) {
+			if (this.impl.is_var_need_ref_proxy != on) {
+				this.impl.is_var_need_ref_proxy = on;
+				if (on) this.impl.is_need_proxy = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// is a local var in a rule 
+		public final boolean isLocalRuleVar() {
+			return this.impl.is_var_local_rule_var;
+		}
+		public final void setLocalRuleVar(boolean on) {
+			if (this.impl.is_var_local_rule_var != on) {
+				this.impl.is_var_local_rule_var = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// closure proxy
+		public final boolean isClosureProxy() {
+			return this.impl.is_var_closure_proxy;
+		}
+		public final void setClosureProxy(boolean on) {
+			if (this.impl.is_var_closure_proxy != on) {
+				this.impl.is_var_closure_proxy = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// "this" var
+		public final boolean isVarThis() {
+			return this.impl.is_var_this;
+		}
+		public final void setVarThis(boolean on) {
+			if (this.impl.is_var_this != on) {
+				this.impl.is_var_this = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// "super" var
+		public final boolean isVarSuper() {
+			return this.impl.is_var_super;
+		}
+		public final void setVarSuper(boolean on) {
+			if (this.impl.is_var_super != on) {
+				this.impl.is_var_super = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		{ return new VarView((VarImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new VarView((VarImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	{ return new VarView((VarImpl)this.$v_impl); }
+	public VarView			getVarView()		{ return new VarView((VarImpl)this.$v_impl); }
+
+	@getter public NodeName				get$name()			{ return this.getVarView().name; }
+	@getter public TypeRef				get$vtype()			{ return this.getVarView().vtype; }
+	@getter public ENode				get$init()			{ return this.getVarView().init; }
+	@getter        int					get$bcpos()			{ return this.getVarView().bcpos; }
+
+	@getter public Type					get$type()			{ return this.getVarView().type; }
+	
+	@setter public void set$name(NodeName val)				{ this.getVarView().name = val; }
+	@setter public void set$vtype(TypeRef val)				{ this.getVarView().vtype = val; }
+	@setter public void set$init(ENode val)				{ this.getVarView().init = val; }
+	@setter        void set$bcpos(int val)					{ this.getVarView().bcpos = val; }
+	
 	public static Var[]	emptyArray = new Var[0];
 
-	public NodeName			name;
+	     public abstract virtual			NodeName		name;
+	@att public abstract virtual			TypeRef			vtype;
+	@att public abstract virtual			ENode			init;
+	            abstract virtual			int				bcpos;
+	@ref public abstract virtual access:ro	Type	type;
 	
-	@att public TypeRef			vtype;
-	
-	@att public ENode			init;
-	
-	private int				bcpos = -1;
-
-	@ref public abstract virtual access:ro Type	type;
-	
-	public Var() {
-	}
+	public Var() { super(new VarImpl()); }
+	public Var(VarImpl impl) { super(impl); }
 
 	public Var(int pos, KString name, Type type, int flags) {
-		super(pos,flags);
+		this(new VarImpl(pos,flags));
 		assert(type != null);
 		this.name = new NodeName(name);
 		this.vtype = new TypeRef(type);
 	}
 
 	public Var(NameRef id, TypeRef vtype, int flags) {
-		super(id.pos,flags);
+		this(new VarImpl(id.pos,flags));
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
 	}
 
-	@getter public Type get$type() {
-		if (vtype == null)
-			return Type.tpVoid;
-		return vtype.getType();
+	public Var(VarImpl impl, KString name, Type type) {
+		this(impl);
+		assert(type != null);
+		this.name = new NodeName(name);
+		this.vtype = new TypeRef(type);
 	}
-	
-	// Var specific
+
+	public Var(VarImpl impl, NameRef id, TypeRef vtype) {
+		this(impl);
+		this.name = new NodeName(id.name);
+		this.vtype = vtype;
+	}
+
+//	@getter public Type get$type() {
+//		if (vtype == null)
+//			return Type.tpVoid;
+//		return vtype.getType();
+//	}
 	
 	// need a reference proxy access 
-	@getter public final boolean get$is_var_need_ref_proxy()  alias isNeedRefProxy  {
-		return this.is_var_need_ref_proxy;
-	}
-	@setter public final void set$is_var_need_ref_proxy(boolean on) alias setNeedRefProxy {
-		if (this.is_var_need_ref_proxy != on) {
-			this.is_var_need_ref_proxy = on;
-			if (on) this.is_need_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isNeedRefProxy() { return this.getVarView().isNeedRefProxy(); }
+	public void setNeedRefProxy(boolean on) { this.getVarView().setNeedRefProxy(on); }
 	// is a local var in a rule 
-	@getter public final boolean get$is_var_local_rule_var()  alias isLocalRuleVar  {
-		return this.is_var_local_rule_var;
-	}
-	@setter public final void set$is_var_local_rule_var(boolean on) alias setLocalRuleVar {
-		if (this.is_var_local_rule_var != on) {
-			this.is_var_local_rule_var = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isLocalRuleVar() { return this.getVarView().isLocalRuleVar(); }
+	public void setLocalRuleVar(boolean on) { this.getVarView().setLocalRuleVar(on); }
 	// closure proxy
-	@getter public final boolean get$is_var_closure_proxy()  alias isClosureProxy  {
-		return this.is_var_closure_proxy;
-	}
-	@setter public final void set$is_var_closure_proxy(boolean on) alias setClosureProxy {
-		if (this.is_var_closure_proxy != on) {
-			this.is_var_closure_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isClosureProxy() { return this.getVarView().isClosureProxy(); }
+	public void setClosureProxy(boolean on) { this.getVarView().setClosureProxy(on); }
 	// "this" var
-	@getter public final boolean get$is_var_this()  alias isVarThis  {
-		return this.is_var_this;
-	}
-	@setter public final void set$is_var_this(boolean on) alias setVarThis {
-		if (this.is_var_this != on) {
-			this.is_var_this = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isVarThis() { return this.getVarView().isVarThis(); }
+	public void setVarThis(boolean on) { this.getVarView().setVarThis(on); }
 	// "super" var
-	@getter public final boolean get$is_var_super()  alias isVarSuper {
-		return this.is_var_super;
-	}
-	@setter public final void set$is_var_super(boolean on) alias setVarSuper {
-		if (this.is_var_super != on) {
-			this.is_var_super = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isVarSuper() { return this.getVarView().isVarSuper(); }
+	public void setVarSuper(boolean on) { this.getVarView().setVarSuper(on); }
 
 	public void callbackChildChanged(AttrSlot attr) {
 		if (parent != null && pslot != null) {
@@ -273,6 +348,41 @@ public class FormPar extends Var {
 	@dflow(in="this:in")	ENode			init;
 	}
 	
+	@node
+	public static class FormParImpl extends VarImpl {
+		public FormParImpl() {}
+		public FormParImpl(int pos) { super(pos); }
+		public FormParImpl(int pos, int fl) { super(pos, fl); }
+
+		@att TypeRef		stype;
+		     int			kind;
+	}
+	@nodeview
+	public static class FormParView extends VarView {
+		final FormParImpl impl;
+		public FormParView(FormParImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+
+		@getter public final TypeRef				get$stype()			{ return this.impl.stype; }
+		@getter public final int					get$kind()			{ return this.impl.kind; }
+		
+		@setter public final void set$stype(TypeRef val)				{ this.impl.stype = val; }
+		@setter public final void set$kind(int val)					{ this.impl.kind = val; }
+	}
+	public NodeView			getNodeView()		{ return new FormParView((FormParImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new FormParView((FormParImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	{ return new FormParView((FormParImpl)this.$v_impl); }
+	public VarView			getVarView()		{ return new FormParView((FormParImpl)this.$v_impl); }
+	public FormParView		getFormParView()	{ return new FormParView((FormParImpl)this.$v_impl); }
+
+	@getter public TypeRef				get$stype()			{ return this.getFormParView().stype; }
+	@getter        int					get$kind()			{ return this.getFormParView().kind; }
+
+	@setter public void set$stype(TypeRef val)				{ this.getFormParView().stype = val; }
+	@setter        void set$kind(int val)					{ this.getFormParView().kind = val; }
+	
 	public static final int PARAM_NORMAL       = 0;
 	public static final int PARAM_THIS         = 1;
 	public static final int PARAM_OUTER_THIS   = 2;
@@ -281,20 +391,21 @@ public class FormPar extends Var {
 	public static final int PARAM_VARARGS      = 5;
 	public static final int PARAM_LVAR_PROXY   = 6;
 	
-	@att public TypeRef		stype;
-	public int kind;
+	@att public abstract virtual	TypeRef		stype;
+	     public abstract virtual	int			kind;
 
 	public FormPar() {
+		super(new FormParImpl());
 	}
 
 	public FormPar(int pos, KString name, Type type, int kind, int flags) {
-		super(pos,name,type,flags);
+		super(new FormParImpl(pos,flags),name,type);
 		this.kind = kind;
 		this.stype = new TypeRef(type.getJavaType());
 	}
 
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
-		super(id,vtype,flags);
+		super(new FormParImpl(id.pos,flags),id,vtype);
 		this.kind = kind;
 		this.stype = stype;
 	}
@@ -733,9 +844,6 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 	// anti-loop locks for Label(bit 0) and DFFuncLabel
 	int locks;
 	
-	// the owner node
-	final ASTNode node;
-	
 	// is a dflow root
 	final boolean is_root;
 	
@@ -753,14 +861,13 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 	public static DataFlowInfo newDataFlowInfo(ASTNode node) {
 		DataFlowInfo template = data_flows.get(node.getClass());
 		if (template == null) {
-			template = new DataFlowInfo(node);
+			template = new DataFlowInfo((ASTNode)node.getClass().newInstance());
 			data_flows.put(node.getClass(), template);
 		}
 		return new DataFlowInfo(node, template);
 	}
 	private DataFlowInfo(ASTNode node, DataFlowInfo template) {
-		super(ID);
-		this.node = node;
+		super(ID, node);
 		this.children = template.children;
 		if (template.results != null)
 			this.results = new DFState[template.results.length];
@@ -774,8 +881,7 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 		this.func_jmp = template.func_jmp;
 	}
 	private DataFlowInfo(ASTNode node) {
-		super(ID);
-		this.node = node;
+		super(ID, node);
 		Vector<DFSocket> chl_dfs = new Vector<DFSocket>();
 		Hashtable<String,kiev.vlang.dflow> dflows = new Hashtable<String,kiev.vlang.dflow>();
 		int attach_idx = 0;
@@ -847,7 +953,7 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 		}
 		if (this.locks > 0)
 			results = new DFState[this.locks];
-		this.node = null;
+		//this.node = null;
 	}
 	
 	public final int allocResult() { return locks++; }
@@ -966,9 +1072,8 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 		}
 	}
 	
-	public void nodeAttached(ASTNode n) {
+	public void nodeAttached() {
 		if (!is_root) {
-			if (ASSERT_MORE) assert(this.node == n);
 			if (ASSERT_MORE) assert(this.parent_dfi == null);
 			if (ASSERT_MORE) assert(this.parent_dfs == null);
 			parent_dfi = node.parent.getDFlow();
@@ -982,13 +1087,12 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 			}
 		}
 	}
-	public void dataAttached(ASTNode n) {
-		if (n.parent != null)
-			nodeAttached(n);
+	public void dataAttached() {
+		if (node.parent != null)
+			nodeAttached();
 	}
 	
-	public void nodeDetached(ASTNode n) {
-		if (ASSERT_MORE) assert(this.node == n);
+	public void nodeDetached() {
 		if (parent_dfs != null) {
 			assert(parent_dfi != null);
 			if (parent_dfs instanceof DFSocketChild) {
@@ -1004,8 +1108,8 @@ public final class DataFlowInfo extends NodeData implements DataFlowSlots {
 			assert(parent_dfi == null);
 		}
 	}
-	public void dataDetached(ASTNode n) {
-		nodeDetached(n);
+	public void dataDetached() {
+		nodeDetached();
 	}
 	
 }

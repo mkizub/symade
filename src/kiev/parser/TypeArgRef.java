@@ -42,20 +42,20 @@ public class TypeArgDef extends TypeDef {
 	@att public TypeRef					super_bound;
 	private Type						lnk;
 
-	public TypeArgDef() {
-	}
+	public TypeArgDef() { super(new TypeDefImpl()); }
 
 	public TypeArgDef(KString nm) {
+		super(new TypeDefImpl());
 		name = new NameRef(nm);
 	}
 
 	public TypeArgDef(NameRef nm) {
-		this.pos = nm.getPos();
+		super(new TypeDefImpl(nm.getPos()));
 		this.name = nm;
 	}
 
 	public TypeArgDef(NameRef nm, TypeRef sup) {
-		this.pos = nm.getPos();
+		super(new TypeDefImpl(nm.getPos()));
 		this.name = nm;
 		this.super_bound = sup;
 	}

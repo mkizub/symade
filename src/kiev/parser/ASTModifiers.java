@@ -12,10 +12,12 @@ import kiev.vlang.*;
  */
 
 @node
-public class ASTModifiers extends ASTNode {
+public final class ASTModifiers extends ASTNode {
 	     public int							modifier;
 	@att public Access 						acc;
 	@att public final NArr<Meta>			annotations;
+	
+	public ASTModifiers() { super(new NodeImpl()); }
 	
 	public int getFlags() {
 		return modifier;

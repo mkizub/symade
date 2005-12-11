@@ -342,7 +342,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		if (fa.pctx.method != null && fa.pctx.method.name.equals(get_name)) {
+		if (fa.pctx.method != null && fa.pctx.method.name.equals(get_name) && fa.pctx.clazz.instanceOf((Struct)f.parent)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -369,7 +369,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
 				append_fast(nameSet).append_fast(f.name.name).toKString();
 	
-			if (ae.pctx.method != null && ae.pctx.method.name.equals(set_name)) {
+			if (ae.pctx.method != null && ae.pctx.method.name.equals(set_name) && ae.pctx.clazz.instanceOf((Struct)f.parent)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -384,6 +384,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				fa.setAsField(true);
 				return true;
 			}
+			Type ae_tp = ae.isGenVoidExpr() ? Type.tpVoid : ae.getType();
 			BinaryOperator op = null;
 			if      (ae.op == AssignOperator.AssignAdd)                  op = BinaryOperator.Add;
 			else if (ae.op == AssignOperator.AssignSub)                  op = BinaryOperator.Sub;
@@ -431,7 +432,8 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				expr = be;
 			}
 			ae.replaceWithNode(expr);
-			expr.resolve(ae.isGenVoidExpr() ? Type.tpVoid : ae.getType());
+			expr.setGenVoidExpr(ae.isGenVoidExpr());
+			expr.resolve(ae_tp);
 			rewriteNode(expr);
 			return false;
 		}
@@ -450,7 +452,10 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 				append_fast(nameGet).append_fast(f.name.name).toKString();
 	
-			if (ie.pctx.method != null && (ie.pctx.method.name.equals(set_name) || ie.pctx.method.name.equals(get_name))) {
+			if (ie.pctx.method != null
+			&& (ie.pctx.method.name.equals(set_name) || ie.pctx.method.name.equals(get_name))
+			&& ie.pctx.clazz.instanceOf((Struct)f.parent) )
+			{
 				fa.setAsField(true);
 				return true;
 			}
@@ -466,6 +471,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				return true;
 			}
 			ENode expr;
+			Type ie_tp = ie.isGenVoidExpr() ? Type.tpVoid : ie.getType();
 			if (ie.isGenVoidExpr()) {
 				if (ie.op == PrefixOperator.PreIncr || ie.op == PostfixOperator.PostIncr) {
 					expr = new AssignExpr(ie.pos, AssignOperator.AssignAdd, ie.lval, new ConstIntExpr(1));
@@ -512,7 +518,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			}
 			ie.replaceWithNode(expr);
 			expr.setGenVoidExpr(ie.isGenVoidExpr());
-			expr.resolve(ie.isGenVoidExpr() ? Type.tpVoid : ie.getType());
+			expr.resolve(ie_tp);
 			rewriteNode(expr);
 			return false;
 		}

@@ -140,7 +140,7 @@ public class ASTNewExpression extends ENode {
 			if( args.length > 0 ) {
 				MethodType mt;
 				Type[] targs = Type.emptyArray;
-				NArr<FormPar> params = new NArr<FormPar>(null, null);
+				NArr<FormPar> params = new NArr<FormPar>();
 				for(int i=0; i < args.length; i++) {
 					args[i].resolve(null);
 					Type at = args[i].getType();

@@ -32,42 +32,138 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class Field extends LvalDNode implements Named, Typed, Accessable {
+public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
+	@node
+	public static class FieldImpl extends LvalDNodeImpl {
+		public FieldImpl() {}
+		public FieldImpl(int pos) { super(pos); }
+		public FieldImpl(int pos, int fl) { super(pos, fl); }
+
+		/** Field' access */
+		     Access				acc;
+		/** Name of the field */
+		     NodeName			name;
+		/** Type of the field */
+		@att TypeRef			ftype;
+		/** Initial value of this field */
+		@att ENode				init;
+		/** Array of attributes of this field */
+		     Attr[]				attrs = Attr.emptyArray;
+		/** Array of invariant methods, that check this field */
+		@ref NArr<Method>		invs;
+	}
+	@nodeview
+	public static class FieldView extends LvalDNodeView {
+		final FieldImpl impl;
+		public FieldView(FieldImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+
+		@getter public final Access					get$acc()			{ return this.impl.acc; }
+		@getter public final NodeName				get$name()			{ return this.impl.name; }
+		@getter public final TypeRef				get$ftype()			{ return this.impl.ftype; }
+		@getter public final ENode					get$init()			{ return this.impl.init; }
+		@getter public final Attr[]					get$attrs()			{ return this.impl.attrs; }
+		@getter public final NArr<Method>			get$invs()			{ return this.impl.invs; }
+		
+		@getter public final Type					get$type()			{ return this.impl.ftype.getType(); }
+		
+		@setter public final void set$acc(Access val)					{ this.impl.acc = val; this.impl.acc.verifyAccessDecl((Field)this.impl._self); }
+		@setter public final void set$name(NodeName val)				{ this.impl.name = val; }
+		@setter public final void set$ftype(TypeRef val)				{ this.impl.ftype = val; }
+		@setter public final void set$init(ENode val)					{ this.impl.init = val; }
+		@setter public final void set$attrs(Attr[] val)				{ this.impl.attrs = val; }
+		
+		// is a virtual field
+		public final boolean isVirtual() {
+			return this.impl.is_fld_virtual;
+		}
+		public final void setVirtual(boolean on) {
+			if (this.impl.is_fld_virtual != on) {
+				this.impl.is_fld_virtual = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// is a field of enum
+		public final boolean isEnumField() {
+			return this.impl.is_fld_enum;
+		}
+		public final void setEnumField(boolean on) {
+			if (this.impl.is_fld_enum != on) {
+				this.impl.is_fld_enum = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// packer field (auto-generated for packed fields)
+		public final boolean isPackerField() {
+			return this.impl.is_fld_packer;
+		}
+		public final void setPackerField(boolean on) {
+			if (this.impl.is_fld_packer != on) {
+				this.impl.is_fld_packer = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// packed field
+		public final boolean isPackedField() {
+			return this.impl.is_fld_packed;
+		}
+		public final void setPackedField(boolean on) {
+			if (this.impl.is_fld_packed != on) {
+				this.impl.is_fld_packed = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		{ return new FieldView((FieldImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new FieldView((FieldImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	{ return new FieldView((FieldImpl)this.$v_impl); }
+	public FieldView		getFieldView()		{ return new FieldView((FieldImpl)this.$v_impl); }
+
+	@getter public Access				get$acc()			{ return this.getFieldView().acc; }
+	@getter public NodeName				get$name()			{ return this.getFieldView().name; }
+	@getter public TypeRef				get$ftype()			{ return this.getFieldView().ftype; }
+	@getter public ENode				get$init()			{ return this.getFieldView().init; }
+	@getter public Attr[]				get$attrs()			{ return this.getFieldView().attrs; }
+	@getter public NArr<Method>			get$invs()			{ return this.getFieldView().invs; }
+	
+	@getter public Type					get$type()			{ return this.getFieldView().type; }
+	
+	@setter public void set$acc(Access val)				{ this.getFieldView().acc = val; }
+	@setter public void set$name(NodeName val)				{ this.getFieldView().name = val; }
+	@setter public void set$ftype(TypeRef val)				{ this.getFieldView().ftype = val; }
+	@setter public void set$init(ENode val)				{ this.getFieldView().init = val; }
+	@setter public void set$attrs(Attr[] val)				{ this.getFieldView().attrs = val; }
+
 	/** Field' access */
-	@virtual
-	public virtual Access	acc;
-
+	     public virtual abstract				Access			acc;
 	/** Name of the field */
-	public NodeName			name;
-
+	     public virtual abstract				NodeName		name;
 	/** Type of the field */
-	@att public TypeRef		ftype;
-
+	@att public virtual abstract				TypeRef			ftype;
 	/** Initial value of this field */
-	@att public ENode		init;
-
+	@att public virtual abstract				ENode			init;
 	/** Array of attributes of this field */
-	public Attr[]			attrs = Attr.emptyArray;
-
+	     public virtual abstract				Attr[]			attrs;
 	/** Array of invariant methods, that check this field */
-	public Method[]			invs = Method.emptyArray;
+	@ref public virtual abstract access:ro		NArr<Method>	invs;
 
-	@ref public abstract virtual access:ro Type	type;
+	@ref public abstract virtual access:ro		Type			type;
 	
 	/** JField for java backend */
 	//@ref public kiev.backend.java15.JField			jfield;
 
-	public Field() {
-	}
+	public Field() { super(new FieldImpl()); }
 	
     /** Constructor for new field
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
 	public Field(KString name, TypeRef ftype, int acc) {
-		super(0,acc);
+		super(new FieldImpl(0,acc));
 		this.name = new NodeName(name);
 		this.ftype = ftype;
 		this.acc = new Access(0);
@@ -79,63 +175,31 @@ public class Field extends LvalDNode implements Named, Typed, Accessable {
 		this(name,new TypeRef(type),acc);
 	}
 	
-	@getter public Type get$type() {
-		return ftype.getType();
-	}
+//	@getter public Type get$type() {
+//		return ftype.getType();
+//	}
+//	
+//	@getter public Access get$acc() {
+//		return acc;
+//	}
+//
+//	@setter public void set$acc(Access a) {
+//		acc = a;
+//		acc.verifyAccessDecl(this);
+//	}
 	
-	@getter public Access get$acc() {
-		return acc;
-	}
-
-	@setter public void set$acc(Access a) {
-		acc = a;
-		acc.verifyAccessDecl(this);
-	}
-	
-	//
-	// Field specific
-	//
-
 	// is a virtual field
-	@getter public final boolean get$is_fld_virtual()  alias isVirtual  {
-		return this.is_fld_virtual;
-	}
-	@setter public final void set$is_fld_virtual(boolean on) alias setVirtual {
-		if (this.is_fld_virtual != on) {
-			this.is_fld_virtual = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isVirtual() { return this.getFieldView().isVirtual(); }
+	public void setVirtual(boolean on) { this.getFieldView().setVirtual(on); }
 	// is a field of enum
-	@getter public final boolean get$is_fld_enum()  alias isEnumField  {
-		return this.is_fld_enum;
-	}
-	@setter public final void set$is_fld_enum(boolean on) alias setEnumField {
-		if (this.is_fld_enum != on) {
-			this.is_fld_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isEnumField() { return this.getFieldView().isEnumField(); }
+	public void setEnumField(boolean on) { this.getFieldView().setEnumField(on); }
 	// packer field (auto-generated for packed fields)
-	@getter public final boolean get$is_fld_packer()  alias isPackerField  {
-		return this.is_fld_packer;
-	}
-	@setter public final void set$is_fld_packer(boolean on) alias setPackerField {
-		if (this.is_fld_packer != on) {
-			this.is_fld_packer = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isPackerField() { return this.getFieldView().isPackerField(); }
+	public void setPackerField(boolean on) { this.getFieldView().setPackerField(on); }
 	// packed field
-	@getter public final boolean get$is_fld_packed()  alias isPackedField  {
-		return this.is_fld_packed;
-	}
-	@setter public final void set$is_fld_packed(boolean on) alias setPackedField {
-		if (this.is_fld_packed != on) {
-			this.is_fld_packed = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isPackedField() { return this.getFieldView().isPackedField(); }
+	public void setPackedField(boolean on) { this.getFieldView().setPackedField(on); }
 
 	public MetaVirtual getMetaVirtual() {
 		return (MetaVirtual)this.meta.get(MetaVirtual.NAME);

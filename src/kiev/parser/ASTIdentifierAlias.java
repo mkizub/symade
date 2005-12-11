@@ -37,15 +37,19 @@ import kiev.transf.*;
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
+	public ASTAlias(NodeImpl v_impl) { super(v_impl); }
+	
 	public abstract void attach(ASTNode n);
 
 }
 
 @node
-public class ASTIdentifierAlias extends ASTAlias {
+public final class ASTIdentifierAlias extends ASTAlias {
 
 	@att public NameRef		name;
 
+	public ASTIdentifierAlias() { super(new NodeImpl()); }
+	
 	public void attach(ASTNode n) {
 		switch(n) {
 		case Method:

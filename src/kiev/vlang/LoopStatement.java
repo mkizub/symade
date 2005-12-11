@@ -58,13 +58,38 @@ public class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
 
-	@ref(copyable=false)
-	public List<ASTNode>	links;
-	
-	CodeLabel				label;
+	@node
+	static class LabelImpl extends DNodeImpl {
+		LabelImpl() {}
+		@ref(copyable=false)	List<ASTNode>	links = List.Nil;
+								CodeLabel		label;
+	}
+	@nodeview
+	static class LabelView extends DNodeView {
+		final LabelImpl impl;
+		LabelView(LabelImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final List<ASTNode>			get$links()		{ return this.impl.links; }
+		@getter public final CodeLabel				get$label()		{ return this.impl.label; }
+		@setter public final void set$links(List<ASTNode> val)		{ this.impl.links =val; }
+		@setter public final void set$label(CodeLabel val)			{ this.impl.label =val; }
+	}
+	public NodeView			getNodeView()		{ return new LabelView((LabelImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new LabelView((LabelImpl)this.$v_impl); }
+	public LabelView		getLabelView()		{ return new LabelView((LabelImpl)this.$v_impl); }
+
+	@ref(copyable=false) public abstract virtual List<ASTNode>		links;
+	                     public abstract virtual CodeLabel			label;
+
+	@getter public List<ASTNode>			get$links()		{ return this.getLabelView().links; }
+	@getter public CodeLabel				get$label()		{ return this.getLabelView().label; }
+	@setter public void set$links(List<ASTNode> val)		{ this.getLabelView().links = val; }
+	@setter public void set$label(CodeLabel val)			{ this.getLabelView().label = val; }
 	
 	public Label() {
-		links = List.Nil;
+		super(new LabelImpl());
 	}
 	
 	public void addLink(ASTNode lnk) {
@@ -630,7 +655,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
 					new LVarExpr(container.pos,iter_array),
-					new ShadowExpr(container)
+					(ENode)container.copy()
 				));
 			((CommaExpr)iter_init).exprs.add(
 				new AssignExpr(iter.pos,AssignOperator.Assign,
@@ -642,14 +667,14 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case KENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), new ShadowExpr(container)
+				new LVarExpr(iter.pos,iter), (ENode)container.copy()
 				);
 			iter_init.resolve(iter.type);
 			break;
 		case JENUM:
 			/* iter = container; */
 			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-				new LVarExpr(iter.pos,iter), new ShadowExpr(container)
+				new LVarExpr(iter.pos,iter), (ENode)container.copy()
 				);
 			iter_init.resolve(iter.type);
 			break;

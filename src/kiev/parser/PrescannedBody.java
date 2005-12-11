@@ -31,7 +31,7 @@ import kiev.stdlib.*;
  */
 
 @node
-public class PrescannedBody extends ASTNode {
+public final class PrescannedBody extends ASTNode {
 	
 	public static final int BlockMode		= 0;
 	public static final int RuleBlockMode	= 1;
@@ -43,9 +43,10 @@ public class PrescannedBody extends ASTNode {
 	public int			columnno;
 	public int			mode;
 	
-	public PrescannedBody() {}
+	public PrescannedBody() { super(new NodeImpl()); }
 	
 	public PrescannedBody(int lineno, int columnno) {
+		super(new NodeImpl());
 		this.lineno = lineno;	
 		this.columnno = columnno;
 	}

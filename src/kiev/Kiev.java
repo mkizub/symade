@@ -477,7 +477,7 @@ public final class Kiev {
 		} finally {
 			Kiev.k.curFileUnit = null;
 			Kiev.k.curClazz = null;
-			f.bodies = PrescannedBody.emptyArray;
+			f.bodies.delAll();
 		}
 	}
 

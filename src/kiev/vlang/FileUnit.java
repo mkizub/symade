@@ -38,24 +38,71 @@ import syntax kiev.Syntax;
 
 @node
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
-	@att public KString					filename = KString.Empty;
-	@att public TypeNameRef				pkg;
-	@att public final NArr<DNode>		syntax;
-	@att public final NArr<DNode>		members;
+
+	@node
+	static class FileUnitImpl extends DNodeImpl {
+		FileUnitImpl() {}
+		@att KString			filename;
+		@att TypeNameRef		pkg;
+		@att NArr<DNode>		syntax;
+		@att NArr<DNode>		members;
+		
+		@ref NArr<PrescannedBody>	bodies;
+		     final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
+		     boolean				scanned_for_interface_only;
+	}
+	@nodeview
+	static class FileUnitView extends DNodeView {
+		final FileUnitImpl impl;
+		FileUnitView(FileUnitImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final KString				get$filename()	{ return this.impl.filename; }
+		@getter public final TypeNameRef			get$pkg()		{ return this.impl.pkg; }
+		@getter public final NArr<DNode>			get$syntax()	{ return this.impl.syntax; }
+		@getter public final NArr<DNode>			get$members()	{ return this.impl.members; }
+		@getter public final NArr<PrescannedBody>	get$bodies()	{ return this.impl.bodies; }
+		@getter public final boolean[]				get$disabled_extensions()			{ return this.impl.disabled_extensions; }
+		@getter public final boolean				get$scanned_for_interface_only()	{ return this.impl.scanned_for_interface_only; }
+
+		@setter public final void set$filename(KString val)					{ this.impl.filename = val; }
+		@setter public final void set$pkg(TypeNameRef val)						{ this.impl.pkg = val; }
+		@setter public final void set$scanned_for_interface_only(boolean val)	{ this.impl.scanned_for_interface_only = val; }
+	}
+	public NodeView			getNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
+	public FileUnitView		getFileUnitView()	{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
+
+	@att public abstract virtual 				KString					filename;
+	@att public abstract virtual				TypeNameRef				pkg;
+	@att public abstract virtual access:ro		NArr<DNode>				syntax;
+	@att public abstract virtual access:ro		NArr<DNode>				members;
 	
-	public PrescannedBody[]				bodies = PrescannedBody.emptyArray;
-	public boolean[]					disabled_extensions;
-	public boolean						scanned_for_interface_only;
+	@ref public abstract virtual access:ro		NArr<PrescannedBody>	bodies;
+	     public abstract virtual access:ro		boolean[]				disabled_extensions;
+	     public abstract virtual				boolean					scanned_for_interface_only;
+
+	@getter public KString					get$filename()	{ return this.getFileUnitView().get$filename(); }
+	@getter public TypeNameRef				get$pkg()		{ return this.getFileUnitView().get$pkg(); }
+	@getter public NArr<DNode>				get$syntax()	{ return this.getFileUnitView().get$syntax(); }
+	@getter public NArr<DNode>				get$members()	{ return this.getFileUnitView().get$members(); }
+	@getter public NArr<PrescannedBody>	get$bodies()	{ return this.getFileUnitView().get$bodies(); }
+	@getter public boolean[]				get$disabled_extensions()			{ return this.getFileUnitView().get$disabled_extensions(); }
+	@getter public boolean					get$scanned_for_interface_only()	{ return this.getFileUnitView().get$scanned_for_interface_only(); }
+
+	@setter public void set$filename(KString val)						{ this.getFileUnitView().set$filename(val); }
+	@setter public void set$pkg(TypeNameRef val)						{ this.getFileUnitView().set$pkg(val); }
+	@setter public void set$scanned_for_interface_only(boolean val)	{ this.getFileUnitView().set$scanned_for_interface_only(val); }
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);
 	}
 	public FileUnit(KString name, Struct pkg) {
-		super(0);
+		super(new FileUnitImpl());
 		this.filename = name;
 		this.pkg = new TypeNameRef(pkg.name.name);
 		this.pkg.lnk = pkg.type;
-		disabled_extensions = Kiev.getCmdLineExtSet();
 	}
 
 	public void setupContext() {
@@ -63,7 +110,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	}
 
 	public void addPrescannedBody(PrescannedBody b) {
-		bodies = (PrescannedBody[])Arrays.append(bodies,b);
+		bodies.append(b);
 	}
 
 	public KString getName() { return filename; }
@@ -254,11 +301,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(ASTNode n; syntax) n.cleanup();
-		foreach(ASTNode n; members) n.cleanup();
-		foreach(PrescannedBody n; bodies)
-			n.replaceWith(null);
-		bodies = PrescannedBody.emptyArray;
+		foreach(DNode n; members; n instanceof Struct) ((Struct)n).cleanup();
+		bodies.delAll();
 	}
 
 	public void toJava(String output_dir) {

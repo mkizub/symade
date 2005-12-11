@@ -37,6 +37,7 @@ public final class MetaSet extends ASTNode {
 	@att public final NArr<Meta> metas;
 	
 	public MetaSet() {
+		super(new NodeImpl());
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
@@ -455,10 +456,12 @@ public abstract class MetaValue extends ASTNode {
 
 	public /*final*/ MetaValueType type;
 
-	public MetaValue() {
+	public MetaValue(NodeImpl v_impl) {
+		super(v_impl);
 	}
 
-	public MetaValue(MetaValueType type) {
+	public MetaValue(NodeImpl v_impl, MetaValueType type) {
+		super(v_impl);
 		this.type  = type;
 	}
 
@@ -513,19 +516,20 @@ public abstract class MetaValue extends ASTNode {
 }
 
 @node
-public class MetaValueScalar extends MetaValue {
+public final class MetaValueScalar extends MetaValue {
 
 	@att public       ENode       value;
 	
 	public MetaValueScalar() {
+		super(new NodeImpl());
 	}
 
 	public MetaValueScalar(MetaValueType type) {
-		super(type);
+		super(new NodeImpl(),type);
 	}
 
 	public MetaValueScalar(MetaValueType type, ENode value) {
-		super(type);
+		super(new NodeImpl(),type);
 		this.value = value;
 	}
 
@@ -556,19 +560,20 @@ public class MetaValueScalar extends MetaValue {
 }
 
 @node
-public class MetaValueArray extends MetaValue {
+public final class MetaValueArray extends MetaValue {
 
 	@att public final NArr<ENode>      values;
 	
 	public MetaValueArray() {
+		super(new NodeImpl());
 	}
 
 	public MetaValueArray(MetaValueType type) {
-		super(type);
+		super(new NodeImpl(),type);
 	}
 
 	public MetaValueArray(MetaValueType type, ENode[] values) {
-		super(type);
+		super(new NodeImpl(),type);
 		this.values.addAll(values);
 	}
 

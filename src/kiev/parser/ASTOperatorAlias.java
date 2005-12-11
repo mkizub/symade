@@ -37,7 +37,7 @@ import static kiev.vlang.Operator.*;
  */
 
 @node
-public class ASTOperatorAlias extends ASTAlias {
+public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_UNKNOWN = 0;
 	public static final int	XFIX_PREFIX  = 1;
 	public static final int	XFIX_POSTFIX = 2;
@@ -48,6 +48,8 @@ public class ASTOperatorAlias extends ASTAlias {
 	public KString				image;
 	public int					xfix;
 
+	public ASTOperatorAlias() { super(new NodeImpl()); }
+	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;
 		if( n instanceof ASTOperator ) {

@@ -159,7 +159,13 @@ public class TypeClassExpr extends ENode {
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public void resolve(Type reqType) {
-		type.getType();
+		Type tp = type.getType();
+		if( !tp.isReference() ) {
+			Type rt = Type.getRefTypeForPrimitive(tp);
+			Field f = rt.clazz.resolveField(KString.from("TYPE"));
+			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
+			return;
+		}
 		setResolved(true);
 	}
 

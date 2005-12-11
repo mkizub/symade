@@ -27,10 +27,37 @@ import kiev.vlang.*;
 import kiev.stdlib.*;
 
 @node
-public class ASTPragma extends DNode {
+public final class ASTPragma extends DNode {
 
-	public boolean								enable;
-	@att public final NArr<ConstStringExpr>	options;
+	@node
+	static class ASTPragmaImpl extends DNodeImpl {
+		ASTPragmaImpl() {}
+		@att boolean				enable;
+		@att NArr<ConstStringExpr>	options;
+	}
+	@nodeview
+	static class ASTPragmaView extends DNodeView {
+		final ASTPragmaImpl impl;
+		ASTPragmaView(ASTPragmaImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final boolean				get$enable()	{ return this.impl.enable; }
+		@getter public final NArr<ConstStringExpr>	get$options()	{ return this.impl.options; }
+		@setter public final void set$enable(boolean val)			{ this.impl.enable = val; }
+	}
+	public NodeView			getNodeView()		{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
+	public ASTPragmaView	getASTPragmaView()	{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
+
+	@att public abstract           boolean					enable;
+	@att public abstract access:ro NArr<ConstStringExpr>	options;
+
+	public ASTPragma() { super(new ASTPragmaImpl()); }
+	
+	@getter public boolean					get$enable()	{ return this.getASTPragmaView().enable; }
+	@getter public NArr<ConstStringExpr>	get$options()	{ return this.getASTPragmaView().options; }
+	@setter public void set$enable(boolean val)			{ this.getASTPragmaView().enable = val; }
 
 	public void resolve(Type reqType) {}
 	

@@ -56,17 +56,17 @@ public enum TopLevelPass {
 
 public abstract class NodeData {
 	public final KString	id;
+	public final ASTNode	node;
 	public NodeData			prev;
 	public NodeData			next;
-	public NodeData(KString id) {
+	public NodeData(KString id, ASTNode node) {
 		this.id = id;
+		this.node = node;
 	}
-	public void nodeAttached(ASTNode n) {}
-	public void dataAttached(ASTNode n) {}
-	public void nodeDetached(ASTNode n) {}
-	public void dataDetached(ASTNode n) {}
-	public void subnodeInserted(NArr<ASTNode> space, ASTNode n) {}
-	public void subnodeRemoved(NArr<ASTNode> space, ASTNode n) {}
+	public void nodeAttached() {}
+	public void dataAttached() {}
+	public void nodeDetached() {}
+	public void dataDetached() {}
 };
 
 public final class NodeContext {
@@ -127,83 +127,241 @@ public abstract class ASTNode implements Constants {
 	public static ASTNode[] emptyArray = new ASTNode[0];
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
-	public int				pos;
+	public static class NodeImpl {
+		protected ASTNode			_self;		
+		protected int				pos;
+		protected int				compileflags;
+		protected ASTNode			parent;
+		protected AttrSlot			pslot;
+		protected ASTNode			pprev;
+		protected ASTNode			pnext;
+		protected NodeContext		pctx;
+		protected NodeData			ndata;
+		// Structures	
+		packed:1,compileflags,16 boolean is_struct_local;
+		packed:1,compileflags,17 boolean is_struct_anomymouse;
+		packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
+		packed:1,compileflags,19 boolean is_struct_verified;
+		packed:1,compileflags,20 boolean is_struct_members_generated;
+		packed:1,compileflags,21 boolean is_struct_pre_generated;
+		packed:1,compileflags,22 boolean is_struct_statements_generated;
+		packed:1,compileflags,23 boolean is_struct_generated;
+		
+		// Expression flags
+		packed:1,compileflags,16 boolean is_expr_use_no_proxy;
+		packed:1,compileflags,17 boolean is_expr_as_field;
+		packed:1,compileflags,18 boolean is_expr_gen_void;
+		packed:1,compileflags,19 boolean is_expr_try_resolved;
+		packed:1,compileflags,20 boolean is_expr_for_wrapper;
+		packed:1,compileflags,21 boolean is_expr_primary;
+		// Statement flags
+		packed:1,compileflags,22 boolean is_stat_abrupted;
+		packed:1,compileflags,23 boolean is_stat_breaked;
+		packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+		packed:1,compileflags,25 boolean is_stat_auto_returnable;
+		packed:1,compileflags,26 boolean is_stat_break_target;
+		
+		// Method flags
+		packed:1,compileflags,17 boolean is_mth_virtual_static;
+		packed:1,compileflags,20 boolean is_mth_operator;
+		packed:1,compileflags,21 boolean is_mth_gen_post_cond;
+		packed:1,compileflags,22 boolean is_mth_need_fields_init;
+		packed:1,compileflags,24 boolean is_mth_local;
+		
+		// Var/field
+		packed:1,compileflags,16 boolean is_init_wrapper;
+		packed:1,compileflags,17 boolean is_need_proxy;
+		// Var specific
+		packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
+		packed:1,compileflags,19 boolean is_var_local_rule_var;
+		packed:1,compileflags,20 boolean is_var_closure_proxy;
+		packed:1,compileflags,21 boolean is_var_this;
+		packed:1,compileflags,22 boolean is_var_super;
 	
-	@ref(copyable=false)
-	public access:ro,ro,ro,rw ASTNode			parent;
-	@ref(copyable=false)
-	public access:ro,ro,ro,rw AttrSlot			pslot;
-	@ref(copyable=false)
-	public ASTNode								pprev;
-	@ref(copyable=false)
-	public ASTNode								pnext;
-	@ref(copyable=false)
-	public access:ro,ro,rw,rw NodeContext		pctx;
+		// Field specific
+		packed:1,compileflags,18 boolean is_fld_packer;
+		packed:1,compileflags,19 boolean is_fld_packed;
 	
-	@ref(copyable=false)
-	public NodeData			ndata;
+		// General flags
+		packed:1,compileflags,28 boolean is_accessed_from_inner;
+		packed:1,compileflags,29 boolean is_resolved;
+		packed:1,compileflags,30 boolean is_hidden;
+		packed:1,compileflags,31 boolean is_bad;
 
-	public int				compileflags;
-	
-	// Structures	
-	@virtual public virtual packed:1,compileflags,16 boolean is_struct_local;
-	@virtual public virtual packed:1,compileflags,17 boolean is_struct_anomymouse;
-	@virtual public virtual packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-	@virtual public virtual packed:1,compileflags,19 boolean is_struct_verified;
-	@virtual public virtual packed:1,compileflags,20 boolean is_struct_members_generated;
-	@virtual public virtual packed:1,compileflags,21 boolean is_struct_pre_generated;
-	@virtual public virtual packed:1,compileflags,22 boolean is_struct_statements_generated;
-	@virtual public virtual packed:1,compileflags,23 boolean is_struct_generated;
-	
-	// Expression flags
-	@virtual public virtual packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-	@virtual public virtual packed:1,compileflags,17 boolean is_expr_as_field;
-	@virtual public virtual packed:1,compileflags,18 boolean is_expr_gen_void;
-	@virtual public virtual packed:1,compileflags,19 boolean is_expr_try_resolved;
-	@virtual public virtual packed:1,compileflags,20 boolean is_expr_for_wrapper;
-	@virtual public virtual packed:1,compileflags,21 boolean is_expr_primary;
-	// Statement flags
-	@virtual public virtual packed:1,compileflags,22 boolean is_stat_abrupted;
-	@virtual public virtual packed:1,compileflags,23 boolean is_stat_breaked;
-	@virtual public virtual packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-	@virtual public virtual packed:1,compileflags,25 boolean is_stat_auto_returnable;
-	@virtual public virtual packed:1,compileflags,26 boolean is_stat_break_target;
-	
-	// Method flags
-	@virtual public virtual packed:1,compileflags,17 boolean is_mth_virtual_static;
-	@virtual public virtual packed:1,compileflags,20 boolean is_mth_operator;
-	@virtual public virtual packed:1,compileflags,21 boolean is_mth_gen_post_cond;
-	@virtual public virtual packed:1,compileflags,22 boolean is_mth_need_fields_init;
-	@virtual public virtual packed:1,compileflags,24 boolean is_mth_local;
-	
-	// Var/field
-	@virtual public virtual packed:1,compileflags,16 boolean is_init_wrapper;
-	@virtual public virtual packed:1,compileflags,17 boolean is_need_proxy;
-	// Var specific
-	@virtual public virtual packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
-	@virtual public virtual packed:1,compileflags,19 boolean is_var_local_rule_var;
-	@virtual public virtual packed:1,compileflags,20 boolean is_var_closure_proxy;
-	@virtual public virtual packed:1,compileflags,21 boolean is_var_this;
-	@virtual public virtual packed:1,compileflags,22 boolean is_var_super;
+		public NodeImpl() {}
+		public NodeImpl(int pos) {
+			this.pos = pos;
+		}
+		// the node is attached
+		public final boolean isAttached()  {
+			return parent != null;
+		}
+		public final void callbackDetached() {
+			assert(isAttached());
+			// notify node data that we are detached
+			NodeData nd = ndata;
+			while (nd != null) {
+				NodeData nx = nd.next;
+				nd.nodeDetached();
+				nd = nx;
+			}
+			// do detcah
+			ASTNode parent = this.parent;
+			AttrSlot pslot = this.pslot;
+			this.parent = null;
+			this.pslot = null;
+			this.pprev = null;
+			this.pnext = null;
+			// set new root of the detached tree
+			_self.walkTree(new TreeWalker() {
+				public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
+			});
+			// notify nodes about new root
+			_self.walkTree(new TreeWalker() {
+				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+			});
+			// notify parent about the changed slot
+			parent.callbackChildChanged(pslot);
+		}
+		
+		public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
+			assert(!isAttached());
+			assert(parent != null && parent != this);
+			// do attach
+			this.parent = parent;
+			this.pslot = pslot;
+			// set new root of the attached tree
+			_self.walkTree(new TreeWalker() {
+				public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
+			});
+			// notify nodes about new root
+			_self.walkTree(new TreeWalker() {
+				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
+			});
+			// notify node data that we are attached
+			NodeData nd = ndata;
+			while (nd != null) {
+				NodeData nx = nd.next;
+				nd.nodeAttached();
+				nd = nx;
+			}
+			// notify parent about the changed slot
+			parent.callbackChildChanged(pslot);
+		}
+	}
+	@nodeview
+	public static class NodeView extends ASTNode {
+		final NodeImpl impl;
+		public NodeView(NodeImpl impl) {
+			super();
+			this.impl = impl;
+		}
+		@getter public final int			get$pos()			{ return this.impl.pos; }
+		@getter public final int			get$compileflags()	{ return this.impl.compileflags; }
+		@getter public final ASTNode		get$parent()		{ return this.impl.parent; }
+		@getter public final AttrSlot		get$pslot()			{ return this.impl.pslot; }
+		@getter public final ASTNode		get$pprev()			{ return this.impl.pprev; }
+		@getter public final ASTNode		get$pnext()			{ return this.impl.pnext; }
+		@getter public final NodeContext	get$pctx()			{ return this.impl.pctx; }
+		@getter public final NodeData		get$ndata()			{ return this.impl.ndata; }
+		
+		@setter public final void set$pos(int val)				{ this.impl.pos = val; }
+		@setter public final void set$compileflags(int val)	{ this.impl.compileflags = val; }
+		@setter public final void set$parent(ASTNode val)		{ this.impl.parent = val; }
+		@setter public final void set$pslot(AttrSlot val)		{ this.impl.pslot = val; }
+		@setter public final void set$pprev(ASTNode val)		{ this.impl.pprev = val; }
+		@setter public final void set$pnext(ASTNode val)		{ this.impl.pnext = val; }
+		@setter public final void set$pctx(NodeContext val)	{ this.impl.pctx = val; }
+		@setter public final void set$ndata(NodeData val)		{ this.impl.ndata = val; }
 
-	// Field specific
-	@virtual public virtual packed:1,compileflags,18 boolean is_fld_packer;
-	@virtual public virtual packed:1,compileflags,19 boolean is_fld_packed;
+		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
+		@getter public final boolean isAccessedFromInner() {
+			return this.impl.is_accessed_from_inner;
+		}
+		@setter public final void setAccessedFromInner(boolean on) {
+			if (this.impl.is_accessed_from_inner != on) {
+				this.impl.is_accessed_from_inner = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// resolved
+		@getter public final boolean isResolved() {
+			return this.impl.is_resolved;
+		}
+		@setter public final void setResolved(boolean on) {
+			if (this.impl.is_resolved != on) {
+				this.impl.is_resolved = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// hidden
+		@getter public final boolean isHidden() {
+			return this.impl.is_hidden;
+		}
+		@setter public final void setHidden(boolean on) {
+			if (this.impl.is_hidden != on) {
+				this.impl.is_hidden = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// bad
+		@getter public final boolean isBad() {
+			return this.impl.is_bad;
+		}
+		@setter public final void setBad(boolean on) {
+			if (this.impl.is_bad != on) {
+				this.impl.is_bad = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	
+	public NodeImpl $v_impl;
+	public NodeView getNodeView() { return new NodeView(this.$v_impl); }
+	
+	@virtual
+	public abstract virtual							int				pos;
+	@virtual
+	public abstract virtual							int				compileflags;
+	@ref(copyable=false) @virtual
+	public abstract virtual access:ro,ro,ro,rw		ASTNode			parent;
+	@ref(copyable=false) @virtual
+	public abstract virtual access:ro,ro,ro,rw		AttrSlot		pslot;
+	@ref(copyable=false) @virtual
+	public abstract virtual							ASTNode			pprev;
+	@ref(copyable=false) @virtual
+	public abstract virtual							ASTNode			pnext;
+	@ref(copyable=false) @virtual
+	public abstract virtual access:ro,ro,rw,rw		NodeContext		pctx;
+	@ref(copyable=false) @virtual
+	public abstract virtual access:no,no,no,rw		NodeData		ndata;
 
-	// General flags
-	@virtual public virtual packed:1,compileflags,28 boolean is_accessed_from_inner;
-	@virtual public virtual packed:1,compileflags,29 boolean is_resolved;
-	@virtual public virtual packed:1,compileflags,30 boolean is_hidden;
-	@virtual public virtual packed:1,compileflags,31 boolean is_bad;
+	// for NodeView only
+	/*private*/ ASTNode() {}
 
-    public ASTNode() {
-		this.setupContext();
+	public ASTNode(NodeImpl v_impl) {
+		this.$v_impl = v_impl;
+		this.$v_impl._self = this;
+		setupContext();
 	}
 
-    public ASTNode(int pos) {
-		this.pos = pos;
-		this.setupContext();
-	}
+	@getter public int			get$pos()			{ return this.getNodeView().get$pos(); }
+	@getter public int			get$compileflags()	{ return this.getNodeView().get$compileflags(); }
+	@getter public ASTNode		get$parent()		{ return this.getNodeView().get$parent(); }
+	@getter public AttrSlot		get$pslot()			{ return this.getNodeView().get$pslot(); }
+	@getter public ASTNode		get$pprev()			{ return this.getNodeView().get$pprev(); }
+	@getter public ASTNode		get$pnext()			{ return this.getNodeView().get$pnext(); }
+	@getter public NodeContext	get$pctx()			{ return this.getNodeView().get$pctx(); }
+	@getter public NodeData		get$ndata()			{ return this.getNodeView().get$ndata(); }
+	
+	@setter public void set$pos(int val)			{ this.getNodeView().set$pos(val); }
+	@setter public void set$compileflags(int val)	{ this.getNodeView().set$compileflags(val); }
+	@setter public void set$parent(ASTNode val)	{ this.getNodeView().set$parent(val); }
+	@setter public void set$pslot(AttrSlot val)	{ this.getNodeView().set$pslot(val); }
+	@setter public void set$pprev(ASTNode val)		{ this.getNodeView().set$pprev(val); }
+	@setter public void set$pnext(ASTNode val)		{ this.getNodeView().set$pnext(val); }
+	@setter public void set$pctx(NodeContext val)	{ this.getNodeView().set$pctx(val); }
+	@setter public void set$ndata(NodeData val)	{ this.getNodeView().set$ndata(val); }
 
 	public void setupContext() {
 		if (this.parent == null)
@@ -212,10 +370,6 @@ public abstract class ASTNode implements Constants {
 			this.pctx = this.parent.pctx;
 	}
 
-	public void cleanup() {
-		// do nothing
-	};
-	
 	public ASTNode detach()
 		alias operator (210,fy,~)
 	{
@@ -237,63 +391,19 @@ public abstract class ASTNode implements Constants {
 	public /*abstract*/ Object copyTo(Object to$node) {
         ASTNode node = (ASTNode)to$node;
 		node.pos			= this.pos;
-//		node.flags			= this.flags;
 		node.compileflags	= this.compileflags;
 		return node;
 	};
 
-	public final void callbackDetached() {
-		assert(isAttached());
-		// notify node data that we are detached
-		NodeData nd = ndata;
-		while (nd != null) {
-			NodeData nx = nd.next;
-			nd.nodeDetached(this);
-			nd = nx;
-		}
-		// do detcah
-		ASTNode parent = this.parent;
-		AttrSlot pslot = this.pslot;
-		this.parent = null;
-		this.pslot = null;
-		this.pprev = null;
-		this.pnext = null;
-		// set new root of the detached tree
-		walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
-		});
-		// notify nodes about new root
-		walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
-		});
-		// notify parent about the changed slot
-		parent.callbackChildChanged(pslot);
+	public void callbackDetached() {
+		this.$v_impl.callbackDetached();
 	}
 	
-	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
-		assert(!isAttached());
-		assert(parent != null && parent != this);
-		// do attach
-		this.parent = parent;
-		this.pslot = pslot;
-		this.parent = parent;
-		// set new root of the attached tree
-		walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
-		});
-		// notify nodes about new root
-		walkTree(new TreeWalker() {
-			public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
-		});
-		// notify node data that we are attached
-		NodeData nd = ndata;
-		while (nd != null) {
-			NodeData nx = nd.next;
-			nd.nodeAttached(this);
-			nd = nx;
-		}
-		// notify parent about the changed slot
-		parent.callbackChildChanged(pslot);
+	public void callbackAttached(NodeImpl parent_impl, AttrSlot pslot) {
+		this.$v_impl.callbackAttached(parent_impl._self, pslot);
+	}
+	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
+		this.$v_impl.callbackAttached(parent, pslot);
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
@@ -383,15 +493,15 @@ public abstract class ASTNode implements Constants {
 				d.next = nd.next;
 				if (nd.prev != null) { d.prev.next = d; nd.prev = null; }
 				if (nd.next != null) { d.next.prev = d; nd.next = null; }
-				nd.dataDetached(this);
-				d.dataAttached(this);
+				nd.dataDetached();
+				d.dataAttached();
 				return;
 			}
 		}
 		d.next = ndata;
 		if (d.next != null) d.next.prev = d;
 		ndata = d;
-		d.dataAttached(this);
+		d.dataAttached();
 	}
 	
 	public void delNodeData(KString id) {
@@ -402,7 +512,7 @@ public abstract class ASTNode implements Constants {
 				if (nd.next != null) nd.next.prev = nd.prev;
 				nd.prev = null;
 				nd.next = null;
-				nd.dataDetached(this);
+				nd.dataDetached();
 				return;
 			}
 		}
@@ -462,45 +572,17 @@ public abstract class ASTNode implements Constants {
 	//
 
 	// the (private) field/method/struct is accessed from inner class (and needs proxy access)
-	@getter public final boolean get$is_accessed_from_inner()  alias isAccessedFromInner  {
-		return this.is_accessed_from_inner;
-	}
-	@setter public final void set$is_accessed_from_inner(boolean on) alias setAccessedFromInner {
-		if (this.is_accessed_from_inner != on) {
-			this.is_accessed_from_inner = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isAccessedFromInner() { return this.getNodeView().isAccessedFromInner(); }
+	public void setAccessedFromInner(boolean on) { this.getNodeView().setAccessedFromInner(on); }
 	// resolved
-	@getter public final boolean get$is_resolved()  alias isResolved  {
-		return this.is_resolved;
-	}
-	@setter public final void set$is_resolved(boolean on) alias setResolved {
-		if (this.is_resolved != on) {
-			this.is_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isResolved() { return this.getNodeView().isResolved(); }
+	public void setResolved(boolean on) { this.getNodeView().setResolved(on); }
 	// hidden
-	@getter public final boolean get$is_hidden()  alias isHidden  {
-		return this.is_hidden;
-	}
-	@setter public final void set$is_hidden(boolean on) alias setHidden {
-		if (this.is_hidden != on) {
-			this.is_hidden = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isHidden() { return this.getNodeView().isHidden(); }
+	public void setHidden(boolean on) { this.getNodeView().setHidden(on); }
 	// bad
-	@getter public final boolean get$is_bad()  alias isBad  {
-		return this.is_bad;
-	}
-	@setter public final void set$is_bad(boolean on) alias setBad {
-		if (this.is_bad != on) {
-			this.is_bad = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isBad() { return this.getNodeView().isBad(); }
+	public void setBad(boolean on) { this.getNodeView().setBad(on); }
 
 }
 
@@ -512,31 +594,151 @@ public abstract class DNode extends ASTNode {
 
 	public static final DNode[] emptyArray = new DNode[0];
 	
-	public int				flags;
-	
+	@node
+	public static class DNodeImpl extends NodeImpl {		
+		     protected int		flags;
+		@att protected MetaSet	meta;
+
+		packed:1,flags,13 boolean is_struct_annotation; // struct
+		packed:1,flags,14 boolean is_struct_enum;       // struct
+		packed:1,flags,14 boolean is_fld_enum;        // field
+		// Flags temporary used with java flags
+		packed:1,flags,16 boolean is_forward;         // var/field
+		packed:1,flags,17 boolean is_fld_virtual;     // field
+		packed:1,flags,16 boolean is_mth_multimethod; // method
+		packed:1,flags,17 boolean is_mth_varargs;     // method
+		packed:1,flags,18 boolean is_mth_rule;        // method
+		packed:1,flags,19 boolean is_mth_invariant;   // method
+		packed:1,flags,16 boolean is_struct_package;    // struct
+		packed:1,flags,17 boolean is_struct_argument;   // struct
+		packed:1,flags,18 boolean is_struct_pizza_case; // struct
+		packed:1,flags,20 boolean is_struct_syntax;     // struct
+		packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
+
+		public DNodeImpl() {}
+		public DNodeImpl(int pos) {
+			super(pos);
+		}
+		public DNodeImpl(int pos, int fl) {
+			super(pos);
+			this.flags = fl;
+		}
+	}
+	@nodeview
+	public static class DNodeView extends NodeView {
+		final DNodeImpl impl;
+		public DNodeView(DNodeImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final int		get$flags()				{ return this.impl.flags; }
+		@getter public final MetaSet	get$meta()				{ return this.impl.meta; }
+		@setter public final void		set$flags(int val)		{ this.impl.flags = val; }
+		@setter public final void		set$meta(MetaSet val)	{ this.impl.meta = val; }
+
+		public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
+		public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
+		public final boolean isProtected()			{ return (flags & ACC_PROTECTED) != 0; }
+		public final boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
+		public final boolean isStatic()				{ return (flags & ACC_STATIC) != 0; }
+		public final boolean isFinal()				{ return (flags & ACC_FINAL) != 0; }
+		public final boolean isSynchronized()		{ return (flags & ACC_SYNCHRONIZED) != 0; }
+		public final boolean isVolatile()			{ return (flags & ACC_VOLATILE) != 0; }
+		public final boolean isTransient()			{ return (flags & ACC_TRANSIENT) != 0; }
+		public final boolean isNative()				{ return (flags & ACC_NATIVE) != 0; }
+		public final boolean isInterface()			{ return (flags & ACC_INTERFACE) != 0; }
+		public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
+		public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
+
+		public void setPublic(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
+			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+			if( on ) flags |= ACC_PUBLIC;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setPrivate(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
+			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+			if( on ) flags |= ACC_PRIVATE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setProtected(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
+			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+			if( on ) flags |= ACC_PROTECTED;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setStatic(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_STATIC;
+			else flags &= ~ACC_STATIC;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setFinal(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_FINAL;
+			else flags &= ~ACC_FINAL;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setSynchronized(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_SYNCHRONIZED;
+			else flags &= ~ACC_SYNCHRONIZED;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setVolatile(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_VOLATILE;
+			else flags &= ~ACC_VOLATILE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setTransient(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_TRANSIENT;
+			else flags &= ~ACC_TRANSIENT;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setNative(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_NATIVE;
+			else flags &= ~ACC_NATIVE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setInterface(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
+			else flags &= ~ACC_INTERFACE;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setAbstract(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_ABSTRACT;
+			else flags &= ~ACC_ABSTRACT;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+		public void setSuper(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_SUPER;
+			else flags &= ~ACC_SUPER;
+			this.callbackChildChanged(nodeattr$flags);
+		}
+	}
+
+	/** java flags */
+	public virtual abstract			int			flags;	
 	/** Meta-information (annotations) of this structure */
-	@att public MetaSet								meta;
+	@att public virtual abstract	MetaSet		meta;
 
-	@virtual public virtual packed:1,flags,13 boolean is_struct_annotation; // struct
-	@virtual public virtual packed:1,flags,14 boolean is_struct_enum;       // struct
-	@virtual public virtual packed:1,flags,14 boolean is_fld_enum;        // field
-	// Flags temporary used with java flags
-	@virtual public virtual packed:1,flags,16 boolean is_forward;         // var/field
-	@virtual public virtual packed:1,flags,17 boolean is_fld_virtual;     // field
-	@virtual public virtual packed:1,flags,16 boolean is_mth_multimethod; // method
-	@virtual public virtual packed:1,flags,17 boolean is_mth_varargs;     // method
-	@virtual public virtual packed:1,flags,18 boolean is_mth_rule;        // method
-	@virtual public virtual packed:1,flags,19 boolean is_mth_invariant;   // method
-	@virtual public virtual packed:1,flags,16 boolean is_struct_package;    // struct
-	@virtual public virtual packed:1,flags,17 boolean is_struct_argument;   // struct
-	@virtual public virtual packed:1,flags,18 boolean is_struct_pizza_case; // struct
-	@virtual public virtual packed:1,flags,20 boolean is_struct_syntax;     // struct
-//	@virtual public virtual packed:1,flags,21 boolean is_struct_wrapper;    // struct
-	@virtual public virtual packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
+	public NodeView getNodeView() { return new DNodeView((DNodeImpl)this.$v_impl); }
+	public DNodeView getDNodeView() { return new DNodeView((DNodeImpl)this.$v_impl); }
 
-	public DNode() {}
-	public DNode(int pos) { super(pos); }
-	public DNode(int pos, int fl) { super(pos); this.flags = fl; }
+	public DNode(DNodeImpl v_impl) { super(v_impl); }
+
+	@getter public int			get$flags()			{ return this.getDNodeView().get$flags(); }
+	@getter public MetaSet		get$meta()			{ return this.getDNodeView().get$meta(); }
+	
+	@setter public void set$flags(int val)			{ this.getDNodeView().set$flags(val); }
+	@setter public void set$meta(MetaSet val)		{ this.getDNodeView().set$meta(val); }
 
 	public abstract void resolveDecl();
 	public abstract Dumper toJavaDecl(Dumper dmp);
@@ -566,94 +768,32 @@ public abstract class DNode extends ASTNode {
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
-	public boolean isPublic()		{ return (flags & ACC_PUBLIC) != 0; }
-	public boolean isPrivate()		{ return (flags & ACC_PRIVATE) != 0; }
-	public boolean isProtected()	{ return (flags & ACC_PROTECTED) != 0; }
-	public boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
-	public boolean isStatic()		{ return (flags & ACC_STATIC) != 0; }
-	public boolean isFinal()		{ return (flags & ACC_FINAL) != 0; }
-	public boolean isSynchronized()	{ return (flags & ACC_SYNCHRONIZED) != 0; }
-	public boolean isVolatile()		{ return (flags & ACC_VOLATILE) != 0; }
-	public boolean isTransient()	{ return (flags & ACC_TRANSIENT) != 0; }
-	public boolean isNative()		{ return (flags & ACC_NATIVE) != 0; }
-	public boolean isInterface()	{ return (flags & ACC_INTERFACE) != 0; }
-	public boolean isAbstract()		{ return (flags & ACC_ABSTRACT) != 0; }
-	public boolean isSuper()		{ return (flags & ACC_SUPER) != 0; }
+	public boolean isPublic()			{ return this.getDNodeView().isPublic(); }
+	public boolean isPrivate()			{ return this.getDNodeView().isPrivate(); }
+	public boolean isProtected()		{ return this.getDNodeView().isProtected(); }
+	public boolean isPackageVisable()	{ return this.getDNodeView().isPackageVisable(); }
+	public boolean isStatic()			{ return this.getDNodeView().isStatic(); }
+	public boolean isFinal()			{ return this.getDNodeView().isFinal(); }
+	public boolean isSynchronized()		{ return this.getDNodeView().isSynchronized(); }
+	public boolean isVolatile()			{ return this.getDNodeView().isVolatile(); }
+	public boolean isTransient()		{ return this.getDNodeView().isTransient(); }
+	public boolean isNative()			{ return this.getDNodeView().isNative(); }
+	public boolean isInterface()		{ return this.getDNodeView().isInterface(); }
+	public boolean isAbstract()			{ return this.getDNodeView().isAbstract(); }
+	public boolean isSuper()			{ return this.getDNodeView().isSuper(); }
 
-	public void setPublic(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-		if( on ) flags |= ACC_PUBLIC;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setPrivate(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-		if( on ) flags |= ACC_PRIVATE;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setProtected(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
-		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-		if( on ) flags |= ACC_PROTECTED;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setStatic(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_STATIC;
-		else flags &= ~ACC_STATIC;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setFinal(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_FINAL;
-		else flags &= ~ACC_FINAL;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setSynchronized(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_SYNCHRONIZED;
-		else flags &= ~ACC_SYNCHRONIZED;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setVolatile(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_VOLATILE;
-		else flags &= ~ACC_VOLATILE;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setTransient(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_TRANSIENT;
-		else flags &= ~ACC_TRANSIENT;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setNative(boolean on) {
-		assert(this instanceof Method,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_NATIVE;
-		else flags &= ~ACC_NATIVE;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setInterface(boolean on) {
-		assert(this instanceof Struct,"For node "+this.getClass());
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
-		else flags &= ~ACC_INTERFACE;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setAbstract(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_ABSTRACT;
-		else flags &= ~ACC_ABSTRACT;
-		this.callbackChildChanged(nodeattr$flags);
-	}
-	public void setSuper(boolean on) {
-		trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
-		if( on ) flags |= ACC_SUPER;
-		else flags &= ~ACC_SUPER;
-		this.callbackChildChanged(nodeattr$flags);
-	}
+	public void setPublic(boolean on)		{ this.getDNodeView().setPublic(on); }
+	public void setPrivate(boolean on)		{ this.getDNodeView().setPrivate(on); }
+	public void setProtected(boolean on)	{ this.getDNodeView().setProtected(on); }
+	public void setStatic(boolean on)		{ this.getDNodeView().setStatic(on); }
+	public void setFinal(boolean on)		{ this.getDNodeView().setFinal(on); }
+	public void setSynchronized(boolean on){ this.getDNodeView().setSynchronized(on); }
+	public void setVolatile(boolean on)	{ this.getDNodeView().setVolatile(on); }
+	public void setTransient(boolean on)	{ this.getDNodeView().setTransient(on); }
+	public void setNative(boolean on)		{ this.getDNodeView().setNative(on); }
+	public void setInterface(boolean on)	{ this.getDNodeView().setInterface(on); }
+	public void setAbstract(boolean on)	{ this.getDNodeView().setAbstract(on); }
+	public void setSuper(boolean on)		{ this.getDNodeView().setSuper(on); }
 
 }
 
@@ -663,44 +803,64 @@ public abstract class DNode extends ASTNode {
 @node
 public abstract class LvalDNode extends DNode {
 
-	public LvalDNode() {}
-	public LvalDNode(int pos) { super(pos); }
-	public LvalDNode(int pos, int fl) { super(pos,fl); }
+	@node
+	public static class LvalDNodeImpl extends DNodeImpl {
+		public LvalDNodeImpl() {}
+		public LvalDNodeImpl(int pos) { super(pos); }
+		public LvalDNodeImpl(int pos, int fl) { super(pos, fl); }
+	}
+	@nodeview
+	public static class LvalDNodeView extends DNodeView {
+		public LvalDNodeView(LvalDNodeImpl impl) {
+			super(impl);
+		}
 
-	//
-	// Var/field
-	//
-	
+		// use no proxy	
+		@getter public final boolean isForward() {
+			return this.impl.is_forward;
+		}
+		@setter public final void setForward(boolean on) {
+			if (this.impl.is_forward != on) {
+				this.impl.is_forward = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// init wrapper
+		@getter public final boolean isInitWrapper() {
+			return this.impl.is_init_wrapper;
+		}
+		@setter public final void setInitWrapper(boolean on) {
+			if (this.impl.is_init_wrapper != on) {
+				this.impl.is_init_wrapper = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// need a proxy access 
+		@getter public final boolean isNeedProxy() {
+			return this.impl.is_need_proxy;
+		}
+		@setter public final void setNeedProxy(boolean on) {
+			if (this.impl.is_need_proxy != on) {
+				this.impl.is_need_proxy = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+
+	public LvalDNode(LvalDNodeImpl v_impl) { super(v_impl); }
+
 	// use no proxy	
-	@getter public final boolean get$is_forward()  alias isForward  {
-		return this.is_forward;
-	}
-	@setter public final void set$is_forward(boolean on) alias setForward {
-		if (this.is_forward != on) {
-			this.is_forward = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isForward() { return getLvalDNodeView().isForward(); }
+	public void setForward(boolean on) { getLvalDNodeView().setForward(on); }
 	// init wrapper
-	@getter public final boolean get$is_init_wrapper()  alias isInitWrapper  {
-		return this.is_init_wrapper;
-	}
-	@setter public final void set$is_init_wrapper(boolean on) alias setInitWrapper {
-		if (this.is_init_wrapper != on) {
-			this.is_init_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isInitWrapper() { return getLvalDNodeView().isInitWrapper(); }
+	public void setInitWrapper(boolean on) { getLvalDNodeView().setInitWrapper(on); }
 	// need a proxy access 
-	@getter public final boolean get$is_need_proxy()  alias isNeedProxy  {
-		return this.is_need_proxy;
-	}
-	@setter public final void set$is_need_proxy(boolean on) alias setNeedProxy {
-		if (this.is_need_proxy != on) {
-			this.is_need_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isNeedProxy() { return getLvalDNodeView().isNeedProxy(); }
+	public void setNeedProxy(boolean on) { getLvalDNodeView().setNeedProxy(on); }
 
 }
 
@@ -714,10 +874,145 @@ public /*abstract*/ class ENode extends ASTNode {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@node
+	public static class ENodeImpl extends NodeImpl {
+		public ENodeImpl() {}
+		public ENodeImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class ENodeView extends NodeView {
+		public ENodeView(ENodeImpl impl) {
+			super(impl);
+		}
+
+		//
+		// Expr specific
+		//
+	
+		// use no proxy	
+		public final boolean isUseNoProxy() {
+			return this.impl.is_expr_use_no_proxy;
+		}
+		public final void setUseNoProxy(boolean on) {
+			if (this.impl.is_expr_use_no_proxy != on) {
+				this.impl.is_expr_use_no_proxy = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// use as field (disable setter/getter calls for virtual fields)
+		public final boolean isAsField() {
+			return this.impl.is_expr_as_field;
+		}
+		public final void setAsField(boolean on) {
+			if (this.impl.is_expr_as_field != on) {
+				this.impl.is_expr_as_field = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// expression will generate void value
+		public final boolean isGenVoidExpr() {
+			return this.impl.is_expr_gen_void;
+		}
+		public final void setGenVoidExpr(boolean on) {
+			if (this.impl.is_expr_gen_void != on) {
+				this.impl.is_expr_gen_void = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// tried to be resolved
+		public final boolean isTryResolved() {
+			return this.impl.is_expr_try_resolved;
+		}
+		public final void setTryResolved(boolean on) {
+			if (this.impl.is_expr_try_resolved != on) {
+				this.impl.is_expr_try_resolved = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// used bt for()
+		public final boolean isForWrapper() {
+			return this.impl.is_expr_for_wrapper;
+		}
+		public final void setForWrapper(boolean on) {
+			if (this.impl.is_expr_for_wrapper != on) {
+				this.impl.is_expr_for_wrapper = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// used for primary expressions, i.e. (a+b)
+		public final boolean isPrimaryExpr() {
+			return this.impl.is_expr_primary;
+		}
+		public final void setPrimaryExpr(boolean on) {
+			if (this.impl.is_expr_primary != on) {
+				this.impl.is_expr_primary = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	
+		//
+		// Statement specific flags
+		//
+		
+		// abrupted
+		public final boolean isAbrupted() {
+			return this.impl.is_stat_abrupted;
+		}
+		public final void setAbrupted(boolean on) {
+			if (this.impl.is_stat_abrupted != on) {
+				this.impl.is_stat_abrupted = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// breaked
+		public final boolean isBreaked() {
+			return this.impl.is_stat_breaked;
+		}
+		public final void setBreaked(boolean on) {
+			if (this.impl.is_stat_breaked != on) {
+				this.impl.is_stat_breaked = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// method-abrupted
+		public final boolean isMethodAbrupted() {
+			return this.impl.is_stat_method_abrupted;
+		}
+		public final void setMethodAbrupted(boolean on) {
+			if (this.impl.is_stat_method_abrupted != on) {
+				this.impl.is_stat_method_abrupted = on;
+				if (on) this.impl.is_stat_abrupted = true;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// auto-returnable
+		public final boolean isAutoReturnable() {
+			return this.impl.is_stat_auto_returnable;
+		}
+		public final void setAutoReturnable(boolean on) {
+			if (this.impl.is_stat_auto_returnable != on) {
+				this.impl.is_stat_auto_returnable = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// break target
+		public final boolean isBreakTarget() {
+			return this.impl.is_stat_break_target;
+		}
+		public final void setBreakTarget(boolean on) {
+			if (this.impl.is_stat_break_target != on) {
+				this.impl.is_stat_break_target = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
+
 	public static final ENode[] emptyArray = new ENode[0];
 	
-	public ENode() {}
-	public ENode(int pos) { super(pos); }
+	public ENode() { super(new ENodeImpl()); }
+	public ENode(int pos) { super(new ENodeImpl(pos)); }
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
@@ -784,121 +1079,43 @@ public /*abstract*/ class ENode extends ASTNode {
 	//
 
 	// use no proxy	
-	@getter public final boolean get$is_expr_use_no_proxy()  alias isUseNoProxy  {
-		return this.is_expr_use_no_proxy;
-	}
-	@setter public final void set$is_expr_use_no_proxy(boolean on) alias setUseNoProxy {
-		if (this.is_expr_use_no_proxy != on) {
-			this.is_expr_use_no_proxy = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isUseNoProxy() { return this.getENodeView().isUseNoProxy(); }
+	public void setUseNoProxy(boolean on) { this.getENodeView().setUseNoProxy(on); }
 	// use as field (disable setter/getter calls for virtual fields)
-	@getter public final boolean get$is_expr_as_field()  alias isAsField  {
-		return this.is_expr_as_field;
-	}
-	@setter public final void set$is_expr_as_field(boolean on) alias setAsField {
-		if (this.is_expr_as_field != on) {
-			this.is_expr_as_field = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isAsField() { return this.getENodeView().isAsField(); }
+	public void setAsField(boolean on) { this.getENodeView().setAsField(on); }
 	// expression will generate void value
-	@getter public final boolean get$is_expr_gen_void()  alias isGenVoidExpr  {
-		return this.is_expr_gen_void;
-	}
-	@setter public final void set$is_expr_gen_void(boolean on) alias setGenVoidExpr {
-		if (this.is_expr_gen_void != on) {
-			this.is_expr_gen_void = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isGenVoidExpr() { return this.getENodeView().isGenVoidExpr(); }
+	public void setGenVoidExpr(boolean on) { this.getENodeView().setGenVoidExpr(on); }
 	// tried to be resolved
-	@getter public final boolean get$is_expr_try_resolved()  alias isTryResolved  {
-		return this.is_expr_try_resolved;
-	}
-	@setter public final void set$is_expr_try_resolved(boolean on) alias setTryResolved {
-		if (this.is_expr_try_resolved != on) {
-			this.is_expr_try_resolved = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isTryResolved() { return this.getENodeView().isTryResolved(); }
+	public void setTryResolved(boolean on) { this.getENodeView().setTryResolved(on); }
 	// used bt for()
-	@getter public final boolean get$is_expr_for_wrapper()  alias isForWrapper  {
-		return this.is_expr_for_wrapper;
-	}
-	@setter public final void set$is_expr_for_wrapper(boolean on) alias setForWrapper {
-		if (this.is_expr_for_wrapper != on) {
-			this.is_expr_for_wrapper = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isForWrapper() { return this.getENodeView().isForWrapper(); }
+	public void setForWrapper(boolean on) { this.getENodeView().setForWrapper(on); }
 	// used for primary expressions, i.e. (a+b)
-	@getter public final boolean get$is_expr_primary()  alias isPrimaryExpr  {
-		return this.is_expr_primary;
-	}
-	@setter public final void set$is_expr_primary(boolean on) alias setPrimaryExpr {
-		if (this.is_expr_primary != on) {
-			this.is_expr_primary = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isPrimaryExpr() { return this.getENodeView().isPrimaryExpr(); }
+	public void setPrimaryExpr(boolean on) { this.getENodeView().setPrimaryExpr(on); }
 
 	//
 	// Statement specific flags
 	//
 	
 	// abrupted
-	@getter public final boolean get$is_stat_abrupted()  alias isAbrupted  {
-		return this.is_stat_abrupted;
-	}
-	@setter public final void set$is_stat_abrupted(boolean on) alias setAbrupted {
-		if (this.is_stat_abrupted != on) {
-			this.is_stat_abrupted = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isAbrupted() { return this.getENodeView().isAbrupted(); }
+	public void setAbrupted(boolean on) { this.getENodeView().setAbrupted(on); }
 	// breaked
-	@getter public final boolean get$is_stat_breaked()  alias isBreaked  {
-		return this.is_stat_breaked;
-	}
-	@setter public final void set$is_stat_breaked(boolean on) alias setBreaked {
-		if (this.is_stat_breaked != on) {
-			this.is_stat_breaked = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isBreaked() { return this.getENodeView().isBreaked(); }
+	public void setBreaked(boolean on) { this.getENodeView().setBreaked(on); }
 	// method-abrupted
-	@getter public final boolean get$is_stat_method_abrupted()  alias isMethodAbrupted  {
-		return this.is_stat_method_abrupted;
-	}
-	@setter public final void set$is_stat_method_abrupted(boolean on) alias setMethodAbrupted {
-		if (this.is_stat_method_abrupted != on) {
-			this.is_stat_method_abrupted = on;
-			if (on) this.is_stat_abrupted = true;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isMethodAbrupted() { return this.getENodeView().isMethodAbrupted(); }
+	public void setMethodAbrupted(boolean on) { this.getENodeView().setMethodAbrupted(on); }
 	// auto-returnable
-	@getter public final boolean get$is_stat_auto_returnable()  alias isAutoReturnable  {
-		return this.is_stat_auto_returnable;
-	}
-	@setter public final void set$is_stat_auto_returnable(boolean on) alias setAutoReturnable {
-		if (this.is_stat_auto_returnable != on) {
-			this.is_stat_auto_returnable = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isAutoReturnable() { return this.getENodeView().isAutoReturnable(); }
+	public void setAutoReturnable(boolean on) { this.getENodeView().setAutoReturnable(on); }
 	// break target
-	@getter public final boolean get$is_stat_break_target()  alias isBreakTarget  {
-		return this.is_stat_break_target;
-	}
-	@setter public final void set$is_stat_break_target(boolean on) alias setBreakTarget {
-		if (this.is_stat_break_target != on) {
-			this.is_stat_break_target = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isBreakTarget() { return this.getENodeView().isBreakTarget(); }
+	public void setBreakTarget(boolean on) { this.getENodeView().setBreakTarget(on); }
 
 }
 
@@ -1054,14 +1271,24 @@ public class InitializerShadow extends ENode {
 
 @node
 public abstract class TypeDef extends DNode implements Named {
-	public TypeDef() {}
-	
-	public TypeDef(int pos) {
-		super(pos);
+
+	@node
+	public static class TypeDefImpl extends DNodeImpl {		
+		public TypeDefImpl() {}
+		public TypeDefImpl(int pos) { super(pos); }
+		public TypeDefImpl(int pos, int fl) { super(pos, fl); }
 	}
-	public TypeDef(int pos, int fl) {
-		super(pos, fl);
+	@nodeview
+	public static class TypeDefView extends DNodeView {
+		public TypeDefView(TypeDefImpl impl) {
+			super(impl);
+		}
 	}
+	public NodeView			getNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+	public TypeDefView		getTypeDefView()	{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+
+	public TypeDef(TypeDefImpl v_impl) { super(v_impl); }
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
@@ -1185,14 +1412,16 @@ public class NameRef extends ASTNode {
 	public KString name;
 
 	public NameRef() {
+		super(new NodeImpl());
 	}
 
 	public NameRef(KString name) {
+		super(new NodeImpl());
 		this.name = name;
 	}
 
 	public NameRef(int pos, KString name) {
-		this.pos = pos;
+		super(new NodeImpl(pos));
 		this.name = name;
 	}
 

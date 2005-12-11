@@ -42,13 +42,13 @@ import syntax kiev.Syntax;
  */
 
 @node(copyable=false)
-public class ProjectFile extends ASTNode {
+public final class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
 	public boolean		bad = true;
 
 	public ProjectFile(ClazzName clname, File f) {
-		super(0);
+		super(new NodeImpl());
 		name = clname;
 		file = f;
 	}

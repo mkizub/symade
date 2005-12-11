@@ -43,54 +43,294 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
+	@node
+	public static class StructImpl extends TypeDefImpl {
+		public StructImpl() {}
+		public StructImpl(int pos) { super(pos); }
+		public StructImpl(int pos, int fl) { super(pos, fl); }
+
+		     Access							acc;
+		     ClazzName						name;
+		@ref BaseType						type;
+		@att TypeRef						super_bound;
+		@att NArr<TypeRef>					interfaces;
+		@att NArr<TypeArgDef>				args;
+		@ref Struct							package_clazz;
+		@ref Struct							typeinfo_clazz;
+		@ref NArr<Struct>					sub_clazz;
+		@ref NArr<DNode>					imported;
+		     Attr[]							attrs = Attr.emptyArray;
+		@att NArr<DNode>					members;
+	}
+	@nodeview
+	public static class StructView extends TypeDefView {
+		final StructImpl impl;
+		public StructView(StructImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+
+		@getter public final Access					get$acc()					{ return this.impl.acc; }
+		@getter public final ClazzName				get$name()					{ return this.impl.name; }
+		@getter public final BaseType				get$type()					{ return this.impl.type; }
+		@getter public final TypeRef				get$super_bound()			{ return this.impl.super_bound; }
+		@getter public final NArr<TypeRef>			get$interfaces()			{ return this.impl.interfaces; }
+		@getter public final NArr<TypeArgDef>		get$args()					{ return this.impl.args; }
+		@getter public final Struct					get$package_clazz()			{ return this.impl.package_clazz; }
+		@getter public final Struct					get$typeinfo_clazz()		{ return this.impl.typeinfo_clazz; }
+		@getter public final NArr<Struct>			get$sub_clazz()				{ return this.impl.sub_clazz; }
+		@getter public final NArr<DNode>			get$imported()				{ return this.impl.imported; }
+		@getter public final Attr[]					get$attrs()					{ return this.impl.attrs; }
+		@getter public final NArr<DNode>			get$members()				{ return this.impl.members; }
+
+		@getter public final BaseType				get$super_type()			{ return (BaseType)super_bound.lnk; }
+
+		@setter public final void set$acc(Access val)							{ this.impl.acc = val; this.impl.acc.verifyAccessDecl((Struct)this.impl._self); }
+		@setter public final void set$name(ClazzName val)						{ this.impl.name = val; }
+		@setter public final void set$type(BaseType val)						{ this.impl.type = val; }
+		@setter public final void set$super_bound(TypeRef val)					{ this.impl.super_bound = val; }
+		@setter public final void set$package_clazz(Struct val)				{ this.impl.package_clazz = val; }
+		@setter public final void set$typeinfo_clazz(Struct val)				{ this.impl.typeinfo_clazz = val; }
+		@setter public final void set$attrs(Attr[] val)						{ this.impl.attrs = val; }
+
+		@setter public final void set$super_type(BaseType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
+		
+		public boolean isClazz() {
+			return !isPackage() && !isInterface() && ! isArgument();
+		}
+		
+		// package	
+		public final boolean isPackage()  {
+			return this.impl.is_struct_package;
+		}
+		public final void setPackage(boolean on) {
+			assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
+			if (this.impl.is_struct_package != on) {
+				this.impl.is_struct_package = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a class's argument	
+		public final boolean isArgument() {
+			return this.impl.is_struct_argument;
+		}
+		public final void setArgument(boolean on) {
+			if (this.impl.is_struct_argument != on) {
+				this.impl.is_struct_argument = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a class's argument	
+		public final boolean isPizzaCase() {
+			return this.impl.is_struct_pizza_case;
+		}
+		public final void setPizzaCase(boolean on) {
+			if (this.impl.is_struct_pizza_case != on) {
+				this.impl.is_struct_pizza_case = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a local (in method) class	
+		public final boolean isLocal() {
+			return this.impl.is_struct_local;
+		}
+		public final void setLocal(boolean on) {
+			if (this.impl.is_struct_local != on) {
+				this.impl.is_struct_local = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// an anonymouse (unnamed) class	
+		public final boolean isAnonymouse() {
+			return this.impl.is_struct_anomymouse;
+		}
+		public final void setAnonymouse(boolean on) {
+			if (this.impl.is_struct_anomymouse != on) {
+				this.impl.is_struct_anomymouse = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// has pizza cases
+		public final boolean isHasCases() {
+			return this.impl.is_struct_has_pizza_cases;
+		}
+		public final void setHasCases(boolean on) {
+			if (this.impl.is_struct_has_pizza_cases != on) {
+				this.impl.is_struct_has_pizza_cases = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// verified
+		public final boolean isVerified() {
+			return this.impl.is_struct_verified;
+		}
+		public final void setVerified(boolean on) {
+			if (this.impl.is_struct_verified != on) {
+				this.impl.is_struct_verified = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// indicates that structure members were generated
+		public final boolean isMembersGenerated() {
+			return this.impl.is_struct_members_generated;
+		}
+		public final void setMembersGenerated(boolean on) {
+			if (this.impl.is_struct_members_generated != on) {
+				this.impl.is_struct_members_generated = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// indicates that structure members were pre-generated
+		public final boolean isMembersPreGenerated() {
+			return this.impl.is_struct_pre_generated;
+		}
+		public final void setMembersPreGenerated(boolean on) {
+			if (this.impl.is_struct_pre_generated != on) {
+				this.impl.is_struct_pre_generated = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		
+		// indicates that statements in code were generated
+		public final boolean isStatementsGenerated() {
+			return this.impl.is_struct_statements_generated;
+		}
+		public final void setStatementsGenerated(boolean on) {
+			if (this.impl.is_struct_statements_generated != on) {
+				this.impl.is_struct_statements_generated = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// indicates that the structrue was generared (from template)
+		public final boolean isGenerated() {
+			return this.impl.is_struct_generated;
+		}
+		public final void setGenerated(boolean on) {
+			if (this.impl.is_struct_generated != on) {
+				this.impl.is_struct_generated = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// kiev annotation
+		public final boolean isAnnotation() {
+			return this.impl.is_struct_annotation;
+		}
+		public final void setAnnotation(boolean on) {
+			assert(!on || (!isPackage() && !isSyntax()));
+			if (this.impl.is_struct_annotation != on) {
+				this.impl.is_struct_annotation = on;
+				if (on) this.setInterface(true);
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// java enum
+		public final boolean isEnum() {
+			return this.impl.is_struct_enum;
+		}
+		public final void setEnum(boolean on) {
+			if (this.impl.is_struct_enum != on) {
+				this.impl.is_struct_enum = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// kiev syntax
+		public final boolean isSyntax() {
+			return this.impl.is_struct_syntax;
+		}
+		public final void setSyntax(boolean on) {
+			assert(!on || (!isPackage() && ! isEnum()));
+			if (this.impl.is_struct_syntax != on) {
+				this.impl.is_struct_syntax = on;
+				this.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// structure was loaded from bytecode
+		public final boolean isLoadedFromBytecode() {
+			return this.impl.is_struct_bytecode;
+		}
+		public final void setLoadedFromBytecode(boolean on) {
+			this.impl.is_struct_bytecode = on;
+		}
+	}
+	public NodeView			getNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
+	public TypeDefView		getTypeDefView()	{ return new StructView((StructImpl)this.$v_impl); }
+	public StructView		getStructView()		{ return new StructView((StructImpl)this.$v_impl); }
+
 	/** Variouse names of the class */
-	public ClazzName								name;
+	     public abstract virtual			ClazzName					name;
 
 	/** Type associated with this class */
-	@ref public BaseType							type;
+	@ref public abstract virtual			BaseType					type;
 
 	/** Bound super-class for class arguments */
-	@att public TypeRef								super_bound;
+	@att public abstract virtual			TypeRef						super_bound;
 
 	/** Bound super-class for class arguments */
-	@virtual
-	@ref public virtual abstract BaseType			super_type;
+	@ref public abstract virtual			BaseType					super_type;
 
 	/** SuperInterface types */
-	@att public final NArr<TypeRef>					interfaces;
+	@att public abstract virtual access:ro	NArr<TypeRef>				interfaces;
 
 	/** Class' type arguments */
-	@att public final NArr<TypeArgDef>				args;
+	@att public abstract virtual access:ro	NArr<TypeArgDef>			args;
 	
 	/** Class' access */
-	@virtual
-	public virtual Access							acc;
+	     public abstract virtual			Access						acc;
 
 	/** Package structure this structure belongs to */
-	@ref public Struct								package_clazz;
+	@ref public abstract virtual			Struct						package_clazz;
 
 	/** The auto-generated class for parametriezed
 	  classes, that containce type info
 	 */
-	@ref public Struct								typeinfo_clazz;
+	@ref public abstract virtual			Struct						typeinfo_clazz;
 	
 	/** Array of substructures of the structure */
-	@ref public final NArr<Struct>					sub_clazz;
+	@ref public abstract virtual access:ro	NArr<Struct>				sub_clazz;
 
 	/** Array of imported classes,fields and methods */
-	@ref public final NArr<DNode>					imported;
+	@ref public abstract virtual access:ro	NArr<DNode>					imported;
 
 	/** Array of attributes of this structure */
-	public Attr[]									attrs = Attr.emptyArray;
+	     public abstract virtual			Attr[]						attrs;
 	
 	/** Array of methods defined in this structure */
-	@att public final NArr<DNode>					members;
+	@att public abstract virtual access:ro	NArr<DNode>					members;
 	
 	/** JClass for java backend */
 	//@ref public kiev.backend.java15.JClass			jclass;
 
+	@getter public Access				get$acc()					{ return this.getStructView().acc; }
+	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
+	@getter public BaseType				get$type()					{ return this.getStructView().type; }
+	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
+	@getter public NArr<TypeRef>		get$interfaces()			{ return this.getStructView().interfaces; }
+	@getter public NArr<TypeArgDef>		get$args()					{ return this.getStructView().args; }
+	@getter public Struct				get$package_clazz()			{ return this.getStructView().package_clazz; }
+	@getter public Struct				get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
+	@getter public NArr<Struct>			get$sub_clazz()				{ return this.getStructView().sub_clazz; }
+	@getter public NArr<DNode>			get$imported()				{ return this.getStructView().imported; }
+	@getter public Attr[]				get$attrs()					{ return this.getStructView().attrs; }
+	@getter public NArr<DNode>			get$members()				{ return this.getStructView().members; }
+	@getter public BaseType				get$super_type()			{ return this.getStructView().super_type; }
+
+	@setter public void set$acc(Access val)				{ this.getStructView().acc = val; }
+	@setter public void set$name(ClazzName val)			{ this.getStructView().name = val; }
+	@setter public void set$type(BaseType val)				{ this.getStructView().type = val; }
+	@setter public void set$super_bound(TypeRef val)		{ this.getStructView().super_bound = val; }
+	@setter public void set$package_clazz(Struct val)		{ this.getStructView().package_clazz = val; }
+	@setter public void set$typeinfo_clazz(Struct val)		{ this.getStructView().typeinfo_clazz = val; }
+	@setter public void set$attrs(Attr[] val)				{ this.getStructView().attrs = val; }
+	@setter public void set$super_type(BaseType val) 		{ this.getStructView().super_type = val; }
+
+	
+	Struct() {
+		super(new StructImpl(0,0));
+	}
+	
 	protected Struct(ClazzName name) {
-		super(0,0);
+		super(new StructImpl(0,0));
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -98,7 +338,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	}
 
 	public Struct(ClazzName name, Struct outer, int acc) {
-		super(0,acc);
+		super(new StructImpl(0,acc));
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -121,182 +361,70 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	public String toString() { return name.name.toString(); }
 
-	@getter public Access get$acc() {
-		return acc;
-	}
+//	@getter public Access get$acc() {
+//		return acc;
+//	}
+//
+//	@setter public void set$acc(Access a) {
+//		acc = a;
+//		acc.verifyAccessDecl(this);
+//	}
+//	
+//	@getter public BaseType get$super_type() {
+//		return (BaseType)super_bound.lnk;
+//	}
+//
+//	@setter public void set$super_type(BaseType tp) {
+//		super_bound = new TypeRef(super_bound.pos, tp);
+//	}
 
-	@setter public void set$acc(Access a) {
-		acc = a;
-		acc.verifyAccessDecl(this);
-	}
-	
-	@getter public BaseType get$super_type() {
-		return (BaseType)super_bound.lnk;
-	}
-
-	@setter public void set$super_type(BaseType tp) {
-		super_bound = new TypeRef(super_bound.pos, tp);
-	}
-
-	//
-	// Struct specific
-	//
-	public boolean isClazz()		{
-		return !isPackage() && !isInterface() && ! isArgument();
-	}
-	
+	// normal class
+	public boolean isClazz() { return getStructView().isClazz(); }
 	// package	
-	@getter public final boolean get$is_struct_package()  alias isPackage  {
-		return this.is_struct_package;
-	}
-	@setter public final void set$is_struct_package(boolean on) alias setPackage {
-		assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
-		if (this.is_struct_package != on) {
-			this.is_struct_package = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isPackage() { return getStructView().isPackage(); }
+	public void setPackage(boolean on) { getStructView().setPackage(on); }
 	// a class's argument	
-	@getter public final boolean get$is_struct_argument()  alias isArgument  {
-		return this.is_struct_argument;
-	}
-	@setter public final void set$is_struct_argument(boolean on) alias setArgument {
-		if (this.is_struct_argument != on) {
-			this.is_struct_argument = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isArgument() { return getStructView().isArgument(); }
+	public void setArgument(boolean on) { getStructView().setArgument(on); }
 	// a class's argument	
-	@getter public final boolean get$is_struct_pizza_case()  alias isPizzaCase  {
-		return this.is_struct_pizza_case;
-	}
-	@setter public final void set$is_struct_pizza_case(boolean on) alias setPizzaCase {
-		if (this.is_struct_pizza_case != on) {
-			this.is_struct_pizza_case = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isPizzaCase() { return getStructView().isPizzaCase(); }
+	public void setPizzaCase(boolean on) { getStructView().setPizzaCase(on); }
 	// a local (in method) class	
-	@getter public final boolean get$is_struct_local()  alias isLocal  {
-		return this.is_struct_local;
-	}
-	@setter public final void set$is_struct_local(boolean on) alias setLocal {
-		if (this.is_struct_local != on) {
-			this.is_struct_local = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isLocal() { return getStructView().isLocal(); }
+	public void setLocal(boolean on) { getStructView().setLocal(on); }
 	// an anonymouse (unnamed) class	
-	@getter public final boolean get$is_struct_anomymouse()  alias isAnonymouse  {
-		return this.is_struct_anomymouse;
-	}
-	@setter public final void set$is_struct_anomymouse(boolean on) alias setAnonymouse {
-		if (this.is_struct_anomymouse != on) {
-			this.is_struct_anomymouse = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isAnonymouse() { return getStructView().isAnonymouse(); }
+	public void setAnonymouse(boolean on) { getStructView().setAnonymouse(on); }
 	// has pizza cases
-	@getter public final boolean get$is_struct_has_pizza_cases()  alias isHasCases  {
-		return this.is_struct_has_pizza_cases;
-	}
-	@setter public final void set$is_struct_has_pizza_cases(boolean on) alias setHasCases {
-		if (this.is_struct_has_pizza_cases != on) {
-			this.is_struct_has_pizza_cases = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isHasCases() { return getStructView().isHasCases(); }
+	public void setHasCases(boolean on) { getStructView().setHasCases(on); }
 	// verified
-	@getter public final boolean get$is_struct_verified()  alias isVerified  {
-		return this.is_struct_verified;
-	}
-	@setter public final void set$is_struct_verified(boolean on) alias setVerified {
-		if (this.is_struct_verified != on) {
-			this.is_struct_verified = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isVerified() { return getStructView().isVerified(); }
+	public void setVerified(boolean on) { getStructView().setVerified(on); }
 	// indicates that structure members were generated
-	@getter public final boolean get$is_struct_members_generated()  alias isMembersGenerated  {
-		return this.is_struct_members_generated;
-	}
-	@setter public final void set$is_struct_members_generated(boolean on) alias setMembersGenerated {
-		if (this.is_struct_members_generated != on) {
-			this.is_struct_members_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isMembersGenerated() { return getStructView().isMembersGenerated(); }
+	public void setMembersGenerated(boolean on) { getStructView().setMembersGenerated(on); }
 	// indicates that structure members were pre-generated
-	@getter public final boolean get$is_struct_pre_generated()  alias isMembersPreGenerated  {
-		return this.is_struct_pre_generated;
-	}
-	@setter public final void set$is_struct_pre_generated(boolean on) alias setMembersPreGenerated {
-		if (this.is_struct_pre_generated != on) {
-			this.is_struct_pre_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	
+	public boolean isMembersPreGenerated() { return getStructView().isMembersPreGenerated(); }
+	public void setMembersPreGenerated(boolean on) { getStructView().setMembersPreGenerated(on); }
 	// indicates that statements in code were generated
-	@getter public final boolean get$is_struct_statements_generated()  alias isStatementsGenerated  {
-		return this.is_struct_statements_generated;
-	}
-	@setter public final void set$is_struct_statements_generated(boolean on) alias setStatementsGenerated {
-		if (this.is_struct_statements_generated != on) {
-			this.is_struct_statements_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isStatementsGenerated() { return getStructView().isStatementsGenerated(); }
+	public void setStatementsGenerated(boolean on) { getStructView().setStatementsGenerated(on); }
 	// indicates that the structrue was generared (from template)
-	@getter public final boolean get$is_struct_generated()  alias isGenerated  {
-		return this.is_struct_generated;
-	}
-	@setter public final void set$is_struct_generated(boolean on) alias setGenerated {
-		if (this.is_struct_generated != on) {
-			this.is_struct_generated = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
-	// kiev annotation
-	@getter public final boolean get$is_struct_annotation()  alias isAnnotation  {
-		return this.is_struct_annotation;
-	}
-	@setter public final void set$is_struct_annotation(boolean on) alias setAnnotation {
-		assert(!on || (!isPackage() && !isSyntax()));
-		if (this.is_struct_annotation != on) {
-			this.is_struct_annotation = on;
-			if (on) this.setInterface(true);
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isGenerated() { return getStructView().isGenerated(); }
+	public void setGenerated(boolean on) { getStructView().setGenerated(on); }
+	// java annotation
+	public boolean isAnnotation() { return getStructView().isAnnotation(); }
+	public void setAnnotation(boolean on) { getStructView().setAnnotation(on); }
 	// java enum
-	@getter public final boolean get$is_struct_enum()  alias isEnum {
-		return this.is_struct_enum;
-	}
-	@setter public final void set$is_struct_enum(boolean on) alias setEnum {
-		if (this.is_struct_enum != on) {
-			this.is_struct_enum = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isEnum() { return getStructView().isEnum(); }
+	public void setEnum(boolean on) { getStructView().setEnum(on); }
 	// kiev syntax
-	@getter public final boolean get$is_struct_syntax()  alias isSyntax  {
-		return this.is_struct_syntax;
-	}
-	@setter public final void set$is_struct_syntax(boolean on) alias setSyntax {
-		assert(!on || (!isPackage() && ! isEnum()));
-		if (this.is_struct_syntax != on) {
-			this.is_struct_syntax = on;
-			this.callbackChildChanged(nodeattr$flags);
-		}
-	}
+	public boolean isSyntax() { return getStructView().isSyntax(); }
+	public void setSyntax(boolean on) { getStructView().setSyntax(on); }
 	// structure was loaded from bytecode
-	@getter public final boolean get$is_struct_bytecode()  alias isLoadedFromBytecode  {
-		return this.is_struct_bytecode;
-	}
-	@setter public final void set$is_struct_bytecode(boolean on) alias setLoadedFromBytecode {
-		this.is_struct_bytecode = on;
-	}
+	public boolean isLoadedFromBytecode() { return getStructView().isLoadedFromBytecode(); }
+	public void setLoadedFromBytecode(boolean on) { getStructView().setLoadedFromBytecode(on); }
 
 	public NodeName getName() { return name; }
 	
@@ -1349,7 +1477,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					abstr.pos = m.pos;
 					abstr.setStatic(false);
 					abstr.setAbstract(true);
-					abstr.params = m.params;
+					abstr.params.copyFrom(m.params);
 
 					m.setStatic(true);
 					m.setVirtualStatic(true);

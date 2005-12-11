@@ -36,6 +36,8 @@ import java.lang.annotation.*;
 public @interface node {
 	boolean copyable() default true;
 }
+// syntax-tree node view
+public @interface nodeview {}
 // syntax-tree attribute field
 public @interface att {
 	boolean copyable() default true;
@@ -62,6 +64,7 @@ public class Tree extends ASTNode {
 	@att public final NArr<Struct>	members;
 	
 	public Tree() {
+		super(new NodeImpl());
 	}
 
 	public Object copy() {
@@ -86,9 +89,10 @@ public final class AttrSlot {
 
 public final class NArr<N extends ASTNode> {
 
-    private final ASTNode 	$parent;
-	private final AttrSlot	$pslot;
-	private N[]				$nodes;
+    private final ASTNode 				$parent;
+    private final ASTNode.NodeImpl 	$parent_impl;
+	private final AttrSlot				$pslot;
+	private N[]							$nodes;
 	
 	public NArr() {
 		this.$nodes = new N[0];
@@ -102,8 +106,19 @@ public final class NArr<N extends ASTNode> {
 			assert (pslot == null || !pslot.is_attr);
 	}
 	
+	public NArr(ASTNode.NodeImpl parent_impl, AttrSlot pslot) {
+		this.$parent_impl = parent_impl;
+		this.$pslot = pslot;
+		this.$nodes = new N[0];
+		if (parent_impl == null)
+			assert (pslot == null || !pslot.is_attr);
+	}
+	
 	public ASTNode getParent() {
-		return $parent;
+		if ($parent != null)
+			return $parent;
+		else
+			return $parent_impl._self;
 	}
 	
 	public AttrSlot getPSlot() {
@@ -145,7 +160,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached($parent, $pslot);
+			node.callbackAttached(getParent(), $pslot);
 		}
 		return node;
 	}
@@ -171,7 +186,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[sz-1].pnext = node;
 				node.pprev = $nodes[sz-1];
 			}
-			node.callbackAttached($parent, $pslot);
+			node.callbackAttached(getParent(), $pslot);
 		}
 		return node;
 	}
@@ -236,7 +251,7 @@ public final class NArr<N extends ASTNode> {
 				$nodes[idx+1].pprev = node;
 				node.pnext = $nodes[idx+1];
 			}
-			node.callbackAttached($parent, $pslot);
+			node.callbackAttached(getParent(), $pslot);
 		}
 		return node;
 	}
@@ -366,6 +381,5 @@ public final class NArr<N extends ASTNode> {
 	}
 
 }
-
 
 
