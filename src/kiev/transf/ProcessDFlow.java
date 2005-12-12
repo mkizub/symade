@@ -84,13 +84,13 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
 		if (tpNArr == null) {
-			Kiev.reportError(null,"Cannot find class "+nameNArr);
+			Kiev.reportError("Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpNode == null)
 			tpNode = Env.getStruct(nameNode).type;
 		if (tpNode == null) {
-			Kiev.reportError(null,"Cannot find class "+nameNode);
+			Kiev.reportError("Cannot find class "+nameNode);
 			return;
 		}
 		if (!s.isClazz())

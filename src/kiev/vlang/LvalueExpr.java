@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -26,6 +6,17 @@ import kiev.transf.*;
 import kiev.parser.*;
 import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JLvalueExprView;
+import kiev.be.java.JAccessExprView;
+import kiev.be.java.JIFldExprView;
+import kiev.be.java.JContainerAccessExprView;
+import kiev.be.java.JThisExprView;
+import kiev.be.java.JLVarExprView;
+import kiev.be.java.JSFldExprView;
+import kiev.be.java.JOuterThisAccessExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -37,6 +28,27 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
+public abstract class LvalueExpr extends ENode {
+
+	@node
+	public abstract static class LvalueExprImpl extends ENodeImpl {
+		public LvalueExprImpl() {}
+		public LvalueExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public abstract static class LvalueExprView extends ENodeView {
+		public LvalueExprView(LvalueExprImpl impl) {
+			super(impl);
+		}
+	}
+
+	public abstract LvalueExprView		getLvalueExprView();
+	public abstract JLvalueExprView		getJLvalueExprView();
+	
+	public LvalueExpr(LvalueExprImpl impl) { super(impl); }
+}
+
+@node
 public class AccessExpr extends LvalueExpr {
 	
 	@dflow(out="obj") private static class DFI {
@@ -44,19 +56,61 @@ public class AccessExpr extends LvalueExpr {
 	}
 
 	private static KString nameWrapperSelf = KString.from("$self");
-	
-	@att public ENode			obj;
-	
-	@att public NameRef			ident;
 
-	public AccessExpr() {}
+	@node
+	public static class AccessExprImpl extends LvalueExprImpl {		
+		@att public ENode			obj;
+		@att public NameRef			ident;
+
+		public AccessExprImpl() {}
+		public AccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class AccessExprView extends LvalueExprView {
+		final AccessExprImpl impl;
+		public AccessExprView(AccessExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$obj()				{ return this.impl.obj; }
+		@getter public final NameRef	get$ident()				{ return this.impl.ident; }
+		@setter public final void		set$obj(ENode val)		{ this.impl.obj = val; }
+		@setter public final void		set$ident(NameRef val)	{ this.impl.ident = val; }
+	}
+	
+	@att public abstract virtual ENode			obj;
+	
+	@att public abstract virtual NameRef		ident;
+	
+	
+	public NodeView			getNodeView()			{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+
+	@getter public ENode		get$obj()			{ return this.getAccessExprView().obj; }
+	@getter public NameRef		get$ident()			{ return this.getAccessExprView().ident; }
+	
+	@setter public void set$obj(ENode val)			{ this.getAccessExprView().obj = val; }
+	@setter public void set$ident(NameRef val)		{ this.getAccessExprView().ident = val; }
+	
+
+	public AccessExpr() {
+		super(new AccessExprImpl());
+	}
+
+	public AccessExpr(AccessExprImpl impl) {
+		super(impl);
+	}
 
 	public AccessExpr(int pos) {
-		super(pos);
+		this(new AccessExprImpl(pos));
 	}
 	
 	public AccessExpr(int pos, ENode obj, NameRef ident) {
-		super(pos);
+		this(new AccessExprImpl(pos));
 		this.obj = obj;
 		this.ident = ident;
 	}
@@ -278,25 +332,66 @@ public class IFldExpr extends AccessExpr {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	@ref public Field		var;
+	@node
+	public static class IFldExprImpl extends AccessExprImpl {		
+		@ref public Field		var;
+
+		public IFldExprImpl() {}
+		public IFldExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class IFldExprView extends AccessExprView {
+		final IFldExprImpl impl;
+		public IFldExprView(IFldExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final Field		get$var()				{ return this.impl.var; }
+		@setter public final void		set$var(Field val)		{ this.impl.var = val; }
+	}
+	
+	@ref public abstract virtual Field			var;
+	
+	public NodeView			getNodeView()			{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public IFldExprView		getIFldExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JAccessExprView	getJAccessExprView()	{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JIFldExprView	getJIFldExprView()		{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+
+	@getter public Field		get$var()			{ return this.getIFldExprView().var; }
+	@setter public void 		set$var(Field val)	{ this.getIFldExprView().var = val; }
 
 	public IFldExpr() {
+		super(new IFldExprImpl());
 	}
 
 	public IFldExpr(int pos, ENode obj, NameRef ident, Field var) {
-		super(pos, obj, ident);
+		super(new IFldExprImpl(pos));
+		this.obj = obj;
+		this.ident = ident;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var) {
-		super(pos, obj, new NameRef(pos,var.name.name));
+		super(new IFldExprImpl(pos));
+		this.obj = obj;
+		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
 	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
-		super(pos, obj, new NameRef(pos,var.name.name));
+		super(new IFldExprImpl(pos));
+		this.obj = obj;
+		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
@@ -346,78 +441,6 @@ public class IFldExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generateCheckCastIfNeeded(Code code) {
-		if( !Kiev.verify ) return;
-		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf((Struct)var.parent) )
-			code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
-	}
-
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Field f = (Field)var;
-		var.acc.verifyReadAccess(this,var);
-		obj.generate(code,null);
-		generateCheckCastIfNeeded(code);
-		code.addInstr(op_getfield,f,obj.getType());
-		if( Kiev.verify && f.type.isArgument() && getType().isReference() )
-			code.addInstr(op_checkcast,getType());
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		Field f = (Field)var;
-		var.acc.verifyReadAccess(this,var);
-		obj.generate(code,null);
-		generateCheckCastIfNeeded(code);
-		code.addInstr(op_dup);
-		code.addInstr(op_getfield,f,obj.getType());
-		if( Kiev.verify && f.type.isArgument() && getType().isReference() )
-			code.addInstr(op_checkcast,getType());
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - access only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		obj.generate(code,null);
-		generateCheckCastIfNeeded(code);
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyWriteAccess(this,var);
-		code.addInstr(op_putfield,var,obj.getType());
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IFldExpr - store & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( var.isVirtual() && !isAsField() )
-			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
-		if( var.isPackedField() )
-			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyWriteAccess(this,var);
-		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,var,obj.getType());
-	}
-
 	public boolean	isConstantExpr() {
 		if( var.isFinal() ) {
 			if( var.init != null )
@@ -459,15 +482,55 @@ public class ContainerAccessExpr extends LvalueExpr {
 	@dflow(in="obj")		ENode		index;
 	}
 
-	@att public ENode		obj;
-	
-	@att public ENode		index;
+	@node
+	public static class ContainerAccessExprImpl extends LvalueExprImpl {		
+		@att public ENode		obj;
+		@att public ENode		index;
 
+		public ContainerAccessExprImpl() {}
+		public ContainerAccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class ContainerAccessExprView extends LvalueExprView {
+		final ContainerAccessExprImpl impl;
+		public ContainerAccessExprView(ContainerAccessExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$obj()				{ return this.impl.obj; }
+		@getter public final ENode		get$index()				{ return this.impl.index; }
+		@setter public final void		set$obj(ENode val)		{ this.impl.obj = val; }
+		@setter public final void		set$index(ENode val)	{ this.impl.index = val; }
+	}
+	
+	@att public abstract virtual ENode			obj;
+	
+	@att public abstract virtual ENode			index;
+	
+	
+	public NodeView						getNodeView()					{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public LvalueExprView				getLvalueExprView()				{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public ContainerAccessExprView		getContainerAccessExprView()	{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JLvalueExprView				getJLvalueExprView()			{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JContainerAccessExprView		getJContainerAccessExprView()	{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+
+	@getter public ENode		get$obj()			{ return this.getContainerAccessExprView().obj; }
+	@getter public ENode		get$index()			{ return this.getContainerAccessExprView().index; }
+	
+	@setter public void set$obj(ENode val)			{ this.getContainerAccessExprView().obj = val; }
+	@setter public void set$index(ENode val)		{ this.getContainerAccessExprView().index = val; }
+	
 	public ContainerAccessExpr() {
+		super(new ContainerAccessExprImpl());
 	}
 
 	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
-		super(pos);
+		super(new ContainerAccessExprImpl(pos));
 		this.obj = obj;
 		this.index = index;
 	}
@@ -551,103 +614,6 @@ public class ContainerAccessExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( obj.getType().isArray() ) {
-			obj.generate(code,null);
-			index.generate(code,null);
-			code.addInstr(Instr.op_arr_load);
-		} else {
-			// Resolve overloaded access method
-			Method@ v;
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
-			obj.generate(code,null);
-			index.generate(code,null);
-			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func,false,obj.getType());
-			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
-				code.addInstr(op_checkcast,getType());
-		}
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( obj.getType().isArray() ) {
-			obj.generate(code,null);
-			index.generate(code,null);
-			code.addInstr(op_dup2);
-			code.addInstr(Instr.op_arr_load);
-		} else {
-			throw new CompilerException(this,"Too complex expression for overloaded operator '[]'");
-		}
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
-		code.setLinePos(this.getPosLine());
-		obj.generate(code,null);
-		index.generate(code,null);
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
-		code.setLinePos(this.getPosLine());
-		Type objType = obj.getType();
-		if( objType.isArray() ) {
-			code.addInstr(Instr.op_arr_store);
-		} else {
-			// Resolve overloaded set method
-			Method@ v;
-			// We need to get the type of object in stack
-			Type t = code.stack_at(0);
-			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
-			Struct s = objType.getStruct();
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
-			code.addInstr(Instr.op_call,(Method)v,false,objType);
-			// Pop return value
-			code.addInstr(Instr.op_pop);
-		}
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( obj.getType().isArray() ) {
-			code.addInstr(op_dup_x2);
-			code.addInstr(Instr.op_arr_store);
-		} else {
-			// Resolve overloaded set method
-			Method@ v;
-			// We need to get the type of object in stack
-			Type t = code.stack_at(0);
-			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
-				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
-			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
-			Struct s = obj.getType().getStruct();
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
-			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
-			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
-				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
-			// The method must return the value to duplicate
-			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func,false,obj.getType());
-			if( Kiev.verify
-			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
-				code.addInstr(op_checkcast,getType());
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( obj.getPriority() < opContainerElementPriority ) {
 			dmp.append('(').append(obj).append(')');
@@ -666,14 +632,45 @@ public class ThisExpr extends LvalueExpr {
 
 	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 	
-	public boolean super_flag;
+	@node
+	public static class ThisExprImpl extends LvalueExprImpl {		
+		@att public boolean super_flag;
+		public ThisExprImpl() {}
+		public ThisExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class ThisExprView extends LvalueExprView {
+		public ThisExprView(ThisExprImpl impl) {
+			super(impl);
+		}
+		@getter public final boolean	get$super_flag()			{ return ((ThisExprImpl)this.impl).super_flag; }
+		@setter public final void		set$super_flag(boolean val)	{ ((ThisExprImpl)this.impl).super_flag = val; }
+	}
+	
+	@att public abstract virtual boolean			super_flag;
+	
+	public NodeView				getNodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public LvalueExprView		getLvalueExprView()		{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public ThisExprView			getThisExprView()		{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JLvalueExprView		getJLvalueExprView()	{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JThisExprView		getJThisExprView()		{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+
+	@getter public boolean		get$super_flag()				{ return this.getThisExprView().super_flag; }
+	@setter public void 		set$super_flag(boolean val)		{ this.getThisExprView().super_flag = val; }
 	
 	public ThisExpr() {
+		super(new ThisExprImpl());
 	}
 	public ThisExpr(int pos) {
-		super(pos);
+		super(new ThisExprImpl(pos));
 	}
 	public ThisExpr(boolean super_flag) {
+		super(new ThisExprImpl());
 		this.super_flag = super_flag;
 	}
 
@@ -704,64 +701,6 @@ public class ThisExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		if (!code.method.isStatic())
-			code.addInstrLoadThis();
-		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_load,code.method.params[0]);
-		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			code.addNullConst();
-		}
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if (!code.method.isStatic())
-			code.addInstrLoadThis();
-		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_load,code.method.params[0]);
-		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			code.addNullConst();
-		}
-		code.addInstr(op_dup);
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - access only: "+this);
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
-		code.setLinePos(this.getPosLine());
-		if (!code.method.isStatic())
-			code.addInstrStoreThis();
-		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_store,code.method.params[0]);
-		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			code.addInstr(op_pop);
-		}
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addInstr(op_dup);
-		if (!code.method.isStatic())
-			code.addInstrStoreThis();
-		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_store,code.method.params[0]);
-		else {
-			Kiev.reportError(this,"Access '"+toString()+"' in static context");
-			code.addInstr(op_pop);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(toString()).space();
 	}
@@ -774,23 +713,61 @@ public class LVarExpr extends LvalueExpr {
 
 	static final KString namePEnv = KString.from("$env");
 
-	@att
-	public NameRef		ident;
-	@ref
-	private Var			var;
+	@node
+	public static class LVarExprImpl extends LvalueExprImpl {		
+		@att public NameRef		ident;
+		@ref public Var			var;
+
+		public LVarExprImpl() {}
+		public LVarExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class LVarExprView extends LvalueExprView {
+		final LVarExprImpl impl;
+		public LVarExprView(LVarExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final NameRef	get$ident()				{ return this.impl.ident; }
+		@getter public final Var		get$var()				{ return this.impl.var; }
+		@setter public final void		set$ident(NameRef val)	{ this.impl.ident = val; }
+		@setter public final void		set$var(Var val)		{ this.impl.var = val; }
+	}
+	
+	@att public abstract virtual NameRef		ident;
+	@ref public abstract virtual Var			var;
+	
+	public NodeView			getNodeView()			{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LVarExprView		getLVarExprView()		{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLVarExprView	getJLVarExprView()		{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+
+	@getter public NameRef		get$ident()			{ return this.getLVarExprView().ident; }
+	@getter public Var			get$var()			{ return this.getLVarExprView().var; }
+	
+	@setter public void set$ident(NameRef val)		{ this.getLVarExprView().ident = val; }
+	@setter public void set$var(Var val)			{ this.getLVarExprView().var = val; }
 
 	public LVarExpr() {
+		super(new LVarExprImpl());
 	}
 	public LVarExpr(int pos, Var var) {
-		super(pos);
+		super(new LVarExprImpl(pos));
 		this.var = var;
 		this.ident = new NameRef(pos, var.name.name);
 	}
 	public LVarExpr(int pos, KString name) {
-		super(pos);
+		super(new LVarExprImpl(pos));
 		this.ident = new NameRef(pos, name);
 	}
 	public LVarExpr(KString name) {
+		super(new LVarExprImpl());
 		this.ident = new NameRef(name);
 	}
 
@@ -889,191 +866,9 @@ public class LVarExpr extends LvalueExpr {
 		setResolved(true);
 	}
 
-	public Field resolveProxyVar(Code code) {
-		Field proxy_var = code.clazz.resolveField(ident.name,false);
-		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
-			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
-		return proxy_var;
-	}
-
-	public Field resolveVarVal() {
-		BaseType prt = Type.getProxyType(var.type);
-		Field var_valf = prt.clazz.resolveField(nameCellVal);
-		return var_valf;
-	}
-
-	public void resolveVarForConditions(Code code) {
-		if( code.cond_generation ) {
-			// Bind the correct var
-			if( getVar().parent != code.method ) {
-				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-				if( ident.name==nameResultVar ) var = code.method.getRetVar();
-				else for(int i=0; i < code.method.params.length; i++) {
-					Var v = code.method.params[i];
-					if( !v.name.equals(var.name) ) continue;
-					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
-					var = v;
-					break;
-				}
-				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
-			}
-			assert( var.parent == code.method, "Can't find var for condition" );
-		}
-	}
-
-	public void generateVerifyCheckCast(Code code) {
-		if( !Kiev.verify ) return;
-		if( !var.type.isReference() || var.type.isArray() ) return;
-		Type chtp = null;
-		if( getVar().parent instanceof Method ) {
-			Method m = (Method)var.parent;
-			for(int i=0; i < m.params.length; i++) {
-				if( var == m.params[i] ) {
-					chtp = m.jtype.args[i];
-					break;
-				}
-			}
-		}
-		if( chtp == null )
-			chtp = var.type.getJavaType();
-		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
-			code.addInstr(op_checkcast,var.type);
-			return;
-		}
-	}
-
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( code.cond_generation ) resolveVarForConditions(code);
-		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
-			code.addInstr(op_load,var);
-		} else {
-			if( isAsField() ) {
-				code.addInstrLoadThis();
-				code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
-			} else {
-				code.addInstr(op_load,var);
-			}
-			if( var.isNeedRefProxy() ) {
-				code.addInstr(op_getfield,resolveVarVal(),code.clazz.type);
-			}
-		}
-		generateVerifyCheckCast(code);
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( code.cond_generation ) resolveVarForConditions(code);
-		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
-			code.addInstr(op_load,var);
-		} else {
-			if( isAsField() ) {
-				code.addInstrLoadThis();
-				if( var.isNeedRefProxy() ) {
-					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
-					code.addInstr(op_dup);
-				} else {
-					code.addInstr(op_dup);
-					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
-				}
-			} else {
-				code.addInstr(op_load,var);
-				code.addInstr(op_dup);
-			}
-			if( var.isNeedRefProxy() ) {
-				code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar(code).getType());
-			}
-		}
-		generateVerifyCheckCast(code);
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - access only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( code.cond_generation ) resolveVarForConditions(code);
-		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-		} else {
-			if( isAsField() ) {
-				code.addInstrLoadThis();
-				if( var.isNeedRefProxy() ) {
-					code.addInstr(op_getfield,resolveProxyVar(code),code.clazz.type);
-					code.addInstr(op_dup);
-				} else {
-					code.addInstr(op_dup);
-				}
-			} else {
-				if( var.isNeedRefProxy() )
-					code.addInstr(op_load,var);
-			}
-		}
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store only: "+this);
-		code.setLinePos(this.getPosLine());
-		if( code.cond_generation ) resolveVarForConditions(code);
-		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
-			code.addInstr(op_store,var);
-		} else {
-			if( isAsField() ) {
-				if( !var.isNeedRefProxy() ) {
-					code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.type);
-				} else {
-					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
-				}
-			} else {
-				if( !var.isNeedRefProxy() ) {
-					code.addInstr(op_store,var);
-				} else {
-					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
-				}
-			}
-		}
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating LVarExpr - store & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		if( code.cond_generation ) resolveVarForConditions(code);
-		if( !getVar().isNeedProxy() || isUseNoProxy() ) {
-			if( code.vars[var.getBCpos()] == null )
-				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.getBCpos()+" but code.var["+var.getBCpos()+"] == null");
-			code.addInstr(op_dup);
-			code.addInstr(op_store,var);
-		} else {
-			if( isAsField() ) {
-				code.addInstr(op_dup_x);
-				if( !var.isNeedRefProxy() ) {
-					code.addInstr(op_putfield,resolveProxyVar(code),code.clazz.type);
-				} else {
-					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
-				}
-			} else {
-				if( !var.isNeedRefProxy() ) {
-					code.addInstr(op_dup);
-					code.addInstr(op_store,var);
-				} else {
-					code.addInstr(op_dup_x);
-					code.addInstr(op_putfield,resolveVarVal(),code.clazz.type);
-				}
-			}
-		}
-		generateVerifyCheckCast(code);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
 		dmp.append(var);
-		if( var.isNeedRefProxy() )
-			dmp.append(".val");
 		return dmp.space();
 	}
 }
@@ -1083,20 +878,56 @@ public class SFldExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	@ref public Field		var;
+	@node
+	public static class SFldExprImpl extends AccessExprImpl {		
+		@ref public Field		var;
+
+		public SFldExprImpl() {}
+		public SFldExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class SFldExprView extends AccessExprView {
+		final SFldExprImpl impl;
+		public SFldExprView(SFldExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final Field		get$var()				{ return this.impl.var; }
+		@setter public final void		set$var(Field val)		{ this.impl.var = val; }
+	}
+	
+	@ref public abstract virtual Field			var;
+	
+	public NodeView			getNodeView()			{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public SFldExprView		getSFldExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JAccessExprView	getJAccessExprView()	{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JSFldExprView	getJSFldExprView()		{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+
+	@getter public Field		get$var()			{ return this.getSFldExprView().var; }
+	@setter public void 		set$var(Field val)	{ this.getSFldExprView().var = val; }
+
 
 	public SFldExpr() {
+		super(new SFldExprImpl());
 	}
 
 	public SFldExpr(int pos, Field var) {
-		super(pos);
+		super(new SFldExprImpl(pos));
 		this.obj = new TypeRef(pos,((Struct)var.parent).type);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 	}
 
 	public SFldExpr(int pos, Field var, boolean direct_access) {
-		super(pos);
+		super(new SFldExprImpl(pos));
 		this.obj = new TypeRef(pos,((Struct)var.parent).type);
 		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
@@ -1155,39 +986,6 @@ public class SFldExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		var.acc.verifyReadAccess(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.type);
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		var.acc.verifyReadAccess(this,var);
-		code.addInstr(op_getstatic,var,code.clazz.type);
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - access only: "+this);
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
-		code.setLinePos(this.getPosLine());
-		var.acc.verifyWriteAccess(this,var);
-		code.addInstr(op_putstatic,var,code.clazz.type);
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		var.acc.verifyWriteAccess(this,var);
-		code.addInstr(op_dup);
-		code.addInstr(op_putstatic,var,code.clazz.type);
-	}
-
 	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) {
@@ -1203,14 +1001,53 @@ public class OuterThisAccessExpr extends AccessExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	@ref public Struct		outer;
-	public Field[]			outer_refs = Field.emptyArray;
+	@node
+	public static class OuterThisAccessExprImpl extends AccessExprImpl {		
+		@ref public Struct			outer;
+		@ref public NArr<Field>		outer_refs;
+
+		public OuterThisAccessExprImpl() {}
+		public OuterThisAccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class OuterThisAccessExprView extends AccessExprView {
+		final OuterThisAccessExprImpl impl;
+		public OuterThisAccessExprView(OuterThisAccessExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final Struct			get$outer()				{ return this.impl.outer; }
+		@getter public final NArr<Field>	get$outer_refs()		{ return this.impl.outer_refs; }
+		@setter public final void			set$outer(Struct val)	{ this.impl.outer = val; }
+	}
+	
+	@ref public abstract virtual			Struct			outer;
+	@ref public abstract virtual access:ro	NArr<Field>		outer_refs;
+	
+	public NodeView						getNodeView()					{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public LvalueExprView				getLvalueExprView()				{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public AccessExprView				getAccessExprView()				{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public OuterThisAccessExprView		getOuterThisAccessExprView()	{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JLvalueExprView				getJLvalueExprView()			{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JAccessExprView				getJAccessExprView()			{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JOuterThisAccessExprView		getJOuterThisAccessExprView()	{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+
+	@getter public Struct		get$outer()				{ return this.getOuterThisAccessExprView().outer; }
+	@getter public NArr<Field>	get$outer_refs()		{ return this.getOuterThisAccessExprView().outer_refs; }
+	@setter public void 		set$outer(Struct val)	{ this.getOuterThisAccessExprView().outer = val; }
+
 
 	public OuterThisAccessExpr() {
+		super(new OuterThisAccessExprImpl());
 	}
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
-		super(pos);
+		super(new OuterThisAccessExprImpl(pos));
 		this.obj = new TypeRef(pos,outer.type);
 		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
@@ -1234,14 +1071,14 @@ public class OuterThisAccessExpr extends AccessExpr {
 	}
 
 	public void resolve(Type reqType) throws RuntimeException {
-		outer_refs = Field.emptyArray;
+		outer_refs.delAll();
 		trace(Kiev.debugResolve,"Resolving "+this);
 		Field ou_ref = outerOf(pctx.clazz);
 		if( ou_ref == null )
 			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+pctx.clazz);
 		do {
 			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
-			outer_refs = (Field[])Arrays.append(outer_refs,ou_ref);
+			outer_refs.append(ou_ref);
 			if( ou_ref.type.isInstanceOf(outer.type) ) break;
 			ou_ref = outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
@@ -1257,44 +1094,6 @@ public class OuterThisAccessExpr extends AccessExpr {
 			throw new RuntimeException("Access to 'this' in static method "+pctx.method);
 		}
 		setResolved(true);
-	}
-
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addInstrLoadThis();
-		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
-	}
-
-	public void generateLoadDup(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addInstrLoadThis();
-		for(int i=0; i < outer_refs.length; i++) {
-			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
-		}
-	}
-
-	public void generateAccess(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addInstrLoadThis();
-		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i],code.clazz.type);
-		}
-	}
-
-	public void generateStore(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.type);
-	}
-
-	public void generateStoreDupValue(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
-		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1],code.clazz.type);
 	}
 
 	public Operator getOp() { return BinaryOperator.Access; }

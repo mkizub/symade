@@ -179,10 +179,7 @@ public class LocalVarTableAttr extends Attr {
 		for(int i=0; i < vars.length; i++) {
 			Var v = vars[i].var;
 			constPool.addAsciiCP(v.name.name);
-			if( v.isNeedRefProxy() )
-				constPool.addAsciiCP(Type.getProxyType(v.type).getJType().java_signature);
-			else
-				constPool.addAsciiCP(v.type.getJType().java_signature);
+			constPool.addAsciiCP(v.type.getJType().java_signature);
 		}
 	}
 
@@ -193,11 +190,7 @@ public class LocalVarTableAttr extends Attr {
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
 			Var v = vars[i].var;
-			KString sign;
-			if( v.isNeedRefProxy() )
-				sign = Type.getProxyType(v.type).getJType().java_signature;
-			else
-				sign = v.type.getJType().java_signature;
+			KString sign = v.type.getJType().java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;

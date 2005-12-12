@@ -7,6 +7,15 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JLvalDNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JVarDeclView;
+import kiev.be.java.JLocalStructDeclView;
+import kiev.be.java.JLvalueExprView;
+import kiev.be.java.JTypeDefView;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -151,11 +160,10 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,16 boolean is_init_wrapper;
 		public packed:1,compileflags,17 boolean is_need_proxy;
 		// Var specific
-		public packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
-		public packed:1,compileflags,19 boolean is_var_local_rule_var;
-		public packed:1,compileflags,20 boolean is_var_closure_proxy;
-		public packed:1,compileflags,21 boolean is_var_this;
-		public packed:1,compileflags,22 boolean is_var_super;
+		public packed:1,compileflags,18 boolean is_var_local_rule_var;
+		public packed:1,compileflags,19 boolean is_var_closure_proxy;
+		public packed:1,compileflags,20 boolean is_var_this;
+		public packed:1,compileflags,21 boolean is_var_super;
 	
 		// Field specific
 		public packed:1,compileflags,18 boolean is_fld_packer;
@@ -171,6 +179,14 @@ public abstract class ASTNode implements Constants {
 		public NodeImpl(int pos) {
 			this.pos = pos;
 		}
+		
+		public Object copyTo(Object to$node) {
+			NodeImpl node = (NodeImpl)to$node;
+			node.pos			= this.pos;
+			node.compileflags	= this.compileflags;
+			return node;
+		}
+
 		// the node is attached
 		public final boolean isAttached()  {
 			return parent != null;
@@ -235,14 +251,15 @@ public abstract class ASTNode implements Constants {
 		}	
 	}
 	@nodeview
-	public static class NodeView {
-		final NodeImpl impl;
+	public static class NodeView implements Constants {
+		public final NodeImpl impl;
 		public NodeView(NodeImpl impl) {
 			super();
 			this.impl = impl;
 		}
 		
 		public final ASTNode getNode() { return impl._self; }
+		public String toString() { return String.valueOf(impl._self); }
 		
 		@getter public final int			get$pos()			{ return this.impl.pos; }
 		@getter public final int			get$compileflags()	{ return this.impl.compileflags; }
@@ -305,7 +322,8 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	public NodeImpl $v_impl;
-	public NodeView getNodeView() { return new NodeView(this.$v_impl); }
+	public NodeView getNodeView()		{ return new NodeView(this.$v_impl); }
+	public JNodeView getJNodeView()		{ return new JNodeView(this.$v_impl); }
 	
 	@virtual
 	public abstract virtual							int				pos;
@@ -378,8 +396,7 @@ public abstract class ASTNode implements Constants {
 
 	public /*abstract*/ Object copyTo(Object to$node) {
         ASTNode node = (ASTNode)to$node;
-		node.pos			= this.pos;
-		node.compileflags	= this.compileflags;
+		$v_impl.copyTo(node.$v_impl);
 		return node;
 	};
 
@@ -619,6 +636,9 @@ public abstract class DNode extends ASTNode {
 			super(impl);
 			this.impl = impl;
 		}
+
+		public final DNode getDNode() { return (DNode)impl._self; }
+		
 		@getter public final int		get$flags()				{ return this.impl.flags; }
 		@getter public final MetaSet	get$meta()				{ return this.impl.meta; }
 		@setter public final void		set$flags(int val)		{ this.impl.flags = val; }
@@ -717,8 +737,10 @@ public abstract class DNode extends ASTNode {
 	/** Meta-information (annotations) of this structure */
 	@att public virtual abstract	MetaSet		meta;
 
-	public NodeView getNodeView() { return new DNodeView((DNodeImpl)this.$v_impl); }
-	public DNodeView getDNodeView() { return new DNodeView((DNodeImpl)this.$v_impl); }
+	public NodeView		getNodeView()		{ return new DNodeView((DNodeImpl)this.$v_impl); }
+	public DNodeView	getDNodeView()		{ return new DNodeView((DNodeImpl)this.$v_impl); }
+	public JNodeView	getJNodeView()		{ return new JDNodeView((DNodeImpl)this.$v_impl); }
+	public JDNodeView	getJDNodeView()		{ return new JDNodeView((DNodeImpl)this.$v_impl); }
 
 	public DNode(DNodeImpl v_impl) { super(v_impl); }
 
@@ -815,6 +837,9 @@ public abstract class LvalDNode extends DNode {
 	public NodeView			getNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
 	public LvalDNodeView	getLvalDNodeView()	{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
 
 	public LvalDNode(LvalDNodeImpl v_impl) { super(v_impl); }
 
@@ -851,6 +876,8 @@ public /*abstract*/ class ENode extends ASTNode {
 			super(impl);
 		}
 
+		public final ENode getENode() { return (ENode)this.impl._self; }
+		
 		//
 		// Expr specific
 		//
@@ -974,11 +1001,14 @@ public /*abstract*/ class ENode extends ASTNode {
 	}
 	public NodeView			getNodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
 	public ENodeView		getENodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JENodeView((ENodeImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JENodeView((ENodeImpl)this.$v_impl); }
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
 	public ENode() { super(new ENodeImpl()); }
 	public ENode(int pos) { super(new ENodeImpl(pos)); }
+	public ENode(ENodeImpl impl) { super(impl); }
 
 	public Type[] getAccessTypes() {
 		return new Type[]{getType()};
@@ -989,9 +1019,7 @@ public /*abstract*/ class ENode extends ASTNode {
 	}
 	
 	public void generate(Code code, Type reqType) {
-		Dumper dmp = new Dumper();
-		dmp.append(this);
-		throw new CompilerException(this,"Unresolved node ("+this.getClass()+") generation, expr: "+dmp);
+		this.getJENodeView().generate(code, reqType);
 	}
 
 	public Operator getOp() { return null; }
@@ -1092,11 +1120,41 @@ public final class VarDecl extends ENode implements Named {
 	@dflow(in="this:in")	Var		var;
 	}
 
-	@att Var var;
+	@node
+	public static class VarDeclImpl extends ENodeImpl {
+		public VarDeclImpl() {}
+
+		@att public Var var;
 	
-	public VarDecl() {}
+	}
+	@nodeview
+	public static class VarDeclView extends ENodeView {
+		final VarDeclImpl impl;
+		public VarDeclView(VarDeclImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		
+		@getter public final Var		get$var()				{ return this.impl.var; }
+		@setter public final void 		set$var(Var val)		{ this.impl.var = val; }
+	}
+
+	@att public virtual abstract	Var		var;
+	
+	public NodeView		getNodeView()		{ return new VarDeclView((VarDeclImpl)this.$v_impl); }
+	public ENodeView	getENodeView()		{ return new VarDeclView((VarDeclImpl)this.$v_impl); }
+	public VarDeclView	getVarDeclView()	{ return new VarDeclView((VarDeclImpl)this.$v_impl); }
+	public JNodeView	getJNodeView()		{ return new JVarDeclView((VarDeclImpl)this.$v_impl); }
+	public JENodeView	getJENodeView()		{ return new JVarDeclView((VarDeclImpl)this.$v_impl); }
+	public JVarDeclView	getJVarDeclView()	{ return new JVarDeclView((VarDeclImpl)this.$v_impl); }
+
+	@getter public Var		get$var()				{ return this.getVarDeclView().var; }
+	@setter public void		set$var(Var val)		{ this.getVarDeclView().var = val; }
+	
+	public VarDecl() { super(new VarDeclImpl()); }
 	
 	public VarDecl(Var var) {
+		super(new VarDeclImpl());
 		this.var = var;
 	}
 
@@ -1105,9 +1163,7 @@ public final class VarDecl extends ENode implements Named {
 	}
 
 	public NodeName getName() { return var.name; }
-	public void generate(Code code, Type reqType) {
-		var.generate(code,Type.tpVoid);
-	}
+
 	public Dumper toJava(Dumper dmp) {
 		var.toJavaDecl(dmp);
 		return dmp;
@@ -1120,10 +1176,41 @@ public final class LocalStructDecl extends ENode implements Named {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@att Struct clazz;
+	@node
+	public static class LocalStructDeclImpl extends ENodeImpl {
+		public LocalStructDeclImpl() {}
+
+		@att public Struct clazz;
 	
-	public LocalStructDecl() {}
+	}
+	@nodeview
+	public static class LocalStructDeclView extends ENodeView {
+		final LocalStructDeclImpl impl;
+		public LocalStructDeclView(LocalStructDeclImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		
+		@getter public final Struct		get$clazz()				{ return this.impl.clazz; }
+		@setter public final void 		set$clazz(Struct val)	{ this.impl.clazz = val; }
+	}
+
+	@att public abstract virtual Struct clazz;
+	
+	public NodeView					getNodeView()				{ return new LocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new LocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+	public LocalStructDeclView		getLocalStructDeclView()	{ return new LocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JLocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JLocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+	public JLocalStructDeclView		getJLocalStructDeclView()	{ return new JLocalStructDeclView((LocalStructDeclImpl)this.$v_impl); }
+
+	@getter public Struct	get$clazz()					{ return this.getLocalStructDeclView().clazz; }
+	@setter public void		set$clazz(Struct val)		{ this.getLocalStructDeclView().clazz = val; }
+	
+	
+	public LocalStructDecl() { super(new LocalStructDeclImpl()); }
 	public LocalStructDecl(Struct clazz) {
+		super(new LocalStructDeclImpl());
 		this.clazz = clazz;
 		clazz.setResolved(true);
 	}
@@ -1142,9 +1229,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	}
 
 	public NodeName getName() { return clazz.name; }
-	public void generate(Code code, Type reqType) {
-		// don't generate here
-	}
+
 	public Dumper toJava(Dumper dmp) {
 		clazz.toJavaDecl(dmp);
 		return dmp;
@@ -1159,12 +1244,35 @@ public class NopExpr extends ENode {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
-	@att
-	public ENode	expr;
-	
-	public NopExpr() {
+	@node
+	public static class NopExprImpl extends ENodeImpl {
+		public NopExprImpl() {}
+		@att public ENode	expr;
 	}
+	@nodeview
+	public static class NopExprView extends ENodeView {
+		final NopExprImpl impl;
+		public NopExprView(NopExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		
+		@getter public final ENode		get$expr()				{ return this.impl.expr; }
+		@setter public final void 		set$expr(ENode val)		{ this.impl.expr = val; }
+	}
+
+	@att public abstract virtual ENode expr;
+	
+	public NodeView			getNodeView()		{ return new NopExprView((NopExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new NopExprView((NopExprImpl)this.$v_impl); }
+	public NopExprView		getNopExprView()	{ return new NopExprView((NopExprImpl)this.$v_impl); }
+
+	@getter public ENode	get$expr()				{ return this.getNopExprView().expr; }
+	@setter public void		set$expr(ENode val)		{ this.getNopExprView().expr = val; }
+	
+	public NopExpr() { super(new NopExprImpl()); }
 	public NopExpr(ENode expr) {
+		super(new NopExprImpl());
 		this.pos = expr.pos;
 		this.expr = expr;
 	}
@@ -1174,38 +1282,6 @@ public class NopExpr extends ENode {
 	public void resolve(Type reqType) {
 		expr.resolve(reqType);
 	}
-}
-
-@node
-public abstract class LvalueExpr extends ENode {
-
-	public LvalueExpr() {}
-
-	public LvalueExpr(int pos) { super(pos); }
-
-	public void generate(Code code, Type reqType) {
-		code.setLinePos(this.getPosLine());
-		generateLoad(code);
-		if( reqType == Type.tpVoid )
-			code.addInstr(Instr.op_pop);
-	}
-
-	/** Just load value referenced by lvalue */
-	public abstract void generateLoad(Code code);
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateLoadDup(Code code);
-
-	/** Load info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public abstract void generateAccess(Code code);
-
-	/** Stores value using previously duped info */
-	public abstract void generateStore(Code code);
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public abstract void generateStoreDupValue(Code code);
 }
 
 @node
@@ -1253,6 +1329,9 @@ public abstract class TypeDef extends DNode implements Named {
 	public NodeView			getNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
 	public TypeDefView		getTypeDefView()	{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
+	public JTypeDefView		getJTypeDefView()	{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
 
 	public TypeDef(TypeDefImpl v_impl) { super(v_impl); }
 
@@ -1433,6 +1512,15 @@ public class CompilerException extends RuntimeException {
 	public CompilerException(ASTNode from, CError err_id, String msg) {
 		super(msg);
 		this.from = from;
+		this.err_id = err_id;
+	}
+	public CompilerException(ASTNode.NodeView from, String msg) {
+		super(msg);
+		this.from = from.getNode();
+	}
+	public CompilerException(ASTNode.NodeView from, CError err_id, String msg) {
+		super(msg);
+		this.from = from.getNode();
 		this.err_id = err_id;
 	}
 }

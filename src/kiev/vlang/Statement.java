@@ -174,9 +174,9 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		for(int i=0; i < params_redir.length; i++) {
 			ParamRedir redir = params_redir[i];
 			if( !redir.new_var.type.equals(method.params[i].type) ) {
-				code.addInstr(Instr.op_load,redir.new_var);
+				code.addInstr(Instr.op_load,redir.new_var.getJVarView());
 				code.addInstr(Instr.op_checkcast,method.params[i].type);
-				code.addInstr(Instr.op_store,redir.new_var);
+				code.addInstr(Instr.op_store,redir.new_var.getJVarView());
 			}
 		}
 	}
@@ -538,7 +538,7 @@ public class ReturnStat extends ENode {
 					if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
 						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
 						code.addVar(tmp_var);
-						code.addInstr(Instr.op_store,tmp_var);
+						code.addInstr(Instr.op_store,tmp_var.getJVarView());
 					}
 					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
@@ -547,14 +547,14 @@ public class ReturnStat extends ENode {
 				if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
 					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
 					code.addVar(tmp_var);
-					code.addInstr(Instr.op_store,tmp_var);
+					code.addInstr(Instr.op_store,tmp_var.getJVarView());
 				}
-				code.addInstr(Instr.op_load,node.expr_var);
+				code.addInstr(Instr.op_load,node.expr_var.getJVarView());
 				code.addInstr(Instr.op_monitorexit);
 			}
 		}
 		if( tmp_var != null ) {
-			code.addInstr(Instr.op_load,tmp_var);
+			code.addInstr(Instr.op_load,tmp_var.getJVarView());
 			code.removeVar(tmp_var);
 		}
 		if( code.need_to_gen_post_cond ) {
@@ -1040,7 +1040,7 @@ public class BreakStat extends ENode {
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				}
 				else {
-					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
@@ -1203,7 +1203,7 @@ public class ContinueStat extends ENode {
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -1484,7 +1484,7 @@ public class GotoStat extends ENode {
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,(Var)lb[i]);
+					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -1569,18 +1569,18 @@ public class GotoCaseStat extends ENode {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
 							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
 							code.addVar(tmp_var);
-							code.addInstr(Instr.op_store,tmp_var);
+							code.addInstr(Instr.op_store,tmp_var.getJVarView());
 						}
 						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
 				}
 				else if (node instanceof SynchronizedStat) {
-					code.addInstr(Instr.op_load,node.expr_var);
+					code.addInstr(Instr.op_load,node.expr_var.getJVarView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			}
 			if( tmp_var != null ) {
-				code.addInstr(Instr.op_load,tmp_var);
+				code.addInstr(Instr.op_load,tmp_var.getJVarView());
 				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;

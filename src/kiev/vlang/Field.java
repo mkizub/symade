@@ -1,27 +1,12 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JLvalDNodeView;
+import kiev.be.java.JFieldView;
 
 import static kiev.stdlib.Debug.*;
 
@@ -42,17 +27,17 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public FieldImpl(int pos, int fl) { super(pos, fl); }
 
 		/** Field' access */
-		     Access				acc;
+		     public Access				acc;
 		/** Name of the field */
-		     NodeName			name;
+		     public NodeName			name;
 		/** Type of the field */
-		@att TypeRef			ftype;
+		@att public TypeRef				ftype;
 		/** Initial value of this field */
-		@att ENode				init;
+		@att public ENode				init;
 		/** Array of attributes of this field */
-		     Attr[]				attrs = Attr.emptyArray;
+		     public Attr[]				attrs = Attr.emptyArray;
 		/** Array of invariant methods, that check this field */
-		@ref NArr<Method>		invs;
+		@ref public NArr<Method>		invs;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -131,6 +116,10 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public DNodeView		getDNodeView()		{ return new FieldView((FieldImpl)this.$v_impl); }
 	public LvalDNodeView	getLvalDNodeView()	{ return new FieldView((FieldImpl)this.$v_impl); }
 	public FieldView		getFieldView()		{ return new FieldView((FieldImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	{ return new JFieldView((FieldImpl)this.$v_impl); }
+	public JFieldView		getJFieldView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
 
 	@getter public Access				get$acc()			{ return this.getFieldView().acc; }
 	@getter public NodeName				get$name()			{ return this.getFieldView().name; }

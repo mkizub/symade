@@ -1,28 +1,10 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.*;
 import kiev.stdlib.*;
 import kiev.parser.*;
+
+import kiev.be.java.JVarView;
 
 import static kiev.stdlib.Debug.*;
 
@@ -45,10 +27,12 @@ public class Var extends LvalDNode implements Named, Typed {
 		public VarImpl(int pos) { super(pos); }
 		public VarImpl(int pos, int fl) { super(pos, fl); }
 
-		     NodeName		name;
-		@att TypeRef		vtype;
-		@att ENode			init;
-		     int			bcpos = -1;
+		public final Var getVar() { return (Var)this._self; }
+		
+		     public NodeName	name;
+		@att public TypeRef		vtype;
+		@att public ENode		init;
+		     public int			bcpos = -1;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -83,17 +67,6 @@ public class Var extends LvalDNode implements Named, Typed {
 			return this.impl.vtype.getType();
 		}
 		
-		// need a reference proxy access 
-		public final boolean isNeedRefProxy() {
-			return this.impl.is_var_need_ref_proxy;
-		}
-		public final void setNeedRefProxy(boolean on) {
-			if (this.impl.is_var_need_ref_proxy != on) {
-				this.impl.is_var_need_ref_proxy = on;
-				if (on) this.impl.is_need_proxy = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar() {
 			return this.impl.is_var_local_rule_var;
@@ -139,6 +112,7 @@ public class Var extends LvalDNode implements Named, Typed {
 	public DNodeView		getDNodeView()		{ return new VarView((VarImpl)this.$v_impl); }
 	public LvalDNodeView	getLvalDNodeView()	{ return new VarView((VarImpl)this.$v_impl); }
 	public VarView			getVarView()		{ return new VarView((VarImpl)this.$v_impl); }
+	public JVarView			getJVarView()		{ return new JVarView((VarImpl)this.$v_impl); }
 
 	@getter public NodeName				get$name()			{ return this.getVarView().name; }
 	@getter public TypeRef				get$vtype()			{ return this.getVarView().vtype; }
@@ -195,9 +169,6 @@ public class Var extends LvalDNode implements Named, Typed {
 //		return vtype.getType();
 //	}
 	
-	// need a reference proxy access 
-	public boolean isNeedRefProxy() { return this.getVarView().isNeedRefProxy(); }
-	public void setNeedRefProxy(boolean on) { this.getVarView().setNeedRefProxy(on); }
 	// is a local var in a rule 
 	public boolean isLocalRuleVar() { return this.getVarView().isLocalRuleVar(); }
 	public void setLocalRuleVar(boolean on) { this.getVarView().setLocalRuleVar(on); }
@@ -271,49 +242,13 @@ public class Var extends LvalDNode implements Named, Typed {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
-		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
-		code.setLinePos(this.getPosLine());
-		try {
-			if( init != null ) {
-				if( !this.isNeedRefProxy() ) {
-					init.generate(code,this.type);
-					code.addVar(this);
-					code.addInstr(Instr.op_store,this);
-				} else {
-					Type prt = Type.getProxyType(this.type);
-					code.addInstr(Instr.op_new,prt);
-					code.addInstr(Instr.op_dup);
-					init.generate(code,this.type);
-					MethodType mt = MethodType.newMethodType(null,new Type[]{init.getType()},Type.tpVoid);
-					Method@ in;
-					PassInfo.resolveBestMethodR(prt,in,new ResInfo(this,ResInfo.noForwards),nameInit,mt);
-					code.addInstr(Instr.op_call,in,false);
-					code.addVar(this);
-					code.addInstr(Instr.op_store,this);
-				}
-			} else {
-				code.addVar(this);
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-//		if (isFinal()) dmp.append("final").forsed_space();
-//		if (isForward()) dmp.append("forward").forsed_space();
-		if( isNeedRefProxy() )
-			dmp.append(Type.getProxyType(type));
-		else
-			dmp.append(type);
-		dmp.forsed_space().append(name);
+		dmp.append(type).forsed_space().append(name);
 		if (init != null)
 			dmp.space().append('=').append(init);
 		dmp.append(';').newLine();
@@ -322,11 +257,7 @@ public class Var extends LvalDNode implements Named, Typed {
 
 	public Dumper toJavaDecl(Dumper dmp, Type jtype) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( isNeedRefProxy() )
-			dmp.append(Type.getProxyType(jtype));
-		else
-			dmp.append(jtype);
-		return dmp.forsed_space().append(name);
+		return dmp.append(jtype).forsed_space().append(name);
 	}
 
 	public void setBCpos(int pos) {

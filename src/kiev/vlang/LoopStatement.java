@@ -454,7 +454,7 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 				if( init instanceof ForInit ) {
 					ForInit fi = (ForInit)init;
 					foreach (Var var; fi.decls) {
-						var.generate(code,Type.tpVoid);
+						var.getJVarView().generate(code,Type.tpVoid);
 					}
 				} else {
 					init.generate(code,Type.tpVoid);

@@ -17,7 +17,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public static class JMethodView extends DNode.DNodeView implements Constants {
+public static class JMethodView extends JDNodeView {
 	final Method.MethodImpl impl;
 	public JMethodView(Method.MethodImpl impl) {
 		super(impl);
@@ -115,7 +115,7 @@ public static class JMethodView extends DNode.DNodeView implements Constants {
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
 						if( type.ret != Type.tpVoid ) {
 							code.addVar(getRetVar());
-							code.addInstr(Instr.op_store,getRetVar());
+							code.addInstr(Instr.op_store,getRetVar().getJVarView());
 						}
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
 							if( !((DNode)cond.parent).isStatic() )
@@ -126,7 +126,7 @@ public static class JMethodView extends DNode.DNodeView implements Constants {
 						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
 							code.importCode(cond.code_attr);
 						if( type.ret != Type.tpVoid ) {
-							code.addInstr(Instr.op_load,getRetVar());
+							code.addInstr(Instr.op_load,getRetVar().getJVarView());
 							code.addInstr(Instr.op_return);
 							code.removeVar(getRetVar());
 						} else {
@@ -157,9 +157,9 @@ public static class JMethodView extends DNode.DNodeView implements Constants {
 			Type tp1 = jtype.args[i];
 			Type tp2 = params[i].type;
 			if !(tp2.getJavaType().isInstanceOf(tp1)) {
-				code.addInstr(Instr.op_load,params[i]);
+				code.addInstr(Instr.op_load,params[i].getJVarView());
 				code.addInstr(Instr.op_checkcast,tp1);
-				code.addInstr(Instr.op_store,params[i]);
+				code.addInstr(Instr.op_store,params[i].getJVarView());
 			}
 		}
 	}

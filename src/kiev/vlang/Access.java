@@ -171,6 +171,9 @@ public class Access implements Constants {
 	public void verifyReadAccess(ASTNode from, DNode n) { verifyAccess(from,n,2); }
 	public void verifyWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,1); }
 	public void verifyReadWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,3); }
+	public void verifyReadAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
+	public void verifyWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
+	public void verifyReadWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
 
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
@@ -183,7 +186,7 @@ public class Access implements Constants {
 		return pkg;
 	}
 
-	private void verifyAccess(ASTNode from, DNode n, int acc) {
+	private void verifyAccess(ASTNode from, ASTNode n, int acc) {
 		assert( n instanceof Accessable && ((Accessable)n).acc == this );
 
 		// Quick check for public access
@@ -196,7 +199,7 @@ public class Access implements Constants {
 		}
 
 		// Check for private access from inner class
-		if (n.isPrivate()) {
+		if (((DNode)n).isPrivate()) {
 			Struct outer1 = from.pctx.clazz;
 			Struct outer2 = getStructOf(n);
 			while (!outer1.package_clazz.isPackage())
@@ -228,7 +231,7 @@ public class Access implements Constants {
 		throwAccessError(from,n,acc,"public");
 	}
 
-	private void throwAccessError(ASTNode from, DNode n, int acc, String astr) {
+	private void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');
 		if( acc == 2 ) sb.append("read");

@@ -25,7 +25,7 @@ import kiev.stdlib.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -65,6 +65,10 @@ public class Dumper {
 		return this;
 	}
 
+	public Dumper append(ASTNode.NodeView o) {
+		return append(o.getNode());
+	}
+	
 	public Dumper append(ASTNode o) {
 		if( o == null ) return this;
 		try {

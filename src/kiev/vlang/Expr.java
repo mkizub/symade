@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -26,6 +6,12 @@ import kiev.parser.*;
 import kiev.transf.*;
 
 import kiev.vlang.Instr.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JLvalueExprView;
+import kiev.be.java.JAssignExprView;
+import kiev.be.java.JIncrementExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -190,16 +176,60 @@ public class AssignExpr extends LvalueExpr {
 	@dflow(in="lval")		ENode			value;
 	}
 	
-	@ref public AssignOperator	op;
+	@node
+	public static class AssignExprImpl extends LvalueExprImpl {		
+		@ref public AssignOperator	op;
+		@att public ENode			lval;
+		@att public ENode			value;
+
+		public AssignExprImpl() {}
+		public AssignExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class AssignExprView extends LvalueExprView {
+		final AssignExprImpl impl;
+		public AssignExprView(AssignExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final AssignOperator	get$op()					{ return this.impl.op; }
+		@getter public final ENode				get$lval()					{ return this.impl.lval; }
+		@getter public final ENode				get$value()					{ return this.impl.value; }
+		@setter public final void				set$op(AssignOperator val)	{ this.impl.op = val; }
+		@setter public final void				set$lval(ENode val)			{ this.impl.lval = val; }
+		@setter public final void				set$value(ENode val)		{ this.impl.value = val; }
+	}
 	
-	@att public ENode			lval;
-	@att public ENode			value;
+	@att public abstract virtual AssignOperator	op;
+	@att public abstract virtual ENode				lval;
+	@att public abstract virtual ENode				value;
+	
+	
+	public NodeView			getNodeView()			{ return new AssignExprView((AssignExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new AssignExprView((AssignExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new AssignExprView((AssignExprImpl)this.$v_impl); }
+	public AssignExprView	getAssignExprView()		{ return new AssignExprView((AssignExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JAssignExprView((AssignExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JAssignExprView((AssignExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JAssignExprView((AssignExprImpl)this.$v_impl); }
+	public JAssignExprView	getJAssignExprView()	{ return new JAssignExprView((AssignExprImpl)this.$v_impl); }
+
+	@getter public AssignOperator	get$op()			{ return this.getAssignExprView().op; }
+	@getter public ENode			get$lval()			{ return this.getAssignExprView().lval; }
+	@getter public ENode			get$value()			{ return this.getAssignExprView().value; }
+	
+	@setter public void set$op(AssignOperator val)		{ this.getAssignExprView().op = val; }
+	@setter public void set$lval(ENode val)			{ this.getAssignExprView().lval = val; }
+	@setter public void set$value(ENode val)			{ this.getAssignExprView().value = val; }
 
 	public AssignExpr() {
+		super(new AssignExprImpl());
 	}
 
 	public AssignExpr(int pos, AssignOperator op, ENode lval, ENode value) {
-		super(pos);
+		super(new AssignExprImpl(pos));
 		this.op = op;
 		this.lval = lval;
 		this.value = value;
@@ -323,13 +353,6 @@ public class AssignExpr extends LvalueExpr {
 		lval.resolve(null);
 		if( !(lval instanceof LvalueExpr) )
 			throw new RuntimeException("Can't assign to "+lval+": lvalue requared");
-		if( (lval instanceof LVarExpr) && ((LVarExpr)lval).getVar().isNeedProxy() ) {
-			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((LVarExpr)lval).getVar();
-			if( var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
-				throw new RuntimeException("Unsupported operation");
-			}
-		}
 		Type t1 = lval.getType();
 		if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
 			op = AssignOperator.Assign;
@@ -416,83 +439,6 @@ public class AssignExpr extends LvalueExpr {
 		if (path != null)
 			return dfs.setNodeValue(path,value);
 		return dfs;
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		ENode value = this.value;
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		if( reqType != Type.tpVoid ) {
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-				lval.generateLoadDup(code);
-				value.generate(code,null);
-				code.addInstr(op.instr);
-				lval.generateStoreDupValue(code);
-			} else {
-				lval.generateAccess(code);
-				value.generate(code,null);
-				lval.generateStoreDupValue(code);
-			}
-		} else {
-			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
-				lval.generateLoadDup(code);
-				value.generate(code,null);
-				code.addInstr(op.instr);
-				lval.generateStore(code);
-			} else {
-				lval.generateAccess(code);
-				value.generate(code,null);
-				lval.generateStore(code);
-			}
-		}
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad(Code code) {
-		code.setLinePos(this.getPosLine());
-		ENode value = this.value;
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
-		lval.generateStoreDupValue(code);
-	}
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while)
-	*/
-	public void generateLoadDup(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	public void generateAccess(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	/** Stores value using previously duped info */
-	public void generateStore(Code code) {
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		code.setLinePos(this.getPosLine());
-		ENode value = this.value;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
-		lval.generateStore(code);
-	}
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public void generateStoreDupValue(Code code) {
-		code.setLinePos(this.getPosLine());
-		ENode value = this.value;
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		lval.generateLoadDup(code);
-		value.generate(code,null);
-		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
-			code.addInstr(op.instr);
-		lval.generateStoreDupValue(code);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1403,21 +1349,58 @@ public class UnaryExpr extends ENode {
 }
 
 @node
-public class IncrementExpr extends LvalueExpr {
+public class IncrementExpr extends ENode {
 	
 	@dflow(out="lval") private static class DFI {
 	@dflow(in="this:in")	ENode			lval;
 	}
 
-	@ref public Operator			op;
+	@node
+	public static class IncrementExprImpl extends ENodeImpl {		
+		@ref public Operator			op;
+		@att public ENode				lval;
+
+		public IncrementExprImpl() {}
+		public IncrementExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static class IncrementExprView extends ENodeView {
+		final IncrementExprImpl impl;
+		public IncrementExprView(IncrementExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final Operator			get$op()					{ return this.impl.op; }
+		@getter public final ENode				get$lval()					{ return this.impl.lval; }
+		@setter public final void				set$op(Operator val)	{ this.impl.op = val; }
+		@setter public final void				set$lval(ENode val)			{ this.impl.lval = val; }
+	}
 	
-	@att public ENode				lval;
+	@att public abstract virtual Operator			op;
+	@att public abstract virtual ENode				lval;
+	
+	
+	public NodeView				getNodeView()			{ return new IncrementExprView((IncrementExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new IncrementExprView((IncrementExprImpl)this.$v_impl); }
+	public IncrementExprView	getIncrementExprView()	{ return new IncrementExprView((IncrementExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JIncrementExprView((IncrementExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JIncrementExprView((IncrementExprImpl)this.$v_impl); }
+	public JIncrementExprView	getJIncrementExprView()	{ return new JIncrementExprView((IncrementExprImpl)this.$v_impl); }
+
+	@getter public Operator			get$op()			{ return this.getIncrementExprView().op; }
+	@getter public ENode			get$lval()			{ return this.getIncrementExprView().lval; }
+	
+	@setter public void set$op(Operator val)			{ this.getIncrementExprView().op = val; }
+	@setter public void set$lval(ENode val)			{ this.getIncrementExprView().lval = val; }
 
 	public IncrementExpr() {
+		super(new IncrementExprImpl());
 	}
 
 	public IncrementExpr(int pos, Operator op, ENode lval) {
-		super(pos);
+		super(new IncrementExprImpl(pos));
 		this.op = op;
 		this.lval = lval;
 	}
@@ -1437,152 +1420,7 @@ public class IncrementExpr extends LvalueExpr {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if( (lval instanceof LVarExpr) && ((LVarExpr)lval).getVar().isNeedProxy() ) {
-			// Check that we in local/anonymouse class, thus var need RefProxy
-			Var var = ((LVarExpr)lval).getVar();
-			if( !var.pctx.clazz.equals(pctx.clazz) && !var.isNeedRefProxy() ) {
-				throw new RuntimeException("Unsupported operation");
-			}
-		}
 		setResolved(true);
-	}
-
-	private void pushProperConstant(Code code, int i) {
-		Type lt = lval.getType();
-		if( i > 0 ) { // 1
-			if( lt == Type.tpDouble ) code.addConst(1.D);
-			else if( lt == Type.tpFloat ) code.addConst(1.F);
-			else if( lt == Type.tpLong ) code.addConst(1L);
-			else code.addConst(1);
-		} else { // -1
-			if( lt == Type.tpDouble ) code.addConst(-1.D);
-			else if( lt == Type.tpFloat ) code.addConst(-1.F);
-			else if( lt == Type.tpLong ) code.addConst(-1L);
-			else code.addConst(-1);
-		}
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		if( reqType != Type.tpVoid ) {
-			generateLoad(code);
-		} else {
-			if( lval instanceof LVarExpr ) {
-				LVarExpr va = (LVarExpr)lval;
-				if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
-					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
-						code.addInstrIncr(va,1);
-						return;
-					}
-					else if( op==PrefixOperator.PreDecr || op==PostfixOperator.PostDecr ) {
-						code.addInstrIncr(va,-1);
-						return;
-					}
-				}
-			}
-			lval.generateLoadDup(code);
-
-			if( op == PrefixOperator.PreIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PrefixOperator.PreDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PostfixOperator.PostIncr ) {
-				pushProperConstant(code,1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-			else if( op == PostfixOperator.PostDecr ) {
-				pushProperConstant(code,-1);
-				code.addInstr(op_add);
-				lval.generateStore(code);
-			}
-		}
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad(Code code) {
-		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
-		code.setLinePos(this.getPosLine());
-		LvalueExpr lval = (LvalueExpr)this.lval;
-		if( lval instanceof LVarExpr ) {
-			LVarExpr va = (LVarExpr)lval;
-			if( va.getType().isIntegerInCode() && !va.getVar().isNeedProxy() || va.isUseNoProxy() ) {
-				if( op == PrefixOperator.PreIncr ) {
-					code.addInstrIncr(va,1);
-					code.addInstr(op_load,va);
-					return;
-				}
-				else if( op == PostfixOperator.PostIncr ) {
-					code.addInstr(op_load,va);
-					code.addInstrIncr(va,1);
-					return;
-				}
-				else if( op == PrefixOperator.PreDecr ) {
-					code.addInstrIncr(va,-1);
-					code.addInstr(op_load,va);
-					return;
-				}
-				else if( op == PostfixOperator.PostDecr ) {
-					code.addInstr(op_load,va);
-					code.addInstrIncr(va,-1);
-					return;
-				}
-			}
-		}
-		lval.generateLoadDup(code);
-		if( op == PrefixOperator.PreIncr ) {
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-		}
-		else if( op == PrefixOperator.PreDecr ) {
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-		}
-		else if( op == PostfixOperator.PostIncr ) {
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-		}
-		else if( op == PostfixOperator.PostDecr ) {
-			pushProperConstant(code,-1);
-			code.addInstr(op_add);
-			lval.generateStoreDupValue(code);
-			pushProperConstant(code,1);
-			code.addInstr(op_add);
-		}
-	}
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while)
-	*/
-	public void generateLoadDup(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	public void generateAccess(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	/** Stores value using previously duped info */
-	public void generateStore(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
-	}
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public void generateStoreDupValue(Code code) {
-		throw new RuntimeException("Too complex lvalue expression "+this);
 	}
 
 	public Dumper toJava(Dumper dmp) {

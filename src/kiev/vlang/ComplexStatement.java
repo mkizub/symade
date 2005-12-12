@@ -234,7 +234,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			vars = new Vector<Var>();
 			foreach (Var p; pattern; p.vtype != null && !(p.name.name.len == 1 && p.name.name.byteAt(0) == '_')) {
 				vars.append(p);
-				p.generate(code,Type.tpVoid);
+				p.getJVarView().generate(code,Type.tpVoid);
 			}
 		}
 		for(int i=0; i < stats.length; i++) {
@@ -680,7 +680,7 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		try {
 			// This label must be created by TryStat's generate routine;
 			code.addInstr(Instr.enter_catch_handler,code_catcher);
-			code.addInstr(Instr.op_store,arg);
+			code.addInstr(Instr.op_store,arg.getJVarView());
 			body.generate(code,Type.tpVoid);
 			if( !body.isMethodAbrupted() ) {
 				if( ((TryStat)parent).finally_catcher != null ) {
@@ -743,19 +743,19 @@ public class FinallyInfo extends CatchInfo {
 			code.addInstr(Instr.set_label,handler);
 			code.addInstr(Instr.enter_catch_handler,null_ci);
 			code.addVar(arg);
-			code.addInstr(Instr.op_store,arg);
+			code.addInstr(Instr.op_store,arg.getJVarView());
 			code.addInstr(Instr.op_jsr,subr_label);
-			code.addInstr(Instr.op_load,arg);
+			code.addInstr(Instr.op_load,arg.getJVarView());
 			code.addInstr(Instr.op_throw);
 			code.addInstr(Instr.exit_catch_handler,null_ci);
 
 			// This label must be created by TryStat's generate routine;
 			code.addInstr(Instr.set_label,subr_label);
 			code.addInstr(Instr.enter_catch_handler,null_ci);
-			code.addInstr(Instr.op_store,ret_arg);
+			code.addInstr(Instr.op_store,ret_arg.getJVarView());
 
 			body.generate(code,Type.tpVoid);
-			code.addInstr(Instr.op_ret,ret_arg);
+			code.addInstr(Instr.op_ret,ret_arg.getJVarView());
 		} catch(Exception e ) { Kiev.reportError(this,e);
 		} finally { code.removeVar(arg); }
 	}
@@ -938,7 +938,7 @@ public class SynchronizedStat extends ENode {
 		try {
 			code.addVar(expr_var);
 			code.addInstr(Instr.op_dup);
-			code.addInstr(Instr.op_store,expr_var);
+			code.addInstr(Instr.op_store,expr_var.getJVarView());
 			code.addInstr(Instr.op_monitorenter);
 			handler = code.newLabel();
 			end_label = code.newLabel();
@@ -956,7 +956,7 @@ public class SynchronizedStat extends ENode {
 				if( isAutoReturnable() )
 					ReturnStat.generateReturn(code,this);
 				else {
-					code.addInstr(Instr.op_load,expr_var);
+					code.addInstr(Instr.op_load,expr_var.getJVarView());
 					code.addInstr(Instr.op_monitorexit);
 					code.addInstr(Instr.op_goto,end_label);
 				}
@@ -964,7 +964,7 @@ public class SynchronizedStat extends ENode {
 
 			code.addInstr(Instr.set_label,handler);
 			code.stack_push(Type.tpThrowable);
-			code.addInstr(Instr.op_load,expr_var);
+			code.addInstr(Instr.op_load,expr_var.getJVarView());
 			code.addInstr(Instr.op_monitorexit);
 			code.addInstr(Instr.op_throw);
 

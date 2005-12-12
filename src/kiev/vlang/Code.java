@@ -4,6 +4,9 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.vlang.Instr.*;
 
+import kiev.be.java.JVarView;
+import kiev.be.java.JFieldView;
+
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
 
@@ -136,6 +139,10 @@ public final class Code implements Constants {
 
 	public void popStackPos() {};
 
+	public void setLinePos(ASTNode.NodeView nv) {
+		this.setLinePos(nv.getNode().getPosLine());
+	}
+	
 	public void setLinePos(int lineno) {
 		if( !generation ) return;
 		last_lineno = lineno;
@@ -689,8 +696,6 @@ public final class Code implements Constants {
 		CodeVar v = vars[vv];
 		int[] opcodes;
 		Type t = v.var.type;
-		if( v.var.isNeedRefProxy() )
-			t = Type.getProxyType(t);
 		if( t == Type.tpVoid )
 			throw new RuntimeException("Can't load variable of type "+t);
 		else if( t == Type.tpLong )	opcodes = lload_ops;
@@ -725,8 +730,6 @@ public final class Code implements Constants {
 		CodeVar v = vars[vv];
 		int[] opcodes;
 		Type t = v.var.type;
-		if( v.var.isNeedRefProxy() )
-			t = Type.getProxyType(t);
 		if( t == Type.tpVoid )
 			throw new RuntimeException("Can't store variable of type "+t);
 		else if( t == Type.tpLong )	opcodes = lstore_ops;
@@ -1163,19 +1166,15 @@ public final class Code implements Constants {
 	    }
 	}
 
-	public void addInstrIncr(LVarExpr vv, int val) {
-		addInstrIncr(vv.getVar(), val);
-	}
-	
 	/** Add pseude-instruction for this code.
 	 */
-	public void addInstrIncr(Var vv, int val) {
+	public void addInstrIncr(JVarView vv, int val) {
 		trace(Kiev.debugInstrGen,pc+": op_incr "+vv+" "+val);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\"op_incr\" ingnored as unreachable");
 			return;
 		}
-		CodeVar v = vars[vv.getBCpos()];
+		CodeVar v = vars[vv.bcpos];
 		add_opcode_and_short(opc_iinc, (v.stack_pos)<<8 | ((byte)val & 0xFF) );
 	}
 
@@ -1229,31 +1228,27 @@ public final class Code implements Constants {
 		generateStoreVar(0);
 	}
 
-	public void addInstr(Instr i, LVarExpr v) {
-		addInstr(i,v.getVar());
-	}
-	
 	/** Add pseude-instruction with var for this code.
 	 */
-	public void addInstr(Instr i, Var v) {
-		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+vars[v.getBCpos()].var);
+	public void addInstr(Instr i, JVarView v) {
+		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+vars[v.bcpos].var);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 	    switch(i) {
         case op_load:
-        	if( vars[v.getBCpos()] == null )
+        	if( vars[v.bcpos] == null )
         		throw new RuntimeException("Generation of unplaced var "+v);
-        	generateLoadVar(v.getBCpos());
+        	generateLoadVar(v.bcpos);
         	break;
         case op_store:
-        	if( vars[v.getBCpos()] == null )
+        	if( vars[v.bcpos] == null )
         		throw new RuntimeException("Generation of unplaced var "+v);
-        	generateStoreVar(v.getBCpos());
+        	generateStoreVar(v.bcpos);
         	break;
         case op_ret:
-        	add_opcode_and_byte(opc_ret,vars[v.getBCpos()].stack_pos);
+        	add_opcode_and_byte(opc_ret,vars[v.bcpos].stack_pos);
         	reachable = false;
         	break;
 		default:
@@ -1263,19 +1258,13 @@ public final class Code implements Constants {
 
 	/** Add pseude-instruction with field for this code.
 	 */
-//	public void addInstr(Instr i, Field f) {
-//		addInstr(i,f,null);
-//	}
-	/** Add pseude-instruction with field for this code.
-	 */
-	public void addInstr(Instr i, Field f, Type tp) {
+	public void addInstr(Instr i, JFieldView f, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+f);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
 		Type ttt = Type.getRealType(tp.getInitialType(),((Struct)f.parent).type);
-//		Type ttt = ((Struct)f.parent).type;
 		KString struct_sig = ttt.getJType().java_signature;
 		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name.name,field_sig);

@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public class JStructView extends TypeDef.TypeDefView implements Constants {
+public class JStructView extends JTypeDefView {
 
 	final Struct.StructImpl impl;
 	public JStructView(Struct.StructImpl impl) {

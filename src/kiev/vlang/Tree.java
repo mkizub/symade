@@ -32,6 +32,17 @@ import java.lang.annotation.*;
  *
  */
 
+@Retention(RetentionPolicy.RUNTIME)
+public @interface dflow {
+	String in() default "";
+	String tru() default "";
+	String fls() default "";
+	String out() default "";
+	String jmp() default "";
+	String seq() default "";
+	String[] links() default {};
+}
+
 // syntax-tree node
 public @interface node {
 	boolean copyable() default true;
@@ -45,17 +56,6 @@ public @interface att {
 // syntax-tree reference field
 public @interface ref {
 	boolean copyable() default true;
-}
-
-@Retention(RetentionPolicy.RUNTIME)
-public @interface dflow {
-	String in() default "";
-	String tru() default "";
-	String fls() default "";
-	String out() default "";
-	String jmp() default "";
-	String seq() default "";
-	String[] links() default {};
 }
 
 // AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es

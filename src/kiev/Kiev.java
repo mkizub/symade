@@ -128,7 +128,12 @@ public final class Kiev {
 	}
 
    	public static void reportError(String msg) {
-		reportError(null, msg);
+		ASTNode dummy = null;
+		reportError(dummy, msg);
+	}
+	
+   	public static void reportError(ASTNode.NodeView from, String msg) {
+		reportError(from.getNode(),msg);
 	}
 	
 	public static void reportError(ASTNode from, String msg) {

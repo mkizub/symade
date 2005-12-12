@@ -217,7 +217,7 @@ public class CallExpr extends ENode {
 					Kiev.reportError(this, "Cannot find outer this parameter");
 					code.addNullConst();
 				} else {
-					code.addInstr(Instr.op_load,fp);
+					code.addInstr(Instr.op_load,fp.getJVarView());
 				}
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
@@ -273,7 +273,7 @@ public class CallExpr extends ENode {
 				BaseType reft = Type.getRefTypeForPrimitive(objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
-				code.addInstr(Instr.op_getstatic,f,reft);
+				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);
 			}
 			else if( func.name.name == nameObjHashCode ) {
 				switch(objt.signature.byteAt(0)) {

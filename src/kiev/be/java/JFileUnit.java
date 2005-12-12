@@ -18,7 +18,7 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public class JFileUnitView extends DNode.DNodeView {
+public class JFileUnitView extends JDNodeView {
 	final FileUnit.FileUnitImpl impl;
 	public JFileUnitView(FileUnit.FileUnitImpl impl) {
 		super(impl);

@@ -226,7 +226,7 @@ public class NewExpr extends ENode {
 				Field f = (Field)n;
 				if( !f.isNeedProxy() ) continue;
 				Var v = ((LVarExpr)f.init).getVar();
-				code.addInstr(Instr.op_load,v);
+				code.addInstr(Instr.op_load,v.getJVarView());
 			}
 		}
 		code.addInstr(op_call,func,false,type);
@@ -538,7 +538,7 @@ public class NewClosure extends ENode {
 			Field f = (Field)n;
 			if( !f.isNeedProxy() ) continue;
 			Var v = ((LVarExpr)f.init).getVar();
-			code.addInstr(Instr.op_load,v);
+			code.addInstr(Instr.op_load,v.getJVarView());
 		}
 		code.addInstr(op_call,func,false);
 	}
