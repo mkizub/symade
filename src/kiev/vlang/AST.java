@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -128,65 +108,64 @@ public abstract class ASTNode implements Constants {
     public static final AttrSlot nodeattr$flags = new AttrSlot("flags", false, false, Integer.TYPE);
 
 	public static class NodeImpl {
-		protected ASTNode			_self;		
-		protected int				pos;
-		protected int				compileflags;
-		protected ASTNode			parent;
-		protected AttrSlot			pslot;
-		protected ASTNode			pprev;
-		protected ASTNode			pnext;
-		protected NodeContext		pctx;
-		protected NodeData			ndata;
+		public		ASTNode			_self;		
+		public		int				pos;
+		public		int				compileflags;
+		protected	ASTNode			parent;
+		protected	AttrSlot		pslot;
+		protected	ASTNode			pprev;
+		protected	ASTNode			pnext;
+		protected	NodeContext		pctx;
+		protected	NodeData		ndata;
 		// Structures	
-		packed:1,compileflags,16 boolean is_struct_local;
-		packed:1,compileflags,17 boolean is_struct_anomymouse;
-		packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-		packed:1,compileflags,19 boolean is_struct_verified;
-		packed:1,compileflags,20 boolean is_struct_members_generated;
-		packed:1,compileflags,21 boolean is_struct_pre_generated;
-		packed:1,compileflags,22 boolean is_struct_statements_generated;
-		packed:1,compileflags,23 boolean is_struct_generated;
+		public packed:1,compileflags,16 boolean is_struct_local;
+		public packed:1,compileflags,17 boolean is_struct_anomymouse;
+		public packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
+		public packed:1,compileflags,19 boolean is_struct_verified;
+		public packed:1,compileflags,20 boolean is_struct_members_generated;
+		public packed:1,compileflags,21 boolean is_struct_pre_generated;
+		public packed:1,compileflags,22 boolean is_struct_statements_generated;
+		public packed:1,compileflags,23 boolean is_struct_generated;
 		
 		// Expression flags
-		packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-		packed:1,compileflags,17 boolean is_expr_as_field;
-		packed:1,compileflags,18 boolean is_expr_gen_void;
-		packed:1,compileflags,19 boolean is_expr_try_resolved;
-		packed:1,compileflags,20 boolean is_expr_for_wrapper;
-		packed:1,compileflags,21 boolean is_expr_primary;
+		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
+		public packed:1,compileflags,17 boolean is_expr_as_field;
+		public packed:1,compileflags,18 boolean is_expr_gen_void;
+		public packed:1,compileflags,19 boolean is_expr_try_resolved;
+		public packed:1,compileflags,20 boolean is_expr_for_wrapper;
+		public packed:1,compileflags,21 boolean is_expr_primary;
 		// Statement flags
-		packed:1,compileflags,22 boolean is_stat_abrupted;
-		packed:1,compileflags,23 boolean is_stat_breaked;
-		packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-		packed:1,compileflags,25 boolean is_stat_auto_returnable;
-		packed:1,compileflags,26 boolean is_stat_break_target;
+		public packed:1,compileflags,22 boolean is_stat_abrupted;
+		public packed:1,compileflags,23 boolean is_stat_breaked;
+		public packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+		public packed:1,compileflags,25 boolean is_stat_auto_returnable;
+		public packed:1,compileflags,26 boolean is_stat_break_target;
 		
 		// Method flags
-		packed:1,compileflags,17 boolean is_mth_virtual_static;
-		packed:1,compileflags,20 boolean is_mth_operator;
-		packed:1,compileflags,21 boolean is_mth_gen_post_cond;
-		packed:1,compileflags,22 boolean is_mth_need_fields_init;
-		packed:1,compileflags,24 boolean is_mth_local;
+		public packed:1,compileflags,17 boolean is_mth_virtual_static;
+		public packed:1,compileflags,18 boolean is_mth_operator;
+		public packed:1,compileflags,19 boolean is_mth_need_fields_init;
+		public packed:1,compileflags,20 boolean is_mth_local;
 		
 		// Var/field
-		packed:1,compileflags,16 boolean is_init_wrapper;
-		packed:1,compileflags,17 boolean is_need_proxy;
+		public packed:1,compileflags,16 boolean is_init_wrapper;
+		public packed:1,compileflags,17 boolean is_need_proxy;
 		// Var specific
-		packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
-		packed:1,compileflags,19 boolean is_var_local_rule_var;
-		packed:1,compileflags,20 boolean is_var_closure_proxy;
-		packed:1,compileflags,21 boolean is_var_this;
-		packed:1,compileflags,22 boolean is_var_super;
+		public packed:1,compileflags,18 boolean is_var_need_ref_proxy; // also sets is_var_need_proxy
+		public packed:1,compileflags,19 boolean is_var_local_rule_var;
+		public packed:1,compileflags,20 boolean is_var_closure_proxy;
+		public packed:1,compileflags,21 boolean is_var_this;
+		public packed:1,compileflags,22 boolean is_var_super;
 	
 		// Field specific
-		packed:1,compileflags,18 boolean is_fld_packer;
-		packed:1,compileflags,19 boolean is_fld_packed;
+		public packed:1,compileflags,18 boolean is_fld_packer;
+		public packed:1,compileflags,19 boolean is_fld_packed;
 	
 		// General flags
-		packed:1,compileflags,28 boolean is_accessed_from_inner;
-		packed:1,compileflags,29 boolean is_resolved;
-		packed:1,compileflags,30 boolean is_hidden;
-		packed:1,compileflags,31 boolean is_bad;
+		public packed:1,compileflags,28 boolean is_accessed_from_inner;
+		public packed:1,compileflags,29 boolean is_resolved;
+		public packed:1,compileflags,30 boolean is_hidden;
+		public packed:1,compileflags,31 boolean is_bad;
 
 		public NodeImpl() {}
 		public NodeImpl(int pos) {
@@ -248,14 +227,23 @@ public abstract class ASTNode implements Constants {
 			// notify parent about the changed slot
 			parent.callbackChildChanged(pslot);
 		}
+		public void callbackChildChanged(AttrSlot attr) {
+			// do nothing
+		}
+		public void callbackRootChanged() {
+			// do nothing
+		}	
 	}
 	@nodeview
-	public static class NodeView extends ASTNode {
+	public static class NodeView {
 		final NodeImpl impl;
 		public NodeView(NodeImpl impl) {
 			super();
 			this.impl = impl;
 		}
+		
+		public final ASTNode getNode() { return impl._self; }
+		
 		@getter public final int			get$pos()			{ return this.impl.pos; }
 		@getter public final int			get$compileflags()	{ return this.impl.compileflags; }
 		@getter public final ASTNode		get$parent()		{ return this.impl.parent; }
@@ -281,7 +269,7 @@ public abstract class ASTNode implements Constants {
 		@setter public final void setAccessedFromInner(boolean on) {
 			if (this.impl.is_accessed_from_inner != on) {
 				this.impl.is_accessed_from_inner = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// resolved
@@ -291,7 +279,7 @@ public abstract class ASTNode implements Constants {
 		@setter public final void setResolved(boolean on) {
 			if (this.impl.is_resolved != on) {
 				this.impl.is_resolved = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// hidden
@@ -301,7 +289,7 @@ public abstract class ASTNode implements Constants {
 		@setter public final void setHidden(boolean on) {
 			if (this.impl.is_hidden != on) {
 				this.impl.is_hidden = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// bad
@@ -311,7 +299,7 @@ public abstract class ASTNode implements Constants {
 		@setter public final void setBad(boolean on) {
 			if (this.impl.is_bad != on) {
 				this.impl.is_bad = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -395,23 +383,23 @@ public abstract class ASTNode implements Constants {
 		return node;
 	};
 
-	public void callbackDetached() {
+	public final void callbackDetached() {
 		this.$v_impl.callbackDetached();
 	}
 	
-	public void callbackAttached(NodeImpl parent_impl, AttrSlot pslot) {
+	public final void callbackAttached(NodeImpl parent_impl, AttrSlot pslot) {
 		this.$v_impl.callbackAttached(parent_impl._self, pslot);
 	}
-	public void callbackAttached(ASTNode parent, AttrSlot pslot) {
+	public final void callbackAttached(ASTNode parent, AttrSlot pslot) {
 		this.$v_impl.callbackAttached(parent, pslot);
 	}
 	
 	public void callbackChildChanged(AttrSlot attr) {
-		// by default do nothing
+		this.$v_impl.callbackChildChanged(attr);
 	}
 	
 	public void callbackRootChanged() {
-		// by default do nothing
+		this.$v_impl.callbackRootChanged();
 	}
 	
 	public final ASTNode replaceWithNode(ASTNode node) {
@@ -596,24 +584,24 @@ public abstract class DNode extends ASTNode {
 	
 	@node
 	public static class DNodeImpl extends NodeImpl {		
-		     protected int		flags;
-		@att protected MetaSet	meta;
+		     public		int			flags;
+		@att public		MetaSet		meta;
 
-		packed:1,flags,13 boolean is_struct_annotation; // struct
-		packed:1,flags,14 boolean is_struct_enum;       // struct
-		packed:1,flags,14 boolean is_fld_enum;        // field
+		public packed:1,flags,13 boolean is_struct_annotation; // struct
+		public packed:1,flags,14 boolean is_struct_enum;       // struct
+		public packed:1,flags,14 boolean is_fld_enum;        // field
 		// Flags temporary used with java flags
-		packed:1,flags,16 boolean is_forward;         // var/field
-		packed:1,flags,17 boolean is_fld_virtual;     // field
-		packed:1,flags,16 boolean is_mth_multimethod; // method
-		packed:1,flags,17 boolean is_mth_varargs;     // method
-		packed:1,flags,18 boolean is_mth_rule;        // method
-		packed:1,flags,19 boolean is_mth_invariant;   // method
-		packed:1,flags,16 boolean is_struct_package;    // struct
-		packed:1,flags,17 boolean is_struct_argument;   // struct
-		packed:1,flags,18 boolean is_struct_pizza_case; // struct
-		packed:1,flags,20 boolean is_struct_syntax;     // struct
-		packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
+		public packed:1,flags,16 boolean is_forward;         // var/field
+		public packed:1,flags,17 boolean is_fld_virtual;     // field
+		public packed:1,flags,16 boolean is_mth_multimethod; // method
+		public packed:1,flags,17 boolean is_mth_varargs;     // method
+		public packed:1,flags,18 boolean is_mth_rule;        // method
+		public packed:1,flags,19 boolean is_mth_invariant;   // method
+		public packed:1,flags,16 boolean is_struct_package;    // struct
+		public packed:1,flags,17 boolean is_struct_argument;   // struct
+		public packed:1,flags,18 boolean is_struct_pizza_case; // struct
+		public packed:1,flags,20 boolean is_struct_syntax;     // struct
+		public packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
 
 		public DNodeImpl() {}
 		public DNodeImpl(int pos) {
@@ -654,73 +642,73 @@ public abstract class DNode extends ASTNode {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PUBLIC;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setPrivate(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PRIVATE;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setProtected(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PROTECTED;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setStatic(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_STATIC;
 			else flags &= ~ACC_STATIC;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setFinal(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_FINAL;
 			else flags &= ~ACC_FINAL;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setSynchronized(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_SYNCHRONIZED;
 			else flags &= ~ACC_SYNCHRONIZED;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setVolatile(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_VOLATILE;
 			else flags &= ~ACC_VOLATILE;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setTransient(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_TRANSIENT;
 			else flags &= ~ACC_TRANSIENT;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setNative(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_NATIVE;
 			else flags &= ~ACC_NATIVE;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setInterface(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
 			else flags &= ~ACC_INTERFACE;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setAbstract(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_ABSTRACT;
 			else flags &= ~ACC_ABSTRACT;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 		public void setSuper(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_SUPER;
 			else flags &= ~ACC_SUPER;
-			this.callbackChildChanged(nodeattr$flags);
+			this.impl.callbackChildChanged(nodeattr$flags);
 		}
 	}
 
@@ -743,28 +731,6 @@ public abstract class DNode extends ASTNode {
 	public abstract void resolveDecl();
 	public abstract Dumper toJavaDecl(Dumper dmp);
 
-	public int setFlags(int fl) {
-		trace(Kiev.debugFlags,"Member "+this+" flags set to 0x"+Integer.toHexString(fl)+" from "+Integer.toHexString(flags));
-		flags = fl;
-		if( this instanceof Struct ) {
-			Struct self = (Struct)this;
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		else if( this instanceof Method ) {
-			Method self = (Method)this;
-			self.setStatic((fl & ACC_STATIC) != 0);
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		else if( this instanceof Field ) {
-			Field self = (Field)this;
-			self.acc = new Access(0);
-			self.acc.verifyAccessDecl(self);
-		}
-		this.callbackChildChanged(nodeattr$flags);
-		return flags;
-	}
 	public int getFlags() { return flags; }
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 
@@ -822,7 +788,7 @@ public abstract class LvalDNode extends DNode {
 		@setter public final void setForward(boolean on) {
 			if (this.impl.is_forward != on) {
 				this.impl.is_forward = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// init wrapper
@@ -832,7 +798,7 @@ public abstract class LvalDNode extends DNode {
 		@setter public final void setInitWrapper(boolean on) {
 			if (this.impl.is_init_wrapper != on) {
 				this.impl.is_init_wrapper = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// need a proxy access 
@@ -842,7 +808,7 @@ public abstract class LvalDNode extends DNode {
 		@setter public final void setNeedProxy(boolean on) {
 			if (this.impl.is_need_proxy != on) {
 				this.impl.is_need_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -896,7 +862,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setUseNoProxy(boolean on) {
 			if (this.impl.is_expr_use_no_proxy != on) {
 				this.impl.is_expr_use_no_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// use as field (disable setter/getter calls for virtual fields)
@@ -906,7 +872,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setAsField(boolean on) {
 			if (this.impl.is_expr_as_field != on) {
 				this.impl.is_expr_as_field = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// expression will generate void value
@@ -916,7 +882,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setGenVoidExpr(boolean on) {
 			if (this.impl.is_expr_gen_void != on) {
 				this.impl.is_expr_gen_void = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// tried to be resolved
@@ -926,7 +892,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setTryResolved(boolean on) {
 			if (this.impl.is_expr_try_resolved != on) {
 				this.impl.is_expr_try_resolved = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// used bt for()
@@ -936,7 +902,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setForWrapper(boolean on) {
 			if (this.impl.is_expr_for_wrapper != on) {
 				this.impl.is_expr_for_wrapper = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// used for primary expressions, i.e. (a+b)
@@ -946,7 +912,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setPrimaryExpr(boolean on) {
 			if (this.impl.is_expr_primary != on) {
 				this.impl.is_expr_primary = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	
@@ -961,7 +927,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setAbrupted(boolean on) {
 			if (this.impl.is_stat_abrupted != on) {
 				this.impl.is_stat_abrupted = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// breaked
@@ -971,7 +937,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setBreaked(boolean on) {
 			if (this.impl.is_stat_breaked != on) {
 				this.impl.is_stat_breaked = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method-abrupted
@@ -982,7 +948,7 @@ public /*abstract*/ class ENode extends ASTNode {
 			if (this.impl.is_stat_method_abrupted != on) {
 				this.impl.is_stat_method_abrupted = on;
 				if (on) this.impl.is_stat_abrupted = true;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// auto-returnable
@@ -992,7 +958,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setAutoReturnable(boolean on) {
 			if (this.impl.is_stat_auto_returnable != on) {
 				this.impl.is_stat_auto_returnable = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// break target
@@ -1002,7 +968,7 @@ public /*abstract*/ class ENode extends ASTNode {
 		public final void setBreakTarget(boolean on) {
 			if (this.impl.is_stat_break_target != on) {
 				this.impl.is_stat_break_target = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}

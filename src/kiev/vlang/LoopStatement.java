@@ -63,6 +63,12 @@ public class Label extends DNode {
 		LabelImpl() {}
 		@ref(copyable=false)	List<ASTNode>	links = List.Nil;
 								CodeLabel		label;
+
+		public void callbackRootChanged() {
+			ASTNode root = this.pctx.root;
+			links = links.filter(fun (ASTNode n)->boolean { return n.pctx.root == root; });
+			super.callbackRootChanged();
+		}	
 	}
 	@nodeview
 	static class LabelView extends DNodeView {
@@ -102,12 +108,6 @@ public class Label extends DNode {
 		links = links.diff(lnk);
 	}
 
-	public void callbackRootChanged() {
-		ASTNode root = this.pctx.root;
-		links = links.filter(fun (ASTNode n)->boolean { return n.pctx.root == root; });
-		super.callbackRootChanged();
-	}
-	
 	static class LabelDFFunc extends DFFunc {
 		final int res_idx;
 		LabelDFFunc(DataFlowInfo dfi) {

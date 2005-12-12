@@ -1,29 +1,11 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
+
+import kiev.be.java.JMethodView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -47,21 +29,37 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public MethodImpl(int pos) { super(pos); }
 		public MethodImpl(int pos, int fl) { super(pos, fl); }
 
-		     Access					acc;
-		     NodeName				name;
-		@att TypeCallRef			type_ref;
-		@att TypeCallRef			dtype_ref;
-		@att NArr<FormPar>			params;
-		@att NArr<ASTAlias>			aliases;
-		@att Var					retvar;
-		@att BlockStat				body;
-		@att PrescannedBody 		pbody;
-		     Attr[]					attrs = Attr.emptyArray;
-		@att NArr<WBCCondition> 	conditions;
-		@ref NArr<Field>			violated_fields;
-		@att MetaValue				annotation_default;
-		     boolean				inlined_by_dispatcher;
-		     boolean				invalid_types;
+		public final Method getMethod() { return (Method)this._self; }
+		
+		     public Access				acc;
+		     public NodeName			name;
+		@att public TypeCallRef			type_ref;
+		@att public TypeCallRef			dtype_ref;
+		@att public NArr<FormPar>		params;
+		@att public NArr<ASTAlias>		aliases;
+		@att public Var					retvar;
+		@att public BlockStat			body;
+		@att public PrescannedBody 		pbody;
+		     public Attr[]				attrs = Attr.emptyArray;
+		@att public NArr<WBCCondition> 	conditions;
+		@ref public NArr<Field>			violated_fields;
+		@att public MetaValue			annotation_default;
+		     public boolean				inlined_by_dispatcher;
+		     public boolean				invalid_types;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "params") {
+					parent.callbackChildChanged(pslot);
+				}
+				else if (attr.name == "conditions")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "annotation_default")
+					parent.callbackChildChanged(pslot);
+			}
+			if (attr.name == "params" || attr.name == "flags")
+				invalid_types = true;
+		}
 	}
 	@nodeview
 	public static class MethodView extends DNodeView {
@@ -114,7 +112,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setMultiMethod(boolean on) {
 			if (this.impl.is_mth_multimethod != on) {
 				this.impl.is_mth_multimethod = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// virtual static method	
@@ -124,7 +122,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setVirtualStatic(boolean on) {
 			if (this.impl.is_mth_virtual_static != on) {
 				this.impl.is_mth_virtual_static = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method with variable number of arguments	
@@ -134,7 +132,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setVarArgs(boolean on) {
 			if (this.impl.is_mth_varargs != on) {
 				this.impl.is_mth_varargs = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// logic rule method	
@@ -144,7 +142,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setRuleMethod(boolean on) {
 			if (this.impl.is_mth_rule != on) {
 				this.impl.is_mth_rule = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method with attached operator	
@@ -154,17 +152,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setOperatorMethod(boolean on) {
 			if (this.impl.is_mth_operator != on) {
 				this.impl.is_mth_operator = on;
-				this.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// needs to call post-condition before return	
-		public final boolean isGenPostCond() {
-			return this.impl.is_mth_gen_post_cond;
-		}
-		public final void setGenPostCond(boolean on) {
-			if (this.impl.is_mth_gen_post_cond != on) {
-				this.impl.is_mth_gen_post_cond = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// need fields initialization	
@@ -174,7 +162,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setNeedFieldInits(boolean on) {
 			if (this.impl.is_mth_need_fields_init != on) {
 				this.impl.is_mth_need_fields_init = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a method generated as invariant	
@@ -184,7 +172,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setInvariantMethod(boolean on) {
 			if (this.impl.is_mth_invariant != on) {
 				this.impl.is_mth_invariant = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a local method (closure code or inner method)	
@@ -194,13 +182,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setLocalMethod(boolean on) {
 			if (this.impl.is_mth_local != on) {
 				this.impl.is_mth_local = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
 	public NodeView			getNodeView()		{ return new MethodView((MethodImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new MethodView((MethodImpl)this.$v_impl); }
 	public MethodView		getMethodView()		{ return new MethodView((MethodImpl)this.$v_impl); }
+	public JMethodView		getJMethodView()	{ return new JMethodView((MethodImpl)this.$v_impl); }
 
 	public static Method[]	emptyArray = new Method[0];
 
@@ -331,9 +320,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	// method with attached operator	
 	public boolean isOperatorMethod() { return this.getMethodView().isOperatorMethod(); }
 	public void setOperatorMethod(boolean on) { this.getMethodView().setOperatorMethod(on); }
-	// needs to call post-condition before return	
-	public boolean isGenPostCond() { return this.getMethodView().isGenPostCond(); }
-	public void setGenPostCond(boolean on) { this.getMethodView().setGenPostCond(on); }
 	// need fields initialization	
 	public boolean isNeedFieldInits() { return this.getMethodView().isNeedFieldInits(); }
 	public void setNeedFieldInits(boolean on) { this.getMethodView().setNeedFieldInits(on); }
@@ -423,35 +409,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_VARARGS)
 			return fp;
 		return null;
-	}
-	
-//	@getter public MethodType get$type()	{
-//		checkRebuildTypes();
-//		return type_ref.getMType();
-//	} 
-//	@getter public MethodType get$jtype()	{
-//		checkRebuildTypes();
-//		return (MethodType)dtype.getJavaType();
-//	}
-//	@getter public MethodType get$dtype()	{
-//		checkRebuildTypes();
-//		if (dtype_ref == null)
-//			dtype_ref = new TypeCallRef(type_ref.getMType());
-//		return dtype_ref.getMType();
-//	}
-	
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if      (attr.name == "params") {
-				parent.callbackChildChanged(pslot);
-			}
-			else if (attr.name == "conditions")
-				parent.callbackChildChanged(pslot);
-			else if (attr.name == "annotation_default")
-				parent.callbackChildChanged(pslot);
-		}
-		if (attr.name == "params" || attr.name == "flags")
-			invalid_types = true;
 	}
 	
 	public void addViolatedField(Field f) {
@@ -863,120 +820,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		setResolved(true);
 	}
 
-	public void generate(ConstPool constPool) {
-		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		// Append invariants by list of violated/used fields
-		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; pctx.clazz.instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; pctx.clazz.instanceOf((Struct)inv.parent) ) {
-					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
-					// check, that this is not set$/get$ method
-					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions.addUniq(inv.conditions[0]);
-				}
-			}
-		}
-		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
-			cond.generate(constPool,Type.tpVoid);
-		if( !isAbstract() && body != null ) {
-			Code code = new Code(pctx.clazz, this, constPool);
-			code.generation = true;
-			try {
-				if( !isBad() ) {
-					FormPar thisPar = null;
-					if( !isStatic() ) {
-						thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
-						code.addVar(thisPar);
-					}
-					if( params.length > 0 ) code.addVars(params.toArray());
-					if( Kiev.verify /*&& jtype != null*/ )
-						generateArgumentCheck(code);
-					if( Kiev.debugOutputC ) {
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
-							code.importCode(cond.code_attr);
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							assert( cond.parent instanceof Method && ((Method)cond.parent).isInvariantMethod() );
-							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
-								if( !((DNode)cond.parent).isStatic() )
-									code.addInstrLoadThis();
-								code.addInstr(Instr.op_call,(Method)cond.parent,false);
-							}
-							setGenPostCond(true);
-						}
-						if( !isGenPostCond() ) {
-							foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondRequire ) {
-								setGenPostCond(true);
-								break;
-							}
-						}
-					}
-					body.generate(code,Type.tpVoid);
-					if( Kiev.debugOutputC && isGenPostCond() ) {
-						if( type.ret != Type.tpVoid ) {
-							code.addVar(getRetVar());
-							code.addInstr(Instr.op_store,getRetVar());
-						}
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							if( !((DNode)cond.parent).isStatic() )
-								code.addInstrLoadThis();
-							code.addInstr(Instr.op_call,(Method)cond.parent,false);
-							setGenPostCond(true);
-						}
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
-							code.importCode(cond.code_attr);
-						if( type.ret != Type.tpVoid ) {
-							code.addInstr(Instr.op_load,getRetVar());
-							code.addInstr(Instr.op_return);
-							code.removeVar(getRetVar());
-						} else {
-							code.addInstr(Instr.op_return);
-						}
-					}
-					if( params.length > 0 ) code.removeVars(params.toArray());
-					if( thisPar != null ) code.removeVar(thisPar);
-				} else {
-					code.addInstr(Instr.op_new,Type.tpError);
-					code.addInstr(Instr.op_dup);
-					KString msg = KString.from("Compiled with errors");
-					constPool.addStringCP(msg);
-					code.addConst(msg);
-					Method func = Type.tpError.clazz.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
-					code.addInstr(Instr.op_call,func,false);
-					code.addInstr(Instr.op_throw);
-				}
-				code.generateCode();
-			} catch(Exception e) {
-				Kiev.reportError(this,e);
-			}
-		}
-	}
-
 	public CodeLabel getBreakLabel() {
 		return ((BlockStat)body).getBreakLabel();
-	}
-
-	public void generateArgumentCheck(Code code) {
-		for(int i=0; i < params.length; i++) {
-			Type tp1 = jtype.args[i];
-			Type tp2 = params[i].type;
-			if !(tp2.getJavaType().isInstanceOf(tp1)) {
-				code.addInstr(Instr.op_load,params[i]);
-				code.addInstr(Instr.op_checkcast,tp1);
-				code.addInstr(Instr.op_store,params[i]);
-			}
-		}
 	}
 
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
 			this.body = (BlockStat)body;
-		}
-//		else if (isMultiMethod()){
-//			BlockStat b = (BlockStat)this.body;
-//			b.addStatement(body);
-//		}
-		else {
+		} else {
 			throw new RuntimeException("Added body to method "+this+" which already have body");
 		}
 

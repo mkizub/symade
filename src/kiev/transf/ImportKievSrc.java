@@ -833,7 +833,7 @@ final class JavaBackend extends BackendProcessor {
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} else {
 				try {
-					node.generate();
+					node.getJFileUnitView().generate();
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			}
 		}

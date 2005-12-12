@@ -48,7 +48,12 @@ public final class Kiev {
 	public static KString	curFile = KString.Empty;
 
    	public static void reportError(Throwable e) {
-		reportError(null, e);
+		ASTNode dummy = null;
+		reportError(dummy, e);
+	}
+	
+   	public static void reportError(ASTNode.NodeView from, Throwable e) {
+		reportError(from.getNode(),e);
 	}
 	
    	public static void reportError(ASTNode from, Throwable e) {

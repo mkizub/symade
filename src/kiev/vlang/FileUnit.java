@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -26,6 +6,8 @@ import kiev.parser.*;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import java.io.*;
+
+import kiev.be.java.JFileUnitView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -40,16 +22,16 @@ import syntax kiev.Syntax;
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
 
 	@node
-	static class FileUnitImpl extends DNodeImpl {
+	public static class FileUnitImpl extends DNodeImpl {
 		FileUnitImpl() {}
-		@att KString			filename;
-		@att TypeNameRef		pkg;
-		@att NArr<DNode>		syntax;
-		@att NArr<DNode>		members;
+		@att public KString			filename;
+		@att public TypeNameRef		pkg;
+		@att public NArr<DNode>		syntax;
+		@att public NArr<DNode>		members;
 		
-		@ref NArr<PrescannedBody>	bodies;
-		     final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
-		     boolean				scanned_for_interface_only;
+		@ref public NArr<PrescannedBody>	bodies;
+		     public final boolean[]		disabled_extensions = Kiev.getCmdLineExtSet();
+		     public boolean				scanned_for_interface_only;
 	}
 	@nodeview
 	static class FileUnitView extends DNodeView {
@@ -73,6 +55,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public NodeView			getNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
 	public FileUnitView		getFileUnitView()	{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
+	public JFileUnitView	getJFileUnitView()	{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
 
 	@att public abstract virtual 				KString					filename;
 	@att public abstract virtual				TypeNameRef				pkg;
@@ -207,23 +190,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		} finally { Kiev.curFile = curr_file; Kiev.setExtSet(exts); }
 	}
 
-	public void generate() {
-		long curr_time = 0L, diff_time = 0L;
-		KString cur_file = Kiev.curFile;
-		Kiev.curFile = filename;
-		boolean[] exts = Kiev.getExtSet();
-        try {
-        	Kiev.setExtSet(disabled_extensions);
-			for(int i=0; i < members.length; i++) {
-				diff_time = curr_time = System.currentTimeMillis();
-				((Struct)members[i]).generate();
-				diff_time = System.currentTimeMillis() - curr_time;
-				if( Kiev.verbose )
-					Kiev.reportInfo("Generated clas "+members[i],diff_time);
-			}
-		} finally { Kiev.curFile = cur_file; Kiev.setExtSet(exts); }
-	}
-
 	private boolean debugTryResolveIn(KString name, String msg) {
 		trace(Kiev.debugResolve,"Resolving "+name+" in "+msg);
 		return true;
@@ -351,38 +317,6 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 			out.close();
 		} catch( IOException e ) {
 			System.out.println("Create/write error while Kiev-to-Java exporting: "+e);
-		}
-	}
-
-	public static void toBytecode(Struct cl, ConstPool constPool) {
-		Struct jcl = cl;
-		String output_dir = Kiev.output_dir;
-		if( output_dir == null ) output_dir = Kiev.javaMode ? "." : "classes";
-		String out_file;
-		if( Kiev.javaMode && output_dir == null )
-			out_file = cl.name.short_name.toString();
-		else if( cl.isPackage() )
-			out_file = (cl.name.bytecode_name+"/package").replace('/',File.separatorChar);
-		else
-			out_file = jcl.name.bytecode_name.replace('/',File.separatorChar).toString();
-		try {
-			DataOutputStream out;
-			make_output_dir(output_dir,out_file);
-			try {
-				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
-			} catch( java.io.FileNotFoundException e ) {
-				System.gc();
-				System.runFinalization();
-				System.gc();
-				System.runFinalization();
-				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
-			}
-			byte[] dump = new Bytecoder(cl,null,constPool).writeClazz();
-			out.write(dump);
-			out.close();
-//			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+cl+"]");
-		} catch( IOException e ) {
-			System.out.println("Create/write error while Kiev-to-JavaBytecode exporting: "+e);
 		}
 	}
 

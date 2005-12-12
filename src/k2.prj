@@ -7,6 +7,9 @@ kiev.Kiev.Ext kiev/Kiev$Ext kiev\Kiev.java
 kiev.Main kiev/Main kiev\Main.java
 kiev.SeverError kiev/SeverError kiev\Errors.java
 kiev.Syntax kiev/Syntax kiev\Syntax.java
+kiev.be.java.JFileUnitView kiev/be/java/JFileUnitView kiev\be\java\JFileUnit.java
+kiev.be.java.JMethodView kiev/be/java/JMethodView kiev\be\java\JMethod.java
+kiev.be.java.JStructView kiev/be/java/JStructView kiev\be\java\JStruct.java
 kiev.bytecode.Annotation kiev/bytecode/Annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.annotation kiev/bytecode/Annotation$annotation kiev\bytecode\Attribute.java
 kiev.bytecode.Annotation.element_value kiev/bytecode/Annotation$element_value kiev\bytecode\Attribute.java

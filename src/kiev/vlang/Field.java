@@ -53,6 +53,15 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		     Attr[]				attrs = Attr.emptyArray;
 		/** Array of invariant methods, that check this field */
 		@ref NArr<Method>		invs;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "ftype")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "meta")
+					parent.callbackChildChanged(pslot);
+			}
+		}
 	}
 	@nodeview
 	public static class FieldView extends LvalDNodeView {
@@ -84,7 +93,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public final void setVirtual(boolean on) {
 			if (this.impl.is_fld_virtual != on) {
 				this.impl.is_fld_virtual = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// is a field of enum
@@ -94,7 +103,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public final void setEnumField(boolean on) {
 			if (this.impl.is_fld_enum != on) {
 				this.impl.is_fld_enum = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packer field (auto-generated for packed fields)
@@ -104,7 +113,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public final void setPackerField(boolean on) {
 			if (this.impl.is_fld_packer != on) {
 				this.impl.is_fld_packer = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packed field
@@ -114,7 +123,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public final void setPackedField(boolean on) {
 			if (this.impl.is_fld_packed != on) {
 				this.impl.is_fld_packed = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -175,19 +184,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		this(name,new TypeRef(type),acc);
 	}
 	
-//	@getter public Type get$type() {
-//		return ftype.getType();
-//	}
-//	
-//	@getter public Access get$acc() {
-//		return acc;
-//	}
-//
-//	@setter public void set$acc(Access a) {
-//		acc = a;
-//		acc.verifyAccessDecl(this);
-//	}
-	
 	// is a virtual field
 	public boolean isVirtual() { return this.getFieldView().isVirtual(); }
 	public void setVirtual(boolean on) { this.getFieldView().setVirtual(on); }
@@ -217,15 +213,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		return (MetaAlias)this.meta.get(MetaAlias.NAME);
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if      (attr.name == "ftype")
-				parent.callbackChildChanged(pslot);
-			else if (attr.name == "meta")
-				parent.callbackChildChanged(pslot);
-		}
-	}
-	
 	public String toString() { return name.toString()/*+":="+type*/; }
 
 	public NodeName getName() { return name; }

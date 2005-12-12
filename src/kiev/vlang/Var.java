@@ -49,6 +49,15 @@ public class Var extends LvalDNode implements Named, Typed {
 		@att TypeRef		vtype;
 		@att ENode			init;
 		     int			bcpos = -1;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "vtype")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "meta")
+					parent.callbackChildChanged(pslot);
+			}
+		}	
 	}
 	@nodeview
 	public static class VarView extends LvalDNodeView {
@@ -82,7 +91,7 @@ public class Var extends LvalDNode implements Named, Typed {
 			if (this.impl.is_var_need_ref_proxy != on) {
 				this.impl.is_var_need_ref_proxy = on;
 				if (on) this.impl.is_need_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// is a local var in a rule 
@@ -92,7 +101,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public final void setLocalRuleVar(boolean on) {
 			if (this.impl.is_var_local_rule_var != on) {
 				this.impl.is_var_local_rule_var = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// closure proxy
@@ -102,7 +111,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public final void setClosureProxy(boolean on) {
 			if (this.impl.is_var_closure_proxy != on) {
 				this.impl.is_var_closure_proxy = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// "this" var
@@ -112,7 +121,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public final void setVarThis(boolean on) {
 			if (this.impl.is_var_this != on) {
 				this.impl.is_var_this = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// "super" var
@@ -122,7 +131,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public final void setVarSuper(boolean on) {
 			if (this.impl.is_var_super != on) {
 				this.impl.is_var_super = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -202,15 +211,6 @@ public class Var extends LvalDNode implements Named, Typed {
 	public boolean isVarSuper() { return this.getVarView().isVarSuper(); }
 	public void setVarSuper(boolean on) { this.getVarView().setVarSuper(on); }
 
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if      (attr.name == "vtype")
-				parent.callbackChildChanged(pslot);
-			else if (attr.name == "meta")
-				parent.callbackChildChanged(pslot);
-		}
-	}
-	
 	public String toString() {
 		return name.toString()/*+":="+type*/;
 	}
@@ -356,6 +356,15 @@ public class FormPar extends Var {
 
 		@att TypeRef		stype;
 		     int			kind;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if (attr.name == "stype")
+					parent.callbackChildChanged(pslot);
+				else
+					super.callbackChildChanged(attr);
+			}
+		}
 	}
 	@nodeview
 	public static class FormParView extends VarView {
@@ -408,15 +417,6 @@ public class FormPar extends Var {
 		super(new FormParImpl(id.pos,flags),id,vtype);
 		this.kind = kind;
 		this.stype = stype;
-	}
-
-	public void callbackChildChanged(AttrSlot attr) {
-		if (parent != null && pslot != null) {
-			if (attr.name == "stype")
-				parent.callbackChildChanged(pslot);
-			else
-				super.callbackChildChanged(attr);
-		}
 	}
 	
 }

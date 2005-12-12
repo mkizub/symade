@@ -378,7 +378,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 		code.removeVars(vars.toArray());
 		if( parent instanceof Method && Kiev.debugOutputC
-		 && ((Method)parent).isGenPostCond() && ((Method)parent).type.ret != Type.tpVoid) {
+		 && code.need_to_gen_post_cond && ((Method)parent).type.ret != Type.tpVoid) {
 			code.stack_push(((Method)parent).type.ret);
 		}
 		code.addInstr(Instr.set_label,break_label);
@@ -557,7 +557,7 @@ public class ReturnStat extends ENode {
 			code.addInstr(Instr.op_load,tmp_var);
 			code.removeVar(tmp_var);
 		}
-		if( code.method.isGenPostCond() ) {
+		if( code.need_to_gen_post_cond ) {
 			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
 			if( code.method.type.ret != Type.tpVoid )
 				code.stack_pop();

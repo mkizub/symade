@@ -1,31 +1,12 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
-
 import java.io.*;
+
+import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -49,18 +30,43 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public StructImpl(int pos) { super(pos); }
 		public StructImpl(int pos, int fl) { super(pos, fl); }
 
-		     Access							acc;
-		     ClazzName						name;
-		@ref BaseType						type;
-		@att TypeRef						super_bound;
-		@att NArr<TypeRef>					interfaces;
-		@att NArr<TypeArgDef>				args;
-		@ref Struct							package_clazz;
-		@ref Struct							typeinfo_clazz;
-		@ref NArr<Struct>					sub_clazz;
-		@ref NArr<DNode>					imported;
-		     Attr[]							attrs = Attr.emptyArray;
-		@att NArr<DNode>					members;
+		public final Struct getStruct() { return (Struct)this._self; }
+		
+		     public Access						acc;
+		     public ClazzName					name;
+		@ref public BaseType					type;
+		@att public TypeRef						super_bound;
+		@att public NArr<TypeRef>				interfaces;
+		@att public NArr<TypeArgDef>			args;
+		@ref public Struct						package_clazz;
+		@ref public Struct						typeinfo_clazz;
+		@ref public NArr<Struct>				sub_clazz;
+		@ref public NArr<DNode>					imported;
+		     public Attr[]						attrs = Attr.emptyArray;
+		@att public NArr<DNode>					members;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (attr.name == "members") {
+				if (type != null)
+					type.invalidate();
+			}
+			else if (attr.name == "args") {
+				if (type != null)
+					type.invalidate();
+			}
+			if (attr.name == "super_bound") {
+				if (type != null)
+					type.invalidate();
+			}
+			else if (attr.name == "interfaces") {
+				if (type != null)
+					type.invalidate();
+			}
+			else if (attr.name == "meta") {
+				if (type != null)
+					type.invalidate();
+			}
+		}	
 	}
 	@nodeview
 	public static class StructView extends TypeDefView {
@@ -107,7 +113,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
 			if (this.impl.is_struct_package != on) {
 				this.impl.is_struct_package = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a class's argument	
@@ -117,7 +123,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setArgument(boolean on) {
 			if (this.impl.is_struct_argument != on) {
 				this.impl.is_struct_argument = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a class's argument	
@@ -127,7 +133,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setPizzaCase(boolean on) {
 			if (this.impl.is_struct_pizza_case != on) {
 				this.impl.is_struct_pizza_case = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a local (in method) class	
@@ -137,7 +143,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setLocal(boolean on) {
 			if (this.impl.is_struct_local != on) {
 				this.impl.is_struct_local = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// an anonymouse (unnamed) class	
@@ -147,7 +153,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setAnonymouse(boolean on) {
 			if (this.impl.is_struct_anomymouse != on) {
 				this.impl.is_struct_anomymouse = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// has pizza cases
@@ -157,7 +163,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setHasCases(boolean on) {
 			if (this.impl.is_struct_has_pizza_cases != on) {
 				this.impl.is_struct_has_pizza_cases = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// verified
@@ -167,7 +173,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setVerified(boolean on) {
 			if (this.impl.is_struct_verified != on) {
 				this.impl.is_struct_verified = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that structure members were generated
@@ -177,7 +183,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setMembersGenerated(boolean on) {
 			if (this.impl.is_struct_members_generated != on) {
 				this.impl.is_struct_members_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that structure members were pre-generated
@@ -187,7 +193,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setMembersPreGenerated(boolean on) {
 			if (this.impl.is_struct_pre_generated != on) {
 				this.impl.is_struct_pre_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		
@@ -198,7 +204,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setStatementsGenerated(boolean on) {
 			if (this.impl.is_struct_statements_generated != on) {
 				this.impl.is_struct_statements_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// indicates that the structrue was generared (from template)
@@ -208,7 +214,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setGenerated(boolean on) {
 			if (this.impl.is_struct_generated != on) {
 				this.impl.is_struct_generated = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// kiev annotation
@@ -220,7 +226,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			if (this.impl.is_struct_annotation != on) {
 				this.impl.is_struct_annotation = on;
 				if (on) this.setInterface(true);
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// java enum
@@ -230,7 +236,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public final void setEnum(boolean on) {
 			if (this.impl.is_struct_enum != on) {
 				this.impl.is_struct_enum = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// kiev syntax
@@ -241,7 +247,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			assert(!on || (!isPackage() && ! isEnum()));
 			if (this.impl.is_struct_syntax != on) {
 				this.impl.is_struct_syntax = on;
-				this.callbackChildChanged(nodeattr$flags);
+				this.impl.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// structure was loaded from bytecode
@@ -256,6 +262,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public DNodeView		getDNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
 	public TypeDefView		getTypeDefView()	{ return new StructView((StructImpl)this.$v_impl); }
 	public StructView		getStructView()		{ return new StructView((StructImpl)this.$v_impl); }
+	public JStructView		getJStructView()	{ return new JStructView((StructImpl)this.$v_impl); }
 
 	/** Variouse names of the class */
 	     public abstract virtual			ClazzName					name;
@@ -449,29 +456,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
-	public void callbackChildChanged(AttrSlot attr) {
-		if (attr.name == "members") {
-			if (type != null)
-				type.invalidate();
-		}
-		else if (attr.name == "args") {
-			if (type != null)
-				type.invalidate();
-		}
-		if (attr.name == "super_bound") {
-			if (type != null)
-				type.invalidate();
-		}
-		else if (attr.name == "interfaces") {
-			if (type != null)
-				type.invalidate();
-		}
-		else if (attr.name == "meta") {
-			if (type != null)
-				type.invalidate();
-		}
-	}
-	
 	public Field[] getEnumFields() {
 		if( !isEnum() )
 			throw new RuntimeException("Request for enum fields in non-enum structure "+this);
@@ -2361,206 +2345,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		return ms;
 	}
 */
-
-	public void generate() {
-		Struct jthis = this;
-		//if( Kiev.verbose ) System.out.println("[ Generating cls "+jthis+"]");
-		if( Kiev.safe && isBad() ) return;
-		if( !isPackage() ) {
-			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-				Struct s = sub_clazz[i];
-				s.generate();
-			}
-		}
-
-		// Check all methods
-//			if( !isAbstract() && isClazz() ) {
-//				List<Method> ms = List.Nil;
-//				ms = collectVTmethods(ms);
-////				System.out.println("VT: "+ms);
-////				foreach(Method m; ms) {
-////					if( m.isAbstract() ) throw new RuntimeException("Abstract method "+m+" in non-abstract class "+jthis);
-////				}
-//			}
-
-		ConstPool constPool = new ConstPool();
-		constPool.addClazzCP(jthis.type.signature);
-		constPool.addClazzCP(jthis.type.getJType().java_signature);
-		if( super_type != null ) {
-			super_type.clazz.checkResolved();
-			constPool.addClazzCP(jthis.super_type.signature);
-			constPool.addClazzCP(jthis.super_type.getJType().java_signature);
-		}
-		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
-			interfaces[i].checkResolved();
-			constPool.addClazzCP(jthis.interfaces[i].signature);
-			constPool.addClazzCP(jthis.interfaces[i].getJType().java_signature);
-		}
-		if( !isPackage() ) {
-			for(int i=0; jthis.sub_clazz!=null && i < jthis.sub_clazz.length; i++) {
-				jthis.sub_clazz[i].checkResolved();
-				constPool.addClazzCP(jthis.sub_clazz[i].type.signature);
-				constPool.addClazzCP(jthis.sub_clazz[i].type.getJType().java_signature);
-			}
-		}
-		
-		if( !isPackage() && sub_clazz!=null && sub_clazz.length > 0 ) {
-			InnerClassesAttr a = new InnerClassesAttr();
-			Struct[] inner = new Struct[sub_clazz.length];
-			Struct[] outer = new Struct[sub_clazz.length];
-			short[] inner_access = new short[sub_clazz.length];
-			for(int j=0; j < sub_clazz.length; j++) {
-				inner[j] = sub_clazz[j];
-				outer[j] = this;
-				inner_access[j] = sub_clazz[j].getJavaFlags();
-				constPool.addClazzCP(inner[j].type.signature);
-			}
-			a.inner = inner;
-			a.outer = outer;
-			a.acc = inner_access;
-			addAttr(a);
-		}
-
-//		if( countPackedFields() > 0 ) {
-//			addAttr(new PackedFieldsAttr(this));
-//		}
-//
-//		if( isSyntax() ) { // || isPackage()
-//			for(int i=0; i < imported.length; i++) {
-//				ASTNode node = imported[i];
-//				if (node instanceof Typedef)
-//					addAttr(new TypedefAttr((Typedef)node));
-//				else if (node instanceof Opdef)
-//					addAttr(new OperatorAttr(((Opdef)node).resolved));
-////					else if (node instanceof Import)
-////						addAttr(new ImportAlias(node));
-////					else
-////						addAttr(new ImportAttr(imported[i]));
-//			}
-//		}
-//
-//		{
-//			int flags = 0;
-////				if( jthis.isWrapper() ) flags |= 1;
-//			if( jthis.isSyntax()  ) flags |= 2;
-//
-//			if( flags != 0 ) jthis.addAttr(new FlagsAttr(flags) );
-//		}
-
-		if (meta.size() > 0) jthis.addAttr(new RVMetaAttr(meta));
-		
-		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
-			constPool.addAsciiCP(f.name.name);
-			constPool.addAsciiCP(f.type.signature);
-			constPool.addAsciiCP(f.type.getJType().java_signature);
-
-//			int flags = 0;
-//			if( f.isVirtual() ) flags |= 2;
-//			if( f.isForward() ) flags |= 8;
-			if( f.isAccessedFromInner()) {
-//				flags |= (f.acc.flags << 24);
-				f.setPrivate(false);
-			}
-//			else if( f.isPublic() && f.acc.flags != 0xFF) flags |= (f.acc.flags << 24);
-//			else if( f.isProtected() && f.acc.flags != 0x3F) flags |= (f.acc.flags << 24);
-//			else if( f.isPrivate() && f.acc.flags != 0x03) flags |= (f.acc.flags << 24);
-//			else if( !f.isPublic() && !f.isProtected() && !f.isPrivate() && f.acc.flags != 0x0F) flags |= (f.acc.flags << 24);
-
-//			if( flags != 0 ) f.addAttr(new FlagsAttr(flags) );
-//			if( f.name.aliases != List.Nil ) f.addAttr(new AliasAttr(f.name));
-//			if( f.isPackerField() ) f.addAttr(new PackerFieldAttr(f));
-
-			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
-
-			for(int j=0; f.attrs != null && j < f.attrs.length; j++)
-				f.attrs[j].generate(constPool);
-		}
-		foreach (ASTNode m; members; m instanceof Method)
-			((Method)m).type.checkJavaSignature();
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
-			constPool.addAsciiCP(m.name.name);
-			constPool.addAsciiCP(m.type.signature);
-			constPool.addAsciiCP(m.type.getJType().java_signature);
-			if( m.jtype != null )
-				constPool.addAsciiCP(m.jtype.getJType().java_signature);
-
-			try {
-				m.generate(constPool);
-
-//				int flags = 0;
-//				if( m.isMultiMethod() ) flags |= 1;
-//				if( m.isVarArgs() ) flags |= 4;
-//				if( m.isRuleMethod() ) flags |= 16;
-//				if( m.isInvariantMethod() ) flags |= 32;
-				if( m.isAccessedFromInner()) {
-//					flags |= (m.acc.flags << 24);
-					m.setPrivate(false);
-				}
-
-//				if( flags != 0 ) m.addAttr(new FlagsAttr(flags) );
-//				if( m.name.aliases != List.Nil ) m.addAttr(new AliasAttr(m.name));
-//
-//				if( m.isInvariantMethod() && m.violated_fields.length > 0 ) {
-//					m.addAttr(new CheckFieldsAttr(m.violated_fields.toArray()));
-//				}
-
-				for(int j=0; j < m.conditions.length; j++) {
-					if( m.conditions[j].definer == m ) {
-						m.addAttr(m.conditions[j].code_attr);
-					}
-				}
-
-				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
-				boolean has_pmeta = false; 
-				foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
-					has_pmeta = true;
-				}
-				if (has_pmeta) {
-					MetaSet[] mss;
-					mss = new MetaSet[m.params.length];
-					for (int i=0; i < mss.length; i++)
-						mss[i] = m.params[i].meta;
-					m.addAttr(new RVParMetaAttr(mss));
-				}
-				if (m.annotation_default != null)
-					m.addAttr(new DefaultMetaAttr(m.annotation_default));
-
-				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate(constPool);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(m,"Compilation error: "+e);
-				m.generate(constPool);
-				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate(constPool);
-				}
-			}
-			if( Kiev.safe && isBad() ) return;
-		}
-		constPool.generate();
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
-			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
-			if( ca != null ) {
-				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
-				Code.patchCodeConstants(ca);
-			}
-		}
-		if( Kiev.safe && isBad() ) return;
-//		Bytecoder bc = new Bytecoder(this,null,constPool);
-//		bc.kievmode = true;
-//		byte[] dump = bc.writeClazz();
-//		Attr ka = addAttr(new KievAttr(dump));
-//		ka.generate(constPool);
-//		if( Kiev.safe && isBad() ) return;
-		FileUnit.toBytecode(this,constPool);
-		Env.setProjectInfo(name, true);
-		kiev.Main.runGC();
-//		setPassed_3(true);
-	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = this;

@@ -1725,10 +1725,9 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 }
 
 Initializer Initializer(ASTModifiers modifiers) :
-{ Initializer n = new Initializer(); BlockStat bl; }
+{ Initializer n = new Initializer(getToken(0).getPos(),modifiers.getFlags()); BlockStat bl; }
 {
 	{
-		n.setFlags(modifiers.getFlags());
 		/*{
 		foreach (Meta m; modifiers.annotations)
 			n.meta.set((Meta)m.copy());

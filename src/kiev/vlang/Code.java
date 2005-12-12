@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.*;
@@ -105,9 +85,11 @@ public final class Code implements Constants {
 
 	public boolean			reachable = true;
 
-	public boolean			generation = false;
+	public boolean			generation;
 
-	public boolean			cond_generation = false;
+	public boolean			cond_generation;
+	
+	public boolean			need_to_gen_post_cond;
 
 	public Code(Struct s, Method m, ConstPool cp) {
 		clazz = s;
@@ -1626,7 +1608,7 @@ public final class Code implements Constants {
 		return ca;
 	}
 
-	void importCode(CodeAttr ca) {
+	public void importCode(CodeAttr ca) {
 		while( constants.length < constants_top+2+ca.constants.length ) {
 			constants = (CP[])Arrays.ensureSize(constants,constants.length*2);
 			constants_pc = (int[])Arrays.ensureSize(constants_pc,constants.length);

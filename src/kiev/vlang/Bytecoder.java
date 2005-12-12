@@ -70,7 +70,8 @@ public class Bytecoder implements Constants {
 			fl &= ~ACC_PRIVATE;
 			fl |=  ACC_PACKAGE;
 		}
-		cl.setFlags( fl );
+		cl.flags = fl;
+		cl.acc.verifyAccessDecl(cl);
 
 		cl.setResolved(true);
 		cl.setMembersGenerated(true);
@@ -377,7 +378,7 @@ public class Bytecoder implements Constants {
 //					}
 					access[i] = (short)ica.cp_inner_flags[i];
 				} catch(Exception e ) {
-					Kiev.reportError(null,e);
+					Kiev.reportError(e);
 				}
 			}
 			a = new InnerClassesAttr();
