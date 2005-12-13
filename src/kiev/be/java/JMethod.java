@@ -24,7 +24,7 @@ public static class JMethodView extends JDNodeView {
 		this.impl = impl;
 	}
 
-	final Method getVMethod() { return this.impl.getMethod(); }
+	final Method getMethod() { return this.impl.getMethod(); }
 		
 	public Var	getRetVar() {
 		if( this.impl.retvar == null )
@@ -80,7 +80,7 @@ public static class JMethodView extends JDNodeView {
 		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 			cond.generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
-			Code code = new Code(pctx.clazz, this.getVMethod(), constPool);
+			Code code = new Code(pctx.clazz, this.getMethod(), constPool);
 			code.generation = true;
 			try {
 				if( !isBad() ) {

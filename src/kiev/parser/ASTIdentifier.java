@@ -81,13 +81,13 @@ public class ASTIdentifier extends ENode {
 		// predefined names
 		if( name == Constants.nameFILE ) {
 			ConstExpr ce = new ConstStringExpr(Kiev.curFile);
-			ce.text_name = this.name;
+			//ce.text_name = this.name;
 			replaceWithNode(ce);
 			return false;
 		}
 		else if( name == Constants.nameLINENO ) {
 			ConstExpr ce = new ConstIntExpr(pos>>>11);
-			ce.text_name = this.name;
+			//ce.text_name = this.name;
 			replaceWithNode(ce);
 			return false;
 		}
@@ -97,13 +97,13 @@ public class ASTIdentifier extends ENode {
 				ce = new ConstStringExpr(pctx.method.name.name);
 			else
 				ce = new ConstStringExpr(nameInit);
-			ce.text_name = this.name;
+			//ce.text_name = this.name;
 			replaceWithNode(ce);
 			return false;
 		}
 		else if( name == Constants.nameDEBUG ) {
 			ConstExpr ce = new ConstBoolExpr(Kiev.debugOutputA);
-			ce.text_name = this.name;
+			//ce.text_name = this.name;
 			replaceWithNode(ce);
 			return false;
 		}

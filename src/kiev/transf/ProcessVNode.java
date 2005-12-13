@@ -379,7 +379,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				ENode ee = new CastExpr(0,Type.getRefTypeForPrimitive(aflds[i].getType()),new LVarExpr(0, setV.params[1]));
+				Type atp = aflds[i].getType();
+				ENode ee;
+				if (atp.isReference())
+					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
+				else
+					ee = new CastExpr(0,Type.getRefTypeForPrimitive(atp),new LVarExpr(0, setV.params[1]));
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,

@@ -1,28 +1,16 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.vlang.Instr.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JBoolExprView;
+import kiev.be.java.JBinaryBooleanOrExprView;
+import kiev.be.java.JBinaryBooleanAndExprView;
+import kiev.be.java.JBinaryBoolExprView;
+import kiev.be.java.JInstanceofExprView;
+import kiev.be.java.JBooleanNotExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -40,30 +28,40 @@ public interface IBoolExpr {
 @node
 public abstract class BoolExpr extends ENode implements IBoolExpr {
 
-	public BoolExpr() {}
+	@node
+	public abstract static class BoolExprImpl extends ENodeImpl {
+		public BoolExprImpl() {}
+		public BoolExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public abstract static class BoolExprView extends ENodeView {
+		public BoolExprView(BoolExprImpl impl) {
+			super(impl);
+		}
+	}
+	public abstract BoolExprView		getBoolExprView();
+	public abstract JBoolExprView		getJBoolExprView();
 
-	public BoolExpr(int pos) { super(pos); }
+	public BoolExpr(BoolExprImpl impl) { super(impl); }
 
 	public Type getType() { return Type.tpBoolean; }
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		CodeLabel label_true = code.newLabel();
-		CodeLabel label_false = code.newLabel();
-
-		generate_iftrue(code,label_true);
-		code.addConst(0);
-		code.addInstr(Instr.op_goto,label_false);
-		code.addInstr(Instr.set_label,label_true);
-		code.addConst(1);
-		code.addInstr(Instr.set_label,label_false);
-		if( reqType == Type.tpVoid ) code.addInstr(Instr.op_pop);
+	public final void generate_iftrue(Code code, CodeLabel label) {
+		this.getJBoolExprView().generate_iftrue(code, label);
 	}
 
-	public abstract void generate_iftrue(Code code, CodeLabel label);
-	public abstract void generate_iffalse(Code code, CodeLabel label);
+	public final void generate_iffalse(Code code, CodeLabel label) {
+		this.getJBoolExprView().generate_iffalse(code, label);
+	}
+
+	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
+		JBoolExprView.gen_iftrue(code, expr.getJENodeView(), label);
+	}
 	
+	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
+		JBoolExprView.gen_iffalse(code, expr.getJENodeView(), label);
+	}
+
 	public static void checkBool(ENode e) {
 		if( e.getType().isBoolean() ) {
 			return;
@@ -85,74 +83,6 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 		throw new RuntimeException("Expression "+e+" must be of boolean type, but found "+e.getType());
 	}
 	
-	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
-		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iftrue(code,label);
-			return;
-		}
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if true): "+expr);
-		code.setLinePos(expr.getPosLine());
-		if( expr.getType().isBoolean() ) {
-			boolean optimized = false;
-			if( expr instanceof BinaryExpr ) {
-				BinaryExpr be = (BinaryExpr)expr;
-				if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
-					Object ce = be.expr2.getConstValue();
-					if( ((Number)ce).intValue() == 0 ) {
-						optimized = true;
-						if( be.op == BinaryOperator.LessThen ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_ifge,label);
-						}
-						else if( be.op == BinaryOperator.LessEquals ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_ifgt,label);
-						}
-						else if( be.op == BinaryOperator.GreaterThen ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_ifle,label);
-						}
-						else if( be.op == BinaryOperator.GreaterEquals ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_iflt,label);
-						}
-						else if( be.op == BinaryOperator.Equals ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_ifne,label);
-						}
-						else if( be.op == BinaryOperator.NotEquals ) {
-							be.expr1.generate(code,null);
-							code.addInstr(Instr.op_ifeq,label);
-						}
-						else {
-							optimized = false;
-						}
-					}
-				}
-			}
-			if( !optimized ) {
-				expr.generate(code,Type.tpBoolean);
-				code.addInstr(Instr.op_ifne,label);
-			}
-		}
-		else
-			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-	}
-
-	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
-		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iffalse(code, label);
-			return;
-		}
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if false): "+expr);
-		code.setLinePos(expr.getPosLine());
-		if( expr.getType().isBoolean() ) {
-			expr.generate(code,Type.tpBoolean);
-			code.addInstr(Instr.op_ifeq,label);
-		}
-		else
-			throw new RuntimeException("BooleanWrapper generation of non-boolean expression "+expr);
-	}
 }
 
 @node
@@ -163,14 +93,49 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@dflow(in="expr1:false")		ENode			expr2;
 	}
 	
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@node
+	public static class BinaryBooleanOrExprImpl extends BoolExprImpl {
+		@att public ENode			expr1;
+		@att public ENode			expr2;
+		public BinaryBooleanOrExprImpl() {}
+		public BinaryBooleanOrExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class BinaryBooleanOrExprView extends BoolExprView {
+		final BinaryBooleanOrExprImpl impl;
+		public BinaryBooleanOrExprView(BinaryBooleanOrExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$expr1()				{ return this.impl.expr1; }
+		@getter public final ENode		get$expr2()				{ return this.impl.expr2; }
+		@setter public final void		set$expr1(ENode val)	{ this.impl.expr1 = val; }
+		@setter public final void		set$expr2(ENode val)	{ this.impl.expr2 = val; }
+	}
+	
+	@att public abstract virtual ENode			expr1;
+	@att public abstract virtual ENode			expr2;
+	
+	@getter public ENode		get$expr1()				{ return this.getBinaryBooleanOrExprView().expr1; }
+	@getter public ENode		get$expr2()				{ return this.getBinaryBooleanOrExprView().expr2; }
+	@setter public void			set$expr1(ENode val)	{ this.getBinaryBooleanOrExprView().expr1 = val; }
+	@setter public void			set$expr2(ENode val)	{ this.getBinaryBooleanOrExprView().expr2 = val; }
 
+	public NodeView						getNodeView()					{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public BoolExprView					getBoolExprView()				{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public BinaryBooleanOrExprView		getBinaryBooleanOrExprView()	{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public JBinaryBooleanOrExprView		getJBinaryBooleanOrExprView()	{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	
 	public BinaryBooleanOrExpr() {
+		super(new BinaryBooleanOrExprImpl());
 	}
 
 	public BinaryBooleanOrExpr(int pos, ENode expr1, ENode expr2) {
-		super(pos);
+		super(new BinaryBooleanOrExprImpl(pos));
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
@@ -204,22 +169,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iftrue(code, expr1, label);
-		BoolExpr.gen_iftrue(code, expr2, label);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		code.setLinePos(this.getPosLine());
-		CodeLabel label1 = code.newLabel();
-		BoolExpr.gen_iftrue(code, expr1, label1);
-		BoolExpr.gen_iffalse(code, expr2, label);
-		code.addInstr(Instr.set_label,label1);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( expr1.getPriority() < opBooleanOrPriority ) {
 			dmp.append('(').append(expr1).append(')');
@@ -245,14 +194,49 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@dflow(in="expr1:true")		ENode			expr2;
 	}
 	
-	@att public ENode			expr1;
-	@att public ENode			expr2;
+	@node
+	public static class BinaryBooleanAndExprImpl extends BoolExprImpl {
+		@att public ENode			expr1;
+		@att public ENode			expr2;
+		public BinaryBooleanAndExprImpl() {}
+		public BinaryBooleanAndExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class BinaryBooleanAndExprView extends BoolExprView {
+		final BinaryBooleanAndExprImpl impl;
+		public BinaryBooleanAndExprView(BinaryBooleanAndExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$expr1()				{ return this.impl.expr1; }
+		@getter public final ENode		get$expr2()				{ return this.impl.expr2; }
+		@setter public final void		set$expr1(ENode val)	{ this.impl.expr1 = val; }
+		@setter public final void		set$expr2(ENode val)	{ this.impl.expr2 = val; }
+	}
+	
+	@att public abstract virtual ENode			expr1;
+	@att public abstract virtual ENode			expr2;
+	
+	@getter public ENode		get$expr1()				{ return this.getBinaryBooleanAndExprView().expr1; }
+	@getter public ENode		get$expr2()				{ return this.getBinaryBooleanAndExprView().expr2; }
+	@setter public void			set$expr1(ENode val)	{ this.getBinaryBooleanAndExprView().expr1 = val; }
+	@setter public void			set$expr2(ENode val)	{ this.getBinaryBooleanAndExprView().expr2 = val; }
 
+	public NodeView						getNodeView()					{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public BoolExprView					getBoolExprView()				{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public BinaryBooleanAndExprView		getBinaryBooleanAndExprView()	{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public JBinaryBooleanAndExprView	getJBinaryBooleanAndExprView()	{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	
 	public BinaryBooleanAndExpr() {
+		super(new BinaryBooleanAndExprImpl());
 	}
 
 	public BinaryBooleanAndExpr(int pos, ENode expr1, ENode expr2) {
-		super(pos);
+		super(new BinaryBooleanAndExprImpl(pos));
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 	}
@@ -281,22 +265,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		setResolved(true);
 	}
 
-	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
-		code.setLinePos(this.getPosLine());
-		CodeLabel label1 = code.newLabel();
-		BoolExpr.gen_iffalse(code, expr1, label1);
-		BoolExpr.gen_iftrue(code, expr2, label);
-		code.addInstr(Instr.set_label,label1);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if false): "+this);
-		code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iffalse(code, expr1, label);
-		BoolExpr.gen_iffalse(code, expr2, label);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( expr1.getPriority() < opBooleanAndPriority ) {
 			dmp.append('(').append(expr1).append(')');
@@ -314,7 +282,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 }
 
 @node
-
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -322,16 +289,55 @@ public class BinaryBoolExpr extends BoolExpr {
 	@dflow(in="expr1")			ENode			expr2;
 	}
 	
-	@ref public BinaryOperator		op;
+	@node
+	public static class BinaryBoolExprImpl extends BoolExprImpl {
+		@ref public BinaryOperator	op;
+		@att public ENode			expr1;
+		@att public ENode			expr2;
+		public BinaryBoolExprImpl() {}
+		public BinaryBoolExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class BinaryBoolExprView extends BoolExprView {
+		final BinaryBoolExprImpl impl;
+		public BinaryBoolExprView(BinaryBoolExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final BinaryOperator	get$op()					{ return this.impl.op; }
+		@getter public final ENode				get$expr1()					{ return this.impl.expr1; }
+		@getter public final ENode				get$expr2()					{ return this.impl.expr2; }
+		@setter public final void				set$op(BinaryOperator val)	{ this.impl.op = val; }
+		@setter public final void				set$expr1(ENode val)		{ this.impl.expr1 = val; }
+		@setter public final void				set$expr2(ENode val)		{ this.impl.expr2 = val; }
+	}
 	
-	@att public ENode				expr1;
-	@att public ENode				expr2;
+	@att public abstract virtual BinaryOperator	op;
+	@att public abstract virtual ENode				expr1;
+	@att public abstract virtual ENode				expr2;
+	
+	@getter public BinaryOperator	get$op()					{ return this.getBinaryBoolExprView().op; }
+	@getter public ENode			get$expr1()					{ return this.getBinaryBoolExprView().expr1; }
+	@getter public ENode			get$expr2()					{ return this.getBinaryBoolExprView().expr2; }
+	@setter public void				set$op(BinaryOperator val)	{ this.getBinaryBoolExprView().op = val; }
+	@setter public void				set$expr1(ENode val)		{ this.getBinaryBoolExprView().expr1 = val; }
+	@setter public void				set$expr2(ENode val)		{ this.getBinaryBoolExprView().expr2 = val; }
 
+	public NodeView						getNodeView()					{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public BoolExprView					getBoolExprView()				{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public BinaryBoolExprView			getBinaryBoolExprView()			{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public JBinaryBoolExprView			getJBinaryBoolExprView()		{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	
 	public BinaryBoolExpr() {
+		super(new BinaryBoolExprImpl());
 	}
 
 	public BinaryBoolExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		super(pos);
+		super(new BinaryBoolExprImpl(pos));
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -505,108 +511,6 @@ public class BinaryBoolExpr extends BoolExpr {
 		return this;
 	}
 
-	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
-		code.setLinePos(this.getPosLine());
-		if( expr2 instanceof ConstExpr ) {
-			ConstExpr ce = (ConstExpr)expr2;
-			Object cv = ce.getConstValue();
-			if( cv == null ) {
-				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnull,label);
-				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnonnull,label);
-				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
-				return;
-			}
-			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals ) {
-					code.addInstr(Instr.op_ifeq,label);
-					return;
-				}
-				else if( op == BinaryOperator.NotEquals ) {
-					code.addInstr(Instr.op_ifne,label);
-					return;
-				}
-				else if( op == BinaryOperator.LessThen ) {
-					code.addInstr(Instr.op_iflt,label);
-					return;
-				}
-				else if( op == BinaryOperator.LessEquals ) {
-					code.addInstr(Instr.op_ifle,label);
-					return;
-				}
-				else if( op == BinaryOperator.GreaterThen ) {
-					code.addInstr(Instr.op_ifgt,label);
-					return;
-				}
-				else if( op == BinaryOperator.GreaterEquals ) {
-					code.addInstr(Instr.op_ifge,label);
-					return;
-				}
-			}
-		}
-		expr1.generate(code,Type.tpBoolean);
-		expr2.generate(code,Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmplt,label);
-		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmpge,label);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if false): "+this);
-		code.setLinePos(this.getPosLine());
-		if( expr2 instanceof ConstExpr ) {
-			ConstExpr ce = (ConstExpr)expr2;
-			Object cv = ce.getConstValue();
-			if( cv == null ) {
-				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals) code.addInstr(Instr.op_ifnonnull,label);
-				else if( op == BinaryOperator.NotEquals ) code.addInstr(Instr.op_ifnull,label);
-				else throw new RuntimeException("Only == and != boolean operations permitted on 'null' constant");
-				return;
-			}
-			else if( expr2.getType().isIntegerInCode() && cv instanceof Number && ((Number)cv).intValue() == 0 ) {
-				expr1.generate(code,Type.tpBoolean);
-				if( op == BinaryOperator.Equals ) {
-					code.addInstr(Instr.op_ifne,label);
-					return;
-				}
-				else if( op == BinaryOperator.NotEquals ) {
-					code.addInstr(Instr.op_ifeq,label);
-					return;
-				}
-				else if( op == BinaryOperator.LessThen ) {
-					code.addInstr(Instr.op_ifge,label);
-					return;
-				}
-				else if( op == BinaryOperator.LessEquals ) {
-					code.addInstr(Instr.op_ifgt,label);
-					return;
-				}
-				else if( op == BinaryOperator.GreaterThen ) {
-					code.addInstr(Instr.op_ifle,label);
-					return;
-				}
-				else if( op == BinaryOperator.GreaterEquals ) {
-					code.addInstr(Instr.op_iflt,label);
-					return;
-				}
-			}
-		}
-		expr1.generate(code,Type.tpBoolean);
-		expr2.generate(code,Type.tpBoolean);
-		if( op == BinaryOperator.Equals )				code.addInstr(Instr.op_ifcmpne,label);
-		else if( op == BinaryOperator.NotEquals )		code.addInstr(Instr.op_ifcmpeq,label);
-		else if( op == BinaryOperator.LessThen )		code.addInstr(Instr.op_ifcmpge,label);
-		else if( op == BinaryOperator.LessEquals )		code.addInstr(Instr.op_ifcmpgt,label);
-		else if( op == BinaryOperator.GreaterThen )	code.addInstr(Instr.op_ifcmple,label);
-		else if( op == BinaryOperator.GreaterEquals )	code.addInstr(Instr.op_ifcmplt,label);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( expr1.getPriority() < op.priority ) {
 			dmp.append('(').append(expr1).append(')');
@@ -630,20 +534,55 @@ public class InstanceofExpr extends BoolExpr {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
-	@att public ENode		expr;
-	@att public TypeRef		type;
+	@node
+	public static class InstanceofExprImpl extends BoolExprImpl {
+		@att public ENode		expr;
+		@att public TypeRef		type;
+		public InstanceofExprImpl() {}
+		public InstanceofExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class InstanceofExprView extends BoolExprView {
+		final InstanceofExprImpl impl;
+		public InstanceofExprView(InstanceofExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$expr()				{ return this.impl.expr; }
+		@getter public final TypeRef	get$type()				{ return this.impl.type; }
+		@setter public final void		set$expr(ENode val)		{ this.impl.expr = val; }
+		@setter public final void		set$type(TypeRef val)	{ this.impl.type = val; }
+	}
+	
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual TypeRef		type;
+	
+	@getter public ENode		get$expr()				{ return this.getInstanceofExprView().expr; }
+	@getter public TypeRef		get$type()				{ return this.getInstanceofExprView().type; }
+	@setter public void			set$expr(ENode val)		{ this.getInstanceofExprView().expr = val; }
+	@setter public void			set$type(TypeRef val)	{ this.getInstanceofExprView().type = val; }
 
+	public NodeView						getNodeView()					{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public BoolExprView					getBoolExprView()				{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public InstanceofExprView			getInstanceofExprView()			{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public JBoolExprView				getJBoolExprView()				{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public JInstanceofExprView			getJInstanceofExprView()		{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	
 	public InstanceofExpr() {
+		super(new InstanceofExprImpl());
 	}
 
 	public InstanceofExpr(int pos, ENode expr, TypeRef type) {
-		super(pos);
+		super(new InstanceofExprImpl(pos));
 		this.expr = expr;
 		this.type = type;
 	}
 
 	public InstanceofExpr(int pos, ENode expr, Type type) {
-		super(pos);
+		super(new InstanceofExprImpl(pos));
 		this.expr = expr;
 		this.type = new TypeRef(type);
 	}
@@ -736,22 +675,6 @@ public class InstanceofExpr extends BoolExpr {
 		return dfs;
 	}
 
-	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		expr.generate(code,Type.tpBoolean);
-		code.addInstr(Instr.op_instanceof,type.getType());
-		code.addInstr(Instr.op_ifne,label);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		expr.generate(code,Type.tpBoolean);
-		code.addInstr(Instr.op_instanceof,type.getType());
-		code.addInstr(Instr.op_ifeq,label);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
 		dmp.append(expr).append(" instanceof ").append(type).space();
@@ -766,13 +689,43 @@ public class BooleanNotExpr extends BoolExpr {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
-	@att public ENode				expr;
+	@node
+	public static class BooleanNotExprImpl extends BoolExprImpl {
+		@att public ENode		expr;
+		public BooleanNotExprImpl() {}
+		public BooleanNotExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class BooleanNotExprView extends BoolExprView {
+		final BooleanNotExprImpl impl;
+		public BooleanNotExprView(BooleanNotExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final ENode		get$expr()				{ return this.impl.expr; }
+		@setter public final void		set$expr(ENode val)		{ this.impl.expr = val; }
+	}
+	
+	@att public abstract virtual ENode			expr;
+	
+	@getter public ENode		get$expr()				{ return this.getBooleanNotExprView().expr; }
+	@setter public void			set$expr(ENode val)		{ this.getBooleanNotExprView().expr = val; }
 
+	public NodeView						getNodeView()					{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public BoolExprView					getBoolExprView()				{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public BooleanNotExprView			getBooleanNotExprView()			{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public JBoolExprView				getJBoolExprView()				{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public JBooleanNotExprView			getJBooleanNotExprView()		{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	
 	public BooleanNotExpr() {
+		super(new BooleanNotExprImpl());
 	}
 
 	public BooleanNotExpr(int pos, ENode expr) {
-		super(pos);
+		super(new BooleanNotExprImpl(pos));
 		this.expr = expr;
 	}
 
@@ -795,18 +748,6 @@ public class BooleanNotExpr extends BoolExpr {
 		}
 		setResolved(true);
 		return;
-	}
-
-	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);
-		code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iffalse(code, expr, label);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if false): "+this);
-		code.setLinePos(this.getPosLine());
-		BoolExpr.gen_iftrue(code, expr, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

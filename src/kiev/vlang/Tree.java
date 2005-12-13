@@ -24,6 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import kiev.be.java.JNodeView;
+
 import static kiev.stdlib.Debug.*;
 import java.lang.annotation.*;
 
@@ -361,6 +363,22 @@ public final class NArr<N extends ASTNode> {
 			node.pnext = null;
 			node.pprev = null;
 		}
+		return arr;
+	}
+
+	public ASTNode.NodeView[] toViewArray(Class view) {
+		int sz = $nodes.length;
+		ASTNode.NodeView[] arr = (ASTNode.NodeView[])java.lang.reflect.Array.newInstance(view, sz);
+		for (int i=0; i < sz; i++)
+			arr[i] = $nodes[i].getNodeView();
+		return arr;
+	}
+
+	public JNodeView[] toJViewArray(Class view) {
+		int sz = $nodes.length;
+		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(view, sz);
+		for (int i=0; i < sz; i++)
+			arr[i] = $nodes[i].getJNodeView();
 		return arr;
 	}
 

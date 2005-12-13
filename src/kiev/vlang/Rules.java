@@ -896,7 +896,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 			this.obj = (ENode)~((IFldExpr)expr.expr).obj;
 		}
 		this.args.addAll(expr.args.delToArray());
-		this.args.insert(0,expr.env_access);
+		this.args.insert(0,new ConstNullExpr()/*expr.env_access*/);
 	}
 
 	public void resolve(Type reqType) {

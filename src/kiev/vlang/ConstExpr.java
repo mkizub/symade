@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -25,7 +5,19 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
-import kiev.vlang.Instr.*;
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JConstExprView;
+import kiev.be.java.JConstBoolExprView;
+import kiev.be.java.JConstNullExprView;
+import kiev.be.java.JConstByteExprView;
+import kiev.be.java.JConstShortExprView;
+import kiev.be.java.JConstIntExprView;
+import kiev.be.java.JConstLongExprView;
+import kiev.be.java.JConstCharExprView;
+import kiev.be.java.JConstFloatExprView;
+import kiev.be.java.JConstDoubleExprView;
+import kiev.be.java.JConstStringExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -43,10 +35,38 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public boolean value;
+	@node
+	public static class ConstBoolExprImpl extends ConstExprImpl {
+		@att public boolean value;
+		public ConstBoolExprImpl() {}
+		public ConstBoolExprImpl(boolean value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstBoolExprView extends ConstExprView {
+		final ConstBoolExprImpl impl;
+		public ConstBoolExprView(ConstBoolExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final boolean	get$value()				{ return this.impl.value; }
+		@setter public final void		set$value(boolean val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual boolean value;
+	@getter public boolean	get$value()				{ return this.getConstBoolExprView().value; }
+	@setter public void		set$value(boolean val)	{ this.getConstBoolExprView().value = val; }
 
-	public ConstBoolExpr() {}
-	public ConstBoolExpr(boolean value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public ConstBoolExprView	getConstBoolExprView()	{ return new ConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	public JConstBoolExprView	getJConstBoolExprView()	{ return new JConstBoolExprView((ConstBoolExprImpl)this.$v_impl); }
+	
+	public ConstBoolExpr() { super(new ConstBoolExprImpl()); }
+	public ConstBoolExpr(boolean value) { super(new ConstBoolExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return value ? Boolean.TRUE: Boolean.FALSE; }
@@ -58,27 +78,12 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 		return false;
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		if( reqType != Type.tpVoid ) {
-			if( value )
-				code.addConst(1);
-			else
-				code.addConst(0);
-		}
-	}
-
 	public void generate_iftrue(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_true "+this);
-		code.setLinePos(this.getPosLine());
-		if( value ) code.addInstr(op_goto,label);
+		this.getJConstBoolExprView().generate_iftrue(code, label);
 	}
 
 	public void generate_iffalse(Code code, CodeLabel label) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: if_false "+this);
-		code.setLinePos(this.getPosLine());
-		if( !value ) code.addInstr(op_goto,label);
+		this.getJConstBoolExprView().generate_iffalse(code, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -91,9 +96,27 @@ public final class ConstNullExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public byte		value;
-
-	public ConstNullExpr() {}
+	@node
+	public static class ConstNullExprImpl extends ConstExprImpl {
+		public ConstNullExprImpl() {}
+	}
+	@nodeview
+	public static class ConstNullExprView extends ConstExprView {
+		public ConstNullExprView(ConstNullExprImpl impl) {
+			super(impl);
+		}
+	}
+	
+	public NodeView				getNodeView()			{ return new ConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public ConstNullExprView	getConstNullExprView()	{ return new ConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	public JConstNullExprView	getJConstNullExprView()	{ return new JConstNullExprView((ConstNullExprImpl)this.$v_impl); }
+	
+	public ConstNullExpr() { super(new ConstNullExprImpl()); }
 
 	public String	toString()			{ return "null"; }
 	public Object	getConstValue()		{ return null; }
@@ -111,10 +134,38 @@ public final class ConstByteExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public byte		value;
+	@node
+	public static class ConstByteExprImpl extends ConstExprImpl {
+		@att public byte value;
+		public ConstByteExprImpl() {}
+		public ConstByteExprImpl(byte value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstByteExprView extends ConstExprView {
+		final ConstByteExprImpl impl;
+		public ConstByteExprView(ConstByteExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final byte		get$value()			{ return this.impl.value; }
+		@setter public final void		set$value(byte val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual byte value;
+	@getter public byte		get$value()			{ return this.getConstByteExprView().value; }
+	@setter public void		set$value(byte val)	{ this.getConstByteExprView().value = val; }
 
-	public ConstByteExpr() {}
-	public ConstByteExpr(byte value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public ConstByteExprView	getConstByteExprView()	{ return new ConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	public JConstByteExprView	getJConstByteExprView()	{ return new JConstByteExprView((ConstByteExprImpl)this.$v_impl); }
+	
+	public ConstByteExpr() { super(new ConstByteExprImpl()); }
+	public ConstByteExpr(byte value) { super(new ConstByteExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Byte.valueOf(value); }
@@ -132,10 +183,38 @@ public final class ConstShortExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public short		value;
+	@node
+	public static class ConstShortExprImpl extends ConstExprImpl {
+		@att public short value;
+		public ConstShortExprImpl() {}
+		public ConstShortExprImpl(short value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstShortExprView extends ConstExprView {
+		final ConstShortExprImpl impl;
+		public ConstShortExprView(ConstShortExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final short		get$value()				{ return this.impl.value; }
+		@setter public final void		set$value(short val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual short value;
+	@getter public short	get$value()				{ return this.getConstShortExprView().value; }
+	@setter public void		set$value(short val)	{ this.getConstShortExprView().value = val; }
 
-	public ConstShortExpr() {}
-	public ConstShortExpr(short value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public ConstShortExprView	getConstShortExprView()	{ return new ConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	public JConstShortExprView	getJConstShortExprView(){ return new JConstShortExprView((ConstShortExprImpl)this.$v_impl); }
+	
+	public ConstShortExpr() { super(new ConstShortExprImpl()); }
+	public ConstShortExpr(short value) { super(new ConstShortExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Short.valueOf(value); }
@@ -153,10 +232,38 @@ public final class ConstIntExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public int			value;
+	@node
+	public static class ConstIntExprImpl extends ConstExprImpl {
+		@att public int value;
+		public ConstIntExprImpl() {}
+		public ConstIntExprImpl(int value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstIntExprView extends ConstExprView {
+		final ConstIntExprImpl impl;
+		public ConstIntExprView(ConstIntExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final int		get$value()			{ return this.impl.value; }
+		@setter public final void		set$value(int val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual int value;
+	@getter public int		get$value()			{ return this.getConstIntExprView().value; }
+	@setter public void		set$value(int val)	{ this.getConstIntExprView().value = val; }
 
-	public ConstIntExpr() {}
-	public ConstIntExpr(int value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public ConstIntExprView		getConstIntExprView()	{ return new ConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	public JConstIntExprView	getJConstIntExprView()	{ return new JConstIntExprView((ConstIntExprImpl)this.$v_impl); }
+	
+	public ConstIntExpr() { super(new ConstIntExprImpl()); }
+	public ConstIntExpr(int value) { super(new ConstIntExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value); }
 	public Object	getConstValue()		{ return Integer.valueOf(value); }
@@ -174,10 +281,38 @@ public final class ConstLongExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public long			value;
+	@node
+	public static class ConstLongExprImpl extends ConstExprImpl {
+		@att public long value;
+		public ConstLongExprImpl() {}
+		public ConstLongExprImpl(long value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstLongExprView extends ConstExprView {
+		final ConstLongExprImpl impl;
+		public ConstLongExprView(ConstLongExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final long		get$value()			{ return this.impl.value; }
+		@setter public final void		set$value(long val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual long value;
+	@getter public long		get$value()			{ return this.getConstLongExprView().value; }
+	@setter public void		set$value(long val)	{ this.getConstLongExprView().value = val; }
 
-	public ConstLongExpr() {}
-	public ConstLongExpr(long value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public ConstLongExprView	getConstLongExprView()	{ return new ConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	public JConstLongExprView	getJConstLongExprView()	{ return new JConstLongExprView((ConstLongExprImpl)this.$v_impl); }
+	
+	public ConstLongExpr() { super(new ConstLongExprImpl()); }
+	public ConstLongExpr(long value) { super(new ConstLongExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value)+"L"; }
 	public Object	getConstValue()		{ return Long.valueOf(value); }
@@ -195,10 +330,38 @@ public final class ConstCharExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public char			value;
+	@node
+	public static class ConstCharExprImpl extends ConstExprImpl {
+		@att public char value;
+		public ConstCharExprImpl() {}
+		public ConstCharExprImpl(char value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstCharExprView extends ConstExprView {
+		final ConstCharExprImpl impl;
+		public ConstCharExprView(ConstCharExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final char		get$value()			{ return this.impl.value; }
+		@setter public final void		set$value(char val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual char value;
+	@getter public char		get$value()			{ return this.getConstCharExprView().value; }
+	@setter public void		set$value(char val)	{ this.getConstCharExprView().value = val; }
 
-	public ConstCharExpr() {}
-	public ConstCharExpr(char value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public ConstCharExprView	getConstCharExprView()	{ return new ConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	public JConstCharExprView	getJConstCharExprView()	{ return new JConstCharExprView((ConstCharExprImpl)this.$v_impl); }
+	
+	public ConstCharExpr() { super(new ConstCharExprImpl()); }
+	public ConstCharExpr(char value) { super(new ConstCharExprImpl(value)); }
 
 	public String	toString()			{ return "'"+Convert.escape(value)+"'"; }
 	public Object	getConstValue()		{ return Character.valueOf(value); }
@@ -217,10 +380,38 @@ public final class ConstFloatExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public float			value;
+	@node
+	public static class ConstFloatExprImpl extends ConstExprImpl {
+		@att public float value;
+		public ConstFloatExprImpl() {}
+		public ConstFloatExprImpl(float value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstFloatExprView extends ConstExprView {
+		final ConstFloatExprImpl impl;
+		public ConstFloatExprView(ConstFloatExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final float		get$value()				{ return this.impl.value; }
+		@setter public final void		set$value(float val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual float value;
+	@getter public float	get$value()				{ return this.getConstFloatExprView().value; }
+	@setter public void		set$value(float val)	{ this.getConstFloatExprView().value = val; }
 
-	public ConstFloatExpr() {}
-	public ConstFloatExpr(float value) { this.value = value; }
+	public NodeView				getNodeView()			{ return new ConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public ConstExprView		getConstExprView()		{ return new ConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public ConstFloatExprView	getConstFloatExprView()	{ return new ConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public JConstExprView		getJConstExprView()		{ return new JConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	public JConstFloatExprView	getJConstFloatExprView(){ return new JConstFloatExprView((ConstFloatExprImpl)this.$v_impl); }
+	
+	public ConstFloatExpr() { super(new ConstFloatExprImpl()); }
+	public ConstFloatExpr(float value) { super(new ConstFloatExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value)+"F"; }
 	public Object	getConstValue()		{ return Float.valueOf(value); }
@@ -239,10 +430,38 @@ public final class ConstDoubleExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public double			value;
+	@node
+	public static class ConstDoubleExprImpl extends ConstExprImpl {
+		@att public double value;
+		public ConstDoubleExprImpl() {}
+		public ConstDoubleExprImpl(double value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstDoubleExprView extends ConstExprView {
+		final ConstDoubleExprImpl impl;
+		public ConstDoubleExprView(ConstDoubleExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final double		get$value()				{ return this.impl.value; }
+		@setter public final void		set$value(double val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual double value;
+	@getter public double	get$value()				{ return this.getConstDoubleExprView().value; }
+	@setter public void		set$value(double val)	{ this.getConstDoubleExprView().value = val; }
 
-	public ConstDoubleExpr() {}
-	public ConstDoubleExpr(double value) { this.value = value; }
+	public NodeView					getNodeView()				{ return new ConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new ConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public ConstExprView			getConstExprView()			{ return new ConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public ConstDoubleExprView		getConstDoubleExprView()	{ return new ConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public JConstExprView			getJConstExprView()			{ return new JConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	public JConstDoubleExprView		getJConstDoubleExprView()	{ return new JConstDoubleExprView((ConstDoubleExprImpl)this.$v_impl); }
+	
+	public ConstDoubleExpr() { super(new ConstDoubleExprImpl()); }
+	public ConstDoubleExpr(double value) { super(new ConstDoubleExprImpl(value)); }
 
 	public String	toString()			{ return String.valueOf(value)+"D"; }
 	public Object	getConstValue()		{ return Double.valueOf(value); }
@@ -260,11 +479,38 @@ public final class ConstStringExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public KString			value;
+	@node
+	public static class ConstStringExprImpl extends ConstExprImpl {
+		@att public KString value;
+		public ConstStringExprImpl() {}
+		public ConstStringExprImpl(KString value) { this.value = value; }
+	}
+	@nodeview
+	public static class ConstStringExprView extends ConstExprView {
+		final ConstStringExprImpl impl;
+		public ConstStringExprView(ConstStringExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final KString	get$value()				{ return this.impl.value; }
+		@setter public final void		set$value(KString val)	{ this.impl.value = val; }
+	}
+	
+	@att public abstract virtual KString value;
+	@getter public KString	get$value()				{ return this.getConstStringExprView().value; }
+	@setter public void		set$value(KString val)	{ this.getConstStringExprView().value = val; }
 
-	public ConstStringExpr() {}
-
-	public ConstStringExpr(KString value) { this.value = value; }
+	public NodeView					getNodeView()				{ return new ConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new ConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public ConstExprView			getConstExprView()			{ return new ConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public ConstStringExprView		getConstStringExprView()	{ return new ConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public JConstExprView			getJConstExprView()			{ return new JConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	public JConstStringExprView		getJConstStringExprView()	{ return new JConstStringExprView((ConstStringExprImpl)this.$v_impl); }
+	
+	public ConstStringExpr() { super(new ConstStringExprImpl()); }
+	public ConstStringExpr(KString value) { super(new ConstStringExprImpl(value)); }
 
 	public String	toString()			{ return '\"'+value.toString()+'\"'; }
 	public Object	getConstValue()		{ return value; }
@@ -282,9 +528,23 @@ public final class ConstStringExpr extends ConstExpr {
 @node
 public abstract class ConstExpr extends ENode {
 
-	public KString text_name;
-	
-	public ConstExpr() {
+	@node
+	public abstract static class ConstExprImpl extends ENodeImpl {
+		public ConstExprImpl() {}
+		public ConstExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public abstract static class ConstExprView extends ENodeView {
+		public ConstExprView(ConstExprImpl impl) {
+			super(impl);
+		}
+	}
+
+	public abstract ConstExprView			getConstExprView();
+	public abstract JConstExprView			getJConstExprView();
+
+	public ConstExpr(ConstExprImpl impl) {
+		super(impl);
 		setResolved(true);
 	}
 
@@ -302,63 +562,6 @@ public abstract class ConstExpr extends ENode {
 	
 	public final void resolve(Type reqType) {
 		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		Object value = getConstValue();
-		trace(Kiev.debugStatGen,"\t\tgenerating ConstExpr: "+value);
-		code.setLinePos(this.getPosLine());
-		if( value == null ) {
-			// Special case for generation of parametriezed
-			// with primitive types classes
-			if( reqType != null && !reqType.isReference() ) {
-				switch(reqType.signature.byteAt(0)) {
-				case 'Z': case 'B': case 'S': case 'I': case 'C':
-					code.addConst(0);
-					break;
-				case 'J':
-					code.addConst(0L);
-					break;
-				case 'F':
-					code.addConst(0.F);
-					break;
-				case 'D':
-					code.addConst(0.D);
-					break;
-				default:
-					code.addNullConst();
-					break;
-				}
-			}
-			else
-				code.addNullConst();
-		}
-		else if( value instanceof Byte ) {
-			code.addConst(((Byte)value).intValue());
-		}
-		else if( value instanceof Short ) {
-			code.addConst(((Short)value).intValue());
-		}
-		else if( value instanceof Integer ) {
-			code.addConst(((Integer)value).intValue());
-		}
-		else if( value instanceof Character ) {
-			code.addConst((int)((Character)value).charValue());
-		}
-		else if( value instanceof Long ) {
-			code.addConst(((Long)value).longValue());
-		}
-		else if( value instanceof Float ) {
-			code.addConst(((Float)value).floatValue());
-		}
-		else if( value instanceof Double ) {
-			code.addConst(((Double)value).doubleValue());
-		}
-		else if( value instanceof KString ) {
-			code.addConst((KString)value);
-		}
-		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 	public Dumper	toJava(Dumper dmp) {

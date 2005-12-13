@@ -1,30 +1,16 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
-import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JNewExprView;
+import kiev.be.java.JNewArrayExprView;
+import kiev.be.java.JNewInitializedArrayExprView;
+import kiev.be.java.JNewClosureView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -42,35 +28,79 @@ public class NewExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@att public TypeRef				type;
-	
-	@att public final NArr<ENode>	args;
-	
-	@att public ENode				outer;
-	
-//	@att
-//	public ENode				tif_expr;	// TypeInfo field access expression
-	@att private ENode			temp_expr;
-	
-//	@att
-//	public final NArr<ENode>	outer_args;
-	
-	@att
-	public Struct				clazz; // if this new expression defines new class
+	@node
+	public static class NewExprImpl extends ENodeImpl {
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		@att public ENode				outer;
+		@att public ENode				temp_expr;
+		@att public Struct				clazz; // if this new expression defines new class
+		@ref public Method				func;
 
-	@ref public Method	func;
+		public NewExprImpl() {}
+		public NewExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class NewExprView extends ENodeView {
+		final NewExprImpl impl;
+		public NewExprView(NewExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final TypeRef		get$type()				{ return this.impl.type; }
+		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
+		@getter public final ENode			get$outer()				{ return this.impl.outer; }
+		@getter public final ENode			get$temp_expr()			{ return this.impl.temp_expr; }
+		@getter public final Struct			get$clazz()				{ return this.impl.clazz; }
+		@getter public final Method			get$func()				{ return this.impl.func; }
+		
+		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
+		@setter public final void	set$outer(ENode val)			{ this.impl.outer = val; }
+		@setter public final void	set$temp_expr(ENode val)		{ this.impl.temp_expr = val; }
+		@setter public final void	set$clazz(Struct val)			{ this.impl.clazz = val; }
+		@setter public final void	set$func(Method val)			{ this.impl.func = val; }
+	}
+	
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	@att public abstract virtual			ENode				outer;
+	@att public abstract virtual			ENode				temp_expr;
+	@att public abstract virtual			Struct				clazz;
+	@ref public abstract virtual			Method				func;
+	
+	@getter public TypeRef			get$type()				{ return this.getNewExprView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getNewExprView().args; }
+	@getter public ENode			get$outer()				{ return this.getNewExprView().outer; }
+	@getter public ENode			get$temp_expr()			{ return this.getNewExprView().temp_expr; }
+	@getter public Struct			get$clazz()				{ return this.getNewExprView().clazz; }
+	@getter public Method			get$func()				{ return this.getNewExprView().func; }
+	
+	@setter public void		set$type(TypeRef val)			{ this.getNewExprView().type = val; }
+	@setter public void		set$outer(ENode val)			{ this.getNewExprView().outer = val; }
+	@setter public void		set$temp_expr(ENode val)		{ this.getNewExprView().temp_expr = val; }
+	@setter public void		set$clazz(Struct val)			{ this.getNewExprView().clazz = val; }
+	@setter public void		set$func(Method val)			{ this.getNewExprView().func = val; }
+
+	public NodeView				getNodeView()		{ return new NewExprView((NewExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()		{ return new NewExprView((NewExprImpl)this.$v_impl); }
+	public NewExprView			getNewExprView()	{ return new NewExprView((NewExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()		{ return new JNewExprView((NewExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()		{ return new JNewExprView((NewExprImpl)this.$v_impl); }
+	public JNewExprView			getJNewExprView()	{ return new JNewExprView((NewExprImpl)this.$v_impl); }
+
 
 	public NewExpr() {
+		super(new NewExprImpl());
 	}
 
 	public NewExpr(int pos, Type type, ENode[] args) {
-		super(pos);
+		super(new NewExprImpl(pos));
 		this.type = new TypeRef(type);
 		foreach (ENode e; args) this.args.append(e);
 	}
 
 	public NewExpr(int pos, TypeRef type, ENode[] args) {
-		super(pos);
+		super(new NewExprImpl(pos));
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 	}
@@ -172,66 +202,6 @@ public class NewExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
-		Type type = this.type.getType();
-		code.setLinePos(this.getPosLine());
-		if( type.isArgument() ) {
-			if( outer != null || args.length > 0 ) {
-				Kiev.reportError(this,"Constructor with arguments for type argument is not supported");
-				return;
-			} else {
-				// If we have primitive type
-				if( !type.isReference() ) {
-					new ConstNullExpr().generate(code,type);
-					return;
-				}
-				int i;
-				for(i=0; i < code.clazz.type.args.length; i++)
-					if( type.string_equals(code.clazz.type.args[i]) ) break;
-				if( i >= code.clazz.type.args.length )
-					throw new CompilerException(this,"Can't create an instance of argument type "+type);
-				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.resolveField(nameTypeInfo));
-				ENode e = new CastExpr(pos,type,
-					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(
-							KString.from("newInstance"),
-							KString.from("(I)Ljava/lang/Object;")
-							),
-							new ENode[]{new ConstIntExpr(i)}),
-					true);
-				e.resolve(reqType);
-				e.generate(code,reqType);
-				return;
-			}
-		}
-		code.addInstr(op_new,type);
-		// First arg ('this' pointer) is generated by 'op_dup'
-		if (reqType != Type.tpVoid)
-			code.addInstr(op_dup);
-		// Constructor call args (first args 'this' skipped)
-		if( outer != null )
-			outer.generate(code,null);
-		if (func.getTypeInfoParam() != null) {
-			// Create static field for this type typeinfo
-			temp_expr = pctx.clazz.accessTypeInfoField(this,type);
-			temp_expr.generate(code,null);
-			temp_expr = null;
-		}
-		for(int i=0; i < args.length; i++)
-			args[i].generate(code,null);
-		if( type.isLocalClazz() ) {
-			Struct cl = ((BaseType)type).clazz;
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
-				if( !f.isNeedProxy() ) continue;
-				Var v = ((LVarExpr)f.init).getVar();
-				code.addInstr(Instr.op_load,v.getJVarView());
-			}
-		}
-		code.addInstr(op_call,func,false,type);
-	}
-
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
@@ -271,18 +241,60 @@ public class NewArrayExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@att public TypeRef				type;
+	@node
+	public static class NewArrayExprImpl extends ENodeImpl {
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		@att public int					dim;
+		@ref public Type				arrtype;
+
+		public NewArrayExprImpl() {}
+		public NewArrayExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class NewArrayExprView extends ENodeView {
+		final NewArrayExprImpl impl;
+		public NewArrayExprView(NewArrayExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final TypeRef		get$type()				{ return this.impl.type; }
+		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
+		@getter public final int			get$dim()				{ return this.impl.dim; }
+		@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
+		
+		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
+		@setter public final void	set$dim(int val)				{ this.impl.dim = val; }
+		@setter public final void	set$arrtype(Type val)			{ this.impl.arrtype = val; }
+	}
 	
-	@att public final NArr<ENode>	args;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	@att public abstract virtual			int					dim;
+	@att public abstract virtual			Type				arrtype;
 	
-	public int						dim;
-	private Type					arrtype;
+	@getter public TypeRef			get$type()				{ return this.getNewArrayExprView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getNewArrayExprView().args; }
+	@getter public int				get$dim()				{ return this.getNewArrayExprView().dim; }
+	@getter public Type				get$arrtype()			{ return this.getNewArrayExprView().arrtype; }
+	
+	@setter public void		set$type(TypeRef val)			{ this.getNewArrayExprView().type = val; }
+	@setter public void		set$dim(int val)				{ this.getNewArrayExprView().dim = val; }
+	@setter public void		set$arrtype(Type val)			{ this.getNewArrayExprView().arrtype = val; }
+
+	public NodeView				getNodeView()			{ return new NewArrayExprView((NewArrayExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new NewArrayExprView((NewArrayExprImpl)this.$v_impl); }
+	public NewArrayExprView		getNewArrayExprView()	{ return new NewArrayExprView((NewArrayExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JNewArrayExprView((NewArrayExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JNewArrayExprView((NewArrayExprImpl)this.$v_impl); }
+	public JNewArrayExprView	getJNewArrayExprView()	{ return new JNewArrayExprView((NewArrayExprImpl)this.$v_impl); }
 
 	public NewArrayExpr() {
+		super(new NewArrayExprImpl());
 	}
 
 	public NewArrayExpr(int pos, TypeRef type, ENode[] args, int dim) {
-		super(pos);
+		super(new NewArrayExprImpl(pos));
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
@@ -340,21 +352,6 @@ public class NewArrayExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
-		Type type = this.type.getType();
-		code.setLinePos(this.getPosLine());
-		if( dim == 1 ) {
-			args[0].generate(code,null);
-			code.addInstr(Instr.op_newarray,type);
-		} else {
-			for(int i=0; i < args.length; i++)
-				args[i].generate(code,null);
-			code.addInstr(Instr.op_multianewarray,arrtype,args.length);
-		}
-		if( reqType == Type.tpVoid ) code.addInstr(Instr.op_pop);
-	}
-
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
@@ -375,26 +372,69 @@ public class NewInitializedArrayExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
-	@att public TypeRef				type;
+	@node
+	public static class NewInitializedArrayExprImpl extends ENodeImpl {
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		@att public int[]				dims;
+		@ref public Type				arrtype;
+
+		public NewInitializedArrayExprImpl() {}
+		public NewInitializedArrayExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class NewInitializedArrayExprView extends ENodeView {
+		final NewInitializedArrayExprImpl impl;
+		public NewInitializedArrayExprView(NewInitializedArrayExprImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final TypeRef		get$type()				{ return this.impl.type; }
+		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
+		@getter public final int			get$dim()				{ return this.impl.dims.length; }
+		@getter public final int[]			get$dims()				{ return this.impl.dims; }
+		@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
+		
+		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
+		@setter public final void	set$dims(int[] val)				{ this.impl.dims = val; }
+		@setter public final void	set$arrtype(Type val)			{ this.impl.arrtype = val; }
+	}
 	
-	@att public final NArr<ENode>	args;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	     public abstract virtual access:ro	int					dim;
+	@att public abstract virtual			int[]				dims;
+	@ref public abstract virtual			Type				arrtype;
 	
-	public int						dim;
-	public int[]					dims;
-	private Type				arrtype;
+	@getter public TypeRef			get$type()				{ return this.getNewInitializedArrayExprView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getNewInitializedArrayExprView().args; }
+	@getter public int				get$dim()				{ return this.getNewInitializedArrayExprView().dim; }
+	@getter public int[]			get$dims()				{ return this.getNewInitializedArrayExprView().dims; }
+	@getter public Type				get$arrtype()			{ return this.getNewInitializedArrayExprView().arrtype; }
+	
+	@setter public void		set$type(TypeRef val)			{ this.getNewInitializedArrayExprView().type = val; }
+	@setter public void		set$dims(int[] val)				{ this.getNewInitializedArrayExprView().dims = val; }
+	@setter public void		set$arrtype(Type val)			{ this.getNewInitializedArrayExprView().arrtype = val; }
+
+	public NodeView							getNodeView()						{ return new NewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
+	public ENodeView						getENodeView()						{ return new NewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
+	public NewInitializedArrayExprView		getNewInitializedArrayExprView()	{ return new NewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
+	public JNodeView						getJNodeView()						{ return new JNewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
+	public JENodeView						getJENodeView()						{ return new JNewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
+	public JNewInitializedArrayExprView	getJNewInitializedArrayExprView()	{ return new JNewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
 
 	public NewInitializedArrayExpr() {
+		super(new NewInitializedArrayExprImpl());
 	}
 
 	public NewInitializedArrayExpr(int pos, TypeRef type, int dim, ENode[] args) {
-		super(pos);
+		super(new NewInitializedArrayExprImpl(pos));
 		this.type = type;
-		this.dim = dim;
+		dims = new int[dim];
+		dims[0] = args.length;
 		foreach (ENode e; args) this.args.append(e);
 		arrtype = Type.newArrayType(type.getType());
 		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
-		dims = new int[dim];
-		dims[0] = args.length;
 	}
 
 	public String toString() {
@@ -431,27 +471,6 @@ public class NewInitializedArrayExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
-		Type type = this.type.getType();
-		code.setLinePos(this.getPosLine());
-		if( dim == 1 ) {
-			code.addConst(args.length);
-			code.addInstr(Instr.op_newarray,type);
-		} else {
-			for(int i=0; i < dim; i++)
-				code.addConst(dims[i]);
-			code.addInstr(Instr.op_multianewarray,arrtype,dim);
-		}
-		for(int i=0; i < args.length; i++) {
-			code.addInstr(Instr.op_dup);
-			code.addConst(i);
-			args[i].generate(code,null);
-			code.addInstr(Instr.op_arr_store);
-		}
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
-	}
-
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
@@ -471,24 +490,62 @@ public class NewClosure extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
-	@att
-	public TypeClosureRef		type;
-	
-	@att
-	public Struct				clazz; // if this new expression defines new class
+	@node
+	public static class NewClosureImpl extends ENodeImpl {
+		@att public TypeClosureRef		type;
+		@att public Struct				clazz;
+		@ref public Method				func;
 
-	@ref public Method	func;
+		public NewClosureImpl() {}
+		public NewClosureImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static class NewClosureView extends ENodeView {
+		final NewClosureImpl impl;
+		public NewClosureView(NewClosureImpl impl) {
+			super(impl);
+			this.impl = impl;
+		}
+		@getter public final TypeClosureRef	get$type()				{ return this.impl.type; }
+		@getter public final Struct				get$clazz()				{ return this.impl.clazz; }
+		@getter public final Method				get$func()				{ return this.impl.func; }
+		
+		@setter public final void	set$type(TypeClosureRef val)		{ this.impl.type = val; }
+		@setter public final void	set$clazz(Struct val)				{ this.impl.clazz = val; }
+		@setter public final void	set$func(Method val)				{ this.impl.func = val; }
+	}
+	
+	@att public abstract virtual			TypeClosureRef		type;
+	@att public abstract virtual			Struct				clazz;
+	@ref public abstract virtual			Method				func;
+	
+	@getter public TypeClosureRef	get$type()				{ return this.getNewClosureView().type; }
+	@getter public Struct			get$clazz()				{ return this.getNewClosureView().clazz; }
+	@getter public Method			get$func()				{ return this.getNewClosureView().func; }
+	
+	@setter public void		set$type(TypeClosureRef val)	{ this.getNewClosureView().type = val; }
+	@setter public void		set$clazz(Struct val)			{ this.getNewClosureView().clazz = val; }
+	@setter public void		set$func(Method val)			{ this.getNewClosureView().func = val; }
+
+	public NodeView				getNodeView()			{ return new NewClosureView((NewClosureImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new NewClosureView((NewClosureImpl)this.$v_impl); }
+	public NewClosureView		getNewClosureView()		{ return new NewClosureView((NewClosureImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JNewClosureView((NewClosureImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JNewClosureView((NewClosureImpl)this.$v_impl); }
+	public JNewClosureView		getJNewClosureView()	{ return new JNewClosureView((NewClosureImpl)this.$v_impl); }
+
 
 	public NewClosure() {
+		super(new NewClosureImpl());
 	}
 
 	public NewClosure(int pos, TypeClosureRef type) {
-		super(pos);
+		super(new NewClosureImpl(pos));
 		this.type = type;
 	}
 
 	public NewClosure(int pos, Method func) {
-		super(pos);
+		super(new NewClosureImpl(pos));
 		this.func = func;
 		this.type = new TypeClosureRef(ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
 	}
@@ -515,32 +572,6 @@ public class NewClosure extends ENode {
 					Method.toString(nameInit,mt)+" for "+type);
 		func = m;
 		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);
-		ClosureType type = (ClosureType)this.type.getType();
-		code.setLinePos(this.getPosLine());
-		code.addInstr(op_new,type);
-		// First arg ('this' pointer) is generated by 'op_dup'
-		if( reqType != Type.tpVoid )
-			code.addInstr(op_dup);
-		// Constructor call args (first args 'this' skipped)
-		if( code.method!=null && !code.method.isStatic() )
-			code.addInstrLoadThis();
-		if( type.args == null )
-			code.addConst(0);
-		else
-			code.addConst(type.args.length);
-		// Now, fill proxyed fields (vars)
-		Struct cl = (Struct)type.clazz;
-		foreach (ASTNode n; cl.members; n instanceof Field) {
-			Field f = (Field)n;
-			if( !f.isNeedProxy() ) continue;
-			Var v = ((LVarExpr)f.init).getVar();
-			code.addInstr(Instr.op_load,v.getJVarView());
-		}
-		code.addInstr(op_call,func,false);
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }
