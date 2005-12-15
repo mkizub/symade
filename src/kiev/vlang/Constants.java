@@ -349,6 +349,7 @@ public interface Constants extends AccessFlags {
 	 */
 	public final static KString nameThis		= KString.from("this");
 	public final static KString nameThisDollar	= KString.from("this$");
+	public final static KString nameView		= KString.from("$view");
 	public final static KString nameTypeInfo	= KString.from("$typeinfo");
 	public final static KString nameClTypeInfo	= KString.from("__ti__");
 //	public final static KString nameTypeInfoArgs= KString.from("typeargs");

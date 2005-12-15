@@ -75,6 +75,7 @@ public abstract class ASTStructDeclaration extends ASTNode implements TopLevelDe
 @node
 public class ASTTypeDeclaration extends ASTStructDeclaration {
     public int				kind;
+	public KString			view_of_name;
     @att public ASTNode		ext;
     @att public ASTNode		impl;
     @att public ASTNode		gens;
@@ -89,6 +90,8 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
     		;
     	else if( t.kind == kiev020Constants.OPERATOR_AT )
         	kind |= ACC_INTERFACE | ACC_ANNOTATION;
+    	else if( t.kind == kiev020Constants.VIEW )
+        	kind |= ACC_VIEW;
     	else
     		throw new RuntimeException("Bad kind of class declaration "+t);
 	}
@@ -98,8 +101,13 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 			modifiers = (ASTModifiers)n;
 		}
         else if( n instanceof ASTIdentifier ) {
-			name = ((ASTIdentifier)n).name;
-            pos = n.getPos();
+        	if (name == null) {
+				name = ((ASTIdentifier)n).name;
+    	        pos = n.getPos();
+    	    } else {
+    	    	assert((kind & ACC_VIEW) != 0);
+    	    	view_of_name = ((ASTIdentifier)n).name;
+    	    }
 		}
         else if( n instanceof ASTArgumentDeclaration ) {
 			argument.append(n);
@@ -122,6 +130,9 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 		trace(Kiev.debugResolve,"Pass 3 for class "+me);
         PassInfo.push(me);
         try {
+			if (me.isView()) {
+				Field f = me.addField(new Field(me,nameView,me.view_of_clazz.type,ACC_FINAL|ACC_PRIVATE));
+			}
         	List<Field> abstr_fields = List.Nil;
 			// Process members
 			for(int i=0; i < members.length; i++) {
@@ -174,6 +185,9 @@ public class ASTTypeDeclaration extends ASTStructDeclaration {
 					// TODO: check flags for fields
 					int flags = fields.modifiers.getFlags();
 					if( me.isPackage() ) flags |= ACC_STATIC;
+					if( me.isView() && (flags & ACC_STATIC)==0) {
+						flags |= ACC_FINAL | ACC_ABSTRACT | ACC_VIRTUAL;
+					}
 					if( me.isInterface() ) {
 						if( (flags & ACC_VIRTUAL) != 0 ) flags |= ACC_ABSTRACT;
 						else {

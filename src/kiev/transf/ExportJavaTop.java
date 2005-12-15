@@ -780,6 +780,14 @@ public final class ExportJavaTop implements Constants {
 		try {
 			/* Now, process 'extends' and 'implements' clauses */
 			ASTNonArrayType at;
+			if( astn.view_of_name != null ) {
+				PVar<Struct> v = new PVar<Struct>();
+				ResInfo info = new ResInfo();
+				if( !PassInfo.resolveNameR(v,info,astn.view_of_name,null,0) )
+					throw new CompilerException(astn.pos,"Cannot resolve class "+astn.view_of_name);
+				else
+					astn.me.view_of_clazz = v;
+			}
 			if( astn.ext != null ) {
 				ASTExtends exts = (ASTExtends)astn.ext;
 				if( me.isInterface() ) {

@@ -283,6 +283,7 @@ public abstract class ASTNode implements Constants {
 	public boolean isTransient()	{ return (flags & ACC_TRANSIENT) != 0; }
 	public boolean isNative()		{ return (flags & ACC_NATIVE) != 0; }
 	public boolean isInterface()	{ return (flags & ACC_INTERFACE) != 0; }
+	public boolean isView()			{ return (flags & ACC_VIEW) != 0; }
 	public boolean isAbstract()		{ return (flags & ACC_ABSTRACT) != 0; }
 	public boolean isSuper()		{ return (flags & ACC_SUPER) != 0; }
 

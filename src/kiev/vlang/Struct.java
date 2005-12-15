@@ -78,6 +78,8 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 	 */
 	@att public Struct					typeinfo_clazz;
 
+	@ref public Struct					view_of_clazz;
+
 	/** Array of substructures of the structure */
 	@att public final NArr<Struct>		sub_clazz;
 
@@ -995,6 +997,26 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				body.stats.append(new ReturnStat(f.pos,body,null));
 				set_var.body = body;
 			}
+			else if (this.isView() && !f.isStatic()) {
+				BlockStat body = new BlockStat(f.pos,set_var,ASTNode.emptyArray);
+				Field view_fld = view_of_clazz.resolveField(f.name.name);
+				Expr val = new VarAccessExpr(f.pos,value);
+				if (!value.getType().isAutoCastableTo(view_fld.getType()))
+					val = new CastExpr(f.pos,view_fld.getType(),val);
+				Statement ass_st = new ExprStat(f.pos,body,
+					new AssignExpr(f.pos,AssignOperator.Assign,
+						new AccessExpr(f.pos,
+							new AccessExpr(f.pos,new ThisExpr(0),resolveField(nameView)),
+							view_fld
+							),
+						val
+					)
+				);
+				body.stats.append(ass_st);
+				body.stats.append(new ReturnStat(f.pos,body,null));
+				set_var.body = body;
+				set_var.setAbstract(false);
+			}
 			this.addMethod(set_var);
 			f.setter = set_var;
 		}
@@ -1015,6 +1037,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,body,new AccessExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
+			}
+			else if (this.isView() && !f.isStatic()) {
+				BlockStat body = new BlockStat(f.pos,get_var,ASTNode.emptyArray);
+				Expr val = new AccessExpr(f.pos,new AccessExpr(f.pos,new ThisExpr(0),resolveField(nameView)),view_of_clazz.resolveField(f.name.name));
+				if (!val.getType().isAutoCastableTo(f.getType()))
+					val = new CastExpr(f.pos,f.getType(),val);
+				body.stats.add(new ReturnStat(f.pos,body,val));
+				get_var.body = body;
+				get_var.setAbstract(false);
 			}
 			this.addMethod(get_var);
 			f.getter = get_var;
@@ -1468,6 +1499,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 						targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 						params = (Var[])Arrays.append(params,new Var(pos,init,nameTypeInfo,typeinfo_clazz.type,0));
 					}
+					if( isView() ) {
+						targs = (Type[])Arrays.append(targs,view_of_clazz.type);
+						params = (Var[])Arrays.append(params,new Var(pos,init,nameView,view_of_clazz.type,0));
+					}
 					if( isEnum() ) {
 						targs = (Type[])Arrays.append(targs,Type.tpString);
 						targs = (Type[])Arrays.append(targs,Type.tpInt);
@@ -1721,7 +1756,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		trace(Kiev.debugMultiMethod,"lookup overwritten methods for "+base+" in "+this+" with "+methods.length+" methods");
 		for(int i=0; i < methods.length; i++) {
 			if( methods[i].isStatic() || methods[i].isPrivate() || methods[i].name.equals(nameInit) ) continue;
-			if( !methods[i].name.equals(m.name) || methods[i].type.args.length != m.type.args.length ) {
+			if( methods[i].name.name == m.name.name || methods[i].type.args.length != m.type.args.length ) {
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
@@ -1914,6 +1949,9 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							}
 						}
 					}
+					else if( this.isView() && super_clazz.clazz.isView() ) {
+						call_super.args.add(new ASTIdentifier(pos, nameView));
+					}
 					else if( isEnum() ) {
 						call_super.args.add(new ASTIdentifier(pos, KString.from("name")));
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
@@ -1929,6 +1967,21 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 							new AssignExpr(pos,AssignOperator.Assign,
 								new AccessExpr(pos,new ThisExpr(pos),OuterThisAccessExpr.outerOf(this)),
 								new VarAccessExpr(pos,methods[i].params[1])
+							)
+						),p++
+					);
+				}
+				if( isView() ) {
+					Var v = null;
+					foreach (Var p; methods[i].params; p.name.equals(nameView)) {
+						v = p;
+						break;
+					}
+					stats.insert(
+						new ExprStat(pos,null,
+							new AssignExpr(pos,AssignOperator.Assign,
+								new AccessExpr(pos,new ThisExpr(pos),resolveField(nameView)),
+								new VarAccessExpr(pos,v)
 							)
 						),p++
 					);
@@ -1996,7 +2049,7 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			for(int j=i; j < methods.length; j++) {
 				if (m.isRuleMethod() != methods[j].isRuleMethod())
 					continue;
-				if( !methods[j].name.equals(m.name) || methods[j].type.args.length != m.type.args.length )
+				if( methods[j].name.name != m.name.name || methods[j].type.args.length != m.type.args.length )
 					continue;
 				MethodType type2 = methods[j].dtype;
 				if (type2==null) type2 = methods[j].type;

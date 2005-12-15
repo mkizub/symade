@@ -399,6 +399,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < TRY: "try" >
 | < VOID: "void" >
 | < VOLATILE: "volatile" >
+| < VIEW: "view" > { if(Kiev.javaMode || Kiev.disabled(Ext.View) || !kiev020.declMode) matchedToken.kind=IDENTIFIER; }
 | < WHILE: "while" >
 | < UNDERSCORE: "_" > { if(Kiev.javaMode) matchedToken.kind=IDENTIFIER; }
 | < ARROW: "->" >
@@ -855,6 +856,11 @@ void TypeDeclaration(ASTModifiers modifiers) :
 		|	t="interface"
 			Identifier()
 		|	t="@" "interface"
+			(Identifier() | KeywordAsIdentifier())
+		|	t="view"
+			(Identifier() | KeywordAsIdentifier())
+			LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
+			<IDENTIFIER> // "of"
 			(Identifier() | KeywordAsIdentifier())
 		)
 		{ jjtThis.set(t); t = null; }

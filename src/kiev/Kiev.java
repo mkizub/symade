@@ -462,6 +462,7 @@ public final class Kiev {
 				while( n != null ) {
 					pl = new List.Cons<ASTNode>(n,pl);
 					n = n.parent;
+					Debug.assert(pl.length() < 100);
 				}
 				if( pl.head() != f ) {
 					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
@@ -492,6 +493,8 @@ public final class Kiev {
 					PassInfo.pop(nn);
 				}
 			}
+//		} catch (Throwable e) {
+//			e.printStackTrace();
 		} finally {
 			Kiev.k.reset();
 			f.bodies = PrescannedBody.emptyArray;
@@ -518,6 +521,7 @@ public final class Kiev {
 		Typedef					: "typedef"			,
 		Enum					: "enum"			,
 		EnumInt					: "enum int"		,
+		View					: "view"			,
 		Contract				: "contract"		,
 		Generics				: "generics"		,
 		Templates				: "templates"		,
