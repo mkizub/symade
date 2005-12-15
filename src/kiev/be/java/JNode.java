@@ -10,26 +10,28 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.ASTNode.NodeImpl;
+import kiev.vlang.DNode.DNodeImpl;
+import kiev.vlang.ENode.ENodeImpl;
+import kiev.vlang.LvalDNode.LvalDNodeImpl;
+import kiev.vlang.VarDecl.VarDeclImpl;
+import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
+import kiev.vlang.TypeDef.TypeDefImpl;
+
 @nodeview
-public class JNodeView extends ASTNode.NodeView {
-	public JNodeView(ASTNode.NodeImpl impl) {
-		super(impl);
+public view JNodeView of NodeImpl extends ASTNode.NodeView {
+	public JNodeView(NodeImpl $view) {
+		super($view);
 	}
 }
 
 @nodeview
-public class JDNodeView extends JNodeView {
-	final DNode.DNodeImpl impl;
-	public JDNodeView(DNode.DNodeImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	
+public view JDNodeView of DNodeImpl extends JNodeView {
+
 	public final DNode getDNode() { return (DNode)this.getNode(); }
 	
-	@getter public final int		get$flags()				{ return this.impl.flags; }
-	@getter public final MetaSet	get$meta()				{ return this.impl.meta; }
-	@setter public final void		set$flags(int val)		{ this.impl.flags = val; }
+	public				int			flags;
+	public access:ro	MetaSet		meta;
 
 	public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
 	public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
@@ -48,44 +50,41 @@ public class JDNodeView extends JNodeView {
 }
 
 @nodeview
-public class JLvalDNodeView extends JDNodeView {
-	public JLvalDNodeView(LvalDNode.LvalDNodeImpl impl) {
-		super(impl);
-	}
-
-	@getter public final boolean isForward() { return this.impl.is_forward; }
-	@getter public final boolean isInitWrapper() { return this.impl.is_init_wrapper; }
-	@getter public final boolean isNeedProxy() { return this.impl.is_need_proxy; }
+public view JLvalDNodeView of LvalDNodeImpl extends JDNodeView {
+	public final boolean isForward() { return this.$view.is_forward; }
+	public final boolean isInitWrapper() { return this.$view.is_init_wrapper; }
+	public final boolean isNeedProxy() { return this.$view.is_need_proxy; }
 }
 
 @nodeview
-public class JENodeView extends JNodeView {
-	public JENodeView(ENode.ENodeImpl impl) {
-		super(impl);
+public view JENodeView of ENodeImpl extends JNodeView {
+	
+	public JENodeView(ENodeImpl $view) {
+		super($view);
 	}
 
-	public final ENode getENode() { return (ENode)this.getNode(); }
+	public final ENode getENode() alias operator(210,fy,$cast) { return (ENode)this.getNode(); }
 	
 	//
 	// Expr specific
 	//
 
-	public final boolean isUseNoProxy() { return this.impl.is_expr_use_no_proxy; }
-	public final boolean isAsField() { return this.impl.is_expr_as_field; }
-	public final boolean isGenVoidExpr() { return this.impl.is_expr_gen_void; }
-	public final boolean isTryResolved() { return this.impl.is_expr_try_resolved; }
-	public final boolean isForWrapper() { return this.impl.is_expr_for_wrapper; }
-	public final boolean isPrimaryExpr() { return this.impl.is_expr_primary; }
+	public final boolean isUseNoProxy() { return this.$view.is_expr_use_no_proxy; }
+	public final boolean isAsField() { return this.$view.is_expr_as_field; }
+	public final boolean isGenVoidExpr() { return this.$view.is_expr_gen_void; }
+	public final boolean isTryResolved() { return this.$view.is_expr_try_resolved; }
+	public final boolean isForWrapper() { return this.$view.is_expr_for_wrapper; }
+	public final boolean isPrimaryExpr() { return this.$view.is_expr_primary; }
 
 	//
 	// Statement specific flags
 	//
 	
-	public final boolean isAbrupted() { return this.impl.is_stat_abrupted; }
-	public final boolean isBreaked() { return this.impl.is_stat_breaked; }
-	public final boolean isMethodAbrupted() { return this.impl.is_stat_method_abrupted; }
-	public final boolean isAutoReturnable() { return this.impl.is_stat_auto_returnable; }
-	public final boolean isBreakTarget() { return this.impl.is_stat_break_target; }
+	public final boolean isAbrupted() { return this.$view.is_stat_abrupted; }
+	public final boolean isBreaked() { return this.$view.is_stat_breaked; }
+	public final boolean isMethodAbrupted() { return this.$view.is_stat_method_abrupted; }
+	public final boolean isAutoReturnable() { return this.$view.is_stat_auto_returnable; }
+	public final boolean isBreakTarget() { return this.$view.is_stat_break_target; }
 
 	public Type getType() { return this.getNode().getType(); }
 	
@@ -99,14 +98,9 @@ public class JENodeView extends JNodeView {
 }
 
 @nodeview
-public class JVarDeclView extends JENodeView {
-	final VarDecl.VarDeclImpl impl;
-	public JVarDeclView(VarDecl.VarDeclImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	
-	@getter public final JVarView	get$var()				{ return this.impl.var.getJVarView(); }
+public final view JVarDeclView of VarDeclImpl extends JENodeView {
+
+	public access:ro	JVarView	var;
 
 	public void generate(Code code, Type reqType) {
 		this.var.generate(code,Type.tpVoid);
@@ -114,14 +108,8 @@ public class JVarDeclView extends JENodeView {
 }
 
 @nodeview
-public static class JLocalStructDeclView extends JENodeView {
-	final LocalStructDecl.LocalStructDeclImpl impl;
-	public JLocalStructDeclView(LocalStructDecl.LocalStructDeclImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	
-	@getter public final Struct		get$clazz()				{ return this.impl.clazz; }
+public final view JLocalStructDeclView of LocalStructDeclImpl extends JENodeView {
+	public access:ro Struct		clazz;
 
 	public void generate(Code code, Type reqType) {
 		// don't generate here
@@ -129,9 +117,9 @@ public static class JLocalStructDeclView extends JENodeView {
 }
 
 @nodeview
-public class JTypeDefView extends JDNodeView {
-	public JTypeDefView(TypeDef.TypeDefImpl impl) {
-		super(impl);
+public abstract view JTypeDefView of TypeDefImpl extends JDNodeView {
+	public JTypeDefView(TypeDefImpl $view) {
+		super($view);
 	}
 }
 

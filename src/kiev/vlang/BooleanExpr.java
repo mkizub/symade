@@ -34,9 +34,9 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 		public BoolExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public abstract static class BoolExprView extends ENodeView {
-		public BoolExprView(BoolExprImpl impl) {
-			super(impl);
+	public abstract static view BoolExprView of BoolExprImpl extends ENodeView {
+		public BoolExprView(BoolExprImpl $view) {
+			super($view);
 		}
 	}
 	public abstract BoolExprView		getBoolExprView();
@@ -101,16 +101,9 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		public BinaryBooleanOrExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class BinaryBooleanOrExprView extends BoolExprView {
-		final BinaryBooleanOrExprImpl impl;
-		public BinaryBooleanOrExprView(BinaryBooleanOrExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode		get$expr1()				{ return this.impl.expr1; }
-		@getter public final ENode		get$expr2()				{ return this.impl.expr2; }
-		@setter public final void		set$expr1(ENode val)	{ this.impl.expr1 = val; }
-		@setter public final void		set$expr2(ENode val)	{ this.impl.expr2 = val; }
+	public static view BinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends BoolExprView {
+		public ENode		expr1;
+		public ENode		expr2;
 	}
 	
 	@att public abstract virtual ENode			expr1;
@@ -202,16 +195,9 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		public BinaryBooleanAndExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class BinaryBooleanAndExprView extends BoolExprView {
-		final BinaryBooleanAndExprImpl impl;
-		public BinaryBooleanAndExprView(BinaryBooleanAndExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode		get$expr1()				{ return this.impl.expr1; }
-		@getter public final ENode		get$expr2()				{ return this.impl.expr2; }
-		@setter public final void		set$expr1(ENode val)	{ this.impl.expr1 = val; }
-		@setter public final void		set$expr2(ENode val)	{ this.impl.expr2 = val; }
+	public static view BinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends BoolExprView {
+		public ENode		expr1;
+		public ENode		expr2;
 	}
 	
 	@att public abstract virtual ENode			expr1;
@@ -298,18 +284,10 @@ public class BinaryBoolExpr extends BoolExpr {
 		public BinaryBoolExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class BinaryBoolExprView extends BoolExprView {
-		final BinaryBoolExprImpl impl;
-		public BinaryBoolExprView(BinaryBoolExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final BinaryOperator	get$op()					{ return this.impl.op; }
-		@getter public final ENode				get$expr1()					{ return this.impl.expr1; }
-		@getter public final ENode				get$expr2()					{ return this.impl.expr2; }
-		@setter public final void				set$op(BinaryOperator val)	{ this.impl.op = val; }
-		@setter public final void				set$expr1(ENode val)		{ this.impl.expr1 = val; }
-		@setter public final void				set$expr2(ENode val)		{ this.impl.expr2 = val; }
+	public static view BinaryBoolExprView of BinaryBoolExprImpl extends BoolExprView {
+		public BinaryOperator	op;
+		public ENode			expr1;
+		public ENode			expr2;
 	}
 	
 	@att public abstract virtual BinaryOperator	op;
@@ -542,16 +520,9 @@ public class InstanceofExpr extends BoolExpr {
 		public InstanceofExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class InstanceofExprView extends BoolExprView {
-		final InstanceofExprImpl impl;
-		public InstanceofExprView(InstanceofExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode		get$expr()				{ return this.impl.expr; }
-		@getter public final TypeRef	get$type()				{ return this.impl.type; }
-		@setter public final void		set$expr(ENode val)		{ this.impl.expr = val; }
-		@setter public final void		set$type(TypeRef val)	{ this.impl.type = val; }
+	public static view InstanceofExprView of InstanceofExprImpl extends BoolExprView {
+		public ENode	expr;
+		public TypeRef	type;
 	}
 	
 	@att public abstract virtual ENode			expr;
@@ -696,14 +667,8 @@ public class BooleanNotExpr extends BoolExpr {
 		public BooleanNotExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class BooleanNotExprView extends BoolExprView {
-		final BooleanNotExprImpl impl;
-		public BooleanNotExprView(BooleanNotExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode		get$expr()				{ return this.impl.expr; }
-		@setter public final void		set$expr(ENode val)		{ this.impl.expr = val; }
+	public static view BooleanNotExprView of BooleanNotExprImpl extends BoolExprView {
+		public ENode		expr;
 	}
 	
 	@att public abstract virtual ENode			expr;

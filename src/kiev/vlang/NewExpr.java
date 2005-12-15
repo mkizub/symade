@@ -22,14 +22,14 @@ import static kiev.vlang.Instr.*;
  */
 
 @node
-public class NewExpr extends ENode {
+public final class NewExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@node
-	public static class NewExprImpl extends ENodeImpl {
+	public static final class NewExprImpl extends ENodeImpl {
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
 		@att public ENode				outer;
@@ -41,24 +41,13 @@ public class NewExpr extends ENode {
 		public NewExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class NewExprView extends ENodeView {
-		final NewExprImpl impl;
-		public NewExprView(NewExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final TypeRef		get$type()				{ return this.impl.type; }
-		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
-		@getter public final ENode			get$outer()				{ return this.impl.outer; }
-		@getter public final ENode			get$temp_expr()			{ return this.impl.temp_expr; }
-		@getter public final Struct			get$clazz()				{ return this.impl.clazz; }
-		@getter public final Method			get$func()				{ return this.impl.func; }
-		
-		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
-		@setter public final void	set$outer(ENode val)			{ this.impl.outer = val; }
-		@setter public final void	set$temp_expr(ENode val)		{ this.impl.temp_expr = val; }
-		@setter public final void	set$clazz(Struct val)			{ this.impl.clazz = val; }
-		@setter public final void	set$func(Method val)			{ this.impl.func = val; }
+	public static final view NewExprView of NewExprImpl extends ENodeView {
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+		public				ENode			outer;
+		public				ENode			temp_expr;
+		public				Struct			clazz;
+		public				Method			func;
 	}
 	
 	@att public abstract virtual			TypeRef				type;
@@ -205,17 +194,17 @@ public class NewExpr extends ENode {
 	public int		getPriority() { return Constants.opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		BaseType tp = (BaseType)type.getType();
+		Type tp = type.getType();
 		if( !tp.isReference() ) {
 			return dmp.append('0');
 		}
-		if( !tp.clazz.isAnonymouse() ) {
+		if( !tp.isAnonymouseClazz() ) {
 			dmp.append("new ").append(tp).append('(');
 		} else {
-			if( tp.clazz.interfaces.length > 0 )
-				dmp.append("new ").append(tp.clazz.interfaces[0].getStruct().name).append('(');
+			if( tp.getStruct().interfaces.length > 0 )
+				dmp.append("new ").append(tp.getStruct().interfaces[0].getStruct().name).append('(');
 			else
-				dmp.append("new ").append(tp.clazz.super_type.clazz.name).append('(');
+				dmp.append("new ").append(tp.getStruct().super_type.clazz.name).append('(');
 		}
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
@@ -223,8 +212,8 @@ public class NewExpr extends ENode {
 				dmp.append(',');
 		}
 		dmp.append(')');
-		if( tp.clazz.isAnonymouse() ) {
-			Struct cl = tp.clazz;
+		if( tp.isAnonymouseClazz() ) {
+			Struct cl = tp.getStruct();
 			dmp.space().append('{').newLine(1);
 			foreach (DNode n; cl.members)
 				n.toJavaDecl(dmp).newLine();
@@ -235,14 +224,14 @@ public class NewExpr extends ENode {
 }
 
 @node
-public class NewArrayExpr extends ENode {
+public final class NewArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@node
-	public static class NewArrayExprImpl extends ENodeImpl {
+	public static final class NewArrayExprImpl extends ENodeImpl {
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
 		@att public int					dim;
@@ -252,20 +241,11 @@ public class NewArrayExpr extends ENode {
 		public NewArrayExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class NewArrayExprView extends ENodeView {
-		final NewArrayExprImpl impl;
-		public NewArrayExprView(NewArrayExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final TypeRef		get$type()				{ return this.impl.type; }
-		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
-		@getter public final int			get$dim()				{ return this.impl.dim; }
-		@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
-		
-		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
-		@setter public final void	set$dim(int val)				{ this.impl.dim = val; }
-		@setter public final void	set$arrtype(Type val)			{ this.impl.arrtype = val; }
+	public static final view NewArrayExprView of NewArrayExprImpl extends ENodeView {
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+		public				int				dim;
+		public				Type			arrtype;
 	}
 	
 	@att public abstract virtual			TypeRef				type;
@@ -366,14 +346,14 @@ public class NewArrayExpr extends ENode {
 }
 
 @node
-public class NewInitializedArrayExpr extends ENode {
+public final class NewInitializedArrayExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]		args;
 	}
 
 	@node
-	public static class NewInitializedArrayExprImpl extends ENodeImpl {
+	public static final class NewInitializedArrayExprImpl extends ENodeImpl {
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
 		@att public int[]				dims;
@@ -383,21 +363,13 @@ public class NewInitializedArrayExpr extends ENode {
 		public NewInitializedArrayExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class NewInitializedArrayExprView extends ENodeView {
-		final NewInitializedArrayExprImpl impl;
-		public NewInitializedArrayExprView(NewInitializedArrayExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final TypeRef		get$type()				{ return this.impl.type; }
-		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
-		@getter public final int			get$dim()				{ return this.impl.dims.length; }
-		@getter public final int[]			get$dims()				{ return this.impl.dims; }
-		@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
+	public static final view NewInitializedArrayExprView of NewInitializedArrayExprImpl extends ENodeView {
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+		public				int[]			dims;
+		public				Type			arrtype;
 		
-		@setter public final void	set$type(TypeRef val)			{ this.impl.type = val; }
-		@setter public final void	set$dims(int[] val)				{ this.impl.dims = val; }
-		@setter public final void	set$arrtype(Type val)			{ this.impl.arrtype = val; }
+		@getter public final int	get$dim()	{ return this.$view.dims.length; }
 	}
 	
 	@att public abstract virtual			TypeRef				type;
@@ -486,12 +458,12 @@ public class NewInitializedArrayExpr extends ENode {
 }
 
 @node
-public class NewClosure extends ENode {
+public final class NewClosure extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
 	@node
-	public static class NewClosureImpl extends ENodeImpl {
+	public static final class NewClosureImpl extends ENodeImpl {
 		@att public TypeClosureRef		type;
 		@att public Struct				clazz;
 		@ref public Method				func;
@@ -500,19 +472,10 @@ public class NewClosure extends ENode {
 		public NewClosureImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class NewClosureView extends ENodeView {
-		final NewClosureImpl impl;
-		public NewClosureView(NewClosureImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final TypeClosureRef	get$type()				{ return this.impl.type; }
-		@getter public final Struct				get$clazz()				{ return this.impl.clazz; }
-		@getter public final Method				get$func()				{ return this.impl.func; }
-		
-		@setter public final void	set$type(TypeClosureRef val)		{ this.impl.type = val; }
-		@setter public final void	set$clazz(Struct val)				{ this.impl.clazz = val; }
-		@setter public final void	set$func(Method val)				{ this.impl.func = val; }
+	public static final view NewClosureView of NewClosureImpl extends ENodeView {
+		public TypeClosureRef	type;
+		public Struct			clazz;
+		public Method			func;
 	}
 	
 	@att public abstract virtual			TypeClosureRef		type;

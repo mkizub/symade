@@ -11,10 +11,19 @@ import static kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.LvalueExpr.LvalueExprImpl;
+import kiev.vlang.AccessExpr.AccessExprImpl;
+import kiev.vlang.IFldExpr.IFldExprImpl;
+import kiev.vlang.ContainerAccessExpr.ContainerAccessExprImpl;
+import kiev.vlang.ThisExpr.ThisExprImpl;
+import kiev.vlang.LVarExpr.LVarExprImpl;
+import kiev.vlang.SFldExpr.SFldExprImpl;
+import kiev.vlang.OuterThisAccessExpr.OuterThisAccessExprImpl;
+
 @nodeview
-public abstract class JLvalueExprView extends JENodeView {
-	public JLvalueExprView(LvalueExpr.LvalueExprImpl impl) {
-		super(impl);
+public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
+	public JLvalueExprView(LvalueExpr.LvalueExprImpl $view) {
+		super($view);
 	}
 
 	public void generate(Code code, Type reqType) {
@@ -43,24 +52,14 @@ public abstract class JLvalueExprView extends JENodeView {
 }
 
 @nodeview
-public abstract class JAccessExprView extends JLvalueExprView {
-	final AccessExpr.AccessExprImpl impl;
-	public JAccessExprView(AccessExpr.AccessExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$obj()				{ return this.impl.obj.getJENodeView(); }
-	@getter public final KString		get$ident()				{ return this.impl.ident.name; }
+public abstract view JAccessExprView of AccessExprImpl extends JLvalueExprView {
+	public access:ro	JENodeView	obj;
+	public access:ro	KString		ident;
 }
 
 @nodeview
-public static class JIFldExprView extends JAccessExprView {
-	final IFldExpr.IFldExprImpl impl;
-	public JIFldExprView(IFldExpr.IFldExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JFieldView		get$var()				{ return this.impl.var.getJFieldView(); }
+public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
+	public access:ro	JFieldView		var;
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -136,14 +135,9 @@ public static class JIFldExprView extends JAccessExprView {
 
 
 @nodeview
-public class JContainerAccessExprView extends JLvalueExprView {
-	final ContainerAccessExpr.ContainerAccessExprImpl impl;
-	public JContainerAccessExprView(ContainerAccessExpr.ContainerAccessExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$obj()				{ return this.impl.obj.getJENodeView(); }
-	@getter public final JENodeView		get$index()				{ return this.impl.index.getJENodeView(); }
+public final view JContainerAccessExprView of ContainerAccessExprImpl extends JLvalueExprView {
+	public access:ro	JENodeView		obj;
+	public access:ro	JENodeView		index;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
@@ -246,11 +240,8 @@ public class JContainerAccessExprView extends JLvalueExprView {
 
 
 @nodeview
-public static class JThisExprView extends JLvalueExprView {
-	public JThisExprView(ThisExpr.ThisExprImpl impl) {
-		super(impl);
-	}
-	@getter public final boolean	get$super_flag()	{ return ((ThisExpr.ThisExprImpl)this.impl).super_flag; }
+public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
+	public access:ro	boolean		super_flag;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
@@ -313,17 +304,12 @@ public static class JThisExprView extends JLvalueExprView {
 }
 
 @nodeview
-public static class JLVarExprView extends JLvalueExprView {
-	final LVarExpr.LVarExprImpl impl;
-	public JLVarExprView(LVarExpr.LVarExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final KString	get$name()				{ return this.impl.ident.name; }
-	@getter public final JVarView	get$var()				{ return this.impl.var.getJVarView(); }
+public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
+	public access:ro	KString		ident;
+	public access:ro	JVarView	var;
 
 	public JFieldView resolveProxyVar(Code code) {
-		Field proxy_var = code.clazz.resolveField(this.name,false);
+		Field proxy_var = code.clazz.resolveField(this.ident,false);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
 		return proxy_var.getJFieldView();
@@ -337,11 +323,11 @@ public static class JLVarExprView extends JLvalueExprView {
 
 	public JVarView resolveVarForConditions(Code code) {
 		assert( code.cond_generation );
-		Var var = this.var.getVVar();
+		Var var = this.var.getVar();
 		// Bind the correct var
 		if( var.parent != code.method ) {
 			assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-			if( this.name==nameResultVar ) {
+			if( this.ident==nameResultVar ) {
 				var = code.method.getRetVar();
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {
@@ -478,13 +464,8 @@ public static class JLVarExprView extends JLvalueExprView {
 }
 
 @nodeview
-public class JSFldExprView extends JAccessExprView {
-	final SFldExpr.SFldExprImpl impl;
-	public JSFldExprView(SFldExpr.SFldExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JFieldView		get$var()				{ return this.impl.var.getJFieldView(); }
+public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
+	public access:ro	JFieldView		var;
 	
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
@@ -522,14 +503,9 @@ public class JSFldExprView extends JAccessExprView {
 }
 
 @nodeview
-public static class JOuterThisAccessExprView extends JAccessExprView {
-	final OuterThisAccessExpr.OuterThisAccessExprImpl impl;
-	public JOuterThisAccessExprView(OuterThisAccessExpr.OuterThisAccessExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final Struct			get$outer()				{ return this.impl.outer; }
-	@getter public final NArr<Field>	get$outer_refs()		{ return this.impl.outer_refs; }
+public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JAccessExprView {
+	public access:ro	Struct			outer;
+	public access:ro	NArr<Field>		outer_refs;
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);

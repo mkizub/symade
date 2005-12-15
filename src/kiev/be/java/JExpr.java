@@ -11,20 +11,19 @@ import static kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.AssignExpr.AssignExprImpl;
+import kiev.vlang.IncrementExpr.IncrementExprImpl;
+
 @nodeview
-public class JAssignExprView extends JLvalueExprView {
-	final AssignExpr.AssignExprImpl impl;
-	public JAssignExprView(AssignExpr.AssignExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final AssignOperator	get$op()					{ return this.impl.op; }
-	@getter public final JLvalueExprView	get$lval()					{ return ((LvalueExpr)this.impl.lval).getJLvalueExprView(); }
-	@getter public final JENodeView			get$value()					{ return this.impl.value.getJENodeView(); }
+public final view JAssignExprView of AssignExprImpl extends JLvalueExprView {
+	public access:ro	AssignOperator		op;
+	public access:ro	JENodeView			lval;
+	public access:ro	JENodeView			value;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
 		code.setLinePos(this);
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		if( reqType != Type.tpVoid ) {
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 				lval.generateLoadDup(code);
@@ -53,6 +52,7 @@ public class JAssignExprView extends JLvalueExprView {
 	/** Just load value referenced by lvalue */
 	public void generateLoad(Code code) {
 		code.setLinePos(this);
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -74,6 +74,7 @@ public class JAssignExprView extends JLvalueExprView {
 	/** Stores value using previously duped info */
 	public void generateStore(Code code) {
 		code.setLinePos(this);
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -84,6 +85,7 @@ public class JAssignExprView extends JLvalueExprView {
 	/** Stores value using previously duped info, and put stored value in stack */
 	public void generateStoreDupValue(Code code) {
 		code.setLinePos(this);
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		lval.generateLoadDup(code);
 		value.generate(code,null);
 		if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) )
@@ -94,19 +96,14 @@ public class JAssignExprView extends JLvalueExprView {
 }
 
 @nodeview
-public class JIncrementExprView extends JENodeView {
-	final IncrementExpr.IncrementExprImpl impl;
-	public JIncrementExprView(IncrementExpr.IncrementExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final Operator			get$op()					{ return this.impl.op; }
-	@getter public final JLvalueExprView	get$lval()					{ return ((LvalueExpr)this.impl.lval).getJLvalueExprView(); }
+public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
+	public access:ro	Operator			op;
+	public access:ro	JENodeView			lval;
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
 		code.setLinePos(this);
-		JLvalueExprView lval = this.lval;
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		if( reqType != Type.tpVoid ) {
 			generateLoad(code);
 		} else {
@@ -152,6 +149,7 @@ public class JIncrementExprView extends JENodeView {
 	private void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: - load "+this);
 		code.setLinePos(this);
+		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		if( lval instanceof JLVarExprView ) {
 			JLVarExprView va = (JLVarExprView)lval;
 			if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {

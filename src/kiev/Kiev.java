@@ -516,6 +516,7 @@ public final class Kiev {
 		Operator				: "operators"		,
 		Typedef					: "typedef"			,
 		Enum					: "enum"			,
+		View					: "view"			,
 		PizzaCase				: "pizza case"		,
 		Contract				: "contract"		,
 		Generics				: "generics"		,
@@ -535,6 +536,7 @@ public final class Kiev {
 		transfProcessors[(int)Ext.VirtualFields]	= new ProcessVirtFld(Ext.VirtualFields);
 		transfProcessors[(int)Ext.PackedFields]	= new ProcessPackedFld(Ext.PackedFields);
 		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);
+		transfProcessors[(int)Ext.View]				= new ProcessView(Ext.View);
 		transfProcessors[(int)Ext.PizzaCase]		= new ProcessPizzaCase(Ext.PizzaCase);
 		transfProcessors[(int)Ext.VNode]			= new ProcessVNode(Ext.VNode);
 		transfProcessors[(int)Ext.DFlow]			= new ProcessDFlow(Ext.DFlow);

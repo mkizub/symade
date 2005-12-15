@@ -37,22 +37,12 @@ public class CallExpr extends ENode {
 		public CallExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class CallExprView extends ENodeView {
-		final CallExprImpl impl;
-		public CallExprView(CallExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode			get$obj()				{ return this.impl.obj; }
-		@getter public final Method			get$func()				{ return this.impl.func; }
-		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
-		@getter public final ENode			get$temp_expr()			{ return this.impl.temp_expr; }
-		@getter public final boolean		get$super_flag()		{ return this.impl.super_flag; }
-		
-		@setter public final void	set$obj(ENode val)			{ this.impl.obj = val; }
-		@setter public final void	set$func(Method val)		{ this.impl.func = val; }
-		@setter public final void	set$temp_expr(ENode val)	{ this.impl.temp_expr = val; }
-		@setter public final void	set$super_flag(boolean val)	{ this.impl.super_flag = val; }
+	public static view CallExprView of CallExprImpl extends ENodeView {
+		public				ENode			obj;
+		public				Method			func;
+		public access:ro	NArr<ENode>		args;
+		public				ENode			temp_expr;
+		public				boolean			super_flag;
 	}
 	
 	@att public abstract virtual			ENode				obj;
@@ -103,16 +93,8 @@ public class CallExpr extends ENode {
 		this.super_flag = super_flag;
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, NArr<ENode> args, boolean super_flag) {
-		this(pos, obj, func, args.toArray(), super_flag);
-	}
-	
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
 		this(pos, obj, func, args, false);
-	}
-
-	public CallExpr(int pos, ENode obj, Method func, NArr<ENode> args) {
-		this(pos, obj, func, args.toArray(), false);
 	}
 
 	public String toString() {
@@ -225,18 +207,10 @@ public class ClosureCallExpr extends ENode {
 		public ClosureCallExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class ClosureCallExprView extends ENodeView {
-		final ClosureCallExprImpl impl;
-		public ClosureCallExprView(ClosureCallExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final ENode			get$expr()				{ return this.impl.expr; }
-		@getter public final NArr<ENode>	get$args()				{ return this.impl.args; }
-		@getter public final boolean		get$is_a_call()			{ return this.impl.is_a_call; }
-		
-		@setter public final void	set$expr(ENode val)			{ this.impl.expr = val; }
-		@setter public final void	set$is_a_call(boolean val)	{ this.impl.is_a_call = val; }
+	public static view ClosureCallExprView of ClosureCallExprImpl extends ENodeView {
+		public				ENode			expr;
+		public access:ro	NArr<ENode>		args;
+		public				boolean			is_a_call;
 	}
 	
 	@att public abstract virtual			ENode				expr;
@@ -265,17 +239,6 @@ public class ClosureCallExpr extends ENode {
 		super(new ClosureCallExprImpl(pos));
 		this.expr = expr;
 		foreach(ENode e; args) this.args.append(e);
-		Type tp = expr.getType();
-		if (tp instanceof ClosureType)
-			is_a_call = tp.args.length==args.length;
-		else
-			is_a_call = true;
-	}
-
-	public ClosureCallExpr(int pos, ENode expr, NArr<ENode> args) {
-		super(new ClosureCallExprImpl(pos));
-		this.expr = expr;
-		this.args.addAll(args);
 		Type tp = expr.getType();
 		if (tp instanceof ClosureType)
 			is_a_call = tp.args.length==args.length;

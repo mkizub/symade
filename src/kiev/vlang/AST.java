@@ -251,79 +251,66 @@ public abstract class ASTNode implements Constants {
 		}	
 	}
 	@nodeview
-	public static class NodeView implements Constants {
-		public final NodeImpl impl;
-		public NodeView(NodeImpl impl) {
-			super();
-			this.impl = impl;
-		}
+	public static view NodeView of NodeImpl implements Constants {
 		
-		public final ASTNode getNode() { return impl._self; }
-		public String toString() { return String.valueOf(impl._self); }
+		public final ASTNode getNode() { return $view._self; }
+		public String toString() { return String.valueOf($view._self); }
+		public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
 		
-		@getter public final int			get$pos()			{ return this.impl.pos; }
-		@getter public final int			get$compileflags()	{ return this.impl.compileflags; }
-		@getter public final ASTNode		get$parent()		{ return this.impl.parent; }
-		@getter public final AttrSlot		get$pslot()			{ return this.impl.pslot; }
-		@getter public final ASTNode		get$pprev()			{ return this.impl.pprev; }
-		@getter public final ASTNode		get$pnext()			{ return this.impl.pnext; }
-		@getter public final NodeContext	get$pctx()			{ return this.impl.pctx; }
-		@getter public final NodeData		get$ndata()			{ return this.impl.ndata; }
+		public int			pos;
+		public int			compileflags;
+		public ASTNode		parent;
+		public AttrSlot		pslot;
+		public ASTNode		pprev;
+		public ASTNode		pnext;
+		public NodeContext	pctx;
+		public NodeData		ndata;
 		
-		@setter public final void set$pos(int val)				{ this.impl.pos = val; }
-		@setter public final void set$compileflags(int val)	{ this.impl.compileflags = val; }
-		@setter public final void set$parent(ASTNode val)		{ this.impl.parent = val; }
-		@setter public final void set$pslot(AttrSlot val)		{ this.impl.pslot = val; }
-		@setter public final void set$pprev(ASTNode val)		{ this.impl.pprev = val; }
-		@setter public final void set$pnext(ASTNode val)		{ this.impl.pnext = val; }
-		@setter public final void set$pctx(NodeContext val)	{ this.impl.pctx = val; }
-		@setter public final void set$ndata(NodeData val)		{ this.impl.ndata = val; }
-
 		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
 		@getter public final boolean isAccessedFromInner() {
-			return this.impl.is_accessed_from_inner;
+			return this.$view.is_accessed_from_inner;
 		}
 		@setter public final void setAccessedFromInner(boolean on) {
-			if (this.impl.is_accessed_from_inner != on) {
-				this.impl.is_accessed_from_inner = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_accessed_from_inner != on) {
+				this.$view.is_accessed_from_inner = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// resolved
 		@getter public final boolean isResolved() {
-			return this.impl.is_resolved;
+			return this.$view.is_resolved;
 		}
 		@setter public final void setResolved(boolean on) {
-			if (this.impl.is_resolved != on) {
-				this.impl.is_resolved = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_resolved != on) {
+				this.$view.is_resolved = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// hidden
 		@getter public final boolean isHidden() {
-			return this.impl.is_hidden;
+			return this.$view.is_hidden;
 		}
 		@setter public final void setHidden(boolean on) {
-			if (this.impl.is_hidden != on) {
-				this.impl.is_hidden = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_hidden != on) {
+				this.$view.is_hidden = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// bad
 		@getter public final boolean isBad() {
-			return this.impl.is_bad;
+			return this.$view.is_bad;
 		}
 		@setter public final void setBad(boolean on) {
-			if (this.impl.is_bad != on) {
-				this.impl.is_bad = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_bad != on) {
+				this.$view.is_bad = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
 	
 	public NodeImpl $v_impl;
-	public NodeView getNodeView()		{ return new NodeView(this.$v_impl); }
-	public JNodeView getJNodeView()		{ return new JNodeView(this.$v_impl); }
+	public NodeView		getNodeView()	alias operator(210,fy,$cast) { return new NodeView($v_impl); }
+	public JNodeView	getJNodeView()	alias operator(210,fy,$cast) { return new JNodeView($v_impl); }
 	
 	@virtual
 	public abstract virtual							int				pos;
@@ -351,23 +338,23 @@ public abstract class ASTNode implements Constants {
 		setupContext();
 	}
 
-	@getter public int			get$pos()			{ return this.getNodeView().get$pos(); }
-	@getter public int			get$compileflags()	{ return this.getNodeView().get$compileflags(); }
-	@getter public ASTNode		get$parent()		{ return this.getNodeView().get$parent(); }
-	@getter public AttrSlot		get$pslot()			{ return this.getNodeView().get$pslot(); }
-	@getter public ASTNode		get$pprev()			{ return this.getNodeView().get$pprev(); }
-	@getter public ASTNode		get$pnext()			{ return this.getNodeView().get$pnext(); }
-	@getter public NodeContext	get$pctx()			{ return this.getNodeView().get$pctx(); }
-	@getter public NodeData		get$ndata()			{ return this.getNodeView().get$ndata(); }
+	@getter public int			get$pos()			{ return this.getNodeView().pos; }
+	@getter public int			get$compileflags()	{ return this.getNodeView().compileflags; }
+	@getter public ASTNode		get$parent()		{ return this.getNodeView().parent; }
+	@getter public AttrSlot		get$pslot()			{ return this.getNodeView().pslot; }
+	@getter public ASTNode		get$pprev()			{ return this.getNodeView().pprev; }
+	@getter public ASTNode		get$pnext()			{ return this.getNodeView().pnext; }
+	@getter public NodeContext	get$pctx()			{ return this.getNodeView().pctx; }
+	@getter public NodeData		get$ndata()			{ return this.getNodeView().ndata; }
 	
-	@setter public void set$pos(int val)			{ this.getNodeView().set$pos(val); }
-	@setter public void set$compileflags(int val)	{ this.getNodeView().set$compileflags(val); }
-	@setter public void set$parent(ASTNode val)	{ this.getNodeView().set$parent(val); }
-	@setter public void set$pslot(AttrSlot val)	{ this.getNodeView().set$pslot(val); }
-	@setter public void set$pprev(ASTNode val)		{ this.getNodeView().set$pprev(val); }
-	@setter public void set$pnext(ASTNode val)		{ this.getNodeView().set$pnext(val); }
-	@setter public void set$pctx(NodeContext val)	{ this.getNodeView().set$pctx(val); }
-	@setter public void set$ndata(NodeData val)	{ this.getNodeView().set$ndata(val); }
+	@setter public void set$pos(int val)			{ this.getNodeView().pos = val; }
+	@setter public void set$compileflags(int val)	{ this.getNodeView().compileflags = val; }
+	@setter public void set$parent(ASTNode val)	{ this.getNodeView().parent = val; }
+	@setter public void set$pslot(AttrSlot val)	{ this.getNodeView().pslot = val; }
+	@setter public void set$pprev(ASTNode val)		{ this.getNodeView().pprev = val; }
+	@setter public void set$pnext(ASTNode val)		{ this.getNodeView().pnext = val; }
+	@setter public void set$pctx(NodeContext val)	{ this.getNodeView().pctx = val; }
+	@setter public void set$ndata(NodeData val)	{ this.getNodeView().ndata = val; }
 
 	public void setupContext() {
 		if (this.parent == null)
@@ -618,7 +605,7 @@ public abstract class DNode extends ASTNode {
 		public packed:1,flags,17 boolean is_struct_argument;   // struct
 		public packed:1,flags,18 boolean is_struct_pizza_case; // struct
 		public packed:1,flags,20 boolean is_struct_syntax;     // struct
-		public packed:1,flags,22 boolean is_struct_bytecode;    // struct was loaded from bytecode
+		public packed:1,flags,23 boolean is_struct_bytecode;    // struct was loaded from bytecode
 
 		public DNodeImpl() {}
 		public DNodeImpl(int pos) {
@@ -630,19 +617,13 @@ public abstract class DNode extends ASTNode {
 		}
 	}
 	@nodeview
-	public static class DNodeView extends NodeView {
-		final DNodeImpl impl;
-		public DNodeView(DNodeImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
+	public static view DNodeView of DNodeImpl extends NodeView {
 
-		public final DNode getDNode() { return (DNode)impl._self; }
+		public final DNode getDNode() { return (DNode)getNode(); }
+		public Dumper toJavaDecl(Dumper dmp) { return getDNode().toJavaDecl(dmp); }
 		
-		@getter public final int		get$flags()				{ return this.impl.flags; }
-		@getter public final MetaSet	get$meta()				{ return this.impl.meta; }
-		@setter public final void		set$flags(int val)		{ this.impl.flags = val; }
-		@setter public final void		set$meta(MetaSet val)	{ this.impl.meta = val; }
+		public int		flags;
+		public MetaSet	meta;
 
 		public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
 		public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
@@ -657,78 +638,79 @@ public abstract class DNode extends ASTNode {
 		public final boolean isInterface()			{ return (flags & ACC_INTERFACE) != 0; }
 		public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
 		public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
+		public final boolean isView()				{ return (flags & ACC_VIEW) != 0; }
 
 		public void setPublic(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PUBLIC;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setPrivate(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PRIVATE;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setProtected(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
 			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
 			if( on ) flags |= ACC_PROTECTED;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setStatic(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_STATIC;
 			else flags &= ~ACC_STATIC;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setFinal(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_FINAL;
 			else flags &= ~ACC_FINAL;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setSynchronized(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_SYNCHRONIZED;
 			else flags &= ~ACC_SYNCHRONIZED;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setVolatile(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_VOLATILE;
 			else flags &= ~ACC_VOLATILE;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setTransient(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_TRANSIENT;
 			else flags &= ~ACC_TRANSIENT;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setNative(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_NATIVE;
 			else flags &= ~ACC_NATIVE;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setInterface(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
 			else flags &= ~ACC_INTERFACE;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setAbstract(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_ABSTRACT;
 			else flags &= ~ACC_ABSTRACT;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setSuper(boolean on) {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_SUPER;
 			else flags &= ~ACC_SUPER;
-			this.impl.callbackChildChanged(nodeattr$flags);
+			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 	}
 
@@ -744,11 +726,11 @@ public abstract class DNode extends ASTNode {
 
 	public DNode(DNodeImpl v_impl) { super(v_impl); }
 
-	@getter public int			get$flags()			{ return this.getDNodeView().get$flags(); }
-	@getter public MetaSet		get$meta()			{ return this.getDNodeView().get$meta(); }
+	@getter public int			get$flags()			{ return this.getDNodeView().flags; }
+	@getter public MetaSet		get$meta()			{ return this.getDNodeView().meta; }
 	
-	@setter public void set$flags(int val)			{ this.getDNodeView().set$flags(val); }
-	@setter public void set$meta(MetaSet val)		{ this.getDNodeView().set$meta(val); }
+	@setter public void set$flags(int val)			{ this.getDNodeView().flags = val; }
+	@setter public void set$meta(MetaSet val)		{ this.getDNodeView().meta = val; }
 
 	public abstract void resolveDecl();
 	public abstract Dumper toJavaDecl(Dumper dmp);
@@ -769,6 +751,7 @@ public abstract class DNode extends ASTNode {
 	public boolean isInterface()		{ return this.getDNodeView().isInterface(); }
 	public boolean isAbstract()			{ return this.getDNodeView().isAbstract(); }
 	public boolean isSuper()			{ return this.getDNodeView().isSuper(); }
+	public boolean isView()				{ return this.getDNodeView().isView(); }
 
 	public void setPublic(boolean on)		{ this.getDNodeView().setPublic(on); }
 	public void setPrivate(boolean on)		{ this.getDNodeView().setPrivate(on); }
@@ -798,39 +781,39 @@ public abstract class LvalDNode extends DNode {
 		public LvalDNodeImpl(int pos, int fl) { super(pos, fl); }
 	}
 	@nodeview
-	public static class LvalDNodeView extends DNodeView {
-		public LvalDNodeView(LvalDNodeImpl impl) {
-			super(impl);
+	public static view LvalDNodeView of LvalDNodeImpl extends DNodeView {
+		public LvalDNodeView(LvalDNodeImpl $view) {
+			super($view);
 		}
 
 		// use no proxy	
 		@getter public final boolean isForward() {
-			return this.impl.is_forward;
+			return this.$view.is_forward;
 		}
 		@setter public final void setForward(boolean on) {
-			if (this.impl.is_forward != on) {
-				this.impl.is_forward = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_forward != on) {
+				this.$view.is_forward = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// init wrapper
 		@getter public final boolean isInitWrapper() {
-			return this.impl.is_init_wrapper;
+			return this.$view.is_init_wrapper;
 		}
 		@setter public final void setInitWrapper(boolean on) {
-			if (this.impl.is_init_wrapper != on) {
-				this.impl.is_init_wrapper = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_init_wrapper != on) {
+				this.$view.is_init_wrapper = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// need a proxy access 
 		@getter public final boolean isNeedProxy() {
-			return this.impl.is_need_proxy;
+			return this.$view.is_need_proxy;
 		}
 		@setter public final void setNeedProxy(boolean on) {
-			if (this.impl.is_need_proxy != on) {
-				this.impl.is_need_proxy = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_need_proxy != on) {
+				this.$view.is_need_proxy = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
@@ -871,12 +854,12 @@ public /*abstract*/ class ENode extends ASTNode {
 		public ENodeImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public static class ENodeView extends NodeView {
-		public ENodeView(ENodeImpl impl) {
-			super(impl);
+	public static view ENodeView of ENodeImpl extends NodeView {
+		public ENodeView(ENodeImpl $view) {
+			super($view);
 		}
 
-		public final ENode getENode() { return (ENode)this.impl._self; }
+		public final ENode getENode() { return (ENode)this.getNode(); }
 		
 		//
 		// Expr specific
@@ -884,62 +867,62 @@ public /*abstract*/ class ENode extends ASTNode {
 	
 		// use no proxy	
 		public final boolean isUseNoProxy() {
-			return this.impl.is_expr_use_no_proxy;
+			return this.$view.is_expr_use_no_proxy;
 		}
 		public final void setUseNoProxy(boolean on) {
-			if (this.impl.is_expr_use_no_proxy != on) {
-				this.impl.is_expr_use_no_proxy = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_use_no_proxy != on) {
+				this.$view.is_expr_use_no_proxy = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// use as field (disable setter/getter calls for virtual fields)
 		public final boolean isAsField() {
-			return this.impl.is_expr_as_field;
+			return this.$view.is_expr_as_field;
 		}
 		public final void setAsField(boolean on) {
-			if (this.impl.is_expr_as_field != on) {
-				this.impl.is_expr_as_field = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_as_field != on) {
+				this.$view.is_expr_as_field = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// expression will generate void value
 		public final boolean isGenVoidExpr() {
-			return this.impl.is_expr_gen_void;
+			return this.$view.is_expr_gen_void;
 		}
 		public final void setGenVoidExpr(boolean on) {
-			if (this.impl.is_expr_gen_void != on) {
-				this.impl.is_expr_gen_void = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_gen_void != on) {
+				this.$view.is_expr_gen_void = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// tried to be resolved
 		public final boolean isTryResolved() {
-			return this.impl.is_expr_try_resolved;
+			return this.$view.is_expr_try_resolved;
 		}
 		public final void setTryResolved(boolean on) {
-			if (this.impl.is_expr_try_resolved != on) {
-				this.impl.is_expr_try_resolved = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_try_resolved != on) {
+				this.$view.is_expr_try_resolved = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// used bt for()
 		public final boolean isForWrapper() {
-			return this.impl.is_expr_for_wrapper;
+			return this.$view.is_expr_for_wrapper;
 		}
 		public final void setForWrapper(boolean on) {
-			if (this.impl.is_expr_for_wrapper != on) {
-				this.impl.is_expr_for_wrapper = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_for_wrapper != on) {
+				this.$view.is_expr_for_wrapper = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// used for primary expressions, i.e. (a+b)
 		public final boolean isPrimaryExpr() {
-			return this.impl.is_expr_primary;
+			return this.$view.is_expr_primary;
 		}
 		public final void setPrimaryExpr(boolean on) {
-			if (this.impl.is_expr_primary != on) {
-				this.impl.is_expr_primary = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_expr_primary != on) {
+				this.$view.is_expr_primary = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	
@@ -949,60 +932,60 @@ public /*abstract*/ class ENode extends ASTNode {
 		
 		// abrupted
 		public final boolean isAbrupted() {
-			return this.impl.is_stat_abrupted;
+			return this.$view.is_stat_abrupted;
 		}
 		public final void setAbrupted(boolean on) {
-			if (this.impl.is_stat_abrupted != on) {
-				this.impl.is_stat_abrupted = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_stat_abrupted != on) {
+				this.$view.is_stat_abrupted = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// breaked
 		public final boolean isBreaked() {
-			return this.impl.is_stat_breaked;
+			return this.$view.is_stat_breaked;
 		}
 		public final void setBreaked(boolean on) {
-			if (this.impl.is_stat_breaked != on) {
-				this.impl.is_stat_breaked = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_stat_breaked != on) {
+				this.$view.is_stat_breaked = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method-abrupted
 		public final boolean isMethodAbrupted() {
-			return this.impl.is_stat_method_abrupted;
+			return this.$view.is_stat_method_abrupted;
 		}
 		public final void setMethodAbrupted(boolean on) {
-			if (this.impl.is_stat_method_abrupted != on) {
-				this.impl.is_stat_method_abrupted = on;
-				if (on) this.impl.is_stat_abrupted = true;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_stat_method_abrupted != on) {
+				this.$view.is_stat_method_abrupted = on;
+				if (on) this.$view.is_stat_abrupted = true;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// auto-returnable
 		public final boolean isAutoReturnable() {
-			return this.impl.is_stat_auto_returnable;
+			return this.$view.is_stat_auto_returnable;
 		}
 		public final void setAutoReturnable(boolean on) {
-			if (this.impl.is_stat_auto_returnable != on) {
-				this.impl.is_stat_auto_returnable = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_stat_auto_returnable != on) {
+				this.$view.is_stat_auto_returnable = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// break target
 		public final boolean isBreakTarget() {
-			return this.impl.is_stat_break_target;
+			return this.$view.is_stat_break_target;
 		}
 		public final void setBreakTarget(boolean on) {
-			if (this.impl.is_stat_break_target != on) {
-				this.impl.is_stat_break_target = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_stat_break_target != on) {
+				this.$view.is_stat_break_target = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
-	public NodeView			getNodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
-	public ENodeView		getENodeView()		{ return new ENodeView((ENodeImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JENodeView((ENodeImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()		{ return new JENodeView((ENodeImpl)this.$v_impl); }
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new ENodeView((ENodeImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			alias operator(210,fy,$cast) { return new ENodeView((ENodeImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			alias operator(210,fy,$cast) { return new JENodeView((ENodeImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			alias operator(210,fy,$cast) { return new JENodeView((ENodeImpl)this.$v_impl); }
 
 	public static final ENode[] emptyArray = new ENode[0];
 	
@@ -1121,22 +1104,15 @@ public final class VarDecl extends ENode implements Named {
 	}
 
 	@node
-	public static class VarDeclImpl extends ENodeImpl {
+	public static final class VarDeclImpl extends ENodeImpl {
 		public VarDeclImpl() {}
 
 		@att public Var var;
 	
 	}
 	@nodeview
-	public static class VarDeclView extends ENodeView {
-		final VarDeclImpl impl;
-		public VarDeclView(VarDeclImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		
-		@getter public final Var		get$var()				{ return this.impl.var; }
-		@setter public final void 		set$var(Var val)		{ this.impl.var = val; }
+	public static final view VarDeclView of VarDeclImpl extends ENodeView {
+		public Var		var;
 	}
 
 	@att public virtual abstract	Var		var;
@@ -1177,22 +1153,15 @@ public final class LocalStructDecl extends ENode implements Named {
 	@dflow(out="this:in") private static class DFI {}
 
 	@node
-	public static class LocalStructDeclImpl extends ENodeImpl {
+	public static final class LocalStructDeclImpl extends ENodeImpl {
 		public LocalStructDeclImpl() {}
 
 		@att public Struct clazz;
 	
 	}
 	@nodeview
-	public static class LocalStructDeclView extends ENodeView {
-		final LocalStructDeclImpl impl;
-		public LocalStructDeclView(LocalStructDeclImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		
-		@getter public final Struct		get$clazz()				{ return this.impl.clazz; }
-		@setter public final void 		set$clazz(Struct val)	{ this.impl.clazz = val; }
+	public static final view LocalStructDeclView of LocalStructDeclImpl extends ENodeView {
+		public Struct		clazz;
 	}
 
 	@att public abstract virtual Struct clazz;
@@ -1238,27 +1207,20 @@ public final class LocalStructDecl extends ENode implements Named {
 
 
 @node
-public class NopExpr extends ENode {
+public final class NopExpr extends ENode {
 
 	@dflow(out="expr") private static class DFI {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
 	@node
-	public static class NopExprImpl extends ENodeImpl {
+	public static final class NopExprImpl extends ENodeImpl {
 		public NopExprImpl() {}
 		@att public ENode	expr;
 	}
 	@nodeview
-	public static class NopExprView extends ENodeView {
-		final NopExprImpl impl;
-		public NopExprView(NopExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		
-		@getter public final ENode		get$expr()				{ return this.impl.expr; }
-		@setter public final void 		set$expr(ENode val)		{ this.impl.expr = val; }
+	public static final view NopExprView of NopExprImpl extends ENodeView {
+		public ENode		expr;
 	}
 
 	@att public abstract virtual ENode expr;
@@ -1285,7 +1247,7 @@ public class NopExpr extends ENode {
 }
 
 @node
-public class InitializerShadow extends ENode {
+public final class InitializerShadow extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
@@ -1321,19 +1283,15 @@ public abstract class TypeDef extends DNode implements Named {
 		public TypeDefImpl(int pos, int fl) { super(pos, fl); }
 	}
 	@nodeview
-	public static class TypeDefView extends DNodeView {
-		public TypeDefView(TypeDefImpl impl) {
-			super(impl);
+	public static view TypeDefView of TypeDefImpl extends DNodeView {
+		public TypeDefView(TypeDefImpl $view) {
+			super($view);
 		}
 	}
-	public NodeView			getNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public TypeDefView		getTypeDefView()	{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
-	public JTypeDefView		getJTypeDefView()	{ return new JTypeDefView((TypeDefImpl)this.$v_impl); }
+	public abstract TypeDefView		getTypeDefView();
+	public abstract JTypeDefView	getJTypeDefView();
 
-	public TypeDef(TypeDefImpl v_impl) { super(v_impl); }
+	public TypeDef(TypeDefImpl impl) { super(impl); }
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
@@ -1478,17 +1436,11 @@ public class NameRef extends ASTNode {
 			this.name = KString.from(t.image);
 	}
 	
-	public Type getType() {
-		return Type.tpVoid;
-	}
+	public Type getType() { return Type.tpVoid; }
 
-	public KString toKString() {
-		return name;
-	}
+	public KString toKString() alias operator(210,fy,$cast) { return name; }
     
-	public String toString() {
-		return name.toString();
-	}
+	public String toString() { return name.toString(); }
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.space().append(name).space();

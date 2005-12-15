@@ -36,7 +36,7 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
+public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
 	public enum ImportMode {
@@ -47,7 +47,7 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 	}
 
 	@node
-	static class ImportImpl extends DNodeImpl {
+	static final class ImportImpl extends DNodeImpl {
 		ImportImpl() {}
 		@att NameRef				name;
 		@att ImportMode				mode = ImportMode.IMPORT_CLASS;
@@ -58,24 +58,13 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 		@ref DNode					resolved;
 	}
 	@nodeview
-	static class ImportView extends DNodeView {
-		final ImportImpl impl;
-		ImportView(ImportImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final NameRef				get$name()	{ return this.impl.name; }
-		@getter public final ImportMode				get$mode()	{ return this.impl.mode; }
-		@getter public final boolean				get$star()	{ return this.impl.star; }
-		@getter public final NArr<TypeRef>			get$args()	{ return this.impl.args; }
-		@getter public final boolean				get$of_method()	{ return this.impl.of_method; }
-		@getter public final DNode					get$resolved()	{ return this.impl.resolved; }
-		
-		@setter public final void set$name(NameRef val)			{ this.impl.name = val; }
-		@setter public final void set$mode(ImportMode val)			{ this.impl.mode = val; }
-		@setter public final void set$star(boolean val)			{ this.impl.star = val; }
-		@setter public final void set$of_method(boolean val)		{ this.impl.of_method = val; }
-		@setter public final void set$resolved(DNode val)			{ this.impl.resolved = val; }
+	static final view ImportView of ImportImpl extends DNodeView {
+		public				NameRef				name;
+		public				ImportMode			mode;
+		public				boolean				star;
+		public access:ro	NArr<TypeRef>		args;
+		public				boolean				of_method;
+		public				DNode				resolved;
 	}
 	public NodeView			getNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
@@ -226,10 +215,10 @@ public class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMet
 
 
 @node
-public class TypeDefOp extends TypeDef implements Named {
+public final class TypeDefOp extends TypeDef implements Named {
 
 	@node
-	static class TypeDefOpImpl extends TypeDefImpl {
+	static final class TypeDefOpImpl extends TypeDefImpl {
 		TypeDefOpImpl() {}
 		TypeDefOpImpl(int pos) { super(pos); }
 		@att KString		name;
@@ -237,32 +226,23 @@ public class TypeDefOp extends TypeDef implements Named {
 		@att TypeArgDef		typearg;
 	}
 	@nodeview
-	static class TypeDefOpView extends TypeDefView {
-		final TypeDefOpImpl impl;
-		TypeDefOpView(TypeDefOpImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final KString			get$name()		{ return this.impl.name; }
-		@getter public final TypeRef			get$type()		{ return this.impl.type; }
-		@getter public final TypeArgDef			get$typearg()	{ return this.impl.typearg; }
-		
-		@setter public final void set$name(KString val)		{ this.impl.name = val; }
-		@setter public final void set$type(TypeRef val)		{ this.impl.type = val; }
-		@setter public final void set$typearg(TypeArgDef val)	{ this.impl.typearg = val; }
+	static final view TypeDefOpView of TypeDefOpImpl extends TypeDefView {
+		public	KString			name;
+		public	TypeRef			type;
+		public	TypeArgDef		typearg;
 	}
 	public NodeView			getNodeView()		{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
 	public TypeDefView		getTypeDefView()	{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
 	public TypeDefOpView	getTypeDefOpView()	{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
 
-	@getter public KString			get$name()		{ return this.getTypeDefOpView().get$name(); }
-	@getter public TypeRef			get$type()		{ return this.getTypeDefOpView().get$type(); }
-	@getter public TypeArgDef		get$typearg()	{ return this.getTypeDefOpView().get$typearg(); }
+	@getter public KString			get$name()		{ return this.getTypeDefOpView().name; }
+	@getter public TypeRef			get$type()		{ return this.getTypeDefOpView().type; }
+	@getter public TypeArgDef		get$typearg()	{ return this.getTypeDefOpView().typearg; }
 
-	@setter public void set$name(KString val)			{ this.getTypeDefOpView().set$name(val); }
-	@setter public void set$type(TypeRef val)			{ this.getTypeDefOpView().set$type(val); }
-	@setter public void set$typearg(TypeArgDef val)	{ this.getTypeDefOpView().set$typearg(val); }
+	@setter public void set$name(KString val)			{ this.getTypeDefOpView().name = val; }
+	@setter public void set$type(TypeRef val)			{ this.getTypeDefOpView().type = val; }
+	@setter public void set$typearg(TypeArgDef val)	{ this.getTypeDefOpView().typearg = val; }
 	
 	public static TypeDefOp[]		emptyArray = new TypeDefOp[0];
 

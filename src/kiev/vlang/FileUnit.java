@@ -34,23 +34,14 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		     public boolean				scanned_for_interface_only;
 	}
 	@nodeview
-	static class FileUnitView extends DNodeView {
-		final FileUnitImpl impl;
-		FileUnitView(FileUnitImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final KString				get$filename()	{ return this.impl.filename; }
-		@getter public final TypeNameRef			get$pkg()		{ return this.impl.pkg; }
-		@getter public final NArr<DNode>			get$syntax()	{ return this.impl.syntax; }
-		@getter public final NArr<DNode>			get$members()	{ return this.impl.members; }
-		@getter public final NArr<PrescannedBody>	get$bodies()	{ return this.impl.bodies; }
-		@getter public final boolean[]				get$disabled_extensions()			{ return this.impl.disabled_extensions; }
-		@getter public final boolean				get$scanned_for_interface_only()	{ return this.impl.scanned_for_interface_only; }
-
-		@setter public final void set$filename(KString val)					{ this.impl.filename = val; }
-		@setter public final void set$pkg(TypeNameRef val)						{ this.impl.pkg = val; }
-		@setter public final void set$scanned_for_interface_only(boolean val)	{ this.impl.scanned_for_interface_only = val; }
+	static final view FileUnitView of FileUnitImpl extends DNodeView {
+		public				KString					filename;
+		public				TypeNameRef				pkg;
+		public access:ro	NArr<DNode>				syntax;
+		public access:ro	NArr<DNode>				members;
+		public access:ro	NArr<PrescannedBody>	bodies;
+		public access:ro	boolean[]				disabled_extensions;
+		public				boolean					scanned_for_interface_only;
 	}
 	public NodeView			getNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
@@ -66,17 +57,17 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	     public abstract virtual access:ro		boolean[]				disabled_extensions;
 	     public abstract virtual				boolean					scanned_for_interface_only;
 
-	@getter public KString					get$filename()	{ return this.getFileUnitView().get$filename(); }
-	@getter public TypeNameRef				get$pkg()		{ return this.getFileUnitView().get$pkg(); }
-	@getter public NArr<DNode>				get$syntax()	{ return this.getFileUnitView().get$syntax(); }
-	@getter public NArr<DNode>				get$members()	{ return this.getFileUnitView().get$members(); }
-	@getter public NArr<PrescannedBody>	get$bodies()	{ return this.getFileUnitView().get$bodies(); }
-	@getter public boolean[]				get$disabled_extensions()			{ return this.getFileUnitView().get$disabled_extensions(); }
-	@getter public boolean					get$scanned_for_interface_only()	{ return this.getFileUnitView().get$scanned_for_interface_only(); }
+	@getter public KString					get$filename()	{ return this.getFileUnitView().filename; }
+	@getter public TypeNameRef				get$pkg()		{ return this.getFileUnitView().pkg; }
+	@getter public NArr<DNode>				get$syntax()	{ return this.getFileUnitView().syntax; }
+	@getter public NArr<DNode>				get$members()	{ return this.getFileUnitView().members; }
+	@getter public NArr<PrescannedBody>	get$bodies()	{ return this.getFileUnitView().bodies; }
+	@getter public boolean[]				get$disabled_extensions()			{ return this.getFileUnitView().disabled_extensions; }
+	@getter public boolean					get$scanned_for_interface_only()	{ return this.getFileUnitView().scanned_for_interface_only; }
 
-	@setter public void set$filename(KString val)						{ this.getFileUnitView().set$filename(val); }
-	@setter public void set$pkg(TypeNameRef val)						{ this.getFileUnitView().set$pkg(val); }
-	@setter public void set$scanned_for_interface_only(boolean val)	{ this.getFileUnitView().set$scanned_for_interface_only(val); }
+	@setter public void set$filename(KString val)						{ this.getFileUnitView().filename = val; }
+	@setter public void set$pkg(TypeNameRef val)						{ this.getFileUnitView().pkg = val; }
+	@setter public void set$scanned_for_interface_only(boolean val)	{ this.getFileUnitView().scanned_for_interface_only = val; }
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);

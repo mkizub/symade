@@ -22,7 +22,7 @@ package kiev.vlang;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -69,8 +69,9 @@ public interface AccessFlags {
 	public static final int ACC_ARGUMENT			= 1 << 17;
 	public static final int ACC_PIZZACASE			= 1 << 18;
 	//public static final int ACC_ENUM				= 1 << 19;
-	public static final int ACC_SYNTAX			= 1 << 20;
+	public static final int ACC_SYNTAX				= 1 << 20;
 	public static final int ACC_WRAPPER			= 1 << 21;
+	public static final int ACC_VIEW				= 1 << 22;
 
 	// Method specific
 	//public static final int ACC_MULTIMETHOD		= 1 << 11;

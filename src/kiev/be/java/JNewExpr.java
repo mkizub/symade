@@ -11,20 +11,22 @@ import static kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.NewExpr.NewExprImpl;
+import kiev.vlang.NewArrayExpr.NewArrayExprImpl;
+import kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl;
+import kiev.vlang.NewClosure.NewClosureImpl;
+
 @nodeview
-public class JNewExprView extends JENodeView {
-	final NewExpr.NewExprImpl impl;
-	public JNewExprView(NewExpr.NewExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final Type			get$type()				{ return this.impl.type.getType(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.impl.args.toJViewArray(JENodeView.class); }
-	@getter public final JENodeView		get$outer()				{ return this.impl.outer==null? null : this.impl.outer.getJENodeView(); }
-	@getter public final JENodeView		get$temp_expr()			{ return this.impl.temp_expr.getJENodeView(); }
-	@getter public final JMethodView	get$func()				{ return this.impl.func.getJMethodView(); }
+public final view JNewExprView of NewExprImpl extends JENodeView {
+	public access:ro	Type			type;
+	public access:ro	JENodeView[]	args;
+	public access:ro	JENodeView		outer;
+	public				JENodeView		temp_expr;
+	public access:ro	JMethodView		func;
 	
-	@setter public final void	set$temp_expr(JENodeView val)	{ this.impl.temp_expr = val==null? null : val.getENode(); }
+	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJENodeView(); }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	@setter public final void	set$temp_expr(JENodeView val)	{ this.$view.temp_expr = val==null? null : val.getENode(); }
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
@@ -91,16 +93,13 @@ public class JNewExprView extends JENodeView {
 
 
 @nodeview
-public class JNewArrayExprView extends JENodeView {
-	final NewArrayExpr.NewArrayExprImpl impl;
-	public JNewArrayExprView(NewArrayExpr.NewArrayExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final Type			get$type()				{ return this.impl.type.getType(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.impl.args.toJViewArray(JENodeView.class); }
-	@getter public final int			get$dim()				{ return this.impl.dim; }
-	@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
+public final view JNewArrayExprView of NewArrayExprImpl extends JENodeView {
+	public access:ro	Type			type;
+	public access:ro	JENodeView[]	args;
+	public access:ro	int				dim;
+	public access:ro	Type			arrtype;
+	
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewArrayExpr: "+this);
@@ -121,18 +120,16 @@ public class JNewArrayExprView extends JENodeView {
 }
 
 @nodeview
-public class JNewInitializedArrayExprView extends JENodeView {
-	final NewInitializedArrayExpr.NewInitializedArrayExprImpl impl;
-	public JNewInitializedArrayExprView(NewInitializedArrayExpr.NewInitializedArrayExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final Type			get$type()				{ return this.impl.type.getType(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.impl.args.toJViewArray(JENodeView.class); }
-	@getter public final int			get$dim()				{ return this.impl.dims.length; }
-	@getter public final int[]			get$dims()				{ return this.impl.dims; }
-	@getter public final Type			get$arrtype()			{ return this.impl.arrtype; }
+public final view JNewInitializedArrayExprView of NewInitializedArrayExprImpl extends JENodeView {
+	public access:ro	Type			type;
+	public access:ro	JENodeView[]	args;
+	public access:ro	int				dim;
+	public access:ro	int[]			dims;
+	public access:ro	Type			arrtype;
 
+	@getter public final int			get$dim()				{ return this.$view.dims.length; }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewInitializedArrayExpr: "+this);
 		Type type = this.type;
@@ -157,15 +154,12 @@ public class JNewInitializedArrayExprView extends JENodeView {
 }
 
 @nodeview
-public class JNewClosureView extends JENodeView {
-	final NewClosure.NewClosureImpl impl;
-	public JNewClosureView(NewClosure.NewClosureImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final ClosureType		get$type()				{ return (ClosureType)this.impl.type.getType(); }
-	@getter public final Struct				get$clazz()				{ return this.impl.clazz; }
-	@getter public final Method				get$func()				{ return this.impl.func; }
+public final view JNewClosureView of NewClosureImpl extends JENodeView {
+	public access:ro	ClosureType		type;
+	public access:ro	Struct			clazz;
+	public access:ro	Method			func;
+
+	@getter public final ClosureType		get$type()				{ return (ClosureType)this.$view.type.getType(); }
 	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewClosure: "+this);

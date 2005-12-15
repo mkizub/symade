@@ -254,6 +254,7 @@ kiev.transf.ProcessEnum kiev/transf/ProcessEnum kiev\transf\ProcessEnum.java
 kiev.transf.ProcessPackedFld kiev/transf/ProcessPackedFld kiev\transf\ProcessPackedFld.java
 kiev.transf.ProcessPizzaCase kiev/transf/ProcessPizzaCase kiev\transf\ProcessPizzaCase.java
 kiev.transf.ProcessVNode kiev/transf/ProcessVNode kiev\transf\ProcessVNode.java
+kiev.transf.ProcessView kiev/transf/ProcessView kiev\transf\ProcessView.java
 kiev.transf.ProcessVirtFld kiev/transf/ProcessVirtFld kiev\transf\ProcessVirtFld.java
 kiev.transf.TransfProcessor kiev/transf/TransfProcessor kiev\transf\TransfProcessor.java
 kiev.vlang.ASTNode kiev/vlang/ASTNode kiev\vlang\AST.java

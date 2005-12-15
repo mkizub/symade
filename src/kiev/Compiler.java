@@ -668,11 +668,11 @@ public class Compiler {
 			for(int i=0; i < Kiev.files.length; i++) {
 				final int errCount = Kiev.errCount;
 				final FileUnit fu = Kiev.files[i];
-				if (Kiev.errCount == errCount)
+				if (Kiev.errCount == errCount || Kiev.source_only)
 					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(fu); });
-				if (Kiev.errCount == errCount)
+				if (Kiev.errCount == errCount || Kiev.source_only)
 					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.rewriteNode(fu); });
-				if (Kiev.errCount == errCount)
+				if (Kiev.errCount == errCount || Kiev.source_only)
 					Kiev.runBackends(fun (BackendProcessor bep)->void { bep.generate(fu); });
 				fu.cleanup();
 				Kiev.files[i] = null;

@@ -42,14 +42,8 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 		public ConstBoolExprImpl(boolean value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstBoolExprView extends ConstExprView {
-		final ConstBoolExprImpl impl;
-		public ConstBoolExprView(ConstBoolExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final boolean	get$value()				{ return this.impl.value; }
-		@setter public final void		set$value(boolean val)	{ this.impl.value = val; }
+	public static view ConstBoolExprView of ConstBoolExprImpl extends ConstExprView {
+		public boolean	value;
 	}
 	
 	@att public abstract virtual boolean value;
@@ -101,9 +95,9 @@ public final class ConstNullExpr extends ConstExpr {
 		public ConstNullExprImpl() {}
 	}
 	@nodeview
-	public static class ConstNullExprView extends ConstExprView {
-		public ConstNullExprView(ConstNullExprImpl impl) {
-			super(impl);
+	public static view ConstNullExprView of ConstNullExprImpl extends ConstExprView {
+		public ConstNullExprView(ConstNullExprImpl $view) {
+			super($view);
 		}
 	}
 	
@@ -141,14 +135,8 @@ public final class ConstByteExpr extends ConstExpr {
 		public ConstByteExprImpl(byte value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstByteExprView extends ConstExprView {
-		final ConstByteExprImpl impl;
-		public ConstByteExprView(ConstByteExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final byte		get$value()			{ return this.impl.value; }
-		@setter public final void		set$value(byte val)	{ this.impl.value = val; }
+	public static view ConstByteExprView of ConstByteExprImpl extends ConstExprView {
+		public byte		value;
 	}
 	
 	@att public abstract virtual byte value;
@@ -190,14 +178,8 @@ public final class ConstShortExpr extends ConstExpr {
 		public ConstShortExprImpl(short value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstShortExprView extends ConstExprView {
-		final ConstShortExprImpl impl;
-		public ConstShortExprView(ConstShortExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final short		get$value()				{ return this.impl.value; }
-		@setter public final void		set$value(short val)	{ this.impl.value = val; }
+	public static view ConstShortExprView of ConstShortExprImpl extends ConstExprView {
+		public short		value;
 	}
 	
 	@att public abstract virtual short value;
@@ -239,14 +221,8 @@ public final class ConstIntExpr extends ConstExpr {
 		public ConstIntExprImpl(int value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstIntExprView extends ConstExprView {
-		final ConstIntExprImpl impl;
-		public ConstIntExprView(ConstIntExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final int		get$value()			{ return this.impl.value; }
-		@setter public final void		set$value(int val)	{ this.impl.value = val; }
+	public static view ConstIntExprView of ConstIntExprImpl extends ConstExprView {
+		public int		value;
 	}
 	
 	@att public abstract virtual int value;
@@ -288,14 +264,8 @@ public final class ConstLongExpr extends ConstExpr {
 		public ConstLongExprImpl(long value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstLongExprView extends ConstExprView {
-		final ConstLongExprImpl impl;
-		public ConstLongExprView(ConstLongExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final long		get$value()			{ return this.impl.value; }
-		@setter public final void		set$value(long val)	{ this.impl.value = val; }
+	public static view ConstLongExprView of ConstLongExprImpl extends ConstExprView {
+		public long		value;
 	}
 	
 	@att public abstract virtual long value;
@@ -337,14 +307,8 @@ public final class ConstCharExpr extends ConstExpr {
 		public ConstCharExprImpl(char value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstCharExprView extends ConstExprView {
-		final ConstCharExprImpl impl;
-		public ConstCharExprView(ConstCharExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final char		get$value()			{ return this.impl.value; }
-		@setter public final void		set$value(char val)	{ this.impl.value = val; }
+	public static view ConstCharExprView of ConstCharExprImpl extends ConstExprView {
+		public char		value;
 	}
 	
 	@att public abstract virtual char value;
@@ -387,14 +351,8 @@ public final class ConstFloatExpr extends ConstExpr {
 		public ConstFloatExprImpl(float value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstFloatExprView extends ConstExprView {
-		final ConstFloatExprImpl impl;
-		public ConstFloatExprView(ConstFloatExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final float		get$value()				{ return this.impl.value; }
-		@setter public final void		set$value(float val)	{ this.impl.value = val; }
+	public static view ConstFloatExprView of ConstFloatExprImpl extends ConstExprView {
+		public float		value;
 	}
 	
 	@att public abstract virtual float value;
@@ -437,14 +395,8 @@ public final class ConstDoubleExpr extends ConstExpr {
 		public ConstDoubleExprImpl(double value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstDoubleExprView extends ConstExprView {
-		final ConstDoubleExprImpl impl;
-		public ConstDoubleExprView(ConstDoubleExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final double		get$value()				{ return this.impl.value; }
-		@setter public final void		set$value(double val)	{ this.impl.value = val; }
+	public static view ConstDoubleExprView of ConstDoubleExprImpl extends ConstExprView {
+		public double		value;
 	}
 	
 	@att public abstract virtual double value;
@@ -486,14 +438,8 @@ public final class ConstStringExpr extends ConstExpr {
 		public ConstStringExprImpl(KString value) { this.value = value; }
 	}
 	@nodeview
-	public static class ConstStringExprView extends ConstExprView {
-		final ConstStringExprImpl impl;
-		public ConstStringExprView(ConstStringExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final KString	get$value()				{ return this.impl.value; }
-		@setter public final void		set$value(KString val)	{ this.impl.value = val; }
+	public static view ConstStringExprView of ConstStringExprImpl extends ConstExprView {
+		public KString		value;
 	}
 	
 	@att public abstract virtual KString value;
@@ -534,9 +480,9 @@ public abstract class ConstExpr extends ENode {
 		public ConstExprImpl(int pos) { super(pos); }
 	}
 	@nodeview
-	public abstract static class ConstExprView extends ENodeView {
-		public ConstExprView(ConstExprImpl impl) {
-			super(impl);
+	public abstract static view ConstExprView of ConstExprImpl extends ENodeView {
+		public ConstExprView(ConstExprImpl $view) {
+			super($view);
 		}
 	}
 

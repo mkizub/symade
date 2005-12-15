@@ -4,6 +4,9 @@ import kiev.*;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JLvalDNodeView;
 import kiev.be.java.JVarView;
 
 import static kiev.stdlib.Debug.*;
@@ -44,75 +47,68 @@ public class Var extends LvalDNode implements Named, Typed {
 		}	
 	}
 	@nodeview
-	public static class VarView extends LvalDNodeView {
-		final VarImpl impl;
-		public VarView(VarImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-
-		@getter public final NodeName				get$name()			{ return this.impl.name; }
-		@getter public final TypeRef				get$vtype()			{ return this.impl.vtype; }
-		@getter public final ENode					get$init()			{ return this.impl.init; }
-		@getter public final int					get$bcpos()			{ return this.impl.bcpos; }
-
-		@setter public final void set$name(NodeName val)				{ this.impl.name = val; }
-		@setter public final void set$vtype(TypeRef val)				{ this.impl.vtype = val; }
-		@setter public final void set$init(ENode val)					{ this.impl.init = val; }
-		@setter public final void set$bcpos(int val)					{ this.impl.bcpos = val; }
+	public static view VarView of VarImpl extends LvalDNodeView {
+		public	NodeName	name;
+		public	TypeRef		vtype;
+		public	ENode		init;
+		public	int			bcpos;
 
 		@getter public final Type get$type() {
-			if (this.impl.vtype == null)
+			if (this.$view.vtype == null)
 				return Type.tpVoid;
-			return this.impl.vtype.getType();
+			return this.$view.vtype.getType();
 		}
 		
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar() {
-			return this.impl.is_var_local_rule_var;
+			return this.$view.is_var_local_rule_var;
 		}
 		public final void setLocalRuleVar(boolean on) {
-			if (this.impl.is_var_local_rule_var != on) {
-				this.impl.is_var_local_rule_var = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_var_local_rule_var != on) {
+				this.$view.is_var_local_rule_var = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// closure proxy
 		public final boolean isClosureProxy() {
-			return this.impl.is_var_closure_proxy;
+			return this.$view.is_var_closure_proxy;
 		}
 		public final void setClosureProxy(boolean on) {
-			if (this.impl.is_var_closure_proxy != on) {
-				this.impl.is_var_closure_proxy = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_var_closure_proxy != on) {
+				this.$view.is_var_closure_proxy = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// "this" var
 		public final boolean isVarThis() {
-			return this.impl.is_var_this;
+			return this.$view.is_var_this;
 		}
 		public final void setVarThis(boolean on) {
-			if (this.impl.is_var_this != on) {
-				this.impl.is_var_this = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_var_this != on) {
+				this.$view.is_var_this = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// "super" var
 		public final boolean isVarSuper() {
-			return this.impl.is_var_super;
+			return this.$view.is_var_super;
 		}
 		public final void setVarSuper(boolean on) {
-			if (this.impl.is_var_super != on) {
-				this.impl.is_var_super = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_var_super != on) {
+				this.$view.is_var_super = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
-	public NodeView			getNodeView()		{ return new VarView((VarImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new VarView((VarImpl)this.$v_impl); }
-	public LvalDNodeView	getLvalDNodeView()	{ return new VarView((VarImpl)this.$v_impl); }
-	public VarView			getVarView()		{ return new VarView((VarImpl)this.$v_impl); }
-	public JVarView			getJVarView()		{ return new JVarView((VarImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new VarView((VarImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new VarView((VarImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new VarView((VarImpl)this.$v_impl); }
+	public VarView			getVarView()		alias operator(210,fy,$cast) { return new VarView((VarImpl)this.$v_impl); }
+	
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JVarView((VarImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JVarView((VarImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JVarView((VarImpl)this.$v_impl); }
+	public JVarView			getJVarView()		alias operator(210,fy,$cast) { return new JVarView((VarImpl)this.$v_impl); }
 
 	@getter public NodeName				get$name()			{ return this.getVarView().name; }
 	@getter public TypeRef				get$vtype()			{ return this.getVarView().vtype; }
@@ -273,14 +269,14 @@ public class Var extends LvalDNode implements Named, Typed {
 }
 
 @node
-public class FormPar extends Var {
+public final class FormPar extends Var {
 	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in")	ENode			init;
 	}
 	
 	@node
-	public static class FormParImpl extends VarImpl {
+	public static final class FormParImpl extends VarImpl {
 		public FormParImpl() {}
 		public FormParImpl(int pos) { super(pos); }
 		public FormParImpl(int pos, int fl) { super(pos, fl); }
@@ -298,25 +294,21 @@ public class FormPar extends Var {
 		}
 	}
 	@nodeview
-	public static class FormParView extends VarView {
-		final FormParImpl impl;
-		public FormParView(FormParImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-
-		@getter public final TypeRef				get$stype()			{ return this.impl.stype; }
-		@getter public final int					get$kind()			{ return this.impl.kind; }
-		
-		@setter public final void set$stype(TypeRef val)				{ this.impl.stype = val; }
-		@setter public final void set$kind(int val)					{ this.impl.kind = val; }
+	public static final view FormParView of FormParImpl extends VarView {
+		public TypeRef		stype;
+		public int			kind;
 	}
-	public NodeView			getNodeView()		{ return new FormParView((FormParImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new FormParView((FormParImpl)this.$v_impl); }
-	public LvalDNodeView	getLvalDNodeView()	{ return new FormParView((FormParImpl)this.$v_impl); }
-	public VarView			getVarView()		{ return new FormParView((FormParImpl)this.$v_impl); }
-	public FormParView		getFormParView()	{ return new FormParView((FormParImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
+	public VarView			getVarView()		alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
+	public FormParView		getFormParView()	alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
 
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JVarView((FormParImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JVarView((FormParImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JVarView((FormParImpl)this.$v_impl); }
+	public JVarView			getJVarView()		alias operator(210,fy,$cast) { return new JVarView((FormParImpl)this.$v_impl); }
+	
 	@getter public TypeRef				get$stype()			{ return this.getFormParView().stype; }
 	@getter        int					get$kind()			{ return this.getFormParView().kind; }
 
@@ -328,8 +320,8 @@ public class FormPar extends Var {
 	public static final int PARAM_OUTER_THIS   = 2;
 	public static final int PARAM_RULE_ENV     = 3;
 	public static final int PARAM_TYPEINFO     = 4;
-	public static final int PARAM_VARARGS      = 5;
-	public static final int PARAM_LVAR_PROXY   = 6;
+	public static final int PARAM_VARARGS      = 6;
+	public static final int PARAM_LVAR_PROXY   = 7;
 	
 	@att public abstract virtual	TypeRef		stype;
 	     public abstract virtual	int			kind;

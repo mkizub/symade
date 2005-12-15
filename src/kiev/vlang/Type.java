@@ -1134,6 +1134,10 @@ public class WrapperType extends Type {
 	public String toString() {
 		return getUnwrappedType().toString();
 	}
+	public Dumper toJava(Dumper dmp) {
+		return getUnwrappedType().toJava(dmp);
+	}
+
 	public boolean isInstanceOf(Type t) {
 		if (this == t) return true;
 		if (t instanceof WrapperType)

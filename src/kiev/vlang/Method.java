@@ -5,6 +5,8 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
 import kiev.be.java.JMethodView;
 
 import static kiev.stdlib.Debug.*;
@@ -62,134 +64,122 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 	}
 	@nodeview
-	public static class MethodView extends DNodeView {
-		final MethodImpl impl;
-		public MethodView(MethodImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		
+	public static view MethodView of MethodImpl extends DNodeView {
+
 		public final void checkRebuildTypes() {
-			if (invalid_types) ((Method)this.impl._self).rebuildTypes();
+			if (invalid_types) ((Method)this.$view._self).rebuildTypes();
 		}
 	
-		@getter public final Access					get$acc()					{ return this.impl.acc; }
-		@getter public final NodeName				get$name()					{ return this.impl.name; }
-		@getter public final TypeCallRef			get$type_ref()				{ return this.impl.type_ref; }
-		@getter public final TypeCallRef			get$dtype_ref()				{ return this.impl.dtype_ref; }
-		@getter public final NArr<FormPar>			get$params()				{ return this.impl.params; }
-		@getter public final NArr<ASTAlias>		get$aliases()				{ return this.impl.aliases; }
-		@getter public final Var					get$retvar()				{ return this.impl.retvar; }
-		@getter public final BlockStat				get$body()					{ return this.impl.body; }
-		@getter public final PrescannedBody		get$pbody()					{ return this.impl.pbody; }
-		@getter public final Attr[]					get$attrs()					{ return this.impl.attrs; }
-		@getter public final NArr<WBCCondition>	get$conditions()			{ return this.impl.conditions; }
-		@getter public final NArr<Field>			get$violated_fields()		{ return this.impl.violated_fields; }
-		@getter public final MetaValue				get$annotation_default()	{ return this.impl.annotation_default; }
-		@getter public final boolean				get$inlined_by_dispatcher()	{ return this.impl.inlined_by_dispatcher; }
-		@getter public final boolean				get$invalid_types()			{ return this.impl.invalid_types; }
+		public				Access				acc;
+		public				NodeName			name;
+		public				TypeCallRef			type_ref;
+		public				TypeCallRef			dtype_ref;
+		public access:ro	NArr<FormPar>		params;
+		public access:ro	NArr<ASTAlias>		aliases;
+		public				Var					retvar;
+		public				BlockStat			body;
+		public				PrescannedBody		pbody;
+		public				Attr[]				attrs;
+		public access:ro	NArr<WBCCondition>	conditions;
+		public access:ro	NArr<Field>			violated_fields;
+		public				MetaValue			annotation_default;
+		public				boolean				inlined_by_dispatcher;
+		public				boolean				invalid_types;
 
 		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return type_ref.getMType(); }
 		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return dtype_ref.getMType(); }
 		@getter public final MethodType				get$jtype()	{ return (MethodType)dtype.getJavaType(); }
 
-		@setter public final void set$acc(Access val)							{ this.impl.acc = val; this.impl.acc.verifyAccessDecl((Method)this.impl._self); }
-		@setter public final void set$name(NodeName val)						{ this.impl.name = val; }
-		@setter public final void set$type_ref(TypeCallRef val)				{ this.impl.type_ref = val; }
-		@setter public final void set$dtype_ref(TypeCallRef val)				{ this.impl.dtype_ref = val; }
-		@setter public final void set$retvar(Var val)							{ this.impl.retvar = val; }
-		@setter public final void set$body(BlockStat val)						{ this.impl.body = val; }
-		@setter public final void set$pbody(PrescannedBody val)				{ this.impl.pbody = val; }
-		@setter public final void set$attrs(Attr[] val)						{ this.impl.attrs = val; }
-		@setter public final void set$annotation_default(MetaValue val)		{ this.impl.annotation_default = val; }
-		@setter public final void set$inlined_by_dispatcher(boolean val)		{ this.impl.inlined_by_dispatcher = val; }
-		@setter public final void set$invalid_types(boolean val)				{ this.impl.invalid_types = val; }
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
 
 		// multimethod	
 		public final boolean isMultiMethod() {
-			return this.impl.is_mth_multimethod;
+			return this.$view.is_mth_multimethod;
 		}
 		public final void setMultiMethod(boolean on) {
-			if (this.impl.is_mth_multimethod != on) {
-				this.impl.is_mth_multimethod = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_multimethod != on) {
+				this.$view.is_mth_multimethod = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// virtual static method	
 		public final boolean isVirtualStatic() {
-			return this.impl.is_mth_virtual_static;
+			return this.$view.is_mth_virtual_static;
 		}
 		public final void setVirtualStatic(boolean on) {
-			if (this.impl.is_mth_virtual_static != on) {
-				this.impl.is_mth_virtual_static = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_virtual_static != on) {
+				this.$view.is_mth_virtual_static = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method with variable number of arguments	
 		public final boolean isVarArgs() {
-			return this.impl.is_mth_varargs;
+			return this.$view.is_mth_varargs;
 		}
 		public final void setVarArgs(boolean on) {
-			if (this.impl.is_mth_varargs != on) {
-				this.impl.is_mth_varargs = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_varargs != on) {
+				this.$view.is_mth_varargs = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// logic rule method	
 		public final boolean isRuleMethod() {
-			return this.impl.is_mth_rule;
+			return this.$view.is_mth_rule;
 		}
 		public final void setRuleMethod(boolean on) {
-			if (this.impl.is_mth_rule != on) {
-				this.impl.is_mth_rule = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_rule != on) {
+				this.$view.is_mth_rule = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// method with attached operator	
 		public final boolean isOperatorMethod() {
-			return this.impl.is_mth_operator;
+			return this.$view.is_mth_operator;
 		}
 		public final void setOperatorMethod(boolean on) {
-			if (this.impl.is_mth_operator != on) {
-				this.impl.is_mth_operator = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_operator != on) {
+				this.$view.is_mth_operator = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// need fields initialization	
 		public final boolean isNeedFieldInits() {
-			return this.impl.is_mth_need_fields_init;
+			return this.$view.is_mth_need_fields_init;
 		}
 		public final void setNeedFieldInits(boolean on) {
-			if (this.impl.is_mth_need_fields_init != on) {
-				this.impl.is_mth_need_fields_init = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_need_fields_init != on) {
+				this.$view.is_mth_need_fields_init = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a method generated as invariant	
 		public final boolean isInvariantMethod() {
-			return this.impl.is_mth_invariant;
+			return this.$view.is_mth_invariant;
 		}
 		public final void setInvariantMethod(boolean on) {
-			if (this.impl.is_mth_invariant != on) {
-				this.impl.is_mth_invariant = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_invariant != on) {
+				this.$view.is_mth_invariant = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// a local method (closure code or inner method)	
 		public final boolean isLocalMethod() {
-			return this.impl.is_mth_local;
+			return this.$view.is_mth_local;
 		}
 		public final void setLocalMethod(boolean on) {
-			if (this.impl.is_mth_local != on) {
-				this.impl.is_mth_local = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_local != on) {
+				this.$view.is_mth_local = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
-	public NodeView			getNodeView()		{ return new MethodView((MethodImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new MethodView((MethodImpl)this.$v_impl); }
-	public MethodView		getMethodView()		{ return new MethodView((MethodImpl)this.$v_impl); }
-	public JMethodView		getJMethodView()	{ return new JMethodView((MethodImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+	public MethodView		getMethodView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+	public JMethodView		getJMethodView()	alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
 
 	public static Method[]	emptyArray = new Method[0];
 

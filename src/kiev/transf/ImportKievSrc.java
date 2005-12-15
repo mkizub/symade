@@ -458,6 +458,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			assert (me.super_type == ((Struct)me.parent).type);
 		}
 		else {
+			if (me.view_of != null)
+				me.view_of.getType();
 			Type sup = me.super_bound.getType();
 			if (sup == null && !me.name.name.equals(Type.tpObject.clazz.name.name))
 				me.super_type = Type.tpObject;
@@ -567,6 +569,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				// TODO: check flags for fields
 				if( me.isPackage() )
 					f.setStatic(true);
+				if( me.isView() && !f.isStatic()) {
+					f.setFinal(true);
+					f.setAbstract(true);
+					f.setVirtual(true);
+				}
 				if( me.isInterface() ) {
 					if (f.isVirtual()) {
 						f.setAbstract(true);

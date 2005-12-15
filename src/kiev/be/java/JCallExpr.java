@@ -11,21 +11,20 @@ import static kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-@nodeview
-public class JCallExprView extends JENodeView {
-	final CallExpr.CallExprImpl impl;
-	public JCallExprView(CallExpr.CallExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$obj()				{ return this.impl.obj.getJENodeView(); }
-	@getter public final JMethodView	get$func()				{ return this.impl.func.getJMethodView(); }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.impl.args.toJViewArray(JENodeView.class); }
-	@getter public final JENodeView		get$temp_expr()			{ return this.impl.temp_expr.getJENodeView(); }
-	@getter public final boolean		get$super_flag()		{ return this.impl.super_flag; }
-	
-	@setter public final void	set$temp_expr(JENodeView val)	{ this.impl.temp_expr = val==null? null : val.getENode(); }
+import kiev.vlang.CallExpr.CallExprImpl;
+import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 
+@nodeview
+public final view JCallExprView of CallExprImpl extends JENodeView {
+	public access:ro ENode			obj;
+	public access:ro JMethodView	func;
+	public           JENodeView		temp_expr;
+	public access:ro boolean		super_flag;
+
+	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
+	
+	@setter public final void		set$temp_expr(JENodeView val)	{ this.$view.temp_expr = val==null?null:val.getENode(); }
+	
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
@@ -45,7 +44,7 @@ public class JCallExprView extends JENodeView {
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
-		if !(obj.getNode() instanceof TypeRef) {
+		if !(obj instanceof TypeRef) {
 			obj.generate(code,null);
 			generateCheckCastIfNeeded(code);
 		}
@@ -259,16 +258,12 @@ public class JCallExprView extends JENodeView {
 
 
 @nodeview
-public class JClosureCallExprView extends JENodeView {
-	final ClosureCallExpr.ClosureCallExprImpl impl;
-	public JClosureCallExprView(ClosureCallExpr.ClosureCallExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final ENode			get$expr()				{ return this.impl.expr; }
-	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.impl.args.toJViewArray(JENodeView.class); }
-	@getter public final boolean		get$is_a_call()			{ return this.impl.is_a_call; }
-	@getter public final ClosureType	get$ctype()				{ return (ClosureType)this.impl.expr.getType(); }
+public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView {
+	public access:ro JENodeView			expr;
+	public access:ro boolean			is_a_call;
+	
+	@getter public final ClosureType	get$ctype()				{ return (ClosureType)this.$view.expr.getType(); }
+	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
 	public ClosureCallExpr getClosureCallExpr() { return (ClosureCallExpr)this.getNode(); }
 

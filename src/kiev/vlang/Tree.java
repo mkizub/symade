@@ -366,17 +366,17 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
-	public ASTNode.NodeView[] toViewArray(Class view) {
+	public ASTNode.NodeView[] toViewArray(Class cls) {
 		int sz = $nodes.length;
-		ASTNode.NodeView[] arr = (ASTNode.NodeView[])java.lang.reflect.Array.newInstance(view, sz);
+		ASTNode.NodeView[] arr = (ASTNode.NodeView[])java.lang.reflect.Array.newInstance(cls, sz);
 		for (int i=0; i < sz; i++)
 			arr[i] = $nodes[i].getNodeView();
 		return arr;
 	}
 
-	public JNodeView[] toJViewArray(Class view) {
+	public JNodeView[] toJViewArray(Class cls) {
 		int sz = $nodes.length;
-		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(view, sz);
+		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(cls, sz);
 		for (int i=0; i < sz; i++)
 			arr[i] = $nodes[i].getJNodeView();
 		return arr;

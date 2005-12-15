@@ -290,6 +290,29 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				body.stats.append(new ReturnStat(f.pos,null));
 				set_var.body = body;
 			}
+			else if (s.isView() && !f.isStatic()) {
+				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				Field view_fld = s.view_of.getType().getStruct().resolveField(f.name.name);
+				ENode val = new LVarExpr(f.pos,value);
+				if!(value.getType().isAutoCastableTo(view_fld.getType()))
+					val = new CastExpr(f.pos,view_fld.getType(),val);
+				ENode ass_st = new ExprStat(f.pos,
+					new AssignExpr(f.pos,AssignOperator.Assign,
+						new IFldExpr(f.pos,
+							new IFldExpr(f.pos,
+								new ThisExpr(0),
+								s.resolveField(nameView)
+							),
+							view_fld
+						),
+						val
+					)
+				);
+				body.stats.append(ass_st);
+				body.stats.append(new ReturnStat(f.pos,null));
+				set_var.body = body;
+				set_var.setAbstract(false);
+			}
 			f.getMetaVirtual().set = set_var;
 		}
 		else if( set_found && !f.acc.writeable() ) {
@@ -310,6 +333,18 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
+			}
+			else if (s.isView() && !f.isStatic()) {
+				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				ENode val = new IFldExpr(f.pos,
+					new IFldExpr(f.pos,new ThisExpr(0),s.resolveField(nameView)),
+					s.view_of.getType().getStruct().resolveField(f.name.name)
+				);
+				if!(val.getType().isAutoCastableTo(f.getType()))
+					val = new CastExpr(f.pos,f.getType(),val);
+				body.stats.add(new ReturnStat(f.pos,val));
+				get_var.body = body;
+				get_var.setAbstract(false);
 			}
 			f.getMetaVirtual().get = get_var;
 		}

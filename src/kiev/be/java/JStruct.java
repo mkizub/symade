@@ -11,6 +11,9 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.Struct.StructImpl;
+
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -18,49 +21,41 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public class JStructView extends JTypeDefView {
+public final view JStructView of StructImpl extends JTypeDefView {
 
-	final Struct.StructImpl impl;
-	public JStructView(Struct.StructImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	
-	final Struct getVStruct() { return this.impl.getStruct(); }
+	final Struct getStruct() { return this.$view.getStruct(); }
 
-	@getter public final Access					get$acc()					{ return this.impl.acc; }
-	@getter public final ClazzName				get$name()					{ return this.impl.name; }
-	@getter public final BaseType				get$type()					{ return this.impl.type; }
-	@getter public final TypeRef				get$super_bound()			{ return this.impl.super_bound; }
-	@getter public final NArr<TypeRef>			get$interfaces()			{ return this.impl.interfaces; }
-	@getter public final NArr<TypeArgDef>		get$args()					{ return this.impl.args; }
-	@getter public final Struct					get$package_clazz()			{ return this.impl.package_clazz; }
-	@getter public final Struct					get$typeinfo_clazz()		{ return this.impl.typeinfo_clazz; }
-	@getter public final NArr<Struct>			get$sub_clazz()				{ return this.impl.sub_clazz; }
-	@getter public final NArr<DNode>			get$imported()				{ return this.impl.imported; }
-	@getter public final Attr[]					get$attrs()					{ return this.impl.attrs; }
-	@getter public final NArr<DNode>			get$members()				{ return this.impl.members; }
+	public access:ro	Access				acc;
+	public access:ro	ClazzName			name;
+	public access:ro	BaseType			type;
+	public access:ro	TypeRef				super_bound;
+	public access:ro	NArr<TypeRef>		interfaces;
+	public access:ro	NArr<TypeArgDef>	args;
+	public access:ro	Struct				package_clazz;
+	public access:ro	Struct				typeinfo_clazz;
+	public access:ro	NArr<Struct>		sub_clazz;
+	public access:ro	NArr<DNode>			imported;
+	public				Attr[]				attrs;
+	public access:ro	NArr<DNode>			members;
 
-	@getter public final BaseType				get$super_type()			{ return (BaseType)super_bound.lnk; }
+	public access:ro	BaseType				get$super_type()			{ return (BaseType)super_bound.lnk; }
 
-	@setter public final void set$attrs(Attr[] val)						{ this.impl.attrs = val; }
-
-	public final boolean isClazz() { return !isPackage() && !isInterface() && ! isArgument(); }
-	public final boolean isPackage()  { return this.impl.is_struct_package; }
-	public final boolean isArgument() { return this.impl.is_struct_argument; }
-	public final boolean isPizzaCase() { return this.impl.is_struct_pizza_case; }
-	public final boolean isLocal() { return this.impl.is_struct_local; }
-	public final boolean isAnonymouse() { return this.impl.is_struct_anomymouse; }
-	public final boolean isHasCases() { return this.impl.is_struct_has_pizza_cases; }
-	public final boolean isVerified() { return this.impl.is_struct_verified; }
-	public final boolean isMembersGenerated() { return this.impl.is_struct_members_generated; }
-	public final boolean isMembersPreGenerated() { return this.impl.is_struct_pre_generated; }
-	public final boolean isStatementsGenerated() { return this.impl.is_struct_statements_generated; }
-	public final boolean isGenerated() { return this.impl.is_struct_generated; }
-	public final boolean isAnnotation() { return this.impl.is_struct_annotation; }
-	public final boolean isEnum() { return this.impl.is_struct_enum; }
-	public final boolean isSyntax() { return this.impl.is_struct_syntax; }
-	public final boolean isLoadedFromBytecode() { return this.impl.is_struct_bytecode; }
+	public final boolean isClazz()					{ return !isPackage() && !isInterface() && ! isArgument(); }
+	public final boolean isPackage()				{ return this.$view.is_struct_package; }
+	public final boolean isArgument()				{ return this.$view.is_struct_argument; }
+	public final boolean isPizzaCase()				{ return this.$view.is_struct_pizza_case; }
+	public final boolean isLocal()					{ return this.$view.is_struct_local; }
+	public final boolean isAnonymouse()			{ return this.$view.is_struct_anomymouse; }
+	public final boolean isHasCases()				{ return this.$view.is_struct_has_pizza_cases; }
+	public final boolean isVerified()				{ return this.$view.is_struct_verified; }
+	public final boolean isMembersGenerated()		{ return this.$view.is_struct_members_generated; }
+	public final boolean isMembersPreGenerated()	{ return this.$view.is_struct_pre_generated; }
+	public final boolean isStatementsGenerated()	{ return this.$view.is_struct_statements_generated; }
+	public final boolean isGenerated()				{ return this.$view.is_struct_generated; }
+	public final boolean isAnnotation()			{ return this.$view.is_struct_annotation; }
+	public final boolean isEnum()					{ return this.$view.is_struct_enum; }
+	public final boolean isSyntax()					{ return this.$view.is_struct_syntax; }
+	public final boolean isLoadedFromBytecode()	{ return this.$view.is_struct_bytecode; }
 
 	/** Add information about new attribute that belongs to this class */
 	Attr addAttr(Attr a) {
@@ -111,7 +106,7 @@ public class JStructView extends JTypeDefView {
 			short[] inner_access = new short[sub_clazz.length];
 			for(int j=0; j < sub_clazz.length; j++) {
 				inner[j] = sub_clazz[j];
-				outer[j] = this.getVStruct();
+				outer[j] = this.getStruct();
 				inner_access[j] = sub_clazz[j].getJavaFlags();
 				constPool.addClazzCP(inner[j].type.signature);
 			}
@@ -224,7 +219,7 @@ public class JStructView extends JTypeDefView {
 				System.runFinalization();
 				out = new DataOutputStream(new FileOutputStream(new File(output_dir,out_file+".class")));
 			}
-			byte[] dump = new Bytecoder(this.getVStruct(),null,constPool).writeClazz();
+			byte[] dump = new Bytecoder(this.getStruct(),null,constPool).writeClazz();
 			out.write(dump);
 			out.close();
 //			if( Kiev.verbose ) System.out.println("[Wrote bytecode for class "+this.name+"]");

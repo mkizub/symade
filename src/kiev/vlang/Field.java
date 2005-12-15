@@ -49,77 +49,66 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		}
 	}
 	@nodeview
-	public static class FieldView extends LvalDNodeView {
-		final FieldImpl impl;
-		public FieldView(FieldImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-
-		@getter public final Access					get$acc()			{ return this.impl.acc; }
-		@getter public final NodeName				get$name()			{ return this.impl.name; }
-		@getter public final TypeRef				get$ftype()			{ return this.impl.ftype; }
-		@getter public final ENode					get$init()			{ return this.impl.init; }
-		@getter public final Attr[]					get$attrs()			{ return this.impl.attrs; }
-		@getter public final NArr<Method>			get$invs()			{ return this.impl.invs; }
+	public static view FieldView of FieldImpl extends LvalDNodeView {
+		public				Access			acc;
+		public				NodeName		name;
+		public				TypeRef			ftype;
+		public				ENode			init;
+		public				Attr[]			attrs;
+		public access:ro	NArr<Method>	invs;
 		
-		@getter public final Type					get$type()			{ return this.impl.ftype.getType(); }
-		
-		@setter public final void set$acc(Access val)					{ this.impl.acc = val; this.impl.acc.verifyAccessDecl((Field)this.impl._self); }
-		@setter public final void set$name(NodeName val)				{ this.impl.name = val; }
-		@setter public final void set$ftype(TypeRef val)				{ this.impl.ftype = val; }
-		@setter public final void set$init(ENode val)					{ this.impl.init = val; }
-		@setter public final void set$attrs(Attr[] val)				{ this.impl.attrs = val; }
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
 		
 		// is a virtual field
 		public final boolean isVirtual() {
-			return this.impl.is_fld_virtual;
+			return this.$view.is_fld_virtual;
 		}
 		public final void setVirtual(boolean on) {
-			if (this.impl.is_fld_virtual != on) {
-				this.impl.is_fld_virtual = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_fld_virtual != on) {
+				this.$view.is_fld_virtual = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// is a field of enum
 		public final boolean isEnumField() {
-			return this.impl.is_fld_enum;
+			return this.$view.is_fld_enum;
 		}
 		public final void setEnumField(boolean on) {
-			if (this.impl.is_fld_enum != on) {
-				this.impl.is_fld_enum = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_fld_enum != on) {
+				this.$view.is_fld_enum = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packer field (auto-generated for packed fields)
 		public final boolean isPackerField() {
-			return this.impl.is_fld_packer;
+			return this.$view.is_fld_packer;
 		}
 		public final void setPackerField(boolean on) {
-			if (this.impl.is_fld_packer != on) {
-				this.impl.is_fld_packer = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_fld_packer != on) {
+				this.$view.is_fld_packer = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 		// packed field
 		public final boolean isPackedField() {
-			return this.impl.is_fld_packed;
+			return this.$view.is_fld_packed;
 		}
 		public final void setPackedField(boolean on) {
-			if (this.impl.is_fld_packed != on) {
-				this.impl.is_fld_packed = on;
-				this.impl.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_fld_packed != on) {
+				this.$view.is_fld_packed = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
 	}
-	public NodeView			getNodeView()		{ return new FieldView((FieldImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new FieldView((FieldImpl)this.$v_impl); }
-	public LvalDNodeView	getLvalDNodeView()	{ return new FieldView((FieldImpl)this.$v_impl); }
-	public FieldView		getFieldView()		{ return new FieldView((FieldImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
-	public JLvalDNodeView	getJLvalDNodeView()	{ return new JFieldView((FieldImpl)this.$v_impl); }
-	public JFieldView		getJFieldView()		{ return new JFieldView((FieldImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public FieldView		getFieldView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JFieldView		getJFieldView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
 
 	@getter public Access				get$acc()			{ return this.getFieldView().acc; }
 	@getter public NodeName				get$name()			{ return this.getFieldView().name; }

@@ -188,18 +188,10 @@ public class AssignExpr extends LvalueExpr {
 		}
 	}
 	@nodeview
-	public static class AssignExprView extends LvalueExprView {
-		final AssignExprImpl impl;
-		public AssignExprView(AssignExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final AssignOperator	get$op()					{ return this.impl.op; }
-		@getter public final ENode				get$lval()					{ return this.impl.lval; }
-		@getter public final ENode				get$value()					{ return this.impl.value; }
-		@setter public final void				set$op(AssignOperator val)	{ this.impl.op = val; }
-		@setter public final void				set$lval(ENode val)			{ this.impl.lval = val; }
-		@setter public final void				set$value(ENode val)		{ this.impl.value = val; }
+	public static view AssignExprView of AssignExprImpl extends LvalueExprView {
+		public AssignOperator	op;
+		public ENode			lval;
+		public ENode			value;
 	}
 	
 	@att public abstract virtual AssignOperator	op;
@@ -1366,16 +1358,9 @@ public class IncrementExpr extends ENode {
 		}
 	}
 	@nodeview
-	public static class IncrementExprView extends ENodeView {
-		final IncrementExprImpl impl;
-		public IncrementExprView(IncrementExprImpl impl) {
-			super(impl);
-			this.impl = impl;
-		}
-		@getter public final Operator			get$op()					{ return this.impl.op; }
-		@getter public final ENode				get$lval()					{ return this.impl.lval; }
-		@setter public final void				set$op(Operator val)	{ this.impl.op = val; }
-		@setter public final void				set$lval(ENode val)			{ this.impl.lval = val; }
+	public static view IncrementExprView of IncrementExprImpl extends ENodeView {
+		public Operator		op;
+		public ENode		lval;
 	}
 	
 	@att public abstract virtual Operator			op;

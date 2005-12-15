@@ -211,6 +211,8 @@ public class NodeName {
 	public NodeName(KString name) {
 		this.name = name;
 	}
+	
+	public KString	toKString()	alias operator(210,fy,$cast) { return name; }
 
 	public void addAlias(KString al) {
 		// Check we do not have this alias already

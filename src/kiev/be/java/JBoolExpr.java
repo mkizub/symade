@@ -11,10 +11,18 @@ import static kiev.vlang.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.BoolExpr.BoolExprImpl;
+import kiev.vlang.BinaryBooleanOrExpr.BinaryBooleanOrExprImpl;
+import kiev.vlang.BinaryBooleanAndExpr.BinaryBooleanAndExprImpl;
+import kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl;
+import kiev.vlang.InstanceofExpr.InstanceofExprImpl;
+import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
+
 @nodeview
-public abstract class JBoolExprView extends JENodeView implements IBoolExpr {
-	public JBoolExprView(BoolExpr.BoolExprImpl impl) {
-		super(impl);
+public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements IBoolExpr {
+	public JBoolExprView(BoolExpr.BoolExprImpl $view) {
+		super($view);
+		this.$view = $view;
 	}
 
 	public void generate(Code code, Type reqType) {
@@ -107,14 +115,9 @@ public abstract class JBoolExprView extends JENodeView implements IBoolExpr {
 
 
 @nodeview
-public class JBinaryBooleanOrExprView extends JBoolExprView {
-	final BinaryBooleanOrExpr.BinaryBooleanOrExprImpl impl;
-	public JBinaryBooleanOrExprView(BinaryBooleanOrExpr.BinaryBooleanOrExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$expr1()				{ return this.impl.expr1.getJENodeView(); }
-	@getter public final JENodeView		get$expr2()				{ return this.impl.expr2.getJENodeView(); }
+public final view JBinaryBooleanOrExprView of BinaryBooleanOrExprImpl extends JBoolExprView {
+	public access:ro JENodeView		expr1;
+	public access:ro JENodeView		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
@@ -134,14 +137,9 @@ public class JBinaryBooleanOrExprView extends JBoolExprView {
 }
 
 @nodeview
-public class JBinaryBooleanAndExprView extends JBoolExprView {
-	final BinaryBooleanAndExpr.BinaryBooleanAndExprImpl impl;
-	public JBinaryBooleanAndExprView(BinaryBooleanAndExpr.BinaryBooleanAndExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$expr1()				{ return this.impl.expr1.getJENodeView(); }
-	@getter public final JENodeView		get$expr2()				{ return this.impl.expr2.getJENodeView(); }
+public final view JBinaryBooleanAndExprView of BinaryBooleanAndExprImpl extends JBoolExprView {
+	public access:ro JENodeView		expr1;
+	public access:ro JENodeView		expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanOrExpr (if true): "+this);
@@ -161,15 +159,10 @@ public class JBinaryBooleanAndExprView extends JBoolExprView {
 }
 
 @nodeview
-public class JBinaryBoolExprView extends JBoolExprView {
-	final BinaryBoolExpr.BinaryBoolExprImpl impl;
-	public JBinaryBoolExprView(BinaryBoolExpr.BinaryBoolExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final BinaryOperator	get$op()				{ return this.impl.op; }
-	@getter public final JENodeView			get$expr1()				{ return this.impl.expr1.getJENodeView(); }
-	@getter public final JENodeView			get$expr2()				{ return this.impl.expr2.getJENodeView(); }
+public final view JBinaryBoolExprView of BinaryBoolExprImpl extends JBoolExprView {
+	public access:ro BinaryOperator		op;
+	public access:ro JENodeView			expr1;
+	public access:ro JENodeView			expr2;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BoolExpr (if true): "+this);
@@ -275,14 +268,9 @@ public class JBinaryBoolExprView extends JBoolExprView {
 }
 
 @nodeview
-public class JInstanceofExprView extends JBoolExprView {
-	final InstanceofExpr.InstanceofExprImpl impl;
-	public JInstanceofExprView(InstanceofExpr.InstanceofExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$expr()				{ return this.impl.expr.getJENodeView(); }
-	@getter public final Type			get$type()				{ return this.impl.type.getType(); }
+public final view JInstanceofExprView of InstanceofExprImpl extends JBoolExprView {
+	public access:ro JENodeView		expr;
+	public access:ro Type			type;
 
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating InstanceofExpr: "+this);
@@ -302,13 +290,8 @@ public class JInstanceofExprView extends JBoolExprView {
 }
 
 @nodeview
-public class JBooleanNotExprView extends JBoolExprView {
-	final BooleanNotExpr.BooleanNotExprImpl impl;
-	public JBooleanNotExprView(BooleanNotExpr.BooleanNotExprImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final JENodeView		get$expr()				{ return this.impl.expr.getJENodeView(); }
+public final view JBooleanNotExprView of BooleanNotExprImpl extends JBoolExprView {
+	public access:ro JENodeView		expr;
 	
 	public void generate_iftrue(Code code, CodeLabel label) {
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanNotExpr (if true): "+this);

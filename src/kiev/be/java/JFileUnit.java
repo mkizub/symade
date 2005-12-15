@@ -11,6 +11,8 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.FileUnit.FileUnitImpl;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -18,23 +20,14 @@ import syntax kiev.Syntax;
  */
 
 @nodeview
-public class JFileUnitView extends JDNodeView {
-	final FileUnit.FileUnitImpl impl;
-	public JFileUnitView(FileUnit.FileUnitImpl impl) {
-		super(impl);
-		this.impl = impl;
-	}
-	@getter public final KString				get$filename()	{ return this.impl.filename; }
-	@getter public final TypeNameRef			get$pkg()		{ return this.impl.pkg; }
-	@getter public final NArr<DNode>			get$syntax()	{ return this.impl.syntax; }
-	@getter public final NArr<DNode>			get$members()	{ return this.impl.members; }
-	@getter public final NArr<PrescannedBody>	get$bodies()	{ return this.impl.bodies; }
-	@getter public final boolean[]				get$disabled_extensions()			{ return this.impl.disabled_extensions; }
-	@getter public final boolean				get$scanned_for_interface_only()	{ return this.impl.scanned_for_interface_only; }
-
-	@setter public final void set$filename(KString val)					{ this.impl.filename = val; }
-	@setter public final void set$pkg(TypeNameRef val)						{ this.impl.pkg = val; }
-	@setter public final void set$scanned_for_interface_only(boolean val)	{ this.impl.scanned_for_interface_only = val; }
+public final view JFileUnitView of FileUnitImpl extends JDNodeView {
+	public				KString					filename;
+	public				TypeNameRef				pkg;
+	public access:ro	NArr<DNode>				syntax;
+	public access:ro	NArr<DNode>				members;
+	public access:ro	NArr<PrescannedBody>	bodies;
+	public access:ro	boolean[]				disabled_extensions;
+	public				boolean					scanned_for_interface_only;
 
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
