@@ -10,6 +10,8 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 import kiev.vlang.Method.MethodImpl;
+import kiev.vlang.Initializer.InitializerImpl;
+import kiev.vlang.WBCCondition.WBCConditionImpl;
 
 /**
  * @author Maxim Kizub
@@ -55,6 +57,10 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }
 	public final boolean isLocalMethod()		{ return this.$view.is_mth_local; }
 
+	public CodeLabel getBreakLabel() {
+		return ((BlockStat)body).getJBlockStatView().getBreakLabel();
+	}
+
 	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		// Append invariants by list of violated/used fields
@@ -69,7 +75,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 			}
 		}
 		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
-			cond.generate(constPool,Type.tpVoid);
+			cond.getJWBCConditionView().generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
 			Code code = new Code(pctx.clazz, this.getMethod(), constPool);
 			code.generation = true;
@@ -102,7 +108,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 							}
 						}
 					}
-					body.generate(code,Type.tpVoid);
+					body.getJENodeView().generate(code,Type.tpVoid);
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
 						if( type.ret != Type.tpVoid ) {
 							code.addVar(getRetVar());
@@ -154,5 +160,56 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 			}
 		}
 	}
-
 }
+
+@nodeview
+public final view JInitializerView of InitializerImpl extends JDNodeView {
+	public access:ro	JENodeView		body;
+
+	public void generate(Code code, Type reqType) {
+		trace(Kiev.debugStatGen,"\tgenerating Initializer");
+		code.setLinePos(this);
+		body.generate(code,reqType);
+	}
+}
+
+@nodeview
+public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView {
+	public access:ro	WBCType				cond;
+	public access:ro	KString				name;
+	public access:ro	JENodeView			body;
+	public				CodeAttr			code_attr;
+
+	public void generate(ConstPool constPool, Type reqType) {
+		Code code = new Code(pctx.clazz, pctx.method, constPool);
+		code.generation = true;
+		code.cond_generation = true;
+		if( cond == WBCType.CondInvariant ) {
+			body.generate(code,Type.tpVoid);
+			code.addInstr(Instr.op_return);
+			return;
+		}
+		if( code_attr == null ) {
+			Method m = code.method;
+			try {
+				FormPar thisPar = null;
+				if( !isStatic() ) {
+					thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+					code.addVar(thisPar);
+				}
+				if( m.params.length > 0 ) code.addVars(m.params.toArray());
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.addVar(m.getRetVar());
+				body.generate(code,Type.tpVoid);
+				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.removeVar(m.getRetVar());
+				if( m.params.length > 0 ) code.removeVars(m.params.toArray());
+				if( thisPar != null ) code.removeVar(thisPar);
+				code.generateCode((WBCCondition)this.getNode());
+			} catch(Exception e) {
+				Kiev.reportError(this,e);
+			}
+			return;
+		}
+		code_attr.generate(constPool);
+	}
+}
+

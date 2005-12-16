@@ -28,9 +28,6 @@ public final view JStructView of StructImpl extends JTypeDefView {
 	public access:ro	Access				acc;
 	public access:ro	ClazzName			name;
 	public access:ro	BaseType			type;
-	public access:ro	TypeRef				super_bound;
-	public access:ro	NArr<TypeRef>		interfaces;
-	public access:ro	NArr<TypeArgDef>	args;
 	public access:ro	Struct				package_clazz;
 	public access:ro	Struct				typeinfo_clazz;
 	public access:ro	NArr<Struct>		sub_clazz;
@@ -38,7 +35,9 @@ public final view JStructView of StructImpl extends JTypeDefView {
 	public				Attr[]				attrs;
 	public access:ro	NArr<DNode>			members;
 
-	public access:ro	BaseType				get$super_type()			{ return (BaseType)super_bound.lnk; }
+	public final Type[]		get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
+	public final Type[]		get$args()			{ return this.$view.args.toTypeArray(); }
+	public final BaseType	get$super_type()	{ return getStruct().super_type; }
 
 	public final boolean isClazz()					{ return !isPackage() && !isInterface() && ! isArgument(); }
 	public final boolean isPackage()				{ return this.$view.is_struct_package; }
@@ -86,7 +85,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			constPool.addClazzCP(this.super_type.signature);
 			constPool.addClazzCP(this.super_type.getJType().java_signature);
 		}
-		for(int i=0; interfaces!=null && i < interfaces.length; i++) {
+		for(int i=0; i < interfaces.length; i++) {
 			interfaces[i].checkResolved();
 			constPool.addClazzCP(this.interfaces[i].signature);
 			constPool.addClazzCP(this.interfaces[i].getJType().java_signature);

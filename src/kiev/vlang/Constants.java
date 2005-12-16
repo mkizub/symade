@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.stdlib.*;
@@ -351,6 +331,7 @@ public interface Constants extends AccessFlags {
 	public final static KString nameView		= KString.from("$view");
 	public final static KString nameTypeInfo	= KString.from("$typeinfo");
 	public final static KString nameClTypeInfo	= KString.from("__ti__");
+	public final static KString nameUnderscore	= KString.from("_");
 //	public final static KString nameTypeInfoArgs= KString.from("typeargs");
 //	public final static KString nameTypeInfoRel	= KString.from("related");
 //	public final static KString nameTypeInfoFill= KString.from("$fill$typeinfo");

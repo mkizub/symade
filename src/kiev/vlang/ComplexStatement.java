@@ -1,28 +1,18 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JCaseLabelView;
+import kiev.be.java.JSwitchStatView;
+import kiev.be.java.JCatchInfoView;
+import kiev.be.java.JFinallyInfoView;
+import kiev.be.java.JTryStatView;
+import kiev.be.java.JSynchronizedStatView;
+import kiev.be.java.JWithStatView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -43,21 +33,50 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
-	@att public ENode				val;
+	@node
+	public static final class CaseLabelImpl extends ENodeImpl {
+		@att public ENode			val;
+		@ref public Type			type;
+		@att public NArr<Var>		pattern;
+		@att public NArr<ENode>		stats;
+		@ref public CodeLabel		case_label;
+		public CaseLabelImpl() {}
+		public CaseLabelImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view CaseLabelView of CaseLabelImpl extends ENodeView {
+		public				ENode			val;
+		public				Type			type;
+		public access:ro	NArr<Var>		pattern;
+		public access:ro	NArr<ENode>		stats;
+	}
+
+	@att public abstract virtual			ENode			val;
+	@ref public abstract virtual			Type			type;
+	@att public abstract virtual access:ro	NArr<Var>		pattern;
+	@att public abstract virtual access:ro	NArr<ENode>		stats;
 	
-	@ref public Type				type;
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public CaseLabelView		getCaseLabelView()		alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JCaseLabelView		getJCaseLabelView()		alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
+
+	@getter public ENode			get$val()				{ return this.getCaseLabelView().val; }
+	@getter public Type				get$type()				{ return this.getCaseLabelView().type; }
+	@getter public NArr<Var>		get$pattern()			{ return this.getCaseLabelView().pattern; }
+	@getter public NArr<ENode>		get$stats()				{ return this.getCaseLabelView().stats; }
+	@setter public void		set$val(ENode val)				{ this.getCaseLabelView().val = val; }
+	@setter public void		set$type(Type val)				{ this.getCaseLabelView().type = val; }
 	
-	@att public final NArr<Var>		pattern;
-	
-	@att public final NArr<ENode>	stats;
-	
-	public CodeLabel	case_label;
 
 	public CaseLabel() {
+		super(new CaseLabelImpl());
 	}
 
 	public CaseLabel(int pos, ENode val, ENode[] stats) {
-		super(pos);
+		super(new CaseLabelImpl(pos));
 		this.val = val;
 		this.stats.addAll(stats);
 	}
@@ -209,45 +228,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public CodeLabel getLabel(Code code) {
-		if (case_label == null || case_label.code != code) case_label = code.newLabel();
-		return case_label;
-	}
-
-	public void generate(Code code, Type reqType) {
-		case_label = getLabel(code);
-		try {
-			code.addInstr(Instr.set_label,case_label);
-			if( val == null ) ((SwitchStat)parent).cosw.addDefault(case_label);
-			else {
-				Object v = val.getConstValue();
-				if( v instanceof Number )
-					((SwitchStat)parent).cosw.addCase( ((Number)v).intValue(), case_label);
-				else if( v instanceof java.lang.Character )
-					((SwitchStat)parent).cosw.addCase( (int)((java.lang.Character)v).charValue(), case_label);
-				else
-					throw new RuntimeException("Case label "+v+" must be of integer type");
-			}
-		} catch(Exception e ) { Kiev.reportError(this,e); }
-		Vector<Var> vars = null;
-		if (pattern.length > 0) {
-			vars = new Vector<Var>();
-			foreach (Var p; pattern; p.vtype != null && !(p.name.name.len == 1 && p.name.name.byteAt(0) == '_')) {
-				vars.append(p);
-				p.getJVarView().generate(code,Type.tpVoid);
-			}
-		}
-		for(int i=0; i < stats.length; i++) {
-			try {
-				stats[i].generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-		if (vars != null)
-			code.removeVars(vars.toArray());
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( val == null )
 			dmp.newLine(-1).append("default:");
@@ -270,37 +250,78 @@ public class SwitchStat extends ENode implements BreakTarget {
 	@dflow(in="cases")				Label			lblbrk;
 	}
 	
-	@att public ENode					sel;
-
-	@att public final NArr<CaseLabel>	cases;
-
-	@att public LVarExpr				tmpvar;
-	@ref public CaseLabel				defCase;
-	@ref private Field					typehash; // needed for re-resolving
-
-	@att public Label					lblcnt;
-
-	@att public Label					lblbrk;
-
-	public CodeSwitch	cosw;
-	
-
 	public static final int NORMAL_SWITCH = 0;
 	public static final int PIZZA_SWITCH = 1;
 	public static final int TYPE_SWITCH = 2;
 	public static final int ENUM_SWITCH = 3;
 
-	public int mode = NORMAL_SWITCH;
+	@node
+	public static class SwitchStatImpl extends ENodeImpl {
+		@att                 public int mode; /* = NORMAL_SWITCH; */
+		@att                 public ENode					sel;
+		@att                 public NArr<CaseLabel>		cases;
+		@att                 public LVarExpr				tmpvar;
+		@ref                 public CaseLabel				defCase;
+		@ref                 public Field					typehash; // needed for re-resolving
+		@att(copyable=false) public Label					lblcnt;
+		@att(copyable=false) public Label					lblbrk;
+		@att                 public CodeSwitch				cosw;
+		public SwitchStatImpl() {}
+		public SwitchStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view SwitchStatView of SwitchStatImpl extends ENodeView {
+		public				int						mode;
+		public				ENode					sel;
+		public access:ro	NArr<CaseLabel>			cases;
+		public				LVarExpr				tmpvar;
+		public				CaseLabel				defCase;
+		public				Field					typehash; // needed for re-resolving
+		public access:ro	Label					lblcnt;
+		public access:ro	Label					lblbrk;
+	}
 
+	@att public abstract virtual			int						mode;
+	@att public abstract virtual			ENode					sel;
+	@att public abstract virtual access:ro	NArr<CaseLabel>			cases;
+	@att public abstract virtual			LVarExpr				tmpvar;
+	@ref public abstract virtual			CaseLabel				defCase;
+	@ref public abstract virtual			Field					typehash; // needed for re-resolving
+	@att public abstract virtual access:ro	Label					lblcnt;
+	@att public abstract virtual access:ro	Label					lblbrk;
+
+	@getter public int				get$mode()				{ return this.getSwitchStatView().mode; }
+	@getter public ENode			get$sel()				{ return this.getSwitchStatView().sel; }
+	@getter public NArr<CaseLabel>	get$cases()				{ return this.getSwitchStatView().cases; }
+	@getter public LVarExpr			get$tmpvar()			{ return this.getSwitchStatView().tmpvar; }
+	@getter public CaseLabel		get$defCase()			{ return this.getSwitchStatView().defCase; }
+	@getter public Field			get$typehash()			{ return this.getSwitchStatView().typehash; }
+	@getter public Label			get$lblcnt()			{ return this.getSwitchStatView().lblcnt; }
+	@getter public Label			get$lblbrk()			{ return this.getSwitchStatView().lblbrk; }
+	
+	@setter public void			set$mode(int val)			{ this.getSwitchStatView().mode = val; }
+	@setter public void			set$sel(ENode val)			{ this.getSwitchStatView().sel = val; }
+	@setter public void			set$tmpvar(LVarExpr val)	{ this.getSwitchStatView().tmpvar = val; }
+	@setter public void			set$defCase(CaseLabel val)	{ this.getSwitchStatView().defCase = val; }
+	@setter public void			set$typehash(Field val)		{ this.getSwitchStatView().typehash = val; }
+
+	public NodeView					getNodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public ENodeView				getENodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public SwitchStatView			getSwitchStatView()		alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JSwitchStatView			getJSwitchStatView()	alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	
 	public SwitchStat() {
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
+		super(new SwitchStatImpl());
+		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
+		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
 	}
 
 	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
-		super(pos);
-		this.lblcnt = new Label();
-		this.lblbrk = new Label();
+		super(new SwitchStatImpl(pos));
+		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
+		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
 		this.sel = sel;
 		this.cases.addAll(cases);
 		defCase = null;
@@ -414,7 +435,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 			clinit.body.addStatement(
 				new ExprStat(typehash.init.getPos(),
 					new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
-						,new SFldExpr(typehash.pos,typehash),new ShadowExpr(typehash.init))
+						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
 				)
 			);
 		}
@@ -527,107 +548,12 @@ public class SwitchStat extends ENode implements BreakTarget {
 		setResolved(true);
 	}
 
-	public Label getCntLabel() {
-		return lblcnt;
-	}
-	public Label getBrkLabel() {
-		return lblbrk;
-	}
-
-	public void generate(Code code, Type reqType) {
-		int lo = Integer.MAX_VALUE;
-		int hi = Integer.MIN_VALUE;
-
-		int ntags = defCase==null? cases.length : cases.length-1;
-		int[] tags = new int[ntags];
-
-		for (int i=0, j=0; i < cases.length; i++) {
-			if (((CaseLabel)cases[i]).val != null) {
-				int val;
-				Object v = cases[i].val.getConstValue();
-				if( v instanceof Number )
-					val = ((Number)v).intValue();
-				else if( v instanceof java.lang.Character )
-					val = (int)((java.lang.Character)v).charValue();
-				else
-					throw new RuntimeException("Case label "+v+" must be of integer type");
-				tags[j++] = val;
-				if (val < lo) lo = val;
-				if (hi < val) hi = val;
-			}
-		}
-
-		long table_space_cost = (long)4 + (hi - lo + 1); // words
-		long table_time_cost = 3; // comparisons
-		long lookup_space_cost = (long)3 + 2 * ntags;
-		long lookup_time_cost = ntags;
-		boolean tabswitch =
-			table_space_cost + 3 * table_time_cost <=
-			lookup_space_cost + 3 * lookup_time_cost;
-
-		try {
-			if( mode == TYPE_SWITCH ) {
-				lblcnt.generate(code,null);
-				sel.generate(code,null);
-			} else {
-				sel.generate(code,null);
-				lblcnt.generate(code,null);
-			}
-			if( tabswitch ) {
-				cosw = code.newTableSwitch(lo,hi);
-				code.addInstr(Instr.op_tableswitch,cosw);
-			} else {
-				qsort(tags,0,tags.length-1);
-				cosw = code.newLookupSwitch(tags);
-				code.addInstr(Instr.op_lookupswitch,cosw);
-			}
-			
-			for(int i=0; i < cases.length; i++) {
-				if( isAutoReturnable() )
-					cases[i].setAutoReturnable(true);
-				((CaseLabel)cases[i]).generate(code,Type.tpVoid);
-			}
-			Vector<Var> vars = new Vector<Var>();
-			for(int i=0; i < cases.length; i++) {
-				foreach (ENode n; cases[i].stats; n instanceof VarDecl)
-					vars.append(((VarDecl)n).var);
-			}
-			code.removeVars(vars.toArray());
-
-			lblbrk.generate(code,null);
-			code.addInstr(Instr.switch_close,cosw);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("switch").space().append('(')
 			.append(sel).space().append(')').space().append('{').newLine(1);
 		for(int i=0; i < cases.length; i++) dmp.append(cases[i]);
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
-	}
-
-	/** sort (int) arrays of keys and values
-	 */
-	static void qsort(int[] keys, int lo, int hi) {
-		int i = lo;
-		int j = hi;
-		int pivot = keys[(i+j)/2];
-		do {
-			while (keys[i] < pivot) i++;
-			while (pivot < keys[j]) j--;
-			if (i <= j) {
-				int temp = keys[i];
-				keys[i] = keys[j];
-				keys[j] = temp;
-				i++;
-				j--;
-			}
-		} while (i <= j);
-		if (lo < j) qsort(keys, lo, j);
-		if (i < hi) qsort(keys, i, hi);
 	}
 }
 
@@ -641,21 +567,42 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@att public Var				arg;
-	
-	@att public ENode			body;
-
-	public CodeLabel		handler;
-	public CodeCatchInfo	code_catcher;
-
-	public CatchInfo() {
+	@node
+	public static class CatchInfoImpl extends ENodeImpl {
+		@att public Var				arg;
+		@att public ENode			body;
+		@att public CodeLabel		handler;
+		@att public CodeCatchInfo	code_catcher;
+		public CatchInfoImpl() {}
+		public CatchInfoImpl(int pos) { super(pos); }
 	}
+	@nodeview
+	public static view CatchInfoView of CatchInfoImpl extends ENodeView {
+		public Var				arg;
+		public ENode			body;
+	}
+	
+	@att public abstract virtual Var			arg;
+	@att public abstract virtual ENode			body;
+	
+	@getter public Var			get$arg()				{ return this.getCatchInfoView().arg; }
+	@getter public ENode		get$body()				{ return this.getCatchInfoView().body; }
+	@setter public void			set$arg(Var val)		{ this.getCatchInfoView().arg = val; }
+	@setter public void			set$body(ENode val)		{ this.getCatchInfoView().body = val; }
 
-//	public CatchInfo(int pos, ASTNode parent, Var arg, ENode body) {
-//		super(pos, parent);
-//		this.arg = arg;
-//		this.body = body;
-//	}
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	
+	public CatchInfo() {
+		super(new CatchInfoImpl());
+	}
+	public CatchInfo(CatchInfoImpl impl) {
+		super(impl);
+	}
 
 	public String toString() {
 		return "catch( "+arg+" )";
@@ -675,31 +622,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public void generate(Code code, Type reqType) {
-		code.addVar(arg);
-		try {
-			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.enter_catch_handler,code_catcher);
-			code.addInstr(Instr.op_store,arg.getJVarView());
-			body.generate(code,Type.tpVoid);
-			if( !body.isMethodAbrupted() ) {
-				if( ((TryStat)parent).finally_catcher != null ) {
-					code.addInstr(Instr.op_jsr,
-						((FinallyInfo)((TryStat)parent).finally_catcher).subr_label);
-				}
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn(code,this);
-				else
-					code.addInstr(Instr.op_goto,((TryStat)parent).end_label);
-			}
-			code.addInstr(Instr.exit_catch_handler,code_catcher);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		} finally {
-			code.removeVar(arg);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("catch").space().append('(').space();
 		arg.toJavaDecl(dmp).space().append(')').space().append(body);
@@ -715,16 +637,35 @@ public class FinallyInfo extends CatchInfo {
 	@dflow(in="arg")		ENode			body;
 	}
 	
-	@att public Var		ret_arg;
-	public CodeLabel	subr_label;
-
-	public FinallyInfo() {
+	@node
+	public static class FinallyInfoImpl extends CatchInfoImpl {
+		@att public Var			ret_arg;
+		@att public CodeLabel	subr_label;
+		public FinallyInfoImpl() {}
+		public FinallyInfoImpl(int pos) { super(pos); }
 	}
+	@nodeview
+	public static view FinallyInfoView of FinallyInfoImpl extends CatchInfoView {
+		public Var			ret_arg;
+	}
+	
+	@att public abstract virtual Var			ret_arg;
+	
+	@getter public Var			get$ret_arg()				{ return this.getFinallyInfoView().ret_arg; }
+	@setter public void			set$ret_arg(Var val)		{ this.getFinallyInfoView().ret_arg = val; }
 
-//	public FinallyInfo(int pos, ASTNode parent, ENode body) {
-//		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
-//		ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
-//	}
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public FinallyInfoView		getFinallyInfoView()	alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JFinallyInfoView		getJFinallyInfoView()	alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	
+	public FinallyInfo() {
+		super(new FinallyInfoImpl());
+	}
 
 	public String toString() { return "finally"; }
 
@@ -736,30 +677,6 @@ public class FinallyInfo extends CatchInfo {
 		super.resolve(reqType);
 	}
 	
-	public void generate(Code code, Type reqType) {
-		try {
-			CodeCatchInfo null_ci = null;
-			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.set_label,handler);
-			code.addInstr(Instr.enter_catch_handler,null_ci);
-			code.addVar(arg);
-			code.addInstr(Instr.op_store,arg.getJVarView());
-			code.addInstr(Instr.op_jsr,subr_label);
-			code.addInstr(Instr.op_load,arg.getJVarView());
-			code.addInstr(Instr.op_throw);
-			code.addInstr(Instr.exit_catch_handler,null_ci);
-
-			// This label must be created by TryStat's generate routine;
-			code.addInstr(Instr.set_label,subr_label);
-			code.addInstr(Instr.enter_catch_handler,null_ci);
-			code.addInstr(Instr.op_store,ret_arg.getJVarView());
-
-			body.generate(code,Type.tpVoid);
-			code.addInstr(Instr.op_ret,ret_arg.getJVarView());
-		} catch(Exception e ) { Kiev.reportError(this,e);
-		} finally { code.removeVar(arg); }
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("finally").space().append(body).newLine();
 		return dmp;
@@ -776,15 +693,43 @@ public class TryStat extends ENode {
 	@dflow(in="this:in")				FinallyInfo		finally_catcher;
 	}
 	
-	@att public ENode					body;
-	
-	@att public final NArr<CatchInfo>	catchers;
-	
-	@att public FinallyInfo				finally_catcher;
+	@node
+	public static final class TryStatImpl extends ENodeImpl {
+		@att public ENode				body;
+		@att public NArr<CatchInfo>		catchers;
+		@att public FinallyInfo			finally_catcher;
+		@att public CodeLabel			end_label;
+		public TryStatImpl() {}
+		public TryStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view TryStatView of TryStatImpl extends ENodeView {
+		public				ENode				body;
+		public access:ro	NArr<CatchInfo>		catchers;
+		public				FinallyInfo			finally_catcher;
+	}
 
-	public CodeLabel	end_label;
+	@att public abstract virtual			ENode				body;
+	@att public abstract virtual access:ro	NArr<CatchInfo>		catchers;
+	@att public abstract virtual			FinallyInfo			finally_catcher;
+	
+	@getter public ENode			get$body()				{ return this.getTryStatView().body; }
+	@getter public NArr<CatchInfo>	get$catchers()			{ return this.getTryStatView().catchers; }
+	@getter public FinallyInfo		get$finally_catcher()	{ return this.getTryStatView().finally_catcher; }
+	
+	@setter public void		set$body(ENode val)						{ this.getTryStatView().body = val; }
+	@setter public void		set$finally_catcher(FinallyInfo val)	{ this.getTryStatView().finally_catcher = val; }
+	
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public TryStatView			getTryStatView()		alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
+	public JTryStatView			getJTryStatView()		alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
+
 
 	public TryStat() {
+		super(new TryStatImpl());
 	}
 
 	public void resolve(Type reqType) {
@@ -828,68 +773,6 @@ public class TryStat extends ENode {
 		}
 	}
 
-	public void generate(Code code, Type reqType) {
-		// Generate labels for handlers
-		if(finally_catcher != null) {
-			code.addVar(finally_catcher.ret_arg);
-			finally_catcher.handler = code.newLabel();
-			finally_catcher.subr_label = code.newLabel();
-			finally_catcher.subr_label.check = false;
-			finally_catcher.code_catcher = code.newCatcher(finally_catcher.handler,null);
-			code.addInstr(Instr.start_catcher,finally_catcher.code_catcher);
-		}
-		for(int i= catchers.length-1; i >= 0 ; i--) {
-			catchers[i].handler = code.newLabel();
-			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.type);
-			code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
-		}
-		end_label = code.newLabel();
-
-		try {
-			try {
-				if( isAutoReturnable() )
-					body.setAutoReturnable(true);
-				body.generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-			if( !body.isMethodAbrupted() ) {
-				if( isAutoReturnable() ) {
-					ReturnStat.generateReturn(code,this);
-				} else {
-					if( finally_catcher != null )
-						code.addInstr(Instr.op_jsr,finally_catcher.subr_label);
-					code.addInstr(Instr.op_goto,end_label);
-				}
-			}
-			for(int i=0; i < catchers.length; i++) {
-				code.addInstr(Instr.stop_catcher,catchers[i].code_catcher);
-			}
-
-			for(int i=0; i < catchers.length; i++) {
-				if( isAutoReturnable() )
-					catchers[i].setAutoReturnable(true);
-				try {
-					catchers[i].generate(code,Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(catchers[i],e);
-				}
-			}
-			if(finally_catcher != null) {
-				try {
-					code.addInstr(Instr.stop_catcher,finally_catcher.code_catcher);
-					finally_catcher.generate(code,Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(finally_catcher,e);
-				}
-			}
-			code.addInstr(Instr.set_label,end_label);
-		} finally {
-			if(finally_catcher != null)
-				code.removeVar(finally_catcher.ret_arg);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("try").space().append(body).newLine();
 		for(int i=0; i < catchers.length; i++)
@@ -910,15 +793,46 @@ public class SynchronizedStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
-	@att public ENode		expr;
-	@att public Var			expr_var;
-	@att public ENode		body;
+	@node
+	public static final class SynchronizedStatImpl extends ENodeImpl {
+		@att public ENode			expr;
+		@att public Var				expr_var;
+		@att public ENode			body;
+		@att public CodeLabel		handler;
+		@att public CodeCatchInfo	code_catcher;
+		@att public CodeLabel		end_label;
+		public SynchronizedStatImpl() {}
+		public SynchronizedStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view SynchronizedStatView of SynchronizedStatImpl extends ENodeView {
+		public ENode			expr;
+		public Var				expr_var;
+		public ENode			body;
+	}
+
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual Var			expr_var;
+	@att public abstract virtual ENode			body;
 	
-	public CodeLabel		handler;
-	public CodeCatchInfo	code_catcher;
-	public CodeLabel	end_label;
+	@getter public ENode			get$expr()		{ return this.getSynchronizedStatView().expr; }
+	@getter public Var				get$expr_var()	{ return this.getSynchronizedStatView().expr_var; }
+	@getter public ENode			get$body()		{ return this.getSynchronizedStatView().body; }
+	
+	@setter public void		set$expr(ENode val)		{ this.getSynchronizedStatView().expr = val; }
+	@setter public void		set$expr_var(Var val)	{ this.getSynchronizedStatView().expr_var = val; }
+	@setter public void		set$body(ENode val)		{ this.getSynchronizedStatView().body = val; }
+	
+	public NodeView					getNodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public SynchronizedStatView		getSynchronizedStatView()	{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JSynchronizedStatView	getJSynchronizedStatView()	{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+
 
 	public SynchronizedStat() {
+		super(new SynchronizedStatImpl());
 	}
 
 	public void resolve(Type reqType) {
@@ -931,47 +845,6 @@ public class SynchronizedStat extends ENode {
 		} catch(Exception e ) { Kiev.reportError(this,e); }
 		setAbrupted(body.isAbrupted());
 		setMethodAbrupted(body.isMethodAbrupted());
-	}
-
-	public void generate(Code code, Type reqType) {
-		expr.generate(code,null);
-		try {
-			code.addVar(expr_var);
-			code.addInstr(Instr.op_dup);
-			code.addInstr(Instr.op_store,expr_var.getJVarView());
-			code.addInstr(Instr.op_monitorenter);
-			handler = code.newLabel();
-			end_label = code.newLabel();
-			code_catcher = code.newCatcher(handler,null);
-			code.addInstr(Instr.start_catcher,code_catcher);
-			try {
-				if( isAutoReturnable() )
-					body.setAutoReturnable(true);
-				body.generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(this,e);
-			}
-			code.addInstr(Instr.stop_catcher,code_catcher);
-			if( !body.isMethodAbrupted() ) {
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn(code,this);
-				else {
-					code.addInstr(Instr.op_load,expr_var.getJVarView());
-					code.addInstr(Instr.op_monitorexit);
-					code.addInstr(Instr.op_goto,end_label);
-				}
-			}
-
-			code.addInstr(Instr.set_label,handler);
-			code.stack_push(Type.tpThrowable);
-			code.addInstr(Instr.op_load,expr_var.getJVarView());
-			code.addInstr(Instr.op_monitorexit);
-			code.addInstr(Instr.op_throw);
-
-			code.addInstr(Instr.set_label,end_label);
-		} finally {
-			code.removeVar(expr_var);
-		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -990,14 +863,43 @@ public class WithStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
-	@att	public ENode		expr;
-	@att	public ENode		body;
+	@node
+	public static final class WithStatImpl extends ENodeImpl {
+		@att public ENode		expr;
+		@att public ENode		body;
+		@ref public LvalDNode	var_or_field;
+		@att public CodeLabel	end_label;
+		public WithStatImpl() {}
+		public WithStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view WithStatView of WithStatImpl extends ENodeView {
+		public ENode		expr;
+		public ENode		body;
+		public LvalDNode	var_or_field;
+	}
+
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual ENode			body;
+	@att public abstract virtual LvalDNode		var_or_field;
 	
-	@ref
-	public LvalDNode	var_or_field;
-	public CodeLabel	end_label;
+	@getter public ENode			get$expr()			{ return this.getWithStatView().expr; }
+	@getter public ENode			get$body()			{ return this.getWithStatView().body; }
+	@getter public LvalDNode		get$var_or_field()	{ return this.getWithStatView().var_or_field; }
+	
+	@setter public void		set$expr(ENode val)				{ this.getWithStatView().expr = val; }
+	@setter public void		set$body(ENode val)				{ this.getWithStatView().body = val; }
+	@setter public void		set$var_or_field(LvalDNode val)	{ this.getWithStatView().var_or_field = val; }
+	
+	public NodeView			getNodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public WithStatView		getWithStatView()	{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
+	public JWithStatView	getJWithStatView()	{ return new JWithStatView((WithStatImpl)this.$v_impl); }
 
 	public WithStat() {
+		super(new WithStatImpl());
 	}
 
 	public void resolve(Type reqType) {
@@ -1033,25 +935,6 @@ public class WithStat extends ENode {
 
 		setAbrupted(body.isAbrupted());
 		setMethodAbrupted(body.isMethodAbrupted());
-	}
-
-	public void generate(Code code, Type reqType) {
-		end_label = code.newLabel();
-		try {
-			if (expr instanceof AssignExpr)
-				expr.generate(code,Type.tpVoid);
-			if( isAutoReturnable() )
-				body.setAutoReturnable(true);
-			body.generate(code,Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-		if( !body.isMethodAbrupted() ) {
-			if( isAutoReturnable() )
-				ReturnStat.generateReturn(code,this);
-		}
-
-		code.addInstr(Instr.set_label,end_label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

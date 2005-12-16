@@ -1021,14 +1021,14 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new SFldExpr(f.pos,f),new ShadowExpr(f.init))
+						,new SFldExpr(f.pos,f),new Shadow(f.init))
 				),0
 			);
 		} else {
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign
-						,new SFldExpr(f.pos,f),new ShadowExpr(f.init))
+						,new SFldExpr(f.pos,f),new Shadow(f.init))
 				),0
 			);
 		}
@@ -1404,7 +1404,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						new ExprStat(f.init.getPos(),
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
-								new SFldExpr(f.pos,f),new ShadowExpr(f.init)
+								new SFldExpr(f.pos,f),new Shadow(f.init)
 							)
 						)
 					);
@@ -1419,7 +1419,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							new AssignExpr(f.init.getPos(),
 								f.isInitWrapper() ? AssignOperator.Assign2 : AssignOperator.Assign,
 								new IFldExpr(f.pos,new ThisExpr(0),f),
-								new ShadowExpr(f.init)
+								new Shadow(f.init)
 							)
 						);
 					instance_init.body.addStatement(init_stat);
@@ -1427,7 +1427,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				}
 			} else {
 				Initializer init = (Initializer)n;
-				ENode init_stat = new InitializerShadow(init);
+				ENode init_stat = new Shadow(init);
 				init_stat.setHidden(true);
 				if (init.isStatic()) {
 					if( class_init == null )
@@ -1484,7 +1484,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				} else {
 					if( stats[0] instanceof ExprStat ) {
 						ExprStat es = (ExprStat)stats[0];
-						ASTNode ce = es.expr;
+						ENode ce = es.expr;
 						if( es.expr instanceof ASTExpression )
 							ce = ((ASTExpression)es.expr).nodes[0];
 						else
@@ -1501,7 +1501,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							if( !(nm.equals(nameThis) || nm.equals(nameSuper) || nm.equals(nameInit)) )
 								gen_def_constr = true;
 							else {
-								if( nm.equals(nameSuper) || (nm.equals(nameInit) && ((CallExpr)es.expr).super_flag) )
+								if( nm.equals(nameSuper) || (nm.equals(nameInit) && es.expr.isSuperExpr()) )
 									m.setNeedFieldInits(true);
 							}
 						}

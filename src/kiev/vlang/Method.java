@@ -8,6 +8,8 @@ import kiev.transf.*;
 import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;
 import kiev.be.java.JMethodView;
+import kiev.be.java.JInitializerView;
+import kiev.be.java.JWBCConditionView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -810,10 +812,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		setResolved(true);
 	}
 
-	public CodeLabel getBreakLabel() {
-		return ((BlockStat)body).getBreakLabel();
-	}
-
 	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
@@ -866,15 +864,41 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 	@dflow(in="this:in")				BlockStat		body;
 	}
 
-	@att public BlockStat				body;
-	@att public PrescannedBody			pbody;
+	@node
+	public static final class InitializerImpl extends DNodeImpl {
+		@att public BlockStat				body;
+		@att public PrescannedBody			pbody;
+		public InitializerImpl() {}
+		public InitializerImpl(int pos, int flags) { super(pos, flags); }
+	}
+	@nodeview
+	public static final view InitializerView of InitializerImpl extends DNodeView {
+		public BlockStat				body;
+		public PrescannedBody			pbody;
+	}
+
+	@att public abstract virtual BlockStat			body;
+	@att public abstract virtual PrescannedBody	pbody;
+	
+	@getter public BlockStat		get$body()			{ return this.getInitializerView().body; }
+	@getter public PrescannedBody	get$pbody()			{ return this.getInitializerView().pbody; }
+	
+	@setter public void		set$body(BlockStat val)				{ this.getInitializerView().body = val; }
+	@setter public void		set$pbody(PrescannedBody val)		{ this.getInitializerView().pbody = val; }
+	
+	public NodeView				getNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public InitializerView		getInitializerView()	{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+	public JDNodeView			getJDNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+	public JInitializerView		getJInitializerView()	{ return new JInitializerView((InitializerImpl)this.$v_impl); }
 
 	public Initializer() {
-		super(new DNodeImpl());
+		super(new InitializerImpl());
 	}
 
 	public Initializer(int pos, int flags) {
-		super(new DNodeImpl(pos, flags));
+		super(new InitializerImpl(pos, flags));
 	}
 
 	public void resolveDecl() {
@@ -887,12 +911,6 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		}
 
 		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating Initializer");
-		code.setLinePos(this.getPosLine());
-		body.generate(code,reqType);
 	}
 
 	public boolean setBody(ENode body) {
@@ -921,22 +939,57 @@ public class WBCCondition extends DNode {
 	@dflow(out="body") private static class DFI {
 	@dflow(in="this:in")			ENode		body;
 	}
+	
+	@node
+	public static final class WBCConditionImpl extends DNodeImpl {
+		@att public WBCType				cond;
+		@att public NameRef				name;
+		@att public ENode				body;
+		@ref public Method				definer;
+		@att public CodeAttr			code_attr;
+		public WBCConditionImpl() {}
+		public WBCConditionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view WBCConditionView of WBCConditionImpl extends DNodeView {
+		public WBCType				cond;
+		public NameRef				name;
+		public ENode				body;
+		public Method				definer;
+		public CodeAttr				code_attr;
+	}
 
-	public WBCType					cond;
+	@att public abstract virtual WBCType			cond;
+	@att public abstract virtual NameRef			name;
+	@att public abstract virtual ENode				body;
+	@ref public abstract virtual Method			definer;
+	@att public abstract virtual CodeAttr			code_attr;
 	
-	@att public NameRef				name;
+	@getter public WBCType			get$cond()			{ return this.getWBCConditionView().cond; }
+	@getter public NameRef			get$name()			{ return this.getWBCConditionView().name; }
+	@getter public ENode			get$body()			{ return this.getWBCConditionView().body; }
+	@getter public Method			get$definer()		{ return this.getWBCConditionView().definer; }
+	@getter public CodeAttr			get$code_attr()		{ return this.getWBCConditionView().code_attr; }
 	
-	@att public ENode				body;
+	@setter public void		set$cond(WBCType val)				{ this.getWBCConditionView().cond = val; }
+	@setter public void		set$name(NameRef val)				{ this.getWBCConditionView().name = val; }
+	@setter public void		set$body(ENode val)					{ this.getWBCConditionView().body = val; }
+	@setter public void		set$definer(Method val)				{ this.getWBCConditionView().definer = val; }
+	@setter public void		set$code_attr(CodeAttr val)			{ this.getWBCConditionView().code_attr = val; }
 	
-	@ref public Method				definer;
-	public CodeAttr					code_attr;
-	
+	public NodeView				getNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public WBCConditionView		getWBCConditionView()	{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JDNodeView			getJDNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JWBCConditionView	getJWBCConditionView()	{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+
 	public WBCCondition() {
-		super(new DNodeImpl());
+		super(new WBCConditionImpl());
 	}
 
 	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
-		super(new DNodeImpl(pos));
+		super(new WBCConditionImpl(pos));
 		if (name != null)
 			this.name = new NameRef(pos, name);
 		this.cond = cond;
@@ -946,38 +999,6 @@ public class WBCCondition extends DNode {
 	public void resolve(Type reqType) {
 		if( code_attr != null ) return;
 		body.resolve(Type.tpVoid);
-	}
-
-	public void generate(ConstPool constPool, Type reqType) {
-		Code code = new Code(pctx.clazz, pctx.method, constPool);
-		code.generation = true;
-		code.cond_generation = true;
-		if( cond == WBCType.CondInvariant ) {
-			body.generate(code,Type.tpVoid);
-			code.addInstr(Instr.op_return);
-			return;
-		}
-		if( code_attr == null ) {
-			Method m = code.method;
-			try {
-				FormPar thisPar = null;
-				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
-					code.addVar(thisPar);
-				}
-				if( m.params.length > 0 ) code.addVars(m.params.toArray());
-				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.addVar(m.getRetVar());
-				body.generate(code,Type.tpVoid);
-				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.removeVar(m.getRetVar());
-				if( m.params.length > 0 ) code.removeVars(m.params.toArray());
-				if( thisPar != null ) code.removeVar(thisPar);
-				code.generateCode(this);
-			} catch(Exception e) {
-				Kiev.reportError(this,e);
-			}
-			return;
-		}
-		code_attr.generate(constPool);
 	}
 
 	public boolean setBody(ENode body) {

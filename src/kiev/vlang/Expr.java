@@ -10,8 +10,18 @@ import kiev.vlang.Instr.*;
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
 import kiev.be.java.JLvalueExprView;
+import kiev.be.java.JShadowView;
+import kiev.be.java.JArrayLengthExprView;
+import kiev.be.java.JTypeClassExprView;
 import kiev.be.java.JAssignExprView;
+import kiev.be.java.JBinaryExprView;
+import kiev.be.java.JStringConcatExprView;
+import kiev.be.java.JCommaExprView;
+import kiev.be.java.JBlockExprView;
+import kiev.be.java.JUnaryExprView;
 import kiev.be.java.JIncrementExprView;
+import kiev.be.java.JConditionalExprView;
+import kiev.be.java.JCastExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.Instr.*;
@@ -26,38 +36,65 @@ import syntax kiev.Syntax;
 
 
 @node
-public class ShadowExpr extends ENode {
+public class Shadow extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	@ref public ENode expr;
+	@node
+	public static final class ShadowImpl extends ENodeImpl {
+		public ShadowImpl() {}
+		@ref public ASTNode	node;
+	}
+	@nodeview
+	public static final view ShadowView of ShadowImpl extends ENodeView {
+		public ASTNode		node;
+	}
+
+	@ref public abstract virtual ASTNode node;
 	
-	public ShadowExpr() {
+	public NodeView			getNodeView()		{ return new ShadowView((ShadowImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new ShadowView((ShadowImpl)this.$v_impl); }
+	public ShadowView		getShadowView()		{ return new ShadowView((ShadowImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JShadowView((ShadowImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JShadowView((ShadowImpl)this.$v_impl); }
+	public JShadowView		getJShadowView()	{ return new JShadowView((ShadowImpl)this.$v_impl); }
+
+	@getter public ASTNode	get$node()				{ return this.getShadowView().node; }
+	@setter public void		set$node(ASTNode val)	{ this.getShadowView().node = val; }
+	
+	public Shadow() {
+		super(new ShadowImpl());
 	}
-	public ShadowExpr(ENode expr) {
-		this.expr = expr;
+	public Shadow(ENode node) {
+		super(new ShadowImpl());
+		this.node = node;
 	}
-	public Type getType() { return expr.getType(); }
+	public Shadow(Initializer node) {
+		super(new ShadowImpl());
+		this.node = node;
+	}
+	public Type getType() { return node.getType(); }
 	
 	public int getPriority() {
-		return expr.getPriority();
+		if (node instanceof ENode)
+			return ((ENode)node).getPriority();
+		return 255;
 	}
 	
 	public void resolve(Type reqType) {
-		expr.resolve(reqType);
+		if (node instanceof ENode)
+			((ENode)node).resolve(reqType);
+		else
+			((Initializer)node).resolveDecl();
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		expr.generate(code,reqType);
-	}
-	
 	public String toString() {
-		return "(shadow of) "+expr;
+		return "(shadow of) "+node;
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return expr.toJava(dmp);
+		return node.toJava(dmp);
 	}
 
 }
@@ -69,15 +106,37 @@ public class ArrayLengthExpr extends AccessExpr {
 	@dflow(in="this:in")	ENode			obj;
 	}
 	
+	@node
+	public static final class ArrayLengthExprImpl extends AccessExprImpl {
+		public ArrayLengthExprImpl() {}
+		public ArrayLengthExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ArrayLengthExprView of ArrayLengthExprImpl extends AccessExprView {
+		ArrayLengthExprView(ArrayLengthExprImpl $view) { super($view); }
+	}
+
+	public NodeView					getNodeView()				{ return new ArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new ArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+	public ArrayLengthExprView		getArrayLengthExprView()	{ return new ArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+	public JArrayLengthExprView		getJArrayLengthExprView()	{ return new JArrayLengthExprView((ArrayLengthExprImpl)this.$v_impl); }
+
 	public ArrayLengthExpr() {
+		super(new ArrayLengthExprImpl());
 	}
 
 	public ArrayLengthExpr(int pos, ENode obj) {
-		super(pos, obj, new NameRef(pos,nameLength));
+		super(new ArrayLengthExprImpl(pos));
+		this.ident = new NameRef(pos,nameLength);
+		this.obj = obj;
 	}
 	public ArrayLengthExpr(int pos, ENode obj, NameRef length) {
-		super(pos, obj, length);
+		super(new ArrayLengthExprImpl(pos));
 		assert(length.name == nameLength);
+		this.ident = new NameRef(pos,nameLength);
+		this.obj = obj;
 	}
 
 	public String toString() {
@@ -100,14 +159,6 @@ public class ArrayLengthExpr extends AccessExpr {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType ) {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerLengthExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		obj.generate(code,null);
-		code.addInstr(Instr.op_arrlength);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( obj.getPriority() < opAccessPriority ) {
 			dmp.append('(');
@@ -124,13 +175,35 @@ public class TypeClassExpr extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	@att public TypeRef		type;
+	@node
+	public static final class TypeClassExprImpl extends ENodeImpl {
+		public TypeClassExprImpl() {}
+		public TypeClassExprImpl(int pos) { super(pos); }
+		@att public TypeRef		type;
+	}
+	@nodeview
+	public static final view TypeClassExprView of TypeClassExprImpl extends ENodeView {
+		public TypeRef		type;
+	}
 
+	@ref public abstract virtual TypeRef type;
+	
+	public NodeView				getNodeView()			{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public TypeClassExprView	getTypeClassExprView()	{ return new TypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+	public JTypeClassExprView	getJTypeClassExprView(){ return new JTypeClassExprView((TypeClassExprImpl)this.$v_impl); }
+
+	@getter public TypeRef	get$type()				{ return this.getTypeClassExprView().type; }
+	@setter public void		set$type(TypeRef val)	{ this.getTypeClassExprView().type = val; }
+	
 	public TypeClassExpr() {
+		super(new TypeClassExprImpl());
 	}
 
 	public TypeClassExpr(int pos, TypeRef type) {
-		super(pos);
+		super(new TypeClassExprImpl(pos));
 		this.type = type;
 	}
 
@@ -153,13 +226,6 @@ public class TypeClassExpr extends ENode {
 			return;
 		}
 		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType ) {
-		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addConst(type.getJavaType());
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -248,7 +314,6 @@ public class AssignExpr extends LvalueExpr {
 	public void resolve(Type reqType) {
 		if( isResolved() )
 			return;
-		setTryResolved(true);
 		lval.resolve(reqType);
 		Type et1 = lval.getType();
 		if (op == AssignOperator.Assign && et1.isWrapper())
@@ -348,7 +413,7 @@ public class AssignExpr extends LvalueExpr {
 		Type t1 = lval.getType();
 		if( op==AssignOperator.AssignAdd && t1==Type.tpString ) {
 			op = AssignOperator.Assign;
-			value = new BinaryExpr(pos,BinaryOperator.Add,new ShadowExpr(lval),(ENode)~value);
+			value = new BinaryExpr(pos,BinaryOperator.Add,new Shadow(lval),(ENode)~value);
 		}
 		if (value instanceof TypeRef)
 			((TypeRef)value).toExpr(t1);
@@ -461,17 +526,45 @@ public class BinaryExpr extends ENode {
 	@dflow(in="expr1")		ENode				expr2;
 	}
 	
-	@ref public BinaryOperator		op;
+	@node
+	public static class BinaryExprImpl extends ENodeImpl {
+		@ref public BinaryOperator	op;
+		@att public ENode			expr1;
+		@att public ENode			expr2;
+		public BinaryExprImpl() {}
+		public BinaryExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view BinaryExprView of BinaryExprImpl extends ENodeView {
+		public BinaryOperator	op;
+		public ENode			expr1;
+		public ENode			expr2;
+	}
 	
-	@att public ENode				expr1;
+	@att public abstract virtual BinaryOperator	op;
+	@att public abstract virtual ENode				expr1;
+	@att public abstract virtual ENode				expr2;
 	
-	@att public ENode				expr2;
+	@getter public BinaryOperator	get$op()					{ return this.getBinaryExprView().op; }
+	@getter public ENode			get$expr1()					{ return this.getBinaryExprView().expr1; }
+	@getter public ENode			get$expr2()					{ return this.getBinaryExprView().expr2; }
+	@setter public void				set$op(BinaryOperator val)	{ this.getBinaryExprView().op = val; }
+	@setter public void				set$expr1(ENode val)		{ this.getBinaryExprView().expr1 = val; }
+	@setter public void				set$expr2(ENode val)		{ this.getBinaryExprView().expr2 = val; }
 
+	public NodeView					getNodeView()				{ return new BinaryExprView((BinaryExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new BinaryExprView((BinaryExprImpl)this.$v_impl); }
+	public BinaryExprView			getBinaryExprView()			{ return new BinaryExprView((BinaryExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JBinaryExprView((BinaryExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JBinaryExprView((BinaryExprImpl)this.$v_impl); }
+	public JBinaryExprView			getJBinaryExprView()		{ return new JBinaryExprView((BinaryExprImpl)this.$v_impl); }
+	
 	public BinaryExpr() {
+		super(new BinaryExprImpl());
 	}
 
 	public BinaryExpr(int pos, BinaryOperator op, ENode expr1, ENode expr2) {
-		super(pos);
+		super(new BinaryExprImpl(pos));
 		this.op = op;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -755,15 +848,6 @@ public class BinaryExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating BinaryExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		expr1.generate(code,null);
-		expr2.generate(code,null);
-		code.addInstr(op.instr);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		if( expr1.getPriority() < op.priority ) {
 			dmp.append('(').append(expr1).append(')');
@@ -787,31 +871,35 @@ public class StringConcatExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]	args;
 	}
 
-	@att public final NArr<ENode>	args;
-
-	public static Struct clazzStringBuffer;
-	public static Method clazzStringBufferToString;
-	public static Method clazzStringBufferInit;
-
-	static {
-		try {
-		clazzStringBuffer = Env.getStruct(ClazzName.fromToplevelName(KString.from("java.lang.StringBuffer"),false) );
-		if( clazzStringBuffer == null )
-			throw new RuntimeException("Core class java.lang.StringBuffer not found");
-		clazzStringBufferToString = (Method)clazzStringBuffer.resolveMethod(
-			KString.from("toString"),KString.from("()Ljava/lang/String;"));
-		clazzStringBufferInit = (Method)clazzStringBuffer.resolveMethod(
-			KString.from("<init>"),KString.from("()V"));
-		} catch(Exception e ) {
-			throw new RuntimeException("Can't initialize: "+e.getMessage());
-		}
+	@node
+	public static class StringConcatExprImpl extends ENodeImpl {
+		@att public NArr<ENode>			args;
+		public StringConcatExprImpl() {}
+		public StringConcatExprImpl(int pos) { super(pos); }
 	}
+	@nodeview
+	public static view StringConcatExprView of StringConcatExprImpl extends ENodeView {
+		public access:ro	NArr<ENode>		args;
+	}
+	
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	
+	@getter public NArr<ENode>		get$args()				{ return this.getStringConcatExprView().args; }
+
+	public NodeView					getNodeView()				{ return new StringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new StringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	public StringConcatExprView		getStringConcatExprView()	{ return new StringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JStringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JStringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	public JStringConcatExprView	getJStringConcatExprView()	{ return new JStringConcatExprView((StringConcatExprImpl)this.$v_impl); }
+	
 
 	public StringConcatExpr() {
+		super(new StringConcatExprImpl());
 	}
 
 	public StringConcatExpr(int pos) {
-		super(pos);
+		super(new StringConcatExprImpl(pos));
 	}
 
 	public String toString() {
@@ -841,63 +929,6 @@ public class StringConcatExpr extends ENode {
 		args.append((ENode)~expr);
 	}
 
-	static final KString sigI = KString.from("(I)Ljava/lang/StringBuffer;");
-	static final KString sigJ = KString.from("(J)Ljava/lang/StringBuffer;");
-	static final KString sigZ = KString.from("(Z)Ljava/lang/StringBuffer;");
-	static final KString sigC = KString.from("(C)Ljava/lang/StringBuffer;");
-	static final KString sigF = KString.from("(F)Ljava/lang/StringBuffer;");
-	static final KString sigD = KString.from("(D)Ljava/lang/StringBuffer;");
-	static final KString sigObj = KString.from("(Ljava/lang/Object;)Ljava/lang/StringBuffer;");
-	static final KString sigStr = KString.from("(Ljava/lang/String;)Ljava/lang/StringBuffer;");
-	static final KString sigArrC = KString.from("([C)Ljava/lang/StringBuffer;");
-	public Method getMethodFor(ENode expr) {
-		JType t = expr.getType().getJType();
-		KString sig = null;
-		switch(t.java_signature.byteAt(0)) {
-		case 'B':
-		case 'S':
-		case 'I': sig = sigI; break;
-		case 'J': sig = sigJ; break;
-		case 'Z': sig = sigZ; break;
-		case 'C': sig = sigC; break;
-		case 'F': sig = sigF; break;
-		case 'D': sig = sigD; break;
-		case 'L':
-		case 'A':
-		case '&':
-		case 'R':
-			if(t == Type.tpString)
-				sig = sigStr;
-			else
-				sig = sigObj;
-			break;
-		case '[':
-			if(t.java_signature.byteAt(1)=='C')
-				sig = sigArrC;
-			else
-				sig = sigObj;
-			break;
-		}
-		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),sig);
-		if( m == null )
-			Kiev.reportError(expr,"Unknown method for StringBuffer");
-		return m;
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating StringConcatExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		code.addInstr(op_new,clazzStringBuffer.type);
-		code.addInstr(op_dup);
-		code.addInstr(op_call,clazzStringBufferInit,false);
-		for(int i=0; i < args.length; i++) {
-			args[i].generate(code,null);
-			code.addInstr(op_call,getMethodFor(args[i]),false);
-		}
-		code.addInstr(op_call,clazzStringBufferToString,false);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 //		dmp.append("((new java.lang.StringBuffer())");
 //		for(int i=0; i < args.length; i++) {
@@ -921,13 +952,35 @@ public class CommaExpr extends ENode {
 	@dflow(in="this:in", seq="true")	ENode[]	exprs;
 	}
 
-	@att public final NArr<ENode>	exprs;
+	@node
+	public static class CommaExprImpl extends ENodeImpl {
+		@att public NArr<ENode>		exprs;
+		public CommaExprImpl() {}
+		public CommaExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view CommaExprView of CommaExprImpl extends ENodeView {
+		public access:ro	NArr<ENode>		exprs;
+	}
+	
+	@att public abstract virtual access:ro	NArr<ENode>			exprs;
+	
+	@getter public NArr<ENode>		get$exprs()				{ return this.getCommaExprView().exprs; }
 
+	public NodeView					getNodeView()			{ return new CommaExprView((CommaExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()			{ return new CommaExprView((CommaExprImpl)this.$v_impl); }
+	public CommaExprView			getCommaExprView()		{ return new CommaExprView((CommaExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()			{ return new JCommaExprView((CommaExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()			{ return new JCommaExprView((CommaExprImpl)this.$v_impl); }
+	public JCommaExprView			getJCommaExprView()		{ return new JCommaExprView((CommaExprImpl)this.$v_impl); }
+	
+	
 	public CommaExpr() {
+		super(new CommaExprImpl());
 	}
 
 	public CommaExpr(ENode expr) {
-		super(expr.pos);
+		super(new CommaExprImpl(expr.pos));
 		this.exprs.add(expr);
 	}
 
@@ -960,16 +1013,6 @@ public class CommaExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		code.setLinePos(this.getPosLine());
-		for(int i=0; i < exprs.length; i++) {
-			if( i < exprs.length-1 )
-				exprs[i].generate(code,Type.tpVoid);
-			else
-				exprs[i].generate(code,reqType);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < exprs.length; i++) {
 			exprs[i].toJava(dmp);
@@ -988,15 +1031,41 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="stats")					ENode		res;
 	}
 
-	@att public final NArr<ENode>		stats;
+	@node
+	public static class BlockExprImpl extends ENodeImpl {
+		@att public NArr<ENode>			stats;
+		@att public ENode				res;
+		public BlockExprImpl() {}
+		public BlockExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view BlockExprView of BlockExprImpl extends ENodeView {
+		public access:ro	NArr<ENode>		stats;
+		public				ENode			res;
+	}
 	
-	@att public       ENode				res;
+	@att public abstract virtual			ENode				res;
+	@att public abstract virtual access:ro	NArr<ENode>			stats;
+	
+	@getter public ENode			get$res()				{ return this.getBlockExprView().res; }
+	@getter public NArr<ENode>		get$stats()				{ return this.getBlockExprView().stats; }
+	
+	@setter public void				set$res(ENode val)		{ this.getBlockExprView().res = val; }
 
+	public NodeView				getNodeView()			{ return new BlockExprView((BlockExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new BlockExprView((BlockExprImpl)this.$v_impl); }
+	public BlockExprView		getBlockExprView()		{ return new BlockExprView((BlockExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JBlockExprView((BlockExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JBlockExprView((BlockExprImpl)this.$v_impl); }
+	public JBlockExprView		getJBlockExprView()		{ return new JBlockExprView((BlockExprImpl)this.$v_impl); }
+	
+	
 	public BlockExpr() {
+		super(new BlockExprImpl());
 	}
 
 	public BlockExpr(int pos) {
-		super(pos);
+		super(new BlockExprImpl(pos));
 	}
 
 	public void setExpr(ENode res) {
@@ -1112,28 +1181,6 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		return new BlockExprDFFunc(dfi);
 	}
 	
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockExpr");
-		code.setLinePos(this.getPosLine());
-		for(int i=0; i < stats.length; i++) {
-			try {
-				stats[i].generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-		if (res != null) {
-			try {
-				res.generate(code,reqType);
-			} catch(Exception e ) {
-				Kiev.reportError(res,e);
-			}
-		}
-		Vector<Var> vars = new Vector<Var>();
-		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-		code.removeVars(vars.toArray());
-	}
-
 	public String toString() {
 		Dumper dmp = new Dumper();
 		dmp.append("({").space();
@@ -1164,15 +1211,40 @@ public class UnaryExpr extends ENode {
 	@dflow(out="this:in")			ENode		expr;
 	}
 
-	@ref public Operator			op;
+	@node
+	public static class UnaryExprImpl extends ENodeImpl {
+		@ref public Operator		op;
+		@att public ENode			expr;
+		public UnaryExprImpl() {}
+		public UnaryExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view UnaryExprView of UnaryExprImpl extends ENodeView {
+		public Operator			op;
+		public ENode			expr;
+	}
 	
-	@att public ENode				expr;
+	@att public abstract virtual Operator			op;
+	@att public abstract virtual ENode				expr;
+	
+	@getter public Operator			get$op()					{ return this.getUnaryExprView().op; }
+	@getter public ENode			get$expr()					{ return this.getUnaryExprView().expr; }
+	@setter public void				set$op(Operator val)		{ this.getUnaryExprView().op = val; }
+	@setter public void				set$expr(ENode val)			{ this.getUnaryExprView().expr = val; }
 
+	public NodeView					getNodeView()				{ return new UnaryExprView((UnaryExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new UnaryExprView((UnaryExprImpl)this.$v_impl); }
+	public UnaryExprView			getUnaryExprView()			{ return new UnaryExprView((UnaryExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JUnaryExprView((UnaryExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JUnaryExprView((UnaryExprImpl)this.$v_impl); }
+	public JUnaryExprView			getJUnaryExprView()			{ return new JUnaryExprView((UnaryExprImpl)this.$v_impl); }
+	
 	public UnaryExpr() {
+		super(new UnaryExprImpl());
 	}
 
 	public UnaryExpr(int pos, Operator op, ENode expr) {
-		super(pos);
+		super(new UnaryExprImpl(pos));
 		this.op = op;
 		this.expr = expr;
 	}
@@ -1198,7 +1270,6 @@ public class UnaryExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		setTryResolved(true);
 		expr.resolve(reqType);
 		Type et = expr.getType();
 		if( et.isNumber() &&
@@ -1302,22 +1373,6 @@ public class UnaryExpr extends ENode {
 			}
 		}
 		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating UnaryExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		expr.generate(code,null);
-		if( op == PrefixOperator.BitNot ) {
-			if( expr.getType() == Type.tpLong )
-				code.addConst(-1L);
-			else
-				code.addConst(-1);
-			code.addInstr(op_xor);
-		} else {
-			code.addInstr(op.instr);
-		}
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1437,17 +1492,45 @@ public class ConditionalExpr extends ENode {
 	@dflow(in="cond:false")	ENode		expr2;
 	}
 
-	@att public ENode		cond;
+	@node
+	public static class ConditionalExprImpl extends ENodeImpl {
+		@att public ENode			cond;
+		@att public ENode			expr1;
+		@att public ENode			expr2;
+		public ConditionalExprImpl() {}
+		public ConditionalExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ConditionalExprView of ConditionalExprImpl extends ENodeView {
+		public ENode		cond;
+		public ENode		expr1;
+		public ENode		expr2;
+	}
 	
-	@att public ENode		expr1;
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			expr1;
+	@att public abstract virtual ENode			expr2;
 	
-	@att public ENode		expr2;
+	@getter public ENode		get$cond()				{ return this.getConditionalExprView().cond; }
+	@getter public ENode		get$expr1()				{ return this.getConditionalExprView().expr1; }
+	@getter public ENode		get$expr2()				{ return this.getConditionalExprView().expr2; }
+	@setter public void			set$cond(ENode val)		{ this.getConditionalExprView().cond = val; }
+	@setter public void			set$expr1(ENode val)	{ this.getConditionalExprView().expr1 = val; }
+	@setter public void			set$expr2(ENode val)	{ this.getConditionalExprView().expr2 = val; }
 
+	public NodeView					getNodeView()				{ return new ConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new ConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	public ConditionalExprView		getConditionalExprView()	{ return new ConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	public JConditionalExprView		getJConditionalExprView()	{ return new JConditionalExprView((ConditionalExprImpl)this.$v_impl); }
+	
 	public ConditionalExpr() {
+		super(new ConditionalExprImpl());
 	}
 
 	public ConditionalExpr(int pos, ENode cond, ENode expr1, ENode expr2) {
-		super(pos);
+		super(new ConditionalExprImpl(pos));
 		this.cond = cond;
 		this.expr1 = expr1;
 		this.expr2 = expr2;
@@ -1496,27 +1579,6 @@ public class ConditionalExpr extends ENode {
 		setResolved(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		code.setLinePos(this.getPosLine());
-		if( cond.isConstantExpr() ) {
-			if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-				expr1.generate(code,null);
-			} else {
-				expr2.generate(code,null);
-			}
-		} else {
-			CodeLabel elseLabel = code.newLabel();
-			CodeLabel endLabel = code.newLabel();
-			BoolExpr.gen_iffalse(code, cond, elseLabel);
-			expr1.generate(code,null);
-			code.addInstr(Instr.op_goto,endLabel);
-			code.addInstr(Instr.set_label,elseLabel);
-			expr2.generate(code,null);
-			if( reqType == Type.tpVoid ) code.addInstr(op_pop);
-			code.addInstr(Instr.set_label,endLabel);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("((");
 		dmp.append(cond).append(") ? (");
@@ -1533,24 +1595,51 @@ public class CastExpr extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@att public TypeRef			type;
+	@node
+	public static class CastExprImpl extends ENodeImpl {
+		@att public ENode		expr;
+		@att public TypeRef		type;
+		@att public boolean		reinterp;
+		public CastExprImpl() {}
+		public CastExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view CastExprView of CastExprImpl extends ENodeView {
+		public ENode	expr;
+		public TypeRef	type;
+		public boolean	reinterp;
+	}
 	
-	@att public ENode			expr;
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual TypeRef		type;
+	@att public abstract virtual boolean		reinterp;
 	
-	public boolean				explicit;
-	public boolean				reinterp;
+	@getter public ENode		get$expr()					{ return this.getCastExprView().expr; }
+	@getter public TypeRef		get$type()					{ return this.getCastExprView().type; }
+	@getter public boolean		get$reinterp()				{ return this.getCastExprView().reinterp; }
+	@setter public void			set$expr(ENode val)			{ this.getCastExprView().expr = val; }
+	@setter public void			set$type(TypeRef val)		{ this.getCastExprView().type = val; }
+	@setter public void			set$reinterp(boolean val)	{ this.getCastExprView().reinterp = val; }
 
+	public NodeView					getNodeView()			{ return new CastExprView((CastExprImpl)this.$v_impl); }
+	public ENodeView				getENodeView()			{ return new CastExprView((CastExprImpl)this.$v_impl); }
+	public CastExprView				getCastExprView()		{ return new CastExprView((CastExprImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()			{ return new JCastExprView((CastExprImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()			{ return new JCastExprView((CastExprImpl)this.$v_impl); }
+	public JCastExprView			getJCastExprView()		{ return new JCastExprView((CastExprImpl)this.$v_impl); }
+	
 	public CastExpr() {
+		super(new CastExprImpl());
 	}
 
 	public CastExpr(int pos, Type type, ENode expr) {
-		super(pos);
+		super(new CastExprImpl(pos));
 		this.type = new TypeRef(type);
 		this.expr = expr;
 	}
 
 	public CastExpr(int pos, TypeRef type, ENode expr) {
-		super(pos);
+		super(new CastExprImpl(pos));
 		this.type = type;
 		this.expr = expr;
 	}
@@ -1592,11 +1681,8 @@ public class CastExpr extends ENode {
 		}
 		// Try to find $cast method
 		if( !extp.isAutoCastableTo(type) ) {
-			ENode ocast = tryOverloadedCast(extp);
-			if( ocast == this ) {
-				resolve(reqType);
+			if( tryOverloadedCast(extp) )
 				return;
-			}
 			if (extp.isWrapper()) {
 				expr = extp.makeWrappedAccess(expr);
 				resolve(reqType);
@@ -1604,11 +1690,8 @@ public class CastExpr extends ENode {
 			}
 		}
 		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
-			ENode ocast = tryOverloadedCast(extp);
-			if( ocast == this ) {
-				resolve(reqType);
+			if( tryOverloadedCast(extp) )
 				return;
-			}
 			expr = extp.makeWrappedAccess(expr);
 			resolve(reqType);
 			return;
@@ -1628,25 +1711,28 @@ public class CastExpr extends ENode {
 		throw new CompilerException(this,"Expression "+expr+" of type "+extp+" is not castable to "+type);
 	}
 
-	public ENode tryOverloadedCast(Type et) {
+	public boolean tryOverloadedCast(Type et) {
 		Method@ v;
 		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
 		MethodType mt = MethodType.newMethodType(null,Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			expr = info.buildCall(this,(ENode)~expr,(Method)v,ENode.emptyArray);
-			return this;
+			ENode call = info.buildCall(this,(ENode)~expr,(Method)v,ENode.emptyArray);
+			if (this.type.getType().isReference())
+				call.setCastCall(true);
+			replaceWithNodeResolve(type.getType(),call);
+			return true;
 		}
 		v.$unbind();
 		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
 		mt = MethodType.newMethodType(null,new Type[]{expr.getType()},this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
-			expr = new CallExpr(pos,null,(Method)v,new ENode[]{(ENode)~expr});
-			expr.resolve(type.getType());
-			return this;
+			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{(ENode)~expr});
+			replaceWithNodeResolve(type.getType(),call);
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	private void resolve2(Type reqType) {
@@ -1690,13 +1776,8 @@ public class CastExpr extends ENode {
 			return;
 		}
 		// Try to find $cast method
-		if( !et.isAutoCastableTo(type) ) {
-			ENode ocast = tryOverloadedCast(et);
-			if( ocast != null && ocast != this ) {
-				replaceWithNodeResolve(type, ocast);
-				return;
-			}
-		}
+		if( !et.isAutoCastableTo(type) && tryOverloadedCast(et))
+			return;
 
 		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
 			if( !et.isReference() && type.isArgument() )
@@ -1873,29 +1954,6 @@ public class CastExpr extends ENode {
 			);});
 		else
 			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\t\tgenerating CastExpr: "+this);
-		code.setLinePos(this.getPosLine());
-		expr.generate(code,null);
-		Type t = expr.getType();
-		if( t.isReference() ) {
-			if( t.isReference() != type.isReference() )
-				throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be casted to type "+type);
-			if( type.isReference() )
-				code.addInstr(Instr.op_checkcast,type.getType());
-		} else {
-			if (reinterp) {
-				if (t.isIntegerInCode() && type.isIntegerInCode())
-					; //generate nothing, both values are int-s
-				else
-					throw new CompilerException(this,"Expression "+expr+" of type "+t+" cannot be reinterpreted to type "+type);
-			} else {
-				code.addInstr(Instr.op_x2y,type.getType());
-			}
-		}
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 	public Dumper toJava(Dumper dmp) {

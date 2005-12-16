@@ -32,7 +32,6 @@ public class CallExpr extends ENode {
 		@ref public Method				func;
 		@att public NArr<ENode>			args;
 		@att public ENode				temp_expr;
-		@att public boolean				super_flag;
 		public CallExprImpl() {}
 		public CallExprImpl(int pos) { super(pos); }
 	}
@@ -42,25 +41,21 @@ public class CallExpr extends ENode {
 		public				Method			func;
 		public access:ro	NArr<ENode>		args;
 		public				ENode			temp_expr;
-		public				boolean			super_flag;
 	}
 	
 	@att public abstract virtual			ENode				obj;
 	@ref public abstract virtual			Method				func;
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	@att public abstract virtual			ENode				temp_expr;
-	@att public abstract virtual			boolean				super_flag;
 	
 	@getter public ENode			get$obj()				{ return this.getCallExprView().obj; }
 	@getter public Method			get$func()				{ return this.getCallExprView().func; }
 	@getter public NArr<ENode>		get$args()				{ return this.getCallExprView().args; }
 	@getter public ENode			get$temp_expr()			{ return this.getCallExprView().temp_expr; }
-	@getter public boolean			get$super_flag()		{ return this.getCallExprView().super_flag; }
 	
 	@setter public void		set$obj(ENode val)				{ this.getCallExprView().obj = val; }
 	@setter public void		set$func(Method val)			{ this.getCallExprView().func = val; }
 	@setter public void		set$temp_expr(ENode val)		{ this.getCallExprView().temp_expr = val; }
-	@setter public void		set$super_flag(boolean val)		{ this.getCallExprView().super_flag = val; }
 
 	public NodeView				getNodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
 	public ENodeView			getENodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
@@ -90,7 +85,8 @@ public class CallExpr extends ENode {
 		}
 		this.func = func;
 		this.args.addAll(args);
-		this.super_flag = super_flag;
+		if (super_flag)
+			this.setSuperExpr(true);
 	}
 
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
@@ -163,8 +159,10 @@ public class CallExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		if( func.getName().equals(nameInit) ) {
-			if( super_flag ) dmp.append(nameSuper);
-			else dmp.append(nameThis);
+			if( isSuperExpr() )
+				dmp.append(nameSuper);
+			else
+				dmp.append(nameThis);
 		} else {
 			if( obj != null ) {
 				if( obj.getPriority() < opCallPriority ) {
@@ -173,7 +171,7 @@ public class CallExpr extends ENode {
 					dmp.append(obj).append('.');
 				}
 			}
-			else if( super_flag )
+			else if( isSuperExpr() )
 				dmp.append("super.");
 			else if( func instanceof Method && ((Method)func).isStatic() )
 				dmp.append(((Struct)((Method)func).parent).name).append('.');

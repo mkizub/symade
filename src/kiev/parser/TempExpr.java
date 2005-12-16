@@ -217,7 +217,6 @@ public class UnresCallExpr extends UnresExpr {
 	@ref public final ENode				obj;	// access expression or type ref
 	@ref public final Named				func;	// function name
 	@ref public final NArr<ENode>		args;
-	     public final boolean			super_flag;
 
 	public UnresCallExpr() {}
 
@@ -226,7 +225,7 @@ public class UnresCallExpr extends UnresExpr {
 		this.obj = obj;
 		this.func = func;
 		this.args.addAll(args);
-		this.super_flag = super_flag;
+		this.setSuperExpr(super_flag);
 	}
 
 	public UnresCallExpr(int pos, ENode obj, Named func, NArr<ENode> args, boolean super_flag) {
@@ -266,7 +265,8 @@ public class UnresCallExpr extends UnresExpr {
 		} else {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray(), super_flag);
+				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray(), isSuperExpr());
+				ce.setCastCall(this.isCastCall());
 				m.makeArgs(ce.args, null);
 				return ce;
 			} else {

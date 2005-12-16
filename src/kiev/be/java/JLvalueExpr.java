@@ -61,6 +61,29 @@ public abstract view JAccessExprView of AccessExprImpl extends JLvalueExprView {
 public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 
+	public boolean	isConstantExpr() {
+		if( var.isFinal() ) {
+			if( var.init != null )
+				return var.init.isConstantExpr();
+			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		var.acc.verifyReadAccess(this,var);
+		if( var.isFinal() ) {
+			if( var.init != null )
+				return var.init.getConstValue();
+			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
+				return cva.value;
+			}
+		}
+    	throw new RuntimeException("Request for constant value of non-constant expression");
+	}
+
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
@@ -241,8 +264,9 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 
 @nodeview
 public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
-	public access:ro	boolean		super_flag;
 
+	public JThisExprView(ThisExprImpl $view) { super($view); }
+	
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
 		code.setLinePos(this);
@@ -467,6 +491,29 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 	
+	public boolean	isConstantExpr() {
+		if( var.isFinal() ) {
+			if( var.init != null )
+				return var.init.isConstantExpr();
+			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		var.acc.verifyReadAccess(this,var);
+		if( var.isFinal() ) {
+			if( var.init != null )
+				return var.init.getConstValue();
+			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
+				return cva.value;
+			}
+		}
+    	throw new RuntimeException("Request for constant value of non-constant expression");
+	}
+
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);

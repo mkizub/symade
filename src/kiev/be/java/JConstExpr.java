@@ -99,6 +99,7 @@ public final view JConstStringExprView of ConstStringExprImpl extends JConstExpr
 @nodeview
 public abstract view JConstExprView of ConstExprImpl extends JENodeView {
 
+	public boolean isConstantExpr() { return true; }
 	public Object getConstValue() { return this.getENode().getConstValue(); }
 	
 	public void generate(Code code, Type reqType) {

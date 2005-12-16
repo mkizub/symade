@@ -31,5 +31,14 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
 	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
 	public final boolean isPackedField()	{ return this.$view.is_fld_packed; }
+
+	public Attr getAttr(KString name) {
+		Attr[] attrs = this.attrs;
+		for(int i=0; i < attrs.length; i++)
+			if( attrs[i].name.equals(name) )
+				return attrs[i];
+		return null;
+	}
+
 }
 

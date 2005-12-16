@@ -17,11 +17,12 @@ import kiev.vlang.Var.VarImpl;
 
 @nodeview
 public final view JVarView of VarImpl extends JLvalDNodeView {
-	final Var getVar() { return this.$view.getVar(); }
+	
+	public final Var getVar() { return (Var)this.getNode(); }
 		
 	public access:ro	KString				name;
-	public access:ro	TypeRef				vtype;
-	public access:ro	ENode				init;
+	public access:ro	Type				vtype;
+	public access:ro	JENodeView			init;
 	public				int					bcpos;
 
 	@getter public final Type get$type() {

@@ -1,29 +1,25 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JInlineMethodStatView;
+import kiev.be.java.JBlockStatView;
+import kiev.be.java.JEmptyStatView;
+import kiev.be.java.JExprStatView;
+import kiev.be.java.JReturnStatView;
+import kiev.be.java.JThrowStatView;
+import kiev.be.java.JIfElseStatView;
+import kiev.be.java.JCondStatView;
+import kiev.be.java.JLabeledStatView;
+import kiev.be.java.JBreakStatView;
+import kiev.be.java.JContinueStatView;
+import kiev.be.java.JGotoStatView;
+import kiev.be.java.JGotoCaseStatView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -35,55 +31,50 @@ import syntax kiev.Syntax;
  */
 
 @node
-public class ShadowStat extends ENode {
-	
-	@dflow(out="this:in") private static class DFI {}
-	
-	@ref public ENode stat;
-	
-	public ShadowStat() {
-	}
-	public ShadowStat(ENode stat) {
-		super(0);
-		this.stat = stat;
-	}
-	public Type getType() { return stat.getType(); }
-
-	public void resolve(Type reqType) {
-		stat.resolve(reqType);
-		setResolved(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		stat.generate(code,reqType);
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return stat.toJava(dmp);
-	}
-
-}
-
-@node
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@dflow(in="root()", out="this:out()") private static class DFI {}
 
-	static class ParamRedir {
-		FormPar		old_var;
-		FormPar		new_var;
-		ParamRedir(FormPar o, FormPar n) { old_var=o; new_var=n; }
+	public static final class ParamRedir {
+		public FormPar		old_var;
+		public FormPar		new_var;
+		public ParamRedir(FormPar o, FormPar n) { old_var=o; new_var=n; }
 	};
 
+	@node
+	public static final class InlineMethodStatImpl extends ENodeImpl {
+		@att public Method			method;
+		@ref public ParamRedir[]	params_redir;
+		public InlineMethodStatImpl() {}
+		public InlineMethodStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view InlineMethodStatView of InlineMethodStatImpl extends ENodeView {
+		public Method			method;
+		public ParamRedir[]		params_redir;
+	}
 
-	@att public Method		method;
-	public ParamRedir[]		params_redir;
+	@att public abstract virtual Method			method;
+	@ref public abstract virtual ParamRedir[]		params_redir;
+	
+	public NodeView					getNodeView()				{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public InlineMethodStatView		getInlineMethodStatView()	{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public JInlineMethodStatView	getJInlineMethodStatView()	{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
 
+	@getter public Method			get$method()				{ return this.getInlineMethodStatView().method; }
+	@getter public ParamRedir[]		get$params_redir()			{ return this.getInlineMethodStatView().params_redir; }
+	@setter public void		set$method(Method val)				{ this.getInlineMethodStatView().method = val; }
+	@setter public void		set$params_redir(ParamRedir[] val)	{ this.getInlineMethodStatView().params_redir = val; }
+	
 	public InlineMethodStat() {
+		super(new InlineMethodStatImpl());
 	}
 
 	public InlineMethodStat(int pos, Method m, Method in) {
-		super(pos);
+		super(new InlineMethodStatImpl(pos));
 		method = m;
 		method.inlined_by_dispatcher = true;
 		assert(m.params.length == in.params.length);
@@ -160,27 +151,6 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		}
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating InlineMethodStat");
-		code.setLinePos(this.getPosLine());
-		if( Kiev.verify )
-			generateArgumentCheck(code);
-		foreach (ParamRedir redir; params_redir)
-			redir.old_var.setBCpos(redir.new_var.getBCpos());
-		method.body.generate(code,reqType);
-	}
-
-	public void generateArgumentCheck(Code code) {
-		for(int i=0; i < params_redir.length; i++) {
-			ParamRedir redir = params_redir[i];
-			if( !redir.new_var.type.equals(method.params[i].type) ) {
-				code.addInstr(Instr.op_load,redir.new_var.getJVarView());
-				code.addInstr(Instr.op_checkcast,method.params[i].type);
-				code.addInstr(Instr.op_store,redir.new_var.getJVarView());
-			}
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
 		foreach (ParamRedir redir; params_redir)
@@ -205,28 +175,46 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="this:in", seq="true")	ENode[]		stats;
 	}
 
-	@att public final NArr<ENode>		stats;
+	@node
+	public static class BlockStatImpl extends ENodeImpl {
+		@att public NArr<ENode>		stats;
+		@ref public CodeLabel		break_label;
+		public BlockStatImpl() {}
+		public BlockStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view BlockStatView of BlockStatImpl extends ENodeView {
+		public access:ro	NArr<ENode>		stats;
+	}
 	
-	private int resolve_pos;
+	@att public abstract virtual access:ro	NArr<ENode>			stats;
+	
+	@getter public NArr<ENode>		get$stats()				{ return this.getBlockStatView().stats; }
 
-	protected CodeLabel	break_label = null;
-
+	public NodeView				getNodeView()			{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public BlockStatView		getBlockStatView()		{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public JBlockStatView		getJBlockStatView()		{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	
 	public BlockStat() {
+		super(new BlockStatImpl());
 	}
 
 	public BlockStat(int pos) {
-		super(pos);
+		super(new BlockStatImpl(pos));
 	}
 
 	public BlockStat(int pos, NArr<ENode> sts) {
-		super(pos);
+		super(new BlockStatImpl(pos));
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
 	}
 
 	public BlockStat(int pos, ENode[] sts) {
-		super(pos);
+		super(new BlockStatImpl(pos));
 		foreach (ENode st; sts) {
 			this.stats.append(st);
 		}
@@ -361,35 +349,6 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		}
 	}
 
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BlockStat");
-		code.setLinePos(this.getPosLine());
-		break_label = code.newLabel();
-		//code.addVars(vars);
-		for(int i=0; i < stats.length; i++) {
-			try {
-				stats[i].generate(code,Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(stats[i],e);
-			}
-		}
-		Vector<Var> vars = new Vector<Var>();
-		foreach (ASTNode n; stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
-		code.removeVars(vars.toArray());
-		if( parent instanceof Method && Kiev.debugOutputC
-		 && code.need_to_gen_post_cond && ((Method)parent).type.ret != Type.tpVoid) {
-			code.stack_push(((Method)parent).type.ret);
-		}
-		code.addInstr(Instr.set_label,break_label);
-	}
-
-	public CodeLabel getBreakLabel() throws RuntimeException {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.space().append('{').newLine(1);
 		foreach (ENode s; stats)
@@ -405,17 +364,32 @@ public class EmptyStat extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-	public EmptyStat() {}
-
-	public EmptyStat(int pos) { super(pos); }
-
-	public void resolve(Type reqType) {
+	@node
+	public static class EmptyStatImpl extends ENodeImpl {
+		public EmptyStatImpl() {}
+		public EmptyStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view EmptyStatView of EmptyStatImpl extends ENodeView {
+		public EmptyStatView(EmptyStatImpl $view) { super($view); }
+	}
+	
+	public NodeView				getNodeView()			{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public EmptyStatView		getEmptyStatView()		{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public JEmptyStatView		getJEmptyStatView()		{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
+	
+	public EmptyStat() {
+		super(new EmptyStatImpl());
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating EmptyStat");
-//		code.setPos(pos);
-//		code.addInstr(Instr.op_nop);
+	public EmptyStat(int pos) {
+		super(new EmptyStatImpl(pos));
+	}
+
+	public void resolve(Type reqType) {
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -430,17 +404,40 @@ public class ExprStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@att public ENode		expr;
+	@node
+	public static final class ExprStatImpl extends ENodeImpl {
+		@att public ENode	expr;
+		public ExprStatImpl() {}
+		public ExprStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ExprStatView of ExprStatImpl extends ENodeView {
+		public ENode		expr;
+	}
 
+	@att public abstract virtual ENode expr;
+	
+	public NodeView			getNodeView()		{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
+	public ExprStatView		getExprStatView()	{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
+	public JExprStatView	getJExprStatView()	{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
+
+	@getter public ENode	get$expr()				{ return this.getExprStatView().expr; }
+	@setter public void		set$expr(ENode val)		{ this.getExprStatView().expr = val; }
+	
 	public ExprStat() {
+		super(new ExprStatImpl());
 	}
 
 	public ExprStat(ENode expr) {
+		super(new ExprStatImpl());
 		this.expr = expr;
 	}
 
 	public ExprStat(int pos, ENode expr) {
-		super(pos);
+		super(new ExprStatImpl(pos));
 		this.expr = expr;
 	}
 
@@ -452,15 +449,6 @@ public class ExprStat extends ENode {
 		try {
 			expr.resolve(Type.tpVoid);
 			expr.setGenVoidExpr(true);
-		} catch(Exception e ) {
-			Kiev.reportError(expr,e);
-		}
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ExprStat");
-		try {
-			expr.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(expr,e);
 		}
@@ -481,13 +469,35 @@ public class ReturnStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@att public ENode		expr;
+	@node
+	public static final class ReturnStatImpl extends ENodeImpl {
+		@att public ENode	expr;
+		public ReturnStatImpl() {}
+		public ReturnStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ReturnStatView of ReturnStatImpl extends ENodeView {
+		public ENode		expr;
+	}
 
+	@att public abstract virtual ENode expr;
+	
+	public NodeView			getNodeView()			{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public ReturnStatView	getReturnStatView()		{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public JReturnStatView	getJReturnStatView()	{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
+
+	@getter public ENode	get$expr()				{ return this.getReturnStatView().expr; }
+	@setter public void		set$expr(ENode val)		{ this.getReturnStatView().expr = val; }
+	
 	public ReturnStat() {
+		super(new ReturnStatImpl());
 	}
 
 	public ReturnStat(int pos, ENode expr) {
-		super(pos);
+		super(new ReturnStatImpl(pos));
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
@@ -511,60 +521,6 @@ public class ReturnStat extends ENode {
 		}
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ReturnStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			if( expr != null )
-				expr.generate(code,code.method.type.ret);
-			generateReturn(code,this);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
-	public static void generateReturn(Code code, ASTNode from) {
-		Var tmp_var = null;
-		for(ASTNode node = from; node != null; node = node.parent) {
-			if (node instanceof Method)
-				break;
-			else if (node instanceof FinallyInfo) {
-				assert (node.parent instanceof TryStat);
-				node = node.parent; // skip TryStat that is parent of FinallyInfo
-				continue;
-			}
-			else if (node instanceof TryStat) {
-				if( node.finally_catcher != null ) {
-					if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
-						code.addVar(tmp_var);
-						code.addInstr(Instr.op_store,tmp_var.getJVarView());
-					}
-					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
-				}
-			}
-			else if (node instanceof SynchronizedStat) {
-				if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
-					code.addVar(tmp_var);
-					code.addInstr(Instr.op_store,tmp_var.getJVarView());
-				}
-				code.addInstr(Instr.op_load,node.expr_var.getJVarView());
-				code.addInstr(Instr.op_monitorexit);
-			}
-		}
-		if( tmp_var != null ) {
-			code.addInstr(Instr.op_load,tmp_var.getJVarView());
-			code.removeVar(tmp_var);
-		}
-		if( code.need_to_gen_post_cond ) {
-			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
-			if( code.method.type.ret != Type.tpVoid )
-				code.stack_pop();
-		} else
-			code.addInstr(Instr.op_return);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("return");
 		if( expr != null )
@@ -580,13 +536,35 @@ public class ThrowStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@att public ENode		expr;
+	@node
+	public static final class ThrowStatImpl extends ENodeImpl {
+		@att public ENode	expr;
+		public ThrowStatImpl() {}
+		public ThrowStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ThrowStatView of ThrowStatImpl extends ENodeView {
+		public ENode		expr;
+	}
 
+	@att public abstract virtual ENode expr;
+	
+	public NodeView			getNodeView()			{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public ThrowStatView	getThrowStatView()		{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public JThrowStatView	getJThrowStatView()		{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
+
+	@getter public ENode	get$expr()				{ return this.getThrowStatView().expr; }
+	@setter public void		set$expr(ENode val)		{ this.getThrowStatView().expr = val; }
+	
 	public ThrowStat() {
+		super(new ThrowStatImpl());
 	}
 
 	public ThrowStat(int pos, ENode expr) {
-		super(pos);
+		super(new ThrowStatImpl(pos));
 		this.expr = expr;
 		setMethodAbrupted(true);
 	}
@@ -603,17 +581,6 @@ public class ThrowStat extends ENode {
 			Kiev.reportWarning(this,"Exception "+exc+" must be caught or declared to be thrown");
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ThrowStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			expr.generate(code,null);
-			code.addInstr(Instr.op_throw);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append("throw").space().append(expr).append(';').newLine();
 	}
@@ -628,17 +595,45 @@ public class IfElseStat extends ENode {
 	@dflow(in="cond:false")	ENode		elseSt;
 	}
 
-	@att public ENode		cond;
+	@node
+	public static class IfElseStatImpl extends ENodeImpl {
+		@att public ENode			cond;
+		@att public ENode			thenSt;
+		@att public ENode			elseSt;
+		public IfElseStatImpl() {}
+		public IfElseStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view IfElseStatView of IfElseStatImpl extends ENodeView {
+		public ENode		cond;
+		public ENode		thenSt;
+		public ENode		elseSt;
+	}
 	
-	@att public ENode		thenSt;
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			thenSt;
+	@att public abstract virtual ENode			elseSt;
 	
-	@att public ENode		elseSt;
+	@getter public ENode		get$cond()				{ return this.getIfElseStatView().cond; }
+	@getter public ENode		get$thenSt()			{ return this.getIfElseStatView().thenSt; }
+	@getter public ENode		get$elseSt()			{ return this.getIfElseStatView().elseSt; }
+	@setter public void			set$cond(ENode val)		{ this.getIfElseStatView().cond = val; }
+	@setter public void			set$thenSt(ENode val)	{ this.getIfElseStatView().thenSt = val; }
+	@setter public void			set$elseSt(ENode val)	{ this.getIfElseStatView().elseSt = val; }
 
+	public NodeView				getNodeView()			{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public IfElseStatView		getIfElseStatView()		{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public JIfElseStatView		getJIfElseStatView()	{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
+	
 	public IfElseStat() {
+		super(new IfElseStatImpl());
 	}
 	
 	public IfElseStat(int pos, ENode cond, ENode thenSt, ENode elseSt) {
-		super(pos);
+		super(new IfElseStatImpl(pos));
 		this.cond = cond;
 		this.thenSt = thenSt;
 		this.elseSt = elseSt;
@@ -679,46 +674,6 @@ public class IfElseStat extends ENode {
 		}
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating IfElseStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			if( cond.isConstantExpr() ) {
-				ENode cond = this.cond;
-				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					if( isAutoReturnable() )
-						thenSt.setAutoReturnable(true);
-					thenSt.generate(code,Type.tpVoid);
-				}
-				else if( elseSt != null ) {
-					if( isAutoReturnable() )
-						elseSt.setAutoReturnable(true);
-					elseSt.generate(code,Type.tpVoid);
-				}
-			} else {
-				CodeLabel else_label = code.newLabel();
-				BoolExpr.gen_iffalse(code, cond, else_label);
-				thenSt.generate(code,Type.tpVoid);
-				if( elseSt != null ) {
-					CodeLabel end_label = code.newLabel();
-					if( !thenSt.isMethodAbrupted() ) {
-						if( isAutoReturnable() )
-							ReturnStat.generateReturn(code,this);
-						else if (!thenSt.isAbrupted())
-							code.addInstr(Instr.op_goto,end_label);
-					}
-					code.addInstr(Instr.set_label,else_label);
-					elseSt.generate(code,Type.tpVoid);
-					code.addInstr(Instr.set_label,end_label);
-				} else {
-					code.addInstr(Instr.set_label,else_label);
-				}
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("if(").space().append(cond).space()
 			.append(')');
@@ -747,15 +702,40 @@ public class CondStat extends ENode {
 	@dflow(in="cond:false")		ENode		message;
 	}
 
-	@att public ENode			cond;
+	@node
+	public static class CondStatImpl extends ENodeImpl {
+		@att public ENode			cond;
+		@att public ENode			message;
+		public CondStatImpl() {}
+		public CondStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view CondStatView of CondStatImpl extends ENodeView {
+		public ENode		cond;
+		public ENode		message;
+	}
 	
-	@att public ENode			message;
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			message;
+	
+	@getter public ENode		get$cond()				{ return this.getCondStatView().cond; }
+	@getter public ENode		get$message()			{ return this.getCondStatView().message; }
+	@setter public void			set$cond(ENode val)		{ this.getCondStatView().cond = val; }
+	@setter public void			set$message(ENode val)	{ this.getCondStatView().message = val; }
 
+	public NodeView				getNodeView()			{ return new CondStatView((CondStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new CondStatView((CondStatImpl)this.$v_impl); }
+	public CondStatView			getCondStatView()		{ return new CondStatView((CondStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JCondStatView((CondStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JCondStatView((CondStatImpl)this.$v_impl); }
+	public JCondStatView		getJCondStatView()		{ return new JCondStatView((CondStatImpl)this.$v_impl); }
+	
 	public CondStat() {
+		super(new CondStatImpl());
 	}
 
 	public CondStat(int pos, ENode cond, ENode message) {
-		super(pos);
+		super(new CondStatImpl(pos));
 		this.cond = cond;
 		this.message = message;
 	}
@@ -771,61 +751,6 @@ public class CondStat extends ENode {
 			message.resolve(Type.tpString);
 		} catch(Exception e ) {
 			Kiev.reportError(message,e);
-		}
-	}
-
-	private KString getAssertMethodName() {
-		WBCCondition wbc = (WBCCondition)parent.parent;
-		switch( wbc.cond ) {
-		case WBCType.CondRequire:	return nameAssertRequireMethod;
-		case WBCType.CondEnsure:	return nameAssertEnsureMethod;
-		case WBCType.CondInvariant:	return nameAssertInvariantMethod;
-		default: return nameAssertMethod;
-		}
-	}
-
-	private KString getAssertMethodSignature() {
-		WBCCondition wbc = (WBCCondition)parent.parent;
-		if( wbc.name == null )
-			return nameAssertSignature;
-		else
-			return nameAssertNameSignature;
-	}
-
-	private void generateAssertName(Code code) {
-		WBCCondition wbc = (WBCCondition)parent.parent;
-		if( wbc.name == null ) return;
-		code.addConst((KString)wbc.name.name);
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating CondStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			if(cond.isConstantExpr() ) {
-				ENode cond = this.cond;
-				if( ((Boolean)cond.getConstValue()).booleanValue() );
-				else {
-					generateAssertName(code);
-					message.generate(code,Type.tpString);
-					Method func = Type.tpDebug.clazz.resolveMethod(
-						getAssertMethodName(),
-						getAssertMethodSignature());
-					code.addInstr(Instr.op_call,func,false);
-				}
-			} else {
-				CodeLabel else_label = code.newLabel();
-				BoolExpr.gen_iftrue(code, cond, else_label);
-				generateAssertName(code);
-				message.generate(code,Type.tpString);
-				Method func = Type.tpDebug.clazz.resolveMethod(
-					getAssertMethodName(),
-					getAssertMethodSignature());
-				code.addInstr(Instr.op_call,func,false);
-				code.addInstr(Instr.set_label,else_label);
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
 		}
 	}
 
@@ -847,17 +772,41 @@ public class LabeledStat extends ENode implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
-	@att
-	public NameRef			ident;
+	@node
+	public static class LabeledStatImpl extends ENodeImpl {
+		@att                 public NameRef		ident;
+		@att(copyable=false) public Label			lbl;
+		@att                 public ENode			stat;
+		public LabeledStatImpl() {}
+	}
+	@nodeview
+	public static view LabeledStatView of LabeledStatImpl extends ENodeView {
+		public NameRef			ident;
+		public Label			lbl;
+		public ENode			stat;
+	}
 	
-	@att(copyable=false)
-	public Label			lbl;
+	@att                 public abstract virtual NameRef		ident;
+	@att(copyable=false) public abstract virtual Label			lbl;
+	@att                 public abstract virtual ENode			stat;
+	
+	@getter public NameRef		get$ident()				{ return this.getLabeledStatView().ident; }
+	@getter public Label		get$lbl()				{ return this.getLabeledStatView().lbl; }
+	@getter public ENode		get$stat()				{ return this.getLabeledStatView().stat; }
+	@setter public void			set$ident(NameRef val)	{ this.getLabeledStatView().ident = val; }
+	@setter public void			set$lbl(Label val)		{ this.getLabeledStatView().lbl = val; }
+	@setter public void			set$stat(ENode val)		{ this.getLabeledStatView().stat = val; }
 
-	@att
-	public ENode			stat;
-
+	public NodeView				getNodeView()			{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public LabeledStatView		getLabeledStatView()	{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public JLabeledStatView		getJLabeledStatView()	{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
+	
 	public LabeledStat() {
-		lbl = new Label();
+		super(new LabeledStatImpl());
+		this.lbl = new Label();
 	}
 	
 	public NodeName getName() { return new NodeName(ident.name); }
@@ -872,21 +821,6 @@ public class LabeledStat extends ENode implements Named {
 		if( stat.isMethodAbrupted() ) setMethodAbrupted(true);
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating LabeledStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			lbl.generate(code,Type.tpVoid);
-			stat.generate(code,Type.tpVoid);
-		} catch(Exception e ) {
-			Kiev.reportError(stat,e);
-		}
-	}
-
-	public CodeLabel getCodeLabel(Code code) {
-		return lbl.getCodeLabel(code);
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.newLine(-1).append(ident).append(':').newLine(1).append(stat);
 	}
@@ -897,19 +831,37 @@ public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
-	@att public NameRef			ident;
-	
-	@ref public Label			dest;
-
-	public BreakStat() {
+	@node
+	public static class BreakStatImpl extends ENodeImpl {
+		@att public NameRef		ident;
+		@ref public Label		dest;
+		public BreakStatImpl() {}
+	}
+	@nodeview
+	public static view BreakStatView of BreakStatImpl extends ENodeView {
+		public NameRef			ident;
+		public Label			dest;
 	}
 	
-//	public BreakStat(int pos, ASTNode parent, KString name) {
-//		super(pos, parent);
-//		this.name = name;
-//		setAbrupted(true);
-//	}
+	@att public abstract virtual NameRef		ident;
+	@ref public abstract virtual Label			dest;
+	
+	@getter public NameRef		get$ident()				{ return this.getBreakStatView().ident; }
+	@getter public Label		get$dest()				{ return this.getBreakStatView().dest; }
+	@setter public void			set$ident(NameRef val)	{ this.getBreakStatView().ident = val; }
+	@setter public void			set$dest(Label val)		{ this.getBreakStatView().dest = val; }
 
+	public NodeView				getNodeView()			{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
+	public BreakStatView		getBreakStatView()		{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
+	public JBreakStatView		getJBreakStatView()		{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
+	
+	public BreakStat() {
+		super(new BreakStatImpl());
+	}
+	
 	public void callbackRootChanged() {
 		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
@@ -934,7 +886,7 @@ public class BreakStat extends ENode {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getBrkLabel();
+					Label l = ((LoopStat)p).lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -961,7 +913,7 @@ public class BreakStat extends ENode {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getBrkLabel();
+					Label l = ((LoopStat)p).lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -989,7 +941,7 @@ public class BreakStat extends ENode {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getBrkLabel();
+					Label l = ((LoopStat)p).lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -1016,7 +968,7 @@ public class BreakStat extends ENode {
 				Kiev.reportError(this,"Break not within loop/switch statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getBrkLabel();
+					Label l = ((LoopStat)p).lblbrk;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -1027,82 +979,6 @@ public class BreakStat extends ENode {
 		if( p instanceof Method )
 			Kiev.reportError(this,"Break not within loop/switch statement");
 		((ENode)p).setBreaked(true);
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating BreakStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			Object[] lb = resolveBreakLabel(code);
-			int i=0;
-			for(; i < lb.length-1; i++)
-				if( lb[i] instanceof CodeLabel ) {
-					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
-				}
-				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
-					code.addInstr(Instr.op_monitorexit);
-				}
-			if( isAutoReturnable() )
-				ReturnStat.generateReturn(code,this);
-			else
-				code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-
-	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveBreakLabel(Code code) {
-		KString name = ident==null?null:ident.name;
-		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
-			// Search for loop statements
-			for(ASTNode node = this.parent; node != null; node = node.parent) {
-				if( node instanceof TryStat ) {
-					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
-				}
-				else if( node instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,node.expr_var);
-				}
-				if( node instanceof Method ) break;
-				if( node instanceof BreakTarget || node instanceof BlockStat );
-				else continue;
-				if( node instanceof BreakTarget ) {
-					BreakTarget t = (BreakTarget)node;
-					return (Object[])Arrays.append(cl,t.getBrkLabel().getCodeLabel(code));
-				}
-				else if( node instanceof BlockStat && ((BlockStat)node).isBreakTarget() ){
-					BlockStat t = (BlockStat)node;
-					return (Object[])Arrays.append(cl,t.getBreakLabel());
-				}
-			}
-			throw new RuntimeException("Break not within loop statement");
-		} else {
-			// Search for labels with loop/switch statement
-			for(ASTNode node = this.parent; node != null; node = node.parent) {
-				if( node instanceof TryStat ) {
-					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
-				}
-				else if( node instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,node.expr_var);
-				}
-				if( node instanceof Method ) break;
-				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
-					ENode st = node.stat;
-					if( st instanceof BreakTarget )
-						return (Object[])Arrays.append(cl,st.getBrkLabel().getCodeLabel(code));
-					else if (st instanceof BlockStat)
-						return (Object[])Arrays.append(cl,st.getBreakLabel());
-					else
-						throw new RuntimeException("Label "+name+" does not refer to break target");
-				}
-			}
-		}
-		throw new RuntimeException("Label "+name+" unresolved or isn't a break target");
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1118,19 +994,37 @@ public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
-	@att public NameRef			ident;
-
-	@ref public Label			dest;
-
-	public ContinueStat() {
+	@node
+	public static class ContinueStatImpl extends ENodeImpl {
+		@att public NameRef		ident;
+		@ref public Label		dest;
+		public ContinueStatImpl() {}
+	}
+	@nodeview
+	public static view ContinueStatView of ContinueStatImpl extends ENodeView {
+		public NameRef			ident;
+		public Label			dest;
 	}
 	
-//	public ContinueStat(int pos, ASTNode parent, KString name) {
-//		super(pos, parent);
-//		this.name = name;
-//		setAbrupted(true);
-//	}
+	@att public abstract virtual NameRef		ident;
+	@ref public abstract virtual Label			dest;
+	
+	@getter public NameRef		get$ident()				{ return this.getContinueStatView().ident; }
+	@getter public Label		get$dest()				{ return this.getContinueStatView().dest; }
+	@setter public void			set$ident(NameRef val)	{ this.getContinueStatView().ident = val; }
+	@setter public void			set$dest(Label val)		{ this.getContinueStatView().dest = val; }
 
+	public NodeView				getNodeView()			{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public ContinueStatView		getContinueStatView()	{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public JContinueStatView	getJContinueStatView()	{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
+	
+	public ContinueStat() {
+		super(new ContinueStatImpl());
+	}
+	
 	public void callbackRootChanged() {
 		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
@@ -1151,7 +1045,7 @@ public class ContinueStat extends ENode {
 				Kiev.reportError(this,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getCntLabel();
+					Label l = ((LoopStat)p).lblcnt;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -1177,7 +1071,7 @@ public class ContinueStat extends ENode {
 				Kiev.reportError(this,"Continue not within loop statement");
 			} else {
 				if (p instanceof LoopStat) {
-					Label l = ((LoopStat)p).getCntLabel();
+					Label l = ((LoopStat)p).lblcnt;
 					if (l != null) {
 						dest = l;
 						l.addLink(this);
@@ -1193,67 +1087,6 @@ public class ContinueStat extends ENode {
 		// TODO: check label or loop statement available
 	}
 
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ContinueStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			Object[] lb = resolveContinueLabel(code);
-			int i=0;
-			for(; i < lb.length-1; i++)
-				if( lb[i] instanceof CodeLabel )
-					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
-				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
-					code.addInstr(Instr.op_monitorexit);
-				}
-			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-
-	/** Returns array of CodeLabel (to op_jsr) or Var (to op_monitorexit) */
-	private Object[] resolveContinueLabel(Code code) {
-		KString name = ident==null?null:ident.name;
-		Object[] cl = new Object[0];
-		if( name == null || name.equals(KString.Empty) ) {
-			// Search for loop statements
-			for(ASTNode node = this.parent; node != null; node = node.parent) {
-				if( node instanceof TryStat ) {
-					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
-				}
-				else if( node instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,node.expr_var);
-				}
-				if( node instanceof Method ) break;
-				if( node instanceof ContinueTarget )
-					return (Object[])Arrays.append(cl,node.getCntLabel().getCodeLabel(code));
-			}
-			throw new RuntimeException("Continue not within loop statement");
-		} else {
-			// Search for labels with loop statement
-			for(ASTNode node = this.parent; node != null; node = node.parent) {
-				if( node instanceof TryStat ) {
-					if( node.finally_catcher != null )
-						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
-				}
-				else if( node instanceof SynchronizedStat ) {
-					cl = (Object[])Arrays.append(cl,node.expr_var);
-				}
-				if( node instanceof Method ) break;
-				if( node instanceof LabeledStat && ((LabeledStat)node).getName().equals(name) ) {
-					ENode st = node.stat;
-					if( st instanceof ContinueTarget )
-						return (Object[])Arrays.append(cl,st.getCntLabel().getCodeLabel(code));
-					throw new RuntimeException("Label "+name+" does not refer to continue target");
-				}
-			}
-		}
-		throw new RuntimeException("Label "+name+" unresolved or isn't a continue target");
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("continue");
 		if( ident != null && !ident.name.equals(KString.Empty) )
@@ -1267,19 +1100,37 @@ public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
-	@att public NameRef			ident;
-
-	@ref public Label			dest;
-
-	public GotoStat() {
+	@node
+	public static class GotoStatImpl extends ENodeImpl {
+		@att public NameRef		ident;
+		@ref public Label		dest;
+		public GotoStatImpl() {}
+	}
+	@nodeview
+	public static view GotoStatView of GotoStatImpl extends ENodeView {
+		public NameRef			ident;
+		public Label			dest;
 	}
 	
-//	public GotoStat(int pos, ASTNode parent, KString name) {
-//		super(pos, parent);
-//		this.name = name;
-//		setAbrupted(true);
-//	}
+	@att public abstract virtual NameRef		ident;
+	@ref public abstract virtual Label			dest;
+	
+	@getter public NameRef		get$ident()				{ return this.getGotoStatView().ident; }
+	@getter public Label		get$dest()				{ return this.getGotoStatView().dest; }
+	@setter public void			set$ident(NameRef val)	{ this.getGotoStatView().ident = val; }
+	@setter public void			set$dest(Label val)		{ this.getGotoStatView().dest = val; }
 
+	public NodeView				getNodeView()			{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
+	public GotoStatView			getGotoStatView()		{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
+	public JGotoStatView		getJGotoStatView()		{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
+	
+	public GotoStat() {
+		super(new GotoStatImpl());
+	}
+	
 	public void callbackRootChanged() {
 		if (dest != null && dest.pctx.root != this.pctx.root) {
 			dest.delLink(this);
@@ -1422,80 +1273,6 @@ public class GotoStat extends ENode {
 		return stats;
 	}
 
-	public Object[] resolveLabelStat(Code code, LabeledStat stat) {
-		Object[] cl1 = new CodeLabel[0];
-		Object[] cl2 = new CodeLabel[0];
-		ASTNode st = stat;
-		while( !(st instanceof Method) ) {
-			if( st instanceof FinallyInfo ) {
-				st = st.parent.parent;
-				continue;
-			}
-			else if( st instanceof TryStat ) {
-				TryStat ts = (TryStat)st;
-				if( ts.finally_catcher != null )
-					cl1 = (Object[])Arrays.append(cl1,((FinallyInfo)ts.finally_catcher).subr_label);
-			}
-			else if( st instanceof SynchronizedStat ) {
-				cl1 = (Object[])Arrays.append(cl1,((SynchronizedStat)st).expr_var);
-			}
-			st = st.parent;
-		}
-		st = this;
-		while( !(st instanceof Method) ) {
-			if( st instanceof FinallyInfo ) {
-				st = st.parent.parent;
-				continue;
-			}
-			if( st instanceof TryStat ) {
-				TryStat ts = (TryStat)st;
-				if( ts.finally_catcher != null )
-					cl2 = (Object[])Arrays.append(cl2,((FinallyInfo)ts.finally_catcher).subr_label);
-			}
-			else if( st instanceof SynchronizedStat ) {
-				cl2 = (Object[])Arrays.append(cl2,((SynchronizedStat)st).expr_var);
-			}
-			st = st.parent;
-		}
-		int i = 0;
-		for(; i < cl2.length && i < cl1.length; i++ )
-			if( cl1[i] != cl2[i] ) break;
-		Object[] cl3 = new Object[ cl2.length - i + 1 ];
-		System.arraycopy(cl2,i,cl3,0,cl3.length-1);
-		cl3[cl3.length-1] = stat.getCodeLabel(code);
-		return cl3;
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating GotoStat");
-		LabeledStat[] stats = resolveStat(ident.name,code.method.body, LabeledStat.emptyArray);
-		if( stats.length == 0 )
-			throw new CompilerException(this,"Label "+ident+" unresolved");
-		if( stats.length > 1 )
-			throw new CompilerException(this,"Umbigouse label "+ident+" in goto statement");
-		LabeledStat stat = stats[0];
-		if( stat == null )
-			throw new CompilerException(this,"Label "+ident+" unresolved");
-		code.setLinePos(this.getPosLine());
-		try {
-			Object[] lb = resolveLabelStat(code,stat);
-			int i=0;
-			for(; i < lb.length-1; i++)
-				if( lb[i] instanceof CodeLabel )
-					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
-				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
-					code.addInstr(Instr.op_monitorexit);
-				}
-			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-			throw new RuntimeException(e.getMessage());
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
-		}
-	}
-
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append("goto").space().append(ident).append(';').newLine();
 	}
@@ -1508,19 +1285,38 @@ public class GotoCaseStat extends ENode {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
-	@att public ENode		expr;
-	
-	@ref public SwitchStat	sw;
 
-	public GotoCaseStat() {
+	@node
+	public static class GotoCaseStatImpl extends ENodeImpl {
+		@att public ENode		expr;
+		@ref public SwitchStat	sw;
+		public GotoCaseStatImpl() {}
+	}
+	@nodeview
+	public static view GotoCaseStatView of GotoCaseStatImpl extends ENodeView {
+		public ENode		expr;
+		public SwitchStat	sw;
 	}
 	
-//	public GotoCaseStat(int pos, ASTNode parent, ENode expr) {
-//		super(pos, parent);
-//		this.expr = expr;
-//		setAbrupted(true);
-//	}
+	@att public abstract virtual ENode			expr;
+	@ref public abstract virtual SwitchStat	sw;
+	
+	@getter public ENode		get$expr()				{ return this.getGotoCaseStatView().expr; }
+	@getter public SwitchStat	get$sw()				{ return this.getGotoCaseStatView().sw; }
+	@setter public void			set$expr(ENode val)		{ this.getGotoCaseStatView().expr = val; }
+	@setter public void			set$sw(SwitchStat val)	{ this.getGotoCaseStatView().sw = val; }
 
+	public NodeView				getNodeView()			{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public GotoCaseStatView		getGotoCaseStatView()	{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public JGotoCaseStatView	getJGotoCaseStatView()	{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	
+	public GotoCaseStat() {
+		super(new GotoCaseStatImpl());
+	}
+	
 	public void resolve(Type reqType) {
 		setAbrupted(true);
 		for(ASTNode node = this.parent; node != null; node = node.parent) {
@@ -1542,79 +1338,6 @@ public class GotoCaseStat extends ENode {
 			} else {
 				expr.resolve(sw.sel.getType());
 			}
-		}
-	}
-
-	public void generate(Code code, Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating GotoCaseStat");
-		code.setLinePos(this.getPosLine());
-		try {
-			if( !expr.isConstantExpr() ) {
-				if( sw.mode == SwitchStat.TYPE_SWITCH )
-					expr.generate(code,Type.tpVoid);
-				else
-					expr.generate(code,null);
-			}
-
-			Var tmp_var = null;
-			for(ASTNode node = this.parent; node != null; node = node.parent) {
-				if (node == sw)
-					break;
-				if (node instanceof FinallyInfo) {
-					node = node.parent; // skip calling jsr if we are in it
-					continue;
-				}
-				if (node instanceof TryStat) {
-					if( node.finally_catcher != null ) {
-						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
-							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
-							code.addVar(tmp_var);
-							code.addInstr(Instr.op_store,tmp_var.getJVarView());
-						}
-						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
-					}
-				}
-				else if (node instanceof SynchronizedStat) {
-					code.addInstr(Instr.op_load,node.expr_var.getJVarView());
-					code.addInstr(Instr.op_monitorexit);
-				}
-			}
-			if( tmp_var != null ) {
-				code.addInstr(Instr.op_load,tmp_var.getJVarView());
-				code.removeVar(tmp_var);
-			}
-			CodeLabel lb = null;
-			if !( expr instanceof ENode ) {
-				if( sw.defCase != null )
-					lb = ((CaseLabel)sw.defCase).getLabel(code);
-				else
-					lb = sw.getBrkLabel().getCodeLabel(code);
-			}
-			else if( !expr.isConstantExpr() )
-				lb = sw.getCntLabel().getCodeLabel(code);
-			else {
-				int goto_value = ((Number)((ConstExpr)expr).getConstValue()).intValue();
-				foreach(ASTNode an; sw.cases) {
-					CaseLabel cl = (CaseLabel)an;
-					int case_value = ((Number)((ConstExpr)cl.val).getConstValue()).intValue();
-					if( goto_value == case_value ) {
-						lb = cl.getLabel(code);
-						break;
-					}
-				}
-				if( lb == null ) {
-					Kiev.reportWarning(this,"'goto case "+expr+"' not found, replaced by "+(sw.defCase!=null?"'goto default'":"'break"));
-					if( sw.defCase != null )
-						lb = ((CaseLabel)sw.defCase).getLabel(code);
-					else
-						lb = sw.getBrkLabel().getCodeLabel(code);
-				}
-			}
-			code.addInstr(Instr.op_goto,lb);
-			if( !expr.isConstantExpr() && sw.mode != SwitchStat.TYPE_SWITCH )
-				code.stack_pop();
-		} catch(Exception e ) {
-			Kiev.reportError(this,e);
 		}
 	}
 

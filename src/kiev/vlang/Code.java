@@ -1002,6 +1002,7 @@ public final class Code implements Constants {
 	/** Add local var for this code.
 		For debug version automatically generates debug info
 	 */
+	public CodeVar addVar(JVarView v) { return this.addVar(v.getVar()); }
 	public CodeVar addVar(Var v) {
 		trace(Kiev.debugInstrGen,"Code add var "+v);
 		int pos = cur_locals;
@@ -1021,6 +1022,7 @@ public final class Code implements Constants {
 
 	/** Remove local var for this code.
 	 */
+	public void removeVar(JVarView v) { this.removeVar(v.getVar()); }
 	public void removeVar(Var v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.getBCpos()+" "+vars[v.getBCpos()]);
 		Type t = v.type;
@@ -1046,12 +1048,18 @@ public final class Code implements Constants {
 	/** Add local vars for this code.
 		For debug version automatically generates debug info
 	 */
+	public void addVars(JVarView[] v) {
+		for(int i=0; i < v.length; i++) addVar(v[i]);
+	}
 	public void addVars(Var[] v) {
 		for(int i=0; i < v.length; i++) addVar(v[i]);
 	}
 
 	/** Remove local vars for this code (i.e. on block end)
 	 */
+	public void removeVars(JVarView[] v) {
+		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
+	}
 	public void removeVars(Var[] v) {
 		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
 	}
@@ -1200,7 +1208,7 @@ public final class Code implements Constants {
 		case op_ifge:     	add_opcode_and_label(opc_ifge,l);		break;
 		case op_iflt:     	add_opcode_and_label(opc_iflt,l);		break;
 		case op_ifgt:     	add_opcode_and_label(opc_ifgt,l);		break;
-		case op_ifnull:		add_opcode_and_label(opc_ifnull,l);		break;
+		case op_ifnull:		add_opcode_and_label(opc_ifnull,l);	break;
 		case op_ifnonnull:	add_opcode_and_label(opc_ifnonnull,l);	break;
         case op_goto:     	add_opcode_and_label(opc_goto,l);
         	reachable = false;

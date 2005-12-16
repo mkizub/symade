@@ -17,12 +17,14 @@ import kiev.vlang.LvalDNode.LvalDNodeImpl;
 import kiev.vlang.VarDecl.VarDeclImpl;
 import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
 import kiev.vlang.TypeDef.TypeDefImpl;
+import kiev.vlang.TypeRef.TypeRefImpl;
 
 @nodeview
 public view JNodeView of NodeImpl extends ASTNode.NodeView {
 	public JNodeView(NodeImpl $view) {
 		super($view);
 	}
+	@getter public final JNodeView get$jparent() { return (JNodeView)this.parent; }
 }
 
 @nodeview
@@ -72,9 +74,10 @@ public view JENodeView of ENodeImpl extends JNodeView {
 	public final boolean isUseNoProxy() { return this.$view.is_expr_use_no_proxy; }
 	public final boolean isAsField() { return this.$view.is_expr_as_field; }
 	public final boolean isGenVoidExpr() { return this.$view.is_expr_gen_void; }
-	public final boolean isTryResolved() { return this.$view.is_expr_try_resolved; }
 	public final boolean isForWrapper() { return this.$view.is_expr_for_wrapper; }
 	public final boolean isPrimaryExpr() { return this.$view.is_expr_primary; }
+	public final boolean isSuperExpr() { return this.$view.is_expr_super; }
+	public final boolean isCastCall() { return this.$view.is_expr_cast_call; }
 
 	//
 	// Statement specific flags
@@ -88,11 +91,16 @@ public view JENodeView of ENodeImpl extends JNodeView {
 
 	public Type getType() { return this.getNode().getType(); }
 	
+	public boolean isConstantExpr() { return false; }
+	public Object	getConstValue() {
+		throw new RuntimeException("Request for constant value of non-constant expression");
+    }
+
 	public void generate(Code code, Type reqType) {
-		//Dumper dmp = new Dumper();
-		//dmp.append(this);
-		//throw new CompilerException(this,"Unresolved node ("+this.getNode().getClass()+") generation, expr: "+dmp);
-		this.getENode().generate(code, reqType);
+		Dumper dmp = new Dumper();
+		dmp.append(this);
+		throw new CompilerException(this,"Unresolved node ("+this.getNode().getClass()+") generation, expr: "+dmp);
+		//this.getENode().generate(code, reqType);
 	}
 
 }
@@ -122,4 +130,14 @@ public abstract view JTypeDefView of TypeDefImpl extends JDNodeView {
 		super($view);
 	}
 }
+
+@nodeview
+public static final view JTypeRefView of TypeRefImpl extends JENodeView {
+	public access:ro Type	lnk;
+
+	public void generate(Code code, Type reqType) {
+		// don't generate here
+	}
+}
+
 

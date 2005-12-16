@@ -15,6 +15,7 @@ import kiev.be.java.JVarDeclView;
 import kiev.be.java.JLocalStructDeclView;
 import kiev.be.java.JLvalueExprView;
 import kiev.be.java.JTypeDefView;
+import kiev.be.java.JTypeRefView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -140,15 +141,16 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
 		public packed:1,compileflags,17 boolean is_expr_as_field;
 		public packed:1,compileflags,18 boolean is_expr_gen_void;
-		public packed:1,compileflags,19 boolean is_expr_try_resolved;
-		public packed:1,compileflags,20 boolean is_expr_for_wrapper;
-		public packed:1,compileflags,21 boolean is_expr_primary;
+		public packed:1,compileflags,19 boolean is_expr_for_wrapper;
+		public packed:1,compileflags,20 boolean is_expr_primary;
+		public packed:1,compileflags,21 boolean is_expr_super;
+		public packed:1,compileflags,22 boolean is_expr_cast_call;
 		// Statement flags
-		public packed:1,compileflags,22 boolean is_stat_abrupted;
-		public packed:1,compileflags,23 boolean is_stat_breaked;
-		public packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-		public packed:1,compileflags,25 boolean is_stat_auto_returnable;
-		public packed:1,compileflags,26 boolean is_stat_break_target;
+		public packed:1,compileflags,23 boolean is_stat_abrupted;
+		public packed:1,compileflags,24 boolean is_stat_breaked;
+		public packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+		public packed:1,compileflags,26 boolean is_stat_auto_returnable;
+		public packed:1,compileflags,27 boolean is_stat_break_target;
 		
 		// Method flags
 		public packed:1,compileflags,17 boolean is_mth_virtual_static;
@@ -817,12 +819,12 @@ public abstract class LvalDNode extends DNode {
 			}
 		}
 	}
-	public NodeView			getNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
-	public LvalDNodeView	getLvalDNodeView()	{ return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
-	public JLvalDNodeView	getJLvalDNodeView()	{ return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new LvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JLvalDNodeView((LvalDNodeImpl)this.$v_impl); }
 
 	public LvalDNode(LvalDNodeImpl v_impl) { super(v_impl); }
 
@@ -895,16 +897,6 @@ public /*abstract*/ class ENode extends ASTNode {
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
-		// tried to be resolved
-		public final boolean isTryResolved() {
-			return this.$view.is_expr_try_resolved;
-		}
-		public final void setTryResolved(boolean on) {
-			if (this.$view.is_expr_try_resolved != on) {
-				this.$view.is_expr_try_resolved = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// used bt for()
 		public final boolean isForWrapper() {
 			return this.$view.is_expr_for_wrapper;
@@ -925,6 +917,27 @@ public /*abstract*/ class ENode extends ASTNode {
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
+		// used for super-expressions, i.e. (super.foo or super.foo())
+		public final boolean isSuperExpr() {
+			return this.$view.is_expr_super;
+		}
+		public final void setSuperExpr(boolean on) {
+			if (this.$view.is_expr_super != on) {
+				this.$view.is_expr_super = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// used for cast calls (to check for null)
+		public final boolean isCastCall() {
+			return this.$view.is_expr_cast_call;
+		}
+		public final void setCastCall(boolean on) {
+			if (this.$view.is_expr_cast_call != on) {
+				this.$view.is_expr_cast_call = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+
 	
 		//
 		// Statement specific flags
@@ -1001,9 +1014,9 @@ public /*abstract*/ class ENode extends ASTNode {
 		throw new CompilerException(this,"Resolve call for e-node "+getClass());
 	}
 	
-	public void generate(Code code, Type reqType) {
-		this.getJENodeView().generate(code, reqType);
-	}
+//	public void generate(Code code, Type reqType) {
+//		this.getJENodeView().generate(code, reqType);
+//	}
 
 	public Operator getOp() { return null; }
 	public int getPriority() {
@@ -1064,15 +1077,18 @@ public /*abstract*/ class ENode extends ASTNode {
 	// expression will generate void value
 	public boolean isGenVoidExpr() { return this.getENodeView().isGenVoidExpr(); }
 	public void setGenVoidExpr(boolean on) { this.getENodeView().setGenVoidExpr(on); }
-	// tried to be resolved
-	public boolean isTryResolved() { return this.getENodeView().isTryResolved(); }
-	public void setTryResolved(boolean on) { this.getENodeView().setTryResolved(on); }
 	// used bt for()
 	public boolean isForWrapper() { return this.getENodeView().isForWrapper(); }
 	public void setForWrapper(boolean on) { this.getENodeView().setForWrapper(on); }
 	// used for primary expressions, i.e. (a+b)
 	public boolean isPrimaryExpr() { return this.getENodeView().isPrimaryExpr(); }
 	public void setPrimaryExpr(boolean on) { this.getENodeView().setPrimaryExpr(on); }
+	// used for super-expressions, i.e. (super.foo or super.foo())
+	public boolean isSuperExpr() { return this.getENodeView().isSuperExpr(); }
+	public void setSuperExpr(boolean on) { this.getENodeView().setSuperExpr(on); }
+	// used for cast calls (to check for null)
+	public boolean isCastCall() { return this.getENodeView().isCastCall(); }
+	public void setCastCall(boolean on) { this.getENodeView().setCastCall(on); }
 
 	//
 	// Statement specific flags
@@ -1246,31 +1262,31 @@ public final class NopExpr extends ENode {
 	}
 }
 
-@node
-public final class InitializerShadow extends ENode {
-
-	@dflow(out="this:in") private static class DFI {}
-
-	@ref Initializer init;
-	
-	public InitializerShadow() {}
-	public InitializerShadow(Initializer init) {
-		this.init = init;
-		this.setResolved(true);
-	}
-	public void resolve(Type reqType) {
-	}
-
-	public void generate(Code code, Type reqType) {
-		init.generate(code,reqType);
-	}
-	public Dumper toJava(Dumper dmp) {
-		dmp.append("/* ");
-		init.toJavaDecl(dmp);
-		dmp.append(" */");
-		return dmp;
-	}
-}
+//@node
+//public final class InitializerShadow extends ENode {
+//
+//	@dflow(out="this:in") private static class DFI {}
+//
+//	@ref Initializer init;
+//	
+//	public InitializerShadow() {}
+//	public InitializerShadow(Initializer init) {
+//		this.init = init;
+//		this.setResolved(true);
+//	}
+//	public void resolve(Type reqType) {
+//	}
+//
+//	public void generate(Code code, Type reqType) {
+//		init.generate(code,reqType);
+//	}
+//	public Dumper toJava(Dumper dmp) {
+//		dmp.append("/* ");
+//		init.toJavaDecl(dmp);
+//		dmp.append(" */");
+//		return dmp;
+//	}
+//}
 
 
 @node
@@ -1303,38 +1319,56 @@ public class TypeRef extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@ref public virtual forward Type	lnk;
+	@node
+	public static final class TypeRefImpl extends ENodeImpl {
+		public TypeRefImpl() {}
+		public TypeRefImpl(int pos, Type tp) { super(pos); this.lnk = tp; }
+		@ref public Type	lnk;
+	}
+	@nodeview
+	public static final view TypeRefView of TypeRefImpl extends ENodeView {
+		public Type	lnk;
+	}
+
+	@ref public abstract virtual forward Type	lnk;
 	
-	public TypeRef() {}
+	public NodeView			getNodeView()		{ return new TypeRefView((TypeRefImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new TypeRefView((TypeRefImpl)this.$v_impl); }
+	public TypeRefView		getTypeRefView()	{ return new TypeRefView((TypeRefImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
+	public JTypeRefView		getJTypeRefView()	{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
+
+	@getter public Type		get$lnk()			alias operator(210,fy,$cast) { return this.getTypeRefView().lnk; }
+	@setter public void		set$lnk(Type val)	{ this.getTypeRefView().lnk = val; }
+	
+	public TypeRef() {
+		super(new TypeRefImpl());
+	}
 	
 	public TypeRef(Type tp) {
-		this.lnk = tp;
+		super(new TypeRefImpl(0, tp));
 	}
 	public TypeRef(int pos) {
-		super(pos);
+		super(new TypeRefImpl(pos, null));
 	}
 	public TypeRef(int pos, Type tp) {
-		super(pos);
-		this.lnk = tp;
+		super(new TypeRefImpl(pos, tp));
 	}
 	
 	public boolean isBound() {
 		return lnk != null;
 	}
+	
+	public boolean isArray() { return getType().isArray(); }
+	public boolean checkResolved() { return getType().checkResolved(); } 
+	public Struct getStruct() { return getType().getStruct(); }
+	public JType getJType() { return getType().getJType(); }
 
 	public Type getType() {
 //		if (lnk == null)
 //			throw new CompilerException(this,"Type "+this+" is not found");
 		return lnk;
-	}
-	
-	public Type get$lnk()
-		alias operator(210,fy,$cast)
-	{
-		return lnk;
-	}
-	public void set$lnk(Type n) {
-		this.lnk = n;
 	}
 	
 	public boolean preResolveIn(TransfProcessor proc) {

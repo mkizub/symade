@@ -16,10 +16,9 @@ import kiev.vlang.ClosureCallExpr.ClosureCallExprImpl;
 
 @nodeview
 public final view JCallExprView of CallExprImpl extends JENodeView {
-	public access:ro ENode			obj;
+	public access:ro JENodeView		obj;
 	public access:ro JMethodView	func;
 	public           JENodeView		temp_expr;
-	public access:ro boolean		super_flag;
 
 	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
@@ -39,13 +38,19 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		code.setLinePos(this);
 		func.acc.verifyReadAccess(this,func);
 		CodeLabel ok_label = null;
+		CodeLabel null_cast_label = null;
 		if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
 			String fname = func.name.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
-		if !(obj instanceof TypeRef) {
+		if !(obj instanceof JTypeRefView) {
 			obj.generate(code,null);
+			if (isCastCall()) {
+				null_cast_label = code.newLabel();
+				code.addInstr(Instr.op_dup);
+				code.addInstr(Instr.op_ifnull, null_cast_label);
+			}
 			generateCheckCastIfNeeded(code);
 		}
 		else if( !func.isStatic() ) {
@@ -62,7 +67,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				&& ((AssignExpr)parent).op == AssignOperator.Assign
 				&& ((AssignExpr)parent).lval.getType() == Type.tpRule
 				)
-				((AssignExpr)parent).lval.generate(code,null);
+				((AssignExpr)parent).lval.getJENodeView().generate(code,null);
 			else
 				code.addNullConst();
 		}
@@ -240,18 +245,22 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 		}
 		else
-			code.addInstr(op_call,func.getMethod(),super_flag,obj.getType());
+			code.addInstr(op_call,func.getMethod(),isSuperExpr(),obj.getType());
+		if( null_cast_label != null ) {
+			code.stack_pop();
+			code.stack_push(Type.tpNull);
+			code.addInstr(Instr.set_label,null_cast_label);
+		}
 		if( func.type.ret != Type.tpVoid ) {
 			if( reqType==Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && ( !func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
+			 && (!func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
-		if( ok_label != null ) {
+		if( ok_label != null )
 			code.addInstr(Instr.set_label,ok_label);
-		}
 	}
 
 }

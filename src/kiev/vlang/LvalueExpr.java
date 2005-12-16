@@ -614,7 +614,6 @@ public final class ThisExpr extends LvalueExpr {
 	
 	@node
 	public static final class ThisExprImpl extends LvalueExprImpl {		
-		@att public boolean super_flag;
 		public ThisExprImpl() {}
 		public ThisExprImpl(int pos) {
 			super(pos);
@@ -622,10 +621,8 @@ public final class ThisExpr extends LvalueExpr {
 	}
 	@nodeview
 	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
-		public boolean	super_flag;
+		public ThisExprView(ThisExprImpl $view) { super($view); }
 	}
-	
-	@att public abstract virtual boolean			super_flag;
 	
 	public NodeView				getNodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
 	public ENodeView			getENodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
@@ -636,9 +633,6 @@ public final class ThisExpr extends LvalueExpr {
 	public JLvalueExprView		getJLvalueExprView()	{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
 	public JThisExprView		getJThisExprView()		{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
 
-	@getter public boolean		get$super_flag()				{ return this.getThisExprView().super_flag; }
-	@setter public void 		set$super_flag(boolean val)		{ this.getThisExprView().super_flag = val; }
-	
 	public ThisExpr() {
 		super(new ThisExprImpl());
 	}
@@ -647,10 +641,11 @@ public final class ThisExpr extends LvalueExpr {
 	}
 	public ThisExpr(boolean super_flag) {
 		super(new ThisExprImpl());
-		this.super_flag = super_flag;
+		if (super_flag)
+			this.setSuperExpr(true);
 	}
 
-	public String toString() { return super_flag ? "super" : "this"; }
+	public String toString() { return isSuperExpr() ? "super" : "this"; }
 
 	public Type getType() {
 		try {
@@ -658,7 +653,7 @@ public final class ThisExpr extends LvalueExpr {
 				return Type.tpVoid;
 			if (pctx.clazz.name.short_name.equals(nameIdefault))
 				return pctx.clazz.package_clazz.type;
-			if (super_flag)
+			if (isSuperExpr())
 				pctx.clazz.type.getSuperType();
 			return pctx.clazz.type;
 		} catch(Exception e) {
@@ -708,14 +703,14 @@ public final class LVarExpr extends LvalueExpr {
 	@att public abstract virtual NameRef		ident;
 	@ref public abstract virtual Var			var;
 	
-	public NodeView			getNodeView()			{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
-	public LvalueExprView	getLvalueExprView()		{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
-	public LVarExprView		getLVarExprView()		{ return new LVarExprView((LVarExprImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()			{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()			{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
-	public JLvalueExprView	getJLvalueExprView()	{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
-	public JLVarExprView	getJLVarExprView()		{ return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LVarExprView		getLVarExprView()		alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLVarExprView	getJLVarExprView()		alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
 
 	@getter public NameRef		get$ident()			{ return this.getLVarExprView().ident; }
 	@getter public Var			get$var()			{ return this.getLVarExprView().var; }

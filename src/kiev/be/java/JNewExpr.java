@@ -40,7 +40,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 			} else {
 				// If we have primitive type
 				if( !type.isReference() ) {
-					new ConstNullExpr().generate(code,type);
+					new ConstNullExpr().getJConstNullExprView().generate(code,type);
 					return;
 				}
 				int i;
@@ -58,7 +58,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 							new ENode[]{new ConstIntExpr(i)}),
 					true);
 				e.resolve(reqType);
-				e.generate(code,reqType);
+				e.getJENodeView().generate(code,reqType);
 				return;
 			}
 		}

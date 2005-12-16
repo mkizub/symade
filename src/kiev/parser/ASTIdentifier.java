@@ -98,7 +98,7 @@ public class ASTIdentifier extends ENode {
 		}
 		else if( name == Constants.nameSuper ) {
 			ThisExpr te = new ThisExpr(pos);
-			te.super_flag = true;
+			te.setSuperExpr(true);
 			replaceWithNode(te);
 			return false;
 		}

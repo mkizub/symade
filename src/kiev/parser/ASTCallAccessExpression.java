@@ -44,11 +44,11 @@ public class ASTCallAccessExpression extends ENode {
 		&& !pctx.method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
-			te.super_flag = true;
+			te.setSuperExpr(true);
 			obj = te;
 		}
 		
-		if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
+		if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 			Method@ m;
 			Type tp = null;
 			ResInfo info = new ResInfo(this);
@@ -67,7 +67,7 @@ public class ASTCallAccessExpression extends ENode {
 			if( info.isEmpty() ) {
 				Method meth = (Method)m;
 				CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
-				cae.super_flag = true;
+				cae.setSuperExpr(true);
 				replaceWithNode(cae);
 				meth.makeArgs(cae.args, tp);
 				return;
@@ -166,11 +166,11 @@ public class ASTCallAccessExpression extends ENode {
 		&& !pctx.method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
-			te.super_flag = true;
+			te.setSuperExpr(true);
 			obj = te;
 		}
 		
-		if (obj instanceof ThisExpr && ((ThisExpr)obj).super_flag) {
+		if (obj instanceof ThisExpr && obj.isSuperExpr()) {
 			Type ret = reqType;
 			Method@ m;
 	retry_with_null_ret:;
@@ -193,7 +193,7 @@ public class ASTCallAccessExpression extends ENode {
 			if( info.isEmpty() ) {
 				Method meth = (Method)m;
 				CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
-				cae.super_flag = true;
+				cae.setSuperExpr(true);
 				replaceWithNode(cae);
 				meth.makeArgs(cae.args, tp);
 				cae.resolve(ret);

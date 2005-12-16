@@ -52,8 +52,8 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 		code.setLinePos(expr);
 		if( expr.getType().isBoolean() ) {
 			boolean optimized = false;
-			if( expr.getNode() instanceof BinaryExpr ) {
-				BinaryExpr be = (BinaryExpr)expr.getNode();
+			if( expr instanceof JBinaryExprView ) {
+				JBinaryExprView be = (JBinaryExprView)expr;
 				if( be.expr2.getType().isIntegerInCode() && be.expr2.isConstantExpr() ) {
 					Object ce = be.expr2.getConstValue();
 					if( ((Number)ce).intValue() == 0 ) {
