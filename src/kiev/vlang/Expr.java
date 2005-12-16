@@ -2270,12 +2270,14 @@ public class CastExpr extends Expr {
 		Struct cl = et.clazz;
 		v.$unbind();
 		if( PassInfo.resolveBestMethodR(cl,v,info,nameCastOp,Expr.emptyArray,this.type,et,0) ) {
-			Expr ce;
+			CallAccessExpr ce;
 			if( info.path.length() == 0 )
 				ce = new CallAccessExpr(pos,parent,expr,(Method)v,Expr.emptyArray);
 			else {
 				ce = new CallAccessExpr(pos,parent,Method.getAccessExpr(info,expr),(Method)v,Expr.emptyArray);
 			}
+			if (this.type.isReference())
+				ce.cast_call_flag = true;
 			expr = ce;
 			return this;
 		}

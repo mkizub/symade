@@ -412,6 +412,10 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 			forw.isForward(),
 			info.enterForward(forw) : info.leaveForward(forw),
 			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
+	;		forw @= virtual_fields,
+			forw.isForward(),
+			info.enterForward(forw) : info.leaveForward(forw),
+			Type.getRealType(tp,forw.type).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
 	}
 
 	public boolean tryLoad(ASTNode@ node, KString name, int resfl) {

@@ -235,6 +235,7 @@ public class CallAccessExpr extends Expr {
 	@ref public Method				func;
 	@att public final NArr<Expr>	args;
 	public boolean					super_flag;
+	public boolean					cast_call_flag;
 
 	public CallAccessExpr() {
 		this.args = new NArr<Expr>(this, new AttrSlot("args", true, true));
@@ -318,6 +319,7 @@ public class CallAccessExpr extends Expr {
 		PassInfo.push(this);
 		try {
 			func.acc.verifyReadAccess(func);
+			CodeLabel null_cast_label = null;
 			if( ((Struct)func.parent).instanceOf(Type.tpDebug.clazz) ) {
 				String fname = func.name.name.toString().toLowerCase();
 				if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
@@ -325,6 +327,11 @@ public class CallAccessExpr extends Expr {
 			}
 			if( obj != null ) {
 				obj.generate(null);
+				if (cast_call_flag) {
+					null_cast_label = Code.newLabel();
+					Code.addInstr(Instr.op_dup);
+					Code.addInstr(Instr.op_ifnull, null_cast_label);
+				}
 				generateCheckCastIfNeeded();
 			}
 			else if( !func.isStatic() ) {
@@ -491,13 +498,14 @@ public class CallAccessExpr extends Expr {
 			}
 			else
 				Code.addInstr(op_call,func,super_flag,obj.getType());
+			if( null_cast_label != null )
+				Code.addInstr(Instr.set_label,null_cast_label);
 			if( func.type.ret != Type.tpVoid ) {
 				if( reqType==Type.tpVoid )
 					Code.addInstr(op_pop);
-				else if( Kiev.verify
+				else if(Kiev.verify
 				 && Type.getRealType(Kiev.argtype,getType()).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
+				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() || null_cast_label != null) )
 				 	Code.addInstr(op_checkcast,getType());
 			}
 		} finally { PassInfo.pop(this); }
