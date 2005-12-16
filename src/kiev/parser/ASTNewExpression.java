@@ -7,6 +7,8 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.stdlib.*;
 
+import kiev.be.java.SourceFileAttr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

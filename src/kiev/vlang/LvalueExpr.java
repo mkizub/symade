@@ -4,7 +4,6 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.transf.*;
 import kiev.parser.*;
-import kiev.vlang.Instr.*;
 import kiev.vlang.Operator.*;
 
 import kiev.be.java.JNodeView;
@@ -18,8 +17,10 @@ import kiev.be.java.JLVarExprView;
 import kiev.be.java.JSFldExprView;
 import kiev.be.java.JOuterThisAccessExprView;
 
+import kiev.be.java.ConstantValueAttr;
+
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 /**
  * @author Maxim Kizub

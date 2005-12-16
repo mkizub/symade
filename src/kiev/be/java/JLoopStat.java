@@ -15,7 +15,7 @@ import kiev.vlang.ForInit.ForInitImpl;
 import kiev.vlang.ForStat.ForStatImpl;
 import kiev.vlang.ForEachStat.ForEachStatImpl;
 
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

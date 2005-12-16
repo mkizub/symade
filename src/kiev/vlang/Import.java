@@ -119,8 +119,6 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 	public void resolveDecl() {}
 
-	public void generate(Code code) {}
-
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Struct@ s;
 		Struct@ sub;

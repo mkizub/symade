@@ -1,7 +1,6 @@
 package kiev.vlang;
 
 import kiev.Kiev;
-import kiev.stdlib.*;
 import kiev.parser.Parser;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
@@ -11,6 +10,9 @@ import java.io.*;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.*;
+
+import kiev.be.java.Bytecoder;
+import kiev.be.java.Attr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

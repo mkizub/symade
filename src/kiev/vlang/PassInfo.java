@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import java.io.*;
 
 import kiev.be.java.JLabelView;
+import kiev.be.java.ExceptionsAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

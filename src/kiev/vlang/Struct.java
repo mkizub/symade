@@ -7,6 +7,9 @@ import kiev.transf.*;
 import java.io.*;
 
 import kiev.be.java.JStructView;
+import kiev.be.java.Attr;
+import kiev.be.java.SourceFileAttr;
+import kiev.be.java.ConstantValueAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

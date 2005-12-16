@@ -10,7 +10,7 @@ import kiev.be.java.JCallExprView;
 import kiev.be.java.JClosureCallExprView;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 import syntax kiev.Syntax;
 

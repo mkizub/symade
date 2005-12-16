@@ -11,6 +11,10 @@ import kiev.be.java.JMethodView;
 import kiev.be.java.JInitializerView;
 import kiev.be.java.JWBCConditionView;
 
+import kiev.be.java.Attr;
+import kiev.be.java.CodeAttr;
+import kiev.be.java.ExceptionsAttr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

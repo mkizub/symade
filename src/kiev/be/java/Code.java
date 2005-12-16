@@ -1,14 +1,13 @@
-package kiev.vlang;
+package kiev.be.java;
 
 import kiev.*;
-import kiev.stdlib.*;
-import kiev.vlang.Instr.*;
+import kiev.vlang.*;
 
 import kiev.be.java.JVarView;
 import kiev.be.java.JFieldView;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 /**
  * @author Maxim Kizub

@@ -12,8 +12,11 @@ import kiev.be.java.JBinaryBoolExprView;
 import kiev.be.java.JInstanceofExprView;
 import kiev.be.java.JBooleanNotExprView;
 
+import kiev.be.java.Code;
+import kiev.be.java.CodeLabel;
+
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 /**
  * @author Maxim Kizub

@@ -13,7 +13,7 @@ import kiev.be.java.JNewInitializedArrayExprView;
 import kiev.be.java.JNewClosureView;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 /**
  * @author Maxim Kizub

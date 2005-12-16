@@ -8,6 +8,8 @@ import kiev.be.java.JDNodeView;
 import kiev.be.java.JLvalDNodeView;
 import kiev.be.java.JFieldView;
 
+import kiev.be.java.Attr;
+
 import static kiev.stdlib.Debug.*;
 
 /**

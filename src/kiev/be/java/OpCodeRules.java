@@ -1,6 +1,7 @@
-package kiev.vlang;
+package kiev.be.java;
 
-import kiev.stdlib.*;
+import kiev.vlang.Type;
+import kiev.vlang.Constants;
 
 /**
  * @author Maxim Kizub

@@ -16,6 +16,8 @@ import kiev.be.java.JForInitView;
 import kiev.be.java.JForStatView;
 import kiev.be.java.JForEachStatView;
 
+import kiev.be.java.CodeLabel;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

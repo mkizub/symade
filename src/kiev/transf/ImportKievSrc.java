@@ -24,7 +24,8 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
-//import kiev.backend.java15.*;
+
+import kiev.be.java.SourceFileAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

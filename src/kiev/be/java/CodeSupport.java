@@ -1,8 +1,7 @@
-package kiev.vlang;
+package kiev.be.java;
 
 import kiev.*;
-import kiev.stdlib.*;
-import kiev.vlang.Instr.*;
+import kiev.vlang.*;
 
 import static kiev.stdlib.Debug.*;
 

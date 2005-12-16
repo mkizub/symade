@@ -5,7 +5,8 @@ package kiev.parser;
 import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.transf.*;
-import kiev.stdlib.*;
+
+import kiev.be.java.SourceFileAttr;
 
 /**
  * @author Maxim Kizub

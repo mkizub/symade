@@ -5,8 +5,6 @@ import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.transf.*;
 
-import kiev.vlang.Instr.*;
-
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
 import kiev.be.java.JLvalueExprView;
@@ -24,7 +22,7 @@ import kiev.be.java.JConditionalExprView;
 import kiev.be.java.JCastExprView;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 import syntax kiev.Syntax;
 

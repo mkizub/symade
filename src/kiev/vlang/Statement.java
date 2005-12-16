@@ -21,6 +21,8 @@ import kiev.be.java.JContinueStatView;
 import kiev.be.java.JGotoStatView;
 import kiev.be.java.JGotoCaseStatView;
 
+import kiev.be.java.CodeLabel;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

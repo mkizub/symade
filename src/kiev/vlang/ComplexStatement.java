@@ -14,6 +14,10 @@ import kiev.be.java.JTryStatView;
 import kiev.be.java.JSynchronizedStatView;
 import kiev.be.java.JWithStatView;
 
+import kiev.be.java.CodeLabel;
+import kiev.be.java.CodeSwitch;
+import kiev.be.java.CodeCatchInfo;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 

@@ -2,7 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.vlang.OpTypes.*;
-import kiev.stdlib.*;
+import kiev.be.java.Instr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;

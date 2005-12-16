@@ -20,7 +20,7 @@ import kiev.be.java.JConstDoubleExprView;
 import kiev.be.java.JConstStringExprView;
 
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
 
 import syntax kiev.Syntax;
 
@@ -70,14 +70,6 @@ public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
 		if (o instanceof ConstBoolExpr)
 			return o.value == this.value;
 		return false;
-	}
-
-	public void generate_iftrue(Code code, CodeLabel label) {
-		this.getJConstBoolExprView().generate_iftrue(code, label);
-	}
-
-	public void generate_iffalse(Code code, CodeLabel label) {
-		this.getJConstBoolExprView().generate_iffalse(code, label);
 	}
 
 	public Dumper toJava(Dumper dmp) {

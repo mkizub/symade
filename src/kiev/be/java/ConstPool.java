@@ -1,7 +1,8 @@
-package kiev.vlang;
+package kiev.be.java;
 
 import kiev.*;
-import kiev.stdlib.*;
+import kiev.vlang.Constants;
+import kiev.vlang.Signature;
 
 import java.io.*;
 
