@@ -72,8 +72,8 @@ public final class Label extends DNode {
 								public CodeLabel		label;
 
 		public final void callbackRootChanged() {
-			ASTNode root = this.pctx.root;
-			links = links.filter(fun (ASTNode n)->boolean { return n.pctx.root == root; });
+			ASTNode root = this._self.ctx_root;
+			links = links.filter(fun (ASTNode n)->boolean { return n.ctx_root == root; });
 			super.callbackRootChanged();
 		}	
 	}

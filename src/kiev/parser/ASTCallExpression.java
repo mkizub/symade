@@ -48,15 +48,15 @@ public class ASTCallExpression extends ENode {
 	public void mainResolveOut() {
 		// method of current class or first-order function
 		DNode@ m;
-		Type tp = pctx.clazz.type;
+		Type tp = ctx_clazz.type;
 		if( func.name.equals(nameThis) ) {
-//			Method mmm = pctx.method;
-//			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
+//			Method mmm = ctx_method;
+//			if( mmm.name.equals(nameInit) && ctx_clazz.type.args.length > 0 ) {
 //				// Insert our-generated typeinfo, or from childs class?
 //				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[0]),0);
 //				else
-//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
+//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.type),0);
 //			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -64,36 +64,36 @@ public class ASTCallExpression extends ENode {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
-				if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
+				if( !PassInfo.resolveBestMethodR(ctx_clazz.type,m,info,ctx_method.name.name,mt) )
 					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
-				Type st = pctx.clazz.super_type;
+				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(ce.args,st);
+				//((Method)m).makeArgs(ce.args,st);
 				return;
 			}
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-//			Method mmm = pctx.method;
-//			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
+//			Method mmm = ctx_method;
+//			if( mmm.name.equals(nameInit) && ctx_clazz.super_type.args.length > 0 ) {
 //				// no // Insert our-generated typeinfo, or from childs class?
 //				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[0]),0);
 //				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[1]),0);
 //				else
-//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
+//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.super_type),0);
 //			}
 //			// If we extend inner non-static class - pass this$N as first argument
-//			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
-//			 && !pctx.clazz.super_type.getStruct().isStatic()
+//			if(  ctx_clazz.super_type.getStruct().package_clazz.isClazz()
+//			 && !ctx_clazz.super_type.getStruct().isStatic()
 //			) {
-//				if( pctx.clazz.isStatic() )
+//				if( ctx_clazz.isStatic() )
 //					throw new CompilerException(this,"Non-static inner super-class of static class");
-//				args.insert(new LVarExpr(pos,(Var)pctx.method.params[0]),0);
+//				args.insert(new LVarExpr(pos,(Var)ctx_method.params[0]),0);
 //			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
@@ -101,14 +101,14 @@ public class ASTCallExpression extends ENode {
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
-				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
+				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
 					throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
-				Type st = pctx.clazz.super_type;
+				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
 				replaceWithNode(ce);
-				((Method)m).makeArgs(ce.args,st);
+				//((Method)m).makeArgs(ce.args,st);
 				return;
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
@@ -171,7 +171,7 @@ public class ASTCallExpression extends ENode {
 //				} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				((Method)m).makeArgs(args,tp);
+				//((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(this,null,m,args.toArray());
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
@@ -186,66 +186,66 @@ public class ASTCallExpression extends ENode {
         }
 		// method of current class or first-order function
 		Method@ m;
-		Type tp = pctx.clazz.type;
+		Type tp = ctx_clazz.type;
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
-//			Method mmm = pctx.method;
-//			if( mmm.name.equals(nameInit) && pctx.clazz.type.args.length > 0 ) {
+//			Method mmm = ctx_method;
+//			if( mmm.name.equals(nameInit) && ctx_clazz.type.args.length > 0 ) {
 //				// Insert our-generated typeinfo, or from childs class?
 //				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[0]),0);
 //				else
-//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.type),0);
+//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.type),0);
 //			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.type,m,info,pctx.method.name.name,mt) )
+			if( !PassInfo.resolveBestMethodR(ctx_clazz.type,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				Type st = pctx.clazz.super_type;
+				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),false);
 				replaceWithNode(ce);
-				m.makeArgs(ce.args,st);
+				//m.makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-//			Method mmm = pctx.method;
-//			if( mmm.name.equals(nameInit) && pctx.clazz.super_type.args.length > 0 ) {
+//			Method mmm = ctx_method;
+//			if( mmm.name.equals(nameInit) && ctx_clazz.super_type.args.length > 0 ) {
 //				// no // Insert our-generated typeinfo, or from childs class?
 //				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[0]),0);
 //				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
 //					args.insert(new LVarExpr(pos,mmm.params[1]),0);
 //				else
-//					args.insert(pctx.clazz.accessTypeInfoField(this,pctx.clazz.super_type),0);
+//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.super_type),0);
 //			}
 //			// If we extend inner non-static class - pass this$N as first argument
-//			if(  pctx.clazz.super_type.getStruct().package_clazz.isClazz()
-//			 && !pctx.clazz.super_type.getStruct().isStatic()
+//			if(  ctx_clazz.super_type.getStruct().package_clazz.isClazz()
+//			 && !ctx_clazz.super_type.getStruct().isStatic()
 //			) {
-//				if( pctx.clazz.isStatic() )
+//				if( ctx_clazz.isStatic() )
 //					throw new CompilerException(this,"Non-static inner super-class of static class");
-//				args.insert(new LVarExpr(pos,(Var)pctx.method.params[0]),0);
+//				args.insert(new LVarExpr(pos,(Var)ctx_method.params[0]),0);
 //			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
-			if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,pctx.method.name.name,mt) )
+			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
-				Type st = pctx.clazz.super_type;
+				Type st = ctx_clazz.super_type;
 				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),true);
 				replaceWithNode(ce);
-				m.makeArgs(ce.args,st);
+				//m.makeArgs(ce.args,st);
 				ce.resolve(ret);
 				return;
 			}
@@ -312,7 +312,7 @@ public class ASTCallExpression extends ENode {
 			} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				((Method)m).makeArgs(args,tp);
+				//((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(this,null,m,args.toArray());
 				this.replaceWithNodeResolve( reqType, e );
 			}

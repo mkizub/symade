@@ -76,11 +76,7 @@ public class CallExpr extends ENode {
 				throw new RuntimeException("Call to non-static method "+func+" without accessor");
 			}
 			this.obj = new TypeRef(((Struct)func.parent).type);
-		}
-		else if (func.isStatic() && !(obj instanceof TypeRef)) {
-			this.obj = new TypeRef(obj.getType());
-		}
-		else {
+		} else {
 			this.obj = obj;
 		}
 		this.func = func;
@@ -114,23 +110,20 @@ public class CallExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
+		if (func.isStatic() && !(obj instanceof TypeRef))
+			this.obj = new TypeRef(obj.getType());
 		obj.resolve(null);
-//		if (func.type.ret == Type.tpRule) {
-//			if( args.length == 0 || args[0].getType() != Type.tpRule )
-//				args.insert(0, new ConstNullExpr());
-//		} else {
-//			trace(Kiev.debugResolve,"CallExpr "+this+" is not a rule call");
-//		}
+		func.makeArgs(args, reqType);
 		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
-			Method mmm = pctx.method;
-			Type tp = mmm.pctx.clazz != func.pctx.clazz ? pctx.clazz.super_type : pctx.clazz.type;
-			assert(pctx.method.name.equals(nameInit));
+			Method mmm = ctx_method;
+			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
+			assert(ctx_method.name.equals(nameInit));
 			assert(tp.args.length > 0);
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam() != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
 			else
-				temp_expr = pctx.clazz.accessTypeInfoField(this,tp);
+				temp_expr = ctx_clazz.accessTypeInfoField(this,tp);
 			temp_expr.resolve(null);
 			temp_expr = null;
 		}

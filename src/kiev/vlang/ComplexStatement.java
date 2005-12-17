@@ -388,7 +388,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 						mode = TYPE_SWITCH;
 						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
-						pctx.clazz.addField(typehash);
+						ctx_clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
 							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
@@ -431,11 +431,11 @@ public class SwitchStat extends ENode implements BreakTarget {
 			for(int j=0; j < signs.length; j++)
 				signs[j] = new ConstStringExpr(typenames[j]);
 			if( defindex < 0 ) defindex = signs.length;
-			typehash.init = new NewExpr(pctx.clazz.pos,Type.tpTypeSwitchHash,
-				new ENode[]{ new NewInitializedArrayExpr(pctx.clazz.pos,new TypeRef(Type.tpString),1,signs),
+			typehash.init = new NewExpr(ctx_clazz.pos,Type.tpTypeSwitchHash,
+				new ENode[]{ new NewInitializedArrayExpr(ctx_clazz.pos,new TypeRef(Type.tpString),1,signs),
 					new ConstIntExpr(defindex)
 				});
-			Constructor clinit = pctx.clazz.getClazzInitMethod();
+			Constructor clinit = ctx_clazz.getClazzInitMethod();
 			clinit.body.addStatement(
 				new ExprStat(typehash.init.getPos(),
 					new AssignExpr(typehash.init.getPos(),AssignOperator.Assign

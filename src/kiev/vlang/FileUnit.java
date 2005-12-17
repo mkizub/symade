@@ -79,9 +79,11 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		this.pkg.lnk = pkg.type;
 	}
 
-	public void setupContext() {
-		pctx = new NodeContext(this);
-	}
+	@getter public FileUnit get$ctx_file_unit() { return this; }
+	@getter public Struct get$ctx_clazz() { return null; }
+	@getter public Struct get$child_ctx_clazz() { return null; }
+	@getter public Method get$ctx_method() { return null; }
+	@getter public Method get$child_ctx_method() { return null; }
 
 	public void addPrescannedBody(PrescannedBody b) {
 		bodies.append(b);

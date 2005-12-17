@@ -73,8 +73,8 @@ public class ASTIdentifier extends ENode {
 		}
 		else if( name == Constants.nameMETHOD ) {
 			ConstExpr ce;
-			if( pctx.method != null )
-				ce = new ConstStringExpr(pctx.method.name.name);
+			if( ctx_method != null )
+				ce = new ConstStringExpr(ctx_method.name.name);
 			else
 				ce = new ConstStringExpr(nameInit);
 			//ce.text_name = this.name;
@@ -154,8 +154,8 @@ public class ASTIdentifier extends ENode {
 			return;
 		}
 		else if( name == Constants.nameMETHOD ) {
-			if( pctx.method != null )
-				replaceWithNode(new ConstStringExpr(pctx.method.name.name));
+			if( ctx_method != null )
+				replaceWithNode(new ConstStringExpr(ctx_method.name.name));
 			else
 				replaceWithNode(new ConstStringExpr(nameInit));
 			return;

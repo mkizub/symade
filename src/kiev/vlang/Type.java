@@ -619,7 +619,7 @@ public class BaseType extends Type {
 	public boolean isStaticClazz()			{ return clazz.isStatic(); }
 	public boolean isStruct()				{ return clazz instanceof Struct; }
 	public boolean isAnonymouseClazz()		{ return clazz.isAnonymouse(); }
-	public boolean isLocalClazz()			{ return clazz.isAnonymouse() || clazz.pctx.method != null || clazz.pctx.outer_method != null; }
+	public boolean isLocalClazz()			{ return clazz.isLocal(); }
 	public boolean isStructInstanceOf(Struct s)	{ return clazz.instanceOf(s); }
 	
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)

@@ -421,10 +421,10 @@ public final class IFldExpr extends AccessExpr {
 		obj.resolve(null);
 
 		// Set violation of the field
-		if( pctx.method != null
+		if( ctx_method != null
 		 && obj instanceof LVarExpr && ((LVarExpr)obj).ident.equals(nameThis)
 		)
-			pctx.method.addViolatedField(var);
+			ctx_method.addViolatedField(var);
 
 		setResolved(true);
 	}
@@ -650,13 +650,13 @@ public final class ThisExpr extends LvalueExpr {
 
 	public Type getType() {
 		try {
-			if (pctx.clazz == null)
+			if (ctx_clazz == null)
 				return Type.tpVoid;
-			if (pctx.clazz.name.short_name.equals(nameIdefault))
-				return pctx.clazz.package_clazz.type;
+			if (ctx_clazz.name.short_name.equals(nameIdefault))
+				return ctx_clazz.package_clazz.type;
 			if (isSuperExpr())
-				pctx.clazz.type.getSuperType();
-			return pctx.clazz.type;
+				ctx_clazz.type.getSuperType();
+			return ctx_clazz.type;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
 			return Type.tpVoid;
@@ -665,9 +665,9 @@ public final class ThisExpr extends LvalueExpr {
 
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
-		if (pctx.method != null &&
-			pctx.method.isStatic() &&
-			!pctx.clazz.name.short_name.equals(nameIdefault)
+		if (ctx_method != null &&
+			ctx_method.isStatic() &&
+			!ctx_clazz.name.short_name.equals(nameIdefault)
 		)
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
@@ -789,7 +789,7 @@ public final class LVarExpr extends LvalueExpr {
 	
 	public boolean preGenerate() {
 		if (getVar().isLocalRuleVar()) {
-			RuleMethod rm = (RuleMethod)pctx.method;
+			RuleMethod rm = (RuleMethod)ctx_method;
 			assert(rm.params[0].type == Type.tpRule);
 			Var pEnv = null;
 			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
@@ -813,16 +813,16 @@ public final class LVarExpr extends LvalueExpr {
 	
 	public void resolve(Type reqType) throws RuntimeException {
 		// Check if we try to access this var from local inner/anonymouse class
-		if( pctx.clazz.isLocal() ) {
-			if( getVar().pctx.clazz != this.pctx.clazz ) {
+		if( ctx_clazz.isLocal() ) {
+			if( getVar().ctx_clazz != this.ctx_clazz ) {
 				var.setNeedProxy(true);
 				setAsField(true);
 				// Now we need to add this var as a fields to
 				// local class and to initializer of this class
 				Field vf;
-				if( (vf = pctx.clazz.resolveField(ident.name,false)) == null ) {
+				if( (vf = ctx_clazz.resolveField(ident.name,false)) == null ) {
 					// Add field
-					vf = pctx.clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
+					vf = ctx_clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
 					vf.setNeedProxy(true);
 					vf.init = (ENode)this.copy();
 				}
@@ -940,8 +940,8 @@ public final class SFldExpr extends AccessExpr {
 	public void resolve(Type reqType) throws RuntimeException {
 		if( isResolved() ) return;
 		// Set violation of the field
-		if( pctx.method != null )
-			pctx.method.addViolatedField(var);
+		if( ctx_method != null )
+			ctx_method.addViolatedField(var);
 		setResolved(true);
 	}
 
@@ -1026,9 +1026,9 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public void resolve(Type reqType) throws RuntimeException {
 		outer_refs.delAll();
 		trace(Kiev.debugResolve,"Resolving "+this);
-		Field ou_ref = outerOf(pctx.clazz);
+		Field ou_ref = outerOf(ctx_clazz);
 		if( ou_ref == null )
-			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+pctx.clazz);
+			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_clazz);
 		do {
 			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
 			outer_refs.append(ou_ref);
@@ -1036,15 +1036,15 @@ public final class OuterThisAccessExpr extends AccessExpr {
 			ou_ref = outerOf(ou_ref.type.getStruct());
 		} while( ou_ref!=null );
 		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.type) )
-			throw new RuntimeException("Outer class "+outer+" not found for inner class "+pctx.clazz);
+			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
 		if( Kiev.debugResolve ) {
 			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
 				sb.append("->").append(outer_refs[i].name);
 			System.out.println(sb.toString());
 		}
-		if( pctx.method.isStatic() && !pctx.method.isVirtualStatic() ) {
-			throw new RuntimeException("Access to 'this' in static method "+pctx.method);
+		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() ) {
+			throw new RuntimeException("Access to 'this' in static method "+ctx_method);
 		}
 		setResolved(true);
 	}

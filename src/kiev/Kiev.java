@@ -73,9 +73,9 @@ public final class Kiev {
 			for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
 				pos = f.pos;
 			if( e.getMessage() == null )
-				report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,e.getClass().getName());
+				report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,e.getClass().getName());
 			else
-				report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,e.getMessage());
+				report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,e.getMessage());
 		} else {
 			if( e.getMessage() == null )
 				report(0,null,null,null,SeverError.Error,e.getClass().getName());
@@ -142,7 +142,7 @@ public final class Kiev {
 		if( debug ) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = from.pos;
-			report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Error,msg);
+			report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,msg);
 		} else {
 			report(0,null,null,null,SeverError.Error,msg);
 		}
@@ -225,7 +225,7 @@ public final class Kiev {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(code.last_lineno<<11, code.clazz.pctx.file_unit, code.clazz, code.method, SeverError.Warning, msg);
+		report(code.last_lineno<<11, code.clazz.ctx_file_unit, code.clazz, code.method, SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {
@@ -238,7 +238,7 @@ public final class Kiev {
 		if( debug && verbose) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = from.pos;
-			report(pos,from.pctx.file_unit,from.pctx.clazz,from.pctx.method,SeverError.Warning,msg);
+			report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Warning,msg);
 		} else {
 			report(0,null,null,null,SeverError.Warning,msg);
 		}
@@ -403,9 +403,9 @@ public final class Kiev {
 		k.ReInit(is);
 		k.reparse_body = true;
 		k.reparse_pos = from.pos;
-		k.curFileUnit = from.pctx.file_unit;
-		k.curClazz = from.pctx.clazz;
-		k.curMethod = from.pctx.method;
+		k.curFileUnit = from.ctx_file_unit;
+		k.curClazz = from.ctx_clazz;
+		k.curMethod = from.ctx_method;
 		BlockStat body = null;
 		try {
 			body = k.Block();

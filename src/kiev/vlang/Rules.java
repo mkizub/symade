@@ -81,7 +81,7 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.pctx.clazz.type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -328,14 +328,14 @@ public abstract class ASTRuleNode extends ENode {
 	public String createTextBacktrack(boolean load) {
 		if (!jn.more_back)
 			return "return null;\n";	// return false - no more solutions
-		assert( ((RuleMethod)pctx.method).base != 1 || load==false);
+		assert( ((RuleMethod)ctx_method).base != 1 || load==false);
 		if (jn.next_back!=null && jn.jump_to_back) {
 			if (load) return "bt$ = $env.bt$"+depth+"; goto enter$"+jn.next_back.idx+";\n";
 			return "goto enter$"+jn.next_back.idx+";\n";
 		}
 		if (load)
 			return "bt$ = $env.bt$"+depth+"; goto case bt$;\n"; // backtrack to saved address
-		if (((RuleMethod)pctx.method).base == 1)
+		if (((RuleMethod)ctx_method).base == 1)
 			return "return null;\n";
 		return "goto case bt$;\n"; // backtrack to saved address
 	}
@@ -389,7 +389,7 @@ public final class RuleBlock extends BlockStat {
 		String tmpClassName = "frame$$";
 		sb.append("static class ").append(tmpClassName).append(" extends rule{\n");
 		sb.append("int bt$;\n");
-		RuleMethod rule_method = (RuleMethod)pctx.method;
+		RuleMethod rule_method = (RuleMethod)ctx_method;
 		// Backtrace holders
 		for (int i=0; i < rule_method.max_depth; i++)
 			sb.append("int bt$").append(i).append(";\n");
@@ -431,7 +431,7 @@ public final class RuleBlock extends BlockStat {
 		sb.append("}\n");
 		trace(Kiev.debugRules,"Rule text generated:\n"+sb);
 		BlockStat mbody = Kiev.parseBlock(this,sb);
-		pctx.method.body = mbody;
+		ctx_method.body = mbody;
 		mbody.stats.addAll(stats);
 		return false;
 	}
@@ -481,7 +481,7 @@ public final class RuleOrExpr extends ASTRuleNode {
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
 		JumpNodes j;
-		int depth = ((RuleMethod)pctx.method).state_depth;
+		int depth = ((RuleMethod)ctx_method).state_depth;
 		int max_depth = depth;
 		for(int i=0; i < rules.length; i++ ) {
 			if( i < rules.length-1 ) {
@@ -489,11 +489,11 @@ public final class RuleOrExpr extends ASTRuleNode {
 			} else {
 				j = new JumpNodes(jn.more_check, jn.next_check, jn.more_back, jn.next_back, jn.jump_to_back);
 			}
-			((RuleMethod)pctx.method).set_depth(depth);
+			((RuleMethod)ctx_method).set_depth(depth);
 			rules[i].resolve1(j);
-			max_depth = Math.max(max_depth,((RuleMethod)pctx.method).state_depth);
+			max_depth = Math.max(max_depth,((RuleMethod)ctx_method).state_depth);
 		}
-		((RuleMethod)pctx.method).set_depth(max_depth);
+		((RuleMethod)ctx_method).set_depth(max_depth);
 	}
 }
 
@@ -617,9 +617,9 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
-		base = ((RuleMethod)pctx.method).allocNewBase(1);
-		depth = ((RuleMethod)pctx.method).push();
+		idx = ++((RuleMethod)ctx_method).index;
+		base = ((RuleMethod)ctx_method).allocNewBase(1);
+		depth = ((RuleMethod)ctx_method).push();
 	}
 
 	public void createText(StringBuffer sb) {
@@ -686,9 +686,9 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
-		base = ((RuleMethod)pctx.method).allocNewBase(2);
-		depth = ((RuleMethod)pctx.method).push();
+		idx = ++((RuleMethod)ctx_method).index;
+		base = ((RuleMethod)ctx_method).allocNewBase(2);
+		depth = ((RuleMethod)ctx_method).push();
 		expr.resolve(null);
 		Type ctype = expr.getType();
 		Method@ elems;
@@ -710,7 +710,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
-		iter_var = ((RuleMethod)pctx.method).add_iterator_var();
+		iter_var = ((RuleMethod)ctx_method).add_iterator_var();
 		ASTNode rb = this.parent;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
@@ -821,7 +821,7 @@ public final class RuleCutExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
+		idx = ++((RuleMethod)ctx_method).index;
 	}
 
 	public void createText(StringBuffer sb) {
@@ -884,10 +884,10 @@ public final class RuleCallExpr extends ASTRuleNode {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
-		base = ((RuleMethod)pctx.method).allocNewBase(1);
-		depth = ((RuleMethod)pctx.method).push();
-		env_var = ((RuleMethod)pctx.method).add_iterator_var();
+		idx = ++((RuleMethod)ctx_method).index;
+		base = ((RuleMethod)ctx_method).allocNewBase(1);
+		depth = ((RuleMethod)ctx_method).push();
+		env_var = ((RuleMethod)ctx_method).add_iterator_var();
 		ASTNode rb = this.parent;
 		while( rb!=null && !(rb instanceof RuleBlock)) {
 			Debug.assert(rb.parent != null, "Parent of "+rb.getClass()+":"+rb+" is null");
@@ -1008,9 +1008,9 @@ public final class RuleWhileExpr extends RuleExprBase {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
-		base = ((RuleMethod)pctx.method).allocNewBase(1);
-		depth = ((RuleMethod)pctx.method).push();
+		idx = ++((RuleMethod)ctx_method).index;
+		base = ((RuleMethod)ctx_method).allocNewBase(1);
+		depth = ((RuleMethod)ctx_method).push();
 	}
 
 	public void createText(StringBuffer sb) {
@@ -1066,10 +1066,10 @@ public final class RuleExpr extends RuleExprBase {
 
 	public void resolve1(JumpNodes jn) {
 		this.jn = jn;
-		idx = ++((RuleMethod)pctx.method).index;
+		idx = ++((RuleMethod)ctx_method).index;
 		if (bt_expr != null) {
-			base = ((RuleMethod)pctx.method).allocNewBase(1);
-			depth = ((RuleMethod)pctx.method).push();
+			base = ((RuleMethod)ctx_method).allocNewBase(1);
+			depth = ((RuleMethod)ctx_method).push();
 		}
 	}
 

@@ -233,15 +233,16 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		} else {
 			MethodType et = (MethodType)Type.fromSignature(sigValues);
 			Method elems = new Method(nameEnumValues,et,ACC_PUBLIC);
+			s.addMethod(elems);
 			elems.body = new BlockStat(0);
 			((BlockStat)elems.body).addStatement(
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
-			s.addMethod(elems);
 			// Object getVal(String)
 			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);
 			Method getV = new Method(KString.from("getVal"),getVt,ACC_PUBLIC);
 			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
+			s.addMethod(getV);
 			getV.body = new BlockStat(0);
 			for(int i=0; i < aflds.length; i++) {
 				ENode ee = new IFldExpr(0,new ThisExpr(0),aflds[i]);
@@ -265,7 +266,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			((BlockStat)getV.body).addStatement(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
-			s.addMethod(getV);
 		}
 		// copy()
 		if (!mnMeta.getZ(nameCopyable) || s.isAbstract()) {
@@ -277,12 +277,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		else {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
 			Method copyV = new Method(KString.from("copy"),copyVt,ACC_PUBLIC);
+			s.addMethod(copyV);
 			copyV.body = new BlockStat(0);
 			NArr<ASTNode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0, KString.from("node"),s.type,0);
 			stats.append(new ReturnStat(0,new ASTCallExpression(0,
 				KString.from("copyTo"),	new ENode[]{new NewExpr(0,s.type,ENode.emptyArray)})));
-			s.addMethod(copyV);
 		}
 		// copyTo(Object)
 		if (hasMethod(s, KString.from("copyTo"))) {
@@ -291,6 +291,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			MethodType copyVt = (MethodType)Type.fromSignature(sigCopyTo);
 			Method copyV = new Method(KString.from("copyTo"),copyVt,ACC_PUBLIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
+			s.addMethod(copyV);
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.type,0);
@@ -357,7 +358,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				}
 			}
 			stats.append(new ReturnStat(0,new LVarExpr(0,v)));
-			s.addMethod(copyV);
 		}
 		// setVal(String, Object)
 		if (hasMethod(s, KString.from("setVal"))) {
@@ -367,6 +367,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Method setV = new Method(KString.from("setVal"),setVt,ACC_PUBLIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
+			s.addMethod(setV);
 			setV.body = new BlockStat(0);
 			for(int i=0; i < aflds.length; i++) {
 				boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
@@ -413,7 +414,6 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			((BlockStat)setV.body).addStatement(
 				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
-			s.addMethod(setV);
 		}
 	}
 

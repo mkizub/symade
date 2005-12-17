@@ -71,7 +71,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 			outer.generate(code,null);
 		if (func.getMethod().getTypeInfoParam() != null) {
 			// Create static field for this type typeinfo
-			temp_expr = pctx.clazz.accessTypeInfoField(this.getNode(),type).getJENodeView();
+			temp_expr = jctx_clazz.accessTypeInfoField(this,type);
 			temp_expr.generate(code,null);
 			temp_expr = null;
 		}

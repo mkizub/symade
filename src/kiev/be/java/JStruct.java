@@ -56,6 +56,8 @@ public final view JStructView of StructImpl extends JTypeDefView {
 	public final boolean isSyntax()					{ return this.$view.is_struct_syntax; }
 	public final boolean isLoadedFromBytecode()	{ return this.$view.is_struct_bytecode; }
 
+	@getter public JStructView get$child_jctx_clazz() { return this; }
+
 	/** Add information about new attribute that belongs to this class */
 	Attr addAttr(Attr a) {
 		// Check we already have this attribute
@@ -69,6 +71,10 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		return a;
 	}
 
+	public JENodeView accessTypeInfoField(JNodeView from, Type t) {
+		return getStruct().accessTypeInfoField(from.getNode(), t).getJENodeView();
+	}
+	
 	void generate() {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;

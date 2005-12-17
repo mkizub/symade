@@ -57,6 +57,12 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }
 	public final boolean isLocalMethod()		{ return this.$view.is_mth_local; }
 
+	@getter public JMethodView get$child_jctx_method() { return this; }
+
+	public FormPar getOuterThisParam() { return getMethod().getOuterThisParam(); }
+	public FormPar getTypeInfoParam() { return getMethod().getTypeInfoParam(); }
+	public FormPar getVarArgParam() { return getMethod().getVarArgParam(); }
+	
 	public CodeLabel getBreakLabel() {
 		return ((BlockStat)body).getJBlockStatView().getBreakLabel();
 	}
@@ -65,8 +71,8 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; pctx.clazz.instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; pctx.clazz.instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; jctx_clazz.getStruct().instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; jctx_clazz.getStruct().instanceOf((Struct)inv.parent) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
@@ -77,13 +83,13 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
 			cond.getJWBCConditionView().generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
-			Code code = new Code(pctx.clazz, this.getMethod(), constPool);
+			Code code = new Code(jctx_clazz.getStruct(), this.getMethod(), constPool);
 			code.generation = true;
 			try {
 				if( !isBad() ) {
 					FormPar thisPar = null;
 					if( !isStatic() ) {
-						thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 						code.addVar(thisPar);
 					}
 					if( params.length > 0 ) code.addVars(params.toArray());
@@ -181,7 +187,7 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 	public				CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {
-		Code code = new Code(pctx.clazz, pctx.method, constPool);
+		Code code = new Code(jctx_clazz.getStruct(), jctx_method.getMethod(), constPool);
 		code.generation = true;
 		code.cond_generation = true;
 		if( cond == WBCType.CondInvariant ) {
@@ -194,7 +200,7 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			try {
 				FormPar thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,pctx.clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
 					code.addVar(thisPar);
 				}
 				if( m.params.length > 0 ) code.addVars(m.params.toArray());

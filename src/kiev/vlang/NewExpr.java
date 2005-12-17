@@ -134,36 +134,24 @@ public final class NewExpr extends ENode {
 		else if( (!type.isStaticClazz() && type.isLocalClazz())
 			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
 		{
-			if( pctx.method==null || pctx.method.isStatic() )
+			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
 			outer.resolve(null);
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-//		if( type.isLocalClazz() ) {
-//			Struct cl = (Struct)type.clazz;
-//			foreach (ASTNode n; cl.members; n instanceof Field) {
-//				Field f = (Field)n;
-//				if( !f.isNeedProxy() ) continue;
-//				outer_args.append(new IFldExpr(pos,new ThisExpr(pos),f));
-//			}
-//		}
 		if( type.args.length > 0 )
-			pctx.clazz.accessTypeInfoField(this,type).resolve(null); // Create static field for this type typeinfo
+			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
-//			if (tif_expr != null)
-//				args.insert((ENode)tif_expr.copy(),0);
-//			if (outer != null)
-//				args.insert((ENode)outer.copy(),0);
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,type);
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
-			if( (pctx.method==null || !pctx.method.name.equals(nameNewOp)) ) {
+			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports);
 				if (PassInfo.resolveBestMethodR(type,m,info,nameNewOp,mt)) {
 					CallExpr n = new CallExpr(pos,new TypeRef(type),(Method)m,args.delToArray());
@@ -302,14 +290,14 @@ public final class NewArrayExpr extends ENode {
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
 		if( type.isArgument() ) {
-			if( pctx.method==null || pctx.method.isStatic() )
+			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;
-			for(i=0; i < pctx.clazz.type.args.length; i++)
-				if( type.string_equals(pctx.clazz.type.args[i]) ) break;
-			if( i >= pctx.clazz.type.args.length )
+			for(i=0; i < ctx_clazz.type.args.length; i++)
+				if( type.string_equals(ctx_clazz.type.args[i]) ) break;
+			if( i >= ctx_clazz.type.args.length )
 				throw new CompilerException(this,"Can't create an array of argument type "+type);
-			ENode tie = new IFldExpr(pos,new ThisExpr(0),pctx.clazz.resolveField(nameTypeInfo));
+			ENode tie = new IFldExpr(pos,new ThisExpr(0),ctx_clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,

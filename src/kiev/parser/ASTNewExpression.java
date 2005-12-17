@@ -106,7 +106,7 @@ public class ASTNewExpression extends ENode {
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
-		clazz.setStatic(pctx.method==null || pctx.method.isStatic());
+		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		clazz.addAttr(sfa);
 		if( sup.isInterface() ) {

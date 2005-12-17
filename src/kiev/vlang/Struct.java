@@ -6,6 +6,9 @@ import kiev.parser.*;
 import kiev.transf.*;
 import java.io.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JTypeDefView;
 import kiev.be.java.JStructView;
 import kiev.be.java.Attr;
 import kiev.be.java.SourceFileAttr;
@@ -253,6 +256,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public DNodeView		getDNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
 	public TypeDefView		getTypeDefView()	{ return new StructView((StructImpl)this.$v_impl); }
 	public StructView		getStructView()		{ return new StructView((StructImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JStructView((StructImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		{ return new JStructView((StructImpl)this.$v_impl); }
+	public JTypeDefView		getJTypeDefView()	{ return new JStructView((StructImpl)this.$v_impl); }
 	public JStructView		getJStructView()	{ return new JStructView((StructImpl)this.$v_impl); }
 
 	/** Variouse names of the class */
@@ -349,12 +355,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			+" as "+name.name+", member of "+outer);
 	}
 
-	public void setupContext() {
-		if (this.parent == null)
-			this.pctx = new NodeContext(this).enter(this);
-		else
-			this.pctx = this.parent.pctx.enter(this);
-	}
+	@getter public Struct get$child_ctx_clazz() { return this; }
 
 	public Object copy() {
 		throw new CompilerException(this,"Struct node cannot be copied");
@@ -941,15 +942,15 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public ENode accessTypeInfoField(ASTNode from, Type t) {
 		if( t.isArgumented() ) {
 			ENode ti_access;
-			if( from.pctx.method == null || from.pctx.method.isStatic()) {
+			if( from.ctx_method == null || from.ctx_method.isStatic()) {
 				// check we have $typeinfo as first argument
-				if( from.pctx.method==null
-				 || from.pctx.method.params.length < 1
-				 || from.pctx.method.params[0].name.name != nameTypeInfo
-				 || !from.pctx.method.params[0].type.isInstanceOf(Type.tpTypeInfo)
+				if( from.ctx_method==null
+				 || from.ctx_method.params.length < 1
+				 || from.ctx_method.params[0].name.name != nameTypeInfo
+				 || !from.ctx_method.params[0].type.isInstanceOf(Type.tpTypeInfo)
 				 )
-					throw new CompilerException(from,"$typeinfo cannot be accessed from "+from.pctx.method);
-				ti_access = new LVarExpr(from.pos,from.pctx.method.params[0]);
+					throw new CompilerException(from,"$typeinfo cannot be accessed from "+from.ctx_method);
+				ti_access = new LVarExpr(from.pos,from.ctx_method.params[0]);
 			}
 			else {
 				Field ti = resolveField(nameTypeInfo);
@@ -965,7 +966,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
-					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.pctx.method);
+					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
 				ti_access = new IFldExpr(from.pos,ti_access,ti_arg);
 				return ti_access;
 			}
@@ -975,7 +976,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
-		if ((from.pctx.method == null || from.pctx.method.name.name == nameClassInit) && from.pctx.clazz.isInterface()) {
+		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
 			BaseType ftype = Type.tpTypeInfo;
 			if (t.args.length > 0) {
 				if (t.getStruct().typeinfo_clazz == null)
@@ -1020,7 +1021,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		addField(f);
 		// Add initialization in <clinit>
 		Constructor class_init = getClazzInitMethod();
-		if( from.pctx.method != null && from.pctx.method.name.equals(nameClassInit) ) {
+		if( from.ctx_method != null && from.ctx_method.name.equals(nameClassInit) ) {
 			class_init.addstats.insert(
 				new ExprStat(f.init.getPos(),
 					new AssignExpr(f.init.getPos(),AssignOperator.Assign

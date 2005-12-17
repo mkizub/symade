@@ -508,12 +508,12 @@ public class ReturnStat extends ENode {
 		setMethodAbrupted(true);
 		if( expr != null ) {
 			try {
-				expr.resolve(pctx.method.type.ret);
+				expr.resolve(ctx_method.type.ret);
 			} catch(Exception e ) {
 				Kiev.reportError(expr,e);
 			}
 		}
-		if( pctx.method.type.ret == Type.tpVoid ) {
+		if( ctx_method.type.ret == Type.tpVoid ) {
 			if( expr != null ) throw new RuntimeException("Can't return value in void method");
 			expr = null;
 		} else {
@@ -865,7 +865,7 @@ public class BreakStat extends ENode {
 	}
 	
 	public void callbackRootChanged() {
-		if (dest != null && dest.pctx.root != this.pctx.root) {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1028,7 +1028,7 @@ public class ContinueStat extends ENode {
 	}
 	
 	public void callbackRootChanged() {
-		if (dest != null && dest.pctx.root != this.pctx.root) {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1134,7 +1134,7 @@ public class GotoStat extends ENode {
 	}
 	
 	public void callbackRootChanged() {
-		if (dest != null && dest.pctx.root != this.pctx.root) {
+		if (dest != null && dest.ctx_root != this.ctx_root) {
 			dest.delLink(this);
 			dest = null;
 		}
@@ -1146,7 +1146,7 @@ public class GotoStat extends ENode {
 			dest.delLink(this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return false;
@@ -1170,7 +1170,7 @@ public class GotoStat extends ENode {
 			dest.delLink(this);
 			dest = null;
 		}
-		LabeledStat[] stats = resolveStat(ident.name,pctx.method.body, LabeledStat.emptyArray);
+		LabeledStat[] stats = resolveStat(ident.name,ctx_method.body, LabeledStat.emptyArray);
 		if( stats.length == 0 ) {
 			Kiev.reportError(this,"Label "+ident+" unresolved");
 			return;

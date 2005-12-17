@@ -104,15 +104,15 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				}
 			}
 			if( func.name.equals(nameInit) && func.getMethod().getTypeInfoParam() != null) {
-				Method mmm = pctx.method;
-				Type tp = mmm.pctx.clazz != func.pctx.clazz ? pctx.clazz.super_type : pctx.clazz.type;
-				assert(pctx.method.name.equals(nameInit));
+				JMethodView mmm = jctx_method;
+				Type tp = mmm.jctx_clazz.getNode() != func.jctx_clazz.getNode() ? jctx_clazz.super_type : jctx_clazz.type;
+				assert(mmm.name.equals(nameInit));
 				assert(tp.args.length > 0);
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam()).getJENodeView();
 				else
-					temp_expr = pctx.clazz.accessTypeInfoField(this.getNode(),tp).getJENodeView();
+					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
 				temp_expr.generate(code,null);
 				temp_expr = null;
 			}

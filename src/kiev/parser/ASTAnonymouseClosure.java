@@ -52,18 +52,18 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		foreach (FormPar fp; params) proc.mainResolve(fp);
 	
 		ClazzName clname = ClazzName.fromBytecodeName(
-			new KStringBuffer(pctx.clazz.name.bytecode_name.len+8)
-				.append_fast(pctx.clazz.name.bytecode_name)
+			new KStringBuffer(ctx_clazz.name.bytecode_name.len+8)
+				.append_fast(ctx_clazz.name.bytecode_name)
 				.append_fast((byte)'$')
-				.append(pctx.clazz.countAnonymouseInnerStructs())
+				.append(ctx_clazz.countAnonymouseInnerStructs())
 				.toKString(),
 			false
 		);
-		clazz = Env.newStruct(clname,pctx.clazz,0,true);
+		clazz = Env.newStruct(clname,ctx_clazz,0,true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
-		if( pctx.method==null || pctx.method.isStatic() ) clazz.setStatic(true);
+		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
 		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
 		clazz.addAttr(sfa);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )

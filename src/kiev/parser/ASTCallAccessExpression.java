@@ -41,7 +41,7 @@ public class ASTCallAccessExpression extends ENode {
 	public void mainResolveOut() {
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-		&& !pctx.method.isStatic() )
+		&& !ctx_method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
 			te.setSuperExpr(true);
@@ -59,7 +59,7 @@ public class ASTCallAccessExpression extends ENode {
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,null);
 			try {
-				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) )
+				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) )
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			info.leaveSuper();
@@ -69,7 +69,7 @@ public class ASTCallAccessExpression extends ENode {
 				CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
 				cae.setSuperExpr(true);
 				replaceWithNode(cae);
-				meth.makeArgs(cae.args, tp);
+				//meth.makeArgs(cae.args, tp);
 				return;
 			}
 			throw new CompilerException(obj,"Super-call via forwarding is not allowed");
@@ -163,7 +163,7 @@ public class ASTCallAccessExpression extends ENode {
 		
 		if( obj instanceof ASTIdentifier
 		&& ((ASTIdentifier)obj).name.equals(Constants.nameSuper)
-		&& !pctx.method.isStatic() )
+		&& !ctx_method.isStatic() )
 		{
 			ThisExpr te = new ThisExpr(obj.pos);
 			te.setSuperExpr(true);
@@ -183,7 +183,7 @@ public class ASTCallAccessExpression extends ENode {
 				ta[i] = args[i].getType();
 			MethodType mt = MethodType.newMethodType(null,ta,ret);
 			try {
-				if( !PassInfo.resolveBestMethodR(pctx.clazz.super_type,m,info,func.name,mt) ) {
+				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
@@ -195,7 +195,7 @@ public class ASTCallAccessExpression extends ENode {
 				CallExpr cae = new CallExpr(pos,(ENode)~obj,meth,args.delToArray());
 				cae.setSuperExpr(true);
 				replaceWithNode(cae);
-				meth.makeArgs(cae.args, tp);
+				//meth.makeArgs(cae.args, tp);
 				cae.resolve(ret);
 				return;
 			}

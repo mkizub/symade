@@ -157,7 +157,7 @@ public class Access implements Constants {
 
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
-		return (Struct)n.parent;
+		return n.ctx_clazz;
 	}
 
 	private Struct getPackageOf(ASTNode n) {
@@ -173,14 +173,14 @@ public class Access implements Constants {
 		if( ((flags>>>6) & acc) == acc ) return;
 
 		// Check for private access
-		if( from.pctx.clazz == getStructOf(n) ) {
+		if( getStructOf(from) == getStructOf(n) ) {
 			if( (flags & acc) != acc ) throwAccessError(from,n,acc,"private");
 			return;
 		}
 
 		// Check for private access from inner class
 		if (((DNode)n).isPrivate()) {
-			Struct outer1 = from.pctx.clazz;
+			Struct outer1 = getStructOf(from);
 			Struct outer2 = getStructOf(n);
 			while (!outer1.package_clazz.isPackage())
 				outer1 = outer1.package_clazz;
@@ -196,13 +196,13 @@ public class Access implements Constants {
 		}
 
 		// Check for default access
-		if( getPackageOf(from.pctx.clazz) == getPackageOf(n) ) {
+		if( getPackageOf(from) == getPackageOf(n) ) {
 			if( ((flags>>>2) & acc) != acc ) throwAccessError(from,n,acc,"default");
 			return;
 		}
 
 		// Check for protected access
-		if( from.pctx.clazz.instanceOf(getStructOf(n)) ) {
+		if( getStructOf(from).instanceOf(getStructOf(n)) ) {
 			if( ((flags>>>4) & acc) != acc ) throwAccessError(from,n,acc,"protected");
 			return;
 		}
@@ -223,7 +223,7 @@ public class Access implements Constants {
 		else if( n instanceof Struct ) sb.append("class ");
 		if( n instanceof Struct ) sb.append(n);
 		else sb.append(n.parent).append('.').append(n);
-		sb.append("\n\tfrom class ").append(from.pctx.clazz);
+		sb.append("\n\tfrom class ").append(getStructOf(from));
 		Kiev.reportError(from,new RuntimeException(sb.toString()));
 	}
 }

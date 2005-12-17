@@ -256,7 +256,7 @@ public class UnresCallExpr extends UnresExpr {
 			if (func instanceof Method) {
 				Method m = (Method)func;
 				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray());
-				m.makeArgs(ce.args, null);
+				//m.makeArgs(ce.args, null);
 				return ce;
 			} else {
 				Field f = (Field)func;
@@ -267,7 +267,7 @@ public class UnresCallExpr extends UnresExpr {
 				Method m = (Method)func;
 				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray(), isSuperExpr());
 				ce.setCastCall(this.isCastCall());
-				m.makeArgs(ce.args, null);
+				//m.makeArgs(ce.args, null);
 				return ce;
 			} else {
 				return new ClosureCallExpr(pos, (ENode)~obj, args.toArray());

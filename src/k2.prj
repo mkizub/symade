@@ -670,7 +670,6 @@ kiev.vlang.NewInitializedArrayExpr kiev/vlang/NewInitializedArrayExpr kiev\vlang
 kiev.vlang.NewInitializedArrayExpr.DFI kiev/vlang/NewInitializedArrayExpr$DFI kiev\vlang\NewExpr.java
 kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprImpl kiev/vlang/NewInitializedArrayExpr$NewInitializedArrayExprImpl kiev\vlang\NewExpr.java
 kiev.vlang.NewInitializedArrayExpr.NewInitializedArrayExprView kiev/vlang/NewInitializedArrayExpr$NewInitializedArrayExprView kiev\vlang\NewExpr.java
-kiev.vlang.NodeContext kiev/vlang/NodeContext kiev\vlang\AST.java
 kiev.vlang.NodeData kiev/vlang/NodeData kiev\vlang\AST.java
 kiev.vlang.NodeName kiev/vlang/NodeName kiev\vlang\ClazzName.java
 kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java

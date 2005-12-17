@@ -59,53 +59,6 @@ public abstract class NodeData {
 	public void dataDetached() {}
 };
 
-public final class NodeContext {
-	public final ASTNode	root;
-	public final FileUnit	file_unit;
-	public final Struct		clazz;
-	public final Struct		outer_clazz;
-	public final Method		method;
-	public final Method		outer_method;
-	private NodeContext(ASTNode root,
-						FileUnit file_unit,
-						Struct clazz,
-						Struct outer_clazz,
-						Method method,
-						Method outer_method)
-	{
-		this.root = root;
-		this.file_unit = file_unit;
-		this.clazz = clazz;
-		this.outer_clazz = outer_clazz;
-		this.method = method;
-		this.outer_method = outer_method;
-	}
-	public NodeContext(ASTNode root) {
-		this.root = root;
-	}
-	public NodeContext(FileUnit fu) {
-		this.root = fu;
-		this.file_unit = fu;
-	}
-	public NodeContext enter(Struct s) {
-		return new NodeContext(	this.root,
-								this.file_unit,
-								s,
-								this.clazz,
-								null,
-								this.method);
-	}
-	public NodeContext enter(Method m) {
-		return new NodeContext(	this.root,
-								this.file_unit,
-								this.clazz,
-								this.outer_clazz,
-								m,
-								this.outer_method);
-	}
-};
-
-
 public class TreeWalker {
 	public boolean pre_exec(ASTNode n) { return true; }
 	public void post_exec(ASTNode n) {}
@@ -125,7 +78,6 @@ public abstract class ASTNode implements Constants {
 		protected	AttrSlot		pslot;
 		protected	ASTNode			pprev;
 		protected	ASTNode			pnext;
-		protected	NodeContext		pctx;
 		protected	NodeData		ndata;
 		// Structures	
 		public packed:1,compileflags,16 boolean is_struct_local;
@@ -209,10 +161,6 @@ public abstract class ASTNode implements Constants {
 			this.pslot = null;
 			this.pprev = null;
 			this.pnext = null;
-			// set new root of the detached tree
-			_self.walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
-			});
 			// notify nodes about new root
 			_self.walkTree(new TreeWalker() {
 				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
@@ -227,10 +175,6 @@ public abstract class ASTNode implements Constants {
 			// do attach
 			this.parent = parent;
 			this.pslot = pslot;
-			// set new root of the attached tree
-			_self.walkTree(new TreeWalker() {
-				public boolean pre_exec(ASTNode n) { n.setupContext(); return true; }
-			});
 			// notify nodes about new root
 			_self.walkTree(new TreeWalker() {
 				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
@@ -265,7 +209,6 @@ public abstract class ASTNode implements Constants {
 		public AttrSlot		pslot;
 		public ASTNode		pprev;
 		public ASTNode		pnext;
-		public NodeContext	pctx;
 		public NodeData		ndata;
 		
 		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
@@ -327,8 +270,6 @@ public abstract class ASTNode implements Constants {
 	@ref(copyable=false) @virtual
 	public abstract virtual							ASTNode			pnext;
 	@ref(copyable=false) @virtual
-	public abstract virtual access:ro,ro,rw,rw		NodeContext		pctx;
-	@ref(copyable=false) @virtual
 	public abstract virtual access:no,no,no,rw		NodeData		ndata;
 
 	// for NodeView only
@@ -337,7 +278,6 @@ public abstract class ASTNode implements Constants {
 	public ASTNode(NodeImpl v_impl) {
 		this.$v_impl = v_impl;
 		this.$v_impl._self = this;
-		setupContext();
 	}
 
 	@getter public int			get$pos()			{ return this.getNodeView().pos; }
@@ -346,7 +286,6 @@ public abstract class ASTNode implements Constants {
 	@getter public AttrSlot		get$pslot()			{ return this.getNodeView().pslot; }
 	@getter public ASTNode		get$pprev()			{ return this.getNodeView().pprev; }
 	@getter public ASTNode		get$pnext()			{ return this.getNodeView().pnext; }
-	@getter public NodeContext	get$pctx()			{ return this.getNodeView().pctx; }
 	@getter public NodeData		get$ndata()			{ return this.getNodeView().ndata; }
 	
 	@setter public void set$pos(int val)			{ this.getNodeView().pos = val; }
@@ -355,15 +294,19 @@ public abstract class ASTNode implements Constants {
 	@setter public void set$pslot(AttrSlot val)	{ this.getNodeView().pslot = val; }
 	@setter public void set$pprev(ASTNode val)		{ this.getNodeView().pprev = val; }
 	@setter public void set$pnext(ASTNode val)		{ this.getNodeView().pnext = val; }
-	@setter public void set$pctx(NodeContext val)	{ this.getNodeView().pctx = val; }
 	@setter public void set$ndata(NodeData val)	{ this.getNodeView().ndata = val; }
 
-	public void setupContext() {
-		if (this.parent == null)
-			this.pctx = new NodeContext(this);
-		else
-			this.pctx = this.parent.pctx;
+	@getter public final ASTNode get$ctx_root() {
+		ASTNode parent = this.parent;
+		if (parent == null)
+			return this;
+		return parent.get$ctx_root();
 	}
+	@getter public FileUnit get$ctx_file_unit() { return this.parent.get$ctx_file_unit(); }
+	@getter public Struct get$ctx_clazz() { return this.parent.child_ctx_clazz; }
+	@getter public Struct get$child_ctx_clazz() { return this.parent.get$child_ctx_clazz(); }
+	@getter public Method get$ctx_method() { return this.parent.child_ctx_method; }
+	@getter public Method get$child_ctx_method() { return this.parent.get$child_ctx_method(); }
 
 	public ASTNode detach()
 		alias operator (210,fy,~)
@@ -1201,7 +1144,7 @@ public final class LocalStructDecl extends ENode implements Named {
 	}
 
 	public boolean preResolveIn(TransfProcessor proc) {
-		if( pctx.method==null || pctx.method.isStatic())
+		if( ctx_method==null || ctx_method.isStatic())
 			clazz.setStatic(true);
 		clazz.setResolved(true);
 		clazz.setLocal(true);

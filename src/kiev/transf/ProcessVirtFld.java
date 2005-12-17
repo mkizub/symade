@@ -237,6 +237,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			}
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				set_var.body = body;
 				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
 					ENode p_st = new IfElseStat(0,
@@ -288,14 +289,12 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					body.stats.append(p_st);
 				}
 				body.stats.append(new ReturnStat(f.pos,null));
-				set_var.body = body;
 			}
 			else if (s.isView() && !f.isStatic()) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				set_var.body = body;
 				Field view_fld = s.view_of.getType().getStruct().resolveField(f.name.name);
 				ENode val = new LVarExpr(f.pos,value);
-				if!(value.getType().isAutoCastableTo(view_fld.getType()))
-					val = new CastExpr(f.pos,view_fld.getType(),val);
 				ENode ass_st = new ExprStat(f.pos,
 					new AssignExpr(f.pos,AssignOperator.Assign,
 						new IFldExpr(f.pos,
@@ -310,7 +309,8 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				);
 				body.stats.append(ass_st);
 				body.stats.append(new ReturnStat(f.pos,null));
-				set_var.body = body;
+				if!(value.getType().isAutoCastableTo(view_fld.getType()))
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),(ENode)~val); });
 				set_var.setAbstract(false);
 			}
 			f.getMetaVirtual().set = set_var;
@@ -331,19 +331,19 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			s.addMethod(get_var);
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
-				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 				get_var.body = body;
+				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
 			else if (s.isView() && !f.isStatic()) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
+				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,
 					new IFldExpr(f.pos,new ThisExpr(0),s.resolveField(nameView)),
 					s.view_of.getType().getStruct().resolveField(f.name.name)
 				);
-				if!(val.getType().isAutoCastableTo(f.getType()))
-					val = new CastExpr(f.pos,f.getType(),val);
 				body.stats.add(new ReturnStat(f.pos,val));
-				get_var.body = body;
+				if!(val.getType().isAutoCastableTo(f.getType()))
+					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),(ENode)~val); });
 				get_var.setAbstract(false);
 			}
 			f.getMetaVirtual().get = get_var;
@@ -377,7 +377,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 			append_fast(nameGet).append_fast(f.name.name).toKString();
 
-		if (fa.pctx.method != null && fa.pctx.method.name.equals(get_name) && fa.pctx.clazz.instanceOf((Struct)f.parent)) {
+		if (fa.ctx_method != null && fa.ctx_method.name.equals(get_name) && fa.ctx_clazz.instanceOf((Struct)f.parent)) {
 			fa.setAsField(true);
 			return true;
 		}
@@ -404,7 +404,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			KString set_name = new KStringBuffer(nameSet.length()+f.name.name.length()).
 				append_fast(nameSet).append_fast(f.name.name).toKString();
 	
-			if (ae.pctx.method != null && ae.pctx.method.name.equals(set_name) && ae.pctx.clazz.instanceOf((Struct)f.parent)) {
+			if (ae.ctx_method != null && ae.ctx_method.name.equals(set_name) && ae.ctx_clazz.instanceOf((Struct)f.parent)) {
 				fa.setAsField(true);
 				return true;
 			}
@@ -487,9 +487,9 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			KString get_name = new KStringBuffer(nameGet.length()+f.name.name.length()).
 				append_fast(nameGet).append_fast(f.name.name).toKString();
 	
-			if (ie.pctx.method != null
-			&& (ie.pctx.method.name.equals(set_name) || ie.pctx.method.name.equals(get_name))
-			&& ie.pctx.clazz.instanceOf((Struct)f.parent) )
+			if (ie.ctx_method != null
+			&& (ie.ctx_method.name.equals(set_name) || ie.ctx_method.name.equals(get_name))
+			&& ie.ctx_clazz.instanceOf((Struct)f.parent) )
 			{
 				fa.setAsField(true);
 				return true;

@@ -285,21 +285,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		invalid_types = true;
 	}
 
-	public void setupContext() {
-		if (this.parent == null)
-			this.pctx = new NodeContext(this).enter(this);
-		else
-			this.pctx = this.parent.pctx.enter(this);
-	}
-
-//	@getter public Access get$acc() {
-//		return acc;
-//	}
-//
-//	@setter public void set$acc(Access a) {
-//		acc = a;
-//		acc.verifyAccessDecl(this);
-//	}
+	@getter public Method get$child_ctx_method() { return this; }
 	
 	// multimethod	
 	public boolean isMultiMethod() { return this.getMethodView().isMultiMethod(); }
@@ -352,8 +338,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.name.name == nameThisDollar);
-				assert(fp.type == this.pctx.clazz.package_clazz.type);
-				dtype_ref.args.add(new TypeRef(this.pctx.clazz.package_clazz.type));
+				assert(fp.type == this.ctx_clazz.package_clazz.type);
+				dtype_ref.args.add(new TypeRef(this.ctx_clazz.package_clazz.type));
 				break;
 			case FormPar.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
@@ -631,7 +617,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.pctx.clazz.type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -648,7 +634,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	{
 		!this.isStatic(),
 		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.pctx.clazz.type.resolveCallAccessR(node,info,name,mt)
+		this.ctx_clazz.type.resolveCallAccessR(node,info,name,mt)
 	;
 		n @= params,
 		n.isForward(),
@@ -782,7 +768,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( pctx.clazz == parent || inlined_by_dispatcher );
+		assert( ctx_clazz == parent || inlined_by_dispatcher );
 		try {
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
 				cond.body.resolve(Type.tpVoid);

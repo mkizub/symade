@@ -444,13 +444,13 @@ public class AssignExpr extends LvalueExpr {
 			 &&	((LVarExpr)((IFldExpr)lval).obj).ident.equals(nameThis)
 			)
 		) {
-			if( pctx.method != null && pctx.method.isInvariantMethod() )
+			if( ctx_method != null && ctx_method.isInvariantMethod() )
 				Kiev.reportError(this,"Side-effect in invariant condition");
-			if( pctx.method != null && !pctx.method.isInvariantMethod() ) {
+			if( ctx_method != null && !ctx_method.isInvariantMethod() ) {
 				if( lval instanceof SFldExpr )
-					pctx.method.addViolatedField( ((SFldExpr)lval).var );
+					ctx_method.addViolatedField( ((SFldExpr)lval).var );
 				else
-					pctx.method.addViolatedField( ((IFldExpr)lval).var );
+					ctx_method.addViolatedField( ((IFldExpr)lval).var );
 			}
 		}
 		setResolved(true);
@@ -1302,8 +1302,8 @@ public class UnaryExpr extends ENode {
 		}
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
-			if (pctx.clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !pctx.clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+			if (ctx_clazz != null && opt.method != null && opt.method.type.args.length == 1) {
+				if ( !ctx_clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};

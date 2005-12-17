@@ -29,6 +29,8 @@ public final view JFileUnitView of FileUnitImpl extends JDNodeView {
 	public access:ro	boolean[]				disabled_extensions;
 	public				boolean					scanned_for_interface_only;
 
+	@getter public JFileUnitView get$jctx_file_unit() { return this; }
+
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		KString cur_file = Kiev.curFile;

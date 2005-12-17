@@ -25,6 +25,29 @@ public view JNodeView of NodeImpl extends ASTNode.NodeView {
 		super($view);
 	}
 	@getter public final JNodeView get$jparent() { return (JNodeView)this.parent; }
+	@getter public JFileUnitView get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
+	@getter public JStructView get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
+	@getter public JStructView get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
+	@getter public JMethodView get$jctx_method() { return this.jparent.child_jctx_method; }
+	@getter public JMethodView get$child_jctx_method() { return this.jparent.get$child_jctx_method(); }
+
+	public boolean equals(Object:Object obj) { return false; }
+	public boolean equals(JNodeView:Object jnv) { return this.$view == jnv.$view; }
+	
+	public static boolean eq(JNodeView jnv1, JNodeView jnv2)
+		alias operator(60,xfx,==)
+	{
+		if (jnv1 == null || jnv2 == null) return jnv1 == jnv2;
+		return jnv1.$view == jnv2.$view;
+	}
+
+	public static boolean neq(JNodeView jnv1, JNodeView jnv2)
+		alias operator(60,xfx,!=)
+	{
+		if (jnv1 == null || jnv2 == null) return jnv1 != jnv2;
+		return jnv1.$view != jnv2.$view;
+	}
+	
 }
 
 @nodeview
