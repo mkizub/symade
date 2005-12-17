@@ -59,7 +59,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 	@getter public JStructView get$child_jctx_clazz() { return this; }
 
 	/** Add information about new attribute that belongs to this class */
-	Attr addAttr(Attr a) {
+	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
 		for(int i=0; i < attrs.length; i++) {
 			if(attrs[i].name == a.name) {
@@ -69,6 +69,14 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		}
 		attrs = (Attr[])Arrays.append(attrs,a);
 		return a;
+	}
+
+	public Attr getAttr(KString name) {
+		if( attrs != null )
+			for(int i=0; i < attrs.length; i++)
+				if( attrs[i].name.equals(name) )
+					return attrs[i];
+		return null;
 	}
 
 	public JENodeView accessTypeInfoField(JNodeView from, Type t) {
@@ -104,6 +112,16 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			}
 		}
 		
+		if( !isPackage() ) {
+			KString fu = jctx_file_unit.filename;
+			int p = fu.lastIndexOf((byte)'/');
+			if (p >= 0) fu = fu.substr(p+1);
+			p = fu.lastIndexOf((byte)'\\');
+			if (p >= 0) fu = fu.substr(p+1);
+			SourceFileAttr sfa = new SourceFileAttr(fu);
+			this.addAttr(sfa);
+		}
+		
 		if( !isPackage() && sub_clazz.length > 0 ) {
 			InnerClassesAttr a = new InnerClassesAttr();
 			Struct[] inner = new Struct[sub_clazz.length];
@@ -125,15 +143,20 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
 		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
+			JFieldView f = ((Field)n).getJFieldView();
 			constPool.addAsciiCP(f.name.name);
 			constPool.addAsciiCP(f.type.signature);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner()) {
-				f.setPrivate(false);
+				f.getField().setPrivate(false);
 			}
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
+			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
+				Object co = f.init.getConstValue();
+				if (co != null)
+					f.addAttr(new ConstantValueAttr(co));
+			}
 
 			for(int j=0; f.attrs != null && j < f.attrs.length; j++)
 				f.attrs[j].generate(constPool);
@@ -141,7 +164,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		foreach (ASTNode m; members; m instanceof Method)
 			((Method)m).type.checkJavaSignature();
 		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
+			JMethodView m = ((Method)n).getJMethodView();
 			constPool.addAsciiCP(m.name.name);
 			constPool.addAsciiCP(m.type.signature);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
@@ -149,10 +172,10 @@ public final view JStructView of StructImpl extends JTypeDefView {
 				constPool.addAsciiCP(m.jtype.getJType().java_signature);
 
 			try {
-				m.getJMethodView().generate(constPool);
+				m.generate(constPool);
 
 				if( m.isAccessedFromInner()) {
-					m.setPrivate(false);
+					m.getMethod().setPrivate(false);
 				}
 
 				for(int j=0; j < m.conditions.length; j++) {
@@ -181,7 +204,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 				}
 			} catch(Exception e ) {
 				Kiev.reportError(m,"Compilation error: "+e);
-				m.getJMethodView().generate(constPool);
+				m.generate(constPool);
 				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
 					m.attrs[j].generate(constPool);
 				}
@@ -190,7 +213,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		}
 		constPool.generate();
 		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
+			JMethodView m = ((Method)n).getJMethodView();
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
 				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
@@ -233,6 +256,20 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		}
 	}
 
+	public void cleanup() {
+		if( !isPackage() ) {
+			foreach (Struct sub; sub_clazz)
+				sub.getJStructView().cleanup();
+		}
+
+		foreach (ASTNode n; members) {
+			if (n instanceof Field)
+				((Field)n).getJFieldView().attrs = Attr.emptyArray;
+			else if (n instanceof Method)
+				((Method)n).getJMethodView().attrs = Attr.emptyArray;
+		}
+		this.attrs = Attr.emptyArray;
+	}
 
 }
 

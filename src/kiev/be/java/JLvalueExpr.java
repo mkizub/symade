@@ -61,28 +61,8 @@ public abstract view JAccessExprView of AccessExprImpl extends JLvalueExprView {
 public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				return true;
-			}
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		var.acc.verifyReadAccess(this,var);
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
-			}
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
+	public boolean	isConstantExpr() { return var.getField().isConstantExpr(); }
+	public Object	getConstValue() { return var.getField().getConstValue(); }
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -491,28 +471,8 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 	
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				return true;
-			}
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		var.acc.verifyReadAccess(this,var);
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
-			}
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
+	public boolean	isConstantExpr() { return var.getField().isConstantExpr(); }
+	public Object	getConstValue() { return var.getField().getConstValue(); }
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);

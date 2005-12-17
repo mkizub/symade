@@ -25,8 +25,6 @@ import kiev.stdlib.*;
 import kiev.vlang.*;
 import kiev.parser.*;
 
-import kiev.be.java.SourceFileAttr;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -64,8 +62,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	private void setSourceFile(Struct me) {
 		if( !me.isLocal() )
 			Env.setProjectInfo(me.name, Kiev.curFile);
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		me.addAttr(sfa);
 	}
 	
 	private void setupStructType(Struct me, boolean canHaveArgs) {

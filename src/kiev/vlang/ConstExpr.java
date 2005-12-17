@@ -538,6 +538,7 @@ public abstract class ConstExpr extends ENode {
 		if (o instanceof Short)     return new ConstShortExpr  (((Short)    o).shortValue());
 		if (o instanceof Long)      return new ConstLongExpr   (((Long)     o).longValue());
 		if (o instanceof Character) return new ConstCharExpr   (((Character)o).charValue());
+		if (o instanceof Boolean)   return new ConstBoolExpr   (((Boolean)  o).booleanValue());
 		if (o instanceof Float)     return new ConstFloatExpr  (((Float)    o).floatValue());
 		if (o instanceof Double)    return new ConstDoubleExpr (((Double)   o).doubleValue());
 		throw new RuntimeException("Bad constant object "+o+" ("+o.getClass()+")");

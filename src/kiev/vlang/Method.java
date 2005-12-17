@@ -11,9 +11,7 @@ import kiev.be.java.JMethodView;
 import kiev.be.java.JInitializerView;
 import kiev.be.java.JWBCConditionView;
 
-import kiev.be.java.Attr;
 import kiev.be.java.CodeAttr;
-import kiev.be.java.ExceptionsAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -48,7 +46,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		@att public Var					retvar;
 		@att public BlockStat			body;
 		@att public PrescannedBody 		pbody;
-		     public Attr[]				attrs = Attr.emptyArray;
+		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<WBCCondition> 	conditions;
 		@ref public NArr<Field>			violated_fields;
 		@att public MetaValue			annotation_default;
@@ -85,7 +83,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				Var					retvar;
 		public				BlockStat			body;
 		public				PrescannedBody		pbody;
-		public				Attr[]				attrs;
 		public access:ro	NArr<WBCCondition>	conditions;
 		public access:ro	NArr<Field>			violated_fields;
 		public				MetaValue			annotation_default;
@@ -198,7 +195,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@getter public Var					get$retvar()				{ return this.getMethodView().retvar; }
 	@getter public BlockStat			get$body()					{ return this.getMethodView().body; }
 	@getter public PrescannedBody		get$pbody()					{ return this.getMethodView().pbody; }
-	@getter public Attr[]				get$attrs()					{ return this.getMethodView().attrs; }
 	@getter public NArr<WBCCondition>	get$conditions()			{ return this.getMethodView().conditions; }
 	@getter public NArr<Field>			get$violated_fields()		{ return this.getMethodView().violated_fields; }
 	@getter public MetaValue			get$annotation_default()	{ return this.getMethodView().annotation_default; }
@@ -216,7 +212,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@setter public void set$retvar(Var val)						{ this.getMethodView().retvar = val; }
 	@setter public void set$body(BlockStat val)					{ this.getMethodView().body = val; }
 	@setter public void set$pbody(PrescannedBody val)				{ this.getMethodView().pbody = val; }
-	@setter public void set$attrs(Attr[] val)						{ this.getMethodView().attrs = val; }
 	@setter public void set$annotation_default(MetaValue val)		{ this.getMethodView().annotation_default = val; }
 	@setter public void set$inlined_by_dispatcher(boolean val)		{ this.getMethodView().inlined_by_dispatcher = val; }
 	@setter        void set$invalid_types(boolean val)				{ this.getMethodView().invalid_types = val; }
@@ -238,8 +233,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	/** Body of the method */
 	@att public abstract virtual			BlockStat			body;
 	@att public abstract virtual			PrescannedBody 		pbody;
-	/** Array of attributes of this method */
-	     public abstract virtual			Attr[]				attrs;
 	/** Require & ensure clauses */
 	@att public abstract virtual access:ro	NArr<WBCCondition> 	conditions;
 	/** Violated by method fields for normal methods, and checked fields
@@ -254,9 +247,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	     public virtual abstract access:ro	MethodType			type; 
 	     public virtual abstract access:ro	MethodType			jtype; 
 		 public virtual abstract access:ro	MethodType			dtype; 
-	
-	/** JMethod for java backend */
-	//@ref public kiev.backend.java15.JMethod	jmethod;
 	
 	public Method() {
 		super(new MethodImpl());
@@ -554,29 +544,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return match;
 	}
 
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-//		if( !(a.name==attrOperator || a.name==attrImport
-//			|| a.name==attrRequire || a.name==attrEnsure) ) {
-			for(int i=0; i < attrs.length; i++) {
-				if(attrs[i].name == a.name) {
-					attrs[i] = a;
-					return a;
-				}
-			}
-//		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
-	}
-
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
@@ -694,16 +661,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if (annotation_default != null)
 			annotation_default.verify();
 		foreach(ASTAlias al; aliases) al.attach(this);
-		MetaThrows throwns = getMetaThrows();
-        if( throwns != null ) {
-			ASTNode[] mthrs = throwns.getThrowns();
-        	Type[] thrs = new Type[mthrs.length];
-			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = mthrs[i].getType();
-        	ExceptionsAttr athr = new ExceptionsAttr();
-        	athr.exceptions = thrs;
-			this.addAttr(athr);
-        }
 
 		foreach(WBCCondition cond; conditions)
 			cond.definer = this;

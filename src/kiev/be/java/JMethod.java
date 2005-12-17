@@ -67,6 +67,25 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		return ((BlockStat)body).getJBlockStatView().getBreakLabel();
 	}
 
+	/** Add information about new attribute that belongs to this class */
+	public Attr addAttr(Attr a) {
+		for(int i=0; i < attrs.length; i++) {
+			if(attrs[i].name == a.name) {
+				attrs[i] = a;
+				return a;
+			}
+		}
+		attrs = (Attr[])Arrays.append(attrs,a);
+		return a;
+	}
+
+	public Attr getAttr(KString name) {
+		for(int i=0; i < attrs.length; i++)
+			if( attrs[i].name.equals(name) )
+				return attrs[i];
+		return null;
+	}
+
 	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
 		// Append invariants by list of violated/used fields
@@ -153,6 +172,16 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 				Kiev.reportError(this,e);
 			}
 		}
+		MetaThrows throwns = getMethod().getMetaThrows();
+        if( throwns != null ) {
+			ASTNode[] mthrs = throwns.getThrowns();
+        	Type[] thrs = new Type[mthrs.length];
+			for (int i=0; i < mthrs.length; i++)
+				thrs[i] = mthrs[i].getType();
+        	ExceptionsAttr athr = new ExceptionsAttr();
+        	athr.exceptions = thrs;
+			this.addAttr(athr);
+        }
 	}
 
 	public void generateArgumentCheck(Code code) {

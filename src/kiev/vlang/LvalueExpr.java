@@ -17,8 +17,6 @@ import kiev.be.java.JLVarExprView;
 import kiev.be.java.JSFldExprView;
 import kiev.be.java.JOuterThisAccessExprView;
 
-import kiev.be.java.ConstantValueAttr;
-
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
 
@@ -431,22 +429,20 @@ public final class IFldExpr extends AccessExpr {
 
 	public boolean	isConstantExpr() {
 		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+			if (var.init != null && var.init.isConstantExpr())
 				return true;
-			}
+			else if (var.const_value != null)
+				return true;
 		}
 		return false;
 	}
 	public Object	getConstValue() {
 		var.acc.verifyReadAccess(this,var);
 		if( var.isFinal() ) {
-			if( var.init != null )
+			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
+			else if (var.const_value != null) {
+				return var.const_value.getConstValue();
 			}
 		}
     	throw new RuntimeException("Request for constant value of non-constant expression");
@@ -897,22 +893,20 @@ public final class SFldExpr extends AccessExpr {
 
 	public boolean	isConstantExpr() {
 		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+			if (var.init != null && var.init.isConstantExpr())
 				return true;
-			}
+			else if (var.const_value != null)
+				return true;
 		}
 		return false;
 	}
 	public Object	getConstValue() {
 		var.acc.verifyReadAccess(this,var);
 		if( var.isFinal() ) {
-			if( var.init != null )
+			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
+			else if (var.const_value != null) {
+				return var.const_value.getConstValue();
 			}
 		}
     	throw new RuntimeException("Request for constant value of non-constant expression");

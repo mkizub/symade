@@ -5,7 +5,6 @@ import kiev.stdlib.*;
 import java.io.*;
 
 import kiev.be.java.JLabelView;
-import kiev.be.java.ExceptionsAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -317,11 +316,13 @@ public class PassInfo {
 					if( exc.isInstanceOf(trySt.catchers[j].arg.type) ) return true;
 			}
 			else if( from instanceof Method ) {
-				Method m = (Method)from;
-                ExceptionsAttr a = (ExceptionsAttr)m.getAttr(Constants.attrExceptions);
-				for(int j=0; a!=null && j < a.exceptions.length; j++)
-					if( exc.isInstanceOf(a.exceptions[j]) ) return true;
-				break;
+				MetaThrows throwns = from.getMetaThrows();
+				if( throwns == null )
+					return false;
+				ASTNode[] mthrs = throwns.getThrowns();
+				for (int i=0; i < mthrs.length; i++)
+					if (exc.isInstanceOf(mthrs[i].getType())) return true;
+				return false;
 			}
 		}
 		return false;

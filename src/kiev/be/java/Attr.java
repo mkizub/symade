@@ -293,9 +293,9 @@ public class ConstantValueAttr extends Attr {
 	public Object		value;
 
 	/** Constructor for bytecode reader and raw field creation */
-	public ConstantValueAttr(ConstExpr val) {
+	public ConstantValueAttr(Object val) {
 		super(attrConstantValue);
-		value = val.getConstValue();
+		value = val;
 	}
 
 	public void generate(ConstPool constPool) {

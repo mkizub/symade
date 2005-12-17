@@ -8,8 +8,6 @@ import kiev.be.java.JDNodeView;
 import kiev.be.java.JLvalDNodeView;
 import kiev.be.java.JFieldView;
 
-import kiev.be.java.Attr;
-
 import static kiev.stdlib.Debug.*;
 
 /**
@@ -36,8 +34,10 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		@att public TypeRef				ftype;
 		/** Initial value of this field */
 		@att public ENode				init;
+		/** Constant value of this field */
+		@ref public ConstExpr			const_value;
 		/** Array of attributes of this field */
-		     public Attr[]				attrs = Attr.emptyArray;
+		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
 		/** Array of invariant methods, that check this field */
 		@ref public NArr<Method>		invs;
 
@@ -56,7 +56,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public				NodeName		name;
 		public				TypeRef			ftype;
 		public				ENode			init;
-		public				Attr[]			attrs;
+		public				ConstExpr		const_value;
 		public access:ro	NArr<Method>	invs;
 		
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
@@ -116,7 +116,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@getter public NodeName				get$name()			{ return this.getFieldView().name; }
 	@getter public TypeRef				get$ftype()			{ return this.getFieldView().ftype; }
 	@getter public ENode				get$init()			{ return this.getFieldView().init; }
-	@getter public Attr[]				get$attrs()			{ return this.getFieldView().attrs; }
+	@getter public ConstExpr			get$const_value()	{ return this.getFieldView().const_value; }
 	@getter public NArr<Method>			get$invs()			{ return this.getFieldView().invs; }
 	
 	@getter public Type					get$type()			{ return this.getFieldView().type; }
@@ -125,7 +125,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@setter public void set$name(NodeName val)				{ this.getFieldView().name = val; }
 	@setter public void set$ftype(TypeRef val)				{ this.getFieldView().ftype = val; }
 	@setter public void set$init(ENode val)				{ this.getFieldView().init = val; }
-	@setter public void set$attrs(Attr[] val)				{ this.getFieldView().attrs = val; }
+	@setter public void set$const_value(ConstExpr val)		{ this.getFieldView().const_value = val; }
 
 	/** Field' access */
 	     public virtual abstract				Access			acc;
@@ -135,16 +135,12 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@att public virtual abstract				TypeRef			ftype;
 	/** Initial value of this field */
 	@att public virtual abstract				ENode			init;
-	/** Array of attributes of this field */
-	     public virtual abstract				Attr[]			attrs;
+	@ref public virtual abstract				ConstExpr		const_value;
 	/** Array of invariant methods, that check this field */
 	@ref public virtual abstract access:ro		NArr<Method>	invs;
 
 	@ref public abstract virtual access:ro		Type			type;
 	
-	/** JField for java backend */
-	//@ref public kiev.backend.java15.JField			jfield;
-
 	public Field() { super(new FieldImpl()); }
 	
     /** Constructor for new field
@@ -203,27 +199,21 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		return dmp.space().append(name).space();
 	}
 
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-//		if( !(a.name==attrOperator || a.name==attrImport
-//			|| a.name==attrRequire || a.name==attrEnsure) ) {
-			for(int i=0; i < attrs.length; i++) {
-				if(attrs[i].name == a.name) {
-					attrs[i] = a;
-					return a;
-				}
-			}
-//		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
+	public boolean	isConstantExpr() {
+		if( this.isFinal() ) {
+			if (this.init != null && this.init.isConstantExpr())
+				return true;
+			else if (this.const_value != null)
+				return true;
+		}
+		return false;
 	}
-
-	public Attr getAttr(KString name) {
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
+		else if (this.const_value != null)
+			return this.const_value.getConstValue();
+    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
 	public void resolveDecl() throws RuntimeException {

@@ -139,10 +139,8 @@ public class Env extends Struct {
 					Operator.cleanupMethod((Method)n);
 				cl.members.delAll();
 				cl.imported.delAll();
-				cl.attrs = Attr.emptyArray;
 			}
-			//if( !cl.isArgument() )
-				outer.addSubStruct((Struct)cl);
+			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated bytecode name "+name.bytecode_name+" of "+name.name);

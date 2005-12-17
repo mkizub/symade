@@ -7,8 +7,6 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.stdlib.*;
 
-import kiev.be.java.SourceFileAttr;
-
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
@@ -107,8 +105,6 @@ public class ASTNewExpression extends ENode {
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		clazz.addAttr(sfa);
 		if( sup.isInterface() ) {
 			clazz.super_type = Type.tpObject;
 			clazz.interfaces.add(new TypeRef(sup));

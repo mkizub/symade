@@ -6,8 +6,6 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.transf.*;
 
-import kiev.be.java.SourceFileAttr;
-
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -64,8 +62,6 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
 		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
-		SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-		clazz.addAttr(sfa);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 		clazz.super_type = Type.tpClosureClazz.type;

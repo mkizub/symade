@@ -97,7 +97,7 @@ public class Bytecoder implements Constants {
 		for(int i=0; i < attrs.length; i++) {
 			Attr at = readAttr(bcclazz.attrs[i],bcclazz);
 			if( at != null ) {
-				cl.addAttr(at);
+				cl.getJStructView().addAttr(at);
 			}
 		}
 		ProcessVirtFld tp = (ProcessVirtFld)Kiev.getProcessor(Kiev.Ext.VirtualFields);
@@ -156,7 +156,7 @@ public class Bytecoder implements Constants {
 			if( at == null ) continue;
 			if( at.name.equals(attrExceptions) ) {
 				if( m != null )
-					m.addAttr(at);
+					m.getJMethodView().addAttr(at);
 				else
 					attrs = (Attr[])Arrays.append(attrs,at);
 			}
@@ -201,7 +201,7 @@ public class Bytecoder implements Constants {
 				for(int i=0; i < conditions.length; i++)
 					m.conditions[i].definer = m;
 			}
-			m.attrs = attrs;
+			m.getJMethodView().attrs = attrs;
 		} else {
 			trace(Kiev.debugBytecodeRead,"read2 method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 		}
@@ -368,8 +368,7 @@ public class Bytecoder implements Constants {
 		}
 		else if( name.equals(attrConstantValue) ) {
 			kiev.bytecode.ConstantValueAttribute ca = (kiev.bytecode.ConstantValueAttribute)bca;
-			ConstExpr ce = ConstExpr.fromConst(ca.getValue(bcclazz));
-			a = new ConstantValueAttr(ce);
+			a = new ConstantValueAttr(ca.getValue(bcclazz));
 		}
 		else if( name.equals(attrRequire) || name.equals(attrEnsure) ) {
 			kiev.bytecode.KievContractAttribute kca = (kiev.bytecode.KievContractAttribute)bca;
@@ -509,7 +508,6 @@ public class Bytecoder implements Constants {
 	/** Write class
 	 */
 	public byte[] writeClazz() {
-		Struct jcl = cl;
 	    bcclazz = new kiev.bytecode.Clazz();
 
 	    // Constant pool
@@ -521,12 +519,12 @@ public class Bytecoder implements Constants {
 		bcclazz.flags = cl.getJavaFlags();
 
 		// This class name
-		KString cl_sig = jcl.type.getJType().java_signature;
+		KString cl_sig = cl.type.getJType().java_signature;
 		trace(Kiev.debugBytecodeGen,"note: class "+cl+" class signature = "+cl_sig);
 		bcclazz.cp_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(cl_sig).pos];
 	    // This class's superclass name
 	    if( cl.super_type != null ) {
-		    KString sup_sig = jcl.super_type.getJType().java_signature;
+		    KString sup_sig = cl.super_type.getJType().java_signature;
 		    bcclazz.cp_super_clazz = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(sup_sig).pos];
 		} else {
 			bcclazz.cp_super_clazz = null;
@@ -534,7 +532,7 @@ public class Bytecoder implements Constants {
 
 	    bcclazz.cp_interfaces = new kiev.bytecode.ClazzPoolConstant[cl.interfaces.length];
 		for(int i=0; i < cl.interfaces.length; i++) {
-		    KString interf_sig = jcl.interfaces[i].getJType().java_signature;
+		    KString interf_sig = cl.interfaces[i].getJType().java_signature;
 			bcclazz.cp_interfaces[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(interf_sig).pos];
 		}
 
@@ -559,12 +557,13 @@ public class Bytecoder implements Constants {
 		}
 
 	    // Number of class attributes
+		JStructView jcl = cl.getJStructView();
 		int len = 0;
-		foreach(Attr a; cl.attrs; !a.isKiev) len++;
+		foreach(Attr a; jcl.attrs; !a.isKiev) len++;
 		bcclazz.attrs = new kiev.bytecode.Attribute[len];
-		for(int i=0, j=0; i < cl.attrs.length; i++) {
-			if( cl.attrs[i].isKiev ) continue;
-			bcclazz.attrs[j++] = writeAttr(cl.attrs[i]);
+		for(int i=0, j=0; i < jcl.attrs.length; i++) {
+			if( jcl.attrs[i].isKiev ) continue;
+			bcclazz.attrs[j++] = writeAttr(jcl.attrs[i]);
 		}
 		return bcclazz.writeClazz();
 	}
@@ -675,9 +674,10 @@ public class Bytecoder implements Constants {
 		bcf.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(tp.java_signature).pos];
 		bcf.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		bcf.attrs = new kiev.bytecode.Attribute[f.attrs.length];
-		for(int i=0; i < f.attrs.length; i++)
-			bcf.attrs[i] = writeAttr(f.attrs[i]);
+		JFieldView jf = f.getJFieldView();
+		bcf.attrs = new kiev.bytecode.Attribute[jf.attrs.length];
+		for(int i=0; i < jf.attrs.length; i++)
+			bcf.attrs[i] = writeAttr(jf.attrs[i]);
 		return bcf;
 	}
 
@@ -689,9 +689,10 @@ public class Bytecoder implements Constants {
 		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
-		bcm.attrs = new kiev.bytecode.Attribute[m.attrs.length];
-		for(int i=0; i < m.attrs.length; i++)
-			bcm.attrs[i] = writeAttr(m.attrs[i]);
+		JMethodView jm = m.getJMethodView();
+		bcm.attrs = new kiev.bytecode.Attribute[jm.attrs.length];
+		for(int i=0; i < jm.attrs.length; i++)
+			bcm.attrs[i] = writeAttr(jm.attrs[i]);
 		return bcm;
     }
 

@@ -7,6 +7,8 @@ import kiev.stdlib.*;
 import kiev.transf.*;
 import java.io.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
 import kiev.be.java.JFileUnitView;
 
 import static kiev.stdlib.Debug.*;
@@ -46,6 +48,8 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public NodeView			getNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
 	public FileUnitView		getFileUnitView()	{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
 	public JFileUnitView	getJFileUnitView()	{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
 
 	@att public abstract virtual 				KString					filename;
@@ -260,7 +264,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(DNode n; members; n instanceof Struct) ((Struct)n).cleanup();
+		foreach(DNode n; members; n instanceof Struct) ((Struct)n).getJStructView().cleanup();
 		bodies.delAll();
 	}
 

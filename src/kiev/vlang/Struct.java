@@ -10,9 +10,6 @@ import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;
 import kiev.be.java.JTypeDefView;
 import kiev.be.java.JStructView;
-import kiev.be.java.Attr;
-import kiev.be.java.SourceFileAttr;
-import kiev.be.java.ConstantValueAttr;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -49,7 +46,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		@ref public Struct						typeinfo_clazz;
 		@ref public NArr<Struct>				sub_clazz;
 		@ref public NArr<DNode>					imported;
-		     public Attr[]						attrs = Attr.emptyArray;
+		public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<DNode>					members;
 
 		public void callbackChildChanged(AttrSlot attr) {
@@ -88,7 +85,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public				Struct				typeinfo_clazz;
 		public access:ro	NArr<Struct>		sub_clazz;
 		public access:ro	NArr<DNode>			imported;
-		public				Attr[]				attrs;
 		public access:ro	NArr<DNode>			members;
 
 		@setter public final void set$acc(Access val) { this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
@@ -297,15 +293,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	/** Array of imported classes,fields and methods */
 	@ref public abstract virtual access:ro	NArr<DNode>					imported;
 
-	/** Array of attributes of this structure */
-	     public abstract virtual			Attr[]						attrs;
-	
 	/** Array of methods defined in this structure */
 	@att public abstract virtual access:ro	NArr<DNode>					members;
 	
-	/** JClass for java backend */
-	//@ref public kiev.backend.java15.JClass			jclass;
-
 	@getter public Access				get$acc()					{ return this.getStructView().acc; }
 	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
 	@getter public BaseType				get$type()					{ return this.getStructView().type; }
@@ -317,7 +307,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@getter public Struct				get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
 	@getter public NArr<Struct>			get$sub_clazz()				{ return this.getStructView().sub_clazz; }
 	@getter public NArr<DNode>			get$imported()				{ return this.getStructView().imported; }
-	@getter public Attr[]				get$attrs()					{ return this.getStructView().attrs; }
 	@getter public NArr<DNode>			get$members()				{ return this.getStructView().members; }
 	@getter public BaseType				get$super_type()			{ return this.getStructView().super_type; }
 
@@ -328,7 +317,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@setter public void set$super_bound(TypeRef val)		{ this.getStructView().super_bound = val; }
 	@setter public void set$package_clazz(Struct val)		{ this.getStructView().package_clazz = val; }
 	@setter public void set$typeinfo_clazz(Struct val)		{ this.getStructView().typeinfo_clazz = val; }
-	@setter public void set$attrs(Attr[] val)				{ this.getStructView().attrs = val; }
 	@setter public void set$super_type(BaseType val) 		{ this.getStructView().super_type = val; }
 
 	
@@ -740,33 +728,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		return null;
 	}
 
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-//		if( !(a.name==attrOperator || a.name==attrImport
-//			|| a.name==attrRequire || a.name==attrEnsure) ) {
-			for(int i=0; i < attrs.length; i++) {
-				if(attrs[i].name == a.name) {
-					attrs[i] = a;
-					return a;
-				}
-			}
-//		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		if( attrs != null )
-			for(int i=0; i < attrs.length; i++)
-				if( attrs[i].name.equals(name) )
-					return attrs[i];
-		return null;
-	}
-
-	/** Add information about new sub structure, this class (package)
-		containes
-	 */
+	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {
 		// Check we already have this sub-class
 		for(int i=0; i < sub_clazz.length; i++) {
@@ -852,12 +814,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public Struct addCase(Struct cas) {
 		setHasCases(true);
 		int caseno = 0;
-//		PizzaCaseAttr case_attr = null;
 		foreach (DNode n; members; n instanceof Struct && ((Struct)n).isPizzaCase()) {
 			Struct s = (Struct)n;
-//			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-//			if( case_attr!=null && case_attr.caseno > caseno )
-//				caseno = case_attr.caseno;
 			MetaPizzaCase meta = s.getMetaPizzaCase();
 			if (meta != null && meta.getTag() > caseno)
 				caseno = meta.getTag();
@@ -869,14 +827,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		meta.setTag(caseno + 1);
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
-//		case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-//		if( case_attr == null ) {
-//			case_attr = new PizzaCaseAttr();
-//			cas.addAttr(case_attr);
-//		}
-//		case_attr.caseno = caseno + 1;
-//		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "
-//			+this+" as case # "+case_attr.caseno);
 		return cas;
 	}
 
@@ -1307,8 +1257,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							);
 							members.add(defaults);
 							defaults.setResolved(true);
-							SourceFileAttr sfa = new SourceFileAttr(Kiev.curFile);
-							defaults.addAttr(sfa);
 							Type[] tarr = type.args;
 							defaults.type = Type.newRefType(defaults, tarr);
 							defaults.super_type = Type.tpObject;
@@ -1387,20 +1335,10 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Field f = (Field)n;
 				if (f.init == null)
 					continue;
-				if( f.init.isConstantExpr() && f.init.getConstValue() == null )
+				if (f.isConstantExpr())
+					f.const_value = ConstExpr.fromConst(f.getConstValue());
+				if (f.init.isConstantExpr() && f.isStatic())
 					continue;
-				if( f.isStatic() && f.init.isConstantExpr() ) {
-					// Attribute may already be assigned (see resolveFinalFields)
-					if( f.getAttr(attrConstantValue) == null ) {
-						ConstantValueAttr a;
-						if( f.init instanceof ConstExpr )
-							a = new ConstantValueAttr((ConstExpr)f.init);
-						else
-							a = new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()));
-						f.addAttr(a);
-					}
-					continue;
-				}
 				if( f.isStatic() ) {
 					if( class_init == null )
 						class_init = getClazzInitMethod();
@@ -2105,13 +2043,13 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public void checkIntegrity() {
 	}
 
-	public ASTNode resolveFinalFields(boolean cleanup) {
+	public ASTNode resolveFinalFields() {
 		trace(Kiev.debugResolve,"Resolving final fields for class "+name);
 		// Resolve final values of class's fields
 		foreach (ASTNode n; members; n instanceof Field) {
 			Field f = (Field)n;
 			if( f == null || f.init == null ) continue;
-			if( /*f.isStatic() &&*/ f.init != null ) {
+			if( f.init != null ) {
 				try {
 					f.init.resolve(f.type);
 					if (f.init instanceof TypeRef)
@@ -2127,18 +2065,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				trace(Kiev.debugResolve && f.init!= null && f.init.isConstantExpr(),
 						(f.isStatic()?"Static":"Instance")+" fields: "+name+"::"+f.name+" = "+f.init);
 			}
-			if( cleanup && !f.isFinal() && f.init!=null && !f.init.isConstantExpr() ) {
-				f.init = null;
-			}
-			if( f.isStatic() && f.init!=null && f.init.isConstantExpr() && f.init.getConstValue()!=null ) {
-				if( f.getAttr(attrConstantValue) != null )
-					f.addAttr(new ConstantValueAttr(ConstExpr.fromConst(f.init.getConstValue()) ));
-			}
 		}
 		// Process inner classes and cases
 		if( !isPackage() ) {
 			for(int i=0; sub_clazz!=null && i < sub_clazz.length; i++) {
-				sub_clazz[i].resolveFinalFields(cleanup);
+				sub_clazz[i].resolveFinalFields();
 			}
 		}
 		return this;
@@ -2197,7 +2128,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	}
 	
 	public final boolean mainResolveIn(TransfProcessor proc) {
-		this.resolveFinalFields(false);
+		this.resolveFinalFields();
 		return !isLocal();
 	}
 	
@@ -2249,16 +2180,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				n.resolveDecl();
 			}
 			
-//			if( type.args != null && type.args.length > 0 && !(type instanceof ClosureType) ) {
-//				ClassArgumentsAttr a = new ClassArgumentsAttr();
-//				short[] argno = new short[type.args.length];
-//				for(int j=0; j < type.args.length; j++) {
-//					argno[j] = (short)j; // ((Argument)type.args[j].clazz).argno;
-//				}
-//				a.args = type.args;
-//				a.argno = argno;
-//				addAttr(a);
-//			}
 			// Autogenerate hidden args for initializers of local class
 			if( isLocal() ) {
 				Field[] proxy_fields = Field.emptyArray;
@@ -2414,39 +2335,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
-	}
-
-	public void cleanup() {
-		if( !isPackage() ) {
-			foreach (Struct sub; sub_clazz)
-					sub.cleanup();
-		}
-
-		foreach (ASTNode n; members; n instanceof Field) {
-			Field f = (Field)n;
-			f.attrs = Attr.emptyArray;
-		}
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
-			Attr[] ats = m.attrs;
-			m.attrs = Attr.emptyArray;
-			for(int j=0; j < ats.length; j++) {
-				if( ats[j].name.equals(attrExceptions) )
-					m.addAttr(ats[j]);
-			}
-		}
-		Attr[] ats = this.attrs;
-		this.attrs = Attr.emptyArray;
-		for(int j=0; j < ats.length; j++) {
-			if( ats[j].name.equals(attrSourceFile)
-//			||	ats[j].name.equals(attrPizzaCase)
-//			||	ats[j].name.equals(attrEnum)
-//			||	ats[j].name.equals(attrRequire)
-//			||	ats[j].name.equals(attrEnsure)
-			)
-				addAttr(ats[j]);
-		}
-		//typeinfo_related = null;
 	}
 
 	public boolean setBody(ENode body) {

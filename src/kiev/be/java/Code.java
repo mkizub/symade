@@ -1555,7 +1555,7 @@ public final class Code implements Constants {
 
 
 	public void generateCode() {
-		this.method.addAttr(generateCodeAttr(0));
+		this.method.getJMethodView().addAttr(generateCodeAttr(0));
 	}
 
 	public void generateCode(WBCCondition wbc) {

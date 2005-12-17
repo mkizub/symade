@@ -22,15 +22,29 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	public access:ro	NodeName			name;
 	public access:ro	TypeRef				ftype;
 	public access:ro	ENode				init;
-	public access:ro	Attr[]				attrs;
+	public				Attr[]				attrs;
 	public access:ro	NArr<Method>		invs;
 	
-	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
+	public final Field getField() { return (Field)this.getNode(); }
 	
+	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
+
 	public final boolean isVirtual()		{ return this.$view.is_fld_virtual; }
 	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
 	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
 	public final boolean isPackedField()	{ return this.$view.is_fld_packed; }
+
+	public Attr addAttr(Attr a) {
+		// Check we already have this attribute
+		for(int i=0; i < attrs.length; i++) {
+			if(attrs[i].name == a.name) {
+				attrs[i] = a;
+				return a;
+			}
+		}
+		attrs = (Attr[])Arrays.append(attrs,a);
+		return a;
+	}
 
 	public Attr getAttr(KString name) {
 		Attr[] attrs = this.attrs;
