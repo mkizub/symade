@@ -233,7 +233,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner()) {
-				f.getField().setPrivate(false);
+				f.setPrivate(false);
 			}
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
@@ -259,7 +259,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 				m.generate(constPool);
 
 				if( m.isAccessedFromInner()) {
-					m.getMethod().setPrivate(false);
+					m.setPrivate(false);
 				}
 
 				JWBCConditionView[] conditions = m.conditions;

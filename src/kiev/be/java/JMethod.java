@@ -23,6 +23,10 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
+	public MetaThrows getMetaThrows() {
+		return (MetaThrows)this.meta.get(MetaThrows.NAME);
+	}
+
 	public JVarView	getRetVar() {
 		if( this.$view.retvar == null )
 			this.$view.retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
@@ -58,9 +62,9 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	@getter public JMethodView get$child_jctx_method() { return this; }
 
-	public FormPar getOuterThisParam() { return getMethod().getOuterThisParam(); }
-	public FormPar getTypeInfoParam() { return getMethod().getTypeInfoParam(); }
-	public FormPar getVarArgParam() { return getMethod().getVarArgParam(); }
+	public JVarView getOuterThisParam() { return (JVarView)this.getMethod().getOuterThisParam(); }
+	public JVarView getTypeInfoParam() { return (JVarView)this.getMethod().getTypeInfoParam(); }
+	public JVarView getVarArgParam() { return (JVarView)this.getMethod().getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
 		return body.getBreakLabel();
@@ -160,7 +164,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 				Kiev.reportError(this,e);
 			}
 		}
-		MetaThrows throwns = getMethod().getMetaThrows();
+		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
 			ASTNode[] mthrs = throwns.getThrowns();
         	Type[] thrs = new Type[mthrs.length];

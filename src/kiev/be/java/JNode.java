@@ -57,6 +57,8 @@ public view JNodeView of NodeImpl implements Constants {
 	@getter public final boolean isResolved() { return this.$view.is_resolved; }
 	@getter public final boolean isHidden() { return this.$view.is_hidden; }
 	@getter public final boolean isBad() { return this.$view.is_bad; }
+
+    public final int getPosLine() { return pos >>> 11; }
 }
 
 @nodeview
@@ -82,6 +84,13 @@ public view JDNodeView of DNodeImpl extends JNodeView {
 	public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
 
 	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
+
+	public void setPrivate(boolean on) {
+		trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
+		flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+		if( on ) flags |= ACC_PRIVATE;
+		this.$view.callbackChildChanged(ASTNode.nodeattr$flags);
+	}
 }
 
 @nodeview
@@ -122,6 +131,13 @@ public view JENodeView of ENodeImpl extends JNodeView {
 	public final boolean isAutoReturnable() { return this.$view.is_stat_auto_returnable; }
 	public final boolean isBreakTarget() { return this.$view.is_stat_break_target; }
 
+	public final void setAutoReturnable(boolean on) {
+		if (this.$view.is_stat_auto_returnable != on) {
+			this.$view.is_stat_auto_returnable = on;
+			this.$view.callbackChildChanged(ASTNode.nodeattr$flags);
+		}
+	}
+	
 	public Type getType() { return this.getNode().getType(); }
 	
 	public boolean isConstantExpr() { return false; }
@@ -133,7 +149,6 @@ public view JENodeView of ENodeImpl extends JNodeView {
 		Dumper dmp = new Dumper();
 		dmp.append(this);
 		throw new CompilerException(this,"Unresolved node ("+this.getNode().getClass()+") generation, expr: "+dmp);
-		//this.getENode().generate(code, reqType);
 	}
 
 }

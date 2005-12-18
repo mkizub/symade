@@ -26,7 +26,6 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 	
 	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJENodeView(); }
 	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
-	@setter public final void	set$temp_expr(JENodeView val)	{ this.$view.temp_expr = val==null? null : val.getENode(); }
 
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating NewExpr: "+this);
@@ -69,7 +68,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		// Constructor call args (first args 'this' skipped)
 		if( outer != null )
 			outer.generate(code,null);
-		if (func.getMethod().getTypeInfoParam() != null) {
+		if (func.getTypeInfoParam() != null) {
 			// Create static field for this type typeinfo
 			temp_expr = jctx_clazz.accessTypeInfoField(this,type);
 			temp_expr.generate(code,null);
@@ -78,17 +77,16 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
 		if( type.isLocalClazz() ) {
-			Struct cl = ((BaseType)type).clazz;
-			foreach (ASTNode n; cl.members; n instanceof Field) {
-				Field f = (Field)n;
+			JStructView cl = ((BaseType)type).clazz.getJStructView();
+			foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
+				JFieldView f = (JFieldView)n;
 				if( !f.isNeedProxy() ) continue;
-				Var v = ((LVarExpr)f.init).getVar();
-				code.addInstr(Instr.op_load,v.getJVarView());
+				JVarView v = ((JLVarExprView)f.init).var;
+				code.addInstr(Instr.op_load,v);
 			}
 		}
 		code.addInstr(op_call,func,false,type);
 	}
-
 }
 
 

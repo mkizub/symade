@@ -60,7 +60,7 @@ public final view JWhileStatView of WhileStatImpl extends JLoopStatView {
 			code.addInstr(Instr.op_goto,lblcnt.label);
 			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
-				body.getENode().setAutoReturnable(true);
+				body.setAutoReturnable(true);
 			body.generate(code,Type.tpVoid);
 			lblcnt.generate(code,Type.tpVoid);
 
@@ -94,7 +94,7 @@ public final view JDoWhileStatView of DoWhileStatImpl extends JLoopStatView {
 // Differ from WhileStat in this:	code.addInstr(Instr.op_goto,continue_label);
 			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
-				body.getENode().setAutoReturnable(true);
+				body.setAutoReturnable(true);
 			body.generate(code,Type.tpVoid);
 			lblcnt.generate(code,Type.tpVoid);
 
@@ -150,7 +150,7 @@ public final view JForStatView of ForStatImpl extends JLoopStatView {
 
 			code.addInstr(Instr.set_label,body_label);
 			if( isAutoReturnable() )
-				body.getENode().setAutoReturnable(true);
+				body.setAutoReturnable(true);
 			body.generate(code,Type.tpVoid);
 
 			lblcnt.generate(code,Type.tpVoid);

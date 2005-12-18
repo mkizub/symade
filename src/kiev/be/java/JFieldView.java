@@ -22,6 +22,7 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	public access:ro	KString				name;
 	public access:ro	Type				ftype;
 	public access:ro	JENodeView			init;
+	public access:ro	JConstExprView		const_value;
 	public				Attr[]				attrs;
 	public access:ro	JMethodView[]		invs;
 	
@@ -54,6 +55,23 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 			if( attrs[i].name.equals(name) )
 				return attrs[i];
 		return null;
+	}
+
+	public boolean	isConstantExpr() {
+		if( this.isFinal() ) {
+			if (this.init != null && this.init.isConstantExpr())
+				return true;
+			else if (this.const_value != null)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
+		else if (this.const_value != null)
+			return this.const_value.getConstValue();
+    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
 }

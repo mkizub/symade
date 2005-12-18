@@ -206,12 +206,12 @@ public final view JIfElseStatView of IfElseStatImpl extends JENodeView {
 				JENodeView cond = this.cond;
 				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
 					if( isAutoReturnable() )
-						thenSt.getENode().setAutoReturnable(true);
+						thenSt.setAutoReturnable(true);
 					thenSt.generate(code,Type.tpVoid);
 				}
 				else if( elseSt != null ) {
 					if( isAutoReturnable() )
-						elseSt.getENode().setAutoReturnable(true);
+						elseSt.setAutoReturnable(true);
 					elseSt.generate(code,Type.tpVoid);
 				}
 			} else {

@@ -140,7 +140,7 @@ public final class Code implements Constants {
 	public void popStackPos() {};
 
 	public void setLinePos(JNodeView nv) {
-		this.setLinePos(nv.getNode().getPosLine());
+		this.setLinePos(nv.getPosLine());
 	}
 	
 	public void setLinePos(int lineno) {

@@ -22,8 +22,6 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 
 	@getter public final JENodeView[]		get$args()	{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
-	@setter public final void		set$temp_expr(JENodeView val)	{ this.$view.temp_expr = val==null?null:val.getENode(); }
-	
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
@@ -61,7 +59,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		}
 		JENodeView[] args = this.args;
 		int i = 0;
-		if( func.getNode() instanceof RuleMethod ) {
+		if( func.isRuleMethod() ) {
 			// Very special case for rule call from inside of RuleMethod
 			JNodeView p = (JNodeView)this.jparent;
 			if (p instanceof JAssignExprView
@@ -95,23 +93,23 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 		}
 		else {
-			if( func.name.equals(nameInit) && func.getMethod().getOuterThisParam() != null) {
-				FormPar fp = code.method.getOuterThisParam();
+			if( func.name.equals(nameInit) && func.getOuterThisParam() != null) {
+				JVarView fp = code.method.getOuterThisParam();
 				if (fp == null) {
 					Kiev.reportError(this, "Cannot find outer this parameter");
 					code.addNullConst();
 				} else {
-					code.addInstr(Instr.op_load,fp.getJVarView());
+					code.addInstr(Instr.op_load,fp);
 				}
 			}
-			if( func.name.equals(nameInit) && func.getMethod().getTypeInfoParam() != null) {
+			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 				JMethodView mmm = jctx_method;
-				Type tp = mmm.jctx_clazz.getNode() != func.jctx_clazz.getNode() ? jctx_clazz.super_type : jctx_clazz.type;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
 				assert(mmm.name.equals(nameInit));
 				assert(tp.args.length > 0);
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
-					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam()).getJENodeView();
+					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJENodeView();
 				else
 					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
 				temp_expr.generate(code,null);
@@ -275,8 +273,6 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	@getter public final ClosureType	get$ctype()				{ return (ClosureType)this.$view.expr.getType(); }
 	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 	
-	public ClosureCallExpr getClosureCallExpr() { return (ClosureCallExpr)this.getNode(); }
-
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ClosureCallExpr: "+this);
 		code.setLinePos(this);
@@ -296,7 +292,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_call,getMethodFor(ctype.args[i].getJType()),false);
 			}
 		}
-		JMethodView call_it = getClosureCallExpr().getCallIt(ctype).getJMethodView();
+		JMethodView call_it = getCallIt(ctype);
 		// Check if we need to call
 		if( is_a_call ) {
 			if( call_it.type.ret == Type.tpRule /*env_access != null*/ )
@@ -313,6 +309,19 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		}
 	}
 
+	public JMethodView getCallIt(ClosureType tp) {
+		KString call_it_name;
+		KString call_it_sign;
+		if( tp.ret.isReference() ) {
+			call_it_name = KString.from("call_Object");
+			call_it_sign = KString.from("()Ljava/lang/Object;");
+		} else {
+			call_it_name = KString.from("call_"+tp.ret);
+			call_it_sign = KString.from("()"+tp.ret.signature);
+		}
+		return tp.clazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
+	}
+	
 	static final KString sigZ = KString.from("(Z)Lkiev/stdlib/closure;");
 	static final KString sigC = KString.from("(C)Lkiev/stdlib/closure;");
 	static final KString sigB = KString.from("(B)Lkiev/stdlib/closure;");

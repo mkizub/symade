@@ -267,7 +267,7 @@ public final view JTryStatView of TryStatImpl extends JENodeView {
 		try {
 			try {
 				if( isAutoReturnable() )
-					body.getENode().setAutoReturnable(true);
+					body.setAutoReturnable(true);
 				body.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
@@ -287,7 +287,7 @@ public final view JTryStatView of TryStatImpl extends JENodeView {
 
 			for(int i=0; i < catchers.length; i++) {
 				if( isAutoReturnable() )
-					catchers[i].getENode().setAutoReturnable(true);
+					catchers[i].setAutoReturnable(true);
 				try {
 					catchers[i].generate(code,Type.tpVoid);
 				} catch(Exception e ) {
@@ -332,7 +332,7 @@ public final view JSynchronizedStatView of SynchronizedStatImpl extends JENodeVi
 			code.addInstr(Instr.start_catcher,code_catcher);
 			try {
 				if( isAutoReturnable() )
-					body.getENode().setAutoReturnable(true);
+					body.setAutoReturnable(true);
 				body.generate(code,Type.tpVoid);
 			} catch(Exception e ) {
 				Kiev.reportError(this,e);
@@ -374,7 +374,7 @@ public final view JWithStatView of WithStatImpl extends JENodeView {
 			if (expr instanceof JAssignExprView)
 				expr.generate(code,Type.tpVoid);
 			if( isAutoReturnable() )
-				body.getENode().setAutoReturnable(true);
+				body.setAutoReturnable(true);
 			body.generate(code,Type.tpVoid);
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

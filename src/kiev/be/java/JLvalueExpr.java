@@ -61,8 +61,8 @@ public abstract view JAccessExprView of AccessExprImpl extends JLvalueExprView {
 public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 
-	public boolean	isConstantExpr() { return var.getField().isConstantExpr(); }
-	public Object	getConstValue() { return var.getField().getConstValue(); }
+	public boolean	isConstantExpr() { return var.isConstantExpr(); }
+	public Object	getConstValue() { return var.getConstValue(); }
 
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
@@ -472,8 +472,8 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 	public access:ro	JFieldView		var;
 	
-	public boolean	isConstantExpr() { return var.getField().isConstantExpr(); }
-	public Object	getConstValue() { return var.getField().getConstValue(); }
+	public boolean	isConstantExpr() { return var.isConstantExpr(); }
+	public Object	getConstValue() { return var.getConstValue(); }
 
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);

@@ -478,8 +478,8 @@ public abstract class ConstExpr extends ENode {
 		}
 	}
 
-	public abstract ConstExprView			getConstExprView();
-	public abstract JConstExprView			getJConstExprView();
+	public abstract ConstExprView			getConstExprView() alias operator(210,fy,$cast);
+	public abstract JConstExprView			getJConstExprView() alias operator(210,fy,$cast);
 
 	public ConstExpr(ConstExprImpl impl) {
 		super(impl);
