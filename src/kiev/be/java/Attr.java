@@ -40,16 +40,16 @@ public class Attr implements Constants {
 
 public class CodeAttr extends Attr {
 
-	public Method	method;
-	public int		max_stack;
-	public int		max_locals;
-	CodeCatchInfo[]	catchers;
-	Attr[]			code_attrs;
-	public byte[]	bcode;
-	public CP[]		constants;
-	public int[]	constants_pc;
+	public JMethodView	method;
+	public int			max_stack;
+	public int			max_locals;
+	CodeCatchInfo[]		catchers;
+	Attr[]				code_attrs;
+	public byte[]		bcode;
+	public CP[]			constants;
+	public int[]		constants_pc;
 
-	public CodeAttr(Method m, int max_st,int max_locs, byte[] bcode,
+	public CodeAttr(JMethodView m, int max_st,int max_locs, byte[] bcode,
 			CodeCatchInfo[] catchers, Attr[] code_attrs) {
 		super(attrCode);
 		this.method = m;
@@ -157,8 +157,8 @@ public class LocalVarTableAttr extends Attr {
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < vars.length; i++) {
-			Var v = vars[i].var;
-			constPool.addAsciiCP(v.name.name);
+			JVarView v = vars[i].var;
+			constPool.addAsciiCP(v.name);
 			constPool.addAsciiCP(v.type.getJType().java_signature);
 		}
 	}
@@ -169,13 +169,13 @@ public class LocalVarTableAttr extends Attr {
 		int len = vars.length;
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
-			Var v = vars[i].var;
+			JVarView v = vars[i].var;
 			KString sign = v.type.getJType().java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
 			lvta.vars[i].length_pc = vars[i].end_pc-vars[i].start_pc;
-			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.name.name).pos];
+			lvta.vars[i].cp_varname = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(v.name).pos];
 			lvta.vars[i].cp_signature = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(sign).pos];
 			lvta.vars[i].slot = vars[i].stack_pos;
 		}
@@ -240,15 +240,15 @@ public class ExceptionsAttr extends Attr {
 public class InnerClassesAttr extends Attr {
 
 	/** Line number table (see Code class for format description) */
-	public Struct[]		inner;
-	public Struct[]		outer;
-	public short[]		acc;
+	public JStructView[]		inner;
+	public JStructView[]		outer;
+	public short[]				acc;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public InnerClassesAttr() {
 		super(attrInnerClasses);
-		inner = new Struct[0];
-		outer = new Struct[0];
+		inner = new JStructView[0];
+		outer = new JStructView[0];
 		acc = new short[0];
 	}
 
@@ -256,10 +256,10 @@ public class InnerClassesAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				constPool.addClazzCP(((Type)inner[i].type).getJType().java_signature);
+				constPool.addClazzCP(inner[i].type.getJType().java_signature);
 			}
 			if( outer[i] != null ) {
-				constPool.addClazzCP(((Type)outer[i].type).getJType().java_signature);
+				constPool.addClazzCP(outer[i].type.getJType().java_signature);
 			}
 		}
 	}
@@ -274,13 +274,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).getJType().java_signature).pos];
+				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].type.getJType().java_signature).pos];
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)outer[i].type).getJType().java_signature).pos];
+				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(outer[i].type.getJType().java_signature).pos];
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(((Type)inner[i].type).getJType().java_signature).asc.pos];
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].type.getJType().java_signature).asc.pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}

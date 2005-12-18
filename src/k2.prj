@@ -19,6 +19,7 @@ kiev.be.java.CodeLabel kiev/be/java/CodeLabel kiev\be\java\CodeSupport.java
 kiev.be.java.CodeLookupSwitch kiev/be/java/CodeLookupSwitch kiev\be\java\CodeSupport.java
 kiev.be.java.CodeSwitch kiev/be/java/CodeSwitch kiev\be\java\CodeSupport.java
 kiev.be.java.CodeTableSwitch kiev/be/java/CodeTableSwitch kiev\be\java\CodeSupport.java
+kiev.be.java.CodeVar kiev/be/java/CodeVar kiev\be\java\CodeSupport.java
 kiev.be.java.ConstPool kiev/be/java/ConstPool kiev\be\java\ConstPool.java
 kiev.be.java.ConstantValueAttr kiev/be/java/ConstantValueAttr kiev\be\java\Attr.java
 kiev.be.java.ContractAttr kiev/be/java/ContractAttr kiev\be\java\Attr.java
@@ -423,7 +424,6 @@ kiev.vlang.ClosureCallExpr.ClosureCallExprImpl kiev/vlang/ClosureCallExpr$Closur
 kiev.vlang.ClosureCallExpr.ClosureCallExprView kiev/vlang/ClosureCallExpr$ClosureCallExprView kiev\vlang\CallExpr.java
 kiev.vlang.ClosureCallExpr.DFI kiev/vlang/ClosureCallExpr$DFI kiev\vlang\CallExpr.java
 kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java
-kiev.vlang.CodeVar kiev/vlang/CodeVar kiev\vlang\Var.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprImpl kiev/vlang/CommaExpr$CommaExprImpl kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprView kiev/vlang/CommaExpr$CommaExprView kiev\vlang\Expr.java

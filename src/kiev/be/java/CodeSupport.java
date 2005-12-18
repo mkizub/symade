@@ -1,7 +1,9 @@
 package kiev.be.java;
 
 import kiev.*;
-import kiev.vlang.*;
+
+import kiev.vlang.Type;
+import kiev.vlang.Constants;
 
 import static kiev.stdlib.Debug.*;
 
@@ -10,6 +12,25 @@ import static kiev.stdlib.Debug.*;
  * @version $Revision$
  *
  */
+
+public class CodeVar {
+
+	public JVarView		var;
+	public int			stack_pos = -1;
+	public int			start_pc = -1;
+	public int			end_pc = -1;
+	public int			index = 0;
+
+	public CodeVar(JVarView var) {
+		this.var = var;
+		stack_pos = var.bcpos;
+	}
+
+	public String toString() {
+		return "("+stack_pos+","+index+","+start_pc+","+end_pc+")";
+	}
+
+}
 
 public class CodeLabel implements Constants {
 	public static CodeLabel[] emptyArray = new CodeLabel[0];

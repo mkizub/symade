@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-2000, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev;
 
 import kiev.stdlib.*;
@@ -26,6 +6,7 @@ import kiev.vlang.*;
 import kiev.parser.*;
 import kiev.transf.*;
 import kiev.be.java.Code;
+import kiev.be.java.JNodeView;
 
 
 /**
@@ -55,6 +36,9 @@ public final class Kiev {
 	}
 	
    	public static void reportError(ASTNode.NodeView from, Throwable e) {
+		reportError(from.getNode(),e);
+	}
+   	public static void reportError(JNodeView from, Throwable e) {
 		reportError(from.getNode(),e);
 	}
 	
@@ -135,6 +119,9 @@ public final class Kiev {
 	}
 	
    	public static void reportError(ASTNode.NodeView from, String msg) {
+		reportError(from.getNode(),msg);
+	}
+   	public static void reportError(JNodeView from, String msg) {
 		reportError(from.getNode(),msg);
 	}
 	
@@ -225,7 +212,7 @@ public final class Kiev {
 		if (nowarn)
 			return;
 		if( debug && verbose) new Exception().printStackTrace(System.out);
-		report(code.last_lineno<<11, code.clazz.ctx_file_unit, code.clazz, code.method, SeverError.Warning, msg);
+		report(code.last_lineno<<11, code.clazz.jctx_file_unit.getFileUnit(), code.clazz.getStruct(), code.method.getMethod(), SeverError.Warning, msg);
 	}
 	
 	public static void reportWarning(String msg) {

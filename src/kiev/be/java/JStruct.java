@@ -23,21 +23,20 @@ import kiev.vlang.Struct.StructImpl;
 @nodeview
 public final view JStructView of StructImpl extends JTypeDefView {
 
-	final Struct getStruct() { return this.$view.getStruct(); }
+	public final Struct getStruct() { return this.$view.getStruct(); }
 
 	public access:ro	Access				acc;
 	public access:ro	ClazzName			name;
 	public access:ro	BaseType			type;
-	public access:ro	Struct				package_clazz;
-	public access:ro	Struct				typeinfo_clazz;
-	public access:ro	NArr<Struct>		sub_clazz;
-	public access:ro	NArr<DNode>			imported;
+	public access:ro	JStructView[]		sub_clazz;
 	public				Attr[]				attrs;
-	public access:ro	NArr<DNode>			members;
+	public access:ro	JDNodeView[]		members;
 
-	public final Type[]		get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
-	public final Type[]		get$args()			{ return this.$view.args.toTypeArray(); }
-	public final BaseType	get$super_type()	{ return getStruct().super_type; }
+	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
+	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
+	public final BaseType		get$super_type()	{ return getStruct().super_type; }
+	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
+	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 
 	public final boolean isClazz()					{ return !isPackage() && !isInterface() && ! isArgument(); }
 	public final boolean isPackage()				{ return this.$view.is_struct_package; }
@@ -58,6 +57,8 @@ public final view JStructView of StructImpl extends JTypeDefView {
 
 	@getter public JStructView get$child_jctx_clazz() { return this; }
 
+	public boolean checkResolved() { return getStruct().checkResolved(); }
+	
 	/** Add information about new attribute that belongs to this class */
 	public Attr addAttr(Attr a) {
 		// Check we already have this attribute
@@ -83,12 +84,95 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		return getStruct().accessTypeInfoField(from.getNode(), t).getJENodeView();
 	}
 	
+	public boolean instanceOf(JStructView cl) {
+		if( cl == null ) return false;
+		if( this.equals(cl) ) return true;
+		if( super_type != null && super_type.clazz.getJStructView().instanceOf(cl) )
+			return true;
+		if( cl.isInterface() ) {
+			for(int i=0; i < interfaces.length; i++) {
+				if( interfaces[i].getStruct().getJStructView().instanceOf(cl) ) return true;
+			}
+		}
+		return false;
+	}
+
+	public JFieldView resolveField(KString name) {
+		return resolveField(name,this,true);
+	}
+
+	public JFieldView resolveField(KString name, boolean fatal) {
+		return resolveField(name,this,fatal);
+	}
+
+	private JFieldView resolveField(KString name, JStructView where, boolean fatal) {
+		this.checkResolved();
+		foreach(JDNodeView n; members; n instanceof JFieldView) {
+			JFieldView f = (JFieldView)n;
+			if (f.name == name)
+				return f;
+		}
+		if( super_type != null )
+			return super_type.getStruct().getJStructView().resolveField(name,where,fatal);
+		if (fatal)
+			throw new RuntimeException("Unresolved field "+name+" in class "+where);
+		return null;
+	}
+
+	public JMethodView resolveMethod(KString name, KString sign) {
+		return resolveMethod(name,sign,this,true);
+	}
+
+	public JMethodView resolveMethod(KString name, KString sign, boolean fatal) {
+		return resolveMethod(name,sign,this,fatal);
+	}
+
+	private JMethodView resolveMethod(KString name, KString sign, JStructView where, boolean fatal) {
+		this.checkResolved();
+		foreach (JDNodeView n; members; n instanceof JMethodView) {
+			JMethodView m = (JMethodView)n;
+			if( m.name.equals(name) && m.type.signature.equals(sign))
+				return m;
+		}
+		if( isInterface() ) {
+			JStructView defaults = null;
+			foreach(JDNodeView n; members; n instanceof JStructView && ((JStructView)n).isClazz() && ((JStructView)n).name.short_name.equals(nameIdefault) ) {
+				defaults = (JStructView)n;
+				break;
+			}
+			if( defaults != null ) {
+				foreach (JDNodeView n; defaults.members; n instanceof JMethodView) {
+					JMethodView m = (JMethodView)n;
+					if( m.name.equals(name) && m.type.signature.equals(sign))
+						return m;
+				}
+			}
+		}
+		trace(Kiev.debugResolve,"Method "+name+" with signature "
+			+sign+" unresolved in class "+this);
+		JMethodView m = null;
+		if( super_type != null )
+			m = super_type.getJStruct().resolveMethod(name,sign,where,fatal);
+		if( m != null ) return m;
+		foreach(Type interf; interfaces) {
+			m = interf.getJStruct().resolveMethod(name,sign,where,fatal);
+			if( m != null ) return m;
+		}
+		if (fatal)
+			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
+		return null;
+	}
+
 	void generate() {
 		//if( Kiev.verbose ) System.out.println("[ Generating cls "+this+"]");
 		if( Kiev.safe && isBad() ) return;
+		
+		JStructView[] sub_clazz = this.sub_clazz;
+		JDNodeView[] members = this.members;
+		
 		if( !isPackage() ) {
-			foreach (Struct sub; sub_clazz)
-				sub.getJStructView().generate();
+			foreach (JStructView sub; sub_clazz)
+				sub.generate();
 		}
 
 		ConstPool constPool = new ConstPool();
@@ -105,10 +189,10 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			constPool.addClazzCP(this.interfaces[i].getJType().java_signature);
 		}
 		if( !isPackage() ) {
-			for(int i=0; i < this.sub_clazz.length; i++) {
-				this.sub_clazz[i].checkResolved();
-				constPool.addClazzCP(this.sub_clazz[i].type.signature);
-				constPool.addClazzCP(this.sub_clazz[i].type.getJType().java_signature);
+			foreach (JStructView sub; sub_clazz) {
+				sub.checkResolved();
+				constPool.addClazzCP(sub.type.signature);
+				constPool.addClazzCP(sub.type.getJType().java_signature);
 			}
 		}
 		
@@ -124,12 +208,12 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		
 		if( !isPackage() && sub_clazz.length > 0 ) {
 			InnerClassesAttr a = new InnerClassesAttr();
-			Struct[] inner = new Struct[sub_clazz.length];
-			Struct[] outer = new Struct[sub_clazz.length];
+			JStructView[] inner = new JStructView[sub_clazz.length];
+			JStructView[] outer = new JStructView[sub_clazz.length];
 			short[] inner_access = new short[sub_clazz.length];
 			for(int j=0; j < sub_clazz.length; j++) {
 				inner[j] = sub_clazz[j];
-				outer[j] = this.getStruct();
+				outer[j] = this;
 				inner_access[j] = sub_clazz[j].getJavaFlags();
 				constPool.addClazzCP(inner[j].type.signature);
 			}
@@ -142,9 +226,9 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		if (meta.size() > 0) this.addAttr(new RVMetaAttr(meta));
 		
 		for(int i=0; attrs!=null && i < attrs.length; i++) attrs[i].generate(constPool);
-		foreach (ASTNode n; members; n instanceof Field) {
-			JFieldView f = ((Field)n).getJFieldView();
-			constPool.addAsciiCP(f.name.name);
+		foreach (JDNodeView n; members; n instanceof JFieldView) {
+			JFieldView f = (JFieldView)n;
+			constPool.addAsciiCP(f.name);
 			constPool.addAsciiCP(f.type.signature);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
@@ -158,14 +242,14 @@ public final view JStructView of StructImpl extends JTypeDefView {
 					f.addAttr(new ConstantValueAttr(co));
 			}
 
-			for(int j=0; f.attrs != null && j < f.attrs.length; j++)
-				f.attrs[j].generate(constPool);
+			foreach (Attr a; f.attrs)
+				a.generate(constPool);
 		}
-		foreach (ASTNode m; members; m instanceof Method)
-			((Method)m).type.checkJavaSignature();
-		foreach (ASTNode n; members; n instanceof Method) {
-			JMethodView m = ((Method)n).getJMethodView();
-			constPool.addAsciiCP(m.name.name);
+		foreach (JDNodeView m; members; m instanceof JMethodView)
+			((JMethodView)m).type.checkJavaSignature();
+		foreach (JDNodeView n; members; n instanceof JMethodView) {
+			JMethodView m = (JMethodView)n;
+			constPool.addAsciiCP(m.name);
 			constPool.addAsciiCP(m.type.signature);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.jtype != null )
@@ -178,42 +262,41 @@ public final view JStructView of StructImpl extends JTypeDefView {
 					m.getMethod().setPrivate(false);
 				}
 
-				for(int j=0; j < m.conditions.length; j++) {
-					if( m.conditions[j].definer == m ) {
-						m.addAttr(m.conditions[j].code_attr);
+				JWBCConditionView[] conditions = m.conditions;
+				for(int j=0; j < conditions.length; j++) {
+					if( conditions[j].definer.equals(m) ) {
+						m.addAttr(conditions[j].code_attr);
 					}
 				}
 
 				if (m.meta.size() > 0) m.addAttr(new RVMetaAttr(m.meta));
-				boolean has_pmeta = false; 
-				foreach (Var p; m.params; p.meta != null && m.meta.size() > 0) {
+				boolean has_pmeta = false;
+				JVarView[] params = m.params;
+				foreach (JVarView p; params; p.meta != null && m.meta.size() > 0)
 					has_pmeta = true;
-				}
 				if (has_pmeta) {
 					MetaSet[] mss;
-					mss = new MetaSet[m.params.length];
+					mss = new MetaSet[params.length];
 					for (int i=0; i < mss.length; i++)
-						mss[i] = m.params[i].meta;
+						mss[i] = params[i].meta;
 					m.addAttr(new RVParMetaAttr(mss));
 				}
 				if (m.annotation_default != null)
 					m.addAttr(new DefaultMetaAttr(m.annotation_default));
 
-				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate(constPool);
-				}
+				foreach (Attr a; m.attrs)
+					a.generate(constPool);
 			} catch(Exception e ) {
 				Kiev.reportError(m,"Compilation error: "+e);
 				m.generate(constPool);
-				for(int j=0; m.attrs!=null && j < m.attrs.length; j++) {
-					m.attrs[j].generate(constPool);
-				}
+				foreach (Attr a; m.attrs)
+					a.generate(constPool);
 			}
 			if( Kiev.safe && isBad() ) return;
 		}
 		constPool.generate();
-		foreach (ASTNode n; members; n instanceof Method) {
-			JMethodView m = ((Method)n).getJMethodView();
+		foreach (JDNodeView n; members; n instanceof JMethodView) {
+			JMethodView m = (JMethodView)n;
 			CodeAttr ca = (CodeAttr)m.getAttr(attrCode);
 			if( ca != null ) {
 				trace(Kiev.debugInstrGen," generating refs for CP for method "+this+"."+m);
@@ -258,15 +341,15 @@ public final view JStructView of StructImpl extends JTypeDefView {
 
 	public void cleanup() {
 		if( !isPackage() ) {
-			foreach (Struct sub; sub_clazz)
-				sub.getJStructView().cleanup();
+			foreach (JStructView sub; this.sub_clazz)
+				sub.cleanup();
 		}
 
-		foreach (ASTNode n; members) {
-			if (n instanceof Field)
-				((Field)n).getJFieldView().attrs = Attr.emptyArray;
-			else if (n instanceof Method)
-				((Method)n).getJMethodView().attrs = Attr.emptyArray;
+		foreach (JDNodeView n; this.members) {
+			if (n instanceof JFieldView)
+				((JFieldView)n).attrs = Attr.emptyArray;
+			else if (n instanceof JMethodView)
+				((JMethodView)n).attrs = Attr.emptyArray;
 		}
 		this.attrs = Attr.emptyArray;
 	}

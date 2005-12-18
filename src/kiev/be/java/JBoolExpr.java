@@ -2,10 +2,8 @@ package kiev.be.java;
 
 import kiev.Kiev;
 import kiev.CError;
-import kiev.stdlib.*;
+
 import kiev.vlang.*;
-import kiev.transf.*;
-import kiev.parser.*;
 
 import static kiev.be.java.Instr.*;
 import static kiev.stdlib.Debug.*;
@@ -20,7 +18,7 @@ import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
 
 @nodeview
 public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements IBoolExpr {
-	public JBoolExprView(BoolExpr.BoolExprImpl $view) {
+	public JBoolExprView(BoolExprImpl $view) {
 		super($view);
 		this.$view = $view;
 	}

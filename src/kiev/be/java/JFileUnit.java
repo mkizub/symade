@@ -31,6 +31,8 @@ public final view JFileUnitView of FileUnitImpl extends JDNodeView {
 
 	@getter public JFileUnitView get$jctx_file_unit() { return this; }
 
+	public final FileUnit getFileUnit() { return (FileUnit)this.getNode(); }
+	
 	public void generate() {
 		long curr_time = 0L, diff_time = 0L;
 		KString cur_file = Kiev.curFile;

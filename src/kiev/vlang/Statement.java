@@ -193,12 +193,12 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@getter public NArr<ENode>		get$stats()				{ return this.getBlockStatView().stats; }
 
-	public NodeView				getNodeView()			{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public BlockStatView		getBlockStatView()		{ return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
-	public JBlockStatView		getJBlockStatView()		{ return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public BlockStatView		getBlockStatView()		alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public JBlockStatView		getJBlockStatView()		alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
 	
 	public BlockStat() {
 		super(new BlockStatImpl());

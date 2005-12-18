@@ -36,6 +36,12 @@ public final view JVarView of VarImpl extends JLvalDNodeView {
 	public final boolean isVarThis()			{ return this.$view.is_var_this; }
 	public final boolean isVarSuper()			{ return this.$view.is_var_super; }
 
+	public void set$bcpos(int pos) {
+		if( pos < 0 || pos > 255)
+			throw new RuntimeException("Bad bytecode position specified: "+pos);
+		this.$view.bcpos = pos;
+	}
+
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating Var declaration");
 		//assert (parent instanceof BlockStat || parent instanceof ExprStat || parent instanceof ForInit);
@@ -43,10 +49,10 @@ public final view JVarView of VarImpl extends JLvalDNodeView {
 		try {
 			if( init != null ) {
 				init.generate(code,this.type);
-				code.addVar(getVar());
+				code.addVar(this);
 				code.addInstr(Instr.op_store,this);
 			} else {
-				code.addVar(getVar());
+				code.addVar(this);
 			}
 		} catch(Exception e ) {
 			Kiev.reportError(this,e);

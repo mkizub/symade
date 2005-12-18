@@ -20,11 +20,16 @@ import kiev.vlang.TypeDef.TypeDefImpl;
 import kiev.vlang.TypeRef.TypeRefImpl;
 
 @nodeview
-public view JNodeView of NodeImpl extends ASTNode.NodeView {
-	public JNodeView(NodeImpl $view) {
-		super($view);
-	}
-	@getter public final JNodeView get$jparent() { return (JNodeView)this.parent; }
+public view JNodeView of NodeImpl implements Constants {
+	
+	public final ASTNode getNode() { return this.$view._self; }
+	public String toString() { return String.valueOf(this.$view._self); }
+	public Dumper toJava(Dumper dmp) { return getNode().toJava(dmp); }
+	
+	public access:ro	int			pos;
+//	public access:ro	int			compileflags;
+	
+	@getter public final JNodeView get$jparent() { return (JNodeView)this.$view.parent; }
 	@getter public JFileUnitView get$jctx_file_unit() { return this.jparent.get$jctx_file_unit(); }
 	@getter public JStructView get$jctx_clazz() { return this.jparent.child_jctx_clazz; }
 	@getter public JStructView get$child_jctx_clazz() { return this.jparent.get$child_jctx_clazz(); }
@@ -48,6 +53,10 @@ public view JNodeView of NodeImpl extends ASTNode.NodeView {
 		return jnv1.$view != jnv2.$view;
 	}
 	
+	@getter public final boolean isAccessedFromInner() { return this.$view.is_accessed_from_inner; }
+	@getter public final boolean isResolved() { return this.$view.is_resolved; }
+	@getter public final boolean isHidden() { return this.$view.is_hidden; }
+	@getter public final boolean isBad() { return this.$view.is_bad; }
 }
 
 @nodeview
@@ -72,6 +81,7 @@ public view JDNodeView of DNodeImpl extends JNodeView {
 	public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
 	public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
 
+	public short getJavaFlags() { return (short)(flags & JAVA_ACC_MASK); }
 }
 
 @nodeview

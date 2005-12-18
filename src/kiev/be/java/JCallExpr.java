@@ -27,9 +27,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf((Struct)func.parent) ) {
+		if( !ot.isStructInstanceOf(func.jctx_clazz.getStruct()) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
-			code.addInstr(Instr.op_checkcast,((Struct)func.parent).type);
+			code.addInstr(Instr.op_checkcast,func.jctx_clazz.type);
 		}
 	}
 
@@ -39,8 +39,8 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		func.acc.verifyReadAccess(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
-		if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
-			String fname = func.name.name.toString().toLowerCase();
+		if( func.jctx_clazz.type.isInstanceOf(Type.tpDebug) ) {
+			String fname = func.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 && !Kiev.debugOutputA ) return;
 			if( fname.indexOf("trace") >= 0 && !Kiev.debugOutputT ) return;
 		}
@@ -63,17 +63,18 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		int i = 0;
 		if( func.getNode() instanceof RuleMethod ) {
 			// Very special case for rule call from inside of RuleMethod
-			if (parent instanceof AssignExpr
-				&& ((AssignExpr)parent).op == AssignOperator.Assign
-				&& ((AssignExpr)parent).lval.getType() == Type.tpRule
+			JNodeView p = (JNodeView)this.jparent;
+			if (p instanceof JAssignExprView
+				&& ((JAssignExprView)p).op == AssignOperator.Assign
+				&& ((JAssignExprView)p).lval.getType() == Type.tpRule
 				)
-				((AssignExpr)parent).lval.getJENodeView().generate(code,null);
+				((JAssignExprView)p).lval.generate(code,null);
 			else
 				code.addNullConst();
 		}
-		else if( ((Struct)func.parent).type.isInstanceOf(Type.tpDebug) ) {
+		else if( func.jctx_clazz.type.isInstanceOf(Type.tpDebug) ) {
 			int mode = 0;
-			String fname = func.name.name.toString().toLowerCase();
+			String fname = func.name.toString().toLowerCase();
 			if( fname.indexOf("assert") >= 0 ) mode = 1;
 			else if( fname.indexOf("trace") >= 0 ) mode = 2;
 			if( mode > 0 && args.length > 0 && args[0].getType().isBoolean() ) {
@@ -140,9 +141,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
-			if( func.parent != Type.tpObject.clazz )
+			if( func.jctx_clazz.type != Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
-			if( func.name.name == nameObjEquals ) {
+			if( func.name == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
 				CodeLabel label_false = code.newLabel();
 				code.addInstr(Instr.op_ifcmpeq,label_true);
@@ -152,13 +153,13 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addConst(1);
 				code.addInstr(Instr.set_label,label_false);
 			}
-			else if( func.name.name == nameObjGetClass ) {
+			else if( func.name == nameObjGetClass ) {
 				BaseType reft = Type.getRefTypeForPrimitive(objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);
 			}
-			else if( func.name.name == nameObjHashCode ) {
+			else if( func.name == nameObjHashCode ) {
 				switch(objt.signature.byteAt(0)) {
 				case 'Z':
 					{
@@ -187,7 +188,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					break;
 				case 'F':
 					{
-					Method m = Type.tpFloatRef.clazz.resolveMethod(
+					JMethodView m = Type.tpFloatRef.getJStruct().resolveMethod(
 						KString.from("floatToIntBits"),
 						KString.from("(F)I")
 						);
@@ -196,7 +197,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					break;
 				case 'D':
 					{
-					Method m = Type.tpDoubleRef.clazz.resolveMethod(
+					JMethodView m = Type.tpDoubleRef.getJStruct().resolveMethod(
 						KString.from("doubleToLongBits"),
 						KString.from("(D)J")
 						);
@@ -210,10 +211,10 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					break;
 				}
 			}
-			else if( func.name.name == nameObjClone ) {
+			else if( func.name == nameObjClone ) {
 				// Do nothing ;-)
 			}
-			else if( func.name.name == nameObjToString ) {
+			else if( func.name == nameObjToString ) {
 				KString sign = null;
 				switch(objt.signature.byteAt(0)) {
 				case 'Z':
@@ -237,7 +238,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 					sign = KString.from("(D)Ljava/lang/String;");
 					break;
 				}
-				Method m = Type.tpString.clazz.resolveMethod(
+				JMethodView m = Type.tpString.getJStruct().resolveMethod(
 					KString.from("valueOf"),sign);
 				code.addInstr(op_call,m,false);
 			}
@@ -245,7 +246,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 		}
 		else
-			code.addInstr(op_call,func.getMethod(),isSuperExpr(),obj.getType());
+			code.addInstr(op_call,func,isSuperExpr(),obj.getType());
 		if( null_cast_label != null ) {
 			code.stack_pop();
 			code.stack_push(Type.tpNull);
@@ -285,7 +286,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		JENodeView[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
-			Method clone_it = ctype.clazz.resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+			JMethodView clone_it = ctype.getJStruct().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
 				code.addInstr(op_checkcast,Type.tpClosureClazz.type);
@@ -295,7 +296,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_call,getMethodFor(ctype.args[i].getJType()),false);
 			}
 		}
-		Method call_it = getClosureCallExpr().getCallIt(ctype);
+		JMethodView call_it = getClosureCallExpr().getCallIt(ctype).getJMethodView();
 		// Check if we need to call
 		if( is_a_call ) {
 			if( call_it.type.ret == Type.tpRule /*env_access != null*/ )
@@ -321,7 +322,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 	static final KString sigF = KString.from("(F)Lkiev/stdlib/closure;");
 	static final KString sigD = KString.from("(D)Lkiev/stdlib/closure;");
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Lkiev/stdlib/closure;");
-	public Method getMethodFor(JType tp) {
+	public JMethodView getMethodFor(JType tp) {
 		KString sig = null;
 		switch(tp.java_signature.byteAt(0)) {
 		case 'B': sig = sigB; break;
@@ -338,7 +339,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		case '&':
 		case 'R': sig = sigObj; break;
 		}
-		Method m = Type.tpClosureClazz.resolveMethod(KString.from("addArg"),sig);
+		JMethodView m = Type.tpClosureClazz.getJStructView().resolveMethod(KString.from("addArg"),sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;

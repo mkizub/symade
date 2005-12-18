@@ -74,7 +74,7 @@ public abstract class ASTNode implements Constants {
 		public		ASTNode			_self;		
 		public		int				pos;
 		public		int				compileflags;
-		protected	ASTNode			parent;
+		public		ASTNode			parent;
 		protected	AttrSlot		pslot;
 		protected	ASTNode			pprev;
 		protected	ASTNode			pnext;
@@ -1448,6 +1448,15 @@ public class CompilerException extends RuntimeException {
 		this.from = from.getNode();
 	}
 	public CompilerException(ASTNode.NodeView from, CError err_id, String msg) {
+		super(msg);
+		this.from = from.getNode();
+		this.err_id = err_id;
+	}
+	public CompilerException(JNodeView from, String msg) {
+		super(msg);
+		this.from = from.getNode();
+	}
+	public CompilerException(JNodeView from, CError err_id, String msg) {
 		super(msg);
 		this.from = from.getNode();
 		this.err_id = err_id;

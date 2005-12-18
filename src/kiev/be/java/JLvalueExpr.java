@@ -67,8 +67,8 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf((Struct)var.parent) )
-			code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
+		if( !ot.isStructInstanceOf(var.jctx_clazz.getStruct()) )
+			code.addInstr(Instr.op_checkcast,var.jctx_clazz.type);
 	}
 
 	public void generateLoad(Code code) {
@@ -159,7 +159,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			obj.generate(code,null);
 			index.generate(code,null);
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func,false,obj.getType());
+			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
@@ -204,7 +204,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
-			code.addInstr(Instr.op_call,(Method)v,false,objType);
+			code.addInstr(Instr.op_call,v.getJMethodView(),false,objType);
 			// Pop return value
 			code.addInstr(Instr.op_pop);
 		}
@@ -231,7 +231,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func,false,obj.getType());
+			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
@@ -253,7 +253,7 @@ public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
 		if (!code.method.isStatic())
 			code.addInstrLoadThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_load,code.method.params[0].getJVarView());
+			code.addInstr(op_load,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			code.addNullConst();
@@ -266,7 +266,7 @@ public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
 		if (!code.method.isStatic())
 			code.addInstrLoadThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_load,code.method.params[0].getJVarView());
+			code.addInstr(op_load,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			code.addNullConst();
@@ -284,7 +284,7 @@ public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
 		if (!code.method.isStatic())
 			code.addInstrStoreThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_store,code.method.params[0].getJVarView());
+			code.addInstr(op_store,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			code.addInstr(op_pop);
@@ -298,7 +298,7 @@ public final view JThisExprView of ThisExprImpl extends JLvalueExprView {
 		if (!code.method.isStatic())
 			code.addInstrStoreThis();
 		else if (code.method.isStatic() && code.method.isVirtualStatic())
-			code.addInstr(op_store,code.method.params[0].getJVarView());
+			code.addInstr(op_store,code.method.params[0]);
 		else {
 			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 			code.addInstr(op_pop);
@@ -313,30 +313,30 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	public access:ro	JVarView	var;
 
 	public JFieldView resolveProxyVar(Code code) {
-		Field proxy_var = code.clazz.resolveField(this.ident,false);
+		JFieldView proxy_var = code.clazz.resolveField(this.ident,false);
 		if( proxy_var == null && code.method.isStatic() && !code.method.isVirtualStatic() )
 			throw new CompilerException(this,"Proxyed var cannot be referenced from static context");
-		return proxy_var.getJFieldView();
+		return proxy_var;
 	}
 
 	public JFieldView resolveVarVal() {
 		BaseType prt = Type.getProxyType(var.type);
-		Field var_valf = prt.clazz.resolveField(nameCellVal);
-		return var_valf.getJFieldView();
+		JFieldView var_valf = prt.clazz.getJStructView().resolveField(nameCellVal);
+		return var_valf;
 	}
 
 	public JVarView resolveVarForConditions(Code code) {
 		assert( code.cond_generation );
-		Var var = this.var.getVar();
+		JVarView var = this.var;
 		// Bind the correct var
-		if( var.parent != code.method ) {
-			assert( var.parent instanceof Method, "Non-parametrs var in condition" );
+		if( !var.jparent.equals(code.method) ) {
+			assert( var.jparent instanceof JMethodView, "Non-parametrs var in condition" );
 			if( this.ident==nameResultVar ) {
 				var = code.method.getRetVar();
 			} else {
 				for(int i=0; i < code.method.params.length; i++) {
-					Var v = code.method.params[i];
-					if( !v.name.equals(var.name) ) continue;
+					JVarView v = code.method.params[i];
+					if( v.name != var.name ) continue;
 					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
 					var = v;
 					break;
@@ -344,18 +344,19 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			}
 			trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
 		}
-		assert( var.parent == code.method, "Can't find var for condition" );
-		return var.getJVarView();
+		assert( var.jparent.equals(code.method), "Can't find var for condition" );
+		return var;
 	}
 
 	public void generateVerifyCheckCast(Code code) {
 		if( !Kiev.verify ) return;
 		if( !var.type.isReference() || var.type.isArray() ) return;
 		Type chtp = null;
-		if( var.parent instanceof Method ) {
-			Method m = (Method)var.parent;
-			for(int i=0; i < m.params.length; i++) {
-				if( var == m.params[i] ) {
+		if( var.jparent instanceof JMethodView ) {
+			JMethodView m = (JMethodView)var.jparent;
+			JVarView[] params = m.params;
+			for(int i=0; i < params.length; i++) {
+				if( var == params[i] ) {
 					chtp = m.jtype.args[i];
 					break;
 				}

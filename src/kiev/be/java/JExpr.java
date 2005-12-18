@@ -194,7 +194,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 	static final KString sigObj = KString.from("(Ljava/lang/Object;)Ljava/lang/StringBuffer;");
 	static final KString sigStr = KString.from("(Ljava/lang/String;)Ljava/lang/StringBuffer;");
 	static final KString sigArrC = KString.from("([C)Ljava/lang/StringBuffer;");
-	public Method getMethodFor(JENodeView expr) {
+	public JMethodView getMethodFor(JENodeView expr) {
 		JType t = expr.getType().getJType();
 		KString sig = null;
 		switch(t.java_signature.byteAt(0)) {
@@ -225,7 +225,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for StringBuffer");
-		return m;
+		return m.getJMethodView();
 	}
 
 
@@ -235,12 +235,12 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		JENodeView[] args = this.args;
 		code.addInstr(op_new,clazzStringBuffer.type);
 		code.addInstr(op_dup);
-		code.addInstr(op_call,clazzStringBufferInit,false);
+		code.addInstr(op_call,clazzStringBufferInit.getJMethodView(),false);
 		for(int i=0; i < args.length; i++) {
 			args[i].generate(code,null);
 			code.addInstr(op_call,getMethodFor(args[i]),false);
 		}
-		code.addInstr(op_call,clazzStringBufferToString,false);
+		code.addInstr(op_call,clazzStringBufferToString.getJMethodView(),false);
 		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -285,10 +285,10 @@ public view JBlockExprView of BlockExprImpl extends JENodeView {
 				Kiev.reportError(res,e);
 			}
 		}
-		Vector<Var> vars = new Vector<Var>();
+		Vector<JVarView> vars = new Vector<JVarView>();
 		foreach (JENodeView n; stats) {
 			if (n instanceof JVarDeclView)
-				vars.append(n.var.getVar());
+				vars.append(n.var);
 		}
 		code.removeVars(vars.toArray());
 	}

@@ -307,8 +307,8 @@ public class Bytecoder implements Constants {
 		else if( name.equals(attrInnerClasses) ) {
 			kiev.bytecode.InnerClassesAttribute ica = (kiev.bytecode.InnerClassesAttribute)bca;
 			int elen = ica.cp_inners.length;
-			Struct[] inner = new Struct[elen];
-			Struct[] outer = new Struct[elen];
+			JStructView[] inner = new JStructView[elen];
+			JStructView[] outer = new JStructView[elen];
 			KString[] inner_name = new KString[elen];
 			short[] access = new short[elen];
 			for(int i=0; i < elen; i++) {
@@ -316,7 +316,7 @@ public class Bytecoder implements Constants {
 					ClazzName cn;
 					if( ica.cp_outers[i] != null ) {
 						cn = ClazzName.fromBytecodeName(ica.getOuterName(i,clazz),false);
-						outer[i] = Env.getStruct(cn);
+						outer[i] = Env.getStruct(cn).getJStructView();
 						if( outer[i] == null )
 							throw new RuntimeException("Class "+cn+" not found");
 					} else {
@@ -338,13 +338,13 @@ public class Bytecoder implements Constants {
 						if (anon || cn.package_name() != cl.name.name) {
 							inner[i] == null;
 						} else {
-							inner[i] = Env.getStruct(cn);
+							inner[i] = Env.getStruct(cn).getJStructView();
 							if( inner[i] == cl ) {
 								Kiev.reportWarning("Class "+cl+" is inner for itself");
 							} else {
 								if( inner[i] == null )
 									throw new RuntimeException("Class "+cn+" not found");
-								cl.members.addUniq(inner[i]);
+								cl.members.addUniq(inner[i].getStruct());
 							}
 						}
 					} else {

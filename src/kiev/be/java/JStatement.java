@@ -38,7 +38,7 @@ public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeVi
 			generateArgumentCheck(code);
 		foreach (ParamRedir redir; params_redir)
 			redir.old_var.getJVarView().bcpos = redir.new_var.getJVarView().bcpos;
-		method.body.getJENodeView().generate(code,reqType);
+		method.body.generate(code,reqType);
 	}
 
 	public void generateArgumentCheck(Code code) {
@@ -70,15 +70,16 @@ public final view JBlockStatView of BlockStatImpl extends JENodeView {
 				Kiev.reportError(stats[i],e);
 			}
 		}
-		Vector<Var> vars = new Vector<Var>();
+		Vector<JVarView> vars = new Vector<JVarView>();
 		foreach (JENodeView n; stats) {
 			if (n instanceof JVarDeclView)
-				vars.append(n.var.getVar());
+				vars.append(n.var);
 		}
 		code.removeVars(vars.toArray());
-		if( parent instanceof Method && Kiev.debugOutputC
-		 && code.need_to_gen_post_cond && ((Method)parent).type.ret != Type.tpVoid) {
-			code.stack_push(((Method)parent).type.ret);
+		JNodeView p = this.jparent;
+		if( p instanceof JMethodView && Kiev.debugOutputC
+		 && code.need_to_gen_post_cond && ((JMethodView)p).type.ret != Type.tpVoid) {
+			code.stack_push(((JMethodView)p).type.ret);
 		}
 		code.addInstr(Instr.set_label,break_label);
 	}
@@ -133,41 +134,41 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 	}
 
 	public static void generateReturn(Code code, JNodeView from) {
-		Var tmp_var = null;
+		JVarView tmp_var = null;
 		for(JNodeView node = from; node != null; node = node.jparent) {
 			if (node instanceof JMethodView)
 				break;
 			else if (node instanceof JFinallyInfoView) {
-				assert (node.parent instanceof TryStat);
+				assert (node.jparent instanceof JTryStatView);
 				node = node.jparent; // skip TryStat that is parent of FinallyInfo
 				continue;
 			}
 			else if (node instanceof JTryStatView) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
+						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
 						code.addVar(tmp_var);
-						code.addInstr(Instr.op_store,tmp_var.getJVarView());
+						code.addInstr(Instr.op_store,tmp_var);
 					}
 					code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 				}
 			}
 			else if (node instanceof JSynchronizedStatView) {
 				if( tmp_var==null /*&& Kiev.verify*/ && code.method.type.ret != Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0);
+					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
 					code.addVar(tmp_var);
-					code.addInstr(Instr.op_store,tmp_var.getJVarView());
+					code.addInstr(Instr.op_store,tmp_var);
 				}
 				code.addInstr(Instr.op_load,node.expr_var);
 				code.addInstr(Instr.op_monitorexit);
 			}
 		}
 		if( tmp_var != null ) {
-			code.addInstr(Instr.op_load,tmp_var.getJVarView());
+			code.addInstr(Instr.op_load,tmp_var);
 			code.removeVar(tmp_var);
 		}
 		if( code.need_to_gen_post_cond ) {
-			code.addInstr(Instr.op_goto,code.method.getJMethodView().getBreakLabel());
+			code.addInstr(Instr.op_goto,code.method.getBreakLabel());
 			if( code.method.type.ret != Type.tpVoid )
 				code.stack_pop();
 		} else
@@ -244,7 +245,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 	public access:ro	JENodeView		message;
 
 	private KString getAssertMethodName() {
-		WBCCondition wbc = (WBCCondition)parent.parent;
+		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
 		switch( wbc.cond ) {
 		case WBCType.CondRequire:	return nameAssertRequireMethod;
 		case WBCType.CondEnsure:	return nameAssertEnsureMethod;
@@ -254,7 +255,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 	}
 
 	private KString getAssertMethodSignature() {
-		WBCCondition wbc = (WBCCondition)parent.parent;
+		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
 		if( wbc.name == null )
 			return nameAssertSignature;
 		else
@@ -262,9 +263,9 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 	}
 
 	private void generateAssertName(Code code) {
-		WBCCondition wbc = (WBCCondition)parent.parent;
+		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
 		if( wbc.name == null ) return;
-		code.addConst((KString)wbc.name.name);
+		code.addConst((KString)wbc.name);
 	}
 
 	public void generate(Code code, Type reqType) {
@@ -280,7 +281,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 					Method func = Type.tpDebug.clazz.resolveMethod(
 						getAssertMethodName(),
 						getAssertMethodSignature());
-					code.addInstr(Instr.op_call,func,false);
+					code.addInstr(Instr.op_call,func.getJMethodView(),false);
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
@@ -290,7 +291,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 				Method func = Type.tpDebug.clazz.resolveMethod(
 					getAssertMethodName(),
 					getAssertMethodSignature());
-				code.addInstr(Instr.op_call,func,false);
+				code.addInstr(Instr.op_call,func.getJMethodView(),false);
 				code.addInstr(Instr.set_label,else_label);
 			}
 		} catch(Exception e ) {
@@ -449,7 +450,7 @@ public final view JContinueStatView of ContinueStatImpl extends JENodeView {
 			throw new RuntimeException("Continue not within loop statement");
 		} else {
 			// Search for labels with loop statement
-			for(JNodeView node = this.parent.getJNodeView(); node != null; node = node.parent.getJNodeView()) {
+			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
 				if( node instanceof JTryStatView ) {
 					if( node.finally_catcher != null )
 						cl = (Object[])Arrays.append(cl,node.finally_catcher.subr_label);
@@ -566,7 +567,7 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 					expr.generate(code,null);
 			}
 
-			Var tmp_var = null;
+			JVarView tmp_var = null;
 			for(JNodeView node = this.jparent; node != null; node = node.jparent) {
 				if (node == sw)
 					break;
@@ -577,9 +578,9 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 				if (node instanceof JTryStatView) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
-							tmp_var = new Var(0,KString.Empty,expr.getType(),0);
+							tmp_var = new Var(0,KString.Empty,expr.getType(),0).getJVarView();
 							code.addVar(tmp_var);
-							code.addInstr(Instr.op_store,tmp_var.getJVarView());
+							code.addInstr(Instr.op_store,tmp_var);
 						}
 						code.addInstr(Instr.op_jsr,node.finally_catcher.subr_label);
 					}
@@ -590,7 +591,7 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 				}
 			}
 			if( tmp_var != null ) {
-				code.addInstr(Instr.op_load,tmp_var.getJVarView());
+				code.addInstr(Instr.op_load,tmp_var);
 				code.removeVar(tmp_var);
 			}
 			CodeLabel lb = null;

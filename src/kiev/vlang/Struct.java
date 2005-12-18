@@ -248,14 +248,14 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			this.$view.is_struct_bytecode = on;
 		}
 	}
-	public NodeView			getNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new StructView((StructImpl)this.$v_impl); }
-	public TypeDefView		getTypeDefView()	{ return new StructView((StructImpl)this.$v_impl); }
-	public StructView		getStructView()		{ return new StructView((StructImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JStructView((StructImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		{ return new JStructView((StructImpl)this.$v_impl); }
-	public JTypeDefView		getJTypeDefView()	{ return new JStructView((StructImpl)this.$v_impl); }
-	public JStructView		getJStructView()	{ return new JStructView((StructImpl)this.$v_impl); }
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
+	public TypeDefView		getTypeDefView()	alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
+	public StructView		getStructView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
+	public JTypeDefView		getJTypeDefView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
+	public JStructView		getJStructView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 
 	/** Variouse names of the class */
 	     public abstract virtual			ClazzName					name;

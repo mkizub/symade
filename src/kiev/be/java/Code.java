@@ -1,10 +1,11 @@
 package kiev.be.java;
 
 import kiev.*;
-import kiev.vlang.*;
 
-import kiev.be.java.JVarView;
-import kiev.be.java.JFieldView;
+import kiev.vlang.Type;
+import kiev.vlang.MethodType;
+import kiev.vlang.ClosureType;
+import kiev.vlang.Constants;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -18,10 +19,10 @@ import static kiev.be.java.Instr.*;
 public final class Code implements Constants {
 	
 	/** Current class we are generating */
-	public Struct			clazz;
+	public JStructView		clazz;
 	
 	/** Current method we are generating */
-	public Method			method;
+	public JMethodView		method;
 	
 	/** Current ConstPool of the class we are generating */
 	public ConstPool		constPool;
@@ -93,7 +94,7 @@ public final class Code implements Constants {
 	
 	public boolean			need_to_gen_post_cond;
 
-	public Code(Struct s, Method m, ConstPool cp) {
+	public Code(JStructView s, JMethodView m, ConstPool cp) {
 		clazz = s;
 		method = m;
 		constPool = cp;
@@ -138,7 +139,7 @@ public final class Code implements Constants {
 
 	public void popStackPos() {};
 
-	public void setLinePos(ASTNode.NodeView nv) {
+	public void setLinePos(JNodeView nv) {
 		this.setLinePos(nv.getNode().getPosLine());
 	}
 	
@@ -530,7 +531,7 @@ public final class Code implements Constants {
 
 	/** Call method. Find out args from method, check args's types
 	 */
-	private void generateCall(Method m, boolean super_flag, Type tp) {
+	private void generateCall(JMethodView m, boolean super_flag, Type tp) {
 		boolean call_static;
 		if( !m.isStatic() ) {
 			trace(Kiev.debugInstrGen,"\t\tgenerating non-static call to method: "+m);
@@ -553,19 +554,17 @@ public final class Code implements Constants {
 			}
 		}
 		KString sign;
-		Type ttt = Type.getRealType(tp,((Struct)m.parent).type);
+		Type ttt = Type.getRealType(tp,((JStructView)m.jparent).type);
 		sign = m.jtype.getJType().java_signature;
 		CP cpm;
-		if( ((Struct)m.parent).isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.getJType().java_signature,
-				m.name.name,sign);
+		if( m.jctx_clazz.isInterface() )
+			cpm = constPool.addInterfaceMethodCP(ttt.getJType().java_signature,m.name,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.getJType().java_signature,
-				m.name.name,sign);
+			cpm = constPool.addMethodCP(ttt.getJType().java_signature,m.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
-		else if( ((Struct)m.parent).isInterface() ) {
+		else if( ((JStructView)m.jparent).isInterface() ) {
 			add_opcode_and_CP(opc_invokeinterface,cpm);
 			int argslen = 1;
 			foreach(Type t; mtype.args) {
@@ -578,7 +577,7 @@ public final class Code implements Constants {
 				+(mtype.args==null?0:mtype.args.length)+" params");
 		}
 		else if(
-			m.name.equals(Struct.nameInit)
+			m.name.equals(Constants.nameInit)
 		 || super_flag
 		 || m.isPrivate()
 		 ) {
@@ -1001,11 +1000,10 @@ public final class Code implements Constants {
 	/** Add local var for this code.
 		For debug version automatically generates debug info
 	 */
-	public CodeVar addVar(JVarView v) { return this.addVar(v.getVar()); }
-	public CodeVar addVar(Var v) {
+	public CodeVar addVar(JVarView v) {
 		trace(Kiev.debugInstrGen,"Code add var "+v);
 		int pos = cur_locals;
-		v.setBCpos(pos);
+		v.bcpos = pos;
 		vars[pos] = new CodeVar(v);
 		vars[pos].start_pc = pc;
 		cur_locals++;
@@ -1021,23 +1019,22 @@ public final class Code implements Constants {
 
 	/** Remove local var for this code.
 	 */
-	public void removeVar(JVarView v) { this.removeVar(v.getVar()); }
-	public void removeVar(Var v) {
-		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.getBCpos()+" "+vars[v.getBCpos()]);
+	public void removeVar(JVarView v) {
+		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
 		Type t = v.type;
 		if( !v.name.equals(KString.Empty) ) {
-			lvta.vars[vars[v.getBCpos()].index].end_pc = pc-1;
+			lvta.vars[vars[v.bcpos].index].end_pc = pc-1;
 		}
 		if( t==Type.tpLong || t==Type.tpDouble ) {
-			if( v.getBCpos() != cur_locals-2 )
-				throw new RuntimeException("Removing var "+v+" at pos "+v.getBCpos()+" but last inserted var was "
+			if( v.bcpos != cur_locals-2 )
+				throw new RuntimeException("Removing var "+v+" at pos "+v.bcpos+" but last inserted var was "
 					+(vars[cur_locals-1]!=null?vars[cur_locals-1].var:vars[cur_locals-2].var)+" at pos "
 					+(vars[cur_locals-1]!=null?(cur_locals-2):(cur_locals-1)));
 			vars[--cur_locals] = null;
 			vars[--cur_locals] = null;
 		} else {
-			if( v.getBCpos() != cur_locals-1 )
-				throw new RuntimeException("Removing var "+v+" at pos "+v.getBCpos()+" but last inserted var was "
+			if( v.bcpos != cur_locals-1 )
+				throw new RuntimeException("Removing var "+v+" at pos "+v.bcpos+" but last inserted var was "
 					+(vars[cur_locals-1]!=null?vars[cur_locals-1].var:vars[cur_locals-2].var)+" at pos "
 					+(vars[cur_locals-1]!=null?(cur_locals-2):(cur_locals-1)));
 			vars[--cur_locals] = null;
@@ -1050,16 +1047,10 @@ public final class Code implements Constants {
 	public void addVars(JVarView[] v) {
 		for(int i=0; i < v.length; i++) addVar(v[i]);
 	}
-	public void addVars(Var[] v) {
-		for(int i=0; i < v.length; i++) addVar(v[i]);
-	}
 
 	/** Remove local vars for this code (i.e. on block end)
 	 */
 	public void removeVars(JVarView[] v) {
-		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
-	}
-	public void removeVars(Var[] v) {
 		for(int i=v.length-1; i >= 0; i--) removeVar(v[i]);
 	}
 
@@ -1271,10 +1262,10 @@ public final class Code implements Constants {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		Type ttt = Type.getRealType(tp.getInitialType(),((Struct)f.parent).type);
+		Type ttt = Type.getRealType(tp.getInitialType(),f.jctx_clazz.type);
 		KString struct_sig = ttt.getJType().java_signature;
-		KString field_sig = Type.getRealType(((Struct)f.parent).type,f.type).getJType().java_signature;
-		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name.name,field_sig);
+		KString field_sig = Type.getRealType(f.jctx_clazz.type,f.type).getJType().java_signature;
+		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
@@ -1359,12 +1350,12 @@ public final class Code implements Constants {
 
 	/** Add pseude-instruction with method call for this code.
 	 */
-	public void addInstr(Instr i, Method method, boolean super_flag) {
+	public void addInstr(Instr i, JMethodView method, boolean super_flag) {
 		addInstr(i,method,super_flag,method.type);
 	}
 	/** Add pseude-instruction with method call for this code.
 	 */
-	public void addInstr(Instr i, Method method, boolean super_flag, Type tp) {
+	public void addInstr(Instr i, JMethodView method, boolean super_flag, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+(super_flag?"super.":"")+method);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1381,7 +1372,7 @@ public final class Code implements Constants {
 
 	/** Add pseude-instruction with method reference for this code.
 	 */
-	public void addInstr(Instr i, Method method, int nargs, Type tp) {
+	public void addInstr(Instr i, JMethodView method, int nargs, Type tp) {
 		trace(Kiev.debugInstrGen,pc+": "+i+" -> "+method);
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
@@ -1555,10 +1546,10 @@ public final class Code implements Constants {
 
 
 	public void generateCode() {
-		this.method.getJMethodView().addAttr(generateCodeAttr(0));
+		this.method.addAttr(generateCodeAttr(0));
 	}
 
-	public void generateCode(WBCCondition wbc) {
+	public void generateCode(JWBCConditionView wbc) {
 		wbc.code_attr = generateCodeAttr(wbc.cond);
 	}
 

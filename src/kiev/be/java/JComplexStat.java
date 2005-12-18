@@ -35,7 +35,7 @@ public final view JCaseLabelView of CaseLabelImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		case_label = getLabel(code);
-		CodeSwitch cosw = ((SwitchStat)this.parent).getJSwitchStatView().cosw;
+		CodeSwitch cosw = ((JSwitchStatView)this.jparent).cosw;
 		try {
 			code.addInstr(Instr.set_label,case_label);
 			if( val == null ) cosw.addDefault(case_label);
@@ -139,10 +139,10 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 					cases[i].setAutoReturnable(true);
 				((CaseLabel)cases[i]).getJCaseLabelView().generate(code,Type.tpVoid);
 			}
-			Vector<Var> vars = new Vector<Var>();
+			Vector<JVarView> vars = new Vector<JVarView>();
 			for(int i=0; i < cases.length; i++) {
-				foreach (ENode n; cases[i].stats; n instanceof VarDecl)
-					vars.append(((VarDecl)n).var);
+				foreach (JENodeView n; cases[i].stats; n instanceof JVarDeclView)
+					vars.append(((JVarDeclView)n).var);
 			}
 			code.removeVars(vars.toArray());
 
@@ -186,14 +186,14 @@ public view JCatchInfoView of CatchInfoImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		code.addVar(arg);
-		JTryStatView tr = ((TryStat)parent).getJTryStatView();
+		JTryStatView tr = (JTryStatView)this.jparent;
 		try {
 			// This label must be created by TryStat's generate routine;
 			code.addInstr(Instr.enter_catch_handler,code_catcher);
 			code.addInstr(Instr.op_store,arg);
 			body.generate(code,Type.tpVoid);
 			if( !body.isMethodAbrupted() ) {
-				if( ((TryStat)parent).finally_catcher != null ) {
+				if( tr.finally_catcher != null ) {
 					code.addInstr(Instr.op_jsr, tr.finally_catcher.subr_label);
 				}
 				if( isAutoReturnable() )

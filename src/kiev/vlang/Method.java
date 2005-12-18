@@ -756,6 +756,18 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		this.cleanDFlow();
 
+		// Append invariants by list of violated/used fields
+		if( !isInvariantMethod() ) {
+			foreach(Field f; violated_fields; ctx_clazz.instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; ctx_clazz.instanceOf((Struct)inv.parent) ) {
+					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
+					// check, that this is not set$/get$ method
+					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
+						conditions.addUniq(inv.conditions[0]);
+				}
+			}
+		}
+		
 		setResolved(true);
 	}
 

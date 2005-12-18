@@ -48,7 +48,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 					if( type.string_equals(code.clazz.type.args[i]) ) break;
 				if( i >= code.clazz.type.args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
-				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.resolveField(nameTypeInfo));
+				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.getStruct().resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,
 					new CallExpr(pos,tie,
 						Type.tpTypeInfo.clazz.resolveMethod(
@@ -86,7 +86,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 				code.addInstr(Instr.op_load,v.getJVarView());
 			}
 		}
-		code.addInstr(op_call,func.getMethod(),false,type);
+		code.addInstr(op_call,func,false,type);
 	}
 
 }
@@ -156,8 +156,8 @@ public final view JNewInitializedArrayExprView of NewInitializedArrayExprImpl ex
 @nodeview
 public final view JNewClosureView of NewClosureImpl extends JENodeView {
 	public access:ro	ClosureType		type;
-	public access:ro	Struct			clazz;
-	public access:ro	Method			func;
+	public access:ro	JStructView		clazz;
+	public access:ro	JMethodView		func;
 
 	@getter public final ClosureType		get$type()				{ return (ClosureType)this.$view.type.getType(); }
 	
@@ -177,12 +177,12 @@ public final view JNewClosureView of NewClosureImpl extends JENodeView {
 		else
 			code.addConst(type.args.length);
 		// Now, fill proxyed fields (vars)
-		Struct cl = (Struct)type.clazz;
-		foreach (ASTNode n; cl.members; n instanceof Field) {
-			Field f = (Field)n;
+		JStructView cl = type.clazz.getJStructView();
+		foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
+			JFieldView f = (JFieldView)n;
 			if( !f.isNeedProxy() ) continue;
-			Var v = ((LVarExpr)f.init).getVar();
-			code.addInstr(Instr.op_load,v.getJVarView());
+			JVarView v = ((JLVarExprView)f.init).var;
+			code.addInstr(Instr.op_load,v);
 		}
 		code.addInstr(op_call,func,false);
 	}

@@ -3,6 +3,8 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import kiev.be.java.JNodeView;
+
 import static kiev.stdlib.Debug.*;
 
 /**
@@ -154,6 +156,9 @@ public class Access implements Constants {
 	public void verifyReadAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
 	public void verifyWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
 	public void verifyReadWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
+	public void verifyReadAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
+	public void verifyWriteAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
+	public void verifyReadWriteAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
 
 	private Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;

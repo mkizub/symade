@@ -19,15 +19,17 @@ import kiev.vlang.Field.FieldImpl;
 public final view JFieldView of FieldImpl extends JLvalDNodeView {
 
 	public access:ro	Access				acc;
-	public access:ro	NodeName			name;
-	public access:ro	TypeRef				ftype;
-	public access:ro	ENode				init;
+	public access:ro	KString				name;
+	public access:ro	Type				ftype;
+	public access:ro	JENodeView			init;
 	public				Attr[]				attrs;
-	public access:ro	NArr<Method>		invs;
+	public access:ro	JMethodView[]		invs;
 	
 	public final Field getField() { return (Field)this.getNode(); }
 	
 	@getter public final Type	get$type()	{ return this.$view.ftype.getType(); }
+	
+	@getter public final JMethodView[] get$invs() { return (JMethodView[])this.$view.invs.toJViewArray(JMethodView.class); }
 
 	public final boolean isVirtual()		{ return this.$view.is_fld_virtual; }
 	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }

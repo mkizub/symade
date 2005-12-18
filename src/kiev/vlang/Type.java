@@ -2,7 +2,8 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-//import kiev.kiev.backend.java15.JStruct;
+
+import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
@@ -29,6 +30,12 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 		return jtype;
 	}
 
+	public final JStructView getJStruct() {
+		Struct s = getStruct();
+		if (s == null)
+			return null;
+		return s.getJStructView();
+	}
 	public Struct getStruct() { return null; }
 	public MetaSet getStructMeta() { return null; }
 

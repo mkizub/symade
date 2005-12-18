@@ -256,16 +256,6 @@ public class Var extends LvalDNode implements Named, Typed {
 		return dmp.append(jtype).forsed_space().append(name);
 	}
 
-	public void setBCpos(int pos) {
-		if( pos < 0 || pos > 255)
-			throw new RuntimeException("Bad bytecode position specified: "+pos);
-		bcpos = pos;
-	}
-
-	public int getBCpos() {
-		return bcpos;
-	}
-
 }
 
 @node
@@ -342,25 +332,6 @@ public final class FormPar extends Var {
 		this.stype = stype;
 	}
 	
-}
-
-public class CodeVar {
-
-	public Var		var;
-	public int		stack_pos = -1;
-	public int		start_pc = -1;
-	public int		end_pc = -1;
-	public int		index = 0;
-
-	public CodeVar(Var var) {
-		this.var = var;
-		stack_pos = var.getBCpos();
-	}
-
-	public String toString() {
-		return "("+stack_pos+","+index+","+start_pc+","+end_pc+")";
-	}
-
 }
 
 public class DFState {

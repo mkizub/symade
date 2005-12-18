@@ -23,30 +23,29 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
-	public Var	getRetVar() {
+	public JVarView	getRetVar() {
 		if( this.$view.retvar == null )
-			this.$view.retvar = new Var(pos,nameResultVar,type_ref.ret.getType(),ACC_FINAL);
-		return this.$view.retvar;
+			this.$view.retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
+		return this.$view.retvar.getJVarView();
 	}
 
 
 	public access:ro	Access				acc;
-	public access:ro	NodeName			name;
-	public access:ro	TypeCallRef			type_ref;
-	public access:ro	TypeCallRef			dtype_ref;
-	public access:ro	NArr<FormPar>		params;
-	public access:ro	NArr<ASTAlias>		aliases;
-	public				Var					retvar;
-	public				BlockStat			body;
+	public access:ro	KString				name;
+	public access:ro	JVarView[]			params;
+	public access:ro	JBlockStatView		body;
 	public				Attr[]				attrs;
-	public access:ro	NArr<WBCCondition>	conditions;
-	public access:ro	NArr<Field>			violated_fields;
+	public access:ro	JWBCConditionView[]	conditions;
+	public access:ro	JFieldView[]		violated_fields;
 	public access:ro	MetaValue			annotation_default;
 	public access:ro	boolean				inlined_by_dispatcher;
 
-	@getter public final MethodType				get$type()	{ return type_ref.getMType(); }
-	@getter public final MethodType				get$dtype()	{ return dtype_ref.getMType(); }
-	@getter public final MethodType				get$jtype()	{ return (MethodType)dtype.getJavaType(); }
+	@getter public final MethodType				get$type()		{ return this.$view.type_ref.getMType(); }
+	@getter public final MethodType				get$dtype()		{ return this.$view.dtype_ref.getMType(); }
+	@getter public final MethodType				get$jtype()		{ return (MethodType)dtype.getJavaType(); }
+	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
+	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
+	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
 
 	public final boolean isMultiMethod()		{ return this.$view.is_mth_multimethod; }
 	public final boolean isVirtualStatic()		{ return this.$view.is_mth_virtual_static; }
@@ -64,7 +63,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public FormPar getVarArgParam() { return getMethod().getVarArgParam(); }
 	
 	public CodeLabel getBreakLabel() {
-		return ((BlockStat)body).getJBlockStatView().getBreakLabel();
+		return body.getBreakLabel();
 	}
 
 	/** Add information about new attribute that belongs to this class */
@@ -88,74 +87,63 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public void generate(ConstPool constPool) {
 		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		// Append invariants by list of violated/used fields
-		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; jctx_clazz.getStruct().instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; jctx_clazz.getStruct().instanceOf((Struct)inv.parent) ) {
-					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
-					// check, that this is not set$/get$ method
-					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions.addUniq(inv.conditions[0]);
-				}
-			}
-		}
-		foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondInvariant )
-			cond.getJWBCConditionView().generate(constPool,Type.tpVoid);
+		foreach(JWBCConditionView cond; conditions; cond.cond != WBCType.CondInvariant )
+			cond.generate(constPool,Type.tpVoid);
 		if( !isAbstract() && body != null ) {
-			Code code = new Code(jctx_clazz.getStruct(), this.getMethod(), constPool);
+			Code code = new Code(jctx_clazz, this, constPool);
 			code.generation = true;
 			try {
 				if( !isBad() ) {
-					FormPar thisPar = null;
+					JVarView thisPar = null;
 					if( !isStatic() ) {
-						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJVarView();
 						code.addVar(thisPar);
 					}
-					if( params.length > 0 ) code.addVars(params.toArray());
+					code.addVars(params);
 					if( Kiev.verify /*&& jtype != null*/ )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire )
+						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondRequire )
 							code.importCode(cond.code_attr);
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							assert( cond.parent instanceof Method && ((Method)cond.parent).isInvariantMethod() );
-							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
-								if( !((DNode)cond.parent).isStatic() )
+						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondInvariant ) {
+							assert( cond.jparent instanceof JMethodView && ((JMethodView)cond.jparent).isInvariantMethod() );
+							if( !name.equals(nameInit) && !name.equals(nameClassInit) ) {
+								if( !((JDNodeView)cond.jparent).isStatic() )
 									code.addInstrLoadThis();
-								code.addInstr(Instr.op_call,(Method)cond.parent,false);
+								code.addInstr(Instr.op_call,cond.jctx_method,false);
 							}
 							code.need_to_gen_post_cond = true;
 						}
 						if( !code.need_to_gen_post_cond ) {
-							foreach(WBCCondition cond; conditions; cond.cond != WBCType.CondRequire ) {
+							foreach(JWBCConditionView cond; conditions; cond.cond != WBCType.CondRequire ) {
 								code.need_to_gen_post_cond = true;
 								break;
 							}
 						}
 					}
-					body.getJENodeView().generate(code,Type.tpVoid);
+					body.generate(code,Type.tpVoid);
 					if( Kiev.debugOutputC && code.need_to_gen_post_cond ) {
 						if( type.ret != Type.tpVoid ) {
 							code.addVar(getRetVar());
-							code.addInstr(Instr.op_store,getRetVar().getJVarView());
+							code.addInstr(Instr.op_store,getRetVar());
 						}
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondInvariant ) {
-							if( !((DNode)cond.parent).isStatic() )
+						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondInvariant ) {
+							if( !((JDNodeView)cond.jparent).isStatic() )
 								code.addInstrLoadThis();
-							code.addInstr(Instr.op_call,(Method)cond.parent,false);
+							code.addInstr(Instr.op_call,cond.jctx_method,false);
 							code.need_to_gen_post_cond = true;
 						}
-						foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure )
+						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondEnsure )
 							code.importCode(cond.code_attr);
 						if( type.ret != Type.tpVoid ) {
-							code.addInstr(Instr.op_load,getRetVar().getJVarView());
+							code.addInstr(Instr.op_load,getRetVar());
 							code.addInstr(Instr.op_return);
 							code.removeVar(getRetVar());
 						} else {
 							code.addInstr(Instr.op_return);
 						}
 					}
-					if( params.length > 0 ) code.removeVars(params.toArray());
+					code.removeVars(params);
 					if( thisPar != null ) code.removeVar(thisPar);
 				} else {
 					code.addInstr(Instr.op_new,Type.tpError);
@@ -163,7 +151,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 					KString msg = KString.from("Compiled with errors");
 					constPool.addStringCP(msg);
 					code.addConst(msg);
-					Method func = Type.tpError.clazz.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
+					JMethodView func = Type.tpError.getJStruct().resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
 					code.addInstr(Instr.op_call,func,false);
 					code.addInstr(Instr.op_throw);
 				}
@@ -189,9 +177,9 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 			Type tp1 = jtype.args[i];
 			Type tp2 = params[i].type;
 			if !(tp2.getJavaType().isInstanceOf(tp1)) {
-				code.addInstr(Instr.op_load,params[i].getJVarView());
+				code.addInstr(Instr.op_load,params[i]);
 				code.addInstr(Instr.op_checkcast,tp1);
-				code.addInstr(Instr.op_store,params[i].getJVarView());
+				code.addInstr(Instr.op_store,params[i]);
 			}
 		}
 	}
@@ -213,10 +201,11 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 	public access:ro	WBCType				cond;
 	public access:ro	KString				name;
 	public access:ro	JENodeView			body;
+	public access:ro	JMethodView			definer;
 	public				CodeAttr			code_attr;
 
 	public void generate(ConstPool constPool, Type reqType) {
-		Code code = new Code(jctx_clazz.getStruct(), jctx_method.getMethod(), constPool);
+		Code code = new Code(jctx_clazz, jctx_method, constPool);
 		code.generation = true;
 		code.cond_generation = true;
 		if( cond == WBCType.CondInvariant ) {
@@ -225,20 +214,20 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			return;
 		}
 		if( code_attr == null ) {
-			Method m = code.method;
+			JMethodView m = code.method;
 			try {
-				FormPar thisPar = null;
+				JVarView thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJVarView();
 					code.addVar(thisPar);
 				}
-				if( m.params.length > 0 ) code.addVars(m.params.toArray());
+				code.addVars(m.params);
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.addVar(m.getRetVar());
 				body.generate(code,Type.tpVoid);
 				if( cond==WBCType.CondEnsure && m.type.ret != Type.tpVoid ) code.removeVar(m.getRetVar());
-				if( m.params.length > 0 ) code.removeVars(m.params.toArray());
+				code.removeVars(m.params);
 				if( thisPar != null ) code.removeVar(thisPar);
-				code.generateCode((WBCCondition)this.getNode());
+				code.generateCode(this);
 			} catch(Exception e) {
 				Kiev.reportError(this,e);
 			}
