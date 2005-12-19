@@ -2397,7 +2397,15 @@ public class Struct extends ASTNode implements Named, Scope, ScopeOfOperators, S
 		if( fu != null )
 			Kiev.curFile = ((FileUnit)fu).filename;
 
+		if( isClazz() && super_clazz != null ) {
+			if (super_clazz.clazz.isFinal())
+				Kiev.reportError(pos, "Class "+this+" extends final class "+super_clazz);
+		}
 		for(int i=0; i < interfaces.length; i++) {
+			if( isInterface() ) {
+				if (interfaces[i].clazz.isFinal())
+					Kiev.reportError(pos, "Iterface "+this+" extends final interface "+interfaces[i]);
+			}
 			if ( interfaces[i].clazz.generated_from != null )
 				interfaces[i].clazz.generated_from.autoProxyMethods(this);
 			else
