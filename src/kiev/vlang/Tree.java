@@ -56,22 +56,9 @@ public final class AttrSlot {
 
 public final class NArr<N extends ASTNode> {
 
-    private final ASTNode 				$parent;
     private final ASTNode.NodeImpl 	$parent_impl;
 	private final AttrSlot				$pslot;
 	private N[]							$nodes;
-	
-//	public NArr() {
-//		this.$nodes = new N[0];
-//	}
-	
-	public NArr(ASTNode parent, AttrSlot pslot) {
-		this.$parent = parent;
-		this.$pslot = pslot;
-		this.$nodes = new N[0];
-		if (parent == null)
-			assert (pslot == null || !pslot.is_attr);
-	}
 	
 	public NArr(ASTNode.NodeImpl parent_impl, AttrSlot pslot) {
 		this.$parent_impl = parent_impl;
@@ -82,10 +69,7 @@ public final class NArr<N extends ASTNode> {
 	}
 	
 	public ASTNode getParent() {
-		if ($parent != null)
-			return $parent;
-		else
-			return $parent_impl._self;
+		return $parent_impl._self;
 	}
 	
 	public AttrSlot getPSlot() {

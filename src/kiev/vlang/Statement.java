@@ -204,6 +204,10 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		super(new BlockStatImpl());
 	}
 
+	public BlockStat(BlockStatImpl $view) {
+		super($view);
+	}
+
 	public BlockStat(int pos) {
 		super(new BlockStatImpl(pos));
 	}

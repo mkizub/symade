@@ -8,6 +8,9 @@ import kiev.parser.*;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+import kiev.vlang.Method.MethodImpl;
+import kiev.vlang.Method.MethodView;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -333,28 +336,44 @@ object, if fails - returns null.
 public abstract class ASTRuleNode extends ENode {
 	public static ASTRuleNode[]	emptyArray = new ASTRuleNode[0];
 
-	public JumpNodes		jn;
+	@node
+	public static abstract class ASTRuleNodeImpl extends ENodeImpl {
+		@att public JumpNodes			jn;
+		@att public int					base;
+		@att public int					idx;
+		@att public int					depth = -1;
+		public ASTRuleNodeImpl() {}
+		public ASTRuleNodeImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static abstract view ASTRuleNodeView of ASTRuleNodeImpl extends ENodeView {
+		public JumpNodes	jn;
+		public int			base;
+		public int			idx;
+		public int			depth;
+	}
+
+	@att public abstract virtual JumpNodes	jn;
+	@att public abstract virtual int					base;
+	@att public abstract virtual int					idx;
+	@att public abstract virtual int					depth;
+	
+	public abstract ASTRuleNodeView		getASTRuleNodeView();
+
+	@getter public JumpNodes		get$jn()			{ return this.getASTRuleNodeView().jn; }
+	@getter public int				get$base()			{ return this.getASTRuleNodeView().base; }
+	@getter public int				get$idx()			{ return this.getASTRuleNodeView().idx; }
+	@getter public int				get$depth()			{ return this.getASTRuleNodeView().depth; }
+
+	@setter public void		set$jn(JumpNodes val)		{ this.getASTRuleNodeView().jn = val; }
+	@setter public void		set$base(int val)			{ this.getASTRuleNodeView().base = val; }
+	@setter public void		set$idx(int val)			{ this.getASTRuleNodeView().idx = val; }
+	@setter public void		set$depth(int val)			{ this.getASTRuleNodeView().depth = val; }
+	
+	public ASTRuleNode(ASTRuleNodeImpl $view) { super($view); }
 
 	public abstract 		void	createText(StringBuffer sb);
 	public abstract 		void	resolve1(JumpNodes jn);
-	@virtual
-	public virtual int		base;
-	@virtual
-	public virtual int		idx;
-	public int				depth = -1;
-
-	public ASTRuleNode() {
-	}
-
-	public ASTRuleNode(int pos) {
-		super(pos);
-	}
-
-	@getter public int get$base() { return base; }
-	@setter public void set$base(int b) { base = b; }
-
-	@getter public int get$idx() { return idx; }
-	@setter public void set$idx(int i) { idx = i; }
 
 	public boolean preGenerate() { Kiev.reportError(this,"preGenerate of ASTRuleNode"); return false; }
 	
@@ -403,15 +422,38 @@ public final class RuleBlock extends BlockStat {
 	@dflow(in="this:in")	ASTRuleNode		node;
 	}
 
-	@att public ASTRuleNode	node;
-	
-	public StringBuffer	fields_buf;
+	@node
+	public static final class RuleBlockImpl extends BlockStatImpl {
+		@att public ASTRuleNode		node;
+		@att public StringBuffer	fields_buf;
+		public RuleBlockImpl() {}
+		public RuleBlockImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleBlockView of RuleBlockImpl extends BlockStatView {
+		public ASTRuleNode		node;
+		public StringBuffer		fields_buf;
+	}
 
+	@att public abstract virtual ASTRuleNode	node;
+	@att public abstract virtual StringBuffer	fields_buf;
+	
+	public NodeView			getNodeView()		{ return new RuleBlockView((RuleBlockImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new RuleBlockView((RuleBlockImpl)this.$v_impl); }
+	public BlockStatView	getBlockStatView()	{ return new RuleBlockView((RuleBlockImpl)this.$v_impl); }
+	public RuleBlockView	getRuleBlockView()	{ return new RuleBlockView((RuleBlockImpl)this.$v_impl); }
+
+	@getter public ASTRuleNode		get$node()				{ return this.getRuleBlockView().node; }
+	@getter public StringBuffer		get$fields_buf()		{ return this.getRuleBlockView().fields_buf; }
+	@setter public void		set$node(ASTRuleNode val)			{ this.getRuleBlockView().node = val; }
+	@setter public void		set$fields_buf(StringBuffer val)	{ this.getRuleBlockView().fields_buf = val; }
+	
 	public RuleBlock() {
+		super(new RuleBlockImpl());
 	}
 
 	public RuleBlock(int pos, ASTRuleNode n) {
-		super(pos);
+		super(new RuleBlockImpl(pos));
 		node = n;
 	}
 
@@ -485,24 +527,43 @@ public final class RuleOrExpr extends ASTRuleNode {
 	@dflow(in="this:in", seq="false")	ASTRuleNode[]	rules;
 	}
 
-	@att
-	public final NArr<ASTRuleNode>	rules;
+	@node
+	public static final class RuleOrExprImpl extends ASTRuleNodeImpl {
+		@att public NArr<ASTRuleNode>			rules;
+		public RuleOrExprImpl() {}
+		public RuleOrExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleOrExprView of RuleOrExprImpl extends ASTRuleNodeView {
+		public access:ro	NArr<ASTRuleNode>			rules;
+	}
 
-	public int get$base() {	return rules[0].get$base(); }
+	@att public abstract virtual access:ro NArr<ASTRuleNode>			rules;
+	
+	public NodeView				getNodeView()			{ return new RuleOrExprView((RuleOrExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleOrExprView((RuleOrExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleOrExprView((RuleOrExprImpl)this.$v_impl); }
+	public RuleOrExprView		getRuleOrExprView()		{ return new RuleOrExprView((RuleOrExprImpl)this.$v_impl); }
+
+	@getter public NArr<ASTRuleNode>	get$rules()		{ return this.getRuleOrExprView().rules; }
+
+	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base(); }
 	public void set$base(int b) {}
 
-	public int get$idx() {	return rules[0].get$idx(); }
+	public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
 	public void set$idx(int i) {}
 
 	public RuleOrExpr() {
+		super(new RuleOrExprImpl());
 	}
 
 	public RuleOrExpr(ASTRuleNode first) {
+		super(new RuleOrExprImpl());
 		this.rules.add(first);
 	}
 
 	public RuleOrExpr(int pos, ASTRuleNode[] rules) {
-		super(pos);
+		super(new RuleOrExprImpl(pos));
 		this.rules.addAll(rules);
 	}
 
@@ -543,24 +604,43 @@ public final class RuleAndExpr extends ASTRuleNode {
 	@dflow(in="this:in", seq="true")	ASTRuleNode[]	rules;
 	}
 
-	@att
-	public final NArr<ASTRuleNode>	rules;
+	@node
+	public static final class RuleAndExprImpl extends ASTRuleNodeImpl {
+		@att public NArr<ASTRuleNode>			rules;
+		public RuleAndExprImpl() {}
+		public RuleAndExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleAndExprView of RuleAndExprImpl extends ASTRuleNodeView {
+		public access:ro	NArr<ASTRuleNode>			rules;
+	}
 
-	public int get$base() {	return rules[0].get$base();	}
+	@att public abstract virtual access:ro NArr<ASTRuleNode>			rules;
+	
+	public NodeView				getNodeView()			{ return new RuleAndExprView((RuleAndExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleAndExprView((RuleAndExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleAndExprView((RuleAndExprImpl)this.$v_impl); }
+	public RuleAndExprView		getRuleAndExprView()	{ return new RuleAndExprView((RuleAndExprImpl)this.$v_impl); }
+
+	@getter public NArr<ASTRuleNode>	get$rules()		{ return this.getRuleAndExprView().rules; }
+
+	public int get$base() {	return rules.length == 0 ? 0 : rules[0].get$base();	}
 	public void set$base(int b) {}
 
-	public int get$idx() {	return rules[0].get$idx(); }
+	public int get$idx() {	return rules.length == 0 ? 0 : rules[0].get$idx(); }
 	public void set$idx(int i) {}
 
 	public RuleAndExpr() {
+		super(new RuleAndExprImpl());
 	}
 
 	public RuleAndExpr(ASTRuleNode first) {
+		super(new RuleAndExprImpl());
 		this.rules.add(first);
 	}
 
 	public RuleAndExpr(int pos, ASTRuleNode[] rules) {
-		super(pos);
+		super(new RuleAndExprImpl(pos));
 		this.rules.addAll(rules);
 	}
 
@@ -636,15 +716,38 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
-	@att public LVarExpr	var;		// variable of type PVar<...>
+	@node
+	public static final class RuleIstheExprImpl extends ASTRuleNodeImpl {
+		@att public LVarExpr	var;		// variable of type PVar<...>
+		@att public ENode		expr;		// expression to check/unify
+		public RuleIstheExprImpl() {}
+		public RuleIstheExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleIstheExprView of RuleIstheExprImpl extends ASTRuleNodeView {
+		public LVarExpr	var;		// variable of type PVar<...>
+		public ENode		expr;		// expression to check/unify
+	}
+
+	@att public abstract virtual LVarExpr	var;		// variable of type PVar<...>
+	@att public abstract virtual ENode		expr;		// expression to check/unify
 	
-	@att public ENode		expr;		// expression to check/unify
+	public NodeView				getNodeView()			{ return new RuleIstheExprView((RuleIstheExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleIstheExprView((RuleIstheExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleIstheExprView((RuleIstheExprImpl)this.$v_impl); }
+	public RuleIstheExprView	getRuleIstheExprView()	{ return new RuleIstheExprView((RuleIstheExprImpl)this.$v_impl); }
+
+	@getter public LVarExpr		get$var()			{ return this.getRuleIstheExprView().var; }
+	@getter public ENode		get$expr()			{ return this.getRuleIstheExprView().expr; }
+	@setter public void		set$var(LVarExpr val)	{ this.getRuleIstheExprView().var = val; }
+	@setter public void		set$expr(ENode val)		{ this.getRuleIstheExprView().expr = val; }
 
 	public RuleIstheExpr() {
+		super(new RuleIstheExprImpl());
 	}
 
 	public RuleIstheExpr(int pos, LVarExpr var, ENode expr) {
-		super(pos);
+		super(new RuleIstheExprImpl(pos));
 		this.var = var;
 		this.expr = expr;
 	}
@@ -695,25 +798,58 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 	@dflow(in="this:in")	ENode	expr;
 	}
 
-	@att public LVarExpr			var;		// variable of type PVar<...>
-	
-	@att public ENode				expr;		// expression to check/unify
-	
-	public int				iter_var;	// iterator var
-
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
 	public static final int	JENUM = 2;
 	public static final int	ELEMS = 3;
 
-	public Type			itype;
-	public int			mode;
+	@node
+	public static final class RuleIsoneofExprImpl extends ASTRuleNodeImpl {
+		@att public LVarExpr	var;		// variable of type PVar<...>
+		@att public ENode		expr;		// expression to check/unify
+		@att public int			iter_var;	// iterator var
+		@att public Type		itype;
+		@att public int			mode;
+		public RuleIsoneofExprImpl() {}
+		public RuleIsoneofExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleIsoneofExprView of RuleIsoneofExprImpl extends ASTRuleNodeView {
+		public LVarExpr		var;		// variable of type PVar<...>
+		public ENode		expr;		// expression to check/unify
+		public int			iter_var;	// iterator var
+		public Type			itype;
+		public int			mode;
+	}
+
+	@att public abstract virtual LVarExpr	var;		// variable of type PVar<...>
+	@att public abstract virtual ENode		expr;		// expression to check/unify
+	@att public abstract virtual int		iter_var;	// iterator var
+	@att public abstract virtual Type		itype;
+	@att public abstract virtual int		mode;
+	
+	public NodeView				getNodeView()				{ return new RuleIsoneofExprView((RuleIsoneofExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()				{ return new RuleIsoneofExprView((RuleIsoneofExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()		{ return new RuleIsoneofExprView((RuleIsoneofExprImpl)this.$v_impl); }
+	public RuleIsoneofExprView	getRuleIsoneofExprView()	{ return new RuleIsoneofExprView((RuleIsoneofExprImpl)this.$v_impl); }
+
+	@getter public LVarExpr		get$var()				{ return this.getRuleIsoneofExprView().var; }
+	@getter public ENode		get$expr()				{ return this.getRuleIsoneofExprView().expr; }
+	@getter public int			get$iter_var()			{ return this.getRuleIsoneofExprView().iter_var; }
+	@getter public Type			get$itype()				{ return this.getRuleIsoneofExprView().itype; }
+	@getter public int			get$mode()				{ return this.getRuleIsoneofExprView().mode; }
+	@setter public void			set$var(LVarExpr val)	{ this.getRuleIsoneofExprView().var = val; }
+	@setter public void			set$expr(ENode val)		{ this.getRuleIsoneofExprView().expr = val; }
+	@setter public void			set$iter_var(int val)	{ this.getRuleIsoneofExprView().iter_var = val; }
+	@setter public void			set$itype(Type val)		{ this.getRuleIsoneofExprView().itype = val; }
+	@setter public void			set$mode(int val)		{ this.getRuleIsoneofExprView().mode = val; }
 
 	public RuleIsoneofExpr() {
+		super(new RuleIsoneofExprImpl());
 	}
 
 	public RuleIsoneofExpr(int pos, LVarExpr var, ENode expr) {
-		super(pos);
+		super(new RuleIsoneofExprImpl(pos));
 		this.var = var;
 		this.expr = expr;
 	}
@@ -848,11 +984,27 @@ public final class RuleCutExpr extends ASTRuleNode {
 	
 	@dflow(out="this:in") private static class DFI {}
 
+	@node
+	public static final class RuleCutExprImpl extends ASTRuleNodeImpl {
+		public RuleCutExprImpl() {}
+		public RuleCutExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleCutExprView of RuleCutExprImpl extends ASTRuleNodeView {
+		public RuleCutExprView(RuleCutExprImpl $view) { super($view); }
+	}
+	
+	public NodeView				getNodeView()			{ return new RuleCutExprView((RuleCutExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleCutExprView((RuleCutExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleCutExprView((RuleCutExprImpl)this.$v_impl); }
+	public RuleCutExprView		getRuleCutExprView()	{ return new RuleCutExprView((RuleCutExprImpl)this.$v_impl); }
+	
 	public RuleCutExpr() {
+		super(new RuleCutExprImpl());
 	}
 
 	public RuleCutExpr(int pos) {
-		super(pos);
+		super(new RuleCutExprImpl(pos));
 	}
 
 	public void resolve(Type reqType) {
@@ -881,22 +1033,49 @@ public final class RuleCallExpr extends ASTRuleNode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
-	@att
-	public ENode					obj;
+	@node
+	public static final class RuleCallExprImpl extends ASTRuleNodeImpl {
+		@att public ENode				obj;
+		@ref public Named				func;
+		@att public NArr<ENode>			args;
+		@att public int					env_var;
+		public RuleCallExprImpl() {}
+		public RuleCallExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleCallExprView of RuleCallExprImpl extends ASTRuleNodeView {
+		public				ENode			obj;
+		public				Named			func;
+		public access:ro	NArr<ENode>		args;
+		public				int				env_var;
+	}
 	
-	public Named					func;
+	@att public abstract virtual			ENode				obj;
+	@ref public abstract virtual			Named				func;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	@att public abstract virtual			int					env_var;
 	
-	@att
-	public final NArr<ENode>		args;
+	@getter public ENode			get$obj()				{ return this.getRuleCallExprView().obj; }
+	@getter public Named			get$func()				{ return this.getRuleCallExprView().func; }
+	@getter public NArr<ENode>		get$args()				{ return this.getRuleCallExprView().args; }
+	@getter public int				get$env_var()			{ return this.getRuleCallExprView().env_var; }
 	
-	public boolean					super_flag;
-	public int						env_var;
+	@setter public void		set$obj(ENode val)				{ this.getRuleCallExprView().obj = val; }
+	@setter public void		set$func(Named val)				{ this.getRuleCallExprView().func = val; }
+	@setter public void		set$env_var(int val)			{ this.getRuleCallExprView().env_var = val; }
+
+	public NodeView				getNodeView()				{ return new RuleCallExprView((RuleCallExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()				{ return new RuleCallExprView((RuleCallExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()		{ return new RuleCallExprView((RuleCallExprImpl)this.$v_impl); }
+	public RuleCallExprView		getRuleCallExprView()		{ return new RuleCallExprView((RuleCallExprImpl)this.$v_impl); }
+	
 
 	public RuleCallExpr() {
+		super(new RuleCallExprImpl());
 	}
 
 	public RuleCallExpr(CallExpr expr) {
-		super(expr.pos);
+		super(new RuleCallExprImpl(expr.pos));
 		this.obj = (ENode)~expr.obj;
 		this.func = expr.func;
 		this.args.addAll(expr.args.delToArray());
@@ -904,7 +1083,7 @@ public final class RuleCallExpr extends ASTRuleNode {
 	}
 
 	public RuleCallExpr(ClosureCallExpr expr) {
-		super(expr.pos);
+		super(new RuleCallExprImpl(expr.pos));
 		this.obj = (ENode)~expr.expr;
 		if( expr.expr instanceof LVarExpr )
 			this.func = ((LVarExpr)expr.expr).getVar();
@@ -942,14 +1121,14 @@ public final class RuleCallExpr extends ASTRuleNode {
 		StringBuffer sb = new StringBuffer();
 		sb.append("($env.$rc$frame$").append(env_var).append("=");
 		if( obj != null ) {
-			if (super_flag) {
+			if (this.isSuperExpr()) {
 				assert (obj instanceof ThisExpr);
 				sb.append("super.");
 			} else {
 				sb.append(Kiev.reparseExpr(obj,true)).append('.');
 			}
 		}
-		else if (super_flag) {
+		else if (this.isSuperExpr()) {
 			sb.append("super.");
 		}
 		sb.append(func.getName()).append('(');
@@ -978,20 +1157,35 @@ public final class RuleCallExpr extends ASTRuleNode {
 @node
 public abstract class RuleExprBase extends ASTRuleNode {
 
-	@att public ENode		expr;
+	@node
+	public static abstract class RuleExprBaseImpl extends ASTRuleNodeImpl {
+		@att public ENode				expr;
+		@att public ENode				bt_expr;
+		public RuleExprBaseImpl() {}
+		public RuleExprBaseImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static abstract view RuleExprBaseView of RuleExprBaseImpl extends ASTRuleNodeView {
+		public				ENode			expr;
+		public				ENode			bt_expr;
+	}
 	
-	@att public ENode		bt_expr;
+	@att public abstract virtual			ENode				expr;
+	@att public abstract virtual			ENode				bt_expr;
+	
+	@getter public ENode			get$expr()				{ return this.getRuleExprBaseView().expr; }
+	@getter public ENode			get$bt_expr()			{ return this.getRuleExprBaseView().bt_expr; }
+	
+	@setter public void		set$expr(ENode val)				{ this.getRuleExprBaseView().expr = val; }
+	@setter public void		set$bt_expr(ENode val)			{ this.getRuleExprBaseView().bt_expr = val; }
 
-	public RuleExprBase() {
+	public abstract RuleExprBaseView	getRuleExprBaseView();
+
+	public RuleExprBase(RuleExprBaseImpl $view) {
+		super($view);
 	}
-
-	public RuleExprBase(ENode expr) {
-		super(expr.pos);
-		this.expr = expr;
-	}
-
-	public RuleExprBase(ENode expr, ENode bt_expr) {
-		super(expr.pos);
+	public RuleExprBase(RuleExprBaseImpl $view, ENode expr, ENode bt_expr) {
+		super($view);
 		this.expr = expr;
 		this.bt_expr = bt_expr;
 	}
@@ -1025,15 +1219,32 @@ public final class RuleWhileExpr extends RuleExprBase {
 	@dflow(in="this:in")	ENode		bt_expr;
 	}
 	
+	@node
+	public static final class RuleWhileExprImpl extends RuleExprBaseImpl {
+		public RuleWhileExprImpl() {}
+		public RuleWhileExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleWhileExprView of RuleWhileExprImpl extends RuleExprBaseView {
+		public RuleWhileExprView(RuleWhileExprImpl $view) { super($view); }
+	}
+	
+	public NodeView				getNodeView()			{ return new RuleWhileExprView((RuleWhileExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleWhileExprView((RuleWhileExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleWhileExprView((RuleWhileExprImpl)this.$v_impl); }
+	public RuleExprBaseView		getRuleExprBaseView()	{ return new RuleWhileExprView((RuleWhileExprImpl)this.$v_impl); }
+	public RuleWhileExprView	getRuleWhileExprView()	{ return new RuleWhileExprView((RuleWhileExprImpl)this.$v_impl); }
+	
 	public RuleWhileExpr() {
+		super(new RuleWhileExprImpl());
 	}
 
 	public RuleWhileExpr(ENode expr) {
-		super(expr);
+		super(new RuleWhileExprImpl(), expr, null);
 	}
 
 	public RuleWhileExpr(ENode expr, ENode bt_expr) {
-		super(expr, bt_expr);
+		super(new RuleWhileExprImpl(), expr, bt_expr);
 	}
 
 	public void resolve(Type reqType) {
@@ -1079,15 +1290,32 @@ public final class RuleExpr extends RuleExprBase {
 	@dflow(in="this:in")	ENode		bt_expr;
 	}
 
+	@node
+	public static final class RuleExprImpl extends RuleExprBaseImpl {
+		public RuleExprImpl() {}
+		public RuleExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view RuleExprView of RuleExprImpl extends RuleExprBaseView {
+		public RuleExprView(RuleExprImpl $view) { super($view); }
+	}
+	
+	public NodeView				getNodeView()			{ return new RuleExprView((RuleExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new RuleExprView((RuleExprImpl)this.$v_impl); }
+	public ASTRuleNodeView		getASTRuleNodeView()	{ return new RuleExprView((RuleExprImpl)this.$v_impl); }
+	public RuleExprBaseView		getRuleExprBaseView()	{ return new RuleExprView((RuleExprImpl)this.$v_impl); }
+	public RuleExprView			getRuleExprView()		{ return new RuleExprView((RuleExprImpl)this.$v_impl); }
+	
 	public RuleExpr() {
+		super(new RuleExprImpl());
 	}
 
 	public RuleExpr(ENode expr) {
-		super(expr);
+		super(new RuleExprImpl(), expr, null);
 	}
 
 	public RuleExpr(ENode expr, ENode bt_expr) {
-		super(expr, bt_expr);
+		super(new RuleExprImpl(), expr, bt_expr);
 	}
 
 	public void resolve(Type reqType) {

@@ -1876,7 +1876,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		if( fu != null )
 			Kiev.curFile = ((FileUnit)fu).filename;
 
+		if( isClazz() && super_type != null && super_type.getStruct().isFinal())
+			Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
 		for(int i=0; i < interfaces.length; i++) {
+			if( isInterface() && interfaces[i].getStruct().isFinal())
+				Kiev.reportError(this, "Iterface "+this+" extends final interface "+interfaces[i]);
 			interfaces[i].getStruct().autoProxyMethods(this);
 		}
 
