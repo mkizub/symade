@@ -23,15 +23,40 @@ public class ASTNewExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 	
-	@att
-	public TypeRef					type;
+	@node
+	public static class ASTNewExpressionImpl extends ENodeImpl {
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		@att public Struct				clazz;
+		public ASTNewExpressionImpl() {}
+		public ASTNewExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTNewExpressionView of ASTNewExpressionImpl extends ENodeView {
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+		public				Struct			clazz;
+	}
 	
-	@att
-	public final NArr<ENode>		args;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	@att public abstract virtual			Struct				clazz;
 	
-    @att
-	public Struct					clazz;
+	@getter public TypeRef			get$type()				{ return this.getASTNewExpressionView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTNewExpressionView().args; }
+	@getter public Struct			get$clazz()				{ return this.getASTNewExpressionView().clazz; }
 	
+	@setter public void		set$type(TypeRef val)			{ this.getASTNewExpressionView().type = val; }
+	@setter public void		set$clazz(Struct val)			{ this.getASTNewExpressionView().clazz = val; }
+
+	public NodeView					getNodeView()				{ return new ASTNewExpressionView((ASTNewExpressionImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new ASTNewExpressionView((ASTNewExpressionImpl)this.$v_impl); }
+	public ASTNewExpressionView		getASTNewExpressionView()	{ return new ASTNewExpressionView((ASTNewExpressionImpl)this.$v_impl); }
+	
+	public ASTNewExpression() {
+		super(new ASTNewExpressionImpl());
+	}
+
 	public Type getType() {
 		return type.getType();
 	}
@@ -118,7 +143,7 @@ public class ASTNewExpression extends ENode {
 			if( args.length > 0 ) {
 				MethodType mt;
 				Type[] targs = Type.emptyArray;
-				NArr<FormPar> params = new NArr<FormPar>();
+				Vector<FormPar> params = new Vector<FormPar>();
 				for(int i=0; i < args.length; i++) {
 					args[i].resolve(null);
 					Type at = args[i].getType();
@@ -127,7 +152,7 @@ public class ASTNewExpression extends ENode {
 				}
 				mt = MethodType.newMethodType(null,targs,Type.tpVoid);
 				Constructor init = new Constructor(mt,ACC_PUBLIC);
-				init.params.addAll(params);
+				init.params.addAll(params.toArray());
 				init.pos = pos;
 				init.body = new BlockStat(pos);
 				init.setPublic(true);

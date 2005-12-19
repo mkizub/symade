@@ -23,16 +23,43 @@ public class ASTCallAccessExpression extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
-	@att public ENode					obj;
+	@node
+	public static class ASTCallAccessExpressionImpl extends ENodeImpl {
+		@att public ENode				obj;
+		@ref public NameRef				func;
+		@att public NArr<ENode>			args;
+		public ASTCallAccessExpressionImpl() {}
+		public ASTCallAccessExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTCallAccessExpressionView of ASTCallAccessExpressionImpl extends ENodeView {
+		public				ENode			obj;
+		public				NameRef			func;
+		public access:ro	NArr<ENode>		args;
+	}
+	
+	@att public abstract virtual			ENode				obj;
+	@ref public abstract virtual			NameRef				func;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	
+	@getter public ENode			get$obj()				{ return this.getASTCallAccessExpressionView().obj; }
+	@getter public NameRef			get$func()				{ return this.getASTCallAccessExpressionView().func; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTCallAccessExpressionView().args; }
+	
+	@setter public void		set$obj(ENode val)				{ this.getASTCallAccessExpressionView().obj = val; }
+	@setter public void		set$func(NameRef val)			{ this.getASTCallAccessExpressionView().func = val; }
 
-	@att public NameRef					func;
+	public NodeView							getNodeView()						{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
+	public ENodeView						getENodeView()						{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
+	public ASTCallAccessExpressionView		getASTCallAccessExpressionView()	{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
+	
 
-    @att public final NArr<ENode>		args;
-
-	public ASTCallAccessExpression() {}
+	public ASTCallAccessExpression() {
+		super(new ASTCallAccessExpressionImpl());
+	}
 	
 	public ASTCallAccessExpression(int pos, ENode obj, KString func, ENode[] args) {
-		super(pos);
+		super(new ASTCallAccessExpressionImpl(pos));
 		this.obj = obj;
 		this.func = new NameRef(pos, func);
 		this.args.addAll(args);

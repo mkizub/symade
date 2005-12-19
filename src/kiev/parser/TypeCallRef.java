@@ -6,6 +6,9 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
+import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.TypeRef.TypeRefView;
+
 /**
  * @author Maxim Kizub
  *
@@ -16,13 +19,36 @@ public class TypeCallRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@att public final NArr<TypeRef>		args;
-	@att public TypeRef					ret;
+	@node
+	public static final class TypeCallRefImpl extends TypeRefImpl {
+		@att public NArr<TypeRef>			args;
+		@att public TypeRef					ret;
+		public TypeCallRefImpl() {}
+	}
+	@nodeview
+	public static final view TypeCallRefView of TypeCallRefImpl extends TypeRefView {
+		public access:ro	NArr<TypeRef>			args;
+		public				TypeRef					ret;
+	}
 
+	@att public abstract virtual access:ro NArr<TypeRef>			args;
+	@att public abstract virtual           TypeRef					ret;
+	
+	public NodeView			getNodeView()			{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
+	public TypeRefView		getTypeRefView()		{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
+	public TypeCallRefView	getTypeCallRefView()	{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
+
+	@getter public NArr<TypeRef>		get$args()		{ return this.getTypeCallRefView().args; }
+	@getter public TypeRef				get$ret()		{ return this.getTypeCallRefView().ret; }
+	@setter public void		set$ret(TypeRef val)		{ this.getTypeCallRefView().ret = val; }
+	
 	public TypeCallRef() {
+		super(new TypeCallRefImpl());
 	}
 
 	public TypeCallRef(MethodType mt) {
+		super(new TypeCallRefImpl());
 		this.ret = new TypeRef(mt.ret);
 		foreach (Type a; mt.args)
 			this.args += new TypeRef(a);

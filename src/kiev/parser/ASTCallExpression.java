@@ -23,27 +23,49 @@ public class ASTCallExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 
-	@att public NameRef					func;
+	@node
+	public static class ASTCallExpressionImpl extends ENodeImpl {
+		@ref public NameRef				func;
+		@att public NArr<ENode>			args;
+		public ASTCallExpressionImpl() {}
+		public ASTCallExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTCallExpressionView of ASTCallExpressionImpl extends ENodeView {
+		public				NameRef			func;
+		public access:ro	NArr<ENode>		args;
+	}
+	
+	@ref public abstract virtual			NameRef				func;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
+	
+	@getter public NameRef			get$func()				{ return this.getASTCallExpressionView().func; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTCallExpressionView().args; }
+	
+	@setter public void		set$func(NameRef val)			{ this.getASTCallExpressionView().func = val; }
 
-    @att public final NArr<ENode>		args;
-
+	public NodeView						getNodeView()				{ return new ASTCallExpressionView((ASTCallExpressionImpl)this.$v_impl); }
+	public ENodeView					getENodeView()				{ return new ASTCallExpressionView((ASTCallExpressionImpl)this.$v_impl); }
+	public ASTCallExpressionView		getASTCallExpressionView()	{ return new ASTCallExpressionView((ASTCallExpressionImpl)this.$v_impl); }
+	
 	public ASTCallExpression() {
+		super(new ASTCallExpressionImpl());
 	}
 
 	public ASTCallExpression(int pos, KString func, ENode[] args) {
-		super(pos);
+		super(new ASTCallExpressionImpl(pos));
 		this.func = new NameRef(pos, func);
 		foreach (ENode e; args) {
 			this.args.append(e);
 		}
 	}
 
-	public ASTCallExpression(int pos, KString func, NArr<ENode> args) {
-		super(pos);
-		this.func = new NameRef(pos, func);
-		this.args = args;
-		foreach (ENode e; args) this.args.append(e);
-	}
+//	public ASTCallExpression(int pos, KString func, NArr<ENode> args) {
+//		super(new ASTCallExpressionImpl(pos));
+//		this.func = new NameRef(pos, func);
+//		this.args = args;
+//		foreach (ENode e; args) this.args.append(e);
+//	}
 
 	public void mainResolveOut() {
 		// method of current class or first-order function

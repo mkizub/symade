@@ -51,15 +51,23 @@ public final class Kiev {
 		}
 		if( debug ) e.printStackTrace(System.out);
 		int pos = 0;
-		if (from != null) {
+		if (from != null && from.isAttached()) {
 			pos = from.pos;
 			ASTNode f = from;
-			for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
-				pos = f.pos;
+			FileUnit fu = null;
+			Struct clazz = null;
+			Method method = null;
+			try {
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_clazz;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
 			if( e.getMessage() == null )
-				report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,e.getClass().getName());
+				report(pos,fu,clazz,method,SeverError.Error,e.getClass().getName());
 			else
-				report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,e.getMessage());
+				report(pos,fu,clazz,method,SeverError.Error,e.getMessage());
 		} else {
 			if( e.getMessage() == null )
 				report(0,null,null,null,SeverError.Error,e.getClass().getName());

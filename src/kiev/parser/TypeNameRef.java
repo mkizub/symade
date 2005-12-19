@@ -7,6 +7,9 @@ import kiev.vlang.*;
 import syntax kiev.Syntax;
 import static kiev.stdlib.Debug.*;
 
+import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.TypeRef.TypeRefView;
+
 /**
  * @author Maxim Kizub
  *
@@ -17,22 +20,43 @@ public class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	@att public NameRef			name;
+	@node
+	public static final class TypeNameRefImpl extends TypeRefImpl {
+		@att public NameRef					name;
+		public TypeNameRefImpl() {}
+		public TypeNameRefImpl(int pos) { super(pos, null); }
+	}
+	@nodeview
+	public static final view TypeNameRefView of TypeNameRefImpl extends TypeRefView {
+		public NameRef				name;
+	}
 
+	@att public abstract virtual NameRef				name;
+	
+	public NodeView			getNodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
+	public TypeRefView		getTypeRefView()		{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
+	public TypeNameRefView	getTypeNameRefView()	{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
+
+	@getter public NameRef		get$name()			{ return this.getTypeNameRefView().name; }
+	@setter public void		set$name(NameRef val)	{ this.getTypeNameRefView().name = val; }
+	
 	public TypeNameRef() {
+		super(new TypeNameRefImpl());
 	}
 
 	public TypeNameRef(KString nm) {
+		super(new TypeNameRefImpl());
 		name = new NameRef(nm);
 	}
 
 	public TypeNameRef(NameRef nm) {
-		this.pos = nm.getPos();
+		super(new TypeNameRefImpl(nm.getPos()));
 		this.name = nm;
 	}
 
 	public TypeNameRef(NameRef nm, Type tp) {
-		this.pos = nm.getPos();
+		super(new TypeNameRefImpl(nm.getPos()));
 		this.name = nm;
 		this.lnk = tp;
 	}

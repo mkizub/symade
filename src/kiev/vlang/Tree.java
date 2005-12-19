@@ -40,21 +40,6 @@ public @interface ref {
 	boolean copyable() default true;
 }
 
-// AST declarations for FileUnit, Struct-s, Import-s, Operator-s, Typedef-s, Macros-es
-@node(copyable=false)
-public class Tree extends ASTNode {
-	@att public final NArr<Struct>	members;
-	
-	public Tree() {
-		super(new NodeImpl());
-	}
-
-	public Object copy() {
-		throw new CompilerException(this,"Tree node cannot be copied");
-	};
-
-}
-
 public final class AttrSlot {
 	public final String  name; // field (property) name
 	public final boolean is_attr; // @att or @ref
@@ -76,9 +61,9 @@ public final class NArr<N extends ASTNode> {
 	private final AttrSlot				$pslot;
 	private N[]							$nodes;
 	
-	public NArr() {
-		this.$nodes = new N[0];
-	}
+//	public NArr() {
+//		this.$nodes = new N[0];
+//	}
 	
 	public NArr(ASTNode parent, AttrSlot pslot) {
 		this.$parent = parent;

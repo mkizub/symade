@@ -1263,13 +1263,13 @@ public class TypeRef extends ENode {
 	@dflow(out="this:in") private static class DFI {}
 
 	@node
-	public static final class TypeRefImpl extends ENodeImpl {
+	public static class TypeRefImpl extends ENodeImpl {
 		public TypeRefImpl() {}
 		public TypeRefImpl(int pos, Type tp) { super(pos); this.lnk = tp; }
 		@ref public Type	lnk;
 	}
 	@nodeview
-	public static final view TypeRefView of TypeRefImpl extends ENodeView {
+	public static view TypeRefView of TypeRefImpl extends ENodeView {
 		public Type	lnk;
 	}
 
@@ -1282,13 +1282,17 @@ public class TypeRef extends ENode {
 	public JENodeView		getJENodeView()		{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
 	public JTypeRefView		getJTypeRefView()	{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
 
-	@getter public Type		get$lnk()			alias operator(210,fy,$cast) { return this.getTypeRefView().lnk; }
+	@getter public Type		get$lnk()			{ return this.getTypeRefView().lnk; }
 	@setter public void		set$lnk(Type val)	{ this.getTypeRefView().lnk = val; }
 	
 	public TypeRef() {
 		super(new TypeRefImpl());
 	}
 	
+	public TypeRef(TypeRefImpl $view) {
+		super($view);
+	}
+
 	public TypeRef(Type tp) {
 		super(new TypeRefImpl(0, tp));
 	}
@@ -1308,7 +1312,9 @@ public class TypeRef extends ENode {
 	public Struct getStruct() { return getType().getStruct(); }
 	public JType getJType() { return getType().getJType(); }
 
-	public Type getType() {
+	public Type getType()
+		alias operator(210,fy,$cast)
+	{
 //		if (lnk == null)
 //			throw new CompilerException(this,"Type "+this+" is not found");
 		return lnk;

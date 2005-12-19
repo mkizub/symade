@@ -20,15 +20,40 @@ public class ASTNewAccessExpression extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
-	@att
-	public ENode				obj;
+	@node
+	public static class ASTNewAccessExpressionImpl extends ENodeImpl {
+		@att public ENode				obj;
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		public ASTNewAccessExpressionImpl() {}
+		public ASTNewAccessExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTNewAccessExpressionView of ASTNewAccessExpressionImpl extends ENodeView {
+		public				ENode			obj;
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+	}
 	
-	@att
-	public TypeRef				type;
+	@att public abstract virtual			ENode				obj;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
 	
-	@att
-	public final NArr<ENode>	args;
+	@getter public ENode			get$obj()				{ return this.getASTNewAccessExpressionView().obj; }
+	@getter public TypeRef			get$type()				{ return this.getASTNewAccessExpressionView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTNewAccessExpressionView().args; }
+	
+	@setter public void		set$obj(ENode val)				{ this.getASTNewAccessExpressionView().obj = val; }
+	@setter public void		set$type(TypeRef val)			{ this.getASTNewAccessExpressionView().type = val; }
 
+	public NodeView							getNodeView()						{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
+	public ENodeView						getENodeView()						{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
+	public ASTNewAccessExpressionView		getASTNewAccessExpressionView()		{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
+	
+	public ASTNewAccessExpression() {
+		super(new ASTNewAccessExpressionImpl());
+	}
+	
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {

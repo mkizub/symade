@@ -6,6 +6,9 @@ import kiev.vlang.*;
 
 import syntax kiev.Syntax;
 
+import kiev.vlang.TypeDef.TypeDefImpl;
+import kiev.vlang.TypeDef.TypeDefView;
+
 /**
  * @author Maxim Kizub
  *
@@ -18,24 +21,51 @@ public class TypeArgDef extends TypeDef {
 
 	private static int anonymousCounter = 100;
 	
-	@att public NameRef					name;
-	@att public TypeRef					super_bound;
-	private Type						lnk;
+	@node
+	public static final class TypeArgDefImpl extends TypeDefImpl {
+		@att public NameRef					name;
+		@att public TypeRef					super_bound;
+		@att public Type					lnk;
+		public TypeArgDefImpl() {}
+		public TypeArgDefImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view TypeArgDefView of TypeArgDefImpl extends TypeDefView {
+		public NameRef				name;
+		public TypeRef				super_bound;
+		public Type					lnk;
+	}
 
+	@att public abstract virtual NameRef				name;
+	@att public abstract virtual TypeRef				super_bound;
+	@att        abstract virtual Type					lnk;
+	
+	public NodeView			getNodeView()			{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()			{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
+	public TypeDefView		getTypeDefView()		{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
+	public TypeArgDefView	getTypeArgDefView()		{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
+
+	@getter public NameRef		get$name()			{ return this.getTypeArgDefView().name; }
+	@getter public TypeRef		get$super_bound()	{ return this.getTypeArgDefView().super_bound; }
+	@getter public Type			get$lnk()			{ return this.getTypeArgDefView().lnk; }
+	@setter public void		set$name(NameRef val)			{ this.getTypeArgDefView().name = val; }
+	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeArgDefView().super_bound = val; }
+	@setter public void		set$lnk(Type val)				{ this.getTypeArgDefView().lnk = val; }
+	
 	public TypeArgDef() { super(new TypeDefImpl()); }
 
 	public TypeArgDef(KString nm) {
-		super(new TypeDefImpl());
+		super(new TypeArgDefImpl());
 		name = new NameRef(nm);
 	}
 
 	public TypeArgDef(NameRef nm) {
-		super(new TypeDefImpl(nm.getPos()));
+		super(new TypeArgDefImpl(nm.getPos()));
 		this.name = nm;
 	}
 
 	public TypeArgDef(NameRef nm, TypeRef sup) {
-		super(new TypeDefImpl(nm.getPos()));
+		super(new TypeArgDefImpl(nm.getPos()));
 		this.name = nm;
 		this.super_bound = sup;
 	}

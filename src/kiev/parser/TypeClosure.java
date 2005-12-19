@@ -4,6 +4,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.TypeRef.TypeRefView;
+
 /**
  * @author Maxim Kizub
  *
@@ -14,12 +17,32 @@ public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-    @att public final NArr<TypeRef>	types;
+	@node
+	public static final class TypeClosureRefImpl extends TypeRefImpl {
+		@att public NArr<TypeRef>		types;
+		public TypeClosureRefImpl() {}
+		public TypeClosureRefImpl(ClosureType tp) { super(0, tp); }
+	}
+	@nodeview
+	public static final view TypeClosureRefView of TypeClosureRefImpl extends TypeRefView {
+		public access:ro	NArr<TypeRef>			types;
+	}
 
-	TypeClosureRef() {}
+	@att public abstract virtual access:ro NArr<TypeRef>			types;
+	
+	public NodeView				getNodeView()			{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
+	public TypeRefView			getTypeRefView()		{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
+	public TypeClosureRefView	getTypeClosureRefView()	{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
+
+	@getter public NArr<TypeRef>		get$types()		{ return this.getTypeClosureRefView().types; }
+	
+	TypeClosureRef() {
+		super(new TypeClosureRefImpl());
+	}
 	
 	TypeClosureRef(ClosureType tp) {
-		this.lnk = tp;
+		super(new TypeClosureRefImpl(tp));
 	}
 	
 	public boolean isBound() {

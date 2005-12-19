@@ -19,14 +19,40 @@ public class ASTNewArrayExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 	
-	@att
-	public TypeRef					type;
+	@node
+	public static class ASTNewArrayExpressionImpl extends ENodeImpl {
+		@att public int					dim;
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		public ASTNewArrayExpressionImpl() {}
+		public ASTNewArrayExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTNewArrayExpressionView of ASTNewArrayExpressionImpl extends ENodeView {
+		public				int				dim;
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+	}
 	
-	@att
-	public final NArr<ENode>		args;
+	@att public abstract virtual			int					dim;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
 	
-	public int dim;
-  
+	@getter public int				get$dim()				{ return this.getASTNewArrayExpressionView().dim; }
+	@getter public TypeRef			get$type()				{ return this.getASTNewArrayExpressionView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTNewArrayExpressionView().args; }
+	
+	@setter public void		set$dim(int val)				{ this.getASTNewArrayExpressionView().dim = val; }
+	@setter public void		set$type(TypeRef val)			{ this.getASTNewArrayExpressionView().type = val; }
+
+	public NodeView							getNodeView()						{ return new ASTNewArrayExpressionView((ASTNewArrayExpressionImpl)this.$v_impl); }
+	public ENodeView						getENodeView()						{ return new ASTNewArrayExpressionView((ASTNewArrayExpressionImpl)this.$v_impl); }
+	public ASTNewArrayExpressionView		getASTNewArrayExpressionView()		{ return new ASTNewArrayExpressionView((ASTNewArrayExpressionImpl)this.$v_impl); }
+	
+	public ASTNewArrayExpression() {
+		super(new ASTNewArrayExpressionImpl());
+	}
+	
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {

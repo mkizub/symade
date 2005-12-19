@@ -26,11 +26,28 @@ public class ASTExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		nodes;
 	}
 	
-	
-	@att
-	
-	public final NArr<ENode>		nodes;
+	@node
+	public static final class ASTExpressionImpl extends ENodeImpl {
+		@att public NArr<ENode>			nodes;
+		public ASTExpressionImpl() {}
+	}
+	@nodeview
+	public static final view ASTExpressionView of ASTExpressionImpl extends ENodeView {
+		public access:ro	NArr<ENode>			nodes;
+	}
 
+	@att public abstract virtual access:ro NArr<ENode>			nodes;
+	
+	public NodeView				getNodeView()			{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
+	public ASTExpressionView	getASTExpressionView()	{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
+
+	@getter public NArr<ENode>		get$nodes()		{ return this.getASTExpressionView().nodes; }
+
+	public ASTExpression() {
+		super(new ASTExpressionImpl());
+	}
+	
 	public void preResolveOut() {
 		if (nodes.length == 1) {
 			ENode n = nodes[0];

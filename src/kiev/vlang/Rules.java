@@ -23,22 +23,61 @@ public class RuleMethod extends Method {
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
-	@att public final NArr<Var>		localvars;
-	public int						base = 1;
-	public int						max_depth = 0;
-	public int						state_depth = 0;
-	public int						max_vars;
-	public int						index;		// index counter for RuleNode.idx
+	@node
+	public static final class RuleMethodImpl extends MethodImpl {
+		@att public NArr<Var>			localvars;
+		@att public int					base = 1;
+		@att public int					max_depth;
+		@att public int					state_depth;
+		@att public int					max_vars;
+		@att public int					index;		// index counter for RuleNode.idx
+		public RuleMethodImpl() {}
+		public RuleMethodImpl(int pos, int flags) { super(pos, flags); }
+	}
+	@nodeview
+	public static final view RuleMethodView of RuleMethodImpl extends MethodView {
+		public access:ro	NArr<Var>			localvars;
+		public				int					base;
+		public				int					max_depth;
+		public				int					state_depth;
+		public				int					max_vars;
+		public				int					index;		// index counter for RuleNode.idx
+	}
 
+	@att public abstract virtual access:ro NArr<Var>			localvars;
+	@att public abstract virtual			int					base;
+	@att public abstract virtual			int					max_depth;
+	@att public abstract virtual			int					state_depth;
+	@att public abstract virtual			int					max_vars;
+	@att public abstract virtual			int					index;		// index counter for RuleNode.idx
+	
+	public NodeView				getNodeView()			{ return new RuleMethodView((RuleMethodImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new RuleMethodView((RuleMethodImpl)this.$v_impl); }
+	public MethodView			getMethodView()			{ return new RuleMethodView((RuleMethodImpl)this.$v_impl); }
+	public RuleMethodView		getRuleMethodView()		{ return new RuleMethodView((RuleMethodImpl)this.$v_impl); }
+
+	@getter public NArr<Var>		get$localvars()		{ return this.getRuleMethodView().localvars; }
+	@getter public int				get$base()			{ return this.getRuleMethodView().base; }
+	@getter public int				get$max_depth()		{ return this.getRuleMethodView().max_depth; }
+	@getter public int				get$state_depth()	{ return this.getRuleMethodView().state_depth; }
+	@getter public int				get$max_vars()		{ return this.getRuleMethodView().max_vars; }
+	@getter public int				get$index()			{ return this.getRuleMethodView().index; }
+
+	@setter public void		set$base(int val)				{ this.getRuleMethodView().base = val; }
+	@setter public void		set$max_depth(int val)			{ this.getRuleMethodView().max_depth = val; }
+	@setter public void		set$state_depth(int val)		{ this.getRuleMethodView().state_depth = val; }
+	@setter public void		set$max_vars(int val)			{ this.getRuleMethodView().max_vars = val; }
+	@setter public void		set$index(int val)				{ this.getRuleMethodView().index = val; }
+	
 	public RuleMethod() {
+		super(new RuleMethodImpl());
 	}
 
 	public RuleMethod(NameRef id, TypeCallRef t_ref, int fl) {
-		super(id.name,t_ref,(TypeCallRef)t_ref.copy(),fl | ACC_RULEMETHOD);
-		pos = id.pos;
+		super(new RuleMethodImpl(id.pos, fl | ACC_RULEMETHOD), id.name,t_ref,(TypeCallRef)t_ref.copy());
 	}
 	public RuleMethod(KString name, MethodType type, int fl) {
-		super(name,type,type,fl | ACC_RULEMETHOD);
+		super(new RuleMethodImpl(0, fl | ACC_RULEMETHOD), name, type);
 	}
 
 	public int allocNewBase(int n) {

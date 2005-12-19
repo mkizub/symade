@@ -6,6 +6,9 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.TypeRef.TypeRefView;
+
 /**
  * @author Maxim Kizub
  *
@@ -13,11 +16,35 @@ import kiev.vlang.*;
 
 @node
 public final class ASTModifiers extends ASTNode {
-	     public int							modifier;
-	@att public Access 						acc;
-	@att public final NArr<Meta>			annotations;
 	
-	public ASTModifiers() { super(new NodeImpl()); }
+	@node
+	public static final class ASTModifiersImpl extends TypeRefImpl {
+		@att public int					modifier;
+		@att public Access 				acc;
+		@att public NArr<Meta>			annotations;
+		public ASTModifiersImpl() {}
+	}
+	@nodeview
+	public static final view ASTModifiersView of ASTModifiersImpl extends TypeRefView {
+		public				int					modifier;
+		public				Access 				acc;
+		public access:ro	NArr<Meta>			annotations;
+	}
+
+	@att public abstract virtual				int					modifier;
+	@att public abstract virtual				Access 				acc;
+	@att public abstract virtual access:ro		NArr<Meta>			annotations;
+	
+	public NodeView				getNodeView()			{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
+	public ASTModifiersView		getASTModifiersView()	{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
+
+	@getter public int				get$modifier()		{ return this.getASTModifiersView().modifier; }
+	@getter public Access			get$acc()			{ return this.getASTModifiersView().acc; }
+	@getter public NArr<Meta>		get$annotations()	{ return this.getASTModifiersView().annotations; }
+	@setter public void		set$modifier(int val)		{ this.getASTModifiersView().modifier = val; }
+	@setter public void		set$acc(Access val)			{ this.getASTModifiersView().acc = val; }
+	
+	public ASTModifiers() { super(new ASTModifiersImpl()); }
 	
 	public int getFlags() {
 		return modifier;

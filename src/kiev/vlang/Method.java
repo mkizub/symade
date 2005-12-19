@@ -252,6 +252,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		super(new MethodImpl());
 	}
 
+	public Method(MethodImpl $view) {
+		super($view);
+	}
+
+	public Method(MethodImpl $view, KString name, MethodType mt) {
+		this($view,name,new TypeCallRef(mt),new TypeCallRef(mt));
+	}
+
 	public Method(KString name, MethodType mt, int fl) {
 		this(name,new TypeCallRef(mt),new TypeCallRef(mt),fl);
 	}
@@ -261,7 +269,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		invalid_types = true;
 	}
 	public Method(KString name, TypeCallRef type_ref, TypeCallRef dtype_ref, int fl) {
-		super(new MethodImpl(0,fl));
+		this(new MethodImpl(0,fl), name, type_ref, dtype_ref);
+	}
+	public Method(MethodImpl $view, KString name, TypeCallRef type_ref, TypeCallRef dtype_ref) {
+		super($view);
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
 		this.type_ref = type_ref;
@@ -793,17 +804,36 @@ public class Constructor extends Method {
 	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
-	@att public final NArr<ENode>	addstats;
+	@node
+	public static final class ConstructorImpl extends MethodImpl {
+		@att public NArr<ENode>			addstats;
+		public ConstructorImpl() {}
+		public ConstructorImpl(int pos, int flags) { super(pos, flags); }
+	}
+	@nodeview
+	public static final view ConstructorView of ConstructorImpl extends MethodView {
+		public access:ro	NArr<ENode>			addstats;
+	}
+
+	@att public abstract virtual access:ro NArr<ENode>			addstats;
+	
+	public NodeView				getNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public MethodView			getMethodView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public ConstructorView		getConstructorView()	{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+
+	@getter public NArr<ENode>		get$addstats()		{ return this.getConstructorView().addstats; }
 
 	public Constructor() {
+		super(new ConstructorImpl());
 	}
 
 	public Constructor(MethodType mt, int fl) {
-		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, mt, fl);
+		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, mt);
 	}
 
 	public Constructor(TypeCallRef type_ref, int fl) {
-		super((fl&ACC_STATIC)==0 ? nameInit:nameClassInit, type_ref, (TypeCallRef)type_ref.copy(), fl);
+		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, type_ref, (TypeCallRef)type_ref.copy());
 	}
 
 	public void resolveDecl() {

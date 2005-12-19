@@ -17,12 +17,50 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
-    @att public final NArr<FormPar>		params;
-    @att public TypeRef						rettype;
-    @att public BlockStat					body;
-	@att public NewClosure					new_closure;
-	@att public Struct						clazz;
+	@node
+	public static class ASTAnonymouseClosureImpl extends ENodeImpl {
+		@att public NArr<FormPar>				params;
+		@att public TypeRef						rettype;
+		@att public BlockStat					body;
+		@att public NewClosure					new_closure;
+		@att public Struct						clazz;
+		public ASTAnonymouseClosureImpl() {}
+		public ASTAnonymouseClosureImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTAnonymouseClosureView of ASTAnonymouseClosureImpl extends ENodeView {
+		public access:ro	NArr<FormPar>				params;
+		public				TypeRef						rettype;
+		public				BlockStat					body;
+		public				NewClosure					new_closure;
+		public				Struct						clazz;
+	}
+	
+	@att public abstract virtual access:ro	NArr<FormPar>				params;
+	@att public abstract virtual			TypeRef						rettype;
+	@att public abstract virtual			BlockStat					body;
+	@att public abstract virtual			NewClosure					new_closure;
+	@att public abstract virtual			Struct						clazz;
+	
+	@getter public NArr<FormPar>	get$params()			{ return this.getASTAnonymouseClosureView().params; }
+	@getter public TypeRef			get$rettype()			{ return this.getASTAnonymouseClosureView().rettype; }
+	@getter public BlockStat		get$body()				{ return this.getASTAnonymouseClosureView().body; }
+	@getter public NewClosure		get$new_closure()		{ return this.getASTAnonymouseClosureView().new_closure; }
+	@getter public Struct			get$clazz()				{ return this.getASTAnonymouseClosureView().clazz; }
+	
+	@setter public void		set$rettype(TypeRef val)		{ this.getASTAnonymouseClosureView().rettype = val; }
+	@setter public void		set$body(BlockStat val)			{ this.getASTAnonymouseClosureView().body = val; }
+	@setter public void		set$new_closure(NewClosure val)	{ this.getASTAnonymouseClosureView().new_closure = val; }
+	@setter public void		set$clazz(Struct val)			{ this.getASTAnonymouseClosureView().clazz = val; }
 
+	public NodeView						getNodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
+	public ASTAnonymouseClosureView		getASTAnonymouseClosureView()	{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
+	
+	public ASTAnonymouseClosure() {
+		super(new ASTAnonymouseClosureImpl());
+	}
+	
   	public void set(Token t) {
     	pos = t.getPos();
 	}

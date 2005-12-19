@@ -20,13 +20,39 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 	
-	@att
-	public TypeRef					type;
+	@node
+	public static class ASTNewInitializedArrayExpressionImpl extends ENodeImpl {
+		@att public int					dim;
+		@att public TypeRef				type;
+		@att public NArr<ENode>			args;
+		public ASTNewInitializedArrayExpressionImpl() {}
+		public ASTNewInitializedArrayExpressionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view ASTNewInitializedArrayExpressionView of ASTNewInitializedArrayExpressionImpl extends ENodeView {
+		public				int				dim;
+		public				TypeRef			type;
+		public access:ro	NArr<ENode>		args;
+	}
 	
-	@att
-	public final NArr<ENode>		args;
+	@att public abstract virtual			int					dim;
+	@att public abstract virtual			TypeRef				type;
+	@att public abstract virtual access:ro	NArr<ENode>			args;
 	
-	public int dim;
+	@getter public int				get$dim()				{ return this.getASTNewInitializedArrayExpressionView().dim; }
+	@getter public TypeRef			get$type()				{ return this.getASTNewInitializedArrayExpressionView().type; }
+	@getter public NArr<ENode>		get$args()				{ return this.getASTNewInitializedArrayExpressionView().args; }
+	
+	@setter public void		set$dim(int val)				{ this.getASTNewInitializedArrayExpressionView().dim = val; }
+	@setter public void		set$type(TypeRef val)			{ this.getASTNewInitializedArrayExpressionView().type = val; }
+
+	public NodeView							getNodeView()						{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
+	public ENodeView						getENodeView()						{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
+	public ASTNewInitializedArrayExpressionView	getASTNewInitializedArrayExpressionView()	{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
+	
+	public ASTNewInitializedArrayExpression() {
+		super(new ASTNewInitializedArrayExpressionImpl());
+	}
 	
 	public void mainResolveOut() {
 		Type tp = type.getType();
