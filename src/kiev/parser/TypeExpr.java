@@ -98,7 +98,7 @@ public class TypeExpr extends TypeRef {
 				else
 					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 			}
-			if (t.args.length != 1)
+			if (t.bindings.length != 1)
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			t.checkResolved();
 			if (t.isWrapper()) {

@@ -479,9 +479,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			Type varg_tp = Type.getRealType(t,params[params.length-1].type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++) {
-				if !(args[i].getType().isInstanceOf(varg_tp.args[0])) {
+				if !(args[i].getType().isInstanceOf(varg_tp.bindings[0])) {
 					CastExpr.autoCastToReference(args[i]);
-					CastExpr.autoCast(args[i],varg_tp.args[0]);
+					CastExpr.autoCast(args[i],varg_tp.bindings[0]);
 				}
 			}
 //			int j;
@@ -689,7 +689,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					mva.values.add(((MetaValueScalar)annotation_default).value);
 					annotation_default = mva;
 				}
-				t = t.args[0];
+				t = t.bindings[0];
 			}
 			if (t.isReference()) {
 				t.checkResolved();

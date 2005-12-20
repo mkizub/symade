@@ -75,8 +75,8 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 			});
 			return;
 		}
-		else if( e.getType().args.length == 0
-				&& e.getType() instanceof ClosureType
+		else if( e.getType() instanceof ClosureType
+				&& ((CallableType)e.getType()).cargs.length == 0
 				&& ((CallableType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
 				)
 		{
@@ -592,7 +592,7 @@ public class InstanceofExpr extends BoolExpr {
 				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
 			return;
 		}
-		if (!type.isArray() && type.args.length > 0) {
+		if (type.getStruct() != null && type.getStruct().args.length > 0) {
 			replaceWithNodeResolve(reqType, new CallExpr(pos,
 					ctx_clazz.accessTypeInfoField(this,type.getType()),
 					Type.tpTypeInfo.clazz.resolveMethod(

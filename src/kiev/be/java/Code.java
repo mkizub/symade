@@ -630,7 +630,7 @@ public final class Code implements Constants {
 		if( !tp2.isIntegerInCode() )
 			throw new RuntimeException("Index of array element must be of integer type, but found "+tp2);
 
-		Type t = tp1.args[0];
+		Type t = tp1.bindings[0];
 		if( t == Type.tpVoid )
 			throw new RuntimeException("Array of elements of 'void' type is not allowed");
 		else if( t == Type.tpByte || t == Type.tpBoolean ) add_opcode(opc_baload);
@@ -656,7 +656,7 @@ public final class Code implements Constants {
 
 		if( !tp1.isArray() )
 			throw new RuntimeException("Index of non-array object "+tp1);
-		Type t = tp1.args[0];
+		Type t = tp1.bindings[0];
 		if( !tp2.isIntegerInCode() )
 			throw new RuntimeException("Index of array element must be of integer type, but found "+tp2);
 

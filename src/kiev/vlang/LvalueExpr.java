@@ -523,7 +523,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		try {
 			Type t = obj.getType();
 			if( t.isArray() ) {
-				return Type.getRealType(t,t.args[0]);
+				return Type.getRealType(t,t.bindings[0]);
 			}
 			else {
 				// Resolve overloaded access method
@@ -543,7 +543,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
 		if( t.isArray() ) {
-			return new Type[]{Type.getRealType(t,t.args[0])};
+			return new Type[]{Type.getRealType(t,t.bindings[0])};
 		} else {
 			Struct s = t.getStruct();
 		lookup_op:

@@ -254,7 +254,7 @@ public class Meta extends ENode {
 					mva.values.add((ENode)~val);
 				}
 				
-				t = t.args[0];
+				t = t.bindings[0];
 			}
 			if (t.isReference()) {
 				t.checkResolved();

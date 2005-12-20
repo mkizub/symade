@@ -43,9 +43,9 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 					return;
 				}
 				int i;
-				for(i=0; i < code.clazz.type.args.length; i++)
-					if( type.string_equals(code.clazz.type.args[i]) ) break;
-				if( i >= code.clazz.type.args.length )
+				for(i=0; i < code.clazz.args.length; i++)
+					if( type.string_equals(code.clazz.args[i]) ) break;
+				if( i >= code.clazz.args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.getStruct().resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,

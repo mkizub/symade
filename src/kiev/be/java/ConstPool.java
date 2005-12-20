@@ -367,12 +367,16 @@ public class ClazzCP extends CP {
 			KStringBuffer ksb = new KStringBuffer(sig.len-2);
 			KString.KStringScanner ksc = new KString.KStringScanner(sig);
 			ksc.nextChar(); // skip 'L'/'A'
-			char c;
-			while( (c=ksc.nextChar()) != ';' ) ksb.append(c); // copy until ';'
-			while( ksc.hasMoreChars() ) ksb.append(ksc.nextChar());
+			for (;;) { // copy until ';' or '<'
+				char c = ksc.nextChar();
+				if (c == ';' || c == '<')
+					break;
+				ksb.append(c);
+			}
 			asc = AsciiCP.newAsciiCP(constPool,ksb.toKString());
-		} else
+		} else {
 			asc = AsciiCP.newAsciiCP(constPool,sig);
+		}
 //		System.out.println("...new ClazzCP: "+sig+" -> "+asc.value);
 		constPool.poolHash.put(this);
 	}

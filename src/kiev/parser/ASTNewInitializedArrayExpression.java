@@ -60,7 +60,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 		if( !tp.isArray() )
 			throw new CompilerException(this,"Type "+type+" is not an array type");
         int dim = 0;
-        while( tp.isArray() ) { dim++; tp = tp.args[0]; }
+        while( tp.isArray() ) { dim++; tp = tp.bindings[0]; }
 		replaceWithNode(new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
 	}
 
@@ -76,13 +76,13 @@ public class ASTNewInitializedArrayExpression extends ENode {
 			throw new CompilerException(this,"Type "+type+" is not an array type");
     	for(int i=0; i < args.length; i++) {
         	try {
-				args[i].resolve(tp.args[0]);
+				args[i].resolve(tp.bindings[0]);
             } catch(Exception e) {
             	Kiev.reportError(args[i],e);
             }
         }
         int dim = 0;
-        while( tp.isArray() ) { dim++; tp = tp.args[0]; }
+        while( tp.isArray() ) { dim++; tp = tp.bindings[0]; }
 		replaceWithNodeResolve(reqType, new NewInitializedArrayExpr(pos,new TypeRef(tp),dim,args.delToArray()));
 	}
 

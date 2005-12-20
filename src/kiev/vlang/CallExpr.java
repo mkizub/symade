@@ -116,9 +116,9 @@ public class CallExpr extends ENode {
 		func.makeArgs(args, reqType);
 		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 			Method mmm = ctx_method;
-			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
+			BaseType tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
 			assert(ctx_method.name.equals(nameInit));
-			assert(tp.args.length > 0);
+			assert(tp.clazz.args.length > 0);
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam() != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
@@ -134,7 +134,7 @@ public class CallExpr extends ENode {
 			Type varg_tp = Type.getRealType(obj.getType(),func.getVarArgParam().type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++)
-				args[i].resolve(varg_tp.args[0]);
+				args[i].resolve(varg_tp.bindings[0]);
 		} else {
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));

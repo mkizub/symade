@@ -104,9 +104,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 				JMethodView mmm = jctx_method;
-				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
+				BaseType tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
 				assert(mmm.name.equals(nameInit));
-				assert(tp.args.length > 0);
+				assert(tp.clazz.args.length > 0);
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJENodeView();
@@ -126,7 +126,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			Type type = func.jtype.args[N];
 			assert(type.isArray());
 			code.addConst(args.length-N);
-			code.addInstr(Instr.op_newarray,type.args[0]);
+			code.addInstr(Instr.op_newarray,type.bindings[0]);
 			for(int j=0; i < args.length; i++, j++) {
 				code.addInstr(Instr.op_dup);
 				code.addConst(j);

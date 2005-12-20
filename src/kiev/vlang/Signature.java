@@ -41,25 +41,16 @@ public class Signature {
 			ksb.append(ret.signature);
 		} else {
 			// Normal class
-			if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
-				ksb.append('[');
-				ksb.append(args[0].signature);
-			} else {
-				if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
-					ksb.append(clazz.type.signature);
-				} else {
-					if(  clazz !=null )
-						ksb.append(clazz.name.signature());
-					// And it's arguments
-					if( args!=null && args.length > 0 ) {
-						ksb.append('<');
-						for(int i=0; i < args.length; i++) {
-							ksb.append(args[i].signature);
-						}
-						ksb.append('>');
-					}
+			ksb.append('L').append(clazz.name.bytecode_name);
+			// And it's arguments
+			if( args!=null && args.length > 0 ) {
+				ksb.append('<');
+				for(int i=0; i < args.length; i++) {
+					ksb.append(args[i].signature);
 				}
+				ksb.append('>');
 			}
+			ksb.append(';');
 		}
 		return ksb.toKString();
 	}
@@ -121,10 +112,10 @@ public class Signature {
 		// Check if this signature is a method signature
 		if( ch == '(' || ch == '&' || ch == '<' ) {
 			// Method signature
-			Type[] fargs = Type.emptyArray;
+			TypeBinding[] fargs = TypeBinding.emptyArray;
 			if( ch == '<' ) {
 				while( sc.hasMoreChars() && sc.peekChar() != '>' )
-					fargs = (Type[])Arrays.append(fargs,getType(sc));
+					fargs = (TypeBinding[])Arrays.append(fargs,new TypeUpperBoundConstraint(getType(sc)));
 				sc.nextChar();
 			}
 			if( ch == '(' ) {

@@ -141,7 +141,7 @@ public final class NewExpr extends ENode {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-		if( type.args.length > 0 )
+		if( ctx_clazz.args.length > 0 )
 			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
@@ -293,9 +293,9 @@ public final class NewArrayExpr extends ENode {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;
-			for(i=0; i < ctx_clazz.type.args.length; i++)
-				if( type.string_equals(ctx_clazz.type.args[i]) ) break;
-			if( i >= ctx_clazz.type.args.length )
+			for(i=0; i < ctx_clazz.args.length; i++)
+				if( type.string_equals(ctx_clazz.args[i].getType()) ) break;
+			if( i >= ctx_clazz.args.length )
 				throw new CompilerException(this,"Can't create an array of argument type "+type);
 			ENode tie = new IFldExpr(pos,new ThisExpr(0),ctx_clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
@@ -417,7 +417,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(arrtype.args[0]);
+			args[i].resolve(arrtype.bindings[0]);
 		for(int i=1; i < dims.length; i++) {
 			int n;
 			for(int j=0; j < args.length; j++) {
