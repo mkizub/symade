@@ -661,7 +661,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+			FormPar va = new FormPar(pos,nameVarArgs,new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		checkRebuildTypes();
@@ -693,7 +693,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
+				if!(t instanceof BaseType)
+					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
+				Struct s = t.getStruct();
+				if!(t == Type.tpString || t == Type.tpClass || s.isAnnotation() || s.isEnum())
 					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);

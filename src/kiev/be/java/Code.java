@@ -3,6 +3,7 @@ package kiev.be.java;
 import kiev.*;
 
 import kiev.vlang.Type;
+import kiev.vlang.ArrayType;
 import kiev.vlang.TypeRules;
 import kiev.vlang.MethodType;
 import kiev.vlang.ClosureType;
@@ -925,7 +926,7 @@ public final class Code implements Constants {
 			ClazzCP cpc = constPool.addClazzCP(type.getJType().java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
-		stack_push(Type.newArrayType(type));
+		stack_push(new ArrayType(type));
 	}
 
 

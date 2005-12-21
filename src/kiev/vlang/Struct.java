@@ -1033,7 +1033,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
 			else
 				typeinfo_clazz.super_type = Type.tpTypeInfo;
-			typeinfo_clazz.type = Type.newJavaRefType(typeinfo_clazz);
+			typeinfo_clazz.type = BaseType.newJavaRefType(typeinfo_clazz);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 
@@ -1259,7 +1259,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							members.add(defaults);
 							defaults.setResolved(true);
 							Type[] tarr = type.bindings;
-							defaults.type = Type.newRefType(defaults, tarr);
+							defaults.type = BaseType.newRefType(defaults, tarr);
 							defaults.super_type = Type.tpObject;
 							//defaults.interfaces.add(new TypeRef(this.type));
 						}

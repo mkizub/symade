@@ -104,7 +104,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		
 		/* Generate type for this structure */
-		me.type = Type.createRefType(me,targs);
+		me.type = BaseType.createRefType(me,targs);
 	}
 
 	public void pass1(Struct:ASTNode astn) {

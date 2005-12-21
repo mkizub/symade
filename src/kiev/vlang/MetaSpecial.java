@@ -94,7 +94,7 @@ public class MetaAlias extends Meta {
 
 	public MetaAlias(ConstStringExpr name) {
 		super(new TypeNameRef(NAME));
-		MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpString).signature);
+		MetaValueType mvt = new MetaValueType(VALUE, new ArrayType(Type.tpString).signature);
 		MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{name});
 		set(mv);
 	}
@@ -126,7 +126,7 @@ public class MetaThrows extends Meta {
 	
 	public void add(NameRef thr) {
 		if (size() == 0) {
-			MetaValueType mvt = new MetaValueType(VALUE, Type.newArrayType(Type.tpClass).signature);
+			MetaValueType mvt = new MetaValueType(VALUE, new ArrayType(Type.tpClass).signature);
 			MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{new TypeNameRef(thr)});
 			set(mv);
 		} else {
@@ -156,7 +156,7 @@ public class MetaPizzaCase extends Meta {
 	public MetaPizzaCase(TypeRef type) {
 		super(type);
 		setI(TAG, 0);
-		MetaValueType mvt = new MetaValueType(FIELDS, Type.newArrayType(Type.tpString).signature);
+		MetaValueType mvt = new MetaValueType(FIELDS, new ArrayType(Type.tpString).signature);
 		MetaValueArray mv = new MetaValueArray(mvt, ENode.emptyArray);
 		set(mv);
 	}

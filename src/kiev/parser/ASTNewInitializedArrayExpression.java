@@ -56,7 +56,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 	
 	public void mainResolveOut() {
 		Type tp = type.getType();
-		while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
+		while( this.dim > 0 ) { tp = new ArrayType(tp); this.dim--; }
 		if( !tp.isArray() )
 			throw new CompilerException(this,"Type "+type+" is not an array type");
         int dim = 0;
@@ -70,7 +70,7 @@ public class ASTNewInitializedArrayExpression extends ENode {
 			tp = reqType;
 		} else {
 			tp = type.getType();
-			while( this.dim > 0 ) { tp = Type.newArrayType(tp); this.dim--; }
+			while( this.dim > 0 ) { tp = new ArrayType(tp); this.dim--; }
 		}
 		if( !tp.isArray() )
 			throw new CompilerException(this,"Type "+type+" is not an array type");

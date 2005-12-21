@@ -69,7 +69,7 @@ public class TypeWithArgsRef extends TypeRef {
 			if (atypes[i] == null)
 				throw new CompilerException(this,"Type "+args[i]+" is not found");
 		}
-		this.lnk = Type.newRefType((BaseType)tp,atypes);
+		this.lnk = BaseType.newRefType((BaseType)tp,atypes);
 		return this.lnk;
 	}
 

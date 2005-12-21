@@ -79,7 +79,7 @@ public class TypeExpr extends TypeRef {
 	    Type tp = arg.getType();
 		DNode@ v;
 		if (op == Constants.nameArrayOp) {
-			tp = Type.newArrayType(tp);
+			tp = new ArrayType(tp);
 		} else {
 			Type t;
 			if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {
@@ -102,10 +102,10 @@ public class TypeExpr extends TypeRef {
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			t.checkResolved();
 			if (t.isWrapper()) {
-				BaseType ut = Type.newRefType(((WrapperType)t).getUnwrappedType(),new Type[]{tp});
+				BaseType ut = BaseType.newRefType(((WrapperType)t).getUnwrappedType(),new Type[]{tp});
 				tp = WrapperType.newWrapperType(ut);
 			} else {
-				tp = Type.newRefType((BaseType)t,new Type[]{tp});
+				tp = BaseType.newRefType((BaseType)t,new Type[]{tp});
 			}
 		}
 		this.lnk = tp;

@@ -34,7 +34,9 @@ kiev.be.java.Instr kiev/be/java/Instr kiev\be\java\Instr.java
 kiev.be.java.InterfaceMethodCP kiev/be/java/InterfaceMethodCP kiev\be\java\ConstPool.java
 kiev.be.java.JAccessExprView kiev/be/java/JAccessExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JArrayLengthExprView kiev/be/java/JArrayLengthExprView kiev\be\java\JExpr.java
+kiev.be.java.JArrayType kiev/be/java/JArrayType kiev\be\java\JType.java
 kiev.be.java.JAssignExprView kiev/be/java/JAssignExprView kiev\be\java\JExpr.java
+kiev.be.java.JBaseType kiev/be/java/JBaseType kiev\be\java\JType.java
 kiev.be.java.JBinaryBoolExprView kiev/be/java/JBinaryBoolExprView kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryBooleanAndExprView kiev/be/java/JBinaryBooleanAndExprView kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryBooleanOrExprView kiev/be/java/JBinaryBooleanOrExprView kiev\be\java\JBoolExpr.java
@@ -108,6 +110,7 @@ kiev.be.java.JSynchronizedStatView kiev/be/java/JSynchronizedStatView kiev\be\ja
 kiev.be.java.JThisExprView kiev/be/java/JThisExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JThrowStatView kiev/be/java/JThrowStatView kiev\be\java\JStatement.java
 kiev.be.java.JTryStatView kiev/be/java/JTryStatView kiev\be\java\JComplexStat.java
+kiev.be.java.JType kiev/be/java/JType kiev\be\java\JType.java
 kiev.be.java.JTypeClassExprView kiev/be/java/JTypeClassExprView kiev\be\java\JExpr.java
 kiev.be.java.JTypeDefView kiev/be/java/JTypeDefView kiev\be\java\JNode.java
 kiev.be.java.JTypeRefView kiev/be/java/JTypeRefView kiev\be\java\JNode.java
@@ -483,7 +486,7 @@ kiev.vlang.AccessExpr.AccessExprView kiev/vlang/AccessExpr$AccessExprView kiev\v
 kiev.vlang.AccessExpr.DFI kiev/vlang/AccessExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
-kiev.vlang.AnnotationType kiev/vlang/AnnotationType kiev\vlang\Type.java
+kiev.vlang.AnnotationType kiev/vlang/AnnotationType kiev\vlang\TypeBase.java
 kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
 kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr$ArrayLengthExprImpl kiev/vlang/ArrayLengthExpr$ArrayLengthExprImpl kiev\vlang\Expr.java
@@ -504,7 +507,7 @@ kiev.vlang.AssignExpr.AssignExprView kiev/vlang/AssignExpr$AssignExprView kiev\v
 kiev.vlang.AssignExpr.DFI kiev/vlang/AssignExpr$DFI kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
-kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
+kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\TypeBase.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr$BinaryBoolExprImpl kiev/vlang/BinaryBoolExpr$BinaryBoolExprImpl kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr$BinaryBoolExprView kiev/vlang/BinaryBoolExpr$BinaryBoolExprView kiev\vlang\BooleanExpr.java
@@ -792,6 +795,7 @@ kiev.vlang.EmptyStat$EmptyStatView kiev/vlang/EmptyStat$EmptyStatView kiev\vlang
 kiev.vlang.EmptyStat.DFI kiev/vlang/EmptyStat$DFI kiev\vlang\Statement.java
 kiev.vlang.EmptyStat.EmptyStatImpl kiev/vlang/EmptyStat$EmptyStatImpl kiev\vlang\Statement.java
 kiev.vlang.EmptyStat.EmptyStatView kiev/vlang/EmptyStat$EmptyStatView kiev\vlang\Statement.java
+kiev.vlang.EnumType kiev/vlang/EnumType kiev\vlang\TypeBase.java
 kiev.vlang.Env kiev/vlang/Env kiev\vlang\Env.java
 kiev.vlang.ExprStat kiev/vlang/ExprStat kiev\vlang\Statement.java
 kiev.vlang.ExprStat$DFI kiev/vlang/ExprStat$DFI kiev\vlang\Statement.java

@@ -3,6 +3,9 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import kiev.be.java.JType;
+import kiev.be.java.JBaseType;
+import kiev.be.java.JArrayType;
 import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;

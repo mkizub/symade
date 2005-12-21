@@ -16,6 +16,7 @@ import kiev.be.java.JLocalStructDeclView;
 import kiev.be.java.JLvalueExprView;
 import kiev.be.java.JTypeDefView;
 import kiev.be.java.JTypeRefView;
+import kiev.be.java.JType;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;

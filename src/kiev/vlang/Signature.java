@@ -144,7 +144,7 @@ public class Signature {
 		}
 
 		// Normal reference type
-		if( ch == '[' ) return Type.newArrayType(getType(sc));
+		if( ch == '[' ) return new ArrayType(getType(sc));
 
 		boolean isArgument = false;
 		if( ch == 'A' ) isArgument = true;
@@ -167,7 +167,7 @@ public class Signature {
 		if( !sc.hasMoreChars() ) {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return Type.newJavaRefType(clazz);
+			return BaseType.newJavaRefType(clazz);
 		}
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
@@ -185,12 +185,12 @@ public class Signature {
 				} else
 					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
-				return Type.newRefType(clazz,args);
+				return BaseType.newRefType(clazz,args);
 			}
 		} else {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return Type.newJavaRefType(clazz);
+			return BaseType.newJavaRefType(clazz);
 		}
 	}
 
@@ -204,7 +204,7 @@ public class Signature {
 		char ch = sc.peekChar();
 
 		// Normal reference type
-		if( ch == '[' ) return Type.newArrayType(getType(sc));
+		if( ch == '[' ) return new ArrayType(getType(sc));
 
 		int pos = sc.pos;
 
@@ -222,16 +222,16 @@ public class Signature {
 		clazz = Env.newStruct(name);
 
 		if( !sc.hasMoreChars() )
-			return Type.newJavaRefType(clazz);
+			return BaseType.newJavaRefType(clazz);
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
 			sc.nextChar();
 			while(sc.peekChar() != '>')
 				args = (Type[])Arrays.append(args,getType(sc));
 			sc.nextChar();
-				return Type.newRefType(clazz,args);
+				return BaseType.newRefType(clazz,args);
 		} else {
-			return Type.newRefType(clazz);
+			return BaseType.newRefType(clazz);
 		}
 	}
 

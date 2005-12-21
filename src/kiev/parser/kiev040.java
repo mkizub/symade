@@ -372,7 +372,7 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(SEMICOLON);
                 TypeNameRef tr = new TypeNameRef(qn);
                 Struct pkg = Env.newPackage(qn.name);
-                pkg.type = Type.Type.newRefType(pkg);
+                pkg.type = BaseType.newRefType(pkg);
                 tr.lnk = pkg.type;
                 {if (true) return tr;}
     throw new Error("Missing return statement in function");

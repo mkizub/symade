@@ -225,7 +225,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (isAtt && !isArr)
 				f.setVirtual(true);
 		}
-		Field vals = s.addField(new Field(nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
+		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
 		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {

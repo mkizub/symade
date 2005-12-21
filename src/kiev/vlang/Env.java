@@ -193,7 +193,7 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = Type.newJavaRefType(cl);
+		cl.type = BaseType.newJavaRefType(cl);
 		return cl;
 	}
 /*

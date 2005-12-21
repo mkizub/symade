@@ -154,7 +154,7 @@ public class RuleMethod extends Method {
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+			FormPar va = new FormPar(pos,nameVarArgs,new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		foreach (Var lv; localvars)
@@ -868,7 +868,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Type ctype = expr.getType();
 		Method@ elems;
 		if( ctype.isArray() ) {
-			itype = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.bindings[0]});
+			itype = BaseType.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.bindings[0]});
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;

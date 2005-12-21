@@ -298,7 +298,7 @@ public class Bytecoder implements Constants {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			Type[] exceptions = new Type[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = Type.newRefType(
+				exceptions[i] = BaseType.newRefType(
 					ClazzName.fromBytecodeName( ea.getException(i,clazz), false ));
 			}
 			a = new ExceptionsAttr();

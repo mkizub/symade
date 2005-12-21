@@ -208,9 +208,8 @@ public class Meta extends ENode {
 	
 	public void verify() {
 		Type mt = type.getType();
-		if (mt == null || !mt.isAnnotation()) {
+		if!(mt instanceof AnnotationType)
 			throw new CompilerException(this, "Annotation name expected");
-		}
 		AnnotationType at = (AnnotationType)mt;
 		Meta m = this;
 		if (at.aname == MetaVirtual.NAME && !(this instanceof MetaVirtual))
@@ -260,7 +259,8 @@ public class Meta extends ENode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
+				Struct s = t.getStruct();
+				if!(t == Type.tpString || t == Type.tpClass || s.isAnnotation() || s.isEnum())
 					throw new CompilerException(m, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);

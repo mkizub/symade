@@ -138,7 +138,7 @@ public class ASTNewExpression extends ENode {
 		}
 
 		{
-			clazz.type = Type.newRefType(clazz,Type.emptyArray);
+			clazz.type = BaseType.newRefType(clazz,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
 			if( args.length > 0 ) {
 				MethodType mt;

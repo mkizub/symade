@@ -266,8 +266,8 @@ public final class NewArrayExpr extends ENode {
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
-		arrtype = Type.newArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
+		arrtype = new ArrayType(type.getType());
+		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
 	}
 
 	public String toString() {
@@ -393,8 +393,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		dims = new int[dim];
 		dims[0] = args.length;
 		foreach (ENode e; args) this.args.append(e);
-		arrtype = Type.newArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
+		arrtype = new ArrayType(type.getType());
+		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
 	}
 
 	public String toString() {
