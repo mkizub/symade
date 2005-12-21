@@ -218,7 +218,7 @@ public class TypeClassExpr extends ENode {
 	public void resolve(Type reqType) {
 		Type tp = type.getType();
 		if( !tp.isReference() ) {
-			Type rt = Type.getRefTypeForPrimitive(tp);
+			Type rt = TypeRules.getRefTypeForPrimitive(tp);
 			Field f = rt.clazz.resolveField(KString.from("TYPE"));
 			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
 			return;
@@ -323,7 +323,7 @@ public class AssignExpr extends LvalueExpr {
 		if (value instanceof TypeRef)
 			((TypeRef)value).toExpr(et1);
 		Type et2 = value.getType();
-		if( op == AssignOperator.Assign && et2.isAutoCastableTo(et1) && !et1.isWrapper() && !et2.isWrapper()) {
+		if( op == AssignOperator.Assign && TypeRules.isAutoCastableTo(et2,et1) && !et1.isWrapper() && !et2.isWrapper()) {
 			this.resolve2(reqType);
 			return;
 		}
@@ -427,7 +427,7 @@ public class AssignExpr extends LvalueExpr {
 			}
 		}
 		else if( !t2.isInstanceOf(t1) ) {
-			if( t2.isCastableTo(t1) ) {
+			if( TypeRules.isCastableTo(t2, t1) ) {
 				value = new CastExpr(pos,t1,(ENode)~value);
 				value.resolve(t1);
 			} else {
@@ -590,7 +590,7 @@ public class BinaryExpr extends ENode {
 		if( op==BinaryOperator.BitOr || op==BinaryOperator.BitXor || op==BinaryOperator.BitAnd ) {
 			if( (t1.isInteger() && t2.isInteger()) || (t1.isBoolean() && t2.isBoolean()) ) {
 				if( t1==Type.tpLong || t2==Type.tpLong ) return Type.tpLong;
-				if( t1.isAutoCastableTo(Type.tpBoolean) && t2.isAutoCastableTo(Type.tpBoolean) ) return Type.tpBoolean;
+				if( TypeRules.isAutoCastableTo(t1,Type.tpBoolean) && TypeRules.isAutoCastableTo(t2,Type.tpBoolean) ) return Type.tpBoolean;
 				return Type.tpInt;
 			}
 		}
@@ -742,11 +742,11 @@ public class BinaryExpr extends ENode {
 				expr2.resolve(Type.tpInt);
 			}
 		} else {
-			if( !rt.equals(t1) && t1.isCastableTo(rt) ) {
+			if( !rt.equals(t1) && TypeRules.isCastableTo(t1,rt) ) {
 				expr1 = new CastExpr(pos,rt,(ENode)~expr1);
 				expr1.resolve(null);
 			}
-			if( !rt.equals(t2) && t2.isCastableTo(rt) ) {
+			if( !rt.equals(t2) && TypeRules.isCastableTo(t2,rt) ) {
 				expr2 = new CastExpr(pos,rt,(ENode)~expr2);
 				expr2.resolve(null);
 			}
@@ -1280,7 +1280,7 @@ public class UnaryExpr extends ENode {
 			replaceWithNodeResolve(reqType, new IncrementExpr(pos,op,(ENode)~expr));
 			return;
 		}
-		if( et.isAutoCastableTo(Type.tpBoolean) &&
+		if( TypeRules.isAutoCastableTo(et, Type.tpBoolean) &&
 			(  op==PrefixOperator.PreIncr
 			|| op==PrefixOperator.BooleanNot
 			)
@@ -1549,11 +1549,11 @@ public class ConditionalExpr extends ENode {
 			if( t1 == t2 ) return t1;
 			if( t1 == Type.tpNull ) return t2;
 			if( t2 == Type.tpNull ) return t1;
-			return Type.leastCommonType(t1,t2);
+			return TypeRules.leastCommonType(t1,t2);
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
 			if( t1 == t2 ) return t1;
-			return Type.upperCastNumbers(t1,t2);
+			return TypeRules.upperCastNumbers(t1,t2);
 		}
 		return expr1.getType();
 	}
@@ -1672,13 +1672,13 @@ public class CastExpr extends ENode {
 		expr.resolve(type);
 		if (expr instanceof TypeRef)
 			((TypeRef)expr).toExpr(type);
-		Type extp = Type.getRealType(type,expr.getType());
+		Type extp = TypeRules.getReal(type,expr.getType());
 		if( type == Type.tpBoolean && extp == Type.tpRule ) {
 			replaceWithNode(expr);
 			return;
 		}
 		// Try to find $cast method
-		if( !extp.isAutoCastableTo(type) ) {
+		if (!TypeRules.isAutoCastableTo(extp,type)) {
 			if( tryOverloadedCast(extp) )
 				return;
 			if (extp.isWrapper()) {
@@ -1687,7 +1687,7 @@ public class CastExpr extends ENode {
 				return;
 			}
 		}
-		else if (extp.isWrapper() && extp.getWrappedType().isAutoCastableTo(type)) {
+		else if (extp.isWrapper() && TypeRules.isAutoCastableTo(extp.getWrappedType(),type)) {
 			if( tryOverloadedCast(extp) )
 				return;
 			expr = extp.makeWrappedAccess(expr);
@@ -1698,7 +1698,7 @@ public class CastExpr extends ENode {
 			this.resolve2(type);
 			return;
 		}
-		if( extp.isCastableTo(type) ) {
+		if( TypeRules.isCastableTo(extp,type) ) {
 			this.resolve2(type);
 			return;
 		}
@@ -1743,7 +1743,7 @@ public class CastExpr extends ENode {
 		if (reqType == Type.tpVoid) {
 			setResolved(true);
 		}
-		Type et = Type.getRealType(type,expr.getType());
+		Type et = TypeRules.getReal(type,expr.getType());
 		// Try wrapped field
 		if (et.isWrapper() && et.getWrappedType().equals(type)) {
 			expr = et.makeWrappedAccess(expr);
@@ -1774,7 +1774,7 @@ public class CastExpr extends ENode {
 			return;
 		}
 		// Try to find $cast method
-		if( !et.isAutoCastableTo(type) && tryOverloadedCast(et))
+		if( !TypeRules.isAutoCastableTo(et,type) && tryOverloadedCast(et))
 			return;
 
 		if( et.isReference() != type.isReference() && !(expr instanceof ClosureCallExpr) )
@@ -1782,7 +1782,7 @@ public class CastExpr extends ENode {
 				Kiev.reportWarning(this,"Cast of argument to primitive type - ensure 'generate' of this type and wrapping in if( A instanceof type ) statement");
 			else if (!et.isEnum())
 				throw new CompilerException(this,"Expression "+expr+" of type "+et+" cannot be casted to type "+type);
-		if( !et.isCastableTo((Type)type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
+		if( !TypeRules.isCastableTo(et,type) && !(reinterp && et.isIntegerInCode() && type.isIntegerInCode() )) {
 			throw new RuntimeException("Expression "+expr+" cannot be casted to type "+type);
 		}
 		if( Kiev.verify && expr.getType() != et ) {
@@ -1843,11 +1843,11 @@ public class CastExpr extends ENode {
 			return;
 		}
 		if( expr instanceof ClosureCallExpr && et instanceof ClosureType ) {
-			if( et.isAutoCastableTo(type) ) {
+			if( TypeRules.isAutoCastableTo(et,type) ) {
 				((ClosureCallExpr)expr).is_a_call = true;
 				return;
 			}
-			else if( et.isCastableTo(type) ) {
+			else if( TypeRules.isCastableTo(et,type) ) {
 				((ClosureCallExpr)expr).is_a_call = true;
 			}
 		}
@@ -1861,9 +1861,9 @@ public class CastExpr extends ENode {
 		assert(ex.isAttached());
 		Type at = ex.getType();
 		if( !at.equals(tp) ) {
-			if( at.isReference() && !tp.isReference() && Type.getRefTypeForPrimitive(tp).equals(at) )
+			if( at.isReference() && !tp.isReference() && TypeRules.getRefTypeForPrimitive(tp).equals(at) )
 				autoCastToPrimitive(ex);
-			else if( !at.isReference() && tp.isReference() && Type.getRefTypeForPrimitive(at).equals(tp) )
+			else if( !at.isReference() && tp.isReference() && TypeRules.getRefTypeForPrimitive(at).equals(tp) )
 				autoCastToReference(ex);
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;

@@ -243,7 +243,7 @@ public class PassInfo {
 				}
 				for (int k=0; k < mt.args.length; k++) {
 					if (mt1.args[k] != mt2.args[k]) {
-						b = mt.args[k].betterCast(mt1.args[k],mt2.args[k]);
+						b = TypeRules.betterCast(mt.args[k],mt1.args[k],mt2.args[k]);
 						if (b == mt2.args[k]) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
@@ -255,7 +255,7 @@ public class PassInfo {
 					}
 				}
 				if (mt1.ret != mt2.ret) {
-					b = mt.ret.betterCast(mt1.ret,mt2.ret);
+					b = TypeRules.betterCast(mt.ret,mt1.ret,mt2.ret);
 					if (b == mt2.ret) {
 						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
 						continue next_method;

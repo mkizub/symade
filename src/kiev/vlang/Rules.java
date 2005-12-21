@@ -245,7 +245,7 @@ public class RuleMethod extends Method {
 //			}
 //		}
 //		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-//		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+//		MethodType rt = (MethodType)TypeRules.getReal(tp,this.type);
 //		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 //			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
 //				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -879,7 +879,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
 		) {
-			itype = Type.getRealType(ctype,elems.type.ret);
+			itype = TypeRules.getReal(ctype,elems.type.ret);
 			mode = ELEMS;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+

@@ -100,10 +100,10 @@ public class ASTNewExpression extends ENode {
 				found = true;
 				for(int j=0; i < mtargs.length; i++,j++) {
 					if( targs[j] == null )
-						targs[j] = Type.getRealType(tp,mtargs[i]);
+						targs[j] = TypeRules.getReal(tp,mtargs[i]);
 					else if( targs[j] == Type.tpVoid )
 						;
-					else if( targs[j] != Type.getRealType(tp,mtargs[i]) )
+					else if( targs[j] != TypeRules.getReal(tp,mtargs[i]) )
 						targs[j] = Type.tpVoid;
 				}
 			}

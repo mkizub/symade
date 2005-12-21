@@ -9,6 +9,208 @@ import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 
+public final class TypeRules implements StdTypes {
+	private TypeRules() {}
+	
+	public static boolean isAutoCastableTo(Type t1, Type t2)
+	{
+		if( t2 == Type.tpVoid ) return true;
+		if( t1.isReference() && t2.isReference() && (t1==tpNull || t2==tpNull) ) return true;
+		if( t1.isInstanceOf(t2) ) return true;
+		if( t1 == Type.tpRule && t2 == Type.tpBoolean ) return true;
+		if( t1.isBoolean() && t2.isBoolean() ) return true;
+		if( t1.isReference() && !t2.isReference() ) {
+			if( getRefTypeForPrimitive(t2) == t1 ) return true;
+			else if( !Kiev.javaMode && t2==Type.tpInt && t1.isInstanceOf(Type.tpEnum) )
+				return true;
+		}
+		if( t2.isReference() && !t1.isReference() ) {
+			if( getRefTypeForPrimitive(t1) == t2 ) return true;
+			else if( !Kiev.javaMode && t1==Type.tpInt && t2.isInstanceOf(Type.tpEnum) )
+				return true;
+		}
+		if( t1==tpByte && ( t2==tpShort || t2==tpInt || t2==tpLong || t2==tpFloat || t2==tpDouble) ) return true;
+		if( (t1==tpShort || t1==tpChar) && (t2==tpInt || t2==tpLong || t2==tpFloat || t2==tpDouble) ) return true;
+		if( t1==tpInt && (t2==tpLong || t2==tpFloat || t2==tpDouble) ) return true;
+		if( t1==tpLong && ( t2==tpFloat || t2==tpDouble) ) return true;
+		if( t1==tpFloat && t2==tpDouble ) return true;
+		if( t1.isWrapper() || t2.isWrapper() ) {
+			if( t1.isWrapper() && t2.isWrapper() )
+				return isAutoCastableTo(t1.getWrappedType(),t2.getWrappedType());
+			else if( t1.isWrapper() && isAutoCastableTo(t1.getWrappedType(),t2) )
+				return true;
+			else if( t2.isWrapper() && isAutoCastableTo(t2,t1.getWrappedType()) )
+				return true;
+			return false;
+		}
+		if( t1 instanceof ClosureType && !(t2 instanceof CallableType) && ((ClosureType)t1).cargs.length == 0 ) {
+			if( isAutoCastableTo(((ClosureType)t1).ret,t2) ) return true;
+		}
+		return false;
+	}
+
+	public static Type leastCommonType(Type tp1, Type tp2) {
+		Type tp = tp1;
+		while( tp != null ) {
+			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) )
+				return tp;
+			tp = tp.getSuperType();
+		}
+		return tp;
+	}
+
+	public static Type upperCastNumbers(Type tp1, Type tp2) {
+		assert( tp1.isNumber() );
+		assert( tp2.isNumber() );
+		if( tp1==Type.tpDouble || tp2==Type.tpDouble) return Type.tpDouble;
+		if( tp1==Type.tpFloat || tp2==Type.tpFloat) return Type.tpFloat;
+		if( tp1==Type.tpLong || tp2==Type.tpLong) return Type.tpLong;
+		if( tp1==Type.tpInt || tp2==Type.tpInt) return Type.tpInt;
+		if( tp1==Type.tpChar || tp2==Type.tpChar) return Type.tpChar;
+		if( tp1==Type.tpShort || tp2==Type.tpShort) return Type.tpShort;
+		if( tp1==Type.tpByte || tp2==Type.tpByte) return Type.tpByte;
+		throw new RuntimeException("Bad number types "+tp1+" or "+tp2);
+	}
+
+	public static boolean isCastableTo(Type t1, Type t2) {
+		if( t1.isNumber() && t2.isNumber() ) return true;
+		if( t1.isReference() && t2.isReference() && (t1==tpNull || t2==tpNull) ) return true;
+		if( t1.isInstanceOf(t2) ) return true;
+		if( t2.isInstanceOf(t1) ) return true;
+		if( t1.isReference() && t2.isReference() && (t1.isInterface() || t2.isInterface()) ) return true;
+		if( t1.isEnum())
+			return isCastableTo(t1, Type.tpInt);
+		if( t2.isArgument() && isCastableTo(t1, t2.getSuperType()) )
+			return true;
+		if( t2.isArgument() && !t1.isReference() ) {
+			return true;
+		}
+		if( t1 instanceof ClosureType && !(t2 instanceof CallableType) && ((ClosureType)t1).cargs.length == 0 ) {
+			if( isCastableTo(((ClosureType)t1).ret, t2) ) return true;
+		}
+		if( t1.isWrapper())
+			return isCastableTo(((WrapperType)t1).getUnwrappedType(),t2);
+		if( t2.isWrapper())
+			return isCastableTo(t1,((WrapperType)t2).getUnwrappedType());
+		return false;
+	}
+
+	public static BaseType getRefTypeForPrimitive(Type tp) {
+		if( tp.isReference() ) return (BaseType)tp;
+		if( tp == Type.tpBoolean ) return Type.tpBooleanRef;
+//		else if( tp == Type.tpRule ) return Type.tpBooleanRef;
+		else if( tp == Type.tpByte ) return Type.tpByteRef;
+		else if( tp == Type.tpShort ) return Type.tpShortRef;
+		else if( tp == Type.tpInt ) return Type.tpIntRef;
+		else if( tp == Type.tpLong ) return Type.tpLongRef;
+		else if( tp == Type.tpFloat ) return Type.tpFloatRef;
+		else if( tp == Type.tpDouble ) return Type.tpDoubleRef;
+		else if( tp == Type.tpChar ) return Type.tpCharRef;
+		else if( tp == Type.tpVoid ) return Type.tpVoidRef;
+		else
+			throw new RuntimeException("Unknown primitive type "+tp);
+	}
+
+	public static Type betterCast(Type t0, Type t1, Type t2) {
+		if( t0.equals(t1) ) return t1;
+		if( t0.equals(t2) ) return t2;
+		if( t0.isBoolean() && t1.isBoolean() ) return t1;
+		if( t0.isBoolean() && t2.isBoolean() ) return t2;
+		if( t0.isNumber() ) {
+			if( t0.isInteger() ) {
+				if( t0 == tpByte )
+					if( t1==tpShort || t2==tpShort ) return tpShort;
+					else if( t1==tpInt || t2==tpInt ) return tpInt;
+					else if( t1==tpLong || t2==tpLong ) return tpLong;
+					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
+					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+					else return null;
+				else if( t0 == tpChar )
+					if( t1==tpShort || t2==tpShort ) return tpShort;
+					else if( t1==tpInt || t2==tpInt ) return tpInt;
+					else if( t1==tpLong || t2==tpLong ) return tpLong;
+					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
+					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+					else return null;
+				else if( t0 == tpShort )
+					if( t1==tpInt || t2==tpInt ) return tpInt;
+					else if( t1==tpLong || t2==tpLong ) return tpLong;
+					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
+					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+					else return null;
+				else if( t0 == tpInt )
+					if( t1==tpLong || t2==tpLong ) return tpLong;
+					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
+					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+					else return null;
+			} else {
+				if( t0 == tpFloat )
+					if( t1==tpFloat || t2==tpFloat ) return tpFloat;
+					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+					else return null;
+				else if( t0 == tpDouble )
+					if( t1==tpDouble || t2==tpDouble) return tpDouble;
+					else return null;
+			}
+		}
+		else if( t0.isReference() ) {
+			if( t1.isReference() && !t2.isReference() ) return t1;
+			else if( !t1.isReference() && t2.isReference() ) return t2;
+			else if( !t1.isReference() && !t2.isReference() ) return null;
+			if( t0 == tpNull ) return null;
+			if( t0.isInstanceOf(t1) ) {
+				if( !t0.isInstanceOf(t2) ) return t1;
+				else if( t2.isInstanceOf(t1) ) return t2;
+				else return t1;
+			}
+			else if( t0.isInstanceOf(t2) ) return t2;
+			if( t1.isWrapper() && t2.isWrapper() ) {
+				Type tp1 = t1.getWrappedType();
+				Type tp2 = t2.getWrappedType();
+				Type tp_better = betterCast(t0,tp1,tp2);
+				if( tp_better != null ) {
+					if( tp_better == tp1 ) return t1;
+					if( tp_better == tp2 ) return t2;
+				}
+			}
+			return null;
+		}
+		return null;
+	}
+
+	public static Type getReal(Type t1, TypeRef t2) {
+		return getReal(t1, t2.lnk);
+	}
+	public static Type getReal(TypeRef t1, Type t2) {
+		return getReal(t1.lnk, t2);
+	}
+	public static Type getReal(TypeRef t1, TypeRef t2) {
+		return getReal(t1.lnk, t2.lnk);
+	}
+	public static Type getReal(Type t1, Type t2) {
+		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
+		if( t1 == null || t2 == null )	return t2;
+		if( !t2.isArgumented() )		return t2;
+		if( !t2.isReference() && !t2.isCallable()) return t2;
+		TypeBinding[] tb = new TypeBinding[t2.bindings.length];
+next_b1:for (int i=0; i < t2.bindings.length; i++) {
+			TypeBinding b2 = t2.bindings[i];
+			for (int j=0; j < t1.bindings.length; j++) {
+				TypeBinding b1 = t1.bindings[j];
+				if (b1.arg == b2.arg) {
+					tb[i] = b1.applay(b2);
+					continue next_b1;
+				}
+			}
+			tb[i] = b2;
+		}
+		t2 = t2.newWithBindings(tb);
+		return null;
+	}
+
+}
+
+
 public abstract class Type implements StdTypes, AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
@@ -243,171 +445,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return this.equals(t);
 	}
 
-	public boolean isAutoCastableTo(Type t)
-	{
-		if( t == Type.tpVoid ) return true;
-		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
-		if( isInstanceOf(t) ) return true;
-		if( this == Type.tpRule && t == Type.tpBoolean ) return true;
-		if( this.isBoolean() && t.isBoolean() ) return true;
-		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) == this ) return true;
-			else if( !Kiev.javaMode && t==Type.tpInt && this.isInstanceOf(Type.tpEnum) )
-				return true;
-		}
-		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) == this ) return true;
-			else if( !Kiev.javaMode && this==Type.tpInt && t.isInstanceOf(Type.tpEnum) ) return true;
-		}
-		if( this==tpByte && ( t==tpShort || t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( (this==tpShort || this==tpChar) && (t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpInt && (t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpLong && ( t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpFloat && t==tpDouble ) return true;
-		if( this.isWrapper() || t.isWrapper() ) {
-			if( this.isWrapper() && t.isWrapper() )
-				return this.getWrappedType().isAutoCastableTo(t.getWrappedType());
-			else if( this.isWrapper() && this.getWrappedType().isAutoCastableTo(t) )
-				return true;
-			else if( t.isWrapper() && t.isAutoCastableTo(t.getWrappedType()) )
-				return true;
-			return false;
-		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).cargs.length == 0 ) {
-			if( ((ClosureType)this).ret.isAutoCastableTo(t) ) return true;
-		}
-		return false;
-	}
-
-	public Type betterCast(Type t1, Type t2) {
-		if( equals(t1) ) return t1;
-		if( equals(t2) ) return t2;
-		if( isBoolean() && t1.isBoolean() ) return t1;
-		if( isBoolean() && t2.isBoolean() ) return t2;
-		if( isNumber() ) {
-			if( isInteger() ) {
-				if( this == tpByte )
-					if( t1==tpShort || t2==tpShort ) return tpShort;
-					else if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
-					else return null;
-				else if( this == tpChar )
-					if( t1==tpShort || t2==tpShort ) return tpShort;
-					else if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
-					else return null;
-				else if( this == tpShort )
-					if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
-					else return null;
-				else if( this == tpInt )
-					if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
-					else return null;
-			} else {
-				if( this == tpFloat )
-					if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
-					else return null;
-				else if( this == tpDouble )
-					if( t1==tpDouble || t2==tpDouble) return tpDouble;
-					else return null;
-			}
-		}
-		else if( this.isReference() ) {
-			if( t1.isReference() && !t2.isReference() ) return t1;
-			else if( !t1.isReference() && t2.isReference() ) return t2;
-			else if( !t1.isReference() && !t2.isReference() ) return null;
-			if( this == tpNull ) return null;
-			if( isInstanceOf(t1) ) {
-				if( !isInstanceOf(t2) ) return t1;
-				else if( t2.isInstanceOf(t1) ) return t2;
-				else return t1;
-			}
-			else if( isInstanceOf(t2) ) return t2;
-			if( t1.isWrapper() && t2.isWrapper() ) {
-				Type tp1 = t1.getWrappedType();
-				Type tp2 = t2.getWrappedType();
-				Type tp_better = betterCast(tp1,tp2);
-				if( tp_better != null ) {
-					if( tp_better == tp1 ) return t1;
-					if( tp_better == tp2 ) return t2;
-				}
-			}
-			return null;
-		}
-		return null;
-	}
-
-	public static Type leastCommonType(Type tp1, Type tp2) {
-		Type tp = tp1;
-		while( tp != null ) {
-			if( tp1.isInstanceOf(tp) && tp2.isInstanceOf(tp) )
-				return tp;
-			tp = tp.getSuperType();
-		}
-		return tp;
-	}
-
-	public static Type upperCastNumbers(Type tp1, Type tp2) {
-		assert( tp1.isNumber() );
-		assert( tp2.isNumber() );
-		if( tp1==Type.tpDouble || tp2==Type.tpDouble) return Type.tpDouble;
-		if( tp1==Type.tpFloat || tp2==Type.tpFloat) return Type.tpFloat;
-		if( tp1==Type.tpLong || tp2==Type.tpLong) return Type.tpLong;
-		if( tp1==Type.tpInt || tp2==Type.tpInt) return Type.tpInt;
-		if( tp1==Type.tpChar || tp2==Type.tpChar) return Type.tpChar;
-		if( tp1==Type.tpShort || tp2==Type.tpShort) return Type.tpShort;
-		if( tp1==Type.tpByte || tp2==Type.tpByte) return Type.tpByte;
-		throw new RuntimeException("Bad number types "+tp1+" or "+tp2);
-	}
-
-	public boolean isCastableTo(Type t) {
-		if( isNumber() && t.isNumber() ) return true;
-		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
-		if( isInstanceOf(t) ) return true;
-		if( t.isInstanceOf(this) ) return true;
-		if( this.isReference() && t.isReference() && (this.isInterface() || t.isInterface()) ) return true;
-		if( t.isEnum())
-			return this.isCastableTo(Type.tpInt);
-		if( t.isArgument() && isCastableTo(t.getSuperType()) )
-			return true;
-		if( t.isArgument() && !this.isReference() ) {
-			return true;
-		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).cargs.length == 0 ) {
-			if( ((ClosureType)this).ret.isCastableTo(t) ) return true;
-		}
-		if( this.isWrapper())
-			return ((WrapperType)this).getUnwrappedType().isCastableTo(t);
-		if( t.isWrapper())
-			return this.isCastableTo(((WrapperType)t).getUnwrappedType());
-		return false;
-	}
-
-	public static BaseType getRefTypeForPrimitive(Type tp) {
-		if( tp.isReference() ) return (BaseType)tp;
-		if( tp == Type.tpBoolean ) return Type.tpBooleanRef;
-//		else if( tp == Type.tpRule ) return Type.tpBooleanRef;
-		else if( tp == Type.tpByte ) return Type.tpByteRef;
-		else if( tp == Type.tpShort ) return Type.tpShortRef;
-		else if( tp == Type.tpInt ) return Type.tpIntRef;
-		else if( tp == Type.tpLong ) return Type.tpLongRef;
-		else if( tp == Type.tpFloat ) return Type.tpFloatRef;
-		else if( tp == Type.tpDouble ) return Type.tpDoubleRef;
-		else if( tp == Type.tpChar ) return Type.tpCharRef;
-		else if( tp == Type.tpVoid ) return Type.tpVoidRef;
-		else
-			throw new RuntimeException("Unknown primitive type "+tp);
-	}
-
 	public boolean isArgument()				{ return false; }
 	
 	public final boolean isReference()		{ return (flags & flReference)		!= 0 ; }
@@ -439,52 +476,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	private static int get_real_type_depth = 0;
 
-	public static Type getRealType(Type t1, TypeRef t2) {
-		return Type.getRealType(t1, t2.lnk);
-	}
-	public static Type getRealType(TypeRef t1, Type t2) {
-		return Type.getRealType(t1.lnk, t2);
-	}
-	public static Type getRealType(TypeRef t1, TypeRef t2) {
-		return Type.getRealType(t1.lnk, t2.lnk);
-	}
-	public static Type getRealType(Type t1, Type t2) {
-		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
-		if( t1 == null || t2 == null )	return t2;
-		if( !t2.isArgumented() )		return t2;
-		if( !t2.isReference() && !t2.isCallable()) return t2;
-		TypeBinding[] tb = new TypeBinding[t2.bindings.length];
-next_b1:for (int i=0; i < t2.bindings.length; i++) {
-			TypeBinding b2 = t2.bindings[i];
-			for (int j=0; j < t1.bindings.length; j++) {
-				TypeBinding b1 = t1.bindings[j];
-				if (b1.arg == b2.arg) {
-					tb[i] = b1.applay(b2);
-					continue next_b1;
-				}
-			}
-			tb[i] = b2;
-		}
-		t2 = t2.newWithBindings(tb);
-		return null;
-	}
-
-	public static BaseType getProxyType(Type tp) {
-		return newRefType(Type.tpRefProxy.clazz,new Type[]{tp});
-//		if( tp.isReference() )			return Type.tpCellObject;
-//		else if( tp == Type.tpBoolean )	return Type.tpCellBoolean;
-//		else if( tp == Type.tpByte )	return Type.tpCellByte;
-//		else if( tp == Type.tpChar )	return Type.tpCellChar;
-//		else if( tp == Type.tpShort)	return Type.tpCellShort;
-//		else if( tp == Type.tpInt  )	return Type.tpCellInt ;
-//		else if( tp == Type.tpLong )	return Type.tpCellLong;
-//		else if( tp == Type.tpFloat)	return Type.tpCellFloat;
-//		else if( tp == Type.tpDouble)	return Type.tpCellDouble;
-//		return tp;
-	}
-
 	public final void checkJavaSignature() {
-		//assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		jtype == null;
 	}
 
@@ -558,7 +550,7 @@ public class BaseType extends Type {
 
 	public Struct getStruct()			{ return clazz; }
 	public Type getTemplateType()		{ return clazz.type; }
-	public Type getSuperType()			{ return Type.getRealType(this,clazz.super_type); }
+	public Type getSuperType()			{ return TypeRules.getReal(this,clazz.super_type); }
 	
 	public Type newWithBindings(TypeBinding[] tb) {
 		return Type.newRefType(this.clazz,tb);
@@ -604,7 +596,7 @@ public class BaseType extends Type {
 	{
 		sup @= getDirectSuperTypes(),
 		info.enterSuper() : info.leaveSuper(),
-		Type.getRealType(this, sup).resolveNameAccessR(node,info,name)
+		TypeRules.getReal(this, sup).resolveNameAccessR(node,info,name)
 	}
 
 	private rule resolveNameR_4(DNode@ node, ResInfo info, KString name)
@@ -613,7 +605,7 @@ public class BaseType extends Type {
 			forw @= getStruct().members,
 			forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
 			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(this,((Field)forw).type).resolveNameAccessR(node,info,name)
+			TypeRules.getReal(this,((Field)forw).type).resolveNameAccessR(node,info,name)
 	}
 
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
@@ -628,7 +620,7 @@ public class BaseType extends Type {
 		MethodType mtype;
 	{
 		checkResolved(),
-		mtype = (MethodType)Type.getRealType(this, mt),
+		mtype = (MethodType)TypeRules.getReal(this, mt),
 		trace(Kiev.debugResolve, "Resolving method "+name+" in "+this),
 		{
 			clazz instanceof Struct,
@@ -641,13 +633,13 @@ public class BaseType extends Type {
 			info.isSuperAllowed(),
 			info.enterSuper() : info.leaveSuper(),
 			sup @= getDirectSuperTypes(),
-			Type.getRealType(this,sup).resolveCallAccessR(node,info,name,mtype)
+			TypeRules.getReal(this,sup).resolveCallAccessR(node,info,name,mtype)
 		;
 			info.isForwardsAllowed() && clazz instanceof Struct,
 			member @= getStruct().members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mtype)
+			TypeRules.getReal(this,((Field)member).type).resolveCallAccessR(node,info,name,mtype)
 		}
 	}
 
@@ -702,7 +694,7 @@ public class BaseType extends Type {
 			return true;
 		}
 		foreach (Type sup; t1.getDirectSuperTypes()) {
-			if (Type.getRealType(t1,sup).isInstanceOf(t2))
+			if (TypeRules.getReal(t1,sup).isInstanceOf(t2))
 				return true;
 		}
 		return false;
@@ -999,7 +991,7 @@ public class WrapperType extends Type {
 
 	public final boolean isWrapper()					{ return true; }
 	public final ENode makeWrappedAccess(ASTNode from)	{ return new IFldExpr(from.pos,(ENode)~from, wrapped_field); } 
-	public final Type getWrappedType()					{ return Type.getRealType(this, wrapped_field.type); }
+	public final Type getWrappedType()					{ return TypeRules.getReal(this, wrapped_field.type); }
 	
 	public BaseType getUnwrappedType()					{ return unwrapped_type; }
 	
@@ -1029,7 +1021,7 @@ public class WrapperType extends Type {
 	{
 		info.isForwardsAllowed(),$cut,
 		checkResolved(),
-		mtype = (MethodType)Type.getRealType(this, mt),
+		mtype = (MethodType)TypeRules.getReal(this, mt),
 		trace(Kiev.debugResolve, "Resolving method "+name+" in wrapper type "+this),
 		{
 			info.enterForward(wrapped_field, 0) : info.leaveForward(wrapped_field, 0),

@@ -670,17 +670,17 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		;	info.isSuperAllowed(),
 			sup ?= super_type,
 			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
 		;	isInterface(),
 			member @= members,
 			member instanceof Struct && ((Struct)member).isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			((Struct)member).resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
 		;	info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
 		}
 	}
 
@@ -1080,7 +1080,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				ENode[] exprs = new ENode[super_type.clazz.args.length];
 				for (int arg=0; arg < super_type.clazz.args.length; arg++) {
 					Type t = super_type.bindings[arg];
-					t = Type.getRealType(this.type,t);
+					t = TypeRules.getReal(this.type,t);
 					if (t instanceof ArgumentType) {
 						exprs[arg] = new ASTIdentifier(pos,((ArgumentType)t).name.short_name);
 					} else {
@@ -1294,7 +1294,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
-			MethodType mit = (MethodType)Type.getRealType(base,mi.jtype);
+			MethodType mit = (MethodType)TypeRules.getReal(base,mi.jtype);
 			if( m.jtype.equals(mit) ) {
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
@@ -1736,7 +1736,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) )
 					be = new InstanceofExpr(pos,
 						new LVarExpr(pos,mm.params[j]),
-						Type.getRefTypeForPrimitive(t));
+						TypeRules.getRefTypeForPrimitive(t));
 				if( t.getStruct() != null && t.getStruct().args.length > 0 && !(t instanceof ClosureType) ) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
@@ -1926,11 +1926,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				foreach (ASTNode sn; s.members; sn instanceof Method) {
 					Method mj = (Method)sn;
 					if( !mj.isStatic() && mj.name.equals(mi.name) ) {
-						if( Type.getRealType(me.type,mj.type).equals(
-										Type.getRealType(me.type,mi.type)) ) {
+						if( TypeRules.getReal(me.type,mj.type).equals(
+										TypeRules.getReal(me.type,mi.type)) ) {
 							trace(Kiev.debugResolve,"chk: methods "+mi.name+
-									Type.getRealType(me.type,mj.type)+
-									" and "+mi.name+Type.getRealType(me.type,mi.type)+" equals");
+									TypeRules.getReal(me.type,mj.type)+
+									" and "+mi.name+TypeRules.getReal(me.type,mi.type)+" equals");
 							if( !mj.isPublic() ) {
 								Kiev.reportWarning(me,"Method "+s+"."+mj+" must be declared public");
 								mj.setPublic(true);
@@ -1939,8 +1939,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							break scan_class;
 						 } else {
 							trace(Kiev.debugResolve,"chk: methods "+mi.name+
-									Type.getRealType(me.type,mj.type)+
-									" and "+mi.name+Type.getRealType(me.type,mi.type)+" not equals");
+									TypeRules.getReal(me.type,mj.type)+
+									" and "+mi.name+TypeRules.getReal(me.type,mi.type)+" not equals");
 						 }
 					 }
 				}
@@ -2228,8 +2228,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			for(List<Method> msi = ms; msi != List.Nil; msi = msi.tail()) {
 				if( (  (by_name_name && m.name.name.equals(msi.head().name.name))
 					|| (!by_name_name && m.name.equals(msi.head().name)) )
-//				 && Type.getRealType(tp,m.jtype).equals(Type.getRealType(tp,msi.head().jtype)) ) {
-				 && Type.getRealType(tp,m.type).equals(Type.getRealType(tp,msi.head().type)) ) {
+//				 && TypeRules.getReal(tp,m.jtype).equals(TypeRules.getReal(tp,msi.head().jtype)) ) {
+				 && TypeRules.getReal(tp,m.type).equals(TypeRules.getReal(tp,msi.head().type)) ) {
 					((List.Cons<Method>)msi).head = m;
 //					System.out.println("replace from "+this+" method "+m.name+m.type.signature);
 					continue next_method;
@@ -2244,11 +2244,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
 		if( super_type != null ) {
 			ms = super_type.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,super_type),ms);
+				TypeRules.getReal(tp,super_type),ms);
 		}
 		foreach(Type i; interfaces) {
 			ms = i.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,i),ms);
+				TypeRules.getReal(tp,i),ms);
 		}
 		if( isInterface() ) {
 //			System.out.println("collecting in "+this);

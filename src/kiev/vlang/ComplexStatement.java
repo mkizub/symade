@@ -154,7 +154,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 			if( val != null ) {
 				val.resolve(null);
 				if( val instanceof TypeRef ) {
-					this.type = Type.getRealType(sw.tmpvar.getType(),val.getType());
+					this.type = TypeRules.getReal(sw.tmpvar.getType(),val.getType());
 					pizza_case = true;
 					Struct cas = this.type.getStruct();
 					if( cas.isPizzaCase() ) {
@@ -175,12 +175,12 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
 								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
-								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
+								Type tp = TypeRules.getReal(sw.tmpvar.getType(),f.type);
 								if( !p.type.equals(tp) )
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
-											Type.getRealType(sw.tmpvar.getType(),cas.type),
+											TypeRules.getReal(sw.tmpvar.getType(),cas.type),
 											new LVarExpr(p.pos,sw.tmpvar.getVar())
 										),
 										f

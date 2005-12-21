@@ -320,7 +320,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	}
 
 	public JFieldView resolveVarVal() {
-		BaseType prt = Type.getProxyType(var.type);
+		BaseType prt = TypeRules.getRefTypeForPrimitive(var.type);
 		JFieldView var_valf = prt.clazz.getJStructView().resolveField(nameCellVal);
 		return var_valf;
 	}
@@ -375,7 +375,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if (!var.isNeedProxy()) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -395,7 +395,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if (!var.isNeedProxy()) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -417,7 +417,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if (!var.isNeedProxy()) {
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
@@ -431,7 +431,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if (!var.isNeedProxy()) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_store,var);
@@ -449,7 +449,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if( !var.isNeedProxy() || isUseNoProxy() ) {
+		if (!var.isNeedProxy()) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_dup);

@@ -3,6 +3,7 @@ package kiev.be.java;
 import kiev.*;
 
 import kiev.vlang.Type;
+import kiev.vlang.TypeRules;
 import kiev.vlang.MethodType;
 import kiev.vlang.ClosureType;
 import kiev.vlang.Constants;
@@ -236,7 +237,7 @@ public final class Code implements Constants {
 			Type t1 = stack_at(j);
 			Type t2 = types[i];
 			try {
-				if( !(	t1.isAutoCastableTo(t2)
+				if( !( TypeRules.isAutoCastableTo(t1,t2)
 				     || ( t1.isIntegerInCode() && t2.isIntegerInCode() )
 				     || ( t1.isArray() && t2.isArray()) )
 				)
@@ -540,7 +541,7 @@ public final class Code implements Constants {
 			trace(Kiev.debugInstrGen,"\t\tgenerating static call to method: "+m);
 			call_static = true;
 		}
-		MethodType mtype = (MethodType)Type.getRealType(tp,m.dtype);
+		MethodType mtype = (MethodType)TypeRules.getReal(tp,m.dtype);
 		for(int i=0; mtype.args!=null && i < mtype.args.length; i++) {
 			try {
 				Type t1 = stack_at(mtype.args.length-i-1);
@@ -554,7 +555,7 @@ public final class Code implements Constants {
 			}
 		}
 		KString sign;
-		Type ttt = Type.getRealType(tp,((JStructView)m.jparent).type);
+		Type ttt = TypeRules.getReal(tp,((JStructView)m.jparent).type);
 		sign = m.jtype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
@@ -1262,14 +1263,14 @@ public final class Code implements Constants {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		Type ttt = Type.getRealType(tp.getTemplateType(),f.jctx_clazz.type);
+		Type ttt = TypeRules.getReal(tp.getTemplateType(),f.jctx_clazz.type);
 		KString struct_sig = ttt.getJType().java_signature;
-		KString field_sig = Type.getRealType(f.jctx_clazz.type,f.type).getJType().java_signature;
+		KString field_sig = TypeRules.getReal(f.jctx_clazz.type,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
-			stack_push(Type.getRealType(tp,f.type));
+			stack_push(TypeRules.getReal(tp,f.type));
 			break;
         case op_putstatic:
 			add_opcode_and_CP(opc_putstatic,cpf);
@@ -1278,7 +1279,7 @@ public final class Code implements Constants {
         case op_getfield:
 			add_opcode_and_CP(opc_getfield,cpf);
 			stack_pop();
-			stack_push(Type.getRealType(tp,f.type));
+			stack_push(TypeRules.getReal(tp,f.type));
 			break;
         case op_putfield:
 			add_opcode_and_CP(opc_putfield,cpf);

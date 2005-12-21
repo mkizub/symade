@@ -113,7 +113,6 @@ public view JENodeView of ENodeImpl extends JNodeView {
 	// Expr specific
 	//
 
-	public final boolean isUseNoProxy() { return this.$view.is_expr_use_no_proxy; }
 	public final boolean isAsField() { return this.$view.is_expr_as_field; }
 	public final boolean isGenVoidExpr() { return this.$view.is_expr_gen_void; }
 	public final boolean isForWrapper() { return this.$view.is_expr_for_wrapper; }

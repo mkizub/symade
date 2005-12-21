@@ -105,7 +105,7 @@ public class CallExpr extends ENode {
 		return sb.toString();
 	}
 	public Type getType() {
-		return Type.getRealType(obj.getType(),func.type.ret);
+		return TypeRules.getReal(obj.getType(),func.type.ret);
 	}
 
 	public void resolve(Type reqType) {
@@ -130,14 +130,14 @@ public class CallExpr extends ENode {
 		if (func.isVarArgs()) {
 			int i=0;
 			for(; i < func.type.args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
-			Type varg_tp = Type.getRealType(obj.getType(),func.getVarArgParam().type);
+				args[i].resolve(TypeRules.getReal(obj.getType(),func.type.args[i]));
+			Type varg_tp = TypeRules.getReal(obj.getType(),func.getVarArgParam().type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++)
 				args[i].resolve(varg_tp.bindings[0]);
 		} else {
 			for (int i=0; i < args.length; i++)
-				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+				args[i].resolve(TypeRules.getReal(obj.getType(),func.type.args[i]));
 		}
 		if !(func.parent instanceof Struct) {
 			ASTNode n = func.parent;

@@ -1277,6 +1277,7 @@ kiev.vlang.TypeRef$TypeRefView kiev/vlang/TypeRef$TypeRefView kiev\vlang\AST.jav
 kiev.vlang.TypeRef.DFI kiev/vlang/TypeRef$DFI kiev\vlang\AST.java
 kiev.vlang.TypeRef.TypeRefImpl kiev/vlang/TypeRef$TypeRefImpl kiev\vlang\AST.java
 kiev.vlang.TypeRef.TypeRefView kiev/vlang/TypeRef$TypeRefView kiev\vlang\AST.java
+kiev.vlang.TypeRules kiev/vlang/TypeRules kiev\vlang\Type.java
 kiev.vlang.TypeUpperBoundConstraint kiev/vlang/TypeUpperBoundConstraint kiev\vlang\TypeBinding.java
 kiev.vlang.Typed kiev/vlang/Typed kiev\vlang\PassInfo.java
 kiev.vlang.UnaryExpr kiev/vlang/UnaryExpr kiev\vlang\Expr.java

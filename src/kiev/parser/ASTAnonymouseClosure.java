@@ -149,7 +149,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
-				BaseType celltp = BaseType.getProxyType(v.type);
+				BaseType celltp = TypeRules.getRefTypeForPrimitive(v.type);
 				val = new IFldExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
 						celltp.clazz.resolveField(nameCellVal)

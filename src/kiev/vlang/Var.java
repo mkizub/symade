@@ -571,7 +571,7 @@ public abstract class ScopeNodeInfo implements Cloneable {
 		Type[] types = new Type[]{this.getDeclType()};
 		foreach(Type t1; j1.getTypes(); t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
 			foreach(Type t2; j2.getTypes(); t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
-				types = DFState.addAccessType(types,Type.leastCommonType(t1,t2));
+				types = DFState.addAccessType(types,TypeRules.leastCommonType(t1,t2));
 		}
 		this.types = types;
 		return types;
@@ -675,7 +675,7 @@ public class ScopeForwardFieldInfo extends ScopeNodeInfo {
 	public Type getDeclType() {
 		Type tp = ((Var)path[0]).type;
 		for(int i=1; i < path.length; i++)
-			tp = Type.getRealType(tp, ((Field)path[i]).type);
+			tp = TypeRules.getReal(tp, ((Field)path[i]).type);
 		return tp;
 	}
 	

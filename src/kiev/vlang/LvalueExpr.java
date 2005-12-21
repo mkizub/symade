@@ -391,7 +391,7 @@ public final class IFldExpr extends AccessExpr {
 	}
 
 	public Type getType() {
-		return Type.getRealType(obj.getType(),var.type);
+		return TypeRules.getReal(obj.getType(),var.type);
 	}
 
 	public Operator getOp() { return BinaryOperator.Access; }
@@ -523,7 +523,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 		try {
 			Type t = obj.getType();
 			if( t.isArray() ) {
-				return Type.getRealType(t,t.bindings[0]);
+				return TypeRules.getReal(t,t.bindings[0]);
 			}
 			else {
 				// Resolve overloaded access method
@@ -532,7 +532,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
 					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
-				return Type.getRealType(t,((Method)v).type.ret);
+				return TypeRules.getReal(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
 			Kiev.reportError(this,e);
@@ -543,7 +543,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
 		if( t.isArray() ) {
-			return new Type[]{Type.getRealType(t,t.bindings[0])};
+			return new Type[]{TypeRules.getReal(t,t.bindings[0])};
 		} else {
 			Struct s = t.getStruct();
 		lookup_op:
@@ -552,7 +552,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 				if (s instanceof Struct) {
 					Struct ss = (Struct)s;
 					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
-						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+						return new Type[]{TypeRules.getReal(t,((Method)n).type.ret)};
 				}
 				if( s.super_type != null ) {
 					s = s.super_type.clazz;

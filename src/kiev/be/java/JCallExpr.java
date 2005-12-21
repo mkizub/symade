@@ -152,7 +152,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name == nameObjGetClass ) {
-				BaseType reft = Type.getRefTypeForPrimitive(objt);
+				BaseType reft = TypeRules.getRefTypeForPrimitive(objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);

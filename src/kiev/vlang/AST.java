@@ -90,19 +90,18 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,23 boolean is_struct_generated;
 		
 		// Expression flags
-		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
-		public packed:1,compileflags,17 boolean is_expr_as_field;
-		public packed:1,compileflags,18 boolean is_expr_gen_void;
-		public packed:1,compileflags,19 boolean is_expr_for_wrapper;
-		public packed:1,compileflags,20 boolean is_expr_primary;
-		public packed:1,compileflags,21 boolean is_expr_super;
-		public packed:1,compileflags,22 boolean is_expr_cast_call;
+		public packed:1,compileflags,16 boolean is_expr_as_field;
+		public packed:1,compileflags,17 boolean is_expr_gen_void;
+		public packed:1,compileflags,18 boolean is_expr_for_wrapper;
+		public packed:1,compileflags,19 boolean is_expr_primary;
+		public packed:1,compileflags,20 boolean is_expr_super;
+		public packed:1,compileflags,21 boolean is_expr_cast_call;
 		// Statement flags
-		public packed:1,compileflags,23 boolean is_stat_abrupted;
-		public packed:1,compileflags,24 boolean is_stat_breaked;
-		public packed:1,compileflags,25 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
-		public packed:1,compileflags,26 boolean is_stat_auto_returnable;
-		public packed:1,compileflags,27 boolean is_stat_break_target;
+		public packed:1,compileflags,22 boolean is_stat_abrupted;
+		public packed:1,compileflags,23 boolean is_stat_breaked;
+		public packed:1,compileflags,24 boolean is_stat_method_abrupted; // also sets is_stat_abrupted
+		public packed:1,compileflags,25 boolean is_stat_auto_returnable;
+		public packed:1,compileflags,26 boolean is_stat_break_target;
 		
 		// Method flags
 		public packed:1,compileflags,17 boolean is_mth_virtual_static;
@@ -810,16 +809,6 @@ public /*abstract*/ class ENode extends ASTNode {
 		// Expr specific
 		//
 	
-		// use no proxy	
-		public final boolean isUseNoProxy() {
-			return this.$view.is_expr_use_no_proxy;
-		}
-		public final void setUseNoProxy(boolean on) {
-			if (this.$view.is_expr_use_no_proxy != on) {
-				this.$view.is_expr_use_no_proxy = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// use as field (disable setter/getter calls for virtual fields)
 		public final boolean isAsField() {
 			return this.$view.is_expr_as_field;
@@ -1011,9 +1000,6 @@ public /*abstract*/ class ENode extends ASTNode {
 	// Expr specific
 	//
 
-	// use no proxy	
-	public boolean isUseNoProxy() { return this.getENodeView().isUseNoProxy(); }
-	public void setUseNoProxy(boolean on) { this.getENodeView().setUseNoProxy(on); }
 	// use as field (disable setter/getter calls for virtual fields)
 	public boolean isAsField() { return this.getENodeView().isAsField(); }
 	public void setAsField(boolean on) { this.getENodeView().setAsField(on); }
@@ -1362,7 +1348,7 @@ public class TypeRef extends ENode {
 			MetaPizzaCase meta = s.getMetaPizzaCase();
 			if (meta == null)
 				throw new RuntimeException("Internal error - can't find pizza case meta attr");
-			Type tp = Type.getRealType(reqType,st);
+			Type tp = TypeRules.getReal(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
 //			if (case_attr.casefields.length != 0)
