@@ -318,7 +318,7 @@ public class OpTypes {
 			} else {
 				// Check method is of nodes[1]'s class
 				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).isStructInstanceOf((Struct)method.parent)
+					&& getExprType(nodes[1],ts[1]).getErasedType().isInstanceOf(method.ctx_clazz.type.getErasedType())
 				)
 					;
 				// Check method arg of nodes[1]'s class

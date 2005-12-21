@@ -1303,7 +1303,7 @@ public class UnaryExpr extends ENode {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			if (ctx_clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !ctx_clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+				if ( !ctx_clazz.type.getErasedType().isInstanceOf(opt.method.ctx_clazz.type.getErasedType()) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -1793,17 +1793,17 @@ public class CastExpr extends ENode {
 			setResolved(true);
 			return;
 		}
-		if( et.isReference() && type.isReference() && et.isStruct()
-		 && et.getStruct().package_clazz.isClazz()
-		 && !et.isArgument()
-		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
-		) {
-			replaceWithNodeResolve(reqType,
-				new CastExpr(pos,type,
-					new IFldExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
-				));
-			return;
-		}
+//		if( et.isReference() && type.isReference() && et.isStruct()
+//		 && et.getStruct().package_clazz.isClazz()
+//		 && !et.isArgument()
+//		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
+//		) {
+//			replaceWithNodeResolve(reqType,
+//				new CastExpr(pos,type,
+//					new IFldExpr(pos,(ENode)~expr,OuterThisAccessExpr.outerOf((Struct)et.getStruct()))
+//				));
+//			return;
+//		}
 		if( expr.isConstantExpr() ) {
 			Object val = expr.getConstValue();
 			Type t = type;

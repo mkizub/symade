@@ -16,10 +16,10 @@ public class TypeBinding extends Type {
 	public TypeConstraint		cs;
 	
 	public TypeBinding(ArgumentType arg) {
-		this(arg, new TypeUpperBoundConstraint(arg.super_type));
+		this(arg, new TypeConstraint.Upper(arg.super_type));
 	}
 	public TypeBinding(ArgumentType arg, TypeConstraint cs) {
-		super(KString.from("A"+arg.name.bytecode_name+":<"+cs.signature+";"));
+		super(KString.from("A"+arg.name.bytecode_name+cs.signature+";"));
 		this.arg = arg;
 		this.cs = cs;
 	}
@@ -31,25 +31,14 @@ public class TypeBinding extends Type {
 		return jtype;
 	}
 
-	public NodeName getName()						{ return cs.getName(); }
-	public ClazzName getClazzName()					{ return cs.getClazzName(); }
-	public boolean isArgument()						{ return true; }
+	public boolean isArgument()						{ return cs.isArgument(); }
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return cs.isAbstract(); }
-	public boolean isEnum()							{ return false; }
-	public boolean isInterface()					{ return false; }
-	public boolean isClazz()						{ return false; }
-	public boolean isHasCases()						{ return cs.isHasCases(); }
-	public boolean isPizzaCase()					{ return cs.isPizzaCase(); }
-	public boolean isStaticClazz()					{ return cs.isStaticClazz(); }
-	public boolean isStruct()						{ return false; }
-	public boolean isAnonymouseClazz()				{ return false; }
-	public boolean isLocalClazz()					{ return false; }
-	public boolean isStructInstanceOf(Struct s)	{ return cs.isStructInstanceOf(s); }
+	public boolean isEnum()							{ return cs.isEnum(); }
+	public boolean isInterface()					{ return cs.isInterface(); }
+	public boolean isClazz()						{ return cs.isClazz(); }
 	public Type getSuperType()						{ return cs.getSuperType(); }
-	public Type getInitialType()					{ return cs.getInitialType(); }
-	public Type getInitialSuperType()				{ return cs.getInitialSuperType(); }
-	public MetaSet getStructMeta()					{ return cs.getStructMeta(); }
+	public Type getTemplateType()					{ return cs.getTemplateType(); }
 	public Type[] getDirectSuperTypes()			{ return cs.getDirectSuperTypes(); }
 	
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
@@ -57,67 +46,164 @@ public class TypeBinding extends Type {
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { cs.resolveCallAccessR(node, info, name, mt) }
 	
-	public Type getJavaType() {
-		return cs.getJavaType();
-	}
-
-	public boolean checkResolved() {
-		return cs.checkResolved();
-	}
-
-	public String toString() {
-		return cs.toString();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		return cs.toJava(dmp);
-	}
+	public Type getErasedType() { return cs.getErasedType(); }
+	public boolean checkResolved() { return cs.checkResolved(); }
+	public String toString() { return cs.toString(); }
+	public Dumper toJava(Dumper dmp) { return cs.toJava(dmp); }
 
 	public boolean isInstanceOf(Type t) {
 		if (this == t) return true;
 		return this.cs.isInstanceOf(t);
+	}
+	
+	public TypeBinding applay(TypeBinding tb) {
+		assert(this.arg == tb.arg);
+		return new TypeBinding(this.arg, this.cs.applay(tb.cs));
 	}
 }
 
 public abstract class TypeConstraint {
 	public final KString signature;
 	
-	public TypeConstraint(KString signature) {
-		this.signature = signature;
+	public case Upper(Type t);
+	public case Equal(Type t);
+	
+	public TypeConstraint() {
+		switch(this) {
+		case Upper(Type t):
+			this.signature = KString.from(":<"+t.signature);
+			break;
+		case Equal(Type t):
+			this.signature = KString.from(":="+t.signature);
+			break;
+		}
 	}
 	
-	public abstract JType getJType();
-	public abstract NodeName getName();
-	public abstract ClazzName getClazzName();
-	public abstract boolean isArgument();
-	public abstract boolean isAnnotation();
-	public abstract boolean isAbstract();
-	public abstract boolean isEnum();
-	public abstract boolean isInterface();
-	public abstract boolean isClazz();
-	public abstract boolean isHasCases();
-	public abstract boolean isPizzaCase();
-	public abstract boolean isStaticClazz();
-	public abstract boolean isStruct();
-	public abstract boolean isAnonymouseClazz();
-	public abstract boolean isLocalClazz();
-	public abstract boolean isStructInstanceOf(Struct s);
-	public abstract Type getSuperType();
-	public abstract Type getInitialType();
-	public abstract Type getInitialSuperType();
-	public abstract MetaSet getStructMeta();
-	public abstract Type[] getDirectSuperTypes();
+	public JType getJType()	 {
+		switch(this) {
+		case Upper(Type t): return t.getJType();
+		case Equal(Type t): return t.getJType();
+		}
+	}
+	public boolean isArgument() {
+		switch(this) {
+		case Upper(Type t): return t.isArgument();
+		case Equal(Type t): return t.isArgument();
+		}
+	}
+	public boolean isAnnotation() {
+		return false;
+	}
+	public boolean isAbstract() {
+		switch(this) {
+		case Upper(Type t): return t.isAbstract();
+		case Equal(Type t): return t.isAbstract();
+		}
+	}
+	public boolean isEnum() {
+		switch(this) {
+		case Upper(Type t): return t.isEnum();
+		case Equal(Type t): return t.isEnum();
+		}
+	}
+	public boolean isInterface() {
+		switch(this) {
+		case Upper(Type t): return t.isInterface();
+		case Equal(Type t): return t.isInterface();
+		}
+	}
+	public boolean isClazz() {
+		switch(this) {
+		case Upper(Type t): return t.isClazz();
+		case Equal(Type t): return t.isClazz();
+		}
+	}
+	public Type getSuperType() {
+		switch(this) {
+		case Upper(Type t): return t;
+		case Equal(Type t): return t;
+		}
+	}
+	public Type getTemplateType() {
+		switch(this) {
+		case Upper(Type t): return t.getTemplateType();
+		case Equal(Type t): return t.getTemplateType();
+		}
+	}
+	public Type[] getDirectSuperTypes() {
+		switch(this) {
+		case Upper(Type t): return t.getDirectSuperTypes();
+		case Equal(Type t): return t.getDirectSuperTypes();
+		}
+	}
+	public Type getErasedType() {
+		switch(this) {
+		case Upper(Type t): return t.getErasedType();
+		case Equal(Type t): return t.getErasedType();
+		}
+	}
+	public String toString() {
+		switch(this) {
+		case Upper(Type t): return t.toString();
+		case Equal(Type t): return t.toString();
+		}
+	}
+	public Dumper toJava(Dumper dmp) {
+		switch(this) {
+		case Upper(Type t): return t.toJava(dmp);
+		case Equal(Type t): return t.toJava(dmp);
+		}
+	}
+	public boolean isInstanceOf(Type tp) {
+		switch(this) {
+		case Upper(Type t): return t.isInstanceOf(tp);
+		case Equal(Type t): return t.isInstanceOf(tp);
+		}
+	}
+	public boolean checkResolved() {
+		switch(this) {
+		case Upper(Type t): return t.checkResolved();
+		case Equal(Type t): return t.checkResolved();
+		}
+	}
 	
-	public abstract rule resolveStaticNameR(DNode@ node, ResInfo info, KString name);
-	public abstract rule resolveNameAccessR(DNode@ node, ResInfo info, KString name);
-	public abstract rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt);
-	public abstract rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt);
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) {
+		this instanceof Upper, ((Upper)this).t.resolveNameAccessR(node, info, name)
+	;	this instanceof Equal, ((Equal)this).t.resolveNameAccessR(node, info, name)
+	}
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) {
+		this instanceof Upper, ((Upper)this).t.resolveCallAccessR(node, info, name, mt)
+	;	this instanceof Equal, ((Equal)this).t.resolveCallAccessR(node, info, name, mt)
+	}
 	
-	public abstract Type getJavaType();
-	public abstract boolean checkResolved();
-	public abstract String toString();
-	public abstract Dumper toJava(Dumper dmp);
-	public abstract boolean isInstanceOf(Type t);
+	TypeConstraint applay(TypeConstraint tc) {
+		switch (this) {
+		case Upper(Type t1):
+			{
+				switch(tc) {
+				case Upper(Type t2):
+					assert(t1.isInstanceOf(t2));
+					return this;
+				case Equal(Type t2):
+					assert(t1.isInstanceOf(t2));
+					return this;
+				}
+			}
+		case Equal(Type t1):
+			{
+				switch(tc) {
+				case Upper(Type t2):
+					assert(t1.isInstanceOf(t2));
+					return this;
+				case Equal(Type t2):
+					assert(t1.isInstanceOf(t2));
+					return this;
+				}
+			}
+		}
+	}
 }
 
 //public class TypeAndConstraint extends TypeConstraint {
@@ -130,57 +216,9 @@ public abstract class TypeConstraint {
 //	public TypeConstraint	c2;
 //}
 
-public class TypeUpperBoundConstraint extends TypeConstraint {
-	public Type		t;
-	public TypeUpperBoundConstraint(Type t) {
-		super(KString.from("~"+t.signature));
-		this.t = t;
-	}
-
-	public JType getJType()							{ return t.getJType(); }
-	public NodeName getName()						{ return t.getName(); }
-	public ClazzName getClazzName()					{ return t.getClazzName(); }
-	public boolean isArgument()						{ return true; }
-	public boolean isAnnotation()					{ return false; }
-	public boolean isAbstract()						{ return t.isAbstract(); }
-	public boolean isEnum()							{ return false; }
-	public boolean isInterface()					{ return false; }
-	public boolean isClazz()						{ return false; }
-	public boolean isHasCases()						{ return t.isHasCases(); }
-	public boolean isPizzaCase()					{ return t.isPizzaCase(); }
-	public boolean isStaticClazz()					{ return t.isStaticClazz(); }
-	public boolean isStruct()						{ return false; }
-	public boolean isAnonymouseClazz()				{ return false; }
-	public boolean isLocalClazz()					{ return false; }
-	public boolean isStructInstanceOf(Struct s)	{ return t.isStructInstanceOf(s); }
-	public Type getSuperType()						{ return t; }
-	public Type getInitialType()					{ return t.getInitialType(); }
-	public Type getInitialSuperType()				{ return t.getInitialSuperType(); }
-	public MetaSet getStructMeta()					{ return t.getStructMeta(); }
-	public Type[] getDirectSuperTypes()			{ return t.getDirectSuperTypes(); }
-	
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { t.resolveNameAccessR(node, info, name) }
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { t.resolveCallAccessR(node, info, name, mt) }
-	
-	public Type getJavaType()						{ return t.getJavaType(); }
-	public boolean checkResolved()					{ return t.checkResolved(); }
-	public String toString()						{ return t.toString(); }
-	public Dumper toJava(Dumper dmp)				{ return t.toJava(dmp); }
-	public boolean isInstanceOf(Type t)			{ return this.t.isInstanceOf(t); }
-
-}
-
 //public class TypeLowerBoundConstraint extends TypeConstraint {
 //	public Type		t;
 //	public TypeLowerBoundConstraint(Type t) { this.t = t; }
 //}
-//
-//public class TypeEqualBoundConstraint extends TypeConstraint {
-//	public Type		t;
-//	public TypeEqualBoundConstraint(Type t) { this.t = t; }
-//}
-
 
 

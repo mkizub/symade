@@ -1262,7 +1262,7 @@ public final class Code implements Constants {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		Type ttt = Type.getRealType(tp.getInitialType(),f.jctx_clazz.type);
+		Type ttt = Type.getRealType(tp.getTemplateType(),f.jctx_clazz.type);
 		KString struct_sig = ttt.getJType().java_signature;
 		KString field_sig = Type.getRealType(f.jctx_clazz.type,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name,field_sig);
@@ -1307,7 +1307,7 @@ public final class Code implements Constants {
 			if( !type.isReference() )
 				throw new RuntimeException("New on non-reference type "+type);
 			if( type instanceof ClosureType )
-				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getClazzName().signature()));
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getStruct().name.signature()));
 			else
 				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
 			stack_push(type);

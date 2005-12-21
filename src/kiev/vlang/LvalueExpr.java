@@ -943,7 +943,7 @@ public final class SFldExpr extends AccessExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		ClazzName cln = cl.type.getClazzName();
+		ClazzName cln = cl.type.getStruct().name;
 		return dmp.space().append(cln).append('.').append(var.name).space();
 	}
 

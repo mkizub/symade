@@ -63,7 +63,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().getClazzName().name == name)
+			if (metas[i].atype.aname == name)
 				return metas[i];
 		}
 		return null;
@@ -86,7 +86,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().getClazzName().name);
+		return unset(meta.atype.aname);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -164,6 +164,7 @@ public class Meta extends ENode {
 	public ENodeView			getENodeView()			{ return new MetaView((MetaImpl)this.$v_impl); }
 	public MetaView				getMetaView()			{ return new MetaView((MetaImpl)this.$v_impl); }
 
+	@getter public AnnotationType		get$atype()		{ return (AnnotationType)this.getMetaView().type.getType(); }
 	@getter public TypeRef				get$type()		{ return this.getMetaView().type; }
 	@getter public NArr<MetaValue>		get$values()	{ return this.getMetaView().values; }
 	@setter public void		set$type(TypeRef val)		{ this.getMetaView().type = val; }
@@ -210,12 +211,13 @@ public class Meta extends ENode {
 		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
+		AnnotationType at = (AnnotationType)mt;
 		Meta m = this;
-		if (mt.getClazzName().name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
+		if (at.aname == MetaVirtual.NAME && !(this instanceof MetaVirtual))
 			m = (Meta)this.copyTo(new MetaVirtual());
-		if (mt.getClazzName().name == MetaPacked.NAME && !(this instanceof MetaPacked))
+		if (at.aname == MetaPacked.NAME && !(this instanceof MetaPacked))
 			m = (Meta)this.copyTo(new MetaPacked());
-		if (mt.getClazzName().name == MetaPacker.NAME && !(this instanceof MetaPacker))
+		if (at.aname == MetaPacker.NAME && !(this instanceof MetaPacker))
 			m = (Meta)this.copyTo(new MetaPacker());
 		if (m != this) {
 			this.replaceWithNode(m);

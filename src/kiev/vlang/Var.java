@@ -323,7 +323,7 @@ public final class FormPar extends Var {
 	public FormPar(int pos, KString name, Type type, int kind, int flags) {
 		super(new FormParImpl(pos,flags),name,type);
 		this.kind = kind;
-		this.stype = new TypeRef(type.getJavaType());
+		this.stype = new TypeRef(type.getErasedType());
 	}
 
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {

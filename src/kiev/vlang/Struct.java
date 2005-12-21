@@ -863,7 +863,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	public static String makeTypeInfoString(Type t) {
 		if( t.isArray() ) {
-			t = t.getJavaType();
+			t = t.getErasedType();
 			return "["+t.bindings[0];
 		}
 		if( t instanceof ClosureType ) {
@@ -874,7 +874,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}
 		if( t.bindings.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
-			sb.append(t.getClazzName().bytecode_name.toString().replace('/','.'));
+			sb.append(t.getStruct().name.bytecode_name.toString().replace('/','.'));
 			sb.append('<');
 			for(int i=0; i < t.bindings.length; i++) {
 				Type ta = t.bindings[i];
@@ -885,7 +885,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			sb.append('>');
 			return sb.toString();
 		} else {
-			return t.getClazzName().bytecode_name.toString().replace('/','.');
+			return t.getStruct().name.bytecode_name.toString().replace('/','.');
 		}
 	}
 
@@ -907,13 +907,14 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
-			if( this.type.isInstanceOf(t.getInitialType()) )
+			if( this.type.isInstanceOf(t.getTemplateType()) )
 				return ti_access;
 
 			if (t.isArgument()) {
 				// Get corresponded type argument
-				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
-						.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
+				ArgumentType at = (ArgumentType)t;
+				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+at.name.short_name.length())
+						.append(nameTypeInfo).append('$').append(at.name.short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
 					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
@@ -1042,13 +1043,13 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			FormPar[] ti_init_params = new FormPar[]{};
 			ENode[] stats = new ENode[type.bindings.length];
 			for (int arg=0; arg < type.bindings.length; arg++) {
-				Type t = type.bindings[arg];
-				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
-					.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
+				ArgumentType t = type.bindings[arg].arg;
+				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.name.short_name.length())
+					.append(nameTypeInfo).append('$').append(t.name.short_name).toKString();
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
-				FormPar v = new FormPar(pos,t.getClazzName().short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,t.name.short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -1080,8 +1081,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				for (int arg=0; arg < super_type.clazz.args.length; arg++) {
 					Type t = super_type.bindings[arg];
 					t = Type.getRealType(this.type,t);
-					if (t.isArgumented()) {
-						exprs[arg] = new ASTIdentifier(pos,t.getClazzName().short_name);
+					if (t instanceof ArgumentType) {
+						exprs[arg] = new ASTIdentifier(pos,((ArgumentType)t).name.short_name);
 					} else {
 						CallExpr ce = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
@@ -2159,7 +2160,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Field f = (Field)n;
 				try {
 					f.type.checkResolved();
-					if (f.type.isStruct())
+					if (f.type.getStruct() != null)
 						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
@@ -2167,11 +2168,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Method m = (Method)n;
 				try {
 					m.type.ret.checkResolved();
-					if (m.type.ret.isStruct())
+					if (m.type.ret.getStruct() != null)
 						m.type.ret.getStruct().acc.verifyReadWriteAccess(this,m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
 						t.checkResolved();
-						if (t.isStruct())
+						if (t.getStruct() != null)
 							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }

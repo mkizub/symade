@@ -67,7 +67,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf(var.jctx_clazz.getStruct()) )
+		if( !ot.getErasedType().isInstanceOf(var.jctx_clazz.type.getErasedType()) )
 			code.addInstr(Instr.op_checkcast,var.jctx_clazz.type);
 	}
 
@@ -162,7 +162,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
+			 && ( !getType().getErasedType().isInstanceOf(func.type.ret.getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -234,7 +234,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
+			 && ( !getType().getErasedType().isInstanceOf(func.type.ret.getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -363,8 +363,8 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			}
 		}
 		if( chtp == null )
-			chtp = var.type.getJavaType();
-		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
+			chtp = var.type.getErasedType();
+		if( !var.type.getErasedType().isInstanceOf(chtp.getErasedType()) ) {
 			code.addInstr(op_checkcast,var.type);
 			return;
 		}

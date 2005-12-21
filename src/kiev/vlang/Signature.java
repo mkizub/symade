@@ -115,7 +115,7 @@ public class Signature {
 			TypeBinding[] fargs = TypeBinding.emptyArray;
 			if( ch == '<' ) {
 				while( sc.hasMoreChars() && sc.peekChar() != '>' )
-					fargs = (TypeBinding[])Arrays.append(fargs,new TypeUpperBoundConstraint(getType(sc)));
+					fargs = (TypeBinding[])Arrays.append(fargs,new TypeConstraint.Upper(getType(sc)));
 				sc.nextChar();
 			}
 			if( ch == '(' ) {

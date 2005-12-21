@@ -382,7 +382,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				expr1.resolve(null);
 				tp = expr1.getType();
 			}
-			if( !tp.isPizzaCase() && !tp.isHasCases() )
+			if (tp.getStruct()==null || !(tp.getStruct().isPizzaCase() || tp.getStruct().isHasCases()))
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = ((BaseType)tp).clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
 			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,ENode.emptyArray);

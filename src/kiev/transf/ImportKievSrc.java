@@ -76,7 +76,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		else if (me.args.length > 0) {
 			targs = new TypeBinding[me.args.length];
 			for(int i=0; i < me.args.length; i++)
-				targs[i] = new TypeBinding((ArgumentType)me.args[i].getType(), new TypeUpperBoundConstraint(Type.tpAny));
+				targs[i] = new TypeBinding((ArgumentType)me.args[i].getType(), new TypeConstraint.Upper(Type.tpAny));
 		}
 
 		if (!me.isStatic() && canHaveArgs) {
@@ -88,14 +88,14 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						for (int i=0; i < me.args.length; i++) {
 							if (targs[i].arg.name.short_name == ob.arg.name.short_name) {
 								Kiev.reportWarning(me, "Deprecated type binding detected for argument "+ob.arg);
-								targs[i].cs = new TypeUpperBoundConstraint(ob.arg);
+								targs[i].cs = new TypeConstraint.Equal(ob.arg);
 								continue next_ob;
 							}
 						}
 						TypeArgDef tad = new TypeArgDef(new NameRef(me.pos, ob.arg.name.short_name));
 						me.members.insert(0,tad);
 						targs = (TypeBinding[])Arrays.append(targs,
-							new TypeBinding((ArgumentType)tad.getType(), new TypeUpperBoundConstraint(ob.arg)));
+							new TypeBinding((ArgumentType)tad.getType(), new TypeConstraint.Equal(ob.arg)));
 					}
 					if (ps.isStatic())
 						break;
@@ -232,7 +232,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1_1(TypeDefOp:ASTNode astn) {
 		try {
 			if (astn.typearg != null) {
-				astn.type = new TypeRef(astn.type.getType().getInitialType());
+				astn.type = new TypeRef(astn.type.getType().getTemplateType());
 			} else {
 				astn.type = new TypeRef(astn.type.getType());
 			}
@@ -382,8 +382,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					Kiev.reportError(astn,"Argument extends bad type "+sup);
 				} else {
 					((ArgumentType)arg.getType()).super_type = sup;
-					targs[i].cs = new TypeUpperBoundConstraint(sup);
+					targs[i] = new TypeBinding(targs[i].arg, new TypeConstraint.Upper(sup));
 				}
+			} else {
+				((ArgumentType)arg.getType()).super_type = Type.tpObject;
+				targs[i] = new TypeBinding(targs[i].arg, new TypeConstraint.Upper(Type.tpObject));
 			}
 		}
 

@@ -1254,6 +1254,9 @@ kiev.vlang.TypeClassExpr.DFI kiev/vlang/TypeClassExpr$DFI kiev\vlang\Expr.java
 kiev.vlang.TypeClassExpr.TypeClassExprImpl kiev/vlang/TypeClassExpr$TypeClassExprImpl kiev\vlang\Expr.java
 kiev.vlang.TypeClassExpr.TypeClassExprView kiev/vlang/TypeClassExpr$TypeClassExprView kiev\vlang\Expr.java
 kiev.vlang.TypeConstraint kiev/vlang/TypeConstraint kiev\vlang\TypeBinding.java
+kiev.vlang.TypeConstraint$Equal kiev/vlang/TypeConstraint$Equal kiev\vlang\TypeBinding.java
+kiev.vlang.TypeConstraint$Equals kiev/vlang/TypeConstraint$Equals kiev\vlang\TypeBinding.java bad
+kiev.vlang.TypeConstraint$Upper kiev/vlang/TypeConstraint$Upper kiev\vlang\TypeBinding.java
 kiev.vlang.TypeDef kiev/vlang/TypeDef kiev\vlang\AST.java
 kiev.vlang.TypeDef$TypeDefImpl kiev/vlang/TypeDef$TypeDefImpl kiev\vlang\AST.java
 kiev.vlang.TypeDef$TypeDefView kiev/vlang/TypeDef$TypeDefView kiev\vlang\AST.java

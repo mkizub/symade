@@ -370,19 +370,19 @@ public interface StdTypes {
 
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
 		ArgumentType tpKievEnumerationArg = ArgumentType.newArgumentType(tpKievEnumerationClazz,KString.from("A"));
-		tpKievEnumeration	= new BaseType(tpKievEnumerationClazz,new TypeBinding[]{new TypeBinding(tpKievEnumerationArg, new TypeUpperBoundConstraint(tpObject))});
+		tpKievEnumeration	= new BaseType(tpKievEnumerationClazz,new TypeBinding[]{new TypeBinding(tpKievEnumerationArg, new TypeConstraint.Upper(tpObject))});
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
 		typeHash.put(tpKievEnumeration);
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
 		ArgumentType tpPrologVarArg = ArgumentType.newArgumentType(tpPrologVarClazz,KString.from("A"));
-		tpPrologVar	= new BaseType(tpPrologVarClazz,new TypeBinding[]{new TypeBinding(tpPrologVarArg, new TypeUpperBoundConstraint(tpObject))});
+		tpPrologVar	= new BaseType(tpPrologVarClazz,new TypeBinding[]{new TypeBinding(tpPrologVarArg, new TypeConstraint.Upper(tpObject))});
 		tpPrologVarClazz.type	= tpPrologVar;
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
 		ArgumentType tpRefProxyArg = ArgumentType.newArgumentType(tpRefProxyClazz,KString.from("A"));
-		tpRefProxy	= new BaseType(tpRefProxyClazz,new TypeBinding[]{new TypeBinding(tpRefProxyArg, new TypeUpperBoundConstraint(tpObject))});
+		tpRefProxy	= new BaseType(tpRefProxyClazz,new TypeBinding[]{new TypeBinding(tpRefProxyArg, new TypeConstraint.Upper(tpObject))});
 		tpRefProxyClazz.type	= tpRefProxy;
 		typeHash.put(tpRefProxy);
 

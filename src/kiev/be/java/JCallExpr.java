@@ -25,7 +25,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.isStructInstanceOf(func.jctx_clazz.getStruct()) ) {
+		if( !ot.getErasedType().isInstanceOf(func.jctx_clazz.type.getErasedType()) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
 			code.addInstr(Instr.op_checkcast,func.jctx_clazz.type);
 		}
@@ -255,7 +255,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null )
@@ -304,7 +304,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && call_it.type.ret.isReference()
-			 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
+			 && ( !call_it.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}

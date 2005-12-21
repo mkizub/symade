@@ -59,7 +59,7 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
-		code.addConst(type.getJavaType());
+		code.addConst(type.getErasedType());
 		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 

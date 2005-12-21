@@ -376,7 +376,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 					tmpvar.getVar().init = old_sel;
 					me.addSymbol(tmpvar.getVar());
 					me.addStatement(this);
-					if( tp.isHasCases() ) {
+					if (tp.getStruct() != null && tp.getStruct().isHasCases()) {
 						mode = PIZZA_SWITCH;
 						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						sel = cae;
@@ -411,9 +411,11 @@ public class SwitchStat extends ENode implements BreakTarget {
 				cases[i].resolve(Type.tpVoid);
 				if( typehash != null ) {
 					CaseLabel c = (CaseLabel)cases[i];
-					if( c.type == null || !c.type.isReference() )
+					if (c.type == null || !c.type.isReference())
 						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					KString name = c.type.getClazzName().name;
+					if (c.type.getStruct() == null)
+						throw new CompilerException(c,"Unsupported type in switch");
+					KString name = c.type.getStruct().name.name;
 					typenames = (KString[])Arrays.append(typenames,name);
 					if( c.val != null )
 						c.val = new ConstIntExpr(i);

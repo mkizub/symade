@@ -76,8 +76,8 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
-		if( type.isLocalClazz() ) {
-			JStructView cl = ((BaseType)type).clazz.getJStructView();
+		if (type.getStruct() != null && type.getStruct().isLocal() ) {
+			JStructView cl = type.getStruct().getJStructView();
 			foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
 				JFieldView f = (JFieldView)n;
 				if( !f.isNeedProxy() ) continue;

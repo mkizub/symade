@@ -122,23 +122,23 @@ public final class NewExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
+		if (this.clazz != null)
+			this.clazz.resolveDecl();
 		Type type = this.type.getType();
-		if( type.isAnonymouseClazz() ) {
-			type.getStruct().resolveDecl();
-		}
+		Struct cls = type.getStruct();
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 			throw new CompilerException(this,"Abstract class "+type+" instantiation");
 		}
 		if( outer != null )
 			outer.resolve(null);
-		else if( (!type.isStaticClazz() && type.isLocalClazz())
-			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
-		{
-			if( ctx_method==null || ctx_method.isStatic() )
-				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
-			outer = new ThisExpr(pos);
-			outer.resolve(null);
-		}
+//		else if( (!type.isStaticClazz() && type.isLocalClazz())
+//			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+//		{
+//			if( ctx_method==null || ctx_method.isStatic() )
+//				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
+//			outer = new ThisExpr(pos);
+//			outer.resolve(null);
+//		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
 		if( ctx_clazz.args.length > 0 )
@@ -183,16 +183,17 @@ public final class NewExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		Type tp = type.getType();
+		Struct clazz = this.clazz;
 		if( !tp.isReference() ) {
 			return dmp.append('0');
 		}
-		if( !tp.isAnonymouseClazz() ) {
+		if (clazz == null) {
 			dmp.append("new ").append(tp).append('(');
 		} else {
-			if( tp.getStruct().interfaces.length > 0 )
-				dmp.append("new ").append(tp.getStruct().interfaces[0].getStruct().name).append('(');
+			if (clazz.interfaces.length > 0 )
+				dmp.append("new ").append(clazz.interfaces[0].getStruct().name).append('(');
 			else
-				dmp.append("new ").append(tp.getStruct().super_type.clazz.name).append('(');
+				dmp.append("new ").append(clazz.super_type.clazz.name).append('(');
 		}
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
@@ -200,10 +201,9 @@ public final class NewExpr extends ENode {
 				dmp.append(',');
 		}
 		dmp.append(')');
-		if( tp.isAnonymouseClazz() ) {
-			Struct cl = tp.getStruct();
+		if (clazz != null) {
 			dmp.space().append('{').newLine(1);
-			foreach (DNode n; cl.members)
+			foreach (DNode n; clazz.members)
 				n.toJavaDecl(dmp).newLine();
 			dmp.newLine(-1).append('}').newLine();
 		}

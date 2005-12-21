@@ -74,17 +74,17 @@ public class TypeWithArgsRef extends TypeRef {
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
 		if (this.lnk != null)
-			sb.append(this.lnk.getClazzName());
-		else
-			sb.append(base_type);
+			return String.valueOf(this.lnk);
+		StringBuffer sb = new StringBuffer();
+		sb.append(base_type);
 		sb.append('<');
 		for (int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if (i < args.length-1) sb.append(',');
 		}
-		return sb.append('>').toString();
+		sb.append('>');
+		return sb.toString();
 	}
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(this.toString());

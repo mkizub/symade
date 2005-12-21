@@ -1352,7 +1352,7 @@ public class TypeRef extends ENode {
 	
 	public void toExpr(Type reqType) {
 		Type st = getType();
-		if (st.isPizzaCase()) {
+		if (st.getStruct() != null && st.getStruct().isPizzaCase()) {
 			Struct s = st.getStruct();
 			// Pizza case may be casted to int or to itself or super-class
 //			PizzaCaseAttr case_attr;
