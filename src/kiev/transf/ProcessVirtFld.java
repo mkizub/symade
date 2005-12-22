@@ -309,7 +309,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				);
 				body.stats.append(ass_st);
 				body.stats.append(new ReturnStat(f.pos,null));
-				if!(TypeRules.isAutoCastableTo(value.getType(),view_fld.getType()))
+				if!(value.getType().isAutoCastableTo(view_fld.getType()))
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,view_fld.getType(),(ENode)~val); });
 				set_var.setAbstract(false);
 			}
@@ -342,7 +342,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 					s.view_of.getType().getStruct().resolveField(f.name.name)
 				);
 				body.stats.add(new ReturnStat(f.pos,val));
-				if!(TypeRules.isAutoCastableTo(val.getType(),f.getType()))
+				if!(val.getType().isAutoCastableTo(f.getType()))
 					val.replaceWith(fun ()->ASTNode { return new CastExpr(f.pos,f.getType(),(ENode)~val); });
 				get_var.setAbstract(false);
 			}

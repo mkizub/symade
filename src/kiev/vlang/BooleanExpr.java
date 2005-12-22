@@ -75,9 +75,9 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 			});
 			return;
 		}
-		else if( e.getType() instanceof ClosureType
-				&& ((CallableType)e.getType()).cargs.length == 0
-				&& TypeRules.isAutoCastableTo(((CallableType)e.getType()).ret, Type.tpBoolean)
+		else if( e.getType().args.length == 0
+				&& e.getType() instanceof ClosureType
+				&& ((CallableType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
 				)
 		{
 			((ClosureCallExpr)e).is_a_call = true;
@@ -336,13 +336,13 @@ public class BinaryBoolExpr extends BoolExpr {
 		Type et1 = expr1.getType();
 		Type et2 = expr2.getType();
 		if( op==BinaryOperator.BooleanOr ) {
-			if( TypeRules.isAutoCastableTo(et1, Type.tpBoolean) && TypeRules.isAutoCastableTo(et2, Type.tpBoolean) ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 				replaceWithNode(new BinaryBooleanOrExpr(pos,expr1,expr2));
 				return;
 			}
 		}
 		else if( op==BinaryOperator.BooleanAnd ) {
-			if( TypeRules.isAutoCastableTo(et1, Type.tpBoolean) && TypeRules.isAutoCastableTo(et2, Type.tpBoolean) ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 				replaceWithNode(new BinaryBooleanAndExpr(pos,expr1,expr2));
 				return;
 			}
@@ -382,7 +382,7 @@ public class BinaryBoolExpr extends BoolExpr {
 				expr1.resolve(null);
 				tp = expr1.getType();
 			}
-			if (tp.getStruct()==null || !(tp.getStruct().isPizzaCase() || tp.getStruct().isHasCases()))
+			if( !tp.isPizzaCase() && !tp.isHasCases() )
 				throw new RuntimeException("Compare non-cased class "+tp+" with class's case "+cas);
 			Method m = ((BaseType)tp).clazz.resolveMethod(nameGetCaseTag,KString.from("()I"));
 			expr1 = new CallExpr(expr1.pos,(ENode)~expr1,m,ENode.emptyArray);
@@ -408,13 +408,13 @@ public class BinaryBoolExpr extends BoolExpr {
 			return;
 		}
 		else if( op==BinaryOperator.BooleanOr ) {
-			if( TypeRules.isAutoCastableTo(et1, Type.tpBoolean) && TypeRules.isAutoCastableTo(et2, Type.tpBoolean) ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanOrExpr(pos,(ENode)~expr1,(ENode)~expr2));
 				return;
 			}
 		}
 		else if( op==BinaryOperator.BooleanAnd ) {
-			if( TypeRules.isAutoCastableTo(et1, Type.tpBoolean) && TypeRules.isAutoCastableTo(et2, Type.tpBoolean) ) {
+			if( et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean) ) {
 				replaceWithNodeResolve(Type.tpBoolean, new BinaryBooleanAndExpr(pos,(ENode)~expr1,(ENode)~expr2));
 				return;
 			}
@@ -422,7 +422,7 @@ public class BinaryBoolExpr extends BoolExpr {
 		else if(
 			(	(et1.isNumber() && et2.isNumber())
 			 || (et1.isReference() && et2.isReference())
-			 || (TypeRules.isAutoCastableTo(et1, Type.tpBoolean) && TypeRules.isAutoCastableTo(et2, Type.tpBoolean))
+			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
 			 || (et1.isEnum() && et2.isIntegerInCode())
 			 || (et1.isIntegerInCode() && et2.isEnum())
 			 || (et1.isEnum() && et2.isEnum() && et1 == et2)
@@ -478,11 +478,11 @@ public class BinaryBoolExpr extends BoolExpr {
 //					else t = tVoid;
 				else t = Type.tpInt;
 
-				if( !t.equals(t1) && TypeRules.isCastableTo(t1,t) ) {
+				if( !t.equals(t1) && t1.isCastableTo(t) ) {
 					expr1 = new CastExpr(pos,t,(ENode)~expr1);
 					expr1.resolve(t);
 				}
-				if( !t.equals(t2) && TypeRules.isCastableTo(t2,t) ) {
+				if( !t.equals(t2) && t2.isCastableTo(t) ) {
 					expr2 = new CastExpr(pos,t,(ENode)~expr2);
 					expr2.resolve(t);
 				}
@@ -584,7 +584,7 @@ public class InstanceofExpr extends BoolExpr {
 				expr.resolve(null);
 			}
 		}
-		if( !TypeRules.isCastableTo(expr.getType(), type.getType()) ) {
+		if( !expr.getType().isCastableTo(type.getType()) ) {
 			throw new CompilerException(this,"Type "+expr.getType()+" is not castable to "+type);
 		}
 		if (expr.getType().isInstanceOf(type.getType())) {
@@ -592,7 +592,7 @@ public class InstanceofExpr extends BoolExpr {
 				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
 			return;
 		}
-		if (type.getStruct() != null && type.getStruct().args.length > 0) {
+		if (!type.isArray() && type.args.length > 0) {
 			replaceWithNodeResolve(reqType, new CallExpr(pos,
 					ctx_clazz.accessTypeInfoField(this,type.getType()),
 					Type.tpTypeInfo.clazz.resolveMethod(
@@ -642,7 +642,7 @@ public class InstanceofExpr extends BoolExpr {
 			Type tp = type.getType();
 			if (et.isWrapper() && !tp.isWrapper()) {
 				BaseType ut = ((WrapperType)et).getUnwrappedType();
-				tp = WrapperType.newWrapperType(BaseType.newRefType(ut,new Type[]{tp}));
+				tp = WrapperType.newWrapperType(Type.newRefType(ut,new Type[]{tp}));
 			}
 			return dfs.addNodeType(path,tp);
 		}

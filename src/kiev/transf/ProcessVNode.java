@@ -77,7 +77,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			foreach (ASTNode n; s.members; n instanceof Field)
 				pass3(n);
 		}
-		else if (s.super_bound.isBound() && s.super_type.getStruct() != null && s.super_type.getStruct().meta.get(mnNode) != null) {
+		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 			if (s.meta.get(mnNodeView) == null)
 				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
@@ -117,7 +117,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					//}
 					isArr = true;
 				}
-				fsm = ft.getStruct().meta.get(mnNode);
+				fsm = ft.getStructMeta().get(mnNode);
 			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
@@ -135,7 +135,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
-			else if (f.type.getStruct().meta.get(mnNode) != null)
+			else if (f.type.getStructMeta().get(mnNode) != null)
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
@@ -202,7 +202,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Field f = aflds[i];
 			boolean isAtt = (f.meta.get(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
-			Type clz_tp = isArr ? f.getType().bindings[0] : f.getType();
+			Type clz_tp = isArr ? f.getType().args[0] : f.getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, atp, new ENode[]{
 				new ConstStringExpr(f.name.name),
@@ -225,7 +225,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (isAtt && !isArr)
 				f.setVirtual(true);
 		}
-		Field vals = s.addField(new Field(nameEnumValuesFld, new ArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
+		Field vals = s.addField(new Field(nameEnumValuesFld, Type.newArrayType(atp), ACC_PUBLIC|ACC_STATIC|ACC_FINAL));
 		vals.init = new NewInitializedArrayExpr(0, new TypeRef(atp), 1, vals_init);
 		// AttrSlot[] values() { return $values; }
 		if (hasMethod(s, nameEnumValues)) {
@@ -295,7 +295,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.type,0);
-			if (s.super_bound.isBound() && s.super_type.getStruct() != null && s.super_type.getStruct().meta.get(mnNode) != null) {
+			if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new NameRef(0,KString.from("copyTo"));
@@ -317,7 +317,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				boolean isNode = (f.getType().getStruct().meta.get(mnNode) != null);
+				boolean isNode = (f.getType().getStructMeta().get(mnNode) != null);
 				boolean isArr = f.getType().isInstanceOf(tpNArr);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
@@ -385,7 +385,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if (atp.isReference())
 					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
 				else
-					ee = new CastExpr(0,TypeRules.getRefTypeForPrimitive(atp),new LVarExpr(0, setV.params[1]));
+					ee = new CastExpr(0,Type.getRefTypeForPrimitive(atp),new LVarExpr(0, setV.params[1]));
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,

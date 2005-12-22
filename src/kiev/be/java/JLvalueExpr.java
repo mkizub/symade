@@ -67,7 +67,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getErasedType().isInstanceOf(var.jctx_clazz.type.getErasedType()) )
+		if( !ot.isStructInstanceOf(var.jctx_clazz.getStruct()) )
 			code.addInstr(Instr.op_checkcast,var.jctx_clazz.type);
 	}
 
@@ -162,7 +162,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().getErasedType().isInstanceOf(func.type.ret.getErasedType()) || getType().isArray() ) )
+			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -234,7 +234,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().getErasedType().isInstanceOf(func.type.ret.getErasedType()) || getType().isArray() ) )
+			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -320,7 +320,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 	}
 
 	public JFieldView resolveVarVal() {
-		BaseType prt = TypeRules.getRefTypeForPrimitive(var.type);
+		BaseType prt = Type.getProxyType(var.type);
 		JFieldView var_valf = prt.clazz.getJStructView().resolveField(nameCellVal);
 		return var_valf;
 	}
@@ -363,8 +363,8 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			}
 		}
 		if( chtp == null )
-			chtp = var.type.getErasedType();
-		if( !var.type.getErasedType().isInstanceOf(chtp.getErasedType()) ) {
+			chtp = var.type.getJavaType();
+		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
 			code.addInstr(op_checkcast,var.type);
 			return;
 		}
@@ -375,7 +375,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if (!var.isNeedProxy()) {
+		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -395,7 +395,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if (!var.isNeedProxy()) {
+		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_load,var);
@@ -417,7 +417,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if (!var.isNeedProxy()) {
+		if( !var.isNeedProxy() || isUseNoProxy() ) {
 		} else {
 			if( isAsField() ) {
 				code.addInstrLoadThis();
@@ -431,7 +431,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if (!var.isNeedProxy()) {
+		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_store,var);
@@ -449,7 +449,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 		code.setLinePos(this);
 		JVarView var = this.var;
 		if( code.cond_generation ) var = resolveVarForConditions(code);
-		if (!var.isNeedProxy()) {
+		if( !var.isNeedProxy() || isUseNoProxy() ) {
 			if( code.vars[var.bcpos] == null )
 				throw new CompilerException(this,"Var "+var+" has bytecode pos "+var.bcpos+" but code.var["+var.bcpos+"] == null");
 			code.addInstr(op_dup);

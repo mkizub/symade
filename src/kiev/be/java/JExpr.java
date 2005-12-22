@@ -59,7 +59,7 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType ) {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
-		code.addConst(type.getErasedType());
+		code.addConst(type.getJavaType());
 		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
 	}
 
@@ -332,7 +332,7 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 		} else {
 			if( lval instanceof JLVarExprView ) {
 				JLVarExprView va = (JLVarExprView)lval;
-				if (va.getType().isIntegerInCode() && !va.var.isNeedProxy()) {
+				if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
 					if( op==PrefixOperator.PreIncr || op==PostfixOperator.PostIncr ) {
 						code.addInstrIncr(va.var,1);
 						return;
@@ -375,7 +375,7 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 		JLvalueExprView lval = (JLvalueExprView)this.lval;
 		if( lval instanceof JLVarExprView ) {
 			JLVarExprView va = (JLVarExprView)lval;
-			if (va.getType().isIntegerInCode() && !va.var.isNeedProxy()) {
+			if( va.getType().isIntegerInCode() && !va.var.isNeedProxy() || va.isUseNoProxy() ) {
 				if( op == PrefixOperator.PreIncr ) {
 					code.addInstrIncr(va.var,1);
 					code.addInstr(op_load,va.var);

@@ -83,7 +83,7 @@ public class OpTypes {
 				types[position] != null, nodes[position] != null, $cut,
 				{
 					auto_cast,
-					TypeRules.isAutoCastableTo(getExprType(nodes[position],types[position]), types[position])
+					getExprType(nodes[position],types[position]).isAutoCastableTo(types[position])
 				;	!auto_cast,
 					getExprType(nodes[position],types[position]).isInstanceOf(types[position])
 				},
@@ -131,10 +131,10 @@ public class OpTypes {
 					{
 						auto_cast,
 						{
-							types[position] != null, TypeRules.isAutoCastableTo(types[position],type)
-						;	TypeRules.isAutoCastableTo(getExprType(nodes[position],types[position]), type),
+							types[position] != null, types[position].isAutoCastableTo(type)
+						;	getExprType(nodes[position],types[position]).isAutoCastableTo(type),
 							types[position] = getExprType(nodes[position],types[position]),
-							TypeRules.isAutoCastableTo(types[position], type)
+							types[position].isAutoCastableTo(type)
 						}
 					;	!auto_cast,
 						{
@@ -220,18 +220,18 @@ public class OpTypes {
 				// If both present, then check they match
 				types[position] != null, nodes[position] != null, $cut,
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+getExprType(nodes[position],types[position])+" to be same as "+types[ref]),
-				TypeRules.isAutoCastableTo(getExprType(nodes[position],types[position]), types[ref])
+				getExprType(nodes[position],types[position]).isAutoCastableTo(types[ref])
 			;
 				// If type exists - let it be
 				types[position] != null, $cut,
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				TypeRules.isAutoCastableTo(types[position], types[ref])
+				types[position].isAutoCastableTo(types[ref])
 			;
 				// If type not exists - try resolve expression
 				types[position] == null, nodes[position] != null, $cut,
 				types[position] = getExprType(nodes[position],types[ref]),
 				trace( Kiev.debugOperators,"opt_check "+position+" type "+types[position]+" to be same as "+types[ref]),
-				TypeRules.isAutoCastableTo(types[position], types[ref])
+				types[position].isAutoCastableTo(types[ref])
 			},
 			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
 		}
@@ -302,7 +302,7 @@ public class OpTypes {
 				{ types[ref1] == null ; types[ref2] == null }
 			;
 				types[ref1].isReference() && types[ref2].isReference(),
-				types[position] = TypeRules.leastCommonType(types[ref1],types[ref2])
+				types[position] = Type.leastCommonType(types[ref1],types[ref2])
 			},
 			trace( Kiev.debugOperators,"opt_check "+position+" set to be "+types[position])
 		}
@@ -318,7 +318,7 @@ public class OpTypes {
 			} else {
 				// Check method is of nodes[1]'s class
 				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).getErasedType().isInstanceOf(method.ctx_clazz.type.getErasedType())
+					&& getExprType(nodes[1],ts[1]).isStructInstanceOf((Struct)method.parent)
 				)
 					;
 				// Check method arg of nodes[1]'s class

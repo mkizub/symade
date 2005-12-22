@@ -151,8 +151,8 @@ public class ASTCallExpression extends ENode {
 							throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,null));
 					} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 					try {
-						if( closure instanceof Var && TypeRules.getReal(tp,((Var)closure).type) instanceof ClosureType
-						||  closure instanceof Field && TypeRules.getReal(tp,((Field)closure).type) instanceof ClosureType
+						if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+						||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 						) {
 							replaceWithNode(new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 							return;
@@ -274,7 +274,7 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
 			MethodType mt;
-			if( reqType instanceof MethodType && ((MethodType)reqType).cargs.length > 0 ) {
+			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
 				mt = (MethodType)reqType;
 			} else {
 				Type[] ta = new Type[args.length];
@@ -292,8 +292,8 @@ public class ASTCallExpression extends ENode {
 					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args,ret));
 				}
 				try {
-					if( closure instanceof Var && TypeRules.getReal(tp,((Var)closure).type) instanceof ClosureType
-					||  closure instanceof Field && TypeRules.getReal(tp,((Field)closure).type) instanceof ClosureType
+					if( closure instanceof Var && Type.getRealType(tp,((Var)closure).type) instanceof ClosureType
+					||  closure instanceof Field && Type.getRealType(tp,((Field)closure).type) instanceof ClosureType
 					) {
 						replaceWithNodeResolve(ret, new ClosureCallExpr(pos,info.buildAccess(this,closure),args.delToArray()));
 						return;

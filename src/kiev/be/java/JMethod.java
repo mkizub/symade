@@ -46,7 +46,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	@getter public final MethodType				get$type()		{ return this.$view.type_ref.getMType(); }
 	@getter public final MethodType				get$dtype()		{ return this.$view.dtype_ref.getMType(); }
-	@getter public final MethodType				get$jtype()		{ return (MethodType)dtype.getErasedType(); }
+	@getter public final MethodType				get$jtype()		{ return (MethodType)dtype.getJavaType(); }
 	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
 	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
 	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
@@ -180,7 +180,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		for(int i=0; i < params.length; i++) {
 			Type tp1 = jtype.args[i];
 			Type tp2 = params[i].type;
-			if !(tp2.getErasedType().isInstanceOf(tp1)) {
+			if !(tp2.getJavaType().isInstanceOf(tp1)) {
 				code.addInstr(Instr.op_load,params[i]);
 				code.addInstr(Instr.op_checkcast,tp1);
 				code.addInstr(Instr.op_store,params[i]);

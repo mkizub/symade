@@ -69,22 +69,22 @@ public class TypeWithArgsRef extends TypeRef {
 			if (atypes[i] == null)
 				throw new CompilerException(this,"Type "+args[i]+" is not found");
 		}
-		this.lnk = BaseType.newRefType((BaseType)tp,atypes);
+		this.lnk = Type.newRefType((BaseType)tp,atypes);
 		return this.lnk;
 	}
 
 	public String toString() {
-		if (this.lnk != null)
-			return String.valueOf(this.lnk);
 		StringBuffer sb = new StringBuffer();
-		sb.append(base_type);
+		if (this.lnk != null)
+			sb.append(this.lnk.getClazzName());
+		else
+			sb.append(base_type);
 		sb.append('<');
 		for (int i=0; i < args.length; i++) {
 			sb.append(args[i]);
 			if (i < args.length-1) sb.append(',');
 		}
-		sb.append('>');
-		return sb.toString();
+		return sb.append('>').toString();
 	}
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(this.toString());

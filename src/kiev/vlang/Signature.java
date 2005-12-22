@@ -41,16 +41,25 @@ public class Signature {
 			ksb.append(ret.signature);
 		} else {
 			// Normal class
-			ksb.append('L').append(clazz.name.bytecode_name);
-			// And it's arguments
-			if( args!=null && args.length > 0 ) {
-				ksb.append('<');
-				for(int i=0; i < args.length; i++) {
-					ksb.append(args[i].signature);
+			if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
+				ksb.append('[');
+				ksb.append(args[0].signature);
+			} else {
+				if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
+					ksb.append(clazz.type.signature);
+				} else {
+					if(  clazz !=null )
+						ksb.append(clazz.name.signature());
+					// And it's arguments
+					if( args!=null && args.length > 0 ) {
+						ksb.append('<');
+						for(int i=0; i < args.length; i++) {
+							ksb.append(args[i].signature);
+						}
+						ksb.append('>');
+					}
 				}
-				ksb.append('>');
 			}
-			ksb.append(';');
 		}
 		return ksb.toKString();
 	}
@@ -112,10 +121,10 @@ public class Signature {
 		// Check if this signature is a method signature
 		if( ch == '(' || ch == '&' || ch == '<' ) {
 			// Method signature
-			TypeBinding[] fargs = TypeBinding.emptyArray;
+			Type[] fargs = Type.emptyArray;
 			if( ch == '<' ) {
 				while( sc.hasMoreChars() && sc.peekChar() != '>' )
-					fargs = (TypeBinding[])Arrays.append(fargs,new TypeConstraint.Upper(getType(sc)));
+					fargs = (Type[])Arrays.append(fargs,getType(sc));
 				sc.nextChar();
 			}
 			if( ch == '(' ) {
@@ -144,7 +153,7 @@ public class Signature {
 		}
 
 		// Normal reference type
-		if( ch == '[' ) return new ArrayType(getType(sc));
+		if( ch == '[' ) return Type.newArrayType(getType(sc));
 
 		boolean isArgument = false;
 		if( ch == 'A' ) isArgument = true;
@@ -167,7 +176,7 @@ public class Signature {
 		if( !sc.hasMoreChars() ) {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return BaseType.newJavaRefType(clazz);
+			return Type.newJavaRefType(clazz);
 		}
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
@@ -185,12 +194,12 @@ public class Signature {
 				} else
 					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
-				return BaseType.newRefType(clazz,args);
+				return Type.newRefType(clazz,args);
 			}
 		} else {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return BaseType.newJavaRefType(clazz);
+			return Type.newJavaRefType(clazz);
 		}
 	}
 
@@ -204,7 +213,7 @@ public class Signature {
 		char ch = sc.peekChar();
 
 		// Normal reference type
-		if( ch == '[' ) return new ArrayType(getType(sc));
+		if( ch == '[' ) return Type.newArrayType(getType(sc));
 
 		int pos = sc.pos;
 
@@ -222,16 +231,16 @@ public class Signature {
 		clazz = Env.newStruct(name);
 
 		if( !sc.hasMoreChars() )
-			return BaseType.newJavaRefType(clazz);
+			return Type.newJavaRefType(clazz);
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
 			sc.nextChar();
 			while(sc.peekChar() != '>')
 				args = (Type[])Arrays.append(args,getType(sc));
 			sc.nextChar();
-				return BaseType.newRefType(clazz,args);
+				return Type.newRefType(clazz,args);
 		} else {
-			return BaseType.newRefType(clazz);
+			return Type.newRefType(clazz);
 		}
 	}
 

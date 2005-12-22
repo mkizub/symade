@@ -91,7 +91,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return type_ref.getMType(); }
 		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return dtype_ref.getMType(); }
-		@getter public final MethodType				get$jtype()	{ return (MethodType)dtype.getErasedType(); }
+		@getter public final MethodType				get$jtype()	{ return (MethodType)dtype.getJavaType(); }
 
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
 
@@ -472,21 +472,21 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if( isVarArgs() ) {
 			int i=0;
 			for(; i < type.args.length-1; i++) {
-				Type ptp = TypeRules.getReal(t,type.args[i]);
+				Type ptp = Type.getRealType(t,type.args[i]);
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			Type varg_tp = TypeRules.getReal(t,params[params.length-1].type);
+			Type varg_tp = Type.getRealType(t,params[params.length-1].type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++) {
-				if !(args[i].getType().isInstanceOf(varg_tp.bindings[0])) {
+				if !(args[i].getType().isInstanceOf(varg_tp.args[0])) {
 					CastExpr.autoCastToReference(args[i]);
-					CastExpr.autoCast(args[i],varg_tp.bindings[0]);
+					CastExpr.autoCast(args[i],varg_tp.args[0]);
 				}
 			}
 //			int j;
 //			for(j=0; j < type.args.length-1; j++)
-//				CastExpr.autoCast(args[j],TypeRules.getReal(t,type.args[j]));
+//				CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
 //			NArr<ENode> varargs = new NArr<ENode>();
 //			while(j < args.length) {
 //				CastExpr.autoCastToReference(args[j]);
@@ -498,7 +498,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 //			args.append(nae);
 		} else {
 			for(int i=0; i < type.args.length; i++) {
-				Type ptp = TypeRules.getReal(t,type.args[i]);
+				Type ptp = Type.getRealType(t,type.args[i]);
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
@@ -527,14 +527,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-		MethodType rt = (MethodType)TypeRules.getReal(tp,this.type);
+		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 			if( exact && !mt.args[i].equals(rt.args[i]) ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+rt.args[i]+" != "+mt.args[i]);
 				return false;
 			}
-			else if( !exact && !TypeRules.isAutoCastableTo(mt.args[i],rt.args[i]) ) {
+			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i]) ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i]);
 				return false;
@@ -545,7 +545,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			match = true;
 		else if( exact &&  rt.ret.equals(mt.ret) )
 			match = true;
-		else if( !exact && TypeRules.isAutoCastableTo(rt.ret,mt.ret) )
+		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
 			match = true;
 		else
 			match = false;
@@ -656,12 +656,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getJavaType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		checkRebuildTypes();
@@ -689,14 +689,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					mva.values.add(((MetaValueScalar)annotation_default).value);
 					annotation_default = mva;
 				}
-				t = t.bindings[0];
+				t = t.args[0];
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if!(t instanceof BaseType)
-					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
-				Struct s = t.getStruct();
-				if!(t == Type.tpString || t == Type.tpClass || s.isAnnotation() || s.isEnum())
+				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
 					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);

@@ -122,26 +122,26 @@ public final class NewExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		if (this.clazz != null)
-			this.clazz.resolveDecl();
 		Type type = this.type.getType();
-		Struct cls = type.getStruct();
+		if( type.isAnonymouseClazz() ) {
+			type.getStruct().resolveDecl();
+		}
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 			throw new CompilerException(this,"Abstract class "+type+" instantiation");
 		}
 		if( outer != null )
 			outer.resolve(null);
-//		else if( (!type.isStaticClazz() && type.isLocalClazz())
-//			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
-//		{
-//			if( ctx_method==null || ctx_method.isStatic() )
-//				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
-//			outer = new ThisExpr(pos);
-//			outer.resolve(null);
-//		}
+		else if( (!type.isStaticClazz() && type.isLocalClazz())
+			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+		{
+			if( ctx_method==null || ctx_method.isStatic() )
+				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
+			outer = new ThisExpr(pos);
+			outer.resolve(null);
+		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-		if( ctx_clazz.args.length > 0 )
+		if( type.args.length > 0 )
 			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {
@@ -183,17 +183,16 @@ public final class NewExpr extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		Type tp = type.getType();
-		Struct clazz = this.clazz;
 		if( !tp.isReference() ) {
 			return dmp.append('0');
 		}
-		if (clazz == null) {
+		if( !tp.isAnonymouseClazz() ) {
 			dmp.append("new ").append(tp).append('(');
 		} else {
-			if (clazz.interfaces.length > 0 )
-				dmp.append("new ").append(clazz.interfaces[0].getStruct().name).append('(');
+			if( tp.getStruct().interfaces.length > 0 )
+				dmp.append("new ").append(tp.getStruct().interfaces[0].getStruct().name).append('(');
 			else
-				dmp.append("new ").append(clazz.super_type.clazz.name).append('(');
+				dmp.append("new ").append(tp.getStruct().super_type.clazz.name).append('(');
 		}
 		for(int i=0; i < args.length; i++) {
 			args[i].toJava(dmp);
@@ -201,9 +200,10 @@ public final class NewExpr extends ENode {
 				dmp.append(',');
 		}
 		dmp.append(')');
-		if (clazz != null) {
+		if( tp.isAnonymouseClazz() ) {
+			Struct cl = tp.getStruct();
 			dmp.space().append('{').newLine(1);
-			foreach (DNode n; clazz.members)
+			foreach (DNode n; cl.members)
 				n.toJavaDecl(dmp).newLine();
 			dmp.newLine(-1).append('}').newLine();
 		}
@@ -266,8 +266,8 @@ public final class NewArrayExpr extends ENode {
 		this.type = type;
 		foreach (ENode e; args) this.args.append(e);
 		this.dim = dim;
-		arrtype = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
+		arrtype = Type.newArrayType(type.getType());
+		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
 	}
 
 	public String toString() {
@@ -293,9 +293,9 @@ public final class NewArrayExpr extends ENode {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;
-			for(i=0; i < ctx_clazz.args.length; i++)
-				if( type.string_equals(ctx_clazz.args[i].getType()) ) break;
-			if( i >= ctx_clazz.args.length )
+			for(i=0; i < ctx_clazz.type.args.length; i++)
+				if( type.string_equals(ctx_clazz.type.args[i]) ) break;
+			if( i >= ctx_clazz.type.args.length )
 				throw new CompilerException(this,"Can't create an array of argument type "+type);
 			ENode tie = new IFldExpr(pos,new ThisExpr(0),ctx_clazz.resolveField(nameTypeInfo));
 			if( dim == 1 ) {
@@ -393,8 +393,8 @@ public final class NewInitializedArrayExpr extends ENode {
 		dims = new int[dim];
 		dims[0] = args.length;
 		foreach (ENode e; args) this.args.append(e);
-		arrtype = new ArrayType(type.getType());
-		for(int i=1; i < dim; i++) arrtype = new ArrayType(arrtype);
+		arrtype = Type.newArrayType(type.getType());
+		for(int i=1; i < dim; i++) arrtype = Type.newArrayType(arrtype);
 	}
 
 	public String toString() {
@@ -417,7 +417,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(arrtype.bindings[0]);
+			args[i].resolve(arrtype.args[0]);
 		for(int i=1; i < dims.length; i++) {
 			int n;
 			for(int j=0; j < args.length; j++) {

@@ -670,17 +670,17 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		;	info.isSuperAllowed(),
 			sup ?= super_type,
 			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	isInterface(),
 			member @= members,
 			member instanceof Struct && ((Struct)member).isClazz() && ((Struct)member).name.short_name.equals(nameIdefault),
 			info.enterMode(ResInfo.noSuper) : info.leaveMode(),
-			((Struct)member).resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
+			((Struct)member).resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		;	info.isSuperAllowed(),
 			isInterface(),
 			sup @= TypeRef.linked_elements(interfaces),
 			info.enterSuper() : info.leaveSuper(),
-			sup.getStruct().resolveStructMethodR(node,info,name,mt,TypeRules.getReal(tp,sup))
+			sup.getStruct().resolveStructMethodR(node,info,name,mt,Type.getRealType(tp,sup))
 		}
 	}
 
@@ -863,8 +863,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	public static String makeTypeInfoString(Type t) {
 		if( t.isArray() ) {
-			t = t.getErasedType();
-			return "["+t.bindings[0];
+			t = t.getJavaType();
+			return "["+t.args[0];
 		}
 		if( t instanceof ClosureType ) {
 			return "kiev.stdlib.closure";
@@ -872,20 +872,20 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		if( t.isArgument() ) {
 			return makeTypeInfoString(t.getSuperType());
 		}
-		if( t.bindings.length > 0 ) {
+		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
-			sb.append(t.getStruct().name.bytecode_name.toString().replace('/','.'));
+			sb.append(t.getClazzName().bytecode_name.toString().replace('/','.'));
 			sb.append('<');
-			for(int i=0; i < t.bindings.length; i++) {
-				Type ta = t.bindings[i];
+			for(int i=0; i < t.args.length; i++) {
+				Type ta = t.args[i];
 				sb.append(makeTypeInfoString(ta));
-				if( i < t.bindings.length-1 )
+				if( i < t.args.length-1 )
 					sb.append(',');
 			}
 			sb.append('>');
 			return sb.toString();
 		} else {
-			return t.getStruct().name.bytecode_name.toString().replace('/','.');
+			return t.getClazzName().bytecode_name.toString().replace('/','.');
 		}
 	}
 
@@ -907,14 +907,13 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
-			if( this.type.isInstanceOf(t.getTemplateType()) )
+			if( this.type.isInstanceOf(t.getInitialType()) )
 				return ti_access;
 
 			if (t.isArgument()) {
 				// Get corresponded type argument
-				ArgumentType at = (ArgumentType)t;
-				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+at.name.short_name.length())
-						.append(nameTypeInfo).append('$').append(at.name.short_name).toKString();
+				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
+						.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
 					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
@@ -929,7 +928,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		// but need typeinfo in <clinit>
 		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
 			BaseType ftype = Type.tpTypeInfo;
-			if (t.bindings.length > 0) {
+			if (t.args.length > 0) {
 				if (t.getStruct().typeinfo_clazz == null)
 					t.getStruct().autoGenerateTypeinfoClazz();
 				ftype = t.getStruct().typeinfo_clazz.type;
@@ -957,7 +956,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			return e;
 		}
 		BaseType ftype = Type.tpTypeInfo;
-		if (t.bindings.length > 0) {
+		if (t.args.length > 0) {
 			if (t.getStruct().typeinfo_clazz == null)
 				t.getStruct().autoGenerateTypeinfoClazz();
 			ftype = t.getStruct().typeinfo_clazz.type;
@@ -1018,7 +1017,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	private void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
 			return;
-		if( !isInterface() && this.args.length > 0 && !(type instanceof ClosureType) ) {
+		if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -1033,23 +1032,23 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
 			else
 				typeinfo_clazz.super_type = Type.tpTypeInfo;
-			typeinfo_clazz.type = BaseType.newJavaRefType(typeinfo_clazz);
+			typeinfo_clazz.type = Type.newJavaRefType(typeinfo_clazz);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 
 			// add in it arguments fields, and prepare for constructor
 			MethodType ti_init;
-			Type[] ti_init_targs = new Type[this.type.bindings.length];
+			Type[] ti_init_targs = new Type[this.type.args.length];
 			FormPar[] ti_init_params = new FormPar[]{};
-			ENode[] stats = new ENode[type.bindings.length];
-			for (int arg=0; arg < type.bindings.length; arg++) {
-				ArgumentType t = type.bindings[arg].arg;
-				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.name.short_name.length())
-					.append(nameTypeInfo).append('$').append(t.name.short_name).toKString();
+			ENode[] stats = new ENode[type.args.length];
+			for (int arg=0; arg < type.args.length; arg++) {
+				Type t = type.args[arg];
+				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
+					.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
-				FormPar v = new FormPar(pos,t.name.short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,t.getClazzName().short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -1077,12 +1076,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				ASTCallExpression call_super = new ASTCallExpression();
 				call_super.pos = pos;
 				call_super.func = new NameRef(pos, nameSuper);
-				ENode[] exprs = new ENode[super_type.clazz.args.length];
-				for (int arg=0; arg < super_type.clazz.args.length; arg++) {
-					Type t = super_type.bindings[arg];
-					t = TypeRules.getReal(this.type,t);
-					if (t instanceof ArgumentType) {
-						exprs[arg] = new ASTIdentifier(pos,((ArgumentType)t).name.short_name);
+				ENode[] exprs = new ENode[super_type.args.length];
+				for (int arg=0; arg < super_type.args.length; arg++) {
+					Type t = super_type.args[arg];
+					t = Type.getRealType(this.type,t);
+					if (t.isArgumented()) {
+						exprs[arg] = new ASTIdentifier(pos,t.getClazzName().short_name);
 					} else {
 						CallExpr ce = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
@@ -1176,7 +1175,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
-					if( !isInterface() && this.args.length > 0 && !(type instanceof ClosureType) ) {
+					if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
@@ -1205,7 +1204,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							targs = (Type[])Arrays.append(targs,package_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
-						if( !isInterface() && this.args.length > 0 && !(type instanceof ClosureType) ) {
+						if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
 							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
@@ -1258,8 +1257,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							);
 							members.add(defaults);
 							defaults.setResolved(true);
-							Type[] tarr = type.bindings;
-							defaults.type = BaseType.newRefType(defaults, tarr);
+							Type[] tarr = type.args;
+							defaults.type = Type.newRefType(defaults, tarr);
 							defaults.super_type = Type.tpObject;
 							//defaults.interfaces.add(new TypeRef(this.type));
 						}
@@ -1294,7 +1293,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
-			MethodType mit = (MethodType)TypeRules.getReal(base,mi.jtype);
+			MethodType mit = (MethodType)Type.getRealType(base,mi.jtype);
 			if( m.jtype.equals(mit) ) {
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
@@ -1467,7 +1466,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					else if( package_clazz.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
-						if( this.args.length > 0 && super_type.clazz.args.length == 0 ) skip_args++;
+						if( this.type.args.length > 0 && super_type.args.length == 0 ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
 								call_super.args.append( new LVarExpr(m.pos,m.params[i]));
@@ -1508,7 +1507,10 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						break;
 					}
 				}
-				if (this.args.length > 0 && !(type instanceof ClosureType) && m.isNeedFieldInits()) {
+				if( type.args.length > 0
+				 && !(type instanceof ClosureType)
+				 && m.isNeedFieldInits()
+				) {
 					Field tif = resolveField(nameTypeInfo);
 					Var v = null;
 					foreach(Var vv; m.params; vv.name.equals(nameTypeInfo) ) {
@@ -1736,8 +1738,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) )
 					be = new InstanceofExpr(pos,
 						new LVarExpr(pos,mm.params[j]),
-						TypeRules.getRefTypeForPrimitive(t));
-				if( t.getStruct() != null && t.getStruct().args.length > 0 && !(t instanceof ClosureType) ) {
+						Type.getRefTypeForPrimitive(t));
+				if( t.args.length > 0 && !t.isArray() && !(t instanceof ClosureType) ) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
@@ -1926,11 +1928,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				foreach (ASTNode sn; s.members; sn instanceof Method) {
 					Method mj = (Method)sn;
 					if( !mj.isStatic() && mj.name.equals(mi.name) ) {
-						if( TypeRules.getReal(me.type,mj.type).equals(
-										TypeRules.getReal(me.type,mi.type)) ) {
+						if( Type.getRealType(me.type,mj.type).equals(
+										Type.getRealType(me.type,mi.type)) ) {
 							trace(Kiev.debugResolve,"chk: methods "+mi.name+
-									TypeRules.getReal(me.type,mj.type)+
-									" and "+mi.name+TypeRules.getReal(me.type,mi.type)+" equals");
+									Type.getRealType(me.type,mj.type)+
+									" and "+mi.name+Type.getRealType(me.type,mi.type)+" equals");
 							if( !mj.isPublic() ) {
 								Kiev.reportWarning(me,"Method "+s+"."+mj+" must be declared public");
 								mj.setPublic(true);
@@ -1939,8 +1941,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							break scan_class;
 						 } else {
 							trace(Kiev.debugResolve,"chk: methods "+mi.name+
-									TypeRules.getReal(me.type,mj.type)+
-									" and "+mi.name+TypeRules.getReal(me.type,mi.type)+" not equals");
+									Type.getRealType(me.type,mj.type)+
+									" and "+mi.name+Type.getRealType(me.type,mi.type)+" not equals");
 						 }
 					 }
 				}
@@ -2160,7 +2162,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Field f = (Field)n;
 				try {
 					f.type.checkResolved();
-					if (f.type.getStruct() != null)
+					if (f.type.isStruct())
 						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
@@ -2168,11 +2170,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Method m = (Method)n;
 				try {
 					m.type.ret.checkResolved();
-					if (m.type.ret.getStruct() != null)
+					if (m.type.ret.isStruct())
 						m.type.ret.getStruct().acc.verifyReadWriteAccess(this,m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
 						t.checkResolved();
-						if (t.getStruct() != null)
+						if (t.isStruct())
 							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }
@@ -2228,8 +2230,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			for(List<Method> msi = ms; msi != List.Nil; msi = msi.tail()) {
 				if( (  (by_name_name && m.name.name.equals(msi.head().name.name))
 					|| (!by_name_name && m.name.equals(msi.head().name)) )
-//				 && TypeRules.getReal(tp,m.jtype).equals(TypeRules.getReal(tp,msi.head().jtype)) ) {
-				 && TypeRules.getReal(tp,m.type).equals(TypeRules.getReal(tp,msi.head().type)) ) {
+//				 && Type.getRealType(tp,m.jtype).equals(Type.getRealType(tp,msi.head().jtype)) ) {
+				 && Type.getRealType(tp,m.type).equals(Type.getRealType(tp,msi.head().type)) ) {
 					((List.Cons<Method>)msi).head = m;
 //					System.out.println("replace from "+this+" method "+m.name+m.type.signature);
 					continue next_method;
@@ -2244,11 +2246,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
 		if( super_type != null ) {
 			ms = super_type.clazz.collectVTinterfaceMethods(
-				TypeRules.getReal(tp,super_type),ms);
+				Type.getRealType(tp,super_type),ms);
 		}
 		foreach(Type i; interfaces) {
 			ms = i.clazz.collectVTinterfaceMethods(
-				TypeRules.getReal(tp,i),ms);
+				Type.getRealType(tp,i),ms);
 		}
 		if( isInterface() ) {
 //			System.out.println("collecting in "+this);
@@ -2281,11 +2283,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			dmp.append("interface").forsed_space();
 			if( isArgument() ) dmp.append("/*argument*/").space();
 			dmp.append(jthis.name.short_name.toString()).space();
-			if (this.args.length > 0) {
+			if( type.args!=null && type.args.length > 0 ) {
 				dmp.append("/* <");
-				for(int i=0; i < this.args.length; i++) {
-					dmp.append(this.args[i]);
-					if( i < this.args.length-1 ) dmp.append(',');
+				for(int i=0; i < type.args.length; i++) {
+					dmp.append(type.args[i]);
+					if( i < type.args.length-1 ) dmp.append(',');
 				}
 				dmp.append("> */");
 			}
@@ -2299,11 +2301,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		} else {
 			dmp.append("class").forsed_space();
 			dmp.append(jthis.name.short_name.toString());
-			if( this.args.length > 0 ) {
+			if( type.args!=null && type.args.length > 0 ) {
 				dmp.append("/* <");
-				for(int i=0; i < this.args.length; i++) {
-					dmp.append(jthis.args[i]);
-					if( i < this.args.length-1 ) dmp.append(',');
+				for(int i=0; i < type.args.length; i++) {
+					dmp.append(jthis.type.args[i]);
+					if( i < type.args.length-1 ) dmp.append(',');
 				}
 				dmp.append("> */");
 			}

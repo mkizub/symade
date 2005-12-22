@@ -149,12 +149,12 @@ public class RuleMethod extends Method {
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getJavaType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		foreach (Var lv; localvars)
@@ -245,7 +245,7 @@ public class RuleMethod extends Method {
 //			}
 //		}
 //		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
-//		MethodType rt = (MethodType)TypeRules.getReal(tp,this.type);
+//		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
 //		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 //			if( exact && !mt.args[i].equals(rt.args[i+1]) ) {
 //				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
@@ -725,7 +725,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 	}
 	@nodeview
 	public static final view RuleIstheExprView of RuleIstheExprImpl extends ASTRuleNodeView {
-		public LVarExpr		var;		// variable of type PVar<...>
+		public LVarExpr	var;		// variable of type PVar<...>
 		public ENode		expr;		// expression to check/unify
 	}
 
@@ -754,7 +754,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
 		var.resolve(null);
-		expr.resolve(var.var.type.bindings[0]);
+		expr.resolve(var.getVar().type.args[0]);
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -868,7 +868,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Type ctype = expr.getType();
 		Method@ elems;
 		if( ctype.isArray() ) {
-			itype = BaseType.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.bindings[0]});
+			itype = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;
@@ -879,7 +879,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
 		) {
-			itype = TypeRules.getReal(ctype,elems.type.ret);
+			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;
 		} else {
 			throw new CompilerException(expr,"Container must be an array or an Enumeration "+

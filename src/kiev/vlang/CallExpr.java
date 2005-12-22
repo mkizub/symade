@@ -105,7 +105,7 @@ public class CallExpr extends ENode {
 		return sb.toString();
 	}
 	public Type getType() {
-		return TypeRules.getReal(obj.getType(),func.type.ret);
+		return Type.getRealType(obj.getType(),func.type.ret);
 	}
 
 	public void resolve(Type reqType) {
@@ -116,9 +116,9 @@ public class CallExpr extends ENode {
 		func.makeArgs(args, reqType);
 		if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 			Method mmm = ctx_method;
-			BaseType tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
+			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
 			assert(ctx_method.name.equals(nameInit));
-			assert(tp.clazz.args.length > 0);
+			assert(tp.args.length > 0);
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam() != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());
@@ -130,14 +130,14 @@ public class CallExpr extends ENode {
 		if (func.isVarArgs()) {
 			int i=0;
 			for(; i < func.type.args.length; i++)
-				args[i].resolve(TypeRules.getReal(obj.getType(),func.type.args[i]));
-			Type varg_tp = TypeRules.getReal(obj.getType(),func.getVarArgParam().type);
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
+			Type varg_tp = Type.getRealType(obj.getType(),func.getVarArgParam().type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++)
-				args[i].resolve(varg_tp.bindings[0]);
+				args[i].resolve(varg_tp.args[0]);
 		} else {
 			for (int i=0; i < args.length; i++)
-				args[i].resolve(TypeRules.getReal(obj.getType(),func.type.args[i]));
+				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
 		}
 		if !(func.parent instanceof Struct) {
 			ASTNode n = func.parent;

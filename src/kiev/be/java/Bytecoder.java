@@ -182,7 +182,7 @@ public class Bytecoder implements Constants {
 		MethodType jtype = mtype;
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.bindings,mtype.cargs,Type.tpRule);
+				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
 				m = new RuleMethod(m_name,mtype,m_flags);
 			}
 			else if (m_name == nameInit || m_name == nameClassInit)
@@ -298,7 +298,7 @@ public class Bytecoder implements Constants {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
 			Type[] exceptions = new Type[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = BaseType.newRefType(
+				exceptions[i] = Type.newRefType(
 					ClazzName.fromBytecodeName( ea.getException(i,clazz), false ));
 			}
 			a = new ExceptionsAttr();

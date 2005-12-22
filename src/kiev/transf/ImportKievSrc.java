@@ -65,46 +65,41 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	}
 	
 	private void setupStructType(Struct me, boolean canHaveArgs) {
-		/* Then may be class arguments - they are proceed here, but their inheritance - at pass2() */
-		TypeBinding[] targs = TypeBinding.emptyArray;
+		/* Then may be class arguments - they are proceed here, but their
+		   inheritance - at pass2()
+		*/
+		Type[] targs = Type.emptyArray;
 		if (!canHaveArgs) {
 			if( me.args.length > 0 ) {
 				Kiev.reportError(me,"Type parameters are not allowed for "+me);
 				me.args.delAll();
 			}
 		}
-		else if (me.args.length > 0) {
-			targs = new TypeBinding[me.args.length];
+		else if( me.parent instanceof Struct && ((Struct)me.parent).args.length > 0 ) {
+			Struct astnp = (Struct)me.parent;
+			// Inner classes's arguments have to be arguments of outer classes
+			// BUG BUG BUG - need to follow java scheme
+			for(int i=0; i < me.args.length; i++) {
+				TypeArgDef arg = me.args[i];
+				Type[] outer_args = astnp.type.args;
+				if( outer_args == null || outer_args.length <= i)
+					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
+				if !(outer_args[i].getClazzName().short_name.equals(arg.name.name))
+					throw new CompilerException(arg,"Inner class arguments must match outer class argument,"
+						+" but arg["+i+"] is "+arg
+						+" and have to be "+outer_args[i].getClazzName().short_name);
+			}
+			/* Create type for class's arguments, if any */
+			if( me.args.length > 0 ) {
+				targs = astnp.type.args;
+			}
+		} else {
 			for(int i=0; i < me.args.length; i++)
-				targs[i] = new TypeBinding((ArgumentType)me.args[i].getType(), new TypeConstraint.Upper(Type.tpAny));
+				targs = (Type[])Arrays.append(targs,me.args[i].getType());
 		}
 
-		if (!me.isStatic() && canHaveArgs) {
-			for (ASTNode parent = me.parent; parent != null; parent = parent.parent) {
-				if (parent instanceof Struct && ((Struct)parent).type.bindings.length > 0 ) {
-					Struct ps = (Struct)me.parent;
-					TypeBinding[] outer_bindings = ps.type.bindings;
-		next_ob:	foreach (TypeBinding ob; outer_bindings) {
-						for (int i=0; i < me.args.length; i++) {
-							if (targs[i].arg.name.short_name == ob.arg.name.short_name) {
-								Kiev.reportWarning(me, "Deprecated type binding detected for argument "+ob.arg);
-								targs[i].cs = new TypeConstraint.Equal(ob.arg);
-								continue next_ob;
-							}
-						}
-						TypeArgDef tad = new TypeArgDef(new NameRef(me.pos, ob.arg.name.short_name));
-						me.members.insert(0,tad);
-						targs = (TypeBinding[])Arrays.append(targs,
-							new TypeBinding((ArgumentType)tad.getType(), new TypeConstraint.Equal(ob.arg)));
-					}
-					if (ps.isStatic())
-						break;
-				}
-			}
-		}
-		
 		/* Generate type for this structure */
-		me.type = BaseType.createRefType(me,targs);
+		me.type = Type.newRefType(me,targs);
 	}
 
 	public void pass1(Struct:ASTNode astn) {
@@ -232,7 +227,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass1_1(TypeDefOp:ASTNode astn) {
 		try {
 			if (astn.typearg != null) {
-				astn.type = new TypeRef(astn.type.getType().getTemplateType());
+				astn.type = new TypeRef(astn.type.getType().getInitialType());
 			} else {
 				astn.type = new TypeRef(astn.type.getType());
 			}
@@ -373,8 +368,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		int pos = astn.pos;
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
 		/* Process inheritance of class's arguments, if any */
-		TypeBinding[] targs = me.type.bindings;
-		for(int i=0; i < me.args.length; i++) {
+		Type[] targs = me.type.args;
+		for(int i=0; i < astn.args.length; i++) {
 			TypeArgDef arg = astn.args[i];
 			if( arg.super_bound != null ) {
 				Type sup = arg.super_bound.getType();
@@ -382,11 +377,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					Kiev.reportError(astn,"Argument extends bad type "+sup);
 				} else {
 					((ArgumentType)arg.getType()).super_type = sup;
-					targs[i] = new TypeBinding(targs[i].arg, new TypeConstraint.Upper(sup));
 				}
-			} else {
-				((ArgumentType)arg.getType()).super_type = Type.tpObject;
-				targs[i] = new TypeBinding(targs[i].arg, new TypeConstraint.Upper(Type.tpObject));
+				targs[i].checkJavaSignature();
 			}
 		}
 
@@ -470,7 +462,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				me.super_type = Type.tpObject;
 			foreach(TypeRef tr; me.interfaces)
 				tr.getType();
-			if( me.type.bindings.length > 0 && !(me.type instanceof ClosureType) ) {
+			if( me.type.args.length > 0 && !(me.type instanceof ClosureType) ) {
 				me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 			}
 		}

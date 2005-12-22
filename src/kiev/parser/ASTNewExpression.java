@@ -100,10 +100,10 @@ public class ASTNewExpression extends ENode {
 				found = true;
 				for(int j=0; i < mtargs.length; i++,j++) {
 					if( targs[j] == null )
-						targs[j] = TypeRules.getReal(tp,mtargs[i]);
+						targs[j] = Type.getRealType(tp,mtargs[i]);
 					else if( targs[j] == Type.tpVoid )
 						;
-					else if( targs[j] != TypeRules.getReal(tp,mtargs[i]) )
+					else if( targs[j] != Type.getRealType(tp,mtargs[i]) )
 						targs[j] = Type.tpVoid;
 				}
 			}
@@ -138,7 +138,7 @@ public class ASTNewExpression extends ENode {
 		}
 
 		{
-			clazz.type = BaseType.newRefType(clazz,Type.emptyArray);
+			clazz.type = Type.newRefType(clazz,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
 			if( args.length > 0 ) {
 				MethodType mt;

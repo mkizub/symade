@@ -123,13 +123,9 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		ClosureType ct = (ClosureType)this.getType();
 		Type ret = ct.ret;
 		if( ret != Type.tpRule ) {
-			KString call_name;
-			if (ret.isReference()) {
+			if( ret.isReference() )
 				ret = Type.tpObject;
-				call_name = KString.from("call_Object");
-			} else {
-				call_name = KString.from("call_"+ret);
-			}
+			KString call_name = KString.from("call_"+ret.getClazzName().short_name);
 			Method md = new Method(call_name, MethodType.newMethodType(Type.emptyArray,ret),ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
@@ -149,7 +145,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
-				BaseType celltp = TypeRules.getRefTypeForPrimitive(v.type);
+				BaseType celltp = BaseType.getProxyType(v.type);
 				val = new IFldExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
 						celltp.clazz.resolveField(nameCellVal)

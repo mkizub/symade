@@ -25,7 +25,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 	public void generateCheckCastIfNeeded(Code code) {
 		if( !Kiev.verify ) return;
 		Type ot = obj.getType();
-		if( !ot.getErasedType().isInstanceOf(func.jctx_clazz.type.getErasedType()) ) {
+		if( !ot.isStructInstanceOf(func.jctx_clazz.getStruct()) ) {
 			trace( Kiev.debugNodeTypes, "Need checkcast for method "+ot+"."+func);
 			code.addInstr(Instr.op_checkcast,func.jctx_clazz.type);
 		}
@@ -104,9 +104,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 			if( func.name.equals(nameInit) && func.getTypeInfoParam() != null) {
 				JMethodView mmm = jctx_method;
-				BaseType tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
+				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
 				assert(mmm.name.equals(nameInit));
-				assert(tp.clazz.args.length > 0);
+				assert(tp.args.length > 0);
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJENodeView();
@@ -126,7 +126,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			Type type = func.jtype.args[N];
 			assert(type.isArray());
 			code.addConst(args.length-N);
-			code.addInstr(Instr.op_newarray,type.bindings[0]);
+			code.addInstr(Instr.op_newarray,type.args[0]);
 			for(int j=0; i < args.length; i++, j++) {
 				code.addInstr(Instr.op_dup);
 				code.addConst(j);
@@ -152,7 +152,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name == nameObjGetClass ) {
-				BaseType reft = TypeRules.getRefTypeForPrimitive(objt);
+				BaseType reft = Type.getRefTypeForPrimitive(objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);
@@ -255,7 +255,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null )
@@ -304,7 +304,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && call_it.type.ret.isReference()
-			 && ( !call_it.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
+			 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}

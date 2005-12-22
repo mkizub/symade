@@ -673,7 +673,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
 				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
 		) {
-			itype = TypeRules.getReal(ctype,elems.type.ret);
+			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;
 		} else if( ctype == Type.tpRule &&
 			(

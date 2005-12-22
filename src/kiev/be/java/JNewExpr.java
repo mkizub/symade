@@ -43,9 +43,9 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 					return;
 				}
 				int i;
-				for(i=0; i < code.clazz.args.length; i++)
-					if( type.string_equals(code.clazz.args[i]) ) break;
-				if( i >= code.clazz.args.length )
+				for(i=0; i < code.clazz.type.args.length; i++)
+					if( type.string_equals(code.clazz.type.args[i]) ) break;
+				if( i >= code.clazz.type.args.length )
 					throw new CompilerException(this,"Can't create an instance of argument type "+type);
 				ENode tie = new IFldExpr(pos,new ThisExpr(pos),code.clazz.getStruct().resolveField(nameTypeInfo));
 				ENode e = new CastExpr(pos,type,
@@ -76,8 +76,8 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
-		if (type.getStruct() != null && type.getStruct().isLocal() ) {
-			JStructView cl = type.getStruct().getJStructView();
+		if( type.isLocalClazz() ) {
+			JStructView cl = ((BaseType)type).clazz.getJStructView();
 			foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
 				JFieldView f = (JFieldView)n;
 				if( !f.isNeedProxy() ) continue;

@@ -3,7 +3,6 @@ package kiev.be.java;
 import kiev.*;
 
 import kiev.vlang.Type;
-import kiev.vlang.TypeRules;
 import kiev.vlang.Constants;
 
 import static kiev.stdlib.Debug.*;
@@ -141,7 +140,7 @@ public class CodeLabel implements Constants {
 								code.set_stack_at(tl,i);
 								continue;
 							}
-							Type lct = TypeRules.leastCommonType(tl,tc);
+							Type lct = Type.leastCommonType(tl,tc);
 							if( lct != null ) {
 								code.set_stack_at(lct,i);
 								continue;
