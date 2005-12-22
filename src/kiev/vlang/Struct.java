@@ -37,6 +37,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		
 		     public Access						acc;
 		     public ClazzName					name;
+		     BaseTypeProvider					instance_meta_type;
 		@ref public BaseType					type;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
@@ -76,6 +77,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public static final view StructView of StructImpl extends TypeDefView {
 		public				Access				acc;
 		public				ClazzName			name;
+		public				BaseTypeProvider	instance_meta_type;
 		public				BaseType			type;
 		public				TypeRef				view_of;
 		public				TypeRef				super_bound;
@@ -261,6 +263,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	     public abstract virtual			ClazzName					name;
 
 	/** Type associated with this class */
+	     public abstract virtual			BaseTypeProvider			instance_meta_type;
 	@ref public abstract virtual			BaseType					type;
 	@att public abstract virtual			TypeRef						view_of;
 
@@ -298,6 +301,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	
 	@getter public Access				get$acc()					{ return this.getStructView().acc; }
 	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
+	@getter public BaseTypeProvider		get$instance_meta_type()	{ return this.getStructView().instance_meta_type; }
 	@getter public BaseType				get$type()					{ return this.getStructView().type; }
 	@getter public TypeRef				get$view_of()				{ return this.getStructView().view_of; }
 	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
@@ -310,22 +314,25 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@getter public NArr<DNode>			get$members()				{ return this.getStructView().members; }
 	@getter public BaseType				get$super_type()			{ return this.getStructView().super_type; }
 
-	@setter public void set$acc(Access val)				{ this.getStructView().acc = val; }
-	@setter public void set$name(ClazzName val)			{ this.getStructView().name = val; }
-	@setter public void set$type(BaseType val)				{ this.getStructView().type = val; }
-	@setter public void set$view_of(TypeRef val)			{ this.getStructView().view_of = val; }
-	@setter public void set$super_bound(TypeRef val)		{ this.getStructView().super_bound = val; }
-	@setter public void set$package_clazz(Struct val)		{ this.getStructView().package_clazz = val; }
-	@setter public void set$typeinfo_clazz(Struct val)		{ this.getStructView().typeinfo_clazz = val; }
-	@setter public void set$super_type(BaseType val) 		{ this.getStructView().super_type = val; }
+	@setter public void set$acc(Access val)							{ this.getStructView().acc = val; }
+	@setter public void set$name(ClazzName val)						{ this.getStructView().name = val; }
+	@setter public void set$instance_meta_type(BaseTypeProvider val)	{ this.getStructView().instance_meta_type = val; }
+	@setter public void set$type(BaseType val)							{ this.getStructView().type = val; }
+	@setter public void set$view_of(TypeRef val)						{ this.getStructView().view_of = val; }
+	@setter public void set$super_bound(TypeRef val)					{ this.getStructView().super_bound = val; }
+	@setter public void set$package_clazz(Struct val)					{ this.getStructView().package_clazz = val; }
+	@setter public void set$typeinfo_clazz(Struct val)					{ this.getStructView().typeinfo_clazz = val; }
+	@setter public void set$super_type(BaseType val) 					{ this.getStructView().super_type = val; }
 
 	
 	Struct() {
 		super(new StructImpl(0,0));
+		instance_meta_type = new BaseTypeProvider(this);
 	}
 	
 	protected Struct(ClazzName name) {
 		super(new StructImpl(0,0));
+		instance_meta_type = new BaseTypeProvider(this);
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -334,6 +341,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	public Struct(ClazzName name, Struct outer, int acc) {
 		super(new StructImpl(0,acc));
+		instance_meta_type = new BaseTypeProvider(this);
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -350,23 +358,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	};
 
 	public String toString() { return name.name.toString(); }
-
-//	@getter public Access get$acc() {
-//		return acc;
-//	}
-//
-//	@setter public void set$acc(Access a) {
-//		acc = a;
-//		acc.verifyAccessDecl(this);
-//	}
-//	
-//	@getter public BaseType get$super_type() {
-//		return (BaseType)super_bound.lnk;
-//	}
-//
-//	@setter public void set$super_type(BaseType tp) {
-//		super_bound = new TypeRef(super_bound.pos, tp);
-//	}
 
 	// normal class
 	public boolean isClazz() { return getStructView().isClazz(); }
@@ -1017,7 +1008,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	private void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
 			return;
-		if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
+		if (!isInterface() && type.args.length > 0) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -1175,7 +1166,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
-					if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
+					if (!isInterface() && type.args.length > 0) {
 						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
@@ -1204,7 +1195,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							targs = (Type[])Arrays.append(targs,package_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
-						if( !isInterface() && type.args.length > 0 && !(type instanceof ClosureType) ) {
+						if (!isInterface() && type.args.length > 0) {
 							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
@@ -1507,10 +1498,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						break;
 					}
 				}
-				if( type.args.length > 0
-				 && !(type instanceof ClosureType)
-				 && m.isNeedFieldInits()
-				) {
+				if (type.args.length > 0 && m.isNeedFieldInits()) {
 					Field tif = resolveField(nameTypeInfo);
 					Var v = null;
 					foreach(Var vv; m.params; vv.name.equals(nameTypeInfo) ) {
@@ -2162,7 +2150,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Field f = (Field)n;
 				try {
 					f.type.checkResolved();
-					if (f.type.isStruct())
+					if (f.type.getStruct()!=null)
 						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
@@ -2170,11 +2158,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				Method m = (Method)n;
 				try {
 					m.type.ret.checkResolved();
-					if (m.type.ret.isStruct())
+					if (m.type.ret.getStruct()!=null)
 						m.type.ret.getStruct().acc.verifyReadWriteAccess(this,m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
 						t.checkResolved();
-						if (t.isStruct())
+						if (t.getStruct()!=null)
 							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }

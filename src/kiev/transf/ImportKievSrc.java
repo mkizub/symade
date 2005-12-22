@@ -462,7 +462,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				me.super_type = Type.tpObject;
 			foreach(TypeRef tr; me.interfaces)
 				tr.getType();
-			if( me.type.args.length > 0 && !(me.type instanceof ClosureType) ) {
+			if (me.type.args.length > 0) {
 				me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 			}
 		}

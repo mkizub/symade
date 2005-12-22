@@ -39,6 +39,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		
 		     public Access				acc;
 		     public NodeName			name;
+		     MethodTypeProvider			meta_type;
 		@att public TypeCallRef			type_ref;
 		@att public TypeCallRef			dtype_ref;
 		@att public NArr<FormPar>		params;
@@ -76,6 +77,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	
 		public				Access				acc;
 		public				NodeName			name;
+		public				MethodTypeProvider	meta_type;
 		public				TypeCallRef			type_ref;
 		public				TypeCallRef			dtype_ref;
 		public access:ro	NArr<FormPar>		params;
@@ -188,6 +190,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@getter public Access				get$acc()					{ return this.getMethodView().acc; }
 	@getter public NodeName				get$name()					{ return this.getMethodView().name; }
+	@getter public MethodTypeProvider	get$meta_type()				{ return this.getMethodView().meta_type; }
 	@getter public TypeCallRef			get$type_ref()				{ return this.getMethodView().type_ref; }
 	@getter public TypeCallRef			get$dtype_ref()				{ return this.getMethodView().dtype_ref; }
 	@getter public NArr<FormPar>		get$params()				{ return this.getMethodView().params; }
@@ -207,6 +210,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
 	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
+	@setter public void set$meta_type(MethodTypeProvider val)		{ this.getMethodView().meta_type = val; }
 	@setter public void set$type_ref(TypeCallRef val)				{ this.getMethodView().type_ref = val; }
 	@setter public void set$dtype_ref(TypeCallRef val)				{ this.getMethodView().dtype_ref = val; }
 	@setter public void set$retvar(Var val)						{ this.getMethodView().retvar = val; }
@@ -221,6 +225,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	/** Name of the method */
 	     public abstract virtual			NodeName			name;
 	/** Return type of the method and signature (argument's types) */
+	     public abstract virtual			MethodTypeProvider	meta_type;
 	@att public abstract virtual			TypeCallRef			type_ref;
 	/** The type of the dispatcher method (if method is a multimethod) */
 	@att public abstract virtual			TypeCallRef			dtype_ref;

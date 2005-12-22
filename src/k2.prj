@@ -389,13 +389,14 @@ kiev.vlang.AccessExpr.AccessExprView kiev/vlang/AccessExpr$AccessExprView kiev\v
 kiev.vlang.AccessExpr.DFI kiev/vlang/AccessExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.AccessFlags kiev/vlang/AccessFlags kiev\vlang\MemberFlags.java
 kiev.vlang.Accessable kiev/vlang/Accessable kiev\vlang\Access.java
-kiev.vlang.AnnotationType kiev/vlang/AnnotationType kiev\vlang\Type.java
 kiev.vlang.ArgumentType kiev/vlang/ArgumentType kiev\vlang\Type.java
+kiev.vlang.ArgumentTypeProvider kiev/vlang/ArgumentTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.ArrayLengthExpr kiev/vlang/ArrayLengthExpr kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr.ArrayLengthExprImpl kiev/vlang/ArrayLengthExpr$ArrayLengthExprImpl kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr.ArrayLengthExprView kiev/vlang/ArrayLengthExpr$ArrayLengthExprView kiev\vlang\Expr.java
 kiev.vlang.ArrayLengthExpr.DFI kiev/vlang/ArrayLengthExpr$DFI kiev\vlang\Expr.java
 kiev.vlang.ArrayType kiev/vlang/ArrayType kiev\vlang\Type.java
+kiev.vlang.ArrayTypeProvider kiev/vlang/ArrayTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.AssignExpr kiev/vlang/AssignExpr kiev\vlang\Expr.java
 kiev.vlang.AssignExpr.AssignExprDFFunc kiev/vlang/AssignExpr$AssignExprDFFunc kiev\vlang\Expr.java
 kiev.vlang.AssignExpr.AssignExprImpl kiev/vlang/AssignExpr$AssignExprImpl kiev\vlang\Expr.java
@@ -404,6 +405,7 @@ kiev.vlang.AssignExpr.DFI kiev/vlang/AssignExpr$DFI kiev\vlang\Expr.java
 kiev.vlang.AssignOperator kiev/vlang/AssignOperator kiev\vlang\Operator.java
 kiev.vlang.AttrSlot kiev/vlang/AttrSlot kiev\vlang\Tree.java
 kiev.vlang.BaseType kiev/vlang/BaseType kiev\vlang\Type.java
+kiev.vlang.BaseTypeProvider kiev/vlang/BaseTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.BinaryBoolExpr kiev/vlang/BinaryBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl kiev/vlang/BinaryBoolExpr$BinaryBoolExprImpl kiev\vlang\BooleanExpr.java
 kiev.vlang.BinaryBoolExpr.BinaryBoolExprView kiev/vlang/BinaryBoolExpr$BinaryBoolExprView kiev\vlang\BooleanExpr.java
@@ -468,6 +470,7 @@ kiev.vlang.ClosureCallExpr.ClosureCallExprImpl kiev/vlang/ClosureCallExpr$Closur
 kiev.vlang.ClosureCallExpr.ClosureCallExprView kiev/vlang/ClosureCallExpr$ClosureCallExprView kiev\vlang\CallExpr.java
 kiev.vlang.ClosureCallExpr.DFI kiev/vlang/ClosureCallExpr$DFI kiev\vlang\CallExpr.java
 kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java
+kiev.vlang.ClosureTypeProvider kiev/vlang/ClosureTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprImpl kiev/vlang/CommaExpr$CommaExprImpl kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprView kiev/vlang/CommaExpr$CommaExprView kiev\vlang\Expr.java
@@ -649,6 +652,9 @@ kiev.vlang.InstanceofExpr.InstanceofExprImpl kiev/vlang/InstanceofExpr$Instanceo
 kiev.vlang.InstanceofExpr.InstanceofExprView kiev/vlang/InstanceofExpr$InstanceofExprView kiev\vlang\BooleanExpr.java
 kiev.vlang.JArrayType kiev/vlang/JArrayType kiev\vlang\Type.java
 kiev.vlang.JBaseType kiev/vlang/JBaseType kiev\vlang\Type.java
+kiev.vlang.JBaseTypeProvider kiev/vlang/JBaseTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.JMethodType kiev/vlang/JMethodType kiev\vlang\Type.java
+kiev.vlang.JMethodTypeProvider kiev/vlang/JMethodTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.JType kiev/vlang/JType kiev\vlang\Type.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
@@ -705,6 +711,8 @@ kiev.vlang.Method.MethodDFFunc kiev/vlang/Method$MethodDFFunc kiev\vlang\Method.
 kiev.vlang.Method.MethodImpl kiev/vlang/Method$MethodImpl kiev\vlang\Method.java
 kiev.vlang.Method.MethodView kiev/vlang/Method$MethodView kiev\vlang\Method.java
 kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
+kiev.vlang.MethodTypeProvider kiev/vlang/MethodTypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.MethodWithArgsTypeProvider kiev/vlang/MethodWithArgsTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
 kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
 kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java
@@ -861,6 +869,7 @@ kiev.vlang.TypeDef.TypeDefView kiev/vlang/TypeDef$TypeDefView kiev\vlang\AST.jav
 kiev.vlang.TypeDefOp kiev/vlang/TypeDefOp kiev\vlang\Import.java
 kiev.vlang.TypeDefOp.TypeDefOpImpl kiev/vlang/TypeDefOp$TypeDefOpImpl kiev\vlang\Import.java
 kiev.vlang.TypeDefOp.TypeDefOpView kiev/vlang/TypeDefOp$TypeDefOpView kiev\vlang\Import.java
+kiev.vlang.TypeProvider kiev/vlang/TypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.TypeRef.DFI kiev/vlang/TypeRef$DFI kiev\vlang\AST.java
 kiev.vlang.TypeRef.TypeRefImpl kiev/vlang/TypeRef$TypeRefImpl kiev\vlang\AST.java
@@ -893,6 +902,7 @@ kiev.vlang.WithStat.DFI kiev/vlang/WithStat$DFI kiev\vlang\ComplexStatement.java
 kiev.vlang.WithStat.WithStatImpl kiev/vlang/WithStat$WithStatImpl kiev\vlang\ComplexStatement.java
 kiev.vlang.WithStat.WithStatView kiev/vlang/WithStat$WithStatView kiev\vlang\ComplexStatement.java
 kiev.vlang.WrapperType kiev/vlang/WrapperType kiev\vlang\Type.java
+kiev.vlang.WrapperTypeProvider kiev/vlang/WrapperTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.att kiev/vlang/att kiev\vlang\Tree.java
 kiev.vlang.dflow kiev/vlang/dflow kiev\vlang\Tree.java
 kiev.vlang.node kiev/vlang/node kiev\vlang\Tree.java

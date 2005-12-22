@@ -490,16 +490,17 @@ public final class NewClosure extends ENode {
 		super(new NewClosureImpl());
 	}
 
-	public NewClosure(int pos, TypeClosureRef type) {
+	public NewClosure(int pos, TypeClosureRef type, Struct clazz) {
 		super(new NewClosureImpl(pos));
 		this.type = type;
+		this.clazz = clazz;
 	}
 
-	public NewClosure(int pos, Method func) {
-		super(new NewClosureImpl(pos));
-		this.func = func;
-		this.type = new TypeClosureRef(ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
-	}
+//	public NewClosure(int pos, Method func) {
+//		super(new NewClosureImpl(pos));
+//		this.func = func;
+//		this.type = new TypeClosureRef(ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
+//	}
 
 	public String toString() {
 		return "fun "+type;
@@ -513,15 +514,11 @@ public final class NewClosure extends ENode {
 		ClosureType type = (ClosureType)this.type.getType();
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		type.getStruct().autoProxyMethods();
-		type.getStruct().resolveDecl();
-		Method@ m;
-		MethodType mt = MethodType.newMethodType(null,new Type[]{Type.tpInt},Type.tpVoid);
-		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
-		if !(PassInfo.resolveBestMethodR(type,m,info,nameInit,mt))
-			throw new CompilerException(this,"Can't find apropriative initializer for "+
-					Method.toString(nameInit,mt)+" for "+type);
-		func = m;
+		this.clazz.autoProxyMethods();
+		this.clazz.resolveDecl();
+		func = clazz.resolveMethod(nameInit,KString.from("(I)V"),false);
+		if (func == null)
+			throw new CompilerException(this,"Can't find apropriative initializer for "+type);
 		setResolved(true);
 	}
 

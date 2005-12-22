@@ -237,8 +237,10 @@ public final class Code implements Constants {
 			Type t2 = types[i];
 			try {
 				if( !(	t1.isAutoCastableTo(t2)
-				     || ( t1.isIntegerInCode() && t2.isIntegerInCode() )
-				     || ( t1.isArray() && t2.isArray()) )
+				     ||(t1.isIntegerInCode() && t2.isIntegerInCode())
+				     ||(t1.isArray() && t2.isArray())
+					 ||(t1.isReference() && t2 == Type.tpObject)
+					 )
 				)
 					throw new RuntimeException("Type of value in stack pos "+j+" is "+stack_at(j)+" but type "+types[i]+" expected for opcode "+opcNames[op]);
 			} catch(Exception e) {
@@ -1307,7 +1309,7 @@ public final class Code implements Constants {
 			if( !type.isReference() )
 				throw new RuntimeException("New on non-reference type "+type);
 			if( type instanceof ClosureType )
-				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getClazzName().signature()));
+				add_opcode_and_CP(opc_new,constPool.getClazzCP(((ClosureType)type).clazz.name.signature()));
 			else
 				add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
 			stack_push(type);

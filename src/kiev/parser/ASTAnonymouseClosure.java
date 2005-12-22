@@ -24,6 +24,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		@att public BlockStat					body;
 		@att public NewClosure					new_closure;
 		@att public Struct						clazz;
+		@ref public ClosureType					ctype;
 		public ASTAnonymouseClosureImpl() {}
 		public ASTAnonymouseClosureImpl(int pos) { super(pos); }
 	}
@@ -34,6 +35,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				BlockStat					body;
 		public				NewClosure					new_closure;
 		public				Struct						clazz;
+		public				ClosureType					ctype;
 	}
 	
 	@att public abstract virtual access:ro	NArr<FormPar>				params;
@@ -41,17 +43,20 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 	@att public abstract virtual			BlockStat					body;
 	@att public abstract virtual			NewClosure					new_closure;
 	@att public abstract virtual			Struct						clazz;
+	@ref public abstract virtual			ClosureType					ctype;
 	
 	@getter public NArr<FormPar>	get$params()			{ return this.getASTAnonymouseClosureView().params; }
 	@getter public TypeRef			get$rettype()			{ return this.getASTAnonymouseClosureView().rettype; }
 	@getter public BlockStat		get$body()				{ return this.getASTAnonymouseClosureView().body; }
 	@getter public NewClosure		get$new_closure()		{ return this.getASTAnonymouseClosureView().new_closure; }
 	@getter public Struct			get$clazz()				{ return this.getASTAnonymouseClosureView().clazz; }
+	@getter public ClosureType		get$ctype()				{ return this.getASTAnonymouseClosureView().ctype; }
 	
 	@setter public void		set$rettype(TypeRef val)		{ this.getASTAnonymouseClosureView().rettype = val; }
 	@setter public void		set$body(BlockStat val)			{ this.getASTAnonymouseClosureView().body = val; }
 	@setter public void		set$new_closure(NewClosure val)	{ this.getASTAnonymouseClosureView().new_closure = val; }
 	@setter public void		set$clazz(Struct val)			{ this.getASTAnonymouseClosureView().clazz = val; }
+	@setter public void		set$ctype(ClosureType val)		{ this.getASTAnonymouseClosureView().ctype = val; }
 
 	public NodeView						getNodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
 	public ENodeView					getENodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
@@ -66,7 +71,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 	}
 
 	public Type getType() {
-		return clazz.type;
+		return ctype;
 	}
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
@@ -96,6 +101,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			false
 		);
 		clazz = Env.newStruct(clname,ctx_clazz,0,true);
+		clazz.type = Type.newRefType(clazz);
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -105,11 +111,10 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		clazz.super_type = Type.tpClosureClazz.type;
 
 		Type[] types = new Type[params.length];
-		for(int i=0; i < types.length; i++) {
+		for(int i=0; i < types.length; i++)
 			types[i] = params[i].type;
-		}
 		Type ret = rettype.getType();
-		clazz.type = ClosureType.newClosureType(clazz,types,ret);
+		this.ctype = ClosureType.newClosureType(clazz,types,ret);
 
 		return false; // don't pre-resolve me
 	}
@@ -120,8 +125,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			return;
 		}
 		BlockStat body = (BlockStat)~this.body;
-		ClosureType ct = (ClosureType)this.getType();
-		Type ret = ct.ret;
+		Type ret = ctype.ret;
 		if( ret != Type.tpRule ) {
 			if( ret.isReference() )
 				ret = Type.tpObject;
@@ -159,8 +163,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		setResolved(true);
 
 		Kiev.runProcessorsOn(clazz);
-		new_closure = new NewClosure(pos,new TypeClosureRef((ClosureType)clazz.type));
-		new_closure.clazz = (Struct)~this.clazz;
+		new_closure = new NewClosure(pos,new TypeClosureRef(ctype), (Struct)~this.clazz);
 		replaceWithNodeResolve(reqType, (ENode)~new_closure);
 	}
 

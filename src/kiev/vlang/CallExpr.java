@@ -254,23 +254,23 @@ public class ClosureCallExpr extends ENode {
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = ClosureType.newClosureType(t.clazz,types,t.ret);
+		t = ClosureType.newClosureType(null,types,t.ret);
 		return t;
 	}
 
 	public Method getCallIt(ClosureType tp) {
 		KString call_it_name;
-		if( ((CallableType)tp).ret.isReference() )
+		KString call_it_sign;
+		if( tp.ret.isReference() ) {
 			call_it_name = KString.from("call_Object");
-		else
-			call_it_name = KString.from("call_"+((CallableType)tp).ret);
-		Method@ callIt;
-		MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpAny);
-		ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noStatic|ResInfo.noImports);
-		PassInfo.resolveBestMethodR(tp,callIt,info,call_it_name,mt);
-		Method call_it = callIt;
+			call_it_sign = KString.from("()"+Type.tpObject.signature);
+		} else {
+			call_it_name = KString.from("call_"+tp.ret);
+			call_it_sign = KString.from("()"+tp.ret.signature);
+		}
+		Method call_it = Type.tpClosureClazz.resolveMethod(call_it_name, call_it_sign, false);
 		if( call_it == null )
-			throw new CompilerException(this,"Can't resolve method "+Method.toString(call_it_name,mt)+" in class "+tp.clazz);
+			throw new CompilerException(this,"Can't resolve method "+call_it_name+call_it_sign+" in "+tp);
 		return call_it;
 	}
 	

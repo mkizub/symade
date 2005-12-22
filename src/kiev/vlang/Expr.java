@@ -1793,7 +1793,7 @@ public class CastExpr extends ENode {
 			setResolved(true);
 			return;
 		}
-		if( et.isReference() && type.isReference() && et.isStruct()
+		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !et.isArgument()
 		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)

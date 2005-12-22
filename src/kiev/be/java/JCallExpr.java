@@ -282,7 +282,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		JENodeView[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
-			JMethodView clone_it = ctype.getJStruct().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+			JMethodView clone_it = Type.tpClosureClazz.getJStructView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
 				code.addInstr(op_checkcast,Type.tpClosureClazz.type);
@@ -319,7 +319,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 			call_it_name = KString.from("call_"+tp.ret);
 			call_it_sign = KString.from("()"+tp.ret.signature);
 		}
-		return tp.clazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
+		return Type.tpClosureClazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
 	}
 	
 	static final KString sigZ = KString.from("(Z)Lkiev/stdlib/closure;");
