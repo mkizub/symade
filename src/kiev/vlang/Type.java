@@ -13,7 +13,7 @@ import syntax kiev.Syntax;
  *
  */
 
-public abstract class Type implements StdTypes, AccessFlags, Named {
+public abstract class Type implements StdTypes, AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
 	static Hash<Type>		typeHash;
@@ -67,7 +67,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 
 	public static BaseType newJavaRefType(Struct clazz) {
 		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null,null,null);
+		KString signature = Signature.from(clazz,null);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean {
 			return t.signature.equals(signature) && t instanceof BaseType; });
 		if( t != null ) {
@@ -89,7 +89,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 		if( clazz != null && clazz.type != null && clazz.type.args.length > 0 )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
 		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null,null,null);
+		KString signature = Signature.from(clazz,null);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 //			if( t.clazz == null ) t.clazz = clazz;
@@ -119,7 +119,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 				}
 			}
 		}
-		KString signature = Signature.from(clazz,null,args,null);
+		KString signature = Signature.from(clazz,args);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 //			if( t.clazz == null ) t.clazz = clazz;
@@ -158,9 +158,6 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 			return Signature.getType(new KString.KStringScanner(sig));
 		}
 	}
-	
-	public abstract NodeName getName();
-	public abstract ClazzName getClazzName();
 	
 	public void invalidate() {
 		// called when clazz was changed
@@ -441,7 +438,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 		trace(Kiev.debugResolve,"Get real type of "+t2+" in "+t1);
 		if( t1 == null || t2 == null )	return t2;
 		if( !t2.isArgumented() )		return t2;
-		if( !t2.isReference() && !t2.isCallable())			return t2;
+		assert(t2.isReference() || t2.isCallable());
 		if( t1.isArgument() )			return t2;
 		// No deep recursion for rewriting rules
 		if( get_real_type_depth > 32 ) return t2;
@@ -490,7 +487,7 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 			if( t2 instanceof ArrayType )
 				tp = newArrayType(tpargs[0]);
 			else if( t2 instanceof ClosureType )
-				tp = ClosureType.newClosureType(t2.clazz,tpargs,getRealType(t1,((ClosureType)t2).ret));
+				tp = ClosureType.newClosureType(tpargs,getRealType(t1,((ClosureType)t2).ret));
 			else if( t2 instanceof MethodType )
 				tp = MethodType.newMethodType(tpargs,tpret);
 			else
@@ -516,11 +513,6 @@ public abstract class Type implements StdTypes, AccessFlags, Named {
 //		else if( tp == Type.tpFloat)	return Type.tpCellFloat;
 //		else if( tp == Type.tpDouble)	return Type.tpCellDouble;
 //		return tp;
-	}
-
-	public final void checkJavaSignature() {
-		//assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
-		jtype == null;
 	}
 
 	public abstract Dumper toJava(Dumper dmp);
@@ -559,7 +551,7 @@ public class JMethodType extends JType implements CallableType {
 	public final JType				jret;
 	
 	JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(JMethodTypeProvider.instance, java_signature);
+		super(CallTypeProvider.instancies[jargs.length], java_signature);
 		this.jargs = jargs;
 		this.jret = jret;
 	}
@@ -571,25 +563,25 @@ public class BaseType extends Type {
 	public final access:ro,ro,ro,rw Struct		clazz;	
 	
 	BaseType(Struct clazz) {
-		super(clazz.instance_meta_type, Signature.from(clazz,null,null,null));
+		super(clazz.imeta_type, Signature.from(clazz,null));
 		this.clazz = clazz;
 		assert(clazz != null);
 	}
 	
 	BaseType(Struct clazz, Type[] args) {
-		super(clazz.instance_meta_type, Signature.from(clazz,null,args,null),args);
+		super(clazz.imeta_type, Signature.from(clazz,args),args);
 		this.clazz = clazz;
 		assert(clazz != null);
 	}
 	
 	BaseType(KString signature, Struct clazz) {
-		super(clazz.instance_meta_type, signature);
+		super(clazz.imeta_type, signature);
 		this.clazz = clazz;
 		assert(clazz != null);
 	}
 	
 	BaseType(KString signature, Struct clazz, Type[] args) {
-		super(clazz.instance_meta_type, signature, args);
+		super(clazz.imeta_type, signature, args);
 		this.clazz = clazz;
 		assert(clazz != null);
 	}
@@ -607,8 +599,6 @@ public class BaseType extends Type {
 		return jtype;
 	}
 
-	public NodeName getName()			{ return clazz.name; }
-	public ClazzName getClazzName()		{ return clazz.name; }
 	public Struct getStruct()			{ return clazz; }
 	public Type getInitialType()		{ return clazz.type; }
 	public Type getInitialSuperType()	{ return clazz.super_type; }
@@ -815,8 +805,6 @@ public class ArrayType extends Type {
 		return jtype;
 	}
 
-	public NodeName getName()						{ return cname; }
-	public ClazzName getClazzName()					{ return cname; }
 	public boolean isArgument()						{ return false; }
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return false; }
@@ -912,8 +900,6 @@ public class ArgumentType extends Type {
 		return jtype;
 	}
 
-	public NodeName getName()						{ return name; }
-	public ClazzName getClazzName()					{ return name; }
 	public boolean isArgument()						{ return true; }
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return super_type.isAbstract(); }
@@ -967,7 +953,6 @@ public class WrapperType extends Type {
 	public static final Type tpWrappedPrologVar = newWrapperType(tpPrologVar);
 	public static final Type tpWrappedRefProxy  = newWrapperType(tpRefProxy);
 	
-	final Field wrapped_field;
 	final BaseType unwrapped_type;
 
 	public static Type newWrapperType(Type type) {
@@ -984,10 +969,11 @@ public class WrapperType extends Type {
 	}
 	
 	private WrapperType(KString sign, BaseType unwrapped_type) {
-		super(WrapperTypeProvider.instance, sign, unwrapped_type.args);
+		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), sign, unwrapped_type.args);
 		this.unwrapped_type = unwrapped_type;
-		this.wrapped_field = unwrapped_type.getStruct().getWrappedField(true);
 	}
+
+	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
 	public JType getJType() {
 		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -1014,8 +1000,6 @@ public class WrapperType extends Type {
 	
 	public BaseType getUnwrappedType()					{ return unwrapped_type; }
 	
-	public NodeName getName()			{ return getUnwrappedType().getName(); }
-	public ClazzName getClazzName()		{ return getUnwrappedType().getClazzName(); }
 	public Struct getStruct()			{ return getUnwrappedType().getStruct(); }
 	public MetaSet getStructMeta()		{ return getUnwrappedType().getStructMeta(); }
 	public Type getSuperType()			{ return getUnwrappedType().getSuperType(); }
@@ -1100,8 +1084,8 @@ public interface CallableType {
 public class ClosureType extends Type implements CallableType {
 	public virtual Type		ret;
 	
-	private ClosureType(ClosureTypeProvider meta_type, KString signature, Type[] args, Type ret) {
-		super(meta_type, signature, args);
+	private ClosureType(KString signature, Type[] args, Type ret) {
+		super(CallTypeProvider.instancies[args.length], signature, args);
 		this.ret = ret;
 		flags |= flReference | flCallable;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
@@ -1110,35 +1094,23 @@ public class ClosureType extends Type implements CallableType {
 		trace(Kiev.debugCreation,"New closure type created: "+this+" with signature "+signature);
 	}
 
-	public static ClosureType newClosureType(Struct clazz, Type[] args, Type ret) {
+	public static ClosureType newClosureType(Type[] args, Type ret) {
 		if (ret   == null) ret   = Type.tpAny;
-		if (clazz == null) clazz = Type.tpClosureClazz;
-		KString sign = Signature.from(clazz,Type.emptyArray,args,ret);
-		if (clazz == Type.tpClosureClazz) clazz = null;
+		KString sign = Signature.from(args,ret,true);
 		ClosureType t = (ClosureType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
-			return t.signature.equals(sign) && t instanceof ClosureType && ((ClosureType)t).clazz == clazz; });
+			return t.signature.equals(sign) && t instanceof ClosureType; });
 		if( t != null ) return t;
-		if (clazz == null) {
-			t = new ClosureType(ClosureTypeProvider.instance, sign, args, ret);
-		} else {
-			assert (clazz.super_type instanceof BaseType && clazz.super_type.clazz == Type.tpClosureClazz);
-			t = new ClosureType(new ClosureTypeProvider(clazz), sign, args, ret);
-		}
+		t = new ClosureType(sign, args, ret);
 		return t;
 	}
 	
 	@getter public Type[]	get$args()	{ return args; }
 	@getter public Type		get$ret()	{ return ret; }
-	@getter public Struct	get$clazz()	{ return ((ClosureTypeProvider)this.meta_type).clazz; }
 
 	public JType getJType() {
 		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
-		if (jtype == null) {
-			if (this.clazz == null)
-				jtype = Type.tpClosure.getJType();
-			else
-				jtype = this.clazz.type.getJType();
-		}
+		if (jtype == null)
+			jtype = Type.tpClosure.getJType();
 		return jtype;
 	}
 
@@ -1157,7 +1129,7 @@ public class ClosureType extends Type implements CallableType {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return clazz.toJava(dmp);
+		return Type.tpClosureClazz.toJava(dmp);
 	}
 
 	public boolean isInstanceOf(Type t) {
@@ -1185,12 +1157,10 @@ public class ClosureType extends Type implements CallableType {
 	
 public class MethodType extends Type implements CallableType {
 	public virtual Type		ret;
-	public Type[]	fargs;	// formal arguments for parametriezed methods
 
-	private MethodType(KString signature, Type ret, Type[] args, Type[] fargs) {
-		super(MethodTypeProvider.instance, signature, args);
+	private MethodType(KString signature, Type[] args, Type ret) {
+		super(CallTypeProvider.instancies[args.length], signature, args);
 		this.ret = ret;
-		this.fargs = fargs;
 		flags |= flCallable;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		if( ret.isArgumented() ) flags |= flArgumented;
@@ -1198,19 +1168,15 @@ public class MethodType extends Type implements CallableType {
 		trace(Kiev.debugCreation,"New method type created: "+this+" with signature "+signature);
 	}
 
-	public static MethodType newMethodType(Type[] fargs, Type[] args, Type ret) {
+	public static MethodType newMethodType(Type[] args, Type ret) {
 		if (args == null) args = Type.emptyArray;
-		if (fargs == null) fargs = Type.emptyArray;
 		if (ret   == null) ret   = Type.tpAny;
-		KString sign = Signature.from(null,fargs,args,ret);
+		KString sign = Signature.from(args,ret,false);
 		MethodType t = (MethodType)typeHash.get(sign.hashCode(),fun (Type t)->boolean {
 			return t.signature.equals(sign) && t instanceof MethodType; });
 		if( t != null ) return t;
-		t = new MethodType(sign,ret,args,fargs);
+		t = new MethodType(sign,args,ret);
 		return t;
-	}
-	public static MethodType newMethodType(Type[] args, Type ret) {
-		return newMethodType(null,args,ret);
 	}
 
 	@getter public Type[]	get$args()	{ return args; }
@@ -1245,15 +1211,6 @@ public class MethodType extends Type implements CallableType {
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		if (fargs != null && fargs.length > 0) {
-			str.append('<');
-			for(int i=0; i < fargs.length; i++) {
-				str.append(fargs[i]);
-				if( i < fargs.length-1)
-					str.append(',');
-			}
-			str.append('>');
-		}
 		str.append('(');
 		if( args != null && args.length > 0 ) {
 			for(int i=0; i < args.length; i++) {
@@ -1276,7 +1233,7 @@ public class MethodType extends Type implements CallableType {
 			if( !args[i].isReference() ) types[i] = args[i];
 			else types[i] = Type.tpObject;
 		}
-		return MethodType.newMethodType(fargs,types,ret);
+		return MethodType.newMethodType(types,ret);
 	}
 
 	public boolean greater(MethodType tp) {
@@ -1333,8 +1290,6 @@ public class MethodType extends Type implements CallableType {
 		return true;
 	}
 	
-	public NodeName getName()			{ return null; }
-	public ClazzName getClazzName()		{ return null; }
 	public Type getSuperType()			{ return null; }
 	public Type getInitialType()		{ return Type.tpAny; }
 	public Type getInitialSuperType()	{ return null; }

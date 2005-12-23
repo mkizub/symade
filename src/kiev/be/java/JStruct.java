@@ -245,8 +245,6 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			foreach (Attr a; f.attrs)
 				a.generate(constPool);
 		}
-		foreach (JDNodeView m; members; m instanceof JMethodView)
-			((JMethodView)m).type.checkJavaSignature();
 		foreach (JDNodeView n; members; n instanceof JMethodView) {
 			JMethodView m = (JMethodView)n;
 			constPool.addAsciiCP(m.name);

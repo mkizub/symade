@@ -413,7 +413,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 					CaseLabel c = (CaseLabel)cases[i];
 					if( c.type == null || !c.type.isReference() )
 						throw new CompilerException(c,"Mixed switch and typeswitch cases");
-					KString name = c.type.getClazzName().name;
+					KString name = c.type.getStruct().name.name;
 					typenames = (KString[])Arrays.append(typenames,name);
 					if( c.val != null )
 						c.val = new ConstIntExpr(i);

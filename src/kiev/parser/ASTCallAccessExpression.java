@@ -84,7 +84,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(null,ta,null);
+			MethodType mt = MethodType.newMethodType(ta,null);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) )
 					throw new CompilerException(obj,"Unresolved method "+Method.toString(func.name,args,null));
@@ -107,7 +107,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = MethodType.newMethodType(null,ta,null);
+			mt = MethodType.newMethodType(ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;
@@ -208,7 +208,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(null,ta,ret);
+			MethodType mt = MethodType.newMethodType(ta,ret);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,func.name,mt) ) {
 					if( ret != null ) { ret = null; goto retry_with_null_ret; }
@@ -236,7 +236,7 @@ public class ASTCallAccessExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = MethodType.newMethodType(null,ta,null);
+			mt = MethodType.newMethodType(ta,null);
 		}
 		int res_flags = ResInfo.noStatic | ResInfo.noImports;
 		ENode[] res;

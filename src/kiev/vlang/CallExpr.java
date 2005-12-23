@@ -254,7 +254,7 @@ public class ClosureCallExpr extends ENode {
 			return t.ret;
 		Type[] types = new Type[t.args.length - args.length];
 		for(int i=0; i < types.length; i++) types[i] = t.args[i+args.length];
-		t = ClosureType.newClosureType(null,types,t.ret);
+		t = ClosureType.newClosureType(types,t.ret);
 		return t;
 	}
 

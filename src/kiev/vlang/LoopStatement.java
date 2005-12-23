@@ -671,7 +671,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			itype = ctype;
 			mode = JENUM;
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny))
+				nameElements,MethodType.newMethodType(Type.emptyArray,Type.tpAny))
 		) {
 			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;
@@ -778,7 +778,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ELEMS:
 			/* iter.hasMoreElements() */
 			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameHasMoreElements,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
+				nameHasMoreElements,MethodType.newMethodType(Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 			iter_cond = new CallExpr(	iter.pos,
 					new LVarExpr(iter.pos,iter),
@@ -817,7 +817,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		case ELEMS:
 			/* var = iter.nextElement() */
 			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameNextElement,MethodType.newMethodType(null,Type.emptyArray,Type.tpAny)) )
+				nameNextElement,MethodType.newMethodType(Type.emptyArray,Type.tpAny)) )
 				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
 				var_init = new CallExpr(iter.pos,
 					new LVarExpr(iter.pos,iter),

@@ -528,7 +528,7 @@ public final class ContainerAccessExpr extends LvalueExpr {
 			else {
 				// Resolve overloaded access method
 				Method@ v;
-				MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
+				MethodType mt = MethodType.newMethodType(new Type[]{index.getType()},Type.tpAny);
 				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
 					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
@@ -943,7 +943,7 @@ public final class SFldExpr extends AccessExpr {
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		ClazzName cln = cl.type.getClazzName();
+		ClazzName cln = cl.name;
 		return dmp.space().append(cln).append('.').append(var.name).space();
 	}
 

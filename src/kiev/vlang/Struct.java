@@ -37,7 +37,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		
 		     public Access						acc;
 		     public ClazzName					name;
-		     BaseTypeProvider					instance_meta_type;
+		     BaseTypeProvider					imeta_type;
+		     WrapperTypeProvider				wmeta_type;
 		@ref public BaseType					type;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
@@ -77,7 +78,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public static final view StructView of StructImpl extends TypeDefView {
 		public				Access				acc;
 		public				ClazzName			name;
-		public				BaseTypeProvider	instance_meta_type;
+		public				BaseTypeProvider	imeta_type;
+		public				WrapperTypeProvider	wmeta_type;
 		public				BaseType			type;
 		public				TypeRef				view_of;
 		public				TypeRef				super_bound;
@@ -263,7 +265,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	     public abstract virtual			ClazzName					name;
 
 	/** Type associated with this class */
-	     public abstract virtual			BaseTypeProvider			instance_meta_type;
+	     public abstract virtual			BaseTypeProvider			imeta_type;
+	     public abstract virtual			WrapperTypeProvider			wmeta_type;
 	@ref public abstract virtual			BaseType					type;
 	@att public abstract virtual			TypeRef						view_of;
 
@@ -301,7 +304,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	
 	@getter public Access				get$acc()					{ return this.getStructView().acc; }
 	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
-	@getter public BaseTypeProvider		get$instance_meta_type()	{ return this.getStructView().instance_meta_type; }
+	@getter public BaseTypeProvider		get$imeta_type()			{ return this.getStructView().imeta_type; }
+	@getter public WrapperTypeProvider	get$wmeta_type()			{ return this.getStructView().wmeta_type; }
 	@getter public BaseType				get$type()					{ return this.getStructView().type; }
 	@getter public TypeRef				get$view_of()				{ return this.getStructView().view_of; }
 	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
@@ -316,7 +320,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	@setter public void set$acc(Access val)							{ this.getStructView().acc = val; }
 	@setter public void set$name(ClazzName val)						{ this.getStructView().name = val; }
-	@setter public void set$instance_meta_type(BaseTypeProvider val)	{ this.getStructView().instance_meta_type = val; }
+	@setter public void set$imeta_type(BaseTypeProvider val)			{ this.getStructView().imeta_type = val; }
+	@setter public void set$wmeta_type(WrapperTypeProvider val)		{ this.getStructView().wmeta_type = val; }
 	@setter public void set$type(BaseType val)							{ this.getStructView().type = val; }
 	@setter public void set$view_of(TypeRef val)						{ this.getStructView().view_of = val; }
 	@setter public void set$super_bound(TypeRef val)					{ this.getStructView().super_bound = val; }
@@ -327,12 +332,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	
 	Struct() {
 		super(new StructImpl(0,0));
-		instance_meta_type = new BaseTypeProvider(this);
+		imeta_type = new BaseTypeProvider(this);
 	}
 	
 	protected Struct(ClazzName name) {
 		super(new StructImpl(0,0));
-		instance_meta_type = new BaseTypeProvider(this);
+		imeta_type = new BaseTypeProvider(this);
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -341,7 +346,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	public Struct(ClazzName name, Struct outer, int acc) {
 		super(new StructImpl(0,acc));
-		instance_meta_type = new BaseTypeProvider(this);
+		imeta_type = new BaseTypeProvider(this);
 		this.name = name;
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
@@ -863,9 +868,10 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		if( t.isArgument() ) {
 			return makeTypeInfoString(t.getSuperType());
 		}
+		KString bname = t.getStruct().name.bytecode_name;
 		if( t.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
-			sb.append(t.getClazzName().bytecode_name.toString().replace('/','.'));
+			sb.append(bname.toString().replace('/','.'));
 			sb.append('<');
 			for(int i=0; i < t.args.length; i++) {
 				Type ta = t.args[i];
@@ -876,7 +882,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			sb.append('>');
 			return sb.toString();
 		} else {
-			return t.getClazzName().bytecode_name.toString().replace('/','.');
+			return bname.toString().replace('/','.');
 		}
 	}
 
@@ -903,8 +909,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 			if (t.isArgument()) {
 				// Get corresponded type argument
-				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
-						.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
+				ArgumentType at = (ArgumentType)t;
+				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+at.name.short_name.length())
+						.append(nameTypeInfo).append('$').append(at.name.short_name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
 					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
@@ -1033,13 +1040,13 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			FormPar[] ti_init_params = new FormPar[]{};
 			ENode[] stats = new ENode[type.args.length];
 			for (int arg=0; arg < type.args.length; arg++) {
-				Type t = type.args[arg];
-				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.getClazzName().short_name.length())
-					.append(nameTypeInfo).append('$').append(t.getClazzName().short_name).toKString();
+				ArgumentType t = (ArgumentType)type.args[arg];
+				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.name.short_name.length())
+					.append(nameTypeInfo).append('$').append(t.name.short_name).toKString();
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
 				ti_init_targs[arg] = Type.tpTypeInfo;
-				FormPar v = new FormPar(pos,t.getClazzName().short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,t.name.short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
 				stats[arg] = new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -1054,7 +1061,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
 
 			// create constructor method
-			ti_init = MethodType.newMethodType(null,ti_init_targs,Type.tpVoid);
+			ti_init = MethodType.newMethodType(ti_init_targs,Type.tpVoid);
 			Constructor init = new Constructor(ti_init,ACC_PUBLIC);
 			init.params.addAll(ti_init_params);
 			typeinfo_clazz.addMethod(init);
@@ -1072,7 +1079,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					Type t = super_type.args[arg];
 					t = Type.getRealType(this.type,t);
 					if (t.isArgumented()) {
-						exprs[arg] = new ASTIdentifier(pos,t.getClazzName().short_name);
+						exprs[arg] = new ASTIdentifier(pos,((ArgumentType)t).name.short_name);
 					} else {
 						CallExpr ce = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
@@ -1091,7 +1098,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			}
 
 			// create method to get typeinfo field
-			MethodType tim_type = MethodType.newMethodType(null,Type.emptyArray,Type.tpTypeInfo);
+			MethodType tim_type = MethodType.newMethodType(Type.emptyArray,Type.tpTypeInfo);
 			Method tim = addMethod(new Method(nameGetTypeInfo,tim_type,ACC_PUBLIC));
 			tim.body = new BlockStat(pos,new ENode[]{
 				new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
@@ -1303,7 +1310,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public Constructor getClazzInitMethod() {
 		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
 			return (Constructor)n;
-		Constructor class_init = new Constructor(MethodType.newMethodType(null,null,Type.tpVoid),ACC_STATIC);
+		Constructor class_init = new Constructor(MethodType.newMethodType(null,Type.tpVoid),ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
 		class_init.body = new BlockStat(pos);

@@ -63,7 +63,7 @@ public final class MetaSet extends ASTNode {
 	public Meta get(KString name) {
 		int sz = metas.length;
 		for (int i=0; i < sz; i++) {
-			if (metas[i].type.getType().getClazzName().name == name)
+			if (metas[i].type.getType().getStruct().name.name == name)
 				return metas[i];
 		}
 		return null;
@@ -86,7 +86,7 @@ public final class MetaSet extends ASTNode {
 
 	public Meta unset(Meta meta) alias del alias operator (5,lfy,-=)
 	{
-		return unset(meta.type.getType().getClazzName().name);
+		return unset(meta.type.getType().getStruct().name.name);
 	}
 	public Meta unset(KString name) alias del alias operator (5,lfy,-=)
 	{
@@ -210,12 +210,13 @@ public class Meta extends ENode {
 		if (mt == null || !mt.isAnnotation()) {
 			throw new CompilerException(this, "Annotation name expected");
 		}
+		KString name = ((BaseType)mt).clazz.name.name;
 		Meta m = this;
-		if (mt.getClazzName().name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
+		if (name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
 			m = (Meta)this.copyTo(new MetaVirtual());
-		if (mt.getClazzName().name == MetaPacked.NAME && !(this instanceof MetaPacked))
+		if (name == MetaPacked.NAME && !(this instanceof MetaPacked))
 			m = (Meta)this.copyTo(new MetaPacked());
-		if (mt.getClazzName().name == MetaPacker.NAME && !(this instanceof MetaPacker))
+		if (name == MetaPacker.NAME && !(this instanceof MetaPacker))
 			m = (Meta)this.copyTo(new MetaPacker());
 		if (m != this) {
 			this.replaceWithNode(m);

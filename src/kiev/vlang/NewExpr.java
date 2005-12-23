@@ -148,7 +148,7 @@ public final class NewExpr extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(null,ta,type);
+			MethodType mt = MethodType.newMethodType(ta,type);
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
@@ -163,7 +163,7 @@ public final class NewExpr extends ENode {
 					return;
 				}
 			}
-			mt = MethodType.newMethodType(null,ta,Type.tpVoid);
+			mt = MethodType.newMethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;
@@ -526,7 +526,7 @@ public final class NewClosure extends ENode {
 
 	public Dumper toJava(Dumper dmp) {
 		ClosureType type = (ClosureType)this.type.getType();
-		Struct cl = type.clazz;
+		Struct cl = clazz;
 		dmp.append("new ").append(cl.super_type.clazz.name).append('(')
 			.append(String.valueOf(type.args.length)).append(')');
 		dmp.space().append('{').newLine(1);

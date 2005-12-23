@@ -53,6 +53,13 @@ public class ASTNewArrayExpression extends ENode {
 		super(new ASTNewArrayExpressionImpl());
 	}
 	
+	public Type getType() {
+		Type t = ArrayType.newArrayType(this.type.getType());
+		for (int i=1; i < dim; i++)
+			t = ArrayType.newArrayType(t);
+		return t;
+	}
+	
 	public void resolve(Type reqType) {
     	for(int i=0; i < args.length; i++) {
         	try {

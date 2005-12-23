@@ -449,6 +449,7 @@ kiev.vlang.CallExpr kiev/vlang/CallExpr kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr.CallExprImpl kiev/vlang/CallExpr$CallExprImpl kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr.CallExprView kiev/vlang/CallExpr$CallExprView kiev\vlang\CallExpr.java
 kiev.vlang.CallExpr.DFI kiev/vlang/CallExpr$DFI kiev\vlang\CallExpr.java
+kiev.vlang.CallTypeProvider kiev/vlang/CallTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.CallableType kiev/vlang/CallableType kiev\vlang\Type.java
 kiev.vlang.CaseLabel kiev/vlang/CaseLabel kiev\vlang\ComplexStatement.java
 kiev.vlang.CaseLabel.CaseLabelDFFuncIn kiev/vlang/CaseLabel$CaseLabelDFFuncIn kiev\vlang\ComplexStatement.java
@@ -470,7 +471,6 @@ kiev.vlang.ClosureCallExpr.ClosureCallExprImpl kiev/vlang/ClosureCallExpr$Closur
 kiev.vlang.ClosureCallExpr.ClosureCallExprView kiev/vlang/ClosureCallExpr$ClosureCallExprView kiev\vlang\CallExpr.java
 kiev.vlang.ClosureCallExpr.DFI kiev/vlang/ClosureCallExpr$DFI kiev\vlang\CallExpr.java
 kiev.vlang.ClosureType kiev/vlang/ClosureType kiev\vlang\Type.java
-kiev.vlang.ClosureTypeProvider kiev/vlang/ClosureTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.CommaExpr kiev/vlang/CommaExpr kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprImpl kiev/vlang/CommaExpr$CommaExprImpl kiev\vlang\Expr.java
 kiev.vlang.CommaExpr.CommaExprView kiev/vlang/CommaExpr$CommaExprView kiev\vlang\Expr.java
@@ -654,7 +654,6 @@ kiev.vlang.JArrayType kiev/vlang/JArrayType kiev\vlang\Type.java
 kiev.vlang.JBaseType kiev/vlang/JBaseType kiev\vlang\Type.java
 kiev.vlang.JBaseTypeProvider kiev/vlang/JBaseTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.JMethodType kiev/vlang/JMethodType kiev\vlang\Type.java
-kiev.vlang.JMethodTypeProvider kiev/vlang/JMethodTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.JType kiev/vlang/JType kiev\vlang\Type.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
@@ -711,8 +710,6 @@ kiev.vlang.Method.MethodDFFunc kiev/vlang/Method$MethodDFFunc kiev\vlang\Method.
 kiev.vlang.Method.MethodImpl kiev/vlang/Method$MethodImpl kiev\vlang\Method.java
 kiev.vlang.Method.MethodView kiev/vlang/Method$MethodView kiev\vlang\Method.java
 kiev.vlang.MethodType kiev/vlang/MethodType kiev\vlang\Type.java
-kiev.vlang.MethodTypeProvider kiev/vlang/MethodTypeProvider kiev\vlang\TypeProvider.java
-kiev.vlang.MethodWithArgsTypeProvider kiev/vlang/MethodWithArgsTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.MultiOperator kiev/vlang/MultiOperator kiev\vlang\Operator.java
 kiev.vlang.NArr kiev/vlang/NArr kiev\vlang\Tree.java
 kiev.vlang.NameRef kiev/vlang/NameRef kiev\vlang\AST.java
@@ -870,6 +867,7 @@ kiev.vlang.TypeDefOp kiev/vlang/TypeDefOp kiev\vlang\Import.java
 kiev.vlang.TypeDefOp.TypeDefOpImpl kiev/vlang/TypeDefOp$TypeDefOpImpl kiev\vlang\Import.java
 kiev.vlang.TypeDefOp.TypeDefOpView kiev/vlang/TypeDefOp$TypeDefOpView kiev\vlang\Import.java
 kiev.vlang.TypeProvider kiev/vlang/TypeProvider kiev\vlang\TypeProvider.java
+kiev.vlang.TypeProvider.Slot kiev/vlang/TypeProvider$Slot kiev\vlang\TypeProvider.java
 kiev.vlang.TypeRef kiev/vlang/TypeRef kiev\vlang\AST.java
 kiev.vlang.TypeRef.DFI kiev/vlang/TypeRef$DFI kiev\vlang\AST.java
 kiev.vlang.TypeRef.TypeRefImpl kiev/vlang/TypeRef$TypeRefImpl kiev\vlang\AST.java

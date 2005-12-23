@@ -152,7 +152,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 		} else {
 			// Resolve overloaded access method
 			Method@ v;
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType()},Type.tpAny);
+			MethodType mt = MethodType.newMethodType(new Type[]{index.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
@@ -200,7 +200,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			Type t = code.stack_at(0);
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.getStruct();
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
+			MethodType mt = MethodType.newMethodType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
@@ -225,7 +225,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = obj.getType().getStruct();
-			MethodType mt = MethodType.newMethodType(null,new Type[]{index.getType(),o.getType()},Type.tpAny);
+			MethodType mt = MethodType.newMethodType(new Type[]{index.getType(),o.getType()},Type.tpAny);
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(obj.getType(),v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));

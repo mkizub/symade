@@ -84,10 +84,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				Type[] outer_args = astnp.type.args;
 				if( outer_args == null || outer_args.length <= i)
 					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
-				if !(outer_args[i].getClazzName().short_name.equals(arg.name.name))
+				if (!outer_args[i].isArgument() || !((ArgumentType)outer_args[i]).name.short_name.equals(arg.name.name))
 					throw new CompilerException(arg,"Inner class arguments must match outer class argument,"
 						+" but arg["+i+"] is "+arg
-						+" and have to be "+outer_args[i].getClazzName().short_name);
+						+" and have to be "+outer_args[i]);
 			}
 			/* Create type for class's arguments, if any */
 			if( me.args.length > 0 ) {
@@ -378,7 +378,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				} else {
 					((ArgumentType)arg.getType()).super_type = sup;
 				}
-				targs[i].checkJavaSignature();
 			}
 		}
 
@@ -643,7 +642,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				WBCCondition inv = (WBCCondition)members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				MethodType mt = MethodType.newMethodType(null,Type.emptyArray,Type.tpVoid);
+				MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpVoid);
 				Method m = new Method(inv.name.name,mt,inv.flags);
 				m.setInvariantMethod(true);
 				m.body = new BlockStat();

@@ -49,7 +49,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		Vector<Type> targs = new Vector<Type>();
 		foreach (Field f; flds/*case_attr.casefields*/)
 			targs.append(f.type);
-		MethodType mt = MethodType.newMethodType(null,targs.toArray(),Type.tpVoid);
+		MethodType mt = MethodType.newMethodType(targs.toArray(),Type.tpVoid);
 		Constructor init = new Constructor(mt,ACC_PUBLIC);
 		init.pos = clazz.pos;
 		foreach (Field f; flds/*case_attr.casefields*/)

@@ -182,7 +182,7 @@ public class Bytecoder implements Constants {
 		MethodType jtype = mtype;
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.fargs,mtype.args,Type.tpRule);
+				mtype = MethodType.newMethodType(mtype.args,Type.tpRule);
 				m = new RuleMethod(m_name,mtype,m_flags);
 			}
 			else if (m_name == nameInit || m_name == nameClassInit)

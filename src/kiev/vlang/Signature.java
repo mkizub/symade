@@ -17,47 +17,40 @@ public class Signature {
 		this.sig = sig;
 	}
 
-	public static KString from(Struct clazz, Type[] fargs, Type[] args, Type ret) {
+	public static KString from(Type[] args, Type ret, boolean closure) {
 		KStringBuffer ksb = new KStringBuffer();
-		if( ret != null ) {
-			// Closure or method.
-			if( clazz != null ) {
-				ksb.append('&'); // Closure
-				if( clazz != Type.tpClosureClazz )
-					ksb.append(clazz.name.signature());
+		// Closure or method.
+		if (closure)
+			ksb.append('&'); // Closure
+		ksb.append('(');
+			if(args!=null && args.length > 0) {
+				for(int i=0; i < args.length; i++)
+					ksb.append(args[i].signature);
 			}
-			if (fargs.length > 0) {
-				ksb.append('<');
-				for(int i=0; i < fargs.length; i++)
-					ksb.append(fargs[i].signature);
-				ksb.append('>');
-			}
-			ksb.append('(');
-				if(args!=null && args.length > 0) {
-					for(int i=0; i < args.length; i++)
-						ksb.append(args[i].signature);
-				}
-			ksb.append(')');
-			ksb.append(ret.signature);
+		ksb.append(')');
+		ksb.append(ret.signature);
+		return ksb.toKString();
+	}
+
+	public static KString from(Struct clazz, Type[] args) {
+		KStringBuffer ksb = new KStringBuffer();
+		// Normal class
+		if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
+			ksb.append('[');
+			ksb.append(args[0].signature);
 		} else {
-			// Normal class
-			if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
-				ksb.append('[');
-				ksb.append(args[0].signature);
+			if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
+				ksb.append(clazz.type.signature);
 			} else {
-				if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
-					ksb.append(clazz.type.signature);
-				} else {
-					if(  clazz !=null )
-						ksb.append(clazz.name.signature());
-					// And it's arguments
-					if( args!=null && args.length > 0 ) {
-						ksb.append('<');
-						for(int i=0; i < args.length; i++) {
-							ksb.append(args[i].signature);
-						}
-						ksb.append('>');
+				if(  clazz !=null )
+					ksb.append(clazz.name.signature());
+				// And it's arguments
+				if( args!=null && args.length > 0 ) {
+					ksb.append('<');
+					for(int i=0; i < args.length; i++) {
+						ksb.append(args[i].signature);
 					}
+					ksb.append('>');
 				}
 			}
 		}
@@ -119,37 +112,28 @@ public class Signature {
 		}
 
 		// Check if this signature is a method signature
-		if( ch == '(' || ch == '&' || ch == '<' ) {
+		if (ch == '(') {
 			// Method signature
-			Type[] fargs = Type.emptyArray;
-			if( ch == '<' ) {
-				while( sc.hasMoreChars() && sc.peekChar() != '>' )
-					fargs = (Type[])Arrays.append(fargs,getType(sc));
-				sc.nextChar();
-			}
-			if( ch == '(' ) {
-				clazz = null;
-			} else {
-				ch = sc.peekChar();
-				if( ch == '(' )
-					clazz = Type.tpClosureClazz;
-				else if( ch == 'L')
-					clazz = ((BaseType)getType(sc)).clazz;
-				else
-					throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' or 'L' expected");
-				ch = sc.nextChar();
-				if( ch != '(' )
-					throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' expected");
-			}
 			args = new Type[0];
 			while( sc.hasMoreChars() && sc.peekChar() != ')' )
 				args = (Type[])Arrays.append(args,getType(sc));
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			if (clazz == null)
-				return MethodType.newMethodType(fargs,args,ret);
-			return ClosureType.newClosureType(clazz,args,ret);
+			return MethodType.newMethodType(args,ret);
+		}
+		if (ch == '&') {
+			// Closure signature
+			ch = sc.peekChar();
+			if( ch != '(' )
+				throw new RuntimeException("Bad closure "+sc+" at pos "+sc.pos+" - '(' expected");
+			args = new Type[0];
+			while( sc.hasMoreChars() && sc.peekChar() != ')' )
+				args = (Type[])Arrays.append(args,getType(sc));
+			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
+				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
+			ret = getType(sc);
+			return ClosureType.newClosureType(args,ret);
 		}
 
 		// Normal reference type
