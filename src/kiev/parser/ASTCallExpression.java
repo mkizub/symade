@@ -274,7 +274,7 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
 			MethodType mt;
-			if( reqType instanceof MethodType && reqType.args.length > 0 ) {
+			if( reqType instanceof MethodType && ((MethodType)reqType).args.length > 0 ) {
 				mt = (MethodType)reqType;
 			} else {
 				Type[] ta = new Type[args.length];

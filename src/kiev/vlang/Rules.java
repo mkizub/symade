@@ -754,7 +754,7 @@ public final class RuleIstheExpr extends ASTRuleNode {
 
     public void resolve(Type reqType) {
 		var.resolve(null);
-		expr.resolve(var.getVar().type.args[0]);
+		expr.resolve(((WrapperType)var.var.type).getWrappedType());
     }
 
 	public void resolve1(JumpNodes jn) {
@@ -868,7 +868,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		Type ctype = expr.getType();
 		Method@ elems;
 		if( ctype.isArray() ) {
-			itype = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{ctype.args[0]});
+			itype = Type.newRefType(Env.getStruct(KString.from("kiev.stdlib.ArrayEnumerator")),new Type[]{((ArrayType)ctype).arg});
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;

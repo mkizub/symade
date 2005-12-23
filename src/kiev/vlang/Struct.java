@@ -860,7 +860,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public static String makeTypeInfoString(Type t) {
 		if( t.isArray() ) {
 			t = t.getJavaType();
-			return "["+t.args[0];
+			return "["+((ArrayType)t).arg;
 		}
 		if( t instanceof ClosureType ) {
 			return "kiev.stdlib.closure";
@@ -869,14 +869,17 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			return makeTypeInfoString(t.getSuperType());
 		}
 		KString bname = t.getStruct().name.bytecode_name;
-		if( t.args.length > 0 ) {
+		if (t instanceof WrapperType)
+			t = t.getUnwrappedType();
+		BaseType bt = (BaseType)t;
+		if( bt.args.length > 0 ) {
 			StringBuffer sb = new StringBuffer(128);
 			sb.append(bname.toString().replace('/','.'));
 			sb.append('<');
-			for(int i=0; i < t.args.length; i++) {
-				Type ta = t.args[i];
+			for(int i=0; i < bt.args.length; i++) {
+				Type ta = bt.args[i];
 				sb.append(makeTypeInfoString(ta));
-				if( i < t.args.length-1 )
+				if( i < bt.args.length-1 )
 					sb.append(',');
 			}
 			sb.append('>');
@@ -926,7 +929,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		// but need typeinfo in <clinit>
 		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
 			BaseType ftype = Type.tpTypeInfo;
-			if (t.args.length > 0) {
+			if (t.getStruct().args.length > 0) {
 				if (t.getStruct().typeinfo_clazz == null)
 					t.getStruct().autoGenerateTypeinfoClazz();
 				ftype = t.getStruct().typeinfo_clazz.type;
@@ -954,7 +957,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			return e;
 		}
 		BaseType ftype = Type.tpTypeInfo;
-		if (t.args.length > 0) {
+		if (t.getStruct().args.length > 0) {
 			if (t.getStruct().typeinfo_clazz == null)
 				t.getStruct().autoGenerateTypeinfoClazz();
 			ftype = t.getStruct().typeinfo_clazz.type;
@@ -1734,7 +1737,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					be = new InstanceofExpr(pos,
 						new LVarExpr(pos,mm.params[j]),
 						Type.getRefTypeForPrimitive(t));
-				if( t.args.length > 0 && !t.isArray() && !(t instanceof ClosureType) ) {
+				if (t instanceof WrapperType)
+					t = t.getUnwrappedType();
+				if (t instanceof BaseType && ((BaseType)t).args.length > 0) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,

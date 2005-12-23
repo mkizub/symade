@@ -248,6 +248,7 @@ public class Meta extends ENode {
 			v.type.signature = tp.signature;
 			Type t = tp;
 			if (t.isArray()) {
+				ArrayType at = (ArrayType)t;
 				if (v instanceof MetaValueScalar) {
 					ENode val = ((MetaValueScalar)v).value;
 					MetaValueArray mva = new MetaValueArray(v.type); 
@@ -255,7 +256,7 @@ public class Meta extends ENode {
 					mva.values.add((ENode)~val);
 				}
 				
-				t = t.args[0];
+				t = at.arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();

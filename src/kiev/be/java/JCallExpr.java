@@ -123,10 +123,9 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			int N = func.params.length-1;
 			for(; i < N; i++)
 				args[i].generate(code,null);
-			Type type = func.jtype.args[N];
-			assert(type.isArray());
+			ArrayType type = (ArrayType)func.jtype.args[N];
 			code.addConst(args.length-N);
-			code.addInstr(Instr.op_newarray,type.args[0]);
+			code.addInstr(Instr.op_newarray,type.arg);
 			for(int j=0; i < args.length; i++, j++) {
 				code.addInstr(Instr.op_dup);
 				code.addConst(j);

@@ -122,7 +122,14 @@ public final class NewExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
-		Type type = this.type.getType();
+		BaseType type;
+		{
+			Type t = this.type.getType();
+			if (t.isWrapper())
+				type = ((WrapperType)t).getUnwrappedType();
+			else
+				type = (BaseType)t;
+		}
 		if( type.isAnonymouseClazz() ) {
 			type.getStruct().resolveDecl();
 		}
@@ -355,7 +362,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		public				TypeRef			type;
 		public access:ro	NArr<ENode>		args;
 		public				int[]			dims;
-		public				Type			arrtype;
+		public				ArrayType		arrtype;
 		
 		@getter public final int	get$dim()	{ return this.$view.dims.length; }
 	}
@@ -364,17 +371,17 @@ public final class NewInitializedArrayExpr extends ENode {
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	     public abstract virtual access:ro	int					dim;
 	@att public abstract virtual			int[]				dims;
-	@ref public abstract virtual			Type				arrtype;
+	@ref public abstract virtual			ArrayType			arrtype;
 	
 	@getter public TypeRef			get$type()				{ return this.getNewInitializedArrayExprView().type; }
 	@getter public NArr<ENode>		get$args()				{ return this.getNewInitializedArrayExprView().args; }
 	@getter public int				get$dim()				{ return this.getNewInitializedArrayExprView().dim; }
 	@getter public int[]			get$dims()				{ return this.getNewInitializedArrayExprView().dims; }
-	@getter public Type				get$arrtype()			{ return this.getNewInitializedArrayExprView().arrtype; }
+	@getter public ArrayType		get$arrtype()			{ return this.getNewInitializedArrayExprView().arrtype; }
 	
 	@setter public void		set$type(TypeRef val)			{ this.getNewInitializedArrayExprView().type = val; }
 	@setter public void		set$dims(int[] val)				{ this.getNewInitializedArrayExprView().dims = val; }
-	@setter public void		set$arrtype(Type val)			{ this.getNewInitializedArrayExprView().arrtype = val; }
+	@setter public void		set$arrtype(ArrayType val)		{ this.getNewInitializedArrayExprView().arrtype = val; }
 
 	public NodeView							getNodeView()						{ return new NewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
 	public ENodeView						getENodeView()						{ return new NewInitializedArrayExprView((NewInitializedArrayExprImpl)this.$v_impl); }
@@ -417,7 +424,7 @@ public final class NewInitializedArrayExpr extends ENode {
 		if( isResolved() ) return;
 		Type type = this.type.getType();
 		for(int i=0; i < args.length; i++)
-			args[i].resolve(arrtype.args[0]);
+			args[i].resolve(arrtype.arg);
 		for(int i=1; i < dims.length; i++) {
 			int n;
 			for(int j=0; j < args.length; j++) {

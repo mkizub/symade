@@ -26,7 +26,7 @@ public abstract class TypeProvider {
 		this.slots = slots;
 	}
 	
-	//public abstract Type newType();
+	public abstract Type newType(Type[] args);
 }
 
 public class BaseTypeProvider extends TypeProvider {
@@ -71,6 +71,10 @@ public class WrapperTypeProvider extends TypeProvider {
 		});
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
+	}
+	public Type newType(Type[] args) {
+		assert (args.length == 1);
+		return WrapperType.newWrapperType(Type.newRefType(clazz,args));
 	}
 }
 

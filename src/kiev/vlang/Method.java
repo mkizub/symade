@@ -481,26 +481,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			Type varg_tp = Type.getRealType(t,params[params.length-1].type);
-			assert(varg_tp.isArray());
+			ArrayType varg_tp = (ArrayType)Type.getRealType(t,params[params.length-1].type);
 			for(; i < args.length; i++) {
-				if !(args[i].getType().isInstanceOf(varg_tp.args[0])) {
+				if !(args[i].getType().isInstanceOf(varg_tp.arg)) {
 					CastExpr.autoCastToReference(args[i]);
-					CastExpr.autoCast(args[i],varg_tp.args[0]);
+					CastExpr.autoCast(args[i],varg_tp.arg);
 				}
 			}
-//			int j;
-//			for(j=0; j < type.args.length-1; j++)
-//				CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
-//			NArr<ENode> varargs = new NArr<ENode>();
-//			while(j < args.length) {
-//				CastExpr.autoCastToReference(args[j]);
-//				varargs.append(args[j]);
-//				args.del(j);
-//			}
-//			NewInitializedArrayExpr nae =
-//				new NewInitializedArrayExpr(getPos(),new TypeRef(Type.tpObject),1,varargs.toArray());
-//			args.append(nae);
 		} else {
 			for(int i=0; i < type.args.length; i++) {
 				Type ptp = Type.getRealType(t,type.args[i]);
@@ -694,7 +681,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					mva.values.add(((MetaValueScalar)annotation_default).value);
 					annotation_default = mva;
 				}
-				t = t.args[0];
+				t = ((ArrayType)t).arg;
 			}
 			if (t.isReference()) {
 				t.checkResolved();

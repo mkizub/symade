@@ -125,7 +125,7 @@ public class PassInfo {
 	;
 		pe = new ParentEnumerator(from),
 		p @= pe,
-		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
+//		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
 		path.space_prev = pe.n,
@@ -142,7 +142,7 @@ public class PassInfo {
 		assert(name.indexOf('.') < 0),
 		pe = new ParentEnumerator(from),
 		p @= pe,
-		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
+//		trace( Kiev.debugResolve, "PassInfo: next parent is '"+p+"' "+p.getClass()),
 		p instanceof ScopeOfNames,
 		trace( Kiev.debugResolve, "PassInfo: resolving name '"+name+"' in scope '"+p+"'"),
 		path.space_prev = pe.n,

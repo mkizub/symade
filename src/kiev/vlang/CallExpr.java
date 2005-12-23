@@ -131,10 +131,10 @@ public class CallExpr extends ENode {
 			int i=0;
 			for(; i < func.type.args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));
-			Type varg_tp = Type.getRealType(obj.getType(),func.getVarArgParam().type);
+			ArrayType varg_tp = (ArrayType)Type.getRealType(obj.getType(),func.getVarArgParam().type);
 			assert(varg_tp.isArray());
 			for(; i < args.length; i++)
-				args[i].resolve(varg_tp.args[0]);
+				args[i].resolve(varg_tp.arg);
 		} else {
 			for (int i=0; i < args.length; i++)
 				args[i].resolve(Type.getRealType(obj.getType(),func.type.args[i]));

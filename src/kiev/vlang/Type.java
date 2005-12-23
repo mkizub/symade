@@ -19,7 +19,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 	static Hash<Type>		typeHash;
 
 	public final TypeProvider	meta_type;
-	public final Type[]			args;
 	public final KString		signature;
 	public int					flags;
 	protected JType				jtype;
@@ -44,23 +43,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	{
 		this.meta_type = meta_type;
 		this.signature = signature;
-		this.args = emptyArray;
 		this.flags = flReference;
-		typeHash.put(this);
-		trace(Kiev.debugCreation,"New type created: "+this+" with signature "+signature);
-	}
-
-	protected Type(TypeProvider meta_type, KString signature, Type[] args)
-		require { meta_type != null; }
-	{
-		this.meta_type = meta_type;
-		this.signature = signature;
-		if( args != null && args.length > 0 )
-			this.args = args;
-		else
-			this.args = emptyArray;
-		this.flags = flReference;
-		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		typeHash.put(this);
 		trace(Kiev.debugCreation,"New type created: "+this+" with signature "+signature);
 	}
@@ -253,7 +236,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 				return true;
 			return false;
 		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && this.args.length == 0 ) {
+		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).args.length == 0 ) {
 			if( ((ClosureType)this).ret.isAutoCastableTo(t) ) return true;
 		}
 		return false;
@@ -362,7 +345,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( t.isArgument() && !this.isReference() ) {
 			return true;
 		}
-		if( this instanceof ClosureType && !(t instanceof CallableType) && this.args.length == 0 ) {
+		if( this instanceof ClosureType && !(t instanceof CallableType) && ((ClosureType)this).args.length == 0 ) {
 			if( ((ClosureType)this).ret.isCastableTo(t) ) return true;
 		}
 		if( this.isWrapper())
@@ -444,13 +427,45 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( get_real_type_depth > 32 ) return t2;
 		get_real_type_depth++;
 		try {
-		if( t1.isArray() ) return getRealType(t1.args[0],t2);
-		if( t2.isArray() ) return Type.newArrayType(getRealType(t1,t2.args[0]));
-		if( t2.isArgument() ) {
-			for(int i=0; i < t1.args.length && i < t1.getInitialType().args.length; i++) {
-				if( t1.getInitialType().args[i].string_equals(t2) ) {
-					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+t1.args[i]);
-					return t1.args[i];
+		if( t1.isArray() ) return getRealType(((ArrayType)t1).arg,t2);
+		if( t2.isArray() ) return newArrayType(getRealType(t1,((ArrayType)t2).arg));
+		if( t1.isWrapper() ) return getRealType(((WrapperType)t1).getUnwrappedType(),t2);
+		if( t2.isWrapper() ) return getRealType(t1,t2.meta_type.newType(new Type[]{((WrapperType)t2).getWrappedType()}));
+		if( t2.isArgument() )
+			return getRealTypeOf(t1,(ArgumentType)t2);
+		// Well, isn't an argument, but may be a type with arguments
+		if( t2 instanceof BaseType ) {
+			BaseType bt2 = (BaseType)t2;
+			if( bt2.args.length == 0 ) return t2;
+			Type[] tpargs = new Type[t2.args.length];
+			for(int i=0; i < tpargs.length; i++)
+				tpargs[i] = getRealType(t1,bt2.args[i]);
+			return Type.newRefType(bt2.clazz,tpargs);
+		}
+		if( t2 instanceof CallableType ) {
+			CallableType ct2 = (CallableType)t2;
+			Type[] tpargs = new Type[ct2.args.length];
+			for(int i=0; i < tpargs.length; i++)
+				tpargs[i] = getRealType(t1,ct2.args[i]);
+			Type ret = getRealType(t1,ct2.ret);
+			if (t2 instanceof MethodType)
+				return MethodType.newMethodType(tpargs,ret);
+			else if (t2 instanceof ClosureType)
+				return ClosureType.newClosureType(tpargs,ret);
+		}
+		assert (false, "Unrecognized type "+t2+" ("+t2.getClass()+")");
+		return t2;
+		} finally { get_real_type_depth--; }
+	}
+
+	private static Type getRealTypeOf(Type t1, ArgumentType t2) {
+		if( t1 instanceof BaseType ) {
+			BaseType bt1 = ((BaseType)t1).clazz.type;
+			for(int i=0; i < bt1.args.length; i++) {
+				if( bt1.args[i].string_equals(t2) ) {
+					bt1 = (BaseType)t1;
+					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+bt1.args[i]);
+					return bt1.args[i];
 				}
 			}
 			// Search in super-class and super-interfaces
@@ -459,46 +474,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 				if (tp != t2)
 					return tp;
 			}
-			// Not found, return itself
-			return t2;
 		}
-		// Well, isn't an argument, but may be a type with arguments
-		if( t2.args.length == 0 && !(t2 instanceof CallableType) ) return t2;
-		Type[] tpargs = new Type[t2.args.length];
-		Type tpret = null;
-		for(int i=0; i < tpargs.length; i++) {
-			// Check it's not an infinite loop
-			if( t2.args[i].string_equals(t2) )
-				throw new RuntimeException("Ciclyc parameter # "+i+":"+t2.args[i]+" in type "+t2);
-			tpargs[i] = getRealType(t1,t2.args[i]);
-		}
-		boolean isRewritten = false;
-		if( t2 instanceof CallableType ) {
-			tpret = getRealType(t1,((CallableType)t2).ret);
-			if( tpret != ((CallableType)t2).ret ) isRewritten = true;
-		}
-		// Check if anything was rewritten
-		for(int i=0; i < tpargs.length; i++) {
-			if( tpargs[i] != t2.args[i] ) { isRewritten = true; break; }
-		}
-		if( isRewritten ) {
-			Type tp;
-			// Check we must return a MethodType, a ClosureType or an array
-			if( t2 instanceof ArrayType )
-				tp = newArrayType(tpargs[0]);
-			else if( t2 instanceof ClosureType )
-				tp = ClosureType.newClosureType(tpargs,getRealType(t1,((ClosureType)t2).ret));
-			else if( t2 instanceof MethodType )
-				tp = MethodType.newMethodType(tpargs,tpret);
-			else
-				tp = newRefType(((BaseType)t2).clazz,tpargs);
-			trace(Kiev.debugResolve,"Type "+t2+" rewritten into "+tp+" using "+t1);
-			return tp;
-		}
-		// Nothing was rewritten...
-		if( t1.getInitialSuperType() != null ) return getRealType(t1.getInitialSuperType(),t2);
+		// Not found, return itself
 		return t2;
-		} finally { get_real_type_depth--; }
 	}
 
 	public static BaseType getProxyType(Type tp) {
@@ -560,35 +538,30 @@ public class JMethodType extends JType implements CallableType {
 public class BaseType extends Type {
 	public static BaseType[]	emptyArray = new BaseType[0];
 
-	public final access:ro,ro,ro,rw Struct		clazz;	
+	public final access:ro,ro,ro,rw		Struct		clazz;	
+	public final						Type[]		args;
 	
 	BaseType(Struct clazz) {
-		super(clazz.imeta_type, Signature.from(clazz,null));
-		this.clazz = clazz;
-		assert(clazz != null);
+		this(clazz.imeta_type, Signature.from(clazz,null), clazz, Type.emptyArray);
 	}
 	
 	BaseType(Struct clazz, Type[] args) {
-		super(clazz.imeta_type, Signature.from(clazz,args),args);
-		this.clazz = clazz;
-		assert(clazz != null);
+		this(clazz.imeta_type, Signature.from(clazz,null), clazz, args);
 	}
 	
 	BaseType(KString signature, Struct clazz) {
-		super(clazz.imeta_type, signature);
-		this.clazz = clazz;
-		assert(clazz != null);
+		this(clazz.imeta_type, signature, clazz, Type.emptyArray);
 	}
 	
 	BaseType(KString signature, Struct clazz, Type[] args) {
-		super(clazz.imeta_type, signature, args);
-		this.clazz = clazz;
-		assert(clazz != null);
+		this(clazz.imeta_type, signature, clazz, args);
 	}
 	
 	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args) {
-		super(meta_type, signature, args);
+		super(meta_type, signature);
 		this.clazz = meta_type.clazz;
+		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
+		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		assert(clazz != null);
 	}
 	
@@ -779,28 +752,31 @@ public class ArrayType extends Type {
 
 	private static final ClazzName cname = ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;"));
 	
+	public final Type			arg;
+	
 	public static ArrayType newArrayType(Type type) {
 		KString sign = new KStringBuffer(type.signature.len).append('[').append(type.signature).toKString();
 		ArrayType t = (ArrayType)typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
 		if( t != null ) return t;
 		t = new ArrayType(sign, type);
-		t.flags	 |= flReference | flArray;
-		if( t.args[0].isArgumented() ) t.flags |= flArgumented;
 		typeHash.put(t);
 		trace(Kiev.debugCreation,"New type created: "+t+" with signature "+t.signature);
 		return t;
 	}
 	
 	private ArrayType(KString signature, Type arg) {
-		super(ArrayTypeProvider.instance, signature, new Type[]{arg});
+		super(ArrayTypeProvider.instance, signature);
+		this.arg = arg;
+		this.flags |= flReference | flArray;
+		if( arg.isArgumented() ) this.flags |= flArgumented;
 	}
 
 	public JType getJType() {
 		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
-			KString asig = args[0].getJType().java_signature;
+			KString asig = arg.getJType().java_signature;
 			KString sig = new KStringBuffer(asig.len+1).append_fast((byte)'[').append_fast(asig).toKString();
-			jtype = new JArrayType(Signature.getJavaSignature(sig), this.args[0].getJType());
+			jtype = new JArrayType(Signature.getJavaSignature(sig), this.arg.getJType());
 		}
 		return jtype;
 	}
@@ -834,7 +810,7 @@ public class ArrayType extends Type {
 	}
 	
 	public Type getJavaType() {
-		return newArrayType(args[0].getJavaType());
+		return newArrayType(arg.getJavaType());
 	}
 
 	public boolean checkResolved() {
@@ -842,18 +818,18 @@ public class ArrayType extends Type {
 	}
 
 	public String toString() {
-		return String.valueOf(args[0])+"[]";
+		return String.valueOf(arg)+"[]";
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(args[0]).append("[]");
+		return dmp.append(arg).append("[]");
 	}
 
 	public boolean isInstanceOf(Type t) {
 		if (this == t) return true;
 		if (t == Type.tpObject) return true;
 		if (t instanceof ArrayType)
-			return args[0].isInstanceOf(t.args[0]);
+			return arg.isInstanceOf(t.arg);
 		return false;
 	}
 
@@ -962,15 +938,16 @@ public class WrapperType extends Type {
 		if !(type instanceof BaseType)
 			throw new RuntimeException("Wrapper of "+type.getClass());
 		t = new WrapperType(sign, (BaseType)type);
-		t.flags	 = type.flags | flWrapper;
 		typeHash.put(t);
 		trace(Kiev.debugCreation,"New type created: "+t+" with signature "+t.signature);
 		return t;
 	}
 	
 	private WrapperType(KString sign, BaseType unwrapped_type) {
-		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), sign, unwrapped_type.args);
+		super(WrapperTypeProvider.instance(unwrapped_type.getStruct()), sign);
 		this.unwrapped_type = unwrapped_type;
+		this.flags	 = flReference | flWrapper;
+		if (unwrapped_type.isArgumented()) this.flags |= flArgumented;
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
@@ -1082,10 +1059,12 @@ public interface CallableType {
 }
 
 public class ClosureType extends Type implements CallableType {
+	public virtual Type[]	args;
 	public virtual Type		ret;
 	
 	private ClosureType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instancies[args.length], signature, args);
+		super(CallTypeProvider.instancies[args.length], signature);
+		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flReference | flCallable;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
@@ -1135,9 +1114,10 @@ public class ClosureType extends Type implements CallableType {
 	public boolean isInstanceOf(Type t) {
 		if (this == t) return true;
 		if (t instanceof ClosureType) {
-			if( this.args.length != t.args.length ) return false;
+			ClosureType ct = (ClosureType)t;
+			if( this.args.length != ct.args.length ) return false;
 			for(int i=0; i < this.args.length; i++)
-				if( !this.args[i].isInstanceOf(t.args[i]) ) return false;
+				if( !this.args[i].isInstanceOf(ct.args[i]) ) return false;
 			return true;
 		}
 		return false;
@@ -1156,10 +1136,12 @@ public class ClosureType extends Type implements CallableType {
 }
 	
 public class MethodType extends Type implements CallableType {
+	public virtual Type[]	args;
 	public virtual Type		ret;
 
 	private MethodType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instancies[args.length], signature, args);
+		super(CallTypeProvider.instancies[args.length], signature);
+		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flCallable;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }

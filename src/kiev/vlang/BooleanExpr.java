@@ -66,22 +66,21 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 	}
 
 	public static void checkBool(ENode e) {
-		if( e.getType().isBoolean() ) {
+		Type et = e.getType();
+		if (et.isBoolean())
 			return;
-		}
-		if( e.getType() == Type.tpRule ) {
+		if (et == Type.tpRule) {
 			e.replaceWithResolve(Type.tpBoolean, fun ()->ENode {
 				return new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr());
 			});
 			return;
 		}
-		else if( e.getType().args.length == 0
-				&& e.getType() instanceof ClosureType
-				&& ((CallableType)e.getType()).ret.isAutoCastableTo(Type.tpBoolean)
-				)
-		{
-			((ClosureCallExpr)e).is_a_call = true;
-			return;
+		if (et instanceof ClosureType) {
+			ClosureType ct = (ClosureType)et;
+			if (ct.args.length == 0 && ct.ret.isAutoCastableTo(Type.tpBoolean)	) {
+				((ClosureCallExpr)e).is_a_call = true;
+				return;
+			}
 		}
 		throw new RuntimeException("Expression "+e+" must be of boolean type, but found "+e.getType());
 	}
@@ -584,23 +583,29 @@ public class InstanceofExpr extends BoolExpr {
 				expr.resolve(null);
 			}
 		}
-		if( !expr.getType().isCastableTo(type.getType()) ) {
+		tp = type.getType();
+		if( !expr.getType().isCastableTo(tp) ) {
 			throw new CompilerException(this,"Type "+expr.getType()+" is not castable to "+type);
 		}
-		if (expr.getType().isInstanceOf(type.getType())) {
+		if (expr.getType().isInstanceOf(tp)) {
 			replaceWithNodeResolve(reqType,
 				new BinaryBoolExpr(pos, BinaryOperator.NotEquals,(ENode)~expr,new ConstNullExpr()));
 			return;
 		}
-		if (!type.isArray() && type.args.length > 0) {
-			replaceWithNodeResolve(reqType, new CallExpr(pos,
-					ctx_clazz.accessTypeInfoField(this,type.getType()),
-					Type.tpTypeInfo.clazz.resolveMethod(
-						KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
-					new ENode[]{(ENode)~expr}
-					)
-				);
-			return;
+		if (tp instanceof WrapperType)
+			tp = tp.getUnwrappedType();
+		if (tp instanceof BaseType) {
+			BaseType bt = (BaseType)tp;
+			if (tp.args.length > 0) {
+				replaceWithNodeResolve(reqType, new CallExpr(pos,
+						ctx_clazz.accessTypeInfoField(this,type.getType()),
+						Type.tpTypeInfo.clazz.resolveMethod(
+							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;)Z")),
+						new ENode[]{(ENode)~expr}
+						)
+					);
+				return;
+			}
 		}
 		setResolved(true);
 	}
