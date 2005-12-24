@@ -25,7 +25,7 @@ public class TypeArgDef extends TypeDef {
 	public static final class TypeArgDefImpl extends TypeDefImpl {
 		@att public NameRef					name;
 		@att public TypeRef					super_bound;
-		@att public Type					lnk;
+		@att public ArgumentType			lnk;
 		public TypeArgDefImpl() {}
 		public TypeArgDefImpl(int pos) { super(pos); }
 	}
@@ -33,12 +33,12 @@ public class TypeArgDef extends TypeDef {
 	public static final view TypeArgDefView of TypeArgDefImpl extends TypeDefView {
 		public NameRef				name;
 		public TypeRef				super_bound;
-		public Type					lnk;
+		public ArgumentType			lnk;
 	}
 
 	@att public abstract virtual NameRef				name;
 	@att public abstract virtual TypeRef				super_bound;
-	@att        abstract virtual Type					lnk;
+	@att        abstract virtual ArgumentType			lnk;
 	
 	public NodeView			getNodeView()			{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()			{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
@@ -47,10 +47,10 @@ public class TypeArgDef extends TypeDef {
 
 	@getter public NameRef		get$name()			{ return this.getTypeArgDefView().name; }
 	@getter public TypeRef		get$super_bound()	{ return this.getTypeArgDefView().super_bound; }
-	@getter public Type			get$lnk()			{ return this.getTypeArgDefView().lnk; }
+	@getter public ArgumentType	get$lnk()			{ return this.getTypeArgDefView().lnk; }
 	@setter public void		set$name(NameRef val)			{ this.getTypeArgDefView().name = val; }
 	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeArgDefView().super_bound = val; }
-	@setter public void		set$lnk(Type val)				{ this.getTypeArgDefView().lnk = val; }
+	@setter public void		set$lnk(ArgumentType val)		{ this.getTypeArgDefView().lnk = val; }
 	
 	public TypeArgDef() { super(new TypeDefImpl()); }
 
@@ -86,13 +86,16 @@ public class TypeArgDef extends TypeDef {
 	}
 
 	public Type getType() {
+		return getAType();
+	}
+	public ArgumentType getAType() {
 		if (this.lnk != null)
 			return this.lnk;
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
 			foreach (TypeArgDef pa; s.package_clazz.args; pa.name.name == name.name) {
-				this.lnk = pa.getType();
+				this.lnk = pa.getAType();
 				if (this.lnk == null)
 					throw new CompilerException(this,"Type "+this+" is not found");
 				return this.lnk;

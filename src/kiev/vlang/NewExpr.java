@@ -155,7 +155,7 @@ public final class NewExpr extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(ta,type);
+			MethodType mt = (MethodType)Type.getRealType(type,MethodType.newMethodType(ta,type));
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
@@ -170,7 +170,7 @@ public final class NewExpr extends ENode {
 					return;
 				}
 			}
-			mt = MethodType.newMethodType(ta,Type.tpVoid);
+			mt = (MethodType)Type.getRealType(type,MethodType.newMethodType(ta,Type.tpVoid));
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;

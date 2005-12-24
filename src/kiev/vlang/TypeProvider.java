@@ -11,12 +11,42 @@ import syntax kiev.Syntax;
 public final class TVar {
 	public static final TVar[] emptyArray = new TVar[0];
 	
-	public final ArgumentType	at;
-	public final Type			bound;
+	public			Type			owner;
+	public  final	ArgumentType	at;
+	private final	Type			bound;
+	private			Type			res;
 	
-	public TVar(ArgumentType at, Type bound) {
+	public TVar(Type owner, ArgumentType at, Type bound) {
+		this.owner = owner;
 		this.at = at;
-		this.bound = bound;
+		this.bound = bound==at ? null : bound;
+	}
+	
+	public TVar copy(Type owner) {
+		return new TVar(owner, this.at, this.bound);
+	}
+	
+	public boolean match(TVar v) {
+		if (this.at == v.at) return true;
+		if (this.at == v.bound) return true;
+		if (this.bound == null) return false;
+		return this.bound == v.at || this.bound == v.bound;
+	}
+	
+	public boolean match(ArgumentType at) {
+		if (this.at == at) return true;
+		if (this.bound == at) return true;
+		return false;
+	}
+	
+	public Type result() {
+		if (res != null) return res;
+		if (bound == null) return at;
+		if (bound instanceof ArgumentType)
+			res = Type.getRealType(owner,bound);
+		else
+			res = bound;
+		return res;
 	}
 }
 
@@ -36,32 +66,23 @@ public class BaseTypeProvider extends TypeProvider {
 		java_meta_type = new JBaseTypeProvider(clazz);
 	}
 	
-	public TVar[] getBindings(Type _t) {
-		BaseType t = (BaseType)_t;
+	public TVar[] getBindings(Type owner) {
+		BaseType t = (BaseType)owner;
 		Vector<TVar> v = new Vector<TVar>();
 		for (int i=0; i < clazz.args.length; i++)
-			v.append(new TVar((ArgumentType)clazz.args[i].getType(), t.args[i]));
-		t.bindings = v.toArray();
-		foreach (Type st; t.getDirectSuperTypes())
-			addSuperBindings(t, (BaseType)st, v);
-		return v.toArray();
-	}
-	private void addSuperBindings(BaseType t, BaseType st, Vector<TVar> v) {
-		st = (BaseType)Type.getRealType(t, st);
-	next_arg:
-		for (int i=0; i < st.clazz.args.length; i++) {
-			ArgumentType at = (ArgumentType)st.clazz.args[i].getType();
-			Type bound = st.args[i];
-			for (int k=0; k < v.length; k++) {
-				if (v[k].at == at) {
-					//assert(v[k].bound == bound);
-					continue next_arg;
+			v.append(new TVar(owner, clazz.args[i].getAType(), t.args[i]));
+		foreach (Type st; t.getDirectSuperTypes()) {
+			TVar[] svars = ((BaseType)st).bindings();
+	next_sv:foreach (TVar sv; svars) {
+				// check it's not already added
+				foreach (TVar tv; v) {
+					if (tv.at == sv.at)
+						continue next_sv;
 				}
+				v.append(sv.copy(owner));
 			}
-			v.append(new TVar(at, bound));
 		}
-		foreach (Type sst; st.getDirectSuperTypes())
-			addSuperBindings(st, (BaseType)sst, v);
+		return v.toArray();
 	}
 }
 

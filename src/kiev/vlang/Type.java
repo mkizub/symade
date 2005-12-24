@@ -114,6 +114,33 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return (BaseType)t;
 	}
 
+	public static BaseType newRefType(Struct clazz, TVar[] bindings) {
+		Type ct = clazz.type;
+		if (ct.bindings().length != bindings.length )
+			throw new RuntimeException("Class "+clazz+" requares "+ct.bindings().length+" type bindings");
+		Type[] args = new Type[clazz.args.length];
+		for (int i=0; i < args.length; i++) {
+			ArgumentType at = clazz.args[i].getAType();
+			for (int b=0; b < bindings.length; b++) {
+				if (bindings[b].at == at) {
+					args[i] = bindings[b].result();
+					break;
+				}
+			}
+			if (args[i] == null)
+				args[i] = at;
+		}
+		KString signature = Signature.from(clazz,args);
+		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
+		if( t != null ) {
+			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
+			return (BaseType)t;
+		}
+		t = new BaseType(clazz.imeta_type, signature, clazz, args, bindings);
+		t.flags |= flReference;
+		return (BaseType)t;
+	}
+
 	public static BaseType newRefType(ClazzName name) {
 		return newRefType(Env.newStruct(name));
 	}
@@ -434,13 +461,24 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( t2.isArgument() )
 			return getRealTypeOf(t1,(ArgumentType)t2);
 		// Well, isn't an argument, but may be a type with arguments
-		if( t2 instanceof BaseType ) {
+		if( t1 instanceof BaseType && t2 instanceof BaseType ) {
+			BaseType bt1 = (BaseType)t1;
 			BaseType bt2 = (BaseType)t2;
 			if( bt2.args.length == 0 ) return t2;
-			Type[] tpargs = new Type[t2.args.length];
-			for(int i=0; i < tpargs.length; i++)
-				tpargs[i] = getRealType(t1,bt2.args[i]);
-			return Type.newRefType(bt2.clazz,tpargs);
+			TVar[] b1 = t1.bindings();
+			TVar[] b2 = t2.bindings();
+			TVar[] br = new TVar[b2.length];
+			for(int i2=0; i2 < b2.length; i2++) {
+				for(int i1=0; i1 < b1.length; i1++) {
+					if (b2[i2].match(b1[i1])) {
+						br[i2] = new TVar(null,b2[i2].at,b1[i1].result());
+						break;
+					}
+				}
+				if (br[i2] == null)
+					br[i2] = b2[i2].copy(null);
+			}
+			return Type.newRefType(bt2.clazz,br);
 		}
 		if( t2 instanceof CallableType ) {
 			CallableType ct2 = (CallableType)t2;
@@ -460,10 +498,10 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	private static Type getRealTypeOf(Type t1, ArgumentType t2) {
 		if( t1 instanceof BaseType ) {
-			TVar[] bindings = t1.getBindings();
+			TVar[] bindings = t1.bindings();
 			for(int i=0; i < bindings.length; i++) {
-				if (bindings[i].at == t2)
-					return bindings[i].bound;
+				if (bindings[i].match(t2))
+					return bindings[i].result();
 			}
 		}
 		// Not found, return itself
@@ -531,7 +569,7 @@ public class BaseType extends Type {
 
 	public final access:ro,ro,ro,rw		Struct		clazz;	
 	public final						Type[]		args;
-										TVar[]		bindings;
+	private								TVar[]		bindings;
 	
 	BaseType(Struct clazz) {
 		this(clazz.imeta_type, Signature.from(clazz,null), clazz, Type.emptyArray);
@@ -557,7 +595,20 @@ public class BaseType extends Type {
 		assert(clazz != null);
 	}
 	
-	public TVar[] getBindings() {
+	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args, TVar[] bindings) {
+		super(meta_type, signature);
+		this.clazz = meta_type.clazz;
+		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
+		this.bindings = bindings;
+		for (int i=0; i < bindings.length; i++) {
+			assert(bindings[i].owner == null);
+			bindings[i].owner = this;
+		}
+		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
+		assert(clazz != null);
+	}
+	
+	public TVar[] bindings() {
 		if (this.bindings == null)
 			this.bindings = meta_type.getBindings(this);
 		return this.bindings;
