@@ -460,19 +460,10 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	private static Type getRealTypeOf(Type t1, ArgumentType t2) {
 		if( t1 instanceof BaseType ) {
-			BaseType bt1 = ((BaseType)t1).clazz.type;
-			for(int i=0; i < bt1.args.length; i++) {
-				if( bt1.args[i].string_equals(t2) ) {
-					bt1 = (BaseType)t1;
-					trace(Kiev.debugResolve,"type "+t2+" is resolved as "+bt1.args[i]);
-					return bt1.args[i];
-				}
-			}
-			// Search in super-class and super-interfaces
-			foreach (Type sup; t1.getDirectSuperTypes()) {
-				Type tp = getRealType(getRealType(t1,sup),t2);
-				if (tp != t2)
-					return tp;
+			TVar[] bindings = t1.getBindings();
+			for(int i=0; i < bindings.length; i++) {
+				if (bindings[i].at == t2)
+					return bindings[i].bound;
 			}
 		}
 		// Not found, return itself
@@ -529,7 +520,7 @@ public class JMethodType extends JType implements CallableType {
 	public final JType				jret;
 	
 	JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(CallTypeProvider.instancies[jargs.length], java_signature);
+		super(CallTypeProvider.instance, java_signature);
 		this.jargs = jargs;
 		this.jret = jret;
 	}
@@ -540,6 +531,7 @@ public class BaseType extends Type {
 
 	public final access:ro,ro,ro,rw		Struct		clazz;	
 	public final						Type[]		args;
+										TVar[]		bindings;
 	
 	BaseType(Struct clazz) {
 		this(clazz.imeta_type, Signature.from(clazz,null), clazz, Type.emptyArray);
@@ -563,6 +555,12 @@ public class BaseType extends Type {
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		assert(clazz != null);
+	}
+	
+	public TVar[] getBindings() {
+		if (this.bindings == null)
+			this.bindings = meta_type.getBindings(this);
+		return this.bindings;
 	}
 	
 	public JType getJType() {
@@ -844,7 +842,7 @@ public class ArgumentType extends Type {
 	public Type					super_type;
 
 	private ArgumentType(KString signature, ClazzName name, Type sup) {
-		super(new ArgumentTypeProvider(), signature);
+		super(ArgumentTypeProvider.instance, signature);
 		this.name = name;
 		super_type = sup;
 	}
@@ -1063,7 +1061,7 @@ public class ClosureType extends Type implements CallableType {
 	public virtual Type		ret;
 	
 	private ClosureType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instancies[args.length], signature);
+		super(CallTypeProvider.instance, signature);
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flReference | flCallable;
@@ -1140,7 +1138,7 @@ public class MethodType extends Type implements CallableType {
 	public virtual Type		ret;
 
 	private MethodType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instancies[args.length], signature);
+		super(CallTypeProvider.instance, signature);
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flCallable;

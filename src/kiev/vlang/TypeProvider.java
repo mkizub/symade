@@ -3,30 +3,27 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
-import kiev.vlang.TypeProvider.Slot;
 import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
+public final class TVar {
+	public static final TVar[] emptyArray = new TVar[0];
+	
+	public final ArgumentType	at;
+	public final Type			bound;
+	
+	public TVar(ArgumentType at, Type bound) {
+		this.at = at;
+		this.bound = bound;
+	}
+}
+
 public abstract class TypeProvider {
-	
-	public static final class Slot {
-		public final String name;
-		public final int arity;
-		public Slot(String name, int arity) {
-			this.name = name.intern();
-			this.arity = arity;
-		}
-	}
-	
-	public final Slot[] slots;
-	
-	TypeProvider(Slot[] slots) {
-		this.slots = slots;
-	}
-	
+	TypeProvider() {}
 	public abstract Type newType(Type[] args);
+	public abstract TVar[] getBindings(Type tp);
 }
 
 public class BaseTypeProvider extends TypeProvider {
@@ -35,26 +32,47 @@ public class BaseTypeProvider extends TypeProvider {
 	final JBaseTypeProvider java_meta_type;
 
 	BaseTypeProvider(Struct clazz) {
-		super(new Slot[]{
-			new Slot("args", clazz.args.length)
-		});
 		this.clazz = clazz;
 		java_meta_type = new JBaseTypeProvider(clazz);
 	}
 	
+	public TVar[] getBindings(Type _t) {
+		BaseType t = (BaseType)_t;
+		Vector<TVar> v = new Vector<TVar>();
+		for (int i=0; i < clazz.args.length; i++)
+			v.append(new TVar((ArgumentType)clazz.args[i].getType(), t.args[i]));
+		t.bindings = v.toArray();
+		foreach (Type st; t.getDirectSuperTypes())
+			addSuperBindings(t, (BaseType)st, v);
+		return v.toArray();
+	}
+	private void addSuperBindings(BaseType t, BaseType st, Vector<TVar> v) {
+		st = (BaseType)Type.getRealType(t, st);
+	next_arg:
+		for (int i=0; i < st.clazz.args.length; i++) {
+			ArgumentType at = (ArgumentType)st.clazz.args[i].getType();
+			Type bound = st.args[i];
+			for (int k=0; k < v.length; k++) {
+				if (v[k].at == at) {
+					//assert(v[k].bound == bound);
+					continue next_arg;
+				}
+			}
+			v.append(new TVar(at, bound));
+		}
+		foreach (Type sst; st.getDirectSuperTypes())
+			addSuperBindings(st, (BaseType)sst, v);
+	}
 }
 
 public class ArrayTypeProvider extends TypeProvider {
 	static final ArrayTypeProvider instance = new ArrayTypeProvider();
-	private ArrayTypeProvider() {
-		super(new Slot[]{
-			new Slot("arg", 1)
-		});
-	}
+	private ArrayTypeProvider() {}
 }
 
 public class ArgumentTypeProvider extends TypeProvider {
-	public ArgumentTypeProvider() { super(new Slot[0]); }
+	static final ArgumentTypeProvider instance = new ArgumentTypeProvider();
+	private ArgumentTypeProvider() {}
 }
 
 public class WrapperTypeProvider extends TypeProvider {
@@ -66,9 +84,6 @@ public class WrapperTypeProvider extends TypeProvider {
 		return clazz.wmeta_type;
 	}
 	private WrapperTypeProvider(Struct clazz) {
-		super(new Slot[]{
-			new Slot("arg", 1)
-		});
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
@@ -79,24 +94,13 @@ public class WrapperTypeProvider extends TypeProvider {
 }
 
 public class CallTypeProvider extends TypeProvider {
-	static final CallTypeProvider[] instancies;
-	static {
-		instancies = new CallTypeProvider[16];
-		for (int i=0; i < 16; i++)
-			instancies[i] = new CallTypeProvider(i);
-	}
-	private CallTypeProvider(int arity) {
-		super(new Slot[]{
-			new Slot("args", arity),
-			new Slot("ret", 1)
-		});
-	}
+	static final CallTypeProvider instance = new CallTypeProvider();
+	private CallTypeProvider() {}
 }
 
 public class JBaseTypeProvider extends TypeProvider {
 	final Struct clazz;
 	JBaseTypeProvider(Struct clazz) {
-		super(new Slot[0]);
 		this.clazz = clazz;
 	}
 }
