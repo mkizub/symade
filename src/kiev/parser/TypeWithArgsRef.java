@@ -63,13 +63,19 @@ public class TypeWithArgsRef extends TypeRef {
 		Type tp = base_type.getType();
 		if (tp == null || !(tp instanceof BaseType))
 			throw new CompilerException(this,"Type "+base_type+" is not found");
-		Type[] atypes = new Type[args.length];
-		for(int i=0; i < atypes.length; i++) {
-			atypes[i] = args[i].getType();
-			if (atypes[i] == null)
-				throw new CompilerException(this,"Type "+args[i]+" is not found");
+		TVarSet vset = tp.bindings().copy();
+		for(int a=0, b=0; a < args.length && b < vset.length; b++) {
+			if (vset[b].isBound())
+				continue;
+			Type bound = args[a].getType();
+			if (bound == null)
+				throw new CompilerException(this,"Type "+args[a]+" is not found");
+			if!(bound.isInstanceOf(vset[b].var))
+				throw new CompilerException(this,"Type "+bound+" is not applayable to "+vset[b].var);
+			vset.set(b, bound);
+			a++;
 		}
-		this.lnk = Type.newRefType(((BaseType)tp).clazz,atypes);
+		this.lnk = tp.rebind(vset);
 		return this.lnk;
 	}
 

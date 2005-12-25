@@ -94,12 +94,12 @@ public class TypeArgDef extends TypeDef {
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
-			foreach (TypeArgDef pa; s.package_clazz.args; pa.name.name == name.name) {
-				this.lnk = pa.getAType();
-				if (this.lnk == null)
-					throw new CompilerException(this,"Type "+this+" is not found");
-				return this.lnk;
-			}
+//			foreach (TypeArgDef pa; s.package_clazz.args; pa.name.name == name.name) {
+//				this.lnk = pa.getAType();
+//				if (this.lnk == null)
+//					throw new CompilerException(this,"Type "+this+" is not found");
+//				return this.lnk;
+//			}
 			KString nm = KString.from(s.name.name+"$"+name.name);
 			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
 			cn = new ClazzName(nm,name.name,bc,true,true);

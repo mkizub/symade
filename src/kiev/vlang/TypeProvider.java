@@ -8,72 +8,212 @@ import kiev.be.java.JStructView;
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
-public final class TVar {
-	public static final TVar[] emptyArray = new TVar[0];
-	
-	public			Type			owner;
-	public  final	ArgumentType	at;
-	private final	Type			bound;
-	private			Type			res;
-	
-	public TVar(Type owner, ArgumentType at, Type bound) {
-		this.owner = owner;
-		this.at = at;
-		this.bound = bound==at ? null : bound;
+public final class TVarSet {
+	public static final TVarSet emptySet = new TVarSet();
+
+	public access:ro,ro,ro,rw	TVar[] tvars = TVar.emptyArray;
+
+	public TVarSet copy() {
+		TVarSet tvs = new TVarSet();
+		if (tvars.length == 0) return tvs;
+		tvs.tvars = new TVar[this.tvars.length];
+		for (int i=0; i < this.tvars.length; i++) {
+			TVar v = this.tvars[i];
+			tvs.tvars[i] = new TVar(v.kind, tvs, v.var, v.bnd);
+		}
+		return tvs;
 	}
 	
-	public TVar copy(Type owner) {
-		return new TVar(owner, this.at, this.bound);
-	}
-	
-	public boolean match(TVar v) {
-		if (this.at == v.at) return true;
-		if (this.at == v.bound) return true;
-		if (this.bound == null) return false;
-		return this.bound == v.at || this.bound == v.bound;
-	}
-	
-	public boolean match(ArgumentType at) {
-		if (this.at == at) return true;
-		if (this.bound == at) return true;
-		return false;
-	}
-	
-	public Type result()
-		require { owner != null; }
+	public int size()
+		alias length
+		alias get$length
 	{
-		if (res != null) return res;
-		if (bound == null) return at;
-		if (bound instanceof ArgumentType) {
-			TVar[] bindings = owner.bindings();
-			for (int i=0; i < bindings.length; i++) {
-				if (bindings[i].at == bound) {
-					res = bindings[i].result();
-					return res;
+		return tvars.length;
+	}
+
+	public TVar get(int idx)
+		alias at
+		alias operator(210,xfy,[])
+	{
+		return tvars[idx];
+	}
+	
+	public void append(ArgumentType var)
+		require { var != null; }
+	{
+		final int n = tvars.length;
+		for (int i=0; i < n; i++) {
+			if (tvars[i].var == var)
+				return; // ignore duplicated var
+		}
+		append(new TVar(TVar.TVAR_UNBOUND, this, var, null));
+		normalize();
+	}
+	
+	public void append(ArgumentType var, Type bnd)
+		require { var != null; }
+	{
+		if (bnd == var || bnd == null) {
+			append(var);
+			return;
+		}
+		for (int i=0; i < tvars.length; i++) {
+			TVar v = tvars[i];
+			if (v.var == var) {
+				if (v.bnd == bnd)
+					return; // ignore duplicated alias
+				if (v.kind >= 0) {
+					i = v.kind;
+					// alias of another var, must point to 
+					assert (tvars.length < i);
+					assert (tvars[i].kind < 0); // must not be another alias
+					assert (v.bnd == tvars[i].var);
+					v = tvars[i];
+					if (v.bnd == bnd)
+						return; // ignore duplicated alias
+				}
+				if (v.bnd == null) {
+					// unbound var, just bind it
+					assert (v.kind == TVar.TVAR_UNBOUND);
+					tvars[i] = new TVar(TVar.TVAR_BOUND,this,var,bnd);
+					normalize();
+					return;
+				}
+				throw new RuntimeException("TVar rebinding");
+			}
+		}
+		append(new TVar(TVar.TVAR_BOUND, this, var, bnd));
+		normalize();
+	}
+
+	public void set(int i, Type bnd)
+		require { bnd != null; }
+	{
+		TVar v = tvars[i];
+		if (v.bnd == bnd)
+			return; // ignore duplicated alias
+		if (v.kind >= 0) {
+			i = v.kind;
+			// alias of another var, must point to 
+			assert (tvars.length < i);
+			assert (tvars[i].kind < 0); // must not be another alias
+			assert (v.bnd == tvars[i].var);
+			v = tvars[i];
+			if (v.bnd == bnd)
+				return; // ignore duplicated alias
+		}
+		if (v.bnd == null) {
+			// unbound var, just bind it
+			assert (v.kind == TVar.TVAR_UNBOUND);
+			tvars[i] = new TVar(TVar.TVAR_BOUND,this,v.var,bnd);
+			normalize();
+			return;
+		}
+		tvars[i] = new TVar(TVar.TVAR_BOUND,this,v.var,bnd);
+		normalize();
+		return;
+	}
+
+	public void append(TVarSet set) {
+		foreach (TVar v; set.tvars)
+			append(v.var, v.bnd);
+	}
+	
+	private void append(TVar v) {
+		final int n = tvars.length;
+		TVar[] tmp = new TVar[n+1];
+		for (int i=0; i < n; i++)
+			tmp[i] = tvars[i];
+		tmp[n] = v;
+		this.tvars = tmp;
+	}
+	
+	private void normalize() {
+		TVar[] tvars = this.tvars;
+		final int n = tvars.length;
+		for (int i=0; i < n; i++) {
+			TVar vi = tvars[i];
+			for (int j=i+1; j < n; j++) {
+				TVar vj = tvars[j];
+				if (vj.bnd == vi.var) {
+					if (vj.kind == i) continue; // already the alias
+					tvars[j] = new TVar(i, this, vj.var, vj.bnd);
 				}
 			}
 		}
-		res = bound;
-		return res;
 	}
-
-	public Type result(TVar[] bindings) {
-		if (res != null) return res;
-		if (bound == null) return at;
-		if (bound instanceof ArgumentType) {
-			for (int i=0; i < bindings.length; i++) {
-				if (bindings[i].at == bound)
-					return bindings[i].result(bindings);
+	
+	public TVarSet rebind(TVarSet vs) {
+		int n = this.tvars.length;
+		TVarSet sr = this.copy();
+	next:
+		for(int i=0; i < vs.length; i++) {
+			TVar v = vs[i];
+			if (v.bnd == null)
+				continue next;
+			for(int r=0; r < n; r++) {
+				TVar x = tvars[r];
+				if (x.var == v.var || x.bnd == v.var || x.bnd == v.bnd || x.bnd == v.bnd) {
+					if (x.isAlias())
+						r = x.kind;
+					sr.set(r, v.result());
+					continue next;
+				}
 			}
 		}
-		return bound;
+		return sr;
+	}
+	
+}
+
+
+public final class TVar {
+	public static final TVar[] emptyArray = new TVar[0];
+	
+	static final int TVAR_UNBOUND = -1;
+	static final int TVAR_BOUND   = -2;
+	
+	public final int			kind;
+	public final TVarSet		set;
+	public final ArgumentType	var;
+	public final Type			bnd;
+	
+	TVar(int kind, TVarSet set, ArgumentType var, Type bnd)
+		require { set != null && var != null; }
+	{
+		this.kind = kind;
+		this.set = set;
+		this.var = var;
+		this.bnd = bnd;
+		assert (
+			(kind == TVar.TVAR_UNBOUND && bnd == null) ||
+			(kind == TVar.TVAR_BOUND && bnd != null) ||
+			(kind >= 0 && set.tvars[kind].var == bnd)
+		);
+	}
+	
+	public boolean isBound() {
+		if (this.kind >= 0)
+			return set.tvars[this.kind].isBound();
+		return this.bnd != null;
+	}
+	
+	public boolean isAlias() {
+		return this.kind >= 0;
+	}
+	
+	public Type result() {
+		if (this.kind >= 0) // alias
+			return set.tvars[this.kind].result();
+		if (bnd == null) return var;
+		return bnd;
 	}
 }
 
 public abstract class TypeProvider {
 	TypeProvider() {}
-	public abstract Type rebind(Type t, TVar[] bindings);
-	public abstract TVar[] bindings(Type tp);
+	public abstract Type rebind(Type t, TVarSet bindings);
+	public abstract TVarSet bindings(Type tp);
 }
 
 public class BaseTypeProvider extends TypeProvider {
@@ -86,53 +226,33 @@ public class BaseTypeProvider extends TypeProvider {
 		java_meta_type = new JBaseTypeProvider(clazz);
 	}
 	
-	public Type rebind(Type t, TVar[] bindings) {
+	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
-		BaseType bt = (BaseType)t;
-		assert(bt.args.length != 0);
-		TVar[] bi = bt.bindings();
-		TVar[] br = new TVar[bi.length];
-	next:
-		for(int i=0; i < bi.length; i++) {
-			for(int b=0; b < bindings.length; b++) {
-				if (bi[i].match(bindings[b])) {
-					br[i] = new TVar(null,bi[i].at,bindings[b].result());
-					continue next;
-				}
-			}
-			br[i] = bi[i].copy(null);
-		}
-		return Type.newRefType(bt.clazz,br);
+		return Type.newRefType(((BaseType)t).clazz, t.bindings().rebind(bindings));
 	}
 	
-	public TVar[] bindings(Type owner) {
+	public TVarSet bindings(Type owner) {
 		BaseType t = (BaseType)owner;
-		Vector<TVar> v = new Vector<TVar>();
+		TVarSet vs = new TVarSet();
 		for (int i=0; i < clazz.args.length; i++)
-			v.append(new TVar(owner, clazz.args[i].getAType(), t.args[i]));
-		foreach (Type st; t.getDirectSuperTypes()) {
-			TVar[] svars = ((BaseType)st).bindings();
-	next_sv:foreach (TVar sv; svars) {
-				// check it's not already added
-				foreach (TVar tv; v) {
-					if (tv.at == sv.at)
-						continue next_sv;
-				}
-				v.append(sv.copy(owner));
-			}
-		}
-		return v.toArray();
+			vs.append(clazz.args[i].getAType(), t.args[i]);
+		foreach (Type st; t.getDirectSuperTypes())
+			vs.append(st.bindings());
+		;
+		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz)
+			vs.append(s.package_clazz.type.bindings());
+		return vs;
 	}
 }
 
 public class ArrayTypeProvider extends TypeProvider {
 	public static final ArrayTypeProvider instance = new ArrayTypeProvider();
 	private ArrayTypeProvider() {}
-	public Type rebind(Type t, TVar[] bindings) {
+	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.rebind(bindings));
 	}
-	public TVar[] bindings(Type owner) {
+	public TVarSet bindings(Type owner) {
 		ArrayType a = (ArrayType)owner;
 		return a.arg.bindings();
 	}
@@ -141,18 +261,19 @@ public class ArrayTypeProvider extends TypeProvider {
 public class ArgumentTypeProvider extends TypeProvider {
 	public static final ArgumentTypeProvider instance = new ArgumentTypeProvider();
 	private ArgumentTypeProvider() {}
-	public Type rebind(Type t, TVar[] bindings) {
+	public Type rebind(Type t, TVarSet bindings) {
 		if( bindings.length == 0 ) return t;
 		ArgumentType at = (ArgumentType)t;
 		for(int i=0; i < bindings.length; i++) {
-			if (bindings[i].match(at))
-				return bindings[i].result();
+			TVar v = bindings[i];
+			if (v.bnd != null && (v.var == at || v.bnd == at))
+				return v.result();
 		}
 		// Not found, return itself
 		return t;
 	}
-	public TVar[] bindings(Type owner) {
-		return TVar.emptyArray;
+	public TVarSet bindings(Type owner) {
+		return TVarSet.emptySet;
 	}
 }
 
@@ -168,11 +289,11 @@ public class WrapperTypeProvider extends TypeProvider {
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
-	public Type rebind(Type t, TVar[] bindings) {
+	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
 	}
-	public TVar[] bindings(Type owner) {
+	public TVarSet bindings(Type owner) {
 		WrapperType w = (WrapperType)owner;
 		return w.getUnwrappedType().bindings();
 	}
@@ -181,7 +302,7 @@ public class WrapperTypeProvider extends TypeProvider {
 public class CallTypeProvider extends TypeProvider {
 	public static final CallTypeProvider instance = new CallTypeProvider();
 	private CallTypeProvider() {}
-	public Type rebind(Type t, TVar[] bindings) {
+	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		CallableType ct = (CallableType)t;
 		Type[] tpargs = new Type[ct.args.length];
@@ -195,8 +316,8 @@ public class CallTypeProvider extends TypeProvider {
 		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");
 		return t;
 	}
-	public TVar[] bindings(Type owner) {
-		return TVar.emptyArray;
+	public TVarSet bindings(Type owner) {
+		return TVarSet.emptySet;
 	}
 }
 

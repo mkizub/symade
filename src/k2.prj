@@ -842,6 +842,7 @@ kiev.vlang.SynchronizedStat.DFI kiev/vlang/SynchronizedStat$DFI kiev\vlang\Compl
 kiev.vlang.SynchronizedStat.SynchronizedStatImpl kiev/vlang/SynchronizedStat$SynchronizedStatImpl kiev\vlang\ComplexStatement.java
 kiev.vlang.SynchronizedStat.SynchronizedStatView kiev/vlang/SynchronizedStat$SynchronizedStatView kiev\vlang\ComplexStatement.java
 kiev.vlang.TVar kiev/vlang/TVar kiev\vlang\TypeProvider.java
+kiev.vlang.TVarSet kiev/vlang/TVarSet kiev\vlang\TypeProvider.java
 kiev.vlang.ThisExpr kiev/vlang/ThisExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.ThisExpr.DFI kiev/vlang/ThisExpr$DFI kiev\vlang\LvalueExpr.java
 kiev.vlang.ThisExpr.ThisExprImpl kiev/vlang/ThisExpr$ThisExprImpl kiev\vlang\LvalueExpr.java

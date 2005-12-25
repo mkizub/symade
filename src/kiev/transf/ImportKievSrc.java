@@ -90,8 +90,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						+" and have to be "+outer_args[i]);
 			}
 			/* Create type for class's arguments, if any */
-			if( me.args.length > 0 ) {
-				targs = astnp.type.args;
+			if (!me.isStatic()) {
+				me.args.delAll();
+			} else {
+				for(int i=0; i < me.args.length; i++)
+					targs = (Type[])Arrays.append(targs,me.args[i].getType());
 			}
 		} else {
 			for(int i=0; i < me.args.length; i++)
@@ -117,8 +120,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			me.setStatic(true);
 			Struct p = (Struct)me.parent;
 			p.addCase(me);
-			me.super_type = p.type;
 			setupStructType(me, true);
+			me.super_type = Type.createRefType(p.type.clazz, me.type.args);
 		}
 		else if (me.isSyntax()) {
 			me.setPrivate(true);
@@ -451,7 +454,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		else if( me.isPizzaCase() ) {
 			// already set
 			//me.super_clazz = ((Struct)me.parent).type;
-			assert (me.super_type == ((Struct)me.parent).type);
+			assert (me.super_type.clazz == me.package_clazz);
 		}
 		else {
 			if (me.view_of != null)

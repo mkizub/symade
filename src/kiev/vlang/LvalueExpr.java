@@ -1003,7 +1003,17 @@ public final class OuterThisAccessExpr extends AccessExpr {
 	public String toString() { return outer.name.toString()+".this"; }
 
 	public Type getType() {
-		return outer.type;
+		try {
+			if (ctx_clazz == null)
+				return outer.type;
+			Type tp = ctx_clazz.type;
+			foreach (Field f; outer_refs)
+				tp = Type.getRealType(tp, f.type);
+			return tp;
+		} catch(Exception e) {
+			Kiev.reportError(this,e);
+			return outer.type;
+		}
 	}
 
 	public static Field outerOf(Struct clazz) {

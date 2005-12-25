@@ -25,17 +25,17 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final	TypeProvider		meta_type;
 	public final	KString				signature;
 	public			int					flags;
-	private			TVar[]				bindings;
+	private			TVarSet				bindings;
 	protected		JType				jtype;
 	
 	public abstract JType getJType();
 
-	public final TVar[] bindings() {
+	public final TVarSet bindings() {
 		if (this.bindings == null)
 			this.bindings = meta_type.bindings(this);
 		return this.bindings;
 	}
-	public final Type rebind(TVar[] bindings) {
+	public final Type rebind(TVarSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
 	
@@ -52,19 +52,13 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract Type getInitialSuperType();
 	public abstract Type getSuperType();
 
-	protected Type(TypeProvider meta_type, KString signature, TVar[] bindings)
+	protected Type(TypeProvider meta_type, KString signature, TVarSet bindings)
 		require { meta_type != null; }
 	{
 		this.meta_type = meta_type;
 		this.signature = signature;
 		this.flags = flReference;
-		if (bindings != null) {
-			this.bindings = bindings;
-			for (int i=0; i < bindings.length; i++) {
-				assert(bindings[i].owner == null);
-				bindings[i].owner = this;
-			}
-		}
+		this.bindings = bindings;
 	}
 
 	public static BaseType createRefType(Struct clazz, Type[] args) {
@@ -100,7 +94,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return (BaseType)t;
 	}
 
-	public static BaseType newRefType(Struct clazz, TVar[] bindings) {
+	public static BaseType newRefType(Struct clazz, TVarSet bindings) {
 		Type ct = clazz.type;
 		if (ct.bindings().length != bindings.length )
 			throw new RuntimeException("Class "+clazz+" requares "+ct.bindings().length+" type bindings");
@@ -108,8 +102,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 		for (int i=0; i < args.length; i++) {
 			ArgumentType at = clazz.args[i].getAType();
 			for (int b=0; b < bindings.length; b++) {
-				if (bindings[b].at == at) {
-					args[i] = bindings[b].result(bindings);
+				if (bindings[b].var == at) {
+					args[i] = bindings[b].result();
 					break;
 				}
 			}
@@ -470,18 +464,25 @@ public class BaseType extends Type {
 		super(meta_type, signature, null);
 		this.clazz = meta_type.clazz;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
-		assert(clazz != null);
+		checkArgumented(this);
 		typeHash.put(this);
 	}
 	
-	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args, TVar[] bindings) {
+	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args, TVarSet bindings) {
 		super(meta_type, signature, bindings);
 		this.clazz = meta_type.clazz;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
-		assert(clazz != null);
+		checkArgumented(this);
 		typeHash.put(this);
+	}
+	
+	private void checkArgumented(BaseType tp) {
+		if (tp == null) return;
+		foreach(Type a; tp.args; a.isArgumented() ) { flags |= flArgumented; return; }
+		Struct pkg = tp.clazz.package_clazz;
+		if (pkg == null || pkg.isPackage()) return;
+		if (tp.clazz.isStatic()) return;
+		checkArgumented(pkg.type);
 	}
 	
 	public JType getJType() {
@@ -627,17 +628,17 @@ public class BaseType extends Type {
 			t1.checkResolved();
 			t2.checkResolved();
 		} catch(Exception e ) {
-			if( Kiev.verbose ) e.printStackTrace( /* */System.out /* */ );
+			if( Kiev.verbose ) e.printStackTrace(System.out);
 			throw new RuntimeException("Unresolved type:"+e);
 		}
 		// Check class1 == class2 && arguments
-		if( t1.clazz != null && t2.clazz != null && t1.clazz.equals(t2.clazz) ) {
-			int t1_args_len = t1.args==null?0:t1.args.length;
-			int t2_args_len = t2.args==null?0:t2.args.length;
-			if( t1_args_len != t2_args_len ) return false;
-			if( t1_args_len == 0 ) return true;
-			for(int i=0; i < t1.args.length; i++)
-				if( !t1.args[i].isInstanceOf(t2.args[i]) ) return false;
+		if (t1.clazz == t2.clazz) {
+			TVarSet b1 = t1.bindings();
+			TVarSet b2 = t2.bindings();
+			for(int i=0; i < b1.length; i++) {
+				if (!b1[i].result().isInstanceOf(b2[i].result()))
+					return false;
+			}
 			return true;
 		}
 		foreach (Type sup; t1.getDirectSuperTypes()) {
@@ -760,7 +761,7 @@ public class ArgumentType extends Type {
 	public Type					super_type;
 
 	private ArgumentType(KString signature, ClazzName name, Type sup) {
-		super(ArgumentTypeProvider.instance, signature, TVar.emptyArray);
+		super(ArgumentTypeProvider.instance, signature, TVarSet.emptySet);
 		this.name = name;
 		super_type = sup;
 		typeHash.put(this);
@@ -979,7 +980,7 @@ public class ClosureType extends Type implements CallableType {
 	public virtual Type		ret;
 	
 	private ClosureType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instance, signature, TVar.emptyArray);
+		super(CallTypeProvider.instance, signature, TVarSet.emptySet);
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flReference | flCallable;
@@ -1055,7 +1056,7 @@ public class MethodType extends Type implements CallableType {
 	public virtual Type		ret;
 
 	private MethodType(KString signature, Type[] args, Type ret) {
-		super(CallTypeProvider.instance, signature, TVar.emptyArray);
+		super(CallTypeProvider.instance, signature, TVarSet.emptySet);
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret = ret;
 		flags |= flCallable;

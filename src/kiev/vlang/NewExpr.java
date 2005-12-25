@@ -136,8 +136,10 @@ public final class NewExpr extends ENode {
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 			throw new CompilerException(this,"Abstract class "+type+" instantiation");
 		}
-		if( outer != null )
+		if( outer != null ) {
 			outer.resolve(null);
+			type = (BaseType)type.rebind(outer.getType().bindings());
+		}
 		else if( (!type.isStaticClazz() && type.isLocalClazz())
 			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
 		{
@@ -145,6 +147,7 @@ public final class NewExpr extends ENode {
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
 			outer.resolve(null);
+			type = (BaseType)type.rebind(outer.getType().bindings());
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);

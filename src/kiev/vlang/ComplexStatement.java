@@ -176,7 +176,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 									continue;
 								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
-								if( !p.type.equals(tp) )
+								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
 								p.init = new IFldExpr(p.pos,
 										new CastExpr(p.pos,
