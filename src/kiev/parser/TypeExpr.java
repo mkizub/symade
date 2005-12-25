@@ -101,7 +101,7 @@ public class TypeExpr extends TypeRef {
 			t.checkResolved();
 			if (t.isWrapper()) {
 				WrapperType wt = (WrapperType)t;
-				tp = ((WrapperTypeProvider)wt.meta_type).newType(new Type[]{tp});
+				tp = WrapperType.newWrapperType(Type.newRefType(((WrapperTypeProvider)wt.meta_type).clazz,new Type[]{tp}));
 			} else {
 				BaseType bt = (BaseType)t;
 				if (bt.args.length != 1)
