@@ -106,7 +106,7 @@ public class TypeExpr extends TypeRef {
 				BaseType bt = (BaseType)t;
 				if (bt.args.length != 1)
 					throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-				tp = Type.newRefType(bt,new Type[]{tp});
+				tp = Type.newRefType(bt.clazz,new Type[]{tp});
 			}
 		}
 		this.lnk = tp;

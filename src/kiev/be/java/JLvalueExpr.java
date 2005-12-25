@@ -363,7 +363,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			}
 		}
 		if( chtp == null )
-			chtp = var.type.getJavaType();
+			chtp = var.type.getErasedType();
 		if( !var.type.isStructInstanceOf(chtp.getStruct()) ) {
 			code.addInstr(op_checkcast,var.type);
 			return;

@@ -254,7 +254,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
-			 && (!func.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() || null_cast_label != null) )
+			 && (!func.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() || null_cast_label != null) )
 				code.addInstr(op_checkcast,getType());
 		}
 		if( ok_label != null )
@@ -303,7 +303,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && call_it.type.ret.isReference()
-			 && ( !call_it.jtype.ret.isInstanceOf(getType().getJavaType()) || getType().isArray() ) )
+			 && ( !call_it.jtype.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}

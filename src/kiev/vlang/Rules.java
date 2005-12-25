@@ -149,7 +149,7 @@ public class RuleMethod extends Method {
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getJavaType());
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}

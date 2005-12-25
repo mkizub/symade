@@ -126,7 +126,7 @@ public class BaseTypeProvider extends TypeProvider {
 }
 
 public class ArrayTypeProvider extends TypeProvider {
-	static final ArrayTypeProvider instance = new ArrayTypeProvider();
+	public static final ArrayTypeProvider instance = new ArrayTypeProvider();
 	private ArrayTypeProvider() {}
 	public Type rebind(Type t, TVar[] bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
@@ -139,7 +139,7 @@ public class ArrayTypeProvider extends TypeProvider {
 }
 
 public class ArgumentTypeProvider extends TypeProvider {
-	static final ArgumentTypeProvider instance = new ArgumentTypeProvider();
+	public static final ArgumentTypeProvider instance = new ArgumentTypeProvider();
 	private ArgumentTypeProvider() {}
 	public Type rebind(Type t, TVar[] bindings) {
 		if( bindings.length == 0 ) return t;
@@ -179,7 +179,7 @@ public class WrapperTypeProvider extends TypeProvider {
 }
 
 public class CallTypeProvider extends TypeProvider {
-	static final CallTypeProvider instance = new CallTypeProvider();
+	public static final CallTypeProvider instance = new CallTypeProvider();
 	private CallTypeProvider() {}
 	public Type rebind(Type t, TVar[] bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
@@ -201,7 +201,7 @@ public class CallTypeProvider extends TypeProvider {
 }
 
 public class JBaseTypeProvider extends TypeProvider {
-	final Struct clazz;
+	public final Struct clazz;
 	JBaseTypeProvider(Struct clazz) {
 		this.clazz = clazz;
 	}

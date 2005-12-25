@@ -158,7 +158,7 @@ public class Env extends Struct {
 		return cl;
 	}
 
-	public static Struct newInterface(ClazzName name,Struct outer/*,Typ sup*/,int access) {
+	public static Struct newInterface(ClazzName name,Struct outer,int access) {
 		Struct cl = newStruct(name,outer,access);
 		cl.setInterface(true);
 		return cl;
@@ -172,6 +172,8 @@ public class Env extends Struct {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
+			if (bcl.type == null)
+				bcl.type = Type.createRefType(bcl,Type.emptyArray);
 			return (Struct)bcl;
 		}
 		return newPackage(ClazzName.fromToplevelName(name,false));
@@ -184,6 +186,8 @@ public class Env extends Struct {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
+			if (bcl.type == null)
+				bcl.type = Type.createRefType(bcl,Type.emptyArray);
 			return (Struct)bcl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
@@ -193,59 +197,10 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = Type.newJavaRefType(cl);
-		return cl;
-	}
-/*
-	public static Struct newArgument(KString nm,Struct outer) {
-		// If outer is an inner class - this argument may be an argument
-		// of it's outer class
-		ClazzName name = ClazzName.fromOuterAndName(outer,nm,true,true);
-		name.isArgument = true;
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
-			if( cl.isArgument() ) return cl;
-			throw new RuntimeException("Class "+cl+" is not a class's argument");
-		}
-		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated class argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
-		cl.setResolved(true);
-		cl.super_type = Type.tpObject;
-		cl.type = Type.newRefType(cl);
-		classHash.put(cl.name.name,cl);
-		classHashDbg.put(cl.name.bytecode_name,cl);
+		cl.type = Type.createRefType(cl, Type.emptyArray);
 		return cl;
 	}
 
-	public static Struct newMethodArgument(KString nm, Struct outer) {
-		// If outer is an inner class - this argument may be an argument
-		// of it's outer class
-		ClazzName name = ClazzName.fromBytecodeName(
-			new KStringBuffer(outer.name.bytecode_name.len+8)
-				.append_fast(outer.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(outer.countAnonymouseInnerStructs())
-				.append((byte)'$')
-				.append(nm)
-				.toKString(),
-				true
-		);
-		name.isArgument = true;
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
-			if( cl.isArgument() ) return cl;
-			throw new RuntimeException("Class "+cl+" is not a class's argument");
-		}
-		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated method argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
-		cl.setResolved(true);
-		cl.super_type = Type.tpObject;
-		cl.type = Type.newRefType(cl);
-		classHash.put(cl.name.name,cl);
-		classHash.put(cl.name.bytecode_name,cl);
-		return cl;
-	}
-*/
 	/** Default environment initialization */
 	public static  void InitializeEnv() {
 	    InitializeEnv(System.getProperty("java.class.path"));

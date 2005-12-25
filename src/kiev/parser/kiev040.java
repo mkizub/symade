@@ -372,7 +372,6 @@ public abstract class kiev040 implements kiev040Constants {
     jj_consume_token(SEMICOLON);
                 TypeNameRef tr = new TypeNameRef(qn);
                 Struct pkg = Env.newPackage(qn.name);
-                pkg.type = Type.Type.newRefType(pkg);
                 tr.lnk = pkg.type;
                 {if (true) return tr;}
     throw new Error("Missing return statement in function");
@@ -4803,6 +4802,12 @@ public abstract class kiev040 implements kiev040Constants {
     catch(LookaheadSuccess ls) { return true; }
   }
 
+  final private boolean jj_3_71() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_103()) return true;
+    return false;
+  }
+
   final private boolean jj_3_69() {
     if (jj_scan_token(FUNCTION)) return true;
     if (jj_scan_token(LPAREN)) return true;
@@ -8782,12 +8787,6 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_scan_token(LBRACKET)) return true;
     if (jj_3R_92()) return true;
     if (jj_scan_token(RBRACKET)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_71() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_103()) return true;
     return false;
   }
 

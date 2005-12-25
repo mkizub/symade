@@ -845,7 +845,6 @@ TypeNameRef Package() :
 	{
 		TypeNameRef tr = new TypeNameRef(qn);
 		Struct pkg = Env.newPackage(qn.name);
-		pkg.type = Type.Type.newRefType(pkg);
 		tr.lnk = pkg.type;
 		return tr;
 	}

@@ -7,6 +7,7 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.be.java.JType;
 import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;
 import kiev.be.java.JLvalDNodeView;

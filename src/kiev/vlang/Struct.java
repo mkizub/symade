@@ -858,23 +858,10 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 */
 
 	public static String makeTypeInfoString(Type t) {
-		if( t.isArray() ) {
-			t = t.getJavaType();
-			return "["+((ArrayType)t).arg;
-		}
-		if( t instanceof ClosureType ) {
-			return "kiev.stdlib.closure";
-		}
-		if( t.isArgument() ) {
-			return makeTypeInfoString(t.getSuperType());
-		}
-		KString bname = t.getStruct().name.bytecode_name;
-		if (t instanceof WrapperType)
-			t = t.getUnwrappedType();
-		BaseType bt = (BaseType)t;
-		if( bt.args.length > 0 ) {
-			StringBuffer sb = new StringBuffer(128);
-			sb.append(bname.toString().replace('/','.'));
+		StringBuffer sb = new StringBuffer(128);
+		sb.append(t.getJType().toClassForNameString());
+		if( t instanceof BaseType && ((BaseType)t).args.length > 0 ) {
+			BaseType bt = (BaseType)t;
 			sb.append('<');
 			for(int i=0; i < bt.args.length; i++) {
 				Type ta = bt.args[i];
@@ -885,8 +872,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			sb.append('>');
 			return sb.toString();
 		} else {
-			return bname.toString().replace('/','.');
 		}
+		return sb.toString();
 	}
 
 	public ENode accessTypeInfoField(ASTNode from, Type t) {
@@ -1033,7 +1020,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
 			else
 				typeinfo_clazz.super_type = Type.tpTypeInfo;
-			typeinfo_clazz.type = Type.newJavaRefType(typeinfo_clazz);
+			typeinfo_clazz.type = Type.createRefType(typeinfo_clazz, Type.emptyArray);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 

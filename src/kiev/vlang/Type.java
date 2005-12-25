@@ -3,6 +3,10 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import kiev.be.java.JType;
+import kiev.be.java.JBaseType;
+import kiev.be.java.JArrayType;
+import kiev.be.java.JMethodType;
 import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
@@ -16,7 +20,7 @@ import syntax kiev.Syntax;
 public abstract class Type implements StdTypes, AccessFlags {
 	public static Type[]	emptyArray = new Type[0];
 
-	static Hash<Type>		typeHash;
+	protected static Hash<Type>		typeHash;
 
 	public final	TypeProvider		meta_type;
 	public final	KString				signature;
@@ -63,69 +67,36 @@ public abstract class Type implements StdTypes, AccessFlags {
 		}
 	}
 
-	public static BaseType newJavaRefType(Struct clazz) {
-		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null);
-		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean {
-			return t.signature.equals(signature) && t instanceof BaseType; });
-		if( t != null ) {
-//			if( t.clazz == null ) t.clazz = clazz;
-			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
-			t.flags |= flReference;
-			return (BaseType)t;
-		}
-		t = new BaseType(signature, clazz);
-		t.flags |= flReference;
-		return (BaseType)t;
-	}
-
-	public static BaseType newRefType(BaseType tp) {
-		return newRefType(tp.clazz);
-	}
-	
-	public static BaseType newRefType(Struct clazz) {
-		if( clazz != null && clazz.type != null && clazz.type.args.length > 0 )
-			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
-		Type[] args = Type.emptyArray;
-		KString signature = Signature.from(clazz,null);
+	public static BaseType createRefType(Struct clazz, Type[] args) {
+		if (args == null) args = Type.emptyArray;
+		KString signature = Signature.from(clazz,args);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
-//			if( t.clazz == null ) t.clazz = clazz;
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
-			t.flags |= flReference;
 			return (BaseType)t;
 		}
-		t = new BaseType(signature, clazz);
-		t.flags |= flReference;
+		t = new BaseType(signature, clazz, args);
 		return (BaseType)t;
 	}
 
-	public static BaseType newRefType(BaseType tp, Type[] args) {
-		return newRefType(tp.clazz, args);
-	}
-	
 	public static BaseType newRefType(Struct clazz, Type[] args) {
-		if( clazz != null && clazz.type != null && clazz.type.args.length != args.length )
+		if( clazz.type.args.length != args.length )
 			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
-		if( clazz != null && clazz.type != null ) {
-			for(int i=0; i < args.length; i++) {
-				if( !args[i].isInstanceOf(clazz.type.args[i]) ) {
-					if( clazz.type.args[i].getSuperType() == Type.tpObject && !args[i].isReference())
-						;
-					else
-						throw new RuntimeException("Type "+args[i]+" must be an instance of "+clazz.type.args[i]);
-				}
+		for(int i=0; i < args.length; i++) {
+			if( !args[i].isInstanceOf(clazz.type.args[i]) ) {
+				if( clazz.type.args[i].getSuperType() == Type.tpObject && !args[i].isReference())
+					;
+				else
+					throw new RuntimeException("Type "+args[i]+" must be an instance of "+clazz.type.args[i]);
 			}
 		}
 		KString signature = Signature.from(clazz,args);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
-//			if( t.clazz == null ) t.clazz = clazz;
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
 			return (BaseType)t;
 		}
 		t = new BaseType(signature, clazz,args);
-		t.flags |= flReference;
 		return (BaseType)t;
 	}
 
@@ -154,14 +125,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 		t = new BaseType(clazz.imeta_type, signature, clazz, args, bindings);
 		t.flags |= flReference;
 		return (BaseType)t;
-	}
-
-	public static BaseType newRefType(ClazzName name) {
-		return newRefType(Env.newStruct(name));
-	}
-
-	public static BaseType newRefType(ClazzName name, Type[] args) {
-		return newRefType(Env.newStruct(name),args);
 	}
 
 	public static ArrayType newArrayType(Type type) {
@@ -446,7 +409,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	
 	public abstract Type[] getDirectSuperTypes();
 	
-	public abstract Type getJavaType();
+	public abstract Type getErasedType();
 
 	public static Type getRealType(Type t1, TypeRef t2) {
 		return Type.getRealType(t1, t2.lnk);
@@ -479,45 +442,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	public abstract Dumper toJava(Dumper dmp);
 
-}
-
-public class JType extends Type {
-	
-	public static final JType[] emptyArray = new JType[0]; 
-	
-	JType(TypeProvider meta_type, KString java_signature) {
-		super(meta_type, java_signature, null);
-		typeHash.put(this);
-	}
-	
-	public final KString get$java_signature() { return signature; }
-}
-
-public class JBaseType extends JType {
-	
-	JBaseType(JBaseTypeProvider meta_type, KString java_signature) {
-		super(meta_type, java_signature);
-	}
-}
-
-public class JArrayType extends JType {
-	public final JType				jarg;
-	
-	JArrayType(KString java_signature, JType jarg) {
-		super(ArrayTypeProvider.instance, java_signature);
-		this.jarg = jarg;
-	}
-}
-
-public class JMethodType extends JType implements CallableType {
-	public final JType[]			jargs;
-	public final JType				jret;
-	
-	JMethodType(KString java_signature, JType[] jargs, JType jret) {
-		super(CallTypeProvider.instance, java_signature);
-		this.jargs = jargs;
-		this.jret = jret;
-	}
 }
 
 public class BaseType extends Type {
@@ -561,7 +485,7 @@ public class BaseType extends Type {
 	}
 	
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
 			jtype = new JBaseType(((BaseTypeProvider)meta_type).java_meta_type, Signature.getJavaSignature(signature));
 		return jtype;
@@ -733,11 +657,10 @@ public class BaseType extends Type {
 		return sta;
 	}
 
-	public Type getJavaType() {
+	public Type getErasedType() {
 		if( !isReference() )
 			return this;
-		if( args.length == 0 ) return this;
-		return newJavaRefType(clazz);
+		return clazz.type;
 	}
 
 }
@@ -765,7 +688,7 @@ public class ArrayType extends Type {
 	}
 
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
 			KString asig = arg.getJType().java_signature;
 			KString sig = new KStringBuffer(asig.len+1).append_fast((byte)'[').append_fast(asig).toKString();
@@ -802,8 +725,8 @@ public class ArrayType extends Type {
 		false
 	}
 	
-	public Type getJavaType() {
-		return newArrayType(arg.getJavaType());
+	public Type getErasedType() {
+		return newArrayType(arg.getErasedType());
 	}
 
 	public boolean checkResolved() {
@@ -864,7 +787,7 @@ public class ArgumentType extends Type {
 	}
 
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
 			jtype = super_type.getJType();
 		return jtype;
@@ -893,10 +816,10 @@ public class ArgumentType extends Type {
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { super_type.resolveCallAccessR(node, info, name, mt) }
 	
-	public Type getJavaType() {
+	public Type getErasedType() {
 		if (super_type == null)
 			return tpObject;
-		return super_type.getJavaType();
+		return super_type.getErasedType();
 	}
 
 	public boolean checkResolved() {
@@ -946,7 +869,7 @@ public class WrapperType extends Type {
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
 			jtype = getUnwrappedType().getJType();
 		return jtype;
@@ -1040,8 +963,8 @@ public class WrapperType extends Type {
 		return sta;
 	}
 
-	public Type getJavaType() {
-		return getUnwrappedType().getJavaType();
+	public Type getErasedType() {
+		return getUnwrappedType().getErasedType();
 	}
 
 }
@@ -1079,7 +1002,7 @@ public class ClosureType extends Type implements CallableType {
 	@getter public Type		get$ret()	{ return ret; }
 
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
 			jtype = Type.tpClosure.getJType();
 		return jtype;
@@ -1121,7 +1044,7 @@ public class ClosureType extends Type implements CallableType {
 
 	public Type[] getDirectSuperTypes() { return Type.emptyArray; }
 
-	public Type getJavaType() {
+	public Type getErasedType() {
 		return Type.tpClosure;
 	}
 
@@ -1161,7 +1084,7 @@ public class MethodType extends Type implements CallableType {
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 
 	public JType getJType() {
-		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
+//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
 			JType[] jargs = JType.emptyArray;
 			if (args.length > 0) {
@@ -1269,13 +1192,13 @@ public class MethodType extends Type implements CallableType {
 
 	public Type[] getDirectSuperTypes() { return Type.emptyArray; }
 
-	public Type getJavaType() {
+	public Type getErasedType() {
 		if( args.length == 0 )
-			return MethodType.newMethodType(Type.emptyArray,((MethodType)this).ret.getJavaType());
+			return MethodType.newMethodType(Type.emptyArray,((MethodType)this).ret.getErasedType());
 		Type[] targs = new Type[args.length];
 		for(int i=0; i < args.length; i++)
-			targs[i] = args[i].getJavaType();
-		return MethodType.newMethodType(targs,((MethodType)this).ret.getJavaType());
+			targs[i] = args[i].getErasedType();
+		return MethodType.newMethodType(targs,((MethodType)this).ret.getErasedType());
 	}
 
 }

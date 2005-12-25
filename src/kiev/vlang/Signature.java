@@ -160,7 +160,7 @@ public class Signature {
 		if( !sc.hasMoreChars() ) {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return Type.newJavaRefType(clazz);
+			return Type.createRefType(clazz, Type.emptyArray);
 		}
 		if( sc.peekChar() == '<' ) {
 			args = new Type[0];
@@ -178,18 +178,17 @@ public class Signature {
 				} else
 					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
-				return Type.newRefType(clazz,args);
+				return Type.createRefType(clazz,args);
 			}
 		} else {
 			if (isArgument)
 				return ArgumentType.newArgumentType(cname,null);
-			return Type.newJavaRefType(clazz);
+			return Type.createRefType(clazz, Type.emptyArray);
 		}
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
 		Struct clazz;
-		Type[] args = null;
 
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
@@ -214,18 +213,15 @@ public class Signature {
 		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos),false);
 		clazz = Env.newStruct(name);
 
-		if( !sc.hasMoreChars() )
-			return Type.newJavaRefType(clazz);
-		if( sc.peekChar() == '<' ) {
+		Type[] args = Type.emptyArray;
+		if( sc.hasMoreChars() && sc.peekChar() == '<' ) {
 			args = new Type[0];
 			sc.nextChar();
 			while(sc.peekChar() != '>')
 				args = (Type[])Arrays.append(args,getType(sc));
 			sc.nextChar();
-				return Type.newRefType(clazz,args);
-		} else {
-			return Type.newRefType(clazz);
 		}
+		return Type.createRefType(clazz,args);
 	}
 
 	public static KString getJavaSignature(KString sig) {
