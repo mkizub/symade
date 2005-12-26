@@ -104,7 +104,7 @@ public class TypeExpr extends TypeRef {
 				tp = WrapperType.newWrapperType(Type.newRefType(((WrapperTypeProvider)wt.meta_type).clazz,new Type[]{tp}));
 			} else {
 				BaseType bt = (BaseType)t;
-				if (bt.args.length != 1)
+				if (bt.clazz.args.length != 1)
 					throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 				tp = Type.newRefType(bt.clazz,new Type[]{tp});
 			}

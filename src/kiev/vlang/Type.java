@@ -38,6 +38,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final Type rebind(TVarSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
+	public final Type resolve(ArgumentType arg) {
+		return this.bindings().resolve(arg);
+	}
 	
 	public final JStructView getJStruct() {
 		Struct s = getStruct();
@@ -438,10 +441,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 }
 
-public class BaseType extends Type {
+public final class BaseType extends Type {
 	public static BaseType[]	emptyArray = new BaseType[0];
 
-	public final access:ro,ro,ro,rw		Struct		clazz;	
 	public final						Type[]		args;
 	
 	BaseType(Struct clazz) {
@@ -462,7 +464,6 @@ public class BaseType extends Type {
 	
 	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args) {
 		super(meta_type, signature, null);
-		this.clazz = meta_type.clazz;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		checkArgumented(this);
 		typeHash.put(this);
@@ -470,7 +471,6 @@ public class BaseType extends Type {
 	
 	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args, TVarSet bindings) {
 		super(meta_type, signature, bindings);
-		this.clazz = meta_type.clazz;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		checkArgumented(this);
 		typeHash.put(this);
@@ -492,6 +492,8 @@ public class BaseType extends Type {
 		return jtype;
 	}
 
+	public final Struct get$clazz() { return ((BaseTypeProvider)meta_type).clazz; }
+	
 	public Struct getStruct()			{ return clazz; }
 	public Type getInitialType()		{ return clazz.type; }
 	public Type getInitialSuperType()	{ return clazz.super_type; }
@@ -594,11 +596,12 @@ public class BaseType extends Type {
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		str.append(clazz.name.toString());
-		if( args != null && args.length > 0 ) {
+		int n = clazz.args.length;
+		if (n > 0) {
 			str.append('<');
-			for(int i=0; i < args.length; i++) {
-				str.append(args[i]);
-				if( i < args.length-1)
+			for(int i=0; i < n; i++) {
+				str.append(resolve(clazz.args[i].getAType()));
+				if( i < n-1)
 					str.append(',');
 			}
 			str.append('>');

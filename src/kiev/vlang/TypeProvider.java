@@ -143,6 +143,40 @@ public final class TVarSet {
 		}
 	}
 	
+	// Bind free (unbound) variables of current type to values
+	// from a set of var=value pairs, returning a new set.
+	//
+	// This operation is used in type extension/specification:
+	//
+	// class Bar<B> :- defines a free variable B
+	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
+	// new Foo<String> :- binds Foo.F to String
+	// new Foo<Bar<Foo<N>>> :- binds Foo.F with Bar<Foo<N>>
+	public TVarSet bind(TVarSet vs) {
+		int n = this.tvars.length;
+		TVarSet sr = this.copy();
+		return sr;
+	}
+
+	// Re-bind type set, replace all abstract types in current set
+	// with results of another set. It binds unbound vars, and re-binds
+	// (changes) vars bound to abstract types, i.e. it changes only 'TVar.bnd' field.
+	//
+	// having a re-bind pair A -> V, will re-bind
+	// A ? -> A V
+	// B A -> B V
+	//
+	// This operation is used in access expressions:
+	//
+	// class Bar<B> { B b; }
+	// class Foo<F> { F f; Foo<Bar<F>> fbf; }
+	// Foo<String> a;
+	// a.* :- binds Foo.F with String, and rebinds Bar.B (bound to Foo.F) with String
+	//        producing: a.f = String; a.fbf = Foo<Bar<String>>; a.b = String 
+	// Foo<Bar<Foo<N>>> x;
+	// a.* :- binds Foo.F with Bar<Foo<N>>, and rebinds Bar.B (bound to Foo.F) with Bar<Foo<N>>,
+	//        producing: a.f = Bar<Foo<N>>; a.fbf = Foo<Bar<Bar<Foo<N>>>>; a.b = Bar<Foo<N>>
+	// a.fbf.* :- a.fbf.f = 
 	public TVarSet rebind(TVarSet vs) {
 		int n = this.tvars.length;
 		TVarSet sr = this.copy();
@@ -164,6 +198,16 @@ public final class TVarSet {
 		return sr;
 	}
 	
+	// find a bound type of an argument
+	public Type resolve(ArgumentType arg) {
+		TVar[] tvars = this.tvars;
+		final int n = tvars.length;
+		for(int i=0; i < n; i++) {
+			if (tvars[i].var == arg)
+				return tvars[i].result();
+		}
+		return arg;
+	}
 }
 
 

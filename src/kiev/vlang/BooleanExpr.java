@@ -596,7 +596,7 @@ public class InstanceofExpr extends BoolExpr {
 			tp = tp.getUnwrappedType();
 		if (tp instanceof BaseType) {
 			BaseType bt = (BaseType)tp;
-			if (tp.args.length > 0) {
+			if (tp.clazz.isRuntimeArgTyped()) {
 				replaceWithNodeResolve(reqType, new CallExpr(pos,
 						ctx_clazz.accessTypeInfoField(this,type.getType()),
 						Type.tpTypeInfo.clazz.resolveMethod(

@@ -77,18 +77,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		else if( me.parent instanceof Struct && ((Struct)me.parent).args.length > 0 ) {
 			Struct astnp = (Struct)me.parent;
-			// Inner classes's arguments have to be arguments of outer classes
-			// BUG BUG BUG - need to follow java scheme
-			for(int i=0; i < me.args.length; i++) {
-				TypeArgDef arg = me.args[i];
-				Type[] outer_args = astnp.type.args;
-				if( outer_args == null || outer_args.length <= i)
-					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
-				if (!outer_args[i].isArgument() || !((ArgumentType)outer_args[i]).name.short_name.equals(arg.name.name))
-					throw new CompilerException(arg,"Inner class arguments must match outer class argument,"
-						+" but arg["+i+"] is "+arg
-						+" and have to be "+outer_args[i]);
-			}
+//			// Inner classes's arguments have to be arguments of outer classes
+//			// BUG BUG BUG - need to follow java scheme
+//			for(int i=0; i < me.args.length; i++) {
+//				TypeArgDef arg = me.args[i];
+//				Type[] outer_args = astnp.type.args;
+//				if( outer_args == null || outer_args.length <= i)
+//					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
+//				if (!outer_args[i].isArgument() || !((ArgumentType)outer_args[i]).name.short_name.equals(arg.name.name))
+//					throw new CompilerException(arg,"Inner class arguments must match outer class argument,"
+//						+" but arg["+i+"] is "+arg
+//						+" and have to be "+outer_args[i]);
+//			}
 			/* Create type for class's arguments, if any */
 			if (!me.isStatic()) {
 				me.args.delAll();
@@ -121,7 +121,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Struct p = (Struct)me.parent;
 			p.addCase(me);
 			setupStructType(me, true);
-			me.super_type = Type.createRefType(p.type.clazz, me.type.args);
+			Type[] args = new Type[p.args.length];
+			for(int i=0; i < p.args.length; i++) {
+				for(int j=0; j < me.args.length; j++) {
+					if (p.args[i].name.name == me.args[j].name.name) {
+						args[i] = me.args[j].getAType();
+						break;
+					}
+				}
+				if (args[i] == null)
+					args[i] = p.args[i].getAType();
+			}
+			me.super_type = Type.createRefType(p.type.clazz, args);
 		}
 		else if (me.isSyntax()) {
 			me.setPrivate(true);
@@ -371,7 +382,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		int pos = astn.pos;
 		trace(Kiev.debugResolve,"Pass 2 for class "+me);
 		/* Process inheritance of class's arguments, if any */
-		Type[] targs = me.type.args;
 		for(int i=0; i < astn.args.length; i++) {
 			TypeArgDef arg = astn.args[i];
 			if( arg.super_bound != null ) {
@@ -464,9 +474,17 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				me.super_type = Type.tpObject;
 			foreach(TypeRef tr; me.interfaces)
 				tr.getType();
-			if (me.type.args.length > 0) {
-				me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+		}
+		{
+			TVar[] tvars = me.type.bindings().tvars;
+			for (int i=0; i < tvars.length; i++) {
+				if (!tvars[i].isBound()) {
+					me.setRuntimeArgTyped(true);
+					break;
+				}
 			}
+			if (me.isRuntimeArgTyped())
+				me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
 
 		// Process inner classes and cases

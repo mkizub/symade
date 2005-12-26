@@ -39,19 +39,14 @@ public class Signature {
 			ksb.append('[');
 			ksb.append(args[0].signature);
 		} else {
-			if( clazz !=null && clazz.type!=null && (clazz.type.args == null || clazz.type.args.length==0) ) {
-				ksb.append(clazz.type.signature);
-			} else {
-				if(  clazz !=null )
-					ksb.append(clazz.name.signature());
-				// And it's arguments
-				if( args!=null && args.length > 0 ) {
-					ksb.append('<');
-					for(int i=0; i < args.length; i++) {
-						ksb.append(args[i].signature);
-					}
-					ksb.append('>');
+			ksb.append(clazz.name.signature());
+			// And it's arguments
+			if( clazz.args.length > 0 ) {
+				ksb.append('<');
+				for(int i=0; i < args.length; i++) {
+					ksb.append(args[i].signature);
 				}
+				ksb.append('>');
 			}
 		}
 		return ksb.toKString();

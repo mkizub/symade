@@ -89,6 +89,7 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,21 boolean is_struct_pre_generated;
 		public packed:1,compileflags,22 boolean is_struct_statements_generated;
 		public packed:1,compileflags,23 boolean is_struct_generated;
+		public packed:1,compileflags,24 boolean is_struct_rt_arg_typed;
 		
 		// Expression flags
 		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;

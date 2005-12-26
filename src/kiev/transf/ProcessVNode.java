@@ -202,7 +202,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Field f = aflds[i];
 			boolean isAtt = (f.meta.get(mnAtt) != null);
 			boolean isArr = f.getType().isInstanceOf(tpNArr);
-			Type clz_tp = isArr ? ((BaseType)f.getType()).args[0] : f.getType();
+			Type clz_tp = isArr ? f.getType().bindings()[0].result() : f.getType();
 			TypeClassExpr clz_expr = new TypeClassExpr(0, new TypeRef(clz_tp));
 			ENode e = new NewExpr(0, atp, new ENode[]{
 				new ConstStringExpr(f.name.name),
