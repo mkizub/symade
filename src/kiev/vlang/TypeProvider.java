@@ -11,6 +11,8 @@ import syntax kiev.Syntax;
 public final class TVarSet {
 	public static final TVarSet emptySet = new TVarSet();
 
+	private final boolean ASSERT_MORE = true;	
+
 	public access:ro,ro,ro,rw	TVar[] tvars = TVar.emptyArray;
 
 	public TVarSet copy() {
@@ -19,7 +21,7 @@ public final class TVarSet {
 		tvs.tvars = new TVar[this.tvars.length];
 		for (int i=0; i < this.tvars.length; i++) {
 			TVar v = this.tvars[i];
-			tvs.tvars[i] = new TVar(v.kind, tvs, v.var, v.bnd);
+			tvs.tvars[i] = new TVar(v.ref, tvs, v.var, v.bnd);
 		}
 		return tvs;
 	}
@@ -38,123 +40,111 @@ public final class TVarSet {
 		return tvars[idx];
 	}
 	
-	public void append(ArgumentType var)
-		require { var != null; }
-	{
-		final int n = tvars.length;
-		for (int i=0; i < n; i++) {
-			if (tvars[i].var == var)
-				return; // ignore duplicated var
-		}
-		append(new TVar(TVar.TVAR_UNBOUND, this, var, null));
-		normalize();
-	}
-	
-	public void append(ArgumentType var, Type bnd)
-		require { var != null; }
-	{
-		if (bnd == var || bnd == null) {
-			append(var);
-			return;
-		}
-		for (int i=0; i < tvars.length; i++) {
-			TVar v = tvars[i];
-			if (v.var == var) {
-				if (v.bnd == bnd)
-					return; // ignore duplicated alias
-				if (v.kind >= 0) {
-					i = v.kind;
-					// alias of another var, must point to 
-					assert (tvars.length < i);
-					assert (tvars[i].kind < 0); // must not be another alias
-					assert (v.bnd == tvars[i].var);
-					v = tvars[i];
-					if (v.bnd == bnd)
-						return; // ignore duplicated alias
-				}
-				if (v.bnd == null) {
-					// unbound var, just bind it
-					assert (v.kind == TVar.TVAR_UNBOUND);
-					tvars[i] = new TVar(TVar.TVAR_BOUND,this,var,bnd);
-					normalize();
-					return;
-				}
-				throw new RuntimeException("TVar rebinding");
-			}
-		}
-		append(new TVar(TVar.TVAR_BOUND, this, var, bnd));
-		normalize();
-	}
-
-	public void set(int i, Type bnd)
-		require { bnd != null; }
-	{
-		TVar v = tvars[i];
-		if (v.bnd == bnd)
-			return; // ignore duplicated alias
-		if (v.kind >= 0) {
-			i = v.kind;
-			// alias of another var, must point to 
-			assert (tvars.length < i);
-			assert (tvars[i].kind < 0); // must not be another alias
-			assert (v.bnd == tvars[i].var);
-			v = tvars[i];
-			if (v.bnd == bnd)
-				return; // ignore duplicated alias
-		}
-		if (v.bnd == null) {
-			// unbound var, just bind it
-			assert (v.kind == TVar.TVAR_UNBOUND);
-			tvars[i] = new TVar(TVar.TVAR_BOUND,this,v.var,bnd);
-			normalize();
-			return;
-		}
-		tvars[i] = new TVar(TVar.TVAR_BOUND,this,v.var,bnd);
-		normalize();
-		return;
-	}
-
 	public void append(TVarSet set) {
 		foreach (TVar v; set.tvars)
 			append(v.var, v.bnd);
 	}
 	
-	private void append(TVar v) {
-		final int n = tvars.length;
-		TVar[] tmp = new TVar[n+1];
-		for (int i=0; i < n; i++)
-			tmp[i] = tvars[i];
-		tmp[n] = v;
-		this.tvars = tmp;
-	}
-	
-	private void normalize() {
+	public void append(ArgumentType var, Type bnd)
+		require { var != null; }
+	{
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
-			TVar vi = tvars[i];
-			for (int j=i+1; j < n; j++) {
-				TVar vj = tvars[j];
-				if (vj.bnd == vi.var) {
-					if (vj.kind == i) continue; // already the alias
-					tvars[j] = new TVar(i, this, vj.var, vj.bnd);
+			if (tvars[i].var == var)
+				return; // ignore duplicated var
+		}
+		TVar[] tmp = new TVar[n+1];
+		for (int i=0; i < n; i++)
+			tmp[i] = tvars[i];
+		tmp[n] = new TVar(-1, this, var, null);
+		// fix aliases
+		for (int i=0; i < n; i++) {
+			TVar v = tmp[i];
+			if (v.bnd == var) {
+				assert (v.ref < 0);
+				tmp[i] = new TVar(n, this, v.var, var);
+			}
+		}
+		this.tvars = tmp;
+		if (ASSERT_MORE) checkIntegrity();
+		if (var != bnd && bnd != null)
+			set(n, var, bnd);
+		if (ASSERT_MORE) checkIntegrity();
+	}
+	
+	public void set(int i, ArgumentType var, Type bnd)
+		require { bnd != null; }
+	{
+		TVar[] tvars = this.tvars;
+		TVar v = tvars[i];
+		assert (v.var == var);
+		if (v.bnd == bnd)
+			return; // ignore duplicated alias
+		while (v.ref >= 0) {
+			i = v.ref;
+			// alias of another var, must point to 
+			assert (i < tvars.length);
+			assert (v.bnd == tvars[i].var);
+			v = tvars[i];
+			if (v.bnd == bnd)
+				return; // ignore duplicated alias
+		}
+		// non-aliased var, just bind or alias it
+		if (bnd instanceof ArgumentType) {
+			final int n = tvars.length;
+			for (int j=0; j < n; j++) {
+				if (tvars[j].var == bnd) {
+					// alias of tvars[j]
+					while (tvars[j].ref >= 0) j = tvars[j].ref;
+					if (i == j)
+						return; // don't bind a var to itself
+					tvars[i] = new TVar(j,this,v.var,tvars[j].var);
+					if (ASSERT_MORE) checkIntegrity();
+					return;
 				}
 			}
 		}
+		// not an alias, just bind
+		tvars[i] = new TVar(-1,this,v.var,bnd);
+		if (ASSERT_MORE) checkIntegrity();
+		return;
 	}
-	
+
 	// Bind free (unbound) variables of current type to values
 	// from a set of var=value pairs, returning a new set.
+	//
+	// having a bind pair A -> V, will bind
+	// A:?      -> A:V			; bind
+	// B:A      -> B:A			; alias remains
+	// C:X<A:?> -> C X<A:?>		; non-recursive
 	//
 	// This operation is used in type extension/specification:
 	//
 	// class Bar<B> :- defines a free variable B
 	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
 	// new Foo<String> :- binds Foo.F to String
-	// new Foo<Bar<Foo<N>>> :- binds Foo.F with Bar<Foo<N>>
+	// new Foo<Bar<Foo<F>>> :- binds Foo.F with Bar<Foo<F>>
+
 	public TVarSet bind(TVarSet vs) {
-		int n = this.tvars.length;
+		TVar[] my_vars = this.tvars;
+		TVar[] vs_vars = vs.tvars;
+		final int my_size = my_vars.length;
+		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		for(int i=0; i < vs_size; i++) {
+			TVar v = vs_vars[i];
+			if (v.bnd == null) continue;
+			Type r = v.result();
+			for(int j=0; j < my_size; j++) {
+				TVar x = my_vars[j];
+				if (x.var == v.var) {
+					// bind
+					sr.set(j, v.var, r);
+					break;
+				}
+			}
+		}
 		return sr;
 	}
 
@@ -163,8 +153,9 @@ public final class TVarSet {
 	// (changes) vars bound to abstract types, i.e. it changes only 'TVar.bnd' field.
 	//
 	// having a re-bind pair A -> V, will re-bind
-	// A ? -> A V
-	// B A -> B V
+	// A:?      -> A:V			; bind
+	// B:A      -> B:V			; re-bind 
+	// C:X<A:?> -> C X<A:V>		; recursive
 	//
 	// This operation is used in access expressions:
 	//
@@ -173,25 +164,41 @@ public final class TVarSet {
 	// Foo<String> a;
 	// a.* :- binds Foo.F with String, and rebinds Bar.B (bound to Foo.F) with String
 	//        producing: a.f = String; a.fbf = Foo<Bar<String>>; a.b = String 
-	// Foo<Bar<Foo<N>>> x;
-	// a.* :- binds Foo.F with Bar<Foo<N>>, and rebinds Bar.B (bound to Foo.F) with Bar<Foo<N>>,
-	//        producing: a.f = Bar<Foo<N>>; a.fbf = Foo<Bar<Bar<Foo<N>>>>; a.b = Bar<Foo<N>>
+	// Foo<Bar<Foo<F>>> x;
+	// a.* :- binds Foo.F with Bar<Foo<F>>, and rebinds Bar.B (bound to Foo.F) with Bar<Foo<F>>,
+	//        producing: a.f = Bar<Foo<F>>; a.fbf = Foo<Bar<Bar<Foo<F>>>>; a.b = Bar<Foo<F>>
 	// a.fbf.* :- a.fbf.f = 
 	public TVarSet rebind(TVarSet vs) {
-		int n = this.tvars.length;
+		TVar[] my_vars = this.tvars;
+		TVar[] vs_vars = vs.tvars;
+		final int my_size = my_vars.length;
+		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
-	next:
-		for(int i=0; i < vs.length; i++) {
-			TVar v = vs[i];
-			if (v.bnd == null)
-				continue next;
-			for(int r=0; r < n; r++) {
-				TVar x = tvars[r];
-				if (x.var == v.var || x.bnd == v.var || x.bnd == v.bnd || x.bnd == v.bnd) {
-					if (x.isAlias())
-						r = x.kind;
-					sr.set(r, v.result());
-					continue next;
+		for(int i=0; i < vs_size; i++) {
+			TVar v = vs_vars[i];
+			if (v.bnd == null) continue;
+			Type r = v.result();
+			for(int j=0; j < my_size; j++) {
+				TVar x = my_vars[j];
+				if (x.var == v.var) {
+					// bind
+					sr.set(j, v.var, r);
+					continue;
+				}
+				if (x.bnd == null || x.isAlias())
+					continue;
+				if (x.bnd instanceof ArgumentType) {
+					if (x.bnd == v.var) {
+						// re-bind
+						sr.set(j, x.var, r);
+					}
+				} else {
+					if (x.bnd.isArgumented()) {
+						// recursive
+						Type t = x.bnd.rebind(vs);
+						if (t != x.bnd)
+							sr.set(j, x.var, t);
+					}
 				}
 			}
 		}
@@ -208,47 +215,61 @@ public final class TVarSet {
 		}
 		return arg;
 	}
+	
+	private void checkIntegrity() {
+		TVar[] tvars = this.tvars;
+		final int n = tvars.length;
+		for (int i=0; i < n; i++) {
+			TVar v = tvars[i];
+			for (int j=0; j < n; j++)
+				assert(i==j || tvars[j].var != v.var);
+			if (v.ref >= 0) {
+				assert(v.bnd instanceof ArgumentType);
+				assert(v.ref < n);
+				assert(tvars[v.ref].var == v.bnd);
+				assert(v.ref != i);
+				for (int j=v.ref; tvars[j].ref >= 0; j=tvars[j].ref)
+					assert(j != i);
+			}
+			else if (v.bnd instanceof ArgumentType) {
+				for (int j=0; j < n; j++)
+					assert(tvars[j].var != v.bnd);
+			}
+		}
+	}
 }
 
 
 public final class TVar {
 	public static final TVar[] emptyArray = new TVar[0];
 	
-	static final int TVAR_UNBOUND = -1;
-	static final int TVAR_BOUND   = -2;
+	public final int			ref;	// if ref >= 0 then it's alias reference 
+	public final TVarSet		set;	// the set this TVar belongs to
+	public final ArgumentType	var;	// variable
+	public final Type			bnd;	// bnd == null for unbound, bnd == set[ref].var, bnd = value (if ref < 0)
 	
-	public final int			kind;
-	public final TVarSet		set;
-	public final ArgumentType	var;
-	public final Type			bnd;
-	
-	TVar(int kind, TVarSet set, ArgumentType var, Type bnd)
+	TVar(int ref, TVarSet set, ArgumentType var, Type bnd)
 		require { set != null && var != null; }
 	{
-		this.kind = kind;
+		this.ref = ref;
 		this.set = set;
 		this.var = var;
 		this.bnd = bnd;
-		assert (
-			(kind == TVar.TVAR_UNBOUND && bnd == null) ||
-			(kind == TVar.TVAR_BOUND && bnd != null) ||
-			(kind >= 0 && set.tvars[kind].var == bnd)
-		);
 	}
 	
 	public boolean isBound() {
-		if (this.kind >= 0)
-			return set.tvars[this.kind].isBound();
-		return this.bnd != null;
+		if (ref >= 0)
+			return set.tvars[ref].isBound();
+		return bnd != null;
 	}
 	
 	public boolean isAlias() {
-		return this.kind >= 0;
+		return ref >= 0;
 	}
 	
 	public Type result() {
-		if (this.kind >= 0) // alias
-			return set.tvars[this.kind].result();
+		if (ref >= 0) // alias
+			return set.tvars[ref].result();
 		if (bnd == null) return var;
 		return bnd;
 	}
@@ -256,6 +277,7 @@ public final class TVar {
 
 public abstract class TypeProvider {
 	TypeProvider() {}
+	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
 	public abstract TVarSet bindings(Type tp);
 }
@@ -270,9 +292,14 @@ public class BaseTypeProvider extends TypeProvider {
 		java_meta_type = new JBaseTypeProvider(clazz);
 	}
 	
+	public Type bind(Type t, TVarSet bindings) {
+		if (!t.isArgumented() || bindings.length == 0) return t;
+		return Type.newRefType(this.clazz, t.bindings().bind(bindings));
+	}
+	
 	public Type rebind(Type t, TVarSet bindings) {
-		if( !t.isArgumented() || bindings.length == 0 ) return t;
-		return Type.newRefType(((BaseType)t).clazz, t.bindings().rebind(bindings));
+		if (!t.isArgumented() || bindings.length == 0) return t;
+		return Type.newRefType(this.clazz, t.bindings().rebind(bindings));
 	}
 	
 	public TVarSet bindings(Type owner) {
@@ -292,6 +319,9 @@ public class BaseTypeProvider extends TypeProvider {
 public class ArrayTypeProvider extends TypeProvider {
 	public static final ArrayTypeProvider instance = new ArrayTypeProvider();
 	private ArrayTypeProvider() {}
+	public Type bind(Type t, TVarSet bindings) {
+		throw new RuntimeException("bind() in ArrayType");
+	}
 	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.rebind(bindings));
@@ -305,8 +335,11 @@ public class ArrayTypeProvider extends TypeProvider {
 public class ArgumentTypeProvider extends TypeProvider {
 	public static final ArgumentTypeProvider instance = new ArgumentTypeProvider();
 	private ArgumentTypeProvider() {}
+	public Type bind(Type t, TVarSet bindings) {
+		throw new RuntimeException("bind() in ArgumentType");
+	}
 	public Type rebind(Type t, TVarSet bindings) {
-		if( bindings.length == 0 ) return t;
+		if (bindings.length == 0) return t;
 		ArgumentType at = (ArgumentType)t;
 		for(int i=0; i < bindings.length; i++) {
 			TVar v = bindings[i];
@@ -333,8 +366,11 @@ public class WrapperTypeProvider extends TypeProvider {
 		this.clazz = clazz;
 		this.field = clazz.getWrappedField(true);
 	}
+	public Type bind(Type t, TVarSet bindings) {
+		throw new RuntimeException("bind() in WrapperType");
+	}
 	public Type rebind(Type t, TVarSet bindings) {
-		if( !t.isArgumented() || bindings.length == 0 ) return t;
+		if (!t.isArgumented() || bindings.length == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
 	}
 	public TVarSet bindings(Type owner) {
@@ -346,6 +382,9 @@ public class WrapperTypeProvider extends TypeProvider {
 public class CallTypeProvider extends TypeProvider {
 	public static final CallTypeProvider instance = new CallTypeProvider();
 	private CallTypeProvider() {}
+	public Type bind(Type t, TVarSet bindings) {
+		throw new RuntimeException("bind() in CallableType");
+	}
 	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		CallableType ct = (CallableType)t;

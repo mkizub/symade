@@ -24,9 +24,10 @@ public interface StdTypes {
 	public static final int flArray				=   64;
 	public static final int flResolved			=  128;
 	public static final int flBoolean			=  256;
-	public static final int flArgumented		=  512;
-	public static final int flWrapper			= 1024;
-	public static final int flCallable			= 2048;
+	public static final int flWrapper			=  512;
+	public static final int flCallable			= 1024;
+	public static final int flArgumented		= 2048;
+	public static final int flUnbound			= 4096;
 
 	public static final BaseType tpEnv;
 	public static final BaseType tpAny;

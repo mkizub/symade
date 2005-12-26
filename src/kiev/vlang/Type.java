@@ -38,6 +38,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final Type rebind(TVarSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
+	public final Type bind(TVarSet bindings) {
+		return meta_type.bind(this,bindings);
+	}
 	public final Type resolve(ArgumentType arg) {
 		return this.bindings().resolve(arg);
 	}

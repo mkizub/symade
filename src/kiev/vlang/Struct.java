@@ -876,11 +876,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		if( t instanceof BaseType && ((BaseType)t).clazz.isRuntimeArgTyped() ) {
 			BaseType bt = (BaseType)t;
 			sb.append('<');
-			for(int i=0; i < bt.clazz.args.length; i++) {
-				Type ta = bt.resolve(bt.clazz.args[i].getAType());
+			boolean comma = false;
+			foreach (TVar tv; bt.clazz.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+				Type ta = bt.resolve(tv.var);
+				if (comma) sb.append(',');
 				sb.append(makeTypeInfoString(ta));
-				if( i < bt.clazz.args.length-1 )
-					sb.append(',');
+				comma = true;
 			}
 			sb.append('>');
 			return sb.toString();
@@ -1037,67 +1038,53 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 
+			// create constructor method
+			Constructor init = new Constructor(MethodType.newMethodType(Type.emptyArray,Type.tpVoid),ACC_PUBLIC);
+			init.body = new BlockStat(pos);
 			// add in it arguments fields, and prepare for constructor
-			MethodType ti_init;
-			Type[] ti_init_targs = new Type[this.args.length];
-			FormPar[] ti_init_params = new FormPar[]{};
-			ENode[] stats = new ENode[this.args.length];
-			for (int arg=0; arg < this.args.length; arg++) {
-				ArgumentType t = this.args[arg].getAType();
-				KString fname = new KStringBuffer(nameTypeInfo.length()+1+t.name.short_name.length())
-					.append(nameTypeInfo).append('$').append(t.name.short_name).toKString();
+			foreach (TVar tv; this.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+				ArgumentType t = tv.var;
+				KString fname = KString.from(nameTypeInfo+"$"+t.name.short_name);
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				ti_init_targs[arg] = Type.tpTypeInfo;
 				FormPar v = new FormPar(pos,t.name.short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
-				ti_init_params = (FormPar[])Arrays.append(ti_init_params,v);
-				stats[arg] = new ExprStat(pos,
+				init.params.append(v);
+				init.body.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
 						new IFldExpr(pos,new ThisExpr(pos),f),
 						new LVarExpr(pos,v)
 					)
-				);
+				));
 			}
-			BlockStat ti_init_body = new BlockStat(pos,stats);
 
 			// create typeinfo field
 			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
-
-			// create constructor method
-			ti_init = MethodType.newMethodType(ti_init_targs,Type.tpVoid);
-			Constructor init = new Constructor(ti_init,ACC_PUBLIC);
-			init.params.addAll(ti_init_params);
+			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
-			init.body = ti_init_body;
+			
 			// and add super-constructor call
 			if (typeinfo_clazz.super_type == Type.tpTypeInfo) {
 				//do nothing, default constructor may be added later
 			} else {
 				init.setNeedFieldInits(true);
-				ASTCallExpression call_super = new ASTCallExpression();
-				call_super.pos = pos;
-				call_super.func = new NameRef(pos, nameSuper);
-				ENode[] exprs = new ENode[super_type.clazz.args.length];
-				for (int arg=0; arg < super_type.clazz.args.length; arg++) {
-					Type t = super_type.resolve(super_type.clazz.args[arg].getAType());
-					t = Type.getRealType(this.type,t);
-					if (t.isArgumented()) {
-						exprs[arg] = new ASTIdentifier(pos,((ArgumentType)t).name.short_name);
+				ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
+				foreach (TVar tv; super_type.clazz.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+					Type t = tv.var.rebind(this.type.bindings());
+					ENode expr;
+					if (t instanceof ArgumentType) {
+						expr = new ASTIdentifier(pos,t.name.short_name);
 					} else {
-						CallExpr ce = new CallExpr(pos,null,
+						expr = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
 								KString.from("newTypeInfo"),
 								KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
 							),
 							new ENode[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
 						);
-						//ce.type_of_static = this.type;
-						exprs[arg] = ce;
 					}
+					call_super.args.append(expr);
 				}
-				foreach (ENode e; exprs)
-					call_super.args.add(e);
-				ti_init_body.stats.insert(new ExprStat(call_super),0);
+				init.body.stats.insert(new ExprStat(call_super),0);
 			}
 
 			// create method to get typeinfo field
