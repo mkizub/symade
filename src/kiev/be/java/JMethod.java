@@ -167,9 +167,9 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 		MetaThrows throwns = getMetaThrows();
         if( throwns != null ) {
 			ASTNode[] mthrs = throwns.getThrowns();
-        	Type[] thrs = new Type[mthrs.length];
+        	JStructView[] thrs = new JStructView[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = mthrs[i].getType();
+				thrs[i] = mthrs[i].getType().getStruct().getJStructView();
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);

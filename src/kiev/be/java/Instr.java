@@ -1,8 +1,5 @@
 package kiev.be.java;
 
-import kiev.Kiev;
-import kiev.vlang.Constants;
-
 /**
  * @author Maxim Kizub
  * @version $Revision$

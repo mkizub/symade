@@ -159,7 +159,7 @@ public class LocalVarTableAttr extends Attr {
 		for(int i=0; i < vars.length; i++) {
 			JVarView v = vars[i].var;
 			constPool.addAsciiCP(v.name);
-			constPool.addAsciiCP(v.type.getJType().java_signature);
+			constPool.addAsciiCP(v.jtype.java_signature);
 		}
 	}
 
@@ -170,7 +170,7 @@ public class LocalVarTableAttr extends Attr {
 		lvta.vars = new kiev.bytecode.LocalVariableTableAttribute.VarInfo[len];
 		for(int i=0; i < len; i++) {
 			JVarView v = vars[i].var;
-			KString sign = v.type.getJType().java_signature;
+			KString sign = v.jtype.java_signature;
 
 			lvta.vars[i] = new kiev.bytecode.LocalVariableTableAttribute.VarInfo();
 			lvta.vars[i].start_pc = vars[i].start_pc;
@@ -211,18 +211,18 @@ public class LinenoTableAttr extends Attr {
 public class ExceptionsAttr extends Attr {
 
 	/** Line number table (see Code class for format description) */
-	public Type[]		exceptions;
+	public JStructView[]		exceptions;
 
 	/** Constructor for bytecode reader and raw field creation */
 	public ExceptionsAttr() {
 		super(attrExceptions);
-		exceptions = new Type[0];
+		exceptions = new JStructView[0];
 	}
 
 	public void generate(ConstPool constPool) {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < exceptions.length; i++)
-			constPool.addClazzCP(exceptions[i].getJType().java_signature);
+			constPool.addClazzCP(exceptions[i].jtype.java_signature);
 	}
 
 	public kiev.bytecode.Attribute write(kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
@@ -231,7 +231,7 @@ public class ExceptionsAttr extends Attr {
 		ea.cp_exceptions = new kiev.bytecode.ClazzPoolConstant[exceptions.length];
 		for(int i=0; i < exceptions.length; i++)
 			ea.cp_exceptions[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[
-				constPool.getClazzCP(exceptions[i].getJType().java_signature).pos];
+				constPool.getClazzCP(exceptions[i].jtype.java_signature).pos];
 		return ea;
 	}
 }
@@ -256,10 +256,10 @@ public class InnerClassesAttr extends Attr {
 		constPool.addAsciiCP(name);
 		for(int i=0; i < inner.length; i++) {
 			if( inner[i] != null) {
-				constPool.addClazzCP(inner[i].type.getJType().java_signature);
+				constPool.addClazzCP(inner[i].jtype.java_signature);
 			}
 			if( outer[i] != null ) {
-				constPool.addClazzCP(outer[i].type.getJType().java_signature);
+				constPool.addClazzCP(outer[i].jtype.java_signature);
 			}
 		}
 	}
@@ -274,13 +274,13 @@ public class InnerClassesAttr extends Attr {
 		ica.cp_inner_flags = new int[len];
 		for(int i=0; i < len; i++) {
 			if( inner[i] != null ) {
-				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].type.getJType().java_signature).pos];
+				ica.cp_inners[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].jtype.java_signature).pos];
 			}
 			if( outer[i] != null ) {
-				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(outer[i].type.getJType().java_signature).pos];
+				ica.cp_outers[i] = (kiev.bytecode.ClazzPoolConstant)bcclazz.pool[constPool.getClazzCP(outer[i].jtype.java_signature).pos];
 			}
 			if( inner[i] != null ) {
-				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].type.getJType().java_signature).asc.pos];
+				ica.cp_inner_names[i] = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getClazzCP(inner[i].jtype.java_signature).asc.pos];
 			}
 			ica.cp_inner_flags[i] = acc[i];
 		}

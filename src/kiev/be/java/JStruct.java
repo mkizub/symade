@@ -28,10 +28,12 @@ public final view JStructView of StructImpl extends JTypeDefView {
 	public access:ro	Access				acc;
 	public access:ro	ClazzName			name;
 	public access:ro	BaseType			type;
+	public access:ro	JBaseType			jtype;
 	public access:ro	JStructView[]		sub_clazz;
 	public				Attr[]				attrs;
 	public access:ro	JDNodeView[]		members;
 
+	public final JBaseType		get$jtype()			{ return (JBaseType)this.type.getJType(); }
 	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
 	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
 	public final BaseType		get$super_type()	{ return getStruct().super_type; }

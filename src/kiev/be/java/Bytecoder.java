@@ -20,9 +20,6 @@ public class Bytecoder implements JConstants {
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
-//	public JStruct								jclazz;
-//	public kiev.bytecode.KievAttributeClazz	kaclazz;
-//	public boolean								kievmode;
 
 	public Bytecoder(Struct cl, kiev.bytecode.Clazz bcclazz, ConstPool constPool) {
 		this.cl = cl;
@@ -70,7 +67,7 @@ public class Bytecoder implements JConstants {
 		}
 
 		// Read interfaces
-		KString[] interfs = bcclazz.getInterfaceNames(); //kaclazz==null? bcclazz.getInterfaceNames() : kaclazz.getInterfaceNames();
+		KString[] interfs = bcclazz.getInterfaceNames();
 		for(int i=0; i < interfs.length; i++) {
 			trace(Kiev.debugBytecodeRead,"Class implements "+interfs[i]);
 			BaseType interf = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(interfs[i]));
@@ -110,7 +107,7 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Field bcf = bcclazz.fields[index];
 		int f_flags = bcf.flags;
 		KString f_name = bcf.getName(bcclazz);
-		KString f_type = bcf.getSignature(bcclazz); //kaclazz==null? bcf.getSignature(bcclazz) : kaclazz.fields[index].getSignature(kaclazz);
+		KString f_type = bcf.getSignature(bcclazz);
 		Attr[] attrs = Attr.emptyArray;
 		ENode f_init = null;
 		NodeName nm = null;
@@ -146,7 +143,7 @@ public class Bytecoder implements JConstants {
 		int m_flags = bcm.flags;
 		KString m_name = bcm.getName(bcclazz);
 		KString m_type_java = bcm.getSignature(bcclazz);
-		KString m_type = m_type_java; //kaclazz==null? m_type_java : kaclazz.methods[index].getSignature(kaclazz);
+		KString m_type = m_type_java;
 		Attr[] attrs = Attr.emptyArray;
 		NodeName nm = null;
 		Operator op = null;
@@ -296,9 +293,9 @@ public class Bytecoder implements JConstants {
 		}
 		else if( name.equals(attrExceptions) ) {
 			kiev.bytecode.ExceptionsAttribute ea = (kiev.bytecode.ExceptionsAttribute)bca;
-			Type[] exceptions = new Type[ea.cp_exceptions.length];
+			JStructView[] exceptions = new JStructView[ea.cp_exceptions.length];
 			for(int i=0; i < exceptions.length; i++) {
-				exceptions[i] = Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false)).type;
+				exceptions[i] = Env.newStruct(ClazzName.fromBytecodeName(ea.getException(i,clazz), false)).getJStructView();
 			}
 			a = new ExceptionsAttr();
 			((ExceptionsAttr)a).exceptions = exceptions;
@@ -349,12 +346,6 @@ public class Bytecoder implements JConstants {
 					} else {
 						inner[i] = null;
 					}
-//					if( inner[i] == null ) {
-//						cn = ClazzName.fromBytecodeName(((AsciiCP)pool[nm]).value);
-//						inner[i] = Env.getStruct(cn);
-//						if( inner[i] == null )
-//							throw new RuntimeException("Class "+cn+" not found");
-//					}
 					access[i] = (short)ica.cp_inner_flags[i];
 				} catch(Exception e ) {
 					Kiev.reportError(e);

@@ -22,6 +22,7 @@ public final view JVarView of VarImpl extends JLvalDNodeView {
 		
 	public access:ro	KString				name;
 	public access:ro	Type				vtype;
+	public access:ro	JType				jtype;
 	public access:ro	JENodeView			init;
 	public				int					bcpos;
 
@@ -29,6 +30,9 @@ public final view JVarView of VarImpl extends JLvalDNodeView {
 		if (this.$view.vtype == null)
 			return Type.tpVoid;
 		return this.$view.vtype.getType();
+	}
+	@getter public final JType get$jtype() {
+		return this.get$type().getJType();
 	}
 	
 	public final boolean isLocalRuleVar()		{ return this.$view.is_var_local_rule_var; }

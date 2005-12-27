@@ -2,7 +2,6 @@ package kiev.be.java;
 
 import kiev.*;
 
-import kiev.vlang.Constants;
 import kiev.vlang.Signature;
 
 import java.io.*;
@@ -45,32 +44,12 @@ public class ConstPool {
 	}
 
 	private CP getAnyCP(CP get_cp) {
-//		if( get_cp.pos != 0 && pool[get_cp.pos]!=null && pool[get_cp.pos].equals(get_cp) ) {
-//			pool[get_cp.pos].pos = get_cp.pos;
-//			return pool[get_cp.pos];
-//		} else {
-//			for(int i=1; i < hwm; i++)
-//				if( pool[i] != null && pool[i].equals(get_cp) ) {
-//					pool[i].pos = i;
-//					return pool[i];
-//				}
-//			return null;
-//		}
 		CP cp_hash = poolHash.get(get_cp);
 		if( cp_hash != null ) return cp_hash;
 		return get_cp;
 	}
 
 	private int addAnyCP(CP newcp) {
-//		int pos;
-//		CP cl_cp = getAnyCP(newcp);
-//		if( cl_cp == null || cl_cp.pos == 0 ) {
-//			cl_cp = poolHash.get(newcp);
-//			if( cl_cp == null ) {
-//				poolHash.put(newcp);
-//			}
-//			return putCPinPool(newcp);
-//		}
 		return newcp.pos;
 	}
 
@@ -81,8 +60,6 @@ public class ConstPool {
 		return cp;
 	}
 	public AsciiCP addAsciiCP(KString asc) {
-//		int pos = addAnyCP( AsciiCP.newAsciiCP(asc));
-//		return (AsciiCP)pool[pos];
 		return AsciiCP.newAsciiCP(this,asc);
 	}
 
@@ -140,11 +117,6 @@ public class ConstPool {
 	}
 
 	public void generate() {
-
-//		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
-//			CP cp = e.nextElement();
-//			cp.pos = -1;
-//		}
 
 		foreach(CP cp; poolHash; cp.pos < 1 && cp instanceof NumberCP ) {
 			if( hwm >= pool.length-2 ) pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
@@ -220,8 +192,6 @@ public class ConstPool {
 			else continue;
 		}
 
-//		AsciiCP k = addAsciiCP(Constants.attrKiev);
-
 		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
 			if( hwm >= pool.length )
 				pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
@@ -234,17 +204,6 @@ public class ConstPool {
 		}
 
 		java_hwm = hwm;
-
-//		boolean kievKiev = false;
-//		// Generate kiev-only part of constant pool
-//		for(Enumeration<CP> e=poolHash.elements(); e.hasMoreElements();) {
-//			if( hwm >= pool.length )
-//				pool = (CP[])Arrays.ensureSize(pool,pool.length*2);
-//			CP cp = e.nextElement();
-//			if( cp.pos > 0 ) continue;
-//			pool[hwm] = cp;
-//			cp.pos = hwm++;
-//		}
 
 		for(int i=0; i < len; i++) {
 			if( hwm >= pool.length-1 )

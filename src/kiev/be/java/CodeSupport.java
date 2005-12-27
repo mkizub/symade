@@ -1,9 +1,6 @@
 package kiev.be.java;
 
-import kiev.*;
-
-import kiev.vlang.Type;
-import kiev.vlang.Constants;
+import kiev.Kiev;
 
 import static kiev.stdlib.Debug.*;
 

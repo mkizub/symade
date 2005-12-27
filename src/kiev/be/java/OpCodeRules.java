@@ -1,15 +1,12 @@
 package kiev.be.java;
 
-import kiev.vlang.Type;
-import kiev.vlang.Constants;
-
 /**
  * @author Maxim Kizub
  * @version $Revision$
  *
  */
 
-public interface OpCodeRules extends Constants {
+public interface OpCodeRules extends JConstants {
 
     // opcode input types (stack)
     public static final JType[][] op_input_types = new JType[][] {
