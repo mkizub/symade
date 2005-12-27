@@ -3,10 +3,7 @@ package kiev.be.java;
 import kiev.*;
 
 import kiev.vlang.Type;
-import kiev.vlang.ArrayType;
 import kiev.vlang.MethodType;
-import kiev.vlang.ClosureType;
-import kiev.vlang.Constants;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
@@ -17,7 +14,7 @@ import static kiev.be.java.Instr.*;
  *
  */
 
-public final class Code implements Constants {
+public final class Code implements JConstants {
 	
 	/** Current class we are generating */
 	public JStructView		clazz;
@@ -47,7 +44,7 @@ public final class Code implements Constants {
 	private int				max_locals;
 
 	/** Stack of code - for code generation only */
-	public Type[]			stack;
+	public JType[]			stack;
 
 	/** Top of stack - for code generation only */
 	public int				top;
@@ -105,7 +102,7 @@ public final class Code implements Constants {
 		vars = new CodeVar[255];
 
 		// Initialize stack
-		stack = new Type[256];
+		stack = new JType[256];
 		top = 0;
 		max_stack = 0;
 		max_stack_top = 0;
@@ -146,6 +143,7 @@ public final class Code implements Constants {
 	
 	public void setLinePos(int lineno) {
 		if( !generation ) return;
+		if( lineno <= 0 || lineno > 0xFFFF) return;
 		last_lineno = lineno;
 		lineno = lineno & 0xFFFF;
 		if( line_top != -1 && ( linetable[line_top] & 0xFFFF ) == lineno )
@@ -163,9 +161,9 @@ public final class Code implements Constants {
 		Automatically calculates max_stack value
 		Automatically expand stack array if needed
 	 */
-	public void stack_push(Type type) {
-		if( stack.length <= (top + 2) ) stack = (Type[])Arrays.cloneToSize(stack,stack.length*2);
-		if( type==Type.tpLong || type==Type.tpDouble ) max_stack_top += 2;
+	public void stack_push(JType type) {
+		if( stack.length <= (top + 2) ) stack = (JType[])Arrays.cloneToSize(stack,stack.length*2);
+		if( type==JType.tpLong || type==JType.tpDouble ) max_stack_top += 2;
 		else max_stack_top++;
 		stack[top++] = type;
 		if( max_stack < max_stack_top ) max_stack = max_stack_top;
@@ -179,8 +177,8 @@ public final class Code implements Constants {
 	/** Pop value from stack.
 	 */
 	public void stack_pop() {
-		Type type = stack[--top];
-		if( type==Type.tpLong || type==Type.tpDouble ) max_stack_top -= 2;
+		JType type = stack[--top];
+		if( type==JType.tpLong || type==JType.tpDouble ) max_stack_top -= 2;
 		else max_stack_top--;
 		stack[top+1] = null;
 		if( top < 0 ) throw new RuntimeException("Top of stack is < 0 for pc="+pc);
@@ -191,7 +189,7 @@ public final class Code implements Constants {
 		}
 	}
 
-	public Type stack_at(int i) {
+	public JType stack_at(int i) {
 		try {
 			return stack[top-i-1];
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -199,7 +197,7 @@ public final class Code implements Constants {
 		}
 	}
 
-	public void set_stack_at(Type tp, int i) {
+	public void set_stack_at(JType tp, int i) {
 		try {
 			stack[top-i-1] = tp;
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -232,15 +230,15 @@ public final class Code implements Constants {
 	 */
 	private void add_opcode(int op) {
 		trace(Kiev.debugInstrGen,"\tadd opcode "+opcNames[op]);
-		Type[] types = OpCodeRules.op_input_types[op];	// get argument types
+		JType[] types = OpCodeRules.op_input_types[op];	// get argument types
 		for(int i=0,j=types.length-1; i < types.length; i++,j--) {
-			Type t1 = stack_at(j);
-			Type t2 = types[i];
+			JType t1 = stack_at(j);
+			JType t2 = types[i];
 			try {
 				if( !(	t1.isAutoCastableTo(t2)
 				     ||(t1.isIntegerInCode() && t2.isIntegerInCode())
 				     ||(t1.isArray() && t2.isArray())
-					 ||(t1.isReference() && t2 == Type.tpObject)
+					 ||(t1.isReference() && t2 == JType.tpObject)
 					 )
 				)
 					throw new RuntimeException("Type of value in stack pos "+j+" is "+stack_at(j)+" but type "+types[i]+" expected for opcode "+opcNames[op]);
@@ -251,9 +249,9 @@ public final class Code implements Constants {
 		for(int i=0; i < types.length; i++) stack_pop();
 		types = OpCodeRules.op_output_types[op];		// get return types
 		if( types.length > 0 ) {
-			Type t = types[0];
+			JType t = types[0];
 			try {
-				if( !(t.isReference() || t==Type.tpVoid) )
+				if( !(t.isReference() || t==JType.tpVoid) )
 					stack_push(t);
 			} catch(Exception e) {
 				throw new RuntimeException("Unresolved type at generation phase: "+e);
@@ -372,7 +370,7 @@ public final class Code implements Constants {
 	private void generatePushConst(Object value) {
 		if( value == null ) {
 			add_opcode(opc_aconst_null);
-			stack_push(Type.tpNull);
+			stack_push(JType.tpNull);
 		}
 		else if( value instanceof java.lang.Character ) {
 			add_opcode_and_short(opc_sipush,((java.lang.Character)value).charValue());
@@ -384,7 +382,7 @@ public final class Code implements Constants {
 			else {
 				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc2_w,c);
-				stack_push(Type.tpLong);
+				stack_push(JType.tpLong);
 			}
 		}
 		else if( value instanceof Float ) {
@@ -395,7 +393,7 @@ public final class Code implements Constants {
 			else {
 				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc,c);
-				stack_push(Type.tpFloat);
+				stack_push(JType.tpFloat);
 			}
 		}
 		else if( value instanceof Double ) {
@@ -405,13 +403,13 @@ public final class Code implements Constants {
 			else {
 				CP c = constPool.addNumberCP((Number)value);
 				add_opcode_and_CP(opc_ldc2_w,c);
-				stack_push(Type.tpDouble);
+				stack_push(JType.tpDouble);
 			}
 		}
 		else if( value instanceof KString ) {
 			CP c = constPool.addStringCP((KString)value);
 			add_opcode_and_CP(opc_ldc,c);
-			stack_push(Type.tpString);
+			stack_push(JType.tpString);
 		}
 		else if( value instanceof Number ) {
 			int val = ((Number)value).intValue();
@@ -433,7 +431,7 @@ public final class Code implements Constants {
 				else {
 					CP c = constPool.addNumberCP((Number)value);
 					add_opcode_and_CP(opc_ldc,c);
-					stack_push(Type.tpInt);
+					stack_push(JType.tpInt);
 				}
 			}
 		}
@@ -445,7 +443,7 @@ public final class Code implements Constants {
 		Check whether two-word or one-word value is popped
 	 */
 	private void generatePop() {
-		Type t = stack_at(0);
+		JType t = stack_at(0);
 		if( t.isDoubleSize() ) add_opcode(opc_pop2);
 		else add_opcode(opc_pop);
 		stack_pop();
@@ -457,7 +455,7 @@ public final class Code implements Constants {
 		only (long1)->(long1,long1) for two-word duplication
 	 */
 	private void generateDup() {
-		Type t = stack_at(0);
+		JType t = stack_at(0);
 		if( t.isDoubleSize() ) add_opcode(opc_dup2);
 		else add_opcode(opc_dup);
 		stack_push(t);
@@ -468,8 +466,8 @@ public final class Code implements Constants {
 		one var (like in generateDup).
 	 */
 	private void generateDupX() {
-		Type type1 = stack_at(0);
-		Type type2 = stack_at(1);
+		JType type1 = stack_at(0);
+		JType type2 = stack_at(1);
 		if( type1.isDoubleSize() ) {
 			if( type2.isDoubleSize() ) add_opcode(opc_dup2_x2);
 			else add_opcode(opc_dup2_x1);
@@ -489,9 +487,9 @@ public final class Code implements Constants {
 		(to dup over long/double var use generateDupX).
 	 */
 	private void generateDupX2() {
-		Type type1 = stack_at(0);
-		Type type2 = stack_at(1);
-		Type type3 = stack_at(2);
+		JType type1 = stack_at(0);
+		JType type2 = stack_at(1);
+		JType type3 = stack_at(2);
 		if( type2.isDoubleSize() || type3.isDoubleSize() )
 			throw new RuntimeException("Dup_X2 over long/double value");
 		if( type1.isDoubleSize() )
@@ -510,8 +508,8 @@ public final class Code implements Constants {
 	/** Duplicate 2 values both of 4 bytes length
 	 */
 	private void generateDup2() {
-		Type t1 = stack_at(0);
-		Type t2 = stack_at(1);
+		JType t1 = stack_at(0);
+		JType t2 = stack_at(1);
 		if( t1.isDoubleSize() || t2.isDoubleSize() )
 			throw new RuntimeException("Dup2 on long/double type");
 		add_opcode(opc_dup2);
@@ -522,8 +520,8 @@ public final class Code implements Constants {
 	/** Swap values on the top of stack (both must be 4 byte length)
 	 */
 	private void generateSwap() {
-		Type t1 = stack_at(0);
-		Type t2 = stack_at(1);
+		JType t1 = stack_at(0);
+		JType t2 = stack_at(1);
 		if( t1.isDoubleSize() || t2.isDoubleSize() )
 			throw new RuntimeException("Swap on long/double type");
 		add_opcode(opc_swap);
@@ -543,41 +541,41 @@ public final class Code implements Constants {
 			trace(Kiev.debugInstrGen,"\t\tgenerating static call to method: "+m);
 			call_static = true;
 		}
-		MethodType mtype = (MethodType)Type.getRealType(tp,m.dtype);
-		for(int i=0; mtype.args!=null && i < mtype.args.length; i++) {
+		JMethodType mtype = (JMethodType)Type.getRealType(tp,m.dtype).getJType();
+		for(int i=0; i < mtype.jargs.length; i++) {
 			try {
-				Type t1 = stack_at(mtype.args.length-i-1);
-				Type t2 = mtype.args[i];
-				if( t1.isArgument() || t2.isArgument() ) continue;
+				JType t1 = stack_at(mtype.jargs.length-i-1);
+				JType t2 = mtype.jargs[i];
+//				if( t1.isArgument() || t2.isArgument() ) continue;
+				if( t1 == JType.tpNull && t2.isReference() ) continue;
 //				if( !t1.isInstanceOf(t2) && !(t1.isIntegerInCode() && t2.isIntegerInCode()) )
 //					throw new RuntimeException("Type of call argument in stack pos "+(m.params.length-i-1)
-//						+" is "+stack_at(m.params.length-i-1)+" but method "+m+" expects "+m.params[i].type);
+//						+" is "+stack_at(m.params.length-i-1)+" but method "+m+" expects "+m.params[i].type.getJType());
 			} catch(Exception e) {
 				throw new RuntimeException("Unresolved type at generation phase: "+e);
 			}
 		}
 		KString sign;
-		Type ttt = Type.getRealType(tp,((JStructView)m.jparent).type);
+		JType ttt = Type.getRealType(tp,((JStructView)m.jparent).type).getJType();
 		sign = m.jtype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
-			cpm = constPool.addInterfaceMethodCP(ttt.getJType().java_signature,m.name,sign);
+			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,m.name,sign);
 		else
-			cpm = constPool.addMethodCP(ttt.getJType().java_signature,m.name,sign);
+			cpm = constPool.addMethodCP(ttt.java_signature,m.name,sign);
 		if( call_static ) {
 			add_opcode_and_CP(opc_invokestatic,cpm);
 		}
 		else if( ((JStructView)m.jparent).isInterface() ) {
 			add_opcode_and_CP(opc_invokeinterface,cpm);
 			int argslen = 1;
-			foreach(Type t; mtype.args) {
+			foreach(JType t; mtype.jargs) {
 				if( t.isDoubleSize() ) argslen+=2;
 				else argslen++;
 			}
 			add_code_byte(argslen);
 			add_code_byte(0);
-			trace(Kiev.debugInstrGen,"call has "
-				+(mtype.args==null?0:mtype.args.length)+" params");
+			trace(Kiev.debugInstrGen,"call has "+mtype.jargs.length+" params");
 		}
 		else if(
 			m.name.equals(Constants.nameInit)
@@ -589,22 +587,22 @@ public final class Code implements Constants {
 		else {
 			add_opcode_and_CP(opc_invokevirtual,cpm);
 		}
-		for(int i=0; mtype.args!=null && i < mtype.args.length; i++) stack_pop();
+		for(int i=0; i < mtype.jargs.length; i++) stack_pop();
 		if( !call_static) stack_pop();
-		if( mtype.ret != Type.tpVoid )
-			stack_push(mtype.ret);
+		if( mtype.jret != JType.tpVoid )
+			stack_push(mtype.jret);
 	}
 
 	public void generateReturn() {
 		try {
-			Type t = this.method.type.ret;
-			if( t == Type.tpVoid )			add_opcode(opc_return);
-			else if( t.isIntegerInCode() )	add_opcode(opc_ireturn);
-			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
-			else if( t == Type.tpFloat )	add_opcode(opc_freturn);
-			else if( t == Type.tpDouble )	add_opcode(opc_dreturn);
-			else if( t == Type.tpLong )		add_opcode(opc_lreturn);
-			else if( t.isReference() )		add_opcode(opc_areturn);
+			JType t = ((JMethodType)this.method.jtype.getJType()).jret;
+			if( t == JType.tpVoid )				add_opcode(opc_return);
+			else if( t.isIntegerInCode() )		add_opcode(opc_ireturn);
+			else if( t == JType.tpLong )		add_opcode(opc_lreturn);
+			else if( t == JType.tpFloat )		add_opcode(opc_freturn);
+			else if( t == JType.tpDouble )		add_opcode(opc_dreturn);
+			else if( t == JType.tpLong )		add_opcode(opc_lreturn);
+			else if( t.isReference() )			add_opcode(opc_areturn);
 			else
 				throw new RuntimeException("Unknown return type "+this.method.type.ret+" of method");
 		} catch(Exception e) {
@@ -615,7 +613,7 @@ public final class Code implements Constants {
 
 	/** Get (load, push in stack) length of array. */
 	public void generateLengthOfArray() {
-		Type tp1 = stack_at(0);
+		JType tp1 = stack_at(0);
 
 		if( !tp1.isArray() )
 			throw new RuntimeException("Length of non-array object "+tp1);
@@ -625,25 +623,26 @@ public final class Code implements Constants {
 
 	/** Get (load, push in stack) element of array. */
 	public void generateLoadElement() {
-		Type tp1 = stack_at(1);
-		Type tp2 = stack_at(0);
+		JType tp1 = stack_at(1);
+		JType tp2 = stack_at(0);
 
 		if( !tp1.isArray() )
 			throw new RuntimeException("Index of non-array object "+tp1);
 		if( !tp2.isIntegerInCode() )
 			throw new RuntimeException("Index of array element must be of integer type, but found "+tp2);
 
-		Type t = ((ArrayType)tp1).arg;
-		if( t == Type.tpVoid )
+		JType t = ((JArrayType)tp1).jarg;
+		if( t == JType.tpVoid )
 			throw new RuntimeException("Array of elements of 'void' type is not allowed");
-		else if( t == Type.tpByte || t == Type.tpBoolean ) add_opcode(opc_baload);
-		else if( t == Type.tpChar )	add_opcode(opc_caload);
-		else if( t == Type.tpShort )	add_opcode(opc_saload);
-		else if( t == Type.tpInt )	add_opcode(opc_iaload);
-		else if( t == Type.tpLong )	add_opcode(opc_laload);
-		else if( t == Type.tpFloat )	add_opcode(opc_faload);
-		else if( t == Type.tpDouble)	add_opcode(opc_daload);
-		else if( t.isInstanceOf(Type.tpObject) )	{
+		else if( t == JType.tpBoolean )		add_opcode(opc_baload);
+		else if( t == JType.tpByte )		add_opcode(opc_baload);
+		else if( t == JType.tpChar )		add_opcode(opc_caload);
+		else if( t == JType.tpShort )		add_opcode(opc_saload);
+		else if( t == JType.tpInt )			add_opcode(opc_iaload);
+		else if( t == JType.tpLong )		add_opcode(opc_laload);
+		else if( t == JType.tpFloat )		add_opcode(opc_faload);
+		else if( t == JType.tpDouble)		add_opcode(opc_daload);
+		else if( t.isInstanceOf(JType.tpObject) )	{
 			add_opcode(opc_aaload);
 			stack_push(t);
 		}
@@ -653,26 +652,27 @@ public final class Code implements Constants {
 
 	/** Get (load, push in stack) element of array. */
 	public void generateStoreElement() {
-		Type tp1 = stack_at(2);
-		Type tp2 = stack_at(1);
-		Type tp3 = stack_at(0);
+		JType tp1 = stack_at(2);
+		JType tp2 = stack_at(1);
+		JType tp3 = stack_at(0);
 
 		if( !tp1.isArray() )
 			throw new RuntimeException("Index of non-array object "+tp1);
-		Type t = ((ArrayType)tp1).arg;
+		JType t = ((JArrayType)tp1).jarg;
 		if( !tp2.isIntegerInCode() )
 			throw new RuntimeException("Index of array element must be of integer type, but found "+tp2);
 
-		if( t == Type.tpVoid )
+		if( t == JType.tpVoid )
 			throw new RuntimeException("Array of elements of 'void' type is not allowed");
-		else if( t == Type.tpByte || t == Type.tpBoolean ) add_opcode(opc_bastore);
-		else if( t == Type.tpChar )	add_opcode(opc_castore);
-		else if( t == Type.tpShort )	add_opcode(opc_sastore);
-		else if( t == Type.tpInt )	add_opcode(opc_iastore);
-		else if( t == Type.tpLong )	add_opcode(opc_lastore);
-		else if( t == Type.tpFloat )	add_opcode(opc_fastore);
-		else if( t == Type.tpDouble)	add_opcode(opc_dastore);
-		else if( t.isInstanceOf(Type.tpObject) ) {
+		else if( t == JType.tpBoolean )		add_opcode(opc_bastore);
+		else if( t == JType.tpByte )		add_opcode(opc_bastore);
+		else if( t == JType.tpChar )		add_opcode(opc_castore);
+		else if( t == JType.tpShort )		add_opcode(opc_sastore);
+		else if( t == JType.tpInt )			add_opcode(opc_iastore);
+		else if( t == JType.tpLong )		add_opcode(opc_lastore);
+		else if( t == JType.tpFloat )		add_opcode(opc_fastore);
+		else if( t == JType.tpDouble)		add_opcode(opc_dastore);
+		else if( t.isInstanceOf(JType.tpObject) ) {
 			stack_pop();
 			stack_pop();
 			stack_pop();
@@ -696,16 +696,16 @@ public final class Code implements Constants {
 	private void generateLoadVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
-		Type t = v.var.type;
-		if( t == Type.tpVoid )
+		JType t = v.var.type.getJType();
+		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't load variable of type "+t);
-		else if( t == Type.tpLong )	opcodes = lload_ops;
-		else if( t == Type.tpFloat )	opcodes = fload_ops;
-		else if( t == Type.tpDouble)	opcodes = dload_ops;
+		else if( t == JType.tpLong )	opcodes = lload_ops;
+		else if( t == JType.tpFloat )	opcodes = fload_ops;
+		else if( t == JType.tpDouble)	opcodes = dload_ops;
 		else if( t.isIntegerInCode() ) opcodes = iload_ops;
-		else if( t.isReference() ) opcodes = aload_ops;
+		else if( t.isReference() )		opcodes = aload_ops;
 		else
-			throw new RuntimeException("Can't load variable of unknown type with signature "+t.signature);
+			throw new RuntimeException("Can't load variable of unknown type with signature "+t.java_signature);
 		if( v.stack_pos >= 0 && v.stack_pos <= 3 )
 			add_opcode(opcodes[v.stack_pos]);
 		else if( v.stack_pos >=0 && v.stack_pos < 256 )
@@ -730,14 +730,14 @@ public final class Code implements Constants {
 	private void generateStoreVar(int vv) {
 		CodeVar v = vars[vv];
 		int[] opcodes;
-		Type t = v.var.type;
-		if( t == Type.tpVoid )
+		JType t = v.var.type.getJType();
+		if( t == JType.tpVoid )
 			throw new RuntimeException("Can't store variable of type "+t);
-		else if( t == Type.tpLong )	opcodes = lstore_ops;
-		else if( t == Type.tpFloat )	opcodes = fstore_ops;
-		else if( t == Type.tpDouble)	opcodes = dstore_ops;
+		else if( t == JType.tpLong )	opcodes = lstore_ops;
+		else if( t == JType.tpFloat )	opcodes = fstore_ops;
+		else if( t == JType.tpDouble)	opcodes = dstore_ops;
 		else if( t.isIntegerInCode() ) opcodes = istore_ops;
-		else if( t.isReference() ) opcodes = astore_ops;
+		else if( t.isReference() )		opcodes = astore_ops;
 		else
 			throw new RuntimeException("Can't store variable of unknown type with type "+t);
 		if( v.stack_pos >= 0 && v.stack_pos <= 3 )
@@ -768,12 +768,12 @@ public final class Code implements Constants {
 		on operand's (in stack) type from input array
 	 */
 	private void generateUnaryOp(int[] ops) {
-		Type pt1 = stack_at(0);
+		JType pt1 = stack_at(0);
 		int op;
 
-		if( pt1 == Type.tpLong )			op = ops[1];
-		else if( pt1 == Type.tpFloat )		op = ops[2];
-		else if( pt1 == Type.tpDouble )		op = ops[3];
+		if( pt1 == JType.tpLong )			op = ops[1];
+		else if( pt1 == JType.tpFloat )		op = ops[2];
+		else if( pt1 == JType.tpDouble )	op = ops[3];
 		else if( pt1.isIntegerInCode() )	op = ops[0];
 		else
             throw new RuntimeException("Bad unary operation on type with type "+pt1);
@@ -784,17 +784,17 @@ public final class Code implements Constants {
 		on operand's (in stack) types from input array
 	 */
 	private void generateBinaryOp(int[] ops) {
-		Type pt1 = stack_at(0);
-		Type pt2 = stack_at(1);
+		JType pt1 = stack_at(0);
+		JType pt2 = stack_at(1);
 		int op;
 
-		if( pt1 == Type.tpLong && pt2 == Type.tpLong )			op = ops[1];
-		else if( pt1 == Type.tpFloat && pt2 == Type.tpFloat)	op = ops[2];
-		else if( pt1 == Type.tpDouble && pt2 == Type.tpDouble)	op = ops[3];
+		if( pt1 == JType.tpLong && pt2 == JType.tpLong )			op = ops[1];
+		else if( pt1 == JType.tpFloat && pt2 == JType.tpFloat)	op = ops[2];
+		else if( pt1 == JType.tpDouble && pt2 == JType.tpDouble)	op = ops[3];
 		else if( pt1.isIntegerInCode() && pt2.isIntegerInCode() )
 			op = ops[0];
 		else
-            throw new RuntimeException("Bad binary operation on types with signatures "+pt1+" and "+pt2);
+            throw new RuntimeException("Bad binary operation on types with types "+pt1+" and "+pt2);
 		add_opcode(op);
 	}
 
@@ -802,15 +802,15 @@ public final class Code implements Constants {
 		on operand's (in stack) types from input array
 	 */
 	private void generateShiftOp(int[] ops) {
-		Type pt1 = stack_at(1);
-		Type pt2 = stack_at(0);
+		JType pt1 = stack_at(1);
+		JType pt2 = stack_at(0);
 		int op;
 
 		if( !pt2.isIntegerInCode() )
             throw new RuntimeException("Shift operation with non-integer shift argument of type: "+pt2);
-		else if( pt1 == Type.tpLong )	op = ops[1];
-		else if( pt1 == Type.tpFloat )	op = ops[2];
-		else if( pt1 == Type.tpDouble )	op = ops[3];
+		else if( pt1 == JType.tpLong )	op = ops[1];
+		else if( pt1 == JType.tpFloat )	op = ops[2];
+		else if( pt1 == JType.tpDouble )	op = ops[3];
 		else if( pt1.isIntegerInCode() )	op = ops[0];
 		else
             throw new RuntimeException("Bad shift operation on types with types "+pt1+" and "+pt2);
@@ -819,29 +819,28 @@ public final class Code implements Constants {
 
 	/** Binary operation instanceof.
 	 */
-	private void generateInstanceofOp(Type type) {
-		Type pt1 = stack_at(0);
-		Type pt2 = type;
+	private void generateInstanceofOp(JType type) {
+		JType pt1 = stack_at(0);
+		JType pt2 = type;
 
 		if( !pt1.isReference() )
             throw new RuntimeException("Instanceof operation on primitive type: "+pt1);
 		if( !pt2.isReference() )
             throw new RuntimeException("Type of instanceof operation is primtive type: "+pt2);
-		CP cpi = constPool.addClazzCP(type.getJType().java_signature);
+		CP cpi = constPool.addClazzCP(type.java_signature);
 		add_opcode_and_CP(opc_instanceof,cpi);
 	}
 
 	/** Boolean operations.
 	 */
 	private void generateCompareOp(Instr instr, CodeLabel l) {
-		Type pt1 = stack_at(1);
-		Type pt2 = stack_at(0);
+		JType pt1 = stack_at(1);
+		JType pt2 = stack_at(0);
 		int op;
 
 		if( pt1.isIntegerInCode() ) {
 			if( !pt2.isIntegerInCode() )
-	            throw new RuntimeException("Bad boolean operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+	            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
 			switch(instr) {
 			case Instr.op_ifcmpeq:	add_opcode_and_label(opc_if_icmpeq,l); break;
 			case Instr.op_ifcmpne:	add_opcode_and_label(opc_if_icmpne,l); break;
@@ -850,47 +849,40 @@ public final class Code implements Constants {
 			case Instr.op_ifcmpge:	add_opcode_and_label(opc_if_icmpge,l); break;
 			case Instr.op_ifcmpgt:	add_opcode_and_label(opc_if_icmpgt,l); break;
 			default:
-	            throw new RuntimeException("Bad boolean compare operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+	            throw new RuntimeException("Bad boolean compare operation "+instr+" on types "+pt1+" and "+pt2);
 			}
 //			l.addInstr();
 			return;
 		}
 		else if( pt1.isReference() ) {
 			if( !pt2.isReference() )
-	            throw new RuntimeException("Bad boolean operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+	            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
 			switch(instr) {
 			case Instr.op_ifcmpeq:	add_opcode_and_label(opc_if_acmpeq,l); break;
 			case Instr.op_ifcmpne:	add_opcode_and_label(opc_if_acmpne,l); break;
 			default:
-	            throw new RuntimeException("Bad boolean compare operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+	            throw new RuntimeException("Bad boolean compare operation "+instr+" on types "+pt1+" and "+pt2);
 			}
 //			l.addInstr();
 			return;
 		}
-		else if( pt1 == Type.tpVoid )
-            throw new RuntimeException("Bad boolean operation "
-            	+instr+" on types with signatures "+pt1+" and "+pt2);
-		else if( pt1 == Type.tpLong ) {
-			if( pt2 != Type.tpLong )
-	            throw new RuntimeException("Bad boolean operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+		else if( pt1 == JType.tpVoid )
+            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
+		else if( pt1 == JType.tpLong ) {
+			if( pt2 != JType.tpLong )
+	            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
 			op = opc_lcmp;
 		}
 		// TODO opc_fcmpg & opc_fcmpl
-		else if( pt1 == Type.tpFloat ) {
-			if( pt2 != Type.tpFloat )
-	            throw new RuntimeException("Bad boolean operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+		else if( pt1 == JType.tpFloat ) {
+			if( pt2 != JType.tpFloat )
+	            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
 			op = opc_fcmpg;
 		}
 		// TODO opc_dcmpg & opc_dcmpl
-		else if( pt1 == Type.tpDouble ) {
-			if( pt2 != Type.tpDouble )
-	            throw new RuntimeException("Bad boolean operation "
-	            	+instr+" on types with signatures "+pt1+" and "+pt2);
+		else if( pt1 == JType.tpDouble ) {
+			if( pt2 != JType.tpDouble )
+	            throw new RuntimeException("Bad boolean operation "+instr+" on types "+pt1+" and "+pt2);
 			op = opc_dcmpg;
 		}
 		else
@@ -904,40 +896,39 @@ public final class Code implements Constants {
 		case Instr.op_ifcmpge: add_opcode_and_label(opc_ifge,l); break;
 		case Instr.op_ifcmpgt: add_opcode_and_label(opc_ifgt,l); break;
 		default:
-            throw new RuntimeException("Bad boolean compare operation "
-            	+instr+" on types with signatures "+pt1+" and "+pt2);
+            throw new RuntimeException("Bad boolean compare operation "+instr+" on types "+pt1+" and "+pt2);
 		}
 //		l.addInstr();
 	}
 
 	/** New one-dimension array */
-	public void generateNewArray(Type type) {
-		Type dim = stack_at(0);
+	public void generateNewArray(JType type) {
+		JType dim = stack_at(0);
 		if( !dim.isIntegerInCode() )
 			throw new RuntimeException("Array dimention must be of integer type, but "+dim+" found");
-		if( type == Type.tpBoolean )		add_opcode_and_byte(opc_newarray,4);
-		else if( type == Type.tpByte )		add_opcode_and_byte(opc_newarray,8);
-		else if( type == Type.tpChar )		add_opcode_and_byte(opc_newarray,5);
-		else if( type == Type.tpShort )		add_opcode_and_byte(opc_newarray,9);
-		else if( type == Type.tpInt )		add_opcode_and_byte(opc_newarray,10);
-		else if( type == Type.tpLong )		add_opcode_and_byte(opc_newarray,11);
-		else if( type == Type.tpFloat )		add_opcode_and_byte(opc_newarray,6);
-		else if( type == Type.tpDouble )	add_opcode_and_byte(opc_newarray,7);
+		if( type == JType.tpBoolean )		add_opcode_and_byte(opc_newarray,4);
+		else if( type == JType.tpByte )		add_opcode_and_byte(opc_newarray,8);
+		else if( type == JType.tpChar )		add_opcode_and_byte(opc_newarray,5);
+		else if( type == JType.tpShort )	add_opcode_and_byte(opc_newarray,9);
+		else if( type == JType.tpInt )		add_opcode_and_byte(opc_newarray,10);
+		else if( type == JType.tpLong )		add_opcode_and_byte(opc_newarray,11);
+		else if( type == JType.tpFloat )	add_opcode_and_byte(opc_newarray,6);
+		else if( type == JType.tpDouble )	add_opcode_and_byte(opc_newarray,7);
 		else if( type.isReference() ) {
-			ClazzCP cpc = constPool.addClazzCP(type.getJType().java_signature);
+			ClazzCP cpc = constPool.addClazzCP(type.java_signature);
 			add_opcode_and_CP(opc_anewarray,cpc);
 		}
-		stack_push(Type.newArrayType(type));
+		stack_push(new JArrayType(type));
 	}
 
 
 	/** New multi-dimension array */
-	public void generateNewMultiArray(int dim, Type arrtype) {
+	public void generateNewMultiArray(int dim, JType arrtype) {
 		for(int i=0; i < dim; i++ )
 			if( !stack_at(i).isIntegerInCode() )
 				throw new RuntimeException("Array dimention must be of integer type, but "
 					+stack_at(i)+" found at "+(dim-i)+" dimension of multidimension array");
-		ClazzCP cpc = constPool.addClazzCP(arrtype.getJType().java_signature);
+		ClazzCP cpc = constPool.addClazzCP(arrtype.java_signature);
 		add_opcode_and_CP(opc_multianewarray,cpc);
 		add_code_byte(dim);
 		for(int i=0; i < dim; i++ ) stack_pop();
@@ -945,57 +936,57 @@ public final class Code implements Constants {
 	}
 
 	/** Casts (converts) primitive bytecode types */
-	public void generatePrimitiveCast(Type to) {
-		Type from = stack_at(0);
+	public void generatePrimitiveCast(JType to) {
+		JType from = stack_at(0);
 		if( to.equals(from) ) return;
-		if( to == Type.tpBoolean || to == Type.tpByte ) {
-			if( from == Type.tpLong )
+		if( to == JType.tpBoolean || to == JType.tpByte ) {
+			if( from == JType.tpLong )
 				{ add_opcode(opc_l2i); add_opcode(opc_i2b); }
-			else if( from == Type.tpFloat )
+			else if( from == JType.tpFloat )
 				{ add_opcode(opc_f2i); add_opcode(opc_i2b); }
-			else if( from == Type.tpDouble )
+			else if( from == JType.tpDouble )
 				{ add_opcode(opc_d2i); add_opcode(opc_i2b); }
 			else if( from.isIntegerInCode() )
 				add_opcode(opc_i2b);
 		}
-		if( to == Type.tpChar ) {
-			if( from == Type.tpLong )
+		if( to == JType.tpChar ) {
+			if( from == JType.tpLong )
 				{ add_opcode(opc_l2i); add_opcode(opc_i2c); }
-			else if( from == Type.tpFloat )
+			else if( from == JType.tpFloat )
 				{ add_opcode(opc_f2i); add_opcode(opc_i2c); }
-			else if( from == Type.tpDouble )
+			else if( from == JType.tpDouble )
 				{ add_opcode(opc_d2i); add_opcode(opc_i2c); }
 			else if( from.isIntegerInCode() )
 				add_opcode(opc_i2c);
 		}
-		if( to == Type.tpShort ) {
-			if( from == Type.tpLong )
+		if( to == JType.tpShort ) {
+			if( from == JType.tpLong )
 				{ add_opcode(opc_l2i); add_opcode(opc_i2s); }
-			else if( from == Type.tpFloat )
+			else if( from == JType.tpFloat )
 				{ add_opcode(opc_f2i); add_opcode(opc_i2s); }
-			else if( from == Type.tpDouble )
+			else if( from == JType.tpDouble )
 				{ add_opcode(opc_d2i); add_opcode(opc_i2s); }
 			else if( from.isIntegerInCode() )
 				add_opcode(opc_i2s);
 		}
-		if( to == Type.tpInt ) {
-			if( from == Type.tpLong )		add_opcode(opc_l2i);
-			else if( from == Type.tpFloat )	add_opcode(opc_f2i);
-			else if( from == Type.tpDouble )	add_opcode(opc_d2i);
+		if( to == JType.tpInt ) {
+			if( from == JType.tpLong )		add_opcode(opc_l2i);
+			else if( from == JType.tpFloat )	add_opcode(opc_f2i);
+			else if( from == JType.tpDouble )	add_opcode(opc_d2i);
 		}
-		if( to == Type.tpLong ) {
-			if( from == Type.tpFloat )		add_opcode(opc_f2l);
-			else if( from == Type.tpDouble )	add_opcode(opc_d2l);
+		if( to == JType.tpLong ) {
+			if( from == JType.tpFloat )		add_opcode(opc_f2l);
+			else if( from == JType.tpDouble )	add_opcode(opc_d2l);
 			else if( from.isIntegerInCode() )	add_opcode(opc_i2l);
 		}
-		if( to == Type.tpFloat ) {
-			if( from == Type.tpLong )		add_opcode(opc_l2f);
-			else if( from == Type.tpDouble )	add_opcode(opc_d2f);
+		if( to == JType.tpFloat ) {
+			if( from == JType.tpLong )		add_opcode(opc_l2f);
+			else if( from == JType.tpDouble )	add_opcode(opc_d2f);
 			else if( from.isIntegerInCode() )	add_opcode(opc_i2f);
 		}
-		if( to == Type.tpDouble ) {
-			if( from == Type.tpLong )		add_opcode(opc_l2d);
-			else if( from == Type.tpFloat )	add_opcode(opc_f2d);
+		if( to == JType.tpDouble ) {
+			if( from == JType.tpLong )		add_opcode(opc_l2d);
+			else if( from == JType.tpFloat )	add_opcode(opc_f2d);
 			else if( from.isIntegerInCode() )	add_opcode(opc_i2d);
 		}
 	}
@@ -1010,8 +1001,8 @@ public final class Code implements Constants {
 		vars[pos] = new CodeVar(v);
 		vars[pos].start_pc = pc;
 		cur_locals++;
-		Type t = v.type;
-		if( t==Type.tpLong || t==Type.tpDouble ) cur_locals++;
+		JType t = v.type.getJType();
+		if( t==JType.tpLong || t==JType.tpDouble ) cur_locals++;
 		if( cur_locals > max_locals ) max_locals = cur_locals;
 		if( !v.name.equals(KString.Empty) ) {
 			lvta.addVar(vars[pos]);
@@ -1024,11 +1015,11 @@ public final class Code implements Constants {
 	 */
 	public void removeVar(JVarView v) {
 		trace(Kiev.debugInstrGen,"Code remove var "+v+" from bc pos "+v.bcpos+" "+vars[v.bcpos]);
-		Type t = v.type;
+		JType t = v.type.getJType();
 		if( !v.name.equals(KString.Empty) ) {
 			lvta.vars[vars[v.bcpos].index].end_pc = pc-1;
 		}
-		if( t==Type.tpLong || t==Type.tpDouble ) {
+		if( t==JType.tpLong || t==JType.tpDouble ) {
 			if( v.bcpos != cur_locals-2 )
 				throw new RuntimeException("Removing var "+v+" at pos "+v.bcpos+" but last inserted var was "
 					+(vars[cur_locals-1]!=null?vars[cur_locals-1].var:vars[cur_locals-2].var)+" at pos "
@@ -1065,7 +1056,7 @@ public final class Code implements Constants {
 	}
 
 	/** Create new catcher and return it */
-	public CodeCatchInfo newCatcher(CodeLabel handler, Type type) {
+	public CodeCatchInfo newCatcher(CodeLabel handler, JType type) {
 		CodeCatchInfo catcher = new CodeCatchInfo(handler,type);
 		catchers = (CodeCatchInfo[])Arrays.insert(catchers,catcher,0);
 		return catcher;
@@ -1265,14 +1256,14 @@ public final class Code implements Constants {
 			Kiev.reportCodeWarning(this,"\""+i+"\" ingnored as unreachable");
 			return;
 		}
-		Type ttt = Type.getRealType(tp.getInitialType(),f.jctx_clazz.type);
-		KString struct_sig = ttt.getJType().java_signature;
+		JType ttt = Type.getRealType(tp.getInitialType(),f.jctx_clazz.type).getJType();
+		KString struct_sig = ttt.java_signature;
 		KString field_sig = Type.getRealType(f.jctx_clazz.type,f.type).getJType().java_signature;
 		FieldCP cpf = constPool.addFieldCP(struct_sig,f.name,field_sig);
 	    switch(i) {
         case op_getstatic:
 			add_opcode_and_CP(opc_getstatic,cpf);
-			stack_push(Type.getRealType(tp,f.type));
+			stack_push(Type.getRealType(tp,f.type).getJType());
 			break;
         case op_putstatic:
 			add_opcode_and_CP(opc_putstatic,cpf);
@@ -1281,7 +1272,7 @@ public final class Code implements Constants {
         case op_getfield:
 			add_opcode_and_CP(opc_getfield,cpf);
 			stack_pop();
-			stack_push(Type.getRealType(tp,f.type));
+			stack_push(Type.getRealType(tp,f.type).getJType());
 			break;
         case op_putfield:
 			add_opcode_and_CP(opc_putfield,cpf);
@@ -1304,16 +1295,16 @@ public final class Code implements Constants {
 		}
 	    switch(i) {
 		case op_x2y:
-			generatePrimitiveCast(type);
+			generatePrimitiveCast(type.getJType());
 			break;
 		case op_new:
 			if( !type.isReference() )
 				throw new RuntimeException("New on non-reference type "+type);
 			add_opcode_and_CP(opc_new,constPool.getClazzCP(type.getJType().java_signature));
-			stack_push(type);
+			stack_push(type.getJType());
 			break;
 		case op_newarray:
-			generateNewArray(type);
+			generateNewArray(type.getJType());
 			break;
 		case op_checkcast:
 			if( !type.isReference() )
@@ -1321,10 +1312,10 @@ public final class Code implements Constants {
 			if( !type.isReference() )
 				break;
 			add_opcode_and_CP(opc_checkcast,constPool.addClazzCP(type.getJType().java_signature));
-			stack_push(type);
+			stack_push(type.getJType());
 			break;
 		case op_instanceof:
-			generateInstanceofOp(type);
+			generateInstanceofOp(type.getJType());
 			break;
 		default:
 			throw new RuntimeException("Bad type-use instruction");
@@ -1341,7 +1332,7 @@ public final class Code implements Constants {
 		}
 		switch(i) {
 		case op_multianewarray:
-			generateNewMultiArray(dim,type);
+			generateNewMultiArray(dim,type.getJType());
 			break;
 		default:
         	throw new RuntimeException("Bad type-use instruction");
@@ -1424,7 +1415,7 @@ public final class Code implements Constants {
 				catcher.handler.attachPosition();
 				stack_push(catcher.type);
 			} else {
-				stack_push(Type.tpThrowable);
+				stack_push(JType.tpThrowable);
 			}
 			reachable = true;
 			break;
@@ -1461,7 +1452,7 @@ public final class Code implements Constants {
 			else {
 				CP c = constPool.addNumberCP(Integer.valueOf(val));
 				add_opcode_and_CP(opc_ldc,c);
-				stack_push(Type.tpInt);
+				stack_push(JType.tpInt);
 			}
 		}
 	}
@@ -1477,7 +1468,7 @@ public final class Code implements Constants {
 		else {
 			CP c = constPool.addNumberCP(Long.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
-			stack_push(Type.tpLong);
+			stack_push(JType.tpLong);
 		}
 	}
 
@@ -1493,7 +1484,7 @@ public final class Code implements Constants {
 		else {
 			CP c = constPool.addNumberCP(Float.valueOf(val));
 			add_opcode_and_CP(opc_ldc,c);
-			stack_push(Type.tpFloat);
+			stack_push(JType.tpFloat);
 		}
 	}
 
@@ -1508,7 +1499,7 @@ public final class Code implements Constants {
 		else {
 			CP c = constPool.addNumberCP(Double.valueOf(val));
 			add_opcode_and_CP(opc_ldc2_w,c);
-			stack_push(Type.tpDouble);
+			stack_push(JType.tpDouble);
 		}
 	}
 
@@ -1520,18 +1511,18 @@ public final class Code implements Constants {
 		}
 		CP c = constPool.addStringCP(val);
 		add_opcode_and_CP(opc_ldc,c);
-		stack_push(Type.tpString);
+		stack_push(JType.tpString);
 	}
 
-	public void addConst(Type val) {
+	public void addConst(JType val) {
 		trace(Kiev.debugInstrGen,pc+": "+Instr.op_push_tconst+" \""+val+"\"");
 		if( !reachable ) {
 			Kiev.reportCodeWarning(this,"\""+Instr.op_push_tconst+"\" ingnored as unreachable");
 			return;
 		}
-		CP c = constPool.addClazzCP(val.getJType().java_signature);
+		CP c = constPool.addClazzCP(val.java_signature);
 		add_opcode_and_CP(opc_ldc,c);
-		stack_push(Type.tpClass);
+		stack_push(JType.tpClass);
 	}
 
 	public void addNullConst() {
@@ -1541,7 +1532,7 @@ public final class Code implements Constants {
 			return;
 		}
 		add_opcode(opc_aconst_null);
-		stack_push(Type.tpNull);
+		stack_push(JType.tpNull);
 	}
 
 

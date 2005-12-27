@@ -16,7 +16,7 @@ import static kiev.vlang.Operator.*;
  *
  */
 
-public class Bytecoder implements Constants {
+public class Bytecoder implements JConstants {
 	public Struct								cl;
 	public ConstPool							constPool;
 	public kiev.bytecode.Clazz					bcclazz;
@@ -383,7 +383,7 @@ public class Bytecoder implements Constants {
 			int[] constants_pc = new int[32];
 			while( pc < ca.bcode.length ) {
 				cp = 0;
-				trace(Kiev.debugBytecodeRead,pc+": opc: "+Constants.opcNames[0xFF&ca.bcode[pc]]);
+				trace(Kiev.debugBytecodeRead,pc+": opc: "+JConstants.opcNames[0xFF&ca.bcode[pc]]);
 				switch( 0xFF & ca.bcode[pc] ) {
 				case opc_ldc:
 					cp = 0xFF & ca.bcode[pc+1];
@@ -406,7 +406,7 @@ public class Bytecoder implements Constants {
 					cp = ((0xFF & ca.bcode[pc+1]) << 8) | (0xFF & ca.bcode[pc+2]);
 					break;
 				default:
-					pc += Constants.opcLengths[0xFF & ca.bcode[pc]];
+					pc += JConstants.opcLengths[0xFF & ca.bcode[pc]];
 					continue;
 				}
 				if( constants_top == constants.length ) {
@@ -487,11 +487,11 @@ public class Bytecoder implements Constants {
 					}
 					break;
 				default:
-					throw new RuntimeException("Bad pool constant "+clazz.pool[cp]+" of opcode "+Constants.opcNames[0xFF&ca.bcode[pc]]);
+					throw new RuntimeException("Bad pool constant "+clazz.pool[cp]+" of opcode "+JConstants.opcNames[0xFF&ca.bcode[pc]]);
 				}
 				trace(Kiev.debugBytecodeRead,pc+": CP: "+constants[constants_top]);
 				constants_top++;
-				pc += Constants.opcLengths[0xFF & ca.bcode[pc]];
+				pc += JConstants.opcLengths[0xFF & ca.bcode[pc]];
 			}
 			ca.constants = (CP[])Arrays.cloneToSize(constants,constants_top);
 			ca.constants_pc = (int[])Arrays.cloneToSize(constants_pc,constants_top);

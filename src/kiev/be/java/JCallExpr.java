@@ -157,7 +157,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);
 			}
 			else if( func.name == nameObjHashCode ) {
-				switch(objt.signature.byteAt(0)) {
+				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':
 					{
 					CodeLabel label_true = code.newLabel();
@@ -213,7 +213,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			}
 			else if( func.name == nameObjToString ) {
 				KString sign = null;
-				switch(objt.signature.byteAt(0)) {
+				switch(objt.getJType().java_signature.byteAt(0)) {
 				case 'Z':
 					sign = KString.from("(Z)Ljava/lang/String;");
 					break;
@@ -246,7 +246,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			code.addInstr(op_call,func,isSuperExpr(),obj.getType());
 		if( null_cast_label != null ) {
 			code.stack_pop();
-			code.stack_push(Type.tpNull);
+			code.stack_push(JType.tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
 		if( func.type.ret != Type.tpVoid ) {
@@ -316,7 +316,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 			call_it_sign = KString.from("()Ljava/lang/Object;");
 		} else {
 			call_it_name = KString.from("call_"+tp.ret);
-			call_it_sign = KString.from("()"+tp.ret.signature);
+			call_it_sign = KString.from("()"+tp.ret.getJType().java_signature);
 		}
 		return Type.tpClosureClazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
 	}

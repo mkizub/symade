@@ -26,7 +26,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final	KString				signature;
 	public			int					flags;
 	private			TVarSet				bindings;
-	protected		JType				jtype;
+	public			JType				jtype;
 	
 	public abstract JType getJType();
 
@@ -472,7 +472,7 @@ public final class BaseType extends Type {
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
-			jtype = new JBaseType(((BaseTypeProvider)meta_type).java_meta_type, Signature.getJavaSignature(signature));
+			jtype = new JBaseType(clazz);
 		return jtype;
 	}
 
@@ -678,9 +678,7 @@ public class ArrayType extends Type {
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
-			KString asig = arg.getJType().java_signature;
-			KString sig = new KStringBuffer(asig.len+1).append_fast((byte)'[').append_fast(asig).toKString();
-			jtype = new JArrayType(Signature.getJavaSignature(sig), this.arg.getJType());
+			jtype = new JArrayType(this.arg.getJType());
 		}
 		return jtype;
 	}
@@ -1085,13 +1083,7 @@ public class MethodType extends Type implements CallableType {
 					jargs[i] = args[i].getJType();
 			}
 			JType jret = ret.getJType();
-			KStringBuffer ksb = new KStringBuffer(64);
-			ksb.append('(');
-			for (int i=0; i < jargs.length; i++)
-				ksb.append(jargs[i].java_signature);
-			ksb.append(')');
-			ksb.append(jret.java_signature);
-			jtype = new JMethodType(ksb.toKString(), jargs, jret);
+			jtype = new JMethodType(jargs, jret);
 		}
 		return jtype;
 	}

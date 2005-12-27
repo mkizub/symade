@@ -34,6 +34,7 @@ kiev.be.java.JArrayLengthExprView kiev/be/java/JArrayLengthExprView kiev\be\java
 kiev.be.java.JArrayType kiev/be/java/JArrayType kiev\be\java\JType.java
 kiev.be.java.JAssignExprView kiev/be/java/JAssignExprView kiev\be\java\JExpr.java
 kiev.be.java.JBaseType kiev/be/java/JBaseType kiev\be\java\JType.java
+kiev.be.java.JBaseTypeProvider kiev/be/java/JBaseTypeProvider kiev\be\java\JType.java
 kiev.be.java.JBinaryBoolExprView kiev/be/java/JBinaryBoolExprView kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryBooleanAndExprView kiev/be/java/JBinaryBooleanAndExprView kiev\be\java\JBoolExpr.java
 kiev.be.java.JBinaryBooleanOrExprView kiev/be/java/JBinaryBooleanOrExprView kiev\be\java\JBoolExpr.java
@@ -62,6 +63,7 @@ kiev.be.java.JConstLongExprView kiev/be/java/JConstLongExprView kiev\be\java\JCo
 kiev.be.java.JConstNullExprView kiev/be/java/JConstNullExprView kiev\be\java\JConstExpr.java
 kiev.be.java.JConstShortExprView kiev/be/java/JConstShortExprView kiev\be\java\JConstExpr.java
 kiev.be.java.JConstStringExprView kiev/be/java/JConstStringExprView kiev\be\java\JConstExpr.java
+kiev.be.java.JConstants kiev/be/java/JConstants kiev\be\java\JConstants.java
 kiev.be.java.JContainerAccessExprView kiev/be/java/JContainerAccessExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JContinueStatView kiev/be/java/JContinueStatView kiev\be\java\JStatement.java
 kiev.be.java.JDNodeView kiev/be/java/JDNodeView kiev\be\java\JNode.java
@@ -69,6 +71,8 @@ kiev.be.java.JDoWhileStatView kiev/be/java/JDoWhileStatView kiev\be\java\JLoopSt
 kiev.be.java.JENodeView kiev/be/java/JENodeView kiev\be\java\JNode.java
 kiev.be.java.JEmptyStatView kiev/be/java/JEmptyStatView kiev\be\java\JStatement.java
 kiev.be.java.JExprStatView kiev/be/java/JExprStatView kiev\be\java\JStatement.java
+kiev.be.java.JFakeType kiev/be/java/JFakeType kiev\be\java\JType.java
+kiev.be.java.JFakeTypeProvider kiev/be/java/JFakeTypeProvider kiev\be\java\JType.java
 kiev.be.java.JFieldView kiev/be/java/JFieldView kiev\be\java\JFieldView.java
 kiev.be.java.JFileUnitView kiev/be/java/JFileUnitView kiev\be\java\JFileUnit.java
 kiev.be.java.JFinallyInfoView kiev/be/java/JFinallyInfoView kiev\be\java\JComplexStat.java
@@ -98,6 +102,8 @@ kiev.be.java.JNewExprView kiev/be/java/JNewExprView kiev\be\java\JNewExpr.java
 kiev.be.java.JNewInitializedArrayExprView kiev/be/java/JNewInitializedArrayExprView kiev\be\java\JNewExpr.java
 kiev.be.java.JNodeView kiev/be/java/JNodeView kiev\be\java\JNode.java
 kiev.be.java.JOuterThisAccessExprView kiev/be/java/JOuterThisAccessExprView kiev\be\java\JLvalueExpr.java
+kiev.be.java.JPrimitiveType kiev/be/java/JPrimitiveType kiev\be\java\JType.java
+kiev.be.java.JPrimitiveTypeProvider kiev/be/java/JPrimitiveTypeProvider kiev\be\java\JType.java
 kiev.be.java.JReturnStatView kiev/be/java/JReturnStatView kiev\be\java\JStatement.java
 kiev.be.java.JSFldExprView kiev/be/java/JSFldExprView kiev\be\java\JLvalueExpr.java
 kiev.be.java.JShadowView kiev/be/java/JShadowView kiev\be\java\JExpr.java
@@ -654,7 +660,6 @@ kiev.vlang.InstanceofExpr.DFI kiev/vlang/InstanceofExpr$DFI kiev\vlang\BooleanEx
 kiev.vlang.InstanceofExpr.InstanceofExprDFFunc kiev/vlang/InstanceofExpr$InstanceofExprDFFunc kiev\vlang\BooleanExpr.java
 kiev.vlang.InstanceofExpr.InstanceofExprImpl kiev/vlang/InstanceofExpr$InstanceofExprImpl kiev\vlang\BooleanExpr.java
 kiev.vlang.InstanceofExpr.InstanceofExprView kiev/vlang/InstanceofExpr$InstanceofExprView kiev\vlang\BooleanExpr.java
-kiev.vlang.JBaseTypeProvider kiev/vlang/JBaseTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.JumpNodes kiev/vlang/JumpNodes kiev\vlang\Rules.java
 kiev.vlang.LVarExpr kiev/vlang/LVarExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.LVarExpr.DFI kiev/vlang/LVarExpr$DFI kiev\vlang\LvalueExpr.java

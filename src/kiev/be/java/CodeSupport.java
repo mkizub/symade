@@ -32,7 +32,7 @@ public class CodeVar {
 
 }
 
-public class CodeLabel implements Constants {
+public class CodeLabel implements JConstants {
 	public static CodeLabel[] emptyArray = new CodeLabel[0];
 
 	public final Code	code;
@@ -44,7 +44,7 @@ public class CodeLabel implements Constants {
 //	public short[]		instrs;
 
 	/** Stack state expected at this label */
-	public Type[]	stack;
+	public JType[]	stack;
 
 	/** If check state does not allowed */
 	public boolean	check = true;
@@ -79,20 +79,20 @@ public class CodeLabel implements Constants {
 		if( !check ) return;
 		if( stack == null ) {
 			if( code.top == 0 )
-				stack = Type.emptyArray;
+				stack = JType.emptyArray;
 			else
-				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
+				stack = (JType[])Arrays.cloneToSize(code.stack,code.top);
 		} else {
 			if( stack.length != code.top )
 				throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+code.top+")");
 			for(int i=0; i < stack.length; i++) {
 				if( stack[stack.length-i-1] != code.stack_at(i) ) {
-					Type tl = stack[stack.length-i-1];
-					Type tc = code.stack_at(i);
+					JType tl = stack[stack.length-i-1];
+					JType tc = code.stack_at(i);
 					// Check for object/null, or one is child of other
 					if( tl.isReference() && tc.isReference() ) {
-						if( tl == Type.tpNull || tl.isInstanceOf(tc) ) continue;
-						if( tc == Type.tpNull || tc.isInstanceOf(tl) ) {
+						if( tl == JType.tpNull || tl.isInstanceOf(tc) ) continue;
+						if( tc == JType.tpNull || tc.isInstanceOf(tl) ) {
 							code.set_stack_at(tl,i);
 							continue;
 						}
@@ -112,7 +112,7 @@ public class CodeLabel implements Constants {
 			// just setup stack to be correct
 			if( stack == null ) {
 				trace(Kiev.debugInstrGen,"Stack state at unreacheable code is undefined, assuming current");
-				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
+				stack = (JType[])Arrays.cloneToSize(code.stack,code.top);
 			} else {
 				trace(Kiev.debugInstrGen,"Attaching label at unreachable code, stack depth is "+stack.length);
 				code.top = stack.length;
@@ -125,29 +125,29 @@ public class CodeLabel implements Constants {
 		} else {
 			// This point is reachable by normal flow control, check stack state
 			if( stack == null ) {
-				stack = (Type[])Arrays.cloneToSize(code.stack,code.top);
+				stack = (JType[])Arrays.cloneToSize(code.stack,code.top);
 			} else {
 				if( stack.length != code.top )
 					throw new RuntimeException("Stack depth at "+this+" does not match stack depth of instruction ("+stack.length+" != "+code.top+")");
 				for(int i=0; i < stack.length; i++) {
 					if( !stack[stack.length-i-1].equals(code.stack_at(i)) ) {
-						Type tl = stack[stack.length-i-1];
-						Type tc = code.stack_at(i);
+						JType tl = stack[stack.length-i-1];
+						JType tc = code.stack_at(i);
 						// Check for object/null, or one is child of other
 						if( tl.isReference() && tc.isReference() ) {
-							if( tl == Type.tpNull || tl.isInstanceOf(tc) ) continue;
-							if( tc == Type.tpNull || tc.isInstanceOf(tl) ) {
+							if( tl == JType.tpNull || tl.isInstanceOf(tc) ) continue;
+							if( tc == JType.tpNull || tc.isInstanceOf(tl) ) {
 								code.set_stack_at(tl,i);
 								continue;
 							}
-							Type lct = Type.leastCommonType(tl,tc);
+							JType lct = JType.leastCommonType(tl,tc);
 							if( lct != null ) {
 								code.set_stack_at(lct,i);
 								continue;
 							}
 						}
 						else if( tl.isIntegerInCode() && tc.isIntegerInCode() ) {
-							code.set_stack_at(Type.tpInt,i);
+							code.set_stack_at(JType.tpInt,i);
 							continue;
 						}
 						throw new RuntimeException("Stack contentce at "+this+" does not match stack contentce of instruction at stack pos "+i+" ("+stack[stack.length-i-1]+" != "+code.stack_at(i)+")");
@@ -277,9 +277,9 @@ public class CodeCatchInfo {
 	public int			start_pc;
 	public int			end_pc;
 	public CodeLabel	handler;
-	public Type			type;
+	public JType		type;
 
-	public CodeCatchInfo(CodeLabel handler, Type type) {
+	public CodeCatchInfo(CodeLabel handler, JType type) {
 		this.handler = handler;
 		this.type = type;
 	}

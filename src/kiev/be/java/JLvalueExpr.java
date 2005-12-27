@@ -197,7 +197,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			// Resolve overloaded set method
 			Method@ v;
 			// We need to get the type of object in stack
-			Type t = code.stack_at(0);
+			JType jt = code.stack_at(0);
+			Type t = Signature.getType(new KString.KStringScanner(jt.java_signature));
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));
 			Struct s = objType.getStruct();
 			MethodType mt = MethodType.newMethodType(new Type[]{index.getType(),o.getType()},Type.tpAny);
@@ -220,7 +221,8 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			// Resolve overloaded set method
 			Method@ v;
 			// We need to get the type of object in stack
-			Type t = code.stack_at(0);
+			JType jt = code.stack_at(0);
+			Type t = Signature.getType(new KString.KStringScanner(jt.java_signature));
 			if( !(code.stack_at(1).isIntegerInCode() || code.stack_at(0).isReference()) )
 				throw new CompilerException(this,"Index of '[]' can't be of type double or long");
 			ENode o = new LVarExpr(pos,new Var(pos,KString.Empty,t,0));

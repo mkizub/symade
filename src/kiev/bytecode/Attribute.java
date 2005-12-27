@@ -305,7 +305,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 		int l;
 		while(pc < code.length) {
 			int instr = 0xFF & code[pc];
-			System.out.print(pc+":\t"+kiev.vlang.Constants.opcNames[instr]);
+			System.out.print(pc+":\t"+kiev.be.java.JConstants.opcNames[instr]);
 			switch(instr) {
 			default:
 				break;
@@ -424,7 +424,7 @@ public class CodeAttribute extends Attribute implements JavaOpcodes {
 				continue;
 			}
 			System.out.println("");
-			pc += kiev.vlang.Constants.opcLengths[instr];
+			pc += kiev.be.java.JConstants.opcLengths[instr];
 		}
 	}
 	private Object utf8(ReadContext cont, int pos) {

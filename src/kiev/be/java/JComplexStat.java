@@ -259,7 +259,7 @@ public final view JTryStatView of TryStatImpl extends JENodeView {
 		}
 		for(int i= catchers.length-1; i >= 0 ; i--) {
 			catchers[i].handler = code.newLabel();
-			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.type);
+			catchers[i].code_catcher = code.newCatcher(catchers[i].handler,catchers[i].arg.type.getJType());
 			code.addInstr(Instr.start_catcher,catchers[i].code_catcher);
 		}
 		end_label = code.newLabel();
@@ -349,7 +349,7 @@ public final view JSynchronizedStatView of SynchronizedStatImpl extends JENodeVi
 			}
 
 			code.addInstr(Instr.set_label,handler);
-			code.stack_push(Type.tpThrowable);
+			code.stack_push(JType.tpThrowable);
 			code.addInstr(Instr.op_load,expr_var);
 			code.addInstr(Instr.op_monitorexit);
 			code.addInstr(Instr.op_throw);

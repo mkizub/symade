@@ -79,7 +79,7 @@ public final view JBlockStatView of BlockStatImpl extends JENodeView {
 		JNodeView p = this.jparent;
 		if( p instanceof JMethodView && Kiev.debugOutputC
 		 && code.need_to_gen_post_cond && ((JMethodView)p).type.ret != Type.tpVoid) {
-			code.stack_push(((JMethodView)p).type.ret);
+			code.stack_push(((JMethodView)p).jtype.ret.getJType());
 		}
 		code.addInstr(Instr.set_label,break_label);
 	}

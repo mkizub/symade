@@ -20,6 +20,10 @@ import static kiev.stdlib.Debug.*;
 public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
+	@dflow(out="init") private static class DFI {
+	@dflow(in="this:in")	ENode			init;
+	}
+
 	@node
 	public static class FieldImpl extends LvalDNodeImpl {
 		public FieldImpl() {}

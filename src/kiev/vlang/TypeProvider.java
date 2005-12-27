@@ -3,6 +3,7 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import kiev.be.java.JBaseTypeProvider;
 import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
@@ -276,7 +277,7 @@ public final class TVar {
 }
 
 public abstract class TypeProvider {
-	TypeProvider() {}
+	public TypeProvider() {}
 	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
 	public abstract TVarSet bindings(Type tp);
@@ -285,11 +286,8 @@ public abstract class TypeProvider {
 public class BaseTypeProvider extends TypeProvider {
 	final Struct clazz;
 	
-	final JBaseTypeProvider java_meta_type;
-
 	BaseTypeProvider(Struct clazz) {
 		this.clazz = clazz;
-		java_meta_type = new JBaseTypeProvider(clazz);
 	}
 	
 	public Type bind(Type t, TVarSet bindings) {
@@ -401,13 +399,6 @@ public class CallTypeProvider extends TypeProvider {
 	}
 	public TVarSet bindings(Type owner) {
 		return TVarSet.emptySet;
-	}
-}
-
-public class JBaseTypeProvider extends TypeProvider {
-	public final Struct clazz;
-	JBaseTypeProvider(Struct clazz) {
-		this.clazz = clazz;
 	}
 }
 

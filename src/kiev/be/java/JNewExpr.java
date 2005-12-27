@@ -180,8 +180,8 @@ public final view JNewClosureView of NewClosureImpl extends JENodeView {
 			code.addInstr(Instr.op_load,v);
 		}
 		code.addInstr(op_call,func,false);
-		code.stack_pop();
-		code.stack_push(ctype);
+		//code.stack_pop();
+		//code.stack_push(ctype);
 	}
 }
 

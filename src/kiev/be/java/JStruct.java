@@ -131,7 +131,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		this.checkResolved();
 		foreach (JDNodeView n; members; n instanceof JMethodView) {
 			JMethodView m = (JMethodView)n;
-			if( m.name.equals(name) && m.type.signature.equals(sign))
+			if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 				return m;
 		}
 		if( isInterface() ) {
@@ -143,13 +143,12 @@ public final view JStructView of StructImpl extends JTypeDefView {
 			if( defaults != null ) {
 				foreach (JDNodeView n; defaults.members; n instanceof JMethodView) {
 					JMethodView m = (JMethodView)n;
-					if( m.name.equals(name) && m.type.signature.equals(sign))
+					if( m.name.equals(name) && m.type.getJType().java_signature.equals(sign))
 						return m;
 				}
 			}
 		}
-		trace(Kiev.debugResolve,"Method "+name+" with signature "
-			+sign+" unresolved in class "+this);
+		trace(Kiev.debugResolve,"Method "+name+" with signature "+sign+" unresolved in class "+this);
 		JMethodView m = null;
 		if( super_type != null )
 			m = super_type.getJStruct().resolveMethod(name,sign,where,fatal);
@@ -176,22 +175,18 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		}
 
 		ConstPool constPool = new ConstPool();
-		constPool.addClazzCP(this.type.signature);
 		constPool.addClazzCP(this.type.getJType().java_signature);
 		if( super_type != null ) {
 			super_type.clazz.checkResolved();
-			constPool.addClazzCP(this.super_type.signature);
 			constPool.addClazzCP(this.super_type.getJType().java_signature);
 		}
 		for(int i=0; i < interfaces.length; i++) {
 			interfaces[i].checkResolved();
-			constPool.addClazzCP(this.interfaces[i].signature);
 			constPool.addClazzCP(this.interfaces[i].getJType().java_signature);
 		}
 		if( !isPackage() ) {
 			foreach (JStructView sub; sub_clazz) {
 				sub.checkResolved();
-				constPool.addClazzCP(sub.type.signature);
 				constPool.addClazzCP(sub.type.getJType().java_signature);
 			}
 		}
@@ -215,7 +210,7 @@ public final view JStructView of StructImpl extends JTypeDefView {
 				inner[j] = sub_clazz[j];
 				outer[j] = this;
 				inner_access[j] = sub_clazz[j].getJavaFlags();
-				constPool.addClazzCP(inner[j].type.signature);
+				constPool.addClazzCP(inner[j].type.getJType().java_signature);
 			}
 			a.inner = inner;
 			a.outer = outer;
@@ -229,7 +224,6 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		foreach (JDNodeView n; members; n instanceof JFieldView) {
 			JFieldView f = (JFieldView)n;
 			constPool.addAsciiCP(f.name);
-			constPool.addAsciiCP(f.type.signature);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
 			if( f.isAccessedFromInner()) {
@@ -248,7 +242,6 @@ public final view JStructView of StructImpl extends JTypeDefView {
 		foreach (JDNodeView n; members; n instanceof JMethodView) {
 			JMethodView m = (JMethodView)n;
 			constPool.addAsciiCP(m.name);
-			constPool.addAsciiCP(m.type.signature);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
 			if( m.jtype != null )
 				constPool.addAsciiCP(m.jtype.getJType().java_signature);

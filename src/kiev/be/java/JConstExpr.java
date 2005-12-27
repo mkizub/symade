@@ -121,7 +121,7 @@ public abstract view JConstExprView of ConstExprImpl extends JENodeView {
 			// Special case for generation of parametriezed
 			// with primitive types classes
 			if( reqType != null && !reqType.isReference() ) {
-				switch(reqType.signature.byteAt(0)) {
+				switch(reqType.getJType().java_signature.byteAt(0)) {
 				case 'Z': case 'B': case 'S': case 'I': case 'C':
 					code.addConst(0);
 					break;
