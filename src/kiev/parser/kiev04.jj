@@ -231,14 +231,24 @@ public abstract class kiev040 {
 		clazz.setResolved(true);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
-		if      (parent instanceof FileUnit)
+		if      (parent instanceof FileUnit) {
 			clazz.setLocal(false);
+			Env.setProjectInfo(clazz.name, Kiev.curFile);
+		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
 		else
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
+		
+		if (clazz.isAnnotation()) {
+			clazz.super_type = Type.tpObject;
+			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
+			clazz.type = Type.createRefType(clazz, new TVarSet());
+			clazz.setTypeResolved(true);
+		}
+
 		return clazz;
 	}
 

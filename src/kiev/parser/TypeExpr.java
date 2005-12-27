@@ -99,15 +99,11 @@ public class TypeExpr extends TypeRef {
 					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 			}
 			t.checkResolved();
-			if (t.isWrapper()) {
-				WrapperType wt = (WrapperType)t;
-				tp = WrapperType.newWrapperType(Type.newRefType(((WrapperTypeProvider)wt.meta_type).clazz,new Type[]{tp}));
-			} else {
-				BaseType bt = (BaseType)t;
-				if (bt.clazz.args.length != 1)
-					throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
-				tp = Type.newRefType(bt.clazz,new Type[]{tp});
-			}
+			TVarSet set = new TVarSet();
+			if (t.getStruct().args.length != 1)
+				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
+			set.append(t.getStruct().args[0].getAType(), tp);
+			tp = t.rebind(set);
 		}
 		this.lnk = tp;
 		return tp;

@@ -4802,62 +4802,10 @@ public abstract class kiev040 implements kiev040Constants {
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3_71() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_103()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_69() {
-    if (jj_scan_token(FUNCTION)) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_70() {
-    if (jj_scan_token(DOT)) return true;
-    if (jj_3R_117()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_164() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_70()) {
-    jj_scanpos = xsp;
-    if (jj_3_71()) {
-    jj_scanpos = xsp;
-    if (jj_3_72()) {
-    jj_scanpos = xsp;
-    if (jj_3R_219()) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  final private boolean jj_3_68() {
-    if (jj_scan_token(NEW)) return true;
-    if (jj_3R_116()) return true;
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_422() {
-    if (jj_scan_token(FINALLY)) return true;
-    if (jj_3R_234()) return true;
-    return false;
-  }
-
   final private boolean jj_3_67() {
     if (jj_scan_token(NEW)) return true;
     if (jj_3R_116()) return true;
     if (jj_scan_token(LBRACKET)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_205() {
-    if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
@@ -4870,6 +4818,11 @@ public abstract class kiev040 implements kiev040Constants {
 
   final private boolean jj_3R_163() {
     if (jj_3R_218()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_205() {
+    if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
@@ -8790,6 +8743,53 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3_71() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_103()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_69() {
+    if (jj_scan_token(FUNCTION)) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_70() {
+    if (jj_scan_token(DOT)) return true;
+    if (jj_3R_117()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_164() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_70()) {
+    jj_scanpos = xsp;
+    if (jj_3_71()) {
+    jj_scanpos = xsp;
+    if (jj_3_72()) {
+    jj_scanpos = xsp;
+    if (jj_3R_219()) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  final private boolean jj_3_68() {
+    if (jj_scan_token(NEW)) return true;
+    if (jj_3R_116()) return true;
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_422() {
+    if (jj_scan_token(FINALLY)) return true;
+    if (jj_3R_234()) return true;
+    return false;
+  }
+
   public kiev040TokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -8929,14 +8929,24 @@ public abstract class kiev040 implements kiev040Constants {
 		clazz.setResolved(true);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
-		if      (parent instanceof FileUnit)
+		if      (parent instanceof FileUnit) {
 			clazz.setLocal(false);
+			Env.setProjectInfo(clazz.name, Kiev.curFile);
+		}
 		else if (parent instanceof Struct)
 			clazz.setLocal(parent.isLocal());
 		else
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
+		
+		if (clazz.isAnnotation()) {
+			clazz.super_type = Type.tpObject;
+			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
+			clazz.type = Type.createRefType(clazz, new TVarSet());
+			clazz.setTypeResolved(true);
+		}
+
 		return clazz;
 	}
 

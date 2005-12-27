@@ -2,6 +2,7 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
+import kiev.parser.TypeArgDef;
 
 import static kiev.vlang.AccessFlags.*;
 import static kiev.stdlib.Debug.*;
@@ -57,7 +58,6 @@ public interface StdTypes {
 	public static final BaseType tpDebug;
 	public static final BaseType tpTypeInfo;
 	public static final BaseType tpTypeInfoInterface;
-	public static final BaseType tpArray;
 	public static final BaseType tpCloneable;
 	public static final BaseType tpString;
 	public static final BaseType tpThrowable;
@@ -66,19 +66,20 @@ public interface StdTypes {
 	public static final BaseType tpCastException;
 	public static final BaseType tpJavaEnumeration;
 	public static final BaseType tpKievEnumeration;
+	public static final BaseType tpArrayEnumerator;
 	public static final BaseType tpRuntimeException;
 	public static final BaseType tpAssertException;
 	public static final BaseType tpEnum;
 	public static final BaseType tpAnnotation;
 	public static final BaseType tpClosure;
-//	public static final BaseType tpMethod;
 	public static final Struct tpClosureClazz;
-//	public static final Struct tpMethodClazz;
 
 	public static final BaseType tpPrologVar;
 	public static final BaseType tpRefProxy;
 
 	public static final BaseType tpTypeSwitchHash;
+
+	public static final ArrayType tpArray;
 
 	static {
 		Type.typeHash = new Hash<Type>();
@@ -251,17 +252,8 @@ public interface StdTypes {
 		tpCloneableClazz.setInterface(true);
 		typeHash.put(tpCloneable);
 
-
-		Struct tpArrayClazz		= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Array;")),kiev_stdlib,ACC_PUBLIC);
-		ArgumentType tpArrayArg	= ArgumentType.newArgumentType(tpArrayClazz,KString.from("elem"));
-		tpArray					= new BaseType(tpArrayClazz,new Type[]{tpArrayArg});
-		tpArrayClazz.type		= tpArray;
-		tpArrayClazz.super_type	= tpObject;
-		tpArray.flags			|= flResolved;
-		tpArrayClazz.setResolved(true);
-		tpArray.flags			= flReference | flArray;
-		tpArrayClazz.interfaces.add(new TypeRef(tpCloneable));
-//		tpArrayClazz.fields = new Field[]{new Field(KString.from("length"),tpInt,(short)(Constants.ACC_FINAL|Constants.ACC_PUBLIC))};
+		tpArray					= ArrayType.newArrayType(Type.tpAny);
+		tpArray.flags			|= flResolved | flReference | flArray;
 		typeHash.put(tpArray);
 
 		Struct tpBooleanRefClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Boolean;")),java_lang,ACC_PUBLIC);
@@ -354,116 +346,56 @@ public interface StdTypes {
 		tpAssertExceptionClazz.type	= tpAssertException;
 		typeHash.put(tpAssertException);
 
-//		Struct tpMessageExceptionClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/MessageNotUnderstoodException;")),kiev_stdlib,ACC_PUBLIC);
-//		tpMessageException				= new Type(tpMessageExceptionClazz);
-//		tpMessageExceptionClazz.type	= tpMessageException;
-//		typeHash.put(tpMessageException);
-
-//		Struct tpApplayableClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Applayable;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
-//		tpApplayable				= new Type(tpApplayableClazz);
-//		tpApplayableClazz.type		= tpApplayable;
-//		typeHash.put(tpApplayable);
-
-//		Struct tpDynamicClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Dynamic;")),kiev_stdlib,ACC_PUBLIC | ACC_INTERFACE);
-//		tpDynamic				= new Type(tpDynamicClazz);
-//		tpDynamicClazz.type		= tpDynamic;
-//		typeHash.put(tpDynamic);
-
-//		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enum;")),kiev_stdlib,ACC_PUBLIC | ACC_ABSTRACT);
 		Struct tpEnumClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/lang/Enum;")),java_lang,ACC_PUBLIC | ACC_ABSTRACT);
 		tpEnum					= new BaseType(tpEnumClazz);
 		tpEnumClazz.type		= tpEnum;
 		typeHash.put(tpEnum);
 
-//		tpMethodClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/method;")),kiev_stdlib,ACC_PUBLIC);
-//		tpMethodClazz.setResolved(true);
-//		tpMethod		= new BaseType(tpMethodClazz);
-////		 new MethodType(tpMethodClazz,Type.tpVoid,Type.emptyArray,Type.emptyArray);
-//		tpMethodClazz.type	= tpMethod;
-//		tpMethod.flags = flResolved;
-
 		tpClosureClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/closure;")),kiev_stdlib,ACC_PUBLIC);
 		tpClosure				= new BaseType(tpClosureClazz);
 		tpClosureClazz.type		= tpClosure;
 
-/*		Struct tpCellClazz	= Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell;")),kiev_stdlib,ACC_PUBLIC);
-		tpCell				= new Type(tpCellClazz);
-		tpCellClazz.type	= tpCell;
-		typeHash.put(tpCell);
-*/
 		Struct tpJavaEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Ljava/util/Enumeration;")),java_util,ACC_PUBLIC);
 		tpJavaEnumeration	= new BaseType(tpJavaEnumerationClazz);
 		tpJavaEnumerationClazz.type	= tpJavaEnumeration;
 		typeHash.put(tpJavaEnumeration);
 
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
-		ArgumentType tpKievEnumerationArg = ArgumentType.newArgumentType(tpKievEnumerationClazz,KString.from("A"));
-		tpKievEnumeration	= new BaseType(tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
+		tpKievEnumerationClazz.args.add(new TypeArgDef(KString.from("A")));
+		ArgumentType tpKievEnumerationArg = tpKievEnumerationClazz.args[0].getAType();
+		tpKievEnumeration	= new BaseType(
+					KString.from("Lkiev/stdlib/Enumeration;<A:Akiev/stdlib/Enumeration$A;>"),
+					tpKievEnumerationClazz,new Type[]{tpKievEnumerationArg});
 		tpKievEnumerationClazz.type	= tpKievEnumeration;
 		typeHash.put(tpKievEnumeration);
-
-/*		Struct tpCellObjectClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_Object;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellObject			= new Type(tpCellObjectClazz);
-		tpCellObjectClazz.type	= tpCellObject;
-		typeHash.put(tpCellObject);
-
-		Struct tpCellBooleanClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_boolean;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellBoolean			= new Type(tpCellBooleanClazz);
-		tpCellBooleanClazz.type	= tpCellBoolean;
-		typeHash.put(tpCellBoolean);
-
-		Struct tpCellByteClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_byte;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellByte			= new Type(tpCellByteClazz);
-		tpCellByteClazz.type	= tpCellByte;
-		typeHash.put(tpCellByte);
-
-		Struct tpCellCharClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_char;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellChar			= new Type(tpCellCharClazz);
-		tpCellCharClazz.type	= tpCellChar;
-		typeHash.put(tpCellChar);
-
-		Struct tpCellShortClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_short;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellShort			= new Type(tpCellShortClazz);
-		tpCellShortClazz.type	= tpCellShort;
-		typeHash.put(tpCellShort);
-
-		Struct tpCellIntClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_int;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellInt			= new Type(tpCellIntClazz);
-		tpCellIntClazz.type	= tpCellInt;
-		typeHash.put(tpCellInt);
-
-		Struct tpCellLongClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_long;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellLong			= new Type(tpCellLongClazz);
-		tpCellLongClazz.type	= tpCellLong;
-		typeHash.put(tpCellLong);
-
-		Struct tpCellFloatClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_float;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellFloat			= new Type(tpCellFloatClazz);
-		tpCellFloatClazz.type	= tpCellFloat;
-		typeHash.put(tpCellFloat);
-
-		Struct tpCellDoubleClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Cell_double;")),kiev_stdlib,ACC_PUBLIC);
-		tpCellDouble			= new Type(tpCellDoubleClazz);
-		tpCellDoubleClazz.type	= tpCellDouble;
-		typeHash.put(tpCellDouble);
-*/
-//		Struct tpPrologEnvClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PEnv;")),kiev_stdlib,ACC_PUBLIC);
-//		tpPrologEnv				= new Type(tpPrologEnvClazz);
-//		tpPrologEnvClazz.type	= tpPrologEnv;
-//		typeHash.put(tpPrologEnv);
+		
+		
+		Struct tpArrayEnumeratorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/ArrayEnumerator;")),kiev_stdlib,ACC_PUBLIC);
+		tpArrayEnumeratorClazz.args.add(new TypeArgDef(KString.from("A")));
+		ArgumentType tpArrayEnumeratorArg = tpArrayEnumeratorClazz.args[0].getAType();
+		tpArrayEnumerator	= new BaseType(
+					KString.from("Lkiev/stdlib/ArrayEnumerator;<A:Akiev/stdlib/ArrayEnumerator$A;>"),
+					tpArrayEnumeratorClazz,new Type[]{tpArrayEnumeratorArg});
+		tpArrayEnumeratorClazz.type	= tpArrayEnumerator;
+		typeHash.put(tpArrayEnumerator);
+		
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
-		ArgumentType tpPrologVarArg = ArgumentType.newArgumentType(tpPrologVarClazz,KString.from("A"));
-		tpPrologVar	= new BaseType(tpPrologVarClazz,new Type[]{tpPrologVarArg});
+		tpPrologVarClazz.args.add(new TypeArgDef(KString.from("A")));
+		ArgumentType tpPrologVarArg = tpPrologVarClazz.args[0].getAType();
+		tpPrologVar	= new BaseType(
+					KString.from("Lkiev/stdlib/PVar;<A:Akiev/stdlib/PVar$A;>"),
+					tpPrologVarClazz,new Type[]{tpPrologVarArg});
 		tpPrologVarClazz.type	= tpPrologVar;
-//		tpPrologVarClazz.setWrapper(true);
 		typeHash.put(tpPrologVar);
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
-		ArgumentType tpRefProxyArg = ArgumentType.newArgumentType(tpRefProxyClazz,KString.from("A"));
-		tpRefProxy	= new BaseType(tpRefProxyClazz,new Type[]{tpRefProxyArg});
+		tpRefProxyClazz.args.add(new TypeArgDef(KString.from("A")));
+		ArgumentType tpRefProxyArg = tpRefProxyClazz.args[0].getAType();
+		tpRefProxy	= new BaseType(
+					KString.from("Lkiev/stdlib/Ref;<A:Akiev/stdlib/Ref$A;>"),
+					tpRefProxyClazz,new Type[]{tpRefProxyArg});
 		tpRefProxyClazz.type	= tpRefProxy;
-//		tpRefProxyClazz.setWrapper(true);
 		typeHash.put(tpRefProxy);
 
 		Struct tpTypeSwitchHashClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/TypeSwitchHash;")),kiev_stdlib,ACC_PUBLIC);

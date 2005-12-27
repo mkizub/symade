@@ -472,7 +472,7 @@ public class Compiler {
 			Kiev.pass_no = TopLevelPass.passStartCleanup;
 			Kiev.files.cleanup();
 			
-			Kiev.pass_no = TopLevelPass.passCreateTopStruct;
+			Kiev.pass_no = TopLevelPass.passProcessSyntax;
 			Kiev.k = new Parser(new StringReader(""));
 			for(int i=0; i < args.length; i++) {
 				try {
@@ -521,7 +521,9 @@ public class Compiler {
 			//		   PASS 1,2 - create top structures	   //
 			////////////////////////////////////////////////////
 
+			Kiev.pass_no = TopLevelPass.passProcessSyntax;
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass1(fu); });
+
 			if( Kiev.errCount > 0 ) goto stop;
 			if( Kiev.project_file != null ) {
 				diff_time = curr_time = System.currentTimeMillis();
@@ -529,21 +531,14 @@ public class Compiler {
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose ) Kiev.reportInfo("Dumped project file \'"+Kiev.project_file+'\'',diff_time);
 			}
-			if( Kiev.interface_only ) goto stop;
 			diff_time = curr_time = System.currentTimeMillis();
 			runGC();
-
-
-			Kiev.pass_no = TopLevelPass.passProcessSyntax;
-			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass1_1(fu); });
+			if( Kiev.interface_only ) goto stop;
 			if( Kiev.errCount > 0 ) goto stop;
 
-			Kiev.pass_no = TopLevelPass.passArgumentInheritance;
+
+			Kiev.pass_no = TopLevelPass.passStructTypes;
 			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass2(fu); });
-			if( Kiev.errCount > 0 ) goto stop;
-
-			Kiev.pass_no = TopLevelPass.passStructInheritance;
-			Kiev.runProcessors(fun (TransfProcessor tp, FileUnit fu)->void { tp.pass2_2(fu); });
 			if( Kiev.errCount > 0 ) goto stop;
 
 			diff_time = System.currentTimeMillis() - curr_time;

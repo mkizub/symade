@@ -646,8 +646,9 @@ public class InstanceofExpr extends BoolExpr {
 			Type et = expr.getType();
 			Type tp = type.getType();
 			if (et.isWrapper() && !tp.isWrapper()) {
-				BaseType ut = ((WrapperType)et).getUnwrappedType();
-				tp = WrapperType.newWrapperType(Type.newRefType(ut.clazz,new Type[]{tp}));
+				TVarSet set = new TVarSet();
+				set.append(et.getStruct().args[0].getAType(), tp);
+				tp = et.rebind(set);
 			}
 			return dfs.addNodeType(path,tp);
 		}

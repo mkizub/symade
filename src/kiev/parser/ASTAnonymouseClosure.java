@@ -101,7 +101,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			false
 		);
 		clazz = Env.newStruct(clname,ctx_clazz,0,true);
-		clazz.type = Type.createRefType(clazz,Type.emptyArray);
+		clazz.type = Type.createRefType(clazz,new TVarSet());
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);

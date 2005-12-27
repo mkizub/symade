@@ -34,21 +34,38 @@ public class Signature {
 
 	public static KString from(Struct clazz, Type[] args) {
 		KStringBuffer ksb = new KStringBuffer();
-		// Normal class
-		if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
-			ksb.append('[');
-			ksb.append(args[0].signature);
-		} else {
-			ksb.append(clazz.name.signature());
-			// And it's arguments
-			if( clazz.args.length > 0 ) {
-				ksb.append('<');
-				for(int i=0; i < args.length; i++) {
-					ksb.append(args[i].signature);
-				}
-				ksb.append('>');
+		ksb.append(clazz.name.signature());
+		// And it's arguments
+		boolean empty = true;
+		if( clazz.args.length > 0 ) {
+			ksb.append('<');
+			for(int i=0; i < args.length; i++) {
+				ksb.append(args[i].signature);
 			}
+			ksb.append('>');
 		}
+		return ksb.toKString();
+	}
+
+	public static KString from(Struct clazz, TVarSet bindings) {
+		KStringBuffer ksb = new KStringBuffer();
+		ksb.append(clazz.name.signature());
+		// And it's type bindings
+		boolean empty = true;
+		foreach (TVar tv; bindings.tvars) {
+			if (tv.var.definer != clazz) {
+				if (!tv.isBound() && !tv.isAlias())
+					continue;
+			}
+			if (empty) { ksb.append('<'); empty = false; }
+			ClazzName name = tv.var.name;
+			if (clazz == tv.var.definer)
+				ksb.append(name.short_name);
+			else
+				ksb.append(name.bytecode_name);
+			ksb.append(':').append(tv.result().signature);
+		}
+		if (!empty) ksb.append('>');
 		return ksb.toKString();
 	}
 
@@ -154,7 +171,7 @@ public class Signature {
 
 		if( !sc.hasMoreChars() ) {
 			if (isArgument)
-				return ArgumentType.newArgumentType(cname,null);
+				throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
 			return Type.createRefType(clazz, Type.emptyArray);
 		}
 		if( sc.peekChar() == '<' ) {
@@ -165,11 +182,11 @@ public class Signature {
 			sc.nextChar();
 			if( isArgument ) {
 				if( args.length == 0 )
-					return ArgumentType.newArgumentType(cname,null);
+					throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
 				else if( args.length == 1 ) {
 					if !( args[0] instanceof BaseType )
 						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
-					return ArgumentType.newArgumentType(cname,(BaseType)args[0]);
+					throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,(BaseType)args[0]);
 				} else
 					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
@@ -177,7 +194,7 @@ public class Signature {
 			}
 		} else {
 			if (isArgument)
-				return ArgumentType.newArgumentType(cname,null);
+				throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
 			return Type.createRefType(clazz, Type.emptyArray);
 		}
 	}

@@ -137,7 +137,18 @@ public final class Kiev {
 		if( debug ) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = from.pos;
-			report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Error,msg);
+			FileUnit fu = null;
+			Struct clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_clazz;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
+			report(pos,fu,clazz,method,SeverError.Error,msg);
 		} else {
 			report(0,null,null,null,SeverError.Error,msg);
 		}
@@ -636,21 +647,13 @@ public final class Kiev {
 	}
 	
 	public static void runProcessorsOn(ASTNode node) {
-		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) ) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.pass1(node);
 		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.pass1_1(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passStructTypes) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
 				if (tp.isEnabled()) tp.pass2(node);
-		}
-		if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) ) {
-			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
-				if (tp.isEnabled()) tp.pass2_2(node);
 		}
 		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDecls) ) {
 			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)

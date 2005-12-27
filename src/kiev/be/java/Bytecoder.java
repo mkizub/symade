@@ -343,7 +343,7 @@ public class Bytecoder implements Constants {
 							} else {
 								if( inner[i] == null )
 									throw new RuntimeException("Class "+cn+" not found");
-								cl.members.addUniq(inner[i].getStruct());
+								cl.members.add((Struct)~inner[i].getStruct());
 							}
 						}
 					} else {

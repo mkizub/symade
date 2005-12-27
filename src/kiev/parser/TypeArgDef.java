@@ -109,11 +109,11 @@ public class TypeArgDef extends TypeDef {
 			cn = new ClazzName(nm,name.name,nm,true,true);
 		}
 		BaseType sup = null;
-		if (Kiev.pass_no.ordinal() >= TopLevelPass.passArgumentInheritance.ordinal()) {
+		if (Kiev.pass_no.ordinal() > TopLevelPass.passStructTypes.ordinal()) {
 			if (super_bound != null)
 				sup = (BaseType)super_bound.getType();
 		}
-		this.lnk = ArgumentType.newArgumentType(cn,sup);
+		this.lnk = ArgumentType.newArgumentType(cn,ctx_clazz,sup);
 		return this.lnk;
 	}
 

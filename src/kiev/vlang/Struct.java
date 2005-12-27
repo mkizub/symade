@@ -211,6 +211,26 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
+		// indicates that type of the structure was attached
+		public final boolean isTypeResolved() {
+			return this.$view.is_struct_type_resolved;
+		}
+		public final void setTypeResolved(boolean on) {
+			if (this.$view.is_struct_type_resolved != on) {
+				this.$view.is_struct_type_resolved = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// indicates that type arguments of the structure were resolved
+		public final boolean isArgsResolved() {
+			return this.$view.is_struct_args_resolved;
+		}
+		public final void setArgsResolved(boolean on) {
+			if (this.$view.is_struct_args_resolved != on) {
+				this.$view.is_struct_args_resolved = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
 		// indicates that the structrue has runtime-visible type arguments
 		public final boolean isRuntimeArgTyped() {
 			return this.$view.is_struct_rt_arg_typed;
@@ -366,7 +386,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			+" as "+name.name+", member of "+outer);
 	}
 
-	@getter public Struct get$child_ctx_clazz() { return this; }
+	@getter public Struct get$child_ctx_clazz()	{ return this; }
 
 	public Object copy() {
 		throw new CompilerException(this,"Struct node cannot be copied");
@@ -409,6 +429,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	// indicates that the structrue was generared (from template)
 	public boolean isGenerated() { return getStructView().isGenerated(); }
 	public void setGenerated(boolean on) { getStructView().setGenerated(on); }
+	// indicates that type arguments of the structure were resolved
+	public final boolean isTypeResolved() { return getStructView().isTypeResolved(); }
+	public final void setTypeResolved(boolean on) { getStructView().setTypeResolved(on); }
+	// indicates that type arguments of the structure were resolved
+	public final boolean isArgsResolved() { return getStructView().isArgsResolved(); }
+	public final void setArgsResolved(boolean on) { getStructView().setArgsResolved(on); }
 	// indicates that the structrue has runtime-visible type arguments
 	public final boolean isRuntimeArgTyped() { return getStructView().isRuntimeArgTyped(); }
 	public final void setRuntimeArgTyped(boolean on) { getStructView().setRuntimeArgTyped(on); }

@@ -11,7 +11,7 @@ import syntax kiev.Syntax;
 public final class TVarSet {
 	public static final TVarSet emptySet = new TVarSet();
 
-	private final boolean ASSERT_MORE = true;	
+	private final boolean ASSERT_MORE = false;	
 
 	public access:ro,ro,ro,rw	TVar[] tvars = TVar.emptyArray;
 

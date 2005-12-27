@@ -29,10 +29,8 @@ import syntax kiev.Syntax;
 
 public enum TopLevelPass {
 	passStartCleanup		   ,	// start of compilation or cleanup before next incremental compilation
-	passCreateTopStruct		   ,	// create top-level Struct
 	passProcessSyntax		   ,	// process syntax - some import, typedef, operator and macro
-	passArgumentInheritance	   ,	// inheritance of type arguments
-	passStructInheritance	   ,	// inheritance of classe/interfaces/structures
+	passStructTypes			   ,	// inheritance and types of structures
 	passResolveMetaDecls	   ,	// resolved meta types declarations
 	passResolveMetaDefaults	   ,	// resolved default values for meta-methods
 	passResolveMetaValues	   ,	// resolve values in meta-data
@@ -89,7 +87,9 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,21 boolean is_struct_pre_generated;
 		public packed:1,compileflags,22 boolean is_struct_statements_generated;
 		public packed:1,compileflags,23 boolean is_struct_generated;
-		public packed:1,compileflags,24 boolean is_struct_rt_arg_typed;
+		public packed:1,compileflags,24 boolean is_struct_type_resolved;
+		public packed:1,compileflags,25 boolean is_struct_args_resolved;
+		public packed:1,compileflags,26 boolean is_struct_rt_arg_typed;
 		
 		// Expression flags
 		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;

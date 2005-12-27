@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.transf;
 
 import kiev.Kiev;
@@ -40,10 +20,12 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public ImportKievSrc(Kiev.Ext ext) {
 		super(ext);
 	}
+	
+	
 	/////////////////////////////////////////////////////
-	//												   //
-	//		   PASS 1 - create top structures		   //
-	//												   //
+	//													//
+	//		   PASS 1 - process file syntax				//
+	//													//
 	/////////////////////////////////////////////////////
 	
 	public void pass1(ASTNode:ASTNode node) {
@@ -52,132 +34,19 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	
 	public void pass1(FileUnit:ASTNode astn) {
 		FileUnit fu = astn;
+		processFileHeader(fu);
 		foreach (ASTNode n; astn.members) {
 			try {
-				pass1(n);
+				processSyntax((Struct)n);
 			} catch(Exception e ) { Kiev.reportError(n,e); }
 		}
 	}
 
-	private void setSourceFile(Struct me) {
-		if( !me.isLocal() )
-			Env.setProjectInfo(me.name, Kiev.curFile);
+	public void pass1(Struct:ASTNode astn) {
+		processSyntax(astn);
 	}
 	
-	private void setupStructType(Struct me, boolean canHaveArgs) {
-		/* Then may be class arguments - they are proceed here, but their
-		   inheritance - at pass2()
-		*/
-		Type[] targs = Type.emptyArray;
-		if (!canHaveArgs) {
-			if( me.args.length > 0 ) {
-				Kiev.reportError(me,"Type parameters are not allowed for "+me);
-				me.args.delAll();
-			}
-		}
-		else if( me.parent instanceof Struct && ((Struct)me.parent).args.length > 0 ) {
-			Struct astnp = (Struct)me.parent;
-//			// Inner classes's arguments have to be arguments of outer classes
-//			// BUG BUG BUG - need to follow java scheme
-//			for(int i=0; i < me.args.length; i++) {
-//				TypeArgDef arg = me.args[i];
-//				Type[] outer_args = astnp.type.args;
-//				if( outer_args == null || outer_args.length <= i)
-//					throw new CompilerException(arg,"Inner class arguments must match outer class arguments");
-//				if (!outer_args[i].isArgument() || !((ArgumentType)outer_args[i]).name.short_name.equals(arg.name.name))
-//					throw new CompilerException(arg,"Inner class arguments must match outer class argument,"
-//						+" but arg["+i+"] is "+arg
-//						+" and have to be "+outer_args[i]);
-//			}
-			/* Create type for class's arguments, if any */
-			if (!me.isStatic()) {
-				me.args.delAll();
-			} else {
-				for(int i=0; i < me.args.length; i++)
-					targs = (Type[])Arrays.append(targs,me.args[i].getType());
-			}
-		} else {
-			for(int i=0; i < me.args.length; i++)
-				targs = (Type[])Arrays.append(targs,me.args[i].getType());
-		}
-
-		/* Generate type for this structure */
-		me.type = Type.createRefType(me,targs);
-	}
-
-	public void pass1(Struct:ASTNode astn) {
-		trace(Kiev.debugResolve,"Pass 1 for struct "+astn);
-
-		Struct me = astn;
-		me.setResolved(true);
-		setSourceFile(me);
-		if (me.isEnum()) {
-			if !(astn.parent instanceof FileUnit)
-				me.setStatic(true);
-			setupStructType(me, false);
-		}
-		else if (me.isPizzaCase()) {
-			me.setStatic(true);
-			Struct p = (Struct)me.parent;
-			p.addCase(me);
-			setupStructType(me, true);
-			Type[] args = new Type[p.args.length];
-			for(int i=0; i < p.args.length; i++) {
-				for(int j=0; j < me.args.length; j++) {
-					if (p.args[i].name.name == me.args[j].name.name) {
-						args[i] = me.args[j].getAType();
-						break;
-					}
-				}
-				if (args[i] == null)
-					args[i] = p.args[i].getAType();
-			}
-			me.super_type = Type.createRefType(p.type.clazz, args);
-		}
-		else if (me.isSyntax()) {
-			me.setPrivate(true);
-			me.setAbstract(true);
-			me.setMembersGenerated(true);
-			me.setStatementsGenerated(true);
-			setupStructType(me, false);
-		}
-		else if (me.type != null)
-			;
-		else
-			setupStructType(me, true);
-
-		// assign type of enum fields
-		if (me.isEnum()) {
-			foreach (ASTNode n; me.members; n instanceof Field && ((Field)n).isEnumField()) {
-				Field f = (Field)n;
-				f.ftype = new TypeRef(me.type);
-			}
-		}
-		
-		if( !me.isPackage() ) {
-			// Process inner classes and cases
-			foreach (ASTNode n; me.members) {
-				pass1(n);
-			}
-		}
-	}
-
-
-
-
-
-	/////////////////////////////////////////////////////
-	//												   //
-	//	   PASS 1_1 - process syntax declarations	   //
-	//												   //
-	/////////////////////////////////////////////////////
-
-
-	public void pass1_1(ASTNode:ASTNode node) {
-		return;
-	}
-
-	public void pass1_1(FileUnit:ASTNode astn) {
+	private void processFileHeader(FileUnit fu) {
 		// Process file imports...
 		boolean java_lang_found = false;
 		KString java_lang_name = KString.from("java.lang");
@@ -186,11 +55,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		boolean kiev_stdlib_meta_found = false;
 		KString kiev_stdlib_meta_name = KString.from("kiev.stdlib.meta");
 
-		foreach (ASTNode n; astn.syntax) {
+		foreach (DNode n; fu.syntax) {
 			try {
 				if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
 					continue; // process later
-				pass1_1(n);
+				processSyntax(n);
 				if (n instanceof Import) {
 					if( n.mode == Import.ImportMode.IMPORT_CLASS && ((Struct)n.resolved).name.name.equals(java_lang_name))
 						java_lang_found = true;
@@ -206,19 +75,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		// Add standard imports, if they were not defined
 		if( !Kiev.javaMode && !kiev_stdlib_found )
-			astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
+			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_name),Import.ImportMode.IMPORT_CLASS,true));
 		if( !Kiev.javaMode && !kiev_stdlib_meta_found )
-			astn.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
+			fu.syntax.add(new Import(Env.newPackage(kiev_stdlib_meta_name),Import.ImportMode.IMPORT_CLASS,true));
 		if( !java_lang_found )
-			astn.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
-
-		// Process members - pass1_1()
-		foreach (ASTNode n; astn.members) {
-			pass1_1(n);
-		}
+			fu.syntax.add(new Import(Env.newPackage(java_lang_name),Import.ImportMode.IMPORT_CLASS,true));
+	}
+	
+	public void processSyntax(ASTNode:ASTNode node) {
+		return;
 	}
 
-	public void pass1_1(Import:ASTNode astn) {
+	public void processSyntax(Import:ASTNode astn) {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
 		DNode@ v;
@@ -238,44 +106,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			astn.resolved = n;
 	}
 
-	public void pass1_1(TypeDefOp:ASTNode astn) {
-		try {
-			if (astn.typearg != null) {
-				astn.type = new TypeRef(astn.type.getType().getInitialType());
-			} else {
-				astn.type = new TypeRef(astn.type.getType());
-			}
-		} catch (RuntimeException e) { /* ignore */ }
-	}
+//	public void processSyntax(TypeDefOp:ASTNode astn) {
+//		try {
+//			if (astn.typearg != null) {
+//				astn.type = new TypeRef(astn.type.getType().getInitialType());
+//			} else {
+//				astn.type = new TypeRef(astn.type.getType());
+//			}
+//		} catch (RuntimeException e) { /* ignore */ }
+//	}
 
-	public void pass1_1(Struct:ASTNode astn) {
-		// Verify meta-data to the new structure
-		Struct me = astn;
-		me.meta.verify();
-		
-		if (me.isSyntax()) {
-			trace(Kiev.debugResolve,"Pass 1_1 for syntax "+me);
-			for (int i=0; i < me.members.length; i++) {
-				ASTNode n = me.members[i];
-				try {
-					if (n instanceof TypeDefOp) {
-						pass1_1(n);
-						me.imported.add(me.members[i]);
-						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-					}
-					else if (n instanceof Opdef) {
-						pass1_1(n);
-						me.imported.add(me.members[i]);
-						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
-					}
-				} catch(Exception e ) {
-					Kiev.reportError(n,e);
-				}
-			}
-		}
-	}
 	
-	public void pass1_1(Opdef:ASTNode astn) {
+	public void processSyntax(Opdef:ASTNode astn) {
 		int prior = astn.prior;
 		int opmode = astn.opmode;
 		KString image = astn.image;
@@ -356,149 +198,258 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 	}
 
-
-
-
-
-
-	/////////////////////////////////////////////////////
-	//													//
-	//	   PASS 2 - struct args inheritance			//
-	//													//
-	/////////////////////////////////////////////////////
-
-
-	public void pass2(ASTNode:ASTNode astn) {
-		return;
-	}
-
-	public void pass2(FileUnit:ASTNode astn) {
-		foreach (ASTNode n; astn.members)
-			pass2(n);
-	}
-
-	public void pass2(Struct:ASTNode astn) {
+	public void processSyntax(Struct:ASTNode astn) {
+		// Verify meta-data to the new structure
 		Struct me = astn;
-		int pos = astn.pos;
-		trace(Kiev.debugResolve,"Pass 2 for class "+me);
-		/* Process inheritance of class's arguments, if any */
-		for(int i=0; i < astn.args.length; i++) {
-			TypeArgDef arg = astn.args[i];
-			if( arg.super_bound != null ) {
-				Type sup = arg.super_bound.getType();
-				if( !sup.isReference() ) {
-					Kiev.reportError(astn,"Argument extends bad type "+sup);
-				} else {
-					((ArgumentType)arg.getType()).super_type = sup;
+		me.meta.verify();
+		
+		if (me.isSyntax()) {
+			trace(Kiev.debugResolve,"Pass 1 for syntax "+me);
+			for (int i=0; i < me.members.length; i++) {
+				ASTNode n = me.members[i];
+				try {
+					if (n instanceof TypeDefOp) {
+						processSyntax(n);
+						me.imported.add(me.members[i]);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
+					}
+					else if (n instanceof Opdef) {
+						processSyntax(n);
+						me.imported.add(me.members[i]);
+						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
+					}
+				} catch(Exception e ) {
+					Kiev.reportError(n,e);
 				}
 			}
 		}
-
-		// Process inner classes and cases
-		if( !me.isPackage() ) {
-			foreach (ASTNode m; astn.members)
-				pass2(m);
-		}
 	}
-
-
-
-
-
-
-
+	
 	/////////////////////////////////////////////////////
-	//												   //
-	//	   PASS 2_2 - struct inheritance			   //
-	//												   //
+	//													//
+	//		   PASS 2 - create types for structures	//
+	//													//
 	/////////////////////////////////////////////////////
 
 
-	public void pass2_2(ASTNode:ASTNode astn) {
+	public void pass2(ASTNode:ASTNode node) {
+		return;
 	}
+	
+	public void pass2(FileUnit:ASTNode astn) {
+		FileUnit fu = astn;
 
-	public void pass2_2(FileUnit:ASTNode astn) {
-		foreach (ASTNode n; astn.syntax) {
+		foreach (DNode n; astn.syntax) {
 			try {
-				if (n instanceof Import && ((Import)n).mode == Import.ImportMode.IMPORT_STATIC && !((Import)n).star)
-					continue; // process later
-				pass2_2(n);
+				if (n instanceof TypeDefOp) {
+					TypeDefOp tdop = (TypeDefOp)n;
+					if (tdop.typearg != null) {
+						tdop.type = new TypeRef(getStructType(tdop.type));
+					} else {
+						getStructType(tdop.type);
+						tdop.type.getType();
+					}
+				}
 			} catch(Exception e ) {
 				Kiev.reportError(n,e);
 			}
 		}
-		foreach (ASTNode n; astn.members)
-			pass2_2(n);
+
+		foreach (DNode n; astn.members)
+			pass2(n);
 	}
 
-	public void pass2_2(TypeDefOp:ASTNode astn) {
-		if (astn.type == null) {
-			if (astn.typearg != null) {
-				astn.type = new TypeRef(((BaseType)astn.type.getType()).clazz.type);
-			} else {
-				astn.type = new TypeRef(astn.type.getType());
-			}
-		}
-	}
-
-	public void pass2_2(Struct:ASTNode astn) {
-		int pos = astn.pos;
-		Struct me = astn;
-		trace(Kiev.debugResolve,"Pass 2_2 for class "+me);
-		/* Now, process 'extends' and 'implements' clauses */
-		if( me.isAnnotation() ) {
-			me.super_type = Type.tpObject;
-			me.interfaces.add(new TypeRef(Type.tpAnnotation));
-		}
-		else if( me.isInterface() ) {
-			me.super_type = Type.tpObject;
-			foreach(TypeRef tr; me.interfaces)
-				tr.getType();
-		}
-		else if( me.isEnum() ) {
-			me.super_type = Type.tpEnum;
-		}
-		else if( me.isSyntax() ) {
-			me.super_type = null;
-		}
-		else if( me.isPizzaCase() ) {
-			// already set
-			//me.super_clazz = ((Struct)me.parent).type;
-			assert (me.super_type.clazz == me.package_clazz);
-		}
-		else {
-			if (me.view_of != null)
-				me.view_of.getType();
-			Type sup = me.super_bound.getType();
-			if (sup == null && !me.name.name.equals(Type.tpObject.clazz.name.name))
-				me.super_type = Type.tpObject;
-			foreach(TypeRef tr; me.interfaces)
-				tr.getType();
-		}
-		{
-			TVar[] tvars = me.type.bindings().tvars;
-			for (int i=0; i < tvars.length; i++) {
-				if (!tvars[i].isBound()) {
-					me.setRuntimeArgTyped(true);
-					break;
+	public void pass2(Struct:ASTNode astn) {
+		try {
+			Struct clazz = (Struct)astn;
+			getStructType(clazz);
+			setStructArgTypes(clazz);
+			if( !clazz.isPackage() ) {
+				foreach (DNode s; clazz.members; s instanceof Struct) {
+					getStructType((Struct)s);
+					setStructArgTypes((Struct)s);
 				}
 			}
-			if (me.isRuntimeArgTyped())
-				me.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+		} catch(Exception e ) { Kiev.reportError(astn,e); }
+	}
+	
+	private BaseType getStructType(Struct clazz) {
+		if (clazz.isTypeResolved()) {
+			if (clazz.type == null)
+				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz);
+			return clazz.type;
 		}
+		
+		if (clazz.isPackage())
+			throw new RuntimeException("Unassigned type for a package: "+clazz);
 
-		// Process inner classes and cases
-		if( !me.isPackage() ) {
-			foreach (ASTNode m; astn.members)
-				pass2_2(m);
+		clazz.setTypeResolved(true);
+		
+		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
+			getStructType(p);
+
+		if (clazz.parent instanceof FileUnit)
+			clazz.setStatic(true);
+
+		if (clazz.isAnnotation()) {
+			clazz.super_type = Type.tpObject;
+			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
+			setupStructType(clazz, false);
 		}
-
+		else if (clazz.isEnum()) {
+			clazz.setStatic(true);
+			clazz.super_type = Type.tpEnum;
+			setupStructType(clazz, false);
+			// assign type of enum fields
+			if (clazz.isEnum()) {
+				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
+					Field f = (Field)n;
+					f.ftype = new TypeRef(clazz.type);
+				}
+			}
+		}
+		else if (clazz.isPizzaCase()) {
+			clazz.setStatic(true);
+			Struct p = clazz.ctx_clazz;
+			p.addCase(clazz);
+			getStructType(p);
+			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.type));
+		next_case_arg:
+			for(int i=0; i < p.args.length; i++) {
+				for(int j=0; j < clazz.args.length; j++) {
+					if (p.args[i].name.name == clazz.args[j].name.name) {
+						sup_ref.args.add(new TypeRef(clazz.args[j].getAType()));
+						continue next_case_arg;
+					}
+				}
+				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
+			}
+			clazz.super_bound = sup_ref;
+			getStructType(sup_ref);
+			setupStructType(clazz, true);
+		}
+		else if (clazz.isSyntax()) {
+			clazz.setPrivate(true);
+			clazz.setAbstract(true);
+			clazz.setMembersGenerated(true);
+			clazz.setStatementsGenerated(true);
+			clazz.super_type = null;
+			setupStructType(clazz, false);
+		}
+		else if( clazz.isInterface() ) {
+			clazz.super_type = Type.tpObject;
+			foreach(TypeRef tr; clazz.interfaces)
+				getStructType(tr);
+			setupStructType(clazz, true);
+		}
+		else {
+			if (clazz.view_of != null)
+				getStructType(clazz.view_of);
+			Type sup = getStructType(clazz.super_bound);
+			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
+				clazz.super_type = Type.tpObject;
+			foreach(TypeRef tr; clazz.interfaces)
+				getStructType(tr);
+			setupStructType(clazz, true);
+		}
+		
+		return clazz.type;
 	}
 
+	private void setupStructType(Struct clazz, boolean canHaveArgs) {
+		if (!canHaveArgs) {
+			if( clazz.args.length > 0 ) {
+				Kiev.reportError(clazz,"Type parameters are not allowed for "+clazz);
+				clazz.args.delAll();
+			}
+		}
+		else if (clazz.parent instanceof Struct) {
+			if (!clazz.isStatic())
+				clazz.args.delAll();
+		}
 
+		TVarSet vs = new TVarSet();
+		// add own class arguments
+		for (int i=0; i < clazz.args.length; i++)
+			vs.append(clazz.args[i].getAType(), null);
+		// add super-class bindings
+		if (clazz.super_bound != null && clazz.super_bound.getType() != null)
+			vs.append(clazz.super_type.bindings());
+		// add super-interfaces bindings
+		foreach(TypeRef tr; clazz.interfaces)
+			vs.append(tr.getType().bindings());
+		// add outer class bindings
+		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz)
+			vs.append(s.package_clazz.type.bindings());
 
+		// Generate type for this structure
+		clazz.type = Type.createRefType(clazz, vs);
+	}
 
+	private BaseType setStructArgTypes(Struct clazz) {
+		if (clazz.isArgsResolved())
+			return clazz.type;
 
+		// Process inheritance of class's arguments
+		for (int i=0; i < clazz.args.length; i++) {
+			TypeArgDef arg = clazz.args[i];
+			if( arg.super_bound != null ) {
+				Type sup = getStructType(arg.super_bound);
+				if (sup == null)
+					sup = Type.tpObject;
+				if( !sup.isReference() )
+					Kiev.reportError(clazz,"Argument extends bad type "+sup);
+				arg.getAType().super_type = sup;
+			}
+		}
+
+		// check super-class bindings
+		if (clazz.super_type != null) {
+			setStructArgTypes(clazz.super_type.clazz);
+			clazz.type.bind(clazz.super_type.bindings());
+		}
+		// add super-interfaces bindings
+		foreach(TypeRef tr; clazz.interfaces) {
+			setStructArgTypes(tr.getType().getStruct());
+			clazz.type.bind(tr.getType().bindings());
+		}
+		// add outer class bindings
+		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz) {
+			setStructArgTypes(s.package_clazz);
+			clazz.type.bind(s.package_clazz.type.bindings());
+		}
+
+		foreach (TVar tv; clazz.type.bindings().tvars) {
+			if (!tv.isBound()) {
+				clazz.setRuntimeArgTyped(true);
+				break;
+			}
+		}
+		if (clazz.isRuntimeArgTyped())
+			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+
+		clazz.setArgsResolved(true);
+		return clazz.type;
+	}
+
+	private Type getStructType(TypeRef tr) {
+		if (tr instanceof TypeNameRef) {
+			TypeNameRef tnr = (TypeNameRef)tr;
+			KString nm = tnr.name.name;
+			DNode@ v;
+			if (!PassInfo.resolveQualifiedNameR(tnr,v,new ResInfo(tnr,ResInfo.noForwards),nm))
+				throw new CompilerException(tnr,"Unresolved identifier "+nm);
+			if (v instanceof Struct)
+				getStructType((Struct)v);
+		}
+		else if (tr instanceof TypeWithArgsRef) {
+			TypeWithArgsRef twar = (TypeWithArgsRef)tr;
+			getStructType(twar.base_type);
+			foreach (TypeRef tr; twar.args)
+				getStructType(tr);
+		}
+		return tr.getType();
+	}
 
 	////////////////////////////////////////////////////
 	//												   //
@@ -686,8 +637,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				pass3(n);
 		}
 	}
-
-
 
 
 	////////////////////////////////////////////////////

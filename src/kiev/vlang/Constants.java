@@ -19,7 +19,7 @@ public interface Constants extends AccessFlags {
 
     // constant pool entry types
     public static final int CONSTANT_UTF8				= 1;
-//    public static final int CONSTANT_UNICODE			= 2;
+//	public static final int CONSTANT_UNICODE			= 2;
     public static final int CONSTANT_INTEGER			= 3;
     public static final int CONSTANT_FLOAT				= 4;
     public static final int CONSTANT_LONG				= 5;
@@ -332,9 +332,6 @@ public interface Constants extends AccessFlags {
 	public final static KString nameTypeInfo	= KString.from("$typeinfo");
 	public final static KString nameClTypeInfo	= KString.from("__ti__");
 	public final static KString nameUnderscore	= KString.from("_");
-//	public final static KString nameTypeInfoArgs= KString.from("typeargs");
-//	public final static KString nameTypeInfoRel	= KString.from("related");
-//	public final static KString nameTypeInfoFill= KString.from("$fill$typeinfo");
 	public final static KString nameGetTypeInfo	= KString.from("getTypeInfoField");
 	public final static KString nameSuper		= KString.from("super");
 	public final static KString nameInit		= KString.from("<init>");
@@ -399,23 +396,8 @@ public interface Constants extends AccessFlags {
 	public final static KString attrExceptions			= KString.from("Exceptions");
 	public final static KString attrInnerClasses		= KString.from("InnerClasses");
 	public final static KString attrConstantValue		= KString.from("ConstantValue");
-//	public final static KString attrClassArguments		= KString.from("kiev.ClassArguments");
-//	public final static KString attrSignature			= KString.from("kiev.Signature");
-//	public final static KString attrPizzaCase			= KString.from("kiev.PizzaCase");
-//	public final static KString attrMethodParams		= KString.from("kiev.MethodParams");
-//	public final static KString attrKiev				= KString.from("kiev.Kiev");
-//	public final static KString attrFlags				= KString.from("kiev.Flags");
-//	public final static KString attrAlias				= KString.from("kiev.Alias");
-//	public final static KString attrTypedef			= KString.from("kiev.Typedef");
-//	public final static KString attrOperator			= KString.from("kiev.Operator");
-//	public final static KString attrImport				= KString.from("kiev.Import");
-//	public final static KString attrEnum				= KString.from("kiev.Enum");
-//	public final static KString attrCheckFields		= KString.from("kiev.CheckFields");
 	public final static KString attrRequire			= KString.from("kiev.Require");
 	public final static KString attrEnsure				= KString.from("kiev.Ensure");
-//	public final static KString attrGenerations		= KString.from("kiev.Generations");
-//	public final static KString attrPackedFields		= KString.from("kiev.PackedFields");
-//	public final static KString attrPackerField		= KString.from("kiev.PackerField");
 	public final static KString attrRVAnnotations		= KString.from("RuntimeVisibleAnnotations");
 	public final static KString attrRIAnnotations		= KString.from("RuntimeInvisibleAnnotations");
 	public final static KString attrRVParAnnotations	= KString.from("RuntimeVisibleParameterAnnotations");
@@ -442,25 +424,6 @@ public interface Constants extends AccessFlags {
 	public final static KString sigDouble	= KString.from("D");
 	public final static KString nameMethod	= KString.from("<method>");
 	public final static KString sigMethod	= KString.from("(");
-
-//	public final static Type tpVoid			= Type.tpVoid;
-//	public final static Type tpBoolean		= Type.tpBoolean;
-//	public final static Type tpByte			= Type.tpByte;
-//	public final static Type tpChar			= Type.tpChar;
-//	public final static Type tpShort		= Type.tpShort;
-//	public final static Type tpInt			= Type.tpInt;
-//	public final static Type tpLong			= Type.tpLong;
-//	public final static Type tpFloat		= Type.tpFloat;
-//	public final static Type tpDouble		= Type.tpDouble;
-//	public final static Type tpNull			= Type.tpNull;
-//	public final static Type tpObject		= Type.tpObject;
-//	public final static Type tpArray		= Type.tpArray;
-//	public final static Type tpCloneable	= Type.tpCloneable;
-//	public final static Type tpString		= Type.tpString;
-//	public final static Type tpThrowable	= Type.tpThrowable;
-//	public final static Type tpError		= Type.tpError;
-//	public final static Type tpException	= Type.tpException;
-//	public final static Type tpRuntimeException = Type.tpRuntimeException;
 
 
     /** Binary operators priority, image and name */

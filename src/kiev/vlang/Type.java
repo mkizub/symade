@@ -79,24 +79,16 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return (BaseType)t;
 	}
 
-	public static BaseType newRefType(Struct clazz, Type[] args) {
-		if( clazz.type.args.length != args.length )
-			throw new RuntimeException("Class "+clazz+" requares "+clazz.type.args.length+" arguments");
-		for(int i=0; i < args.length; i++) {
-			if( !args[i].isInstanceOf(clazz.type.args[i]) ) {
-				if( clazz.type.args[i].getSuperType() == Type.tpObject && !args[i].isReference())
-					;
-				else
-					throw new RuntimeException("Type "+args[i]+" must be an instance of "+clazz.type.args[i]);
-			}
-		}
-		KString signature = Signature.from(clazz,args);
+	public static BaseType createRefType(Struct clazz, TVarSet bindings) {
+		KString signature = Signature.from(clazz,bindings);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
+			if (t.bindings == null)
+				t.bindings = bindings;
 			return (BaseType)t;
 		}
-		t = new BaseType(signature, clazz,args);
+		t = new BaseType(clazz.imeta_type, signature, bindings);
 		return (BaseType)t;
 	}
 
@@ -104,25 +96,13 @@ public abstract class Type implements StdTypes, AccessFlags {
 		Type ct = clazz.type;
 		if (ct.bindings().length != bindings.length )
 			throw new RuntimeException("Class "+clazz+" requares "+ct.bindings().length+" type bindings");
-		Type[] args = new Type[clazz.args.length];
-		for (int i=0; i < args.length; i++) {
-			ArgumentType at = clazz.args[i].getAType();
-			for (int b=0; b < bindings.length; b++) {
-				if (bindings[b].var == at) {
-					args[i] = bindings[b].result();
-					break;
-				}
-			}
-			if (args[i] == null)
-				args[i] = at;
-		}
-		KString signature = Signature.from(clazz,args);
+		KString signature = Signature.from(clazz,bindings);
 		BaseType t = (BaseType)typeHash.get(signature.hashCode(),fun (Type t)->boolean { return t.signature.equals(signature); });
 		if( t != null ) {
 			trace(Kiev.debugCreation,"Type "+t+" with signature "+t.signature+" already exists");
 			return (BaseType)t;
 		}
-		t = new BaseType(clazz.imeta_type, signature, clazz, args, bindings);
+		t = new BaseType(clazz.imeta_type, signature, bindings);
 		t.flags |= flReference;
 		return (BaseType)t;
 	}
@@ -427,7 +407,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 	}
 
 	public static BaseType getProxyType(Type tp) {
-		return newRefType(Type.tpRefProxy.clazz,new Type[]{tp});
+		TVarSet set = new TVarSet();
+		set.append(tpRefProxy.clazz.args[0].getAType(), tp);
+		return (BaseType)tpRefProxy.bind(set);
 //		if( tp.isReference() )			return Type.tpCellObject;
 //		else if( tp == Type.tpBoolean )	return Type.tpCellBoolean;
 //		else if( tp == Type.tpByte )	return Type.tpCellByte;
@@ -447,35 +429,34 @@ public abstract class Type implements StdTypes, AccessFlags {
 public final class BaseType extends Type {
 	public static BaseType[]	emptyArray = new BaseType[0];
 
-	public final						Type[]		args;
+	final Type[]		args;
 	
 	BaseType(Struct clazz) {
-		this(clazz.imeta_type, Signature.from(clazz,null), clazz, Type.emptyArray);
-	}
-	
-	BaseType(Struct clazz, Type[] args) {
-		this(clazz.imeta_type, Signature.from(clazz,null), clazz, args);
+		this(clazz.imeta_type, Signature.from(clazz,Type.emptyArray), Type.emptyArray);
 	}
 	
 	BaseType(KString signature, Struct clazz) {
-		this(clazz.imeta_type, signature, clazz, Type.emptyArray);
+		this(clazz.imeta_type, signature, Type.emptyArray);
 	}
 	
 	BaseType(KString signature, Struct clazz, Type[] args) {
-		this(clazz.imeta_type, signature, clazz, args);
+		this(clazz.imeta_type, signature, args);
 	}
 	
-	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args) {
+	BaseType(BaseTypeProvider meta_type, KString signature, Type[] args) {
 		super(meta_type, signature, null);
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		checkArgumented(this);
 		typeHash.put(this);
 	}
 	
-	BaseType(BaseTypeProvider meta_type, KString signature, Struct clazz, Type[] args, TVarSet bindings) {
+	BaseType(BaseTypeProvider meta_type, KString signature, TVarSet bindings) {
 		super(meta_type, signature, bindings);
-		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
-		checkArgumented(this);
+		this.args = Type.emptyArray;
+		foreach(TVar v; bindings.tvars; v.bnd == null || v.result().isArgumented()) {
+			flags |= flArgumented;
+			break;
+		}
 		typeHash.put(this);
 	}
 	
@@ -761,25 +742,29 @@ public class ArrayType extends Type {
 public class ArgumentType extends Type {
 
 	/** Variouse names of the type */
-	public ClazzName			name;
+	public final ClazzName			name;
+
+	/** The class this argument belongs to */
+	public final Struct				definer;
 
 	/** Bound super-class for class arguments */
 	public Type					super_type;
-
-	private ArgumentType(KString signature, ClazzName name, Type sup) {
+	
+	private ArgumentType(KString signature, ClazzName name, Struct definer, Type sup) {
 		super(ArgumentTypeProvider.instance, signature, TVarSet.emptySet);
 		this.name = name;
+		this.definer = definer;
 		super_type = sup;
 		typeHash.put(this);
 	}
 	
-	public static ArgumentType newArgumentType(ClazzName name, Type sup) {
+	public static ArgumentType newArgumentType(ClazzName name, Struct definer, Type sup) {
 		KString sign = KString.from("A"+name.bytecode_name+";");
 		ArgumentType t = (ArgumentType)typeHash.get(sign.hashCode(),fun (Type t)->boolean { return t.signature.equals(sign); });
 		if( t != null ) return t;
 		if (sup == null)
 			sup = tpObject;
-		t = new ArgumentType(sign,name,sup);
+		t = new ArgumentType(sign,name,definer,sup);
 		t.flags	|= flReference | flArgumented;
 		typeHash.put(t);
 		trace(Kiev.debugCreation,"New type argument: "+t+" with signature "+t.signature);
@@ -790,7 +775,7 @@ public class ArgumentType extends Type {
 		KString nm = KString.from(owner.name.name+"$"+name);
 		KString bc = KString.from(owner.name.bytecode_name+"$"+name);
 		ClazzName cn = new ClazzName(nm,name,bc,true,true);
-		return newArgumentType(cn,null);
+		return newArgumentType(cn,owner,null);
 	}
 
 	public JType getJType() {

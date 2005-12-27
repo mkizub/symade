@@ -84,6 +84,8 @@ public class Env extends Struct {
 		root = this;
 		setPackage(true);
 		setResolved(true);
+		setTypeResolved(true);
+		setArgsResolved(true);
 		type = Type.tpEnv;
 	}
 
@@ -132,8 +134,11 @@ public class Env extends Struct {
 			if( cleanup ) {
 				cl.flags = access;
 				cl.package_clazz = outer;
+				cl.typeinfo_clazz = null;
+				cl.view_of = null;
 				cl.super_bound = new TypeRef();
 				cl.interfaces.delAll();
+				cl.args.delAll();
 				cl.sub_clazz.delAll();
 				foreach(ASTNode n; cl.members; n instanceof Method && ((Method)n).isOperatorMethod() )
 					Operator.cleanupMethod((Method)n);
@@ -173,7 +178,10 @@ public class Env extends Struct {
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			if (bcl.type == null)
-				bcl.type = Type.createRefType(bcl,Type.emptyArray);
+				bcl.type = Type.createRefType(bcl,TVarSet.emptySet);
+			bcl.setResolved(true);
+			bcl.setTypeResolved(true);
+			bcl.setArgsResolved(true);
 			return (Struct)bcl;
 		}
 		return newPackage(ClazzName.fromToplevelName(name,false));
@@ -187,7 +195,10 @@ public class Env extends Struct {
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			if (bcl.type == null)
-				bcl.type = Type.createRefType(bcl,Type.emptyArray);
+				bcl.type = Type.createRefType(bcl,TVarSet.emptySet);
+			bcl.setResolved(true);
+			bcl.setTypeResolved(true);
+			bcl.setArgsResolved(true);
 			return (Struct)bcl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
@@ -197,7 +208,10 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = Type.createRefType(cl, Type.emptyArray);
+		cl.type = Type.createRefType(cl, TVarSet.emptySet);
+		cl.setResolved(true);
+		cl.setTypeResolved(true);
+		cl.setArgsResolved(true);
 		return cl;
 	}
 
@@ -421,8 +435,10 @@ public class Env extends Struct {
 					pkg = getStruct(pkg.name);
 					//pkg = loadClazz(pkg.name);
 				}
-				if( cl == null )
+				if( cl == null ) {
 					cl = newStruct(name,false);
+					new FileUnit(KString.from(name.short_name+".class"), pkg).members.add(cl);
+				}
 			}
 			cl = new Bytecoder(cl,clazz,null).readClazz();
 			diff_time = System.currentTimeMillis() - curr_time;
