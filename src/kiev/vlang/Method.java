@@ -653,7 +653,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				fp.meta.verify();
 		}
 		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs,Type.newArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
 			params.append(va);
 		}
 		checkRebuildTypes();

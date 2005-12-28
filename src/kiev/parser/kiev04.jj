@@ -242,13 +242,6 @@ public abstract class kiev040 {
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
 		
-		if (clazz.isAnnotation()) {
-			clazz.super_type = Type.tpObject;
-			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
-			clazz.type = Type.createRefType(clazz, new TVarSet());
-			clazz.setTypeResolved(true);
-		}
-
 		return clazz;
 	}
 

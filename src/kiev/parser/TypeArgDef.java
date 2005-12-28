@@ -94,12 +94,6 @@ public class TypeArgDef extends TypeDef {
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
-//			foreach (TypeArgDef pa; s.package_clazz.args; pa.name.name == name.name) {
-//				this.lnk = pa.getAType();
-//				if (this.lnk == null)
-//					throw new CompilerException(this,"Type "+this+" is not found");
-//				return this.lnk;
-//			}
 			KString nm = KString.from(s.name.name+"$"+name.name);
 			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
 			cn = new ClazzName(nm,name.name,bc,true,true);
@@ -108,11 +102,9 @@ public class TypeArgDef extends TypeDef {
 			KString nm = KString.from("$"+cnt+"$"+name.name);
 			cn = new ClazzName(nm,name.name,nm,true,true);
 		}
-		BaseType sup = null;
-		if (Kiev.pass_no.ordinal() > TopLevelPass.passStructTypes.ordinal()) {
-			if (super_bound != null)
-				sup = (BaseType)super_bound.getType();
-		}
+		Type sup = Type.tpObject;
+		if (super_bound != null)
+			sup = super_bound.getType();
 		this.lnk = ArgumentType.newArgumentType(cn,ctx_clazz,sup);
 		return this.lnk;
 	}

@@ -80,13 +80,13 @@ public class Env extends Struct {
 		really there may be no instances of this class
 	 */
 	private Env() {
-		super(ClazzName.Empty);
+		super();
 		root = this;
 		setPackage(true);
 		setResolved(true);
-		setTypeResolved(true);
-		setArgsResolved(true);
-		type = Type.tpEnv;
+		this.imeta_type = new BaseTypeProvider(this);
+		this.type = Type.tpEnv; // call StdType initialization
+		this.super_bound = new TypeRef(Type.tpObject);
 	}
 
 	public Object copy() {
@@ -178,10 +178,8 @@ public class Env extends Struct {
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			if (bcl.type == null)
-				bcl.type = Type.createRefType(bcl,TVarSet.emptySet);
+				bcl.type = BaseType.createRefType(bcl,TVarSet.emptySet);
 			bcl.setResolved(true);
-			bcl.setTypeResolved(true);
-			bcl.setArgsResolved(true);
 			return (Struct)bcl;
 		}
 		return newPackage(ClazzName.fromToplevelName(name,false));
@@ -195,10 +193,8 @@ public class Env extends Struct {
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
 			if (bcl.type == null)
-				bcl.type = Type.createRefType(bcl,TVarSet.emptySet);
+				bcl.type = BaseType.createRefType(bcl,TVarSet.emptySet);
 			bcl.setResolved(true);
-			bcl.setTypeResolved(true);
-			bcl.setArgsResolved(true);
 			return (Struct)bcl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
@@ -208,10 +204,8 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = Type.createRefType(cl, TVarSet.emptySet);
+		cl.type = BaseType.createRefType(cl, TVarSet.emptySet);
 		cl.setResolved(true);
-		cl.setTypeResolved(true);
-		cl.setArgsResolved(true);
 		return cl;
 	}
 

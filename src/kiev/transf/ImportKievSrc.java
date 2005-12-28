@@ -106,16 +106,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			astn.resolved = n;
 	}
 
-//	public void processSyntax(TypeDefOp:ASTNode astn) {
-//		try {
-//			if (astn.typearg != null) {
-//				astn.type = new TypeRef(astn.type.getType().getInitialType());
-//			} else {
-//				astn.type = new TypeRef(astn.type.getType());
-//			}
-//		} catch (RuntimeException e) { /* ignore */ }
-//	}
-
 	
 	public void processSyntax(Opdef:ASTNode astn) {
 		int prior = astn.prior;
@@ -244,9 +234,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if (n instanceof TypeDefOp) {
 					TypeDefOp tdop = (TypeDefOp)n;
 					if (tdop.typearg != null) {
-						tdop.type = new TypeRef(getStructType(tdop.type));
+						tdop.type = new TypeRef(tdop.type.getType());
 					} else {
-						getStructType(tdop.type);
 						tdop.type.getType();
 					}
 				}
@@ -263,11 +252,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		try {
 			Struct clazz = (Struct)astn;
 			getStructType(clazz);
-			setStructArgTypes(clazz);
 			if( !clazz.isPackage() ) {
 				foreach (DNode s; clazz.members; s instanceof Struct) {
 					getStructType((Struct)s);
-					setStructArgTypes((Struct)s);
 				}
 			}
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
@@ -275,14 +262,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	
 	private BaseType getStructType(Struct clazz) {
 		if (clazz.isTypeResolved()) {
-			if (clazz.type == null)
+			if (!clazz.isArgsResolved())
 				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz);
 			return clazz.type;
 		}
 		
-		if (clazz.isPackage())
-			throw new RuntimeException("Unassigned type for a package: "+clazz);
-
 		clazz.setTypeResolved(true);
 		
 		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
@@ -325,7 +309,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
 			}
 			clazz.super_bound = sup_ref;
-			getStructType(sup_ref);
+			sup_ref.getType();
 			setupStructType(clazz, true);
 		}
 		else if (clazz.isSyntax()) {
@@ -339,20 +323,28 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		else if( clazz.isInterface() ) {
 			clazz.super_type = Type.tpObject;
 			foreach(TypeRef tr; clazz.interfaces)
-				getStructType(tr);
+				tr.getType();
 			setupStructType(clazz, true);
 		}
 		else {
 			if (clazz.view_of != null)
-				getStructType(clazz.view_of);
-			Type sup = getStructType(clazz.super_bound);
+				clazz.view_of.getType();
+			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
 			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
 				clazz.super_type = Type.tpObject;
 			foreach(TypeRef tr; clazz.interfaces)
-				getStructType(tr);
+				tr.getType();
 			setupStructType(clazz, true);
 		}
 		
+		foreach (TVar tv; clazz.type.bindings().tvars; !tv.isBound()) {
+			clazz.setRuntimeArgTyped(true);
+			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
+			break;
+		}
+
+		clazz.setArgsResolved(true);
+			
 		return clazz.type;
 	}
 
@@ -367,88 +359,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			if (!clazz.isStatic())
 				clazz.args.delAll();
 		}
-
-		TVarSet vs = new TVarSet();
-		// add own class arguments
-		for (int i=0; i < clazz.args.length; i++)
-			vs.append(clazz.args[i].getAType(), null);
-		// add super-class bindings
-		if (clazz.super_bound != null && clazz.super_bound.getType() != null)
-			vs.append(clazz.super_type.bindings());
-		// add super-interfaces bindings
-		foreach(TypeRef tr; clazz.interfaces)
-			vs.append(tr.getType().bindings());
-		// add outer class bindings
-		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz)
-			vs.append(s.package_clazz.type.bindings());
-
-		// Generate type for this structure
-		clazz.type = Type.createRefType(clazz, vs);
-	}
-
-	private BaseType setStructArgTypes(Struct clazz) {
-		if (clazz.isArgsResolved())
-			return clazz.type;
-
-		// Process inheritance of class's arguments
-		for (int i=0; i < clazz.args.length; i++) {
-			TypeArgDef arg = clazz.args[i];
-			if( arg.super_bound != null ) {
-				Type sup = getStructType(arg.super_bound);
-				if (sup == null)
-					sup = Type.tpObject;
-				if( !sup.isReference() )
-					Kiev.reportError(clazz,"Argument extends bad type "+sup);
-				arg.getAType().super_type = sup;
-			}
-		}
-
-		// check super-class bindings
-		if (clazz.super_type != null) {
-			setStructArgTypes(clazz.super_type.clazz);
-			clazz.type.bind(clazz.super_type.bindings());
-		}
-		// add super-interfaces bindings
-		foreach(TypeRef tr; clazz.interfaces) {
-			setStructArgTypes(tr.getType().getStruct());
-			clazz.type.bind(tr.getType().bindings());
-		}
-		// add outer class bindings
-		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz) {
-			setStructArgTypes(s.package_clazz);
-			clazz.type.bind(s.package_clazz.type.bindings());
-		}
-
-		foreach (TVar tv; clazz.type.bindings().tvars) {
-			if (!tv.isBound()) {
-				clazz.setRuntimeArgTyped(true);
-				break;
-			}
-		}
-		if (clazz.isRuntimeArgTyped())
-			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
-
-		clazz.setArgsResolved(true);
-		return clazz.type;
-	}
-
-	private Type getStructType(TypeRef tr) {
-		if (tr instanceof TypeNameRef) {
-			TypeNameRef tnr = (TypeNameRef)tr;
-			KString nm = tnr.name.name;
-			DNode@ v;
-			if (!PassInfo.resolveQualifiedNameR(tnr,v,new ResInfo(tnr,ResInfo.noForwards),nm))
-				throw new CompilerException(tnr,"Unresolved identifier "+nm);
-			if (v instanceof Struct)
-				getStructType((Struct)v);
-		}
-		else if (tr instanceof TypeWithArgsRef) {
-			TypeWithArgsRef twar = (TypeWithArgsRef)tr;
-			getStructType(twar.base_type);
-			foreach (TypeRef tr; twar.args)
-				getStructType(tr);
-		}
-		return tr.getType();
 	}
 
 	////////////////////////////////////////////////////

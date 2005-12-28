@@ -56,21 +56,21 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				if (type != null)
 					type.invalidate();
 			}
-			else if (attr.name == "args") {
-				if (type != null)
-					type.invalidate();
-			}
-			if (attr.name == "super_bound") {
-				if (type != null)
-					type.invalidate();
-			}
-			else if (attr.name == "interfaces") {
-				if (type != null)
-					type.invalidate();
-			}
 			else if (attr.name == "meta") {
 				if (type != null)
 					type.invalidate();
+			}
+			else if (attr.name == "args") {
+				imeta_type.version++;
+			}
+			if (attr.name == "super_bound") {
+				imeta_type.version++;
+			}
+			else if (attr.name == "interfaces") {
+				imeta_type.version++;
+			}
+			else if (attr.name == "package_clazz") {
+				imeta_type.version++;
 			}
 		}	
 	}
@@ -362,28 +362,19 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	
 	Struct() {
 		super(new StructImpl(0,0));
-		imeta_type = new BaseTypeProvider(this);
+		this.name = ClazzName.Empty;
 	}
 	
-	protected Struct(ClazzName name) {
-		super(new StructImpl(0,0));
-		imeta_type = new BaseTypeProvider(this);
-		this.name = name;
-		this.super_bound = new TypeRef();
-		this.meta = new MetaSet();
-		this.acc = new Access(0);
-	}
-
 	public Struct(ClazzName name, Struct outer, int acc) {
 		super(new StructImpl(0,acc));
-		imeta_type = new BaseTypeProvider(this);
 		this.name = name;
+		this.imeta_type = new BaseTypeProvider(this);
+		this.type = BaseType.createRefType(this, TVarSet.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
 		this.acc = new Access(0);
-		trace(Kiev.debugCreation,"New clazz created: "+name.short_name
-			+" as "+name.name+", member of "+outer);
+		trace(Kiev.debugCreation,"New clazz created: "+name.short_name	+" as "+name.name+", member of "+outer);
 	}
 
 	@getter public Struct get$child_ctx_clazz()	{ return this; }
@@ -1060,7 +1051,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
 			else
 				typeinfo_clazz.super_type = Type.tpTypeInfo;
-			typeinfo_clazz.type = Type.createRefType(typeinfo_clazz, Type.emptyArray);
+			typeinfo_clazz.type = BaseType.createRefType(typeinfo_clazz, Type.emptyArray);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 

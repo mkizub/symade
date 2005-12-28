@@ -79,7 +79,7 @@ public class TypeExpr extends TypeRef {
 	    Type tp = arg.getType();
 		DNode@ v;
 		if (op == Constants.nameArrayOp) {
-			tp = Type.newArrayType(tp);
+			tp = new ArrayType(tp);
 		} else {
 			Type t;
 			if (!PassInfo.resolveNameR(this,v,new ResInfo(this),op)) {

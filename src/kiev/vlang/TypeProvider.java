@@ -288,10 +288,10 @@ public final class TVar {
 }
 
 public abstract class TypeProvider {
+	public int version;
 	public TypeProvider() {}
 	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
-	public abstract TVarSet bindings(Type tp);
 }
 
 public class CoreTypeProvider extends TypeProvider {
@@ -302,9 +302,6 @@ public class CoreTypeProvider extends TypeProvider {
 	}
 	public Type rebind(Type t, TVarSet bindings) {
 		return t;
-	}
-	public TVarSet bindings(Type owner) {
-		return TVarSet.emptySet;
 	}
 }
 
@@ -317,26 +314,14 @@ public class BaseTypeProvider extends TypeProvider {
 	
 	public Type bind(Type t, TVarSet bindings) {
 		if (!t.isArgumented() || bindings.length == 0) return t;
-		return Type.newRefType(this.clazz, t.bindings().bind(bindings));
+		return new BaseType(this.clazz, t.bindings().bind(bindings));
 	}
 	
 	public Type rebind(Type t, TVarSet bindings) {
 		if (!t.isArgumented() || bindings.length == 0) return t;
-		return Type.newRefType(this.clazz, t.bindings().rebind(bindings));
+		return new BaseType(this.clazz, t.bindings().rebind(bindings));
 	}
 	
-	public TVarSet bindings(Type owner) {
-		BaseType t = (BaseType)owner;
-		TVarSet vs = new TVarSet();
-		for (int i=0; i < clazz.args.length; i++)
-			vs.append(clazz.args[i].getAType(), t.args[i]);
-		foreach (Type st; t.getDirectSuperTypes())
-			vs.append(st.bindings());
-		;
-		for (Struct s = clazz; !s.isStatic() && !s.package_clazz.isPackage(); s = s.package_clazz)
-			vs.append(s.package_clazz.type.bindings());
-		return vs;
-	}
 }
 
 public class ArrayTypeProvider extends TypeProvider {
@@ -348,10 +333,6 @@ public class ArrayTypeProvider extends TypeProvider {
 	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;
 		return ArrayType.newArrayType(((ArrayType)t).arg.rebind(bindings));
-	}
-	public TVarSet bindings(Type owner) {
-		ArrayType a = (ArrayType)owner;
-		return a.arg.bindings();
 	}
 }
 
@@ -371,9 +352,6 @@ public class ArgumentTypeProvider extends TypeProvider {
 		}
 		// Not found, return itself
 		return t;
-	}
-	public TVarSet bindings(Type owner) {
-		return TVarSet.emptySet;
 	}
 }
 
@@ -396,10 +374,6 @@ public class WrapperTypeProvider extends TypeProvider {
 		if (!t.isArgumented() || bindings.length == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
 	}
-	public TVarSet bindings(Type owner) {
-		WrapperType w = (WrapperType)owner;
-		return w.getUnwrappedType().bindings();
-	}
 }
 
 public class CallTypeProvider extends TypeProvider {
@@ -421,9 +395,6 @@ public class CallTypeProvider extends TypeProvider {
 			return ClosureType.newClosureType(tpargs,ret);
 		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");
 		return t;
-	}
-	public TVarSet bindings(Type owner) {
-		return TVarSet.emptySet;
 	}
 }
 
