@@ -97,7 +97,7 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 		if (hasMethod(s, nameGetDFlowIn)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
-			MethodType mt = (MethodType)Type.fromSignature(signGetDFlowIn);
+			MethodType mt = (MethodType)Signature.getType(signGetDFlowIn);
 			Method dfIn = new Method(nameGetDFlowIn,mt,ACC_PUBLIC);
 			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
 			dfIn.body = new BlockStat(0);
@@ -204,11 +204,11 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 				}
 				Method dfIn;
 				if (seq) {
-					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInSeq);
+					MethodType mt = (MethodType)Signature.getType(signGetDFlowInSeq);
 					dfIn = new Method(fname,mt,ACC_PRIVATE);
 					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
-					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
+					MethodType mt = (MethodType)Signature.getType(signGetDFlowInFld);
 					dfIn = new Method(fname,mt,ACC_PRIVATE);
 				}
 				dfIn.body = new BlockStat(0);

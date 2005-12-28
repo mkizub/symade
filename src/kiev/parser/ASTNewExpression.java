@@ -150,7 +150,7 @@ public class ASTNewExpression extends ENode {
 					targs = (Type[])Arrays.append(targs,at);
 					params.append(new FormPar(pos,KString.from("arg$"+i),at,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				}
-				mt = MethodType.newMethodType(targs,Type.tpVoid);
+				mt = new MethodType(targs,Type.tpVoid);
 				Constructor init = new Constructor(mt,ACC_PUBLIC);
 				init.params.addAll(params.toArray());
 				init.pos = pos;

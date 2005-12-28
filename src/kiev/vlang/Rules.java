@@ -879,7 +879,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 			itype = ctype;
 			mode = JENUM;
 		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
-				nameElements,MethodType.newMethodType(Type.emptyArray,Type.tpAny))
+				nameElements,new MethodType(Type.emptyArray,Type.tpAny))
 		) {
 			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;

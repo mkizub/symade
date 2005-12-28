@@ -68,7 +68,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		// Cast from int
 		{
 			MethodType tomet;
-		 	tomet = MethodType.newMethodType(new Type[]{Type.tpInt},clazz.type);
+		 	tomet = new MethodType(new Type[]{Type.tpInt},clazz.type);
 			Method tome = new Method(nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
@@ -99,7 +99,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		{
 			MethodType tostrt;
 			int acc_flags;
-			tostrt = MethodType.newMethodType(Type.emptyArray,Type.tpString);
+			tostrt = new MethodType(Type.emptyArray,Type.tpString);
 			acc_flags = ACC_PUBLIC;
 			Method tostr = new Method(KString.from("toString"),tostrt,acc_flags);
 			tostr.name.addAlias(nameCastOp);
@@ -137,7 +137,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		{
 			MethodType fromstrt, jfromstrt;
 			int acc_flags;
-			fromstrt = MethodType.newMethodType(new Type[]{Type.tpString},clazz.type);
+			fromstrt = new MethodType(new Type[]{Type.tpString},clazz.type);
 			jfromstrt= fromstrt;
 			acc_flags = ACC_PUBLIC | ACC_STATIC;
 			Method fromstr = new Method(KString.from("valueOf"),fromstrt,acc_flags);

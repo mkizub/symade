@@ -160,7 +160,7 @@ public final class NewExpr extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = (MethodType)Type.getRealType(type,MethodType.newMethodType(ta,type));
+			MethodType mt = (MethodType)Type.getRealType(type,new MethodType(ta,type));
 			Method@ m;
 			// First try overloaded 'new', than real 'new'
 			if( (ctx_method==null || !ctx_method.name.equals(nameNewOp)) ) {
@@ -175,7 +175,7 @@ public final class NewExpr extends ENode {
 					return;
 				}
 			}
-			mt = (MethodType)Type.getRealType(type,MethodType.newMethodType(ta,Type.tpVoid));
+			mt = (MethodType)Type.getRealType(type,new MethodType(ta,Type.tpVoid));
 			ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports|ResInfo.noStatic);
 			if( PassInfo.resolveBestMethodR(type,m,info,nameInit,mt) ) {
 				func = m;
@@ -511,7 +511,7 @@ public final class NewClosure extends ENode {
 //	public NewClosure(int pos, Method func) {
 //		super(new NewClosureImpl(pos));
 //		this.func = func;
-//		this.type = new TypeClosureRef(ClosureType.newClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
+//		this.type = new TypeClosureRef(new ClosureType(Type.tpClosureClazz,func.type.args,func.type.ret));
 //	}
 
 	public String toString() {

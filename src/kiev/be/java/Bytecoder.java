@@ -121,7 +121,7 @@ public class Bytecoder implements JConstants {
 				f_init = ConstExpr.fromConst(a.value);
 			}
 		}
-		Type ftype = Signature.getType(new KString.KStringScanner(f_type));
+		Type ftype = Signature.getType(f_type);
 		f = new Field(f_name,ftype,f_flags);
 		if( acc != null ) f.acc = acc;
 		if( nm != null )
@@ -175,11 +175,11 @@ public class Bytecoder implements JConstants {
 				}
 			}
 		}
-		MethodType mtype = (MethodType)Signature.getType(new KString.KStringScanner(m_type));
+		MethodType mtype = (MethodType)Signature.getType(m_type);
 		MethodType jtype = mtype;
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = MethodType.newMethodType(mtype.args,Type.tpRule);
+				mtype = new MethodType(mtype.args,Type.tpRule);
 				m = new RuleMethod(m_name,mtype,m_flags);
 			}
 			else if (m_name == nameInit || m_name == nameClassInit)

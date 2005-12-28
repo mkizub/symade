@@ -221,7 +221,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		}
 		if( !set_found && f.acc.writeable() ) {
 			Method set_var = new Method(set_name,
-				MethodType.newMethodType(new Type[]{f.type},Type.tpVoid),
+				new MethodType(new Type[]{f.type},Type.tpVoid),
 				f.getJavaFlags()
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
@@ -238,7 +238,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			if( !f.isAbstract() ) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				set_var.body = body;
-				Type astT = Type.fromSignature(KString.from("Lkiev/vlang/ASTNode;"));
+				Type astT = Signature.getType(KString.from("Lkiev/vlang/ASTNode;"));
 				if (f.meta.get(ProcessVNode.mnAtt) != null && f.type.isInstanceOf(astT)) {
 					ENode p_st = new IfElseStat(0,
 							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
@@ -323,7 +323,7 @@ final class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			return;		// no need to generate getter
 		if( !get_found && f.acc.readable()) {
 			Method get_var = new Method(get_name,
-				MethodType.newMethodType(Type.emptyArray,f.type),
+				new MethodType(Type.emptyArray,f.type),
 				f.getJavaFlags()
 			);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)

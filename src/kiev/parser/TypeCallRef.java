@@ -74,7 +74,7 @@ public class TypeCallRef extends TypeRef {
 		for(int i=0; i < atypes.length; i++) {
 			atypes[i] = args[i].getType();
 		}
-		this.lnk = MethodType.newMethodType(atypes,rt);
+		this.lnk = new MethodType(atypes,rt);
 		return (MethodType)this.lnk;
 	}
 	public Type getType() {

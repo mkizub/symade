@@ -68,7 +68,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(ta,Type.tpVoid);
+			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.type,m,info,ctx_method.name.name,mt) )
@@ -87,7 +87,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(ta,Type.tpVoid);
+			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
 				if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
@@ -106,7 +106,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for(int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			mt = MethodType.newMethodType(ta,null);
+			mt = new MethodType(ta,null);
 			ResInfo info = new ResInfo(this);
 			try {
 				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
@@ -152,7 +152,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(ta,Type.tpVoid);
+			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(ctx_clazz.type,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
@@ -170,7 +170,7 @@ public class ASTCallExpression extends ENode {
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
-			MethodType mt = MethodType.newMethodType(ta,Type.tpVoid);
+			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			if( !PassInfo.resolveBestMethodR(ctx_clazz.super_type,m,info,ctx_method.name.name,mt) )
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
@@ -191,7 +191,7 @@ public class ASTCallExpression extends ENode {
 				Type[] ta = new Type[args.length];
 				for(int i=0; i < ta.length; i++)
 					ta[i] = args[i].getType();
-				mt = MethodType.newMethodType(ta,ret);
+				mt = new MethodType(ta,ret);
 			}
 			ResInfo info = new ResInfo(this);
 			if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {

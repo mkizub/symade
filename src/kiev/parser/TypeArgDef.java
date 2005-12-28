@@ -105,7 +105,7 @@ public class TypeArgDef extends TypeDef {
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = ArgumentType.newArgumentType(cn,ctx_clazz,sup);
+		this.lnk = new ArgumentType(cn,ctx_clazz,sup);
 		return this.lnk;
 	}
 

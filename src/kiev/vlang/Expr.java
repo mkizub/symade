@@ -1791,7 +1791,7 @@ public class CastExpr extends ENode {
 		Method@ v;
 		ResInfo info = new ResInfo(this,ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 		v.$unbind();
-		MethodType mt = MethodType.newMethodType(Type.emptyArray,this.type.getType());
+		MethodType mt = new MethodType(Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			ENode call = info.buildCall(this,(ENode)~expr,(Method)v,ENode.emptyArray);
 			if (this.type.getType().isReference())
@@ -1801,7 +1801,7 @@ public class CastExpr extends ENode {
 		}
 		v.$unbind();
 		info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports);
-		mt = MethodType.newMethodType(new Type[]{expr.getType()},this.type.getType());
+		mt = new MethodType(new Type[]{expr.getType()},this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
 			assert(v.isStatic());
 			ENode call = new CallExpr(pos,null,(Method)v,new ENode[]{(ENode)~expr});

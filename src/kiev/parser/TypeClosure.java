@@ -57,7 +57,7 @@ public class TypeClosureRef extends TypeRef {
 			tps[i] = types[i].getType();
 		}
         Type ret = types[types.length-1].getType();
-        this.lnk = ClosureType.newClosureType(tps,ret);
+        this.lnk = new ClosureType(tps,ret);
 		return this.lnk;
 	}
 

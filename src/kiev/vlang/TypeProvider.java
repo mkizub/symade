@@ -390,9 +390,9 @@ public class CallTypeProvider extends TypeProvider {
 			tpargs[i] = ct.args[i].rebind(bindings);
 		Type ret = ct.ret.rebind(bindings);
 		if (t instanceof MethodType)
-			return MethodType.newMethodType(tpargs,ret);
+			return new MethodType(tpargs,ret);
 		else if (t instanceof ClosureType)
-			return ClosureType.newClosureType(tpargs,ret);
+			return new ClosureType(tpargs,ret);
 		assert (false, "Unrecognized type "+t+" ("+t.getClass()+")");
 		return t;
 	}

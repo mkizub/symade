@@ -524,7 +524,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				WBCCondition inv = (WBCCondition)members[i];
 				assert(inv.cond == WBCType.CondInvariant);
 				// TODO: check flags for fields
-				MethodType mt = MethodType.newMethodType(Type.emptyArray,Type.tpVoid);
+				MethodType mt = new MethodType(Type.emptyArray,Type.tpVoid);
 				Method m = new Method(inv.name.name,mt,inv.flags);
 				m.setInvariantMethod(true);
 				m.body = new BlockStat();

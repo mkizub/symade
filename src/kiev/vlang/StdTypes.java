@@ -84,28 +84,28 @@ public interface StdTypes {
 	static {
 
 		Struct tpEnvClazz = Env.root;
-		tpEnv				= new BaseType(KString.from("<root>"), tpEnvClazz);
+		tpEnv				= new BaseType(tpEnvClazz);
 		tpEnvClazz.type		= tpEnv;
 		tpEnv.flags			= flResolved;
 
-		tpAny		= new CoreType(Constants.sigAny,     Constants.nameAny,     0);
-		tpVoid		= new CoreType(Constants.sigVoid,    Constants.nameVoid,    0);
-		tpBoolean	= new CoreType(Constants.sigBoolean, Constants.nameBoolean, flBoolean | flIntegerInCode);
-		tpByte		= new CoreType(Constants.sigByte,    Constants.nameByte,    flInteger | flIntegerInCode);
-		tpChar		= new CoreType(Constants.sigChar,    Constants.nameChar,    flInteger | flIntegerInCode);
-		tpShort		= new CoreType(Constants.sigShort,   Constants.nameShort,   flInteger | flIntegerInCode);
-		tpInt		= new CoreType(Constants.sigInt,     Constants.nameInt,     flInteger | flIntegerInCode);
-		tpLong		= new CoreType(Constants.sigLong,    Constants.nameLong,    flInteger | flDoubleSize);
-		tpFloat		= new CoreType(Constants.sigFloat,   Constants.nameFloat,   flFloat);
-		tpDouble	= new CoreType(Constants.sigDouble,  Constants.nameDouble,  flFloat   | flDoubleSize);
-		tpNull		= new CoreType(Constants.sigNull,    Constants.nameNull,    flReference);
-//		tpRule		= new CoreType(Constants.sigRule,    Constants.nameRule,    flReference);
+		tpAny		= new CoreType(Constants.nameAny,     0);
+		tpVoid		= new CoreType(Constants.nameVoid,    0);
+		tpBoolean	= new CoreType(Constants.nameBoolean, flBoolean | flIntegerInCode);
+		tpByte		= new CoreType(Constants.nameByte,    flInteger | flIntegerInCode);
+		tpChar		= new CoreType(Constants.nameChar,    flInteger | flIntegerInCode);
+		tpShort		= new CoreType(Constants.nameShort,   flInteger | flIntegerInCode);
+		tpInt		= new CoreType(Constants.nameInt,     flInteger | flIntegerInCode);
+		tpLong		= new CoreType(Constants.nameLong,    flInteger | flDoubleSize);
+		tpFloat		= new CoreType(Constants.nameFloat,   flFloat);
+		tpDouble	= new CoreType(Constants.nameDouble,  flFloat   | flDoubleSize);
+		tpNull		= new CoreType(Constants.nameNull,    flReference);
+//		tpRule		= new CoreType(Constants.nameRule,    flReference);
 
 		Struct tpRuleClazz = Env.newStruct(new ClazzName(
 							KString.from("rule"),
 							KString.from("rule"),
 							KString.from("R"),false,false),null,ACC_PUBLIC);
-		tpRule					= new BaseType(KString.from("R"), tpRuleClazz);
+		tpRule					= new BaseType(tpRuleClazz);
 		tpRuleClazz.type		= tpRule;
 		tpRuleClazz.setResolved(true);
 		tpRule.flags			= flResolved | flReference;

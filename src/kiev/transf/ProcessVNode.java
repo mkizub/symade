@@ -171,7 +171,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Field "+s+"."+nameEnumValuesFld+" already exists, @node members are not generated");
 			return;
 		}
-		Type atp = Type.fromSignature(KString.from("Lkiev/vlang/AttrSlot;"));
+		Type atp = Signature.getType(KString.from("Lkiev/vlang/AttrSlot;"));
 		ENode[] vals_init = new ENode[aflds.size()];
 		for(int i=0; i < vals_init.length; i++) {
 			Field f = aflds[i];
@@ -206,7 +206,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, nameEnumValues)) {
 			Kiev.reportWarning(s,"Method "+s+"."+nameEnumValues+sigValues+" already exists, @node member is not generated");
 		} else {
-			MethodType et = (MethodType)Type.fromSignature(sigValues);
+			MethodType et = (MethodType)Signature.getType(sigValues);
 			Method elems = new Method(nameEnumValues,et,ACC_PUBLIC);
 			s.addMethod(elems);
 			elems.body = new BlockStat(0);
@@ -214,7 +214,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				new ReturnStat(0,
 					new SFldExpr(0,vals) ) );
 			// Object getVal(String)
-			MethodType getVt = (MethodType)Type.fromSignature(sigGetVal);
+			MethodType getVt = (MethodType)Signature.getType(sigGetVal);
 			Method getV = new Method(KString.from("getVal"),getVt,ACC_PUBLIC);
 			getV.params.add(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(getV);
@@ -250,7 +250,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			Kiev.reportWarning(s,"Method "+s+"."+"copy"+sigCopy+" already exists, @node member is not generated");
 		}
 		else {
-			MethodType copyVt = (MethodType)Type.fromSignature(sigCopy);
+			MethodType copyVt = (MethodType)Signature.getType(sigCopy);
 			Method copyV = new Method(KString.from("copy"),copyVt,ACC_PUBLIC);
 			s.addMethod(copyV);
 			copyV.body = new BlockStat(0);
@@ -263,7 +263,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, KString.from("copyTo"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"copyTo"+sigCopyTo+" already exists, @node member is not generated");
 		} else {
-			MethodType copyVt = (MethodType)Type.fromSignature(sigCopyTo);
+			MethodType copyVt = (MethodType)Signature.getType(sigCopyTo);
 			Method copyV = new Method(KString.from("copyTo"),copyVt,ACC_PUBLIC);
 			copyV.params.append(new FormPar(0,KString.from("to$node"), Type.tpObject, FormPar.PARAM_NORMAL, 0));
 			s.addMethod(copyV);
@@ -338,7 +338,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		if (hasMethod(s, KString.from("setVal"))) {
 			Kiev.reportWarning(s,"Method "+s+"."+"setVal"+sigSetVal+" already exists, @node member is not generated");
 		} else {
-			MethodType setVt = (MethodType)Type.fromSignature(sigSetVal);
+			MethodType setVt = (MethodType)Signature.getType(sigSetVal);
 			Method setV = new Method(KString.from("setVal"),setVt,ACC_PUBLIC);
 			setV.params.append(new FormPar(0, KString.from("name"), Type.tpString, FormPar.PARAM_NORMAL, 0));
 			setV.params.append(new FormPar(0, KString.from("val"), Type.tpObject, FormPar.PARAM_NORMAL, 0));

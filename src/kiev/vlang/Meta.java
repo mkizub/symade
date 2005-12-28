@@ -131,14 +131,14 @@ public final class MetaSet extends ASTNode {
 }
 
 public final class MetaValueType {
-	public KString name;
-	public KString signature;
+	public KString	name;
+	public Type		ret;
 	public MetaValueType(KString name) {
 		this.name = name;
 	}
-	public MetaValueType(KString name, KString sign) {
+	public MetaValueType(KString name, Type ret) {
 		this.name = name;
-		this.signature = sign;
+		this.ret = ret;
 	}
 }
 
@@ -246,7 +246,7 @@ public class Meta extends ENode {
 			if (m == null)
 				throw new CompilerException(v, "Unresolved method "+v.type.name+" in class "+s);
 			Type tp = m.type.ret;
-			v.type.signature = tp.signature;
+			v.type.ret = tp;
 			Type t = tp;
 			if (t.isArray()) {
 				ArrayType at = (ArrayType)t;
@@ -277,7 +277,7 @@ public class Meta extends ENode {
 			// value not specified - does the method has a default meta-value?
 			if (m.annotation_default != null) {
 				MetaValueType mvt = new MetaValueType(m.name.name);
-				mvt.signature = m.type.ret.signature;
+				mvt.ret = m.type.ret;
 				if (!m.type.ret.isArray()) {
 					MetaValueScalar mvs = (MetaValueScalar)m.annotation_default;
 					ENode v = (ENode)mvs.value.copy();
@@ -360,7 +360,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpBoolean.signature);
+		MetaValueType mvt = new MetaValueType(name, Type.tpBoolean);
 		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstBoolExpr(val));
 		values.append(mv);
 		return mv;
@@ -375,7 +375,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpInt.signature);
+		MetaValueType mvt = new MetaValueType(name, Type.tpInt);
 		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstIntExpr(val));
 		values.append(mv);
 		return mv;
@@ -390,7 +390,7 @@ public class Meta extends ENode {
 				return values[i];
 			}
 		}
-		MetaValueType mvt = new MetaValueType(name, Type.tpString.signature);
+		MetaValueType mvt = new MetaValueType(name, Type.tpString);
 		MetaValueScalar mv = new MetaValueScalar(mvt, new ConstStringExpr(val));
 		values.append(mv);
 		return mv;

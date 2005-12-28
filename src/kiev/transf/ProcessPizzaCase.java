@@ -49,7 +49,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 		Vector<Type> targs = new Vector<Type>();
 		foreach (Field f; flds/*case_attr.casefields*/)
 			targs.append(f.type);
-		MethodType mt = MethodType.newMethodType(targs.toArray(),Type.tpVoid);
+		MethodType mt = new MethodType(targs.toArray(),Type.tpVoid);
 		Constructor init = new Constructor(mt,ACC_PUBLIC);
 		init.pos = clazz.pos;
 		foreach (Field f; flds/*case_attr.casefields*/)
@@ -110,7 +110,7 @@ final class PizzaCaseBackend extends BackendProcessor implements Constants {
 			ftag.init = ce;
 
 			Method gettag = new Method(nameGetCaseTag,
-				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+				new MethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
@@ -120,7 +120,7 @@ final class PizzaCaseBackend extends BackendProcessor implements Constants {
 		else if( clazz.isHasCases() ) {
 			// Add get$case$tag() method to itself
 			Method gettag = new Method(Constants.nameGetCaseTag,
-				MethodType.newMethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+				new MethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))

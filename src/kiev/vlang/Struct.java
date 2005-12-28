@@ -722,51 +722,6 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		return (Method)m;
 	}
 
-/*
-	public Method resolveMethod(KString name, KString sign) {
-		return resolveMethod(name,sign,this,true);
-	}
-
-	public Method resolveMethod(KString name, KString sign, boolean fatal) {
-		return resolveMethod(name,sign,this,fatal);
-	}
-
-	private Method resolveMethod(KString name, KString sign, Struct where, boolean fatal) {
-		checkResolved();
-		foreach (ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
-			if( m.name.equals(name) && m.type.signature.equals(sign))
-				return m;
-		}
-		if( isInterface() ) {
-			Struct defaults = null;
-			foreach(ASTNode n; members; n instanceof Struct && ((Struct)n).isClazz() && ((Struct)n).name.short_name.equals(nameIdefault) ) {
-				defaults = (Struct)n;
-				break;
-			}
-			if( defaults != null ) {
-				foreach (ASTNode n; defaults.members; n instanceof Method) {
-					Method m = (Method)n;
-					if( m.name.equals(name) && m.type.signature.equals(sign))
-						return m;
-				}
-			}
-		}
-		trace(Kiev.debugResolve,"Method "+name+" with signature "
-			+sign+" unresolved in class "+this);
-		Method m = null;
-		if( super_type != null )
-			m = super_type.clazz.resolveMethod(name,sign,where,fatal);
-		if( m != null ) return m;
-		foreach(TypeRef interf; interfaces) {
-			m = interf.getStruct().resolveMethod(name,sign,where,fatal);
-			if( m != null ) return m;
-		}
-		if (fatal)
-			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
-		return null;
-	}
-*/
 	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {
 		// Check we already have this sub-class
@@ -1065,7 +1020,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			typeinfo_clazz.pos = pos;
 
 			// create constructor method
-			Constructor init = new Constructor(MethodType.newMethodType(Type.emptyArray,Type.tpVoid),ACC_PUBLIC);
+			Constructor init = new Constructor(new MethodType(Type.emptyArray,Type.tpVoid),ACC_PUBLIC);
 			init.body = new BlockStat(pos);
 			// add in it arguments fields, and prepare for constructor
 			foreach (TVar tv; this.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
@@ -1114,7 +1069,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			}
 
 			// create method to get typeinfo field
-			MethodType tim_type = MethodType.newMethodType(Type.emptyArray,Type.tpTypeInfo);
+			MethodType tim_type = new MethodType(Type.emptyArray,Type.tpTypeInfo);
 			Method tim = addMethod(new Method(nameGetTypeInfo,tim_type,ACC_PUBLIC));
 			tim.body = new BlockStat(pos,new ENode[]{
 				new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
@@ -1201,12 +1156,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						MethodType mt;
 						if( !isStatic() ) {
-							mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
+							mt = new MethodType(new Type[]{Type.tpInt},Type.tpVoid);
 							init = new Constructor(mt,ACC_PUBLIC);
 							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						} else {
-							mt = MethodType.newMethodType(new Type[]{Type.tpInt},Type.tpVoid);
+							mt = new MethodType(new Type[]{Type.tpInt},Type.tpVoid);
 							init = new Constructor(mt,ACC_PUBLIC);
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						}
@@ -1234,7 +1189,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 							targs = (Type[])Arrays.append(targs,view_of.getType());
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameView,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL));
 						}
-						mt = MethodType.newMethodType(targs,Type.tpVoid);
+						mt = new MethodType(targs,Type.tpVoid);
 						init = new Constructor(mt,ACC_PUBLIC);
 						init.params.addAll(params);
 					}
@@ -1327,7 +1282,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	public Constructor getClazzInitMethod() {
 		foreach(ASTNode n; members; n instanceof Method && ((Method)n).name.equals(nameClassInit) )
 			return (Constructor)n;
-		Constructor class_init = new Constructor(MethodType.newMethodType(null,Type.tpVoid),ACC_STATIC);
+		Constructor class_init = new Constructor(new MethodType(Type.emptyArray,Type.tpVoid),ACC_STATIC);
 		class_init.pos = pos;
 		addMethod(class_init);
 		class_init.body = new BlockStat(pos);

@@ -16,22 +16,7 @@ public class Signature {
 	private Signature(KString sig) {
 		this.sig = sig;
 	}
-
-	public static KString from(Type[] args, Type ret, boolean closure) {
-		KStringBuffer ksb = new KStringBuffer();
-		// Closure or method.
-		if (closure)
-			ksb.append('&'); // Closure
-		ksb.append('(');
-			if(args!=null && args.length > 0) {
-				for(int i=0; i < args.length; i++)
-					ksb.append(args[i].signature);
-			}
-		ksb.append(')');
-		ksb.append(ret.signature);
-		return ksb.toKString();
-	}
-
+/*
 	public static KString from(Struct clazz, Type[] args) {
 		KStringBuffer ksb = new KStringBuffer();
 		ksb.append(clazz.name.signature());
@@ -86,7 +71,7 @@ public class Signature {
 		}
 		return ksb.toKString();
 	}
-
+*/
 	public String toString() { return sig.toString(); }
 
 	public int hashCode() { return sig.hashCode(); }
@@ -95,10 +80,10 @@ public class Signature {
 		return ( o instanceof Signature && ((Signature)o).sig.equals(sig) );
 	}
 
-	//public Type getType() {
-	//	return getType(new KString.KStringScanner(sig));
-	//}
-
+	public static Type getType(KString sig) {
+		return Signature.getType(new KString.KStringScanner(sig));
+	}
+	
 	public static Type getType(KString.KStringScanner sc) {
 		Struct clazz;
 		Type[] args = null;
@@ -132,7 +117,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return MethodType.newMethodType(args,ret);
+			return new MethodType(args,ret);
 		}
 		if (ch == '&') {
 			// Closure signature
@@ -145,7 +130,7 @@ public class Signature {
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return ClosureType.newClosureType(args,ret);
+			return new ClosureType(args,ret);
 		}
 
 		// Normal reference type
@@ -171,7 +156,7 @@ public class Signature {
 
 		if( !sc.hasMoreChars() ) {
 			if (isArgument)
-				throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
+				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
 			return BaseType.createRefType(clazz, Type.emptyArray);
 		}
 		if( sc.peekChar() == '<' ) {
@@ -182,11 +167,11 @@ public class Signature {
 			sc.nextChar();
 			if( isArgument ) {
 				if( args.length == 0 )
-					throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
+					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
 				else if( args.length == 1 ) {
 					if !( args[0] instanceof BaseType )
 						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
-					throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,(BaseType)args[0]);
+					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,(BaseType)args[0]);
 				} else
 					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
 			} else {
@@ -194,7 +179,7 @@ public class Signature {
 			}
 		} else {
 			if (isArgument)
-				throw new RuntimeException("not implemented"); //return ArgumentType.newArgumentType(cname,null);
+				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
 			return BaseType.createRefType(clazz, Type.emptyArray);
 		}
 	}
@@ -251,7 +236,7 @@ public class Signature {
 				sc.nextChar();
 				return ks;
 			} else {
-				return Type.tpObject.signature;
+				return KString.from("Lkava/lang/Object;"); //Type.tpObject.signature;
 			}
 		}
 		if( sc.peekChar() == '&' ) {
