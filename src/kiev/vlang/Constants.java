@@ -90,6 +90,8 @@ public interface Constants extends AccessFlags {
 	public final static KString attrRIParAnnotations	= KString.from("RuntimeInvisibleParameterAnnotations");
 	public final static KString attrAnnotationDefault	= KString.from("AnnotationDefault");
 
+	public final static KString nameAny		= KString.from("any");
+	public final static KString sigAny			= KString.from("?");
 	public final static KString nameVoid		= KString.from("void");
 	public final static KString sigVoid		= KString.from("V");
 	public final static KString nameBoolean	= KString.from("boolean");
@@ -108,6 +110,8 @@ public interface Constants extends AccessFlags {
 	public final static KString sigFloat		= KString.from("F");
 	public final static KString nameDouble		= KString.from("double");
 	public final static KString sigDouble		= KString.from("D");
+	public final static KString nameNull		= KString.from("null");
+	public final static KString sigNull		= KString.from("0");
 	public final static KString nameRule		= KString.from("rule");
 	public final static KString sigRule		= KString.from("R");
 

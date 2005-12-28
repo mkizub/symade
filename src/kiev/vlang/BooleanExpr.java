@@ -433,10 +433,10 @@ public class BinaryBoolExpr extends BoolExpr {
 			||  op==BinaryOperator.NotEquals
 			)
 		) {
-			if ((et1.isReference() && et2.isReference() && et2 ≢ Type.tpNull) && (et1.getStruct()!=null && et2.getStruct()!=null) &&
-				(et1.getStruct().instanceOf(Env.getStruct(clazzType)) || et2.getStruct().instanceOf(Env.getStruct(clazzType)))
-			)
-				Kiev.reportWarning(this, "Unoverriden type comparision");
+//			if ((et1.isReference() && et2.isReference() && et2 ≢ Type.tpNull) && (et1.getStruct()!=null && et2.getStruct()!=null) &&
+//				(et1.getStruct().instanceOf(Env.getStruct(clazzType)) || et2.getStruct().instanceOf(Env.getStruct(clazzType)))
+//			)
+//				Kiev.reportWarning(this, "Unoverriden type comparision");
 			this.resolve2(reqType);
 			return;
 		}

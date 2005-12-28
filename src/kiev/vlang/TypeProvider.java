@@ -41,6 +41,17 @@ public final class TVarSet {
 		return tvars[idx];
 	}
 	
+	boolean eq(TVarSet vset) {
+		TVar[] b1 = this.tvars;
+		TVar[] b2 = vset.tvars;
+		final int n = b1.length;
+		for (int i=0; i < n; i++) {
+			if (b1[i].result() ≉ b2[i].result())
+				return false;
+		}
+		return true;
+	}
+
 	public void append(TVarSet set) {
 		foreach (TVar v; set.tvars)
 			append(v.var, v.bnd);
@@ -281,6 +292,20 @@ public abstract class TypeProvider {
 	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
 	public abstract TVarSet bindings(Type tp);
+}
+
+public class CoreTypeProvider extends TypeProvider {
+	public static final CoreTypeProvider instance = new CoreTypeProvider();
+	private CoreTypeProvider() {}
+	public Type bind(Type t, TVarSet bindings) {
+		throw new RuntimeException("bind() in CoreType");
+	}
+	public Type rebind(Type t, TVarSet bindings) {
+		return t;
+	}
+	public TVarSet bindings(Type owner) {
+		return TVarSet.emptySet;
+	}
 }
 
 public class BaseTypeProvider extends TypeProvider {

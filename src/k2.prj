@@ -551,6 +551,8 @@ kiev.vlang.ContinueStat.ContinueStatImpl kiev/vlang/ContinueStat$ContinueStatImp
 kiev.vlang.ContinueStat.ContinueStatView kiev/vlang/ContinueStat$ContinueStatView kiev\vlang\Statement.java
 kiev.vlang.ContinueStat.DFI kiev/vlang/ContinueStat$DFI kiev\vlang\Statement.java
 kiev.vlang.ContinueTarget kiev/vlang/ContinueTarget kiev\vlang\PassInfo.java
+kiev.vlang.CoreType kiev/vlang/CoreType kiev\vlang\Type.java
+kiev.vlang.CoreTypeProvider kiev/vlang/CoreTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.DFFunc kiev/vlang/DFFunc kiev\vlang\Var.java
 kiev.vlang.DFFunc.DFFuncAbrupt kiev/vlang/DFFunc$DFFuncAbrupt kiev\vlang\Var.java
 kiev.vlang.DFFunc.DFFuncChildFls kiev/vlang/DFFunc$DFFuncChildFls kiev\vlang\Var.java

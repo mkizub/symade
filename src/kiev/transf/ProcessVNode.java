@@ -57,7 +57,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			foreach (ASTNode n; s.members; n instanceof Field)
 				pass3(n);
 		}
-		else if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
+		else if (s.super_bound.isBound() && s.super_type.getMeta(mnNode) != null) {
 			if (s.meta.get(mnNodeView) == null)
 				Kiev.reportError(s,"Class "+s+" must be marked with @node: it extends @node "+s.super_type);
 			return;
@@ -87,17 +87,12 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			if (f.isStatic())
 				Kiev.reportError(f,"Field "+f.parent+"."+f+" is static and cannot have @att or @ref");
 			boolean isArr = false;
-			Meta fsm;
 			{
 				Type ft = f.type;
 				if (ft.isInstanceOf(tpNArr)) {
-					//if (!f.isFinal()) {
-					//	Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be final");
-						f.setFinal(true);
-					//}
+					f.setFinal(true);
 					isArr = true;
 				}
-				fsm = ft.getStructMeta().get(mnNode);
 			}
 			//System.out.println("process @node: field "+f+" of type "+fs+" has correct @att="+fmatt+" or @ref="+fmref);
 			if (fmatt != null) {
@@ -115,7 +110,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 		else if !(f.isStatic()) {
 			if (f.type.isInstanceOf(tpNArr))
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
-			else if (f.type.getStructMeta().get(mnNode) != null)
+			else if (f.type.getMeta(mnNode) != null)
 				Kiev.reportWarning(f,"Field "+f.parent+"."+f+" must be marked with @att or @ref");
 		}
 	}
@@ -275,7 +270,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			copyV.body = new BlockStat();
 			NArr<ENode> stats = ((BlockStat)copyV.body).stats;
 			Var v = new Var(0,KString.from("node"),s.type,0);
-			if (s.super_bound.isBound() && s.super_type.getStructMeta().get(mnNode) != null) {
+			if (s.super_bound.isBound() && s.super_type.getMeta(mnNode) != null) {
 				ASTCallAccessExpression cae = new ASTCallAccessExpression();
 				cae.obj = new ASTIdentifier(0,KString.from("super"));
 				cae.func = new NameRef(0,KString.from("copyTo"));
@@ -297,7 +292,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 					if (fmeta != null && !fmeta.getZ(nameCopyable))
 						continue; // do not copy the field
 				}
-				boolean isNode = (f.getType().getStructMeta().get(mnNode) != null);
+				boolean isNode = (f.getType().getMeta(mnNode) != null);
 				boolean isArr = f.getType().isInstanceOf(tpNArr);
 				if (f.meta.get(mnAtt) != null && (isNode || isArr)) {
 					if (isArr) {
