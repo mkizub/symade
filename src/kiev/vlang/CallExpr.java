@@ -260,18 +260,15 @@ public class ClosureCallExpr extends ENode {
 
 	public Method getCallIt(ClosureType tp) {
 		KString call_it_name;
-		KString call_it_sign;
+		Type ret;
 		if( tp.ret.isReference() ) {
 			call_it_name = KString.from("call_Object");
-			call_it_sign = KString.from("()"+Type.tpObject.signature);
+			ret = Type.tpObject;
 		} else {
 			call_it_name = KString.from("call_"+tp.ret);
-			call_it_sign = KString.from("()"+tp.ret.signature);
+			ret = tp.ret;
 		}
-		Method call_it = Type.tpClosureClazz.resolveMethod(call_it_name, call_it_sign, false);
-		if( call_it == null )
-			throw new CompilerException(this,"Can't resolve method "+call_it_name+call_it_sign+" in "+tp);
-		return call_it;
+		return Type.tpClosureClazz.resolveMethod(call_it_name, ret);
 	}
 	
 	public void resolve(Type reqType) throws RuntimeException {

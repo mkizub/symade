@@ -176,55 +176,15 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		clazzStringBuffer = Env.getStruct(ClazzName.fromToplevelName(KString.from("java.lang.StringBuffer"),false) );
 		if( clazzStringBuffer == null )
 			throw new RuntimeException("Core class java.lang.StringBuffer not found");
-		clazzStringBufferToString = (Method)clazzStringBuffer.resolveMethod(
-			KString.from("toString"),KString.from("()Ljava/lang/String;"));
-		clazzStringBufferInit = (Method)clazzStringBuffer.resolveMethod(
-			KString.from("<init>"),KString.from("()V"));
+		clazzStringBufferToString = clazzStringBuffer.resolveMethod(KString.from("toString"),Type.tpString);
+		clazzStringBufferInit = clazzStringBuffer.resolveMethod(KString.from("<init>"),Type.tpVoid);
 		} catch(Exception e ) {
 			throw new RuntimeException("Can't initialize: "+e.getMessage());
 		}
 	}
 
-	static final KString sigI = KString.from("(I)Ljava/lang/StringBuffer;");
-	static final KString sigJ = KString.from("(J)Ljava/lang/StringBuffer;");
-	static final KString sigZ = KString.from("(Z)Ljava/lang/StringBuffer;");
-	static final KString sigC = KString.from("(C)Ljava/lang/StringBuffer;");
-	static final KString sigF = KString.from("(F)Ljava/lang/StringBuffer;");
-	static final KString sigD = KString.from("(D)Ljava/lang/StringBuffer;");
-	static final KString sigObj = KString.from("(Ljava/lang/Object;)Ljava/lang/StringBuffer;");
-	static final KString sigStr = KString.from("(Ljava/lang/String;)Ljava/lang/StringBuffer;");
-	static final KString sigArrC = KString.from("([C)Ljava/lang/StringBuffer;");
 	public JMethodView getMethodFor(JENodeView expr) {
-		JType t = expr.getType().getJType();
-		KString sig = null;
-		switch(t.java_signature.byteAt(0)) {
-		case 'B':
-		case 'S':
-		case 'I': sig = sigI; break;
-		case 'J': sig = sigJ; break;
-		case 'Z': sig = sigZ; break;
-		case 'C': sig = sigC; break;
-		case 'F': sig = sigF; break;
-		case 'D': sig = sigD; break;
-		case 'L':
-		case 'A':
-		case '&':
-		case 'R':
-			if(t == JType.tpString)
-				sig = sigStr;
-			else
-				sig = sigObj;
-			break;
-		case '[':
-			if(t.java_signature.byteAt(1)=='C')
-				sig = sigArrC;
-			else
-				sig = sigObj;
-			break;
-		}
-		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),sig);
-		if( m == null )
-			Kiev.reportError(expr,"Unknown method for StringBuffer");
+		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.type,expr.getType());
 		return m.getJMethodView();
 	}
 

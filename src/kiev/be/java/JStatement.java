@@ -244,30 +244,29 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 	public access:ro	JENodeView		cond;
 	public access:ro	JENodeView		message;
 
-	private KString getAssertMethodName() {
-		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
-		switch( wbc.cond ) {
-		case WBCType.CondRequire:	return nameAssertRequireMethod;
-		case WBCType.CondEnsure:	return nameAssertEnsureMethod;
-		case WBCType.CondInvariant:	return nameAssertInvariantMethod;
-		default: return nameAssertMethod;
-		}
-	}
-
-	private KString getAssertMethodSignature() {
-		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
-		if( wbc.name == null )
-			return nameAssertSignature;
-		else
-			return nameAssertNameSignature;
-	}
-
 	private void generateAssertName(Code code) {
 		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
 		if( wbc.name == null ) return;
 		code.addConst((KString)wbc.name);
 	}
 
+	private JMethodView getAssertMethod() {
+		KString fname;
+		JWBCConditionView wbc = (JWBCConditionView)jparent.jparent;
+		switch( wbc.cond ) {
+		case WBCType.CondRequire:	fname = nameAssertRequireMethod;
+		case WBCType.CondEnsure:	fname = nameAssertEnsureMethod;
+		case WBCType.CondInvariant:	fname = nameAssertInvariantMethod;
+		default: fname = nameAssertMethod;
+		}
+		Method func;
+		if( wbc.name == null )
+			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
+		else
+			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
+		return func.getJMethodView();
+	}
+	
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\tgenerating CondStat");
 		code.setLinePos(this);
@@ -278,20 +277,14 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 				else {
 					generateAssertName(code);
 					message.generate(code,Type.tpString);
-					Method func = Type.tpDebug.clazz.resolveMethod(
-						getAssertMethodName(),
-						getAssertMethodSignature());
-					code.addInstr(Instr.op_call,func.getJMethodView(),false);
+					code.addInstr(Instr.op_call,getAssertMethod(),false);
 				}
 			} else {
 				CodeLabel else_label = code.newLabel();
 				JBoolExprView.gen_iftrue(code, cond, else_label);
 				generateAssertName(code);
 				message.generate(code,Type.tpString);
-				Method func = Type.tpDebug.clazz.resolveMethod(
-					getAssertMethodName(),
-					getAssertMethodSignature());
-				code.addInstr(Instr.op_call,func.getJMethodView(),false);
+				code.addInstr(Instr.op_call,getAssertMethod(),false);
 				code.addInstr(Instr.set_label,else_label);
 			}
 		} catch(Exception e ) {

@@ -710,6 +710,19 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 
+	public Method resolveMethod(KString name, Type ret, ...) {
+		Type[] args = new Type[va_args.length];
+		for (int i=0; i < va_args.length; i++)
+			args[i] = (Type)va_args[i];
+		MethodType mt = new MethodType(args,ret);
+		DNode@ m;
+		if (!this.type.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
+			!this.type.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
+		return (Method)m;
+	}
+
+/*
 	public Method resolveMethod(KString name, KString sign) {
 		return resolveMethod(name,sign,this,true);
 	}
@@ -753,7 +766,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			throw new RuntimeException("Unresolved method "+name+sign+" in class "+where);
 		return null;
 	}
-
+*/
 	/** Add information about new sub structure, this class (package) containes */
 	public Struct addSubStruct(Struct sub) {
 		// Check we already have this sub-class
@@ -954,10 +967,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			}
 			ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
 			ENode e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
-					Type.tpTypeInfo.clazz.resolveMethod(
-						KString.from("newTypeInfo"),
-						KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
-					), ti_args));
+					Type.tpTypeInfo.clazz.resolveMethod(KString.from("newTypeInfo"),Type.tpTypeInfo,Type.tpString),
+					ti_args));
 			return e;
 		}
 		
@@ -983,10 +994,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
 		f.init = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
-				Type.tpTypeInfo.clazz.resolveMethod(
-					KString.from("newTypeInfo"),
-					KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
-				), ti_args));
+				Type.tpTypeInfo.clazz.resolveMethod(KString.from("newTypeInfo"),Type.tpTypeInfo,Type.tpString),
+				ti_args));
 		addField(f);
 		// Add initialization in <clinit>
 		Constructor class_init = getClazzInitMethod();
@@ -1094,7 +1103,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						expr = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
 								KString.from("newTypeInfo"),
-								KString.from("(Ljava/lang/String;)Lkiev/stdlib/TypeInfo;")
+								Type.tpTypeInfo,Type.tpString
 							),
 							new ENode[]{new ConstStringExpr(KString.from(makeTypeInfoString(t)))}
 						);
@@ -1749,8 +1758,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
 						accessTypeInfoField(mmt.m,t),
-						Type.tpTypeInfo.clazz.resolveMethod(
-							KString.from("$instanceof"),KString.from("(Ljava/lang/Object;Lkiev/stdlib/TypeInfo;)Z")),
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("$instanceof"),Type.tpBoolean,Type.tpObject,Type.tpTypeInfo),
 						new ENode[]{
 							new LVarExpr(pos,mm.params[j]),
 							new IFldExpr(pos,

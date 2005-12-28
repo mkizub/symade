@@ -313,14 +313,14 @@ public final class NewArrayExpr extends ENode {
 			if( dim == 1 ) {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(II)Ljava/lang/Object;")),
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt,Type.tpInt),
 						new ENode[]{new ConstIntExpr(i),(ENode)~args[0]}
 					),true));
 				return;
 			} else {
 				this.replaceWithNodeResolve(reqType, new CastExpr(pos,arrtype,
 					new CallExpr(pos,tie,
-						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),KString.from("(I[I)Ljava/lang/Object;")),
+						Type.tpTypeInfo.clazz.resolveMethod(KString.from("newArray"),Type.tpObject,Type.tpInt,new ArrayType(Type.tpInt)),
 						new ENode[]{
 							new ConstIntExpr(i),
 							new NewInitializedArrayExpr(pos,new TypeRef(Type.tpInt),1,args.delToArray())
@@ -528,9 +528,7 @@ public final class NewClosure extends ENode {
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
 		this.clazz.autoProxyMethods();
 		this.clazz.resolveDecl();
-		func = clazz.resolveMethod(nameInit,KString.from("(I)V"),false);
-		if (func == null)
-			throw new CompilerException(this,"Can't find apropriative initializer for "+type);
+		func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
 		setResolved(true);
 	}
 

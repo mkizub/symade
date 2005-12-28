@@ -1840,14 +1840,14 @@ public class CastExpr extends ENode {
 		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
-			Method cm = ((BaseType)type).clazz.resolveMethod(nameCastOp,KString.from("(I)"+type.signature));
+			Method cm = ((BaseType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{(ENode)~expr}));
 			return;
 		}
 		if( !Kiev.javaMode && type.isIntegerInCode() && et.isInstanceOf(Type.tpEnum) ) {
 			if (et.isIntegerInCode())
 				return;
-			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I"));
+			Method cf = Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,(ENode)~expr,cf,ENode.emptyArray));
 			return;
 		}
@@ -1974,59 +1974,35 @@ public class CastExpr extends ENode {
 		if( !tp.isReference() ) return;
 		if( tp ≈ Type.tpBooleanRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpBooleanRef.clazz.resolveMethod(
-					KString.from("booleanValue"),
-					KString.from("()Z")
-				),ENode.emptyArray
+				Type.tpBooleanRef.clazz.resolveMethod(KString.from("booleanValue"),Type.tpBoolean),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpByteRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpByteRef.clazz.resolveMethod(
-					KString.from("byteValue"),
-					KString.from("()B")
-				),ENode.emptyArray
+				Type.tpByteRef.clazz.resolveMethod(KString.from("byteValue"),Type.tpByte),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpShortRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpShortRef.clazz.resolveMethod(
-					KString.from("shortValue"),
-					KString.from("()S")
-				),ENode.emptyArray
+				Type.tpShortRef.clazz.resolveMethod(KString.from("shortValue"),Type.tpShort),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpIntRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpIntRef.clazz.resolveMethod(
-					KString.from("intValue"),
-					KString.from("()I")
-				),ENode.emptyArray
+				Type.tpIntRef.clazz.resolveMethod(KString.from("intValue"),Type.tpInt),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpLongRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpLongRef.clazz.resolveMethod(
-					KString.from("longValue"),
-					KString.from("()J")
-				),ENode.emptyArray
+				Type.tpLongRef.clazz.resolveMethod(KString.from("longValue"),Type.tpLong),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpFloatRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpFloatRef.clazz.resolveMethod(
-					KString.from("floatValue"),
-					KString.from("()F")
-				),ENode.emptyArray
+				Type.tpFloatRef.clazz.resolveMethod(KString.from("floatValue"),Type.tpFloat),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpDoubleRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpDoubleRef.clazz.resolveMethod(
-					KString.from("doubleValue"),
-					KString.from("()D")
-				),ENode.emptyArray
+				Type.tpDoubleRef.clazz.resolveMethod(KString.from("doubleValue"),Type.tpDouble),ENode.emptyArray
 			);});
 		else if( tp ≈ Type.tpCharRef )
 			ex.replaceWith(fun ()->ENode {return new CallExpr(ex.pos,(ENode)~ex,
-				Type.tpCharRef.clazz.resolveMethod(
-					KString.from("charValue"),
-					KString.from("()C")
-				),ENode.emptyArray
+				Type.tpCharRef.clazz.resolveMethod(KString.from("charValue"),Type.tpChar),ENode.emptyArray
 			);});
 		else
 			throw new RuntimeException("Type "+tp+" is not a reflection of primitive type");

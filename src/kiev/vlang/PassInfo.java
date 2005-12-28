@@ -241,6 +241,18 @@ public class PassInfo {
 					trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because of path");
 					continue next_method;
 				}
+				if (m1.isVarArgs()) {
+					if (m1.type.args.length < m2.type.args.length) {
+						trace(Kiev.debugResolve,"Method "+m1+" is less specific because of arity then "+m2);
+						continue next_method;
+					}
+				}
+				if (m2.isVarArgs()) {
+					if (m2.type.args.length < m1.type.args.length) {
+						trace(Kiev.debugResolve,"Method "+m1+" is more specific because of arity then "+m2);
+						goto is_more_specific;
+					}
+				}
 				for (int k=0; k < mt.args.length; k++) {
 					if (mt1.args[k] ≉ mt2.args[k]) {
 						b = mt.args[k].betterCast(mt1.args[k],mt2.args[k]);
@@ -265,7 +277,7 @@ public class PassInfo {
 						continue next_method;
 					}
 				}
-				
+			is_more_specific:;
 				trace(Kiev.debugResolve,"Methods "+m1+" is more specific then "+m2+" resolving for "+Method.toString(name,mt));
 				methods.remove(j);
 				paths.remove(j);

@@ -42,14 +42,20 @@ public class ResInfo {
 	public ResInfo(ASTNode from) {
 		flags_stack = new int[16];
 		forwards_stack = new ASTNode[16];
-		from_scope = from.ctx_clazz;
+		if (from instanceof Struct)
+			from_scope = (Struct)from;
+		else
+			from_scope = from.ctx_clazz;
 	}
 	
 	public ResInfo(ASTNode from, int fl) {
 		flags = fl;
 		flags_stack = new int[16];
 		forwards_stack = new ASTNode[16];
-		from_scope = from.ctx_clazz;
+		if (from instanceof Struct)
+			from_scope = (Struct)from;
+		else
+			from_scope = from.ctx_clazz;
 	}
 	
 	public void enterMode(int fl) {

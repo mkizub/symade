@@ -391,7 +391,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 						ctx_clazz.addField(typehash);
 						CallExpr cae = new CallExpr(pos,
 							new SFldExpr(pos,typehash),
-							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
+							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),Type.tpInt, Type.tpObject),
 							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;

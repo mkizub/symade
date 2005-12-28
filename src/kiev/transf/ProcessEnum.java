@@ -107,7 +107,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 			tostr.body = new BlockStat(pos);
 			SwitchStat sw = new SwitchStat(pos,
 				new CallExpr(pos,	new ThisExpr(),
-					(Method)Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, KString.from("()I")),
+					Type.tpEnum.clazz.resolveMethod(nameEnumOrdinal, Type.tpInt),
 					ENode.emptyArray),
 				CaseLabel.emptyArray);
 			CaseLabel[] cases = new CaseLabel[eflds.length+1];
@@ -150,9 +150,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 				new LVarExpr(pos,fromstr.params[0]),
 				new CallExpr(pos,
 					new LVarExpr(pos,fromstr.params[0]),
-					Type.tpString.clazz.resolveMethod(
-						KString.from("intern"),KString.from("()Ljava/lang/String;"),true
-					),
+					Type.tpString.clazz.resolveMethod(KString.from("intern"),Type.tpString),
 					ENode.emptyArray
 				));
 			((BlockStat)fromstr.body).addStatement(new ExprStat(pos,ae));
