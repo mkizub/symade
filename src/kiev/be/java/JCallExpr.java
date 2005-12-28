@@ -64,7 +64,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			JNodeView p = (JNodeView)this.jparent;
 			if (p instanceof JAssignExprView
 				&& ((JAssignExprView)p).op == AssignOperator.Assign
-				&& ((JAssignExprView)p).lval.getType() == Type.tpRule
+				&& ((JAssignExprView)p).lval.getType() ≡ Type.tpRule
 				)
 				((JAssignExprView)p).lval.generate(code,null);
 			else
@@ -138,7 +138,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
 		if( !objt.isReference() ) {
-			if( func.jctx_clazz.type != Type.tpObject )
+			if( func.jctx_clazz.type ≢ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name == nameObjEquals ) {
 				CodeLabel label_true = code.newLabel();
@@ -249,8 +249,8 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 			code.stack_push(JType.tpNull);
 			code.addInstr(Instr.set_label,null_cast_label);
 		}
-		if( func.type.ret != Type.tpVoid ) {
-			if( reqType==Type.tpVoid )
+		if( func.type.ret ≢ Type.tpVoid ) {
+			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && getType().isReference()
@@ -294,12 +294,12 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		JMethodView call_it = getCallIt(ctype);
 		// Check if we need to call
 		if( is_a_call ) {
-			if( call_it.type.ret == Type.tpRule /*env_access != null*/ )
+			if( call_it.type.ret ≡ Type.tpRule /*env_access != null*/ )
 				code.addNullConst(); //env_access.generate(code,null);
 			code.addInstr(op_call,call_it,false);
 		}
-		if( call_it.type.ret != Type.tpVoid ) {
-			if( reqType==Type.tpVoid )
+		if( call_it.type.ret ≢ Type.tpVoid ) {
+			if( reqType ≡ Type.tpVoid )
 				code.addInstr(op_pop);
 			else if( Kiev.verify
 			 && call_it.type.ret.isReference()

@@ -9,6 +9,7 @@ import kiev.vlang.*;
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -128,7 +129,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"'[]' operator can't be static");
 					if( m.type.args.length != 2 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 2 arguments");
-					if( !m.type.ret.equals(m.type.args[1]) )
+					if( m.type.ret ≉ m.type.args[1] )
 						throw new CompilerException(this,"Method "+m+" must return "+m.type.args[1]);
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
@@ -173,7 +174,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"'[]' operator can't be static");
 					if( m.type.args.length != 1 )
 						throw new CompilerException(this,"Method "+m+" must be virtual and have 1 argument");
-					if( m.type.ret == Type.tpVoid )
+					if( m.type.ret ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameArrayOp);
 					if( Kiev.verbose ) System.out.println("Attached operator [] to method "+m);
@@ -209,7 +210,7 @@ public final class ASTOperatorAlias extends ASTAlias {
 						throw new CompilerException(this,"Static cast method "+m+" must have 1 argument");
 					else if( !m.isStatic() && m.type.args.length != 0 )
 						throw new CompilerException(this,"Virtual scast method "+m+" must have no arguments");
-					if( m.type.ret == Type.tpVoid )
+					if( m.type.ret ≡ Type.tpVoid )
 						throw new CompilerException(this,"Method "+m+" must not return void");
 					m.name.addAlias(nameCastOp);
 					return;

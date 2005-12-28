@@ -32,7 +32,7 @@ public final view JConstBoolExprView of ConstBoolExprImpl extends JConstExprView
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating ConstBoolExpr: "+this);
 		code.setLinePos(this);
-		if( reqType != Type.tpVoid ) {
+		if( reqType ≢ Type.tpVoid ) {
 			if( value )
 				code.addConst(1);
 			else
@@ -167,7 +167,7 @@ public abstract view JConstExprView of ConstExprImpl extends JENodeView {
 			code.addConst((KString)value);
 		}
 		else throw new RuntimeException("Internal error: unknown type of constant "+value.getClass());
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }

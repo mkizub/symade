@@ -60,26 +60,11 @@ public class ASTCallExpression extends ENode {
 		}
 	}
 
-//	public ASTCallExpression(int pos, KString func, NArr<ENode> args) {
-//		super(new ASTCallExpressionImpl(pos));
-//		this.func = new NameRef(pos, func);
-//		this.args = args;
-//		foreach (ENode e; args) this.args.append(e);
-//	}
-
 	public void mainResolveOut() {
 		// method of current class or first-order function
 		DNode@ m;
 		Type tp = ctx_clazz.type;
 		if( func.name.equals(nameThis) ) {
-//			Method mmm = ctx_method;
-//			if( mmm.name.equals(nameInit) && ctx_clazz.type.args.length > 0 ) {
-//				// Insert our-generated typeinfo, or from childs class?
-//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
-//				else
-//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.type),0);
-//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -99,24 +84,6 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-//			Method mmm = ctx_method;
-//			if( mmm.name.equals(nameInit) && ctx_clazz.super_type.args.length > 0 ) {
-//				// no // Insert our-generated typeinfo, or from childs class?
-//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
-//				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[1]),0);
-//				else
-//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.super_type),0);
-//			}
-//			// If we extend inner non-static class - pass this$N as first argument
-//			if(  ctx_clazz.super_type.getStruct().package_clazz.isClazz()
-//			 && !ctx_clazz.super_type.getStruct().isStatic()
-//			) {
-//				if( ctx_clazz.isStatic() )
-//					throw new CompilerException(this,"Non-static inner super-class of static class");
-//				args.insert(new LVarExpr(pos,(Var)ctx_method.params[0]),0);
-//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -163,42 +130,12 @@ public class ASTCallExpression extends ENode {
 					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-//				if( reqType instanceof CallableType ) {
-//					ASTAnonymouseClosure ac = new ASTAnonymouseClosure();
-//					ac.pos = pos;
-//					ac.rettype = new TypeRef(pos, ((CallableType)reqType).ret);
-//					for (int i=0; i < ac.params.length; i++)
-//						ac.params.append(new FormPar(pos,KString.from("arg"+(i+1)),((Method)m).type.args[i],0));
-//					BlockStat bs = new BlockStat(pos,ENode.emptyArray);
-//					ENode[] oldargs = args.toArray();
-//					Expr[] cargs = new Expr[ac.params.length];
-//					for(int i=0; i < cargs.length; i++)
-//						cargs[i] = new LVarExpr(pos,(Var)ac.params[i]);
-//					args.delAll();
-//					foreach (ENode e; cargs)
-//						args.add(e);
-//					if( ac.rettype.getType() == Type.tpVoid ) {
-//						bs.addStatement(new ExprStat(pos,this));
-//						bs.addStatement(new ReturnStat(pos,null));
-//					} else {
-//						bs.addStatement(new ReturnStat(pos,this));
-//					}
-//					ac.body = bs;
-//					if( oldargs.length > 0 ) {
-//						replaceWithNode(new ClosureCallExpr(pos,ac,oldargs));
-//					} else {
-//						replaceWithNode(ac);
-//					}
-//					return false;
-//				} else {
 				if( m.isStatic() )
 					assert (info.isEmpty());
-				//((Method)m).makeArgs(args,tp);
 				ENode e = info.buildCall(this,null,m,args.toArray());
 				if (e instanceof UnresExpr)
 					e = ((UnresExpr)e).toResolvedExpr();
 				this.replaceWithNode(e);
-//				}
 		}
 	}
 	
@@ -212,14 +149,6 @@ public class ASTCallExpression extends ENode {
 		Type ret = reqType;
 	retry_with_null_ret:;
 		if( func.name.equals(nameThis) ) {
-//			Method mmm = ctx_method;
-//			if( mmm.name.equals(nameInit) && ctx_clazz.type.args.length > 0 ) {
-//				// Insert our-generated typeinfo, or from childs class?
-//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
-//				else
-//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.type),0);
-//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -238,24 +167,6 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-//			Method mmm = ctx_method;
-//			if( mmm.name.equals(nameInit) && ctx_clazz.super_type.args.length > 0 ) {
-//				// no // Insert our-generated typeinfo, or from childs class?
-//				if( mmm.type.args.length > 0 && mmm.type.args[0].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[0]),0);
-//				else if( mmm.type.args.length > 1 && mmm.type.args[1].isInstanceOf(Type.tpTypeInfo) )
-//					args.insert(new LVarExpr(pos,mmm.params[1]),0);
-//				else
-//					args.insert(ctx_clazz.accessTypeInfoField(this,ctx_clazz.super_type),0);
-//			}
-//			// If we extend inner non-static class - pass this$N as first argument
-//			if(  ctx_clazz.super_type.getStruct().package_clazz.isClazz()
-//			 && !ctx_clazz.super_type.getStruct().isStatic()
-//			) {
-//				if( ctx_clazz.isStatic() )
-//					throw new CompilerException(this,"Non-static inner super-class of static class");
-//				args.insert(new LVarExpr(pos,(Var)ctx_method.params[0]),0);
-//			}
 			Type[] ta = new Type[args.length];
 			for (int i=0; i < ta.length; i++)
 				ta[i] = args[i].getType();
@@ -318,7 +229,7 @@ public class ASTCallExpression extends ENode {
 				args.delAll();
 				foreach (ENode e; cargs)
 					args.add(e);
-				if( ac.rettype.getType() == Type.tpVoid ) {
+				if( ac.rettype.getType() ≡ Type.tpVoid ) {
 					bs.addStatement(new ExprStat(pos,this));
 					bs.addStatement(new ReturnStat(pos,null));
 				} else {

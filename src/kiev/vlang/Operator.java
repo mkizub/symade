@@ -34,7 +34,7 @@ public class OpTypes {
 				we.expr = e;
 				e.resolve(tp);
 				e = we.expr;
-				we.replaceWithNode(e);
+				we.replaceWithNode((ENode)~e);
 				assert( e.isResolved() );
 				n = e;
 				goto case e;
@@ -196,7 +196,7 @@ public class OpTypes {
 			types[ref] != null,							// not resolved yet
 			$cut,
 			trace( Kiev.debugOperators,"op_type_res: type at "+ref+" is already resolved as "+types[ref]),
-			types[ref] != Type.tpAny					// already resolved
+			types[ref] ≢ Type.tpAny					// already resolved
 		},
 		trace( Kiev.debugOperators,"type "+types[ref]+" resolved for "+(ref==0?"ret":"arg"+ref))
 	}
@@ -266,13 +266,13 @@ public class OpTypes {
 			;
 				types[ref1].isNumber() && types[ref2].isNumber(),
 				{
-					types[ref1] == Type.tpDouble || types[ref2] == Type.tpDouble, tp ?= Type.tpDouble
-				;	types[ref1] == Type.tpFloat || types[ref2] == Type.tpFloat, tp ?= Type.tpFloat
-				;	types[ref1] == Type.tpLong || types[ref2] == Type.tpLong, tp ?= Type.tpLong
-				;	types[ref1] == Type.tpInt || types[ref2] == Type.tpInt, tp ?= Type.tpInt
-				;	types[ref1] == Type.tpChar || types[ref2] == Type.tpChar, tp ?= Type.tpChar
-				;	types[ref1] == Type.tpShort || types[ref2] == Type.tpShort, tp ?= Type.tpShort
-				;	types[ref1] == Type.tpByte || types[ref2] == Type.tpByte, tp ?= Type.tpByte
+					types[ref1] ≡ Type.tpDouble || types[ref2] ≡ Type.tpDouble, tp ?= Type.tpDouble
+				;	types[ref1] ≡ Type.tpFloat || types[ref2] ≡ Type.tpFloat, tp ?= Type.tpFloat
+				;	types[ref1] ≡ Type.tpLong || types[ref2] ≡ Type.tpLong, tp ?= Type.tpLong
+				;	types[ref1] ≡ Type.tpInt || types[ref2] ≡ Type.tpInt, tp ?= Type.tpInt
+				;	types[ref1] ≡ Type.tpChar || types[ref2] ≡ Type.tpChar, tp ?= Type.tpChar
+				;	types[ref1] ≡ Type.tpShort || types[ref2] ≡ Type.tpShort, tp ?= Type.tpShort
+				;	types[ref1] ≡ Type.tpByte || types[ref2] ≡ Type.tpByte, tp ?= Type.tpByte
 				},
 				types[position] = tp
 			},

@@ -344,21 +344,21 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				assert(fp.isForward());
 				assert(fp.isFinal());
 				assert(fp.name.name == nameThisDollar);
-				assert(fp.type == this.ctx_clazz.package_clazz.type);
+				assert(fp.type ≈ this.ctx_clazz.package_clazz.type);
 				dtype_ref.args.add(new TypeRef(this.ctx_clazz.package_clazz.type));
 				break;
 			case FormPar.PARAM_RULE_ENV:
 				assert(this instanceof RuleMethod);
 				assert(fp.isForward());
 				assert(fp.isFinal());
-				assert(fp.type == Type.tpRule);
+				assert(fp.type ≡ Type.tpRule);
 				assert(fp.name.name == namePEnv);
 				dtype_ref.args.add(new TypeRef(Type.tpRule));
 				break;
 			case FormPar.PARAM_TYPEINFO:
 				assert(this instanceof Constructor || (this.isStatic() && this.name.equals(nameNewOp)));
 				assert(fp.isFinal());
-				assert(fp.stype == null || fp.stype.getType() == fp.vtype.getType());
+				assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
 				dtype_ref.args.add((TypeRef)fp.vtype.copy());
 				break;
 			case FormPar.PARAM_VARARGS:
@@ -533,7 +533,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 		boolean match = false;
-		if( mt.ret == Type.tpAny )
+		if( mt.ret ≡ Type.tpAny )
 			match = true;
 		else if( exact &&  rt.ret.equals(mt.ret) )
 			match = true;
@@ -685,7 +685,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
+				if (!(t ≈ Type.tpString || t ≈ Type.tpClass || t.isAnnotation() || t.isEnum()))
 					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);
@@ -734,12 +734,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				cond.body.resolve(Type.tpVoid);
 			}
 			if( body != null ) {
-				if (type.ret == Type.tpVoid)
+				if (type.ret ≡ Type.tpVoid)
 					body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret == Type.tpVoid ) {
+				if( type.ret ≡ Type.tpVoid ) {
 					if( body instanceof BlockStat ) {
 						((BlockStat)body).stats.append(new ReturnStat(pos,null));
 						body.setAbrupted(true);
@@ -751,7 +751,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				}
 			}
 			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
-				if( type.ret != Type.tpVoid ) getRetVar();
+				if( type.ret ≢ Type.tpVoid ) getRetVar();
 				cond.resolve(Type.tpVoid);
 			}
 		} catch(Exception e ) {

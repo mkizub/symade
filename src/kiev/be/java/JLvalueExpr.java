@@ -29,7 +29,7 @@ public abstract view JLvalueExprView of LvalueExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		code.setLinePos(this);
 		generateLoad(code);
-		if( reqType == Type.tpVoid )
+		if( reqType ≡ Type.tpVoid )
 			code.addInstr(Instr.op_pop);
 	}
 

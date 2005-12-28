@@ -9,6 +9,7 @@ import kiev.be.java.JLvalDNodeView;
 import kiev.be.java.JFieldView;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -227,7 +228,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 			if (init instanceof TypeRef)
 				((TypeRef)init).toExpr(type);
 			init.resolve(type);
-			if (init.getType() != type) {
+			if (init.getType() ≉ type) {
 				init = new CastExpr(init.pos, type, init);
 				init.resolve(type);
 			}

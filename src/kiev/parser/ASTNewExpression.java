@@ -101,9 +101,9 @@ public class ASTNewExpression extends ENode {
 				for(int j=0; i < mtargs.length; i++,j++) {
 					if( targs[j] == null )
 						targs[j] = Type.getRealType(tp,mtargs[i]);
-					else if( targs[j] == Type.tpVoid )
+					else if( targs[j] ≡ Type.tpVoid )
 						;
-					else if( targs[j] != Type.getRealType(tp,mtargs[i]) )
+					else if( targs[j] ≉ Type.getRealType(tp,mtargs[i]) )
 						targs[j] = Type.tpVoid;
 				}
 			}
@@ -112,7 +112,7 @@ public class ASTNewExpression extends ENode {
 		}
 		for(int i=0; i < args.length; i++) {
 			try {
-				if( targs[i] != Type.tpVoid )
+				if( targs[i] ≢ Type.tpVoid )
 					args[i].resolve(targs[i]);
 				else
 					args[i].resolve(null);

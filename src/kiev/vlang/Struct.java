@@ -1089,7 +1089,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			typeinfo_clazz.addMethod(init);
 			
 			// and add super-constructor call
-			if (typeinfo_clazz.super_type == Type.tpTypeInfo) {
+			if (typeinfo_clazz.super_type ≈ Type.tpTypeInfo) {
 				//do nothing, default constructor may be added later
 			} else {
 				init.setNeedFieldInits(true);
@@ -1647,8 +1647,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					vae[k] = new CastExpr(0,mm.type.args[k],
 						new LVarExpr(0,mm.params[k]), Kiev.verify);
 				}
-				if( m.type.ret != Type.tpVoid ) {
-					if( overwr.type.ret == Type.tpVoid )
+				if( m.type.ret ≢ Type.tpVoid ) {
+					if( overwr.type.ret ≡ Type.tpVoid )
 						br = new BlockStat(0,new ENode[]{
 							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
 							new ReturnStat(0,new ConstNullExpr())
@@ -2005,7 +2005,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				for(int k=1; k < args.length; k++)
 					args[k] = new LVarExpr(0,proxy.params[k-1]);
 				CallExpr ce = new CallExpr(0,null,m,args);
-				if( proxy.type.ret == Type.tpVoid ) {
+				if( proxy.type.ret ≡ Type.tpVoid ) {
 					bs.addStatement(new ExprStat(0,ce));
 					bs.addStatement(new ReturnStat(0,null));
 				} else {
@@ -2072,7 +2072,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					f.init.resolve(f.type);
 					if (f.init instanceof TypeRef)
 						((TypeRef)f.init).toExpr(f.type);
-					if (f.init.getType() != f.type) {
+					if (f.init.getType() ≉ f.type) {
 						ENode finit = (ENode)~f.init;
 						f.init = new CastExpr(finit.pos, f.type, finit);
 						f.init.resolve(f.type);

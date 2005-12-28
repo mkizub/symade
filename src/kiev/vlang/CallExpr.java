@@ -311,7 +311,7 @@ public class ClosureCallExpr extends ENode {
 		if( is_a_call ) {
 			Method call_it = getCallIt((ClosureType)expr.getType());
 			dmp.append('.').append(call_it.name).append('(');
-			if( call_it.type.ret == Type.tpRule ) dmp.append("null");
+			if( call_it.type.ret ≡ Type.tpRule ) dmp.append("null");
 			dmp.append(')');
 		}
 		return dmp;

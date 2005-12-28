@@ -10,6 +10,7 @@ import kiev.be.java.JLvalDNodeView;
 import kiev.be.java.JVarView;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -203,7 +204,7 @@ public class Var extends LvalDNode implements Named, Typed {
 			Var node = (Var)dfi.node;
 			DFState out = DFFunc.calc(f, dfi);
 			out = out.declNode(node);
-			if( node.init != null && node.init.getType() != Type.tpVoid )
+			if( node.init != null && node.init.getType() ≢ Type.tpVoid )
 				out = out.setNodeValue(new LvalDNode[]{node},node.init);
 			res = out;
 			dfi.setResult(res_idx, res);
@@ -399,7 +400,7 @@ public class DFState {
 		Type[] types = addAccessType(snits, type);
 		if (types.length == snits.length) {
 			for (int i=0; i < types.length; i++) {
-				if (types[i] != snits[i])
+				if (types[i] ≉ snits[i])
 					goto changed;
 			}
 			return this;
@@ -413,7 +414,7 @@ changed:;
 
 	public DFState setNodeValue(LvalDNode[] path, ENode expr) {
 		Type tp = expr.getType();
-		if( tp == Type.tpNull && tp == Type.tpVoid )
+		if( tp ≡ Type.tpNull && tp ≡ Type.tpVoid )
 			return this;
 		ScopeNodeInfo sni = makeNode(path);
 		if (sni == null) return this;
@@ -429,14 +430,14 @@ changed:;
 	 *  the class type (if exists), and others to be interface types
 	 */
 	static Type[] addAccessType(Type[] types, Type type) {
-		if( type == null || type == Type.tpVoid || type == Type.tpNull ) return types;
+		if( type ≡ null || type ≡ Type.tpVoid || type ≡ Type.tpNull ) return types;
 		if( types == null || !type.isReference() ) {
 			return new Type[]{type};
 		}
 		trace( Kiev.debugNodeTypes, "types: add type "+type+" to "+Arrays.toString(types));
 		Type[] newtypes = new Type[]{type};
 	next_type:
-		foreach(Type t1; types; t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull ) {
+		foreach(Type t1; types; t1 ≢ null && t1 ≢ Type.tpVoid && t1 ≢ Type.tpNull ) {
 			for( int i=0; i < newtypes.length; i++) {
 				Type t2 = newtypes[i];
 				if (t2.isInstanceOf(t1))
@@ -569,8 +570,8 @@ public abstract class ScopeNodeInfo implements Cloneable {
 		if (types != null)
 			return types;
 		Type[] types = new Type[]{this.getDeclType()};
-		foreach(Type t1; j1.getTypes(); t1 != null && t1 != Type.tpVoid && t1 != Type.tpNull) {
-			foreach(Type t2; j2.getTypes(); t2 != null && t2 != Type.tpVoid && t2 != Type.tpNull )
+		foreach(Type t1; j1.getTypes(); t1 ≢ null && t1 ≢ Type.tpVoid && t1 ≢ Type.tpNull) {
+			foreach(Type t2; j2.getTypes(); t2 ≢ null && t2 ≢ Type.tpVoid && t2 ≢ Type.tpNull )
 				types = DFState.addAccessType(types,Type.leastCommonType(t1,t2));
 		}
 		this.types = types;

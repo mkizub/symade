@@ -196,7 +196,7 @@ public class RuleMethod extends Method {
 
 	public boolean preGenerate() {
 		Var penv = params[0];
-		assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+		assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 		if( body instanceof RuleBlock ) {
 			body.preGenerate();
 			Kiev.runProcessorsOn(body);
@@ -209,13 +209,13 @@ public class RuleMethod extends Method {
 		trace(Kiev.debugResolve,"Resolving rule "+this);
 		try {
 			Var penv = params[0];
-			assert(penv.name.name == namePEnv && penv.getType() == Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
+			assert(penv.name.name == namePEnv && penv.getType() ≡ Type.tpRule, "Expected to find 'rule $env' but found "+penv.getType()+" "+penv);
 			if( body != null ) {
-				if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
+				if( type.ret ≡ Type.tpVoid ) body.setAutoReturnable(true);
 				body.resolve(Type.tpVoid);
 			}
 			if( body != null && !body.isMethodAbrupted() ) {
-				if( type.ret == Type.tpVoid ) {
+				if( type.ret ≡ Type.tpVoid ) {
 					((BlockStat)body).stats.append(new ReturnStat(pos,null));
 					body.setAbrupted(true);
 				} else {
@@ -1197,7 +1197,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 
 		if( expr instanceof CallExpr ) {
 			CallExpr e = (CallExpr)expr;
-			if( e.func.type.ret == Type.tpRule ) {
+			if( e.func.type.ret ≡ Type.tpRule ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr((CallExpr)~e));
 				return;
 			}
@@ -1205,7 +1205,7 @@ public abstract class RuleExprBase extends ASTRuleNode {
 		else if( expr instanceof ClosureCallExpr ) {
 			ClosureCallExpr e = (ClosureCallExpr)expr;
 			Type tp = e.getType();
-			if( tp == Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret == Type.tpRule && tp.args.length == 0) ) {
+			if( tp ≡ Type.tpRule || (tp instanceof ClosureType && ((ClosureType)tp).ret ≡ Type.tpRule && tp.args.length == 0) ) {
 				replaceWithNodeResolve(reqType, new RuleCallExpr((ClosureCallExpr)~e));
 				return;
 			}

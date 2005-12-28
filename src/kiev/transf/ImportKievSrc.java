@@ -568,15 +568,15 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						f.meta.unset(pack);
 					} else {
 						int max_pack_size = 32;
-						if( ftype == Type.tpShort || ftype == Type.tpChar ) {
+						if( ftype ≡ Type.tpShort || ftype ≡ Type.tpChar ) {
 							max_pack_size = 16;
 							if( pack.size <= 0 ) pack.size = 16;
 						}
-						else if( ftype == Type.tpByte ) {
+						else if( ftype ≡ Type.tpByte ) {
 							max_pack_size = 8;
 							if( pack.size <= 0 ) pack.size = 8;
 						}
-						else if( ftype == Type.tpBoolean) {
+						else if( ftype ≡ Type.tpBoolean) {
 							max_pack_size = 1;
 							if( pack.size <= 0 ) pack.size = 1;
 						}
@@ -663,7 +663,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					m.setPublic(true);
 					m.setAbstract(true);
 					m.pass3();
-					if (m.type.ret == Type.tpVoid || m.type.ret == Type.tpRule)
+					if (m.type.ret ≡ Type.tpVoid || m.type.ret ≡ Type.tpRule)
 						Kiev.reportError(m, "Annotation methods must return a value");
 				}
 				else if( n instanceof Field )

@@ -5,6 +5,7 @@ import kiev.stdlib.*;
 import kiev.parser.TypeNameRef;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -260,7 +261,7 @@ public class Meta extends ENode {
 			}
 			if (t.isReference()) {
 				t.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.isAnnotation() || t.isEnum()))
+				if (!(t ≈ Type.tpString || t ≈ Type.tpClass || t.isAnnotation() || t.isEnum()))
 					throw new CompilerException(m, "Bad annotation value type "+tp);
 			}
 			v.resolve(t);
@@ -517,7 +518,7 @@ public abstract class MetaValue extends ASTNode {
 
 	boolean checkValue(Type reqType, ENode value) {
 		if (value instanceof TypeRef) {
-			if (reqType == Type.tpClass) {
+			if (reqType ≈ Type.tpClass) {
 				((TypeRef)value).getType();
 				return false;
 			} else {
@@ -532,7 +533,7 @@ public abstract class MetaValue extends ASTNode {
 		else if (!v.isConstantExpr())
 			throw new CompilerException(this, "Annotation value must be a Constant, Class, Annotation or array of them, but found "+v+" ("+v.getClass()+")");
 		Type vt = value.getType();
-		if (vt != reqType) {
+		if (vt ≉ reqType) {
 			v.replaceWith(fun ()->ENode {return new CastExpr(v.pos, reqType, v);});
 			return true;
 		}
@@ -540,7 +541,7 @@ public abstract class MetaValue extends ASTNode {
 		if (!v.isConstantExpr())
 			throw new CompilerException(this, "Annotation value must be a constant, but found "+v+" ("+v.getClass()+")");
 		Type vt = v.getType();
-		if (vt != reqType)
+		if (vt ≉ reqType)
 			throw new CompilerException(this, "Wrong annotation value type "+vt+", type "+reqType+" is expected for value "+type.name);
 		return false;
 	}

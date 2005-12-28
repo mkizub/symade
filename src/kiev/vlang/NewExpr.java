@@ -15,6 +15,8 @@ import kiev.be.java.JNewClosureView;
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -304,7 +306,7 @@ public final class NewArrayExpr extends ENode {
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;
 			for(i=0; i < ctx_clazz.args.length; i++)
-				if( type.string_equals(ctx_clazz.args[i].getAType()) ) break;
+				if (type ≈ ctx_clazz.args[i].getAType()) break;
 			if( i >= ctx_clazz.args.length )
 				throw new CompilerException(this,"Can't create an array of argument type "+type);
 			ENode tie = new IFldExpr(pos,new ThisExpr(0),ctx_clazz.resolveField(nameTypeInfo));

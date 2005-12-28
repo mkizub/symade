@@ -17,6 +17,7 @@ import kiev.be.java.CodeLabel;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -69,7 +70,7 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 		Type et = e.getType();
 		if (et.isBoolean())
 			return;
-		if (et == Type.tpRule) {
+		if (et ≡ Type.tpRule) {
 			e.replaceWithResolve(Type.tpBoolean, fun ()->ENode {
 				return new BinaryBoolExpr(e.pos,BinaryOperator.NotEquals,e,new ConstNullExpr());
 			});
@@ -391,6 +392,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		}
 	}
 
+	private static KString clazzType = KString.from("kiev.vlang.Type");
+	
 	public void resolve(Type reqType) {
 		if( isResolved() ) return;
 		resolveExprs();
@@ -424,12 +427,16 @@ public class BinaryBoolExpr extends BoolExpr {
 			 || (et1.isAutoCastableTo(Type.tpBoolean) && et2.isAutoCastableTo(Type.tpBoolean))
 			 || (et1.isEnum() && et2.isIntegerInCode())
 			 || (et1.isIntegerInCode() && et2.isEnum())
-			 || (et1.isEnum() && et2.isEnum() && et1 == et2)
+			 || (et1.isEnum() && et2.isEnum() && et1 ≡ et2)
 			) &&
 			(   op==BinaryOperator.Equals
 			||  op==BinaryOperator.NotEquals
 			)
 		) {
+			if ((et1.isReference() && et2.isReference() && et2 ≢ Type.tpNull) && (et1.getStruct()!=null && et2.getStruct()!=null) &&
+				(et1.getStruct().instanceOf(Env.getStruct(clazzType)) || et2.getStruct().instanceOf(Env.getStruct(clazzType)))
+			)
+				Kiev.reportWarning(this, "Unoverriden type comparision");
 			this.resolve2(reqType);
 			return;
 		}
@@ -468,9 +475,9 @@ public class BinaryBoolExpr extends BoolExpr {
 			}
 			if( !t1.isReference() && !t2.isReference()) {
 				Type t;
-				if( t1==Type.tpDouble || t2==Type.tpDouble ) t=Type.tpDouble;
-				else if( t1==Type.tpFloat || t2==Type.tpFloat ) t=Type.tpFloat;
-				else if( t1==Type.tpLong || t2==Type.tpLong ) t=Type.tpLong;
+				if      (t1 ≡ Type.tpDouble || t2 ≡ Type.tpDouble ) t = Type.tpDouble;
+				else if (t1 ≡ Type.tpFloat  || t2 ≡ Type.tpFloat  ) t = Type.tpFloat;
+				else if (t1 ≡ Type.tpLong   || t2 ≡ Type.tpLong   ) t = Type.tpLong;
 //					else if( t1==tInt || t2==tInt ) t=tInt;
 //					else if( t1==tShort || t2==tShort ) t=tShort;
 //					else if( t1==tByte || t2==tByte ) t=tByte;

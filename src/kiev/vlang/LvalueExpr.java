@@ -19,6 +19,7 @@ import kiev.be.java.JOuterThisAccessExprView;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.be.java.Instr.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -786,7 +787,7 @@ public final class LVarExpr extends LvalueExpr {
 	public boolean preGenerate() {
 		if (getVar().isLocalRuleVar()) {
 			RuleMethod rm = (RuleMethod)ctx_method;
-			assert(rm.params[0].type == Type.tpRule);
+			assert(rm.params[0].type ≡ Type.tpRule);
 			Var pEnv = null;
 			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
 				VarDecl vd = (VarDecl)n;

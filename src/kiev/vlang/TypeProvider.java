@@ -52,7 +52,7 @@ public final class TVarSet {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for (int i=0; i < n; i++) {
-			if (tvars[i].var == var)
+			if (tvars[i].var ≡ var)
 				return; // ignore duplicated var
 		}
 		TVar[] tmp = new TVar[n+1];
@@ -62,14 +62,14 @@ public final class TVarSet {
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];
-			if (v.bnd == var) {
+			if (v.bnd ≡ var) {
 				assert (v.ref < 0);
 				tmp[i] = new TVar(n, this, v.var, var);
 			}
 		}
 		this.tvars = tmp;
 		if (ASSERT_MORE) checkIntegrity();
-		if (var != bnd && bnd != null)
+		if (var ≢ bnd && bnd ≢ null)
 			set(n, var, bnd);
 		if (ASSERT_MORE) checkIntegrity();
 	}
@@ -79,23 +79,23 @@ public final class TVarSet {
 	{
 		TVar[] tvars = this.tvars;
 		TVar v = tvars[i];
-		assert (v.var == var);
-		if (v.bnd == bnd)
+		assert (v.var ≡ var);
+		if (v.bnd ≡ bnd)
 			return; // ignore duplicated alias
 		while (v.ref >= 0) {
 			i = v.ref;
 			// alias of another var, must point to 
 			assert (i < tvars.length);
-			assert (v.bnd == tvars[i].var);
+			assert (v.bnd ≡ tvars[i].var);
 			v = tvars[i];
-			if (v.bnd == bnd)
+			if (v.bnd ≡ bnd)
 				return; // ignore duplicated alias
 		}
 		// non-aliased var, just bind or alias it
 		if (bnd instanceof ArgumentType) {
 			final int n = tvars.length;
 			for (int j=0; j < n; j++) {
-				if (tvars[j].var == bnd) {
+				if (tvars[j].var ≡ bnd) {
 					// alias of tvars[j]
 					while (tvars[j].ref >= 0) j = tvars[j].ref;
 					if (i == j)
@@ -139,7 +139,7 @@ public final class TVarSet {
 			Type r = v.result();
 			for(int j=0; j < my_size; j++) {
 				TVar x = my_vars[j];
-				if (x.var == v.var) {
+				if (x.var ≡ v.var) {
 					// bind
 					sr.set(j, v.var, r);
 					break;
@@ -181,7 +181,7 @@ public final class TVarSet {
 			Type r = v.result();
 			for(int j=0; j < my_size; j++) {
 				TVar x = my_vars[j];
-				if (x.var == v.var) {
+				if (x.var ≡ v.var) {
 					// bind
 					sr.set(j, v.var, r);
 					continue;
@@ -189,7 +189,7 @@ public final class TVarSet {
 				if (x.bnd == null || x.isAlias())
 					continue;
 				if (x.bnd instanceof ArgumentType) {
-					if (x.bnd == v.var) {
+					if (x.bnd ≡ v.var) {
 						// re-bind
 						sr.set(j, x.var, r);
 					}
@@ -197,7 +197,7 @@ public final class TVarSet {
 					if (x.bnd.isArgumented()) {
 						// recursive
 						Type t = x.bnd.rebind(vs);
-						if (t != x.bnd)
+						if (t ≢ x.bnd)
 							sr.set(j, x.var, t);
 					}
 				}
@@ -211,7 +211,7 @@ public final class TVarSet {
 		TVar[] tvars = this.tvars;
 		final int n = tvars.length;
 		for(int i=0; i < n; i++) {
-			if (tvars[i].var == arg)
+			if (tvars[i].var ≡ arg)
 				return tvars[i].result();
 		}
 		return arg;
@@ -223,18 +223,18 @@ public final class TVarSet {
 		for (int i=0; i < n; i++) {
 			TVar v = tvars[i];
 			for (int j=0; j < n; j++)
-				assert(i==j || tvars[j].var != v.var);
+				assert(i==j || tvars[j].var ≢ v.var);
 			if (v.ref >= 0) {
 				assert(v.bnd instanceof ArgumentType);
 				assert(v.ref < n);
-				assert(tvars[v.ref].var == v.bnd);
+				assert(tvars[v.ref].var ≡ v.bnd);
 				assert(v.ref != i);
 				for (int j=v.ref; tvars[j].ref >= 0; j=tvars[j].ref)
 					assert(j != i);
 			}
 			else if (v.bnd instanceof ArgumentType) {
 				for (int j=0; j < n; j++)
-					assert(tvars[j].var != v.bnd);
+					assert(tvars[j].var ≢ v.bnd);
 			}
 		}
 	}
@@ -341,7 +341,7 @@ public class ArgumentTypeProvider extends TypeProvider {
 		ArgumentType at = (ArgumentType)t;
 		for(int i=0; i < bindings.length; i++) {
 			TVar v = bindings[i];
-			if (v.bnd != null && (v.var == at || v.bnd == at))
+			if (v.bnd != null && (v.var ≡ at || v.bnd ≡ at))
 				return v.result();
 		}
 		// Not found, return itself

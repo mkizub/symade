@@ -47,7 +47,7 @@ public final view JArrayLengthExprView of ArrayLengthExprImpl extends JAccessExp
 		code.setLinePos(this);
 		obj.generate(code,null);
 		code.addInstr(Instr.op_arrlength);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
@@ -60,7 +60,7 @@ public final view JTypeClassExprView of TypeClassExprImpl extends JENodeView {
 		trace(Kiev.debugStatGen,"\t\tgenerating TypeClassExpr: "+this);
 		code.setLinePos(this);
 		code.addConst(type.getErasedType().getJType());
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
@@ -75,7 +75,7 @@ public view JAssignExprView of AssignExprImpl extends JLvalueExprView {
 		trace(Kiev.debugStatGen,"\t\tgenerating AssignExpr: "+this);
 		code.setLinePos(this);
 		JLvalueExprView lval = (JLvalueExprView)this.lval;
-		if( reqType != Type.tpVoid ) {
+		if( reqType ≢ Type.tpVoid ) {
 			if( !(op == AssignOperator.Assign || op == AssignOperator.Assign2) ) {
 				lval.generateLoadDup(code);
 				value.generate(code,null);
@@ -158,7 +158,7 @@ public view JBinaryExprView of BinaryExprImpl extends JENodeView {
 		expr1.generate(code,null);
 		expr2.generate(code,null);
 		code.addInstr(op.instr);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
@@ -210,7 +210,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		case 'A':
 		case '&':
 		case 'R':
-			if(t == Type.tpString)
+			if(t == JType.tpString)
 				sig = sigStr;
 			else
 				sig = sigObj;
@@ -241,7 +241,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 			code.addInstr(op_call,getMethodFor(args[i]),false);
 		}
 		code.addInstr(op_call,clazzStringBufferToString.getJMethodView(),false);
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
@@ -305,7 +305,7 @@ public view JUnaryExprView of UnaryExprImpl extends JENodeView {
 		code.setLinePos(this);
 		expr.generate(code,null);
 		if( op == PrefixOperator.BitNot ) {
-			if( expr.getType() == Type.tpLong )
+			if( expr.getType() ≡ Type.tpLong )
 				code.addConst(-1L);
 			else
 				code.addConst(-1);
@@ -313,7 +313,7 @@ public view JUnaryExprView of UnaryExprImpl extends JENodeView {
 		} else {
 			code.addInstr(op.instr);
 		}
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }
@@ -327,7 +327,7 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 		trace(Kiev.debugStatGen,"\t\tgenerating IncrementExpr: "+this);
 		code.setLinePos(this);
 		JLvalueExprView lval = (JLvalueExprView)this.lval;
-		if( reqType != Type.tpVoid ) {
+		if( reqType ≢ Type.tpVoid ) {
 			generateLoad(code);
 		} else {
 			if( lval instanceof JLVarExprView ) {
@@ -428,14 +428,14 @@ public final view JIncrementExprView of IncrementExprImpl extends JENodeView {
 	private void pushProperConstant(Code code, int i) {
 		Type lt = lval.getType();
 		if( i > 0 ) { // 1
-			if( lt == Type.tpDouble ) code.addConst(1.D);
-			else if( lt == Type.tpFloat ) code.addConst(1.F);
-			else if( lt == Type.tpLong ) code.addConst(1L);
+			if     ( lt ≡ Type.tpDouble ) code.addConst(1.D);
+			else if( lt ≡ Type.tpFloat  ) code.addConst(1.F);
+			else if( lt ≡ Type.tpLong   ) code.addConst(1L);
 			else code.addConst(1);
 		} else { // -1
-			if( lt == Type.tpDouble ) code.addConst(-1.D);
-			else if( lt == Type.tpFloat ) code.addConst(-1.F);
-			else if( lt == Type.tpLong ) code.addConst(-1L);
+			if     ( lt ≡ Type.tpDouble ) code.addConst(-1.D);
+			else if( lt ≡ Type.tpFloat  ) code.addConst(-1.F);
+			else if( lt ≡ Type.tpLong   ) code.addConst(-1L);
 			else code.addConst(-1);
 		}
 	}
@@ -464,7 +464,7 @@ public view JConditionalExprView of ConditionalExprImpl extends JENodeView {
 			code.addInstr(Instr.op_goto,endLabel);
 			code.addInstr(Instr.set_label,elseLabel);
 			expr2.generate(code,null);
-			if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+			if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 			code.addInstr(Instr.set_label,endLabel);
 		}
 	}
@@ -496,7 +496,7 @@ public view JCastExprView of CastExprImpl extends JENodeView {
 				code.addInstr(Instr.op_x2y,type);
 			}
 		}
-		if( reqType == Type.tpVoid ) code.addInstr(op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 
 }

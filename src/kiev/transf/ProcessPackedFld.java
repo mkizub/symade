@@ -6,6 +6,7 @@ import kiev.vlang.*;
 import kiev.parser.*;
 
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
  * @author Maxim Kizub
@@ -55,7 +56,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 				Kiev.reportError(f,"Packer field "+mp_in+" not found");
 				return;
 			}
-			if( p.type != Type.tpInt ) {
+			if( p.type ≢ Type.tpInt ) {
 				Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 				return;
 			}
@@ -115,7 +116,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 						f.setPackedField(false);
 						continue;
 					}
-					if( p.type != Type.tpInt ) {
+					if( p.type ≢ Type.tpInt ) {
 						Kiev.reportError(f,"Packer field "+p+" is not of 'int' type");
 						f.meta.unset(mp);
 						f.setPackedField(false);
@@ -199,13 +200,13 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 		}
 		expr = new BinaryExpr(fa.pos, BinaryOperator.BitAnd, expr, mexpr);
-		if( mp.size == 8 && f.type == Type.tpByte )
+		if( mp.size == 8 && f.type ≡ Type.tpByte )
 			expr = new CastExpr(fa.pos, Type.tpByte, expr);
-		else if( mp.size == 16 && f.type == Type.tpShort )
+		else if( mp.size == 16 && f.type ≡ Type.tpShort )
 			expr = new CastExpr(fa.pos, Type.tpShort, expr);
-		else if( mp.size == 16 && f.type == Type.tpChar )
+		else if( mp.size == 16 && f.type ≡ Type.tpChar )
 			expr = new CastExpr(fa.pos, Type.tpChar, expr, true);
-		else if( mp.size == 1 && f.type == Type.tpBoolean )
+		else if( mp.size == 1 && f.type ≡ Type.tpBoolean )
 			expr = new CastExpr(fa.pos, Type.tpBoolean, expr, true);
 
 		fa.replaceWithNode(expr);
@@ -248,14 +249,14 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 				ConstExpr sexpr = new ConstIntExpr(mp.offset);
 				expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 			}
-			if( mp.size == 8 && f.type == Type.tpByte )
+			if( mp.size == 8 && f.type ≡ Type.tpByte )
 				expr = new CastExpr(fa.pos, Type.tpByte, expr);
-			else if( mp.size == 16 && f.type == Type.tpShort )
+			else if( mp.size == 16 && f.type ≡ Type.tpShort )
 				expr = new CastExpr(fa.pos, Type.tpShort, expr);
 			tmp.init = expr;
 			be.addStatement(new ExprStat(new AssignExpr(fa.pos, ae.op, mkAccess(tmp), (ENode)~ae.value)));
 		}
-		else if (ae.value.getType() == Type.tpBoolean) {
+		else if (ae.value.getType() ≡ Type.tpBoolean) {
 			tmp.init = new CastExpr(ae.value.pos, Type.tpInt, (ENode)~ae.value, true);
 		}
 		else {
@@ -332,9 +333,9 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 					ConstExpr sexpr = new ConstIntExpr(mp.offset);
 					expr = new BinaryExpr(fa.pos, BinaryOperator.UnsignedRightShift, expr, sexpr);
 				}
-				if( mp.size == 8 && f.type == Type.tpByte )
+				if( mp.size == 8 && f.type ≡ Type.tpByte )
 					expr = new CastExpr(fa.pos, Type.tpByte, expr);
-				else if( mp.size == 16 && f.type == Type.tpShort )
+				else if( mp.size == 16 && f.type ≡ Type.tpShort )
 					expr = new CastExpr(fa.pos, Type.tpShort, expr);
 				ConstExpr ce;
 				if (ie.op == PrefixOperator.PreIncr)

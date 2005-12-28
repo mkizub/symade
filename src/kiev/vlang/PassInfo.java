@@ -242,25 +242,25 @@ public class PassInfo {
 					continue next_method;
 				}
 				for (int k=0; k < mt.args.length; k++) {
-					if (mt1.args[k] != mt2.args[k]) {
+					if (mt1.args[k] ≉ mt2.args[k]) {
 						b = mt.args[k].betterCast(mt1.args[k],mt2.args[k]);
-						if (b == mt2.args[k]) {
+						if (b ≡ mt2.args[k]) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
-						if (b == null && !mt1.args[k].isInstanceOf(mt2.args[k])) {
+						if (b ≡ null && mt1.args[k] ≥ mt2.args[k]) {
 							trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because arg "+k);
 							continue next_method;
 						}
 					}
 				}
-				if (mt1.ret != mt2.ret) {
+				if (mt1.ret ≉ mt2.ret) {
 					b = mt.ret.betterCast(mt1.ret,mt2.ret);
-					if (b == mt2.ret) {
+					if (b ≡ mt2.ret) {
 						trace(Kiev.debugResolve,"Method "+m1+" and "+m2+" is not more specific because ret");
 						continue next_method;
 					}
-					if (b == null && mt2.ret.isInstanceOf(mt1.ret)) {
+					if (b ≡ null && mt2.ret ≥ mt1.ret) {
 						trace(Kiev.debugResolve,"Method "+m1+" has less specific return value, then "+m2);
 						continue next_method;
 					}

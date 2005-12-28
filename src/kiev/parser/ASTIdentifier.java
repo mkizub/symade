@@ -176,7 +176,7 @@ public class ASTIdentifier extends ENode {
 				String val = Env.getProperty(prop);
 				if( val == null ) val = Env.getProperty(prop.replace('_','.'));
 				if( val != null ) {
-					if( reqType == null || reqType == Type.tpString) {
+					if( reqType ≡ null || reqType ≈ Type.tpString) {
 						replaceWithNode(new ConstStringExpr(KString.from(val)));
 						return;
 					}

@@ -6,6 +6,8 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.transf.*;
 
+import syntax kiev.Syntax;
+
 /**
  * @author Maxim Kizub
  * @version $Revision$
@@ -126,7 +128,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		}
 		BlockStat body = (BlockStat)~this.body;
 		Type ret = ctype.ret;
-		if( ret != Type.tpRule ) {
+		if( ret ≢ Type.tpRule ) {
 			KString call_name;
 			if( ret.isReference() ) {
 				ret = Type.tpObject;

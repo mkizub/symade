@@ -25,7 +25,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final	TypeProvider		meta_type;
 	public final	KString				signature;
 	public			int					flags;
-	private			TVarSet				bindings;
+					TVarSet				bindings;
 	public			JType				jtype;
 	
 	public abstract JType getJType();
@@ -165,53 +165,56 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract String toString();
 	public abstract boolean checkResolved();
 
-	public final boolean equals(Object:Object to) {
+	public static boolean identity(Type t1, Type t2) alias operator (60, xfx, ≡ ) {
+		return t1 == t2;
+	}
+
+	public static boolean not_identity(Type t1, Type t2) alias operator (60, xfx, ≢ ) {
+		return t1 != t2;
+	}
+
+	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
+		if (to instanceof Type) return this.eq((Type)to);
 		return false;
 	}
 
-	public final boolean equals(TypeRef:Object to) {
-		return this.equals(((TypeRef)to).getType());
+	public static boolean type_equals(Type t1, Type t2) alias operator (60, xfx, ≈ ) {
+		if (t1 ≡ null || t2 ≡ null) return false;
+		return t1.eq(t2);
 	}
 
-	public final boolean equals(Type:Object to) {
-		if( signature.equals( ((Type)to).signature ) ) return true;
-		else if (this.isBoolean() && to.isBoolean() ) return true;
-		else if (this.isArgument())
-			return getSuperType().equals(to);
-		else if (to.isArgument())
-			return this.equals(to.getSuperType());
-		return false;
+	public static boolean type_not_equals(Type t1, Type t2) alias operator (60, xfx, ≉ ) {
+		if (t1 ≡ null || t2 ≡ null) return true;
+		return !t1.eq(t2);
 	}
+	
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
 
-	public boolean string_equals(Type to) {
-		return signature.equals( to.signature );
-	}
-
-	public boolean isInstanceOf(Type t) {
+	public boolean isInstanceOf(Type t) alias operator (60, xfx, ≥ ) {
 		return this.equals(t);
 	}
 
 	public boolean isAutoCastableTo(Type t)
 	{
-		if( t == Type.tpVoid ) return true;
-		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
+		if( t ≡ Type.tpVoid ) return true;
+		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
-		if( this == Type.tpRule && t == Type.tpBoolean ) return true;
+		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
 		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) == this ) return true;
-			else if( !Kiev.javaMode && t==Type.tpInt && this.isInstanceOf(Type.tpEnum) )
+			if( getRefTypeForPrimitive(t) ≈ this ) return true;
+			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
 				return true;
 		}
 		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) == this ) return true;
-			else if( !Kiev.javaMode && this==Type.tpInt && t.isInstanceOf(Type.tpEnum) ) return true;
+			if( getRefTypeForPrimitive(t) ≈ this ) return true;
+			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
 		}
-		if( this==tpByte && ( t==tpShort || t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( (this==tpShort || this==tpChar) && (t==tpInt || t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpInt && (t==tpLong || t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpLong && ( t==tpFloat || t==tpDouble) ) return true;
-		if( this==tpFloat && t==tpDouble ) return true;
+		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
+		if( (this ≡ tpShort || this ≡ tpChar) && (t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
+		if( this ≡ tpInt && (t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
+		if( this ≡ tpLong && ( t ≡ tpFloat || t ≡ tpDouble) ) return true;
+		if( this ≡ tpFloat && t ≡ tpDouble ) return true;
 		if( this.isWrapper() || t.isWrapper() ) {
 			if( this.isWrapper() && t.isWrapper() )
 				return this.getWrappedType().isAutoCastableTo(t.getWrappedType());
@@ -234,38 +237,38 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( isBoolean() && t2.isBoolean() ) return t2;
 		if( isNumber() ) {
 			if( isInteger() ) {
-				if( this == tpByte )
-					if( t1==tpShort || t2==tpShort ) return tpShort;
-					else if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+				if( this ≡ tpByte )
+					if     ( t1 ≡ tpShort  || t2 ≡ tpShort  ) return tpShort;
+					else if( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
+					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
+					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
+					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
-				else if( this == tpChar )
-					if( t1==tpShort || t2==tpShort ) return tpShort;
-					else if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+				else if( this ≡ tpChar )
+					if     ( t1 ≡ tpShort  || t2 ≡ tpShort  ) return tpShort;
+					else if( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
+					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
+					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
+					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
-				else if( this == tpShort )
-					if( t1==tpInt || t2==tpInt ) return tpInt;
-					else if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+				else if( this ≡ tpShort )
+					if     ( t1 ≡ tpInt    || t2 ≡ tpInt    ) return tpInt;
+					else if( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
+					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
+					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
-				else if( this == tpInt )
-					if( t1==tpLong || t2==tpLong ) return tpLong;
-					else if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+				else if( this ≡ tpInt )
+					if     ( t1 ≡ tpLong   || t2 ≡ tpLong   ) return tpLong;
+					else if( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
+					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
 			} else {
-				if( this == tpFloat )
-					if( t1==tpFloat || t2==tpFloat ) return tpFloat;
-					else if( t1==tpDouble || t2==tpDouble ) return tpDouble;
+				if( this ≡ tpFloat )
+					if     ( t1 ≡ tpFloat  || t2 ≡ tpFloat  ) return tpFloat;
+					else if( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
-				else if( this == tpDouble )
-					if( t1==tpDouble || t2==tpDouble) return tpDouble;
+				else if( this ≡ tpDouble )
+					if     ( t1 ≡ tpDouble || t2 ≡ tpDouble ) return tpDouble;
 					else return null;
 			}
 		}
@@ -273,7 +276,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 			if( t1.isReference() && !t2.isReference() ) return t1;
 			else if( !t1.isReference() && t2.isReference() ) return t2;
 			else if( !t1.isReference() && !t2.isReference() ) return null;
-			if( this == tpNull ) return null;
+			if( this ≡ tpNull ) return null;
 			if( isInstanceOf(t1) ) {
 				if( !isInstanceOf(t2) ) return t1;
 				else if( t2.isInstanceOf(t1) ) return t2;
@@ -285,8 +288,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 				Type tp2 = t2.getWrappedType();
 				Type tp_better = betterCast(tp1,tp2);
 				if( tp_better != null ) {
-					if( tp_better == tp1 ) return t1;
-					if( tp_better == tp2 ) return t2;
+					if( tp_better ≡ tp1 ) return t1;
+					if( tp_better ≡ tp2 ) return t2;
 				}
 			}
 			return null;
@@ -307,19 +310,19 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public static Type upperCastNumbers(Type tp1, Type tp2) {
 		assert( tp1.isNumber() );
 		assert( tp2.isNumber() );
-		if( tp1==Type.tpDouble || tp2==Type.tpDouble) return Type.tpDouble;
-		if( tp1==Type.tpFloat || tp2==Type.tpFloat) return Type.tpFloat;
-		if( tp1==Type.tpLong || tp2==Type.tpLong) return Type.tpLong;
-		if( tp1==Type.tpInt || tp2==Type.tpInt) return Type.tpInt;
-		if( tp1==Type.tpChar || tp2==Type.tpChar) return Type.tpChar;
-		if( tp1==Type.tpShort || tp2==Type.tpShort) return Type.tpShort;
-		if( tp1==Type.tpByte || tp2==Type.tpByte) return Type.tpByte;
+		if( tp1 ≡ Type.tpDouble || tp2 ≡ Type.tpDouble) return Type.tpDouble;
+		if( tp1 ≡ Type.tpFloat  || tp2 ≡ Type.tpFloat ) return Type.tpFloat;
+		if( tp1 ≡ Type.tpLong   || tp2 ≡ Type.tpLong  ) return Type.tpLong;
+		if( tp1 ≡ Type.tpInt    || tp2 ≡ Type.tpInt   ) return Type.tpInt;
+		if( tp1 ≡ Type.tpChar   || tp2 ≡ Type.tpChar  ) return Type.tpChar;
+		if( tp1 ≡ Type.tpShort  || tp2 ≡ Type.tpShort ) return Type.tpShort;
+		if( tp1 ≡ Type.tpByte   || tp2 ≡ Type.tpByte  ) return Type.tpByte;
 		throw new RuntimeException("Bad number types "+tp1+" or "+tp2);
 	}
 
 	public boolean isCastableTo(Type t) {
 		if( isNumber() && t.isNumber() ) return true;
-		if( this.isReference() && t.isReference() && (this==tpNull || t==tpNull) ) return true;
+		if( this.isReference() && t.isReference() && (this ≡ tpNull || t ≡ tpNull) ) return true;
 		if( isInstanceOf(t) ) return true;
 		if( t.isInstanceOf(this) ) return true;
 		if( this.isReference() && t.isReference() && (this.isInterface() || t.isInterface()) ) return true;
@@ -342,16 +345,16 @@ public abstract class Type implements StdTypes, AccessFlags {
 
 	public static BaseType getRefTypeForPrimitive(Type tp) {
 		if( tp.isReference() ) return (BaseType)tp;
-		if( tp == Type.tpBoolean ) return Type.tpBooleanRef;
-//		else if( tp == Type.tpRule ) return Type.tpBooleanRef;
-		else if( tp == Type.tpByte ) return Type.tpByteRef;
-		else if( tp == Type.tpShort ) return Type.tpShortRef;
-		else if( tp == Type.tpInt ) return Type.tpIntRef;
-		else if( tp == Type.tpLong ) return Type.tpLongRef;
-		else if( tp == Type.tpFloat ) return Type.tpFloatRef;
-		else if( tp == Type.tpDouble ) return Type.tpDoubleRef;
-		else if( tp == Type.tpChar ) return Type.tpCharRef;
-		else if( tp == Type.tpVoid ) return Type.tpVoidRef;
+		if     ( tp ≡ Type.tpBoolean ) return Type.tpBooleanRef;
+//		else if( tp ≡ Type.tpRule   ) return Type.tpBooleanRef;
+		else if( tp ≡ Type.tpByte   ) return Type.tpByteRef;
+		else if( tp ≡ Type.tpShort  ) return Type.tpShortRef;
+		else if( tp ≡ Type.tpInt    ) return Type.tpIntRef;
+		else if( tp ≡ Type.tpLong   ) return Type.tpLongRef;
+		else if( tp ≡ Type.tpFloat  ) return Type.tpFloatRef;
+		else if( tp ≡ Type.tpDouble ) return Type.tpDoubleRef;
+		else if( tp ≡ Type.tpChar   ) return Type.tpCharRef;
+		else if( tp ≡ Type.tpVoid   ) return Type.tpVoidRef;
 		else
 			throw new RuntimeException("Unknown primitive type "+tp);
 	}
@@ -477,6 +480,20 @@ public final class BaseType extends Type {
 	}
 
 	public final Struct get$clazz() { return ((BaseTypeProvider)meta_type).clazz; }
+
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(BaseType:Type type) {
+		if (this.bindings == null || type.bindings == null) return this.signature == type.signature;
+		if (this.clazz != type.clazz) return false;
+		TVar[] b1 = this.bindings().tvars;
+		TVar[] b2 = type.bindings().tvars;
+		final int n = b1.length;
+		for (int i=0; i < n; i++) {
+			if (b1[i].result() ≉ b2[i].result())
+				return false;
+		}
+		return true;
+	}
 	
 	public Struct getStruct()			{ return clazz; }
 	public Type getInitialType()		{ return clazz.type; }
@@ -683,6 +700,11 @@ public class ArrayType extends Type {
 		return jtype;
 	}
 
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(ArrayType:Type type) {
+		return this.arg ≈ type.arg;
+	}
+
 	public boolean isArgument()						{ return false; }
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return false; }
@@ -728,8 +750,8 @@ public class ArrayType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this == t) return true;
-		if (t == Type.tpObject) return true;
+		if (this ≡ t) return true;
+		if (t ≈ Type.tpObject) return true;
 		if (t instanceof ArrayType)
 			return arg.isInstanceOf(t.arg);
 		return false;
@@ -783,6 +805,11 @@ public class ArgumentType extends Type {
 		return jtype;
 	}
 
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(ArgumentType:Type type) {
+		return this ≡ type;
+	}
+
 	public boolean isArgument()						{ return true; }
 	public boolean isAnnotation()					{ return false; }
 	public boolean isAbstract()						{ return super_type.isAbstract(); }
@@ -825,7 +852,7 @@ public class ArgumentType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this == t) return true;
+		if (this ≡ t) return true;
 		return super_type.isInstanceOf(t);
 	}
 
@@ -863,6 +890,11 @@ public class WrapperType extends Type {
 		if (jtype == null)
 			jtype = getUnwrappedType().getJType();
 		return jtype;
+	}
+
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(WrapperType:Type type) {
+		return this.getUnwrappedType() ≈ type.getUnwrappedType();
 	}
 
 	public boolean isAnnotation()					{ return false; }
@@ -936,7 +968,7 @@ public class WrapperType extends Type {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this == t) return true;
+		if (this ≡ t) return true;
 		if (t instanceof WrapperType)
 			return getUnwrappedType().isInstanceOf(t.getUnwrappedType());
 		return false;
@@ -998,6 +1030,20 @@ public class ClosureType extends Type implements CallableType {
 		return jtype;
 	}
 
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(ClosureType:Type type) {
+		if (this.ret ≉ type.ret) return false;
+		public Type[] args1 = this.args;
+		public Type[] args2 = type.args;
+		if (args1.length != args2.length) return false;
+		int n = args1.length;
+		for (int i=0; i < n; i++) {
+			if (args1[i] ≉ args2[i])
+				return false;
+		}
+		return true;
+	}
+
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		str.append('(');
@@ -1017,7 +1063,7 @@ public class ClosureType extends Type implements CallableType {
 	}
 
 	public boolean isInstanceOf(Type t) {
-		if (this == t) return true;
+		if (this ≡ t) return true;
 		if (t instanceof ClosureType) {
 			ClosureType ct = (ClosureType)t;
 			if( this.args.length != ct.args.length ) return false;
@@ -1088,6 +1134,19 @@ public class MethodType extends Type implements CallableType {
 		return jtype;
 	}
 
+	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
+	protected access:no,rw,no,rw boolean eq(MethodType:Type type) {
+		if (this.ret ≉ type.ret) return false;
+		public Type[] args1 = this.args;
+		public Type[] args2 = type.args;
+		if (args1.length != args2.length) return false;
+		int n = args1.length;
+		for (int i=0; i < n; i++) {
+			if (args1[i] ≉ args2[i])
+				return false;
+		}
+		return true;
+	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -1123,7 +1182,7 @@ public class MethodType extends Type implements CallableType {
 		for(int i=0; i < args.length; i++) {
 			Type t1 = args[i];
 			Type t2 = tp.args[i];
-			if( !t1.string_equals(t2) ) {
+			if (t1 ≉ t2) {
 				if( t1.isInstanceOf(t2) ) {
 					trace(Kiev.debugMultiMethod,"Type "+args[i]+" is greater then "+t2);
 					gt = true;
@@ -1144,7 +1203,7 @@ public class MethodType extends Type implements CallableType {
 		boolean gt = false;
 		boolean lt = false;
 		for(int i=0; i < args.length; i++) {
-			if( !args[i].string_equals(tp.args[i]) ) {
+			if (args[i] ≉ tp.args[i]) {
 				if( args[i].isInstanceOf(tp.args[i]) ) gt = true;
 				else if( tp.args[i].isInstanceOf(args[i]) ) lt = true;
 				else return 0;

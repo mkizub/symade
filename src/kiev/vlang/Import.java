@@ -98,7 +98,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
 		int i = 0;
 		Type[] types;
-		if( args.length > 0 && args[0]==Type.tpRule) {
+		if( args.length > 0 && args[0].getType() ≡ Type.tpRule) {
 			types = new Type[args.length-1];
 			i++;
 		} else {

@@ -1333,14 +1333,14 @@ public class TypeRef extends ENode {
 	}
 	
 	public void resolve(Type reqType) {
-		if (reqType != null && reqType != Type.tpClass)
+		if (reqType ≢ null && reqType ≉ Type.tpClass)
 			toExpr(reqType);
 		else
 			getType(); // calls resolving
 	}
 	
 	public boolean equals(Object o) {
-		if (o instanceof Type) return this.lnk == o;
+		if (o instanceof Type) return this.lnk ≡ (Type)o;
 		return this == o;
 	}
 	
@@ -1373,7 +1373,7 @@ public class TypeRef extends ENode {
 			if (reqType.isInteger()) {
 //				ENode expr = new ConstIntExpr(case_attr.caseno);
 				ENode expr = new ConstIntExpr(meta.getTag());
-				if( reqType != Type.tpInt )
+				if( reqType ≢ Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);
 				return;

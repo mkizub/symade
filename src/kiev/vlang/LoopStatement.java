@@ -675,10 +675,10 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		) {
 			itype = Type.getRealType(ctype,elems.type.ret);
 			mode = ELEMS;
-		} else if( ctype == Type.tpRule &&
+		} else if( ctype ≡ Type.tpRule &&
 			(
-			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
-			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() == Type.tpRule )
+			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret ≡ Type.tpRule )
+			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
 			)
 		  ) {
 			itype = Type.tpRule;
@@ -687,7 +687,7 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 			throw new CompilerException(container,"Container must be an array or an Enumeration "+
 				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
 		}
-		if( itype == Type.tpRule ) {
+		if( itype ≡ Type.tpRule ) {
 			iter = new Var(pos,KString.from("$env"),itype,0);
 		}
 		else if( var != null ) {

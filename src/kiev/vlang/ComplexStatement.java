@@ -192,7 +192,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 					} else {
 						if( sw.mode != SwitchStat.TYPE_SWITCH )
 							throw new CompilerException(this,"Type case in non-type switch");
-						if( val.getType() == Type.tpObject ) {
+						if( val.getType() ≈ Type.tpObject ) {
 							val = null;
 							sw.defCase = this;
 						} else {
@@ -205,7 +205,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 							throw new CompilerException(this,"Wrong case in enum switch");
 						SFldExpr f = (SFldExpr)val;
 						Type et = sw.sel.getType();
-						if( f.var.type != et )
+						if( f.var.type ≢ et )
 							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
 						if (et.isEnum())
 							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));

@@ -35,7 +35,7 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 		code.addInstr(Instr.set_label,label_true);
 		code.addConst(1);
 		code.addInstr(Instr.set_label,label_false);
-		if( reqType == Type.tpVoid ) code.addInstr(Instr.op_pop);
+		if( reqType ≡ Type.tpVoid ) code.addInstr(Instr.op_pop);
 	}
 
 	public abstract void generate_iftrue(Code code, CodeLabel label);
