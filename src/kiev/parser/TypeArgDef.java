@@ -25,6 +25,7 @@ public class TypeArgDef extends TypeDef {
 	public static final class TypeArgDefImpl extends TypeDefImpl {
 		@att public NameRef					name;
 		@att public TypeRef					super_bound;
+		@att public boolean					erasable;
 		@att public ArgumentType			lnk;
 		public TypeArgDefImpl() {}
 		public TypeArgDefImpl(int pos) { super(pos); }
@@ -33,11 +34,13 @@ public class TypeArgDef extends TypeDef {
 	public static final view TypeArgDefView of TypeArgDefImpl extends TypeDefView {
 		public NameRef				name;
 		public TypeRef				super_bound;
+		public boolean				erasable;
 		public ArgumentType			lnk;
 	}
 
 	@att public abstract virtual NameRef				name;
 	@att public abstract virtual TypeRef				super_bound;
+	@att public abstract virtual boolean				erasable;
 	@att        abstract virtual ArgumentType			lnk;
 	
 	public NodeView			getNodeView()			{ return new TypeArgDefView((TypeArgDefImpl)this.$v_impl); }
@@ -47,9 +50,11 @@ public class TypeArgDef extends TypeDef {
 
 	@getter public NameRef		get$name()			{ return this.getTypeArgDefView().name; }
 	@getter public TypeRef		get$super_bound()	{ return this.getTypeArgDefView().super_bound; }
+	@getter public boolean		get$erasable()		{ return this.getTypeArgDefView().erasable; }
 	@getter public ArgumentType	get$lnk()			{ return this.getTypeArgDefView().lnk; }
 	@setter public void		set$name(NameRef val)			{ this.getTypeArgDefView().name = val; }
 	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeArgDefView().super_bound = val; }
+	@setter public void		set$erasable(boolean val)		{ this.getTypeArgDefView().erasable = val; }
 	@setter public void		set$lnk(ArgumentType val)		{ this.getTypeArgDefView().lnk = val; }
 	
 	public TypeArgDef() { super(new TypeDefImpl()); }
@@ -105,7 +110,7 @@ public class TypeArgDef extends TypeDef {
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = new ArgumentType(cn,ctx_clazz,sup);
+		this.lnk = new ArgumentType(cn,ctx_clazz,sup,erasable);
 		return this.lnk;
 	}
 

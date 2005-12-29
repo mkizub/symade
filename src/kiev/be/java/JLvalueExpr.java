@@ -162,7 +162,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
+			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}
@@ -236,7 +236,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
-			 && ( !getType().isStructInstanceOf(func.type.ret.getStruct()) || getType().isArray() ) )
+			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
 				code.addInstr(op_checkcast,getType());
 		}
 	}

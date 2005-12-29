@@ -36,6 +36,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
 	public abstract TVarSet bindings();
+	public abstract ArgumentType getOuterArg();
 	
 	public final Type rebind(TVarSet bindings) {
 		return meta_type.rebind(this,bindings);
@@ -300,6 +301,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final boolean isResolved()		{ return (flags & flResolved)		!= 0 ; }
 	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
+	public final boolean isRtArgumented()	{ return (flags & flRtArgumented)	!= 0 ; }
 	public final boolean isCallable()		{ return (flags & flCallable)		!= 0 ; }
 
 	public boolean isAnnotation()			{ return false; }
@@ -349,6 +351,7 @@ public final class CoreType extends Type {
 		this.name = name;
 	}
 	protected access:no,rw,no,rw boolean eq(Type t) { return this == t; }
+	public ArgumentType getOuterArg()	{ return null; }
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
 	public Meta getMeta(KString name)	{ return null; }
 	public Type getInitialType()		{ return this; }
@@ -381,8 +384,9 @@ public final class BaseType extends Type {
 				vs.append(ad.getAType(), null);
 			foreach (Type st; this.getDirectSuperTypes())
 				vs.append(st.bindings());
-			for (Struct s = clazz; !s.isStatic() && !s.isPackage() && !s.package_clazz.isPackage(); s = s.package_clazz)
-				vs.append(s.package_clazz.type.bindings());
+			ArgumentType ot = getOuterArg();
+			if (ot ≢ null)
+				vs.append(ot, null);
 			this.bindings = vs;
 		} else {
 			TVarSet vs = clazz.type.bindings().bind(this.bindings);
@@ -401,11 +405,7 @@ public final class BaseType extends Type {
 			this.bindings = vs;
 		}
 		this.version = this.meta_type.version;
-		flags &= ~flArgumented;
-		foreach(TVar v; this.bindings.tvars; v.bnd == null || v.result().isArgumented()) {
-			flags |= flArgumented;
-			break;
-		}
+		checkArgumented();
 	}
 	
 	BaseType(Struct clazz) {
@@ -415,9 +415,19 @@ public final class BaseType extends Type {
 	private BaseType(BaseTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type);
 		this.bindings = bindings;
-		foreach(TVar v; bindings.tvars; v.bnd == null || v.result().isArgumented()) {
-			flags |= flArgumented;
-			break;
+		checkArgumented();
+	}
+	
+	private void checkArgumented() {
+		flags &= ~(flArgumented | flRtArgumented);
+		foreach(TVar v; this.bindings().tvars) {
+			if (v.result().isArgumented()) {
+				flags |= flArgumented;
+				if (v.result().isRtArgumented()) {
+					flags |= flRtArgumented;
+					break;
+				}
+			}
 		}
 	}
 	
@@ -427,7 +437,7 @@ public final class BaseType extends Type {
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < args.length; i++) {
 			ClazzName cn = ClazzName.fromToplevelName(KString.from("_"+i+"_"), true);
-			ArgumentType var = new ArgumentType(cn,null,Type.tpAny);
+			ArgumentType var = new ArgumentType(cn,null,Type.tpAny, true);
 			vs.append(var, args[i]);
 		}
 		return createRefType(clazz, vs);
@@ -462,6 +472,24 @@ public final class BaseType extends Type {
 		if (this.clazz != type.clazz) return false;
 		return this.bindings().eq(type.bindings());
 	}
+	
+	public ArgumentType getOuterArg() {
+		if (clazz.isStatic() || clazz.isPackage() || clazz.package_clazz.isPackage())
+			return null;
+		KString name = KString.from("This$0");
+		TypeArgDef tad = null;
+		foreach(DNode n; clazz.members; n instanceof TypeArgDef && ((TypeArgDef)n).name.equals(name) ) {
+			tad = (TypeArgDef)n;
+			break;
+		}
+		if (tad == null) {
+			tad = new TypeArgDef(new NameRef(clazz.pos,name), new TypeRef(clazz.package_clazz.type));
+			tad.erasable = true;
+			clazz.members.append(tad);
+		}
+		return tad.getAType();
+	}
+	
 	
 	public Struct getStruct()			{ return clazz; }
 	public Type getInitialType()		{ return clazz.type; }
@@ -658,6 +686,7 @@ public class ArrayType extends Type {
 	}
 
 	public TVarSet bindings()			{ return arg.bindings(); }
+	public ArgumentType getOuterArg()	{ return arg.getOuterArg(); }
 	
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -737,16 +766,23 @@ public class ArgumentType extends Type {
 	/** Bound super-class for class arguments */
 	public Type						super_type;
 	
-	public ArgumentType(ClazzName name, Struct definer, Type sup) {
+	/** If the argument will be erased at run-time */
+	public  final boolean			erasable;
+	
+	public ArgumentType(ClazzName name, Struct definer, Type sup, boolean erasable) {
 		super(ArgumentTypeProvider.instance);
-		this.flags	|= flReference | flArgumented;
 		this.name = name;
 		this.definer = definer;
-		if (sup == null) sup = tpObject;
-		this.super_type = sup;
+		this.super_type = (sup == null) ? tpObject : sup;
+		this.erasable = erasable;
+		if (erasable)
+			this.flags	|= flReference | flArgumented;
+		else
+			this.flags	|= flReference | flArgumented | flRtArgumented;
 	}
 	
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
+	public ArgumentType getOuterArg()	{ return null; }
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -777,6 +813,7 @@ public class ArgumentType extends Type {
 	public Type getInitialSuperType()				{ return super_type.getInitialSuperType(); }
 	public Meta getMeta(KString name)				{ return super_type.getMeta(name); }
 	public Type[] getDirectSuperTypes()			{ return super_type.getDirectSuperTypes(); }
+	public Struct getStruct()						{ return super_type.getStruct(); }
 	
 	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { super_type.resolveNameAccessR(node, info, name) }
@@ -824,11 +861,13 @@ public class WrapperType extends Type {
 		this.unwrapped_type = unwrapped_type;
 		this.flags	 = flReference | flWrapper;
 		if (unwrapped_type.isArgumented()) this.flags |= flArgumented;
+		if (unwrapped_type.isRtArgumented()) this.flags |= flRtArgumented;
 	}
 
 	private Field get$wrapped_field() { return ((WrapperTypeProvider)this.meta_type).field; }
 	
 	public TVarSet bindings()			{ return getUnwrappedType().bindings(); }
+	public ArgumentType getOuterArg()	{ return getUnwrappedType().getOuterArg(); }
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -958,6 +997,7 @@ public class ClosureType extends Type implements CallableType {
 	@getter public Type		get$ret()	{ return ret; }
 
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
+	public ArgumentType getOuterArg()	{ return null; }
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -1044,6 +1084,7 @@ public class MethodType extends Type implements CallableType {
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
+	public ArgumentType getOuterArg()	{ return null; }
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));

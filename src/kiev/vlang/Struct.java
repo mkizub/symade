@@ -562,7 +562,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 
 	private Field resolveField(KString name, Struct where, boolean fatal) {
 		checkResolved();
-		foreach(ASTNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
+		foreach(DNode f; members; f instanceof Field && ((Field)f).name.equals(name) ) return (Field)f;
 		if( super_type != null ) return super_type.getStruct().resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
@@ -876,17 +876,15 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	}
 
 	public ENode accessTypeInfoField(ASTNode from, Type t) {
-		if( t.isArgumented() ) {
+		if( t.isRtArgumented() ) {
 			ENode ti_access;
-			if( from.ctx_method == null || from.ctx_method.isStatic()) {
+			Method ctx_method = from.ctx_method;
+			if (ctx_method != null && ctx_method.isStatic()) {
 				// check we have $typeinfo as first argument
-				if( from.ctx_method==null
-				 || from.ctx_method.params.length < 1
-				 || from.ctx_method.params[0].name.name != nameTypeInfo
-				 || !from.ctx_method.params[0].type.isInstanceOf(Type.tpTypeInfo)
-				 )
-					throw new CompilerException(from,"$typeinfo cannot be accessed from "+from.ctx_method);
-				ti_access = new LVarExpr(from.pos,from.ctx_method.params[0]);
+				if (ctx_method.getTypeInfoParam() == null)
+					throw new CompilerException(from,"$typeinfo cannot be accessed from "+ctx_method);
+				else
+					ti_access = new LVarExpr(from.pos,ctx_method.getTypeInfoParam());
 			}
 			else {
 				Field ti = resolveField(nameTypeInfo);
@@ -1112,11 +1110,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			// Check if it's an inner class
 			if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
 				int n = 0;
-				for(Struct pkg=package_clazz;
-						pkg.isClazz() && !pkg.isStatic();
-							pkg=pkg.package_clazz) n++;
-				Field f = addField(new Field(
-					KString.from(nameThisDollar.toString()+(n-1)),package_clazz.type,ACC_FORWARD|ACC_FINAL));
+				for(Struct pkg=package_clazz; pkg.isClazz() && !pkg.isStatic(); pkg=pkg.package_clazz)
+					n++;
+				Field f = addField(new Field(KString.from(nameThisDollar.toString()+n),type.getOuterArg(),ACC_FORWARD|ACC_FINAL));
 				f.pos = pos;
 			}
 	
@@ -1479,11 +1475,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				}
 				if (isRuntimeArgTyped() && m.isNeedFieldInits()) {
 					Field tif = resolveField(nameTypeInfo);
-					Var v = null;
-					foreach(Var vv; m.params; vv.name.equals(nameTypeInfo) ) {
-						v = vv;
-						break;
-					}
+					Var v = m.getTypeInfoParam();
 					assert(v != null);
 					stats.insert(
 						new ExprStat(pos,

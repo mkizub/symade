@@ -119,7 +119,11 @@ public final class NewExpr extends ENode {
 	}
 
 	public Type getType() {
-		return type.getType();
+		Type type = this.type.getType();
+		if (outer == null) return type;
+		TVarSet vset = new TVarSet();
+		vset.append(type.getOuterArg(), outer.getType());
+		return type.bind(vset);
 	}
 
 	public void resolve(Type reqType) {
@@ -138,18 +142,20 @@ public final class NewExpr extends ENode {
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 			throw new CompilerException(this,"Abstract class "+type+" instantiation");
 		}
-		if( outer != null ) {
-			outer.resolve(null);
-			type = (BaseType)type.rebind(outer.getType().bindings());
-		}
-		else if( (!type.isStaticClazz() && type.isLocalClazz())
-			  || (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+		if( outer == null &&
+			( (!type.isStaticClazz() && type.isLocalClazz())
+			|| (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
+		)
 		{
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
+		}
+		if( outer != null ) {
 			outer.resolve(null);
-			type = (BaseType)type.rebind(outer.getType().bindings());
+			TVarSet vset = new TVarSet();
+			vset.append(type.getOuterArg(), outer.getType());
+			type = (BaseType)type.bind(vset);
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);

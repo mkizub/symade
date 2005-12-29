@@ -231,8 +231,9 @@ public abstract class kiev040 {
 		clazz.setResolved(true);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
-		if      (parent instanceof FileUnit) {
+		if (parent instanceof FileUnit) {
 			clazz.setLocal(false);
+			clazz.setStatic(true);
 			Env.setProjectInfo(clazz.name, Kiev.curFile);
 		}
 		else if (parent instanceof Struct)

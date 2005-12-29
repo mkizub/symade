@@ -28,7 +28,7 @@ public interface StdTypes {
 	public static final int flWrapper			=  512;
 	public static final int flCallable			= 1024;
 	public static final int flArgumented		= 2048;
-	public static final int flUnbound			= 4096;
+	public static final int flRtArgumented		= 4096;
 
 	public static final BaseType tpEnv;
 	public static final CoreType tpAny;

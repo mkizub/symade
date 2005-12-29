@@ -1009,7 +1009,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 				return outer.type;
 			Type tp = ctx_clazz.type;
 			foreach (Field f; outer_refs)
-				tp = Type.getRealType(tp, f.type);
+				tp = f.type.rebind(tp.bindings());
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);

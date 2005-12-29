@@ -337,10 +337,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			setupStructType(clazz, true);
 		}
 		
-		foreach (TVar tv; clazz.type.bindings().tvars; !tv.isBound()) {
+		clazz.type.bindings(); // update the type
+		if (clazz.type.isRtArgumented()) {
 			clazz.setRuntimeArgTyped(true);
 			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
-			break;
 		}
 
 		clazz.setArgsResolved(true);
@@ -356,8 +356,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 		else if (clazz.parent instanceof Struct) {
+			////////////// BUG BUG - for compatibility with kiev 0.3 ////////////
 			if (!clazz.isStatic())
 				clazz.args.delAll();
+			/////////////////////////////////////////////////////////////////////
 		}
 	}
 
@@ -532,12 +534,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				m.conditions += inv;
 			}
 			// Inner classes and cases after all methods and fields, skip now
+			else if( members[i] instanceof TypeArgDef );
 			else if( members[i] instanceof Struct );
 			else if( members[i] instanceof Import ) {
 				me.imported.add((Import)members[i]);
 			}
 			else {
-				throw new CompilerException(members[i],"Unknown type if structure member: "+members[i]);
+				throw new CompilerException(members[i],"Unknown type of structure member: "+members[i]);
 			}
 		}
 
