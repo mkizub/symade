@@ -540,14 +540,14 @@ public final class Kiev {
 	
 	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
 	static {
-		transfProcessors[(int)Ext.JavaOnly]		= new ImportKievSrc(Ext.JavaOnly);
-		transfProcessors[(int)Ext.VirtualFields]	= new ProcessVirtFld(Ext.VirtualFields);
-		transfProcessors[(int)Ext.PackedFields]	= new ProcessPackedFld(Ext.PackedFields);
-		transfProcessors[(int)Ext.Enum]				= new ProcessEnum(Ext.Enum);
-		transfProcessors[(int)Ext.View]				= new ProcessView(Ext.View);
-		transfProcessors[(int)Ext.PizzaCase]		= new ProcessPizzaCase(Ext.PizzaCase);
-		transfProcessors[(int)Ext.VNode]			= new ProcessVNode(Ext.VNode);
-		transfProcessors[(int)Ext.DFlow]			= new ProcessDFlow(Ext.DFlow);
+		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc.$instance;
+		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld.$instance;
+		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld.$instance;
+		transfProcessors[(int)Ext.Enum]				= ProcessEnum.$instance;
+		transfProcessors[(int)Ext.View]				= ProcessView.$instance;
+		transfProcessors[(int)Ext.PizzaCase]		= ProcessPizzaCase.$instance;
+		transfProcessors[(int)Ext.VNode]			= ProcessVNode.$instance;
+		transfProcessors[(int)Ext.DFlow]			= ProcessDFlow.$instance;
 		setExtension(false, "vnode");
 		setExtension(false, "dflow");
 	}

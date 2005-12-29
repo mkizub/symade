@@ -193,6 +193,9 @@ public final class NewExpr extends ENode {
 				throw new CompilerException(this,"Can't find apropriative initializer for "+
 					Method.toString(nameInit,args,Type.tpVoid)+" for "+type);
 			}
+		} else {
+			if( !type.isRtArgumented())
+				throw new CompilerException(this,"Can't create an instance of erasable argument type "+type);
 		}
 		setResolved(true);
 	}
@@ -308,6 +311,8 @@ public final class NewArrayExpr extends ENode {
 			if( args[i] != null )
 				args[i].resolve(Type.tpInt);
 		if( type.isArgument() ) {
+			if( !type.isRtArgumented())
+				throw new CompilerException(this,"Can't create an array of erasable argument type "+type);
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"Access to argument "+type+" from static method");
 			int i;

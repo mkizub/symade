@@ -26,6 +26,7 @@ package kiev.stdlib;
  *
  */
 
+@erasable(false)
 public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cloneable
 {
     /**
@@ -297,6 +298,7 @@ public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cl
 	return buf.toString();
     }
 
+@erasable(true)
 public static class HashtableEntry<A,B> {
 
     A key;
@@ -321,6 +323,7 @@ public static class HashtableEntry<A,B> {
  * A hashtable enumerator class.  This class should remain opaque
  * to the client. It will use the Enumeration interface.
  */
+@erasable(true)
 static class KeyEnumerator<A,B> implements Enumeration<A> {
     int index;
     HashtableEntry<A,B> table[];
@@ -364,6 +367,7 @@ static class KeyEnumerator<A,B> implements Enumeration<A> {
  *  @version 1.0
  *  @since pizza 1.0alpha8 96/11/22
  */
+@erasable(true)
 static class ValueEnumerator<A,B> implements Enumeration<B>, Cloneable {
     int index;
     HashtableEntry<A,B> table[];

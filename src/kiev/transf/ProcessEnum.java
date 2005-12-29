@@ -12,11 +12,13 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
+@singleton
 public class ProcessEnum extends TransfProcessor implements Constants {
 
-	public ProcessEnum(Kiev.Ext ext) {
-		super(ext);
+	public static final ProcessEnum $instance = new ProcessEnum();
+	
+	private ProcessEnum() {
+		super(Kiev.Ext.Enum);
 	}
 
 	public void autoGenerateMembers(ASTNode:ASTNode node) {

@@ -26,6 +26,7 @@ package kiev.stdlib;
  *
  */
 
+@erasable(true)
 public final $wrapper class Ref<A>
 {
 

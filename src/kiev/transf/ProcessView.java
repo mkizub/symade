@@ -12,11 +12,13 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
+@singleton
 public class ProcessView extends TransfProcessor implements Constants {
 
-	public ProcessView(Kiev.Ext ext) {
-		super(ext);
+	public static final ProcessView $instance = new ProcessView();
+	
+	private ProcessView() {
+		super(Kiev.Ext.View);
 	}
 
 	public void autoGenerateMembers(ASTNode:ASTNode node) {

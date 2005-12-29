@@ -12,13 +12,13 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
+@singleton
 public final class ProcessPackedFld extends TransfProcessor implements Constants {
 	
-	private JavaPackedFldBackend javaBackend = new JavaPackedFldBackend();
+	public static final ProcessPackedFld $instance = new ProcessPackedFld();
 	
-	public ProcessPackedFld(Kiev.Ext ext) {
-		super(ext);
+	private ProcessPackedFld() {
+		super(Kiev.Ext.PackedFields);
 	}
 	
 	public void verify(ASTNode:ASTNode node) {
@@ -67,13 +67,17 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return javaBackend;
+			return JavaPackedFldBackend.$instance;
 		return null;
 	}
 	
 }
 
-final class JavaPackedFldBackend extends BackendProcessor implements Constants {
+@singleton
+class JavaPackedFldBackend extends BackendProcessor implements Constants {
+	
+	public static final JavaPackedFldBackend $instance = new JavaPackedFldBackend();
+
 	private static final int[] masks =
 		{	0,
 			0x1       ,0x3       ,0x7       ,0xF       ,
@@ -86,7 +90,7 @@ final class JavaPackedFldBackend extends BackendProcessor implements Constants {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	public JavaPackedFldBackend() {
+	private JavaPackedFldBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	

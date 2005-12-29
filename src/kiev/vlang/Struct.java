@@ -120,13 +120,23 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
-		// a class's argument	
+		// a pizza case	
 		public final boolean isPizzaCase() {
 			return this.$view.is_struct_pizza_case;
 		}
 		public final void setPizzaCase(boolean on) {
 			if (this.$view.is_struct_pizza_case != on) {
 				this.$view.is_struct_pizza_case = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a structure with the only one instance (singleton)	
+		public final boolean isSingleton() {
+			return this.$view.is_struct_singleton;
+		}
+		public final void setSingleton(boolean on) {
+			if (this.$view.is_struct_singleton != on) {
+				this.$view.is_struct_singleton = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -396,6 +406,9 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	// a class's argument	
 	public boolean isPizzaCase() { return getStructView().isPizzaCase(); }
 	public void setPizzaCase(boolean on) { getStructView().setPizzaCase(on); }
+	// a structure with the only one instance (singleton)	
+	public boolean isSingleton() { return getStructView().isSingleton(); }
+	public void setSingleton(boolean on) { getStructView().setSingleton(on); }
 	// a local (in method) class	
 	public boolean isLocal() { return getStructView().isLocal(); }
 	public void setLocal(boolean on) { getStructView().setLocal(on); }
@@ -462,6 +475,12 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 //		return (MetaPizzaCase)this.meta.get(MetaPizzaCase.NAME);
 		foreach (Meta m; meta.metas; m instanceof MetaPizzaCase)
 			return (MetaPizzaCase)m;
+		return null;
+	}
+
+	public MetaErasable getMetaErasable() {
+		foreach (Meta m; meta.metas; m instanceof MetaErasable)
+			return (MetaErasable)m;
 		return null;
 	}
 
@@ -1191,7 +1210,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					}
 					init.pos = pos;
 					init.body = new BlockStat(pos);
-					if( isEnum() )
+					if (isEnum() || isSingleton())
 						init.setPrivate(true);
 					else
 						init.setPublic(true);

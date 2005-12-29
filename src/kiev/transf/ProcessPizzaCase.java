@@ -12,13 +12,13 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-
+@singleton
 public class ProcessPizzaCase extends TransfProcessor implements Constants {
 	
-	private PizzaCaseBackend javaBackend = new PizzaCaseBackend();
-
-	public ProcessPizzaCase(Kiev.Ext ext) {
-		super(ext);
+	public static final ProcessPizzaCase $instance = new ProcessPizzaCase();
+	
+	private ProcessPizzaCase() {
+		super(Kiev.Ext.PizzaCase);
 	}
 
 	public void pass3(ASTNode:ASTNode node) {
@@ -35,29 +35,23 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				this.pass3(dn);
 			return;
 		}
+		if (clazz.isSingleton())
+			return;
 		MetaPizzaCase meta = clazz.getMetaPizzaCase();
 		Field[] flds = Field.emptyArray;
-//		PizzaCaseAttr case_attr = (PizzaCaseAttr)clazz.getAttr(attrPizzaCase);
-//		case_attr.casefields = Field.emptyArray;
 		foreach (DNode dn; clazz.members; dn instanceof Field) {
 			Field f = (Field)dn;
-//			case_attr.casefields = (Field[])Arrays.append(case_attr.casefields,f);
 			flds = (Field[])Arrays.append(flds,f);
 			meta.add(f);
 		}
 		// Create constructor for pizza case
-		Vector<Type> targs = new Vector<Type>();
-		foreach (Field f; flds/*case_attr.casefields*/)
-			targs.append(f.type);
-		MethodType mt = new MethodType(targs.toArray(),Type.tpVoid);
-		Constructor init = new Constructor(mt,ACC_PUBLIC);
-		init.pos = clazz.pos;
-		foreach (Field f; flds/*case_attr.casefields*/)
+		MethodType mt = new MethodType(Type.emptyArray,Type.tpVoid);
+		Constructor init = new Constructor(mt, ACC_PUBLIC);
+		foreach (Field f; flds)
 			init.params.add(new FormPar(f.pos,f.name.name,f.type,FormPar.PARAM_NORMAL,0));
-		clazz.addMethod(init);
 		init.body = new BlockStat(clazz.pos);
 		int p = 0;
-		foreach (Field f; flds/*case_attr.casefields*/) {
+		foreach (Field f; flds) {
 			Var v = null;
 			foreach (FormPar fp; init.params; fp.name.name == f.name.name) {
 				init.body.stats.insert(
@@ -71,19 +65,24 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 				break;
 			}
 		}
+		init.pos = clazz.pos;
+		clazz.addMethod(init);
 	}
 
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return javaBackend;
+			return PizzaCaseBackend.$instance;
 		return null;
 	}
 	
 }
 
-final class PizzaCaseBackend extends BackendProcessor implements Constants {
+@singleton
+class PizzaCaseBackend extends BackendProcessor implements Constants {
 
-	public PizzaCaseBackend() {
+	public static final PizzaCaseBackend $instance = new PizzaCaseBackend();
+
+	private PizzaCaseBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	

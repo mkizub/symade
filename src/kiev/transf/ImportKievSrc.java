@@ -13,12 +13,13 @@ import syntax kiev.Syntax;
  *
  */
 
+@singleton
 public final class ImportKievSrc extends TransfProcessor implements Constants {
 
-	private JavaBackend javaBackend = new JavaBackend();
+	public static final ImportKievSrc $instance = new ImportKievSrc();
 	
-	public ImportKievSrc(Kiev.Ext ext) {
-		super(ext);
+	private ImportKievSrc() {
+		super(Kiev.Ext.JavaOnly);
 	}
 	
 	
@@ -543,6 +544,20 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				throw new CompilerException(members[i],"Unknown type of structure member: "+members[i]);
 			}
 		}
+		
+		if (me.meta.get(MetaSingleton.NAME) != null) {
+			me.setSingleton(me.meta.get(MetaSingleton.NAME).getZ(MetaSingleton.nameValue));
+		}
+		
+		if (me.isSingleton()) {
+			me.setFinal(true);
+			if (me.resolveField(nameInstance, false) == null) {
+				Field inst = new Field(nameInstance, me.type, ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
+				inst.pos = me.pos;
+				inst.init = new NewExpr(me.pos, me.type, ENode.emptyArray);
+				me.addField(inst);
+			}
+		}
 
 		// Process inner classes and cases
 		if( !me.isPackage() ) {
@@ -667,15 +682,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return javaBackend;
+			return JavaBackend.$instance;
 		return null;
 	}
 	
 }
 
-final class JavaBackend extends BackendProcessor {
+@singleton
+class JavaBackend extends BackendProcessor {
+
+	public static final JavaBackend $instance = new JavaBackend();
 	
-	public JavaBackend() {
+	private JavaBackend() {
 		super(Kiev.Backend.Java15);
 	}
 	

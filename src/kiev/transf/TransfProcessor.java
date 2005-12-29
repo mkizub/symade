@@ -13,10 +13,13 @@ import syntax kiev.Syntax;
  *
  */
 
-public class TransfProcessor {
-	private Kiev.Ext extension;
+public abstract class TransfProcessor {
+	
+	private final Kiev.Ext extension;
+	
 	public TransfProcessor(Kiev.Ext ext) {
 		this.extension = ext;
+		Kiev.transfProcessors[(int)ext] = this;
 	}
 	public boolean isEnabled() {
 		return Kiev.enabled(extension);

@@ -551,8 +551,9 @@ public abstract class DNode extends ASTNode {
 		public packed:1,flags,16 boolean is_struct_package;    // struct
 		public packed:1,flags,17 boolean is_struct_argument;   // struct
 		public packed:1,flags,18 boolean is_struct_pizza_case; // struct
+		public packed:1,flags,19 boolean is_struct_singleton;  // struct
 		public packed:1,flags,20 boolean is_struct_syntax;     // struct
-		public packed:1,flags,23 boolean is_struct_bytecode;    // struct was loaded from bytecode
+		public packed:1,flags,23 boolean is_struct_bytecode;   // struct was loaded from bytecode
 
 		public DNodeImpl() {}
 		public DNodeImpl(int pos) {
@@ -1354,33 +1355,33 @@ public class TypeRef extends ENode {
 	
 	public void toExpr(Type reqType) {
 		Type st = getType();
-		if (st.isPizzaCase()) {
-			Struct s = st.getStruct();
+		Struct s = st.getStruct();
+		if (s != null && s.isPizzaCase()) {
 			// Pizza case may be casted to int or to itself or super-class
-//			PizzaCaseAttr case_attr;
-//			case_attr = (PizzaCaseAttr)s.getAttr(attrPizzaCase);
-//			if (case_attr == null)
-//				throw new RuntimeException("Internal error - can't find case_attr");
 			MetaPizzaCase meta = s.getMetaPizzaCase();
 			if (meta == null)
 				throw new RuntimeException("Internal error - can't find pizza case meta attr");
 			Type tp = Type.getRealType(reqType,st);
 			if !(reqType.isInteger() || tp.isInstanceOf(reqType))
 				throw new CompilerException(this,"Pizza case "+tp+" cannot be casted to type "+reqType);
-//			if (case_attr.casefields.length != 0)
 			if (meta.getFields().length != 0)
 				throw new CompilerException(this,"Empty constructor for pizza case "+tp+" not found");
 			if (reqType.isInteger()) {
-//				ENode expr = new ConstIntExpr(case_attr.caseno);
 				ENode expr = new ConstIntExpr(meta.getTag());
 				if( reqType ≢ Type.tpInt )
 					expr = new CastExpr(pos,reqType,expr);
 				replaceWithNodeResolve(reqType, expr);
-				return;
 			}
-			// Now, check we need add type arguments
-			replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,ENode.emptyArray);});
+			else if (s.isSingleton()) {
+				replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
+			}
+			else {
+				replaceWithResolve(reqType, fun ()->ENode {return new NewExpr(pos,tp,ENode.emptyArray);});
+			}
 			return;
+		}
+		if (s != null && s.isSingleton()) {
+			replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
 		}
 		throw new CompilerException(this,"Type "+this+" is not a class's case with no fields");
 	}

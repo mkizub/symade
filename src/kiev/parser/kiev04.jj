@@ -1099,12 +1099,13 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	"case"
 	name = Name()
 	{
-		clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC, modifiers, parent);
+		clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC|ACC_FINAL, modifiers, parent);
 		clazz.super_type = parent.type;
+		clazz.setSingleton(true);
 	}
 	ClazzArguments(clazz)
 	[
-	"("
+	"(" { clazz.setSingleton(false); }
 		[
 			modifiers = Modifiers()
 			clazz.members += CaseTypeField(modifiers)
@@ -1239,7 +1240,7 @@ Meta Annotation() :
 		"("
 		[	LOOKAHEAD( <IDENTIFIER> "=" )
 			AnnotationValues(n)
-		|	v = AnnotationValueAny() { n.set(v); }
+		|	v = AnnotationValueAny() { v.type = new MetaValueType(KString.from("value")); n.set(v); }
 		]
 		")"
 	]
@@ -2199,7 +2200,15 @@ ENode Expression() :
 	|	LOOKAHEAD(2)
 		e.nodes += AccessExpression()
 	)+
-	{ return e; }
+	{
+		if (e.nodes.length == 1 && e.nodes[0] instanceof ENode) {
+			ENode en = (ENode)~e.nodes[0];
+			if (e.isPrimaryExpr())
+				en.setPrimaryExpr(true);
+			return en;
+		}
+		return e;
+	}
 }
 
 ENode ReparseExpression() :

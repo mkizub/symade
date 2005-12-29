@@ -11,9 +11,11 @@ import static kiev.stdlib.Debug.*;
  * @author Maxim Kizub
  *
  */
-
+@singleton
 public final class ProcessDFlow extends TransfProcessor implements Constants {
 
+	public static final ProcessDFlow $instance = new ProcessDFlow();
+	
 	public static final KString mnNode				= KString.from("kiev.vlang.dflow"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
 	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
@@ -26,8 +28,8 @@ public final class ProcessDFlow extends TransfProcessor implements Constants {
 	private static Type tpNArr;
 	private static Type tpNode;
 	
-	public ProcessDFlow(Kiev.Ext ext) {
-		super(ext);
+	private ProcessDFlow() {
+		super(Kiev.Ext.DFlow);
 	}
 
 	/////////////////////////////////////////////

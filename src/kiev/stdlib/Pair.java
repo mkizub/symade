@@ -27,6 +27,7 @@ package kiev.stdlib;
  *
  */
 
+@erasable(false)
 public class Pair<A,B>
 {
 

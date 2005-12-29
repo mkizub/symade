@@ -26,6 +26,7 @@ package kiev.stdlib;
  *
  */
 
+@erasable(false)
 public abstract class Dictionary<A,B extends Object>
 {
     /**

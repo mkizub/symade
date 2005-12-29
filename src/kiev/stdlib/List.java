@@ -27,6 +27,7 @@ package kiev.stdlib;
  * @version $Revision$
  */
 
+@erasable(true)
 public class List<A>
 {
 
@@ -160,16 +161,16 @@ public class List<A>
 		}
 	}
     
-	public A[] toArray()
-//		alias operator(210,fy,$cast)
-	{
-		A[] arr = new A[length()];
-		for(int i=0; this != List.Nil; i++) {
-			arr[i] = head();
-			this = tail();
-		}
-		return arr;
-	}
+//	public A[] toArray()
+////		alias operator(210,fy,$cast)
+//	{
+//		A[] arr = new A[length()];
+//		for(int i=0; this != List.Nil; i++) {
+//			arr[i] = head();
+//			this = tail();
+//		}
+//		return arr;
+//	}
 
 /** return the result of appending element `y' to this list as a new list
  */

@@ -102,10 +102,13 @@ public class TypeArgDef extends TypeDef {
 			KString nm = KString.from(s.name.name+"$"+name.name);
 			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
 			cn = new ClazzName(nm,name.name,bc,true,true);
+			MetaErasable er = s.getMetaErasable();
+			this.erasable = (er == null || er.value);
 		} else {
 			int cnt = anonymousCounter++;
 			KString nm = KString.from("$"+cnt+"$"+name.name);
 			cn = new ClazzName(nm,name.name,nm,true,true);
+			this.erasable = true;
 		}
 		Type sup = Type.tpObject;
 		if (super_bound != null)

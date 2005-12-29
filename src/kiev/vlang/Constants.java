@@ -45,6 +45,7 @@ public interface Constants extends AccessFlags {
 	public final static KString nameEnumValuesFld	= KString.from("$values");
 	public final static KString nameEnumValues	= KString.from("values");
 	public final static KString nameEnumOrdinal	= KString.from("ordinal");
+	public final static KString nameInstance		= KString.from("$instance");
 	public final static KString nameClosureArgs		= KString.from("$args");
 	public final static KString nameClosureMaxArgs	= KString.from("max$args");
 	public final static KString nameClosureTopArg	= KString.from("top$arg");

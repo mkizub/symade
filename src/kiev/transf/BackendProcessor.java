@@ -13,10 +13,10 @@ import syntax kiev.Syntax;
  *
  */
 
-public class BackendProcessor {
+public abstract class BackendProcessor {
 	private Kiev.Backend backend;
 	
-	public BackendProcessor(Kiev.Backend backend) {
+	BackendProcessor(Kiev.Backend backend) {
 		this.backend = backend;
 	}
 	
