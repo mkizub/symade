@@ -90,11 +90,27 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void processSyntax(Import:ASTNode astn) {
 		if (astn.of_method || (astn.mode==Import.ImportMode.IMPORT_STATIC && !astn.star)) return;
 		KString name = astn.name.name;
-		DNode@ v;
-		if( !PassInfo.resolveQualifiedNameR(astn,v,new ResInfo(astn,ResInfo.noForwards),name) ) {
-			Kiev.reportError(astn,"Unresolved identifier "+name);
-		}
-		DNode n = v;
+		Struct scope = Env.root;
+		DNode n;
+		int dot;
+		do {
+			dot = name.indexOf('.');
+			KString head;
+			if (dot > 0) {
+				head = name.substr(0,dot);
+				name = name.substr(dot+1);
+			} else {
+				head = name;
+			}
+			DNode@ node;
+			if!(scope.resolveNameR(node,new ResInfo(astn,ResInfo.noForwards|ResInfo.noSuper|ResInfo.noImports),head)) {
+				Kiev.reportError(astn,"Unresolved identifier "+name+" in "+scope);
+				return;
+			}
+			n = node;
+			if (node instanceof Struct)
+				scope = (Struct)node;
+		} while (dot > 0);
 		if		(astn.mode == Import.ImportMode.IMPORT_CLASS && !(n instanceof Struct))
 			Kiev.reportError(astn,"Identifier "+name+" is not a class or package");
 		else if (astn.mode == Import.ImportMode.IMPORT_PACKAGE && !(n instanceof Struct && ((Struct)n).isPackage()))
@@ -254,9 +270,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Struct clazz = (Struct)astn;
 			getStructType(clazz);
 			if( !clazz.isPackage() ) {
-				foreach (DNode s; clazz.members; s instanceof Struct) {
-					getStructType((Struct)s);
-				}
+				foreach (DNode s; clazz.members; s instanceof Struct)
+					pass2(s);
 			}
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}

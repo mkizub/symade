@@ -3,7 +3,7 @@ package kiev.be.java;
 import kiev.Kiev;
 import kiev.vlang.*;
 
-import java.io.*;
+import java.io.File;
 
 /**
  * @author Maxim Kizub
@@ -123,7 +123,7 @@ public class SourceFileAttr extends Attr {
 	/** Constructor for bytecode reader and raw field creation */
 	public SourceFileAttr(KString filename) {
 		super(attrSourceFile);
-		this.filename = KString.from((new java.io.File(filename.toString())).getName());
+		this.filename = KString.from((new File(filename.toString())).getName());
 	}
 
 	public void generate(ConstPool constPool) {

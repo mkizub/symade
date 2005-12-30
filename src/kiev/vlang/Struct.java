@@ -638,6 +638,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			arg.name.name.equals(name),
 			node ?= arg
 		;	node @= members,
+			node instanceof TypeArgDef && ((TypeArgDef)node).name.name.equals(name)
+		;	node @= members,
 			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 		;	node @= members,
 			node instanceof Struct && ((Struct)node).name.short_name.equals(name)
@@ -916,8 +918,8 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			if (t.isArgument()) {
 				// Get corresponded type argument
 				ArgumentType at = (ArgumentType)t;
-				KString fnm = new KStringBuffer(nameTypeInfo.length()+1+at.name.short_name.length())
-						.append(nameTypeInfo).append('$').append(at.name.short_name).toKString();
+				KString fnm = new KStringBuffer(nameTypeInfo.len+1+at.name.len)
+						.append(nameTypeInfo).append('$').append(at.name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
 				if (ti_arg == null)
 					throw new RuntimeException("Field "+fnm+" not found in "+typeinfo_clazz+" from method "+from.ctx_method);
@@ -1042,10 +1044,10 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 			// add in it arguments fields, and prepare for constructor
 			foreach (TVar tv; this.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
 				ArgumentType t = tv.var;
-				KString fname = KString.from(nameTypeInfo+"$"+t.name.short_name);
+				KString fname = KString.from(nameTypeInfo+"$"+t.name);
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
-				FormPar v = new FormPar(pos,t.name.short_name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
+				FormPar v = new FormPar(pos,t.name,Type.tpTypeInfo,FormPar.PARAM_NORMAL,ACC_FINAL);
 				init.params.append(v);
 				init.body.stats.append(new ExprStat(pos,
 					new AssignExpr(pos,AssignOperator.Assign,
@@ -1070,7 +1072,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					Type t = tv.var.rebind(this.type.bindings());
 					ENode expr;
 					if (t instanceof ArgumentType) {
-						expr = new ASTIdentifier(pos,t.name.short_name);
+						expr = new ASTIdentifier(pos,t.name);
 					} else {
 						expr = new CallExpr(pos,null,
 							Type.tpTypeInfo.clazz.resolveMethod(
@@ -1443,7 +1445,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 					ASTCallExpression call_super = new ASTCallExpression();
 					call_super.pos = pos;
 					call_super.func = new NameRef(pos, nameSuper);
-					if( super_type.clazz == Type.tpClosureClazz ) {
+					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						ASTIdentifier max_args = new ASTIdentifier();
 						max_args.name = nameClosureMaxArgs;
 						call_super.args.add(max_args);

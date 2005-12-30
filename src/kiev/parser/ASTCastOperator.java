@@ -39,7 +39,7 @@ public class ASTCastOperator extends ASTOperator {
 				throw e;
 		}
 		TypeNameRef tnr = (TypeNameRef)type;
-		String[] names = String.valueOf(tnr.name.name).split("\\.");
+		String[] names = String.valueOf(tnr.name).split("\\.");
 		ENode e = new ASTIdentifier(type.pos, KString.from(names[0]));
 		for (int i=1; i < names.length; i++) {
 			e = new AccessExpr(type.pos, e, new NameRef(type.pos, KString.from(names[i])));

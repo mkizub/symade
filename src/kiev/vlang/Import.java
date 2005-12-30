@@ -264,7 +264,7 @@ public final class TypeDefOp extends TypeDef implements Named {
 
 		TypeWithArgsRef natp = (TypeWithArgsRef)tp;
 		TypeNameRef arg = (TypeNameRef)natp.args[0];
-		KString argnm = arg.name.name;
+		KString argnm = arg.name;
 		//if (!typearg.name.short_name.equals(argnm))
 		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
 		natp.args[0] = new TypeRef(typearg.getType());

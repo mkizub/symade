@@ -436,8 +436,7 @@ public final class BaseType extends Type {
 			return createRefType(clazz, TVarSet.emptySet);
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < args.length; i++) {
-			ClazzName cn = ClazzName.fromToplevelName(KString.from("_"+i+"_"), true);
-			ArgumentType var = new ArgumentType(cn,null,Type.tpAny, true);
+			ArgumentType var = new ArgumentType(KString.from("_"+i+"_"),null,Type.tpAny, true);
 			vs.append(var, args[i]);
 		}
 		return createRefType(clazz, vs);
@@ -758,10 +757,10 @@ public class ArrayType extends Type {
 public class ArgumentType extends Type {
 
 	/** Variouse names of the type */
-	public final ClazzName			name;
+	public final KString			name;
 
 	/** The class this argument belongs to */
-	public final Struct				definer;
+	public final DNode				definer;
 
 	/** Bound super-class for class arguments */
 	public Type						super_type;
@@ -769,7 +768,7 @@ public class ArgumentType extends Type {
 	/** If the argument will be erased at run-time */
 	public  final boolean			erasable;
 	
-	public ArgumentType(ClazzName name, Struct definer, Type sup, boolean erasable) {
+	public ArgumentType(KString name, DNode definer, Type sup, boolean erasable) {
 		super(ArgumentTypeProvider.instance);
 		this.name = name;
 		this.definer = definer;
@@ -835,7 +834,7 @@ public class ArgumentType extends Type {
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.append(name.short_name);
+		return dmp.append(name);
 	}
 
 	public boolean isInstanceOf(Type t) {

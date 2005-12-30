@@ -246,14 +246,11 @@ public abstract class kiev040 {
 		return clazz;
 	}
 
-	private TypeArgDef mkTypeArgDef(NameRef name, ASTNode parent) {
+	private TypeArgDef mkTypeArgDef(NameRef name, ASTModifiers modifiers) {
 		TypeArgDef arg = new TypeArgDef(name);
-		if (parent instanceof Struct) {
-			Struct s = (Struct)parent;
-			s.args += arg;
-		} else {
-			//ASTMethodDeclaration m = (ASTMethodDeclaration)parent;
-			//m.argtypes += arg;
+		if (modifiers != null) {
+			foreach (Meta m; modifiers.annotations)
+				arg.meta.set((Meta)m.copy());
 		}
 		return arg;
 	}
@@ -962,7 +959,7 @@ Struct SyntaxDeclaration(ASTModifiers modifiers, ASTNode parent) :
 }
 
 Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
-{ Struct clazz; NameRef name; Struct oldClazz; }
+{ Struct clazz; NameRef name; Struct oldClazz; TypeArgDef[] args; }
 {
 	(
 		"class"
@@ -970,7 +967,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		{
 			clazz = mkStruct(name, 0, modifiers, parent);
 		}
-		ClazzArguments(clazz)
+		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
 			(
@@ -989,7 +986,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		{
 			clazz = mkStruct(name, ACC_INTERFACE, modifiers, parent);
 		}
-		ClazzArguments(clazz)
+		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
 			clazz.interfaces += NArrType()
@@ -1015,7 +1012,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
 		clazz.view_of = NArrType()
-		ClazzArguments(clazz)
+		args = ClazzArguments() { clazz.args.addAll(args); }
 		[
 			"extends"
 			(
@@ -1057,7 +1054,8 @@ void TypeBodyDeclaration(Struct clazz) :
 			clazz.members += Initializer(modifiers)
 		|	clazz.members += InvariantDeclaration(modifiers) [ ";" ]
 		|	clazz.members += TypeDeclaration(modifiers, clazz) [ ";" ]
-		|	clazz.members += CaseTypeDeclaration(modifiers, clazz) ";"
+		|	clazz.members += CaseTypeDeclaration(modifiers, clazz)
+		|	clazz.members += MemberArgDecl(modifiers)
 		|
 			LOOKAHEAD( "rule" <IDENTIFIER> "(" )
 			clazz.members += RuleDeclaration(modifiers)
@@ -1094,7 +1092,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 }
 
 Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
-{ NameRef name; Struct clazz; }
+{ NameRef name; Struct clazz; TypeArgDef[] args; }
 {
 	"case"
 	name = Name()
@@ -1103,7 +1101,7 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 		clazz.super_type = parent.type;
 		clazz.setSingleton(true);
 	}
-	ClazzArguments(clazz)
+	args = ClazzArguments() { clazz.args.addAll(args); }
 	[
 	"(" { clazz.setSingleton(false); }
 		[
@@ -1117,32 +1115,51 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 		]
 	")"
 	]
+	";"
 	{ return clazz; }
 }
 
 
-void ClazzArguments(ASTNode parent) :
-{}
+TypeArgDef[] ClazzArguments() :
+{ TypeArgDef[] args = new TypeArgDef[0]; TypeArgDef arg; }
 {
 	[
 		"<"
-			ArgumentDeclaration(parent)
+			arg = ArgumentDeclaration()
+			{ args = (TypeArgDef[])Arrays.append(args,arg); }
 			(	","
-				ArgumentDeclaration(parent)
+				arg = ArgumentDeclaration()
+				{ args = (TypeArgDef[])Arrays.append(args,arg); }
 			)*
 		">"
 	]
+	{ return args; }
 }
 
-void ArgumentDeclaration(ASTNode parent) :
+TypeArgDef MemberArgDecl(ASTModifiers modifiers) :
+{ NameRef name; TypeArgDef arg; }
+{
+	"typedef"
+	name      = Name()
+	{ arg = mkTypeArgDef(name,modifiers); }
+	[
+		"="
+		arg.super_bound = NArrType()
+	]
+	";"
+	{ return arg; }
+}
+
+TypeArgDef ArgumentDeclaration() :
 { NameRef name; TypeArgDef arg; }
 {
 	name      = Name()
-	{ arg = mkTypeArgDef(name,parent); }
+	{ arg = mkTypeArgDef(name,null); }
 	[
 		"extends"
 		arg.super_bound = NArrType()
 	]
+	{ return arg; }
 }
 
 int Modifier() :
@@ -1534,12 +1551,12 @@ BlockStat MaybeSkipBlock() :
 }
 
 Method MethodDeclaration(ASTModifiers modifiers) :
-{ Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; }
+{ Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; TypeArgDef[] args; }
 {
-	ClazzArguments(null)
+	args = ClazzArguments()
 	ret = Type()
 	id = Name()
-	{ m = mkMethod(id,modifiers,ret); oldMethod = curMethod; curMethod = m; }
+	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
 	try {
 	"("
 		[
@@ -1759,8 +1776,7 @@ TypeRef Type() :
 { TypeRef res; }
 {
 	(
-		res = ReparseType()
-	|	res = TypeExpr()
+		res = TypeExpr()
 	|	LOOKAHEAD({Kiev.enabled(Ext.With)})
 		res = ClosureType()
 	)
@@ -1784,17 +1800,32 @@ TypeRef TypeExpr() :
 	{ return res; }
 }
 
+TypeRef TypeQName() :
+{ NameRef id; TypeRef res; }
+{
+	id = Name() { res = new TypeNameRef(id); }
+	(
+		"."
+		id = Name()  { res = new TypeNameRef(res, id); }
+	)*
+	{ return res; }
+}
+
 TypeRef TypeWithArgs() :
-{ NameRef id; TypeRef res; TypeRef arg; TypeWithArgsRef tra; }
+{ NameRef id; TypeRef res; TypeWithArgsRef tra; }
 {
 	id = QName() { res = new TypeNameRef(id); }
-	[	LOOKAHEAD(1, "<")
-		"<"
-			{ res = tra = new TypeWithArgsRef(res); }
-			tra.args += Type()
-			( "," tra.args += Type() )*
-		">"
-	]
+	(	LOOKAHEAD(2)
+		(
+			"."
+			id = Name()  { res = new TypeNameRef(res, id); }
+		|	"<"
+				{ res = tra = new TypeWithArgsRef(res); }
+				tra.args += Type()
+				( "," tra.args += Type() )*
+			">"
+		)
+	)*
 	{ return res; }
 }
 

@@ -19,8 +19,6 @@ public class TypeArgDef extends TypeDef {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	private static int anonymousCounter = 100;
-	
 	@node
 	public static final class TypeArgDefImpl extends TypeDefImpl {
 		@att public NameRef					name;
@@ -99,21 +97,15 @@ public class TypeArgDef extends TypeDef {
 		ClazzName cn;
 		if (parent instanceof Struct) {
 			Struct s = (Struct)parent;
-			KString nm = KString.from(s.name.name+"$"+name.name);
-			KString bc = KString.from(s.name.bytecode_name+"$"+name.name);
-			cn = new ClazzName(nm,name.name,bc,true,true);
 			MetaErasable er = s.getMetaErasable();
 			this.erasable = (er == null || er.value);
 		} else {
-			int cnt = anonymousCounter++;
-			KString nm = KString.from("$"+cnt+"$"+name.name);
-			cn = new ClazzName(nm,name.name,nm,true,true);
 			this.erasable = true;
 		}
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = new ArgumentType(cn,ctx_clazz,sup,erasable);
+		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,erasable);
 		return this.lnk;
 	}
 
