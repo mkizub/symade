@@ -133,6 +133,8 @@ public final class NewExpr extends ENode {
 			Type t = this.type.getType();
 			if (t.isWrapper())
 				type = ((WrapperType)t).getUnwrappedType();
+			else if (t instanceof ArgumentType)
+				type = (BaseType)((ArgumentType)t).super_type;
 			else
 				type = (BaseType)t;
 		}

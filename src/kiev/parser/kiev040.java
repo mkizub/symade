@@ -510,18 +510,19 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeDefOp Typedef() throws ParseException {
-  NameRef id; ASTOperator op; TypeRef tp; TypeDefOp n = new TypeDefOp();
+  final public TypeDecl Typedef() throws ParseException {
+  NameRef id; TypeDecl n;
     jj_consume_token(TYPEDEF);
     if (jj_2_4(3) && (checkNoSpace(getToken(1),getToken(2)))) {
-      id = Name();
-      op = Operator();
-      tp = Type();
-                  n.set(id, op, tp);
+                  n = new TypeOpDef();
+      id     = Name();
+                                          n.arg = new TypeDef(id);
+      n.op   = Operator();
+      n.type = Type();
     } else if (jj_2_5(1)) {
-      tp = Type();
-      id = Name();
-                  n.set(tp, id);
+                  n = new TypeDef(); n.erasable = true;
+      n.super_bound = Type();
+      n.name = Name();
     } else {
       jj_consume_token(-1);
       throw new ParseException();
@@ -606,7 +607,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) throws ParseException {
-  Struct clazz; NameRef name; Struct oldClazz; TypeArgDef[] args;
+  Struct clazz; NameRef name; Struct oldClazz; TypeDef[] args;
     switch (jj_nt.kind) {
     case CLASS:
       jj_consume_token(CLASS);
@@ -905,7 +906,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) throws ParseException {
-  NameRef name; Struct clazz; TypeArgDef[] args;
+  NameRef name; Struct clazz; TypeDef[] args;
     jj_consume_token(CASE);
     name = Name();
                 clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC|ACC_FINAL, modifiers, parent);
@@ -946,13 +947,13 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeArgDef[] ClazzArguments() throws ParseException {
-  TypeArgDef[] args = new TypeArgDef[0]; TypeArgDef arg;
+  final public TypeDef[] ClazzArguments() throws ParseException {
+  TypeDef[] args = new TypeDef[0]; TypeDef arg;
     switch (jj_nt.kind) {
     case LT:
       jj_consume_token(LT);
       arg = ArgumentDeclaration();
-                          args = (TypeArgDef[])Arrays.append(args,arg);
+                          args = (TypeDef[])Arrays.append(args,arg);
       label_17:
       while (true) {
         switch (jj_nt.kind) {
@@ -964,7 +965,7 @@ public abstract class kiev040 implements kiev040Constants {
         }
         jj_consume_token(COMMA);
         arg = ArgumentDeclaration();
-                                  args = (TypeArgDef[])Arrays.append(args,arg);
+                                  args = (TypeDef[])Arrays.append(args,arg);
       }
       jj_consume_token(GT);
       break;
@@ -975,11 +976,11 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeArgDef MemberArgDecl(ASTModifiers modifiers) throws ParseException {
-  NameRef name; TypeArgDef arg;
+  final public TypeDef MemberArgDecl(ASTModifiers modifiers) throws ParseException {
+  NameRef name; TypeDef arg;
     jj_consume_token(TYPEDEF);
     name      = Name();
-          arg = mkTypeArgDef(name,modifiers);
+          arg = mkTypeDef(name,modifiers);
     switch (jj_nt.kind) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
@@ -993,10 +994,10 @@ public abstract class kiev040 implements kiev040Constants {
     throw new Error("Missing return statement in function");
   }
 
-  final public TypeArgDef ArgumentDeclaration() throws ParseException {
-  NameRef name; TypeArgDef arg;
+  final public TypeDef ArgumentDeclaration() throws ParseException {
+  NameRef name; TypeDef arg;
     name      = Name();
-          arg = mkTypeArgDef(name,null);
+          arg = mkTypeDef(name,null);
     switch (jj_nt.kind) {
     case EXTENDS:
       jj_consume_token(EXTENDS);
@@ -1756,7 +1757,7 @@ public abstract class kiev040 implements kiev040Constants {
   }
 
   final public Method MethodDeclaration(ASTModifiers modifiers) throws ParseException {
-  Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; TypeArgDef[] args;
+  Token t; Method m, oldMethod; TypeRef ret; NameRef id; MetaThrows thr; TypeDef[] args;
     args = ClazzArguments();
     ret = Type();
     id = Name();
@@ -9057,8 +9058,8 @@ public abstract class kiev040 implements kiev040Constants {
 		return clazz;
 	}
 
-	private TypeArgDef mkTypeArgDef(NameRef name, ASTModifiers modifiers) {
-		TypeArgDef arg = new TypeArgDef(name);
+	private TypeDef mkTypeDef(NameRef name, ASTModifiers modifiers) {
+		TypeDef arg = new TypeDef(name);
 		if (modifiers != null) {
 			foreach (Meta m; modifiers.annotations)
 				arg.meta.set((Meta)m.copy());

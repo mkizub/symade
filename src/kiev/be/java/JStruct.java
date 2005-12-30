@@ -21,7 +21,7 @@ import kiev.vlang.Struct.StructImpl;
  */
 
 @nodeview
-public final view JStructView of StructImpl extends JTypeDefView {
+public final view JStructView of StructImpl extends JTypeDeclView {
 
 	public final Struct getStruct() { return this.$view.getStruct(); }
 

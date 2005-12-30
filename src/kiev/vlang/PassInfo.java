@@ -94,7 +94,7 @@ public class PassInfo {
 		DNode@ node;
 		if (!resolveNameR(from, node,new ResInfo(from),qname))
 			return false;
-		if (node instanceof TypeDef)
+		if (node instanceof TypeDecl)
 			return true;
 		return false;
 	}

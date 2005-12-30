@@ -40,7 +40,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		     public Access				acc;
 		     public NodeName			name;
 		     CallTypeProvider			meta_type;
-		@att public NArr<TypeArgDef>	targs;
+		@att public NArr<TypeDef>	targs;
 		@att public TypeCallRef			type_ref;
 		@att public TypeCallRef			dtype_ref;
 		@att public NArr<FormPar>		params;
@@ -79,7 +79,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				Access				acc;
 		public				NodeName			name;
 		public				CallTypeProvider	meta_type;
-		public access:ro	NArr<TypeArgDef>	targs;
+		public access:ro	NArr<TypeDef>	targs;
 		public				TypeCallRef			type_ref;
 		public				TypeCallRef			dtype_ref;
 		public access:ro	NArr<FormPar>		params;
@@ -193,7 +193,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@getter public Access				get$acc()					{ return this.getMethodView().acc; }
 	@getter public NodeName				get$name()					{ return this.getMethodView().name; }
 	@getter public CallTypeProvider		get$meta_type()				{ return this.getMethodView().meta_type; }
-	@getter public NArr<TypeArgDef>		get$targs()					{ return this.getMethodView().targs; }
+	@getter public NArr<TypeDef>		get$targs()					{ return this.getMethodView().targs; }
 	@getter public TypeCallRef			get$type_ref()				{ return this.getMethodView().type_ref; }
 	@getter public TypeCallRef			get$dtype_ref()				{ return this.getMethodView().dtype_ref; }
 	@getter public NArr<FormPar>		get$params()				{ return this.getMethodView().params; }
@@ -229,7 +229,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	     public abstract virtual			NodeName			name;
 	/** Return type of the method and signature (argument's types) */
 	     public abstract virtual			CallTypeProvider	meta_type;
-	@att public abstract virtual access:ro	NArr<TypeArgDef>	targs;
+	@att public abstract virtual access:ro	NArr<TypeDef>	targs;
 	@att public abstract virtual			TypeCallRef			type_ref;
 	/** The type of the dispatcher method (if method is a multimethod) */
 	@att public abstract virtual			TypeCallRef			dtype_ref;

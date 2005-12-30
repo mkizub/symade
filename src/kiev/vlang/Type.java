@@ -3,8 +3,6 @@ package kiev.vlang;
 import kiev.Kiev;
 import kiev.stdlib.*;
 
-import kiev.parser.TypeArgDef;
-
 import kiev.be.java.JType;
 import kiev.be.java.JBaseType;
 import kiev.be.java.JArrayType;
@@ -380,7 +378,7 @@ public final class BaseType extends Type {
 	private void updateBindings() {
 		if (this ≡ clazz.type) {
 			TVarSet vs = new TVarSet();
-			foreach (TypeArgDef ad; clazz.args)
+			foreach (TypeDef ad; clazz.args)
 				vs.append(ad.getAType(), null);
 			foreach (Type st; this.getDirectSuperTypes())
 				vs.append(st.bindings());
@@ -476,13 +474,13 @@ public final class BaseType extends Type {
 		if (clazz.isStatic() || clazz.isPackage() || clazz.package_clazz.isPackage())
 			return null;
 		KString name = KString.from("This$0");
-		TypeArgDef tad = null;
-		foreach(DNode n; clazz.members; n instanceof TypeArgDef && ((TypeArgDef)n).name.equals(name) ) {
-			tad = (TypeArgDef)n;
+		TypeDef tad = null;
+		foreach(DNode n; clazz.members; n instanceof TypeDef && ((TypeDef)n).name.equals(name) ) {
+			tad = (TypeDef)n;
 			break;
 		}
 		if (tad == null) {
-			tad = new TypeArgDef(new NameRef(clazz.pos,name), new TypeRef(clazz.package_clazz.type));
+			tad = new TypeDef(new NameRef(clazz.pos,name), new TypeRef(clazz.package_clazz.type));
 			tad.erasable = true;
 			clazz.members.append(tad);
 		}

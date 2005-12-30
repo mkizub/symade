@@ -1203,9 +1203,9 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		;	n instanceof LocalStructDecl,
 			name.equals(((LocalStructDecl)n).clazz.name.short_name),
 			node ?= ((LocalStructDecl)n).clazz
-		;	n instanceof TypeDef,
-			name.equals(((TypeDef)n).getName()),
-			node ?= ((TypeDef)n)
+		;	n instanceof TypeDecl,
+			name.equals(((TypeDecl)n).getName()),
+			node ?= ((TypeDecl)n)
 		}
 	;
 		info.isForwardsAllowed(),

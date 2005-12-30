@@ -8,7 +8,7 @@ import java.io.*;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;
-import kiev.be.java.JTypeDefView;
+import kiev.be.java.JTypeDeclView;
 import kiev.be.java.JStructView;
 
 import static kiev.stdlib.Debug.*;
@@ -21,14 +21,14 @@ import syntax kiev.Syntax;
 
 
 @node(copyable=false)
-public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
+public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
 	@node
-	public static final class StructImpl extends TypeDefImpl {
+	public static final class StructImpl extends TypeDeclImpl {
 		public StructImpl() {}
 		public StructImpl(int pos) { super(pos); }
 		public StructImpl(int pos, int fl) { super(pos, fl); }
@@ -43,7 +43,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
 		@att public NArr<TypeRef>				interfaces;
-		@att public NArr<TypeArgDef>			args;
+		@att public NArr<TypeDef>			args;
 		@ref public Struct						package_clazz;
 		@ref public Struct						typeinfo_clazz;
 		@ref public NArr<Struct>				sub_clazz;
@@ -75,7 +75,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}	
 	}
 	@nodeview
-	public static final view StructView of StructImpl extends TypeDefView {
+	public static final view StructView of StructImpl extends TypeDeclView {
 		public				Access				acc;
 		public				ClazzName			name;
 		public				BaseTypeProvider	imeta_type;
@@ -84,7 +84,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		public				TypeRef				view_of;
 		public				TypeRef				super_bound;
 		public access:ro	NArr<TypeRef>		interfaces;
-		public access:ro	NArr<TypeArgDef>	args;
+		public access:ro	NArr<TypeDef>	args;
 		public				Struct				package_clazz;
 		public				Struct				typeinfo_clazz;
 		public access:ro	NArr<Struct>		sub_clazz;
@@ -294,11 +294,11 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	}
 	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
-	public TypeDefView		getTypeDefView()	alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
+	public TypeDeclView		getTypeDeclView()	alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
 	public StructView		getStructView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
 	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
-	public JTypeDefView		getJTypeDefView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
+	public JTypeDeclView		getJTypeDeclView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 	public JStructView		getJStructView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 
 	/** Variouse names of the class */
@@ -320,7 +320,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@att public abstract virtual access:ro	NArr<TypeRef>				interfaces;
 
 	/** Class' type arguments */
-	@att public abstract virtual access:ro	NArr<TypeArgDef>			args;
+	@att public abstract virtual access:ro	NArr<TypeDef>			args;
 	
 	/** Class' access */
 	     public abstract virtual			Access						acc;
@@ -350,7 +350,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	@getter public TypeRef				get$view_of()				{ return this.getStructView().view_of; }
 	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
 	@getter public NArr<TypeRef>		get$interfaces()			{ return this.getStructView().interfaces; }
-	@getter public NArr<TypeArgDef>		get$args()					{ return this.getStructView().args; }
+	@getter public NArr<TypeDef>		get$args()					{ return this.getStructView().args; }
 	@getter public Struct				get$package_clazz()			{ return this.getStructView().package_clazz; }
 	@getter public Struct				get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
 	@getter public NArr<Struct>			get$sub_clazz()				{ return this.getStructView().sub_clazz; }
@@ -631,14 +631,14 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 		}
 	}
 	protected rule resolveNameR_1(DNode@ node, ResInfo info, KString name)
-		TypeArgDef@ arg;
+		TypeDef@ arg;
 	{
 			this.name.short_name.equals(name), node ?= this
 		;	arg @= args,
 			arg.name.name.equals(name),
 			node ?= arg
 		;	node @= members,
-			node instanceof TypeArgDef && ((TypeArgDef)node).name.name.equals(name)
+			node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
 		;	node @= members,
 			node instanceof Field && ((Field)node).name.equals(name) && info.check(node)
 		;	node @= members,
@@ -651,7 +651,7 @@ public class Struct extends TypeDef implements Named, ScopeOfNames, ScopeOfMetho
 	{
 			node @= imported,
 			{	node instanceof Field && ((Field)node).isStatic() && ((Field)node).name.equals(name)
-			;	node instanceof TypeDefOp && ((TypeDefOp)node).name.equals(name)
+			;	node instanceof TypeDef && ((TypeDef)node).name.name.equals(name)
 			}
 	}
 	protected rule resolveNameR_3(DNode@ node, ResInfo info, KString name)

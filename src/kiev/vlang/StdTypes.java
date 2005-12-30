@@ -2,7 +2,6 @@ package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.TypeArgDef;
 
 import static kiev.vlang.AccessFlags.*;
 import static kiev.stdlib.Debug.*;
@@ -240,21 +239,21 @@ public interface StdTypes {
 		tpJavaEnumerationClazz.type	= tpJavaEnumeration;
 		
 		Struct tpKievEnumerationClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Enumeration;")),kiev_stdlib,ACC_PUBLIC);
-		tpKievEnumerationClazz.args.add(new TypeArgDef(KString.from("A")));
+		tpKievEnumerationClazz.args.add(new TypeDef(KString.from("A")));
 		tpKievEnumeration	= tpKievEnumerationClazz.type;
 		
 		
 		Struct tpArrayEnumeratorClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/ArrayEnumerator;")),kiev_stdlib,ACC_PUBLIC);
-		tpArrayEnumeratorClazz.args.add(new TypeArgDef(KString.from("A")));
+		tpArrayEnumeratorClazz.args.add(new TypeDef(KString.from("A")));
 		tpArrayEnumerator	= tpArrayEnumeratorClazz.type;
 		
 
 		Struct tpPrologVarClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/PVar;")),kiev_stdlib,ACC_PUBLIC);
-		tpPrologVarClazz.args.add(new TypeArgDef(KString.from("A")));
+		tpPrologVarClazz.args.add(new TypeDef(KString.from("A")));
 		tpPrologVar	= tpPrologVarClazz.type;
 
 		Struct tpRefProxyClazz = Env.newStruct(ClazzName.fromSignature(KString.from("Lkiev/stdlib/Ref;")),kiev_stdlib,ACC_PUBLIC);
-		tpRefProxyClazz.args.add(new TypeArgDef(KString.from("A")));
+		tpRefProxyClazz.args.add(new TypeDef(KString.from("A")));
 		tpRefProxy	= tpRefProxyClazz.type;
 
 	}

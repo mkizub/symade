@@ -274,9 +274,9 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		;	n instanceof LocalStructDecl,
 			name.equals(((LocalStructDecl)n).clazz.name.short_name),
 			node ?= ((LocalStructDecl)n).clazz
-		;	n instanceof TypeDefOp,
-			name.equals(((TypeDefOp)n).name),
-			node ?= ((TypeDefOp)n)
+		;	n instanceof TypeDef,
+			name.equals(((TypeDef)n).name),
+			node ?= ((TypeDef)n)
 		}
 	;
 		info.isForwardsAllowed(),

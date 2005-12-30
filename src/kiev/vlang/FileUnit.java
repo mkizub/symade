@@ -212,9 +212,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	{
 		syn @= syntax,
 		{
-			syn instanceof TypeDefOp,
+			syn instanceof TypeDef,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),
-			name.equals(((TypeDefOp)syn).name),
+			name.equals(((TypeDef)syn).name.name),
 			node ?= syn
 		;	syn instanceof Import && !((Import)syn).star,
 			trace( Kiev.debugResolve, "In file syntax: "+name+" with "+syn),

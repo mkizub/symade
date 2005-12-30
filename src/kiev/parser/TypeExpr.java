@@ -93,8 +93,8 @@ public class TypeExpr extends TypeRef {
 				else
 					throw new CompilerException(this,"Typedef for type operator "+op+" not found");
 			} else {
-				if (v instanceof TypeDef)
-					t = ((TypeDef)v).getType();
+				if (v instanceof TypeDecl)
+					t = ((TypeDecl)v).getType();
 				else
 					throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 			}

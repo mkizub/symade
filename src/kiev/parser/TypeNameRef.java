@@ -82,13 +82,13 @@ public class TypeNameRef extends TypeRef {
 		if (this.outer != null) {
 			Type outer = this.outer.getType();
 			ResInfo info = new ResInfo(this,ResInfo.noImports|ResInfo.noForwards|ResInfo.noSuper);
-			TypeDef@ td;
+			TypeDecl@ td;
 			if!(outer.resolveStaticNameR(td,info,name))
 				throw new CompilerException(this,"Unresolved type "+name+" in "+outer);
 			td.checkResolved();
 			this.lnk = td.getType().bind(outer.bindings());
 		} else {
-			TypeDef@ td;
+			TypeDecl@ td;
 			if( !PassInfo.resolveQualifiedNameR(this,td,new ResInfo(this,ResInfo.noForwards),name) )
 				throw new CompilerException(this,"Unresolved type "+name);
 			td.checkResolved();

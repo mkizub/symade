@@ -163,10 +163,10 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
 			((Field)tmp).name.equals(name),
 			node ?= tmp
-		;	tmp instanceof TypeDefOp,
+		;	tmp instanceof TypeDef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((TypeDefOp)tmp).name.equals(name),
-			node ?= ((TypeDefOp)tmp)
+			((TypeDef)tmp).name.equals(name),
+			node ?= ((TypeDef)tmp)
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}
@@ -191,100 +191,69 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 }
 
-
 @node
-public final class TypeDefOp extends TypeDef implements Named {
+public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
+
+	@dflow(out="this:in") private static class DFI {}
 
 	@node
-	static final class TypeDefOpImpl extends TypeDefImpl {
-		TypeDefOpImpl() {}
-		TypeDefOpImpl(int pos) { super(pos); }
-		@att KString		name;
+	static final class TypeOpDefImpl extends TypeDeclImpl {
+		TypeOpDefImpl() {}
+		TypeOpDefImpl(int pos) { super(pos); }
+		@att ASTOperator	op;
 		@att TypeRef		type;
-		@att TypeArgDef		typearg;
+		@att TypeDef		arg;
 	}
 	@nodeview
-	static final view TypeDefOpView of TypeDefOpImpl extends TypeDefView {
-		public	KString			name;
+	static final view TypeOpDefView of TypeOpDefImpl extends TypeDeclView {
+		public	ASTOperator		op;
 		public	TypeRef			type;
-		public	TypeArgDef		typearg;
+		public	TypeDef		arg;
 	}
-	public NodeView			getNodeView()		{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
-	public TypeDefView		getTypeDefView()	{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
-	public TypeDefOpView	getTypeDefOpView()	{ return new TypeDefOpView((TypeDefOpImpl)this.$v_impl); }
+	public NodeView			getNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public TypeDeclView		getTypeDeclView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public TypeOpDefView	getTypeOpDefView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
 
-	@getter public KString			get$name()		{ return this.getTypeDefOpView().name; }
-	@getter public TypeRef			get$type()		{ return this.getTypeDefOpView().type; }
-	@getter public TypeArgDef		get$typearg()	{ return this.getTypeDefOpView().typearg; }
+	@getter public ASTOperator		get$op()		{ return this.getTypeOpDefView().op; }
+	@getter public TypeRef			get$type()		{ return this.getTypeOpDefView().type; }
+	@getter public TypeDef		get$arg()		{ return this.getTypeOpDefView().arg; }
 
-	@setter public void set$name(KString val)			{ this.getTypeDefOpView().name = val; }
-	@setter public void set$type(TypeRef val)			{ this.getTypeDefOpView().type = val; }
-	@setter public void set$typearg(TypeArgDef val)	{ this.getTypeDefOpView().typearg = val; }
+	@setter public void set$op(ASTOperator val)		{ this.getTypeOpDefView().op = val; }
+	@setter public void set$type(TypeRef val)			{ this.getTypeOpDefView().type = val; }
+	@setter public void set$arg(TypeDef val)		{ this.getTypeOpDefView().arg = val; }
 	
-	public static TypeDefOp[]		emptyArray = new TypeDefOp[0];
-
-	@att public abstract virtual KString		name;
+	@att public abstract virtual ASTOperator	op;
 	@att public abstract virtual TypeRef		type;
-	@att public abstract virtual TypeArgDef	typearg;
+	@att public abstract virtual TypeDef	arg;
 
-	public TypeDefOp() {
-		super(new TypeDefOpImpl());
-	}
-	
-	public TypeDefOp(int pos, KString name) {
-		super(new TypeDefOpImpl(pos));
-		this.name = name;
-	}
-	
-	public TypeDefOp(Type tp, KString name) {
-		super(new TypeDefOpImpl());
-		this.type = new TypeRef(tp);
-		this.name = name;
+	public TypeOpDef() {
+		super(new TypeOpDefImpl());
 	}
 	
 	public boolean checkResolved() {
-		Type t = type.getType();
-		if (t != null && t.getStruct() != null)
-			return t.getStruct().checkResolved();
-		return true;
+		return type.getType().checkResolved();
 	}
 	
 	public NodeName	getName() {
-		return new NodeName(name);
+		return new NodeName(op.image);
 	}
 	
 	public Type getType() {
 		return type.getType();
 	}
 
-	public void set(NameRef id, ASTOperator op, TypeRef tp) {
-		typearg = new TypeArgDef(id.name);
-		name = op.image;
-
-		TypeWithArgsRef natp = (TypeWithArgsRef)tp;
-		TypeNameRef arg = (TypeNameRef)natp.args[0];
-		KString argnm = arg.name;
-		//if (!typearg.name.short_name.equals(argnm))
-		//	throw new ParseException("Typedef args "+typearg.name.short_name+" and "+type+" do not match");
-		natp.args[0] = new TypeRef(typearg.getType());
-		type = natp;
-		return;
-	}
-	
-	public void set(TypeRef tp, NameRef id) {
-		type = tp;
-		name = id.name;
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name) {
+		path.space_prev == this.type,
+		this.arg.name.name == name,
+		node ?= this.arg
 	}
 
 	public boolean preGenerate()	{ return false; }
 	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
 
 	public String toString() {
-		if (typearg != null)
-			return "typedef type"+name+" "+type+"<type>;";
-		else
-    		return "typedef "+type+" "+name+";";
+		return "typedef "+arg+op+" "+type+"<"+arg+">;";
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -15,7 +15,7 @@ import kiev.be.java.JENodeView;
 import kiev.be.java.JVarDeclView;
 import kiev.be.java.JLocalStructDeclView;
 import kiev.be.java.JLvalueExprView;
-import kiev.be.java.JTypeDefView;
+import kiev.be.java.JTypeDeclView;
 import kiev.be.java.JTypeRefView;
 
 import static kiev.stdlib.Debug.*;
@@ -1236,24 +1236,24 @@ public final class NopExpr extends ENode {
 
 
 @node
-public abstract class TypeDef extends DNode implements Named {
+public abstract class TypeDecl extends DNode implements Named {
 
 	@node
-	public static class TypeDefImpl extends DNodeImpl {		
-		public TypeDefImpl() {}
-		public TypeDefImpl(int pos) { super(pos); }
-		public TypeDefImpl(int pos, int fl) { super(pos, fl); }
+	public static class TypeDeclImpl extends DNodeImpl {		
+		public TypeDeclImpl() {}
+		public TypeDeclImpl(int pos) { super(pos); }
+		public TypeDeclImpl(int pos, int fl) { super(pos, fl); }
 	}
 	@nodeview
-	public static view TypeDefView of TypeDefImpl extends DNodeView {
-		public TypeDefView(TypeDefImpl $view) {
+	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
+		public TypeDeclView(TypeDeclImpl $view) {
 			super($view);
 		}
 	}
-	public abstract TypeDefView		getTypeDefView();
-	public abstract JTypeDefView	getJTypeDefView();
+	public abstract TypeDeclView		getTypeDeclView();
+	public abstract JTypeDeclView	getJTypeDeclView();
 
-	public TypeDef(TypeDefImpl impl) { super(impl); }
+	public TypeDecl(TypeDeclImpl impl) { super(impl); }
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();

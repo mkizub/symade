@@ -215,7 +215,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			for (int i=0; i < me.members.length; i++) {
 				ASTNode n = me.members[i];
 				try {
-					if (n instanceof TypeDefOp) {
+					if (n instanceof TypeOpDef) {
 						processSyntax(n);
 						me.imported.add(me.members[i]);
 						trace(Kiev.debugResolve,"Add "+n+" to syntax "+me);
@@ -248,14 +248,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 		foreach (DNode n; astn.syntax) {
 			try {
-				if (n instanceof TypeDefOp) {
-					TypeDefOp tdop = (TypeDefOp)n;
-					if (tdop.typearg != null) {
-						tdop.type = new TypeRef(tdop.type.getType());
-					} else {
-						tdop.type.getType();
-					}
-				}
+				if (n instanceof TypeDef)
+					n.getType();
+				else if (n instanceof TypeOpDef)
+					n.getType();
 			} catch(Exception e ) {
 				Kiev.reportError(n,e);
 			}
@@ -550,7 +546,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				m.conditions += inv;
 			}
 			// Inner classes and cases after all methods and fields, skip now
-			else if( members[i] instanceof TypeArgDef );
+			else if( members[i] instanceof TypeDef );
 			else if( members[i] instanceof Struct );
 			else if( members[i] instanceof Import ) {
 				me.imported.add((Import)members[i]);

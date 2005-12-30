@@ -16,7 +16,7 @@ import kiev.vlang.ENode.ENodeImpl;
 import kiev.vlang.LvalDNode.LvalDNodeImpl;
 import kiev.vlang.VarDecl.VarDeclImpl;
 import kiev.vlang.LocalStructDecl.LocalStructDeclImpl;
-import kiev.vlang.TypeDef.TypeDefImpl;
+import kiev.vlang.TypeDecl.TypeDeclImpl;
 import kiev.vlang.TypeRef.TypeRefImpl;
 
 @nodeview
@@ -173,8 +173,8 @@ public final view JLocalStructDeclView of LocalStructDeclImpl extends JENodeView
 }
 
 @nodeview
-public abstract view JTypeDefView of TypeDefImpl extends JDNodeView {
-	public JTypeDefView(TypeDefImpl $view) {
+public abstract view JTypeDeclView of TypeDeclImpl extends JDNodeView {
+	public JTypeDeclView(TypeDeclImpl $view) {
 		super($view);
 	}
 }

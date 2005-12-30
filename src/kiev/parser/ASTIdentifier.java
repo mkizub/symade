@@ -131,8 +131,8 @@ public class ASTIdentifier extends ENode {
 //			}
 			throw new CompilerException(this,"Unresolved identifier "+name);
 		}
-		if( v instanceof TypeDef ) {
-			TypeDef td = (TypeDef)v;
+		if( v instanceof TypeDecl ) {
+			TypeDecl td = (TypeDecl)v;
 			td.checkResolved();
 			replaceWithNode(new TypeRef(td.getType()));
 		}
@@ -225,8 +225,8 @@ public class ASTIdentifier extends ENode {
 			replaceWithNode(new TypeNameRef(new NameRef(pos,name),s.type));
 			return;
 		}
-		else if( v instanceof TypeDef ) {
-			replaceWithNode(new TypeRef(((TypeDef)v).getType()));
+		else if( v instanceof TypeDecl ) {
+			replaceWithNode(new TypeRef(((TypeDecl)v).getType()));
 			return;
 		}
 		replaceWithNodeResolve(reqType, info.buildAccess(this, null, v));
