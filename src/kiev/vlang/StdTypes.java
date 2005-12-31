@@ -28,7 +28,8 @@ public interface StdTypes {
 	public static final int flCallable			= 1 << 10;
 	public static final int flArgumented		= 1 << 11;
 	public static final int flRtArgumented		= 1 << 12;
-	public static final int flVirtual			= 1 << 13;
+	public static final int flArgVirtual		= 1 << 13;
+	public static final int flArgForward		= 1 << 14;
 
 	public static final BaseType tpEnv;
 	public static final CoreType tpAny;

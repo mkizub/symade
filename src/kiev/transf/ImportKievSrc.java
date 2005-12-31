@@ -212,6 +212,37 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		foreach (DNode dn; me.members; dn.meta != null)
 			dn.meta.verify();
 		
+		if (me.isAnnotation() || me.isEnum() || me.isSyntax()) {
+			if( me.args.length > 0 ) {
+				Kiev.reportError(me,"Type parameters are not allowed for "+me);
+				me.args.delAll();
+			}
+		}
+		else if!(me.parent instanceof FileUnit) {
+			if (!me.isStatic()) {
+				///// BUG BUG - for compatibility with kiev 0.3 /////
+				me.args.delAll();
+				/////////////////////////////////////////////////////
+				Struct pkg = me.package_clazz;
+				if (me.isClazz() && pkg.isClazz()) {
+					int n = 0;
+					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
+					TypeDef td = new TypeDef(
+						new NameRef(me.pos,KString.from(nameThis+"$"+n+"$type")),
+						new TypeRef(pkg.type));
+					td.meta = new MetaSet();
+					td.meta.add(new MetaForward());
+					me.members.append(td);
+					Field f = new Field(
+						KString.from(nameThis+"$"+n),
+						td.getAType(),
+						ACC_FORWARD|ACC_FINAL);
+					f.pos = me.pos;
+					me.members.append(f);
+				}
+			}
+		}
+
 		if (me.isSyntax()) {
 			trace(Kiev.debugResolve,"Pass 1 for syntax "+me);
 			for (int i=0; i < me.members.length; i++) {
@@ -295,12 +326,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		if (clazz.isAnnotation()) {
 			clazz.super_type = Type.tpObject;
 			clazz.interfaces.add(new TypeRef(Type.tpAnnotation));
-			setupStructType(clazz, false);
 		}
 		else if (clazz.isEnum()) {
 			clazz.setStatic(true);
 			clazz.super_type = Type.tpEnum;
-			setupStructType(clazz, false);
 			// assign type of enum fields
 			if (clazz.isEnum()) {
 				foreach (DNode n; clazz.members; n instanceof Field && ((Field)n).isEnumField()) {
@@ -327,7 +356,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 			clazz.super_bound = sup_ref;
 			sup_ref.getType();
-			setupStructType(clazz, true);
 		}
 		else if (clazz.isSyntax()) {
 			clazz.setPrivate(true);
@@ -335,13 +363,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.setMembersGenerated(true);
 			clazz.setStatementsGenerated(true);
 			clazz.super_type = null;
-			setupStructType(clazz, false);
 		}
 		else if( clazz.isInterface() ) {
 			clazz.super_type = Type.tpObject;
 			foreach(TypeRef tr; clazz.interfaces)
 				tr.getType();
-			setupStructType(clazz, true);
 		}
 		else {
 			if (clazz.view_of != null)
@@ -351,7 +377,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				clazz.super_type = Type.tpObject;
 			foreach(TypeRef tr; clazz.interfaces)
 				tr.getType();
-			setupStructType(clazz, true);
 		}
 		
 		clazz.type.bindings(); // update the type
@@ -366,21 +391,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		clazz.setArgsResolved(true);
 			
 		return clazz.type;
-	}
-
-	private void setupStructType(Struct clazz, boolean canHaveArgs) {
-		if (!canHaveArgs) {
-			if( clazz.args.length > 0 ) {
-				Kiev.reportError(clazz,"Type parameters are not allowed for "+clazz);
-				clazz.args.delAll();
-			}
-		}
-		else if (clazz.parent instanceof Struct) {
-			////////////// BUG BUG - for compatibility with kiev 0.3 ////////////
-			if (!clazz.isStatic())
-				clazz.args.delAll();
-			/////////////////////////////////////////////////////////////////////
-		}
 	}
 
 	////////////////////////////////////////////////////

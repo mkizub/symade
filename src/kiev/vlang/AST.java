@@ -537,12 +537,12 @@ public abstract class DNode extends ASTNode {
 		     public		int			flags;
 		@att public		MetaSet		meta;
 
-		public packed:1,flags, 7 boolean is_mth_varargs;     // method
-		public packed:1,flags,13 boolean is_struct_annotation; // struct
-		public packed:1,flags,14 boolean is_struct_enum;       // struct
-		public packed:1,flags,14 boolean is_fld_enum;        // field
+		public packed:1,flags, 7 boolean is_mth_varargs;		// method
+		public packed:1,flags,13 boolean is_struct_annotation;	// struct
+		public packed:1,flags,14 boolean is_struct_enum;		// struct
+		public packed:1,flags,14 boolean is_fld_enum;			// field
 		// Flags temporary used with java flags
-		public packed:1,flags,16 boolean is_forward;			// var/field
+		public packed:1,flags,16 boolean is_forward;			// var/field/typedef
 		public packed:1,flags,17 boolean is_fld_virtual;		// field
 		public packed:1,flags,16 boolean is_mth_multimethod;	// method
 		public packed:1,flags,18 boolean is_mth_rule;			// method
@@ -1255,8 +1255,6 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	// the type is erasable	
 	public final boolean isTypeUnerasable() { return getMetaUnerasable() != null; }
-	// a typedef's argument is virtual
-	public final boolean isTypeVirtual() { return getMetaVirtual() != null; }
 
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }
 
@@ -1271,15 +1269,6 @@ public abstract class TypeDecl extends DNode implements Named {
 		if (ms != null) {
 			foreach (Meta m; ms.metas; m instanceof MetaUnerasable)
 				return (MetaUnerasable)m;
-		}
-		return null;
-	}
-
-	public final MetaVirtual getMetaVirtual() {
-		MetaSet ms = this.meta;
-		if (ms != null) {
-			foreach (Meta m; ms.metas; m instanceof MetaVirtual)
-				return (MetaVirtual)m;
 		}
 		return null;
 	}

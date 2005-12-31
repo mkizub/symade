@@ -1246,6 +1246,7 @@ NameRef KeywordAsName() :
 	|	t="alias"
 	|	t="packed"
 	|	t="throws"
+	|	t="forward"
 	)
 	{
 		id = new NameRef();

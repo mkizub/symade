@@ -702,6 +702,7 @@ public abstract class kiev040 implements kiev040Constants {
         break;
       case THROWS:
       case VIRTUAL:
+      case FORWARD:
       case ALIAS:
       case PACKED:
         name = KeywordAsName();
@@ -1185,6 +1186,9 @@ public abstract class kiev040 implements kiev040Constants {
     case THROWS:
       t= jj_consume_token(THROWS);
       break;
+    case FORWARD:
+      t= jj_consume_token(FORWARD);
+      break;
     default:
       jj_consume_token(-1);
       throw new ParseException();
@@ -1205,6 +1209,7 @@ public abstract class kiev040 implements kiev040Constants {
       break;
     case THROWS:
     case VIRTUAL:
+    case FORWARD:
     case ALIAS:
     case PACKED:
       id = KeywordAsName();
@@ -4962,26 +4967,6 @@ public abstract class kiev040 implements kiev040Constants {
     catch(LookaheadSuccess ls) { return true; }
   }
 
-  final private boolean jj_3R_99() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_160()) {
-    jj_scanpos = xsp;
-    if (jj_3R_161()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3_65() {
-    if (jj_3R_119()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_224() {
-    if (jj_scan_token(REPARSE_EXPRESSION)) return true;
-    return false;
-  }
-
   final private boolean jj_3_64() {
     if (jj_3R_118()) return true;
     return false;
@@ -6430,22 +6415,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_283() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(66)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(73)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(80)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(56)) return true;
-    }
-    }
-    }
-    return false;
-  }
-
   final private boolean jj_3_93() {
     if (jj_3R_73()) return true;
     Token xsp;
@@ -6455,6 +6424,25 @@ public abstract class kiev040 implements kiev040Constants {
     if (jj_scan_token(40)) {
     jj_scanpos = xsp;
     if (jj_3R_132()) return true;
+    }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_283() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(66)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(73)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(80)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(56)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(68)) return true;
+    }
+    }
     }
     }
     return false;
@@ -6472,6 +6460,11 @@ public abstract class kiev040 implements kiev040Constants {
 
   final private boolean jj_3R_306() {
     if (jj_scan_token(WRITE_ONLY)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_91() {
+    if (jj_3R_131()) return true;
     return false;
   }
 
@@ -6493,11 +6486,6 @@ public abstract class kiev040 implements kiev040Constants {
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3_91() {
-    if (jj_3R_131()) return true;
     return false;
   }
 
@@ -6588,16 +6576,16 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_115() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_304() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(COMMA)) return true;
     if (jj_scan_token(INTEGER_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_115() {
-    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -6639,11 +6627,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_212() {
-    if (jj_scan_token(FORWARD)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_133() {
     if (jj_3R_114()) return true;
     Token xsp;
@@ -6651,6 +6634,11 @@ public abstract class kiev040 implements kiev040Constants {
       xsp = jj_scanpos;
       if (jj_3_60()) { jj_scanpos = xsp; break; }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_212() {
+    if (jj_scan_token(FORWARD)) return true;
     return false;
   }
 
@@ -6679,15 +6667,15 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_206() {
-    if (jj_scan_token(FINAL)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_245() {
     if (jj_scan_token(LBRACE)) return true;
     if (jj_3R_325()) return true;
     if (jj_scan_token(RBRACE)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_206() {
+    if (jj_scan_token(FINAL)) return true;
     return false;
   }
 
@@ -6711,13 +6699,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_201() {
-    if (jj_scan_token(PUBLIC)) return true;
+  final private boolean jj_3R_114() {
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_114() {
-    if (jj_scan_token(IDENTIFIER)) return true;
+  final private boolean jj_3R_201() {
+    if (jj_scan_token(PUBLIC)) return true;
     return false;
   }
 
@@ -6820,6 +6808,11 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_258() {
+    if (jj_scan_token(FLOAT)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_148() {
     if (jj_scan_token(TYPEDEF)) return true;
     if (jj_3R_114()) return true;
@@ -6827,11 +6820,6 @@ public abstract class kiev040 implements kiev040Constants {
     xsp = jj_scanpos;
     if (jj_3R_337()) jj_scanpos = xsp;
     if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_258() {
-    if (jj_scan_token(FLOAT)) return true;
     return false;
   }
 
@@ -6860,15 +6848,15 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_252() {
+    if (jj_scan_token(BOOLEAN)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_395() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_73()) return true;
     if (jj_3R_92()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_252() {
-    if (jj_scan_token(BOOLEAN)) return true;
     return false;
   }
 
@@ -7142,11 +7130,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_89() {
-    if (jj_3R_152()) return true;
-    return false;
-  }
-
   final private boolean jj_3_89() {
     if (jj_3R_129()) return true;
     return false;
@@ -7157,6 +7140,11 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_89() {
+    if (jj_3R_152()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_279() {
     if (jj_3R_302()) return true;
     return false;
@@ -7164,11 +7152,6 @@ public abstract class kiev040 implements kiev040Constants {
 
   final private boolean jj_3R_278() {
     if (jj_3R_301()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_88() {
-    if (jj_3R_151()) return true;
     return false;
   }
 
@@ -7187,8 +7170,18 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_88() {
+    if (jj_3R_151()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_276() {
     if (jj_3R_299()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_275() {
+    if (jj_3R_298()) return true;
     return false;
   }
 
@@ -7200,18 +7193,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_275() {
-    if (jj_3R_298()) return true;
+  final private boolean jj_3R_274() {
+    if (jj_3R_297()) return true;
     return false;
   }
 
   final private boolean jj_3R_87() {
     if (jj_3R_150()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_274() {
-    if (jj_3R_297()) return true;
     return false;
   }
 
@@ -7230,13 +7218,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_86() {
-    if (jj_3R_149()) return true;
+  final private boolean jj_3R_271() {
+    if (jj_3R_294()) return true;
     return false;
   }
 
-  final private boolean jj_3R_271() {
-    if (jj_3R_294()) return true;
+  final private boolean jj_3R_86() {
+    if (jj_3R_149()) return true;
     return false;
   }
 
@@ -7245,13 +7233,18 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_269() {
+    if (jj_3R_292()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_85() {
     if (jj_3R_148()) return true;
     return false;
   }
 
-  final private boolean jj_3R_269() {
-    if (jj_3R_292()) return true;
+  final private boolean jj_3R_268() {
+    if (jj_3R_291()) return true;
     return false;
   }
 
@@ -7260,8 +7253,8 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_268() {
-    if (jj_3R_291()) return true;
+  final private boolean jj_3R_267() {
+    if (jj_3R_290()) return true;
     return false;
   }
 
@@ -7273,8 +7266,8 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_267() {
-    if (jj_3R_290()) return true;
+  final private boolean jj_3R_266() {
+    if (jj_3R_289()) return true;
     return false;
   }
 
@@ -7286,18 +7279,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_266() {
-    if (jj_3R_289()) return true;
+  final private boolean jj_3R_265() {
+    if (jj_3R_288()) return true;
     return false;
   }
 
   final private boolean jj_3_10() {
     if (jj_3R_90()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_265() {
-    if (jj_3R_288()) return true;
     return false;
   }
 
@@ -7462,13 +7450,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3_8() {
-    if (jj_scan_token(RULE)) return true;
+  final private boolean jj_3R_143() {
+    if (jj_3R_215()) return true;
     return false;
   }
 
-  final private boolean jj_3R_143() {
-    if (jj_3R_215()) return true;
+  final private boolean jj_3_8() {
+    if (jj_scan_token(RULE)) return true;
     return false;
   }
 
@@ -7518,11 +7506,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_392() {
-    if (jj_3R_223()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_80() {
     Token xsp;
     xsp = jj_scanpos;
@@ -7533,6 +7516,11 @@ public abstract class kiev040 implements kiev040Constants {
     lookingAhead = false;
     if (!jj_semLA || jj_3R_143()) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_392() {
+    if (jj_3R_223()) return true;
     return false;
   }
 
@@ -7650,29 +7638,23 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_365() {
-    if (jj_3R_283()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_372() {
     if (jj_3R_399()) return true;
     return false;
   }
 
-  final private boolean jj_3R_364() {
-    if (jj_3R_114()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_391() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_3R_127()) return true;
+  final private boolean jj_3R_365() {
+    if (jj_3R_283()) return true;
     return false;
   }
 
   final private boolean jj_3R_371() {
     if (jj_3R_398()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_364() {
+    if (jj_3R_114()) return true;
     return false;
   }
 
@@ -7683,6 +7665,12 @@ public abstract class kiev040 implements kiev040Constants {
     jj_scanpos = xsp;
     if (jj_3R_372()) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_391() {
+    if (jj_scan_token(COMMA)) return true;
+    if (jj_3R_127()) return true;
     return false;
   }
 
@@ -7697,6 +7685,12 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3_55() {
+    if (jj_3R_73()) return true;
+    if (jj_3R_109()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_363() {
     if (jj_scan_token(EXTENDS)) return true;
     if (jj_3R_127()) return true;
@@ -7708,26 +7702,8 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3_55() {
-    if (jj_3R_73()) return true;
-    if (jj_3R_109()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_338() {
     if (jj_3R_370()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_197() {
-    if (jj_scan_token(OPERATOR_AT)) return true;
-    if (jj_scan_token(INTERFACE)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_364()) {
-    jj_scanpos = xsp;
-    if (jj_3R_365()) return true;
-    }
     return false;
   }
 
@@ -7747,6 +7723,18 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3R_197() {
+    if (jj_scan_token(OPERATOR_AT)) return true;
+    if (jj_scan_token(INTERFACE)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_364()) {
+    jj_scanpos = xsp;
+    if (jj_3R_365()) return true;
+    }
+    return false;
+  }
+
   final private boolean jj_3_54() {
     if (jj_3R_73()) return true;
     if (jj_3R_108()) return true;
@@ -7758,6 +7746,11 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3_85() {
+    if (jj_scan_token(LBRACE)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_390() {
     if (jj_scan_token(COMMA)) return true;
     if (jj_3R_127()) return true;
@@ -7766,11 +7759,6 @@ public abstract class kiev040 implements kiev040Constants {
 
   final private boolean jj_3R_389() {
     if (jj_3R_127()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_85() {
-    if (jj_scan_token(LBRACE)) return true;
     return false;
   }
 
@@ -8511,17 +8499,17 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3_3() {
-    if (jj_3R_78()) return true;
-    return false;
-  }
-
   final private boolean jj_3_35() {
     if (jj_3R_73()) return true;
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_102()) jj_scanpos = xsp;
     if (jj_scan_token(VARARGS)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_3() {
+    if (jj_3R_78()) return true;
     return false;
   }
 
@@ -8548,15 +8536,15 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_136() {
-    if (jj_3R_194()) return true;
-    return false;
-  }
-
   final private boolean jj_3_80() {
     if (jj_scan_token(LBRACKET)) return true;
     if (jj_3R_95()) return true;
     if (jj_scan_token(RBRACKET)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_136() {
+    if (jj_3R_194()) return true;
     return false;
   }
 
@@ -8576,14 +8564,14 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_74() {
-    if (jj_3R_137()) return true;
-    return false;
-  }
-
   final private boolean jj_3_79() {
     if (jj_scan_token(DOT)) return true;
     if (jj_3R_114()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_74() {
+    if (jj_3R_137()) return true;
     return false;
   }
 
@@ -8658,6 +8646,13 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
+  final private boolean jj_3_75() {
+    if (jj_scan_token(NEW)) return true;
+    if (jj_3R_127()) return true;
+    if (jj_scan_token(LBRACKET)) return true;
+    return false;
+  }
+
   final private boolean jj_3_1() {
     if (jj_3R_73()) return true;
     Token xsp;
@@ -8669,13 +8664,6 @@ public abstract class kiev040 implements kiev040Constants {
     lookingAhead = false;
     if (!jj_semLA || jj_3R_75()) return true;
     }
-    return false;
-  }
-
-  final private boolean jj_3_75() {
-    if (jj_scan_token(NEW)) return true;
-    if (jj_3R_127()) return true;
-    if (jj_scan_token(LBRACKET)) return true;
     return false;
   }
 
@@ -9093,6 +9081,26 @@ public abstract class kiev040 implements kiev040Constants {
     xsp = jj_scanpos;
     if (jj_3R_426()) jj_scanpos = xsp;
     if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_99() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_160()) {
+    jj_scanpos = xsp;
+    if (jj_3R_161()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3_65() {
+    if (jj_3R_119()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_224() {
+    if (jj_scan_token(REPARSE_EXPRESSION)) return true;
     return false;
   }
 

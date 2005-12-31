@@ -79,8 +79,27 @@ public class TypeDef extends TypeDecl {
 		return true;
 	}
 	
-	public boolean isBound() {
-		return true;
+	// a typedef's argument is forward
+	public final boolean isTypeForward() { return getMetaForward() != null; }
+	// a typedef's argument is virtual
+	public final boolean isTypeVirtual() { return getMetaVirtual() != null; }
+
+	public final MetaForward getMetaForward() {
+		MetaSet ms = this.meta;
+		if (ms != null) {
+			foreach (Meta m; ms.metas; m instanceof MetaForward)
+				return (MetaForward)m;
+		}
+		return null;
+	}
+
+	public final MetaVirtual getMetaVirtual() {
+		MetaSet ms = this.meta;
+		if (ms != null) {
+			foreach (Meta m; ms.metas; m instanceof MetaVirtual)
+				return (MetaVirtual)m;
+		}
+		return null;
 	}
 
 	public Type getType() {
@@ -94,7 +113,7 @@ public class TypeDef extends TypeDecl {
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,this.isTypeUnerasable(),this.isTypeVirtual());
+		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,isTypeUnerasable(),isTypeVirtual(),isTypeForward());
 		return this.lnk;
 	}
 

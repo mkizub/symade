@@ -213,14 +213,18 @@ public class Meta extends ENode {
 		}
 		KString name = ((BaseType)mt).clazz.name.name;
 		Meta m = this;
-		if (name == MetaVirtual.NAME && !(this instanceof MetaVirtual))
+		if (name == MetaVirtual.NAME    && !(this instanceof MetaVirtual))
 			m = (Meta)this.copyTo(new MetaVirtual());
-		if (name == MetaPacked.NAME && !(this instanceof MetaPacked))
+		if (name == MetaPacked.NAME     && !(this instanceof MetaPacked))
 			m = (Meta)this.copyTo(new MetaPacked());
-		if (name == MetaPacker.NAME && !(this instanceof MetaPacker))
+		if (name == MetaPacker.NAME     && !(this instanceof MetaPacker))
 			m = (Meta)this.copyTo(new MetaPacker());
 		if (name == MetaUnerasable.NAME && !(this instanceof MetaUnerasable))
 			m = (Meta)this.copyTo(new MetaUnerasable());
+		if (name == MetaSingleton.NAME  && !(this instanceof MetaSingleton))
+			m = (Meta)this.copyTo(new MetaSingleton());
+		if (name == MetaForward.NAME    && !(this instanceof MetaForward))
+			m = (Meta)this.copyTo(new MetaForward());
 		if (m != this) {
 			this.replaceWithNode(m);
 			foreach (MetaValue v; values)

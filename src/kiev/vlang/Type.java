@@ -301,7 +301,8 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final boolean isCallable()		{ return (flags & flCallable)		!= 0 ; }
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
 	public final boolean isRtArgumented()	{ return (flags & flRtArgumented)	!= 0 ; }
-	public final boolean isVirtual()		{ return (flags & flVirtual)		!= 0 ; }
+	public final boolean isArgVirtual()	{ return (flags & flArgVirtual)		!= 0 ; }
+	public final boolean isArgForward()	{ return (flags & flArgForward)		!= 0 ; }
 
 	public boolean isAnnotation()			{ return false; }
 	public boolean isAbstract()				{ return false; }
@@ -389,9 +390,6 @@ public final class BaseType extends Type {
 			foreach (Type st; this.getDirectSuperTypes()) {
 				vs.append(st.bindings());
 			}
-			ArgumentType ot = getOuterArg();
-			if (ot ≢ null)
-				vs.append(ot, null);
 			this.bindings = vs;
 		} else {
 			TVarSet vs = clazz.type.bindings().bind(this.bindings);
@@ -400,11 +398,11 @@ public final class BaseType extends Type {
 				if (vars[i].var.definer == null) {
 					for (int j=0; j < vs.length; j++) {
 						if (!vs.tvars[j].isBound()) {
-							vs.set(j, vs.tvars[j].var, vars[i].bnd);
+							vs.set(vs.tvars[j], vars[i].value());
 							continue next;
 						}
 					}
-					vs.append(vars[i].var, vars[i].bnd);
+					vs.append(vars[i].var, vars[i].value());
 				}
 			}
 			this.bindings = vs;
@@ -425,10 +423,10 @@ public final class BaseType extends Type {
 	
 	private void checkArgumented() {
 		flags &= ~(flArgumented | flRtArgumented);
-		foreach(TVar v; this.bindings().tvars) {
+		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
 			if (v.result().isArgumented()) {
 				flags |= flArgumented;
-				if (v.result().isRtArgumented()) {
+				if (v.var.isRtArgumented()) {
 					flags |= flRtArgumented;
 					break;
 				}
@@ -441,7 +439,7 @@ public final class BaseType extends Type {
 			return createRefType(clazz, TVarSet.emptySet);
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < args.length; i++) {
-			ArgumentType var = new ArgumentType(KString.from("_"+i+"_"),null,Type.tpAny, false, false);
+			ArgumentType var = new ArgumentType(KString.from("_"+i+"_"),null,Type.tpAny, false, false, false);
 			vs.append(var, args[i]);
 		}
 		return createRefType(clazz, vs);
@@ -478,19 +476,17 @@ public final class BaseType extends Type {
 	}
 	
 	public ArgumentType getOuterArg() {
+		Struct pkg = clazz.package_clazz;
 		if (clazz.isStatic() || clazz.isPackage() || clazz.package_clazz.isPackage())
 			return null;
-		KString name = KString.from("This$0");
-		TypeDef tad = null;
-		foreach(DNode n; clazz.members; n instanceof TypeDef && ((TypeDef)n).name.equals(name) ) {
-			tad = (TypeDef)n;
-			break;
+		int n = 0;
+		KString name = KString.from(Constants.nameThis+"$"+n+"$type");
+		TVar[] tvars = bindings().tvars;
+		for (int i=0; i < tvars.length; i++) {
+			if (tvars[i].var.name == name)
+				return tvars[i].var;
 		}
-		if (tad == null) {
-			tad = new TypeDef(new NameRef(clazz.pos,name), new TypeRef(clazz.package_clazz.type));
-			clazz.members.append(tad);
-		}
-		return tad.getAType();
+		return null;
 	}
 	
 	
@@ -769,14 +765,15 @@ public class ArgumentType extends Type {
 	/** Bound super-class for class arguments */
 	public Type						super_type;
 	
-	public ArgumentType(KString name, DNode definer, Type sup, boolean is_unerasable, boolean is_virtual) {
+	public ArgumentType(KString name, DNode definer, Type sup, boolean is_unerasable, boolean is_virtual, boolean is_forward) {
 		super(ArgumentTypeProvider.instance);
 		this.name = name;
 		this.definer = definer;
 		this.super_type = (sup == null) ? tpObject : sup;
 		this.flags |= flReference | flArgumented;
 		if (is_unerasable) this.flags |= flRtArgumented;
-		if (is_virtual) this.flags |= flVirtual;
+		if (is_virtual) this.flags |= flArgVirtual;
+		if (is_forward) this.flags |= flArgForward;
 	}
 	
 	public TVarSet bindings()			{ return TVarSet.emptySet; }

@@ -203,4 +203,17 @@ public class MetaSingleton extends Meta {
 	}
 }
 
+@node
+public class MetaForward extends Meta {
+	public static final KString NAME = KString.from("kiev.stdlib.meta.forward");
+
+	public MetaForward() {
+		super(new TypeNameRef(NAME));
+	}
+
+	public MetaForward(TypeRef type) {
+		super(type);
+	}
+}
+
 

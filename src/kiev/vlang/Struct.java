@@ -863,7 +863,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public ENode accessTypeInfoField(ASTNode from, Type t) {
-		if( t.isRtArgumented() ) {
+		if( this.isTypeUnerasable() && t.isRtArgumented() ) {
 			ENode ti_access;
 			Method ctx_method = from.ctx_method;
 			if (ctx_method != null && ctx_method.isStatic()) {
@@ -1095,13 +1095,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			autoGenerateTypeinfoClazz();
 	
 			// Check if it's an inner class
-			if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
-				int n = 0;
-				for(Struct pkg=package_clazz; pkg.isClazz() && !pkg.isStatic(); pkg=pkg.package_clazz)
-					n++;
-				Field f = addField(new Field(KString.from(nameThisDollar.toString()+n),type.getOuterArg(),ACC_FORWARD|ACC_FINAL));
-				f.pos = pos;
-			}
+//			if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
+//				int n = 0;
+//				for(Struct pkg=package_clazz; pkg.isClazz() && !pkg.isStatic(); pkg=pkg.package_clazz)
+//					n++;
+//				Field f = addField(new Field(KString.from(nameThisDollar.toString()+n),type.getOuterArg(),ACC_FORWARD|ACC_FINAL));
+//				f.pos = pos;
+//			}
 	
 			if( !isInterface() && !isPackage() ) {
 				// Default <init> method, if no one is declared
