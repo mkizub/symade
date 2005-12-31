@@ -140,7 +140,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		s ?= ((Struct)this.resolved),
 		{
 			!s.isPackage(),
-			sub @= s.sub_clazz, !sub.isArgument(),
+			sub @= s.sub_clazz,
 			{
 				sub.name.name.equals(name), node ?= sub.$var
 			;	sub.name.short_name.equals(name), node ?= sub.$var

@@ -41,7 +41,7 @@ public class Bytecoder implements JConstants {
 		// Clean java flags
 		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
-		fl &= ~(ACC_PACKAGE|ACC_ARGUMENT|ACC_PIZZACASE|ACC_ENUM|ACC_SYNTAX);
+		fl &= ~(ACC_PACKAGE|ACC_VIRTUAL|ACC_PIZZACASE|ACC_ENUM|ACC_SYNTAX);
 		fl |= bcclazz.flags;
 		if ((fl & (ACC_PUBLIC | ACC_PRIVATE)) == (ACC_PUBLIC | ACC_PRIVATE)) {
 			fl &= ~ACC_PRIVATE;
@@ -513,7 +513,7 @@ public class Bytecoder implements JConstants {
 		bcclazz.pool = writeConstPool();
 
 	    // Access bitflags
-	    if( !cl.isInterface() && !cl.isArgument() )
+	    if( !cl.isInterface() )
 	    	cl.setSuper(true);
 		bcclazz.flags = cl.getJavaFlags();
 

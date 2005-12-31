@@ -89,7 +89,6 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,23 boolean is_struct_generated;
 		public packed:1,compileflags,24 boolean is_struct_type_resolved;
 		public packed:1,compileflags,25 boolean is_struct_args_resolved;
-		public packed:1,compileflags,26 boolean is_struct_rt_arg_typed;
 		
 		// Expression flags
 		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
@@ -543,17 +542,18 @@ public abstract class DNode extends ASTNode {
 		public packed:1,flags,14 boolean is_struct_enum;       // struct
 		public packed:1,flags,14 boolean is_fld_enum;        // field
 		// Flags temporary used with java flags
-		public packed:1,flags,16 boolean is_forward;         // var/field
-		public packed:1,flags,17 boolean is_fld_virtual;     // field
-		public packed:1,flags,16 boolean is_mth_multimethod; // method
-		public packed:1,flags,18 boolean is_mth_rule;        // method
-		public packed:1,flags,19 boolean is_mth_invariant;   // method
-		public packed:1,flags,16 boolean is_struct_package;    // struct
-		public packed:1,flags,17 boolean is_struct_argument;   // struct
-		public packed:1,flags,18 boolean is_struct_pizza_case; // struct
-		public packed:1,flags,19 boolean is_struct_singleton;  // struct
-		public packed:1,flags,20 boolean is_struct_syntax;     // struct
-		public packed:1,flags,23 boolean is_struct_bytecode;   // struct was loaded from bytecode
+		public packed:1,flags,16 boolean is_forward;			// var/field
+		public packed:1,flags,17 boolean is_fld_virtual;		// field
+		public packed:1,flags,16 boolean is_mth_multimethod;	// method
+		public packed:1,flags,18 boolean is_mth_rule;			// method
+		public packed:1,flags,19 boolean is_mth_invariant;		// method
+		public packed:1,flags,18 boolean is_struct_package;	// struct
+		public packed:1,flags,19 boolean is_struct_pizza_case;	// struct
+		public packed:1,flags,20 boolean is_struct_singleton;	// struct
+		public packed:1,flags,21 boolean is_struct_syntax;		// struct
+		public packed:1,flags,22 boolean is_struct_wrapper;	// struct
+		public packed:1,flags,23 boolean is_struct_view;		// struct
+		public packed:1,flags,24 boolean is_struct_bytecode;	// struct was loaded from bytecode
 
 		public DNodeImpl() {}
 		public DNodeImpl(int pos) {
@@ -1250,13 +1250,40 @@ public abstract class TypeDecl extends DNode implements Named {
 			super($view);
 		}
 	}
-	public abstract TypeDeclView		getTypeDeclView();
+	public abstract TypeDeclView	getTypeDeclView();
 	public abstract JTypeDeclView	getJTypeDeclView();
+
+	// the type is erasable	
+	public final boolean isTypeUnerasable() { return getMetaUnerasable() != null; }
+	// a typedef's argument is virtual
+	public final boolean isTypeVirtual() { return getMetaVirtual() != null; }
 
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
+
+	public MetaUnerasable getMetaUnerasable() {
+		Struct clazz = ctx_clazz;
+		if (clazz == null)
+			return null;
+		MetaSet ms = clazz.meta;
+		if (ms != null) {
+			foreach (Meta m; ms.metas; m instanceof MetaUnerasable)
+				return (MetaUnerasable)m;
+		}
+		return null;
+	}
+
+	public final MetaVirtual getMetaVirtual() {
+		MetaSet ms = this.meta;
+		if (ms != null) {
+			foreach (Meta m; ms.metas; m instanceof MetaVirtual)
+				return (MetaVirtual)m;
+		}
+		return null;
+	}
+
 }
 
 

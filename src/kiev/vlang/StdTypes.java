@@ -14,20 +14,21 @@ import static kiev.stdlib.Debug.*;
 
 public interface StdTypes {
 
-	public static final int flReference		=    1;
-	public static final int flIntegerInCode	=    2;
-	public static final int flInteger			=    4;
-	public static final int flFloatInCode		=    8;
-	public static final int flFloat				=   16;
-	public static final int flNumber			=   20;
-	public static final int flDoubleSize		=   32;
-	public static final int flArray				=   64;
-	public static final int flResolved			=  128;
-	public static final int flBoolean			=  256;
-	public static final int flWrapper			=  512;
-	public static final int flCallable			= 1024;
-	public static final int flArgumented		= 2048;
-	public static final int flRtArgumented		= 4096;
+	public static final int flReference		= 1 <<  0;
+	public static final int flIntegerInCode	= 1 <<  1;
+	public static final int flInteger			= 1 <<  2;
+	public static final int flFloatInCode		= 1 <<  3;
+	public static final int flFloat				= 1 <<  4;
+	public static final int flNumber			= flFloat | flInteger;
+	public static final int flDoubleSize		= 1 <<  5;
+	public static final int flArray				= 1 <<  6;
+	public static final int flResolved			= 1 <<  7;
+	public static final int flBoolean			= 1 <<  8;
+	public static final int flWrapper			= 1 <<  9;
+	public static final int flCallable			= 1 << 10;
+	public static final int flArgumented		= 1 << 11;
+	public static final int flRtArgumented		= 1 << 12;
+	public static final int flVirtual			= 1 << 13;
 
 	public static final BaseType tpEnv;
 	public static final CoreType tpAny;

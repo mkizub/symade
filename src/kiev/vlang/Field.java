@@ -233,6 +233,7 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 				init.resolve(type);
 			}
 		}
+		setResolved(true);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {

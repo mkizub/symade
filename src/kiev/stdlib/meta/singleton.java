@@ -4,7 +4,5 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface singleton {
-	public boolean value() default true;
-}
+public @interface singleton {}
 

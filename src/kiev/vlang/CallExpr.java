@@ -118,7 +118,7 @@ public class CallExpr extends ENode {
 			Method mmm = ctx_method;
 			Type tp = mmm.ctx_clazz != func.ctx_clazz ? ctx_clazz.super_type : ctx_clazz.type;
 			assert(ctx_method.name.equals(nameInit));
-			assert(tp.getStruct().isRuntimeArgTyped());
+			assert(tp.getStruct().isTypeUnerasable());
 			// Insert our-generated typeinfo, or from childs class?
 			if (mmm.getTypeInfoParam() != null)
 				temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam());

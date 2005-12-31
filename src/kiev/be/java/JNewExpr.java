@@ -32,8 +32,8 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		Type type = this.type;
 		JENodeView[] args = this.args;
 		code.setLinePos(this);
-		while( type.isArgument() && ((ArgumentType)type).erasable)
-			type = ((ArgumentType)type).super_type;
+		while( type.isArgument() && !type.isRtArgumented())
+			type = type.getErasedType();
 		if( type.isArgument() ) {
 			if( outer != null || args.length > 0 ) {
 				Kiev.reportError(this,"Constructor with arguments for type argument is not supported");

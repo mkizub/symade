@@ -1559,7 +1559,7 @@ public final class Code implements JConstants {
 			if( Kiev.debugOutputL ) {
 				LinenoTableAttr lnta = new LinenoTableAttr();
 				if( line_top >= 0 ) {
-					while( (linetable[line_top] >>> 16) >= pc )
+					while( line_top >= 0 && (linetable[line_top] >>> 16) >= pc )
 						line_top--;
 					lnta.table = (int[])Arrays.cloneToSize(linetable,line_top+1);
 					attrs = (Attr[])Arrays.append(attrs,lnta);

@@ -23,7 +23,6 @@ public class TypeDef extends TypeDecl {
 	public static final class TypeDefImpl extends TypeDeclImpl {
 		@att public NameRef					name;
 		@att public TypeRef					super_bound;
-		@att public boolean					erasable;
 		@att public ArgumentType			lnk;
 		public TypeDefImpl() {}
 		public TypeDefImpl(int pos) { super(pos); }
@@ -32,27 +31,23 @@ public class TypeDef extends TypeDecl {
 	public static final view TypeDefView of TypeDefImpl extends TypeDeclView {
 		public NameRef				name;
 		public TypeRef				super_bound;
-		public boolean				erasable;
 		public ArgumentType			lnk;
 	}
 
 	@att public abstract virtual NameRef				name;
 	@att public abstract virtual TypeRef				super_bound;
-	@att public abstract virtual boolean				erasable;
 	@att        abstract virtual ArgumentType			lnk;
 	
 	public NodeView			getNodeView()			{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()			{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
 	public TypeDeclView		getTypeDeclView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public TypeDefView	getTypeDefView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+	public TypeDefView		getTypeDefView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
 
 	@getter public NameRef		get$name()			{ return this.getTypeDefView().name; }
 	@getter public TypeRef		get$super_bound()	{ return this.getTypeDefView().super_bound; }
-	@getter public boolean		get$erasable()		{ return this.getTypeDefView().erasable; }
 	@getter public ArgumentType	get$lnk()			{ return this.getTypeDefView().lnk; }
 	@setter public void		set$name(NameRef val)			{ this.getTypeDefView().name = val; }
 	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeDefView().super_bound = val; }
-	@setter public void		set$erasable(boolean val)		{ this.getTypeDefView().erasable = val; }
 	@setter public void		set$lnk(ArgumentType val)		{ this.getTypeDefView().lnk = val; }
 	
 	public TypeDef() { super(new TypeDefImpl()); }
@@ -94,18 +89,12 @@ public class TypeDef extends TypeDecl {
 	public ArgumentType getAType() {
 		if (this.lnk != null)
 			return this.lnk;
-		ClazzName cn;
-		if (parent instanceof Struct) {
-			Struct s = (Struct)parent;
-			MetaErasable er = s.getMetaErasable();
-			this.erasable = (er == null || er.value);
-		} else {
-			this.erasable = true;
-		}
+		if (this.meta != null)
+			this.meta.verify();
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,erasable);
+		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,this.isTypeUnerasable(),this.isTypeVirtual());
 		return this.lnk;
 	}
 

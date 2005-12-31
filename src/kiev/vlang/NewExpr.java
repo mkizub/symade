@@ -161,7 +161,7 @@ public final class NewExpr extends ENode {
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
-		if( type.clazz.isRuntimeArgTyped() )
+		if( type.clazz.isTypeUnerasable() )
 			ctx_clazz.accessTypeInfoField(this,type); // Create static field for this type typeinfo
 		// Don't try to find constructor of argument type
 		if( !type.isArgument() ) {

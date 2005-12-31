@@ -54,7 +54,7 @@ public final class AttrSlot {
 	}
 }
 
-@erasable(false)
+@unerasable
 public final class NArr<N extends ASTNode> {
 
     private final ASTNode.NodeImpl 	$parent_impl;
@@ -340,7 +340,6 @@ public final class NArr<N extends ASTNode> {
 		return arr;
 	}
 
-	@erasable(true)
 	public Enumeration<N> elements() {
 		return new Enumeration<N>() {
 			int current;
@@ -356,7 +355,6 @@ public final class NArr<N extends ASTNode> {
 			}
 		};
 	}
-
 }
 
 

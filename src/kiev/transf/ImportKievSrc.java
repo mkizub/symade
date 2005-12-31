@@ -209,6 +209,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		// Verify meta-data to the new structure
 		Struct me = astn;
 		me.meta.verify();
+		foreach (DNode dn; me.members; dn.meta != null)
+			dn.meta.verify();
 		
 		if (me.isSyntax()) {
 			trace(Kiev.debugResolve,"Pass 1 for syntax "+me);
@@ -230,6 +232,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 			}
 		}
+
+		foreach (DNode dn; me.members; dn instanceof Struct)
+			processSyntax(dn);
 	}
 	
 	/////////////////////////////////////////////////////
@@ -351,7 +356,10 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		
 		clazz.type.bindings(); // update the type
 		if (clazz.type.isRtArgumented()) {
-			clazz.setRuntimeArgTyped(true);
+			if (clazz.getMetaUnerasable() == null) {
+				Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
+				clazz.meta.add(new MetaUnerasable());
+			}
 			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
 
@@ -556,9 +564,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 		
-		if (me.meta.get(MetaSingleton.NAME) != null) {
-			me.setSingleton(me.meta.get(MetaSingleton.NAME).getZ(MetaSingleton.nameValue));
-		}
+		if (me.meta.get(MetaSingleton.NAME) != null)
+			me.setSingleton(true);
 		
 		if (me.isSingleton()) {
 			me.setFinal(true);

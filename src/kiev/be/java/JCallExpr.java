@@ -106,7 +106,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				JMethodView mmm = jctx_method;
 				Type tp = !mmm.jctx_clazz.equals(func.jctx_clazz) ? jctx_clazz.super_type : jctx_clazz.type;
 				assert(mmm.name.equals(nameInit));
-				assert(tp.getStruct().isRuntimeArgTyped());
+				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
 					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJENodeView();

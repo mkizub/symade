@@ -276,8 +276,6 @@ public class Signature {
 		while( sc.nextChar() != ';' );
 		KString kstr = sc.str.substr(pos,sc.pos);
 		Struct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
-		if( struct !=null && struct.isArgument() )
-			kstr = struct.super_type.clazz.name.signature();
 		if( sc.peekChar() == '<' ) {
 			int depth = 0;
 			while( sc.hasMoreChars() ) {

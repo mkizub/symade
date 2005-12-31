@@ -69,7 +69,17 @@ public final class TVarSet {
 		TVar[] tmp = new TVar[n+1];
 		for (int i=0; i < n; i++)
 			tmp[i] = tvars[i];
-		tmp[n] = new TVar(-1, this, var, null);
+		if (var.isVirtual()) {
+			for (int i=0; i < n; i++) {
+				if (tmp[i].var.isVirtual() && tmp[i].var.name == var.name) {
+					tmp[n] = new TVar(i, this, var, tmp[i].var);
+					bnd = null;
+					break;
+				}
+			}
+		}
+		if (tmp[n] == null)
+			tmp[n] = new TVar(-1, this, var, null);
 		// fix aliases
 		for (int i=0; i < n; i++) {
 			TVar v = tmp[i];

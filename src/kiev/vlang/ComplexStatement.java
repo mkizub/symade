@@ -442,6 +442,7 @@ public class SwitchStat extends ENode implements BreakTarget {
 						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
 				)
 			);
+			//typehash.resolveDecl();
 		}
 		for(int i=0; i < cases.length; i++) {
 			for(int j=0; j < i; j++) {

@@ -96,7 +96,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@setter public final void set$super_type(BaseType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 		
 		public boolean isClazz() {
-			return !isPackage() && !isInterface() && ! isArgument();
+			return !isPackage() && !isInterface();
 		}
 		
 		// package	
@@ -107,16 +107,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
 			if (this.$view.is_struct_package != on) {
 				this.$view.is_struct_package = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// a class's argument	
-		public final boolean isArgument() {
-			return this.$view.is_struct_argument;
-		}
-		public final void setArgument(boolean on) {
-			if (this.$view.is_struct_argument != on) {
-				this.$view.is_struct_argument = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -238,16 +228,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public final void setArgsResolved(boolean on) {
 			if (this.$view.is_struct_args_resolved != on) {
 				this.$view.is_struct_args_resolved = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// indicates that the structrue has runtime-visible type arguments
-		public final boolean isRuntimeArgTyped() {
-			return this.$view.is_struct_rt_arg_typed;
-		}
-		public final void setRuntimeArgTyped(boolean on) {
-			if (this.$view.is_struct_rt_arg_typed != on) {
-				this.$view.is_struct_rt_arg_typed = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -400,10 +380,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	// package	
 	public boolean isPackage() { return getStructView().isPackage(); }
 	public void setPackage(boolean on) { getStructView().setPackage(on); }
-	// a class's argument	
-	public boolean isArgument() { return getStructView().isArgument(); }
-	public void setArgument(boolean on) { getStructView().setArgument(on); }
-	// a class's argument	
+	// a pizza class case	
 	public boolean isPizzaCase() { return getStructView().isPizzaCase(); }
 	public void setPizzaCase(boolean on) { getStructView().setPizzaCase(on); }
 	// a structure with the only one instance (singleton)	
@@ -439,9 +416,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	// indicates that type arguments of the structure were resolved
 	public final boolean isArgsResolved() { return getStructView().isArgsResolved(); }
 	public final void setArgsResolved(boolean on) { getStructView().setArgsResolved(on); }
-	// indicates that the structrue has runtime-visible type arguments
-	public final boolean isRuntimeArgTyped() { return getStructView().isRuntimeArgTyped(); }
-	public final void setRuntimeArgTyped(boolean on) { getStructView().setRuntimeArgTyped(on); }
 	// java annotation
 	public boolean isAnnotation() { return getStructView().isAnnotation(); }
 	public void setAnnotation(boolean on) { getStructView().setAnnotation(on); }
@@ -478,9 +452,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return null;
 	}
 
-	public MetaErasable getMetaErasable() {
-		foreach (Meta m; meta.metas; m instanceof MetaErasable)
-			return (MetaErasable)m;
+	public MetaUnerasable getMetaUnerasable() {
+		foreach (Meta m; meta.metas; m instanceof MetaUnerasable)
+			return (MetaUnerasable)m;
 		return null;
 	}
 
@@ -512,18 +486,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public Dumper toJava(Dumper dmp) {
-		if( isArgument() ) {
-//			dmp.append("/*").append(name.short_name).append("*/");
-			if( interfaces.length > 0 )
-				return dmp.append(interfaces[0]);
-			else
-				return dmp.append(super_type);
-		} else {
-			if (isLocal())
-				return dmp.append(name.short_name);
-			else
-				return dmp.append(name);
-		}
+		if (isLocal())
+			return dmp.append(name.short_name);
+		else
+			return dmp.append(name);
 	}
 	
 	public int countAnonymouseInnerStructs() {
@@ -879,7 +845,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static String makeTypeInfoString(Type t) {
 		StringBuffer sb = new StringBuffer(128);
 		sb.append(t.getJType().toClassForNameString());
-		if( t instanceof BaseType && ((BaseType)t).clazz.isRuntimeArgTyped() ) {
+		if( t instanceof BaseType && ((BaseType)t).clazz.isTypeUnerasable() ) {
 			BaseType bt = (BaseType)t;
 			sb.append('<');
 			boolean comma = false;
@@ -934,7 +900,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// but need typeinfo in <clinit>
 		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
 			BaseType ftype = Type.tpTypeInfo;
-			if (t.getStruct().isRuntimeArgTyped()) {
+			if (t.getStruct().isTypeUnerasable()) {
 				if (t.getStruct().typeinfo_clazz == null)
 					t.getStruct().autoGenerateTypeinfoClazz();
 				ftype = t.getStruct().typeinfo_clazz.type;
@@ -960,7 +926,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			return e;
 		}
 		BaseType ftype = Type.tpTypeInfo;
-		if (t.getStruct().isRuntimeArgTyped()) {
+		if (t.getStruct().isTypeUnerasable()) {
 			if (t.getStruct().typeinfo_clazz == null)
 				t.getStruct().autoGenerateTypeinfoClazz();
 			ftype = t.getStruct().typeinfo_clazz.type;
@@ -1019,7 +985,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	private void autoGenerateTypeinfoClazz() {
 		if (typeinfo_clazz != null)
 			return;
-		if (!isInterface() && isRuntimeArgTyped()) {
+		if (!isInterface() && isTypeUnerasable()) {
 			// create typeinfo class
 			int flags = this.flags & JAVA_ACC_MASK;
 			flags &= ~(ACC_PRIVATE | ACC_PROTECTED);
@@ -1161,7 +1127,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
-					if (!isInterface() && isRuntimeArgTyped()) {
+					if (!isInterface() && isTypeUnerasable()) {
 						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
 						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
@@ -1190,7 +1156,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 							targs = (Type[])Arrays.append(targs,package_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
-						if (!isInterface() && isRuntimeArgTyped()) {
+						if (!isInterface() && isTypeUnerasable()) {
 							targs = (Type[])Arrays.append(targs,typeinfo_clazz.type);
 							params = (FormPar[])Arrays.append(params,new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
@@ -1453,7 +1419,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					else if( package_clazz.isClazz() && isAnonymouse() ) {
 						int skip_args = 0;
 						if( !isStatic() ) skip_args++;
-						if( this.isRuntimeArgTyped() && super_type.clazz.isRuntimeArgTyped() ) skip_args++;
+						if( this.isTypeUnerasable() && super_type.clazz.isTypeUnerasable() ) skip_args++;
 						if( m.params.length > skip_args+1 ) {
 							for(int i=skip_args+1; i < m.params.length; i++) {
 								call_super.args.append( new LVarExpr(m.pos,m.params[i]));
@@ -1494,7 +1460,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						break;
 					}
 				}
-				if (isRuntimeArgTyped() && m.isNeedFieldInits()) {
+				if (isTypeUnerasable() && m.isNeedFieldInits()) {
 					Field tif = resolveField(nameTypeInfo);
 					Var v = m.getTypeInfoParam();
 					assert(v != null);
@@ -1721,7 +1687,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						Type.getRefTypeForPrimitive(t));
 				if (t instanceof WrapperType)
 					t = t.getUnwrappedType();
-				if (t instanceof BaseType && ((BaseType)t).clazz.isRuntimeArgTyped()) {
+				if (t instanceof BaseType && ((BaseType)t).clazz.isTypeUnerasable()) {
 					if (t.getStruct().typeinfo_clazz == null)
 						t.getStruct().autoGenerateTypeinfoClazz();
 					ENode tibe = new CallExpr(pos,
@@ -2260,9 +2226,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		Struct jthis = this;
 		if( Kiev.verbose ) System.out.println("[ Dumping class "+jthis+"]");
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		if( isInterface() || isArgument() ) {
+		if( isInterface() ) {
 			dmp.append("interface").forsed_space();
-			if( isArgument() ) dmp.append("/*argument*/").space();
 			dmp.append(jthis.name.short_name.toString()).space();
 			if( this.args.length > 0 ) {
 				dmp.append("/* <");
@@ -2305,7 +2270,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( !isPackage() ) {
 			foreach (ASTNode n; members; n instanceof Struct) {
 				Struct s = (Struct)n;
-				if( s.isArgument() ) continue;
 				s.toJavaDecl(dmp).newLine();
 			}
 		}

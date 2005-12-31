@@ -40,7 +40,6 @@ package kiev.stdlib;
  * @see Vector
  * @see Hashtable
  */
-@erasable(true)
 public interface Enumeration<A>
 {
     /**

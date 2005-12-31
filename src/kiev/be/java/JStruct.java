@@ -40,9 +40,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
 	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 
-	public final boolean isClazz()					{ return !isPackage() && !isInterface() && ! isArgument(); }
+	public final boolean isClazz()					{ return !isPackage() && !isInterface(); }
 	public final boolean isPackage()				{ return this.$view.is_struct_package; }
-	public final boolean isArgument()				{ return this.$view.is_struct_argument; }
 	public final boolean isPizzaCase()				{ return this.$view.is_struct_pizza_case; }
 	public final boolean isLocal()					{ return this.$view.is_struct_local; }
 	public final boolean isAnonymouse()			{ return this.$view.is_struct_anomymouse; }

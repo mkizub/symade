@@ -27,7 +27,6 @@ package kiev.stdlib;
  * @version $Revision$
  */
 
-@erasable(true)
 public class List<A>
 {
 

@@ -35,7 +35,6 @@ package kiev.stdlib;
 
 import kiev.stdlib.List.*;
 
-@erasable(true)
 public final class ListBuffer<A>
 {
 

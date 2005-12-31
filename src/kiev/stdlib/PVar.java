@@ -20,7 +20,7 @@
 
 package kiev.stdlib;
 
-@erasable(false)
+@unerasable
 public final $wrapper class PVar<A>
 {
 

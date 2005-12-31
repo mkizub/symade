@@ -31,7 +31,7 @@ package kiev.stdlib;
  * methods.<p>
  *
  */
-@erasable(false)
+@unerasable
 public class Hash<A extends Object> implements Cloneable {
     /**
      * The hash table data.
@@ -312,7 +312,6 @@ public static class HashEntry<A extends Object> {
  * A set enumerator class.  This class should remain opaque
  * to the client. It will use the Enumeration interface.
  */
-@erasable(true)
 static class HashEnumerator<A extends Object> implements Enumeration<A>, Cloneable {
     int index;
     HashEntry<A> table[];

@@ -178,32 +178,21 @@ public class MetaPizzaCase extends Meta {
 }
 
 @node
-public class MetaErasable extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.erasable");
-	public static final KString nameValue = KString.from("value");
+public class MetaUnerasable extends Meta {
+	public static final KString NAME = KString.from("kiev.stdlib.meta.unerasable");
 
-	@virtual
-	public virtual abstract boolean value;
-
-	public MetaErasable() {
+	public MetaUnerasable() {
 		super(new TypeNameRef(NAME));
 	}
 
-	public MetaErasable(TypeRef type) {
+	public MetaUnerasable(TypeRef type) {
 		super(type);
 	}
-	
-	@getter public boolean get$value() { return getZ(nameValue); }
-	@setter public void set$value(boolean val) { setZ(nameValue, val); }
 }
 
 @node
 public class MetaSingleton extends Meta {
 	public static final KString NAME = KString.from("kiev.stdlib.meta.singleton");
-	public static final KString nameValue = KString.from("value");
-
-	@virtual
-	public virtual abstract boolean value;
 
 	public MetaSingleton() {
 		super(new TypeNameRef(NAME));
@@ -212,9 +201,6 @@ public class MetaSingleton extends Meta {
 	public MetaSingleton(TypeRef type) {
 		super(type);
 	}
-	
-	@getter public boolean get$value() { return getZ(nameValue); }
-	@setter public void set$value(boolean val) { setZ(nameValue, val); }
 }
 
 

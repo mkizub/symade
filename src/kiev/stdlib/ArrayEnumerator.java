@@ -26,7 +26,6 @@ package kiev.stdlib;
  *
  */
 
-@erasable(true)
 public class ArrayEnumerator<A> implements Enumeration<A>, Cloneable
 {
 

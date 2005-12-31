@@ -26,7 +26,7 @@ package kiev.stdlib;
  *
  */
 
-@erasable(false)
+@unerasable
 public class Vector<A> implements Cloneable
 {
 
@@ -261,7 +261,6 @@ public class Vector<A> implements Cloneable
 		return buf.toString();
 	}
 
-	@erasable(true)
 	public class VectorEnumerator<A> implements Enumeration<A> {
 		int current;
 

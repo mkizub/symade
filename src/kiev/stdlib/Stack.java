@@ -26,7 +26,7 @@ package kiev.stdlib;
  *
  */
 
-@erasable(false)
+@unerasable
 public class Stack<A> extends Vector<A> implements Cloneable
 {
 
@@ -64,7 +64,6 @@ public class Stack<A> extends Vector<A> implements Cloneable
 		return new StackEnumerator<A>();
 	}
     
-	@erasable(true)
 	public class StackEnumerator<A> implements Enumeration<A> {
 		int current;
 
