@@ -18,7 +18,7 @@ public interface AccessFlags {
 	public static final int ACC_VOLATILE			= 1 << 6; // field
 	public static final int ACC_BRIDGE				= 1 << 6; // method
 	public static final int ACC_TRANSIENT			= 1 << 7; // field
-	//public static final int ACC_VARARGS			= 1 << 7; // method
+	public static final int ACC_VARARGS			= 1 << 7; // method
 	public static final int ACC_NATIVE				= 1 << 8;
 	public static final int ACC_INTERFACE			= 1 << 9;
 	public static final int ACC_ABSTRACT			= 1 << 10;
@@ -56,7 +56,6 @@ public interface AccessFlags {
 	// Method specific
 	//public static final int ACC_MULTIMETHOD		= 1 << 11;
 	//public static final int ACC_VIRTUALSTATIC	= 1 << 12;
-	//public static final int ACC_VARARGS			= 1 << 13;
 	//public static final int ACC_RULEMETHOD		= 1 << 14;
 	//public static final int ACC_OPERATORMETHOD	= 1 << 15;
 	//public static final int ACC_GENPOSTCOND		= 1 << 16;
@@ -64,7 +63,6 @@ public interface AccessFlags {
 	//public static final int ACC_INVARIANT_METHOD= 1 << 18;
 	//public static final int ACC_LOCAL_METHOD	= 1 << 19;
 	public static final int ACC_MULTIMETHOD		= 1 << 16; // temporary used with java flags
-	public static final int ACC_VARARGS			= 1 << 17; // temporary used with java flags
 	public static final int ACC_RULEMETHOD		= 1 << 18; // temporary used with java flags
 	public static final int ACC_INVARIANT_METHOD	= 1 << 19; // temporary used with java flags
 

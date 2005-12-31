@@ -538,6 +538,7 @@ public abstract class DNode extends ASTNode {
 		     public		int			flags;
 		@att public		MetaSet		meta;
 
+		public packed:1,flags, 7 boolean is_mth_varargs;     // method
 		public packed:1,flags,13 boolean is_struct_annotation; // struct
 		public packed:1,flags,14 boolean is_struct_enum;       // struct
 		public packed:1,flags,14 boolean is_fld_enum;        // field
@@ -545,7 +546,6 @@ public abstract class DNode extends ASTNode {
 		public packed:1,flags,16 boolean is_forward;         // var/field
 		public packed:1,flags,17 boolean is_fld_virtual;     // field
 		public packed:1,flags,16 boolean is_mth_multimethod; // method
-		public packed:1,flags,17 boolean is_mth_varargs;     // method
 		public packed:1,flags,18 boolean is_mth_rule;        // method
 		public packed:1,flags,19 boolean is_mth_invariant;   // method
 		public packed:1,flags,16 boolean is_struct_package;    // struct

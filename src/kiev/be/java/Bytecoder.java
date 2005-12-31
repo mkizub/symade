@@ -188,9 +188,18 @@ public class Bytecoder implements JConstants {
 				m = new Method(m_name,mtype,m_flags);
 			cl.members.append(m);
 			for (int i=0; i < mtype.args.length; i++) {
-				FormPar fp = new FormPar(new NameRef(KString.from("arg"+1)),
-					new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_NORMAL,0);
-				m.params.add(fp);
+				int kind = FormPar.PARAM_NORMAL;
+				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.args.length-1) {
+					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
+						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_VARARGS,ACC_FINAL);
+						m.params.add(fp);
+						mtype = m.jtype;
+						break;
+				} else {
+					FormPar fp = new FormPar(new NameRef(KString.from("arg"+i)),
+						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_NORMAL,0);
+						m.params.add(fp);
+				}
 			}
 			trace(Kiev.debugBytecodeRead,"read method "+m+" with flags 0x"+Integer.toHexString(m.getFlags()));
 			if( conditions != null ) {

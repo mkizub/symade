@@ -355,6 +355,16 @@ public abstract class kiev040 {
 		return v;
 	}
 	
+	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
+		FormPar v = new FormPar(id, vt, (TypeRef)vt.copy(), FormPar.PARAM_VARARGS, modifiers.getFlags()|ACC_FINAL);
+		if (modifiers.annotations.length > 0) {
+			v.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				v.meta.set((Meta)m.copy());
+		}
+		return v;
+	}
+	
 	private ENode mkNotExpr(ASTOperator not, ENode cond) {
 		ASTExpression e = new ASTExpression();
 		e.pos = cond.pos;
@@ -1446,6 +1456,26 @@ FormPar MethodFormalParameter(ASTModifiers modifiers) :
 	{ return mkFormPar(id, modifiers, tp, st); }
 }
 
+FormPar MethodVarargsParameter(ASTModifiers modifiers) :
+{ Token t; TypeRef tp = null; NameRef id = null; }
+{
+	[ tp = Type() ]
+	t = "..."
+	[ id = Name() ]
+	{
+		if (tp == null) {
+			tp = new TypeRef(t.getPos(),new ArrayType(Type.tpObject));
+		} else {
+			tp = new TypeExpr(tp, Constants.nameArrayOp);
+			tp.pos = t.getPos();
+		}
+		if (id == null) {
+			id = new NameRef(t.getPos(), Constants.nameVarArgs);
+		}
+		return mkVarargPar(id, modifiers, tp);
+	}
+}
+
 FormPar FormalParameter(ASTModifiers modifiers) :
 { Token t; TypeRef tp; NameRef id; }
 {
@@ -1559,20 +1589,26 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	{ m = mkMethod(id,modifiers,ret); m.targs.addAll(args); oldMethod = curMethod; curMethod = m; }
 	try {
 	"("
-		[
+		(
+			LOOKAHEAD( Modifiers() [Type()] "...")
+			modifiers = Modifiers()
+			m.params += MethodVarargsParameter(modifiers)
+			{ m.setVarArgs(true); }
+		|
 			modifiers = Modifiers()
 			m.params += MethodFormalParameter(modifiers)
-			(
-				LOOKAHEAD(2) ","
+			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+				","
 				modifiers = Modifiers()
-				m.params += MethodFormalParameter(modifiers)
+				(
+					LOOKAHEAD( [Type()] "...")
+					m.params += MethodVarargsParameter(modifiers)
+					{ m.setVarArgs(true); }
+				|
+					m.params += MethodFormalParameter(modifiers)
+				)
 			)*
-			[	LOOKAHEAD(2, [","] "...")
-				[","]
-				"..."
-				{ m.setVarArgs(true); }
-			]
-		]
+		)?
 	")"
 	(	t=<OPERATOR_LRBRACKETS> { m.type_ref.ret = new TypeExpr(m.type_ref.ret,t); } )*
 	(
@@ -1608,20 +1644,26 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	}
 	try {
 	"("
-		[
+		(
+			LOOKAHEAD( Modifiers() [Type()] "...")
 			modifiers = Modifiers()
-			m.params += FormalParameter(modifiers)
-			(
-				LOOKAHEAD(2) ","
+			m.params += MethodVarargsParameter(modifiers)
+			{ m.setVarArgs(true); }
+		|
+			modifiers = Modifiers()
+			m.params += MethodFormalParameter(modifiers)
+			(	LOOKAHEAD(1, ",", { !m.isVarArgs() })
+				","
 				modifiers = Modifiers()
-				m.params += FormalParameter(modifiers)
+				(
+					LOOKAHEAD( [Type()] "...")
+					m.params += MethodVarargsParameter(modifiers)
+					{ m.setVarArgs(true); }
+				|
+					m.params += MethodFormalParameter(modifiers)
+				)
 			)*
-			[	LOOKAHEAD(2, [","] "...")
-				[","]
-				"..."
-				{ m.setVarArgs(true); }
-			]
-		]
+		)?
 	")"
 	(
 		m.aliases += Alias()

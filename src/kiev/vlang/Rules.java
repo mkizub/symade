@@ -111,6 +111,8 @@ public class RuleMethod extends Method {
 		Var@ var;
 	{
 		checkRebuildTypes(),
+		path.space_prev.pslot.name == "params",$cut,false
+	;
 		var @= localvars,
 		var.name.equals(name),
 		node ?= var
@@ -153,10 +155,10 @@ public class RuleMethod extends Method {
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
-			params.append(va);
-		}
+//		if( isVarArgs() ) {
+//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+//			params.append(va);
+//		}
 		foreach (Var lv; localvars)
 			lv.setLocalRuleVar(true);
 		trace(Kiev.debugMultiMethod,"Rule "+this+" has java type "+this.jtype);

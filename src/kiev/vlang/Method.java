@@ -366,7 +366,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				dtype_ref.args.add((TypeRef)fp.vtype.copy());
 				break;
 			case FormPar.PARAM_VARARGS:
-				assert(fp.isFinal());
+				//assert(fp.isFinal());
 				assert(fp.type.isArray());
 				dtype_ref.args.add((TypeRef)fp.vtype.copy());
 				break;
@@ -480,16 +480,20 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
 			int i=0;
-			for(; i < type.args.length-1; i++) {
+			for(; i < type.args.length; i++) {
 				Type ptp = Type.getRealType(t,type.args[i]);
 				if !(args[i].getType().isInstanceOf(ptp))
 					CastExpr.autoCast(args[i],ptp);
 			}
-			ArrayType varg_tp = (ArrayType)Type.getRealType(t,params[params.length-1].type);
-			for(; i < args.length; i++) {
-				if !(args[i].getType().isInstanceOf(varg_tp.arg)) {
-					CastExpr.autoCastToReference(args[i]);
-					CastExpr.autoCast(args[i],varg_tp.arg);
+			if (args.length == i+1 && args[i].getType().isInstanceOf(getVarArgParam().type)) {
+				// array as va_arg
+			} else {
+				ArrayType varg_tp = (ArrayType)Type.getRealType(t,getVarArgParam().type);
+				for(; i < args.length; i++) {
+					if !(args[i].getType().isInstanceOf(varg_tp.arg)) {
+						CastExpr.autoCastToReference(args[i]);
+						CastExpr.autoCast(args[i],varg_tp.arg);
+					}
 				}
 			}
 		} else {
@@ -581,7 +585,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		Type@ t;
 	{
 		checkRebuildTypes(),
-		inlined_by_dispatcher,$cut,false
+		inlined_by_dispatcher || path.space_prev.pslot.name == "params",$cut,false
 	;
 		var @= params,
 		var.name.equals(name),
@@ -656,10 +660,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
-		if( isVarArgs() ) {
-			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
-			params.append(va);
-		}
+//		if( isVarArgs() ) {
+//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+//			params.append(va);
+//		}
 		checkRebuildTypes();
 		type_ref.getMType(); // resolve
 		dtype_ref.getMType(); // resolve
