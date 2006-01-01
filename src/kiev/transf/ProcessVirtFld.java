@@ -223,10 +223,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			}
 		}
 		if( !set_found && f.acc.writeable() ) {
-			Method set_var = new Method(set_name,
-				new MethodType(new Type[]{f.type},Type.tpVoid),
-				f.getJavaFlags()
-			);
+			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags());
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
 			s.addMethod(set_var);
@@ -325,10 +322,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		if (!f.isVirtual())
 			return;		// no need to generate getter
 		if( !get_found && f.acc.readable()) {
-			Method get_var = new Method(get_name,
-				new MethodType(Type.emptyArray,f.type),
-				f.getJavaFlags()
-			);
+			Method get_var = new Method(get_name,f.type,f.getJavaFlags());
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
 			s.addMethod(get_var);

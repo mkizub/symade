@@ -138,21 +138,13 @@ public class ASTNewExpression extends ENode {
 		}
 
 		{
-			//clazz.type = Type.createRefType(clazz,Type.emptyArray);
 			// Create default initializer, if number of arguments > 0
 			if( args.length > 0 ) {
-				MethodType mt;
-				Type[] targs = Type.emptyArray;
-				Vector<FormPar> params = new Vector<FormPar>();
+				Constructor init = new Constructor(ACC_PUBLIC);
 				for(int i=0; i < args.length; i++) {
 					args[i].resolve(null);
-					Type at = args[i].getType();
-					targs = (Type[])Arrays.append(targs,at);
-					params.append(new FormPar(pos,KString.from("arg$"+i),at,FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
+					init.params.append(new FormPar(pos,KString.from("arg$"+i),args[i].getType(),FormPar.PARAM_LVAR_PROXY,ACC_FINAL));
 				}
-				mt = new MethodType(targs,Type.tpVoid);
-				Constructor init = new Constructor(mt,ACC_PUBLIC);
-				init.params.addAll(params.toArray());
 				init.pos = pos;
 				init.body = new BlockStat(pos);
 				init.setPublic(true);

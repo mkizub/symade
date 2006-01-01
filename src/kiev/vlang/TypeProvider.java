@@ -14,8 +14,17 @@ public final class TVarSet {
 
 	private final boolean ASSERT_MORE = true;	
 
-	public access:ro,ro,ro,rw	TVar[] tvars = TVar.emptyArray;
+	public access:ro,ro,ro,rw	TVar[] tvars;
 
+	public TVarSet() {
+		tvars = TVar.emptyArray;
+	}
+	
+	public TVarSet(ArgumentType var, Type bnd) {
+		tvars = new TVar[]{ new TVarBound(this, 0, var, bnd) };
+		if (ASSERT_MORE) checkIntegrity();
+	}
+	
 	public TVarSet copy() {
 		TVarSet tvs = new TVarSet();
 		int n = this.tvars.length;
@@ -262,6 +271,7 @@ public final class TVarSet {
 			}
 			else if (v.isBound()) {
 				TVarBound bv = (TVarBound)v;
+				assert(bv.bnd ≢ null);
 				if (bv.bnd instanceof ArgumentType) {
 					for (int j=0; j < n; j++)
 						assert(tvars[j].var ≢ bv.bnd);
@@ -420,7 +430,7 @@ public class ArgumentTypeProvider extends TypeProvider {
 }
 
 public class WrapperTypeProvider extends TypeProvider {
-	public final Struct	clazz;
+	public final Struct		clazz;
 	public final Field		field;
 	public static WrapperTypeProvider instance(Struct clazz) {
 		if (clazz.wmeta_type == null)

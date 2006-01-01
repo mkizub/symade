@@ -85,7 +85,7 @@ public class Env extends Struct {
 		setPackage(true);
 		setResolved(true);
 		this.imeta_type = new BaseTypeProvider(this);
-		this.type = Type.tpEnv; // call StdType initialization
+		((StructImpl)this.$v_impl).type = Type.tpEnv; // call StdType initialization
 		this.super_bound = new TypeRef(Type.tpObject);
 	}
 
@@ -177,8 +177,6 @@ public class Env extends Struct {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
-			if (bcl.type == null)
-				bcl.type = BaseType.createRefType(bcl,TVarSet.emptySet);
 			bcl.setResolved(true);
 			return (Struct)bcl;
 		}
@@ -192,8 +190,6 @@ public class Env extends Struct {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
 			bcl.setPackage(true);
-			if (bcl.type == null)
-				bcl.type = BaseType.createRefType(bcl,TVarSet.emptySet);
 			bcl.setResolved(true);
 			return (Struct)bcl;
 		}
@@ -204,7 +200,6 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = BaseType.createRefType(cl, TVarSet.emptySet);
 		cl.setResolved(true);
 		return cl;
 	}

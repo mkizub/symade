@@ -41,8 +41,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		     public NodeName			name;
 		     CallTypeProvider			meta_type;
 		@att public NArr<TypeDef>		targs;
-		@att public TypeCallRef			type_ref;
-		@att public TypeCallRef			dtype_ref;
+		@att public TypeRef				type_ret;
+		@att public TypeRef				dtype_ret;
 		@att public NArr<FormPar>		params;
 		@att public NArr<ASTAlias>		aliases;
 		@att public Var					retvar;
@@ -54,6 +54,10 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		@att public MetaValue			annotation_default;
 		     public boolean				inlined_by_dispatcher;
 		     public boolean				invalid_types;
+
+		public virtual						MethodType		type;
+		public virtual						MethodType		dtype;
+		public virtual abstract access:ro	MethodType		jtype;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -68,20 +72,89 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			if (attr.name == "params" || attr.name == "flags")
 				invalid_types = true;
 		}
+
+		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return this.type; }
+		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
+		@getter public final MethodType				get$jtype()	{ checkRebuildTypes(); return (MethodType)this.dtype.getErasedType(); }
+
+		public final void checkRebuildTypes() {
+			if (invalid_types) rebuildTypes();
+		}
+	
+		final void rebuildTypes() {
+			TVarSet vset = new TVarSet();
+			if (targs.length > 0) {
+				foreach (TypeDef td; targs)
+					vset.append(td.getAType(), null);
+			}
+			vset.append(getMethod().ctx_clazz.type.bindings());
+			Vector<Type> args = new Vector<Type>();
+			Vector<Type> dargs = new Vector<Type>();
+			foreach (FormPar fp; params) {
+				switch (fp.kind) {
+				case FormPar.PARAM_NORMAL:
+					args.append(fp.type);
+					dargs.append(fp.dtype);
+					break;
+				case FormPar.PARAM_OUTER_THIS:
+					assert(this instanceof Constructor.ConstructorImpl);
+					assert(!this.getMethod().isStatic());
+					assert(fp.isForward());
+					assert(fp.isFinal());
+					assert(fp.name.name == nameThisDollar);
+					assert(fp.type ≈ this.getMethod().ctx_clazz.package_clazz.type);
+					dargs.append(this.getMethod().ctx_clazz.package_clazz.type);
+					break;
+				case FormPar.PARAM_RULE_ENV:
+					assert(this instanceof RuleMethod.RuleMethodImpl);
+					assert(fp.isForward());
+					assert(fp.isFinal());
+					assert(fp.type ≡ Type.tpRule);
+					assert(fp.name.name == namePEnv);
+					dargs.append(Type.tpRule);
+					break;
+				case FormPar.PARAM_TYPEINFO:
+					assert(this instanceof Constructor.ConstructorImpl || (this.getMethod().isStatic() && this.name.equals(nameNewOp)));
+					assert(fp.isFinal());
+					assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
+					dargs.append(fp.type);
+					break;
+				case FormPar.PARAM_VARARGS:
+					//assert(fp.isFinal());
+					assert(fp.type.isArray());
+					dargs.append(fp.type);
+					break;
+				case FormPar.PARAM_LVAR_PROXY:
+					assert(this instanceof Constructor.ConstructorImpl);
+					assert(fp.isFinal());
+					dargs.append(fp.type);
+					break;
+				default:
+					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
+				}
+			}
+			this.type = new MethodType(vset, args.toArray(), type_ret.getType());
+			this.dtype = new MethodType(vset, dargs.toArray(), dtype_ret.getType());
+			invalid_types = false;
+		}
+		
 	}
 	@nodeview
 	public static view MethodView of MethodImpl extends DNodeView {
 
 		public final void checkRebuildTypes() {
-			if (invalid_types) ((Method)this.$view._self).rebuildTypes();
+			this.$view.checkRebuildTypes();
 		}
 	
 		public				Access				acc;
 		public				NodeName			name;
 		public				CallTypeProvider	meta_type;
 		public access:ro	NArr<TypeDef>		targs;
-		public				TypeCallRef			type_ref;
-		public				TypeCallRef			dtype_ref;
+		public				TypeRef				type_ret;
+		public				TypeRef				dtype_ret;
+		public access:ro	MethodType			type;
+		public access:ro	MethodType			dtype;
+		public access:ro	MethodType			jtype;
 		public access:ro	NArr<FormPar>		params;
 		public access:ro	NArr<ASTAlias>		aliases;
 		public				Var					retvar;
@@ -92,10 +165,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				MetaValue			annotation_default;
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
-
-		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return type_ref.getMType(); }
-		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return dtype_ref.getMType(); }
-		@getter public final MethodType				get$jtype()	{ return (MethodType)dtype.getErasedType(); }
 
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
 
@@ -194,8 +263,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@getter public NodeName				get$name()					{ return this.getMethodView().name; }
 	@getter public CallTypeProvider		get$meta_type()				{ return this.getMethodView().meta_type; }
 	@getter public NArr<TypeDef>		get$targs()					{ return this.getMethodView().targs; }
-	@getter public TypeCallRef			get$type_ref()				{ return this.getMethodView().type_ref; }
-	@getter public TypeCallRef			get$dtype_ref()				{ return this.getMethodView().dtype_ref; }
+	@getter public TypeRef				get$type_ret()				{ return this.getMethodView().type_ret; }
+	@getter public TypeRef				get$dtype_ret()				{ return this.getMethodView().dtype_ret; }
 	@getter public NArr<FormPar>		get$params()				{ return this.getMethodView().params; }
 	@getter public NArr<ASTAlias>		get$aliases()				{ return this.getMethodView().aliases; }
 	@getter public Var					get$retvar()				{ return this.getMethodView().retvar; }
@@ -214,8 +283,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
 	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
 	@setter public void set$meta_type(CallTypeProvider val)		{ this.getMethodView().meta_type = val; }
-	@setter public void set$type_ref(TypeCallRef val)				{ this.getMethodView().type_ref = val; }
-	@setter public void set$dtype_ref(TypeCallRef val)				{ this.getMethodView().dtype_ref = val; }
+	@setter public void set$type_ret(TypeRef val)					{ this.getMethodView().type_ret = val; }
+	@setter public void set$dtype_ret(TypeRef val)					{ this.getMethodView().dtype_ret = val; }
 	@setter public void set$retvar(Var val)						{ this.getMethodView().retvar = val; }
 	@setter public void set$body(BlockStat val)					{ this.getMethodView().body = val; }
 	@setter public void set$pbody(PrescannedBody val)				{ this.getMethodView().pbody = val; }
@@ -230,9 +299,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	/** Return type of the method and signature (argument's types) */
 	     public abstract virtual			CallTypeProvider	meta_type;
 	@att public abstract virtual access:ro	NArr<TypeDef>		targs;
-	@att public abstract virtual			TypeCallRef			type_ref;
+	@att public abstract virtual			TypeRef				type_ret;
 	/** The type of the dispatcher method (if method is a multimethod) */
-	@att public abstract virtual			TypeCallRef			dtype_ref;
+	@att public abstract virtual			TypeRef				dtype_ret;
 	/** Parameters of this method */
 	@att public abstract virtual access:ro	NArr<FormPar>		params;
 	/** Name/operator aliases of this method */
@@ -265,31 +334,23 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		super($view);
 	}
 
-	public Method(MethodImpl $view, KString name, MethodType mt) {
-		this($view,name,new TypeCallRef(mt),new TypeCallRef(mt));
+	public Method(MethodImpl $view, KString name, Type ret) {
+		this($view,name,new TypeRef(ret));
 	}
 
-	public Method(KString name, MethodType mt, int fl) {
-		this(name,new TypeCallRef(mt),new TypeCallRef(mt),fl);
-	}
-
-	public Method(KString name, MethodType mt, MethodType dmt, int fl) {
-		this(name,new TypeCallRef(mt),new TypeCallRef(dmt),fl);
+	public Method(KString name, Type ret, int fl) {
+		this(name,new TypeRef(ret),fl);
 		invalid_types = true;
 	}
-	public Method(KString name, TypeCallRef type_ref, TypeCallRef dtype_ref, int fl) {
-		this(new MethodImpl(0,fl), name, type_ref, dtype_ref);
+	public Method(KString name, TypeRef type_ret, int fl) {
+		this(new MethodImpl(0,fl), name, type_ret);
 	}
-	public Method(MethodImpl $view, KString name, TypeCallRef type_ref, TypeCallRef dtype_ref) {
+	public Method(MethodImpl $view, KString name, TypeRef type_ret) {
 		super($view);
 		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
-		this.type_ref = type_ref;
-		if (dtype_ref != null) {
-			this.dtype_ref = dtype_ref;
-		} else {
-			this.dtype_ref = (TypeCallRef)type_ref.copy();
-		}
+		this.type_ret = type_ret;
+		this.dtype_ret = (TypeRef)type_ret.copy();
 		this.acc = new Access(0);
 		this.meta = new MetaSet();
 		invalid_types = true;
@@ -327,65 +388,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	}
 
 	public void checkRebuildTypes() {
-		if (invalid_types) rebuildTypes();
-	}
-	
-	final void rebuildTypes() {
-		type_ref.args.delAll();
-		dtype_ref.args.delAll();
-		type_ref.targs.delAll();
-		dtype_ref.targs.delAll();
-		if (targs.length > 0) {
-			type_ref.targs.addAll(targs);
-			dtype_ref.targs.addAll(targs);
-		}
-		foreach (FormPar fp; params) {
-			switch (fp.kind) {
-			case FormPar.PARAM_NORMAL:
-				type_ref.args.add((TypeRef)fp.vtype.copy());
-				if (fp.stype != null)
-					dtype_ref.args.add((TypeRef)fp.stype.copy());
-				else
-					dtype_ref.args.add((TypeRef)fp.vtype.copy());
-				break;
-			case FormPar.PARAM_OUTER_THIS:
-				assert(this instanceof Constructor);
-				assert(!this.isStatic());
-				assert(fp.isForward());
-				assert(fp.isFinal());
-				assert(fp.name.name == nameThisDollar);
-				assert(fp.type ≈ this.ctx_clazz.package_clazz.type);
-				dtype_ref.args.add(new TypeRef(this.ctx_clazz.package_clazz.type));
-				break;
-			case FormPar.PARAM_RULE_ENV:
-				assert(this instanceof RuleMethod);
-				assert(fp.isForward());
-				assert(fp.isFinal());
-				assert(fp.type ≡ Type.tpRule);
-				assert(fp.name.name == namePEnv);
-				dtype_ref.args.add(new TypeRef(Type.tpRule));
-				break;
-			case FormPar.PARAM_TYPEINFO:
-				assert(this instanceof Constructor || (this.isStatic() && this.name.equals(nameNewOp)));
-				assert(fp.isFinal());
-				assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
-				dtype_ref.args.add((TypeRef)fp.vtype.copy());
-				break;
-			case FormPar.PARAM_VARARGS:
-				//assert(fp.isFinal());
-				assert(fp.type.isArray());
-				dtype_ref.args.add((TypeRef)fp.vtype.copy());
-				break;
-			case FormPar.PARAM_LVAR_PROXY:
-				assert(this instanceof Constructor);
-				assert(fp.isFinal());
-				dtype_ref.args.add((TypeRef)fp.vtype.copy());
-				break;
-			default:
-				throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
-			}
-		}
-		invalid_types = false;
+		this.getMethodView().checkRebuildTypes();
 	}
 	
 	public FormPar getOuterThisParam() {
@@ -421,13 +424,14 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer(name+"(");
-		int n = type_ref.args.length;
-		for(int i=0; i < n; i++) {
-			sb.append(type_ref.args[i].toString());
-			if( i < (n-1) )
-				sb.append(",");
+		int n = params.length;
+		boolean comma = false;
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_NORMAL) {
+			if (comma) sb.append(",");
+			sb.append(fp.vtype.toString());
+			comma = true;
 		}
-		sb.append(")->").append(type_ref.ret);
+		sb.append(")->").append(type_ret);
 		return sb.toString();
 	}
 
@@ -469,11 +473,11 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public NodeName getName() { return name; }
 
-	public Type	getType() { return type_ref.getMType(); }
+	public Type	getType() { return type; }
 
 	public Var	getRetVar() {
 		if( retvar == null )
-			retvar = new Var(pos,nameResultVar,type_ref.ret.getType(),ACC_FINAL);
+			retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
 		return retvar;
 	}
 
@@ -570,9 +574,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			dmp.space().append(((Struct)parent).name.short_name);
 		dmp.append('(');
 		for(int i=0; i < params.length; i++) {
-			if (params[i].isFinal()) dmp.append("final").forsed_space();
-			if (params[i].isForward()) dmp.append("forward").forsed_space();
-			params[i].toJavaDecl(dmp,dtype_ref.args[i].getType());
+			params[i].toJavaDecl(dmp,params[i].dtype);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
@@ -588,9 +590,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		FormPar@ var;
-		Type@ t;
 	{
-		checkRebuildTypes(),
 		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
 	;
 		path.space_prev.pslot.name == "params" ||
@@ -622,7 +622,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
-		checkRebuildTypes(),
 		info.isForwardsAllowed(),
 	{
 		!this.isStatic(),
@@ -680,8 +679,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 //			params.append(va);
 //		}
 		checkRebuildTypes();
-		type_ref.getMType(); // resolve
-		dtype_ref.getMType(); // resolve
 		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
 		meta.verify();
 		if (annotation_default != null)
@@ -696,7 +693,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	public void resolveMetaDefaults() {
 		if (annotation_default != null) {
-			Type tp = this.type_ref.getMType().ret;
+			Type tp = this.type_ret.getType();
 			Type t = tp;
 			if (t.isArray()) {
 				if (annotation_default instanceof MetaValueScalar) {
@@ -843,12 +840,8 @@ public class Constructor extends Method {
 		super(new ConstructorImpl());
 	}
 
-	public Constructor(MethodType mt, int fl) {
-		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, mt);
-	}
-
-	public Constructor(TypeCallRef type_ref, int fl) {
-		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, type_ref, (TypeCallRef)type_ref.copy());
+	public Constructor(int fl) {
+		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
 	}
 
 	public void resolveDecl() {

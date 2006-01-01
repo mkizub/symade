@@ -1842,7 +1842,7 @@ public abstract class kiev040 implements kiev040Constants {
           break label_31;
         }
         t= jj_consume_token(OPERATOR_LRBRACKETS);
-                                          m.type_ref.ret = new TypeExpr(m.type_ref.ret,t);
+                                          m.type_ret = new TypeExpr(m.type_ret,t);
       }
       label_32:
       while (true) {
@@ -4986,6 +4986,40 @@ public abstract class kiev040 implements kiev040Constants {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_108(); }
     catch(LookaheadSuccess ls) { return true; }
+  }
+
+  final private boolean jj_3R_431() {
+    if (jj_3R_115()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_300() {
+    if (jj_scan_token(BREAK)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_431()) jj_scanpos = xsp;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_100() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_161()) {
+    jj_scanpos = xsp;
+    if (jj_3R_162()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3_65() {
+    if (jj_3R_120()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_227() {
+    if (jj_scan_token(REPARSE_EXPRESSION)) return true;
+    return false;
   }
 
   final private boolean jj_3_64() {
@@ -9138,40 +9172,6 @@ public abstract class kiev040 implements kiev040Constants {
     return false;
   }
 
-  final private boolean jj_3R_431() {
-    if (jj_3R_115()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_300() {
-    if (jj_scan_token(BREAK)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_431()) jj_scanpos = xsp;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_100() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_161()) {
-    jj_scanpos = xsp;
-    if (jj_3R_162()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3_65() {
-    if (jj_3R_120()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_227() {
-    if (jj_scan_token(REPARSE_EXPRESSION)) return true;
-    return false;
-  }
-
   public kiev040TokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -9337,9 +9337,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 
 	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
-		TypeCallRef tc = new TypeCallRef();
-		tc.ret = new TypeRef(Type.tpVoid);
-		Constructor meth = new Constructor(tc, modifiers.getFlags());
+		Constructor meth = new Constructor(modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -9348,9 +9346,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 	
 	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		TypeCallRef tc = new TypeCallRef();
-		tc.ret = ret;
-		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
+		Method meth = new Method(id.name, ret, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -9359,12 +9355,7 @@ public abstract class kiev040 implements kiev040Constants {
 	}
 	
 	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		TypeCallRef tc = new TypeCallRef();
-		if (ret == null)
-			tc.ret = new TypeRef(Type.tpVoid);
-		else
-			tc.ret = ret;
-		RuleMethod meth = new RuleMethod(id, tc, modifiers.getFlags());
+		RuleMethod meth = new RuleMethod(id, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -9372,10 +9363,10 @@ public abstract class kiev040 implements kiev040Constants {
 		return meth;
 	}
 	
-	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef type, boolean first) {
+	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
 		if (!first)
-			type = (TypeRef)type.copy();
-		Field f = new Field(id.name,type,modifiers.getFlags());
+			ret = (TypeRef)ret.copy();
+		Field f = new Field(id.name,ret,modifiers.getFlags());
 		f.acc.flags = 0;
 		f.pos = id.pos;
 		if (first) {

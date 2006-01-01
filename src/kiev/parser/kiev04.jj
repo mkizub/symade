@@ -257,9 +257,7 @@ public abstract class kiev040 {
 	}
 
 	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
-		TypeCallRef tc = new TypeCallRef();
-		tc.ret = new TypeRef(Type.tpVoid);
-		Constructor meth = new Constructor(tc, modifiers.getFlags());
+		Constructor meth = new Constructor(modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -268,9 +266,7 @@ public abstract class kiev040 {
 	}
 	
 	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		TypeCallRef tc = new TypeCallRef();
-		tc.ret = ret;
-		Method meth = new Method(id.name, tc, null, modifiers.getFlags());
+		Method meth = new Method(id.name, ret, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -279,12 +275,7 @@ public abstract class kiev040 {
 	}
 	
 	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		TypeCallRef tc = new TypeCallRef();
-		if (ret == null)
-			tc.ret = new TypeRef(Type.tpVoid);
-		else
-			tc.ret = ret;
-		RuleMethod meth = new RuleMethod(id, tc, modifiers.getFlags());
+		RuleMethod meth = new RuleMethod(id, modifiers.getFlags());
 		meth.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
@@ -292,10 +283,10 @@ public abstract class kiev040 {
 		return meth;
 	}
 	
-	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef type, boolean first) {
+	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
 		if (!first)
-			type = (TypeRef)type.copy();
-		Field f = new Field(id.name,type,modifiers.getFlags());
+			ret = (TypeRef)ret.copy();
+		Field f = new Field(id.name,ret,modifiers.getFlags());
 		f.acc.flags = 0;
 		f.pos = id.pos;
 		if (first) {
@@ -1612,7 +1603,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 			)*
 		)?
 	")"
-	(	t=<OPERATOR_LRBRACKETS> { m.type_ref.ret = new TypeExpr(m.type_ref.ret,t); } )*
+	(	t=<OPERATOR_LRBRACKETS> { m.type_ret = new TypeExpr(m.type_ret,t); } )*
 	(
 		m.aliases += Alias()
 	)*

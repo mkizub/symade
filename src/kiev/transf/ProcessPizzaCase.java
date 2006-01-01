@@ -45,8 +45,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 			meta.add(f);
 		}
 		// Create constructor for pizza case
-		MethodType mt = new MethodType(Type.emptyArray,Type.tpVoid);
-		Constructor init = new Constructor(mt, ACC_PUBLIC);
+		Constructor init = new Constructor(ACC_PUBLIC);
 		foreach (Field f; flds)
 			init.params.add(new FormPar(f.pos,f.name.name,f.type,FormPar.PARAM_NORMAL,0));
 		init.body = new BlockStat(clazz.pos);
@@ -108,8 +107,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 			ConstExpr ce = new ConstIntExpr(meta.getTag());
 			ftag.init = ce;
 
-			Method gettag = new Method(nameGetCaseTag,
-				new MethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
@@ -118,8 +116,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 		}
 		else if( clazz.isHasCases() ) {
 			// Add get$case$tag() method to itself
-			Method gettag = new Method(Constants.nameGetCaseTag,
-				new MethodType(Type.emptyArray,Type.tpInt),ACC_PUBLIC);
+			Method gettag = new Method(Constants.nameGetCaseTag,Type.tpInt,ACC_PUBLIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))

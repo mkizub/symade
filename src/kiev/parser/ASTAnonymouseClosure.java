@@ -103,7 +103,6 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			false
 		);
 		clazz = Env.newStruct(clname,ctx_clazz,0,true);
-		//clazz.type = BaseType.createRefType(clazz,new TVarSet());
 		clazz.setResolved(true);
 		clazz.setLocal(true);
 		clazz.setAnonymouse(true);
@@ -136,13 +135,13 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 			} else {
 				call_name = KString.from("call_"+ret);
 			}
-			Method md = new Method(call_name, new MethodType(Type.emptyArray,ret),ACC_PUBLIC);
+			Method md = new Method(call_name, ret, ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
 			clazz.members.add(md);
 		} else {
 			KString call_name = KString.from("call_rule");
-			RuleMethod md = new RuleMethod(call_name, new MethodType(Type.emptyArray,Type.tpRule),ACC_PUBLIC);
+			RuleMethod md = new RuleMethod(call_name,ACC_PUBLIC);
 			md.pos = pos;
 			md.body = body;
 			clazz.members.add(md);

@@ -154,34 +154,34 @@ public class Signature {
 			clazz = Env.newStruct(cname);
 		}
 
-		if( !sc.hasMoreChars() ) {
+//		if( !sc.hasMoreChars() ) {
+//			if (isArgument)
+//				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
+//			return BaseType.createRefType(clazz, TVarSet.emptySet);
+//		}
+//		if( sc.peekChar() == '<' ) {
+//			args = new Type[0];
+//			sc.nextChar();
+//			while(sc.peekChar() != '>')
+//				args = (Type[])Arrays.append(args,getType(sc));
+//			sc.nextChar();
+//			if( isArgument ) {
+//				if( args.length == 0 )
+//					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
+//				else if( args.length == 1 ) {
+//					if !( args[0] instanceof BaseType )
+//						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
+//					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,(BaseType)args[0]);
+//				} else
+//					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
+//			} else {
+//				return BaseType.createRefType(clazz,args);
+//			}
+//		} else {
 			if (isArgument)
 				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
-			return BaseType.createRefType(clazz, Type.emptyArray);
-		}
-		if( sc.peekChar() == '<' ) {
-			args = new Type[0];
-			sc.nextChar();
-			while(sc.peekChar() != '>')
-				args = (Type[])Arrays.append(args,getType(sc));
-			sc.nextChar();
-			if( isArgument ) {
-				if( args.length == 0 )
-					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
-				else if( args.length == 1 ) {
-					if !( args[0] instanceof BaseType )
-						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
-					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,(BaseType)args[0]);
-				} else
-					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
-			} else {
-				return BaseType.createRefType(clazz,args);
-			}
-		} else {
-			if (isArgument)
-				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
-			return BaseType.createRefType(clazz, Type.emptyArray);
-		}
+			return new BaseType(clazz);
+//		}
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
@@ -210,15 +210,15 @@ public class Signature {
 		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos),false);
 		clazz = Env.newStruct(name);
 
-		Type[] args = Type.emptyArray;
-		if( sc.hasMoreChars() && sc.peekChar() == '<' ) {
-			args = new Type[0];
-			sc.nextChar();
-			while(sc.peekChar() != '>')
-				args = (Type[])Arrays.append(args,getType(sc));
-			sc.nextChar();
-		}
-		return BaseType.createRefType(clazz,args);
+//		Type[] args = Type.emptyArray;
+//		if( sc.hasMoreChars() && sc.peekChar() == '<' ) {
+//			args = new Type[0];
+//			sc.nextChar();
+//			while(sc.peekChar() != '>')
+//				args = (Type[])Arrays.append(args,getType(sc));
+//			sc.nextChar();
+//		}
+		return new BaseType(clazz);
 	}
 
 	public static KString getJavaSignature(KString sig) {

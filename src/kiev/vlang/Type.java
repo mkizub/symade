@@ -402,6 +402,7 @@ public final class BaseType extends Type {
 							continue next;
 						}
 					}
+					assert(false, "Uninitialized class?");
 					vs.append(vars[i].var, vars[i].value());
 				}
 			}
@@ -434,21 +435,6 @@ public final class BaseType extends Type {
 		}
 	}
 	
-	public static BaseType createRefType(Struct clazz, Type[] args) {
-		if (args == null || args.length == 0)
-			return createRefType(clazz, TVarSet.emptySet);
-		TVarSet vs = new TVarSet();
-		for (int i=0; i < args.length; i++) {
-			vs.append(tpUnattachedArgs[i], args[i]);
-		}
-		return createRefType(clazz, vs);
-	}
-
-	public static BaseType createRefType(Struct clazz, TVarSet bindings) {
-		BaseType t = new BaseType(clazz.imeta_type, bindings);
-		return (BaseType)t;
-	}
-
 	public static BaseType newRefType(Struct clazz, TVarSet bindings)
 		alias operator(240,lfy,new)
 	{
@@ -683,7 +669,7 @@ public class ArrayType extends Type {
 		if( arg.isArgumented() ) this.flags |= flArgumented;
 	}
 
-	public TVarSet bindings()			{ return arg.bindings(); }
+	public TVarSet bindings()			{ return new TVarSet(tpArrayArg, arg); /*arg.bindings()*/; }
 	public ArgumentType getOuterArg()	{ return arg.getOuterArg(); }
 	
 	public JType getJType() {
@@ -759,12 +745,12 @@ public class ArgumentType extends Type {
 	public final KString			name;
 
 	/** The class this argument belongs to */
-	public final DNode				definer;
+	public final TypeDecl			definer;
 
 	/** Bound super-class for class arguments */
 	public Type						super_type;
 	
-	public ArgumentType(KString name, DNode definer, Type sup, boolean is_unerasable, boolean is_virtual, boolean is_forward) {
+	public ArgumentType(KString name, TypeDecl definer, Type sup, boolean is_unerasable, boolean is_virtual, boolean is_forward) {
 		super(ArgumentTypeProvider.instance);
 		this.name = name;
 		this.definer = definer;

@@ -113,7 +113,7 @@ public class TypeDef extends TypeDecl {
 		Type sup = Type.tpObject;
 		if (super_bound != null)
 			sup = super_bound.getType();
-		this.lnk = new ArgumentType(name.name,(DNode)parent,sup,isTypeUnerasable(),isTypeVirtual(),isTypeForward());
+		this.lnk = new ArgumentType(name.name,this,sup,isTypeUnerasable(),isTypeVirtual(),isTypeForward());
 		return this.lnk;
 	}
 

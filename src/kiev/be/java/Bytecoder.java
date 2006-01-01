@@ -55,7 +55,7 @@ public class Bytecoder implements JConstants {
 		cl.setStatementsGenerated(true);
 
 		trace(Kiev.debugBytecodeRead,"Clazz type "+bcclazz.getClazzName());
-		cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
+		//cl.type = (BaseType)Signature.getTypeOfClazzCP(new KString.KStringScanner(bcclazz.getClazzName()));
 
 		// This class's superclass name (load if not loaded)
 		if( bcclazz.getSuperClazzName() != null ) {
@@ -180,15 +180,14 @@ public class Bytecoder implements JConstants {
 		if( m == null ) {
 			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
 				mtype = new MethodType(mtype.args,Type.tpRule);
-				m = new RuleMethod(m_name,mtype,m_flags);
+				m = new RuleMethod(m_name,m_flags);
 			}
 			else if (m_name == nameInit || m_name == nameClassInit)
-				m = new Constructor(mtype,m_flags);
+				m = new Constructor(m_flags);
 			else
-				m = new Method(m_name,mtype,m_flags);
+				m = new Method(m_name,mtype.ret,m_flags);
 			cl.members.append(m);
 			for (int i=0; i < mtype.args.length; i++) {
-				int kind = FormPar.PARAM_NORMAL;
 				if( (m_flags & ACC_VARARGS) != 0 && i == mtype.args.length-1) {
 					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
 						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_VARARGS,ACC_FINAL);

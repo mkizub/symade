@@ -76,11 +76,11 @@ public class RuleMethod extends Method {
 		super(new RuleMethodImpl());
 	}
 
-	public RuleMethod(NameRef id, TypeCallRef t_ref, int fl) {
-		super(new RuleMethodImpl(id.pos, fl | ACC_RULEMETHOD), id.name,t_ref,(TypeCallRef)t_ref.copy());
+	public RuleMethod(NameRef id, int fl) {
+		super(new RuleMethodImpl(id.pos, fl | ACC_RULEMETHOD), id.name, new TypeRef(Type.tpRule));
 	}
-	public RuleMethod(KString name, MethodType type, int fl) {
-		super(new RuleMethodImpl(0, fl | ACC_RULEMETHOD), name, type);
+	public RuleMethod(KString name, int fl) {
+		super(new RuleMethodImpl(0, fl | ACC_RULEMETHOD), name, Type.tpRule);
 	}
 
 	public int allocNewBase(int n) {
@@ -110,8 +110,13 @@ public class RuleMethod extends Method {
 	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Var@ var;
 	{
-		checkRebuildTypes(),
-		path.space_prev.pslot.name == "params",$cut,false
+		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
+	;
+		path.space_prev.pslot.name == "params" ||
+		path.space_prev.pslot.name == "type_ref" ||
+		path.space_prev.pslot.name == "dtype_ref",$cut,
+		node @= targs,
+		((TypeDef)node).name.name == name
 	;
 		var @= localvars,
 		var.name.equals(name),

@@ -44,8 +44,8 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public access:ro	MetaValue			annotation_default;
 	public access:ro	boolean				inlined_by_dispatcher;
 
-	@getter public final MethodType				get$type()		{ return this.$view.type_ref.getMType(); }
-	@getter public final MethodType				get$dtype()		{ return this.$view.dtype_ref.getMType(); }
+	@getter public final MethodType				get$type()		{ return this.$view.type; }
+	@getter public final MethodType				get$dtype()		{ return this.$view.dtype; }
 	@getter public final MethodType				get$jtype()		{ return (MethodType)dtype.getErasedType(); }
 	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
 	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }

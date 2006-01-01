@@ -129,7 +129,7 @@ public class Var extends LvalDNode implements Named, Typed {
 	@att public abstract virtual			TypeRef			vtype;
 	@att public abstract virtual			ENode			init;
 	            abstract virtual			int				bcpos;
-	@ref public abstract virtual access:ro	Type	type;
+	@ref public abstract virtual access:ro	Type			type;
 	
 	public Var() { super(new VarImpl()); }
 	public Var(VarImpl impl) { super(impl); }
@@ -288,6 +288,13 @@ public final class FormPar extends Var {
 	public static final view FormParView of FormParImpl extends VarView {
 		public TypeRef		stype;
 		public int			kind;
+
+		@getter public final Type get$dtype() {
+			if (this.$view.stype == null)
+				return get$type();
+			return this.$view.stype.getType();
+		}
+		
 	}
 	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
 	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new FormParView((FormParImpl)this.$v_impl); }
@@ -303,6 +310,8 @@ public final class FormPar extends Var {
 	@getter public TypeRef				get$stype()			{ return this.getFormParView().stype; }
 	@getter        int					get$kind()			{ return this.getFormParView().kind; }
 
+	@getter public Type					get$dtype()			{ return this.getFormParView().dtype; }
+	
 	@setter public void set$stype(TypeRef val)				{ this.getFormParView().stype = val; }
 	@setter        void set$kind(int val)					{ this.getFormParView().kind = val; }
 	
@@ -314,8 +323,9 @@ public final class FormPar extends Var {
 	public static final int PARAM_VARARGS      = 6;
 	public static final int PARAM_LVAR_PROXY   = 7;
 	
-	@att public abstract virtual	TypeRef		stype;
-	     public abstract virtual	int			kind;
+	@att public abstract virtual			TypeRef		stype;
+	     public abstract virtual			int			kind;
+	@ref public abstract virtual access:ro	Type		dtype;
 
 	public FormPar() {
 		super(new FormParImpl());

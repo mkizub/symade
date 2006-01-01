@@ -56,9 +56,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		
 		// values()[]
 		{
-			MethodType valuestp;
-		 	valuestp = new MethodType(Type.emptyArray,new ArrayType(clazz.type));
-			Method mvals = new Method(nameEnumValues,valuestp,ACC_PUBLIC | ACC_STATIC);
+			Method mvals = new Method(nameEnumValues,new ArrayType(clazz.type),ACC_PUBLIC | ACC_STATIC);
 			mvals.pos = pos;
 			mvals.body = new BlockStat(pos);
 			((BlockStat)mvals.body).addStatement(
@@ -69,9 +67,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 		
 		// Cast from int
 		{
-			MethodType tomet;
-		 	tomet = new MethodType(new Type[]{Type.tpInt},clazz.type);
-			Method tome = new Method(nameCastOp,tomet,ACC_PUBLIC | ACC_STATIC);
+			Method tome = new Method(nameCastOp,clazz.type,ACC_PUBLIC | ACC_STATIC);
 			tome.pos = pos;
 			tome.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt, FormPar.PARAM_NORMAL,0));
 			tome.body = new BlockStat(pos);
@@ -99,11 +95,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 
 		// toString
 		{
-			MethodType tostrt;
-			int acc_flags;
-			tostrt = new MethodType(Type.emptyArray,Type.tpString);
-			acc_flags = ACC_PUBLIC;
-			Method tostr = new Method(KString.from("toString"),tostrt,acc_flags);
+			Method tostr = new Method(KString.from("toString"),Type.tpString,ACC_PUBLIC);
 			tostr.name.addAlias(nameCastOp);
 			tostr.pos = pos;
 			tostr.body = new BlockStat(pos);
@@ -137,12 +129,7 @@ public class ProcessEnum extends TransfProcessor implements Constants {
 
 		// fromString
 		{
-			MethodType fromstrt, jfromstrt;
-			int acc_flags;
-			fromstrt = new MethodType(new Type[]{Type.tpString},clazz.type);
-			jfromstrt= fromstrt;
-			acc_flags = ACC_PUBLIC | ACC_STATIC;
-			Method fromstr = new Method(KString.from("valueOf"),fromstrt,acc_flags);
+			Method fromstr = new Method(KString.from("valueOf"),clazz.type,ACC_PUBLIC | ACC_STATIC);
 			fromstr.name.addAlias(nameCastOp);
 			fromstr.name.addAlias(KString.from("fromString"));
 			fromstr.pos = pos;
