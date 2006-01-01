@@ -538,6 +538,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		}
 		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
 		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+		rt = (MethodType)rt.bind(mt.bindings());
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
 			if( exact && !mt.args[i].equals(rt.args[i]) ) {
 				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)

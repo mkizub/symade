@@ -137,11 +137,11 @@ public class ASTCallAccessExpression extends ENode {
 			try {
 				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 					if (tps.length == 1 && res_flags == 0)
-						res[si] = info.buildCall(this, obj, m, args.delToArray());
+						res[si] = info.buildCall(this, obj, m, info.mt, args.delToArray());
 					else if (res_flags == 0)
-						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
+						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, info.mt, args.delToArray());
 					else
-						res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
+						res[si] = info.buildCall(this, (ENode)obj.copy(), m, info.mt, args.delToArray());
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 		}
@@ -266,11 +266,11 @@ public class ASTCallAccessExpression extends ENode {
 			try {
 				if (PassInfo.resolveBestMethodR(tp,m,info,func.name,mt)) {
 					if (tps.length == 1 && res_flags == 0)
-						res[si] = info.buildCall(this, obj, m, args.delToArray());
+						res[si] = info.buildCall(this, obj, m, info.mt, args.delToArray());
 					else if (res_flags == 0)
-						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, args.delToArray());
+						res[si] = info.buildCall(this, new TypeRef(tps[si]), m, info.mt, args.delToArray());
 					else
-						res[si] = info.buildCall(this, (ENode)obj.copy(), m, args.delToArray());
+						res[si] = info.buildCall(this, (ENode)obj.copy(), m, info.mt, args.delToArray());
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 		}

@@ -28,7 +28,7 @@ public class ResInfo {
 	private Struct		from_scope;
 	
 	// a real type of the method in Method.compare() call
-	MethodType			mt;
+	public MethodType	mt;
 	
 	ASTNode				space_prev;
 	
@@ -214,34 +214,34 @@ public class ResInfo {
 		throw new CompilerException(at, "Don't know how to build access to "+node+" from "+from+" via "+this);
 	}
 	
-	public ENode buildCall(ASTNode at, ENode from, ASTNode node, ENode[] args) {
+	public ENode buildCall(ASTNode at, ENode from, ASTNode node, MethodType mt, ENode[] args) {
 		if (node instanceof Method) {
 			Method meth = (Method)node;
 			if (from == null && forwards_p == 0) {
 				if !(meth.isStatic())
 					throw new CompilerException(at, "Don't know how to build call of "+meth+" via "+this);
 				//return new CallExpr(pos,meth,args);
-				return new UnresCallExpr(at.pos, new TypeRef(((Struct)meth.parent).type), meth, args, false);
+				return new UnresCallExpr(at.pos, new TypeRef(((Struct)meth.parent).type), meth, mt, args, false);
 			}
 			ENode expr = from;
 			if (forwards_p > 0)
 				expr = buildAccess(at, from, forwards_stack[--forwards_p]);
-			return new UnresCallExpr(at.pos,expr,meth,args,false);
+			return new UnresCallExpr(at.pos,expr,meth,mt,args,false);
 		}
 		else if (node instanceof Field) {
 			Field f = (Field)node;
 			if (from == null && forwards_p == 0) {
 				if !(node.isStatic())
 					throw new CompilerException(at, "Don't know how to build closure for "+node+" via "+this);
-				return new UnresCallExpr(at.pos,new TypeRef(((Struct)f.parent).type),f,args,false);
+				return new UnresCallExpr(at.pos, new TypeRef(((Struct)f.parent).type), f, mt, args, false);
 			}
 			ENode expr = buildAccess(at, from, f);
-			return new UnresCallExpr(at.pos,expr,f,args,false);
+			return new UnresCallExpr(at.pos,expr,f,mt,args,false);
 		}
 		else if (node instanceof Var) {
 			Var var = (Var)node;
 			ENode expr = buildAccess(at, from, var);
-			return new UnresCallExpr(at.pos,expr,var,args,false);
+			return new UnresCallExpr(at.pos,expr,var,mt,args,false);
 		}
 		throw new CompilerException(at, "Don't know how to call "+node+" via "+this);
 	}
@@ -262,6 +262,7 @@ public class ResInfo {
 		ri.forwards_stack = (ASTNode[])this.forwards_stack.clone();
 		ri.forwards_p     = this.forwards_p;
 		ri.transforms     = this.transforms;
+		ri.mt             = this.mt;
 		ri.from_scope     = this.from_scope;
 		return ri;
 	}
@@ -275,6 +276,8 @@ public class ResInfo {
 		this.forwards_stack = ri.forwards_stack;
 		this.forwards_p     = ri.forwards_p;
 		this.transforms     = ri.transforms;
+		this.mt             = ri.mt;
+		this.from_scope     = ri.from_scope;
 	}
 
 	public String toString() {

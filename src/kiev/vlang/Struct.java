@@ -1561,21 +1561,21 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if( m.type.ret ≢ Type.tpVoid ) {
 					if( overwr.type.ret ≡ Type.tpVoid )
 						br = new BlockStat(0,new ENode[]{
-							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
+							new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
 							new ReturnStat(0,new ConstNullExpr())
 						});
 					else {
 						if( !overwr.type.ret.isReference() && mm.type.ret.isReference() ) {
-							CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,vae,true);
+							CallExpr ce = new CallExpr(0,new ThisExpr(true),overwr,null,vae,true);
 							br = new ReturnStat(0,ce);
 							CastExpr.autoCastToReference(ce);
 						}
 						else
-							br = new ReturnStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true));
+							br = new ReturnStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true));
 					}
 				} else {
 					br = new BlockStat(0,new ENode[]{
-						new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,vae,true)),
+						new ExprStat(0,new CallExpr(0,new ThisExpr(true),overwr,null,vae,true)),
 						new ReturnStat(0,null)
 					});
 				}

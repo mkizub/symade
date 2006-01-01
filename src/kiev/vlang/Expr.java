@@ -1793,7 +1793,7 @@ public class CastExpr extends ENode {
 		v.$unbind();
 		MethodType mt = new MethodType(Type.emptyArray,this.type.getType());
 		if( PassInfo.resolveBestMethodR(et,v,info,nameCastOp,mt) ) {
-			ENode call = info.buildCall(this,(ENode)~expr,(Method)v,ENode.emptyArray);
+			ENode call = info.buildCall(this,(ENode)~expr,(Method)v,info.mt,ENode.emptyArray);
 			if (this.type.getType().isReference())
 				call.setCastCall(true);
 			replaceWithNodeResolve(type.getType(),call);

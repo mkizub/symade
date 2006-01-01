@@ -328,6 +328,7 @@ public class UnresCallExpr extends UnresExpr {
 	public static class UnresCallExprImpl extends UnresExprImpl {
 		@ref public ENode				obj;
 		@ref public Named				func;
+		@ref public MethodType			mt;
 		@ref public NArr<ENode>			args;
 		public UnresCallExprImpl() {}
 		public UnresCallExprImpl(int pos) { super(pos, null); }
@@ -336,19 +337,23 @@ public class UnresCallExpr extends UnresExpr {
 	public static view UnresCallExprView of UnresCallExprImpl extends UnresExprView {
 		public				ENode			obj;
 		public				Named			func;
+		public				MethodType		mt;
 		public access:ro	NArr<ENode>		args;
 	}
 	
 	@ref public abstract virtual			ENode				obj;
 	@ref public abstract virtual			Named				func;
+	@ref public abstract virtual			MethodType			mt;
 	@ref public abstract virtual access:ro	NArr<ENode>			args;
 	
 	@getter public ENode			get$obj()				{ return this.getUnresCallExprView().obj; }
 	@getter public Named			get$func()				{ return this.getUnresCallExprView().func; }
+	@getter public MethodType		get$mt()				{ return this.getUnresCallExprView().mt; }
 	@getter public NArr<ENode>		get$args()				{ return this.getUnresCallExprView().args; }
 	
 	@setter public void		set$obj(ENode val)				{ this.getUnresCallExprView().obj = val; }
-	@setter public void		set$func(Named val)			{ this.getUnresCallExprView().func = val; }
+	@setter public void		set$func(Named val)				{ this.getUnresCallExprView().func = val; }
+	@setter public void		set$mt(MethodType val)			{ this.getUnresCallExprView().mt = val; }
 
 	public NodeView					getNodeView()			{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
 	public ENodeView				getENodeView()			{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
@@ -360,16 +365,13 @@ public class UnresCallExpr extends UnresExpr {
 		super(new UnresCallExprImpl());
 	}
 
-	public UnresCallExpr(int pos, ENode obj, Named func, ENode[] args, boolean super_flag) {
+	public UnresCallExpr(int pos, ENode obj, Named func, MethodType mt, ENode[] args, boolean super_flag) {
 		super(new UnresCallExprImpl(pos));
 		this.obj = obj;
 		this.func = func;
+		this.mt = mt;
 		this.args.addAll(args);
 		this.setSuperExpr(super_flag);
-	}
-
-	public UnresCallExpr(int pos, ENode obj, Named func, NArr<ENode> args, boolean super_flag) {
-		this(pos, obj, func, args.toArray(), super_flag);
 	}
 
 	public String toString() {
@@ -395,8 +397,7 @@ public class UnresCallExpr extends UnresExpr {
 		if (obj instanceof TypeRef) {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray());
-				//m.makeArgs(ce.args, null);
+				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, mt, args.toArray());
 				return ce;
 			} else {
 				Field f = (Field)func;
@@ -405,9 +406,8 @@ public class UnresCallExpr extends UnresExpr {
 		} else {
 			if (func instanceof Method) {
 				Method m = (Method)func;
-				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, args.toArray(), isSuperExpr());
+				CallExpr ce = new CallExpr(pos, (ENode)~obj, m, mt, args.toArray(), isSuperExpr());
 				ce.setCastCall(this.isCastCall());
-				//m.makeArgs(ce.args, null);
 				return ce;
 			} else {
 				return new ClosureCallExpr(pos, (ENode)~obj, args.toArray());

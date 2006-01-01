@@ -393,19 +393,6 @@ public final class BaseType extends Type {
 			this.bindings = vs;
 		} else {
 			TVarSet vs = clazz.type.bindings().bind(this.bindings);
-			TVar[] vars = this.bindings.tvars;
-	next:	for (int i=0; i < vars.length; i++) {
-				if (vars[i].var.definer == null) {
-					for (int j=0; j < vs.length; j++) {
-						if (!vs.tvars[j].isBound()) {
-							vs.set(vs.tvars[j], vars[i].value());
-							continue next;
-						}
-					}
-					assert(false, "Uninitialized class?");
-					vs.append(vars[i].var, vars[i].value());
-				}
-			}
 			this.bindings = vs;
 		}
 		this.version = this.meta_type.version;
@@ -416,7 +403,7 @@ public final class BaseType extends Type {
 		this(clazz.imeta_type, TVarSet.emptySet);
 	}
 	
-	private BaseType(BaseTypeProvider meta_type, TVarSet bindings) {
+	BaseType(BaseTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type);
 		this.bindings = bindings;
 		checkArgumented();
@@ -435,15 +422,15 @@ public final class BaseType extends Type {
 		}
 	}
 	
-	public static BaseType newRefType(Struct clazz, TVarSet bindings)
-		alias operator(240,lfy,new)
-	{
-		Type ct = clazz.type;
-		if (ct.bindings().length != bindings.length )
-			throw new RuntimeException("Class "+clazz+" requares "+ct.bindings().length+" type bindings");
-		BaseType t = new BaseType(clazz.imeta_type, bindings);
-		return (BaseType)t;
-	}
+//	public static BaseType newRefType(Struct clazz, TVarSet bindings)
+//		alias operator(240,lfy,new)
+//	{
+//		Type ct = clazz.type;
+//		if (ct.bindings().length != bindings.length )
+//			throw new RuntimeException("Class "+clazz+" requares "+ct.bindings().length+" type bindings");
+//		BaseType t = new BaseType(clazz.imeta_type, bindings);
+//		return (BaseType)t;
+//	}
 
 	public JType getJType() {
 //		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
@@ -1059,7 +1046,7 @@ public class MethodType extends Type implements CallableType {
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		if( this.ret.isArgumented() ) flags |= flArgumented;
 	}
-	public static MethodType createMethodType(ArgumentType[] targs, Type[] args, Type ret)
+	public static MethodType createMethodType(Type[] targs, Type[] args, Type ret)
 		alias operator(210,lfy,new)
 	{
 		if (targs == null || targs.length == 0) return new MethodType(args,ret);

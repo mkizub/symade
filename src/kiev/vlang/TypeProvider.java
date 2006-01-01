@@ -167,6 +167,7 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
+		// bind known vars
 		for(int i=0; i < vs_size; i++) {
 			TVar v = vs_vars[i];
 			if (!v.isBound()) continue;
@@ -178,6 +179,21 @@ public final class TVarSet {
 					sr.set(sr.tvars[i], r);
 					break;
 				}
+			}
+		}
+		// bind free vars
+		for(int i=0; i < vs_size; i++) {
+			TVar v = vs_vars[i];
+			if (v.var.definer != null)
+				continue;
+			Type r = v.result();
+			for(int j=0; j < my_size; j++) {
+				TVar x = my_vars[j];
+				if (x.isAlias() || x.isBound())
+					continue;
+				// bind free var
+				sr.set(sr.tvars[i], r);
+				break;
 			}
 		}
 		return sr;
@@ -388,12 +404,12 @@ public class BaseTypeProvider extends TypeProvider {
 	
 	public Type bind(Type t, TVarSet bindings) {
 		if (!t.isArgumented() || bindings.length == 0) return t;
-		return new BaseType(this.clazz, t.bindings().bind(bindings));
+		return new BaseType(this, t.bindings().bind(bindings));
 	}
 	
 	public Type rebind(Type t, TVarSet bindings) {
 		if (!t.isArgumented() || bindings.length == 0) return t;
-		return new BaseType(this.clazz, t.bindings().rebind(bindings));
+		return new BaseType(this, t.bindings().rebind(bindings));
 	}
 	
 }
@@ -454,7 +470,12 @@ public class CallTypeProvider extends TypeProvider {
 	public static final CallTypeProvider instance = new CallTypeProvider();
 	private CallTypeProvider() {}
 	public Type bind(Type t, TVarSet bindings) {
-		throw new RuntimeException("bind() in CallableType");
+		if (!t.isArgumented() || bindings.length == 0 || t.bindings().length == 0) return t;
+		if!(t instanceof MethodType) return t;
+		MethodType mt = (MethodType)t;
+		mt = new MethodType(mt.bindings().bind(bindings),mt.args,mt.ret);
+		mt = (MethodType)this.rebind(mt,mt.bindings());
+		return mt;
 	}
 	public Type rebind(Type t, TVarSet bindings) {
 		if( !t.isArgumented() || bindings.length == 0 ) return t;

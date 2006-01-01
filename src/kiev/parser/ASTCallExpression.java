@@ -85,7 +85,7 @@ public class ASTCallExpression extends ENode {
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),false);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),false);
 				replaceWithNode(ce);
 				//((Method)m).makeArgs(ce.args,st);
 				return;
@@ -101,14 +101,14 @@ public class ASTCallExpression extends ENode {
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
 			if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,(Method)m,args.delToArray(),true);
+				CallExpr ce = new CallExpr(pos,null,(Method)m,info.mt,args.delToArray(),true);
 				replaceWithNode(ce);
 				//((Method)m).makeArgs(ce.args,st);
 				return;
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
-			MethodType mt = new MethodType(ta,null);
+			MethodType mt = new MethodType(ata,ta,null);
 			ResInfo info = new ResInfo(this);
 			try {
 				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {
@@ -132,12 +132,13 @@ public class ASTCallExpression extends ENode {
 					throw new CompilerException(this,"Unresolved method "+Method.toString(func.name,args));
 				}
 			} catch (RuntimeException e) { throw new CompilerException(this,e.getMessage()); }
-				if( m.isStatic() )
-					assert (info.isEmpty());
-				ENode e = info.buildCall(this,null,m,args.toArray());
-				if (e instanceof UnresExpr)
-					e = ((UnresExpr)e).toResolvedExpr();
-				this.replaceWithNode(e);
+
+			if( m.isStatic() )
+				assert (info.isEmpty());
+			ENode e = info.buildCall(this,null,m,info.mt,args.toArray());
+			if (e instanceof UnresExpr)
+				e = ((UnresExpr)e).toResolvedExpr();
+			this.replaceWithNode(e);
 		}
 	}
 	
@@ -160,7 +161,7 @@ public class ASTCallExpression extends ENode {
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),false);
+				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),false);
 				replaceWithNode(ce);
 				//m.makeArgs(ce.args,st);
 				ce.resolve(ret);
@@ -178,7 +179,7 @@ public class ASTCallExpression extends ENode {
 				throw new CompilerException(this,"Method "+Method.toString(func.name,args)+" unresolved");
             if( info.isEmpty() ) {
 				Type st = ctx_clazz.super_type;
-				CallExpr ce = new CallExpr(pos,null,m,args.delToArray(),true);
+				CallExpr ce = new CallExpr(pos,null,m,info.mt,args.delToArray(),true);
 				replaceWithNode(ce);
 				//m.makeArgs(ce.args,st);
 				ce.resolve(ret);
@@ -248,7 +249,7 @@ public class ASTCallExpression extends ENode {
 				if( m.isStatic() )
 					assert (info.isEmpty());
 				//((Method)m).makeArgs(args,tp);
-				ENode e = info.buildCall(this,null,m,args.toArray());
+				ENode e = info.buildCall(this,null,m,info.mt,args.toArray());
 				this.replaceWithNodeResolve( reqType, e );
 			}
 		}

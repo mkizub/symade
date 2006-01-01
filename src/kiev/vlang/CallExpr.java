@@ -30,6 +30,7 @@ public class CallExpr extends ENode {
 	public static class CallExprImpl extends ENodeImpl {
 		@att public ENode				obj;
 		@ref public Method				func;
+		@ref public MethodType			mt;
 		@att public NArr<ENode>			args;
 		@att public ENode				temp_expr;
 		public CallExprImpl() {}
@@ -39,22 +40,26 @@ public class CallExpr extends ENode {
 	public static view CallExprView of CallExprImpl extends ENodeView {
 		public				ENode			obj;
 		public				Method			func;
+		public				MethodType		mt;
 		public access:ro	NArr<ENode>		args;
 		public				ENode			temp_expr;
 	}
 	
 	@att public abstract virtual			ENode				obj;
 	@ref public abstract virtual			Method				func;
+	@ref public abstract virtual			MethodType			mt;
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	@att public abstract virtual			ENode				temp_expr;
 	
 	@getter public ENode			get$obj()				{ return this.getCallExprView().obj; }
 	@getter public Method			get$func()				{ return this.getCallExprView().func; }
+	@getter public MethodType		get$mt()				{ return this.getCallExprView().mt; }
 	@getter public NArr<ENode>		get$args()				{ return this.getCallExprView().args; }
 	@getter public ENode			get$temp_expr()			{ return this.getCallExprView().temp_expr; }
 	
 	@setter public void		set$obj(ENode val)				{ this.getCallExprView().obj = val; }
 	@setter public void		set$func(Method val)			{ this.getCallExprView().func = val; }
+	@setter public void		set$mt(MethodType val)			{ this.getCallExprView().mt = val; }
 	@setter public void		set$temp_expr(ENode val)		{ this.getCallExprView().temp_expr = val; }
 
 	public NodeView				getNodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
@@ -69,7 +74,7 @@ public class CallExpr extends ENode {
 		super(new CallExprImpl());
 	}
 
-	public CallExpr(int pos, ENode obj, Method func, ENode[] args, boolean super_flag) {
+	public CallExpr(int pos, ENode obj, Method func, MethodType mt, ENode[] args, boolean super_flag) {
 		super(new CallExprImpl(pos));
 		if (obj == null) {
 			if !(func.isStatic() || func instanceof Constructor) {
@@ -80,13 +85,18 @@ public class CallExpr extends ENode {
 			this.obj = obj;
 		}
 		this.func = func;
+		this.mt = mt;
 		this.args.addAll(args);
 		if (super_flag)
 			this.setSuperExpr(true);
 	}
 
+	public CallExpr(int pos, ENode obj, Method func, MethodType mt, ENode[] args) {
+		this(pos, obj, func, mt, args, false);
+	}
+
 	public CallExpr(int pos, ENode obj, Method func, ENode[] args) {
-		this(pos, obj, func, args, false);
+		this(pos, obj, func, null, args, false);
 	}
 
 	public String toString() {
@@ -105,7 +115,10 @@ public class CallExpr extends ENode {
 		return sb.toString();
 	}
 	public Type getType() {
-		return Type.getRealType(obj.getType(),func.type.ret);
+		if (mt == null)
+			return Type.getRealType(obj.getType(),func.type.ret);
+		else
+			return mt.ret;
 	}
 
 	public void resolve(Type reqType) {

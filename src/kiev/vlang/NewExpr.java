@@ -121,9 +121,7 @@ public final class NewExpr extends ENode {
 	public Type getType() {
 		Type type = this.type.getType();
 		if (outer == null) return type;
-		TVarSet vset = new TVarSet();
-		vset.append(type.getOuterArg(), outer.getType());
-		return type.bind(vset);
+		return type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
 	}
 
 	public void resolve(Type reqType) {
@@ -155,9 +153,7 @@ public final class NewExpr extends ENode {
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			TVarSet vset = new TVarSet();
-			vset.append(type.getOuterArg(), outer.getType());
-			type = (BaseType)type.bind(vset);
+			type = (BaseType)type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);
