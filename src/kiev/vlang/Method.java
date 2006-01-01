@@ -40,7 +40,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		     public Access				acc;
 		     public NodeName			name;
 		     CallTypeProvider			meta_type;
-		@att public NArr<TypeDef>	targs;
+		@att public NArr<TypeDef>		targs;
 		@att public TypeCallRef			type_ref;
 		@att public TypeCallRef			dtype_ref;
 		@att public NArr<FormPar>		params;
@@ -79,7 +79,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				Access				acc;
 		public				NodeName			name;
 		public				CallTypeProvider	meta_type;
-		public access:ro	NArr<TypeDef>	targs;
+		public access:ro	NArr<TypeDef>		targs;
 		public				TypeCallRef			type_ref;
 		public				TypeCallRef			dtype_ref;
 		public access:ro	NArr<FormPar>		params;
@@ -229,7 +229,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	     public abstract virtual			NodeName			name;
 	/** Return type of the method and signature (argument's types) */
 	     public abstract virtual			CallTypeProvider	meta_type;
-	@att public abstract virtual access:ro	NArr<TypeDef>	targs;
+	@att public abstract virtual access:ro	NArr<TypeDef>		targs;
 	@att public abstract virtual			TypeCallRef			type_ref;
 	/** The type of the dispatcher method (if method is a multimethod) */
 	@att public abstract virtual			TypeCallRef			dtype_ref;
@@ -333,6 +333,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	final void rebuildTypes() {
 		type_ref.args.delAll();
 		dtype_ref.args.delAll();
+		type_ref.targs.delAll();
+		dtype_ref.targs.delAll();
+		if (targs.length > 0) {
+			type_ref.targs.addAll(targs);
+			dtype_ref.targs.addAll(targs);
+		}
 		foreach (FormPar fp; params) {
 			switch (fp.kind) {
 			case FormPar.PARAM_NORMAL:
@@ -585,13 +591,22 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		Type@ t;
 	{
 		checkRebuildTypes(),
-		inlined_by_dispatcher || path.space_prev.pslot.name == "params",$cut,false
+		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
+	;
+		path.space_prev.pslot.name == "params" ||
+		path.space_prev.pslot.name == "type_ref" ||
+		path.space_prev.pslot.name == "dtype_ref",$cut,
+		node @= targs,
+		((TypeDef)node).name.name == name
 	;
 		var @= params,
 		var.name.equals(name),
 		node ?= var
 	;
 		node ?= retvar, ((Var)node).name.equals(name)
+	;
+		node @= targs,
+		((TypeDef)node).name.name == name
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),

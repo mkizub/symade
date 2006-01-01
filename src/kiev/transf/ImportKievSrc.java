@@ -230,8 +230,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					TypeDef td = new TypeDef(
 						new NameRef(me.pos,KString.from(nameThis+"$"+n+"$type")),
 						new TypeRef(pkg.type));
-					td.meta = new MetaSet();
-					td.meta.add(new MetaForward());
+					//td.meta = new MetaSet();
+					//td.meta.add(new MetaForward());
 					me.members.append(td);
 					Field f = new Field(
 						KString.from(nameThis+"$"+n),

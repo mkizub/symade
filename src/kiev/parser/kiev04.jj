@@ -2299,6 +2299,12 @@ ENode CallExpression() :
 { ASTCallExpression e = new ASTCallExpression(); }
 {
 	e.func = Name()
+	[
+		"<"
+			e.targs += Type()
+			( ","  e.targs += Type() )*
+		">"
+	]
 	"("
 	[	e.args += ExpressionNT(null)
 		(	","  e.args += ExpressionNT(null)	)*
@@ -2339,7 +2345,7 @@ ENode AccessExpression() :
 		LOOKAHEAD(2)
 		e = ConstExpression()
 	|
-		LOOKAHEAD(2)
+		LOOKAHEAD( <IDENTIFIER> ["<" Type() ("," Type())* ">"] "(" )
 		e = CallExpression()
 	|
 		LOOKAHEAD(2)

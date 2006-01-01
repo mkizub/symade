@@ -26,6 +26,7 @@ public class ASTCallExpression extends ENode {
 	@node
 	public static class ASTCallExpressionImpl extends ENodeImpl {
 		@ref public NameRef				func;
+		@att public NArr<TypeRef>		targs;
 		@att public NArr<ENode>			args;
 		public ASTCallExpressionImpl() {}
 		public ASTCallExpressionImpl(int pos) { super(pos); }
@@ -33,13 +34,16 @@ public class ASTCallExpression extends ENode {
 	@nodeview
 	public static view ASTCallExpressionView of ASTCallExpressionImpl extends ENodeView {
 		public				NameRef			func;
+		public access:ro	NArr<TypeRef>	targs;
 		public access:ro	NArr<ENode>		args;
 	}
 	
 	@ref public abstract virtual			NameRef				func;
+	@att public abstract virtual access:ro	NArr<TypeRef>		targs;
 	@att public abstract virtual access:ro	NArr<ENode>			args;
 	
 	@getter public NameRef			get$func()				{ return this.getASTCallExpressionView().func; }
+	@getter public NArr<TypeRef>	get$targs()				{ return this.getASTCallExpressionView().targs; }
 	@getter public NArr<ENode>		get$args()				{ return this.getASTCallExpressionView().args; }
 	
 	@setter public void		set$func(NameRef val)			{ this.getASTCallExpressionView().func = val; }
@@ -64,10 +68,15 @@ public class ASTCallExpression extends ENode {
 		// method of current class or first-order function
 		DNode@ m;
 		Type tp = ctx_clazz.type;
+		
+		Type[] ata = new Type[targs.length];
+		for (int i=0; i < ata.length; i++)
+			ata[i] = targs[i].getType();
+		Type[] ta = new Type[args.length];
+		for (int i=0; i < ta.length; i++)
+			ta[i] = args[i].getType();
+		
 		if( func.name.equals(nameThis) ) {
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
 			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
@@ -84,9 +93,6 @@ public class ASTCallExpression extends ENode {
 			throw new CompilerException(this,"Constructor call via forwarding is not allowed");
 		}
 		else if( func.name.equals(nameSuper) ) {
-			Type[] ta = new Type[args.length];
-			for (int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
 			MethodType mt = new MethodType(ta,Type.tpVoid);
 			ResInfo info = new ResInfo(this,ResInfo.noSuper|ResInfo.noStatic|ResInfo.noForwards|ResInfo.noImports);
 			try {
@@ -102,11 +108,7 @@ public class ASTCallExpression extends ENode {
 			}
 			throw new CompilerException(this,"Super-constructor call via forwarding is not allowed");
 		} else {
-			MethodType mt;
-			Type[] ta = new Type[args.length];
-			for(int i=0; i < ta.length; i++)
-				ta[i] = args[i].getType();
-			mt = new MethodType(ta,null);
+			MethodType mt = new MethodType(ta,null);
 			ResInfo info = new ResInfo(this);
 			try {
 				if( !PassInfo.resolveMethodR(this,m,info,func.name,mt) ) {

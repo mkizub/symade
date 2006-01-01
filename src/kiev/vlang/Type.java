@@ -439,8 +439,7 @@ public final class BaseType extends Type {
 			return createRefType(clazz, TVarSet.emptySet);
 		TVarSet vs = new TVarSet();
 		for (int i=0; i < args.length; i++) {
-			ArgumentType var = new ArgumentType(KString.from("_"+i+"_"),null,Type.tpAny, false, false, false);
-			vs.append(var, args[i]);
+			vs.append(tpUnattachedArgs[i], args[i]);
 		}
 		return createRefType(clazz, vs);
 	}
@@ -1058,17 +1057,34 @@ public class ClosureType extends Type implements CallableType {
 }
 	
 public class MethodType extends Type implements CallableType {
+	private TVarSet			bindings;
 	public virtual Type[]	args;
 	public virtual Type		ret;
 
 	public MethodType(Type[] args, Type ret) {
+		this(TVarSet.emptySet, args, ret);
+	}
+	public MethodType(TVarSet bindings, Type[] args, Type ret) {
 		super(CallTypeProvider.instance);
+		this.bindings = bindings;
 		this.args = (args != null && args.length > 0) ? args : Type.emptyArray;
 		this.ret  = (ret  == null) ? Type.tpAny : ret;
 		flags |= flCallable;
 		foreach(Type a; args; a.isArgumented() ) { flags |= flArgumented; break; }
 		if( this.ret.isArgumented() ) flags |= flArgumented;
 	}
+	public static MethodType createMethodType(ArgumentType[] targs, Type[] args, Type ret)
+		alias operator(210,lfy,new)
+	{
+		if (targs == null || targs.length == 0) return new MethodType(args,ret);
+		args = (args != null && args.length > 0) ? args : Type.emptyArray;
+		ret  = (ret  == null) ? Type.tpAny : ret;
+		TVarSet vs = new TVarSet();
+		for (int i=0; i < targs.length; i++)
+			vs.append(tpUnattachedArgs[i], targs[i]);
+		return new MethodType(vs,args,ret);
+	}
+
 
 	@getter public Type[]	get$args()	{ return args; }
 	@getter public Type		get$ret()	{ return ret; }
@@ -1078,7 +1094,7 @@ public class MethodType extends Type implements CallableType {
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 
-	public TVarSet bindings()			{ return TVarSet.emptySet; }
+	public TVarSet bindings()			{ return bindings; }
 	public ArgumentType getOuterArg()	{ return null; }
 
 	public JType getJType() {

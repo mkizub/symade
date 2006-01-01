@@ -82,6 +82,8 @@ public interface StdTypes {
 
 	public static final ArrayType tpArray;
 
+	public static final ArgumentType[] tpUnattachedArgs;
+
 	static {
 
 		Struct tpEnvClazz = Env.root;
@@ -258,6 +260,9 @@ public interface StdTypes {
 		tpRefProxyClazz.args.add(new TypeDef(KString.from("A")));
 		tpRefProxy	= tpRefProxyClazz.type;
 
+		tpUnattachedArgs = new ArgumentType[128] ;
+		for (int i=0; i < tpUnattachedArgs.length; i++)
+			tpUnattachedArgs[i] = new ArgumentType(KString.from("_"+Integer.toHexString(i)+"_"),null,Type.tpAny, false, false, false);
 	}
 }
 

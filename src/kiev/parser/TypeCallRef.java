@@ -21,16 +21,19 @@ public class TypeCallRef extends TypeRef {
 
 	@node
 	public static final class TypeCallRefImpl extends TypeRefImpl {
+		@ref public NArr<TypeDef>			targs;
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					ret;
 		public TypeCallRefImpl() {}
 	}
 	@nodeview
 	public static final view TypeCallRefView of TypeCallRefImpl extends TypeRefView {
+		public access:ro	NArr<TypeDef>			targs;
 		public access:ro	NArr<TypeRef>			args;
 		public				TypeRef					ret;
 	}
 
+	@ref public abstract virtual access:ro NArr<TypeDef>			targs;
 	@att public abstract virtual access:ro NArr<TypeRef>			args;
 	@att public abstract virtual           TypeRef					ret;
 	
@@ -39,6 +42,7 @@ public class TypeCallRef extends TypeRef {
 	public TypeRefView		getTypeRefView()		{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
 	public TypeCallRefView	getTypeCallRefView()	{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
 
+	@getter public NArr<TypeDef>		get$targs()		{ return this.getTypeCallRefView().targs; }
 	@getter public NArr<TypeRef>		get$args()		{ return this.getTypeCallRefView().args; }
 	@getter public TypeRef				get$ret()		{ return this.getTypeCallRefView().ret; }
 	@setter public void		set$ret(TypeRef val)		{ this.getTypeCallRefView().ret = val; }
@@ -74,7 +78,14 @@ public class TypeCallRef extends TypeRef {
 		for(int i=0; i < atypes.length; i++) {
 			atypes[i] = args[i].getType();
 		}
-		this.lnk = new MethodType(atypes,rt);
+		if (targs.length == 0) {
+			this.lnk = new MethodType(atypes,rt);
+		} else {
+			TVarSet vset = new TVarSet();
+			foreach (TypeDef td; targs)
+				vset.append(td.getAType(), null);
+			this.lnk = new MethodType(vset,atypes,rt);
+		}
 		return (MethodType)this.lnk;
 	}
 	public Type getType() {
@@ -83,6 +94,15 @@ public class TypeCallRef extends TypeRef {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		if (targs.length > 0) {
+			sb.append('<');
+			for(int i=0; i < targs.length; i++) {
+				sb.append(targs[i]);
+				if( i < targs.length-1)
+					sb.append(',');
+			}
+			sb.append('>');
+		}
 		sb.append('(');
 		for(int i=0; i < args.length; i++) {
 			sb.append(args[i]);
