@@ -1664,6 +1664,7 @@ void KeywordAsIdentifier()       :
 	|	t="alias"
 	|	t="packed"
 	|	t="throws"
+	|	t="forward"
 	)
 	{
 		id = new ASTIdentifier(0);
