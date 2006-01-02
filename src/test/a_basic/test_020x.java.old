@@ -1,0 +1,57 @@
+package test.a_basic;
+class test_020 {
+	public static class test_020_StaticSub {
+		int i;
+		test_020 tst;
+		test_020_StaticSub(test_020 tst) {	
+			this.tst = tst;
+		}
+		public String toString() {
+			return "static sub of "+tst+" = "+getClass();
+		}
+	}
+	public class test_020_DynamicSub {
+		int i;
+		test_020_DynamicSub() {	
+		}
+		public String toString() {
+			return "dynamic sub of "+test_020.this+" = "+getClass();
+		}
+	}
+	public static void main(String[] args) {
+		test_020 tst = new test_020();
+		tst.test();
+	}
+	public void test() {
+		test_020_StaticSub st = new test_020_StaticSub(new test_020());
+		System.out.println(st);
+		test_020_DynamicSub dt1 = new test_020_DynamicSub();
+		System.out.println(dt1);
+		test_020_DynamicSub dt2 = this.new test_020_DynamicSub();
+		System.out.println(dt2);
+		final Ref<int> i = 100;
+		int j = 200;
+		class test_020_InnerSub {
+			test_020_InnerSub() {	
+			}
+			public String toString() {
+				return "inner dynamic sub of "+test_020.this+" = "+getClass()+"\n\r\ti = "+i++;
+			}
+		};
+		test_020_InnerSub it = new test_020_InnerSub();
+		System.out.println(it);
+		System.out.println("now i = "+i);
+		Object at = new Object() {
+			public String toString() {
+				return "anonymouse inner dynamic sub of "+test_020.this+" = "+getClass()+"\n\r\tj = "+j;
+			}
+		};
+		i = 150;
+		j = 250;
+		System.out.println(at);
+	}
+
+	public String toString() {
+		return getClass().toString();
+	}
+}
