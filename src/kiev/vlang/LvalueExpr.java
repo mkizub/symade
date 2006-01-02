@@ -1,42 +1,317 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.vlang.Instr.*;
+import kiev.transf.*;
+import kiev.parser.*;
 import kiev.vlang.Operator.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JLvalueExprView;
+import kiev.be.java.JAccessExprView;
+import kiev.be.java.JIFldExprView;
+import kiev.be.java.JContainerAccessExprView;
+import kiev.be.java.JThisExprView;
+import kiev.be.java.JLVarExprView;
+import kiev.be.java.JSFldExprView;
+import kiev.be.java.JOuterThisAccessExprView;
+
 import static kiev.stdlib.Debug.*;
-import static kiev.vlang.Instr.*;
+import static kiev.be.java.Instr.*;
+import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LvalueExpr.java,v 1.6.2.1.2.5 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.5 $
+ * @version $Revision$
  *
  */
 
 @node
+public abstract class LvalueExpr extends ENode {
+
+	@node
+	public abstract static class LvalueExprImpl extends ENodeImpl {
+		public LvalueExprImpl() {}
+		public LvalueExprImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public abstract static view LvalueExprView of LvalueExprImpl extends ENodeView {
+		public LvalueExprView(LvalueExprImpl $view) {
+			super($view);
+		}
+	}
+
+	public abstract LvalueExprView		getLvalueExprView() alias operator(210,fy,$cast);
+	public abstract JLvalueExprView		getJLvalueExprView() alias operator(210,fy,$cast);
+	
+	public LvalueExpr(LvalueExprImpl impl) { super(impl); }
+}
+
+@node
 public class AccessExpr extends LvalueExpr {
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
+
+	private static KString nameWrapperSelf = KString.from("$self");
+
+	@node
+	public static class AccessExprImpl extends LvalueExprImpl {		
+		@att public ENode			obj;
+		@att public NameRef			ident;
+
+		public AccessExprImpl() {}
+		public AccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static view AccessExprView of AccessExprImpl extends LvalueExprView {
+		public ENode	obj;
+		public NameRef	ident;
+	}
+	
+	@att public abstract virtual ENode			obj;
+	
+	@att public abstract virtual NameRef		ident;
+	
+	
+	public NodeView			getNodeView()			{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new AccessExprView((AccessExprImpl)this.$v_impl); }
+
+	@getter public ENode		get$obj()			{ return this.getAccessExprView().obj; }
+	@getter public NameRef		get$ident()			{ return this.getAccessExprView().ident; }
+	
+	@setter public void set$obj(ENode val)			{ this.getAccessExprView().obj = val; }
+	@setter public void set$ident(NameRef val)		{ this.getAccessExprView().ident = val; }
+	
+
+	public AccessExpr() {
+		super(new AccessExprImpl());
+	}
+
+	public AccessExpr(AccessExprImpl impl) {
+		super(impl);
+	}
+
+	public AccessExpr(int pos) {
+		this(new AccessExprImpl(pos));
+	}
+	
+	public AccessExpr(int pos, ENode obj, NameRef ident) {
+		this(new AccessExprImpl(pos));
+		this.obj = obj;
+		this.ident = ident;
+	}
+
+	public void mainResolveOut() {
+		ASTNode[] res;
+		Type[] tps;
+
+		// pre-resolve result
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ASTNode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			ENode e = obj;
+			//tps = new Type[]{e.getType()};
+			tps = e.getAccessTypes();
+			res = new ASTNode[tps.length];
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					// compatibility with previois version
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = (ENode)~obj;
+					}
+				}
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals(nameLength) ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+					}
+				}
+			}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			DNode@ v;
+			ResInfo info;
+			if (tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic | ResInfo.noImports),ident.name) )
+				res[si] = makeExpr(v,info,(ENode)~obj);
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
+				res[si] = makeExpr(v,info,tp.getStruct());
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(this, msg.toString());
+		}
+		this.replaceWithNode(res[idx]);
+	}
+	
+	public void resolve(Type reqType) throws CompilerException {
+		ENode[] res;
+		Type[] tps;
+
+		// resolve access
+		obj.resolve(null);
+
+	try_static:
+		if( obj instanceof TypeRef ) {
+			tps = new Type[]{ ((TypeRef)obj).getType() };
+			res = new ENode[1];
+			if( ident.name.equals(nameThis) )
+				res[0] = new OuterThisAccessExpr(pos,tps[0].getStruct());
+		}
+		else {
+			ENode e = obj;
+			tps = e.getAccessTypes();
+			res = new ENode[tps.length];
+			for (int si=0; si < tps.length; si++) {
+				Type tp = tps[si];
+				if( ident.name.equals(nameWrapperSelf) && tp.isReference() ) {
+					if (tp.isWrapper()) {
+						tps[si] = ((WrapperType)tp).getUnwrappedType();
+						res[si] = obj;
+					}
+					else if (tp.isInstanceOf(Type.tpPrologVar)) {
+						tps[si] = tp;
+						res[si] = obj;
+					}
+				}
+				else if (ident.name.byteAt(0) == '$') {
+					while (tp.isWrapper())
+						tps[si] = tp = ((WrapperType)tp).getUnwrappedType();
+				}
+				else if( ident.name.equals(nameLength) ) {
+					if( tp.isArray() ) {
+						tps[si] = Type.tpInt;
+						res[si] = new ArrayLengthExpr(pos,(ENode)e.copy(), (NameRef)ident.copy());
+					}
+				}
+			}
+			// fall down
+		}
+		for (int si=0; si < tps.length; si++) {
+			if (res[si] != null)
+				continue;
+			Type tp = tps[si];
+			DNode@ v;
+			ResInfo info;
+			if (!(obj instanceof TypeRef) &&
+				tp.resolveNameAccessR(v,info=new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),ident.name) )
+				res[si] = makeExpr(v,info,(ENode)~obj);
+			else if (tp.resolveStaticNameR(v,info=new ResInfo(this),ident.name))
+				res[si] = makeExpr(v,info,tp.getStruct());
+		}
+		int cnt = 0;
+		int idx = -1;
+		for (int si=0; si < res.length; si++) {
+			if (res[si] != null) {
+				cnt ++;
+				if (idx < 0) idx = si;
+			}
+		}
+		if (cnt > 1) {
+			StringBuffer msg = new StringBuffer("Umbigous access:\n");
+			for(int si=0; si < res.length; si++) {
+				if (res[si] == null)
+					continue;
+				msg.append("\t").append(res).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			throw new CompilerException(this, msg.toString());
+		}
+		if (cnt == 0) {
+			StringBuffer msg = new StringBuffer("Unresolved access to '"+ident+"' in:\n");
+			for(int si=0; si < res.length; si++) {
+				if (tps[si] == null)
+					continue;
+				msg.append("\t").append(tps[si]).append('\n');
+			}
+			msg.append("while resolving ").append(this);
+			this.obj = this.obj;
+			throw new CompilerException(this, msg.toString());
+			//return;
+		}
+		this.replaceWithNodeResolve(reqType,(ENode)~res[idx]);
+	}
+
+	private ENode makeExpr(ASTNode v, ResInfo info, ASTNode o) {
+		if( v instanceof Field ) {
+			return info.buildAccess(this, o, v);
+		}
+		else if( v instanceof Struct ) {
+			TypeRef tr = new TypeRef(((Struct)v).type);
+			return tr;
+		}
+		else {
+			throw new CompilerException(this,"Identifier "+ident+" must be a class's field");
+		}
+	}
+
+	public int		getPriority() { return Constants.opAccessPriority; }
+
+	public String toString() {
+    	return obj+"."+ident;
+	}
+
+	public Dumper toJava(Dumper dmp) {
+    	dmp.append(obj).append('.').append(ident.name);
+		return dmp;
+	}
+}
+
+@node
+public final class IFldExpr extends AccessExpr {
+	
+	@dflow(out="obj") private static class DFI {
+	@dflow(in="this:in")	ENode			obj;
+	}
 
 	public static final int[] masks =
 		{	0,
@@ -50,55 +325,63 @@ public class AccessExpr extends LvalueExpr {
 			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
 		};
 
-	@att public Expr		obj;
-	@ref public Field		var;
-	@ref public Method		fset;		// for virtual fields
-	@ref public Method		fget;		// for virtual fields
+	@node
+	public static final class IFldExprImpl extends AccessExprImpl {		
+		@ref public Field		var;
 
-	public AccessExpr() {
+		public IFldExprImpl() {}
+		public IFldExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view IFldExprView of IFldExprImpl extends AccessExprView {
+		public Field		var;
+	}
+	
+	@ref public abstract virtual Field			var;
+	
+	public NodeView			getNodeView()			{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public IFldExprView		getIFldExprView()		{ return new IFldExprView((IFldExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JAccessExprView	getJAccessExprView()	{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+	public JIFldExprView	getJIFldExprView()		{ return new JIFldExprView((IFldExprImpl)this.$v_impl); }
+
+	@getter public Field		get$var()			{ return this.getIFldExprView().var; }
+	@setter public void 		set$var(Field val)	{ this.getIFldExprView().var = val; }
+
+	public IFldExpr() {
+		super(new IFldExprImpl());
 	}
 
-	public AccessExpr(int pos, Expr obj, Field var) {
-		super(pos);
+	public IFldExpr(int pos, ENode obj, NameRef ident, Field var) {
+		super(new IFldExprImpl(pos));
 		this.obj = obj;
-		this.obj.parent = this;
+		this.ident = ident;
 		this.var = var;
 		assert(obj != null && var != null);
 	}
 
-	public AccessExpr(int pos, Expr obj, Field var, boolean direct_access) {
-		super(pos);
+	public IFldExpr(int pos, ENode obj, Field var) {
+		super(new IFldExprImpl(pos));
 		this.obj = obj;
-		this.obj.parent = this;
+		this.ident = new NameRef(pos,var.name.name);
+		this.var = var;
+		assert(obj != null && var != null);
+	}
+
+	public IFldExpr(int pos, ENode obj, Field var, boolean direct_access) {
+		super(new IFldExprImpl(pos));
+		this.obj = obj;
+		this.ident = new NameRef(pos,var.name.name);
 		this.var = var;
 		assert(obj != null && var != null);
 		if (direct_access) setAsField(true);
-	}
-
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var) {
-		super(pos,par);
-		this.obj = obj;
-		this.obj.parent = this;
-		this.var = var;
-		assert(obj != null && var != null);
-	}
-
-	public AccessExpr(int pos, Expr obj, Field var, int flags) {
-		super(pos);
-		this.obj = obj;
-		this.obj.parent = this;
-		this.var = var;
-		setFlags(flags);
-		assert(obj != null && var != null);
-	}
-
-	public AccessExpr(int pos, ASTNode par, Expr obj, Field var, int flags) {
-		super(pos,par);
-		this.obj = obj;
-		this.obj.parent = this;
-		this.var = var;
-		setFlags(flags);
-		assert(obj != null && var != null);
 	}
 
 	public String toString() {
@@ -112,257 +395,55 @@ public class AccessExpr extends LvalueExpr {
 		return Type.getRealType(obj.getType(),var.type);
 	}
 
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
-	public void cleanup() {
-		parent=null;
-		obj.cleanup();
-		obj = null;
-		var = null;
-		fset = null;
-		fget = null;
+	public LvalDNode[] getAccessPath() {
+		if (obj instanceof LVarExpr) {
+			LVarExpr va = (LVarExpr)obj;
+			if (va.getVar().isFinal() && va.getVar().isForward())
+				return new LvalDNode[]{va.getVar(), this.var};
+			return null;
+		}
+		if (obj instanceof IFldExpr) {
+			IFldExpr ae = (IFldExpr)obj;
+			if !(ae.var.isFinal() || ae.var.isForward())
+				return null;
+			LvalDNode[] path = ae.getAccessPath();
+			if (path == null)
+				return null;
+			return (LvalDNode[])Arrays.append(path, var);
+		}
+		return null;
 	}
+	
+	public void resolve(Type reqType) throws RuntimeException {
+		obj.resolve(null);
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
+		// Set violation of the field
+		if( ctx_method != null
+		 && obj instanceof LVarExpr && ((LVarExpr)obj).ident.equals(nameThis)
+		)
+			ctx_method.addViolatedField(var);
 
-		PassInfo.push(this);
-		try {
-			obj = (Expr)obj.resolve(null);
-			if( var.isVirtual() && !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
-				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
-				{
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,obj.getType(),ResolveFlags.NoForwards);
-					fset = fsg;
-//					if (fset == null && var.acc.writeable())
-//						Kiev.reportError(pos, "Unresolved method "+set_name);
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),obj.getType(),ResolveFlags.NoForwards);
-					fget = fsg;
-//					if (fget == null && var.acc.readable())
-//						Kiev.reportError(pos, "Unresolved method "+get_name);
-				}
-			}
-
-			// Set violation of the field
-			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/
-			 && obj instanceof VarAccessExpr && ((VarAccessExpr)obj).var.name.equals(nameThis)
-			)
-				PassInfo.method.addViolatedField(var);
-
-			setResolved(true);
-			Type tp = getType();
-			if( !var.getType().equals(tp) ) {
-				return new CastExpr(pos,tp,this).resolve(null);
-			}
-		} finally { PassInfo.pop(this); }
-		return this;
-	}
-
-	public void generateCheckCastIfNeeded() {
-		if( !Kiev.verify ) return;
-		Type ot = obj.getType();
-		if( !ot.clazz.instanceOf((Struct)var.parent) )
-			Code.addInstr(Instr.op_checkcast,((Struct)var.parent).type);
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			Field f = (Field)var;
-			var.acc.verifyReadAccess(var);
-			obj.generate(null);
-			generateCheckCastIfNeeded();
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,obj.getType());
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				else
-					Code.addInstr(op_getfield,f,obj.getType());
-			}
-			if( Kiev.verify && f.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = FieldAccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			Field f = (Field)var;
-			var.acc.verifyReadAccess(var);
-			obj.generate(null);
-			generateCheckCastIfNeeded();
-			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,obj.getType());
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-				else
-					Code.addInstr(op_getfield,f,obj.getType());
-			}
-			if( Kiev.verify && f.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = FieldAccessExpr.masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			obj.generate(null);
-			generateCheckCastIfNeeded();
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,obj.getType());
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = FieldAccessExpr.masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-					// Clear var's position
-					mask = FieldAccessExpr.masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-				} else {
-					Code.addInstr(op_putfield,var,obj.getType());
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating AccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			Code.addInstr(op_dup_x);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,obj.getType());
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = FieldAccessExpr.masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,obj.getType());
-					// Clear var's position
-					mask = FieldAccessExpr.masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,obj.getType());
-				} else {
-					Code.addInstr(op_putfield,var,obj.getType());
-				}
-			}
-		} finally { PassInfo.pop(this); }
+		setResolved(true);
 	}
 
 	public boolean	isConstantExpr() {
 		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
+			if (var.init != null && var.init.isConstantExpr())
 				return true;
-			}
+			else if (var.const_value != null)
+				return true;
 		}
 		return false;
 	}
 	public Object	getConstValue() {
-		var.acc.verifyReadAccess(var);
+		var.acc.verifyReadAccess(this,var);
 		if( var.isFinal() ) {
-			if( var.init != null )
+			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
+			else if (var.const_value != null) {
+				return var.const_value.getConstValue();
 			}
 		}
     	throw new RuntimeException("Request for constant value of non-constant expression");
@@ -374,30 +455,62 @@ public class AccessExpr extends LvalueExpr {
 		} else {
 			dmp.append(obj).append('.');
 		}
-		if( isAsField() ) {
-			return dmp.space().append(var.name).space();
-		} else {
-			dmp.append(var.name);
-		}
-		return dmp;
+		return dmp.append(var.name).space();
 	}
 }
 
 @node
-public class ContainerAccessExpr extends LvalueExpr {
-
-	@att public Expr		obj;
-	@att public Expr		index;
-
-	public ContainerAccessExpr() {
+public final class ContainerAccessExpr extends LvalueExpr {
+	
+	@dflow(out="index") private static class DFI {
+	@dflow(in="this:in")	ENode		obj;
+	@dflow(in="obj")		ENode		index;
 	}
 
-	public ContainerAccessExpr(int pos, Expr obj, Expr index) {
-		super(pos);
+	@node
+	public static final class ContainerAccessExprImpl extends LvalueExprImpl {		
+		@att public ENode		obj;
+		@att public ENode		index;
+
+		public ContainerAccessExprImpl() {}
+		public ContainerAccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view ContainerAccessExprView of ContainerAccessExprImpl extends LvalueExprView {
+		public ENode		obj;
+		public ENode		index;
+	}
+	
+	@att public abstract virtual ENode			obj;
+	
+	@att public abstract virtual ENode			index;
+	
+	
+	public NodeView						getNodeView()					{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public LvalueExprView				getLvalueExprView()				{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public ContainerAccessExprView		getContainerAccessExprView()	{ return new ContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JLvalueExprView				getJLvalueExprView()			{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+	public JContainerAccessExprView		getJContainerAccessExprView()	{ return new JContainerAccessExprView((ContainerAccessExprImpl)this.$v_impl); }
+
+	@getter public ENode		get$obj()			{ return this.getContainerAccessExprView().obj; }
+	@getter public ENode		get$index()			{ return this.getContainerAccessExprView().index; }
+	
+	@setter public void set$obj(ENode val)			{ this.getContainerAccessExprView().obj = val; }
+	@setter public void set$index(ENode val)		{ this.getContainerAccessExprView().index = val; }
+	
+	public ContainerAccessExpr() {
+		super(new ContainerAccessExprImpl());
+	}
+
+	public ContainerAccessExpr(int pos, ENode obj, ENode index) {
+		super(new ContainerAccessExprImpl(pos));
 		this.obj = obj;
-		this.obj.parent = this;
 		this.index = index;
-		this.index.parent = this;
 	}
 
 	public String toString() {
@@ -411,19 +524,19 @@ public class ContainerAccessExpr extends LvalueExpr {
 		try {
 			Type t = obj.getType();
 			if( t.isArray() ) {
-				return Type.getRealType(t,t.args[0]);
+				return Type.getRealType(t,((ArrayType)t).arg);
 			}
 			else {
 				// Resolve overloaded access method
-				PVar<ASTNode> v;
-				Struct s = t.clazz;
-				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,t,ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index})+" in "+t);
+				Method@ v;
+				MethodType mt = new MethodType(new Type[]{index.getType()},Type.tpAny);
+				ResInfo info = new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
+				if( !PassInfo.resolveBestMethodR(t,v,info,nameArrayOp,mt) )
+					return Type.tpVoid; //throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+t);
 				return Type.getRealType(t,((Method)v).type.ret);
 			}
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
@@ -431,163 +544,52 @@ public class ContainerAccessExpr extends LvalueExpr {
 	public Type[] getAccessTypes() {
 		Type t = obj.getType();
 		if( t.isArray() ) {
-			return new Type[]{Type.getRealType(t,t.args[0])};
+			return new Type[]{Type.getRealType(t,((ArrayType)t).arg)};
 		} else {
-			Struct s = t.clazz;
+			Struct s = t.getStruct();
 		lookup_op:
 			for(;;) {
 				s.checkResolved();
-				foreach(Method m; s.methods; m.name.equals(nameArrayOp))
-					return new Type[]{Type.getRealType(t,m.type.ret)};
-				if( s.super_clazz != null ) {
-					s = s.super_clazz.clazz;
+				if (s instanceof Struct) {
+					Struct ss = (Struct)s;
+					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
+						return new Type[]{Type.getRealType(t,((Method)n).type.ret)};
+				}
+				if( s.super_type != null ) {
+					s = s.super_type.clazz;
 					continue;
 				}
-				throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
+				//throw new RuntimeException("Resolved object "+obj+" of type "+t+" is not an array and does not overrides '[]' operator");
+				return Type.emptyArray;
 			}
 		}
 	}
 
 	public int getPriority() { return opContainerElementPriority; }
 
-	public void cleanup() {
-		obj.cleanup();
-		obj = null;
-		index.cleanup();
-		index = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			obj = (Expr)obj.resolve(null);
-			if( !obj.getType().isArray() ) {
-				// May be an overloaded '[]' operator, ensure overriding
-				Struct s = obj.getType().clazz;
-				if (s.generated_from != null) s = s.generated_from;
-			lookup_op:
-				for(;;) {
-					s.checkResolved();
-					foreach(Method m; s.methods; m.name.equals(nameArrayOp))
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
+		obj.resolve(null);
+		if( obj.getType().getStruct() != null ) {
+			// May be an overloaded '[]' operator, ensure overriding
+			Struct s = obj.getType().getStruct();
+		lookup_op:
+			for(;;) {
+				s.checkResolved();
+				if (s instanceof Struct) {
+					Struct ss = (Struct)s;
+					foreach(ASTNode n; ss.members; n instanceof Method && ((Method)n).name.equals(nameArrayOp))
 						break lookup_op;
-					if( s.super_clazz != null ) {
-						s = s.super_clazz.clazz;
-						continue;
-					}
-					throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");
 				}
+				if( s.super_type != null ) {
+					s = s.super_type.clazz;
+					continue;
+				}
+				throw new RuntimeException("Resolved object "+obj+" of type "+obj.getType()+" is not an array and does not overrides '[]' operator");
 			}
-			index = (Expr)index.resolve(null);
-		} finally { PassInfo.pop(this); }
+		}
+		index.resolve(null);
 		setResolved(true);
-		return this;
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			if( obj.getType().isArray() ) {
-				obj.generate(null);
-				index.generate(null);
-				Code.addInstr(Instr.op_arr_load);
-			} else {
-				// Resolve overloaded access method
-				PVar<ASTNode> v;
-				if( !PassInfo.resolveBestMethodR(obj.getType().clazz,v,new ResInfo(),nameArrayOp,new Expr[]{index},null,obj.getType(),ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index}));
-				obj.generate(null);
-				index.generate(null);
-				Method func = (Method)v;
-				Code.addInstr(Instr.op_call,func,false,obj.getType());
-				if( Kiev.verify
-				 && func.type.ret.isReference()
-				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
-				 	Code.addInstr(op_checkcast,getType());
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			if( obj.getType().isArray() ) {
-				obj.generate(null);
-				index.generate(null);
-				Code.addInstr(op_dup2);
-				Code.addInstr(Instr.op_arr_load);
-			} else {
-				throw new CompilerException(pos,"Too complex expression for overloaded operator '[]'");
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			obj.generate(null);
-			index.generate(null);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			Type objType = Type.getRealType(Kiev.argtype,obj.getType());
-			if( objType.isArray() ) {
-				Code.addInstr(Instr.op_arr_store);
-			} else {
-				// Resolve overloaded set method
-				PVar<ASTNode> v;
-				// We need to get the type of object in stack
-				Type t = Code.stack_at(0);
-				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
-				Struct s = objType.clazz;
-				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,objType,ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o})+" in "+objType);
-				Code.addInstr(Instr.op_call,(Method)v,false,objType);
-				// Pop return value
-				Code.addInstr(Instr.op_pop);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ContainerAccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			if( obj.getType().isArray() ) {
-				Code.addInstr(op_dup_x2);
-				Code.addInstr(Instr.op_arr_store);
-			} else {
-				// Resolve overloaded set method
-				PVar<ASTNode> v;
-				// We need to get the type of object in stack
-				Type t = Code.stack_at(0);
-				if( !(Code.stack_at(1).isIntegerInCode() || Code.stack_at(0).isReference()) )
-					throw new CompilerException(pos,"Index of '[]' can't be of type double or long");
-				Expr o = new VarAccessExpr(pos,this,new Var(pos,this,KString.Empty,t,0));
-				Struct s = obj.getType().clazz;
-				if (s.generated_from != null) s = s.generated_from;
-				if( !PassInfo.resolveBestMethodR(s,v,new ResInfo(),nameArrayOp,new Expr[]{index,o},null,obj.getType(),ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+Method.toString(nameArrayOp,new Expr[]{index,o}));
-				// The method must return the value to duplicate
-				Method func = (Method)v;
-				Code.addInstr(Instr.op_call,func,false,obj.getType());
-				if( Kiev.verify
-				 && Type.getRealType(Kiev.argtype,func.type.ret).isReference()
-//				 && func.jtype!= null
-				 && ( !getType().clazz.equals(func.type.ret.clazz) || getType().isArray() ) )
-				 	Code.addInstr(op_checkcast,getType());
-			}
-		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -602,1190 +604,459 @@ public class ContainerAccessExpr extends LvalueExpr {
 }
 
 @node
-public class ThisExpr extends LvalueExpr {
+public final class ThisExpr extends LvalueExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
-	public ThisExpr() {
+	static public final FormPar thisPar = new FormPar(0,Constants.nameThis,Type.tpVoid,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD);
+	
+	@node
+	public static final class ThisExprImpl extends LvalueExprImpl {		
+		public ThisExprImpl() {}
+		public ThisExprImpl(int pos) {
+			super(pos);
+		}
 	}
-	public ThisExpr(int pos) {
-		super(pos);
-	}
-	public ThisExpr(int pos, ASTNode par) {
-		super(pos,par);
-	}
-
-
-	public String toString() { return "this"; }
-
-	private Var getVar() {
-		if (PassInfo.method == null)
-			return null;
-		if (PassInfo.method.isStatic())
-			return null;
-		return PassInfo.method.params[0];
+	@nodeview
+	public static final view ThisExprView of ThisExprImpl extends LvalueExprView {
+		public ThisExprView(ThisExprImpl $view) { super($view); }
 	}
 	
+	public NodeView				getNodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public LvalueExprView		getLvalueExprView()		{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public ThisExprView			getThisExprView()		{ return new ThisExprView((ThisExprImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JLvalueExprView		getJLvalueExprView()	{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+	public JThisExprView		getJThisExprView()		{ return new JThisExprView((ThisExprImpl)this.$v_impl); }
+
+	public ThisExpr() {
+		super(new ThisExprImpl());
+	}
+	public ThisExpr(int pos) {
+		super(new ThisExprImpl(pos));
+	}
+	public ThisExpr(boolean super_flag) {
+		super(new ThisExprImpl());
+		if (super_flag)
+			this.setSuperExpr(true);
+	}
+
+	public String toString() { return isSuperExpr() ? "super" : "this"; }
+
 	public Type getType() {
 		try {
-			if (PassInfo.clazz == null)
+			if (ctx_clazz == null)
 				return Type.tpVoid;
-			return PassInfo.clazz.type;
+			if (ctx_clazz.name.short_name.equals(nameIdefault))
+				return ctx_clazz.package_clazz.type;
+			if (isSuperExpr())
+				ctx_clazz.type.getSuperType();
+			return ctx_clazz.type;
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
 
-	public Type[] getAccessTypes() {
-		Var var = getVar();
-		if (var == null)
-			return new Type[]{getType()};
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
-			return new Type[]{var.type};
-		return sni.types;
-	}
-
-	public void cleanup() {
-		parent=null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			if (PassInfo.method != null && PassInfo.method.isStatic())
-				Kiev.reportError(pos,"Access 'this' in static context");
-		} finally { PassInfo.pop(this); }
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
+		if (ctx_method != null &&
+			ctx_method.isStatic() &&
+			!ctx_clazz.name.short_name.equals(nameIdefault)
+		)
+			Kiev.reportError(this,"Access '"+toString()+"' in static context");
 		setResolved(true);
-		return this;
 	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			Code.addInstr(op_dup);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - access only: "+this);
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_store,PassInfo.method.params[0]);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating ThisExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_dup);
-			Code.addInstr(op_store,PassInfo.method.params[0]);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
-		return dmp.space().append("this").space();
+		return dmp.space().append(toString()).space();
 	}
 }
 
 @node
-public class VarAccessExpr extends LvalueExpr {
+public final class LVarExpr extends LvalueExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
-	@ref public Var		var;
+	static final KString namePEnv = KString.from("$env");
 
-	public VarAccessExpr() {
+	@node
+	public static final class LVarExprImpl extends LvalueExprImpl {		
+		@att public NameRef		ident;
+		@ref public Var			var;
+
+		public LVarExprImpl() {}
+		public LVarExprImpl(int pos) {
+			super(pos);
+		}
 	}
-	public VarAccessExpr(int pos, Var var) {
-		super(pos);
-		if( var == null )
-			throw new RuntimeException("Null var");
+	@nodeview
+	public static final view LVarExprView of LVarExprImpl extends LvalueExprView {
+		public NameRef	ident;
+		public Var		var;
+	}
+	
+	@att public abstract virtual NameRef		ident;
+	@ref public abstract virtual Var			var;
+	
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public LVarExprView		getLVarExprView()		alias operator(210,fy,$cast) { return new LVarExprView((LVarExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+	public JLVarExprView	getJLVarExprView()		alias operator(210,fy,$cast) { return new JLVarExprView((LVarExprImpl)this.$v_impl); }
+
+	@getter public NameRef		get$ident()			{ return this.getLVarExprView().ident; }
+	@getter public Var			get$var()			{ return this.getLVarExprView().var; }
+	
+	@setter public void set$ident(NameRef val)		{ this.getLVarExprView().ident = val; }
+	@setter public void set$var(Var val)			{ this.getLVarExprView().var = val; }
+
+	public LVarExpr() {
+		super(new LVarExprImpl());
+	}
+	public LVarExpr(int pos, Var var) {
+		super(new LVarExprImpl(pos));
 		this.var = var;
+		this.ident = new NameRef(pos, var.name.name);
 	}
-	public VarAccessExpr(int pos, ASTNode par, Var var) {
-		super(pos,par);
-		if( var == null )
-			throw new RuntimeException("Null var");
-		this.var = var;
+	public LVarExpr(int pos, KString name) {
+		super(new LVarExprImpl(pos));
+		this.ident = new NameRef(pos, name);
+	}
+	public LVarExpr(KString name) {
+		super(new LVarExprImpl());
+		this.ident = new NameRef(name);
 	}
 
-
-	public String toString() { return var.toString(); }
+	public void set(Token t) {
+        pos = t.getPos();
+		if (t.image.startsWith("#id\""))
+			this.ident = new NameRef(pos, ConstExpr.source2ascii(t.image.substring(4,t.image.length()-2)));
+		else
+			this.ident = new NameRef(pos, KString.from(t.image));
+	}
+	
+	public String toString() {
+		if (var == null)
+			return ident.toString();
+		return var.toString();
+	}
 
 	public Type getType() {
 		try {
 			return var.type;
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
 
 	public Type[] getAccessTypes() {
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new LvalDNode[]{getVar()});
+		if( sni == null || sni.getTypes().length == 0 )
 			return new Type[]{var.type};
-		return sni.types;
+		return (Type[])sni.getTypes().clone();
 	}
 
-	public void cleanup() {
-		parent=null;
-		var = null;
+	public Var getVar() {
+		if (var != null)
+			return var;
+		Var@ v;
+		ResInfo info = new ResInfo(this);
+		if( !PassInfo.resolveNameR(this,v,info,ident.name) )
+			throw new CompilerException(this,"Unresolved var "+ident);
+		var = v;
+		return var;
 	}
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			// Check if we try to access this var from local inner/anonymouse class
-			if( PassInfo.clazz.isLocal() ) {
-				ASTNode p = var.parent;
-				while( !(p instanceof Struct) ) p = p.parent;
-				if( p != PassInfo.clazz ) {
-					var.setNeedProxy(true);
-					setAsField(true);
-					// Now we need to add this var as a fields to
-					// local class and to initializer of this class
-					Field vf;
-					if( (vf = (Field)PassInfo.clazz.resolveName(var.name.name)) == null ) {
-						// Add field
-						vf = PassInfo.clazz.addField(new Field(PassInfo.clazz,var.name.name,var.type,ACC_PUBLIC));
-						vf.setNeedProxy(true);
-						vf.init = this;
-					}
+	public boolean preResolveIn(TransfProcessor proc) {
+		getVar(); // calls resolving
+		return false;
+	}
+	
+	public boolean mainResolveIn(TransfProcessor proc) {
+		getVar(); // calls resolving
+		return false;
+	}
+	
+	public boolean preGenerate() {
+		if (getVar().isLocalRuleVar()) {
+			RuleMethod rm = (RuleMethod)ctx_method;
+			assert(rm.params[0].type ≡ Type.tpRule);
+			Var pEnv = null;
+			foreach (ENode n; rm.body.stats; n instanceof VarDecl) {
+				VarDecl vd = (VarDecl)n;
+				if (vd.var.name.equals(namePEnv)) {
+					assert(vd.var.type.isInstanceOf(Type.tpRule));
+					pEnv = vd.var;
+					break;
 				}
 			}
-		} finally { PassInfo.pop(this); }
+			if (pEnv == null) {
+				Kiev.reportError(this, "Cannot find "+namePEnv);
+				return false;
+			}
+			Struct s = ((LocalStructDecl)((BlockStat)rm.body).stats[0]).clazz;
+			Field f = s.resolveField(ident.name);
+			replaceWithNode(new IFldExpr(pos, new LVarExpr(pos, pEnv), (NameRef)~ident, f));
+		}
+		return true;
+	}
+	
+	public void resolve(Type reqType) throws RuntimeException {
+		// Check if we try to access this var from local inner/anonymouse class
+		if( ctx_clazz.isLocal() ) {
+			if( getVar().ctx_clazz != this.ctx_clazz ) {
+				var.setNeedProxy(true);
+				setAsField(true);
+				// Now we need to add this var as a fields to
+				// local class and to initializer of this class
+				Field vf;
+				if( (vf = ctx_clazz.resolveField(ident.name,false)) == null ) {
+					// Add field
+					vf = ctx_clazz.addField(new Field(ident.name,var.type,ACC_PUBLIC));
+					vf.setNeedProxy(true);
+					vf.init = (ENode)this.copy();
+				}
+			}
+		}
 		setResolved(true);
-		return this;
 	}
-
-	public Field resolveProxyVar() {
-		Field proxy_var =
-			(Field)PassInfo.clazz.resolveName(var.name.name);
-		if( proxy_var == null && PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() )
-			throw new CompilerException(pos,"Proxyed var cannot be referenced from static context");
-		return proxy_var;
-	}
-
-	public Field resolveVarVal() {
-		Type prt = Type.getProxyType(var.type);
-		Field var_valf =
-			(Field)prt.clazz.resolveName(nameCellVal);
-		return var_valf;
-	}
-
-	public void resolveVarForConditions() {
-		if( Code.cond_generation ) {
-			// Bind the correct var
-			if( var.parent != PassInfo.method ) {
-				assert( var.parent instanceof Method, "Non-parametrs var in condition" );
-				if( var.name==nameResultVar ) var = PassInfo.method.getRetVar();
-				else for(int i=0; i < PassInfo.method.params.length; i++) {
-					Var v = PassInfo.method.params[i];
-					if( !v.name.equals(var.name) ) continue;
-					assert( var.type.equals(v.type), "Type of vars in overriden methods missmatch" );
-					var = v;
-					break;
-				}
-				trace(Kiev.debugStatGen,"Var "+var+" substituted for condition");
-			}
-			assert( var.parent == PassInfo.method, "Can't find var for condition" );
-//			assert( var.name==nameResultVar && var == PassInfo.method.getRetVar()
-//			 || var == PassInfo.method.params[var.getBCpos()], "Missplaced var "+var );
-		}
-	}
-
-	public void generateVerifyCheckCast() {
-		if( !Kiev.verify ) return;
-		if( !Type.getRealType(Kiev.argtype,var.type).isReference() || var.type.isArray() ) return;
-		Type chtp = null;
-		if( var.parent instanceof Method ) {
-			Method m = (Method)var.parent;
-			for(int i=m.isStatic()?0:1; i < m.params.length; i++) {
-				if( var == m.params[i] ) {
-					// First param is this
-//					if( m.isStatic() ) chtp = m.jtype.args[i];
-//					else chtp = m.jtype.args[i-1];
-					if( m.isStatic() ) chtp = m.type.args[i];
-					else chtp = m.type.args[i-1];
-					break;
-				}
-			}
-		}
-		if( chtp == null )
-			chtp = var.type.getJavaType();
-		if( !var.type.clazz.equals(chtp.clazz) ) {
-			Code.addInstr(op_checkcast,var.type);
-			return;
-		}
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			if( Code.cond_generation ) resolveVarForConditions();
-			if( !var.isNeedProxy() || isUseNoProxy() ) {
-				if( Code.vars[var.getBCpos()] == null )
-					throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-				Code.addInstr(op_load,var);
-			} else {
-				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
-					Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
-				} else {
-					Code.addInstr(op_load,var);
-				}
-				if( var.isNeedRefProxy() ) {
-					Code.addInstr(op_getfield,resolveVarVal(),PassInfo.clazz.type);
-				}
-			}
-			generateVerifyCheckCast();
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			if( Code.cond_generation ) resolveVarForConditions();
-			if( !var.isNeedProxy() || isUseNoProxy() ) {
-				if( Code.vars[var.getBCpos()] == null )
-					throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-				Code.addInstr(op_load,var);
-			} else {
-				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
-					if( var.isNeedRefProxy() ) {
-						Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
-						Code.addInstr(op_dup);
-					} else {
-						Code.addInstr(op_dup);
-						Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
-					}
-				} else {
-					Code.addInstr(op_load,var);
-					Code.addInstr(op_dup);
-				}
-				if( var.isNeedRefProxy() ) {
-					Code.addInstr(op_getfield,resolveVarVal(),resolveProxyVar().getType());
-				}
-			}
-			generateVerifyCheckCast();
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			if( Code.cond_generation ) resolveVarForConditions();
-			if( !var.isNeedProxy() || isUseNoProxy() ) {
-			} else {
-				if( isAsField() ) {
-					Code.addInstr(op_load,PassInfo.method.params[0]);
-					if( var.isNeedRefProxy() ) {
-						Code.addInstr(op_getfield,resolveProxyVar(),PassInfo.clazz.type);
-						Code.addInstr(op_dup);
-					} else {
-						Code.addInstr(op_dup);
-					}
-				} else {
-					if( var.isNeedRefProxy() )
-						Code.addInstr(op_load,var);
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			if( Code.cond_generation ) resolveVarForConditions();
-			if( !var.isNeedProxy() || isUseNoProxy() ) {
-				if( Code.vars[var.getBCpos()] == null )
-					throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-				Code.addInstr(op_store,var);
-			} else {
-				if( isAsField() ) {
-					if( !var.isNeedRefProxy() ) {
-						Code.addInstr(op_putfield,resolveProxyVar(),PassInfo.clazz.type);
-					} else {
-						Code.addInstr(op_putfield,resolveVarVal(),PassInfo.clazz.type);
-					}
-				} else {
-					if( !var.isNeedRefProxy() ) {
-						Code.addInstr(op_store,var);
-					} else {
-						Code.addInstr(op_putfield,resolveVarVal(),PassInfo.clazz.type);
-					}
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			if( Code.cond_generation ) resolveVarForConditions();
-			if( !var.isNeedProxy() || isUseNoProxy() ) {
-				if( Code.vars[var.getBCpos()] == null )
-					throw new CompilerException(pos,"Var "+var+" has bytecode pos "+var.getBCpos()+" but Code.var["+var.getBCpos()+"] == null");
-				Code.addInstr(op_dup);
-				Code.addInstr(op_store,var);
-			} else {
-				if( isAsField() ) {
-					Code.addInstr(op_dup_x);
-					if( !var.isNeedRefProxy() ) {
-						Code.addInstr(op_putfield,resolveProxyVar(),PassInfo.clazz.type);
-					} else {
-						Code.addInstr(op_putfield,resolveVarVal(),PassInfo.clazz.type);
-					}
-				} else {
-					if( !var.isNeedRefProxy() ) {
-						Code.addInstr(op_dup);
-						Code.addInstr(op_store,var);
-					} else {
-						Code.addInstr(op_dup_x);
-						Code.addInstr(op_putfield,resolveVarVal(),PassInfo.clazz.type);
-					}
-				}
-			}
-			generateVerifyCheckCast();
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.space();
 		dmp.append(var);
-		if( var.isNeedRefProxy() )
-			dmp.append(".val");
 		return dmp.space();
 	}
 }
 
 @node
-public class LocalPrologVarAccessExpr extends LvalueExpr {
+public final class SFldExpr extends AccessExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
-	@ref public Var		var;
+	@node
+	public static final class SFldExprImpl extends AccessExprImpl {		
+		@ref public Field		var;
 
-	public LocalPrologVarAccessExpr() {
+		public SFldExprImpl() {}
+		public SFldExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view SFldExprView of SFldExprImpl extends AccessExprView {
+		public Field		var;
 	}
 	
-	public LocalPrologVarAccessExpr(int pos, ASTNode par, Var var) {
-		super(pos,par);
-		this.var = var;
-		RuleMethod rm = (RuleMethod)PassInfo.method;
-		int i = 0;
-		for(; i < rm.localvars.length; i++)
-			if( rm.localvars[i].name.equals(var.name) ) break;
-		if( i >= rm.localvars.length )
-			throw new CompilerException(pos,"Local prolog var "+var+" not found in "+rm);
+	@ref public abstract virtual Field			var;
+	
+	public NodeView			getNodeView()			{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public ENodeView		getENodeView()			{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public LvalueExprView	getLvalueExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public AccessExprView	getAccessExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public SFldExprView		getSFldExprView()		{ return new SFldExprView((SFldExprImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()			{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()			{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JLvalueExprView	getJLvalueExprView()	{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JAccessExprView	getJAccessExprView()	{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+	public JSFldExprView	getJSFldExprView()		{ return new JSFldExprView((SFldExprImpl)this.$v_impl); }
+
+	@getter public Field		get$var()			{ return this.getSFldExprView().var; }
+	@setter public void 		set$var(Field val)	{ this.getSFldExprView().var = val; }
+
+
+	public SFldExpr() {
+		super(new SFldExprImpl());
 	}
 
-	public String toString() {
-		return "$env."+var.name;
+	public SFldExpr(int pos, Field var) {
+		super(new SFldExprImpl(pos));
+		this.obj = new TypeRef(pos,((Struct)var.parent).type);
+		this.ident = new NameRef(pos,var.name.name);
+		this.var = var;
+	}
+
+	public SFldExpr(int pos, Field var, boolean direct_access) {
+		super(new SFldExprImpl(pos));
+		this.obj = new TypeRef(pos,((Struct)var.parent).type);
+		this.ident = new NameRef(pos,var.name.name);
+		this.var = var;
+		if (direct_access) setAsField(true);
+	}
+
+	public String toString() { return var.toString(); }
+
+	public boolean	isConstantExpr() {
+		if( var.isFinal() ) {
+			if (var.init != null && var.init.isConstantExpr())
+				return true;
+			else if (var.const_value != null)
+				return true;
+		}
+		return false;
+	}
+	public Object	getConstValue() {
+		var.acc.verifyReadAccess(this,var);
+		if( var.isFinal() ) {
+			if (var.init != null && var.init.isConstantExpr())
+				return var.init.getConstValue();
+			else if (var.const_value != null) {
+				return var.const_value.getConstValue();
+			}
+		}
+    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
 	public Type getType() {
 		try {
 			return var.type;
-//			return Rule.getTypeOfVar(var);
 		} catch(Exception e) {
-			Kiev.reportError(pos,e);
-			return Type.tpVoid;
-		}
-	}
-
-	public void cleanup() {
-		parent=null;
-		var = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-		} finally { PassInfo.pop(this); }
-		setResolved(true);
-		return this;
-	}
-
-	public Field resolveFieldForLocalPrologVar() {
-		RuleMethod rm = (RuleMethod)PassInfo.method;
-		TypeDeclStat tds = (TypeDeclStat)((BlockStat)rm.body).stats[0];
-		Struct s = tds.struct;
-		Field f = s.resolveField(var.name.name);
-		assert(f != null);
-		return f;
-	}
-
-	public Var resolveFrameForLocalPrologVar() {
-		RuleMethod rm = (RuleMethod)PassInfo.method;
-		if( rm.isStatic() ) {
-			assert(rm.params[0].type == Type.tpRule);
-			return rm.params[0];
-		} else {
-			assert(rm.params[1].type == Type.tpRule);
-			return rm.params[1];
-		}
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating LocalPrologVarAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-			Code.addInstr(op_getfield,resolveFieldForLocalPrologVar(),var.getType());
-			if( Kiev.verify && !var.type.equals(Type.tpObject) )
-				Code.addInstr(Instr.op_checkcast,var.type);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating LocalPrologVarAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-			Code.addInstr(op_dup);
-			Code.addInstr(op_getfield,resolveFieldForLocalPrologVar(),var.getType());
-			if( Kiev.verify && !var.type.equals(Type.tpObject) )
-				Code.addInstr(Instr.op_checkcast,var.type);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,resolveFrameForLocalPrologVar());
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			if( Kiev.verify && !var.type.equals(Type.tpObject) )
-				Code.addInstr(Instr.op_checkcast,var.type);
-			Code.addInstr(op_putfield,resolveFieldForLocalPrologVar(),var.getType());
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating VarAccessExpr - store & dup: "+this);
-		try {
-			if( Kiev.verify && !var.type.equals(Type.tpObject) )
-				Code.addInstr(Instr.op_checkcast,var.type);
-			Code.addInstr(op_dup_x);
-			Code.addInstr(op_putfield,resolveFieldForLocalPrologVar(),var.getType());
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
-
-	public Dumper toJava(Dumper dmp) {
-		dmp.space();
-		dmp.append("$env.").append(var.name.name);
-		return dmp.space();
-	}
-}
-
-@node
-public class FieldAccessExpr extends LvalueExpr {
-
-	@ref public Field	var;
-	@ref public Method	fset;		// for virtual fields
-	@ref public Method	fget;		// for virtual fields
-
-	public FieldAccessExpr() {
-	}
-
-	public FieldAccessExpr(int pos, Field var) {
-		super(pos);
-		this.var = var;
-	}
-
-	public FieldAccessExpr(int pos, Field var, boolean direct_access) {
-		super(pos);
-		this.var = var;
-		if (direct_access) setAsField(true);
-	}
-
-	public String toString() { return var.toString(); }
-
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		var.acc.verifyReadAccess(var);
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.getConstValue();
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public Type getType() {
-		try {
-			Type t = var.getType();
-			return Type.getRealType((Type)PassInfo.method.params[0].type,t);
-		} catch(Exception e) {
-			Kiev.reportError(pos,e);
+			Kiev.reportError(this,e);
 			return Type.tpVoid;
 		}
 	}
 
 	public Type[] getAccessTypes() {
 		Type[] types;
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
+		ScopeNodeInfo sni = getDFlow().out().getNodeInfo(new LvalDNode[]{var});
+		if( sni == null || sni.getTypes().length == 0 )
 			types = new Type[]{var.type};
 		else
-			types = sni.types;
-		for(int i=0; i < types.length; i++) types[i] = Type.getRealType((Type)PassInfo.method.params[0].type,types[i]);
+			types = (Type[])sni.getTypes().clone();
 		return types;
 	}
 
-	public void cleanup() {
-		parent=null;
-		var = null;
-		fget = null;
-		fset = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			if( var.isVirtual() && !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
-				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
-				{
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,null,ResolveFlags.NoForwards);
-					fset = fsg;
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),null,ResolveFlags.NoForwards);
-					fget = fsg;
-				}
-			}
-			if( PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() ) {
-				throw new RuntimeException("Access to non-static field "+var+" in static method "+PassInfo.method);
-			}
-
-			// Set violation of the field
-			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/ )
-				PassInfo.method.addViolatedField(var);
-
-		} finally { PassInfo.pop(this); }
+	public void resolve(Type reqType) throws RuntimeException {
+		if( isResolved() ) return;
+		// Set violation of the field
+		if( ctx_method != null )
+			ctx_method.addViolatedField(var);
 		setResolved(true);
-		return this;
 	}
 
-	public static final int[] masks =
-		{	0,
-			0x1       ,0x3       ,0x7       ,0xF       ,
-			0x1F      ,0x3F      ,0x7F      ,0xFF      ,
-			0x1FF     ,0x3FF     ,0x7FF     ,0xFFF     ,
-			0x1FFF    ,0x3FFF    ,0x7FFF    ,0xFFFF    ,
-			0x1FFFF   ,0x3FFFF   ,0x7FFFF   ,0xFFFFF   ,
-			0x1FFFFF  ,0x3FFFFF  ,0x7FFFFF  ,0xFFFFFF  ,
-			0x1FFFFFF ,0x3FFFFFF ,0x7FFFFFF ,0xFFFFFFF ,
-			0x1FFFFFFF,0x3FFFFFFF,0x7FFFFFFF,0xFFFFFFFF
-		};
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				else
-					Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			}
-			if( Kiev.verify && var.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() )
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-				else
-					Code.addInstr(op_getfield,var,PassInfo.clazz.type);
-			}
-			if( Kiev.verify && var.type.clazz.isArgument()
-			 && Type.getRealType(Kiev.argtype,getType()).isReference() )
-				Code.addInstr(op_checkcast,getType());
-			if( var.isPackedField() ) {
-				int mask = masks[var.pack.size];
-				mask <<= var.pack.offset;
-				Code.addConst(mask);
-				Code.addInstr(op_and);
-				if(var.pack.offset > 0) {
-					Code.addConst(var.pack.offset);
-					Code.addInstr(op_ushr);
-				}
-				if( var.pack.size == 8 && var.type == Type.tpByte )
-					Code.addInstr(Instr.op_x2y,Type.tpByte);
-				else if( var.pack.size == 16 && var.type == Type.tpShort )
-					Code.addInstr(Instr.op_x2y,Type.tpShort);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating FieldAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-					// Clear var's position
-					mask = masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-				} else {
-					Code.addInstr(op_putfield,var,PassInfo.clazz.type);
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			Code.addInstr(op_dup_x);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				if( var.isPackedField() ) {
-					// Correct value
-					int mask = masks[var.pack.size];
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-					if(var.pack.offset > 0) {
-						Code.addConst(var.pack.offset);
-						Code.addInstr(op_shl);
-					}
-
-					// Load old value of packer field
-					Code.addInstr(op_swap);
-					Code.addInstr(op_dup_x);
-					Code.addInstr(op_getfield,var.pack.packer,PassInfo.clazz.type);
-					// Clear var's position
-					mask = masks[var.pack.size];
-					mask <<= var.pack.offset;
-					mask = ~mask;
-					Code.addConst(mask);
-					Code.addInstr(op_and);
-
-					// Fill with var's value
-					Code.addInstr(op_or);
-
-					// Store packer field
-					Code.addInstr(op_putfield,var.pack.packer,PassInfo.clazz.type);
-				} else {
-					Code.addInstr(op_putfield,var,PassInfo.clazz.type);
-				}
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
-
-	public Dumper toJava(Dumper dmp) {
-		if( isAsField() ) {
-			return dmp.space().append("this.").append(var.name).space();
-		} else {
-			return dmp.space().append("this.").append(var).space();
-		}
-	}
-}
-
-@node
-public class StaticFieldAccessExpr extends LvalueExpr {
-
-	@ref public Struct		obj;
-	@ref public Field		var;
-	@ref public Method		fset;		// for virtual fields
-	@ref public Method		fget;		// for virtual fields
-
-	public StaticFieldAccessExpr() {
-	}
-
-	public StaticFieldAccessExpr(int pos, Struct obj, Field var) {
-		super(pos);
-		this.var = var;
-		this.obj = obj;
-	}
-
-	public StaticFieldAccessExpr(int pos, Struct obj, Field var, boolean direct_access) {
-		super(pos);
-		this.var = var;
-		this.obj = obj;
-		if (direct_access) setAsField(true);
-	}
-
-	public String toString() { return var.toString(); }
-
-	public boolean	isConstantExpr() {
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.isConstantExpr();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				return true;
-			}
-		}
-		return false;
-	}
-	public Object	getConstValue() {
-		var.acc.verifyReadAccess(var);
-		if( var.isFinal() ) {
-			if( var.init != null )
-				return var.init.getConstValue();
-			else if( var.isStatic() && var.getAttr(attrConstantValue)!=null ) {
-				ConstantValueAttr cva = (ConstantValueAttr)var.getAttr(attrConstantValue);
-				return cva.value;
-			}
-		}
-    	throw new RuntimeException("Request for constant value of non-constant expression");
-	}
-
-	public Type getType() {
-		try {
-			Type t = var.getType();
-			return Type.getRealType(obj.super_clazz,t);
-		} catch(Exception e) {
-			Kiev.reportError(pos,e);
-			return Type.tpVoid;
-		}
-	}
-
-	public Type[] getAccessTypes() {
-		Type[] types;
-		ScopeNodeInfo sni = NodeInfoPass.getNodeInfo(var);
-		if( sni == null || sni.types == null )
-			types = new Type[]{var.type};
-		else
-			types = sni.types;
-		for(int i=0; i < types.length; i++) types[i] = Type.getRealType(obj.super_clazz,types[i]);
-		return types;
-	}
-
-	public void cleanup() {
-		parent=null;
-		var = null;
-		obj = null;
-		fget = null;
-		fset = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			if( var.isVirtual()&& !isAsField() ) {
-				KString get_name = new KStringBuffer(nameGet.length()+var.name.name.length()).
-					append_fast(nameGet).append_fast(var.name.name).toKString();
-				KString set_name = new KStringBuffer(nameSet.length()+var.name.name.length()).
-					append_fast(nameSet).append_fast(var.name.name).toKString();
-
-				if( PassInfo.clazz.instanceOf(((Struct)var.parent))
-				 && (PassInfo.method.name.equals(get_name) || PassInfo.method.name.equals(set_name)) )
-				{
-				 	setAsField(true);
-				} else {
-					// We return get$ method. set$ method must be checked by AssignExpr
-					PVar<Method> fsg;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),set_name,new Expr[]{this},Type.tpVoid,null,ResolveFlags.NoForwards);
-					fset = fsg;
-					fsg = null;
-					PassInfo.resolveBestMethodR(((Struct)var.parent),fsg,new ResInfo(),get_name,Expr.emptyArray,getType(),null,ResolveFlags.NoForwards);
-					fget = fsg;
-				}
-			}
-
-			// Set violation of the field
-			if( PassInfo.method != null /*&& PassInfo.method.isInvariantMethod()*/ )
-				PassInfo.method.addViolatedField(var);
-
-		} finally { PassInfo.pop(this); }
-
-		setResolved(true);
-		return this;
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			}
-			else if (var.parent.isPrimitiveEnum()) {
-				Code.addConst(((Integer)((ConstExpr)var.init).getConstValue()).intValue());
-			}
-			else {
-				Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyReadAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fget != null,"methods get$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fget,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_getstatic,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - access only: "+this);
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - store only: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating StaticFieldAccessExpr - store & dup: "+this);
-		PassInfo.push(this);
-		try {
-			var.acc.verifyWriteAccess(var);
-			Code.addInstr(op_dup);
-			if( var.isVirtual() && !isAsField() ) {
-				assert(fset != null,"methods set$"+var.name.name+" not preresolved");
-				Code.addInstr(op_call,fset,false,PassInfo.clazz.type);
-			} else {
-				Code.addInstr(op_putstatic,var,PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) {
 		Struct cl = (Struct)var.parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
-		if( isAsField() ) {
-			return dmp.space().append(cl.name)
-				.append('.').append(var.name).space();
-		} else {
-			return dmp.space().append(cl.name)
-				.append('.').append(var).space();
-		}
+		ClazzName cln = cl.name;
+		return dmp.space().append(cln).append('.').append(var.name).space();
 	}
 
 }
 
 @node
-public class OuterThisAccessExpr extends LvalueExpr {
+public final class OuterThisAccessExpr extends AccessExpr {
+	
+	@dflow(out="this:in") private static class DFI {}
 
-	@ref public Struct		outer;
-	public Field[]		outer_refs = Field.emptyArray;
+	@node
+	public static final class OuterThisAccessExprImpl extends AccessExprImpl {		
+		@ref public Struct			outer;
+		@ref public NArr<Field>		outer_refs;
+
+		public OuterThisAccessExprImpl() {}
+		public OuterThisAccessExprImpl(int pos) {
+			super(pos);
+		}
+	}
+	@nodeview
+	public static final view OuterThisAccessExprView of OuterThisAccessExprImpl extends AccessExprView {
+		public				Struct			outer;
+		public access:ro	NArr<Field>		outer_refs;
+	}
+	
+	@ref public abstract virtual			Struct			outer;
+	@ref public abstract virtual access:ro	NArr<Field>		outer_refs;
+	
+	public NodeView						getNodeView()					{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public ENodeView					getENodeView()					{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public LvalueExprView				getLvalueExprView()				{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public AccessExprView				getAccessExprView()				{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public OuterThisAccessExprView		getOuterThisAccessExprView()	{ return new OuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JNodeView					getJNodeView()					{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JENodeView					getJENodeView()					{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JLvalueExprView				getJLvalueExprView()			{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JAccessExprView				getJAccessExprView()			{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+	public JOuterThisAccessExprView		getJOuterThisAccessExprView()	{ return new JOuterThisAccessExprView((OuterThisAccessExprImpl)this.$v_impl); }
+
+	@getter public Struct		get$outer()				{ return this.getOuterThisAccessExprView().outer; }
+	@getter public NArr<Field>	get$outer_refs()		{ return this.getOuterThisAccessExprView().outer_refs; }
+	@setter public void 		set$outer(Struct val)	{ this.getOuterThisAccessExprView().outer = val; }
+
 
 	public OuterThisAccessExpr() {
+		super(new OuterThisAccessExprImpl());
 	}
 
 	public OuterThisAccessExpr(int pos, Struct outer) {
-		super(pos);
+		super(new OuterThisAccessExprImpl(pos));
+		this.obj = new TypeRef(pos,outer.type);
+		this.ident = new NameRef(pos,nameThis);
 		this.outer = outer;
 	}
 
 	public String toString() { return outer.name.toString()+".this"; }
 
 	public Type getType() {
-		return outer.type;
+		try {
+			if (ctx_clazz == null)
+				return outer.type;
+			Type tp = ctx_clazz.type;
+			foreach (Field f; outer_refs)
+				tp = f.type.rebind(tp.bindings());
+			return tp;
+		} catch(Exception e) {
+			Kiev.reportError(this,e);
+			return outer.type;
+		}
 	}
 
 	public static Field outerOf(Struct clazz) {
-		for(int i=0; i < clazz.fields.length; i++)
-			if( clazz.fields[i].name.name.startsWith(nameThisDollar) ) {
-				trace(Kiev.debugResolve,"Name of field "+clazz.fields[i]+" starts with this$");
-				return clazz.fields[i];
+		foreach (ASTNode n; clazz.members; n instanceof Field) {
+			Field f = (Field)n;
+			if( f.name.name.startsWith(nameThisDollar) ) {
+				trace(Kiev.debugResolve,"Name of field "+f+" starts with this$");
+				return f;
 			}
+		}
 		return null;
 	}
 
-	public void cleanup() {
-		parent=null;
-		outer = null;
-		outer_refs = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		PassInfo.push(this);
-		try {
-			trace(Kiev.debugResolve,"Resolving "+this);
-			Field ou_ref = outerOf(PassInfo.clazz);
-			if( ou_ref == null )
-				throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+PassInfo.clazz);
-			do {
-				trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
-				outer_refs = (Field[])Arrays.append(outer_refs,ou_ref);
-				if( ou_ref.type.isInstanceOf(outer.type) ) break;
-				ou_ref = outerOf(ou_ref.type.clazz);
-			} while( ou_ref!=null );
-			if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.type) )
-				throw new RuntimeException("Outer class "+outer+" not found for inner class "+PassInfo.clazz);
-			if( Kiev.debugResolve ) {
-				StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
-				for(int i=0; i < outer_refs.length; i++)
-					sb.append("->").append(outer_refs[i].name);
-				System.out.println(sb.toString());
-			}
-			if( PassInfo.method.isStatic() && !PassInfo.method.isVirtualStatic() ) {
-				throw new RuntimeException("Access to 'this' in static method "+PassInfo.method);
-			}
-		} finally { PassInfo.pop(this); }
-		setResolved(true);
-		return this;
-	}
-
-	public void generateLoad() {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
+	public void resolve(Type reqType) throws RuntimeException {
+		outer_refs.delAll();
+		trace(Kiev.debugResolve,"Resolving "+this);
+		Field ou_ref = outerOf(ctx_clazz);
+		if( ou_ref == null )
+			throw new RuntimeException("Outer 'this' reference in non-inner or static inner class "+ctx_clazz);
+		do {
+			trace(Kiev.debugResolve,"Add "+ou_ref+" of type "+ou_ref.type+" to access path");
+			outer_refs.append(ou_ref);
+			if( ou_ref.type.isInstanceOf(outer.type) ) break;
+			ou_ref = outerOf(ou_ref.type.getStruct());
+		} while( ou_ref!=null );
+		if( !outer_refs[outer_refs.length-1].type.isInstanceOf(outer.type) )
+			throw new RuntimeException("Outer class "+outer+" not found for inner class "+ctx_clazz);
+		if( Kiev.debugResolve ) {
+			StringBuffer sb = new StringBuffer("Outer 'this' resolved as this");
 			for(int i=0; i < outer_refs.length; i++)
-				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
-		} finally { PassInfo.pop(this); }
+				sb.append("->").append(outer_refs[i].name);
+			System.out.println(sb.toString());
+		}
+		if( ctx_method.isStatic() && !ctx_method.isVirtualStatic() ) {
+			throw new RuntimeException("Access to 'this' in static method "+ctx_method);
+		}
+		setResolved(true);
 	}
 
-	public void generateLoadDup() {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - load & dup: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			for(int i=0; i < outer_refs.length; i++) {
-				if( i == outer_refs.length-1 ) Code.addInstr(op_dup);
-				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateAccess() {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - access only: "+this);
-		PassInfo.push(this);
-		try {
-			Code.addInstr(op_load,PassInfo.method.params[0]);
-			for(int i=0; i < outer_refs.length-1; i++) {
-				Code.addInstr(op_getfield,outer_refs[i],PassInfo.clazz.type);
-			}
-		} finally { PassInfo.pop(this); }
-	}
-
-	public void generateStore() {
-		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		Code.addInstr(op_putfield,outer_refs[outer_refs.length-1],PassInfo.clazz.type);
-	}
-
-	public void generateStoreDupValue() {
-		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
-		Code.addInstr(op_dup_x);
-		Code.addInstr(op_putfield,outer_refs[outer_refs.length-1],PassInfo.clazz.type);
-	}
-
-	public int getPriority() { return opAccessPriority; }
+	public Operator getOp() { return BinaryOperator.Access; }
 
 	public Dumper toJava(Dumper dmp) { return dmp.space().append(outer.name.name).append(".this").space(); }
 }
 
-@node
-public class SelfAccessExpr extends LvalueExpr {
-
-	@att public LvalueExpr		expr;
-
-	public SelfAccessExpr() {
-	}
-
-	public SelfAccessExpr(int pos, LvalueExpr expr) {
-		super(pos);
-		this.expr = expr;
-		this.expr.parent = this;
-	}
-
-	public String toString() {
-		if( expr.getPriority() < opAccessPriority )
-			return "("+expr.toString()+").$self";
-		else
-			return expr.toString()+".$self";
-	}
-
-	public Type getType() {
-		return Type.tpObject;
-	}
-
-	public int getPriority() { return opAccessPriority; }
-
-	public void cleanup() {
-		parent=null;
-		expr.cleanup();
-		expr = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		expr = (LvalueExpr)expr.resolve(reqType);
-		setResolved(true);
-		// Thanks to AccessExpr, that resolved all things for us
-		return this;
-	}
-
-	/** Just load value referenced by lvalue */
-	public void generateLoad() {
-		expr.generateLoad();
-	}
-
-	/** Load value and dup info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public void generateLoadDup() {
-		expr.generateLoadDup();
-	}
-
-	/** Load info needed for generateStore or generateStoreDupValue
-		(the caller MUST provide one of Store call after a while) */
-	public void generateAccess() {
-		expr.generateAccess();
-	}
-
-	/** Stores value using previously duped info */
-	public void generateStore() {
-		expr.generateStore();
-	}
-
-	/** Stores value using previously duped info, and put stored value in stack */
-	public void generateStoreDupValue() {
-		expr.generateStoreDupValue();
-	}
-
-	public Dumper toJava(Dumper dmp) {
-		if( expr.getPriority() < opAccessPriority ) {
-			dmp.append('(');
-			expr.toJava(dmp).append(")").space();
-		} else {
-			expr.toJava(dmp).space();
-		}
-		return dmp;
-	}
-}
 

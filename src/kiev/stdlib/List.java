@@ -21,15 +21,13 @@
 package kiev.stdlib;
 
 /** a class for immutable lists
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/List.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @see		ListBuffer
  * @author Martin Odersky
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  */
 
 public class List<A>
-	$generate <int>,<long>,<float>,<double>
 {
 
 	public case Nil<A>;
@@ -162,16 +160,16 @@ public class List<A>
 		}
 	}
     
-	public A[] toArray()
-//		alias operator(210,fy,$cast)
-	{
-		A[] arr = new A[length()];
-		for(int i=0; this != List.Nil; i++) {
-			arr[i] = head();
-			this = tail();
-		}
-		return arr;
-	}
+//	public A[] toArray()
+////		alias operator(210,fy,$cast)
+//	{
+//		A[] arr = new A[length()];
+//		for(int i=0; this != List.Nil; i++) {
+//			arr[i] = head();
+//			this = tail();
+//		}
+//		return arr;
+//	}
 
 /** return the result of appending element `y' to this list as a new list
  */
@@ -247,8 +245,15 @@ public class List<A>
 		case Nil:
 			return this;
 		case Cons(A x, List<A> xs):
-			if (p(x)) return new Cons<A>(x, xs.filter(p));
-			else return xs.filter(p);
+		{
+			List<A> t = xs.filter(p);
+			if (p(x)) {
+				if (t == xs) return this;
+				return new Cons<A>(x, t);
+			}
+			else
+				return t;
+		}
 		}
 	}
 
@@ -465,25 +470,7 @@ public class List<A>
 	{
 		List<A> nl = Nil;
 		for(int i=va_args.length-1; i >= 0; i--) {
-			A h;
-			if( A instanceof boolean )
-				h = (A)((Boolean)va_args[i]).booleanValue();
-			else if( A instanceof char )
-				h = (A)((Character)va_args[i]).charValue();
-			else if( A instanceof byte )
-				h = (A)((Number)va_args[i]).byteValue();
-			else if( A instanceof short )
-				h = (A)((Number)va_args[i]).shortValue();
-			else if( A instanceof int )
-				h = (A)((Number)va_args[i]).intValue();
-			else if( A instanceof long )
-				h = (A)((Number)va_args[i]).longValue();
-			else if( A instanceof float )
-				h = (A)((Number)va_args[i]).floatValue();
-			else if( A instanceof double )
-				h = (A)((Number)va_args[i]).doubleValue();
-			else
-				h = (A)va_args[i];
+			A h = (A)va_args[i];
 			nl = new Cons<A>(h,nl);
 		}
 		return new Cons<A>(hd,nl);

@@ -23,9 +23,8 @@ package kiev.stdlib;
 import kiev.stdlib.KString.KStringScanner;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/KStringTokenizer.java,v 1.2 1998/10/21 19:44:43 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2 $
+ * @version $Revision$
  *
  */
 

@@ -25,9 +25,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/TypeInfo.java,v 1.2.2.1.2.1 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.2.1.2.1 $
+ * @version $Revision$
  *
  */
 

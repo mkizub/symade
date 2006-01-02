@@ -1,41 +1,27 @@
-/*
- Copyright (C) 1997-2000, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev;
 
 import kiev.stdlib.*;
 import java.io.*;
 import kiev.vlang.*;
 import kiev.parser.*;
+import kiev.transf.*;
+import kiev.be.java.Code;
+import kiev.be.java.JNodeView;
+
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/Kiev.java,v 1.5.2.1.2.2 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1.2.2 $
  *
  */
 
 public final class Kiev {
 
 	private Kiev() {}
-
+	
+	static class CompilationAbortError extends java.lang.Error {
+		CompilationAbortError() { super("Compilation terminated"); }
+	}
+	
 	// Error section
 	public static long		programm_start;
 	public static long		programm_end;
@@ -43,99 +29,162 @@ public final class Kiev {
 	public static int		errCount = 0;
 	public static int		warnCount = 0;
 	public static KString	curFile = KString.Empty;
-	public static KString	maybeCurFile = KString.Empty;
 
-   	public static void reportError(int pos, Throwable e) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		int p = pos;
-		if( e instanceof CompilerException  ) {
-			if( ((CompilerException)e).pos != 0 )
-				p = ((CompilerException)e).pos;
-			if( ((CompilerException)e).clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)((CompilerException)e).clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) maybeCurFile = sfa.filename;
-			}
+   	public static void reportError(Throwable e) {
+		ASTNode dummy = null;
+		reportError(dummy, e);
+	}
+	
+   	public static void reportError(ASTNode.NodeView from, Throwable e) {
+		reportError(from.getNode(),e);
+	}
+   	public static void reportError(JNodeView from, Throwable e) {
+		reportError(from.getNode(),e);
+	}
+	
+   	public static void reportError(ASTNode from, Throwable e) {
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof CompilerException) {
+			if (e.from != null)
+				from = e.from;
 		}
-		errCount++;
-		if( e.getMessage() == null )
-			reportError(p,"Error",e.getClass().toString());
-		else
-			reportError(p,"Error",e.getMessage());
+		if( debug ) e.printStackTrace(System.out);
+		int pos = 0;
+		if (from != null && from.isAttached()) {
+			pos = from.pos;
+			ASTNode f = from;
+			FileUnit fu = null;
+			Struct clazz = null;
+			Method method = null;
+			try {
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_clazz;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
+			if( e.getMessage() == null )
+				report(pos,fu,clazz,method,SeverError.Error,e.getClass().getName());
+			else
+				report(pos,fu,clazz,method,SeverError.Error,e.getMessage());
+		} else {
+			if( e.getMessage() == null )
+				report(0,null,null,null,SeverError.Error,e.getClass().getName());
+			else
+				report(0,null,null,null,SeverError.Error,e.getMessage());
+		}
+		if (testError != null) {
+			if !(e instanceof CompilerException) {
+				System.out.println("FAILED: expected CompilerException");
+				System.exit(1);
+			}
+			else if ((pos>>>11) != testErrorLine || (pos&0x3FF) != testErrorOffs) {
+				System.out.println("FAILED: expected position "+(pos>>>11)+":"+(pos&0x3FF));
+				System.exit(1);
+			}
+			else if (((CompilerException)e).err_id != testError) {
+				System.out.println("FAILED: expected error "+testError);
+				System.exit(1);
+			}
+			System.out.println("SUCCESS: found expected error "+testError+" at "+(pos>>>11)+":"+(pos&0x3FF));
+			System.exit(0);
+		}
 	}
 
    	public static void reportParserError(int pos, String msg) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
         errorPrompt = false;
-		errCount++;
-		reportError( pos, "Error", msg);
-//        System.exit(1);
+		if( debug ) new Exception().printStackTrace(System.out);
+		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, String msg, Throwable e) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof ParseException)
+			pos = ((ParseException)e).currentToken.next.getPos();
         errorPrompt = false;
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		errCount++;
-		reportError( pos, "Error", msg);
-//        System.exit(1);
+		if( debug ) e.printStackTrace(System.out);
+		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);
 	}
 
    	public static void reportParserError(int pos, Throwable e) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
+		if (e instanceof CompilationAbortError)
+			throw (CompilationAbortError)e;
+		if (e instanceof ParseException) {
+			if (e.currentToken == null)
+				pos = 0;
+			else if (e.currentToken.next == null)
+				pos = e.currentToken.getPos();
+			else
+				pos = e.currentToken.next.getPos();
+		}
         errorPrompt = false;
-		if( debug ) e.printStackTrace( /* */System.out /* */ );
-		int p = pos;
-		if( e instanceof CompilerException  ) {
-			if( ((CompilerException)e).pos != 0 )
-				p = ((CompilerException)e).pos;
-			if( ((CompilerException)e).clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)((CompilerException)e).clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) maybeCurFile = sfa.filename;
-			}
+		if( debug ) e.printStackTrace(System.out);
+		if( e.getMessage() == null )
+			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getClass().getName());
+		else
+			report(pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error,e.getMessage());
+	}
+
+   	public static void reportError(String msg) {
+		ASTNode dummy = null;
+		reportError(dummy, msg);
+	}
+	
+   	public static void reportError(ASTNode.NodeView from, String msg) {
+		reportError(from.getNode(),msg);
+	}
+   	public static void reportError(JNodeView from, String msg) {
+		reportError(from.getNode(),msg);
+	}
+	
+	public static void reportError(ASTNode from, String msg) {
+		if( debug ) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			FileUnit fu = null;
+			Struct clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_clazz;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
+			report(pos,fu,clazz,method,SeverError.Error,msg);
+		} else {
+			report(0,null,null,null,SeverError.Error,msg);
 		}
-		reportError( p,e );
 	}
 
-	public static void reportError(int pos, String msg) {
-		if( PassInfo.method != null ) PassInfo.method.setBad(true);
-		if( PassInfo.clazz != null ) PassInfo.clazz.setBad(true);
-		errCount++;
-		reportError(pos,"Error",msg);
-	}
-
-	private static int getPossiblePos(int i) {
-		if( i < 0 ) return 0;
-		int pos = PassInfo.path[i].getPos();
-		if( (pos >>> 11) == 0 ) return getPossiblePos(i-1);
-		return pos;
-	}
-
-	public static void reportError(int pos, String err, String msg) {
-		if( (pos >>> 11) == 0 ) pos = getPossiblePos(PassInfo.pathTop-1);
-		KString cf = KString.Empty;
-		if( curFile == null || curFile.equals(KString.Empty) ) {
-			if( maybeCurFile != null && !maybeCurFile.equals(KString.Empty) )
-				cf = maybeCurFile;
-			else if( PassInfo.clazz != null ) {
-				SourceFileAttr sfa = (SourceFileAttr)PassInfo.clazz.getAttr(Constants.attrSourceFile);
-				if( sfa != null ) cf = sfa.filename;
+	private static void report(int pos, FileUnit file_unit, Struct clazz, Method method, SeverError err, String msg) {
+		if (err == SeverError.Warning) {
+			warnCount++;
+		} else {
+			errCount++;
+			if( method != null ) method.setBad(true);
+			if( clazz != null ) clazz.setBad(true);
+		}
+		KString cf = null;
+		if (file_unit != null) {
+			cf = file_unit.filename;
+			if (javacerrors) {
+				String fn = new File(cf.toString()).getAbsolutePath();
+				System.out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
+			}
+			else if (pos > 0) {
+				System.out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+err+": "+msg);
+			}
+			else {
+				System.out.println(err+": "+msg);
 			}
 		} else {
-			cf = curFile;
+			System.out.println(err+": "+msg);
 		}
-		maybeCurFile = KString.Empty;
-		if (javacerrors) {
-			String fn = new File(cf.toString()).getAbsolutePath();
-			System./*err*/out.println(fn+":"+(pos>>>11)+": "+err+": "+msg);
-		} else {
-			System./*err*/out.println(cf+":"+(pos>>>11)+":"+(pos & 0x3FF)+": "+err+": "+msg);
-		}
-		if( (verbose || Kiev.javaMode) && (pos >>> 11) != 0 ) {
+		if( cf != null && (verbose || Kiev.javaMode) && (pos >>> 11) != 0 ) {
 			File f = new File(cf.toString());
 			if( f.exists() && f.canRead() ) {
 				int lineno = pos>>>11;
@@ -174,7 +223,7 @@ public final class Kiev {
 				case -1:
 				case 'a':
 				case 'A':
-					throw new Error("Compilation terminated");
+					throw new CompilationAbortError();
 				case ' ': case '\t': case '\r': case '\n':
 					continue;
 				}
@@ -184,17 +233,27 @@ public final class Kiev {
 		}
 	}
 
-	public static void reportWarning(int pos, String msg) {
-		warnCount++;
-		if( debug ) {
-			try {
-				throw new Exception();
-			} catch( Exception e ) {
-				e.printStackTrace( /* */System.out /* */ );
-			}
+	public static void reportCodeWarning(Code code, String msg) {
+		if (nowarn)
+			return;
+		if( debug && verbose) new Exception().printStackTrace(System.out);
+		report(code.last_lineno<<11, code.clazz.jctx_file_unit.getFileUnit(), code.clazz.getStruct(), code.method.getMethod(), SeverError.Warning, msg);
+	}
+	
+	public static void reportWarning(String msg) {
+		reportWarning(null, msg);
+	}
+	
+	public static void reportWarning(ASTNode from, String msg) {
+		if (nowarn)
+			return;
+		if( debug && verbose) new Exception().printStackTrace(System.out);
+		if (from != null) {
+			int pos = from.pos;
+			report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Warning,msg);
+		} else {
+			report(0,null,null,null,SeverError.Warning,msg);
 		}
-		if (!nowarn)
-			reportError( pos,"Warning",msg );
 	}
 
     private static char[] emptyString = new char[80];
@@ -212,29 +271,17 @@ public final class Kiev {
 		System./*err*/out.flush();
 	}
 
-			static class profInfo {
-				Class cl;
-				int max_instances;
-				int curr_instances;
-				int total_instances;
-				profInfo(Class cl, int mi, int ci, int ti) {
-					this.cl = cl;
-					max_instances = mi;
-					curr_instances = ci;
-					total_instances = ti;
-				}
-				public String toString() {
-					return cl+"\t"+curr_instances+"\t"+max_instances+"\t"+total_instances;
-				}
-			}
-
 	public static void reportTotals() {
 		if( errCount > 0 )
-			System./*err*/out.println(errCount+" errors");
+			System.out.println(errCount+" errors");
 		if( warnCount > 0 )
-			System./*err*/out.println(warnCount+" warnings");
+			System.out.println(warnCount+" warnings");
 		programm_end = System.currentTimeMillis();
-		System./*err*/out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		System.out.println("total "+(programm_end-programm_start)+"ms, max memory used = "+programm_mem+" Kb");
+		if (testError != null) {
+			System.out.println("FAILED: there was no expected error "+testError+" at "+testErrorLine+":"+testErrorOffs);
+			System.exit(1);
+		}
 		System.out.println("\007\007");
 	}
 
@@ -263,7 +310,7 @@ public final class Kiev {
     }
 
 	// Global flags and objects
-	public static String version = "Kiev compiler (v 0.20), (C) Forestro, 1997-2003, http://forestro.com";
+	public static String version = "Kiev compiler (v 0.40), (C) Forestro, 1997-2005, http://forestro.com";
 	//public static int revision = 000;
 
 	public static boolean debug				= false;
@@ -311,102 +358,47 @@ public final class Kiev {
 
 	public static long gc_mem				= (long)(1024*1024);
 
-	public static boolean gen_resolve		= false;
-
 	public static boolean javacerrors		= false;
 	public static boolean nowarn			= false;
-
-    // New primitive objects section
-	public static final Byte[]		byteArray	= new Byte[256];
-	public static final java.lang.Character[]	charArray	= new java.lang.Character[128];
-	public static final Short[]		shortArray	= new Short[256+1];
-	public static final Integer[]	intArray	= new Integer[256*2+1];
-	public static final Long[]		longArray	= new Long[128+1];
-	public static final Float[]		floatArray	= new Float[4];
-	public static final Double[]	doubleArray = new Double[4];
-
-	static {
-		// Fill hash arrays
-		for(int i=0; i < byteArray.length; i++) {
-			byteArray[i] = new Byte((byte)(i-128));
-		}
-		for(int i=0; i < charArray.length; i++) {
-			charArray[i] = new java.lang.Character((char)i);
-		}
-		for(int i=0; i < shortArray.length; i++) {
-			shortArray[i] = new Short((short)(i-128));
-		}
-		for(int i=0; i < intArray.length; i++) {
-			intArray[i] = new Integer(i-256);
-		}
-		for(int i=0; i < longArray.length; i++) {
-			longArray[i] = new Long((long)(i-64));
-		}
-		for(int i=0; i < floatArray.length; i++) {
-			floatArray[i] = new Float((float)(i-1));
-		}
-		for(int i=0; i < doubleArray.length; i++) {
-			doubleArray[i] = new Double((double)(i-1));
-		}
-	}
-
-	public static Byte newByte(int n) {
-		byte b = (byte)n;
-		n = (int)b;
-		return byteArray[n+128];
-	}
-	public static java.lang.Character newCharacter(int n) {
-		if( n >= 0 && n <= 127 )
-			return charArray[n];
-		else
-			return new java.lang.Character((char)n);
-	}
-	public static Short newShort(int n) {
-		int i = n+128;
-		if( i >= 0 && i <= 256 )
-			return shortArray[i];
-		else
-			return new Short((short)n);
-	}
-	public static Integer newInteger(int n) {
-		if( n >= -256 && n <= 256 )
-			return intArray[n+256];
-		else
-			return new Integer(n);
-	}
-	public static Long newLong(long n) {
-		long i = n+64;
-		if( i >= 0 && i <= 128 )
-			return longArray[(int)i];
-		else
-			return new Long(n);
-	}
-	public static Float newFloat(float n) {
-		if( n == -1.f ) return floatArray[0];
-		if( n == 0.f ) return floatArray[1];
-		if( n == 1.f ) return floatArray[2];
-		if( n == 2.f ) return floatArray[3];
-		return new Float(n);
-	}
-	public static Double newDouble(double n) {
-		if( n == -1.d ) return doubleArray[0];
-		if( n == 0.d ) return doubleArray[1];
-		if( n == 1.d ) return doubleArray[2];
-		if( n == 2.d ) return doubleArray[3];
-		return new Double(n);
-	}
+	
+	public static CError testError			= null;
+	public static int    testErrorLine		= 0;
+	public static int    testErrorOffs		= 0;
 
 	// Scanning & parsing
-	public static kiev020				k;
-	public static ASTFileUnit			curASTFileUnit;
+	public static Parser				k;
 	public static Vector<FileUnit>		files = new Vector<FileUnit>();
-	public static Vector<Struct>		packages_scanned = new Vector<Struct>();
-	public static Vector<ASTFileUnit>	file_unit = new Vector<ASTFileUnit>();
-	public static Vector<ASTFileUnit>	files_scanned = new Vector<ASTFileUnit>();
 	public static TopLevelPass			pass_no = TopLevelPass.passStartCleanup;
-	public static Hashtable<String,ASTNode> parserAddresses =
-		new Hashtable<String,ASTNode>();
-	public static Type					argtype = null;
+
+	public static Hashtable<String,Object> parserAddresses = new Hashtable<String,Object>();
+	private static int		parserAddrIdx;
+
+	private static String parserAddr(Object obj) {
+		String addr = Integer.toHexString(++parserAddrIdx);
+		while( addr.length() < 8 ) {
+			addr = '0'+addr;
+		}
+		Kiev.parserAddresses.put(addr,obj);
+		return addr;
+	}
+
+	public static String reparseExpr(ENode e, boolean copy) {
+		if (copy)
+			return "#expr"+parserAddr(e.copy())+"#".toLowerCase();
+		else
+			return "#expr"+parserAddr(e)+"#".toLowerCase();
+	}
+
+	public static String reparseStat(ENode s, boolean copy) {
+		if (copy)
+			return "#stat"+parserAddr(s.copy())+"#".toLowerCase();
+		else
+			return "#stat"+parserAddr(s)+"#".toLowerCase();
+	}
+
+	public static String reparseType(Type tp) {
+		return "#type"+parserAddr(tp)+"#".toLowerCase();
+	}
 
 	public static boolean passLessThen(TopLevelPass p) {
 		return ((int)pass_no) < ((int)p);
@@ -415,15 +407,26 @@ public final class Kiev {
 		return ((int)pass_no) >= ((int)p);
 	}
 
-	public static ASTNode parseBlock(StringBuffer sb, int begLine, int begCol) {
+	public static BlockStat parseBlock(ASTNode from, StringBuffer sb) {
 		StringBufferInputStream is = new StringBufferInputStream(sb.toString());
+		FileUnit oldFileUnit = k.curFileUnit;
+		Struct oldClazz = k.curClazz;
+		Method oldMethod = k.curMethod;
 		k.ReInit(is);
 		k.reparse_body = true;
-		k.reparse_pos = (begLine << 11) | (begCol & 0x3FF);
-		ASTBlock body = null;
+		k.reparse_pos = from.pos;
+		k.curFileUnit = from.ctx_file_unit;
+		k.curClazz = from.ctx_clazz;
+		k.curMethod = from.ctx_method;
+		BlockStat body = null;
 		try {
 			body = k.Block();
-		} finally { k.reparse_body = false; }
+		} finally {
+			k.reparse_body = false;
+			k.curFileUnit = oldFileUnit;
+			k.curClazz = oldClazz;
+			k.curMethod = oldMethod;
+		}
 		return body;
 	}
 
@@ -446,32 +449,39 @@ public final class Kiev {
 				}
 			}
 		} catch( Exception e ) {
-			reportError(0,e);
+			reportError(f,e);
 			return;
 		} finally {
 			file_reader.close();
 		}
-		kiev020.interface_only = false;
+		Kiev.k.interface_only = false;
 		try {
 			CharArrayReader bis = new CharArrayReader(file_chars, 0, file_sz);
 			Kiev.k.ReInit(bis);
 			foreach(PrescannedBody b; f.bodies; b != null ) {
+				Kiev.k.curFileUnit = null;
+				Kiev.k.curClazz = null;
+				Kiev.k.curMethod = null;
 				// callect parents of this block
 				List<ASTNode> pl = List.Nil;
-				ASTNode n = (ASTNode)b.sb;
+				ASTNode n = (ASTNode)b;
 				while( n != null ) {
 					pl = new List.Cons<ASTNode>(n,pl);
 					n = n.parent;
-					Debug.assert(pl.length() < 100);
 				}
 				if( pl.head() != f ) {
-					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
+					reportError(b,"Prescanned body highest parent is "+pl.head()+" but "+f+" is expected");
 					continue;
 				}
 				foreach(ASTNode nn; pl) {
-					PassInfo.push(nn);
+					if (nn instanceof FileUnit)
+						Kiev.k.curFileUnit = (FileUnit)nn;
+					else if (nn instanceof Struct)
+						Kiev.k.curClazz = (Struct)nn;
+					else if (nn instanceof Method)
+						Kiev.k.curMethod = (Method)nn;
 				}
-				ASTBlock bl;
+				BlockStat bl;
 				switch(b.mode) {
 				case PrescannedBody.BlockMode:
 					bl = Kiev.k.PrescannedBlock(b);
@@ -479,28 +489,28 @@ public final class Kiev {
 				case PrescannedBody.RuleBlockMode:
 					bl = Kiev.k.PrescannedRuleBlock(b);
 					break;
-				case PrescannedBody.CondBlockMode:
-					bl = Kiev.k.PrescannedCondBlock(b);
-					break;
 				default:
 					throw new RuntimeException("Unknown mode of prescanned block: "+b.mode);
 				}
-				if( !b.sb.setBody(bl) ) {
-					reportError((b.lineno <<11) | (b.columnno & 0x3FF),"Prescanned body does not math");
+				if( !((SetBody)b.parent).setBody(bl) ) {
+					reportError(b,"Prescanned body does not math");
 				}
+				b.replaceWithNode(null);
 				pl = pl.reverse();
-				foreach(ASTNode nn; pl) {
-					PassInfo.pop(nn);
-				}
 			}
-//		} catch (Throwable e) {
-//			e.printStackTrace();
 		} finally {
-			Kiev.k.reset();
-			f.bodies = PrescannedBody.emptyArray;
+			Kiev.k.curFileUnit = null;
+			Kiev.k.curClazz = null;
+			f.bodies.delAll();
 		}
 	}
 
+	
+	// Backends
+	static public enum Backend {
+		Java15					: "java15"
+	};
+	public static Backend useBackend = Backend.Java15;
 
 	// Extensions settings
 	public static boolean javaMode			= false;
@@ -520,32 +530,55 @@ public final class Kiev {
 		Operator				: "operators"		,
 		Typedef					: "typedef"			,
 		Enum					: "enum"			,
-		EnumInt					: "enum int"		,
 		View					: "view"			,
+		PizzaCase				: "pizza case"		,
 		Contract				: "contract"		,
 		Generics				: "generics"		,
 		Templates				: "templates"		,
 		Wrappers				: "wrappers"		,
-		Access					: "access"
+		Access					: "access"			,
+		VNode					: "vnode"			,
+		DFlow					: "dflow"
 	};
 	
-	private static boolean[] command_line_disabled_extensions	= new boolean[20];
-	private static boolean[] disabled_extensions				= new boolean[20];
+	private static boolean[] command_line_disabled_extensions	= new boolean[Ext.values().length];
+	private static boolean[] disabled_extensions				= new boolean[Ext.values().length];
+	
+	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
+	static {
+		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc.$instance;
+		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld.$instance;
+		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld.$instance;
+		transfProcessors[(int)Ext.Enum]				= ProcessEnum.$instance;
+		transfProcessors[(int)Ext.View]				= ProcessView.$instance;
+		transfProcessors[(int)Ext.PizzaCase]		= ProcessPizzaCase.$instance;
+		transfProcessors[(int)Ext.VNode]			= ProcessVNode.$instance;
+		transfProcessors[(int)Ext.DFlow]			= ProcessDFlow.$instance;
+		setExtension(false, "vnode");
+		setExtension(false, "dflow");
+	}
+	
+	public static TransfProcessor getProcessor(Ext ext) {
+		TransfProcessor tp = transfProcessors[(int)ext];
+		if (tp != null && !tp.isDisabled())
+			return tp;
+		return null;
+	}
 	
 	public static boolean disabled(Ext ext) {
 		int idx = (int)ext;
-		return disabled_extensions[idx-1];
+		return disabled_extensions[idx];
 	}
 	
 	public static boolean enabled(Ext ext) {
 		int idx = (int)ext;
-		return !disabled_extensions[idx-1];
+		return !disabled_extensions[idx];
 	}
 	
-	public static void check(int pos, Ext ext) {
-		if (!enabled(ext))
-			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
-	}
+//	public static void check(int pos, Ext ext) {
+//		if (!enabled(ext))
+//			throw new CompilerException(pos,"Error: extension disabled, to enable use: pragma enable \""+ext+"\";");
+//	}
 	
 	public static boolean[] getCmdLineExtSet() {
 		return (boolean[])command_line_disabled_extensions.clone();
@@ -560,7 +593,7 @@ public final class Kiev {
 	}
 	
 	public static void enable(Ext ext) {
-		disabled_extensions[((int)ext)-1] = false;
+		disabled_extensions[((int)ext)] = false;
 	}
 	
 	static void setExtension(boolean enabled, String s) {
@@ -568,12 +601,12 @@ public final class Kiev {
 		try {
 			ext = Ext.fromString(s);
 		} catch(RuntimeException e) {
-			Kiev.reportWarning(0,"Unknown pragma '"+s+"'");
+			Kiev.reportWarning("Unknown pragma '"+s+"'");
 			return;
 		}
-		int i = ((int)ext)-1;
-		if (i < 0) {
-			for (int i=0; i < disabled_extensions.length; i++) {
+		int i = (int)ext;
+		if (i == 0) {
+			for (int i=1; i < disabled_extensions.length; i++) {
 				command_line_disabled_extensions[i] = !enabled;
 				disabled_extensions[i] = !enabled;
 			}
@@ -582,4 +615,95 @@ public final class Kiev {
 			disabled_extensions[i] = !enabled;
 		}
 	}
+	
+	public static boolean runBackends((BackendProcessor)->void step) {
+		foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+			if (!tp.isEnabled() )
+				continue;
+			BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+			if (bep != null)
+				try { step(bep); } catch (Exception e) { Kiev.reportError(e); }
+		}
+		return (Kiev.errCount > 0); // true if failed
+	}
+	
+	public static boolean runProcessors((TransfProcessor, FileUnit)->void step) {
+		foreach (FileUnit fu; Kiev.files) {
+			KString curr_file = Kiev.curFile;
+			Kiev.curFile = fu.filename;
+			boolean[] exts = Kiev.getExtSet();
+			try {
+				Kiev.setExtSet(fu.disabled_extensions);
+				foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+					try {
+						if (tp.isEnabled() )
+							step(tp,fu);
+					}
+					catch (Exception e) {
+						Kiev.reportError(fu,e);
+					}
+				}
+			}
+			finally {
+				Kiev.curFile = curr_file;
+				Kiev.setExtSet(exts);
+			}
+		}
+		return (Kiev.errCount > 0); // true if failed
+	}
+	
+	public static void runProcessorsOn(ASTNode node) {
+		if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass1(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passStructTypes) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass2(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDecls) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaDecl(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaDefaults) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaDefaults(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveMetaValues) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.resolveMetaValues(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.pass3(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passAutoGenerateMembers) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.autoGenerateMembers(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.preResolve(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.mainResolve(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passVerify) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null)
+				if (tp.isEnabled()) tp.verify(node);
+		}
+		if ( Kiev.passGreaterEquals(TopLevelPass.passPreGenerate) ) {
+			foreach (TransfProcessor tp; Kiev.transfProcessors; tp != null) {
+				if !(tp.isEnabled())
+					continue;
+				BackendProcessor bep = tp.getBackend(Kiev.useBackend);
+				if (bep == null)
+					continue;
+				bep.preGenerate(node);
+			}
+		}
+	}
+
 }
+

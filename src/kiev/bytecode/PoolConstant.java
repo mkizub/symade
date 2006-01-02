@@ -23,23 +23,22 @@ package kiev.bytecode;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/PoolConstant.java,v 1.2 1998/10/21 19:44:17 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2 $
+ * @version $Revision$
  *
  */
 
 public abstract class PoolConstant implements BytecodeFileConstants, BytecodeElement {
 
-	public int				constant_type;
+	public int				idx;
 
-	public abstract void	read(ReadContext cont);
 	public abstract void	write(ReadContext cont);
 	public abstract int		size();
+	public abstract int		constant_type();
 	public boolean			double_slot() { return false; }
 
-	public PoolConstant(int constant_type) {
-		this.constant_type = constant_type;
+	public PoolConstant(int idx) {
+		this.idx = idx;
 	}
 
 	public static PoolConstant[] readConstantPool(ReadContext cont) {
@@ -47,7 +46,7 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 		trace(Clazz.traceRead,cont.offset+": Pool containce "+len+" constants");
 		assert(len > 0,"Null or negative number of pool constants "+len);
 		PoolConstant[] pool = new PoolConstant[len];
-		pool[0] = new VoidPoolConstant();
+		pool[0] = new VoidPoolConstant(0);
 		fillConstantPool(cont,pool,1);
 		return pool;
 	}
@@ -62,6 +61,24 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 		return pool;
 	}
 
+	private static Utf8PoolConstant checkUtf8Ref(PoolConstant[] pool, int ref) {
+		assert(ref > 0 && ref < pool.length ,"Reference to UTF8 constant "+ref+" out of range");
+		assert(pool[ref].constant_type() == CONSTANT_UTF8 ,"Reference to UTF8 constant "+ref+" does not points to CONSTANT_UTF8");
+		return (Utf8PoolConstant)pool[ref];
+	}
+	
+	private static ClazzPoolConstant checkClsRef(PoolConstant[] pool, int ref) {
+		assert(ref > 0 && ref < pool.length ,"Reference to CLASS constant "+ref+" out of range");
+		assert(pool[ref].constant_type() == CONSTANT_CLASS ,"Reference to CLASS constant "+ref+" does not points to CONSTANT_CLASS");
+		return (ClazzPoolConstant)pool[ref];
+	}
+	
+	private static NameAndTypePoolConstant checkNmTpRef(PoolConstant[] pool, int ref) {
+		assert(ref > 0 && ref < pool.length ,"Reference to constant "+ref+" out of range");
+		assert(pool[ref].constant_type() == CONSTANT_NAMEANDTYPE ,"Reference to constant "+ref+" does not points to CONSTANT_NAMEANDTYPE");
+		return (NameAndTypePoolConstant)pool[ref];
+	}
+	
 	public static void fillConstantPool(ReadContext cont, PoolConstant[] pool, int pool_offset) {
 		int len = pool.length;
 		for(int i=pool_offset; i < len; i++) {
@@ -69,59 +86,97 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 			switch(ctype) {
 			case CONSTANT_UTF8:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_UTF8");
-				pool[i] = new Utf8PoolConstant();
+				pool[i] = new Utf8PoolConstant(i, cont);
 				break;
 			case CONSTANT_UNICODE:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_UNICODE");
-				pool[i] = new UnicodePoolConstant();
+				pool[i] = new UnicodePoolConstant(i, cont);
 				break;
 			case CONSTANT_INTEGER:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_INTEGER");
-				pool[i] = new IntegerPoolConstant();
+				pool[i] = new IntegerPoolConstant(i, cont);
 				break;
 			case CONSTANT_FLOAT:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_FLOAT");
-				pool[i] = new FloatPoolConstant();
+				pool[i] = new FloatPoolConstant(i, cont);
 				break;
 			case CONSTANT_LONG:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_LONG");
-				pool[i] = new LongPoolConstant();
+				pool[i] = new LongPoolConstant(i, cont);
 				break;
 			case CONSTANT_DOUBLE:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_DOUBLE");
-				pool[i] = new DoublePoolConstant();
+				pool[i] = new DoublePoolConstant(i, cont);
 				break;
 			case CONSTANT_CLASS:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_CLASS");
-				pool[i] = new ClazzPoolConstant();
+				pool[i] = new ClazzPoolConstant(i, cont);
 				break;
 			case CONSTANT_STRING:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_STRING");
-				pool[i] = new StringPoolConstant();
+				pool[i] = new StringPoolConstant(i, cont);
 				break;
 			case CONSTANT_FIELD:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_FIELD");
-				pool[i] = new FieldPoolConstant();
+				pool[i] = new FieldPoolConstant(i, cont);
 				break;
 			case CONSTANT_METHOD:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_METHOD");
-				pool[i] = new MethodPoolConstant();
+				pool[i] = new MethodPoolConstant(i, cont);
 				break;
 			case CONSTANT_INTERFACEMETHOD:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_INTERFACEMETHOD");
-				pool[i] = new InterfaceMethodPoolConstant();
+				pool[i] = new InterfaceMethodPoolConstant(i, cont);
 				break;
 			case CONSTANT_NAMEANDTYPE:
 				trace(Clazz.traceRead,cont.offset+": const "+i+" CONSTANT_NAMEANDTYPE");
-				pool[i] = new NameAndTypePoolConstant();
+				pool[i] = new NameAndTypePoolConstant(i, cont);
 				break;
 			default:
 				assert(false,"Bad pool constant type "+ctype+" for constant "+i);
 			}
-			pool[i].read(cont);
 			if( pool[i].double_slot() ) {
 				assert(i < pool.length-1,"Double-slotted pool constant type at the end of constants");
-				pool[++i] = new VoidPoolConstant();
+				i++;
+				pool[i] = new VoidPoolConstant(i);
+			}
+		}
+		for(int i=pool_offset; i < len; i++) {
+			int ref1, ref2;
+			switch(pool[i].constant_type()) {
+			case CONSTANT_CLASS:
+				ref1 = ((ClazzPoolConstant)pool[i]).ref.idx;
+				pool[i] = new ClazzPoolConstant(i, checkUtf8Ref(pool,ref1));
+				break;
+			case CONSTANT_STRING:
+				ref1 = ((StringPoolConstant)pool[i]).ref.idx;
+				pool[i] = new StringPoolConstant(i, checkUtf8Ref(pool,ref1));
+				break;
+			case CONSTANT_NAMEANDTYPE:
+				ref1 = ((NameAndTypePoolConstant)pool[i]).ref_name.idx;
+				ref2 = ((NameAndTypePoolConstant)pool[i]).ref_type.idx;
+				pool[i] = new NameAndTypePoolConstant(i, checkUtf8Ref(pool,ref1), checkUtf8Ref(pool,ref2));
+				break;
+			}
+		}
+		for(int i=pool_offset; i < len; i++) {
+			int cp, nt;
+			switch(pool[i].constant_type()) {
+			case CONSTANT_FIELD:
+				cp = ((FieldPoolConstant)pool[i]).ref_clazz.idx;
+				nt = ((FieldPoolConstant)pool[i]).ref_nametype.idx;
+				pool[i] = new FieldPoolConstant(i, checkClsRef(pool, cp), checkNmTpRef(pool, nt));
+				break;
+			case CONSTANT_METHOD:
+				cp = ((MethodPoolConstant)pool[i]).ref_clazz.idx;
+				nt = ((MethodPoolConstant)pool[i]).ref_nametype.idx;
+				pool[i] = new MethodPoolConstant(i, checkClsRef(pool, cp), checkNmTpRef(pool, nt));
+				break;
+			case CONSTANT_INTERFACEMETHOD:
+				cp = ((InterfaceMethodPoolConstant)pool[i]).ref_clazz.idx;
+				nt = ((InterfaceMethodPoolConstant)pool[i]).ref_nametype.idx;
+				pool[i] = new InterfaceMethodPoolConstant(i, checkClsRef(pool, cp), checkNmTpRef(pool, nt));
+				break;
 			}
 		}
 	}
@@ -149,246 +204,307 @@ public abstract class PoolConstant implements BytecodeFileConstants, BytecodeEle
 	}
 }
 
-public class VoidPoolConstant extends PoolConstant {
+public final class VoidPoolConstant extends PoolConstant {
 
-	public VoidPoolConstant() { super(0); }
+	public VoidPoolConstant(int idx) { super(idx); }
 
-	public void read(ReadContext cont) {
-		assert(false,"VoidPoolConstant read");
-	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": void constant ");
 	}
+	public int constant_type() { return 0; }
 	public int size()	{ return 0; }
 }
 
-public class Utf8PoolConstant extends PoolConstant {
+public final class Utf8PoolConstant extends PoolConstant {
 
-	public KString			value;
+	public final KString			value;
 
-	public Utf8PoolConstant() { super(CONSTANT_UTF8); }
-
-	public void read(ReadContext cont) {
+	public Utf8PoolConstant(int idx, KString value) {
+		super(idx);
+		this.value = value;
+	}
+	public Utf8PoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		int len = cont.readShort();
 		assert(cont.data.length-cont.offset >= len,"Too big length "+len+" specified for UTF8 string ");
 		value = KString.from(cont.data,cont.offset,cont.offset+len);
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
 		cont.offset += len;
 	}
+
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_UTF8 len="+value.length()+", value="+value);
-		cont.writeByte(constant_type);
+		cont.writeByte(CONSTANT_UTF8);
 		cont.writeShort(value.length());
 		cont.write(KString.buffer,value.offset,value.offset+value.len);
 	}
+	public int constant_type() { return CONSTANT_UTF8; }
 	public int size()	{ return 1+2+value.len; }
 }
 
-public class UnicodePoolConstant extends PoolConstant {
+public final class UnicodePoolConstant extends PoolConstant {
 
-	public UnicodePoolConstant() { super(CONSTANT_UNICODE); }
-
-	public void read(ReadContext cont) {
+	public UnicodePoolConstant(int idx) {
+		super(idx);
+	}
+	public UnicodePoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		assert(false,"UnicodePoolConstant read");
 	}
 	public void write(ReadContext cont) {
 		assert(false,"UnicodePoolConstant read");
 	}
+	public int constant_type() { return CONSTANT_UNICODE; }
 	public int size()	{ return 0; }
 }
 
 public abstract class NumberPoolConstant extends PoolConstant {
 
-	public NumberPoolConstant(int constant_type) { super(constant_type); }
+	public NumberPoolConstant(int idx) { super(idx); }
 
 	public abstract	Number getValue();
 }
 
-public class IntegerPoolConstant extends NumberPoolConstant {
+public final class IntegerPoolConstant extends NumberPoolConstant {
 
-	public int				value;
+	public final int				value;
 
-	public IntegerPoolConstant() { super(CONSTANT_INTEGER); }
-
-	public void read(ReadContext cont) {
+	public IntegerPoolConstant(int idx, int value) {
+		super(idx);
+		this.value = value;
+	}
+	public IntegerPoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		value = cont.readInt();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_INTEGER value="+value);
-		cont.writeByte(constant_type);
+		cont.writeByte(CONSTANT_INTEGER);
 		cont.writeInt(value);
 	}
 	public int size()	{ return 1+4; }
-	public Number getValue() { return new Integer(value); }
+	public int constant_type() { return CONSTANT_INTEGER; }
+	public Number getValue() { return Integer.valueOf(value); }
 }
 
-public class FloatPoolConstant extends NumberPoolConstant {
+public final class FloatPoolConstant extends NumberPoolConstant {
 
-	public float			value;
+	public final float			value;
 
-	public FloatPoolConstant() { super(CONSTANT_FLOAT); }
-
-	public void read(ReadContext cont) {
+	public FloatPoolConstant(int idx, float value) {
+		super(idx);
+		this.value = value;
+	}
+	public FloatPoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		value = cont.readFloat();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_FLOAT value="+value);
-		cont.writeByte(constant_type);
+		cont.writeByte(CONSTANT_FLOAT);
 		cont.writeFloat(value);
 	}
 	public int size()	{ return 1+4; }
-	public Number getValue() { return new Float(value); }
+	public int constant_type() { return CONSTANT_FLOAT; }
+	public Number getValue() { return Float.valueOf(value); }
 }
 
-public class LongPoolConstant extends NumberPoolConstant {
+public final class LongPoolConstant extends NumberPoolConstant {
 
-	public long				value;
+	public final long				value;
 
-	public LongPoolConstant() { super(CONSTANT_LONG); }
-
-	public void read(ReadContext cont) {
+	public LongPoolConstant(int idx, long value) {
+		super(idx);
+		this.value = value;
+	}
+	public LongPoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		value = cont.readLong();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_LONG value="+value);
-		cont.writeByte(constant_type);
+		cont.writeByte(CONSTANT_LONG);
 		cont.writeLong(value);
 	}
 	public int size()	{ return 1+8; }
+	public int constant_type() { return CONSTANT_LONG; }
 	public boolean double_slot() { return true; }
-	public Number getValue() { return new Long(value); }
+	public Number getValue() { return Long.valueOf(value); }
 }
 
 public class DoublePoolConstant extends NumberPoolConstant {
 
-	public double			value;
+	public final double			value;
 
-	public DoublePoolConstant() { super(CONSTANT_DOUBLE); }
-
-	public void read(ReadContext cont) {
+	public DoublePoolConstant(int idx, double value) {
+		super(idx);
+		this.value = value;
+	}
+	public DoublePoolConstant(int idx, ReadContext cont) {
+		super(idx);
 		value = cont.readDouble();
 		trace(Clazz.traceRead,cont.offset+": value = "+value);
 	}
 	public void write(ReadContext cont) {
 		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_DOUBLE value="+value);
-		cont.writeByte(constant_type);
+		cont.writeByte(CONSTANT_DOUBLE);
 		cont.writeDouble(value);
 	}
 	public int size()	{ return 1+8; }
+	public int constant_type() { return CONSTANT_DOUBLE; }
 	public boolean double_slot() { return true; }
-	public Number getValue() { return new Double(value); }
+	public Number getValue() { return Double.valueOf(value); }
 }
 
 public abstract class RefPoolConstant extends PoolConstant {
 
-	public int				ref;
+	public final Utf8PoolConstant		ref;
 
-	public RefPoolConstant(int constant_type) {
-		super(constant_type);
+	public RefPoolConstant(int idx, Utf8PoolConstant ref) {
+		super(idx);
+		this.ref = ref;
 	}
-
-	public void read(ReadContext cont) {
-		ref = cont.readShort();
+	public RefPoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		ref = new Utf8PoolConstant(cont.readShort(), KString.Empty);
 		trace(Clazz.traceRead,cont.offset+": ref = "+ref);
 	}
 	public void write(ReadContext cont) {
-		cont.writeByte(constant_type);
-		assert(ref > 0 && ref < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref+" out of range");
-		assert(cont.clazz.pool[ref].constant_type == CONSTANT_UTF8 ,"Reference to UTF8 constant "+ref+" does not points to CONSTANT_UTF8");
-		trace(Clazz.traceWrite,cont.offset+": constant "+(constant_type==CONSTANT_CLASS?"CONSTANT_CLASS":"CONSTANT_STRING")+" ref="+ref+", value="+((Utf8PoolConstant)cont.clazz.pool[ref]).value);
-		cont.writeShort(ref);
+		cont.writeByte(constant_type());
+		assert(ref.idx > 0 && ref.idx < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref.idx+" out of range");
+		assert(cont.clazz.pool[ref.idx].constant_type() == CONSTANT_UTF8 ,"Reference to UTF8 constant "+ref.idx+" does not points to CONSTANT_UTF8");
+		trace(Clazz.traceWrite,cont.offset+": constant "+(constant_type()==CONSTANT_CLASS?"CONSTANT_CLASS":"CONSTANT_STRING")+" ref="+ref.idx+", value="+ref.value);
+		cont.writeShort(ref.idx);
 	}
 	public int size()	{ return 1+2; }
 }
 
-public class ClazzPoolConstant extends RefPoolConstant {
+public final class ClazzPoolConstant extends RefPoolConstant {
 
-	public ClazzPoolConstant() { super(CONSTANT_CLASS); }
+	public ClazzPoolConstant(int idx, Utf8PoolConstant ref) {
+		super(idx,ref);
+	}
+	public ClazzPoolConstant(int idx, ReadContext cont) {
+		super(idx,cont);
+	}
+	public int constant_type() { return CONSTANT_CLASS; }
 
 }
 
-public class StringPoolConstant extends RefPoolConstant {
+public final class StringPoolConstant extends RefPoolConstant {
 
-	public StringPoolConstant() { super(CONSTANT_STRING); }
+	public StringPoolConstant(int idx, Utf8PoolConstant ref) {
+		super(idx,ref);
+	}
+	public StringPoolConstant(int idx, ReadContext cont) {
+		super(idx,cont);
+	}
+	public int constant_type() { return CONSTANT_STRING; }
 
+}
+
+public final class NameAndTypePoolConstant extends PoolConstant {
+
+	public final Utf8PoolConstant		ref_name;
+	public final Utf8PoolConstant		ref_type;
+
+	public NameAndTypePoolConstant(int idx, Utf8PoolConstant ref_name, Utf8PoolConstant ref_type) {
+		super(idx);
+		this.ref_name = ref_name;
+		this.ref_type = ref_type;
+	}
+	public NameAndTypePoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		ref_name = new Utf8PoolConstant(cont.readShort(), KString.Empty);
+		ref_type = new Utf8PoolConstant(cont.readShort(), KString.Empty);
+		trace(Clazz.traceRead,cont.offset+": ref_name = "+ref_name+", ref_type="+ref_type);
+	}
+	public void write(ReadContext cont) {
+		cont.writeByte(CONSTANT_NAMEANDTYPE);
+		assert(ref_name.idx > 0 && ref_name.idx < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref_name.idx+" out of range");
+		assert(cont.clazz.pool[ref_name.idx].constant_type() == CONSTANT_UTF8 ,"Reference to name constant "+ref_name+" does not points to CONSTANT_UTF8");
+		cont.writeShort(ref_name.idx);
+		assert(ref_type.idx > 0 && ref_type.idx < cont.clazz.pool.length ,"Reference to clazz constant "+ref_type.idx+" out of range");
+		assert(cont.clazz.pool[ref_type.idx].constant_type() == CONSTANT_UTF8 ,"Reference to type constant "+ref_type+" does not points to CONSTANT_UTF8");
+		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_NAMEANDTYPE "
+			+" ref_name="+ref_name.idx+", name="+ref_name.value
+			+" ref_type="+ref_type.idx+", signature="+ref_type.value);
+		cont.writeShort(ref_type.idx);
+	}
+	public int size()	{ return 1+4; }
+	public int constant_type() { return CONSTANT_NAMEANDTYPE; }
 }
 
 public abstract class ClazzNameTypePoolConstant extends PoolConstant {
 
-	public int				ref_clazz;
-	public int				ref_nametype;
+	public final ClazzPoolConstant			ref_clazz;
+	public final NameAndTypePoolConstant	ref_nametype;
 
-	public ClazzNameTypePoolConstant(int constant_type) {
-		super(constant_type);
+	public ClazzNameTypePoolConstant(int idx, ClazzPoolConstant ref_clazz, NameAndTypePoolConstant ref_nametype) {
+		super(idx);
+		this.ref_clazz = ref_clazz;
+		this.ref_nametype = ref_nametype;
 	}
-
-	public void read(ReadContext cont) {
-		ref_clazz = cont.readShort();
-		ref_nametype = cont.readShort();
+	public ClazzNameTypePoolConstant(int idx, ReadContext cont) {
+		super(idx);
+		ref_clazz = new ClazzPoolConstant(cont.readShort(), (Utf8PoolConstant)null);
+		ref_nametype = new NameAndTypePoolConstant(cont.readShort(),null,null);
 		trace(Clazz.traceRead,cont.offset+": ref_clazz = "+ref_clazz+", ref_nametype="+ref_nametype);
 	}
 	public void write(ReadContext cont) {
-		cont.writeByte(constant_type);
-		assert(ref_clazz > 0 && ref_clazz < cont.clazz.pool.length ,"Reference to clazz constant "+ref_clazz+" out of range");
-		assert(cont.clazz.pool[ref_clazz].constant_type == CONSTANT_CLASS ,"Reference to clazz constant "+ref_clazz+" does not points to CONSTANT_CLASS");
-		cont.writeShort(ref_clazz);
-		assert(ref_nametype > 0 && ref_nametype < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref_nametype+" out of range");
-		assert(cont.clazz.pool[ref_nametype].constant_type == CONSTANT_NAMEANDTYPE ,"Reference to name&type constant "+ref_nametype+" does not points to CONSTANT_NAMEANDTYPE");
-		trace(Clazz.traceWrite,cont.offset+": constant "+(constant_type==CONSTANT_FIELD?"CONSTANT_FIELD":constant_type==CONSTANT_METHOD?"CONSTANT_METHOD":"CONSTANT_INTERFACEMETHOD")
-			+" ref_clazz="+ref_clazz+", clazz="+((Utf8PoolConstant)cont.clazz.pool[((ClazzPoolConstant)cont.clazz.pool[ref_clazz]).ref]).value
-			+", ref_nametype="+ref_nametype
-			+", name="+((Utf8PoolConstant)cont.clazz.pool[((NameAndTypePoolConstant)cont.clazz.pool[ref_nametype]).ref_name]).value
-			+", signature="+((Utf8PoolConstant)cont.clazz.pool[((NameAndTypePoolConstant)cont.clazz.pool[ref_nametype]).ref_type]).value);
-		cont.writeShort(ref_nametype);
+		cont.writeByte(constant_type());
+		assert(ref_clazz.idx > 0 && ref_clazz.idx < cont.clazz.pool.length ,"Reference to clazz constant "+ref_clazz.idx+" out of range");
+		assert(cont.clazz.pool[ref_clazz.idx].constant_type() == CONSTANT_CLASS ,"Reference to clazz constant "+ref_clazz+" does not points to CONSTANT_CLASS");
+		cont.writeShort(ref_clazz.idx);
+		assert(ref_nametype.idx > 0 && ref_nametype.idx < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref_nametype.idx+" out of range");
+		assert(cont.clazz.pool[ref_nametype.idx].constant_type() == CONSTANT_NAMEANDTYPE ,"Reference to name&type constant "+ref_nametype+" does not points to CONSTANT_NAMEANDTYPE");
+		trace(Clazz.traceWrite,cont.offset+": constant "+(constant_type()==CONSTANT_FIELD?"CONSTANT_FIELD":constant_type()==CONSTANT_METHOD?"CONSTANT_METHOD":"CONSTANT_INTERFACEMETHOD")
+			+" ref_clazz="+ref_clazz.idx+", clazz="+ref_clazz.ref.value
+			+", ref_nametype="+ref_nametype.idx
+			+", name="+ref_nametype.ref_name.value
+			+", signature="+ref_nametype.ref_type.value);
+		cont.writeShort(ref_nametype.idx);
 	}
 	public int size()	{ return 1+4; }
 }
 
-public class FieldPoolConstant extends ClazzNameTypePoolConstant {
+public final class FieldPoolConstant extends ClazzNameTypePoolConstant {
 
-	public FieldPoolConstant() { super(CONSTANT_FIELD); }
-
-}
-
-public class MethodPoolConstant extends ClazzNameTypePoolConstant {
-
-	public MethodPoolConstant() { super(CONSTANT_METHOD); }
-
-}
-
-public class InterfaceMethodPoolConstant extends ClazzNameTypePoolConstant {
-
-	public InterfaceMethodPoolConstant() { super(CONSTANT_INTERFACEMETHOD); }
-
-}
-
-public class NameAndTypePoolConstant extends PoolConstant {
-
-	public int				ref_name;
-	public int				ref_type;
-
-	public NameAndTypePoolConstant() { super(CONSTANT_NAMEANDTYPE); }
-
-	public void read(ReadContext cont) {
-		ref_name = cont.readShort();
-		ref_type = cont.readShort();
-		trace(Clazz.traceRead,cont.offset+": ref_name = "+ref_name+", ref_type="+ref_type);
+	public FieldPoolConstant(int idx, ClazzPoolConstant ref_clazz, NameAndTypePoolConstant ref_nametype) {
+		super(idx,ref_clazz,ref_nametype);
 	}
-	public void write(ReadContext cont) {
-		cont.writeByte(constant_type);
-		assert(ref_name > 0 && ref_name < cont.clazz.pool.length ,"Reference to UTF8 constant "+ref_name+" out of range");
-		assert(cont.clazz.pool[ref_name].constant_type == CONSTANT_UTF8 ,"Reference to name constant "+ref_name+" does not points to CONSTANT_UTF8");
-		cont.writeShort(ref_name);
-		assert(ref_type > 0 && ref_type < cont.clazz.pool.length ,"Reference to clazz constant "+ref_type+" out of range");
-		assert(cont.clazz.pool[ref_type].constant_type == CONSTANT_UTF8 ,"Reference to type constant "+ref_type+" does not points to CONSTANT_UTF8");
-		trace(Clazz.traceWrite,cont.offset+": constant CONSTANT_NAMEANDTYPE "
-			+" ref_name="+ref_name+", name="+((Utf8PoolConstant)cont.clazz.pool[ref_name]).value
-			+" ref_type="+ref_type+", signature="+((Utf8PoolConstant)cont.clazz.pool[ref_type]).value);
-		cont.writeShort(ref_type);
+	public FieldPoolConstant(int idx, ReadContext cont) {
+		super(idx,cont);
 	}
-	public int size()	{ return 1+4; }
+	public int constant_type() { return CONSTANT_FIELD; }
+
 }
+
+public final class MethodPoolConstant extends ClazzNameTypePoolConstant {
+
+	public MethodPoolConstant(int idx, ClazzPoolConstant ref_clazz, NameAndTypePoolConstant ref_nametype) {
+		super(idx,ref_clazz,ref_nametype);
+	}
+	public MethodPoolConstant(int idx, ReadContext cont) {
+		super(idx,cont);
+	}
+	public int constant_type() { return CONSTANT_METHOD; }
+
+}
+
+public final class InterfaceMethodPoolConstant extends ClazzNameTypePoolConstant {
+
+	public InterfaceMethodPoolConstant(int idx, ClazzPoolConstant ref_clazz, NameAndTypePoolConstant ref_nametype) {
+		super(idx,ref_clazz,ref_nametype);
+	}
+	public InterfaceMethodPoolConstant(int idx, ReadContext cont) {
+		super(idx,cont);
+	}
+	public int constant_type() { return CONSTANT_INTERFACEMETHOD; }
+
+}
+
 

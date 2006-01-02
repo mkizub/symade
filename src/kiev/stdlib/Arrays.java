@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Arrays.java,v 1.2 1998/10/21 19:44:41 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2 $
+ * @version $Revision$
  *
  */
 

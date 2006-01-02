@@ -21,14 +21,13 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Vector.java,v 1.2.4.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 
+@unerasable
 public class Vector<A> implements Cloneable
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	public A		data[];
@@ -60,6 +59,7 @@ public class Vector<A> implements Cloneable
 	}
 
 	public synchronized A[] copyIntoArray()
+		alias toArray
 		alias operator(210,fy,$cast)
 	{
 		A[] anArray = new A[count];

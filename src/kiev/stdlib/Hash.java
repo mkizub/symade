@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Hash.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 
@@ -32,8 +31,8 @@ package kiev.stdlib;
  * methods.<p>
  *
  */
-public
-class Hash<A extends Object> implements Cloneable {
+@unerasable
+public class Hash<A extends Object> implements Cloneable {
     /**
      * The hash table data.
      */

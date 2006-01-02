@@ -28,9 +28,8 @@ import java.util.zip.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/Classpath.java,v 1.3.4.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.1 $
+ * @version $Revision$
  *
  */
 
@@ -100,15 +99,13 @@ public class Classpath implements BytecodeFileConstants {
 		Clazz cl = new Clazz();
 		cl.flags = ACC_PUBLIC | ACC_PRIVATE;
 		PoolConstant[] pool = new PoolConstant[3];
-		pool[0] = new VoidPoolConstant();
-		pool[1] = new ClazzPoolConstant();
-		((ClazzPoolConstant)pool[1]).ref = 2;
-		pool[2] = new Utf8PoolConstant();
-		((Utf8PoolConstant)pool[2]).value = clazz_name;
+		pool[2] = new Utf8PoolConstant(2,clazz_name);
+		pool[1] = new ClazzPoolConstant(1, (Utf8PoolConstant)pool[2]);
+		pool[0] = new VoidPoolConstant(0);
 		cl.pool = pool;
-		cl.cp_clazz = 1;
-		cl.cp_super_clazz = 0;
-		cl.cp_interfaces = new int[0];
+		cl.cp_clazz = (ClazzPoolConstant)pool[1];
+		cl.cp_super_clazz = null;
+		cl.cp_interfaces = new ClazzPoolConstant[0];
 		cl.fields = new Field[0];
 		cl.methods = new Method[0];
 		cl.attrs = new Attribute[0];

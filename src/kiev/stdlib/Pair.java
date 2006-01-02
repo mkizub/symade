@@ -21,24 +21,18 @@
 package kiev.stdlib;
 
 /** a class for pairs
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Pair.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @author      Martin Odersky
  * @author      Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 
+@unerasable
 public class Pair<A,B>
-	$generate
-		<int,int>,<int,long>,<int,float>,<int,double>,<int,B>,
-		<long,int>,<long,long>,<long,float>,<long,double>,<long,B>,
-		<float,int>,<float,long>,<float,float>,<float,double>,<float,B>,
-		<double,int>,<double,long>,<double,float>,<double,double>,<double,B>,
-		<A,int>,<A,long>,<A,float>,<A,double>
 {
 
-	A fst;
-	B snd;
+	public A fst;
+	public B snd;
     
 	public Pair(A fst, B snd) {
 		this.fst = fst;
@@ -51,11 +45,9 @@ public class Pair<A,B>
 	public int hashCode() {
 		int f, s;
 
-		if( A instanceof Object ) f = fst == null ? 1 : fst.hashCode();
-		else f = fst.hashCode();
+		f = fst == null ? 1 : fst.hashCode();
 
-		if( B instanceof Object ) s = snd == null ? 1 : snd.hashCode();
-		else s = snd.hashCode();
+		s = snd == null ? 1 : snd.hashCode();
 
 		return f * s;
 	}
@@ -71,16 +63,8 @@ public class Pair<A,B>
 	public boolean equals(Object other) {
 		if (other instanceof Pair<A,B>) {
 			Pair<A,B> o = (Pair<A,B>)other;
-			if( A instanceof Object ) {
-				if( !equals(fst,o.fst) ) return false;
-			} else {
-				if( fst != o.fst ) return false;
-			}
-			if( B instanceof Object ) {
-				if( !equals(snd,o.snd) ) return false;
-			} else {
-				if( snd != o.snd ) return false;
-			}
+			if( !equals(fst,o.fst) ) return false;
+			if( !equals(snd,o.snd) ) return false;
 			return true;
 		} else {
 			return false;

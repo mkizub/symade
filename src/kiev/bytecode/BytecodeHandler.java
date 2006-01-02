@@ -20,13 +20,14 @@
   
 package kiev.bytecode;
 
+import kiev.stdlib.meta.*;
+
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/BytecodeHandler.java,v 1.2 1998/10/21 19:44:16 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2 $
+ * @version $Revision$
  *
  */
-
+/*
 public interface BytecodeHandler {
 	public static final int PreprocessStage					= 10;
 	public static final int InheritanceResolveStage			= 20;
@@ -40,6 +41,7 @@ public interface BytecodeHandler {
 }
 
 public interface AttributeHandler extends BytecodeHandler {
-	virtual KString			aname;
+	@virtual
+	virtual abstract KString			aname;
 }
-
+*/

@@ -21,14 +21,12 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/PVar.java,v 1.2.2.1.2.2 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.2.1.2.2 $
+ * @version $Revision$
  *
  */
 
 public final $wrapper class Ref<A>
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
 
 	forward public A			$val;
@@ -45,9 +43,6 @@ public final $wrapper class Ref<A>
 
 	public boolean equals(A value) {
 		A r = $val;
-		if( A instanceof Object )
-			return (r==null && value==null) || r.equals(value);
-		else
-			return r.equals(value);
+		return (r==null && value==null) || r.equals(value);
 	}
 }

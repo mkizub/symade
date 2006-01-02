@@ -1,32 +1,11 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Main;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Signature.java,v 1.3.2.1.2.1 1999/02/15 21:45:14 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.1 $
+ * @version $Revision$
  *
  */
 
@@ -37,52 +16,41 @@ public class Signature {
 	private Signature(KString sig) {
 		this.sig = sig;
 	}
-
-	public static KString from(Struct clazz, Type[] fargs, Type[] args, Type ret) {
+/*
+	public static KString from(Struct clazz, Type[] args) {
 		KStringBuffer ksb = new KStringBuffer();
-		if( ret != null ) {
-			// Closure or method.
-			if( clazz == MethodType.tpMethodClazz ) ;// Method
-			else if( clazz.instanceOf(Type.tpClosureClazz) ) {
-				ksb.append('&'); // Closure
-				if( clazz != Type.tpClosureClazz )
-					ksb.append(clazz.name.signature());
+		ksb.append(clazz.name.signature());
+		// And it's arguments
+		boolean empty = true;
+		if( clazz.args.length > 0 ) {
+			ksb.append('<');
+			for(int i=0; i < args.length; i++) {
+				ksb.append(args[i].signature);
 			}
-			if (fargs.length > 0) {
-				ksb.append('<');
-				for(int i=0; i < fargs.length; i++)
-					ksb.append(fargs[i].signature);
-				ksb.append('>');
-			}
-			ksb.append('(');
-				if(args!=null && args.length > 0) {
-					for(int i=0; i < args.length; i++)
-						ksb.append(args[i].signature);
-				}
-			ksb.append(')');
-			ksb.append(ret.signature);
-		} else {
-			// Normal class
-			if( clazz !=null && clazz.type !=null && clazz.type.isArray() && args != null && args.length > 0 ) {
-				ksb.append('[');
-				ksb.append(args[0].signature);
-			} else {
-				if( clazz !=null && clazz.type!=null && clazz.generated_from == null && (clazz.type.args == null || clazz.type.args.length==0) ) {
-					ksb.append(clazz.type.signature);
-				} else {
-					if(  clazz !=null )
-						ksb.append(clazz.name.signature());
-					// And it's arguments
-					if( args!=null && args.length > 0 ) {
-						ksb.append('<');
-						for(int i=0; i < args.length; i++) {
-							ksb.append(args[i].signature);
-						}
-						ksb.append('>');
-					}
-				}
-			}
+			ksb.append('>');
 		}
+		return ksb.toKString();
+	}
+
+	public static KString from(Struct clazz, TVarSet bindings) {
+		KStringBuffer ksb = new KStringBuffer();
+		ksb.append(clazz.name.signature());
+		// And it's type bindings
+		boolean empty = true;
+		foreach (TVar tv; bindings.tvars) {
+			if (tv.var.definer != clazz) {
+				if (!tv.isBound() && !tv.isAlias())
+					continue;
+			}
+			if (empty) { ksb.append('<'); empty = false; }
+			ClazzName name = tv.var.name;
+			if (clazz == tv.var.definer)
+				ksb.append(name.short_name);
+			else
+				ksb.append(name.bytecode_name);
+			ksb.append(':').append(tv.result().signature);
+		}
+		if (!empty) ksb.append('>');
 		return ksb.toKString();
 	}
 
@@ -95,7 +63,7 @@ public class Signature {
 				ksb.append(args[i].signature);
 				if( full && args[i].isArgument() ) {
 					ksb.append('<');
-					ksb.append(args[i].clazz.super_clazz.signature);
+					ksb.append(args[i].getSuperType().signature);
 					ksb.append('>');
 				}
 			}
@@ -103,7 +71,7 @@ public class Signature {
 		}
 		return ksb.toKString();
 	}
-
+*/
 	public String toString() { return sig.toString(); }
 
 	public int hashCode() { return sig.hashCode(); }
@@ -112,10 +80,10 @@ public class Signature {
 		return ( o instanceof Signature && ((Signature)o).sig.equals(sig) );
 	}
 
-	//public Type getType() {
-	//	return getType(new KString.KStringScanner(sig));
-	//}
-
+	public static Type getType(KString sig) {
+		return Signature.getType(new KString.KStringScanner(sig));
+	}
+	
 	public static Type getType(KString.KStringScanner sc) {
 		Struct clazz;
 		Type[] args = null;
@@ -141,38 +109,32 @@ public class Signature {
 		}
 
 		// Check if this signature is a method signature
-		if( ch == '(' || ch == '&' || ch == '<' ) {
+		if (ch == '(') {
 			// Method signature
-			Type[] fargs = Type.emptyArray;
-			if( ch == '<' ) {
-				while( sc.hasMoreChars() && sc.peekChar() != '>' )
-					fargs = (Type[])Arrays.append(fargs,getType(sc));
-				sc.nextChar();
-			}
-			if( ch == '(' ) clazz = MethodType.tpMethodClazz;
-			else {
-				ch = sc.peekChar();
-				if( ch == '(' )
-					clazz = Type.tpClosureClazz;
-				else if( ch == 'L')
-					clazz = getType(sc).clazz;
-				else
-					throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' or 'L' expected");
-				ch = sc.nextChar();
-				if( ch != '(' )
-					throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - '(' expected");
-			}
 			args = new Type[0];
 			while( sc.hasMoreChars() && sc.peekChar() != ')' )
 				args = (Type[])Arrays.append(args,getType(sc));
 			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
 				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
 			ret = getType(sc);
-			return MethodType.newMethodType(clazz,fargs,args,ret);
+			return new MethodType(args,ret);
+		}
+		if (ch == '&') {
+			// Closure signature
+			ch = sc.peekChar();
+			if( ch != '(' )
+				throw new RuntimeException("Bad closure "+sc+" at pos "+sc.pos+" - '(' expected");
+			args = new Type[0];
+			while( sc.hasMoreChars() && sc.peekChar() != ')' )
+				args = (Type[])Arrays.append(args,getType(sc));
+			if( !sc.hasMoreChars() || sc.nextChar() != ')' )
+				throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ')' expected");
+			ret = getType(sc);
+			return new ClosureType(args,ret);
 		}
 
 		// Normal reference type
-		if( ch == '[' ) return Type.newArrayType(getType(sc));
+		if( ch == '[' ) return new ArrayType(getType(sc));
 
 		boolean isArgument = false;
 		if( ch == 'A' ) isArgument = true;
@@ -182,53 +144,48 @@ public class Signature {
 		while( sc.hasMoreChars() && (ch=sc.nextChar()) != ';' );
 		if( ch != ';' )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - ';' expected");
+		ClazzName cname = null;
 		if( isArgument ) {
 			KString bcn = sc.str.substr(pos,sc.pos-1);
-			ClazzName name;
-			//if (bcn.indexOf((byte)'.') >= 0)
-				name = ClazzName.fromBytecodeName(bcn,isArgument);
-			//else
-			//	name = ClazzName.fromOuterAndName(bcn);
-			//name.isArgument = true;
-			clazz = Env.newArgument(name.short_name,Env.getStruct(name.package_name()));
-			clazz.setArgument(true);
-			clazz.setResolved(true);
+			cname = ClazzName.fromBytecodeName(bcn,isArgument);
+			clazz = null;
 		} else {
-			ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
-			clazz = Env.newStruct(name);
+			cname = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos-1),isArgument);
+			clazz = Env.newStruct(cname);
 		}
 
-		if( !sc.hasMoreChars() )
-			return Type.newJavaRefType(clazz);
-		if( sc.peekChar() == '<' ) {
-			args = new Type[0];
-			sc.nextChar();
-			while(sc.peekChar() != '>')
-				args = (Type[])Arrays.append(args,getType(sc));
-			sc.nextChar();
-			if( isArgument ) {
-				if( args.length == 0 )
-					return Type.newRefType(clazz);
-				else if( args.length == 1 ) {
-					if( clazz.super_clazz==null )
-						clazz.super_clazz = args[0];
-					else if( !args[0].equals(clazz.super_clazz) )
-						throw new RuntimeException("Is class argument signature "+sc
-							+" type of argument super-class "+args[0]+" does not match "+clazz.super_clazz);
-					return Type.newRefType(clazz);
-				} else
-					throw new RuntimeException("Signature of class's argument "+clazz+" specifies more than one super-class: "+args);
-			} else {
-				return Type.newRefType(clazz,args);
-			}
-		} else {
-			return Type.newJavaRefType(clazz);
-		}
+//		if( !sc.hasMoreChars() ) {
+//			if (isArgument)
+//				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
+//			return BaseType.createRefType(clazz, TVarSet.emptySet);
+//		}
+//		if( sc.peekChar() == '<' ) {
+//			args = new Type[0];
+//			sc.nextChar();
+//			while(sc.peekChar() != '>')
+//				args = (Type[])Arrays.append(args,getType(sc));
+//			sc.nextChar();
+//			if( isArgument ) {
+//				if( args.length == 0 )
+//					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
+//				else if( args.length == 1 ) {
+//					if !( args[0] instanceof BaseType )
+//						throw new RuntimeException("Bad super-class "+args[0]+" of argument "+cname);
+//					throw new RuntimeException("not implemented"); //return new ArgumentType(cname,(BaseType)args[0]);
+//				} else
+//					throw new RuntimeException("Signature of class's argument "+cname+" specifies more than one super-class: "+args);
+//			} else {
+//				return BaseType.createRefType(clazz,args);
+//			}
+//		} else {
+			if (isArgument)
+				throw new RuntimeException("not implemented"); //return new ArgumentType(cname,null);
+			return new BaseType(clazz);
+//		}
 	}
 
 	public static Type getTypeOfClazzCP(KString.KStringScanner sc) {
 		Struct clazz;
-		Type[] args = null;
 
 		if( !sc.hasMoreChars() )
 			throw new RuntimeException("Bad signature "+sc+" at pos "+sc.pos+" - empty");
@@ -236,7 +193,7 @@ public class Signature {
 		char ch = sc.peekChar();
 
 		// Normal reference type
-		if( ch == '[' ) return Type.newArrayType(getType(sc));
+		if( ch == '[' ) return new ArrayType(getType(sc));
 
 		int pos = sc.pos;
 
@@ -253,18 +210,15 @@ public class Signature {
 		ClazzName name = ClazzName.fromBytecodeName(sc.str.substr(pos,sc.pos),false);
 		clazz = Env.newStruct(name);
 
-		if( !sc.hasMoreChars() )
-			return Type.newJavaRefType(clazz);
-		if( sc.peekChar() == '<' ) {
-			args = new Type[0];
-			sc.nextChar();
-			while(sc.peekChar() != '>')
-				args = (Type[])Arrays.append(args,getType(sc));
-			sc.nextChar();
-				return Type.newRefType(clazz,args);
-		} else {
-			return Type.newRefType(clazz);
-		}
+//		Type[] args = Type.emptyArray;
+//		if( sc.hasMoreChars() && sc.peekChar() == '<' ) {
+//			args = new Type[0];
+//			sc.nextChar();
+//			while(sc.peekChar() != '>')
+//				args = (Type[])Arrays.append(args,getType(sc));
+//			sc.nextChar();
+//		}
+		return new BaseType(clazz);
 	}
 
 	public static KString getJavaSignature(KString sig) {
@@ -282,7 +236,7 @@ public class Signature {
 				sc.nextChar();
 				return ks;
 			} else {
-				return Type.tpObject.signature;
+				return KString.from("Lkava/lang/Object;"); //Type.tpObject.signature;
 			}
 		}
 		if( sc.peekChar() == '&' ) {
@@ -322,8 +276,6 @@ public class Signature {
 		while( sc.nextChar() != ';' );
 		KString kstr = sc.str.substr(pos,sc.pos);
 		Struct struct = Env.classHash.get(ClazzName.fromSignature(kstr).name);
-		if( struct !=null && (struct.isArgument() /*|| struct.isPrimitiveEnum()*/))
-			kstr = struct.super_clazz.clazz.name.signature();
 		if( sc.peekChar() == '<' ) {
 			int depth = 0;
 			while( sc.hasMoreChars() ) {

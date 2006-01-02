@@ -1,32 +1,11 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Main;
 import kiev.stdlib.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Dumper.java,v 1.3.2.1 1999/02/12 18:47:07 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1 $
+ * @version $Revision$
  *
  */
 
@@ -66,6 +45,10 @@ public class Dumper {
 		return this;
 	}
 
+	public Dumper append(ASTNode.NodeView o) {
+		return append(o.getNode());
+	}
+	
 	public Dumper append(ASTNode o) {
 		if( o == null ) return this;
 		try {
@@ -73,7 +56,7 @@ public class Dumper {
 		} catch( Throwable e ) {
 			System.out.println("Internal error in dumper for "+o.getClass());
 			e.printStackTrace();
-			append("/*INTERNEL ERROR*/");
+			append("/*INTERNAL ERROR*/");
 		}
 		return this;
 	}

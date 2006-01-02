@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Debug.java,v 1.2.4.1 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.1 $
+ * @version $Revision$
  *
  */
 
@@ -327,6 +326,7 @@ public class InvariantFailedException extends AssertionFailedException {
  *  class for non-default assertion handling
  */
 public interface AssertionHandler {
+	@virtual
 	public virtual abstract boolean	enabled;
 	public void failedAssertion(RuntimeException e);
 }
@@ -344,10 +344,11 @@ public class TTYAssertionHandler implements AssertionHandler {
 	public static java.io.PrintStream		err = System.err;
 	public static java.io.InputStream		in = System.in;
 
+	@virtual
 	public virtual boolean enabled = true;
 	
-	public boolean get$enabled() { return enabled; }
-	public void set$enabled(boolean e) { enabled = e; }
+	@getter public boolean get$enabled() { return enabled; }
+	@setter public void set$enabled(boolean e) { enabled = e; }
 	
 	public TTYAssertionHandler() { this(true); }
 	public TTYAssertionHandler(boolean enabled) { this.enabled = enabled; }
@@ -383,12 +384,14 @@ public class TTYAssertionHandler implements AssertionHandler {
 	
 	public static boolean colored = false;
 	
+	@virtual
 	private virtual abstract String b;
-	private void set$b(String s){}
-	private String get$b() { return (colored ? "\033[01;36m" : ""); }
+	@setter private void set$b(String s){}
+	@getter private String get$b() { return (colored ? "\033[01;36m" : ""); }
 
+	@virtual
 	private virtual abstract String m;
-	private void set$m(String s){}
-	private String get$m() { return (colored ? "\033[0m" : ""); }
+	@setter private void set$m(String s){}
+	@getter private String get$m() { return (colored ? "\033[0m" : ""); }
 }
 

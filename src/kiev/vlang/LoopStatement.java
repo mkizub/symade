@@ -1,145 +1,208 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
+import kiev.transf.*;
+
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JLoopStatView;
+import kiev.be.java.JLabelView;
+import kiev.be.java.JWhileStatView;
+import kiev.be.java.JDoWhileStatView;
+import kiev.be.java.JForInitView;
+import kiev.be.java.JForStatView;
+import kiev.be.java.JForEachStatView;
+
+import kiev.be.java.CodeLabel;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/LoopStatement.java,v 1.5.2.1 1999/02/12 18:47:07 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1 $
+ * @version $Revision$
  *
  */
 
 @node
-public abstract class LoopStat extends Statement implements BreakTarget, ContinueTarget {
-
-	protected	CodeLabel	continue_label = null;
-	protected	CodeLabel	break_label = null;
-
-	protected LoopStat() {
+public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
+	@node
+	public static abstract class LoopStatImpl extends ENodeImpl {
+		@att(copyable=false)	public Label		lblcnt;
+		@att(copyable=false)	public Label		lblbrk;
+		public LoopStatImpl() {	}
+		public LoopStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static abstract view LoopStatView of LoopStatImpl extends ENodeView {
+		public access:ro	Label					lblcnt;
+		public access:ro	Label					lblbrk;
 	}
 
-	protected LoopStat(int pos, ASTNode parent) {
-		super(pos, parent);
+	@att public abstract virtual access:ro	Label					lblcnt;
+	@att public abstract virtual access:ro	Label					lblbrk;
+
+	@getter public Label			get$lblcnt()			{ return this.getLoopStatView().lblcnt; }
+	@getter public Label			get$lblbrk()			{ return this.getLoopStatView().lblbrk; }
+
+	public abstract LoopStatView	getLoopStatView();
+	public abstract JLoopStatView	getJLoopStatView();
+	
+	protected LoopStat(LoopStatImpl $view) {
+		super($view);
+		$view.lblcnt = new Label();
+		$view.lblbrk = new Label();
 		setBreakTarget(true);
-	}
-
-	public CodeLabel getContinueLabel() throws RuntimeException {
-		if( continue_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
-		return continue_label;
-	}
-
-	public CodeLabel getBreakLabel() throws RuntimeException {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
 	}
 }
 
 
 @node
-public class WhileStat extends LoopStat {
+public final class Label extends DNode {
+	
+	@dflow(out="this:out()") private static class DFI {}
 
-	@att public BooleanExpr	cond;
-	@att public Statement	body;
+	@node
+	public final static class LabelImpl extends DNodeImpl {
+		LabelImpl() {}
+		@ref(copyable=false)	public List<ASTNode>	links = List.Nil;
+								public CodeLabel		label;
+
+		public final void callbackRootChanged() {
+			ASTNode root = this._self.ctx_root;
+			links = links.filter(fun (ASTNode n)->boolean { return n.ctx_root == root; });
+			super.callbackRootChanged();
+		}	
+	}
+	@nodeview
+	public final static view LabelView of LabelImpl extends DNodeView {
+		public List<ASTNode>		links;
+	}
+	
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
+	public LabelView		getLabelView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
+	public JLabelView		getJLabelView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
+
+	@ref(copyable=false) public abstract virtual List<ASTNode>		links;
+
+	@getter public List<ASTNode>	get$links()						{ return this.getLabelView().links; }
+	@setter public void				set$links(List<ASTNode> val)	{ this.getLabelView().links = val; }
+	
+	public Label() {
+		super(new LabelImpl());
+	}
+	
+	public void addLink(ASTNode lnk) {
+		if (links.contains(lnk))
+			return;
+		links = new List.Cons<ASTNode>(lnk, links);
+	}
+
+	public void delLink(ASTNode lnk) {
+		links = links.diff(lnk);
+	}
+
+	static class LabelDFFunc extends DFFunc {
+		final int res_idx;
+		LabelDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			if ((dfi.locks & 1) != 0)
+				throw new DFLoopException(this);
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			Label node = (Label)dfi.node;
+			DFState tmp = node.getDFlow().in();
+			dfi.locks |= 1;
+			try {
+				foreach (ASTNode lnk; node.links) {
+					try {
+						DFState s = lnk.getDFlow().jmp();
+						tmp = DFState.join(s,tmp);
+					} catch (DFLoopException e) {
+						if (e.label != this) throw e;
+					}
+				}
+			} finally { dfi.locks &= ~1; }
+			res = tmp;
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncOut(DataFlowInfo dfi) {
+		return new LabelDFFunc(dfi);
+	}
+}
+
+@node
+public class WhileStat extends LoopStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in", links="body")		Label		lblcnt;
+	@dflow(in="lblcnt")						ENode		cond;
+	@dflow(in="cond:true")					ENode		body;
+	@dflow(in="cond:false")					Label		lblbrk;
+	}
+
+	@node
+	public static final class WhileStatImpl extends LoopStatImpl {
+		@att public ENode		cond;
+		@att public ENode		body;
+		public WhileStatImpl() {}
+		public WhileStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view WhileStatView of WhileStatImpl extends LoopStatView {
+		public ENode		cond;
+		public ENode		body;
+	}
+
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			body;
+	
+	@getter public ENode			get$cond()			{ return this.getWhileStatView().cond; }
+	@getter public ENode			get$body()			{ return this.getWhileStatView().body; }
+	
+	@setter public void		set$cond(ENode val)				{ this.getWhileStatView().cond = val; }
+	@setter public void		set$body(ENode val)				{ this.getWhileStatView().body = val; }
+	
+	public NodeView				getNodeView()			{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
+	public LoopStatView			getLoopStatView()		{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
+	public WhileStatView		getWhileStatView()		{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
+	public JLoopStatView		getJLoopStatView()		{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
+	public JWhileStatView		getJWhileStatView()		{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
 
 	public WhileStat() {
+		super(new WhileStatImpl());
 	}
 
-	public WhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
-		super(pos, parent);
+	public WhileStat(int pos, ENode cond, ENode body) {
+		super(new WhileStatImpl(pos));
 		this.cond = cond;
-		this.cond.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		body.cleanup();
-		body = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+	public void resolve(Type reqType) {
 		try {
-			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-			} catch(Exception e ) { Kiev.reportError(cond.pos,e); }
-			if( cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
-			try {
-				body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) { Kiev.reportError(body.pos,e); }
-			if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-				setMethodAbrupted(true);
-			}
-		} finally {
-			PassInfo.pop(this);
-			NodeInfoPass.popState();
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) { Kiev.reportError(cond,e); }
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) { Kiev.reportError(body,e); }
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
+			setMethodAbrupted(true);
 		}
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating WhileStat");
-		PassInfo.push(this);
-		try {
-			continue_label = Code.newLabel();
-			break_label = Code.newLabel();
-			CodeLabel body_label = Code.newLabel();
-
-			Code.addInstr(Instr.op_goto,continue_label);
-			Code.addInstr(Instr.set_label,body_label);
-			if( isAutoReturnable() )
-				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.set_label,continue_label);
-
-			if( cond.isConstantExpr() ) {
-				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					Code.addInstr(Instr.op_goto,body_label);
-				}
-			} else {
-				((BooleanExpr)cond).generate_iftrue(body_label);
-			}
-			Code.addInstr(Instr.set_label,break_label);
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -156,81 +219,70 @@ public class WhileStat extends LoopStat {
 
 @node
 public class DoWhileStat extends LoopStat {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in", links="cond:true")	ENode		body;
+	@dflow(in="body")							Label		lblcnt;
+	@dflow(in="lblcnt")							ENode		cond;
+	@dflow(in="cond:false")						Label		lblbrk;
+	}
 
-	@att public BooleanExpr	cond;
-	@att public Statement	body;
+	@node
+	public static final class DoWhileStatImpl extends LoopStatImpl {
+		@att public ENode		cond;
+		@att public ENode		body;
+		public DoWhileStatImpl() {}
+		public DoWhileStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view DoWhileStatView of DoWhileStatImpl extends LoopStatView {
+		public ENode		cond;
+		public ENode		body;
+	}
+
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			body;
+	
+	@getter public ENode			get$cond()			{ return this.getDoWhileStatView().cond; }
+	@getter public ENode			get$body()			{ return this.getDoWhileStatView().body; }
+	
+	@setter public void		set$cond(ENode val)				{ this.getDoWhileStatView().cond = val; }
+	@setter public void		set$body(ENode val)				{ this.getDoWhileStatView().body = val; }
+	
+	public NodeView				getNodeView()			{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public LoopStatView			getLoopStatView()		{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public DoWhileStatView		getDoWhileStatView()	{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public JLoopStatView		getJLoopStatView()		{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public JDoWhileStatView		getJDoWhileStatView()	{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
 
 	public DoWhileStat() {
+		super(new DoWhileStatImpl());
 	}
 
-	public DoWhileStat(int pos, ASTNode parent, BooleanExpr cond, Statement body) {
-		super(pos,parent);
+	public DoWhileStat(int pos, ENode cond, ENode body) {
+		super(new DoWhileStatImpl(pos));
 		this.cond = cond;
-		this.cond.parent = this;
 		this.body = body;
-		this.body.parent = this;
 	}
 
-	public void cleanup() {
-		parent=null;
-		cond.cleanup();
-		cond = null;
-		body.cleanup();
-		body = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
+	public void resolve(Type reqType) {
 		try {
-			try {   body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
-			}
-			try {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-				if( !(cond instanceof BooleanExpr) )
-					cond = (BooleanExpr)new BooleanWrapperExpr(cond.pos,cond).resolve(Type.tpBoolean);
-			} catch(Exception e ) {
-				Kiev.reportError(cond.pos,e);
-			}
-			if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
-				setMethodAbrupted(true);
-			}
-		} finally {
-			PassInfo.pop(this);
-			NodeInfoPass.popState();
-		}
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating DoWhileStat");
-		PassInfo.push(this);
-		try {
-			continue_label = Code.newLabel();
-			break_label = Code.newLabel();
-			CodeLabel body_label = Code.newLabel();
-
-// Differ from WhileStat in this:	Code.addInstr(Instr.op_goto,continue_label);
-			Code.addInstr(Instr.set_label,body_label);
-			if( isAutoReturnable() )
-				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.set_label,continue_label);
-
-			if( cond.isConstantExpr() ) {
-				if( ((Boolean)cond.getConstValue()).booleanValue() ) {
-					Code.addInstr(Instr.op_goto,body_label);
-				}
-			} else {
-				((BooleanExpr)cond).generate_iftrue(body_label);
-			}
-			Code.addInstr(Instr.set_label,break_label);
+			body.resolve(Type.tpVoid);
 		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+			Kiev.reportError(body,e);
+		}
+		try {
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		} catch(Exception e ) {
+			Kiev.reportError(cond,e);
+		}
+		if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() && !isBreaked() ) {
+			setMethodAbrupted(true);
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -248,49 +300,69 @@ public class DoWhileStat extends LoopStat {
 }
 
 @node
-public class ForInit extends ASTNode implements Scope {
+public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="decls") private static class DFI {
+	@dflow(in="", seq="true")	Var[]		decls;
+	}
 
-	@att public final NArr<DeclStat>	decls;
+	@node
+	public static final class ForInitImpl extends ENodeImpl {
+		@att public final NArr<Var>		decls;
+		public ForInitImpl() {}
+		public ForInitImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ForInitView of ForInitImpl extends ENodeView {
+		public access:ro	NArr<Var>		decls;
+	}
+
+	@att public abstract virtual access:ro	NArr<Var>		decls;
+	
+	public NodeView				getNodeView()			{ return new ForInitView((ForInitImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ForInitView((ForInitImpl)this.$v_impl); }
+	public ForInitView			getForInitView()		{ return new ForInitView((ForInitImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JForInitView((ForInitImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JForInitView((ForInitImpl)this.$v_impl); }
+	public JForInitView			getJForInitView()		{ return new JForInitView((ForInitImpl)this.$v_impl); }
+
+	@getter public NArr<Var>	get$decls()				{ return this.getForInitView().decls; }
+	
 
 	public ForInit() {
-		this.decls = new NArr<DeclStat>(this, new AttrSlot("decls", true, true));
+		super(new ForInitImpl());
 	}
 
 	public ForInit(int pos) {
-		super(pos);
-		this.decls = new NArr<DeclStat>(this, new AttrSlot("decls", true, true));
+		super(new ForInitImpl(pos));
 	}
 
-	public void cleanup() {
-		parent=null;
-		decls.cleanup();
-	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo info, KString name, Type tp, int resfl)
-		DeclStat@ n;
+	public rule resolveNameR(DNode@ node, ResInfo info, KString name)
+		Var@ var;
 	{
-		n @= decls,
-		{
-			n.var.name.equals(name), node ?= n.var
-		;	n.var.isForward(),
-			info.enterForward(n.var) : info.leaveForward(n.var),
-			Type.getRealType(tp,n.var.getType()).clazz.resolveNameR(node,info,name,tp,resfl | ResolveFlags.NoImports)
-		}
+		var @= decls,
+		var.name.equals(name),
+		node ?= var
+	;	var @= decls,
+		var.isForward(),
+		info.enterForward(var) : info.leaveForward(var),
+		var.getType().resolveNameAccessR(node,info,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
-		DeclStat@ n;
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
+		Var@ var;
 	{
-		n @= decls,
-		n.var.isForward(),
-		info.enterForward(n.var) : info.leaveForward(n.var),
-		Type.getRealType(type,n.var.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		var @= decls,
+		var.isForward(),
+		info.enterForward(var) : info.leaveForward(var),
+		var.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
+	public void resolve(Type reqType) {
+		foreach (Var v; decls)
+			v.resolveDecl();
+	}
+	
 	public Dumper toJava(Dumper dmp) {
 		for(int i=0; i < decls.length; i++) {
 			decls[i].toJava(dmp);
@@ -301,213 +373,125 @@ public class ForInit extends ASTNode implements Scope {
 }
 
 @node
-public class ForStat extends LoopStat implements Scope {
-
-	@att public ASTNode		init;
-	@att public BooleanExpr	cond;
-	@att public Expr		iter;
-	@att public Statement	body;
-
-	public ForStat() {
+public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")				ENode		init;
+	@dflow(in="init", links="iter")		ENode		cond;
+	@dflow(in="cond:true")				ENode		body;
+	@dflow(in="body")					Label		lblcnt;
+	@dflow(in="lblcnt")					ENode		iter;
+	@dflow(in="cond:false")				Label		lblbrk;
 	}
 	
-	public ForStat(int pos, ASTNode parent, ASTNode init, BooleanExpr cond, Expr iter, Statement body) {
-		super(pos, parent);
-		if( init != null ) {
-			this.init = init;
-			this.init.parent = this;
-		}
-		if( cond != null ) {
-			this.cond = cond;
-			this.cond.parent = this;
-		}
-		if( iter != null ) {
-			this.iter = iter;
-			this.iter.parent = this;
-		}
+	@node
+	public static final class ForStatImpl extends LoopStatImpl {
+		@att public ENode		init;
+		@att public ENode		cond;
+		@att public ENode		body;
+		@att public ENode		iter;
+		public ForStatImpl() {}
+		public ForStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ForStatView of ForStatImpl extends LoopStatView {
+		public ENode		init;
+		public ENode		cond;
+		public ENode		body;
+		public ENode		iter;
+	}
+
+	@att public abstract virtual ENode			init;
+	@att public abstract virtual ENode			cond;
+	@att public abstract virtual ENode			body;
+	@att public abstract virtual ENode			iter;
+	
+	@getter public ENode			get$init()			{ return this.getForStatView().init; }
+	@getter public ENode			get$cond()			{ return this.getForStatView().cond; }
+	@getter public ENode			get$body()			{ return this.getForStatView().body; }
+	@getter public ENode			get$iter()			{ return this.getForStatView().iter; }
+	
+	@setter public void		set$init(ENode val)				{ this.getForStatView().init = val; }
+	@setter public void		set$cond(ENode val)				{ this.getForStatView().cond = val; }
+	@setter public void		set$body(ENode val)				{ this.getForStatView().body = val; }
+	@setter public void		set$iter(ENode val)				{ this.getForStatView().iter = val; }
+	
+	public NodeView				getNodeView()			{ return new ForStatView((ForStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ForStatView((ForStatImpl)this.$v_impl); }
+	public LoopStatView			getLoopStatView()		{ return new ForStatView((ForStatImpl)this.$v_impl); }
+	public ForStatView			getForStatView()		{ return new ForStatView((ForStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JForStatView((ForStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JForStatView((ForStatImpl)this.$v_impl); }
+	public JLoopStatView		getJLoopStatView()		{ return new JForStatView((ForStatImpl)this.$v_impl); }
+	public JForStatView			getJForStatView()		{ return new JForStatView((ForStatImpl)this.$v_impl); }
+
+	public ForStat() {
+		super(new ForStatImpl());
+	}
+	
+	public ForStat(int pos, ENode init, ENode cond, ENode iter, ENode body) {
+		super(new ForStatImpl(pos));
+		this.init = init;
+		this.cond = cond;
+		this.iter = iter;
 		this.body = body;
-		this.body.parent = this;
 	}
 
-	public void cleanup() {
-		parent=null;
+	public void resolve(Type reqType) {
 		if( init != null ) {
-			init.cleanup();
-			init = null;
-			}
-		if( cond != null ) {
-			cond.cleanup();
-			cond = null;
-			}
-		if( iter != null ) {
-			iter.cleanup();
-			iter = null;
-			}
-		body.cleanup();
-		body = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
-		try {
-			if( init != null ) {
-				try {
-					if( init instanceof Statement )
-						init = ((Statement)init).resolve(Type.tpVoid);
-					else if( init instanceof Expr )
-						init = ((Expr)init).resolve(Type.tpVoid);
-					else if( init instanceof ASTVarDecls ) {
-						ASTVarDecls vdecls = (ASTVarDecls)init;
-						int flags = 0;
-						Type type = ((ASTType)vdecls.type).getType();
-						int dim = 0;
-						while( type.isArray() ) { dim++; type = type.args[0]; }
-						DeclStat[] decls = new DeclStat[vdecls.vars.length];
-						this.init = new ForInit(init.pos);
-						for(int j=0; j < vdecls.vars.length; j++) {
-							ASTVarDecl vdecl = (ASTVarDecl)vdecls.vars[j];
-							KString vname = vdecl.name;
-							Type tp = type;
-							for(int k=0; k < vdecl.dim; k++) tp = Type.newArrayType(tp);
-							for(int k=0; k < dim; k++) tp = Type.newArrayType(tp);
-							DeclStat ds = new DeclStat(vdecl.pos, init, new Var(vdecl.pos,this,vname,tp,flags));
-							((ForInit)init).decls.append(ds);
-							if (vdecls.hasFinal()) ds.var.setFinal(true);
-							if (vdecls.hasForward()) ds.var.setForward(true);
-							if( vdecl.init != null ) {
-								ds.init = vdecl.init.resolveExpr(ds.var.type);
-								ds.init.parent = ds;
-							}
-							else if (ds.var.isFinal())
-								Kiev.reportError(ds.var.pos,"Final variable "+ds.var+" must have initializer");
-						}
-					}
-					else
-						throw new RuntimeException("Unknown type of for-init node "+init);
-					if (init instanceof Expr)
-						init.setGenVoidExpr(true);
-					if (init != null)
-						init.parent = this;
-				} catch(Exception e ) {
-					Kiev.reportError(init.pos,e);
-				}
-			}
-			if(  cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if(  cond != null && cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
-			if( cond != null ) {
-				try {
-					cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-					cond.parent = this;
-				} catch(Exception e ) {
-					Kiev.reportError(cond.pos,e);
-				}
-			}
-			try {   body = (Statement)body.resolve(Type.tpVoid);
+			try {
+				init.resolve(Type.tpVoid);
+				init.setGenVoidExpr(true);
 			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
+				Kiev.reportError(init,e);
 			}
-			if( iter != null ) {
-				try {
-					iter = (Expr)iter.resolve(Type.tpVoid);
-					iter.parent = this;
-					iter.setGenVoidExpr(true);
-				} catch(Exception e ) {
-					Kiev.reportError(iter.pos,e);
-				}
-			}
-			if( ( cond==null
-				|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
-				)
-				&& !isBreaked()
-			) {
-				setMethodAbrupted(true);
-			}
-		} finally {
-			PassInfo.pop(this);
-			NodeInfoPass.popState();
 		}
-		return this;
+		if( cond != null ) {
+			try {
+				cond.resolve(Type.tpBoolean);
+				BoolExpr.checkBool(cond);
+			} catch(Exception e ) {
+				Kiev.reportError(cond,e);
+			}
+		}
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(body,e);
+		}
+		if( iter != null ) {
+			try {
+				iter.resolve(Type.tpVoid);
+				iter.setGenVoidExpr(true);
+			} catch(Exception e ) {
+				Kiev.reportError(iter,e);
+			}
+		}
+		if( ( cond==null
+			|| (cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue())
+			)
+			&& !isBreaked()
+		) {
+			setMethodAbrupted(true);
+		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveNameR(node,path,name,tp,resfl)
+		((ForInit)init).resolveNameR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		ASTNode@ n;
 	{
 		init instanceof ForInit,
-		((ForInit)init).resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ForStat");
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
-		CodeLabel body_label = Code.newLabel();
-		CodeLabel check_label = Code.newLabel();
-
-		PassInfo.push(this);
-		try {
-			if( init != null ) {
-				if( init instanceof Statement )
-					((Statement)init).generate(Type.tpVoid);
-				else if( init instanceof Expr )
-					((Expr)init).generate(Type.tpVoid);
-				else if( init instanceof ForInit ) {
-					ForInit fi = (ForInit)init;
-					foreach (DeclStat ds; fi.decls) {
-						ds.generate(Type.tpVoid);
-					}
-				}
-			}
-
-			if( cond != null ) {
-				Code.addInstr(Instr.op_goto,check_label);
-			}
-
-			Code.addInstr(Instr.set_label,body_label);
-			if( isAutoReturnable() )
-				body.setAutoReturnable(true);
-			body.generate(Type.tpVoid);
-
-			Code.addInstr(Instr.set_label,continue_label);
-			if( iter != null )
-				iter.generate(Type.tpVoid);
-
-			Code.addInstr(Instr.set_label,check_label);
-			if( cond != null ) {
-				if( cond.isConstantExpr() && ((Boolean)cond.getConstValue()).booleanValue() )
-					Code.addInstr(Instr.op_goto,body_label);
-				else if( cond.isConstantExpr() && !((Boolean)cond.getConstValue()).booleanValue() );
-				else ((BooleanExpr)cond).generate_iftrue(body_label);
-			} else {
-				Code.addInstr(Instr.op_goto,body_label);
-			}
-			Code.addInstr(Instr.set_label,break_label);
-
-			if( init != null && init instanceof ForInit ) {
-				ForInit fi = (ForInit)init;
-				for(int i=fi.decls.length-1; i >= 0; i--) {
-					Code.removeVar(fi.decls[i].var);
-				}
-			}
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		((ForInit)init).resolveMethodR(node,info,name,mt)
 	}
 
 	public Dumper toJava(Dumper dmp) {
 		dmp.append("for").space().append('(');
-		if( init != null && init instanceof Statement ) dmp.append(init);
+		if( init != null && init instanceof ENode ) dmp.append(init);
 		else if( init != null ) {
 			dmp.append(init).append(';');
 		} else {
@@ -533,18 +517,22 @@ public class ForStat extends LoopStat implements Scope {
 }
 
 @node
-public class ForEachStat extends LoopStat implements Scope {
-
-	@att public Var			var;
-	@att public Var			iter;
-	@att public Var			iter_array;
-	@att public Expr		iter_init;
-	@att public BooleanExpr	iter_cond;
-	@att public Expr		iter_incr;
-	@att public Expr		var_init;
-	@att public Expr		container;
-	@att public BooleanExpr	cond;
-	@att public Statement	body;
+public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")						ENode		container;
+	@dflow(in="this:in")						Var			var;
+	@dflow(in="var")							Var			iter;
+	@dflow(in="iter")							Var			iter_array;
+	@dflow(in="iter_array")						ENode		iter_init;
+	@dflow(in="iter_init", links="iter_incr")	ENode		iter_cond;
+	@dflow(in="iter_cond:true")					ENode		var_init;
+	@dflow(in="var_init")						ENode		cond;
+	@dflow(in="cond:true")						ENode		body;
+	@dflow(in="body", links="cond:false")		Label		lblcnt;
+	@dflow(in="lblcnt")							ENode		iter_incr;
+	@dflow(in="iter_cond:false")				Label		lblbrk;
+	}
 
 	public static final int	ARRAY = 0;
 	public static final int	KENUM = 1;
@@ -552,330 +540,341 @@ public class ForEachStat extends LoopStat implements Scope {
 	public static final int	ELEMS = 3;
 	public static final int	RULE  = 4;
 
-	public int			mode;
+	@node
+	public static final class ForEachStatImpl extends LoopStatImpl {
+		@att public int			mode;
+		@att public ENode		container;
+		@att public Var			var;
+		@att public Var			iter;
+		@att public Var			iter_array;
+		@att public ENode		iter_init;
+		@att public ENode		iter_cond;
+		@att public ENode		var_init;
+		@att public ENode		cond;
+		@att public ENode		body;
+		@att public ENode		iter_incr;
+		public ForEachStatImpl() {}
+		public ForEachStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view ForEachStatView of ForEachStatImpl extends LoopStatView {
+		public int			mode;
+		public ENode		container;
+		public Var			var;
+		public Var			iter;
+		public Var			iter_array;
+		public ENode		iter_init;
+		public ENode		iter_cond;
+		public ENode		var_init;
+		public ENode		cond;
+		public ENode		body;
+		public ENode		iter_incr;
+	}
+
+	@att public abstract virtual int		mode;
+	@att public abstract virtual ENode		container;
+	@att public abstract virtual Var		var;
+	@att public abstract virtual Var		iter;
+	@att public abstract virtual Var		iter_array;
+	@att public abstract virtual ENode		iter_init;
+	@att public abstract virtual ENode		iter_cond;
+	@att public abstract virtual ENode		var_init;
+	@att public abstract virtual ENode		cond;
+	@att public abstract virtual ENode		body;
+	@att public abstract virtual ENode		iter_incr;
+
+	@getter public int				get$mode()			{ return this.getForEachStatView().mode; }
+	@getter public ENode			get$container()		{ return this.getForEachStatView().container; }
+	@getter public Var				get$var()			{ return this.getForEachStatView().var; }
+	@getter public Var				get$iter()			{ return this.getForEachStatView().iter; }
+	@getter public Var				get$iter_array()	{ return this.getForEachStatView().iter_array; }
+	@getter public ENode			get$iter_init()		{ return this.getForEachStatView().iter_init; }
+	@getter public ENode			get$iter_cond()		{ return this.getForEachStatView().iter_cond; }
+	@getter public ENode			get$var_init()		{ return this.getForEachStatView().var_init; }
+	@getter public ENode			get$cond()			{ return this.getForEachStatView().cond; }
+	@getter public ENode			get$body()			{ return this.getForEachStatView().body; }
+	@getter public ENode			get$iter_incr()		{ return this.getForEachStatView().iter_incr; }
+	
+	@setter public void		set$mode(int val)				{ this.getForEachStatView().mode = val; }
+	@setter public void		set$container(ENode val)		{ this.getForEachStatView().container = val; }
+	@setter public void		set$var(Var val)				{ this.getForEachStatView().var = val; }
+	@setter public void		set$iter(Var val)				{ this.getForEachStatView().iter = val; }
+	@setter public void		set$iter_array(Var val)			{ this.getForEachStatView().iter_array = val; }
+	@setter public void		set$iter_init(ENode val)		{ this.getForEachStatView().iter_init = val; }
+	@setter public void		set$iter_cond(ENode val)		{ this.getForEachStatView().iter_cond = val; }
+	@setter public void		set$var_init(ENode val)			{ this.getForEachStatView().var_init = val; }
+	@setter public void		set$cond(ENode val)				{ this.getForEachStatView().cond = val; }
+	@setter public void		set$body(ENode val)				{ this.getForEachStatView().body = val; }
+	@setter public void		set$iter_incr(ENode val)			{ this.getForEachStatView().iter_incr = val; }
+	
+	public NodeView				getNodeView()			{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public LoopStatView			getLoopStatView()		{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public ForEachStatView		getForEachStatView()	{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public JLoopStatView		getJLoopStatView()		{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public JForEachStatView		getJForEachStatView()	{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
 
 	public ForEachStat() {
+		super(new ForEachStatImpl());
 	}
 	
-	public ForEachStat(int pos, ASTNode parent, Var var, Expr container, BooleanExpr cond, Statement body) {
-		super(pos, parent);
+	public ForEachStat(int pos, Var var, ENode container, ENode cond, ENode body) {
+		super(new ForEachStatImpl(pos));
 		this.var = var;
-		if( this.var != null )
-			this.var.parent = this;
 		this.container = container;
-		this.container.parent = this;
-		if( cond != null ) {
-			this.cond = cond;
-			this.cond.parent = this;
-		}
+		this.cond = cond;
 		this.body = body;
-		this.body.parent = this;
 	}
 
-	public void cleanup() {
-		parent=null;
-		var = null;
-		iter = null;
-		iter_array = null;
-		if( iter_init != null ) {
-			iter_init.cleanup();
-			iter_init = null;
-			}
-		if( iter_cond != null ) {
-			iter_cond.cleanup();
-			iter_cond = null;
-			}
-		if( iter_incr != null ) {
-			iter_incr.cleanup();
-			iter_incr = null;
-			}
-		if( var_init != null ) {
-			var_init.cleanup();
-			var_init = null;
-			}
-		if( container != null ) {
-			container.cleanup();
-			container = null;
-			}
-		if( cond != null ) {
-			cond.cleanup();
-			cond = null;
-			}
-		body.cleanup();
-		body = null;
-	}
+	public void resolve(Type reqType) {
+		// foreach( type x; container; cond) statement
+		// is equivalent to
+		// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
+		//		type x = container.nextElement();
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//	or if container is an array:
+		//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
+		//		type x = x$arr[ x$iter ];
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//	or if container is a rule:
+		//	for(rule $env=null; ($env=rule($env,...)) != null; ) {
+		//		if( !cond ) continue;
+		//		...
+		//	}
+		//
 
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
-		ScopeNodeInfoVector state = NodeInfoPass.pushState();
-		state.guarded = true;
-		try {
-			// foreach( type x; container; cond) statement
-			// is equivalent to
-			// for(iter-type x$iter = container.elements(); x$iter.hasMoreElements(); ) {
-			//		type x = container.nextElement();
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//	or if container is an array:
-			//	for(int x$iter=0, x$arr=container; x$iter < x$arr.length; x$iter++) {
-			//		type x = x$arr[ x$iter ];
-			//
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//	or if container is a rule:
-			//	for(rule $env=null; ($env=rule($env,...)) != null; ) {
-			//		if( !cond ) continue;
-			//		...
-			//	}
-			//
+		container.resolve(null);
 
-			container = (Expr)container.resolve(null);
-
-			Type itype;
-			Type ctype = container.getType();
-			PVar<Method> elems = new PVar<Method>();
-			PVar<Method> nextelem = new PVar<Method>();
-			PVar<Method> moreelem = new PVar<Method>();
-			if (ctype.clazz.isWrapper()) {
-				container = (Expr)new AccessExpr(container.pos,container,ctype.clazz.wrapped_field).resolve(null);
-				ctype = container.getType();
+		Type itype;
+		Type ctype = container.getType();
+		Method@ elems;
+		Method@ nextelem;
+		Method@ moreelem;
+		if (ctype.isWrapper()) {
+			container = ctype.makeWrappedAccess(container);
+			container.resolve(null);
+			ctype = container.getType();
+		}
+		if( ctype.isArray() ) {
+			itype = Type.tpInt;
+			mode = ARRAY;
+		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
+			itype = ctype;
+			mode = KENUM;
+		} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
+			itype = ctype;
+			mode = JENUM;
+		} else if( PassInfo.resolveBestMethodR(ctype,elems,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+				nameElements,new MethodType(Type.emptyArray,Type.tpAny))
+		) {
+			itype = Type.getRealType(ctype,elems.type.ret);
+			mode = ELEMS;
+		} else if( ctype ≡ Type.tpRule &&
+			(
+			   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret ≡ Type.tpRule )
+			|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() ≡ Type.tpRule )
+			)
+		  ) {
+			itype = Type.tpRule;
+			mode = RULE;
+		} else {
+			throw new CompilerException(container,"Container must be an array or an Enumeration "+
+				"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
+		}
+		if( itype ≡ Type.tpRule ) {
+			iter = new Var(pos,KString.from("$env"),itype,0);
+		}
+		else if( var != null ) {
+			iter = new Var(var.pos,KString.from(var.name.name+"$iter"),itype,0);
+			if (mode == ARRAY) {
+				iter_array = new Var(container.pos,KString.from(var.name.name+"$arr"),container.getType(),0);
 			}
-			if( ctype.isArray() ) {
-				itype = Type.tpInt;
-				mode = ARRAY;
-			} else if( ctype.clazz.instanceOf( Type.tpKievEnumeration.clazz) ) {
-				itype = ctype;
-				mode = KENUM;
-			} else if( ctype.isInstanceOf( Type.tpJavaEnumeration) ) {
-				itype = ctype;
-				mode = JENUM;
-			} else if( PassInfo.resolveBestMethodR(ctype.clazz,elems,new ResInfo(),nameElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) ) {
-				itype = Type.getRealType(ctype,elems.type.ret);
-				mode = ELEMS;
-			} else if( ctype == Type.tpRule &&
-				(
-				   ( container instanceof CallExpr && ((CallExpr)container).func.type.ret == Type.tpRule )
-				|| ( container instanceof CallAccessExpr && ((CallAccessExpr)container).func.type.ret == Type.tpRule )
-				|| ( container instanceof ClosureCallExpr && ((ClosureCallExpr)container).getType() == Type.tpRule )
-				)
-			  ) {
-				itype = Type.tpRule;
-				mode = RULE;
-			} else {
-				throw new CompilerException(container.pos,"Container must be an array or an Enumeration "+
-					"or a class that implements 'Enumeration elements()' method, but "+ctype+" found");
-			}
-			if( itype == Type.tpRule ) {
-				iter = new Var(pos,this,KString.from("$env"),itype,0);
-			}
-			else if( var != null ) {
-				iter = new Var(var.pos,this,KString.from(var.name.name+"$iter"),itype,0);
-				if (mode == ARRAY)
-					iter_array = new Var(container.pos,this,KString.from(var.name.name+"$arr"),container.getType(),0);
-			}
-			else {
-				iter = null;
-			}
-
-			// Initialize iterator
-			switch( mode ) {
-			case ARRAY:
-				/* iter = 0; arr = container;*/
-				iter_init = new CommaExpr(0, new Expr[]{
-					new AssignExpr(iter.pos,AssignOperator.Assign,
-						new VarAccessExpr(container.pos,iter_array),
-							new ShadowExpr(container)
-						),
-					new AssignExpr(iter.pos,AssignOperator.Assign,
-						new VarAccessExpr(iter.pos,iter),
-							new ConstExpr(iter.pos,Kiev.newInteger(0))
-						)
-				});
-				iter_init.parent = this;
-				iter_init = (Expr)iter_init.resolve(Type.tpInt);
-				break;
-			case KENUM:
-				/* iter = container; */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
-					);
-				iter_init.parent = this;
-				iter_init = (Expr)iter_init.resolve(iter.type);
-				break;
-			case JENUM:
-				/* iter = container; */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ShadowExpr(container)
-					);
-				iter_init.parent = this;
-				iter_init = (Expr)iter_init.resolve(iter.type);
-				break;
-			case ELEMS:
-				/* iter = container.elements(); */
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter),
-					new CallAccessExpr(container.pos,new ShadowExpr(container),elems,Expr.emptyArray)
-					);
-				iter_init.parent = this;
-				iter_init = (Expr)iter_init.resolve(iter.type);
-				break;
-			case RULE:
-				/* iter = rule(iter,...); */
-				{
-				iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
-					new VarAccessExpr(iter.pos,iter), new ConstExpr(iter.pos,null)
-					);
-				iter_init.parent = this;
-				iter_init = (Expr)iter_init.resolve(Type.tpVoid);
-				// Also, patch the rule argument
-				NArr<Expr> args = null;
-				if( container instanceof CallExpr ) {
-					args = ((CallExpr)container).args;
-				}
-				else if( container instanceof CallAccessExpr ) {
-					args = ((CallAccessExpr)container).args;
-				}
-				else if( container instanceof ClosureCallExpr ) {
-					args = ((ClosureCallExpr)container).args;
-				}
-				else
-					Debug.assert("Unknown type of rule - "+container.getClass());
-				args[0] = (Expr)new VarAccessExpr(container.pos,iter).resolve(Type.tpRule);
-				}
-				break;
-			}
-			iter_init.parent = this;
-			iter_init.setGenVoidExpr(true);
-
-			// Check iterator condition
-
-			switch( mode ) {
-			case ARRAY:
-				/* iter < container.length */
-				iter_cond = new BinaryBooleanExpr(iter.pos,BinaryOperator.LessThen,
-					new VarAccessExpr(iter.pos,iter),
-					new ArrayLengthAccessExpr(iter.pos,new VarAccessExpr(0,iter_array))
-					);
-				break;
-			case KENUM:
-			case JENUM:
-			case ELEMS:
-				/* iter.hasMoreElements() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,moreelem,new ResInfo(),
-					nameHasMoreElements,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-				iter_cond = new BooleanWrapperExpr(iter.pos,
-					new CallAccessExpr(iter.pos, new VarAccessExpr(iter.pos,this,iter),
-						moreelem,
-						Expr.emptyArray
-					));
-				break;
-			case RULE:
-				/* (iter = rule(iter, ...)) != null */
-				iter_cond = new BinaryBooleanExpr(
-					container.pos,
-					BinaryOperator.NotEquals,
-					new AssignExpr(container.pos,AssignOperator.Assign,
-						new VarAccessExpr(container.pos,iter),
-						new ShadowExpr(container)),
-					new ConstExpr(container.pos,null)
-					);
-				break;
-			}
-			if( iter_cond != null ) {
-				iter_cond.parent = this;
-				iter_cond = (BooleanExpr)iter_cond.resolve(Type.tpBoolean);
-			}
-
-			// Initialize value
-			switch( mode ) {
-			case ARRAY:
-				/* var = container[iter] */
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-					new VarAccessExpr(var.pos,var),
-					new ContainerAccessExpr(container.pos,new VarAccessExpr(0,iter_array),new VarAccessExpr(iter.pos,iter))
-					);
-				break;
-			case KENUM:
-			case JENUM:
-			case ELEMS:
-				/* var = iter.nextElement() */
-				if( !PassInfo.resolveBestMethodR(itype.clazz,nextelem,new ResInfo(),
-					nameNextElement,Expr.emptyArray,null,ctype,ResolveFlags.NoForwards) )
-					throw new CompilerException(pos,"Can't find method "+nameHasMoreElements);
-					var_init = new CallAccessExpr(iter.pos,
-						new VarAccessExpr(iter.pos,iter),
-						nextelem,
-						Expr.emptyArray
-					);
-				if (!nextelem.type.ret.isInstanceOf(var.type))
-					var_init = new CastExpr(pos,var.type,var_init);
-				var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
-					new VarAccessExpr(var.pos,var),
-					var_init
-				);
-				break;
-			case RULE:
-				/* iter = rule(...); */
-				var_init = null;
-				break;
-			}
-			if( var_init != null ) {
-				var_init.parent = this;
-				var_init = (Expr)var_init.resolve(var.getType());
-				var_init.parent = this;
-				var_init.setGenVoidExpr(true);
-			}
-
-			// Check condition, if any
-			if( cond != null ) {
-				cond = (BooleanExpr)cond.resolve(Type.tpBoolean);
-			}
-
-			if( cond != null && cond instanceof InstanceofExpr ) ((InstanceofExpr)cond).setNodeTypeInfo();
-			else if( cond != null &&  cond instanceof BinaryBooleanAndExpr ) {
-				BinaryBooleanAndExpr bbae = (BinaryBooleanAndExpr)cond;
-				if( bbae.expr1 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr1).setNodeTypeInfo();
-				if( bbae.expr2 instanceof InstanceofExpr ) ((InstanceofExpr)bbae.expr2).setNodeTypeInfo();
-			}
-
-			// Process body
-			try {   body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(body.pos,e);
-			}
-
-			// Increment iterator
-			if( mode == ARRAY ) {
-				/* iter++ */
-				iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
-					new VarAccessExpr(iter.pos,iter)
-					);
-				iter_incr.parent = this;
-				iter_incr = (Expr)iter_incr.resolve(Type.tpVoid);
-				iter_incr.parent = this;
-				iter_incr.setGenVoidExpr(true);
-			} else {
-				iter_incr = null;
-			}
-		} finally {
-			PassInfo.pop(this);
-			NodeInfoPass.popState();
+		}
+		else {
+			iter = null;
 		}
 
-		return this;
+		// Initialize iterator
+		switch( mode ) {
+		case ARRAY:
+			/* iter = 0; arr = container;*/
+			iter_init = new CommaExpr();
+			((CommaExpr)iter_init).exprs.add(
+				new AssignExpr(iter.pos,AssignOperator.Assign,
+					new LVarExpr(container.pos,iter_array),
+					(ENode)container.copy()
+				));
+			((CommaExpr)iter_init).exprs.add(
+				new AssignExpr(iter.pos,AssignOperator.Assign,
+					new LVarExpr(iter.pos,iter),
+					new ConstIntExpr(0)
+				));
+			iter_init.resolve(Type.tpInt);
+			break;
+		case KENUM:
+			/* iter = container; */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new LVarExpr(iter.pos,iter), (ENode)container.copy()
+				);
+			iter_init.resolve(iter.type);
+			break;
+		case JENUM:
+			/* iter = container; */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new LVarExpr(iter.pos,iter), (ENode)container.copy()
+				);
+			iter_init.resolve(iter.type);
+			break;
+		case ELEMS:
+			/* iter = container.elements(); */
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new LVarExpr(iter.pos,iter),
+				new CallExpr(container.pos,(ENode)container.copy(),elems,ENode.emptyArray)
+				);
+			iter_init.resolve(iter.type);
+			break;
+		case RULE:
+			/* iter = rule(iter/hidden,...); */
+			{
+			iter_init = new AssignExpr(iter.pos, AssignOperator.Assign,
+				new LVarExpr(iter.pos,iter), new ConstNullExpr()
+				);
+			iter_init.resolve(Type.tpVoid);
+//			// now is hidden // Also, patch the rule argument
+//			NArr<ENode> args = null;
+//			if( container instanceof CallExpr ) {
+//				args = ((CallExpr)container).args;
+//			}
+//			else if( container instanceof ClosureCallExpr ) {
+//				args = ((ClosureCallExpr)container).args;
+//			}
+//			else
+//				Debug.assert("Unknown type of rule - "+container.getClass());
+//			args[0] = new LVarExpr(container.pos,iter);
+//			args[0].resolve(Type.tpRule);
+			}
+			break;
+		}
+		iter_init.setGenVoidExpr(true);
+
+		// Check iterator condition
+
+		switch( mode ) {
+		case ARRAY:
+			/* iter < container.length */
+			iter_cond = new BinaryBoolExpr(iter.pos,BinaryOperator.LessThen,
+				new LVarExpr(iter.pos,iter),
+				new ArrayLengthExpr(iter.pos,new LVarExpr(0,iter_array))
+				);
+			break;
+		case KENUM:
+		case JENUM:
+		case ELEMS:
+			/* iter.hasMoreElements() */
+			if( !PassInfo.resolveBestMethodR(itype,moreelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+				nameHasMoreElements,new MethodType(Type.emptyArray,Type.tpAny)) )
+				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
+			iter_cond = new CallExpr(	iter.pos,
+					new LVarExpr(iter.pos,iter),
+					moreelem,
+					ENode.emptyArray
+				);
+			break;
+		case RULE:
+			/* (iter = rule(iter, ...)) != null */
+			iter_cond = new BinaryBoolExpr(
+				container.pos,
+				BinaryOperator.NotEquals,
+				new AssignExpr(container.pos,AssignOperator.Assign,
+					new LVarExpr(container.pos,iter),
+					(ENode)container.copy()),
+				new ConstNullExpr()
+				);
+			break;
+		}
+		if( iter_cond != null ) {
+			iter_cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(iter_cond);
+		}
+
+		// Initialize value
+		switch( mode ) {
+		case ARRAY:
+			/* var = container[iter] */
+			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
+				new LVarExpr(var.pos,var),
+				new ContainerAccessExpr(container.pos,new LVarExpr(0,iter_array),new LVarExpr(iter.pos,iter))
+				);
+			break;
+		case KENUM:
+		case JENUM:
+		case ELEMS:
+			/* var = iter.nextElement() */
+			if( !PassInfo.resolveBestMethodR(itype,nextelem,new ResInfo(this,ResInfo.noStatic|ResInfo.noImports),
+				nameNextElement,new MethodType(Type.emptyArray,Type.tpAny)) )
+				throw new CompilerException(this,"Can't find method "+nameHasMoreElements);
+				var_init = new CallExpr(iter.pos,
+					new LVarExpr(iter.pos,iter),
+					nextelem,
+					ENode.emptyArray
+				);
+			if (!nextelem.type.ret.isInstanceOf(var.type))
+				var_init = new CastExpr(pos,var.type,(ENode)~var_init);
+			var_init = new AssignExpr(var.pos,AssignOperator.Assign2,
+				new LVarExpr(var.pos,var),
+				(ENode)~var_init
+			);
+			break;
+		case RULE:
+			/* iter = rule(...); */
+			var_init = null;
+			break;
+		}
+		if( var_init != null ) {
+			var_init.resolve(var.getType());
+			var_init.setGenVoidExpr(true);
+		}
+
+		// Check condition, if any
+		if( cond != null ) {
+			cond.resolve(Type.tpBoolean);
+			BoolExpr.checkBool(cond);
+		}
+
+		// Process body
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(body,e);
+		}
+
+		// Increment iterator
+		if( mode == ARRAY ) {
+			/* iter++ */
+			iter_incr = new IncrementExpr(iter.pos,PostfixOperator.PostIncr,
+				new LVarExpr(iter.pos,iter)
+				);
+			iter_incr.resolve(Type.tpVoid);
+			iter_incr.setGenVoidExpr(true);
+		} else {
+			iter_incr = null;
+		}
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		{	node ?= var
 		;	node ?= iter
 		}, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
 		{	n ?= var
@@ -883,62 +882,7 @@ public class ForEachStat extends LoopStat implements Scope {
 		},
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
-	}
-
-	public void generate(Type reqType) {
-		trace(Kiev.debugStatGen,"\tgenerating ForEachStat");
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
-		CodeLabel body_label = Code.newLabel();
-		CodeLabel check_label = Code.newLabel();
-
-		PassInfo.push(this);
-		try {
-			if( iter != null )
-				Code.addVar(iter);
-			if( var != null )
-				Code.addVar(var);
-			if( iter_array != null )
-				Code.addVar(iter_array);
-
-			// Init iterator
-			iter_init.generate(Type.tpVoid);
-
-			// Goto check
-			Code.addInstr(Instr.op_goto,check_label);
-
-			// Start body - set var, check cond, do body
-			Code.addInstr(Instr.set_label,body_label);
-
-			if( var_init != null)
-				var_init.generate(Type.tpVoid);
-			if( cond != null )
-				cond.generate_iffalse(continue_label);
-
-			body.generate(Type.tpVoid);
-
-			// Continue - iterate iterator and check iterator condition
-			Code.addInstr(Instr.set_label,continue_label);
-			if( iter_incr != null )
-				iter_incr.generate(Type.tpVoid);
-
-			// Just check iterator condition
-			Code.addInstr(Instr.set_label,check_label);
-			if( iter_cond != null )
-				iter_cond.generate_iftrue(body_label);
-
-			if( iter_array != null )
-				Code.removeVar(iter_array);
-			if( var != null )
-				Code.removeVar(var);
-			if( iter != null )
-				Code.removeVar(iter);
-
-			Code.addInstr(Instr.set_label,break_label);
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
 
 	public Dumper toJava(Dumper dmp) {

@@ -1,139 +1,186 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
-import kiev.parser.PrescannedBody;
+import kiev.parser.*;
 import kiev.stdlib.*;
+import kiev.transf.*;
 import java.io.*;
 
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Import.java,v 1.5.2.1.2.1 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1.2.1 $
+ * @version $Revision$
  *
  */
 
 @node
-public class Import extends ASTNode implements Constants, Scope {
+public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
-	public static final int	IMPORT_CLASS   = 0;
-	public static final int	IMPORT_STATIC  = 1;
-	public static final int	IMPORT_PACKAGE = 2;
-	public static final int	IMPORT_SYNTAX  = 3;
-
-	public int				mode = IMPORT_CLASS;
-    public boolean			star = false;
-    @ref public ASTNode		node;
-
-	public Import() {
+	public enum ImportMode {
+		IMPORT_CLASS,
+		IMPORT_STATIC,
+		IMPORT_PACKAGE,
+		IMPORT_SYNTAX;
 	}
 
-	public Import(int pos, ASTNode parent, ASTNode node, int mode, boolean star) {
-		super(pos, parent);
-		this.node = node;
+	@node
+	static final class ImportImpl extends DNodeImpl {
+		ImportImpl() {}
+		@att NameRef				name;
+		@att ImportMode				mode = ImportMode.IMPORT_CLASS;
+		@att boolean				star;
+		@att NArr<TypeRef>			args;
+		
+		@ref boolean				of_method;
+		@ref DNode					resolved;
+	}
+	@nodeview
+	static final view ImportView of ImportImpl extends DNodeView {
+		public				NameRef				name;
+		public				ImportMode			mode;
+		public				boolean				star;
+		public access:ro	NArr<TypeRef>		args;
+		public				boolean				of_method;
+		public				DNode				resolved;
+	}
+	public NodeView			getNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
+	public ImportView		getImportView()		{ return new ImportView((ImportImpl)this.$v_impl); }
+
+	@att public abstract virtual				NameRef					name;
+	@att public abstract virtual				ImportMode				mode;
+	@att public abstract virtual				boolean					star;
+	@att public abstract virtual access:ro		NArr<TypeRef>			args;
+
+	@ref public abstract virtual				boolean					of_method;
+	@ref public abstract virtual				DNode					resolved;
+
+	@getter public NameRef				get$name()	{ return this.getImportView().name; }
+	@getter public ImportMode			get$mode()	{ return this.getImportView().mode; }
+	@getter public boolean				get$star()	{ return this.getImportView().star; }
+	@getter public NArr<TypeRef>		get$args()	{ return this.getImportView().args; }
+	@getter public boolean				get$of_method()	{ return this.getImportView().of_method; }
+	@getter public DNode				get$resolved()	{ return this.getImportView().resolved; }
+	
+	@setter public void set$name(NameRef val)			{ this.getImportView().name = val; }
+	@setter public void set$mode(ImportMode val)		{ this.getImportView().mode = val; }
+	@setter public void set$star(boolean val)			{ this.getImportView().star = val; }
+	@setter public void set$of_method(boolean val)		{ this.getImportView().of_method = val; }
+	@setter public void set$resolved(DNode val)		{ this.getImportView().resolved = val; }
+
+	public Import() { super(new ImportImpl()); }
+
+	public Import(DNode node, ImportMode mode, boolean star) {
+		super(new ImportImpl());
+		this.resolved = node;
 		this.mode = mode;
 		this.star = star;
 	}
 
 	public String toString() {
 		StringBuffer str = new StringBuffer("import ");
-		if (mode == IMPORT_STATIC)  str.append("static ");
-		if (mode == IMPORT_PACKAGE) str.append("package ");
-		if (mode == IMPORT_SYNTAX)  str.append("syntax ");
-		if (node instanceof Field)  str.append(node.getType()).append('.');
-		str.append(node);
+		if (mode == ImportMode.IMPORT_STATIC)  str.append("static ");
+		if (mode == ImportMode.IMPORT_PACKAGE) str.append("package ");
+		if (mode == ImportMode.IMPORT_SYNTAX)  str.append("syntax ");
+		if (resolved instanceof Field)  str.append(resolved.getType()).append('.');
+		str.append(resolved);
 		if (star) str.append(".*");
 		return str.toString();
 	}
 
-	public ASTNode resolve() throws RuntimeException {
+	public boolean preGenerate()	{ return false; }
+	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
+
+	public ASTNode resolveImports() {
+		if (!of_method || (mode==ImportMode.IMPORT_STATIC && star)) return this;
+		int i = 0;
+		Type[] types;
+		if( args.length > 0 && args[0].getType() ≡ Type.tpRule) {
+			types = new Type[args.length-1];
+			i++;
+		} else {
+			types = new Type[args.length];
+		}
+		for(int j=0; j < types.length; j++,i++)
+			types[j] = args[i].getType();
+		DNode@ v;
+		MethodType mt = new MethodType(types,Type.tpAny);
+		if( !PassInfo.resolveMethodR(this,v,null,name.name,mt) )
+			throw new CompilerException(this,"Unresolved method "+Method.toString(name.name,mt));
+		DNode n = v;
+		if (mode != ImportMode.IMPORT_STATIC || !(n instanceof Method))
+			throw new CompilerException(this,"Identifier "+name+" is not a method");
+		resolved = n;
 		return this;
 	}
 
-	public void generate() {}
+	public void resolveDecl() {}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 		Struct@ s;
 		Struct@ sub;
-		ASTNode@ tmp;
+		DNode@ tmp;
 	{
-		this.node instanceof Method, $cut, false
+		this.resolved instanceof Method, $cut, false
 	;
-		mode == IMPORT_CLASS && this.node instanceof Struct && !star,
-		((Struct)this.node).checkResolved(),
-		s ?= ((Struct)this.node),
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && !star,
+		((Struct)this.resolved).checkResolved(),
+		s ?= ((Struct)this.resolved),
 		!s.isPackage(),
 		{
 			s.name.name.equals(name), node ?= s.$var
 		;	s.name.short_name.equals(name), node ?= s.$var
 		}
 	;
-		mode == IMPORT_CLASS && this.node instanceof Struct && star,
-		((Struct)this.node).checkResolved(),
-		s ?= ((Struct)this.node),
+		mode == ImportMode.IMPORT_CLASS && this.resolved instanceof Struct && star,
+		((Struct)this.resolved).checkResolved(),
+		s ?= ((Struct)this.resolved),
 		{
 			!s.isPackage(),
-			sub @= s.sub_clazz, !sub.isArgument(),
+			sub @= s.sub_clazz,
 			{
 				sub.name.name.equals(name), node ?= sub.$var
 			;	sub.name.short_name.equals(name), node ?= sub.$var
 			}
-		;	s.isPackage(), s.resolveNameR(node,path,name,tp,resfl)
+		;	s.isPackage(), s.resolveNameR(node,path,name)
 		}
 	;
-		mode == IMPORT_STATIC && star && this.node instanceof Struct,
-		((Struct)this.node).checkResolved(),
-		((Struct)this.node).resolveNameR(node,path,name,tp,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		path.isStaticAllowed(),
+		((Struct)this.resolved).checkResolved(),
+		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		((Struct)this.resolved).resolveNameR(node,path,name),
 		node instanceof Field && node.isStatic() && node.isPublic()
 	;
-		mode == IMPORT_SYNTAX,
-		((Struct)this.node).checkResolved(),
-		tmp @= ((Struct)this.node).imported,
+		mode == ImportMode.IMPORT_SYNTAX && this.resolved instanceof Struct,
+		((Struct)this.resolved).checkResolved(),
+		tmp @= ((Struct)this.resolved).imported,
 		{
 			tmp instanceof Field,
 			trace(Kiev.debugResolve,"Syntax check field "+tmp+" == "+name),
 			((Field)tmp).name.equals(name),
 			node ?= tmp
-		;	tmp instanceof Typedef,
+		;	tmp instanceof TypeDef,
 			trace(Kiev.debugResolve,"Syntax check typedef "+tmp+" == "+name),
-			((Typedef)tmp).name.equals(name),
-			node ?= ((Typedef)tmp).type
+			((TypeDef)tmp).name.equals(name),
+			node ?= ((TypeDef)tmp)
 		//;	trace(Kiev.debugResolve,"Syntax check "+tmp.getClass()+" "+tmp+" == "+name), false
 		}
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(DNode@ node, ResInfo path, KString name, MethodType mt)
 	{
-		mode == IMPORT_STATIC && !star && this.node instanceof Method,
-		((Method)this.node).equalsByCast(name,args,ret,type,resfl),
-		node ?= ((Method)this.node)
+		mode == ImportMode.IMPORT_STATIC && !star && this.resolved instanceof Method,
+		((Method)this.resolved).equalsByCast(name,mt,null,path),
+		node ?= ((Method)this.resolved)
 	;
-		mode == IMPORT_STATIC && star && this.node instanceof Struct,
-		((Struct)this.node).checkResolved(),
-		((Struct)this.node).resolveMethodR(node,path,name,args,ret,type,resfl|ResolveFlags.NoForwards|ResolveFlags.NoImports|ResolveFlags.Static),
+		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
+		((Struct)this.resolved).checkResolved(),
+		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
+		((Struct)this.resolved).type.resolveCallStaticR(node,path,name,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 
@@ -142,10 +189,75 @@ public class Import extends ASTNode implements Constants, Scope {
 		return dmp;
 	}
 
-	public void cleanup() {
-		parent=null;
-		node = null;
+}
+
+@node
+public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
+
+	@dflow(out="this:in") private static class DFI {}
+
+	@node
+	static final class TypeOpDefImpl extends TypeDeclImpl {
+		TypeOpDefImpl() {}
+		TypeOpDefImpl(int pos) { super(pos); }
+		@att ASTOperator	op;
+		@att TypeRef		type;
+		@att TypeDef		arg;
+	}
+	@nodeview
+	static final view TypeOpDefView of TypeOpDefImpl extends TypeDeclView {
+		public	ASTOperator		op;
+		public	TypeRef			type;
+		public	TypeDef		arg;
+	}
+	public NodeView			getNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public TypeDeclView		getTypeDeclView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+	public TypeOpDefView	getTypeOpDefView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
+
+	@getter public ASTOperator		get$op()		{ return this.getTypeOpDefView().op; }
+	@getter public TypeRef			get$type()		{ return this.getTypeOpDefView().type; }
+	@getter public TypeDef		get$arg()		{ return this.getTypeOpDefView().arg; }
+
+	@setter public void set$op(ASTOperator val)		{ this.getTypeOpDefView().op = val; }
+	@setter public void set$type(TypeRef val)			{ this.getTypeOpDefView().type = val; }
+	@setter public void set$arg(TypeDef val)		{ this.getTypeOpDefView().arg = val; }
+	
+	@att public abstract virtual ASTOperator	op;
+	@att public abstract virtual TypeRef		type;
+	@att public abstract virtual TypeDef	arg;
+
+	public TypeOpDef() {
+		super(new TypeOpDefImpl());
+	}
+	
+	public boolean checkResolved() {
+		return type.getType().checkResolved();
+	}
+	
+	public NodeName	getName() {
+		return new NodeName(op.image);
+	}
+	
+	public Type getType() {
+		return type.getType();
 	}
 
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name) {
+		path.space_prev == this.type,
+		this.arg.name.name == name,
+		node ?= this.arg
+	}
+
+	public boolean preGenerate()	{ return false; }
+	public boolean mainResolveIn(TransfProcessor proc)		{ return false; }
+
+	public String toString() {
+		return "typedef "+arg+op+" "+type+"<"+arg+">;";
+	}
+
+	public Dumper toJava(Dumper dmp) {
+    	return dmp.append("/* ").append(toString()).append(" */").newLine();
+    }
 }
 

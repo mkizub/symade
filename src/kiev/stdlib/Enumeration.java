@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Enumeration.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 
@@ -42,7 +41,6 @@ package kiev.stdlib;
  * @see Hashtable
  */
 public interface Enumeration<A>
-	$generate <boolean>,<byte>,<char>,<short>,<int>,<long>,<float>,<double>
 {
     /**
      * Returns true if the enumeration contains more elements; false

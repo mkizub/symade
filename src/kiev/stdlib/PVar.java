@@ -20,11 +20,14 @@
 
 package kiev.stdlib;
 
+@unerasable
 public final $wrapper class PVar<A>
 {
 
-	forward public virtual access:ro,rw			A			$var;
-	        private 							PVar<A>		$pvar := null;
+	@virtual
+	forward public virtual access:ro,rw			A		$var;
+	        private 								PVar<A>	$pvar := null;
+	@virtual
 	        public virtual access:ro abstract 	boolean		$is_bound;
 
 	public PVar() {}
@@ -33,8 +36,10 @@ public final $wrapper class PVar<A>
 		this.$var = var;
 	}
 
+	@getter
 	public A get$$var()
 		alias $get_var
+		alias operator(210,fy,$cast)
 	{
 		if ($pvar.$self != null)
 			return $pvar.$get_var();
@@ -42,6 +47,7 @@ public final $wrapper class PVar<A>
 			return $var;
 	}
 
+	@getter
 	public boolean get$$is_bound()
 		alias $get_is_bound
 	{
@@ -59,10 +65,13 @@ public final $wrapper class PVar<A>
 
 	public boolean equals(A value) {
 		A v = $var;
-		if( A instanceof Object )
-			return (v==null && value==null) || v.equals(value);
-		else
-			return v.equals(value);
+		return (v==null && value==null) || v.equals(value);
+	}
+
+	public boolean equals(PVar<A> value) {
+		A v1 = $var;
+		A v2 = value.$var;
+		return (v1==null && v2==null) || v1.equals(v2);
 	}
 
 	public void $bind(A var)

@@ -21,14 +21,13 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Hashtable.java,v 1.3.4.2 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.2 $
+ * @version $Revision$
  *
  */
 
+@unerasable
 public class Hashtable<A,B extends Object> extends Dictionary<A,B> implements Cloneable
-	$generate <int,B>,<long,B>
 {
     /**
      * The hash table data.

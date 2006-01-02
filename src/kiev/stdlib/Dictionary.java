@@ -21,14 +21,13 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Dictionary.java,v 1.2.4.2 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.2 $
+ * @version $Revision$
  *
  */
 
+@unerasable
 public abstract class Dictionary<A,B extends Object>
-	$generate <int,B>,<long,B>
 {
     /**
      * Returns the number of elements contained within the Dictionary. 

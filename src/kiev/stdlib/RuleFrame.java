@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/Attic/RuleFrame.java,v 1.1.2.1.2.1 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.1.2.1.2.1 $
+ * @version $Revision$
  *
  */
 

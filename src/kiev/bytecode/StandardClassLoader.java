@@ -25,16 +25,15 @@ import java.io.*;
 import static kiev.stdlib.Debug.*;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/bytecode/StandardClassLoader.java,v 1.3.4.1 1999/05/29 21:03:05 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.1 $
+ * @version $Revision$
  *
  */
 
 public class StandardClassLoader extends ClassLoader {
 	protected Hashtable<String,Class>	cache = new Hashtable<String,Class>();
 	protected Classpath					classpath;
-	public Vector<BytecodeHandler>		handlers = new Vector<BytecodeHandler>();
+//	public Vector<BytecodeHandler>		handlers = new Vector<BytecodeHandler>();
 
 	public StandardClassLoader() {
 		classpath = new Classpath();
@@ -44,30 +43,30 @@ public class StandardClassLoader extends ClassLoader {
 		classpath = new Classpath(path);
 	}
 
-	public void addHandler(BytecodeHandler bh) {
-		handlers.append(bh);
-	}
+//	public void addHandler(BytecodeHandler bh) {
+//		handlers.append(bh);
+//	}
 
-	public void handleClazz(Clazz clazz) {
-		if( handlers.length <= 0 ) return;
-		Vector<BytecodeHandler> handls = new Vector<BytecodeHandler>();
-		int stage = 0;
-		int nextstage = 1000;
-		for(;;) {
-			handls.cleanup();
-			foreach(BytecodeHandler bh; handlers) {
-				int bhstage = bh.getPriority();
-				if( bhstage == stage ) handls.append(bh);
-				else if( bhstage > stage && bhstage < nextstage ) nextstage = bhstage;
-			}
-			foreach(BytecodeHandler bh; handls) {
-				bh.processClazz(clazz);
-			}
-			if( nextstage <= stage ) break;
-			stage = nextstage;
-			nextstage = 1000;
-		}
-	}
+//	public void handleClazz(Clazz clazz) {
+//		if( handlers.length <= 0 ) return;
+//		Vector<BytecodeHandler> handls = new Vector<BytecodeHandler>();
+//		int stage = 0;
+//		int nextstage = 1000;
+//		for(;;) {
+//			handls.cleanup();
+//			foreach(BytecodeHandler bh; handlers) {
+//				int bhstage = bh.getPriority();
+//				if( bhstage == stage ) handls.append(bh);
+//				else if( bhstage > stage && bhstage < nextstage ) nextstage = bhstage;
+//			}
+//			foreach(BytecodeHandler bh; handls) {
+//				bh.processClazz(clazz);
+//			}
+//			if( nextstage <= stage ) break;
+//			stage = nextstage;
+//			nextstage = 1000;
+//		}
+//	}
 
 	public synchronized boolean existsClazz(String name) {
 		return classpath.exists(name);
@@ -96,8 +95,8 @@ public class StandardClassLoader extends ClassLoader {
 		trace(Clazz.traceRules,"Reading bytecode for clazz "+name);
 		Clazz clazz = new Clazz();
 		clazz.readClazz(data);
-		trace(Clazz.traceRules,"Processing bytecode for clazz "+name);
-		handleClazz(clazz);
+//		trace(Clazz.traceRules,"Processing bytecode for clazz "+name);
+//		handleClazz(clazz);
 		return clazz;
 	}
 

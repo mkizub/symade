@@ -2,9 +2,8 @@
 package kiev.parser;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/parser/Token.java,v 1.2 1998/10/21 19:44:39 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2 $
+ * @version $Revision$
  *
  */
 
@@ -12,7 +11,7 @@ package kiev.parser;
  * Describes the input token stream.
  */
 
-public class Token implements kiev020Constants {
+public class Token implements kiev040Constants {
 
   /**
    * An integer that describes the kind of this token.  This numbering
@@ -81,7 +80,7 @@ public class Token implements kiev020Constants {
 	{
 		Token t = new Token();
 		switch(ofKind) {
-		case UNDERSCORE:
+//		case UNDERSCORE:
 		case FUNCTION:
 		case RULE:
 		case PCUT:

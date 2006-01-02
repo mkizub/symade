@@ -6,69 +6,73 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.vlang.*;
 
+import kiev.vlang.TypeRef.TypeRefImpl;
+import kiev.vlang.TypeRef.TypeRefView;
+
 /**
  * @author Maxim Kizub
  *
  */
 
 @node
-public class ASTModifiers extends ASTNode {
-	@att public final NArr<ASTModifier>	modifier;
-	@att public ASTAccess 					acc;
-	@att public ASTPack   					pack;
-	@att public final NArr<ASTAnnotation>	annotations;
+public final class ASTModifiers extends ASTNode {
 	
-	public ASTModifiers() {
-		modifier = new NArr<ASTModifier>(this);
-		annotations = new NArr<ASTAnnotation>(this);
+	@node
+	public static final class ASTModifiersImpl extends TypeRefImpl {
+		@att public int					modifier;
+		@att public Access 				acc;
+		@att public NArr<Meta>			annotations;
+		public ASTModifiersImpl() {}
+	}
+	@nodeview
+	public static final view ASTModifiersView of ASTModifiersImpl extends TypeRefView {
+		public				int					modifier;
+		public				Access 				acc;
+		public access:ro	NArr<Meta>			annotations;
 	}
 
-	public ASTModifiers(int id) {
-		this();
-	}
+	@att public abstract virtual				int					modifier;
+	@att public abstract virtual				Access 				acc;
+	@att public abstract virtual access:ro		NArr<Meta>			annotations;
+	
+	public NodeView				getNodeView()			{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
+	public ASTModifiersView		getASTModifiersView()	{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
 
-	public void jjtAddChild(ASTNode n, int i) {
-		if (n instanceof ASTModifier) {
-			modifier.append((ASTModifier)n);
-		}
-		else if (n instanceof ASTAccess) {
-			if (acc != null)
-				Kiev.reportParserError(n.pos, "Multiple access specifiers");
-			acc = (ASTAccess)n;
-		}
-		else if (n instanceof ASTPack) {
-			if (pack != null)
-				Kiev.reportParserError(n.pos, "Multiple field pack instructions");
-			pack = (ASTPack)n;
-		}
-		else if (n instanceof ASTAnnotation) {
-			annotations.append((ASTAnnotation)n);
-		}
-		else {
-			throw new CompilerException(n.getPos(),"Bad child number "+i+": "+n+" ("+n.getClass()+")");
-		}
-	}
+	@getter public int				get$modifier()		{ return this.getASTModifiersView().modifier; }
+	@getter public Access			get$acc()			{ return this.getASTModifiersView().acc; }
+	@getter public NArr<Meta>		get$annotations()	{ return this.getASTModifiersView().annotations; }
+	@setter public void		set$modifier(int val)		{ this.getASTModifiersView().modifier = val; }
+	@setter public void		set$acc(Access val)			{ this.getASTModifiersView().acc = val; }
+	
+	public ASTModifiers() { super(new ASTModifiersImpl()); }
 	
 	public int getFlags() {
-		int flags = 0;
-		foreach (ASTModifier m; modifier)
-			flags |= m.flag();
-		return flags;
+		return modifier;
 	}
 
 	public MetaSet getMetas(MetaSet ms) {
-	next_annotation:
-		foreach (ASTAnnotation a; annotations) {
-			Meta m = a.getMeta();
-			if (m != null)
-				ms.set(m);
+		foreach (Meta v; annotations) {
+			try {
+				v.verify();
+			} catch (CompilerException e) {
+				Kiev.reportError(this, e);
+			}
+		}
+		foreach (Meta v; annotations) {
+			ms.set((Meta)v.copy());
 		}
 		return ms;
 	}
 
     public Dumper toJava(Dumper dmp) {
-		for(int i=0; i < modifier.length; i++)
-			modifier[i].toJava(dmp);
+		foreach (Meta m; annotations)
+			dmp.append(m);
+		Env.toJavaModifiers(dmp,(short)modifier);
+		if( (modifier & ACC_VIRTUAL		) > 0 ) dmp.append("/*virtual*/ ");
+		if( (modifier & ACC_FORWARD		) > 0 ) dmp.append("/*forward*/ ");
+		
+		if (acc != null) dmp.append(acc.toString());
+		
 		return dmp;
     }
 }

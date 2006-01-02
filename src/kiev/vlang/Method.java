@@ -1,162 +1,453 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
-import kiev.parser.ASTNewInitializedArrayExpression;
+import kiev.parser.*;
+import kiev.transf.*;
 
-import static kiev.vlang.WorkByContractCondition.*;
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JMethodView;
+import kiev.be.java.JInitializerView;
+import kiev.be.java.JWBCConditionView;
+
+import kiev.be.java.CodeAttr;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Method.java,v 1.6.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.6.2.1.2.2 $
  *
  */
 
 @node
-public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessable {
+public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
+	
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in")	BlockStat		body;
+	@dflow(in="this:in")	WBCCondition[] 	conditions;
+	}
+
+	@node
+	public static class MethodImpl extends DNodeImpl {
+		public MethodImpl() {}
+		public MethodImpl(int pos) { super(pos); }
+		public MethodImpl(int pos, int fl) { super(pos, fl); }
+
+		public final Method getMethod() { return (Method)this._self; }
+		
+		     public Access				acc;
+		     public NodeName			name;
+		     CallTypeProvider			meta_type;
+		@att public NArr<TypeDef>		targs;
+		@att public TypeRef				type_ret;
+		@att public TypeRef				dtype_ret;
+		@att public NArr<FormPar>		params;
+		@att public NArr<ASTAlias>		aliases;
+		@att public Var					retvar;
+		@att public BlockStat			body;
+		@att public PrescannedBody 		pbody;
+		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+		@att public NArr<WBCCondition> 	conditions;
+		@ref public NArr<Field>			violated_fields;
+		@att public MetaValue			annotation_default;
+		     public boolean				inlined_by_dispatcher;
+		     public boolean				invalid_types;
+
+		public virtual						MethodType		type;
+		public virtual						MethodType		dtype;
+		public virtual abstract access:ro	MethodType		jtype;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "params") {
+					parent.callbackChildChanged(pslot);
+				}
+				else if (attr.name == "conditions")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "annotation_default")
+					parent.callbackChildChanged(pslot);
+			}
+			if (attr.name == "params" || attr.name == "flags")
+				invalid_types = true;
+		}
+
+		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return this.type; }
+		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
+		@getter public final MethodType				get$jtype()	{ checkRebuildTypes(); return (MethodType)this.dtype.getErasedType(); }
+
+		public final void checkRebuildTypes() {
+			if (invalid_types) rebuildTypes();
+		}
+	
+		final void rebuildTypes() {
+			TVarSet vset = new TVarSet();
+			if (targs.length > 0) {
+				foreach (TypeDef td; targs)
+					vset.append(td.getAType(), null);
+			}
+			vset.append(getMethod().ctx_clazz.type.bindings());
+			Vector<Type> args = new Vector<Type>();
+			Vector<Type> dargs = new Vector<Type>();
+			foreach (FormPar fp; params) {
+				switch (fp.kind) {
+				case FormPar.PARAM_NORMAL:
+					args.append(fp.type);
+					dargs.append(fp.dtype);
+					break;
+				case FormPar.PARAM_OUTER_THIS:
+					assert(this instanceof Constructor.ConstructorImpl);
+					assert(!this.getMethod().isStatic());
+					assert(fp.isForward());
+					assert(fp.isFinal());
+					assert(fp.name.name == nameThisDollar);
+					assert(fp.type ≈ this.getMethod().ctx_clazz.package_clazz.type);
+					dargs.append(this.getMethod().ctx_clazz.package_clazz.type);
+					break;
+				case FormPar.PARAM_RULE_ENV:
+					assert(this instanceof RuleMethod.RuleMethodImpl);
+					assert(fp.isForward());
+					assert(fp.isFinal());
+					assert(fp.type ≡ Type.tpRule);
+					assert(fp.name.name == namePEnv);
+					dargs.append(Type.tpRule);
+					break;
+				case FormPar.PARAM_TYPEINFO:
+					assert(this instanceof Constructor.ConstructorImpl || (this.getMethod().isStatic() && this.name.equals(nameNewOp)));
+					assert(fp.isFinal());
+					assert(fp.stype == null || fp.stype.getType() ≈ fp.vtype.getType());
+					dargs.append(fp.type);
+					break;
+				case FormPar.PARAM_VARARGS:
+					//assert(fp.isFinal());
+					assert(fp.type.isArray());
+					dargs.append(fp.type);
+					break;
+				case FormPar.PARAM_LVAR_PROXY:
+					assert(this instanceof Constructor.ConstructorImpl);
+					assert(fp.isFinal());
+					dargs.append(fp.type);
+					break;
+				default:
+					throw new CompilerException(fp, "Unknown kind of the formal parameter "+fp);
+				}
+			}
+			this.type = new MethodType(vset, args.toArray(), type_ret.getType());
+			this.dtype = new MethodType(vset, dargs.toArray(), dtype_ret.getType());
+			invalid_types = false;
+		}
+		
+	}
+	@nodeview
+	public static view MethodView of MethodImpl extends DNodeView {
+
+		public final void checkRebuildTypes() {
+			this.$view.checkRebuildTypes();
+		}
+	
+		public				Access				acc;
+		public				NodeName			name;
+		public				CallTypeProvider	meta_type;
+		public access:ro	NArr<TypeDef>		targs;
+		public				TypeRef				type_ret;
+		public				TypeRef				dtype_ret;
+		public access:ro	MethodType			type;
+		public access:ro	MethodType			dtype;
+		public access:ro	MethodType			jtype;
+		public access:ro	NArr<FormPar>		params;
+		public access:ro	NArr<ASTAlias>		aliases;
+		public				Var					retvar;
+		public				BlockStat			body;
+		public				PrescannedBody		pbody;
+		public access:ro	NArr<WBCCondition>	conditions;
+		public access:ro	NArr<Field>			violated_fields;
+		public				MetaValue			annotation_default;
+		public				boolean				inlined_by_dispatcher;
+		public				boolean				invalid_types;
+
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+
+		// multimethod	
+		public final boolean isMultiMethod() {
+			return this.$view.is_mth_multimethod;
+		}
+		public final void setMultiMethod(boolean on) {
+			if (this.$view.is_mth_multimethod != on) {
+				this.$view.is_mth_multimethod = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// virtual static method	
+		public final boolean isVirtualStatic() {
+			return this.$view.is_mth_virtual_static;
+		}
+		public final void setVirtualStatic(boolean on) {
+			if (this.$view.is_mth_virtual_static != on) {
+				this.$view.is_mth_virtual_static = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// method with variable number of arguments	
+		public final boolean isVarArgs() {
+			return this.$view.is_mth_varargs;
+		}
+		public final void setVarArgs(boolean on) {
+			if (this.$view.is_mth_varargs != on) {
+				this.$view.is_mth_varargs = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// logic rule method	
+		public final boolean isRuleMethod() {
+			return this.$view.is_mth_rule;
+		}
+		public final void setRuleMethod(boolean on) {
+			if (this.$view.is_mth_rule != on) {
+				this.$view.is_mth_rule = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// method with attached operator	
+		public final boolean isOperatorMethod() {
+			return this.$view.is_mth_operator;
+		}
+		public final void setOperatorMethod(boolean on) {
+			if (this.$view.is_mth_operator != on) {
+				this.$view.is_mth_operator = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// need fields initialization	
+		public final boolean isNeedFieldInits() {
+			return this.$view.is_mth_need_fields_init;
+		}
+		public final void setNeedFieldInits(boolean on) {
+			if (this.$view.is_mth_need_fields_init != on) {
+				this.$view.is_mth_need_fields_init = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a method generated as invariant	
+		public final boolean isInvariantMethod() {
+			return this.$view.is_mth_invariant;
+		}
+		public final void setInvariantMethod(boolean on) {
+			if (this.$view.is_mth_invariant != on) {
+				this.$view.is_mth_invariant = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a local method (closure code or inner method)	
+		public final boolean isLocalMethod() {
+			return this.$view.is_mth_local;
+		}
+		public final void setLocalMethod(boolean on) {
+			if (this.$view.is_mth_local != on) {
+				this.$view.is_mth_local = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+	public MethodView		getMethodView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
+
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+	public JMethodView		getJMethodView()	alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+
 	public static Method[]	emptyArray = new Method[0];
 
+	@getter public Access				get$acc()					{ return this.getMethodView().acc; }
+	@getter public NodeName				get$name()					{ return this.getMethodView().name; }
+	@getter public CallTypeProvider		get$meta_type()				{ return this.getMethodView().meta_type; }
+	@getter public NArr<TypeDef>		get$targs()					{ return this.getMethodView().targs; }
+	@getter public TypeRef				get$type_ret()				{ return this.getMethodView().type_ret; }
+	@getter public TypeRef				get$dtype_ret()				{ return this.getMethodView().dtype_ret; }
+	@getter public NArr<FormPar>		get$params()				{ return this.getMethodView().params; }
+	@getter public NArr<ASTAlias>		get$aliases()				{ return this.getMethodView().aliases; }
+	@getter public Var					get$retvar()				{ return this.getMethodView().retvar; }
+	@getter public BlockStat			get$body()					{ return this.getMethodView().body; }
+	@getter public PrescannedBody		get$pbody()					{ return this.getMethodView().pbody; }
+	@getter public NArr<WBCCondition>	get$conditions()			{ return this.getMethodView().conditions; }
+	@getter public NArr<Field>			get$violated_fields()		{ return this.getMethodView().violated_fields; }
+	@getter public MetaValue			get$annotation_default()	{ return this.getMethodView().annotation_default; }
+	@getter public boolean				get$inlined_by_dispatcher()	{ return this.getMethodView().inlined_by_dispatcher; }
+	@getter        boolean				get$invalid_types()			{ return this.getMethodView().invalid_types; }
+
+	@getter public MethodType			get$type()	{ return this.getMethodView().type; }
+	@getter public MethodType			get$dtype()	{ return this.getMethodView().dtype; }
+	@getter public MethodType			get$jtype()	{ return this.getMethodView().jtype; }
+
+	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
+	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
+	@setter public void set$meta_type(CallTypeProvider val)		{ this.getMethodView().meta_type = val; }
+	@setter public void set$type_ret(TypeRef val)					{ this.getMethodView().type_ret = val; }
+	@setter public void set$dtype_ret(TypeRef val)					{ this.getMethodView().dtype_ret = val; }
+	@setter public void set$retvar(Var val)						{ this.getMethodView().retvar = val; }
+	@setter public void set$body(BlockStat val)					{ this.getMethodView().body = val; }
+	@setter public void set$pbody(PrescannedBody val)				{ this.getMethodView().pbody = val; }
+	@setter public void set$annotation_default(MetaValue val)		{ this.getMethodView().annotation_default = val; }
+	@setter public void set$inlined_by_dispatcher(boolean val)		{ this.getMethodView().inlined_by_dispatcher = val; }
+	@setter        void set$invalid_types(boolean val)				{ this.getMethodView().invalid_types = val; }
+
 	/** Method's access */
-	public virtual Access	acc;
-
+	     public abstract virtual			Access				acc;
 	/** Name of the method */
-	public NodeName			name;
-
+	     public abstract virtual			NodeName			name;
 	/** Return type of the method and signature (argument's types) */
-	@ref public MethodType		type;
-
-	/** The java type of the method (if method overrides parametriezed method) */
-	@ref public MethodType		jtype;
-
+	     public abstract virtual			CallTypeProvider	meta_type;
+	@att public abstract virtual access:ro	NArr<TypeDef>		targs;
+	@att public abstract virtual			TypeRef				type_ret;
 	/** The type of the dispatcher method (if method is a multimethod) */
-	@ref public MethodType		dtype;
-
-	/** Signatures of thrown types (structures) */
-//	public Type[]			throwns = Type.emptyArray;
-
+	@att public abstract virtual			TypeRef				dtype_ret;
 	/** Parameters of this method */
-	public Var[]			params = Var.emptyArray;
-
+	@att public abstract virtual access:ro	NArr<FormPar>		params;
+	/** Name/operator aliases of this method */
+    @att public abstract virtual access:ro	NArr<ASTAlias>		aliases;
 	/** Return value of this method */
-	@att public Var			retvar;
-
-	/** Body of the method - ASTBlockStat or BlockStat
-	 */
-	@att public ASTNode			body;
-
-	/** Array of attributes of this method
-	 */
-	public Attr[]			attrs = Attr.emptyArray;
-
+	@att public abstract virtual			Var					retvar;
+	/** Body of the method */
+	@att public abstract virtual			BlockStat			body;
+	@att public abstract virtual			PrescannedBody 		pbody;
 	/** Require & ensure clauses */
-	public WorkByContractCondition[]	conditions = WorkByContractCondition.emptyArray;
-
+	@att public abstract virtual access:ro	NArr<WBCCondition> 	conditions;
 	/** Violated by method fields for normal methods, and checked fields
-	 *  for invariant method
-	 */
-	public Field[]			violated_fields = Field.emptyArray;
-	
+	 *  for invariant method */
+	@ref public abstract virtual access:ro	NArr<Field>			violated_fields;
 	/** Default meta-value for annotation methods */
-	@att public MetaValue		annotation_default;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet			meta;
-
-	/** Indicates that this method is inlined by dispatcher method
-	 */
-	public boolean			inlined_by_dispatcher;
-
+	@att public abstract virtual			MetaValue			annotation_default;
+	/** Indicates that this method is inlined by dispatcher method */
+	     public abstract virtual			boolean				inlined_by_dispatcher;
+	            abstract virtual			boolean				invalid_types;
+	
+	     public virtual abstract access:ro	MethodType			type; 
+	     public virtual abstract access:ro	MethodType			jtype; 
+		 public virtual abstract access:ro	MethodType			dtype; 
+	
 	public Method() {
+		super(new MethodImpl());
 	}
 
-	public Method(ASTNode clazz, KString name, MethodType type, int acc) {
-		this(clazz,name,type,null,acc);
+	public Method(MethodImpl $view) {
+		super($view);
 	}
 
-	public Method(ASTNode clazz, KString name, MethodType type, MethodType dtype, int acc) {
-		super(0,acc);
+	public Method(MethodImpl $view, KString name, Type ret) {
+		this($view,name,new TypeRef(ret));
+	}
+
+	public Method(KString name, Type ret, int fl) {
+		this(name,new TypeRef(ret),fl);
+		invalid_types = true;
+	}
+	public Method(KString name, TypeRef type_ret, int fl) {
+		this(new MethodImpl(0,fl), name, type_ret);
+	}
+	public Method(MethodImpl $view, KString name, TypeRef type_ret) {
+		super($view);
+		assert ((name != nameInit && name != nameClassInit) || this instanceof Constructor);
 		this.name = new NodeName(name);
-		this.type = type;
-		this.dtype = dtype;
-		if( ((Struct)clazz).generated_from == null )
-			this.jtype = (MethodType)(dtype==null?type:dtype).getJavaType();
-		else
-			this.jtype = (MethodType)Type.getRealType(((Struct)clazz).type,(dtype==null?type:dtype)).getJavaType();
-        // Parent is always the class this method belongs to
-		this.parent = clazz;
+		this.type_ret = type_ret;
+		this.dtype_ret = (TypeRef)type_ret.copy();
 		this.acc = new Access(0);
-		this.meta = new MetaSet(this);
+		this.meta = new MetaSet();
+		invalid_types = true;
 	}
 
-	public Access get$acc() {
-		return acc;
+	@getter public Method get$child_ctx_method() { return this; }
+	
+	// multimethod	
+	public boolean isMultiMethod() { return this.getMethodView().isMultiMethod(); }
+	public void setMultiMethod(boolean on) { this.getMethodView().setMultiMethod(on); }
+	// virtual static method	
+	public boolean isVirtualStatic() { return this.getMethodView().isVirtualStatic(); }
+	public void setVirtualStatic(boolean on) { this.getMethodView().setVirtualStatic(on); }
+	// method with variable number of arguments	
+	public boolean isVarArgs() { return this.getMethodView().isVarArgs(); }
+	public void setVarArgs(boolean on) { this.getMethodView().setVarArgs(on); }
+	// logic rule method	
+	public boolean isRuleMethod() { return this.getMethodView().isRuleMethod(); }
+	public void setRuleMethod(boolean on) { this.getMethodView().setRuleMethod(on); }
+	// method with attached operator	
+	public boolean isOperatorMethod() { return this.getMethodView().isOperatorMethod(); }
+	public void setOperatorMethod(boolean on) { this.getMethodView().setOperatorMethod(on); }
+	// need fields initialization	
+	public boolean isNeedFieldInits() { return this.getMethodView().isNeedFieldInits(); }
+	public void setNeedFieldInits(boolean on) { this.getMethodView().setNeedFieldInits(on); }
+	// a method generated as invariant	
+	public boolean isInvariantMethod() { return this.getMethodView().isInvariantMethod(); }
+	public void setInvariantMethod(boolean on) { this.getMethodView().setInvariantMethod(on); }
+	// a local method (closure code or inner method)	
+	public boolean isLocalMethod() { return this.getMethodView().isLocalMethod(); }
+	public void setLocalMethod(boolean on) { this.getMethodView().setLocalMethod(on); }
+
+	public MetaThrows getMetaThrows() {
+		return (MetaThrows)this.meta.get(MetaThrows.NAME);
 	}
 
-	public void set$acc(Access a) {
-		acc = a;
-		acc.verifyAccessDecl(this);
+	public void checkRebuildTypes() {
+		this.getMethodView().checkRebuildTypes();
 	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
+	
+	public FormPar getOuterThisParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_OUTER_THIS)
+			return fp;
+		return null;
 	}
-
+	
+	public FormPar getTypeInfoParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_TYPEINFO)
+			return fp;
+		return null;
+	}
+	
+	public FormPar getVarArgParam() {
+		checkRebuildTypes();
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_VARARGS)
+			return fp;
+		return null;
+	}
+	
 	public void addViolatedField(Field f) {
 		if( isInvariantMethod() ) {
-			f.invs = (Method[])Arrays.appendUniq(f.invs,this);
+			f.invs.addUniq(this);
 			if( ((Struct)parent).instanceOf((Struct)f.parent) )
-				violated_fields = (Field[])Arrays.appendUniq(violated_fields,f);
+				violated_fields.addUniq(f);
 		} else {
-			violated_fields = (Field[])Arrays.appendUniq(violated_fields,f);
+			violated_fields.addUniq(f);
 		}
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer(name+"(");
-		for(int i=0; type.args != null && i < type.args.length; i++) {
-			sb.append(type.args[i].toString());
-			if( i < (type.args.length-1) ) sb.append(",");
+		int n = params.length;
+		boolean comma = false;
+		foreach (FormPar fp; params; fp.kind == FormPar.PARAM_NORMAL) {
+			if (comma) sb.append(",");
+			sb.append(fp.vtype.toString());
+			comma = true;
 		}
-		sb.append(")->").append(type.ret);
+		sb.append(")->").append(type_ret);
 		return sb.toString();
 	}
 
-	public static String toString(KString nm, NArr<Expr> args) {
+	public static String toString(KString nm, NArr<ENode> args) {
 		return toString(nm,args.toArray(),null);
 	}
 
-	public static String toString(KString nm, Expr[] args) {
+	public static String toString(KString nm, ENode[] args) {
 		return toString(nm,args,null);
 	}
 
-	public static String toString(KString nm, NArr<Expr> args, Type ret) {
+	public static String toString(KString nm, NArr<ENode> args, Type ret) {
 		return toString(nm,args.toArray(),ret);
 	}
 	
-	public static String toString(KString nm, Expr[] args, Type ret) {
+	public static String toString(KString nm, ENode[] args, Type ret) {
 		StringBuffer sb = new StringBuffer(nm+"(");
 		for(int i=0; args!=null && i < args.length; i++) {
 			sb.append(args[i].getType().toString());
@@ -169,164 +460,127 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return sb.toString();
 	}
 
+	public static String toString(KString nm, MethodType mt) {
+		Type[] args = mt.args;
+		StringBuffer sb = new StringBuffer(nm+"(");
+		for(int i=0; i < args.length; i++) {
+			sb.append(args[i].toString());
+			if( i < (args.length-1) ) sb.append(",");
+		}
+		sb.append(")->").append(mt.ret);
+		return sb.toString();
+	}
+
 	public NodeName getName() { return name; }
 
-	public Type	getType() { return type.ret; }
+	public Type	getType() { return type; }
 
 	public Var	getRetVar() {
 		if( retvar == null )
-			retvar = new Var(pos,this,nameResultVar,type.ret,ACC_FINAL);
+			retvar = new Var(pos,nameResultVar,type_ret.getType(),ACC_FINAL);
 		return retvar;
-	}
-
-	public void cleanup() {
-//		parent=null;
-		// Methods are persistant
-		if( body != null ) {
-			body.cleanup();
-			body = null;
-		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
 		return dmp.append(name);
 	}
 
-	public Expr[] makeArgs(NArr<Expr> args, Type t) {
-		return makeArgs(args.toArray(), t);
-	}
-	public Expr[] makeArgs(Expr[] args, Type t) {
+	public void makeArgs(NArr<ENode> args, Type t) {
+		checkRebuildTypes();
+		assert(args.getPSlot().is_attr);
 		if( isVarArgs() ) {
-			Expr[] varargs = new Expr[type.args.length];
-			int j;
-			for(j=0; j < varargs.length-1; j++)
-				varargs[j] = CastExpr.autoCast(args[j],Type.getRealType(t,type.args[j]));
-			Expr[] varargs2 = new Expr[args.length - varargs.length + 1];
-			for(int k=0; k < varargs2.length; j++,k++) {
-				varargs2[k] = CastExpr.autoCastToReference(args[j],true);
+			int i=0;
+			for(; i < type.args.length; i++) {
+				Type ptp = Type.getRealType(t,type.args[i]);
+				if !(args[i].getType().isInstanceOf(ptp))
+					CastExpr.autoCast(args[i],ptp);
 			}
-			NewInitializedArrayExpr nae =
-				new NewInitializedArrayExpr(getPos(),Type.tpObject,1,varargs2);
-			varargs[varargs.length-1] = nae;
-			return varargs;
+			if (args.length == i+1 && args[i].getType().isInstanceOf(getVarArgParam().type)) {
+				// array as va_arg
+			} else {
+				ArrayType varg_tp = (ArrayType)Type.getRealType(t,getVarArgParam().type);
+				for(; i < args.length; i++) {
+					if !(args[i].getType().isInstanceOf(varg_tp.arg)) {
+						CastExpr.autoCastToReference(args[i]);
+						CastExpr.autoCast(args[i],varg_tp.arg);
+					}
+				}
+			}
 		} else {
-			int i = 0;
-			int j = 0;
-			if( this instanceof RuleMethod ) j++;
-			for(; i < args.length; i++, j++)
-				args[i] = CastExpr.autoCast(args[i],Type.getRealType(t,type.args[j]));
-			return args;
+			for(int i=0; i < type.args.length; i++) {
+				Type ptp = Type.getRealType(t,type.args[i]);
+				if !(args[i].getType().isInstanceOf(ptp))
+					CastExpr.autoCast(args[i],ptp);
+			}
 		}
 	}
 
-	public boolean equals(KString name, Expr[] args, Type ret, Type type, int resfl) {
+	public boolean equalsByCast(KString name, MethodType mt, Type tp, ResInfo info) {
 		if( this.name.equals(name) )
-			return compare(name,args,ret,type,true);
+			return compare(name,mt,tp,info,false);
 		return false;
 	}
-	public boolean equalsByCast(KString name, Expr[] args, Type ret, Type type, int resfl) {
-		if( this.name.equals(name) )
-			return compare(name,args,ret,type,false);
-		return false;
-	}
-
-	public boolean compare(KString name, Expr[] args, Type ret, Type type, boolean exact) throws RuntimeException {
+	
+	public boolean compare(KString name, MethodType mt, Type tp, ResInfo info, boolean exact) {
 		if( !this.name.equals(name) ) return false;
 		int type_len = this.type.args.length;
-		int args_len = args==null? 0 : args.length;
+		int args_len = mt.args.length;
 		if( type_len != args_len ) {
 			if( !isVarArgs() ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" differ in number of params: "+type_len+" != "+args_len);
 				return false;
 			} else if( type_len-1 > args_len ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
 					+" not match in number of params: "+type_len+" != "+args_len);
 				return false;
 			}
 		}
-		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,args,ret));
+		trace(Kiev.debugResolve,"Compare method "+this+" and "+Method.toString(name,mt));
+		MethodType rt = (MethodType)Type.getRealType(tp,this.type);
+		rt = (MethodType)rt.bind(mt.bindings());
 		for(int i=0; i < (isVarArgs()?type_len-1:type_len); i++) {
-			if( exact && !Type.getRealType(type,args[i].getType()).equals(Type.getRealType(type,this.type.args[i])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+Type.getRealType(type,this.type.args[i])+" != "+Type.getRealType(type,args[i].getType()));
+			if( exact && !mt.args[i].equals(rt.args[i]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+rt.args[i]+" != "+mt.args[i]);
 				return false;
 			}
-			else if( !exact && !Type.getRealType(type,args[i].getType()).isAutoCastableTo(Type.getRealType(type,this.type.args[i])) ) {
-				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,args,ret)
-					+" differ in param # "+i+": "+Type.getRealType(type,args[i].getType())+" not auto-castable to "+Type.getRealType(type,this.type.args[i]));
+			else if( !exact && !mt.args[i].isAutoCastableTo(rt.args[i]) ) {
+				trace(Kiev.debugResolve,"Methods "+this+" and "+Method.toString(name,mt)
+					+" differ in param # "+i+": "+mt.args[i]+" not auto-castable to "+rt.args[i]);
 				return false;
 			}
 		}
 		boolean match = false;
-		if( ret == null )
+		if( mt.ret ≡ Type.tpAny )
 			match = true;
-		else if( exact &&  Type.getRealType(type,this.type.ret).equals(Type.getRealType(type,ret)) )
+		else if( exact &&  rt.ret.equals(mt.ret) )
 			match = true;
-		else if( !exact && Type.getRealType(type,this.type.ret).isAutoCastableTo(Type.getRealType(type,ret)) )
+		else if( !exact && rt.ret.isAutoCastableTo(mt.ret) )
 			match = true;
 		else
 			match = false;
-		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,args,ret)+(match?" match":" do not match"));
+		trace(Kiev.debugResolve,"Method "+this+" and "+Method.toString(name,mt)+(match?" match":" do not match"));
+		if (info != null && match)
+			info.mt = rt;
 		return match;
-	}
-
-//	public Type addThrown(Type thr) {
-//		throwns = (Type[])Arrays.append(throwns,thr);
-//		return thr;
-//	}
-
-//	public Var addParametr(Var par) {
-//		params = (Var[])Arrays.append(params,par);
-//		if( code == null ) code = new Code(this);
-//		code.addVar(par);
-//		return par;
-//	}
-
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-		if( !(a.name==attrOperator || a.name==attrImport
-			|| a.name==attrRequire || a.name==attrEnsure) ) {
-			for(int i=0; i < attrs.length; i++) {
-				if(attrs[i].name == a.name) {
-					attrs[i] = a;
-					return a;
-				}
-			}
-		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
 	}
 
 	// TODO
 	public Dumper toJavaDecl(Dumper dmp) {
-		Struct cl = (Struct)parent;
-		cl = Type.getRealType(Kiev.argtype,cl.type).clazz;
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( !name.equals(nameInit) )
-			dmp.space()
-			.append(((MethodType)Type.getRealType(Kiev.argtype,type)).ret)
-			.forsed_space().append(name);
+			dmp.space().append(type.ret).forsed_space().append(name);
 		else
-			dmp.space().append(cl.name.short_name);
+			dmp.space().append(((Struct)parent).name.short_name);
 		dmp.append('(');
-		int offset = 0;
-		if( !isStatic() ) offset++;
-		for(int i=offset; i < params.length; i++) {
-			if (params[i].isFinal()) dmp.append("final").forsed_space();
-			if (params[i].isForward()) dmp.append("forward").forsed_space();
-			params[i].toJavaDecl(dmp,type.args[i-offset]);
+		for(int i=0; i < params.length; i++) {
+			params[i].toJavaDecl(dmp,params[i].dtype);
 			if( i < (params.length-1) ) dmp.append(",");
 		}
 		dmp.append(')').space();
+		foreach(WBCCondition cond; conditions) 
+			cond.toJava(dmp);
 		if( isAbstract() || body == null ) {
 			dmp.append(';').newLine();
 		} else {
@@ -335,26 +589,112 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 		return dmp;
 	}
 
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+		FormPar@ var;
 	{
-		inlined_by_dispatcher,$cut,false
-	;	node @= params, ((Var)node).name.equals(name)
-	;	node @= type.fargs, ((Type)node).clazz.name.short_name.equals(name)
-	;	node ?= retvar, ((Var)node).name.equals(name)
+		inlined_by_dispatcher || path.space_prev.pslot.name == "targs",$cut,false
+	;
+		path.space_prev.pslot.name == "params" ||
+		path.space_prev.pslot.name == "type_ref" ||
+		path.space_prev.pslot.name == "dtype_ref",$cut,
+		node @= targs,
+		((TypeDef)node).name.name == name
+	;
+		var @= params,
+		var.name.equals(name),
+		node ?= var
+	;
+		node ?= retvar, ((Var)node).name.equals(name)
+	;
+		node @= targs,
+		((TypeDef)node).name.name == name
+	;
+		!this.isStatic() && path.isForwardsAllowed(),
+		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
+		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
+	;
+		path.isForwardsAllowed(),
+		var @= params,
+		var.isForward(),
+		path.enterForward(var) : path.leaveForward(var),
+		var.type.resolveNameAccessR(node,path,name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo info, KString name, Expr[] args, Type ret, Type type, int resfl)
+	public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 		Var@ n;
 	{
+		info.isForwardsAllowed(),
+	{
+		!this.isStatic(),
+		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
+		this.ctx_clazz.type.resolveCallAccessR(node,info,name,mt)
+	;
 		n @= params,
 		n.isForward(),
 		info.enterForward(n) : info.leaveForward(n),
-		Type.getRealType(type,n.getType()).clazz.resolveMethodR(node,info,name,args,ret,type,resfl | ResolveFlags.NoImports)
+		n.getType().resolveCallAccessR(node,info,name,mt)
 	}
+	}
+
+    public ASTNode pass3() {
+		if !( parent instanceof Struct )
+			throw new CompilerException(this,"Method must be declared on class level only");
+		Struct clazz = (Struct)parent;
+		// TODO: check flags for methods
+		if( clazz.isPackage() ) setStatic(true);
+		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
+		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
+		else if( clazz.isInterface() ) {
+			setPublic(true);
+			if( pbody == null ) setAbstract(true);
+		}
+
+//		if (argtypes.length > 0) {
+//			ftypes = new Type[argtypes.length];
+//			for (int i=0; i < argtypes.length; i++)
+//				ftypes[i] = argtypes[i].getType();
+//		}
+
+		if (clazz.isAnnotation() && params.length != 0) {
+			Kiev.reportError(this, "Annotation methods may not have arguments");
+			params.delAll();
+			setVarArgs(false);
+		}
+
+		if (clazz.isAnnotation() && (body != null || pbody != null)) {
+			Kiev.reportError(this, "Annotation methods may not have bodies");
+			body = null;
+			pbody = null;
+		}
+
+		// push the method, because formal parameters may refer method's type args
+		foreach (FormPar fp; params) {
+			fp.vtype.getType(); // resolve
+			if (fp.stype == null)
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
+			if (fp.meta != null)
+				fp.meta.verify();
+		}
+//		if( isVarArgs() ) {
+//			FormPar va = new FormPar(pos,nameVarArgs, new ArrayType(Type.tpObject),FormPar.PARAM_VARARGS,ACC_FINAL);
+//			params.append(va);
+//		}
+		checkRebuildTypes();
+		trace(Kiev.debugMultiMethod,"Method "+this+" has dispatcher type "+this.dtype);
+		meta.verify();
+		if (annotation_default != null)
+			annotation_default.verify();
+		foreach(ASTAlias al; aliases) al.attach(this);
+
+		foreach(WBCCondition cond; conditions)
+			cond.definer = this;
+
+        return this;
+    }
 
 	public void resolveMetaDefaults() {
 		if (annotation_default != null) {
-			Type tp = this.type.ret;
+			Type tp = this.type_ret.getType();
 			Type t = tp;
 			if (t.isArray()) {
 				if (annotation_default instanceof MetaValueScalar) {
@@ -362,356 +702,305 @@ public class Method extends ASTNode implements Named,Typed,Scope,SetBody,Accessa
 					mva.values.add(((MetaValueScalar)annotation_default).value);
 					annotation_default = mva;
 				}
-				t = t.args[0];
+				t = ((ArrayType)t).arg;
 			}
 			if (t.isReference()) {
-				t.clazz.checkResolved();
-				if (!(t == Type.tpString || t == Type.tpClass || t.clazz.isAnnotation() || t.clazz.isJavaEnum()))
-					throw new CompilerException(pos, "Bad annotation value type "+tp);
+				t.checkResolved();
+				if (!(t ≈ Type.tpString || t ≈ Type.tpClass || t.isAnnotation() || t.isEnum()))
+					throw new CompilerException(annotation_default, "Bad annotation value type "+tp);
 			}
 			annotation_default.resolve(t);
 		}
 	}
 	
-	public void resolveMetaValues() {
-		foreach (Meta m; meta)
-			m.resolve();
-		for(int i=0; i < params.length; i++) {
-			Var p = params[i];
-			if (p.meta != null) {
-				foreach (Meta m; p.meta)
-					m.resolve();
-			}
+	static class MethodDFFunc extends DFFunc {
+		final int res_idx;
+		MethodDFFunc(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
 		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			Method m = (Method)dfi.node;
+			DFState in = DFState.makeNewState();
+			for(int i=0; i < m.params.length; i++) {
+				Var p = m.params[i];
+				in = in.declNode(p);
+			}
+			res = in;
+			dfi.setResult(res_idx, res);
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new MethodDFFunc(dfi);
+	}
+
+	public boolean preResolveIn(TransfProcessor proc) {
+		checkRebuildTypes();
+		return true;
 	}
 	
-	public ASTNode resolve(Type reqType) {
-		if( isResolved() ) return this;
+	public boolean mainResolveIn(TransfProcessor proc) {
+		checkRebuildTypes();
+		return true;
+	}
+	
+	public void resolveDecl() {
+		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);
-		assert( PassInfo.clazz == parent || inlined_by_dispatcher );
-		PassInfo.push(this);
+		assert( ctx_clazz == parent || inlined_by_dispatcher );
 		try {
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.init();
-			ScopeNodeInfoVector state = NodeInfoPass.pushState();
-			state.guarded = true;
-			
-			if (!inlined_by_dispatcher) {
-				for(int i=0; i < params.length; i++) {
-					Var p = params[i];
-					NodeInfoPass.setNodeType(p,p.type);
-					NodeInfoPass.setNodeInitialized(p,true);
+			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondRequire ) {
+				cond.body.resolve(Type.tpVoid);
+			}
+			if( body != null ) {
+				if (type.ret ≡ Type.tpVoid)
+					body.setAutoReturnable(true);
+				body.resolve(Type.tpVoid);
+			}
+			if( body != null && !body.isMethodAbrupted() ) {
+				if( type.ret ≡ Type.tpVoid ) {
+					if( body instanceof BlockStat ) {
+						((BlockStat)body).stats.append(new ReturnStat(pos,null));
+						body.setAbrupted(true);
+					}
+					else if !(isInvariantMethod())
+						Kiev.reportError(this,"Return requared");
+				} else {
+					Kiev.reportError(this,"Return requared");
 				}
 			}
-			foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire ) {
-				cond.parent = this;
+			foreach(WBCCondition cond; conditions; cond.cond == WBCType.CondEnsure ) {
+				if( type.ret ≢ Type.tpVoid ) getRetVar();
 				cond.resolve(Type.tpVoid);
 			}
-			if (PassInfo.clazz.isAnnotation()) {
-				if( body != null ) {
-					if (type.ret.isArray()) {
-						Type t = type.ret.args[0];
-						if (t.isArray())
-							Kiev.reportError(body.pos, "Annotation default value must be one-dimentional array");
-						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
-						if (e instanceof ASTNewInitializedArrayExpression || e instanceof NewInitializedArrayExpr)
-							e = e.resolveExpr(type.ret);
-						else
-							e = e.resolveExpr(t);
-						if (e instanceof NewInitializedArrayExpr) {
-							if (e.getType() != type.ret)
-								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-							NewInitializedArrayExpr ne = (NewInitializedArrayExpr)e;
-							foreach (Expr ee; ne.args) {
-								if (!ee.isConstantExpr())
-									Kiev.reportError(body.pos, "Annotation default value must be a constant");
-							}
-						} else {
-							if (e.getType() != t)
-								Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-							if (!e.isConstantExpr())
-								Kiev.reportError(body.pos, "Annotation default value must be a constant");
-							e = new NewInitializedArrayExpr(body.pos, t, 1, new Expr[]{e});
-						}
-						((ExprStat)body).expr = e;
-						e.parent = body;
-					} else {
-						Expr e = ((ExprStat)body).expr.resolveExpr(type.ret);
-						if (!e.isConstantExpr())
-							Kiev.reportError(body.pos, "Annotation default value must be a constant");
-						else if (e.getType() != type.ret)
-							Kiev.reportError(body.pos, "Annotation default value must have type "+type.ret);
-						else {
-							((ExprStat)body).expr = e;
-							e.parent = body;
-						}
-					}
-				}
-			} else {
-				if( body != null ) {
-					body.parent = this;
-					if( type.ret == Type.tpVoid ) body.setAutoReturnable(true);
-					body = ((Statement)body).resolve(Type.tpVoid);
-				}
-				if( body != null && !body.isMethodAbrupted() ) {
-					if( type.ret == Type.tpVoid ) {
-						if( body instanceof BlockStat ) {
-							((BlockStat)body).stats.append(new ReturnStat(pos,body,null));
-							body.setAbrupted(true);
-						}
-						else if( body instanceof WorkByContractCondition );
-						else
-							Kiev.reportError(pos,"Return requared");
-					} else {
-						Kiev.reportError(pos,"Return requared");
-					}
-				}
-				foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure ) {
-					cond.parent = this;
-					if( type.ret != Type.tpVoid ) getRetVar();
-					cond.resolve(Type.tpVoid);
-				}
-			}
 		} catch(Exception e ) {
-			Kiev.reportError(0/*body.getPos()*/,e);
-		} finally {
-			if (!inlined_by_dispatcher)
-				NodeInfoPass.close();
-			PassInfo.pop(this);
+			Kiev.reportError(this,e);
 		}
+		this.cleanDFlow();
 
-		setResolved(true);
-		return this;
-	}
-
-	public void generate() {
-		if( Kiev.debug ) System.out.println("\tgenerating Method "+this);
-		PassInfo.push(this);
 		// Append invariants by list of violated/used fields
 		if( !isInvariantMethod() ) {
-			foreach(Field f; violated_fields; PassInfo.clazz.instanceOf((Struct)f.parent) ) {
-				foreach(Method inv; f.invs; PassInfo.clazz.instanceOf((Struct)inv.parent) ) {
+			foreach(Field f; violated_fields; ctx_clazz.instanceOf((Struct)f.parent) ) {
+				foreach(Method inv; f.invs; ctx_clazz.instanceOf((Struct)inv.parent) ) {
 					assert(inv.isInvariantMethod(),"Non-invariant method in list of field's invariants");
 					// check, that this is not set$/get$ method
 					if( !(name.name.startsWith(nameSet) || name.name.startsWith(nameGet)) )
-						conditions = (WorkByContractCondition[])Arrays.appendUniq(conditions,inv.body);
+						conditions.addUniq(inv.conditions[0]);
 				}
 			}
 		}
-		try {
-			foreach(WorkByContractCondition cond; conditions; cond.cond != CondInvariant )
-				cond.generate(Type.tpVoid);
-		} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
-		if( !isAbstract() && body != null ) {
-			Code.reInit();
-			Code.generation = true;
-			PassInfo.push(this);
-			try {
-				if( !isBad() ) {
-					if( params.length > 0 ) Code.addVars(params);
-					if( Kiev.verify /*&& jtype != null*/ )
-						generateArgumentCheck();
-					if( Kiev.debugOutputC ) {
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondRequire )
-							Code.importCode(cond.code);
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondInvariant ) {
-							assert( cond.parent instanceof Method && cond.parent.isInvariantMethod() );
-							if( !name.name.equals(nameInit) && !name.name.equals(nameClassInit) ) {
-								if( !cond.parent.isStatic() )
-									Code.addInstr(Instr.op_load,params[0]);
-								Code.addInstr(Instr.op_call,(Method)cond.parent,false);
-							}
-							setGenPostCond(true);
-						}
-						if( !isGenPostCond() ) {
-							foreach(WorkByContractCondition cond; conditions; cond.cond != CondRequire ) {
-								setGenPostCond(true);
-								break;
-							}
-						}
-					}
-					((Statement)body).generate(Type.tpVoid);
-					if( Kiev.debugOutputC && isGenPostCond() ) {
-						if( type.ret != Type.tpVoid ) {
-							Code.addVar(getRetVar());
-							Code.addInstr(Instr.op_store,getRetVar());
-						}
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondInvariant ) {
-							if( !cond.parent.isStatic() )
-								Code.addInstr(Instr.op_load,params[0]);
-							Code.addInstr(Instr.op_call,(Method)cond.parent,false);
-							setGenPostCond(true);
-						}
-						foreach(WorkByContractCondition cond; conditions; cond.cond == CondEnsure )
-							Code.importCode(cond.code);
-						if( type.ret != Type.tpVoid ) {
-							Code.addInstr(Instr.op_load,getRetVar());
-							Code.addInstr(Instr.op_return);
-							Code.removeVar(getRetVar());
-						} else {
-							Code.addInstr(Instr.op_return);
-						}
-					}
-					if( params.length > 0 ) Code.removeVars(params);
-				} else {
-					Code.addInstr(Instr.op_new,Type.tpError);
-					Code.addInstr(Instr.op_dup);
-					KString msg = KString.from("Compiled with errors");
-					ConstPool.addStringCP(msg);
-					Code.addConst(msg);
-					Method func = Type.tpError.clazz.resolveMethod(nameInit,KString.from("(Ljava/lang/String;)V"));
-					Code.addInstr(Instr.op_call,func,false);
-					Code.addInstr(Instr.op_throw);
-				}
-				Code.generateCode();
-			} catch(Exception e) {
-				Kiev.reportError(pos,e);
-				body = null;
-			} finally { kiev.vlang.PassInfo.pop(this); kiev.vlang.Code.generation = false; }
-		}
+		
+		setResolved(true);
 	}
 
-	public CodeLabel getBreakLabel() {
-		return ((BlockStat)body).getBreakLabel();
-	}
-
-	public void generateArgumentCheck() {
-//		if( jtype == null ) return;
-		int i=0;
-		int j=0;
-		if( !isStatic() ) j++;
-		for(; i < type.args.length; i++, j++) {
-			Type tp1 = Type.getRealType(Kiev.argtype,jtype.args[i]);
-			Type tp2 = Type.getRealType(Kiev.argtype,params[j].type);
-			if( !tp1.equals(tp2) ) {
-				if (tp2.clazz.isEnum() && tp2.clazz.isPrimitiveEnum() && tp1.isIntegerInCode())
-					continue;
-				Code.addInstr(Instr.op_load,params[j]);
-				Code.addInstr(Instr.op_checkcast,type.args[i]);
-				Code.addInstr(Instr.op_store,params[j]);
-			}
-		}
-	}
-
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		trace(Kiev.debugMultiMethod,"Setting body of methods "+this);
 		if (this.body == null) {
-			this.body = body;
-			this.body.parent = this;
-		}
-		else if (isMultiMethod()){
-			BlockStat b = (BlockStat)this.body;
-			b.addStatement(body);
-		}
-		else {
+			this.body = (BlockStat)body;
+		} else {
 			throw new RuntimeException("Added body to method "+this+" which already have body");
 		}
 
 		return true;
 	}
 
-	public static Expr getAccessExpr(ResInfo info) {
-		Expr expr;
-		List<ASTNode> path = info.path.toList();
-		if (path.head() instanceof Field) {
-			Field f = (Field)path.head();
-			if (f.isStatic())
-				expr = new StaticFieldAccessExpr(0,(Struct)f.parent,f);
-			else
-				expr = new AccessExpr(0,new ThisExpr(0),f);
-		}
-		else if (path.head() instanceof Var) {
-			Var v = (Var)path.head();
-			if( v.isLocalRuleVar() )
-				expr = new LocalPrologVarAccessExpr(0,null,v);
-			else
-				expr = new VarAccessExpr(0,v);
-		}
-		else
-			throw new CompilerException(0,"Forward/with access path not with Field or Var");
-		path = path.tail();
-		foreach(ASTNode n; path) {
-			expr = new AccessExpr(0,expr,(Field)n);
-		}
-		return expr;
+}
+
+@node
+public class Constructor extends Method {
+	
+	@dflow(in="root()") private static class DFI {
+	@dflow(in="this:in", seq="true")	ENode[]			addstats;
+	@dflow(in="this:in")				BlockStat		body;
+	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
-	public static Expr getAccessExpr(ResInfo info,Expr expr) {
-		List<ASTNode> path = info.path.toList();
-		foreach(ASTNode n; path) {
-			expr = new AccessExpr(0,expr,(Field)n);
+	@node
+	public static final class ConstructorImpl extends MethodImpl {
+		@att public NArr<ENode>			addstats;
+		public ConstructorImpl() {}
+		public ConstructorImpl(int pos, int flags) { super(pos, flags); }
+	}
+	@nodeview
+	public static final view ConstructorView of ConstructorImpl extends MethodView {
+		public access:ro	NArr<ENode>			addstats;
+	}
+
+	@att public abstract virtual access:ro NArr<ENode>			addstats;
+	
+	public NodeView				getNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public MethodView			getMethodView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+	public ConstructorView		getConstructorView()	{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
+
+	@getter public NArr<ENode>		get$addstats()		{ return this.getConstructorView().addstats; }
+
+	public Constructor() {
+		super(new ConstructorImpl());
+	}
+
+	public Constructor(int fl) {
+		super(new ConstructorImpl(0, fl), (fl&ACC_STATIC)==0 ? nameInit:nameClassInit, Type.tpVoid);
+	}
+
+	public void resolveDecl() {
+		super.resolveDecl();
+		ENode[] addstats = this.addstats.delToArray();
+		for(int i=0; i < addstats.length; i++) {
+			body.stats.insert(addstats[i],i);
+			trace(Kiev.debugResolve,"ENode added to constructor: "+addstats[i]);
 		}
-		return expr;
+	}
+}
+
+@node
+public class Initializer extends DNode implements SetBody, PreScanneable {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")				BlockStat		body;
+	}
+
+	@node
+	public static final class InitializerImpl extends DNodeImpl {
+		@att public BlockStat				body;
+		@att public PrescannedBody			pbody;
+		public InitializerImpl() {}
+		public InitializerImpl(int pos, int flags) { super(pos, flags); }
+	}
+	@nodeview
+	public static final view InitializerView of InitializerImpl extends DNodeView {
+		public BlockStat				body;
+		public PrescannedBody			pbody;
+	}
+
+	@att public abstract virtual BlockStat			body;
+	@att public abstract virtual PrescannedBody	pbody;
+	
+	@getter public BlockStat		get$body()			{ return this.getInitializerView().body; }
+	@getter public PrescannedBody	get$pbody()			{ return this.getInitializerView().pbody; }
+	
+	@setter public void		set$body(BlockStat val)				{ this.getInitializerView().body = val; }
+	@setter public void		set$pbody(PrescannedBody val)		{ this.getInitializerView().pbody = val; }
+	
+	public NodeView				getNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public InitializerView		getInitializerView()	{ return new InitializerView((InitializerImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+	public JDNodeView			getJDNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+	public JInitializerView		getJInitializerView()	{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+
+	public Initializer() {
+		super(new InitializerImpl());
+	}
+
+	public Initializer(int pos, int flags) {
+		super(new InitializerImpl(pos, flags));
+	}
+
+	public void resolveDecl() {
+		if( isResolved() ) return;
+		
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+
+		setResolved(true);
+	}
+
+	public boolean setBody(ENode body) {
+		trace(Kiev.debugMultiMethod,"Setting body of initializer "+this);
+		if (this.body == null) {
+			this.body = (BlockStat)body;
+		}
+		else {
+			throw new RuntimeException("Added body to initializer "+this+" which already has body");
+		}
+		return true;
 	}
 
 }
 
+public enum WBCType {
+	public CondUnknown,
+	public CondRequire,
+	public CondEnsure,
+	public CondInvariant;
+}
+
 @node
-public class WorkByContractCondition extends Statement implements SetBody {
-
-	public static WorkByContractCondition[]	emptyArray = new WorkByContractCondition[0];
-
-	public static final int CondRequire		= 1;
-	public static final int CondEnsure 		= 2;
-	public static final int CondInvariant	= 3;
-
-	public int				cond;
-	public KString			name;
-	@att public Statement	body;
-	public CodeAttr			code;
-	@ref public Method		definer;
-
-	public WorkByContractCondition() {
+public class WBCCondition extends DNode {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")			ENode		body;
+	}
+	
+	@node
+	public static final class WBCConditionImpl extends DNodeImpl {
+		@att public WBCType				cond;
+		@att public NameRef				name;
+		@att public ENode				body;
+		@ref public Method				definer;
+		@att public CodeAttr			code_attr;
+		public WBCConditionImpl() {}
+		public WBCConditionImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view WBCConditionView of WBCConditionImpl extends DNodeView {
+		public WBCType				cond;
+		public NameRef				name;
+		public ENode				body;
+		public Method				definer;
+		public CodeAttr				code_attr;
 	}
 
-	public WorkByContractCondition(int pos, int cond, KString name, Statement body) {
-		super(pos,null);
-		this.name = name;
+	@att public abstract virtual WBCType			cond;
+	@att public abstract virtual NameRef			name;
+	@att public abstract virtual ENode				body;
+	@ref public abstract virtual Method			definer;
+	@att public abstract virtual CodeAttr			code_attr;
+	
+	@getter public WBCType			get$cond()			{ return this.getWBCConditionView().cond; }
+	@getter public NameRef			get$name()			{ return this.getWBCConditionView().name; }
+	@getter public ENode			get$body()			{ return this.getWBCConditionView().body; }
+	@getter public Method			get$definer()		{ return this.getWBCConditionView().definer; }
+	@getter public CodeAttr			get$code_attr()		{ return this.getWBCConditionView().code_attr; }
+	
+	@setter public void		set$cond(WBCType val)				{ this.getWBCConditionView().cond = val; }
+	@setter public void		set$name(NameRef val)				{ this.getWBCConditionView().name = val; }
+	@setter public void		set$body(ENode val)					{ this.getWBCConditionView().body = val; }
+	@setter public void		set$definer(Method val)				{ this.getWBCConditionView().definer = val; }
+	@setter public void		set$code_attr(CodeAttr val)			{ this.getWBCConditionView().code_attr = val; }
+	
+	public NodeView				getNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public DNodeView			getDNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public WBCConditionView		getWBCConditionView()	{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JDNodeView			getJDNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public JWBCConditionView	getJWBCConditionView()	{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+
+	public WBCCondition() {
+		super(new WBCConditionImpl());
+	}
+
+	public WBCCondition(int pos, WBCType cond, KString name, ENode body) {
+		super(new WBCConditionImpl(pos));
+		if (name != null)
+			this.name = new NameRef(pos, name);
 		this.cond = cond;
 		this.body = body;
-		if( body != null )
-			body.parent = this;
 	}
 
-	public ASTNode resolve(Type reqType) {
-		if( code != null ) return this;
-		body = (Statement)body.resolve(Type.tpVoid);
-		return this;
+	public void resolve(Type reqType) {
+		if( code_attr != null ) return;
+		body.resolve(Type.tpVoid);
 	}
 
-	public void generate(Type reqType) {
-		if( cond == CondInvariant ) {
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.op_return);
-		}
-		else if( code == null ) {
-			Code.reInit();
-			Code.generation = true;
-			Code.cond_generation = true;
-			PassInfo.push(this);
-			Method m = (Method)PassInfo.method;
-			try {
-				if( m.params.length > 0 ) Code.addVars(m.params);
-				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.addVar(m.getRetVar());
-				body.generate(Type.tpVoid);
-				if( cond==CondEnsure && m.type.ret != Type.tpVoid ) Code.removeVar(m.getRetVar());
-				if( m.params.length > 0 ) Code.removeVars(m.params);
-				Code.generateCode(this);
-			} catch(Exception e) {
-				Kiev.reportError(pos,e);
-			} finally {
-				PassInfo.pop(this);
-				Code.generation = false;
-				Code.cond_generation = false;
-			}
-		} else {
-			code.generate();
-		}
-	}
-
-	public boolean setBody(Statement body) {
+	public boolean setBody(ENode body) {
 		this.body = body;
-		this.body.parent = this;
 		return true;
 	}
 

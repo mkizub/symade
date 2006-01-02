@@ -1,37 +1,17 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.vlang.OpTypes.*;
-import kiev.stdlib.*;
+import kiev.be.java.Instr;
 
 import static kiev.stdlib.Debug.*;
 import static kiev.vlang.OpTypes.*;
 import static kiev.vlang.Operator.*;
 
+import syntax kiev.Syntax;
+
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Operator.java,v 1.3.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.2 $
  *
  */
 
@@ -41,19 +21,28 @@ public class OpTypes {
 
 	public OpTypes() {}
 
-	public static Type getExprType(ASTNode n, Type tp) {
+	public static Type getExprType(Object n, Type tp) {
 		Type t = null;
 		switch(n) {
-		case Expr:
-			trace( Kiev.debugOperators,"type of "+n+" is "+((Expr)n).getType());
-			if( !n.isResolved() ) {
-				n = ((Expr)n).resolve(tp);
-				assert( n.isResolved() );
-				goto case n;
+		case ENode:
+		{
+			ENode e = (ENode)n;
+			trace( Kiev.debugOperators,"type of "+n+" is "+e.getType());
+			if( !e.isResolved() ) {
+				NopExpr we = new NopExpr();
+				e.replaceWithNode(we);
+				we.expr = e;
+				e.resolve(tp);
+				e = we.expr;
+				we.replaceWithNode((ENode)~e);
+				assert( e.isResolved() );
+				n = e;
+				goto case e;
 			} else {
-				t = ((Expr)n).getType();
+				t = e.getType();
 			}
 			break;
+		}
 		case Type:
 			trace( Kiev.debugOperators,"type of "+n+" is "+((Type)n));
 			t = (Type)n;
@@ -207,7 +196,7 @@ public class OpTypes {
 			types[ref] != null,							// not resolved yet
 			$cut,
 			trace( Kiev.debugOperators,"op_type_res: type at "+ref+" is already resolved as "+types[ref]),
-			types[ref] != Type.tpAny					// already resolved
+			types[ref] ≢ Type.tpAny					// already resolved
 		},
 		trace( Kiev.debugOperators,"type "+types[ref]+" resolved for "+(ref==0?"ret":"arg"+ref))
 	}
@@ -277,13 +266,13 @@ public class OpTypes {
 			;
 				types[ref1].isNumber() && types[ref2].isNumber(),
 				{
-					types[ref1] == Type.tpDouble || types[ref2] == Type.tpDouble, tp ?= Type.tpDouble
-				;	types[ref1] == Type.tpFloat || types[ref2] == Type.tpFloat, tp ?= Type.tpFloat
-				;	types[ref1] == Type.tpLong || types[ref2] == Type.tpLong, tp ?= Type.tpLong
-				;	types[ref1] == Type.tpInt || types[ref2] == Type.tpInt, tp ?= Type.tpInt
-				;	types[ref1] == Type.tpChar || types[ref2] == Type.tpChar, tp ?= Type.tpChar
-				;	types[ref1] == Type.tpShort || types[ref2] == Type.tpShort, tp ?= Type.tpShort
-				;	types[ref1] == Type.tpByte || types[ref2] == Type.tpByte, tp ?= Type.tpByte
+					types[ref1] ≡ Type.tpDouble || types[ref2] ≡ Type.tpDouble, tp ?= Type.tpDouble
+				;	types[ref1] ≡ Type.tpFloat || types[ref2] ≡ Type.tpFloat, tp ?= Type.tpFloat
+				;	types[ref1] ≡ Type.tpLong || types[ref2] ≡ Type.tpLong, tp ?= Type.tpLong
+				;	types[ref1] ≡ Type.tpInt || types[ref2] ≡ Type.tpInt, tp ?= Type.tpInt
+				;	types[ref1] ≡ Type.tpChar || types[ref2] ≡ Type.tpChar, tp ?= Type.tpChar
+				;	types[ref1] ≡ Type.tpShort || types[ref2] ≡ Type.tpShort, tp ?= Type.tpShort
+				;	types[ref1] ≡ Type.tpByte || types[ref2] ≡ Type.tpByte, tp ?= Type.tpByte
 				},
 				types[position] = tp
 			},
@@ -329,11 +318,11 @@ public class OpTypes {
 			} else {
 				// Check method is of nodes[1]'s class
 				if( method.type.args.length == (nodes.length-2) && nodes[1] != null
-					&& getExprType(nodes[1],ts[1]).clazz.instanceOf((Struct)method.parent)
+					&& getExprType(nodes[1],ts[1]).isStructInstanceOf((Struct)method.parent)
 				)
 					;
 				// Check method arg of nodes[1]'s class
-				//else if( method.type.args.length == (nodes.length-2) && nodes[1] != null
+				//else if( method.type.args.length == 1 && nodes[1] != null
 				//	&& getExprType(nodes[1],ts[1]).isInstanceOf(method.type.args[0])
 				//)
 				//	;
@@ -364,8 +353,7 @@ public class OpTypes {
 }
 
 
-@node(copyable=false)
-public abstract class Operator extends ASTNode implements Constants {
+public abstract class Operator implements Constants {
 
 	// Assign orders
 	public static final int LFY			= 0;
@@ -422,14 +410,10 @@ public abstract class Operator extends ASTNode implements Constants {
     public			int			mode;
     public			boolean		is_standard;
     public			OpTypes[]	types;
+	@virtual
     public virtual abstract KString	smode;
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"Operator node cannot be copied");
-	};
-
 	protected Operator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
-		super(0);
 		priority = pr;
 		image = img;
 		name = nm;
@@ -453,8 +437,8 @@ public abstract class Operator extends ASTNode implements Constants {
 
 	public boolean isStandard() { return is_standard; }
 
-	public void set$smode(KString sm) { throw new RuntimeException(); }
-	public KString get$smode() { return orderAndArityNames[mode]; }
+	@setter public void set$smode(KString sm) { throw new RuntimeException(); }
+	@getter public KString get$smode() { return orderAndArityNames[mode]; }
 
 	public void addTypes(OpTypes.TypeRule rt, ...) {
 		iopt.trtypes = new TypeRule[va_args.length+1];
@@ -492,8 +476,12 @@ public abstract class Operator extends ASTNode implements Constants {
 		};
 		foreach( Hashtable<KString,Operator> hash; hashes ) {
 			foreach( Operator op; hash; op.types.length > 0 ) {
-				foreach( OpTypes opt; op.types; opt.method == m) {
-					op.removeTypes(opt$iter);
+				for(int i=0; i < op.types.length; i++) {
+					OpTypes opt = op.types[i];
+					if (opt.method == m) {
+						op.removeTypes(i);
+						i--;
+					}
 				}
 			}
 		}
@@ -550,25 +538,24 @@ public abstract class Operator extends ASTNode implements Constants {
 
 }
 
-@node(copyable=false)
 public class AssignOperator extends Operator {
 
 	public static Hashtable<KString,AssignOperator>	hash = new Hashtable<KString,AssignOperator>();
 
 	// Assign (binary) operators
-	@ref public static final AssignOperator Assign;
-	@ref public static final AssignOperator Assign2;
-	@ref public static final AssignOperator AssignBitOr;
-	@ref public static final AssignOperator AssignBitXor;
-	@ref public static final AssignOperator AssignBitAnd;
-	@ref public static final AssignOperator AssignLeftShift;
-	@ref public static final AssignOperator AssignRightShift;
-	@ref public static final AssignOperator AssignUnsignedRightShift;
-	@ref public static final AssignOperator AssignAdd;
-	@ref public static final AssignOperator AssignSub;
-	@ref public static final AssignOperator AssignMul;
-	@ref public static final AssignOperator AssignDiv;
-	@ref public static final AssignOperator AssignMod;
+	public static final AssignOperator Assign;
+	public static final AssignOperator Assign2;
+	public static final AssignOperator AssignBitOr;
+	public static final AssignOperator AssignBitXor;
+	public static final AssignOperator AssignBitAnd;
+	public static final AssignOperator AssignLeftShift;
+	public static final AssignOperator AssignRightShift;
+	public static final AssignOperator AssignUnsignedRightShift;
+	public static final AssignOperator AssignAdd;
+	public static final AssignOperator AssignSub;
+	public static final AssignOperator AssignMul;
+	public static final AssignOperator AssignDiv;
+	public static final AssignOperator AssignMod;
 
 	static {
 		Assign = newAssignOperator(KString.from("="), KString.from("opAssign"),null,true);
@@ -622,10 +609,6 @@ public class AssignOperator extends Operator {
 			AssignMod.addTypes(otSame(1),otNumber(),otSame(1));
 	}
 
-	public Object copy() {
-		throw new CompilerException(getPos(),"AssignOperator node cannot be copied");
-	};
-
 	protected AssignOperator(KString img, KString nm, Instr in, boolean std) {
 		super(opAssignPriority,img,nm,in,orderAndArityNames[LFY],std);
 		hash.put(img,this);
@@ -650,33 +633,34 @@ public class AssignOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class BinaryOperator extends Operator {
 
 	public static Hashtable<KString,BinaryOperator>	hash = new Hashtable<KString,BinaryOperator>();
 
 	// Binary operators
-	@ref public static final BinaryOperator BooleanOr;
-	@ref public static final BinaryOperator BooleanAnd;
-	@ref public static final BinaryOperator BitOr;
-	@ref public static final BinaryOperator BitXor;
-	@ref public static final BinaryOperator BitAnd;
-	@ref public static final BinaryOperator Equals;
-	@ref public static final BinaryOperator NotEquals;
-	@ref public static final BinaryOperator InstanceOf;
-	@ref public static final BinaryOperator LessThen;
-	@ref public static final BinaryOperator LessEquals;
-	@ref public static final BinaryOperator GreaterThen;
-	@ref public static final BinaryOperator GreaterEquals;
-	@ref public static final BinaryOperator LeftShift;
-	@ref public static final BinaryOperator RightShift;
-	@ref public static final BinaryOperator UnsignedRightShift;
-	@ref public static final BinaryOperator Add;
-	@ref public static final BinaryOperator Sub;
-	@ref public static final BinaryOperator Mul;
-	@ref public static final BinaryOperator Div;
-	@ref public static final BinaryOperator Mod;
+	public static final BinaryOperator BooleanOr;
+	public static final BinaryOperator BooleanAnd;
+	public static final BinaryOperator BitOr;
+	public static final BinaryOperator BitXor;
+	public static final BinaryOperator BitAnd;
+	public static final BinaryOperator Equals;
+	public static final BinaryOperator NotEquals;
+	public static final BinaryOperator InstanceOf;
+	public static final BinaryOperator LessThen;
+	public static final BinaryOperator LessEquals;
+	public static final BinaryOperator GreaterThen;
+	public static final BinaryOperator GreaterEquals;
+	public static final BinaryOperator LeftShift;
+	public static final BinaryOperator RightShift;
+	public static final BinaryOperator UnsignedRightShift;
+	public static final BinaryOperator Add;
+	public static final BinaryOperator Sub;
+	public static final BinaryOperator Mul;
+	public static final BinaryOperator Div;
+	public static final BinaryOperator Mod;
 
+	public static final BinaryOperator Access;
+	
 	static {
 		BooleanOr = newBinaryOperator(opBooleanOrPriority, KString.from("||"), KString.from("opBooleanOr"),null,orderAndArityNames[YFX],true);
 //			iopt=new OpTypes();
@@ -758,13 +742,10 @@ public class BinaryOperator extends Operator {
 //			iopt=new OpTypes();
 //			Mod.addTypes(otSame(1),otUpperCastNumber(1,2),otSame(1));
 
+		Access = newBinaryOperator(opAccessPriority, KString.from("."), KString.from("opAccess"),null,orderAndArityNames[YFX],true);
 	}
 
 	public boolean is_boolean_op;
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"BinaryOperator node cannot be copied");
-	};
 
 	protected BinaryOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
@@ -790,13 +771,12 @@ public class BinaryOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class MultiOperator extends Operator {
 
 	public static Hashtable<KString,MultiOperator>	hash = new Hashtable<KString,MultiOperator>();
 
 	// Binary operators
-	@ref public static final MultiOperator Conditional;
+	public static final MultiOperator Conditional;
 
 	static {
 		Conditional = newMultiOperator(opConditionalPriority, new KString[]{KString.from("?"),KString.from(":")}, KString.from("opChoice"),true);
@@ -805,10 +785,6 @@ public class MultiOperator extends Operator {
 	}
 
 	public KString[]	images;
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"MultiOperator node cannot be copied");
-	};
 
 	protected MultiOperator(int pr, KString[] img, KString nm, boolean std) {
 		super(pr,img[0],nm,null,orderAndArityNames[XFXFY],std);
@@ -839,18 +815,17 @@ public class MultiOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class PrefixOperator extends Operator {
 
 	public static Hashtable<KString,PrefixOperator>	hash = new Hashtable<KString,PrefixOperator>();
 
 	// Unary prefix operators
-	@ref public static final PrefixOperator Pos;
-	@ref public static final PrefixOperator Neg;
-	@ref public static final PrefixOperator PreIncr;
-	@ref public static final PrefixOperator PreDecr;
-	@ref public static final PrefixOperator BitNot;
-	@ref public static final PrefixOperator BooleanNot;
+	public static final PrefixOperator Pos;
+	public static final PrefixOperator Neg;
+	public static final PrefixOperator PreIncr;
+	public static final PrefixOperator PreDecr;
+	public static final PrefixOperator BitNot;
+	public static final PrefixOperator BooleanNot;
 
 	static {
 		Pos = newPrefixOperator(opNegPriority, KString.from("+"), KString.from("opPos"),Instr.op_nop,orderAndArityNames[FY],true);
@@ -874,10 +849,6 @@ public class PrefixOperator extends Operator {
 //			iopt=new OpTypes();
 //			BooleanNot.addTypes(otType(Type.tpBoolean),otBoolean());
 	}
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"PrefixOperator node cannot be copied");
-	};
 
 	protected PrefixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
@@ -903,14 +874,13 @@ public class PrefixOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class PostfixOperator extends Operator {
 
 	public static Hashtable<KString,PostfixOperator>	hash = new Hashtable<KString,PostfixOperator>();
 
 	// Unary postfix operators
-	@ref public static final PostfixOperator PostIncr;
-	@ref public static final PostfixOperator PostDecr;
+	public static final PostfixOperator PostIncr;
+	public static final PostfixOperator PostDecr;
 
 	static {
 		PostIncr = newPostfixOperator(opIncrPriority, KString.from("++"), KString.from("opPostIncr"),null,orderAndArityNames[XF],true);
@@ -921,10 +891,6 @@ public class PostfixOperator extends Operator {
 //			PostDecr.addTypes(otSame(1),otInteger());
 	}
 
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"PostfixOperator node cannot be copied");
-	};
 
 	protected PostfixOperator(int pr, KString img, KString nm, Instr in, KString oa, boolean std) {
 		super(pr,img,nm,in,oa,std);
@@ -950,15 +916,10 @@ public class PostfixOperator extends Operator {
 
 }
 
-@node(copyable=false)
 public class CastOperator extends Operator {
 
-	@ref public Type		type;
+	public Type		type;
 	public boolean  reinterp;
-
-	public Object copy() {
-		throw new CompilerException(getPos(),"CastOperator node cannot be copied");
-	};
 
 	public CastOperator(Type tp, boolean r) {
 		super(opCastPriority,KString.Empty,KString.from("(cast)"),null,orderAndArityNames[FY],true);

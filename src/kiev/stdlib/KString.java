@@ -21,9 +21,8 @@
 package kiev.stdlib;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/stdlib/KString.java,v 1.2.4.1 1999/05/29 21:03:10 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.2.4.1 $
+ * @version $Revision$
  *
  */
 
@@ -232,7 +231,7 @@ public final class KString {
 	}
 	
 	public final boolean equals(KString nm) {
-		return	this.index == nm.index /* this.offset == nm.offset && this.len == nm.len */;
+		return	nm != null && this.index == nm.index /* this.offset == nm.offset && this.len == nm.len */;
 	}
 
 	public final boolean equals(Object nm) {

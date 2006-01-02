@@ -1,31 +1,9 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
-import kiev.stdlib.*;
-import kiev.parser.kiev020;
+import kiev.parser.Parser;
 import kiev.parser.ParseException;
 import kiev.parser.ParseError;
-import kiev.parser.ASTFileUnit;
 import kiev.transf.*;
 
 import java.io.*;
@@ -33,23 +11,26 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.zip.*;
 
+import kiev.be.java.Bytecoder;
+import kiev.be.java.Attr;
+
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Env.java,v 1.4.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.4.2.1.2.2 $
+ * @version $Revision$
  *
  */
 
 @node(copyable=false)
-public class ProjectFile extends ASTNode {
+public final class ProjectFile extends ASTNode {
 	public ClazzName	name;
 	public File			file;
 	public boolean		bad = true;
 
 	public ProjectFile(ClazzName clname, File f) {
-		super(0,0);
+		super(new NodeImpl());
 		name = clname;
 		file = f;
 	}
@@ -63,10 +44,9 @@ public class ProjectFile extends ASTNode {
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"ProjectFile node cannot be copied");
+		throw new CompilerException(this,"ProjectFile node cannot be copied");
 	};
 
-	public void jjtAddChild(ASTNode n, int i) {}
     public Dumper toJava(Dumper dmp) { return dmp; }
 
 }
@@ -80,15 +60,15 @@ public class ProjectFile extends ASTNode {
 public class Env extends Struct {
 
 	/** Hashtable of all defined and loaded classes */
-	public static Hashtable<KString,Struct>	classHash = new Hashtable<KString,Struct>();
-	public static Hash<KString>		classHashOfFails = new Hash<KString>();
-	public static Hashtable<KString,Struct>	classHashDbg = new Hashtable<KString,Struct>();
+	public static Hashtable<KString,Struct>	classHash			= new Hashtable<KString,Struct>();
+	public static Hash<KString>						classHashOfFails	= new Hash<KString>();
+	public static Hashtable<KString,Struct>	classHashDbg 		= new Hashtable<KString,Struct>();
 
 	/** Hashtable for project file (class name + file name) */
 	public static Hashtable<KString,ProjectFile>	projectHash = new Hashtable<KString,ProjectFile>();
 
 	/** Root of package hierarchy */
-	@ref public static Env			root = new Env();
+	public static Env			root = new Env();
 
 	/** StandardClassLoader */
 	public static kiev.bytecode.StandardClassLoader		stdClassLoader;
@@ -100,14 +80,17 @@ public class Env extends Struct {
 		really there may be no instances of this class
 	 */
 	private Env() {
-		super(ClazzName.Empty);
+		super();
+		root = this;
 		setPackage(true);
 		setResolved(true);
-		type = Type.tpVoid;
+		this.imeta_type = new BaseTypeProvider(this);
+		((StructImpl)this.$v_impl).type = Type.tpEnv; // call StdType initialization
+		this.super_bound = new TypeRef(Type.tpObject);
 	}
 
 	public Object copy() {
-		throw new CompilerException(getPos(),"Env node cannot be copied");
+		throw new CompilerException(this,"Env node cannot be copied");
 	};
 
 	public static void setProperty(String prop, String value) {
@@ -120,6 +103,10 @@ public class Env extends Struct {
 
 	public static String getProperty(String prop) {
 		return props.getProperty(prop);
+	}
+	
+	public String toString() {
+		return "<root>";
 	}
 
 	public static Struct newStruct(ClazzName name, boolean cleanup) {
@@ -139,30 +126,30 @@ public class Env extends Struct {
 	}
 
 	public static Struct newStruct(ClazzName name,Struct outer,int access, boolean cleanup) {
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
+		Struct bcl = classHash.get(name.name);
+		if( bcl != null ) {
+			if !(bcl instanceof Struct)
+				throw new CompilerException("Cannot create struct "+name);
+			Struct cl = (Struct)bcl;
 			if( cleanup ) {
 				cl.flags = access;
 				cl.package_clazz = outer;
-				cl.super_clazz = null;
+				cl.typeinfo_clazz = null;
+				cl.view_of = null;
+				cl.super_bound = new TypeRef();
 				cl.interfaces.delAll();
+				cl.args.delAll();
 				cl.sub_clazz.delAll();
-				cl.fields.delAll();
-				cl.virtual_fields.delAll();
-				cl.wrapped_field = null;
-				if( cl.methods != null ) {
-					foreach(Method m; cl.methods; m.isOperatorMethod() ) Operator.cleanupMethod(m);
-				}
-				cl.methods.delAll();
+				foreach(ASTNode n; cl.members; n instanceof Method && ((Method)n).isOperatorMethod() )
+					Operator.cleanupMethod((Method)n);
+				cl.members.delAll();
 				cl.imported.delAll();
-				cl.attrs = Attr.emptyArray;
 			}
-			if( !cl.isArgument() )
-				outer.addSubStruct((Struct)cl);
+			outer.addSubStruct((Struct)cl);
 			return cl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated bytecode name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer,access);
+		Struct cl = new Struct(name,outer,access);
 		classHash.put(cl.name.name,cl);
 		classHashDbg.put(cl.name.bytecode_name,cl);
 		if( outer == null ) {
@@ -171,11 +158,12 @@ public class Env extends Struct {
 			else
 				outer = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
 		}
-		outer.addSubStruct((Struct)cl);
+		if( outer != null )
+			outer.addSubStruct((Struct)cl);
 		return cl;
 	}
 
-	public static Struct newInterface(ClazzName name,Struct outer/*,Typ sup*/,int access) {
+	public static Struct newInterface(ClazzName name,Struct outer,int access) {
 		Struct cl = newStruct(name,outer,access);
 		cl.setInterface(true);
 		return cl;
@@ -184,20 +172,26 @@ public class Env extends Struct {
 	public static Struct newPackage(KString name) {
 		if( name.equals(KString.Empty) )
 			return Env.root;
-		Struct cl = classHash.get(name);
-		if( cl != null ) {
-			cl.setPackage(true);
-			return cl;
+		Struct bcl = classHash.get(name);
+		if( bcl != null ) {
+			if !(bcl instanceof Struct)
+				throw new CompilerException("Cannot create struct "+name);
+			bcl.setPackage(true);
+			bcl.setResolved(true);
+			return (Struct)bcl;
 		}
 		return newPackage(ClazzName.fromToplevelName(name,false));
 	}
 
 	public static Struct newPackage(ClazzName name) {
 		if( name.equals(ClazzName.Empty)) return Env.root;
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
-			cl.setPackage(true);
-			return cl;
+		Struct bcl = classHash.get(name.name);
+		if( bcl != null ) {
+			if !(bcl instanceof Struct)
+				throw new CompilerException("Cannot create struct "+name);
+			bcl.setPackage(true);
+			bcl.setResolved(true);
+			return (Struct)bcl;
 		}
 		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated package name "+name.bytecode_name+" of "+name.name);
 		return newPackage(name,newPackage(ClazzName.fromToplevelName(name.package_name(),false)));
@@ -206,56 +200,7 @@ public class Env extends Struct {
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
 		cl.setPackage(true);
-		cl.type = Type.newJavaRefType(cl);
-		return cl;
-	}
-
-	public static Struct newArgument(KString nm,Struct outer) {
-		// If outer is an inner class - this argument may be an argument
-		// of it's outer class
-		ClazzName name = ClazzName.fromOuterAndName(outer,nm,true,true);
-		name.isArgument = true;
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
-			if( cl.isArgument() ) return cl;
-			throw new RuntimeException("Class "+cl+" is not a class's argument");
-		}
-		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated class argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
 		cl.setResolved(true);
-		cl.super_clazz = Type.tpObject;
-		cl.type = Type.newRefType(cl);
-		classHash.put(cl.name.name,cl);
-		classHashDbg.put(cl.name.bytecode_name,cl);
-		return cl;
-	}
-
-	public static Struct newMethodArgument(KString nm, Struct outer) {
-		// If outer is an inner class - this argument may be an argument
-		// of it's outer class
-		ClazzName name = ClazzName.fromBytecodeName(
-			new KStringBuffer(outer.name.bytecode_name.len+8)
-				.append_fast(outer.name.bytecode_name)
-				.append_fast((byte)'$')
-				.append(outer.anonymouse_inner_counter)
-				.append((byte)'$')
-				.append(nm)
-				.toKString(),
-				true
-		);
-		name.isArgument = true;
-		Struct cl = classHash.get(name.name);
-		if( cl != null ) {
-			if( cl.isArgument() ) return cl;
-			throw new RuntimeException("Class "+cl+" is not a class's argument");
-		}
-		assert(classHashDbg.get(name.bytecode_name)==null,"Duplicated method argument name "+name.bytecode_name+" of "+name.name);
-		cl = new Struct(name,outer/*,sup*/,ACC_PUBLIC|ACC_STATIC|ACC_ARGUMENT);
-		cl.setResolved(true);
-		cl.super_clazz = Type.tpObject;
-		cl.type = Type.newRefType(cl);
-		classHash.put(cl.name.name,cl);
-		classHash.put(cl.name.bytecode_name,cl);
 		return cl;
 	}
 
@@ -270,7 +215,7 @@ public class Env extends Struct {
 	public static void InitializeEnv(String path) {
 		if( path == null ) path = System.getProperty("java.class.path");
 		stdClassLoader = new kiev.bytecode.StandardClassLoader(path);
-		stdClassLoader.addHandler(new kiev.bytecode.KievAttributeHandler());
+//		stdClassLoader.addHandler(new kiev.bytecode.KievAttributeHandler());
 
 		if( Kiev.project_file != null && Kiev.project_file.exists() ) {
 			try {
@@ -308,7 +253,7 @@ public class Env extends Struct {
 			} catch (EOFException e) {
 				// OK
 			} catch (IOException e) {
-				Kiev.reportWarning(0,"Error while project file reading: "+e);
+				Kiev.reportWarning("Error while project file reading: "+e);
 			}
 		}
 
@@ -325,13 +270,15 @@ public class Env extends Struct {
 				ProjectFile value = projectHash.get(key);
 				Struct cl = classHash.get(value.name.name);
 				if( cl != null && cl.isBad() ) value.bad = true;
+				if !(cl instanceof Struct)
+					continue;
 				strs.append(value.name.name+" "+value.name.bytecode_name+" "+value.file+(value.bad?" bad":""));
 			}
 			String[] sarr = (String[])strs;
 			sortStrings(sarr);
 			foreach(String s; sarr) out.println(s);
 		} catch (IOException e) {
-			Kiev.reportWarning(0,"Error while project file writing: "+e);
+			Kiev.reportWarning("Error while project file writing: "+e);
 		}
 	}
 
@@ -400,7 +347,7 @@ public class Env extends Struct {
 		// Check class is already loaded
 		if( classHashOfFails.get(name) != null ) return false;
 		Struct cl = classHash.get(name);
-		if (classHash.get(name) != null)
+		if (cl != null)
 			return true;
 		// Check if not loaded
 		ClazzName clname = ClazzName.fromToplevelName(name,false);
@@ -424,7 +371,7 @@ public class Env extends Struct {
 			classHashOfFails.put(name);
 //			throw new RuntimeException("Class "+name+" not found");
 		}
-		return cl;
+		return (Struct)cl;
 	}
 
 	public static Struct getStruct(ClazzName name) throws RuntimeException {
@@ -444,7 +391,7 @@ public class Env extends Struct {
 			classHashOfFails.put(name.name);
 //			throw new RuntimeException("Class "+name+" not found");
 		}
-		return cl;
+		return (Struct)cl;
 	}
 
 	public static boolean existsClazz(ClazzName name) {
@@ -464,7 +411,7 @@ public class Env extends Struct {
 		if( stdClassLoader==null ) InitializeEnv();
 		kiev.bytecode.Clazz clazz = stdClassLoader.loadClazz(name.bytecode_name.toString());
 		if( clazz != null ) {
-			Struct cl = classHash.get(name.name);
+			Struct cl = (Struct)classHash.get(name.name);
 			if( cl == null || !cl.isResolved() || cl.package_clazz==null ) {
 				// Ensure the parent package/outer class is loaded
 				Struct pkg = getStruct(ClazzName.fromBytecodeName(name.package_bytecode_name(),false));
@@ -477,10 +424,12 @@ public class Env extends Struct {
 					pkg = getStruct(pkg.name);
 					//pkg = loadClazz(pkg.name);
 				}
-				if( cl == null )
+				if( cl == null ) {
 					cl = newStruct(name,false);
+					new FileUnit(KString.from(name.short_name+".class"), pkg).members.add(cl);
+				}
 			}
-			cl = new Bytecoder(cl,clazz).readClazz();
+			cl = new Bytecoder(cl,clazz,null).readClazz();
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose )
 				Kiev.reportInfo("Loaded "+(
@@ -516,6 +465,7 @@ public class Env extends Struct {
 		}
 		if (file == null)
 			return null;
+		Parser k = Kiev.k;
 		try {
 			diff_time = curr_time = System.currentTimeMillis();
 			FileInputStream fin;
@@ -528,49 +478,35 @@ public class Env extends Struct {
 				System.runFinalization();
 				fin = new FileInputStream(file);
 			}
-			kiev020 k = Kiev.k;
-			kiev020.interface_only = true;
+			k.interface_only = true;
 			k.ReInit(fin);
-			ASTFileUnit fu = k.FileUnit(Kiev.curFile.toString());
+			FileUnit fu = k.FileUnit(Kiev.curFile.toString());
+			fu.scanned_for_interface_only = true;
 			try {
 				fin.close();
 			} catch (IOException ioe) {
-				Kiev.reportError(0,ioe.getMessage());
+				Kiev.reportError(ioe);
 			}
 			diff_time = System.currentTimeMillis() - curr_time;
 			if( Kiev.verbose ) Kiev.reportInfo("Scanned file   "+filename,diff_time);
 			System.gc();
 			try {
-				Kiev.files_scanned.append(fu);
-				ExportJavaTop exporter = new ExportJavaTop();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateTopStruct) )     exporter.pass1(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passProcessSyntax) )       exporter.pass1_1(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passArgumentInheritance) ) exporter.pass2(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passStructInheritance) )	exporter.pass2_2(fu, null);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passCreateMembers) )		fu.pass3();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passAutoProxyMethods) )	fu.autoProxyMethods();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveImports) )		fu.resolveImports();
-				if ( Kiev.passGreaterEquals(TopLevelPass.passResolveFinalFields) )	fu.resolveFinalFields(false);
-				if ( Kiev.passGreaterEquals(TopLevelPass.passGenerate) ) {
-					if (Kiev.safe)
-						Kiev.files.append(fu.file_unit);
-					else
-						fu.file_unit.cleanup();
-				}
+				Kiev.files.append(fu);
+				Kiev.runProcessorsOn(fu);
 				fu = null;
 			} catch(Exception e ) {
-				Kiev.reportError(0,e);
+				Kiev.reportError(e);
 			}
 			System.gc();
 		} catch ( ParseException e ) {
-			Kiev.reportError(0,e);
+			Kiev.reportError(e);
 		} catch ( ParseError e ) {
 			System.out.println("Error while scanning input file:"+filename+":"+e);
 		} finally {
-			kiev020.interface_only = Kiev.interface_only;
+			k.interface_only = Kiev.interface_only;
 			Kiev.curFile = cur_file;
 		}
-		Struct cl = classHash.get(name.name);
+		Struct cl = (Struct)classHash.get(name.name);
 		return (Struct)cl;
 	}
 

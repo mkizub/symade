@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.transf;
 
 import kiev.Kiev;
@@ -31,9 +11,11 @@ import static kiev.stdlib.Debug.*;
  * @author Maxim Kizub
  *
  */
+@singleton
+public final class ProcessDFlow extends TransfProcessor implements Constants {
 
-public final class ProcessDFlow implements Constants {
-
+	public static final ProcessDFlow $instance = new ProcessDFlow();
+	
 	public static final KString mnNode				= KString.from("kiev.vlang.dflow"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
 	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 
@@ -46,6 +28,10 @@ public final class ProcessDFlow implements Constants {
 	private static Type tpNArr;
 	private static Type tpNode;
 	
+	private ProcessDFlow() {
+		super(Kiev.Ext.DFlow);
+	}
+
 	/////////////////////////////////////////////
 	//      Verify the VNode tree structure    //
     /////////////////////////////////////////////
@@ -56,27 +42,37 @@ public final class ProcessDFlow implements Constants {
 
 	private boolean hasField(Struct s, KString name) {
 		s.checkResolved();
-		foreach(Field f; s.fields; f.name.equals(name) ) return true;
+		foreach (ASTNode n; s.members; n instanceof Field && ((Field)n).name.equals(name)) return true;
 		return false;
 	}
 	
 	private boolean hasMethod(Struct s, KString name) {
 		s.checkResolved();
-		foreach(Method m; s.methods; m.name.equals(name) ) return true;
+		foreach (ASTNode n; s.members; n instanceof Method && ((Method)n).name.equals(name)) return true;
 		return false;
 	}
+
 	
-	public void autoGenerateMembers(Struct s) {
+	public void autoGenerateMembers(ASTNode:ASTNode node) {
+		return;
+	}
+	
+	public void autoGenerateMembers(FileUnit:ASTNode fu) {
+		foreach (DNode dn; fu.members; dn instanceof Struct)
+			this.autoGenerateMembers(dn);
+	}
+	
+	public void autoGenerateMembers(Struct:ASTNode s) {
 		if (tpNArr == null)
 			tpNArr = Env.getStruct(nameNArr).type;
 		if (tpNArr == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNArr);
+			Kiev.reportError("Cannot find class "+nameNArr);
 			return;
 		}
 		if (tpNode == null)
 			tpNode = Env.getStruct(nameNode).type;
 		if (tpNode == null) {
-			Kiev.reportError(0,"Cannot find class "+nameNode);
+			Kiev.reportError("Cannot find class "+nameNode);
 			return;
 		}
 		if (!s.isClazz())
@@ -91,35 +87,28 @@ public final class ProcessDFlow implements Constants {
 			Struct ss = s;
 			while (ss != null && ss.meta.get(mnNode) != null) {
 				int p = 0;
-				foreach (Field f; ss.fields; !f.isStatic() && f.meta.get(mnNode) != null) {
+				foreach (DNode n; ss.members; n instanceof Field && !n.isStatic() && n.meta.get(mnNode) != null) {
+					Field f = (Field)n;
 					aflds.insert(p, f);
 					p++;
 				}
-				ss = ss.super_clazz.clazz;
+				ss = ss.super_type.getStruct();
 			}
 		}
 		// DFState getDFlowIn(ASTNode $child)
 		if (hasMethod(s, nameGetDFlowIn)) {
-			Kiev.reportWarning(s.pos,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
+			Kiev.reportWarning(s,"Method "+s+"."+nameGetDFlowIn+" already exists, @dflow member is not generated");
 		} else {
-			MethodType mt = (MethodType)Type.fromSignature(signGetDFlowIn);
-			Method dfIn = new Method(s,nameGetDFlowIn,mt,ACC_PUBLIC);
-			dfIn.params = new Var[]{
-				new Var(0, dfIn, nameThis, s.type, 0),
-				new Var(0, dfIn, KString.from("$child"), tpNode, 0),
-			};
-			dfIn.body = new BlockStat(0,dfIn);
+			MethodType mt = (MethodType)Signature.getType(signGetDFlowIn);
+			Method dfIn = new Method(nameGetDFlowIn,mt.ret,ACC_PUBLIC);
+			dfIn.params.add(new FormPar(0, KString.from("child"), tpNode, FormPar.PARAM_NORMAL, 0));
+			dfIn.body = new BlockStat(0);
 			Var var = new Var(0, KString.from("name"),Type.tpString,ACC_FINAL);
-			DeclStat vdecl = new DeclStat(0,null,var);
-			((BlockStat)dfIn.body).addStatement(vdecl);
+			dfIn.body.addStatement(new VarDecl(var));
 			{
-				ASTAccessExpression ae0 = new ASTAccessExpression();
-				ae0.obj = new VarAccessExpr(0,dfIn.params[1]);
-				ae0.ident = new ASTIdentifier(0,KString.from("pslot"));
-				ASTAccessExpression ae1 = new ASTAccessExpression();
-				ae1.obj = ae0;
-				ae1.ident = new ASTIdentifier(0,KString.from("name"));
-				vdecl.init = ae1;
+				AccessExpr ae0 = new AccessExpr(0, new LVarExpr(0,dfIn.params[0]), new NameRef(KString.from("pslot")));
+				AccessExpr ae1 = new AccessExpr(0, ae0, new NameRef(KString.from("name")));
+				var.init = ae1;
 			}
 			for(int i=0; i < aflds.length; i++) {
 				Field fld = aflds[i];
@@ -128,26 +117,26 @@ public final class ProcessDFlow implements Constants {
 				KString fldnm = fld.name.name;
 				KString fname = KString.from(nameGetDFlowIn+"$"+fldnm);
 				ASTCallExpression ce = new ASTCallExpression();
-				ce.func = new ASTIdentifier(0,fname);
+				ce.func = new NameRef(fname);
 				if (seq)
-					ce.args.add(new VarAccessExpr(0,dfIn.params[1]));
-				((BlockStat)dfIn.body).addStatement(
-					new IfElseStat(0,null,
-						new BinaryBooleanExpr(0, BinaryOperator.Equals,
-							new VarAccessExpr(0, var),
-							new ConstExpr(0,fldnm)
+					ce.args.add(new LVarExpr(0, dfIn.params[0]));
+				dfIn.body.addStatement(
+					new IfElseStat(0,
+						new BinaryBoolExpr(0, BinaryOperator.Equals,
+							new LVarExpr(0, var),
+							new ConstStringExpr(fldnm)
 						),
-						new ReturnStat(0,null, ce),
+						new ReturnStat(0, ce),
 						null
 					)
 				);
 			}
 			StringConcatExpr msg = new StringConcatExpr();
-			msg.appendArg(new ConstExpr(0,KString.from("No @dflow value \"")));
-			msg.appendArg(new VarAccessExpr(0, var));
-			msg.appendArg(new ConstExpr(0,KString.from("\" in "+s.name.short_name)));
-			((BlockStat)dfIn.body).addStatement(
-				new ThrowStat(0,null,new NewExpr(0,Type.tpRuntimeException,new Expr[]{msg}))
+			msg.appendArg(new ConstStringExpr(KString.from("No @dflow value \"")));
+			msg.appendArg(new LVarExpr(0, var));
+			msg.appendArg(new ConstStringExpr(KString.from("\" in "+s.name.short_name)));
+			dfIn.body.addStatement(
+				new ThrowStat(0,new NewExpr(0,Type.tpRuntimeException,new ENode[]{msg}))
 			);
 			s.addMethod(dfIn);
 		}
@@ -161,10 +150,10 @@ public final class ProcessDFlow implements Constants {
 			KString src = meta.getS(KString.from("in"));
 			boolean seq = isArr && meta.getZ(KString.from("seq"));
 			if (hasMethod(s, fname)) {
-				Kiev.reportWarning(s.pos,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
+				Kiev.reportWarning(s,"Method "+s+"."+fname+" already exists, @dflow member is not generated");
 			} else {
-				ASTAccessExpression acc_fld = null;
-				ASTAccessExpression acc_prev = null;
+				AccessExpr acc_fld = null;
+				AccessExpr acc_prev = null;
 				ASTCallAccessExpression cae_prev = null;
 				ASTCallAccessExpression cae_tru = null;
 				ASTCallAccessExpression cae_fls = null;
@@ -190,73 +179,67 @@ public final class ProcessDFlow implements Constants {
 						fun_nm = KString.from("getDFlowFls");
 					}
 					else {
-						Kiev.reportError(fld.pos,"Bad @dflow in(): "+src);
+						Kiev.reportError(fld,"Bad @dflow in(): "+src);
 						continue;
 					}
 					cae_tru = new ASTCallAccessExpression();
-					cae_tru.obj = new ASTIdentifier(0,acc_nm);
-					cae_tru.func = new ASTIdentifier(0,fun_nm);
+					cae_tru.obj = new ASTIdentifier(acc_nm);
+					cae_tru.func = new NameRef(fun_nm);
 					
 					if (seq) {
-						acc_prev = new ASTAccessExpression();
-						acc_prev.obj = new ASTIdentifier(0,KString.from("$child"));
-						acc_prev.ident = new ASTIdentifier(0,KString.from("pprev"));
+						acc_prev = new AccessExpr();
+						acc_prev.obj = new ASTIdentifier(KString.from("$child"));
+						acc_prev.ident = new NameRef(KString.from("pprev"));
 						cae_prev = new ASTCallAccessExpression();
-						cae_prev.obj = (ASTAccessExpression)acc_prev.copy();
-						cae_prev.func = new ASTIdentifier(0,KString.from("getDFlowOut"));
+						cae_prev.obj = (AccessExpr)acc_prev.copy();
+						cae_prev.func = new NameRef(KString.from("getDFlowOut"));
 					}
 					
 					if (acc_nm != nameThis) {
-						acc_fld = new ASTAccessExpression();
+						acc_fld = new AccessExpr();
 						acc_fld.obj = new ThisExpr();
-						acc_fld.ident = new ASTIdentifier(0,acc_nm);
+						acc_fld.ident = new NameRef(acc_nm);
 						cae_fls = new ASTCallAccessExpression();
 						cae_fls.obj = new ThisExpr();
-						cae_fls.func = new ASTIdentifier(0,KString.from("getDFlowIn$"+acc_nm));
+						cae_fls.func = new NameRef(KString.from("getDFlowIn$"+acc_nm));
 					}
 				}
 				Method dfIn;
 				if (seq) {
-					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInSeq);
-					dfIn = new Method(s,fname,mt,ACC_PRIVATE);
-					dfIn.params = new Var[]{
-						new Var(0, dfIn, nameThis, s.type, 0),
-						new Var(0, dfIn, KString.from("$child"), tpNode, 0),
-					};
+					MethodType mt = (MethodType)Signature.getType(signGetDFlowInSeq);
+					dfIn = new Method(fname,mt.ret,ACC_PRIVATE);
+					dfIn.params.add(new FormPar(0, KString.from("$child"), tpNode, FormPar.PARAM_NORMAL, 0));
 				} else {
-					MethodType mt = (MethodType)Type.fromSignature(signGetDFlowInFld);
-					dfIn = new Method(s,fname,mt,ACC_PRIVATE);
-					dfIn.params = new Var[]{
-						new Var(0, dfIn, nameThis, s.type, 0),
-					};
+					MethodType mt = (MethodType)Signature.getType(signGetDFlowInFld);
+					dfIn = new Method(fname,mt.ret,ACC_PRIVATE);
 				}
-				dfIn.body = new BlockStat(0,dfIn);
+				dfIn.body = new BlockStat(0);
 				if (isArr && seq) {
-					((BlockStat)dfIn.body).addStatement(
-						new IfElseStat(0,null,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+					dfIn.body.addStatement(
+						new IfElseStat(0,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_prev,
-								new ConstExpr(0,null)
+								new ConstNullExpr()
 							),
-							new ReturnStat(0,null,cae_prev),
+							new ReturnStat(0,cae_prev),
 							null
 						)
 					);
 				}
 				if (cae_fls != null) {
-					((BlockStat)dfIn.body).addStatement(
-						new IfElseStat(0,null,
-							new BinaryBooleanExpr(0, BinaryOperator.NotEquals,
+					dfIn.body.addStatement(
+						new IfElseStat(0,
+							new BinaryBoolExpr(0, BinaryOperator.NotEquals,
 								acc_fld,
-								new ConstExpr(0,null)
+								new ConstNullExpr()
 							),
-							new ReturnStat(0,null,cae_tru),
-							new ReturnStat(0,null,cae_fls)
+							new ReturnStat(0,cae_tru),
+							new ReturnStat(0,cae_fls)
 						)
 					);
 				} else {
-					((BlockStat)dfIn.body).addStatement(
-						new ReturnStat(0,null,cae_tru)
+					dfIn.body.addStatement(
+						new ReturnStat(0,cae_tru)
 					);
 				}
 				s.addMethod(dfIn);

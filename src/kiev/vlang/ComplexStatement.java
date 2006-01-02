@@ -1,73 +1,130 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JENodeView;
+import kiev.be.java.JCaseLabelView;
+import kiev.be.java.JSwitchStatView;
+import kiev.be.java.JCatchInfoView;
+import kiev.be.java.JFinallyInfoView;
+import kiev.be.java.JTryStatView;
+import kiev.be.java.JSynchronizedStatView;
+import kiev.be.java.JWithStatView;
+
+import kiev.be.java.CodeLabel;
+import kiev.be.java.CodeSwitch;
+import kiev.be.java.CodeCatchInfo;
+
 import static kiev.stdlib.Debug.*;
 import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/ComplexStatement.java,v 1.5.2.1.2.2 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.5.2.1.2.2 $
+ * @version $Revision$
  *
  */
 
 @node
-public class CaseLabel extends ASTNode {
+public class CaseLabel extends ENode implements ScopeOfNames {
+	
+	@dflow(in="this:in()", out="stats") private static class DFI {
+	@dflow(in="this:in", seq="true") Var[]		pattern;
+	@dflow(in="pattern", seq="true") ENode[]	stats;
+	}
+	
+	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
-	static CaseLabel[] emptyArray = new CaseLabel[0];
+	@node
+	public static final class CaseLabelImpl extends ENodeImpl {
+		@att public ENode			val;
+		@ref public Type			type;
+		@att public NArr<Var>		pattern;
+		@att public NArr<ENode>		stats;
+		@ref public CodeLabel		case_label;
+		public CaseLabelImpl() {}
+		public CaseLabelImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view CaseLabelView of CaseLabelImpl extends ENodeView {
+		public				ENode			val;
+		public				Type			type;
+		public access:ro	NArr<Var>		pattern;
+		public access:ro	NArr<ENode>		stats;
+	}
 
-	@att public ASTNode		val;
-	@ref public Type		type;
-	public Var[]		pattern;
-	@att public BlockStat	stats;
+	@att public abstract virtual			ENode			val;
+	@ref public abstract virtual			Type			type;
+	@att public abstract virtual access:ro	NArr<Var>		pattern;
+	@att public abstract virtual access:ro	NArr<ENode>		stats;
+	
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public CaseLabelView		getCaseLabelView()		alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
+	public JCaseLabelView		getJCaseLabelView()		alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
 
-	public CodeLabel	case_label;
+	@getter public ENode			get$val()				{ return this.getCaseLabelView().val; }
+	@getter public Type				get$type()				{ return this.getCaseLabelView().type; }
+	@getter public NArr<Var>		get$pattern()			{ return this.getCaseLabelView().pattern; }
+	@getter public NArr<ENode>		get$stats()				{ return this.getCaseLabelView().stats; }
+	@setter public void		set$val(ENode val)				{ this.getCaseLabelView().val = val; }
+	@setter public void		set$type(Type val)				{ this.getCaseLabelView().type = val; }
+	
 
 	public CaseLabel() {
+		super(new CaseLabelImpl());
 	}
 
-	public CaseLabel(int pos, ASTNode parent, ASTNode val, ASTNode[] stats) {
-		super(pos,parent);
+	public CaseLabel(int pos, ENode val, ENode[] stats) {
+		super(new CaseLabelImpl(pos));
 		this.val = val;
-		if( val != null && val instanceof Expr )
-			this.val.parent = this;
-		this.stats = new BlockStat(pos,this,stats);
+		this.stats.addAll(stats);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
+	static class CaseLabelDFFuncIn extends DFFunc {
+		final int res_idx;
+		CaseLabelDFFuncIn(DataFlowInfo dfi) {
+			res_idx = dfi.allocResult(); 
+		}
+		DFState calc(DataFlowInfo dfi) {
+			DFState res = dfi.getResult(res_idx);
+			if (res != null) return res;
+			CaseLabel cl = (CaseLabel)dfi.node;
+			if (cl.parent instanceof SwitchStat) {
+				ENode sel = ((SwitchStat)cl.parent).sel;
+				if (sel != null)
+					res = sel.getDFlow().out();
+			}
+			if (cl.pprev != null) {
+				DFState prev = cl.pprev.getDFlow().out();
+				if (res != null)
+					res = DFState.join(res,prev);
+				else
+					res = prev;
+			}
+			if (res != null)
+				dfi.setResult(res_idx, res);
+			else
+				res = DFState.makeNewState();
+			return res;
+		}
+	}
+	public DFFunc newDFFuncIn(DataFlowInfo dfi) {
+		return new CaseLabelDFFuncIn(dfi);
 	}
 
 	public String toString() {
-		if( val == null ) return "default:";
-		else if(pattern != null) {
+		if( val == null )
+			return "default:";
+		else if(pattern.length > 0) {
 			StringBuffer sb = new StringBuffer();
 			sb.append("case ").append(val).append('(');
 			for(int i=0; i < pattern.length; i++) {
-				sb.append(pattern[i].type).append(' ').append(pattern[i].name);
+				sb.append(pattern[i].vtype).append(' ').append(pattern[i].name);
 				if( i < pattern.length-1 ) sb.append(',');
 			}
 			sb.append("):");
@@ -76,545 +133,424 @@ public class CaseLabel extends ASTNode {
 		return "case "+val+':';
 	}
 
-	public Statement addStatement(int i, Statement st) {
+	public ENode addStatement(int i, ENode st) {
 		if( st == null ) return null;
-		stats.stats.insert(st,i);
+		stats.insert(st,i);
 		return st;
 	}
 
-	public void cleanup() {
-		parent=null;
-		val.cleanup();
-		val = null;
-		type = null;
-		pattern = null;
-		stats.cleanup();
-		stats = null;
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
+		Var@ var;
+	{
+		var @= pattern,
+		var.name.equals(name),
+		node ?= var
 	}
-
-	public ASTNode resolve(Type tpVoid) throws RuntimeException {
+	
+	public void resolve(Type tpVoid) {
 		boolean pizza_case = false;
-		PassInfo.push(this);
+		SwitchStat sw = (SwitchStat)parent;
 		try {
-			SwitchStat sw = (SwitchStat)parent;
-			try {
-				if( val != null ) {
-					ASTNode v;
-					if( val instanceof Expr ) v = ((Expr)val).resolve(null);
-					else v = val;
-					if( v instanceof WrapedExpr && ((WrapedExpr)v).expr instanceof Struct )
-						v = ((WrapedExpr)v).expr;
-					if( v instanceof Expr )	{
-						if( sw.mode == SwitchStat.ENUM_SWITCH ) {
-							if( !(v instanceof StaticFieldAccessExpr) )
-								throw new CompilerException(pos,"Wrong case in enum switch");
-							StaticFieldAccessExpr f = (StaticFieldAccessExpr)v;
-							Type et = sw.sel.getType();
-							if( f.var.type != et )
-								throw new CompilerException(pos,"Case of type "+f.var.type+" do not match switch expression of type "+et);
-							if (et.clazz.isPrimitiveEnum())
-								et = et.clazz.getPrimitiveEnumType();
-							if (et.clazz.isEnum() && !et.clazz.isPrimitiveEnum())
-								val = new ConstExpr(pos,Kiev.newInteger(et.clazz.getValueForEnumField(f.var)));
-							else
-								val = new ConstExpr(pos,((ConstExpr)f.var.init).value);
-						}
-						else if( sw.mode != SwitchStat.NORMAL_SWITCH )
-							throw new CompilerException(pos,"Wrong case in normal switch");
-						else
-							val = (Expr)v;
-					}
-					else if( v instanceof Struct ) {
-						((Struct)v).checkResolved();
-						v = Type.getRealType(sw.tmpvar.type,v.type).clazz;
-						this.type = ((Struct)v).type;
-						pizza_case = true;
-						Struct cas = (Struct)v;
-						if( cas.isPizzaCase() ) {
-							if( sw.mode != SwitchStat.PIZZA_SWITCH )
-								throw new CompilerException(pos,"Pizza case type in non-pizza switch");
-							PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
-							val = new ConstExpr(val.getPos(),Kiev.newInteger(case_attr.caseno));
-							if( pattern != null && pattern.length > 0 ) {
-								if( pattern.length != case_attr.casefields.length )
-									throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
-								for(int i=0, j=0; i < pattern.length; i++) {
-									if( pattern[i]==null ) continue;
-									pattern[i] = (Var)pattern[i].resolve(null);
-									Type tp = Type.getRealType(sw.tmpvar.type,case_attr.casefields[i].type);
-									if( !pattern[i].type.equals(tp) )
-										throw new RuntimeException("Pattern variable "+pattern[i].name+" has type "+pattern[i].type+" but type "+tp+" is expected");
-									Expr init =
-										new AccessExpr(pattern[i].pos,
-											new CastExpr(pattern[i].pos,Type.getRealType(sw.tmpvar.type,cas.type),
-												(Expr)new VarAccessExpr(pattern[i].pos,sw.tmpvar).resolve(null)),
-											case_attr.casefields[i]
-										);
-									addStatement(j++,new DeclStat(pattern[i].pos,stats,pattern[i],init));
-								}
-							}
-						} else {
-							if( sw.mode != SwitchStat.TYPE_SWITCH )
-								throw new CompilerException(pos,"Type case in non-type switch");
-							if( v.equals(Type.tpObject.clazz) ) {
-								val = null;
-								sw.defCase = this;
-							} else {
-								val = new ConstExpr(val.getPos(),Kiev.newInteger(0));
-							}
-						}
-					}
-					else
-						throw new CompilerException(pos,"Unknown node of class "+v.getClass());
-				} else {
-					sw.defCase = this;
-					if( sw.mode == SwitchStat.TYPE_SWITCH )
-						this.type = Type.tpObject;
-				}
-			} catch(Exception e ) { Kiev.reportError(pos,e); }
-
-			//this.stats.resolveBlockStats();
-			this.stats.resolve(Type.tpVoid);
-			this.setAbrupted(stats.isAbrupted());
-			this.setMethodAbrupted(stats.isMethodAbrupted());
-
 			if( val != null ) {
-				if( !((Expr)val).isConstantExpr() )
-					throw new RuntimeException("Case label "+val+" must be a constant expression but "+val.getClass()+" found");
-				if( !((Expr)val).getType().isIntegerInCode() )
-					throw new RuntimeException("Case label "+val+" must be of integer type");
-			}
-		} finally { PassInfo.pop(this); }
-		return this;
-	}
-
-	public CodeLabel getLabel() {
-		if( case_label == null ) case_label = Code.newLabel();
-		return case_label;
-	}
-
-	public void generate(Type reqType) {
-		case_label = getLabel();
-		PassInfo.push(this);
-		try {
-			try {
-				Code.addInstr(Instr.set_label,case_label);
-				if( val == null ) ((SwitchStat)parent).cosw.addDefault(case_label);
-				else {
-					Object v = ((Expr)val).getConstValue();
-					if( v instanceof Number )
-						((SwitchStat)parent).cosw.addCase( ((Number)v).intValue(), case_label);
-					else if( v instanceof java.lang.Character )
-						((SwitchStat)parent).cosw.addCase( (int)((java.lang.Character)v).charValue(), case_label);
-					else
-						throw new RuntimeException("Case label "+v+" must be of integer type");
+				val.resolve(null);
+				if( val instanceof TypeRef ) {
+					this.type = Type.getRealType(sw.tmpvar.getType(),val.getType());
+					pizza_case = true;
+					Struct cas = this.type.getStruct();
+					if( cas.isPizzaCase() ) {
+						if( sw.mode != SwitchStat.PIZZA_SWITCH )
+							throw new CompilerException(this,"Pizza case type in non-pizza switch");
+						//PizzaCaseAttr case_attr = (PizzaCaseAttr)cas.getAttr(attrPizzaCase);
+						MetaPizzaCase meta = cas.getMetaPizzaCase();
+						//val = new ConstIntExpr(case_attr.caseno);
+						val = new ConstIntExpr(meta.getTag());
+						if( pattern.length > 0 ) {
+							ENode[] fields = meta.getFields();
+//							if( pattern.length != case_attr.casefields.length )
+//								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
+							if( pattern.length != fields.length )
+								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
+							for(int i=0, j=0; i < pattern.length; i++) {
+								Var p = pattern[i];
+								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
+									continue;
+								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
+								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
+								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
+									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");
+								p.init = new IFldExpr(p.pos,
+										new CastExpr(p.pos,
+											Type.getRealType(sw.tmpvar.getType(),cas.type),
+											new LVarExpr(p.pos,sw.tmpvar.getVar())
+										),
+										f
+									);
+//									addSymbol(j++,p);
+								p.resolveDecl();
+							}
+						}
+					} else {
+						if( sw.mode != SwitchStat.TYPE_SWITCH )
+							throw new CompilerException(this,"Type case in non-type switch");
+						if( val.getType() ≈ Type.tpObject ) {
+							val = null;
+							sw.defCase = this;
+						} else {
+							val = new ConstIntExpr(0);
+						}
+					}
+				} else {
+					if( sw.mode == SwitchStat.ENUM_SWITCH ) {
+						if( !(val instanceof SFldExpr) )
+							throw new CompilerException(this,"Wrong case in enum switch");
+						SFldExpr f = (SFldExpr)val;
+						Type et = sw.sel.getType();
+						if( f.var.type ≢ et )
+							throw new CompilerException(this,"Case of type "+f.var.type+" do not match switch expression of type "+et);
+						if (et.isEnum())
+							val = new ConstIntExpr(et.getStruct().getIndexOfEnumField(f.var));
+						else
+							val = (ENode)f.var.init.copy();
+					}
+					else if( sw.mode != SwitchStat.NORMAL_SWITCH )
+						throw new CompilerException(this,"Wrong case in normal switch");
 				}
-			} catch(Exception e ) { Kiev.reportError(pos,e); }
-			if (isAutoReturnable()) stats.setAutoReturnable(true);
-			stats.generate(Type.tpVoid);
-		} finally { PassInfo.pop(this); }
+			} else {
+				sw.defCase = this;
+				if( sw.mode == SwitchStat.TYPE_SWITCH )
+					this.type = Type.tpObject;
+			}
+		} catch(Exception e ) { Kiev.reportError(this,e); }
+
+		BlockStat.resolveBlockStats(this, stats);
+
+		if( val != null ) {
+			if( !val.isConstantExpr() )
+				throw new RuntimeException("Case label "+val+" must be a constant expression but "+val.getClass()+" found");
+			if( !val.getType().isIntegerInCode() )
+				throw new RuntimeException("Case label "+val+" must be of integer type");
+		}
 	}
 
 	public Dumper toJava(Dumper dmp) {
 		if( val == null )
-			dmp.newLine(-1).append("default:").newLine();
+			dmp.newLine(-1).append("default:");
 		else
-			dmp.newLine(-1).append("case ").append(val).append(':').newLine();
-		dmp.append(stats).newLine(1);
-//		for(int i=0; i < stats.length; i++) {
-//			if( stats[i] == null ) dmp.append(';');
-//			else dmp.append(stats[i]).newLine();
-//		}
+			dmp.newLine(-1).append("case ").append(val).append(':');
+		dmp.newLine(1);
+		foreach (ENode s; stats)
+			s.toJava(dmp);
 		return dmp;
 	}
 }
 
 @node
-public class SwitchStat extends BlockStat implements BreakTarget {
-
-	@att public Expr					sel;
-	@ref public Var						tmpvar;
-	@ref public Field					typehash;
-	@att public final NArr<ASTNode>		cases;
-	@ref public ASTNode					defCase;
-
-	public CodeSwitch	cosw;
-	protected CodeLabel	break_label = null;
-	protected CodeLabel	continue_label = null;
-
+public class SwitchStat extends ENode implements BreakTarget {
+	
+	@dflow(out="lblbrk") private static class DFI {
+	@dflow(in="this:in")			ENode			sel;
+	@dflow(in="sel", seq="false")	CaseLabel[]		cases;
+	@dflow(in="cases")				Label			lblcnt;
+	@dflow(in="cases")				Label			lblbrk;
+	}
+	
 	public static final int NORMAL_SWITCH = 0;
 	public static final int PIZZA_SWITCH = 1;
 	public static final int TYPE_SWITCH = 2;
 	public static final int ENUM_SWITCH = 3;
 
-	public int mode = NORMAL_SWITCH;
-
-	public SwitchStat() {
-		this.cases = new NArr<ASTNode>(this, new AttrSlot("cases", true, true));
+	@node
+	public static class SwitchStatImpl extends ENodeImpl {
+		@att                 public int mode; /* = NORMAL_SWITCH; */
+		@att                 public ENode					sel;
+		@att                 public NArr<CaseLabel>		cases;
+		@att                 public LVarExpr				tmpvar;
+		@ref                 public CaseLabel				defCase;
+		@ref                 public Field					typehash; // needed for re-resolving
+		@att(copyable=false) public Label					lblcnt;
+		@att(copyable=false) public Label					lblbrk;
+		@att                 public CodeSwitch				cosw;
+		public SwitchStatImpl() {}
+		public SwitchStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view SwitchStatView of SwitchStatImpl extends ENodeView {
+		public				int						mode;
+		public				ENode					sel;
+		public access:ro	NArr<CaseLabel>			cases;
+		public				LVarExpr				tmpvar;
+		public				CaseLabel				defCase;
+		public				Field					typehash; // needed for re-resolving
+		public access:ro	Label					lblcnt;
+		public access:ro	Label					lblbrk;
 	}
 
-	public SwitchStat(int pos, ASTNode parent, Expr sel, ASTNode[] cases) {
-		super(pos, parent);
+	@att public abstract virtual			int						mode;
+	@att public abstract virtual			ENode					sel;
+	@att public abstract virtual access:ro	NArr<CaseLabel>			cases;
+	@att public abstract virtual			LVarExpr				tmpvar;
+	@ref public abstract virtual			CaseLabel				defCase;
+	@ref public abstract virtual			Field					typehash; // needed for re-resolving
+	@att public abstract virtual access:ro	Label					lblcnt;
+	@att public abstract virtual access:ro	Label					lblbrk;
+
+	@getter public int				get$mode()				{ return this.getSwitchStatView().mode; }
+	@getter public ENode			get$sel()				{ return this.getSwitchStatView().sel; }
+	@getter public NArr<CaseLabel>	get$cases()				{ return this.getSwitchStatView().cases; }
+	@getter public LVarExpr			get$tmpvar()			{ return this.getSwitchStatView().tmpvar; }
+	@getter public CaseLabel		get$defCase()			{ return this.getSwitchStatView().defCase; }
+	@getter public Field			get$typehash()			{ return this.getSwitchStatView().typehash; }
+	@getter public Label			get$lblcnt()			{ return this.getSwitchStatView().lblcnt; }
+	@getter public Label			get$lblbrk()			{ return this.getSwitchStatView().lblbrk; }
+	
+	@setter public void			set$mode(int val)			{ this.getSwitchStatView().mode = val; }
+	@setter public void			set$sel(ENode val)			{ this.getSwitchStatView().sel = val; }
+	@setter public void			set$tmpvar(LVarExpr val)	{ this.getSwitchStatView().tmpvar = val; }
+	@setter public void			set$defCase(CaseLabel val)	{ this.getSwitchStatView().defCase = val; }
+	@setter public void			set$typehash(Field val)		{ this.getSwitchStatView().typehash = val; }
+
+	public NodeView					getNodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public ENodeView				getENodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public SwitchStatView			getSwitchStatView()		alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public JSwitchStatView			getJSwitchStatView()	alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	
+	public SwitchStat() {
+		super(new SwitchStatImpl());
+		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
+		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
+	}
+
+	public SwitchStat(int pos, ENode sel, CaseLabel[] cases) {
+		super(new SwitchStatImpl(pos));
+		((SwitchStatImpl)this.$v_impl).lblcnt = new Label();
+		((SwitchStatImpl)this.$v_impl).lblbrk = new Label();
 		this.sel = sel;
-		this.sel.parent = this;
-		this.cases = new NArr<ASTNode>(this, new AttrSlot("cases", true, true));
-		foreach (ASTNode c; cases)
-			this.cases.add(c);
+		this.cases.addAll(cases);
 		defCase = null;
 		setBreakTarget(true);
 	}
 
 	public String toString() { return "switch("+sel+")"; }
 
-//	public void addCase(CaseLabel c) throws RuntimeException {
-//		if( c.val == null && defCase != null )
-//			throw new RuntimeException("More than one default case in switch statement");
-//		if( c.val == null ) defCase = c;
-//		cases = (CaseLabel[])Arrays.append(cases,c);
-//	}
-
-	public void cleanup() {
-		parent=null;
-		sel.cleanup();
-		sel = null;
-		tmpvar = null;
-		typehash = null;
-		foreach(ASTNode n; cases; n!=null) n.cleanup();
-		cases = null;
-		if( defCase != null ) {
-			defCase.cleanup();
-			defCase = null;
+	public void resolve(Type reqType) {
+		if( isResolved() ) return;
+		if( cases.length == 0 ) {
+			ExprStat st = new ExprStat(pos,(ENode)~sel);
+			this.replaceWithNodeResolve(Type.tpVoid, st);
 		}
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		if( isResolved() ) return this;
-		if( cases.length == 0 ) return new ExprStat(pos,parent,sel).resolve(Type.tpVoid);
-		else if( cases.length == 1 && cases[0] instanceof ASTNormalCase) {
-			CaseLabel cas = (CaseLabel)((ASTNormalCase)cases[0]).resolve(Type.tpVoid);
-			BlockStat st = cas.stats;
-			st.setBreakTarget(true);
-			st = (BlockStat)st;
+		else if( cases.length == 1 && cases[0].pattern.length == 0) {
+			cases[0].resolve(Type.tpVoid);
+			CaseLabel cas = (CaseLabel)cases[0];
+			BlockStat bl = new BlockStat(cas.pos, cas.stats.delToArray());
+			bl.setBreakTarget(true);
 			if( ((CaseLabel)cas).val == null ) {
-				st.stats.insert(new ExprStat(sel.pos,st,sel),0);
-				return st.resolve(reqType);
+				bl.stats.insert(new ExprStat(sel.pos,(ENode)~sel),0);
+				this.replaceWithNodeResolve(Type.tpVoid, bl);
+				return;
 			} else {
-				return new IfElseStat(pos,parent,
-						new BinaryBooleanExpr(sel.pos,BinaryOperator.Equals,sel,
-						(Expr)((Expr)((CaseLabel)cas).val).resolve(Type.tpInt)),st,null
-					).resolve(Type.tpVoid);
+				IfElseStat st = new IfElseStat(pos,
+						new BinaryBoolExpr(sel.pos,BinaryOperator.Equals,(ENode)~sel,(ENode)~cas.val),
+						bl,
+						null
+					);
+				this.replaceWithNodeResolve(Type.tpVoid, st);
+				return;
 			}
 		}
-		BlockStat me = null;
 		if( tmpvar == null ) {
-			PassInfo.push(this);
+			BlockStat me = null;
 			try {
-				sel = (Expr)sel.resolve(Type.tpInt);
+				sel.resolve(Type.tpInt);
 				Type tp = sel.getType();
-				if( tp.clazz.isEnum() ) {
+				if( tp.isEnum() ) {
 					mode = ENUM_SWITCH;
 				}
 				else if( tp.isReference() ) {
-//					if( sel instanceof VarAccessExpr ) {
-//						tmpvar = ((VarAccessExpr)sel).var;
-//					} else {
-						tmpvar = new Var(sel.getPos(),KString.from(
-							"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0);
-						Expr init = sel;
-						me = new BlockStat(pos,parent);
-						Statement ds = new DeclStat(tmpvar.pos,me,tmpvar,init);
-						me.addStatement(ds);
-						me.addStatement(this);
-//					}
-					if( tp.clazz.isHasCases() ) {
+					tmpvar = new LVarExpr(sel.pos, new Var(sel.pos,KString.from(
+						"tmp$sel$"+Integer.toHexString(sel.hashCode())),tp,0));
+					me = new BlockStat(pos);
+					this.replaceWithNode(me);
+					ENode old_sel = (ENode)~this.sel;
+					tmpvar.getVar().init = old_sel;
+					me.addSymbol(tmpvar.getVar());
+					me.addStatement(this);
+					if( tp.isHasCases() ) {
 						mode = PIZZA_SWITCH;
-						ASTCallAccessExpression cae = new ASTCallAccessExpression(0);
-						cae.pos = pos;
-						cae.obj = (Expr)new VarAccessExpr(tmpvar.pos,tmpvar).resolve(null);
-						cae.func = new ASTIdentifier(pos, nameGetCaseTag);
-						cae.parent = sel.parent;
+						ASTCallAccessExpression cae = new ASTCallAccessExpression();
 						sel = cae;
+						cae.pos = pos;
+						cae.obj = new LVarExpr(tmpvar.pos,tmpvar.getVar());
+						cae.obj.resolve(null);
+						cae.func = new NameRef(pos, nameGetCaseTag);
 					} else {
 						mode = TYPE_SWITCH;
-						typehash = new Field(PassInfo.clazz,
-							KString.from("fld$sel$"+Integer.toHexString(sel.hashCode())),
+						typehash = new Field(KString.from("fld$sel$"+Integer.toHexString(old_sel.hashCode())),
 							Type.tpTypeSwitchHash,ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
-						PassInfo.clazz.addField(typehash);
-						CallAccessExpr cae = new CallAccessExpr(pos,this,
-							new StaticFieldAccessExpr(pos,PassInfo.clazz,typehash),
-							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),KString.from("(Ljava/lang/Object;)I")),
-							new Expr[]{new VarAccessExpr(pos,tmpvar)}
+						ctx_clazz.addField(typehash);
+						CallExpr cae = new CallExpr(pos,
+							new SFldExpr(pos,typehash),
+							Type.tpTypeSwitchHash.clazz.resolveMethod(KString.from("index"),Type.tpInt, Type.tpObject),
+							new ENode[]{new LVarExpr(pos,tmpvar.getVar())}
 							);
 						sel = cae;
 					}
 				}
-			} catch(Exception e ) { Kiev.reportError(sel.getPos(),e);
-			} finally { PassInfo.pop(this); }
+			} catch(Exception e ) { Kiev.reportError(sel,e); }
+			if( me != null ) {
+				me.resolve(reqType);
+				return;
+			}
 		}
-		if( me != null ) return me.resolve(reqType);
-		PassInfo.push(this);
-		NodeInfoPass.pushState();
-		ScopeNodeInfoVector result_state = null;
-		ScopeNodeInfoVector case_states[] = new ScopeNodeInfoVector[cases.length];
-		try {
-			sel = (Expr)sel.resolve(Type.tpInt);
-			KString[] typenames = new KString[0];
-			int defindex = -1;
-			for(int i=0; i < cases.length; i++) {
-				try {
-					case_states[i] = NodeInfoPass.pushState();
-					if( cases[i] instanceof ASTNormalCase ) {
-						cases[i] = (CaseLabel)((ASTNormalCase)cases[i]).resolve(Type.tpVoid);
-					}
-					else if( cases[i] instanceof ASTPizzaCase ) {
-						cases[i] = (CaseLabel)((ASTPizzaCase)cases[i]).resolve(Type.tpVoid);
-					}
-					else if( cases[i] instanceof CaseLabel ) {
-						cases[i] = (CaseLabel)((CaseLabel)cases[i]).resolve(Type.tpVoid);
-					}
+		sel.resolve(Type.tpInt);
+		KString[] typenames = new KString[0];
+		int defindex = -1;
+		for(int i=0; i < cases.length; i++) {
+			try {
+				cases[i].resolve(Type.tpVoid);
+				if( typehash != null ) {
+					CaseLabel c = (CaseLabel)cases[i];
+					if( c.type == null || !c.type.isReference() )
+						throw new CompilerException(c,"Mixed switch and typeswitch cases");
+					KString name = c.type.getStruct().name.name;
+					typenames = (KString[])Arrays.append(typenames,name);
+					if( c.val != null )
+						c.val = new ConstIntExpr(i);
 					else
-						throw new CompilerException(cases[i].pos,"Unknown type of case");
-					case_states[i] = NodeInfoPass.popState();
-					if( typehash != null ) {
-						CaseLabel c = (CaseLabel)cases[i];
-						if( c.type == null || !c.type.isReference() )
-							throw new CompilerException(c.pos,"Mixed switch and typeswitch cases");
-						KString name = c.type.clazz.name.name;
-						typenames = (KString[])Arrays.append(typenames,name);
-						if( c.val != null )
-							c.val = new ConstExpr(c.val.getPos(),Kiev.newInteger(i));
-						else
-							defindex = i;
-					}
-				} catch(Exception e ) { Kiev.reportError(cases[i].getPos(),e); }
-				if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
-					Kiev.reportWarning(cases[i+1].pos, "Fall through to switch case");
+						defindex = i;
 				}
 			}
-			if( mode == TYPE_SWITCH ) {
-				ConstExpr[] signs = new ConstExpr[typenames.length];
-				for(int j=0; j < signs.length; j++)
-					signs[j] = new ConstExpr(PassInfo.clazz.pos,typenames[j]);
-				if( defindex < 0 ) defindex = signs.length;
-				typehash.init = new NewExpr(PassInfo.clazz.pos,Type.tpTypeSwitchHash,
-					new Expr[]{ new NewInitializedArrayExpr(PassInfo.clazz.pos,Type.tpString,1,signs),
-						new ConstExpr(PassInfo.clazz.pos,Kiev.newInteger(defindex))
-					});
-				Method clinit = null;
-				foreach(Method m; PassInfo.clazz.methods; m.name.equals(nameClassInit)) {
-					clinit = m; break;
-				}
-				if( clinit == null ) {
-					clinit = new Method(PassInfo.clazz,nameClassInit,
-						MethodType.newMethodType(null,null,null,Type.tpVoid),ACC_STATIC);
-					clinit.pos = PassInfo.clazz.pos;
-					PassInfo.clazz.addMethod(clinit);
-					clinit.body = new BlockStat(PassInfo.clazz.pos,clinit);
-				}
-				((BlockStat)clinit.body).addStatement(
-					new ExprStat(typehash.init.getPos(),clinit.body,
-						new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
-							,new StaticFieldAccessExpr(typehash.pos,PassInfo.clazz,typehash),new ShadowExpr(typehash.init))
-					)
-				);
+			catch(Exception e ) { Kiev.reportError(cases[i],e); }
+			if( tmpvar!=null && i < cases.length-1 && !cases[i].isAbrupted() ) {
+				Kiev.reportWarning(cases[i+1], "Fall through to switch case");
 			}
+		}
+		if( mode == TYPE_SWITCH ) {
+			ConstExpr[] signs = new ConstExpr[typenames.length];
+			for(int j=0; j < signs.length; j++)
+				signs[j] = new ConstStringExpr(typenames[j]);
+			if( defindex < 0 ) defindex = signs.length;
+			typehash.init = new NewExpr(ctx_clazz.pos,Type.tpTypeSwitchHash,
+				new ENode[]{ new NewInitializedArrayExpr(ctx_clazz.pos,new TypeRef(Type.tpString),1,signs),
+					new ConstIntExpr(defindex)
+				});
+			Constructor clinit = ctx_clazz.getClazzInitMethod();
+			clinit.body.addStatement(
+				new ExprStat(typehash.init.getPos(),
+					new AssignExpr(typehash.init.getPos(),AssignOperator.Assign
+						,new SFldExpr(typehash.pos,typehash),new Shadow(typehash.init))
+				)
+			);
+			//typehash.resolveDecl();
+		}
+		for(int i=0; i < cases.length; i++) {
+			for(int j=0; j < i; j++) {
+				ENode vi = cases[i].val;
+				ENode vj = cases[j].val;
+				if( i != j &&  vi != null && vj != null
+				 && vi.getConstValue().equals(vj.getConstValue()) )
+					throw new RuntimeException("Duplicate value "+vi+" and "+vj+" in switch statement");
+			}
+		}
+		// Check if abrupted
+		if( !isBreaked() ) {
+			boolean has_default_case = false;
 			for(int i=0; i < cases.length; i++) {
-				for(int j=0; j < i; j++) {
-					Expr vi = (Expr)((CaseLabel)cases[i]).val;
-					Expr vj = (Expr)((CaseLabel)cases[j]).val;
-					if( i != j &&  vi != null && vj != null
-					 && vi.getConstValue().equals(vj.getConstValue()) )
-						throw new RuntimeException("Duplicate value "+vi+" and "+vj+" in switch statement");
+				if( ((CaseLabel)cases[i]).val == null ) {
+					has_default_case = true;
+					break;
 				}
 			}
-			// Check if abrupted
-			if( !isBreaked() ) {
-				boolean has_default_case = false;
-				for(int i=0; i < cases.length; i++) {
-					if( ((CaseLabel)cases[i]).val == null ) {
-						has_default_case = true;
-						break;
-					}
-				}
-				boolean has_unabrupted_case = false;
-				if( !has_default_case ) {
-					// Check if it's an enum-type switch and all cases are
-					// abrupted and all enum values cases present
-					// Check if all cases are abrupted
-					if( mode == ENUM_SWITCH ) {
-						for(int i=0; i < cases.length; i++) {
-							if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
-								has_unabrupted_case = true;
-								break;
-							}
-							else if( !cases[i].isAbrupted() ) {
-								for(int j = i+1; j < cases.length; j++) {
-									if( cases[j].isAbrupted()  ) {
-										if( !cases[j].isMethodAbrupted() ) {
-											has_unabrupted_case = true;
-											break;
-										}
+			boolean has_unabrupted_case = false;
+			if( !has_default_case ) {
+				// Check if it's an enum-type switch and all cases are
+				// abrupted and all enum values cases present
+				// Check if all cases are abrupted
+				if( mode == ENUM_SWITCH ) {
+					for(int i=0; i < cases.length; i++) {
+						if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
+							has_unabrupted_case = true;
+							break;
+						}
+						else if( !cases[i].isAbrupted() ) {
+							for(int j = i+1; j < cases.length; j++) {
+								if( cases[j].isAbrupted()  ) {
+									if( !cases[j].isMethodAbrupted() ) {
+										has_unabrupted_case = true;
+										break;
 									}
 								}
 							}
 						}
+					}
+					if( !has_unabrupted_case ) {
+						Type tp = sel.getType();
+						Field[] eflds = tp.getStruct().getEnumFields();
+						if (eflds.length == cases.length)
+							setMethodAbrupted(true);
+					}
+				}
+				// Check if it's a pizza-type switch and all cases are
+				// abrupted and all class's cases present
+				// Check if all cases are abrupted
+				else if( mode == PIZZA_SWITCH ) {
+					for(int i=0; i < cases.length; i++) {
+						if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
+							has_unabrupted_case = true;
+							break;
+						}
+						else if( !cases[i].isAbrupted() ) {
+							for(int j = i+1; j < cases.length; j++) {
+								if( cases[j].isAbrupted()  ) {
+									if( !cases[j].isMethodAbrupted() ) {
+										has_unabrupted_case = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+					if( tmpvar != null ) {
 						if( !has_unabrupted_case ) {
-							Type tp = sel.getType();
-							EnumAttr ea = null;
-							if (tp.clazz.isPrimitiveEnum())
-								ea = (EnumAttr)tp.clazz.getAttr(attrPrimitiveEnum);
-							else
-								ea = (EnumAttr)tp.clazz.getAttr(attrEnum);
-							if( ea.fields.length == cases.length )
-								setMethodAbrupted(true);
-						}
-					}
-					// Check if it's a pizza-type switch and all cases are
-					// abrupted and all class's cases present
-					// Check if all cases are abrupted
-					else if( mode == PIZZA_SWITCH ) {
-						for(int i=0; i < cases.length; i++) {
-							if( !cases[i].isMethodAbrupted() && cases[i].isAbrupted() ) {
-								has_unabrupted_case = true;
-								break;
-							}
-							else if( !cases[i].isAbrupted() ) {
-								for(int j = i+1; j < cases.length; j++) {
-									if( cases[j].isAbrupted()  ) {
-										if( !cases[j].isMethodAbrupted() ) {
-											has_unabrupted_case = true;
-											break;
-										}
-									}
+							Type tp = tmpvar.getType();
+							//PizzaCaseAttr case_attr;
+							int caseno = 0;
+							Struct tpclz = tp.getStruct();
+							for(int i=0; i < tpclz.sub_clazz.length; i++) {
+								if( tpclz.sub_clazz[i].isPizzaCase() ) {
+//									case_attr = (PizzaCaseAttr)tpclz.sub_clazz[i].getAttr(attrPizzaCase);
+//									if( case_attr!=null && case_attr.caseno > caseno )
+//										caseno = case_attr.caseno;
+									MetaPizzaCase meta = tpclz.sub_clazz[i].getMetaPizzaCase();
+									if( meta!=null && meta.getTag() > caseno )
+										caseno = meta.getTag();
 								}
 							}
-						}
-						if( tmpvar != null ) {
-							if( !has_unabrupted_case ) {
-								Type tp = tmpvar.getType();
-								PizzaCaseAttr case_attr;
-								int caseno = 0;
-								for(int i=0; i < tp.clazz.sub_clazz.length; i++) {
-									if( tp.clazz.sub_clazz[i].isPizzaCase() ) {
-										case_attr = (PizzaCaseAttr)tp.clazz.sub_clazz[i].getAttr(attrPizzaCase);
-										if( case_attr!=null && case_attr.caseno > caseno )
-											caseno = case_attr.caseno;
-									}
-								}
-								if( caseno == cases.length ) setMethodAbrupted(true);
-							}
+							if( caseno == cases.length ) setMethodAbrupted(true);
 						}
 					}
-				} else {
-					if (!cases[cases.length-1].isAbrupted()) {
-						setAbrupted(false);
-						has_unabrupted_case = true;
-					}
-					if( !has_unabrupted_case ) setMethodAbrupted(true);
 				}
-			}
-			if( isMethodAbrupted() && defCase==null ) {
-				Statement thrErr = new ThrowStat(pos,this,new NewExpr(pos,Type.tpError,Expr.emptyArray));
-				CaseLabel dc = new CaseLabel(pos,this,null,new ASTNode[]{thrErr});
-				cases.insert(dc,0);
-				dc.resolve(Type.tpVoid);
-			}
-			if( mode == ENUM_SWITCH ) {
-				Type tp = sel.getType();
-				Expr cae = new CastExpr(pos,Type.tpInt,sel);
-				cae.parent = sel.parent;
-				sel = (Expr)cae.resolve(Type.tpInt);
-			}
-		} finally {
-			PassInfo.pop(this);
-			result_state = NodeInfoPass.popState();
-			if( !isMethodAbrupted() ) {
-				for(int i=0; i < case_states.length; i++) {
-					if( !cases[i].isMethodAbrupted() && case_states[i] != null )
-						result_state = NodeInfoPass.joinInfo(result_state, case_states[i]);
+			} else {
+				if (!cases[cases.length-1].isAbrupted()) {
+					setAbrupted(false);
+					has_unabrupted_case = true;
 				}
-				NodeInfoPass.addInfo(result_state);
+				if( !has_unabrupted_case ) setMethodAbrupted(true);
 			}
+		}
+		if( isMethodAbrupted() && defCase==null ) {
+			ENode thrErr = new ThrowStat(pos,new NewExpr(pos,Type.tpError,ENode.emptyArray));
+			CaseLabel dc = new CaseLabel(pos,null,new ENode[]{thrErr});
+			cases.insert(dc,0);
+			dc.resolve(Type.tpVoid);
+		}
+		if( mode == ENUM_SWITCH ) {
+			Type tp = sel.getType();
+			sel = new CastExpr(pos,Type.tpInt,(ENode)~sel);
+			sel.resolve(Type.tpInt);
 		}
 		setResolved(true);
-		if( me != null ) return me.resolve(reqType);
-		return this;
-	}
-
-	public CodeLabel getBreakLabel() throws RuntimeException {
-		if( break_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'break' label");
-		return break_label;
-	}
-
-	public CodeLabel getContinueLabel() throws RuntimeException {
-		if( continue_label == null )
-			throw new RuntimeException("Wrong generation phase for getting 'continue' label");
-		return continue_label;
-	}
-
-	public void generate(Type reqType) {
-		int lo = Integer.MAX_VALUE;
-		int hi = Integer.MIN_VALUE;
-
-		int ntags = defCase==null? cases.length : cases.length-1;
-		int[] tags = new int[ntags];
-
-		for (int i=0, j=0; i < cases.length; i++) {
-			if (((CaseLabel)cases[i]).val != null) {
-				int val;
-				Object v = ((Expr)((CaseLabel)cases[i]).val).getConstValue();
-				if( v instanceof Number )
-					val = ((Number)v).intValue();
-				else if( v instanceof java.lang.Character )
-					val = (int)((java.lang.Character)v).charValue();
-				else
-					throw new RuntimeException("Case label "+v+" must be of integer type");
-				tags[j++] = val;
-				if (val < lo) lo = val;
-				if (hi < val) hi = val;
-			}
-		}
-
-		long table_space_cost = (long)4 + (hi - lo + 1); // words
-		long table_time_cost = 3; // comparisons
-		long lookup_space_cost = (long)3 + 2 * ntags;
-		long lookup_time_cost = ntags;
-		boolean tabswitch =
-			table_space_cost + 3 * table_time_cost <=
-			lookup_space_cost + 3 * lookup_time_cost;
-
-		PassInfo.push(this);
-		continue_label = Code.newLabel();
-		break_label = Code.newLabel();
-		try {
-			if( mode == TYPE_SWITCH ) {
-				Code.addInstr(Instr.set_label,continue_label);
-				sel.generate(null);
-			} else {
-				sel.generate(null);
-				Code.addInstr(Instr.set_label,continue_label);
-			}
-			if( tabswitch ) {
-				cosw = Code.newTableSwitch(lo,hi);
-				Code.addInstr(Instr.op_tableswitch,cosw);
-			} else {
-				qsort(tags,0,tags.length-1);
-				cosw = Code.newLookupSwitch(tags);
-				Code.addInstr(Instr.op_lookupswitch,cosw);
-			}
-			//Code.addVars(vars);
-			for(int i=0; i < cases.length; i++) {
-				if( isAutoReturnable() )
-					cases[i].setAutoReturnable(true);
-				((CaseLabel)cases[i]).generate(Type.tpVoid);
-			}
-			//Code.removeVars(vars);
-			Code.addInstr(Instr.set_label,break_label);
-			Code.addInstr(Instr.switch_close,cosw);
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); }
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -624,112 +560,70 @@ public class SwitchStat extends BlockStat implements BreakTarget {
 		dmp.newLine(-1).append('}').newLine();
 		return dmp;
 	}
-
-	/** sort (int) arrays of keys and values
-	 */
-	static void qsort(int[] keys, int lo, int hi) {
-		int i = lo;
-		int j = hi;
-		int pivot = keys[(i+j)/2];
-		do {
-			while (keys[i] < pivot) i++;
-			while (pivot < keys[j]) j--;
-			if (i <= j) {
-				int temp = keys[i];
-				keys[i] = keys[j];
-				keys[j] = temp;
-				i++;
-				j--;
-			}
-		} while (i <= j);
-		if (lo < j) qsort(keys, lo, j);
-		if (i < hi) qsort(keys, i, hi);
-	}
 }
 
 @node
-public class CatchInfo extends Statement implements Scope {
-
+public class CatchInfo extends ENode implements ScopeOfNames {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	Var				arg;
+	@dflow(in="arg")		ENode			body;
+	}
+	
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
-	@att public Var	arg;
-	@att public Statement	body;
+	@node
+	public static class CatchInfoImpl extends ENodeImpl {
+		@att public Var				arg;
+		@att public ENode			body;
+		@att public CodeLabel		handler;
+		@att public CodeCatchInfo	code_catcher;
+		public CatchInfoImpl() {}
+		public CatchInfoImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view CatchInfoView of CatchInfoImpl extends ENodeView {
+		public Var				arg;
+		public ENode			body;
+	}
+	
+	@att public abstract virtual Var			arg;
+	@att public abstract virtual ENode			body;
+	
+	@getter public Var			get$arg()				{ return this.getCatchInfoView().arg; }
+	@getter public ENode		get$body()				{ return this.getCatchInfoView().body; }
+	@setter public void			set$arg(Var val)		{ this.getCatchInfoView().arg = val; }
+	@setter public void			set$body(ENode val)		{ this.getCatchInfoView().body = val; }
 
-	public CodeLabel		handler;
-	public CodeCatchInfo	code_catcher;
-
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	
 	public CatchInfo() {
+		super(new CatchInfoImpl());
 	}
-
-	public CatchInfo(int pos, ASTNode parent, Var arg, Statement body) {
-		super(pos, parent);
-		this.arg = arg;
-		this.arg.parent = arg;
-		this.body = body;
-		this.body.parent = this;
-	}
-
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
+	public CatchInfo(CatchInfoImpl impl) {
+		super(impl);
 	}
 
 	public String toString() {
 		return "catch( "+arg+" )";
 	}
 
-	public void cleanup() {
-		parent=null;
-		arg = null;
-		body.cleanup();
-		body = null;
-	}
-
-	public rule resolveNameR(ASTNode@ node, ResInfo path, KString name, Type tp, int resfl)
+	public rule resolveNameR(DNode@ node, ResInfo path, KString name)
 	{
 		node ?= arg, ((Var)node).name.equals(name)
 	}
 
-	public rule resolveMethodR(ASTNode@ node, ResInfo path, KString name, Expr[] args, Type ret, Type type, int resfl)
-	{
-		false
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-//		arg = (Var)arg.resolve();
-		PassInfo.push(this);
+	public void resolve(Type reqType) {
 		try {
-			body = (Statement)body.resolve(Type.tpVoid);
+			body.resolve(Type.tpVoid);
 			if( body.isMethodAbrupted() ) setMethodAbrupted(true);
 		} catch(Exception e ) {
-			Kiev.reportError(body.pos,e);
-		} finally { PassInfo.pop(this); }
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		PassInfo.push(this);
-		Code.addVar(arg);
-		try {
-			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.enter_catch_handler,code_catcher);
-			Code.addInstr(Instr.op_store,arg);
-			body.generate(Type.tpVoid);
-			if( !body.isMethodAbrupted() ) {
-				if( ((TryStat)parent).finally_catcher != null ) {
-					Code.addInstr(Instr.op_jsr,
-						((FinallyInfo)((TryStat)parent).finally_catcher).subr_label);
-				}
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
-				else
-					Code.addInstr(Instr.op_goto,((TryStat)parent).end_label);
-			}
-			Code.addInstr(Instr.exit_catch_handler,code_catcher);
-		} catch(Exception e ) {
-			Kiev.reportError(pos,e);
-		} finally {
-			Code.removeVar(arg);
-			PassInfo.pop(this);
+			Kiev.reportError(body,e);
 		}
 	}
 
@@ -742,46 +636,52 @@ public class CatchInfo extends Statement implements Scope {
 
 @node
 public class FinallyInfo extends CatchInfo {
-
-	@att public Var	ret_arg;
-	public CodeLabel	subr_label;
-
-	public FinallyInfo() {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	Var				arg;
+	@dflow(in="arg")		ENode			body;
 	}
+	
+	@node
+	public static class FinallyInfoImpl extends CatchInfoImpl {
+		@att public Var			ret_arg;
+		@att public CodeLabel	subr_label;
+		public FinallyInfoImpl() {}
+		public FinallyInfoImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static view FinallyInfoView of FinallyInfoImpl extends CatchInfoView {
+		public Var			ret_arg;
+	}
+	
+	@att public abstract virtual Var			ret_arg;
+	
+	@getter public Var			get$ret_arg()				{ return this.getFinallyInfoView().ret_arg; }
+	@setter public void			set$ret_arg(Var val)		{ this.getFinallyInfoView().ret_arg = val; }
 
-	public FinallyInfo(int pos, ASTNode parent, Statement body) {
-		super(pos,parent,new Var(pos,KString.Empty,Type.tpThrowable,0),body);
-        ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
-        ret_arg.parent = this;
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public FinallyInfoView		getFinallyInfoView()	alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public JFinallyInfoView		getJFinallyInfoView()	alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	
+	public FinallyInfo() {
+		super(new FinallyInfoImpl());
 	}
 
 	public String toString() { return "finally"; }
 
-	public void generate(Type reqType) {
-		PassInfo.push(this);
-		try {
-			CodeCatchInfo null_ci = null;
-			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.set_label,handler);
-			Code.addInstr(Instr.enter_catch_handler,null_ci);
-			Code.addVar(arg);
-			Code.addInstr(Instr.op_store,arg);
-			Code.addInstr(Instr.op_jsr,subr_label);
-			Code.addInstr(Instr.op_load,arg);
-			Code.addInstr(Instr.op_throw);
-			Code.addInstr(Instr.exit_catch_handler,null_ci);
-
-			// This label must be created by TryStat's generate routine;
-			Code.addInstr(Instr.set_label,subr_label);
-			Code.addInstr(Instr.enter_catch_handler,null_ci);
-			Code.addInstr(Instr.op_store,ret_arg);
-
-			body.generate(Type.tpVoid);
-			Code.addInstr(Instr.op_ret,ret_arg);
-		} catch(Exception e ) { Kiev.reportError(pos,e);
-		} finally { PassInfo.pop(this); Code.removeVar(arg); }
+	public void resolve(Type reqType) {
+		if (arg == null)
+			arg = new Var(pos,KString.Empty,Type.tpThrowable,0);
+		if (ret_arg == null)
+			ret_arg = new Var(pos,KString.Empty,Type.tpObject,0);
+		super.resolve(reqType);
 	}
-
+	
 	public Dumper toJava(Dumper dmp) {
 		dmp.newLine().append("finally").space().append(body).newLine();
 		return dmp;
@@ -790,162 +690,91 @@ public class FinallyInfo extends CatchInfo {
 }
 
 @node
-public class TryStat extends Statement/*defaults*/ {
+public class TryStat extends ENode {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")				ENode			body;
+	@dflow(in="this:in", seq="false")	CatchInfo[]		catchers;
+	@dflow(in="this:in")				FinallyInfo		finally_catcher;
+	}
+	
+	@node
+	public static final class TryStatImpl extends ENodeImpl {
+		@att public ENode				body;
+		@att public NArr<CatchInfo>		catchers;
+		@att public FinallyInfo			finally_catcher;
+		@att public CodeLabel			end_label;
+		public TryStatImpl() {}
+		public TryStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view TryStatView of TryStatImpl extends ENodeView {
+		public				ENode				body;
+		public access:ro	NArr<CatchInfo>		catchers;
+		public				FinallyInfo			finally_catcher;
+	}
 
-	@att public Statement	body;
-	public ASTNode[]	catchers = ASTNode.emptyArray;
-	@att public ASTNode		finally_catcher;
+	@att public abstract virtual			ENode				body;
+	@att public abstract virtual access:ro	NArr<CatchInfo>		catchers;
+	@att public abstract virtual			FinallyInfo			finally_catcher;
+	
+	@getter public ENode			get$body()				{ return this.getTryStatView().body; }
+	@getter public NArr<CatchInfo>	get$catchers()			{ return this.getTryStatView().catchers; }
+	@getter public FinallyInfo		get$finally_catcher()	{ return this.getTryStatView().finally_catcher; }
+	
+	@setter public void		set$body(ENode val)						{ this.getTryStatView().body = val; }
+	@setter public void		set$finally_catcher(FinallyInfo val)	{ this.getTryStatView().finally_catcher = val; }
+	
+	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public TryStatView			getTryStatView()		alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
+	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
+	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
+	public JTryStatView			getJTryStatView()		alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
 
-	public CodeLabel	end_label;
 
 	public TryStat() {
+		super(new TryStatImpl());
 	}
 
-	public TryStat(int pos, ASTNode parent, Statement body, ASTNode[] catchers, ASTNode finally_catcher) {
-		super(pos, parent);
-		this.body = body;
-		this.body.parent = this;
-		this.catchers = catchers;
-		for(int i=0; i < catchers.length; i++) catchers[i].parent = this;
-		if( finally_catcher != null ) {
-			this.finally_catcher = finally_catcher;
-			this.finally_catcher.parent = this;
-		}
-	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		foreach(ASTNode n; catchers; n!=null) n.cleanup();
-		catchers = null;
-		if( finally_catcher != null ) {
-			finally_catcher.cleanup();
-			finally_catcher = null;
-		}
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		ScopeNodeInfoVector finally_state = null;
+	public void resolve(Type reqType) {
 		for(int i=0; i < catchers.length; i++) {
 			try {
-				NodeInfoPass.pushState();
-				catchers[i] = (CatchInfo)((ASTCatchInfo)catchers[i]).resolve(Type.tpVoid);
-				catchers[i].parent = this;
+				catchers[i].resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(catchers[i].pos,e);
-			} finally {
-				NodeInfoPass.popState();
+				Kiev.reportError(catchers[i],e);
 			}
 		}
 		if(finally_catcher != null) {
 			try {
-				NodeInfoPass.pushState();
-				finally_catcher = (FinallyInfo)((ASTFinallyInfo)finally_catcher).resolve(Type.tpVoid);
-				finally_catcher.parent = this;
+				finally_catcher.resolve(Type.tpVoid);
 			} catch(Exception e ) {
-				Kiev.reportError(finally_catcher.pos,e);
-			} finally {
-				finally_state = NodeInfoPass.popState();
+				Kiev.reportError(finally_catcher,e);
 			}
 		}
-		PassInfo.push(this);
-		NodeInfoPass.pushState();
 		try {
-			try {
-				body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-			// Check if abrupted
-			if( finally_catcher!= null && finally_catcher.isMethodAbrupted())
-				setMethodAbrupted(true);
-			else if( finally_catcher!= null && finally_catcher.isAbrupted())
-				setMethodAbrupted(false);
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		}
+		// Check if abrupted
+		if( finally_catcher!= null && finally_catcher.isMethodAbrupted())
+			setMethodAbrupted(true);
+		else if( finally_catcher!= null && finally_catcher.isAbrupted())
+			setMethodAbrupted(false);
+		else {
+			// Check that the body and all cases are abrupted
+			boolean has_unabrupted_catcher = false;
+			if( !body.isMethodAbrupted() ) has_unabrupted_catcher = true;
 			else {
-				// Check that the body and all cases are abrupted
-				boolean has_unabrupted_catcher = false;
-				if( !body.isMethodAbrupted() ) has_unabrupted_catcher = true;
-				else {
-					for(int i=0; i < catchers.length; i++) {
-						if( !catchers[i].isMethodAbrupted() ) {
-							has_unabrupted_catcher = true;
-							break;
-						}
+				for(int i=0; i < catchers.length; i++) {
+					if( !catchers[i].isMethodAbrupted() ) {
+						has_unabrupted_catcher = true;
+						break;
 					}
 				}
-				if( !has_unabrupted_catcher ) setMethodAbrupted(true);
 			}
-		} finally {
-			PassInfo.pop(this);
-			NodeInfoPass.popState();
-			if( finally_state != null && !finally_catcher.isMethodAbrupted())
-				NodeInfoPass.addInfo(finally_state);
-		}
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		// Generate labels for handlers
-		if(finally_catcher != null) {
-			Code.addVar(((FinallyInfo)finally_catcher).ret_arg);
-			((FinallyInfo)finally_catcher).handler = Code.newLabel();
-			((FinallyInfo)finally_catcher).subr_label = Code.newLabel();
-			((FinallyInfo)finally_catcher).subr_label.check = false;
-			((FinallyInfo)finally_catcher).code_catcher = Code.newCatcher(((FinallyInfo)finally_catcher).handler,null);
-			Code.addInstr(Instr.start_catcher,((FinallyInfo)finally_catcher).code_catcher);
-		}
-		for(int i= catchers.length-1; i >= 0 ; i--) {
-			((CatchInfo)catchers[i]).handler = Code.newLabel();
-			((CatchInfo)catchers[i]).code_catcher = Code.newCatcher(((CatchInfo)catchers[i]).handler,((CatchInfo)catchers[i]).arg.type);
-			Code.addInstr(Instr.start_catcher,((CatchInfo)catchers[i]).code_catcher);
-		}
-		end_label = Code.newLabel();
-
-		PassInfo.push(this);
-		try {
-			try {
-				if( isAutoReturnable() )
-					body.setAutoReturnable(true);
-				body.generate(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-			if( !body.isMethodAbrupted() ) {
-				if( finally_catcher != null ) {
-					Code.addInstr(Instr.op_jsr,((FinallyInfo)finally_catcher).subr_label);
-				}
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
-				else
-					Code.addInstr(Instr.op_goto,end_label);
-			}
-			for(int i=0; i < catchers.length; i++) {
-				Code.addInstr(Instr.stop_catcher,((CatchInfo)catchers[i]).code_catcher);
-			}
-
-			for(int i=0; i < catchers.length; i++) {
-				if( isAutoReturnable() )
-					catchers[i].setAutoReturnable(true);
-				try {
-					((CatchInfo)catchers[i]).generate(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(catchers[i].pos,e);
-				}
-			}
-			if(finally_catcher != null) {
-				try {
-					Code.addInstr(Instr.stop_catcher,((FinallyInfo)finally_catcher).code_catcher);
-					((FinallyInfo)finally_catcher).generate(Type.tpVoid);
-				} catch(Exception e ) {
-					Kiev.reportError(finally_catcher.pos,e);
-				}
-			}
-			Code.addInstr(Instr.set_label,end_label);
-		} finally {
-			PassInfo.pop(this);
-			if(finally_catcher != null)
-				Code.removeVar(((FinallyInfo)finally_catcher).ret_arg);
+			if( !has_unabrupted_catcher ) setMethodAbrupted(true);
 		}
 	}
 
@@ -961,93 +790,66 @@ public class TryStat extends Statement/*defaults*/ {
 }
 
 @node
-public class SynchronizedStat extends Statement {
+@dflow(out="body")
+public class SynchronizedStat extends ENode {
+	
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	@dflow(in="expr")		ENode		body;
+	}
+	
+	@node
+	public static final class SynchronizedStatImpl extends ENodeImpl {
+		@att public ENode			expr;
+		@att public Var				expr_var;
+		@att public ENode			body;
+		@att public CodeLabel		handler;
+		@att public CodeCatchInfo	code_catcher;
+		@att public CodeLabel		end_label;
+		public SynchronizedStatImpl() {}
+		public SynchronizedStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view SynchronizedStatView of SynchronizedStatImpl extends ENodeView {
+		public ENode			expr;
+		public Var				expr_var;
+		public ENode			body;
+	}
 
-	@att public Statement	body;
-	@att public Expr			expr;
-	@att public Var			expr_var;
-	public CodeLabel		handler;
-	public CodeCatchInfo	code_catcher;
-	public CodeLabel	end_label;
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual Var			expr_var;
+	@att public abstract virtual ENode			body;
+	
+	@getter public ENode			get$expr()		{ return this.getSynchronizedStatView().expr; }
+	@getter public Var				get$expr_var()	{ return this.getSynchronizedStatView().expr_var; }
+	@getter public ENode			get$body()		{ return this.getSynchronizedStatView().body; }
+	
+	@setter public void		set$expr(ENode val)		{ this.getSynchronizedStatView().expr = val; }
+	@setter public void		set$expr_var(Var val)	{ this.getSynchronizedStatView().expr_var = val; }
+	@setter public void		set$body(ENode val)		{ this.getSynchronizedStatView().body = val; }
+	
+	public NodeView					getNodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public ENodeView				getENodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public SynchronizedStatView		getSynchronizedStatView()	{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JNodeView				getJNodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JENodeView				getJENodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+	public JSynchronizedStatView	getJSynchronizedStatView()	{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
+
 
 	public SynchronizedStat() {
+		super(new SynchronizedStatImpl());
 	}
 
-	public SynchronizedStat(int pos, ASTNode parent, Expr expr, Statement body) {
-		super(pos, parent);
-		this.expr = expr;
-		this.expr.parent = this;
-		this.body = body;
-		this.body.parent = this;
-	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		expr.cleanup();
-		expr = null;
-		expr_var = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
+	public void resolve(Type reqType) {
 		try {
-			try {
-				expr = (Expr)expr.resolve(null);
-				expr_var = new Var(pos,this,KString.Empty,Type.tpObject,0);
-			} catch(Exception e ) { Kiev.reportError(pos,e); }
-			try {
-				body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) { Kiev.reportError(pos,e); }
-			setAbrupted(body.isAbrupted());
-			setMethodAbrupted(body.isMethodAbrupted());
-		} finally { PassInfo.pop(this); }
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		PassInfo.push(this);
-
-		expr.generate(null);
+			expr.resolve(null);
+			expr_var = new Var(pos,KString.Empty,Type.tpObject,0);
+		} catch(Exception e ) { Kiev.reportError(this,e); }
 		try {
-			Code.addVar(expr_var);
-			Code.addInstr(Instr.op_dup);
-			Code.addInstr(Instr.op_store,expr_var);
-			Code.addInstr(Instr.op_monitorenter);
-			handler = Code.newLabel();
-			end_label = Code.newLabel();
-			code_catcher = Code.newCatcher(handler,null);
-			Code.addInstr(Instr.start_catcher,code_catcher);
-			try {
-				if( isAutoReturnable() )
-					body.setAutoReturnable(true);
-				body.generate(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-			Code.addInstr(Instr.stop_catcher,code_catcher);
-			if( !body.isMethodAbrupted() ) {
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
-				else {
-					Code.addInstr(Instr.op_load,expr_var);
-					Code.addInstr(Instr.op_monitorexit);
-					Code.addInstr(Instr.op_goto,end_label);
-				}
-			}
-
-			Code.addInstr(Instr.set_label,handler);
-			Code.stack_push(Type.tpThrowable);
-			Code.addInstr(Instr.op_load,expr_var);
-			Code.addInstr(Instr.op_monitorexit);
-			Code.addInstr(Instr.op_throw);
-
-			Code.addInstr(Instr.set_label,end_label);
-		} finally {
-			PassInfo.pop(this);
-			Code.removeVar(expr_var);
-		}
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) { Kiev.reportError(this,e); }
+		setAbrupted(body.isAbrupted());
+		setMethodAbrupted(body.isMethodAbrupted());
 	}
 
 	public Dumper toJava(Dumper dmp) {
@@ -1059,94 +861,85 @@ public class SynchronizedStat extends Statement {
 }
 
 @node
-public class WithStat extends Statement {
+public class WithStat extends ENode {
 
-	@att public Statement	body;
-	@att public Expr		expr;
-	@ref public ASTNode		var_or_field;
-	public CodeLabel	end_label;
+	@dflow(out="body") private static class DFI {
+	@dflow(in="this:in")	ENode		expr;
+	@dflow(in="expr")		ENode		body;
+	}
+	
+	@node
+	public static final class WithStatImpl extends ENodeImpl {
+		@att public ENode		expr;
+		@att public ENode		body;
+		@ref public LvalDNode	var_or_field;
+		@att public CodeLabel	end_label;
+		public WithStatImpl() {}
+		public WithStatImpl(int pos) { super(pos); }
+	}
+	@nodeview
+	public static final view WithStatView of WithStatImpl extends ENodeView {
+		public ENode		expr;
+		public ENode		body;
+		public LvalDNode	var_or_field;
+	}
+
+	@att public abstract virtual ENode			expr;
+	@att public abstract virtual ENode			body;
+	@att public abstract virtual LvalDNode		var_or_field;
+	
+	@getter public ENode			get$expr()			{ return this.getWithStatView().expr; }
+	@getter public ENode			get$body()			{ return this.getWithStatView().body; }
+	@getter public LvalDNode		get$var_or_field()	{ return this.getWithStatView().var_or_field; }
+	
+	@setter public void		set$expr(ENode val)				{ this.getWithStatView().expr = val; }
+	@setter public void		set$body(ENode val)				{ this.getWithStatView().body = val; }
+	@setter public void		set$var_or_field(LvalDNode val)	{ this.getWithStatView().var_or_field = val; }
+	
+	public NodeView			getNodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public ENodeView		getENodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public WithStatView		getWithStatView()	{ return new WithStatView((WithStatImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
+	public JENodeView		getJENodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
+	public JWithStatView	getJWithStatView()	{ return new JWithStatView((WithStatImpl)this.$v_impl); }
 
 	public WithStat() {
+		super(new WithStatImpl());
 	}
 
-	public WithStat(int pos, ASTNode parent, Expr expr, Statement body) {
-		super(pos, parent);
-		this.expr = expr;
-		this.expr.parent = this;
-		this.body = body;
-		this.body.parent = this;
-	}
-
-	public void cleanup() {
-		parent=null;
-		body.cleanup();
-		body = null;
-		expr.cleanup();
-		expr = null;
-		var_or_field = null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
-		PassInfo.push(this);
+	public void resolve(Type reqType) {
 		try {
-			try {
-				expr = (Expr)expr.resolve(null);
-				Expr e = expr;
-				switch (e) {
-				case VarAccessExpr:				var_or_field = ((VarAccessExpr)e).var;				break;
-				case LocalPrologVarAccessExpr:	var_or_field = ((LocalPrologVarAccessExpr)e).var;	break;
-				case AccessExpr:				var_or_field = ((AccessExpr)e).var;					break;
-				case StaticFieldAccessExpr:		var_or_field = ((StaticFieldAccessExpr)e).var;		break;
-				case AssignExpr:                e = ((AssignExpr)e).lval;                           goto case e;
-				}
-				if (var_or_field == null) {
-					Kiev.reportError(pos,"With statement needs variable or field argument");
-					return body.resolve(Type.tpVoid);
-				}
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-				return body.resolve(Type.tpVoid);
+			expr.resolve(null);
+			ENode e = expr;
+			switch (e) {
+			case LVarExpr:		var_or_field = ((LVarExpr)e).getVar();	break;
+			case IFldExpr:		var_or_field = ((IFldExpr)e).var;		break;
+			case SFldExpr:		var_or_field = ((SFldExpr)e).var;		break;
+			case AssignExpr:	e = ((AssignExpr)e).lval;				goto case e;
 			}
-
-			boolean is_forward = var_or_field.isForward();
-			if (!is_forward) var_or_field.setForward(true);
-			try {
-				body = (Statement)body.resolve(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			} finally {
-				if (!is_forward) var_or_field.setForward(false);
+			if (var_or_field == null) {
+				Kiev.reportError(this,"With statement needs variable or field argument");
+				this.replaceWithNode(body);
+				body.resolve(Type.tpVoid);
+				return;
 			}
-
-			setAbrupted(body.isAbrupted());
-			setMethodAbrupted(body.isMethodAbrupted());
-		} finally { PassInfo.pop(this); }
-		return this;
-	}
-
-	public void generate(Type reqType) {
-		PassInfo.push(this);
-
-		try {
-			end_label = Code.newLabel();
-			try {
-				if (expr instanceof AssignExpr)
-					expr.generate(Type.tpVoid);
-				if( isAutoReturnable() )
-					body.setAutoReturnable(true);
-				body.generate(Type.tpVoid);
-			} catch(Exception e ) {
-				Kiev.reportError(pos,e);
-			}
-			if( !body.isMethodAbrupted() ) {
-				if( isAutoReturnable() )
-					ReturnStat.generateReturn();
-			}
-
-			Code.addInstr(Instr.set_label,end_label);
-		} finally {
-			PassInfo.pop(this);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+			return;
 		}
+
+		boolean is_forward = var_or_field.isForward();
+		if (!is_forward) var_or_field.setForward(true);
+		try {
+			body.resolve(Type.tpVoid);
+		} catch(Exception e ) {
+			Kiev.reportError(this,e);
+		} finally {
+			if (!is_forward) var_or_field.setForward(false);
+		}
+
+		setAbrupted(body.isAbrupted());
+		setMethodAbrupted(body.isMethodAbrupted());
 	}
 
 	public Dumper toJava(Dumper dmp) {

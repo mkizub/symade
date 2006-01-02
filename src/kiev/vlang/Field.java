@@ -1,132 +1,197 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
 import kiev.stdlib.*;
 
+import kiev.be.java.JNodeView;
+import kiev.be.java.JDNodeView;
+import kiev.be.java.JLvalDNodeView;
+import kiev.be.java.JFieldView;
+
 import static kiev.stdlib.Debug.*;
+import syntax kiev.Syntax;
 
 /**
- * $Header: /home/CVSROOT/forestro/kiev/kiev/vlang/Field.java,v 1.3.2.1.2.3 1999/05/29 21:03:11 max Exp $
  * @author Maxim Kizub
- * @version $Revision: 1.3.2.1.2.3 $
+ * @version $Revision$
  *
  */
 
 @node
-public class Field extends ASTNode implements Named, Typed, Accessable {
+public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
+	@dflow(out="init") private static class DFI {
+	@dflow(in="this:in")	ENode			init;
+	}
+
+	@node
+	public static class FieldImpl extends LvalDNodeImpl {
+		public FieldImpl() {}
+		public FieldImpl(int pos) { super(pos); }
+		public FieldImpl(int pos, int fl) { super(pos, fl); }
+
+		/** Field' access */
+		     public Access				acc;
+		/** Name of the field */
+		     public NodeName			name;
+		/** Type of the field */
+		@att public TypeRef				ftype;
+		/** Initial value of this field */
+		@att public ENode				init;
+		/** Constant value of this field */
+		@ref public ConstExpr			const_value;
+		/** Array of attributes of this field */
+		public kiev.be.java.Attr[]		attrs = kiev.be.java.Attr.emptyArray;
+		/** Array of invariant methods, that check this field */
+		@ref public NArr<Method>		invs;
+
+		public void callbackChildChanged(AttrSlot attr) {
+			if (parent != null && pslot != null) {
+				if      (attr.name == "ftype")
+					parent.callbackChildChanged(pslot);
+				else if (attr.name == "meta")
+					parent.callbackChildChanged(pslot);
+			}
+		}
+	}
+	@nodeview
+	public static view FieldView of FieldImpl extends LvalDNodeView {
+		public				Access			acc;
+		public				NodeName		name;
+		public				TypeRef			ftype;
+		public				ENode			init;
+		public				ConstExpr		const_value;
+		public access:ro	NArr<Method>	invs;
+		
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
+		
+		// is a virtual field
+		public final boolean isVirtual() {
+			return this.$view.is_fld_virtual;
+		}
+		public final void setVirtual(boolean on) {
+			if (this.$view.is_fld_virtual != on) {
+				this.$view.is_fld_virtual = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// is a field of enum
+		public final boolean isEnumField() {
+			return this.$view.is_fld_enum;
+		}
+		public final void setEnumField(boolean on) {
+			if (this.$view.is_fld_enum != on) {
+				this.$view.is_fld_enum = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// packer field (auto-generated for packed fields)
+		public final boolean isPackerField() {
+			return this.$view.is_fld_packer;
+		}
+		public final void setPackerField(boolean on) {
+			if (this.$view.is_fld_packer != on) {
+				this.$view.is_fld_packer = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// packed field
+		public final boolean isPackedField() {
+			return this.$view.is_fld_packed;
+		}
+		public final void setPackedField(boolean on) {
+			if (this.$view.is_fld_packed != on) {
+				this.$view.is_fld_packed = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+	}
+	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public FieldView		getFieldView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
+	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+	public JFieldView		getJFieldView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
+
+	@getter public Access				get$acc()			{ return this.getFieldView().acc; }
+	@getter public NodeName				get$name()			{ return this.getFieldView().name; }
+	@getter public TypeRef				get$ftype()			{ return this.getFieldView().ftype; }
+	@getter public ENode				get$init()			{ return this.getFieldView().init; }
+	@getter public ConstExpr			get$const_value()	{ return this.getFieldView().const_value; }
+	@getter public NArr<Method>			get$invs()			{ return this.getFieldView().invs; }
+	
+	@getter public Type					get$type()			{ return this.getFieldView().type; }
+	
+	@setter public void set$acc(Access val)				{ this.getFieldView().acc = val; }
+	@setter public void set$name(NodeName val)				{ this.getFieldView().name = val; }
+	@setter public void set$ftype(TypeRef val)				{ this.getFieldView().ftype = val; }
+	@setter public void set$init(ENode val)				{ this.getFieldView().init = val; }
+	@setter public void set$const_value(ConstExpr val)		{ this.getFieldView().const_value = val; }
+
 	/** Field' access */
-	public virtual Access	acc;
-
+	     public virtual abstract				Access			acc;
 	/** Name of the field */
-	public NodeName			name;
-
+	     public virtual abstract				NodeName		name;
 	/** Type of the field */
-	@ref public Type		type;
-
-	/** Pack size/offset */
-	public PackInfo			pack;
-
+	@att public virtual abstract				TypeRef			ftype;
 	/** Initial value of this field */
-	@att public Expr		init = null;
-
-	/** Meta-information (annotations) of this structure */
-	@att public MetaSet		meta;
-
-	/** Array of attributes of this field */
-	public Attr[]			attrs = Attr.emptyArray;
-
+	@att public virtual abstract				ENode			init;
+	@ref public virtual abstract				ConstExpr		const_value;
 	/** Array of invariant methods, that check this field */
-	public Method[]			invs = Method.emptyArray;
+	@ref public virtual abstract access:ro		NArr<Method>	invs;
 
-	/** Getter/setter methods for this field */
-	@ref public Method		getter = null;
-	@ref public Method		setter = null;
-
-	public static class PackInfo {
-		public int		size;
-		public int		offset = -1;
-		public Field	packer;
-		public KString	packer_name;
-		public PackInfo(int size) {
-			this.size = size;
-			this.offset = -1;
-		}
-		public PackInfo(int size,Field packer) {
-			this.size = size;
-			this.packer = packer;
-			if( packer != null )
-				this.packer_name = packer.name.name;
-		}
-		public PackInfo(int size,KString packer) {
-			this.size = size;
-			this.packer_name = packer;
-		}
-		public PackInfo(int size,int offset,Field packer) {
-			this.size = size;
-			this.offset = offset;
-			this.packer = packer;
-			if( packer != null )
-				this.packer_name = packer.name.name;
-		}
-		public PackInfo(int size,int offset,KString packer) {
-			this.size = size;
-			this.offset = offset;
-			this.packer_name = packer;
-		}
-	}
-
-	public Field() {
-	}
+	@ref public abstract virtual access:ro		Type			type;
+	
+	public Field() { super(new FieldImpl()); }
 	
     /** Constructor for new field
 	    This constructor must not be called directly,
 	    but via factory method newField(...) of Clazz
      */
-	public Field(ASTNode clazz, KString name, Type type, int acc) {
-		super(0,acc);
+	public Field(KString name, TypeRef ftype, int acc) {
+		super(new FieldImpl(0,acc));
 		this.name = new NodeName(name);
-		this.type = type;
-        // Parent node is always a class this field was declared in
-		this.parent = clazz;
+		this.ftype = ftype;
 		this.acc = new Access(0);
-		this.meta = new MetaSet(this);
-		trace(Kiev.debugCreation,"New field created: "+name
-			+" with type "+type);
+		this.meta = new MetaSet();
+		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
 
-	public Access get$acc() {
-		return acc;
+	public Field(KString name, Type type, int acc) {
+		this(name,new TypeRef(type),acc);
+	}
+	
+	// is a virtual field
+	public boolean isVirtual() { return this.getFieldView().isVirtual(); }
+	public void setVirtual(boolean on) { this.getFieldView().setVirtual(on); }
+	// is a field of enum
+	public boolean isEnumField() { return this.getFieldView().isEnumField(); }
+	public void setEnumField(boolean on) { this.getFieldView().setEnumField(on); }
+	// packer field (auto-generated for packed fields)
+	public boolean isPackerField() { return this.getFieldView().isPackerField(); }
+	public void setPackerField(boolean on) { this.getFieldView().setPackerField(on); }
+	// packed field
+	public boolean isPackedField() { return this.getFieldView().isPackedField(); }
+	public void setPackedField(boolean on) { this.getFieldView().setPackedField(on); }
+
+	public MetaVirtual getMetaVirtual() {
+		return (MetaVirtual)this.meta.get(MetaVirtual.NAME);
 	}
 
-	public void set$acc(Access a) {
-		acc = a;
-		acc.verifyAccessDecl(this);
+	public MetaPacked getMetaPacked() {
+		return (MetaPacked)this.meta.get(MetaPacked.NAME);
 	}
 
-	public void jjtAddChild(ASTNode n, int i) {
-		throw new RuntimeException("Bad compiler pass to add child");
+	public MetaPacker getMetaPacker() {
+		return (MetaPacker)this.meta.get(MetaPacker.NAME);
+	}
+
+	public MetaAlias getMetaAlias() {
+		return (MetaAlias)this.meta.get(MetaAlias.NAME);
 	}
 
 	public String toString() { return name.toString()/*+":="+type*/; }
@@ -136,51 +201,45 @@ public class Field extends ASTNode implements Named, Typed, Accessable {
 	public Type	getType() { return type; }
 
 	public Dumper toJava(Dumper dmp) {
-		if( isVirtual() ) {
-			return dmp.space().append(nameGet).append(name).append("()").space();
-		} else {
-			return dmp.space().append(name).space();
+		return dmp.space().append(name).space();
+	}
+
+	public boolean	isConstantExpr() {
+		if( this.isFinal() ) {
+			if (this.init != null && this.init.isConstantExpr())
+				return true;
+			else if (this.const_value != null)
+				return true;
 		}
+		return false;
+	}
+	public Object	getConstValue() {
+		if (this.init != null && this.init.isConstantExpr())
+			return this.init.getConstValue();
+		else if (this.const_value != null)
+			return this.const_value.getConstValue();
+    	throw new RuntimeException("Request for constant value of non-constant expression");
 	}
 
-	/** Add information about new attribute that belongs to this class */
-	public Attr addAttr(Attr a) {
-		// Check we already have this attribute
-		if( !(a.name==attrOperator || a.name==attrImport
-			|| a.name==attrRequire || a.name==attrEnsure) ) {
-			for(int i=0; i < attrs.length; i++) {
-				if(attrs[i].name == a.name) {
-					attrs[i] = a;
-					return a;
-				}
-			}
-		}
-		attrs = (Attr[])Arrays.append(attrs,a);
-		return a;
-	}
-
-	public Attr getAttr(KString name) {
-		for(int i=0; i < attrs.length; i++)
-			if( attrs[i].name.equals(name) )
-				return attrs[i];
-		return null;
-	}
-
-	public ASTNode resolve(Type reqType) throws RuntimeException {
+	public void resolveDecl() throws RuntimeException {
 		foreach (Meta m; meta)
 			m.resolve();
-		if( name.equals(KString.Empty) ) return this;
 		if( init != null ) {
-			if( init instanceof Expr )
-				init = ((Expr)init).resolveExpr(type);
+			if (init instanceof TypeRef)
+				((TypeRef)init).toExpr(type);
+			init.resolve(type);
+			if (init.getType() ≉ type) {
+				init = new CastExpr(init.pos, type, init);
+				init.resolve(type);
+			}
 		}
-		return this;
+		setResolved(true);
 	}
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
 		if( !name.equals(KString.Empty) )
-			Type.getRealType(Kiev.argtype,type).toJava(dmp).forsed_space().append(name);
+			type.toJava(dmp).forsed_space().append(name);
 		if( init != null ) {
 			if( !name.equals(KString.Empty) )
 				dmp.append(" = ");

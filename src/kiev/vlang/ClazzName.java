@@ -1,23 +1,3 @@
-/*
- Copyright (C) 1997-1998, Forestro, http://forestro.com
-
- This file is part of the Kiev compiler.
-
- The Kiev compiler is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation.
-
- The Kiev compiler is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with the Kiev compiler; see the file License.  If not, write to
- the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
-*/
-
 package kiev.vlang;
 
 import kiev.Kiev;
@@ -27,16 +7,11 @@ import static kiev.stdlib.Debug.*;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 1.3.4.1 $
+ * @version $Revision$
  *
  */
 
-public class ClazzName implements Constants {
-
-	/** Full-qualified name of class/package/interface
-		for example - java.lang.Object or kiev.Type.tMethod
-	 */
-	public KString		name;
+public class ClazzName extends NodeName implements Constants {
 
 	/** Unqualified name of class/package/interface
 		for java bytecode example - Object or tMethod
@@ -62,7 +37,7 @@ public class ClazzName implements Constants {
 	}
 
 	public ClazzName(KString name, KString short_name, KString bytecode_name, boolean isArg, boolean isInn) {
-		this.name = name;
+		super(name);
 		this.short_name = short_name;
 		this.bytecode_name = bytecode_name;
 		this.isArgument = isArg;
@@ -128,22 +103,17 @@ public class ClazzName implements Constants {
 		if(short_name.equals(KString.Empty)) return Empty;
 		String delim = isInn ? "$" : "/" ;
 		KString bytecode_name;
-		try {
-			if( outer.isPackage() ) {
-				assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
-				if( !outer.name.name.equals(KString.Empty) )
-					bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-				else
-					bytecode_name = short_name;
-			} else {
-				assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+		if( outer.isPackage() ) {
+			assert(!isArg && !isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
+			if( !outer.name.name.equals(KString.Empty) )
 				bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
-			}
-		} catch(Exception e) {
-			Kiev.reportError(0,e);
+			else
+				bytecode_name = short_name;
+		} else {
+			assert(isInn,"fromOuterAndName("+outer+","+short_name+","+isArg+","+isInn+")");
 			bytecode_name = KString.from(outer.name.bytecode_name+delim+short_name);
 		}
-		delim = isInn ? "$" : "." ;
+		delim = "."; //isInn ? "$" : "." ;
 		KString name = KString.from(outer.name.name+delim+short_name);
 		return new ClazzName(name,short_name,bytecode_name,isArg,isInn);
 	}
@@ -221,6 +191,8 @@ public class NodeName {
 	public NodeName(KString name) {
 		this.name = name;
 	}
+	
+	public KString	toKString()	alias operator(210,fy,$cast) { return name; }
 
 	public void addAlias(KString al) {
 		// Check we do not have this alias already
