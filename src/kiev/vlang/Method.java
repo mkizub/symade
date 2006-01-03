@@ -57,7 +57,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 		public virtual						MethodType		type;
 		public virtual						MethodType		dtype;
-		public virtual abstract access:ro	MethodType		jtype;
+		public virtual abstract access:ro	MethodType		etype;
 
 		public void callbackChildChanged(AttrSlot attr) {
 			if (parent != null && pslot != null) {
@@ -75,7 +75,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 		@getter public final MethodType				get$type()	{ checkRebuildTypes(); return this.type; }
 		@getter public final MethodType				get$dtype()	{ checkRebuildTypes(); return this.dtype; }
-		@getter public final MethodType				get$jtype()	{ checkRebuildTypes(); return (MethodType)this.dtype.getErasedType(); }
+		@getter public final MethodType				get$etype()	{ checkRebuildTypes(); return (MethodType)this.dtype.getErasedType(); }
 
 		public final void checkRebuildTypes() {
 			if (invalid_types) rebuildTypes();
@@ -154,7 +154,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				TypeRef				dtype_ret;
 		public access:ro	MethodType			type;
 		public access:ro	MethodType			dtype;
-		public access:ro	MethodType			jtype;
+		public access:ro	MethodType			etype;
 		public access:ro	NArr<FormPar>		params;
 		public access:ro	NArr<ASTAlias>		aliases;
 		public				Var					retvar;
@@ -289,7 +289,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@getter public MethodType			get$type()	{ return this.getMethodView().type; }
 	@getter public MethodType			get$dtype()	{ return this.getMethodView().dtype; }
-	@getter public MethodType			get$jtype()	{ return this.getMethodView().jtype; }
+	@getter public MethodType			get$etype()	{ return this.getMethodView().etype; }
 
 	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
 	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
@@ -334,8 +334,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	            abstract virtual			boolean				invalid_types;
 	
 	     public virtual abstract access:ro	MethodType			type; 
-	     public virtual abstract access:ro	MethodType			jtype; 
 		 public virtual abstract access:ro	MethodType			dtype; 
+	     public virtual abstract access:ro	MethodType			etype; 
 	
 	public Method() {
 		super(new MethodImpl());
@@ -685,7 +685,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}

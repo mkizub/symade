@@ -244,8 +244,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			JMethodView m = (JMethodView)n;
 			constPool.addAsciiCP(m.name);
 			constPool.addAsciiCP(m.type.getJType().java_signature);
-			if( m.jtype != null )
-				constPool.addAsciiCP(m.jtype.getJType().java_signature);
+			if( m.etype != null )
+				constPool.addAsciiCP(m.etype.getJType().java_signature);
 
 			try {
 				m.generate(constPool);

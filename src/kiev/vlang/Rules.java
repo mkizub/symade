@@ -156,7 +156,7 @@ public class RuleMethod extends Method {
 		foreach (FormPar fp; params) {
 			fp.vtype.getType(); // resolve
 			if (fp.stype == null)
-				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType().getErasedType());
+				fp.stype = new TypeRef(fp.vtype.pos,fp.vtype.getType());
 			if (fp.meta != null)
 				fp.meta.verify();
 		}
@@ -166,7 +166,7 @@ public class RuleMethod extends Method {
 //		}
 		foreach (Var lv; localvars)
 			lv.setLocalRuleVar(true);
-		trace(Kiev.debugMultiMethod,"Rule "+this+" has java type "+this.jtype);
+		trace(Kiev.debugMultiMethod,"Rule "+this+" has erased type "+this.etype);
 		foreach(ASTAlias al; aliases) al.attach(this);
 
 		foreach(WBCCondition cond; conditions)

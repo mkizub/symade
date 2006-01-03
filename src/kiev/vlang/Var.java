@@ -252,9 +252,9 @@ public class Var extends LvalDNode implements Named, Typed {
 		return dmp;
 	}
 
-	public Dumper toJavaDecl(Dumper dmp, Type jtype) {
+	public Dumper toJavaDecl(Dumper dmp, Type etype) {
 		Env.toJavaModifiers(dmp,getJavaFlags());
-		return dmp.append(jtype).forsed_space().append(name);
+		return dmp.append(etype).forsed_space().append(name);
 	}
 
 }
@@ -334,7 +334,7 @@ public final class FormPar extends Var {
 	public FormPar(int pos, KString name, Type type, int kind, int flags) {
 		super(new FormParImpl(pos,flags),name,type);
 		this.kind = kind;
-		this.stype = new TypeRef(type.getErasedType());
+		this.stype = new TypeRef(type);
 	}
 
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {

@@ -359,7 +359,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 			JVarView[] params = m.params;
 			for(int i=0; i < params.length; i++) {
 				if( var == params[i] ) {
-					chtp = m.jtype.args[i];
+					chtp = m.etype.args[i];
 					break;
 				}
 			}

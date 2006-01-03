@@ -557,7 +557,7 @@ public final class Code implements JConstants {
 		}
 		KString sign;
 		JType ttt = Type.getRealType(tp,((JStructView)m.jparent).type).getJType();
-		sign = m.jtype.getJType().java_signature;
+		sign = m.etype.getJType().java_signature;
 		CP cpm;
 		if( m.jctx_clazz.isInterface() )
 			cpm = constPool.addInterfaceMethodCP(ttt.java_signature,m.name,sign);
@@ -595,7 +595,7 @@ public final class Code implements JConstants {
 
 	public void generateReturn() {
 		try {
-			JType t = ((JMethodType)this.method.jtype.getJType()).jret;
+			JType t = ((JMethodType)this.method.etype.getJType()).jret;
 			if( t == JType.tpVoid )				add_opcode(opc_return);
 			else if( t.isIntegerInCode() )		add_opcode(opc_ireturn);
 			else if( t == JType.tpLong )		add_opcode(opc_lreturn);

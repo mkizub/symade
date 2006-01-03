@@ -107,7 +107,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 			ConstExpr ce = new ConstIntExpr(meta.getTag());
 			ftag.init = ce;
 
-			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC);
+			Method gettag = new Method(nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new SFldExpr(ftag.pos,ftag))
@@ -116,7 +116,7 @@ class PizzaCaseBackend extends BackendProcessor implements Constants {
 		}
 		else if( clazz.isHasCases() ) {
 			// Add get$case$tag() method to itself
-			Method gettag = new Method(Constants.nameGetCaseTag,Type.tpInt,ACC_PUBLIC);
+			Method gettag = new Method(Constants.nameGetCaseTag,Type.tpInt,ACC_PUBLIC | ACC_SYNTHETIC);
 			gettag.body = new BlockStat(gettag.pos);
 			((BlockStat)gettag.body).addStatement(
 				new ReturnStat(gettag.pos,new ConstIntExpr(0))

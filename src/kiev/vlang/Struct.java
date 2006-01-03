@@ -1053,7 +1053,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 
 			// create method to get typeinfo field
-			Method tim = addMethod(new Method(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC));
+			Method tim = addMethod(new Method(nameGetTypeInfo,Type.tpTypeInfo,ACC_PUBLIC | ACC_SYNTHETIC));
 			tim.body = new BlockStat(pos,new ENode[]{
 				new ReturnStat(pos,new IFldExpr(pos,new ThisExpr(pos),tif))
 			});
@@ -1227,8 +1227,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 //				trace(Kiev.debugMultiMethod,"Method "+m+" not matched by "+methods[i]+" in class "+this);
 				continue;
 			}
-			MethodType mit = (MethodType)Type.getRealType(base,mi.jtype);
-			if( m.jtype.equals(mit) ) {
+			MethodType mit = (MethodType)Type.getRealType(base,mi.etype);
+			if( m.etype.equals(mit) ) {
 				trace(Kiev.debugMultiMethod,"Method "+m+" overrides "+mi+" of type "+mit+" in class "+this);
 				mm = mi;
 				// Append constraints to m from mm
@@ -1528,9 +1528,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (mm == null) {
 				// create dispatch method
 				if (m.isRuleMethod())
-					mm = new RuleMethod(m.name.name, m.flags);
+					mm = new RuleMethod(m.name.name, m.flags | ACC_SYNTHETIC);
 				else
-					mm = new Method(m.name.name, type1.ret, m.flags);
+					mm = new Method(m.name.name, type1.ret, m.flags | ACC_SYNTHETIC);
 				mm.name.aliases = m.name.aliases;
 				mm.setStatic(m.isStatic());
 				for (int j=0; j < m.params.length; j++) {
@@ -1600,7 +1600,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					// already removed
 					if (!rm.type.ret.equals(mm.type.ret)) {
 						// insert new method
-						Method nm = new Method(rm.name.name,rm.type.ret,rm.flags);
+						Method nm = new Method(rm.name.name,rm.type.ret,rm.flags | ACC_SYNTHETIC);
 						nm.pos = rm.pos;
 						nm.name = rm.name;
 						nm.params.addAll(rm.params);
@@ -1645,7 +1645,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					assert(m.params[i].stype != null);
 					mi.params[i].stype = (TypeRef)m.params[i].stype.copy();
 				}
-				mi.dtype_ret = new TypeRef(m.jtype.ret);
+				mi.dtype_ret = new TypeRef(m.dtype.ret);
 			}
 		}
 
@@ -1727,8 +1727,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			ce.args.append(new ThisExpr(pos));
 		foreach (FormPar fp; dispatcher.params)
 			ce.args.append(new LVarExpr(0,fp));
-		if (dispatched.dtype.ret ≉ dispatcher.dtype.ret)
-			return new CastExpr(pos, dispatcher.dtype.ret, ce);
+		if!(dispatcher.etype.ret ≥ dispatched.etype.ret)
+			return new CastExpr(pos, dispatcher.etype.ret, ce);
 		return ce;
 	}
 
@@ -1831,9 +1831,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (Kiev.debugMultiMethod) {
 			trace("vtable for "+this+":");
 			foreach (VTableEntry vte; vtable) {
-				trace("    "+vte.name+vte.dtype);
+				trace("    "+vte.name+vte.etype);
 				if (vte.overloader != null)
-				trace("            overloaded by "+vte.overloader.name+vte.overloader.dtype);
+				trace("            overloaded by "+vte.overloader.name+vte.overloader.etype);
 				foreach (Method m; vte.methods)
 					trace("        "+m.ctx_clazz+"."+m.name.name+m.type);
 			}
@@ -1844,7 +1844,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			foreach (VTableEntry vte; vtable; vte.overloader == null)
 				autoProxyMixinMethods(vte);
 			// generate bridge methods
-			foreach (VTableEntry vte; vtable; vte.overloader != null)
+			foreach (VTableEntry vte; vtable)
 				autoBridgeMethods(vte);
 			// generate method dispatchers for multimethods
 //			foreach (VTableEntry vte; vtable; vte.overloader == null)
@@ -1861,12 +1861,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	
 	static class VTableEntry {
 		KString      name;
-		MethodType   dtype;
+		MethodType   etype;
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
-		VTableEntry(KString name, MethodType dtype) {
+		VTableEntry(KString name, MethodType etype) {
 			this.name = name;
-			this.dtype = dtype;
+			this.etype = etype;
 		}
 	}
 	
@@ -1880,53 +1880,62 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method m = (Method)n;
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
-			MethodType dtype = m.dtype;
+			MethodType etype = m.etype;
 			foreach (KString name; m.name.getAllNames()) {
 				boolean is_new = true;
 				foreach (VTableEntry vte; vtable) {
-					if (name == vte.name && dtype ≈ vte.dtype) {
+					if (name == vte.name && etype ≈ vte.etype) {
 						is_new = false;
 						if (!vte.methods.contains(m))
 							vte.methods = new List<Method>.Cons(m, vte.methods);
 					}
 				}
 				if (is_new)
-					vtable.append(new VTableEntry(name, dtype));
+					vtable.append(new VTableEntry(name, etype));
 			}
 		}
 		
 		// process overload
 		foreach (VTableEntry vte; vtable) {
+			MethodType et = new MethodType(vte.etype.args,null);
 			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
 				Method m = (Method)n;
 				if (m.isStatic() && !m.isVirtualStatic())
 					continue;
 				if (!m.name.equals(vte.name) || vte.methods.contains(m))
 					continue;
-				MethodType t1 = new MethodType(m.dtype.args,null);
-				MethodType t2 = new MethodType(vte.dtype.args,null);
-				if (t1 ≈ t2)
+				MethodType mt = new MethodType(m.etype.args,null);
+				if (mt ≈ et)
 					vte.methods = new List<Method>.Cons(m, vte.methods);
+			}
+			if (!this.isInterface()) {
+				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
+					foreach (Method m; vte2.methods) {
+						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.type);
+						if (mt ≈ et)
+							vte.methods = new List<Method>.Cons(m, vte.methods);
+					}
+				}
 			}
 		}
 		
 		// mark overloaded entries in vtable
 		foreach (VTableEntry vte1; vtable; vte1.overloader == null) {
 			foreach (VTableEntry vte2; vtable; vte1 != vte2 && vte1.name == vte2.name && vte2.overloader == null) {
-				MethodType t1 = new MethodType(vte1.dtype.args,null);
-				MethodType t2 = new MethodType(vte2.dtype.args,null);
+				MethodType t1 = new MethodType(vte1.etype.args,null);
+				MethodType t2 = new MethodType(vte2.etype.args,null);
 				if (t1 ≉ t2)
 					continue;
-				Type r1 = vte1.dtype.ret;
-				Type r2 = vte2.dtype.ret;
+				Type r1 = vte1.etype.ret;
+				Type r2 = vte2.etype.ret;
 				if (r1 ≥ r2)
 					vte2.overloader = vte1;
 				else if (r2 ≥ r1)
 					vte1.overloader = vte2;
 				else
 					Kiev.reportWarning(this,"Bad method overloading for:\n"+
-						"    "+vte1.name+vte1.dtype+"\n"+
-						"    "+vte2.name+vte2.dtype
+						"    "+vte1.name+vte1.etype+"\n"+
+						"    "+vte2.name+vte2.etype
 					);
 			}
 		}
@@ -1965,12 +1974,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (found == null)
 			return; // no new methods in this class
 		// make the root dispatch method type
-		Method root = new Method(vte.name, vte.dtype.ret, ACC_PUBLIC);
+		Method root = new Method(vte.name, vte.etype.ret, ACC_PUBLIC | ACC_SYNTHETIC);
 		root.params.copyFrom(found.params);
 		root.pos = found.pos;
 		foreach (FormPar fp; root.params) {
-			if (fp.type != fp.dtype)
-				fp.vtype = (TypeRef)fp.stype.copy();
+			fp.stype = new TypeRef(fp.stype.getErasedType());
+			fp.vtype = new TypeRef(fp.stype.getErasedType());
 		}
 		members.append(root);
 		// check if we already have this method in this class
@@ -2006,7 +2015,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		foreach (Method m; mmset; m != root)
 			mmt.add(m);
 
-		trace(Kiev.debugMultiMethod,"Dispatch tree "+this+"."+vte.name+vte.dtype+" is:\n"+mmt);
+		trace(Kiev.debugMultiMethod,"Dispatch tree "+this+"."+vte.name+vte.etype+" is:\n"+mmt);
 
 		if (root.body==null)
 			root.body = new BlockStat(root.pos);
@@ -2058,13 +2067,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (def == null) {
 			// create an abstract method
 			Method def = vte.methods.head();
-			Kiev.reportWarning(this,"Method "+vte.name+vte.dtype+" is not implemented in "+this);
-			m = new Method(vte.name, vte.dtype.ret, ACC_ABSTRACT | ACC_PUBLIC);
+			Kiev.reportWarning(this,"Method "+vte.name+vte.etype+" is not implemented in "+this);
+			m = new Method(vte.name, vte.etype.ret, ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			m.params.copyFrom(def.params);
 			members.append(m);
 		} else {
 			// create a proxy call
-			m = new Method(vte.name, vte.dtype.ret, ACC_PUBLIC);
+			m = new Method(vte.name, vte.etype.ret, ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC);
 			m.params.copyFrom(def.params);
 			m.params.del(0);
 			members.append(m);
@@ -2079,13 +2088,13 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public void autoBridgeMethods(VTableEntry vte) {
 		// get overloader vtable entry
-		VTableEntry ovr = vte.overloader;
+		VTableEntry ovr = vte;
 		while (ovr.overloader != null)
 			ovr = ovr.overloader;
 		// find overloader method
 		Method mo = null;
 		foreach (Method m; vte.methods) {
-			if (m.ctx_clazz == this && m.dtype ≈ ovr.dtype) {
+			if (m.ctx_clazz == this && m.etype ≈ ovr.etype) {
 				mo = m;
 				break;
 			}
@@ -2093,14 +2102,19 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (mo == null)
 			return; // not overloaded in this class
 	next_m:
-		foreach (Method m; vte.methods) {
+		foreach (Method m; vte.methods; m != mo) {
 			// check this class have no such a method
-			foreach (DNode x; this.members; x instanceof Method) {
-				if (x.dtype ≈ vte.dtype)
+			foreach (DNode x; this.members; x instanceof Method && x.name.equals(m.name)) {
+				if (x.etype ≈ m.etype)
 					continue next_m;
 			}
-			Method bridge = new Method(vte.name, vte.dtype.ret, ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
-			bridge.params.copyFrom(mo.params);
+			Method bridge = new Method(m.name.name, m.etype.ret, ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
+			bridge.params.copyFrom(m.params);
+			foreach (FormPar fp; bridge.params) {
+				fp.stype = new TypeRef(fp.stype.getErasedType());
+				fp.vtype = new TypeRef(fp.stype.getErasedType());
+				fp.pos = mo.pos;
+			}
 			bridge.pos = mo.pos;
 			members.append(bridge);
 			bridge.body = new BlockStat();

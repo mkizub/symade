@@ -46,7 +46,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	@getter public final MethodType				get$type()		{ return this.$view.type; }
 	@getter public final MethodType				get$dtype()		{ return this.$view.dtype; }
-	@getter public final MethodType				get$jtype()		{ return (MethodType)dtype.getErasedType(); }
+	@getter public final MethodType				get$etype()		{ return (MethodType)dtype.getErasedType(); }
 	@getter public final JVarView[]				get$params()	{ return (JVarView[])this.$view.params.toJViewArray(JVarView.class); }
 	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
 	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
@@ -104,7 +104,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 						code.addVar(thisPar);
 					}
 					code.addVars(params);
-					if( Kiev.verify /*&& jtype != null*/ )
+					if( Kiev.verify )
 						generateArgumentCheck(code);
 					if( Kiev.debugOutputC ) {
 						foreach(JWBCConditionView cond; conditions; cond.cond == WBCType.CondRequire )
@@ -178,7 +178,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 
 	public void generateArgumentCheck(Code code) {
 		for(int i=0; i < params.length; i++) {
-			Type tp1 = jtype.args[i];
+			Type tp1 = etype.args[i];
 			Type tp2 = params[i].type;
 			if !(tp2.getErasedType().isInstanceOf(tp1)) {
 				code.addInstr(Instr.op_load,params[i]);

@@ -192,7 +192,7 @@ public class Bytecoder implements JConstants {
 					FormPar fp = new FormPar(new NameRef(KString.from("va_arg")),
 						new TypeRef(mtype.args[i]),new TypeRef(jtype.args[i]),FormPar.PARAM_VARARGS,ACC_FINAL);
 						m.params.add(fp);
-						mtype = m.jtype;
+						mtype = m.etype;
 						break;
 				} else {
 					FormPar fp = new FormPar(new NameRef(KString.from("arg"+i)),
@@ -684,7 +684,7 @@ public class Bytecoder implements JConstants {
 		kiev.bytecode.Method bcm = new kiev.bytecode.Method();
 		bcm.flags = m.getJavaFlags();
 		bcm.cp_name = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.name.name).pos];
-		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.jtype.getJType().java_signature).pos];
+		bcm.cp_type = (kiev.bytecode.Utf8PoolConstant)bcclazz.pool[constPool.getAsciiCP(m.etype.getJType().java_signature).pos];
 		bcm.attrs = kiev.bytecode.Attribute.emptyArray;
 		// Number of type attributes
 		JMethodView jm = m.getJMethodView();
