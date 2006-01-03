@@ -36,6 +36,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract TVarSet bindings();
 	public abstract ArgumentType getOuterArg();
 	
+	public final Type rebind(Type concrete) {
+		return meta_type.rebind(this,concrete.bindings());
+	}
 	public final Type rebind(TVarSet bindings) {
 		return meta_type.rebind(this,bindings);
 	}
@@ -128,13 +131,13 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( isInstanceOf(t) ) return true;
 		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
-		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) ≈ this ) return true;
+		if( this.isReference() && t instanceof CoreType ) {
+			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
 			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
 				return true;
 		}
-		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive(t) ≈ this ) return true;
+		if( this.isReference() && t instanceof CoreType ) {
+			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
 			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
 		}
 		if( this ≡ tpByte && (t ≡ tpShort || t ≡ tpInt || t ≡ tpLong || t ≡ tpFloat || t ≡ tpDouble) ) return true;
@@ -270,9 +273,9 @@ public abstract class Type implements StdTypes, AccessFlags {
 		return false;
 	}
 
-	public static BaseType getRefTypeForPrimitive(Type tp) {
-		if( tp.isReference() ) return (BaseType)tp;
-		if     ( tp ≡ Type.tpBoolean ) return Type.tpBooleanRef;
+	public static BaseType getRefTypeForPrimitive(CoreType tp) {
+//		if     ( tp.isReference()   ) return (BaseType)tp;
+		if     ( tp ≡ Type.tpBoolean) return Type.tpBooleanRef;
 //		else if( tp ≡ Type.tpRule   ) return Type.tpBooleanRef;
 		else if( tp ≡ Type.tpByte   ) return Type.tpByteRef;
 		else if( tp ≡ Type.tpShort  ) return Type.tpShortRef;

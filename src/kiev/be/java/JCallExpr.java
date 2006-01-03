@@ -142,7 +142,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		// Special meaning of Object.equals and so on
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
-		if( !objt.isReference() ) {
+		if( objt instanceof CoreType ) {
 			if( func.jctx_clazz.type ≢ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name == nameObjEquals ) {
@@ -156,7 +156,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				code.addInstr(Instr.set_label,label_false);
 			}
 			else if( func.name == nameObjGetClass ) {
-				BaseType reft = Type.getRefTypeForPrimitive(objt);
+				BaseType reft = Type.getRefTypeForPrimitive((CoreType)objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
 				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);

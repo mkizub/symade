@@ -110,6 +110,7 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,18 boolean is_mth_operator;
 		public packed:1,compileflags,19 boolean is_mth_need_fields_init;
 		public packed:1,compileflags,20 boolean is_mth_local;
+		public packed:1,compileflags,21 boolean is_mth_dispatcher;
 		
 		// Var/field
 		public packed:1,compileflags,16 boolean is_init_wrapper;
@@ -484,7 +485,9 @@ public abstract class ASTNode implements Constants {
 	public void preResolveOut() {}
 	public boolean mainResolveIn(TransfProcessor proc) { return true; }
 	public void mainResolveOut() {}
-	public boolean	preGenerate()	{ return true; }
+	public boolean preVerify() { return true; }
+	public void postVerify() {}
+	public boolean preGenerate() { return true; }
 	
 	
 	public final void walkTree(TreeWalker walker) {

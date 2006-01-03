@@ -216,8 +216,8 @@ public class TypeClassExpr extends ENode {
 
 	public void resolve(Type reqType) {
 		Type tp = type.getType();
-		if( !tp.isReference() ) {
-			Type rt = Type.getRefTypeForPrimitive(tp);
+		if (tp instanceof CoreType) {
+			Type rt = Type.getRefTypeForPrimitive((CoreType)tp);
 			Field f = rt.clazz.resolveField(KString.from("TYPE"));
 			replaceWithNodeResolve(reqType,new SFldExpr(pos,f));
 			return;
@@ -1939,9 +1939,9 @@ public class CastExpr extends ENode {
 		assert(ex.isAttached());
 		Type at = ex.getType();
 		if( !at.equals(tp) ) {
-			if( at.isReference() && !tp.isReference() && Type.getRefTypeForPrimitive(tp).equals(at) )
+			if( at.isReference() && tp instanceof CoreType && Type.getRefTypeForPrimitive((CoreType)tp).equals(at) )
 				autoCastToPrimitive(ex);
-			else if( !at.isReference() && tp.isReference() && Type.getRefTypeForPrimitive(at).equals(tp) )
+			else if( at instanceof CoreType && tp.isReference() && Type.getRefTypeForPrimitive((CoreType)at).equals(tp) )
 				autoCastToReference(ex);
 			else if( at.isReference() && tp.isReference() && at.isInstanceOf(tp) )
 				;

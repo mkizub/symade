@@ -518,12 +518,13 @@ public class ReturnStat extends ENode {
 			}
 		}
 		if( ctx_method.type.ret ≡ Type.tpVoid ) {
-			if( expr != null ) throw new RuntimeException("Can't return value in void method");
+			if( expr != null ) Kiev.reportError(this,"Can't return value in void method");
 			expr = null;
 		} else {
-			if( expr == null ) {
-				throw new RuntimeException("Return must return a value in non-void method");
-			}
+			if( expr == null )
+				Kiev.reportError(this,"Return must return a value in non-void method");
+			else if (!expr.getType().isInstanceOf(ctx_method.type.ret))
+				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret);
 		}
 	}
 

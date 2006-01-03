@@ -194,6 +194,10 @@ public class NodeName {
 	
 	public KString	toKString()	alias operator(210,fy,$cast) { return name; }
 
+	public List<KString> getAllNames() {
+		return new List<KString>.Cons(name, aliases);
+	}
+	
 	public void addAlias(KString al) {
 		// Check we do not have this alias already
 		foreach(KString n; aliases)

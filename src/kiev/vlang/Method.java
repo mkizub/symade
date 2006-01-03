@@ -185,6 +185,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setVirtualStatic(boolean on) {
 			if (this.$view.is_mth_virtual_static != on) {
 				this.$view.is_mth_virtual_static = on;
+				if (!isStatic()) this.setStatic(true);
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -245,6 +246,16 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public final void setLocalMethod(boolean on) {
 			if (this.$view.is_mth_local != on) {
 				this.$view.is_mth_local = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		// a dispatcher (for multimethods)	
+		public final boolean isDispatcherMethod() {
+			return this.$view.is_mth_dispatcher;
+		}
+		public final void setDispatcherMethod(boolean on) {
+			if (this.$view.is_mth_dispatcher != on) {
+				this.$view.is_mth_dispatcher = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -382,6 +393,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	// a local method (closure code or inner method)	
 	public boolean isLocalMethod() { return this.getMethodView().isLocalMethod(); }
 	public void setLocalMethod(boolean on) { this.getMethodView().setLocalMethod(on); }
+	// a dispatcher (for multimethods)	
+	public final boolean isDispatcherMethod() { return this.getMethodView().isDispatcherMethod(); }
+	public final void setDispatcherMethod(boolean on) { this.getMethodView().setDispatcherMethod(on); }
 
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.meta.get(MetaThrows.NAME);
@@ -746,6 +760,15 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		return true;
 	}
 	
+	public boolean preVerify() {
+		if (isAbstract() && isStatic()) {
+			setBad(true);
+			ctx_clazz.setBad(true);
+			Kiev.reportError(this,"Static method cannot be declared abstract");
+		}
+		return true;
+	}
+
 	public void resolveDecl() {
 		if( isResolved() ) return;
 		trace(Kiev.debugResolve,"Resolving method "+this);

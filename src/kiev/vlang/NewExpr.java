@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.*;
 import kiev.vlang.Operator.*;
+import kiev.transf.BackendProcessor;
 
 import kiev.be.java.JNodeView;
 import kiev.be.java.JENodeView;
@@ -535,8 +536,9 @@ public final class NewClosure extends ENode {
 		ClosureType type = (ClosureType)this.type.getType();
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		this.clazz.autoProxyMethods();
-		this.clazz.resolveDecl();
+		Struct clazz = this.clazz;
+		Kiev.runBackends(fun (BackendProcessor bep)->void { bep.preGenerate(clazz); });
+		Kiev.runBackends(fun (BackendProcessor bep)->void { bep.resolve(clazz); });
 		func = clazz.resolveMethod(nameInit,Type.tpVoid,Type.tpInt);
 		setResolved(true);
 	}

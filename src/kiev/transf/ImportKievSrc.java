@@ -701,6 +701,14 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		return;
 	}
 
+	public void verify(ASTNode node) {
+		node.walkTree(new TreeWalker() {
+			public boolean pre_exec(ASTNode n) { return n.preVerify(); }
+			public void post_exec(ASTNode n) { n.postVerify(); }
+		});
+		return;
+	}
+
 	////////////////////////////////////////////////////
 	//												   //
 	//	   PASS - pre-generation, auto-proxy methods  //
@@ -725,16 +733,11 @@ class JavaBackend extends BackendProcessor {
 	}
 	
 	public void preGenerate() {
-//		JPackage jroot = (JPackage)new TreeMapper().mapStruct(Env.root);
 		foreach (FileUnit fu; Kiev.files) {
-//			foreach (DNode d; fu.members; d instanceof Struct) {
-//				new JStruct((Struct)d).preGenerate();
-//			}
 			fu.walkTree(new TreeWalker() {
 				public boolean pre_exec(ASTNode n) { return n.preGenerate(); }
 			});
 		}
-//		jroot.toJavaDecl("jsrc");
 	}
 
 	public void preGenerate(ASTNode node) {

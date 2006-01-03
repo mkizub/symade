@@ -43,7 +43,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
 		@att public NArr<TypeRef>				interfaces;
-		@att public NArr<TypeDef>			args;
+		@att public NArr<TypeDef>				args;
 		@ref public Struct						package_clazz;
 		@ref public Struct						typeinfo_clazz;
 		@ref public NArr<Struct>				sub_clazz;
@@ -84,7 +84,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				TypeRef				view_of;
 		public				TypeRef				super_bound;
 		public access:ro	NArr<TypeRef>		interfaces;
-		public access:ro	NArr<TypeDef>	args;
+		public access:ro	NArr<TypeDef>		args;
 		public				Struct				package_clazz;
 		public				Struct				typeinfo_clazz;
 		public access:ro	NArr<Struct>		sub_clazz;
@@ -1061,6 +1061,46 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	}
 	
+	public void autoGenerateIdefault() {
+		if (!isInterface())
+			return;
+		Struct defaults = null;
+		foreach (DNode n; members; n instanceof Method) {
+			Method m = (Method)n;
+			if (!m.isAbstract()) {
+				if (m instanceof Constructor) continue; // ignore <clinit>
+
+				// Make inner class name$default
+				if( defaults == null ) {
+					defaults = Env.newStruct(
+						ClazzName.fromOuterAndName(this,nameIdefault,false,true),
+						this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
+					);
+					members.add(defaults);
+					defaults.setResolved(true);
+					Kiev.runProcessorsOn(defaults);
+				}
+				
+				if (m.isStatic()) {
+					defaults.members.add((Method)~m);
+					continue;
+				}
+
+				// Now, non-static methods (templates)
+				// Make it static and add abstract method
+				Method def = new Method(m.name.name,m.type.ret,m.getFlags()|ACC_STATIC);
+				def.pos = m.pos;
+				def.params.moveFrom(m.params); // move, because the vars are resolved
+				m.params.copyFrom(def.params);
+				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
+				defaults.members.add(def);
+				def.body = (BlockStat)~m.body;
+				def.setVirtualStatic(true);
+
+				m.setAbstract(true);
+			}
+		}
+	}
 
 	public void autoGenerateMembers() {
 		checkResolved();
@@ -1164,42 +1204,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					else
 						init.setPublic(true);
 					addMethod(init);
-				}
-			}
-			else if( isInterface() ) {
-				Struct defaults = null;
-				foreach (ASTNode n; members; n instanceof Method) {
-					Method m = (Method)n;
-					m.setPublic(true);
-					if( !m.isAbstract() ) {
-						if( m.isStatic() ) continue;
-						// Now, non-static methods (templates)
-						// Make it static and add abstract method
-						Method abstr = new Method(m.name.name,m.type.ret,m.getFlags()|ACC_PUBLIC );
-						abstr.pos = m.pos;
-						abstr.setStatic(false);
-						abstr.setAbstract(true);
-						abstr.params.copyFrom(m.params);
-						m.replaceWithNode(abstr);
-	
-						// Make inner class name$default
-						if( defaults == null ) {
-							defaults = Env.newStruct(
-								ClazzName.fromOuterAndName(this,nameIdefault,false,true),
-								this,ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT, true
-							);
-							members.add(defaults);
-							defaults.setResolved(true);
-							Kiev.runProcessorsOn(defaults);
-						}
-						m.setStatic(true);
-						m.setVirtualStatic(true);
-						m.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
-						defaults.addMethod(m);
-					}
-					if( isInterface() && !m.isStatic() ) {
-						m.setAbstract(true);
-					}
 				}
 			}
 		} finally { Kiev.setExtSet(old_exts); Kiev.curFile = oldfn; }
@@ -1546,7 +1550,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
 			IfElseStat st = null;
-			st = makeDispatchStatInline(mm,mmt);
+			st = makeDispatchStat(mm,mmt);
 
 			if (overwr != null) {
 				IfElseStat last_st = st;
@@ -1647,8 +1651,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	}
 
-	IfElseStat makeDispatchStatInline(Method mm, MMTree mmt) {
-		Type.tpNull.checkResolved();
+	IfElseStat makeDispatchStat(Method mm, MMTree mmt) {
 		IfElseStat dsp = null;
 		ENode cond = null;
 		for(int i=0; i < mmt.uppers.length; i++) {
@@ -1658,10 +1661,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				Type t = m.type.args[j];
 				if( mmt.m != null && t.equals(mmt.m.type.args[j]) ) continue;
 				ENode be = null;
-				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) )
-					be = new InstanceofExpr(pos,
-						new LVarExpr(pos,mm.params[j]),
-						Type.getRefTypeForPrimitive(t));
+				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) ) {
+					if (t instanceof CoreType)
+						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), Type.getRefTypeForPrimitive((CoreType)t));
+					else
+						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), t);
+				}
 				if (t instanceof WrapperType)
 					t = t.getUnwrappedType();
 				if (t instanceof BaseType && ((BaseType)t).clazz.isTypeUnerasable()) {
@@ -1689,10 +1694,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				ENode st = new InlineMethodStat(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
+				ENode st = makeDispatchCall(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
 				br = new IfElseStat(0,cond,st,null);
 			} else {
-				br = new IfElseStat(0,cond,makeDispatchStatInline(mm,mmt.uppers[i]),null);
+				br = new IfElseStat(0,cond,makeDispatchStat(mm,mmt.uppers[i]),null);
 			}
 			cond = null;
 			if( dsp == null ) dsp = br;
@@ -1704,12 +1709,27 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		if( mmt.m != mm && mmt.m != null) {
 			ENode br;
-			br = new InlineMethodStat(mmt.m.pos,mmt.m,mm);
+			br = makeDispatchCall(mmt.m.pos,mmt.m,mm);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 			st.elseSt = br;
 		}
 		return dsp;
+	}
+	
+	private ENode makeDispatchCall(int pos, Method dispatcher, Method dispatched) {
+		//return new InlineMethodStat(pos,dispatched,dispatcher)
+		ENode obj = null;
+		if (!dispatched.isStatic() && !dispatcher.isStatic())
+			obj = new ThisExpr(pos);
+		CallExpr ce = new CallExpr(pos, obj, dispatched, null, ENode.emptyArray, this != dispatched.ctx_clazz);
+		if (dispatched.isVirtualStatic() && !dispatcher.isStatic())
+			ce.args.append(new ThisExpr(pos));
+		foreach (FormPar fp; dispatcher.params)
+			ce.args.append(new LVarExpr(0,fp));
+		if (dispatched.dtype.ret ≉ dispatcher.dtype.ret)
+			return new CastExpr(pos, dispatcher.dtype.ret, ce);
+		return ce;
 	}
 
 	static class MMTree {
@@ -1777,59 +1797,326 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	}
 
-	public boolean preGenerate() {
-		autoProxyMethods();
-//		new kiev.backend.java15.TreeMapper().mapStruct(this);
+	// verify resolved tree
+	public boolean preVerify() {
+		if (isClazz() && super_type != null && super_type.getStruct().isFinal()) {
+			Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
+
+		}
+		else if (isInterface()) {
+			foreach (TypeRef i; interfaces) {
+				if(i.getStruct().isFinal())
+					Kiev.reportError(this, "Iterface "+this+" extends final interface "+i);
+			}
+		}
 		return true;
 	}
 	
-	public void autoProxyMethods() {
+	public boolean preGenerate() {
 		checkResolved();
-		if( isMembersPreGenerated() ) return;
-		if( isPackage() ) return;
-		if( super_type != null && !super_type.clazz.isMembersPreGenerated() ) {
-			super_type.clazz.autoProxyMethods();
-		}
-		for(int i=0; i < interfaces.length; i++)
-			if( !interfaces[i].getStruct().isMembersPreGenerated() ) {
-				interfaces[i].getStruct().autoProxyMethods();
-			}
-		ASTNode fu = parent;
-		while( fu != null && !(fu instanceof FileUnit))
-			fu = fu.parent;
-		if( fu != null )
-			Kiev.curFile = ((FileUnit)fu).filename;
+		if( isMembersPreGenerated() ) return true;
+		if( isPackage() ) return false;
+		
+		// first, pre-generate super-types
+		foreach (Type sup; type.getDirectSuperTypes())
+			sup.getStruct().preGenerate();
 
-		if( isClazz() && super_type != null && super_type.getStruct().isFinal())
-			Kiev.reportError(this, "Class "+this+" extends final class "+super_type);
-		for(int i=0; i < interfaces.length; i++) {
-			if( isInterface() && interfaces[i].getStruct().isFinal())
-				Kiev.reportError(this, "Iterface "+this+" extends final interface "+interfaces[i]);
-			interfaces[i].getStruct().autoProxyMethods(this);
-		}
-
-		if( isClazz() ) {
-			boolean make_abstract = false;
-			foreach(DNode n; members; n instanceof Method && n.isAbstract() && n.isStatic()) {
-				Method m = (Method)n;
-				m.setBad(true);
-				this.setBad(true);
-				Kiev.reportError(m,"Static method cannot be declared abstract");
+		// generate typeinfo class, if needed
+		autoGenerateTypeinfoClazz();
+		// generate a class for interface non-abstract members
+		autoGenerateIdefault();
+		// build vtable
+		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
+		buildVTable(vtable);
+		if (Kiev.debugMultiMethod) {
+			trace("vtable for "+this+":");
+			foreach (VTableEntry vte; vtable) {
+				trace("    "+vte.name+vte.dtype);
+				if (vte.overloader != null)
+				trace("            overloaded by "+vte.overloader.name+vte.overloader.dtype);
+				foreach (Method m; vte.methods)
+					trace("        "+m.ctx_clazz+"."+m.name.name+m.type);
 			}
 		}
-
-		// Check all methods
-//		if( !isAbstract() && isClazz() ) {
-//			List<Method> ms = List.Nil;
-//			ms = collectVTmethods(ms);
-//		}
-
+		
+		if (isClazz()) {
+			// forward default implementation to interfaces
+			foreach (VTableEntry vte; vtable; vte.overloader == null)
+				autoProxyMixinMethods(vte);
+			// generate bridge methods
+			foreach (VTableEntry vte; vtable; vte.overloader != null)
+				autoBridgeMethods(vte);
+			// generate method dispatchers for multimethods
+//			foreach (VTableEntry vte; vtable; vte.overloader == null)
+//				createMethodDispatchers(vte);
+		}
+		
+		
 		setMembersPreGenerated(true);
 		
-		foreach(DNode s; members; s instanceof Struct)
-			((Struct)s).autoProxyMethods();
+		//combineMethods();
 
-		combineMethods();
+		return true;
+	}
+	
+	static class VTableEntry {
+		KString      name;
+		MethodType   dtype;
+		List<Method> methods = List.Nil;
+		VTableEntry  overloader;
+		VTableEntry(KString name, MethodType dtype) {
+			this.name = name;
+			this.dtype = dtype;
+		}
+	}
+	
+	private void buildVTable(Vector<VTableEntry> vtable) {
+		// take vtable from super-types
+		foreach (Type sup; this.type.getDirectSuperTypes())
+			sup.getStruct().buildVTable(vtable);
+		
+		// process override
+		foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
+			Method m = (Method)n;
+			if (m.isStatic() && !m.isVirtualStatic())
+				continue;
+			MethodType dtype = m.dtype;
+			foreach (KString name; m.name.getAllNames()) {
+				boolean is_new = true;
+				foreach (VTableEntry vte; vtable) {
+					if (name == vte.name && dtype ≈ vte.dtype) {
+						is_new = false;
+						if (!vte.methods.contains(m))
+							vte.methods = new List<Method>.Cons(m, vte.methods);
+					}
+				}
+				if (is_new)
+					vtable.append(new VTableEntry(name, dtype));
+			}
+		}
+		
+		// process overload
+		foreach (VTableEntry vte; vtable) {
+			foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
+				Method m = (Method)n;
+				if (m.isStatic() && !m.isVirtualStatic())
+					continue;
+				if (!m.name.equals(vte.name) || vte.methods.contains(m))
+					continue;
+				MethodType t1 = new MethodType(m.dtype.args,null);
+				MethodType t2 = new MethodType(vte.dtype.args,null);
+				if (t1 ≈ t2)
+					vte.methods = new List<Method>.Cons(m, vte.methods);
+			}
+		}
+		
+		// mark overloaded entries in vtable
+		foreach (VTableEntry vte1; vtable; vte1.overloader == null) {
+			foreach (VTableEntry vte2; vtable; vte1 != vte2 && vte1.name == vte2.name && vte2.overloader == null) {
+				MethodType t1 = new MethodType(vte1.dtype.args,null);
+				MethodType t2 = new MethodType(vte2.dtype.args,null);
+				if (t1 ≉ t2)
+					continue;
+				Type r1 = vte1.dtype.ret;
+				Type r2 = vte2.dtype.ret;
+				if (r1 ≥ r2)
+					vte2.overloader = vte1;
+				else if (r2 ≥ r1)
+					vte1.overloader = vte2;
+				else
+					Kiev.reportWarning(this,"Bad method overloading for:\n"+
+						"    "+vte1.name+vte1.dtype+"\n"+
+						"    "+vte2.name+vte2.dtype
+					);
+			}
+		}
+		// find highest overloader
+		foreach (VTableEntry vte; vtable; vte.overloader != null) {
+			while (vte.overloader.overloader != null)
+				vte.overloader = vte.overloader.overloader;
+		}
+	}
+	
+	private void createMethodDispatchers(VTableEntry vte) {
+		// get a set of overloaded methods that are not overriden
+		Vector<Method> mmset = new Vector<Method>();
+	next_m1:
+		foreach (Method m1; vte.methods) {
+			for (int i=0; i < mmset.length; i++) {
+				Method m2 = mmset[i];
+				if (m2.type ≉ m1.type)
+					continue; // different overloading
+				if (m2.ctx_clazz.instanceOf(m1.ctx_clazz))
+					continue next_m1; // m2 overrides m1
+				mmset[i] = m1; // m1 overrides m2
+				continue next_m1;
+			}
+			// new overloading
+			mmset.append(m1);
+		}
+		// check we have any new method in this class
+		Method found = null;
+		foreach (Method m; mmset) {
+			if (m.ctx_clazz == this) {
+				found = m;
+				break;
+			}
+		}
+		if (found == null)
+			return; // no new methods in this class
+		// make the root dispatch method type
+		Method root = new Method(vte.name, vte.dtype.ret, ACC_PUBLIC);
+		root.params.copyFrom(found.params);
+		root.pos = found.pos;
+		foreach (FormPar fp; root.params) {
+			if (fp.type != fp.dtype)
+				fp.vtype = (TypeRef)fp.stype.copy();
+		}
+		members.append(root);
+		// check if we already have this method in this class
+		foreach (Method m; mmset) {
+			if (m.ctx_clazz == this && m.type.rebind(this.type) ≈ root.type.rebind(this.type)) {
+				members.detach(root);
+				root = found = m;
+				break;
+			}
+		}
+		if (found != root) {
+			vte.methods = new List<Method>.Cons(root, vte.methods);
+			mmset.append(root);
+		}
+		// check it's a multimethod entry
+		if (mmset.length <= 1)
+			return; // not a multimethod entry
+		// make multimethods to be static
+		int tmp = 1;
+		foreach (Method m; mmset; m != root) {
+			if (m.ctx_clazz == this && !m.isVirtualStatic()) {
+				m.setVirtualStatic(true);
+				if (m.name.name == vte.name) {
+					KString name = m.name.name;
+					m.name.name = KString.from(name+"$mm$"+tmp);
+					m.name.addAlias(name);
+				}
+			}
+		}
+		
+		// create mmtree
+		MMTree mmt = new MMTree(root);
+		foreach (Method m; mmset; m != root)
+			mmt.add(m);
+
+		trace(Kiev.debugMultiMethod,"Dispatch tree "+this+"."+vte.name+vte.dtype+" is:\n"+mmt);
+
+		if (root.body==null)
+			root.body = new BlockStat(root.pos);
+		IfElseStat st = makeDispatchStat(root,mmt);
+		if (st != null)
+			root.body.stats.insert(0, st);
+	}
+	
+	public void autoProxyMixinMethods(VTableEntry vte) {
+		// check we have a virtual method for this entry
+		foreach (Method m; vte.methods) {
+			if (m.ctx_clazz.isInterface())
+				continue;
+			// found a virtual method, nothing to proxy here
+			return;
+		}
+		// all methods are from interfaces, check if we have a default implementation
+		Method def = null;
+		foreach (Method m; vte.methods) {
+			// find default implementation class
+			Struct i = null;
+			foreach (DNode n; m.ctx_clazz.members; n instanceof Struct && n.name.short_name == nameIdefault) {
+				i = n;
+				break;
+			}
+			if (i == null)
+				continue;
+			Method fnd = null;
+			Type[] args = m.type.args;
+			args = (Type[])Arrays.insert(args,m.ctx_clazz.type,0);
+			MethodType mt = new MethodType(args, m.type.ret);
+			foreach (Method dm; i.members; dm instanceof Method && dm.name.equals(m.name) && dm.type ≈ mt) {
+				fnd = dm;
+				break;
+			}
+			if (def == null)
+				def = fnd; // first method found
+			else if (fnd.ctx_clazz.instanceOf(def.ctx_clazz))
+				def = fnd; // overriden default implementation
+			else if (def.ctx_clazz.instanceOf(fnd.ctx_clazz))
+				; // just ignore
+			else
+				Kiev.reportWarning(this,"Umbigous default implementation for methods:\n"+
+					"    "+def.ctx_clazz+"."+def+"\n"+
+					"    "+fnd.ctx_clazz+"."+fnd
+				);
+		}
+		Method m = null;
+		if (def == null) {
+			// create an abstract method
+			Method def = vte.methods.head();
+			Kiev.reportWarning(this,"Method "+vte.name+vte.dtype+" is not implemented in "+this);
+			m = new Method(vte.name, vte.dtype.ret, ACC_ABSTRACT | ACC_PUBLIC);
+			m.params.copyFrom(def.params);
+			members.append(m);
+		} else {
+			// create a proxy call
+			m = new Method(vte.name, vte.dtype.ret, ACC_PUBLIC);
+			m.params.copyFrom(def.params);
+			m.params.del(0);
+			members.append(m);
+			m.body = new BlockStat();
+			if( m.type.ret ≡ Type.tpVoid )
+				m.body.addStatement(new ExprStat(0,makeDispatchCall(0, m, def)));
+			else
+				m.body.addStatement(new ReturnStat(0,makeDispatchCall(0, m, def)));
+		}
+		vte.methods = new List<Method>.Cons(m, vte.methods);
+	}
+
+	public void autoBridgeMethods(VTableEntry vte) {
+		// get overloader vtable entry
+		VTableEntry ovr = vte.overloader;
+		while (ovr.overloader != null)
+			ovr = ovr.overloader;
+		// find overloader method
+		Method mo = null;
+		foreach (Method m; vte.methods) {
+			if (m.ctx_clazz == this && m.dtype ≈ ovr.dtype) {
+				mo = m;
+				break;
+			}
+		}
+		if (mo == null)
+			return; // not overloaded in this class
+	next_m:
+		foreach (Method m; vte.methods) {
+			// check this class have no such a method
+			foreach (DNode x; this.members; x instanceof Method) {
+				if (x.dtype ≈ vte.dtype)
+					continue next_m;
+			}
+			Method bridge = new Method(vte.name, vte.dtype.ret, ACC_BRIDGE | ACC_SYNTHETIC | mo.flags);
+			bridge.params.copyFrom(mo.params);
+			bridge.pos = mo.pos;
+			members.append(bridge);
+			bridge.body = new BlockStat();
+			if (bridge.type.ret ≢ Type.tpVoid)
+				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
+			else
+				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
+			vte.methods = new List<Method>.Cons(bridge, vte.methods);
+		}
+	}
+
+/*	
+	public void autoProxyMethods() {
+		for(int i=0; i < interfaces.length; i++) {
+			interfaces[i].getStruct().autoProxyMethods(this);
+		}
 	}
 
 	// Check that Struct me implements all methods and
@@ -1940,6 +2227,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			interfaces[i].getStruct().autoProxyMethods(me);
 		}
 	}
+*/
 
 	static class StructDFFunc extends DFFunc {
 		final int res_idx;
@@ -2141,60 +2429,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		diff_time = System.currentTimeMillis() - curr_time;
 		if( Kiev.verbose ) Kiev.reportInfo("Resolved class "+this,diff_time);
 	}
-/*
-	List<Method> addMethodsToVT(Type tp, List<Method> ms, boolean by_name_name) {
-	next_method:
-		foreach(ASTNode n; members; n instanceof Method) {
-			Method m = (Method)n;
-			if (!m.isStatic() && !m.name.equals(nameInit))
-				continue;
-			for(List<Method> msi = ms; msi != List.Nil; msi = msi.tail()) {
-				if( (  (by_name_name && m.name.name.equals(msi.head().name.name))
-					|| (!by_name_name && m.name.equals(msi.head().name)) )
-//				 && Type.getRealType(tp,m.jtype).equals(Type.getRealType(tp,msi.head().jtype)) ) {
-				 && Type.getRealType(tp,m.type).equals(Type.getRealType(tp,msi.head().type)) ) {
-					((List.Cons<Method>)msi).head = m;
-//					System.out.println("replace from "+this+" method "+m.name+m.type.signature);
-					continue next_method;
-				}
-			}
-//			System.out.println("add from "+this+" method "+m.name+m.jtype.signature);
-			ms = new List.Cons<Method>(m,ms);
-		}
-		return ms;
-	}
-
-	List<Method> collectVTinterfaceMethods(Type tp, List<Method> ms) {
-		if( super_type != null ) {
-			ms = super_type.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,super_type),ms);
-		}
-		foreach(Type i; interfaces) {
-			ms = i.clazz.collectVTinterfaceMethods(
-				Type.getRealType(tp,i),ms);
-		}
-		if( isInterface() ) {
-//			System.out.println("collecting in "+this);
-			ms = addMethodsToVT(tp,ms,false);
-		}
-		return ms;
-	}
-
-	List<Method> collectVTvirtualMethods(Type tp, List<Method> ms)
-	{
-		if( super_type != null )
-			ms = super_type.clazz.collectVTvirtualMethods(tp,ms);
-//		System.out.println("collecting in "+this);
-		ms = addMethodsToVT(tp,ms,true);
-		return ms;
-	}
-
-	List<Method> collectVTmethods(List<Method> ms) {
-		ms = collectVTinterfaceMethods(this.type,ms);
-		ms = collectVTvirtualMethods(this.type,ms);
-		return ms;
-	}
-*/
 
 	public Dumper toJavaDecl(Dumper dmp) {
 		Struct jthis = this;
