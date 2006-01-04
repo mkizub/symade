@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -64,7 +64,7 @@ public class Stack<A> extends Vector<A> implements Cloneable
 		return new StackEnumerator<A>();
 	}
     
-	public class StackEnumerator<A> implements Enumeration<A> {
+	public class StackEnumerator implements Enumeration {
 		int current;
 
 		public StackEnumerator() {

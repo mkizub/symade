@@ -63,10 +63,6 @@ public class TypeWithArgsRef extends TypeRef {
 		Type tp = base_type.getType();
 		if (tp == null || !(tp instanceof BaseType))
 			throw new CompilerException(this,"Type "+base_type+" is not found");
-		////////////// BUG BUG - for compatibility with kiev 0.3 ////////////
-		if (!tp.getStruct().isStatic())
-			this.args.delAll();
-		/////////////////////////////////////////////////////////////////////
 		TVarSet tpset = tp.bindings();
 		TVarSet set = new TVarSet();
 		int a = 0;

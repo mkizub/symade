@@ -22,7 +22,7 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
@@ -261,7 +261,7 @@ public class Vector<A> implements Cloneable
 		return buf.toString();
 	}
 
-	public class VectorEnumerator<A> implements Enumeration<A> {
+	public class VectorEnumerator implements Enumeration {
 		int current;
 
 		public VectorEnumerator() {

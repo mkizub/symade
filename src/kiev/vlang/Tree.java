@@ -355,6 +355,135 @@ public final class NArr<N extends ASTNode> {
 			}
 		};
 	}
+
+/*
+	@unerasable
+	public final class JArr<J extends JNodeView> {
+
+		public NArr<N> getNArr() { return NArr.this; }		
+		
+		public JNodeView getParent() {
+			return (J)NArr.this.$parent_impl._self;
+		}
+		
+		public AttrSlot getPSlot() {
+			return NArr.this.$pslot;
+		}
+		
+		public int size()
+			alias length
+			alias get$size
+			alias get$length
+		{
+			return NArr.this.size();
+		}
+	
+		public final J get(int idx)
+			alias at
+			alias operator(210,xfy,[])
+		{
+			return (J)NArr.this.get(idx);
+		}
+		
+		public J set(int idx, J node)
+			alias operator(210,lfy,[])
+			require { node != null; }
+		{
+			NArr.this.set(idx, (N)node);
+			return node;
+		}
+	
+		public N add(N node)
+			alias append
+			alias operator(5, lfy, +=)
+			require { node != null; }
+		{
+			NArr.this.add((N)node);
+			return node;
+		}
+	
+		public void addAll(JArr<J> arr)
+			alias appendAll
+		{
+			foreach(J n; arr) add(n);
+		}
+	
+		public void addAll(J[] arr)
+			alias appendAll
+		{
+			foreach(J n; arr) add(n);
+		}
+	
+		public void addUniq(J node)
+			alias appendUniq
+		{
+			if (indexOf(node) < 0) add(node);
+		}
+	
+		public void addUniq(JArr<J> arr)
+			alias appendUniq
+		{
+			foreach(J n; arr) addUniq(n);
+		}
+	
+		public void addUniq(J[] arr)
+			alias appendUniq
+		{
+			foreach(J n; arr) addUniq(n);
+		}
+	
+		public J insert(J node, int idx)
+		{
+			return insert(idx, node);
+		}
+		
+		public J insert(int idx, J node)
+			require { node != null; }
+		{
+			NArr.this.insert(idx,(N)node);
+			return node;
+		}
+	
+		public void detach(J old) { 	NArr.this.detach((N)old); }
+		public void del(int idx) { NArr.this.del(idx); }
+		public void delAll() { NArr.this.delAll(); }
+		public void copyFrom(JArr<J> arr) { NArr.this.copyFrom(arr.getNArr()); }
+		public void moveFrom(JArr<J> arr) { NArr.this.moveFrom(arr.getNArr()); }
+		public boolean contains(J node) { return NArr.this.contains((N)node); }
+		public int indexOf(J node) { return NArr.this.indexOf((N)node); }
+		public J[] toArray() {
+			int sz = Narr.this.$nodes.length;
+			J[] arr = new J[sz];
+			for (int i=0; i < sz; i++)
+				arr[i] = this[i];
+			return arr;
+		}
+	
+		public J[] delToArray() {
+			N[] narr = NArr.this.delToArray();
+			J[] jarr = new J[narr.length];
+			for (int i=0; i < sz; i++)
+				jarr[i] = (J)narr[i];
+			return jarr;
+		}
+	
+		public Enumeration<J> elements() {
+			return new Enumeration<J>() {
+				int current;
+				public boolean hasMoreElements() { return current < JArr.this.size(); }
+				public J nextElement() {
+					if ( current < size() ) return JArr.this[current++];
+					throw new NoSuchElementException(Integer.toString(JArr.this.size()));
+				}
+				/// BUG BUG BUG ///
+				public Object nextElement() {
+					if ( current < size() ) return JArr.this[current++];
+					throw new NoSuchElementException(Integer.toString(JArr.this.size()));
+				}
+			};
+		}
+	}
+*/
 }
 
 

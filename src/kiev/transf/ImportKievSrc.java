@@ -220,9 +220,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		else if!(me.parent instanceof FileUnit) {
 			if (!me.isStatic()) {
-				///// BUG BUG - for compatibility with kiev 0.3 /////
-				me.args.delAll();
-				/////////////////////////////////////////////////////
 				Struct pkg = me.package_clazz;
 				if (me.isClazz() && pkg.isClazz()) {
 					int n = 0;

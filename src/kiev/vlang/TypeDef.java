@@ -45,10 +45,10 @@ public class TypeDef extends TypeDecl {
 
 	@getter public NameRef		get$name()			{ return this.getTypeDefView().name; }
 	@getter public TypeRef		get$super_bound()	{ return this.getTypeDefView().super_bound; }
-	@getter public ArgumentType	get$lnk()			{ return this.getTypeDefView().lnk; }
+	@getter        ArgumentType	get$lnk()			{ return this.getTypeDefView().lnk; }
 	@setter public void		set$name(NameRef val)			{ this.getTypeDefView().name = val; }
 	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeDefView().super_bound = val; }
-	@setter public void		set$lnk(ArgumentType val)		{ this.getTypeDefView().lnk = val; }
+	@setter        void		set$lnk(ArgumentType val)		{ this.getTypeDefView().lnk = val; }
 	
 	public TypeDef() { super(new TypeDefImpl()); }
 

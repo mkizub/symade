@@ -405,7 +405,7 @@ public class List<A>
 /** return the elements of this list as an enumeration
  */
 	public Enumeration<A> elements() {
-		return new ListEnumerator<A>();
+		return new ListEnumerator<A>(this);
 	}
 
 /** zip two lists into a list of pairs
@@ -476,16 +476,22 @@ public class List<A>
 		return new Cons<A>(hd,nl);
 	}
 
-class ListEnumerator<A> implements Enumeration<A>, Cloneable {
+static class ListEnumerator<A> implements Enumeration<A>, Cloneable {
 
+	private List<A> lst;
+	
+	ListEnumerator(List<A> lst) {
+		this.lst = lst;
+	}
+	
 	public boolean hasMoreElements() {
-		return List.this != List.Nil;
+		return lst != List.Nil;
 	}
 
 	public A nextElement() {
-		switch (List.this) {
+		switch (lst) {
 		case List.Cons(A x, List<A> xs):
-			List.this = xs;
+			lst = xs;
 			return x;
 		case List.Nil:
 			throw new NoSuchElementException();
