@@ -1467,25 +1467,41 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method m = (Method)members[cur_m];
 			if (m.name.equals(nameClassInit) || m.name.equals(nameInit))
 				continue;
+			if (m.isBridgeMethod())
+				continue;
 			if( m.isMultiMethod() ) {
 				trace(Kiev.debugMultiMethod,"Multimethod "+m+" already processed...");
 				continue; // do not process method twice...
 			}
-			MethodType type1 = m.type;
-			MethodType dtype1 = m.dtype;
-			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+type1);
+			Method mmm;
+			{
+				// create dispatch method
+				if (m.isRuleMethod())
+					mmm = new RuleMethod(m.name.name, m.flags | ACC_SYNTHETIC);
+				else
+					mmm = new Method(m.name.name, m.type.ret, m.flags | ACC_SYNTHETIC);
+				mmm.setStatic(m.isStatic());
+				mmm.name.aliases = m.name.aliases;
+				foreach (FormPar fp; m.params)
+					mmm.params.add(new FormPar(fp.pos,fp.name.name,fp.stype.getType(),fp.kind,fp.flags));
+				this.members.add(mmm);
+			}
+			MethodType type1 = mmm.type;
+			MethodType dtype1 = mmm.dtype;
+			MethodType etype1 = mmm.etype;
+			this.members.detach(mmm);
 			Method mm = null;
+			trace(Kiev.debugMultiMethod,"Generating dispatch method for "+m+" with dispatch type "+etype1);
 			// find all methods with the same java type
 			ListBuffer<Method> mlistb = new ListBuffer<Method>();
-			foreach (ASTNode nj; members; nj instanceof Method) {
+			foreach (DNode nj; members; nj instanceof Method && nj.isStatic() == m.isStatic()) {
 				Method mj = (Method)nj;
-//				if (m.isRuleMethod() != mj.isRuleMethod())
-//					continue;
 				MethodType type2 = mj.type;
 				MethodType dtype2 = mj.dtype;
-				if( mj.name.name != m.name.name || dtype2.args.length != dtype1.args.length )
+				MethodType etype2 = mj.etype;
+				if( mj.name.name != m.name.name || etype2.args.length != etype1.args.length )
 					continue;
-				if (dtype1.isMultimethodSuper(dtype2)) {
+				if (etype1.isMultimethodSuper(etype2)) {
 					trace(Kiev.debugMultiMethod,"added dispatchable method "+mj);
 					if (mm == null) {
 						if (type1.equals(type2))
@@ -1496,7 +1512,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					}
 					mlistb.append(mj);
 				} else {
-					trace(Kiev.debugMultiMethod,"methods "+mj+" with dispatch type "+type2+" doesn't match...");
+					trace(Kiev.debugMultiMethod,"methods "+mj+" with dispatch type "+etype2+" doesn't match...");
 				}
 			}
 			Method overwr = null;
@@ -1515,37 +1531,25 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				}
 				continue;
 			}
-			// if multimethod already assigned, thus, no super. call will be done - forget it
-			if (mm != null) {
+
+			List<Method> mlist = mlistb.toList();
+
+			if (mm == null) {
+				// create a new dispatcher method...
+				mm = mmm;
+				this.addMethod(mm);
+				trace(Kiev.debugMultiMethod,"will add new dispatching method "+mm);
+			} else {
+				// if multimethod already assigned, thus, no super. call will be done - forget it
 				trace(Kiev.debugMultiMethod,"will attach dispatching to this method "+mm);
 				overwr = null;
 			}
 
-
-			List<Method> mlist = mlistb.toList();
-
-			// create a new dispatcher method...
-			if (mm == null) {
-				// create dispatch method
-				if (m.isRuleMethod())
-					mm = new RuleMethod(m.name.name, m.flags | ACC_SYNTHETIC);
-				else
-					mm = new Method(m.name.name, type1.ret, m.flags | ACC_SYNTHETIC);
-				mm.name.aliases = m.name.aliases;
-				mm.setStatic(m.isStatic());
-				for (int j=0; j < m.params.length; j++) {
-					mm.params.add(new FormPar(m.params[j].pos,m.params[j].name.name,type1.args[j],m.params[j].kind,m.params[j].flags));
-				}
-			}
-
 			// create mmtree
 			MMTree mmt = new MMTree(mm);
-			for(List<Method> ul = mlist; ul != List.Nil; ul = ul.tail()) {
-				Method rm = ul.head();
-				if (rm != mm)
-					removeMethod(rm);
-				mmt.add(rm);
-			}
+
+			foreach (Method m; mlist; m != mm)
+				mmt.add(m);
 
 			trace(Kiev.debugMultiMethod,"Dispatch tree "+mm+" is:\n"+mmt);
 
@@ -1585,6 +1589,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				}
 				last_st.elseSt = br;
 			}
+			assert (mm.parent == this);
 			if (st != null) {
 				BlockStat body = new BlockStat(0);
 				body.addStatement(st);
@@ -1594,37 +1599,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					mm.body = body;
 			}
 			mm.setMultiMethod(true);
-			boolean add_mm = true;
-			foreach (Method rm; mlist) {
-				if (mm != rm) {
-					// already removed
-					if (!rm.type.ret.equals(mm.type.ret)) {
-						// insert new method
-						Method nm = new Method(rm.name.name,rm.type.ret,rm.flags | ACC_SYNTHETIC);
-						nm.pos = rm.pos;
-						nm.name = rm.name;
-						nm.params.addAll(rm.params);
-						ENode[] vae = new ENode[mm.params.length];
-						for(int k=0; k < vae.length; k++) {
-							vae[k] = new LVarExpr(0,mm.params[k]);
-						}
-						nm.body = new BlockStat(0,new ENode[]{
-							new ReturnStat(0,
-								new CastExpr(0,rm.type.ret,
-									new CallExpr(0,new ThisExpr(true),mm,vae)))
-							});
-						addMethod(nm);
-					}
-					// also, check if we just removed current method,
-					// and correct iterator index
-					if (m == rm)
-						cur_m--;
-				} else {
-					add_mm = false; // do not add it
-				}
-			}
-			if (add_mm)
-				addMethod(mm);
 		}
 
 		// Setup java types for methods
@@ -1662,7 +1636,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if( mmt.m != null && t.equals(mmt.m.type.args[j]) ) continue;
 				ENode be = null;
 				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) ) {
-					if (t instanceof CoreType)
+					if (!t.isReference())
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), Type.getRefTypeForPrimitive((CoreType)t));
 					else
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), t);
@@ -1694,7 +1668,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				cond = new ConstBoolExpr(true);
 			IfElseStat br;
 			if( mmt.uppers[i].uppers.length==0 ) {
-				ENode st = makeDispatchCall(mmt.uppers[i].m.pos,mmt.uppers[i].m,mm);
+				ENode st = makeMMDispatchCall(mmt.uppers[i].m.pos,mm,mmt.uppers[i].m);
 				br = new IfElseStat(0,cond,st,null);
 			} else {
 				br = new IfElseStat(0,cond,makeDispatchStat(mm,mmt.uppers[i]),null);
@@ -1709,7 +1683,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		}
 		if( mmt.m != mm && mmt.m != null) {
 			ENode br;
-			br = makeDispatchCall(mmt.m.pos,mmt.m,mm);
+			br = makeMMDispatchCall(mmt.m.pos,mm,mmt.m);
 			IfElseStat st = dsp;
 			while( st.elseSt != null ) st = (IfElseStat)st.elseSt;
 			st.elseSt = br;
@@ -1717,6 +1691,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return dsp;
 	}
 	
+	private ENode makeMMDispatchCall(int pos, Method dispatcher, Method dispatched) {
+		assert (dispatched != dispatcher);
+		assert (dispatched.isAttached());
+		if (dispatched.ctx_clazz == this) {
+			assert (dispatched.parent == this);
+			return new InlineMethodStat(pos,(Method)~dispatched,dispatcher);
+		} else {
+			return makeDispatchCall(pos,dispatched,dispatcher);
+		}
+	}
+
 	private ENode makeDispatchCall(int pos, Method dispatcher, Method dispatched) {
 		//return new InlineMethodStat(pos,dispatched,dispatcher)
 		ENode obj = null;
@@ -1846,7 +1831,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// generate bridge methods
 			foreach (VTableEntry vte; vtable)
 				autoBridgeMethods(vte);
-			// generate method dispatchers for multimethods
+//			// generate method dispatchers for multimethods
 //			foreach (VTableEntry vte; vtable; vte.overloader == null)
 //				createMethodDispatchers(vte);
 		}
@@ -1854,7 +1839,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		
 		setMembersPreGenerated(true);
 		
-		//combineMethods();
+		combineMethods();
 
 		return true;
 	}
@@ -1881,18 +1866,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (m.isStatic() && !m.isVirtualStatic())
 				continue;
 			MethodType etype = m.etype;
-			foreach (KString name; m.name.getAllNames()) {
-				boolean is_new = true;
-				foreach (VTableEntry vte; vtable) {
-					if (name == vte.name && etype ≈ vte.etype) {
-						is_new = false;
-						if (!vte.methods.contains(m))
-							vte.methods = new List<Method>.Cons(m, vte.methods);
-					}
+			KString name = m.name.name;
+			boolean is_new = true;
+			foreach (VTableEntry vte; vtable) {
+				if (name == vte.name && etype ≈ vte.etype) {
+					is_new = false;
+					if (!vte.methods.contains(m))
+						vte.methods = new List<Method>.Cons(m, vte.methods);
 				}
-				if (is_new)
-					vtable.append(new VTableEntry(name, etype));
 			}
+			if (is_new)
+				vtable.append(new VTableEntry(name, etype));
 		}
 		
 		// process overload
@@ -1902,7 +1886,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				Method m = (Method)n;
 				if (m.isStatic() && !m.isVirtualStatic())
 					continue;
-				if (!m.name.equals(vte.name) || vte.methods.contains(m))
+				if (m.name.name != vte.name || vte.methods.contains(m))
 					continue;
 				MethodType mt = new MethodType(m.etype.args,null);
 				if (mt ≈ et)
@@ -2047,7 +2031,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Type[] args = m.type.args;
 			args = (Type[])Arrays.insert(args,m.ctx_clazz.type,0);
 			MethodType mt = new MethodType(args, m.type.ret);
-			foreach (Method dm; i.members; dm instanceof Method && dm.name.equals(m.name) && dm.type ≈ mt) {
+			foreach (Method dm; i.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;
 				break;
 			}
@@ -2067,7 +2051,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (def == null) {
 			// create an abstract method
 			Method def = vte.methods.head();
-			Kiev.reportWarning(this,"Method "+vte.name+vte.etype+" is not implemented in "+this);
+			if (!this.isAbstract())
+				Kiev.reportWarning(this,"Method "+vte.name+vte.etype+" is not implemented in "+this);
 			m = new Method(vte.name, vte.etype.ret, ACC_ABSTRACT | ACC_PUBLIC | ACC_SYNTHETIC);
 			m.params.copyFrom(def.params);
 			members.append(m);
@@ -2104,7 +2089,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	next_m:
 		foreach (Method m; vte.methods; m != mo) {
 			// check this class have no such a method
-			foreach (DNode x; this.members; x instanceof Method && x.name.equals(m.name)) {
+			foreach (DNode x; this.members; x instanceof Method && x.name.name == m.name.name) {
 				if (x.etype ≈ m.etype)
 					continue next_m;
 			}

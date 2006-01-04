@@ -1427,7 +1427,7 @@ Var PizzaCaseFormalParameter(ASTModifiers modifiers) :
 {
 	(
 		LOOKAHEAD({ !Kiev.javaMode && (getToken(1).image.equals("_")) })
-		id = Name() { tp = null; }
+		id = Name() { tp = new TypeRef(id.pos, Type.tpVoid); }
 	|
 		tp = Type()
 		id = Name()

@@ -54,11 +54,7 @@ public class Var extends LvalDNode implements Named, Typed {
 		public	ENode		init;
 		public	int			bcpos;
 
-		@getter public final Type get$type() {
-			if (this.$view.vtype == null)
-				return Type.tpVoid;
-			return this.$view.vtype.getType();
-		}
+		@getter public final Type get$type() { return this.$view.vtype.getType(); }
 		
 		// is a local var in a rule 
 		public final boolean isLocalRuleVar() {
@@ -134,27 +130,33 @@ public class Var extends LvalDNode implements Named, Typed {
 	public Var() { super(new VarImpl()); }
 	public Var(VarImpl impl) { super(impl); }
 
-	public Var(int pos, KString name, Type type, int flags) {
+	public Var(int pos, KString name, Type type, int flags)
+		require type != null;
+	{
 		this(new VarImpl(pos,flags));
-		assert(type != null);
 		this.name = new NodeName(name);
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(NameRef id, TypeRef vtype, int flags) {
+	public Var(NameRef id, TypeRef vtype, int flags)
+		require vtype != null;
+	{
 		this(new VarImpl(id.pos,flags));
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
 	}
 
-	public Var(VarImpl impl, KString name, Type type) {
+	public Var(VarImpl impl, KString name, Type type)
+		require type != null;
+	{
 		this(impl);
-		assert(type != null);
 		this.name = new NodeName(name);
 		this.vtype = new TypeRef(type);
 	}
 
-	public Var(VarImpl impl, NameRef id, TypeRef vtype) {
+	public Var(VarImpl impl, NameRef id, TypeRef vtype)
+		require vtype != null;
+	{
 		this(impl);
 		this.name = new NodeName(id.name);
 		this.vtype = vtype;
@@ -340,7 +342,7 @@ public final class FormPar extends Var {
 	public FormPar(NameRef id, TypeRef vtype, TypeRef stype, int kind, int flags) {
 		super(new FormParImpl(id.pos,flags),id,vtype);
 		this.kind = kind;
-		this.stype = stype;
+		this.stype = stype == null ? (TypeRef)vtype.copy() : stype;
 	}
 	
 }

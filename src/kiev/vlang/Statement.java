@@ -523,7 +523,7 @@ public class ReturnStat extends ENode {
 		} else {
 			if( expr == null )
 				Kiev.reportError(this,"Return must return a value in non-void method");
-			else if (!expr.getType().isInstanceOf(ctx_method.type.ret))
+			else if (!expr.getType().isInstanceOf(ctx_method.etype.ret) && expr.getType() != Type.tpNull)
 				Kiev.reportError(this,"Return expression is not of type "+ctx_method.type.ret);
 		}
 	}

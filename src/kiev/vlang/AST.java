@@ -585,6 +585,7 @@ public abstract class DNode extends ASTNode {
 		public final boolean isSynchronized()		{ return (flags & ACC_SYNCHRONIZED) != 0; }
 		public final boolean isVolatile()			{ return (flags & ACC_VOLATILE) != 0; }
 		public final boolean isTransient()			{ return (flags & ACC_TRANSIENT) != 0; }
+		public final boolean isBridgeMethod()		{ return (flags & ACC_BRIDGE) != 0; }
 		public final boolean isNative()				{ return (flags & ACC_NATIVE) != 0; }
 		public final boolean isInterface()			{ return (flags & ACC_INTERFACE) != 0; }
 		public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
@@ -637,6 +638,12 @@ public abstract class DNode extends ASTNode {
 			trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
 			if( on ) flags |= ACC_TRANSIENT;
 			else flags &= ~ACC_TRANSIENT;
+			this.$view.callbackChildChanged(nodeattr$flags);
+		}
+		public void setBridgeMethod(boolean on) {
+			trace(Kiev.debugFlags,"Member "+this+" flag ACC_BRIDGE set to "+on+" from "+((flags & ACC_BRIDGE)!=0)+", now 0x"+Integer.toHexString(flags));
+			if( on ) flags |= ACC_BRIDGE;
+			else flags &= ~ACC_BRIDGE;
 			this.$view.callbackChildChanged(nodeattr$flags);
 		}
 		public void setNative(boolean on) {
@@ -698,6 +705,7 @@ public abstract class DNode extends ASTNode {
 	public boolean isSynchronized()		{ return this.getDNodeView().isSynchronized(); }
 	public boolean isVolatile()			{ return this.getDNodeView().isVolatile(); }
 	public boolean isTransient()		{ return this.getDNodeView().isTransient(); }
+	public boolean isBridgeMethod()		{ return this.getDNodeView().isBridgeMethod(); }
 	public boolean isNative()			{ return this.getDNodeView().isNative(); }
 	public boolean isInterface()		{ return this.getDNodeView().isInterface(); }
 	public boolean isAbstract()			{ return this.getDNodeView().isAbstract(); }
@@ -712,6 +720,7 @@ public abstract class DNode extends ASTNode {
 	public void setSynchronized(boolean on){ this.getDNodeView().setSynchronized(on); }
 	public void setVolatile(boolean on)	{ this.getDNodeView().setVolatile(on); }
 	public void setTransient(boolean on)	{ this.getDNodeView().setTransient(on); }
+	public void setBridgeMethod(boolean on){ this.getDNodeView().setBridgeMethod(on); }
 	public void setNative(boolean on)		{ this.getDNodeView().setNative(on); }
 	public void setInterface(boolean on)	{ this.getDNodeView().setInterface(on); }
 	public void setAbstract(boolean on)	{ this.getDNodeView().setAbstract(on); }

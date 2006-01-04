@@ -142,7 +142,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 		// Special meaning of Object.equals and so on
 		// for parametriezed with primitive types classes
 		Type objt = obj.getType();
-		if( objt instanceof CoreType ) {
+		if( !objt.isReference() ) {
 			if( func.jctx_clazz.type ≢ Type.tpObject )
 				Kiev.reportError(this,"Call to unknown method "+func+" of type "+objt);
 			if( func.name == nameObjEquals ) {

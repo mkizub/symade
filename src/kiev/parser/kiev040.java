@@ -1530,7 +1530,7 @@ public abstract class kiev040 implements kiev040Constants {
   Token t; TypeRef tp; NameRef id;
     if (!Kiev.javaMode && (getToken(1).image.equals("_"))) {
       id = Name();
-                              tp = null;
+                              tp = new TypeRef(id.pos, Type.tpVoid);
     } else if (jj_2_27(1)) {
       tp = Type();
       id = Name();

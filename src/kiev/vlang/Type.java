@@ -131,12 +131,12 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( isInstanceOf(t) ) return true;
 		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
-		if( this.isReference() && t instanceof CoreType ) {
+		if( this.isReference() && !t.isReference() ) {
 			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
 			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
 				return true;
 		}
-		if( this.isReference() && t instanceof CoreType ) {
+		if( this.isReference() && !t.isReference() ) {
 			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
 			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
 		}

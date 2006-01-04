@@ -172,7 +172,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
-								if( p.vtype == null || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
+								if( p.type == Type.tpVoid || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
 								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
