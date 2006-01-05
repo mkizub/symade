@@ -1398,6 +1398,7 @@ public class TypeRef extends ENode {
 		}
 		if (s != null && s.isSingleton()) {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
+			return;
 		}
 		throw new CompilerException(this,"Type "+this+" is not a class's case with no fields");
 	}
