@@ -15,8 +15,6 @@ import syntax kiev.Syntax;
 @singleton
 public class ProcessView extends TransfProcessor implements Constants {
 
-	public static final ProcessView $instance = new ProcessView();
-	
 	private ProcessView() {
 		super(Kiev.Ext.View);
 	}

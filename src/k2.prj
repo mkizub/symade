@@ -693,6 +693,7 @@ kiev.vlang.Meta kiev/vlang/Meta kiev\vlang\Meta.java
 kiev.vlang.Meta.MetaImpl kiev/vlang/Meta$MetaImpl kiev\vlang\Meta.java
 kiev.vlang.Meta.MetaView kiev/vlang/Meta$MetaView kiev\vlang\Meta.java
 kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
+kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
 kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java
@@ -831,6 +832,7 @@ kiev.vlang.Shadow.DFI kiev/vlang/Shadow$DFI kiev\vlang\Expr.java
 kiev.vlang.Shadow.ShadowImpl kiev/vlang/Shadow$ShadowImpl kiev\vlang\Expr.java
 kiev.vlang.Shadow.ShadowView kiev/vlang/Shadow$ShadowView kiev\vlang\Expr.java
 kiev.vlang.Signature kiev/vlang/Signature kiev\vlang\Signature.java
+kiev.vlang.SpecialAttrSlot kiev/vlang/SpecialAttrSlot kiev\vlang\Tree.java
 kiev.vlang.StdTypes kiev/vlang/StdTypes kiev\vlang\StdTypes.java
 kiev.vlang.StringConcatExpr kiev/vlang/StringConcatExpr kiev\vlang\Expr.java
 kiev.vlang.StringConcatExpr.DFI kiev/vlang/StringConcatExpr$DFI kiev\vlang\Expr.java

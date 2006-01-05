@@ -190,16 +190,29 @@ public class MetaUnerasable extends Meta {
 	}
 }
 
-@node
-public class MetaSingleton extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.singleton");
+@singleton
+public final class MetaSingleton extends SpecialAttrSlot {
+	public static final String  SNAME = "kiev.stdlib.meta.singleton";
+	public static final KString KNAME = KString.from(SNAME);
+	
+	private MetaSingleton() { super(SNAME,false,Boolean.TYPE); }
+	
+	public void attach(ASTNode node) { this.set(node, Boolean.TRUE); }
+	public void detach(ASTNode node) { this.set(node, Boolean.FALSE); }
 
-	public MetaSingleton() {
-		super(new TypeNameRef(NAME));
+	public void set(ASTNode node, Object value) {
+		boolean val = ((Boolean)value).booleanValue();
+		if (node instanceof Struct)
+			node.setSingleton(val);
+		else if (val)
+			node.addNodeData(new NodeData(KNAME,node));
+		else
+			node.delNodeData(KNAME);
 	}
-
-	public MetaSingleton(TypeRef type) {
-		super(type);
+	public Object get(ASTNode node) {
+		if (node instanceof Struct)
+			return Boolean.valueOf(node.isSingleton());
+		return Boolean.valueOf(node.getNodeData(KNAME) != null);
 	}
 }
 

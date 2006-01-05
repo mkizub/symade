@@ -15,8 +15,6 @@ import syntax kiev.Syntax;
 @singleton
 public class ProcessPizzaCase extends TransfProcessor implements Constants {
 	
-	public static final ProcessPizzaCase $instance = new ProcessPizzaCase();
-	
 	private ProcessPizzaCase() {
 		super(Kiev.Ext.PizzaCase);
 	}
@@ -70,7 +68,7 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return PizzaCaseBackend.$instance;
+			return PizzaCaseBackend;
 		return null;
 	}
 	
@@ -78,8 +76,6 @@ public class ProcessPizzaCase extends TransfProcessor implements Constants {
 
 @singleton
 class PizzaCaseBackend extends BackendProcessor implements Constants {
-
-	public static final PizzaCaseBackend $instance = new PizzaCaseBackend();
 
 	private PizzaCaseBackend() {
 		super(Kiev.Backend.Java15);

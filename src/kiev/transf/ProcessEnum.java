@@ -15,8 +15,6 @@ import syntax kiev.Syntax;
 @singleton
 public class ProcessEnum extends TransfProcessor implements Constants {
 
-	public static final ProcessEnum $instance = new ProcessEnum();
-	
 	private ProcessEnum() {
 		super(Kiev.Ext.Enum);
 	}

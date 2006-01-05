@@ -546,14 +546,14 @@ public final class Kiev {
 	
 	public static TransfProcessor[] transfProcessors			= new TransfProcessor[Ext.values().length];
 	static {
-		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc.$instance;
-		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld.$instance;
-		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld.$instance;
-		transfProcessors[(int)Ext.Enum]				= ProcessEnum.$instance;
-		transfProcessors[(int)Ext.View]				= ProcessView.$instance;
-		transfProcessors[(int)Ext.PizzaCase]		= ProcessPizzaCase.$instance;
-		transfProcessors[(int)Ext.VNode]			= ProcessVNode.$instance;
-		transfProcessors[(int)Ext.DFlow]			= ProcessDFlow.$instance;
+		transfProcessors[(int)Ext.JavaOnly]		= ImportKievSrc;
+		transfProcessors[(int)Ext.VirtualFields]	= ProcessVirtFld;
+		transfProcessors[(int)Ext.PackedFields]	= ProcessPackedFld;
+		transfProcessors[(int)Ext.Enum]				= ProcessEnum;
+		transfProcessors[(int)Ext.View]				= ProcessView;
+		transfProcessors[(int)Ext.PizzaCase]		= ProcessPizzaCase;
+		transfProcessors[(int)Ext.VNode]			= ProcessVNode;
+		transfProcessors[(int)Ext.DFlow]			= ProcessDFlow;
 		setExtension(false, "vnode");
 		setExtension(false, "dflow");
 	}

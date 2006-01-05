@@ -43,7 +43,7 @@ public enum TopLevelPass {
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
-public abstract class NodeData {
+public class NodeData {
 	public final KString	id;
 	public final ASTNode	node;
 	public NodeData			prev;
@@ -1410,8 +1410,9 @@ public class TypeRef extends ENode {
 		}
 		if (s != null && s.isSingleton()) {
 			replaceWithNodeResolve(reqType, new SFldExpr(pos, s.resolveField(nameInstance)));
+			return;
 		}
-		throw new CompilerException(this,"Type "+this+" is not a class's case with no fields");
+		throw new CompilerException(this,"Type "+this+" is not a singleton");
 	}
 	
 	public static Enumeration<Type> linked_elements(NArr<TypeRef> arr) {

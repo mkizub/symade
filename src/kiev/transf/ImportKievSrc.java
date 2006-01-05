@@ -16,8 +16,6 @@ import syntax kiev.Syntax;
 @singleton
 public final class ImportKievSrc extends TransfProcessor implements Constants {
 
-	public static final ImportKievSrc $instance = new ImportKievSrc();
-	
 	private ImportKievSrc() {
 		super(Kiev.Ext.JavaOnly);
 	}
@@ -570,9 +568,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			}
 		}
 		
-		if (me.meta.get(MetaSingleton.NAME) != null)
-			me.setSingleton(true);
-		
 		if (me.isSingleton()) {
 			me.setFinal(true);
 			if (me.resolveField(nameInstance, false) == null) {
@@ -714,7 +709,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return JavaBackend.$instance;
+			return JavaBackend;
 		return null;
 	}
 	
@@ -723,8 +718,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 @singleton
 class JavaBackend extends BackendProcessor {
 
-	public static final JavaBackend $instance = new JavaBackend();
-	
 	private JavaBackend() {
 		super(Kiev.Backend.Java15);
 	}

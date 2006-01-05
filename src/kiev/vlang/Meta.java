@@ -221,8 +221,6 @@ public class Meta extends ENode {
 			m = (Meta)this.copyTo(new MetaPacker());
 		if (name == MetaUnerasable.NAME && !(this instanceof MetaUnerasable))
 			m = (Meta)this.copyTo(new MetaUnerasable());
-		if (name == MetaSingleton.NAME  && !(this instanceof MetaSingleton))
-			m = (Meta)this.copyTo(new MetaSingleton());
 		if (name == MetaForward.NAME    && !(this instanceof MetaForward))
 			m = (Meta)this.copyTo(new MetaForward());
 		if (m != this) {

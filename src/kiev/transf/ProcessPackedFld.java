@@ -15,8 +15,6 @@ import syntax kiev.Syntax;
 @singleton
 public final class ProcessPackedFld extends TransfProcessor implements Constants {
 	
-	public static final ProcessPackedFld $instance = new ProcessPackedFld();
-	
 	private ProcessPackedFld() {
 		super(Kiev.Ext.PackedFields);
 	}
@@ -67,7 +65,7 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 	
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return JavaPackedFldBackend.$instance;
+			return JavaPackedFldBackend;
 		return null;
 	}
 	
@@ -76,8 +74,6 @@ public final class ProcessPackedFld extends TransfProcessor implements Constants
 @singleton
 class JavaPackedFldBackend extends BackendProcessor implements Constants {
 	
-	public static final JavaPackedFldBackend $instance = new JavaPackedFldBackend();
-
 	private static final int[] masks =
 		{	0,
 			0x1       ,0x3       ,0x7       ,0xF       ,

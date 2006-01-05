@@ -14,8 +14,6 @@ import static kiev.stdlib.Debug.*;
 @singleton
 public final class ProcessDFlow extends TransfProcessor implements Constants {
 
-	public static final ProcessDFlow $instance = new ProcessDFlow();
-	
 	public static final KString mnNode				= KString.from("kiev.vlang.dflow"); 
 	public static final KString nameNArr			= KString.from("kiev.vlang.NArr"); 
 	public static final KString nameNode			= KString.from("kiev.vlang.ASTNode"); 

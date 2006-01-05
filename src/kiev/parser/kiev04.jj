@@ -242,6 +242,8 @@ public abstract class kiev040 {
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
+		foreach (SpecialAttrSlot sa; modifiers.specials)
+			sa.attach(clazz);
 		
 		return clazz;
 	}
@@ -510,6 +512,7 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 | < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
+| < SINGLETON: "@singleton" >
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
@@ -830,6 +833,7 @@ ASTModifiers Modifiers() :
 {	{ ASTModifiers n = new ASTModifiers(); }
 	(
 		n.annotations	+= Annotation()
+	|	n				+= SpecialAnnotation()
 	)*
 	(
 		modifier		 = Modifier() {n.modifier |= modifier; }
@@ -1227,6 +1231,12 @@ int AccessSpec() :
 |	<WRITE_ONLY>	{ return 1; }
 |	<READ_WRITE>	{ return 3; }
 |	<NO_READ_WRITE>	{ return 0; }
+}
+
+SpecialAttrSlot SpecialAnnotation() :
+{}
+{
+	"@singleton" { return MetaSingleton; }
 }
 
 NameRef KeywordAsName() :

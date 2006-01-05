@@ -14,8 +14,6 @@ import static kiev.stdlib.Debug.*;
 @singleton
 public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
-	public static final ProcessVirtFld $instance = new ProcessVirtFld();
-	
 	private ProcessVirtFld() {
 		super(Kiev.Ext.VirtualFields);
 	}
@@ -147,7 +145,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 	
 	public BackendProcessor getBackend(Kiev.Backend backend) {
 		if (backend == Kiev.Backend.Java15)
-			return JavaVirtFldBackend.$instance;
+			return JavaVirtFldBackend;
 		return null;
 	}
 	
@@ -155,8 +153,6 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 
 @singleton
 class JavaVirtFldBackend extends BackendProcessor implements Constants {
-
-	public static final JavaVirtFldBackend $instance = new JavaVirtFldBackend();
 
 	private JavaVirtFldBackend() {
 		super(Kiev.Backend.Java15);
