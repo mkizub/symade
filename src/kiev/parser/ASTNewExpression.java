@@ -147,7 +147,7 @@ public class ASTNewExpression extends ENode {
 				}
 				init.pos = pos;
 				init.body = new BlockStat(pos);
-				init.setPublic(true);
+				init.setPublic();
 				clazz.addMethod(init);
 			}
 		}

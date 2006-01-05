@@ -286,7 +286,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				}
 				body.stats.append(new ReturnStat(f.pos,null));
 			}
-			else if (s.isView() && !f.isStatic()) {
+			else if (s.isStructView() && !f.isStatic()) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				set_var.body = body;
 				Field view_fld = s.view_of.getType().getStruct().resolveField(f.name.name);
@@ -327,7 +327,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				get_var.body = body;
 				body.stats.add(new ReturnStat(f.pos,new IFldExpr(f.pos,new ThisExpr(0),f,true)));
 			}
-			else if (s.isView() && !f.isStatic()) {
+			else if (s.isStructView() && !f.isStatic()) {
 				BlockStat body = new BlockStat(f.pos,ENode.emptyArray);
 				get_var.body = body;
 				ENode val = new IFldExpr(f.pos,

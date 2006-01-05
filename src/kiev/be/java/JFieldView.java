@@ -32,7 +32,7 @@ public final view JFieldView of FieldImpl extends JLvalDNodeView {
 	
 	@getter public final JMethodView[] get$invs() { return (JMethodView[])this.$view.invs.toJViewArray(JMethodView.class); }
 
-	public final boolean isVirtual()		{ return this.$view.is_fld_virtual; }
+	public final boolean isVirtual()		{ return this.$view.is_virtual; }
 	public final boolean isEnumField()		{ return this.$view.is_fld_enum; }
 	public final boolean isPackerField()	{ return this.$view.is_fld_packer; }
 	public final boolean isPackedField()	{ return this.$view.is_fld_packed; }

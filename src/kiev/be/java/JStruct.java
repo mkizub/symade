@@ -40,20 +40,19 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
 	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 
-	public final boolean isClazz()					{ return !isPackage() && !isInterface(); }
-	public final boolean isPackage()				{ return this.$view.is_struct_package; }
+	public final boolean isClazz()					{ return this.getStruct().isClazz(); }
+	public final boolean isPackage()				{ return this.getStruct().isPackage(); }
 	public final boolean isPizzaCase()				{ return this.$view.is_struct_pizza_case; }
 	public final boolean isLocal()					{ return this.$view.is_struct_local; }
 	public final boolean isAnonymouse()			{ return this.$view.is_struct_anomymouse; }
 	public final boolean isHasCases()				{ return this.$view.is_struct_has_pizza_cases; }
-	public final boolean isVerified()				{ return this.$view.is_struct_verified; }
 	public final boolean isMembersGenerated()		{ return this.$view.is_struct_members_generated; }
 	public final boolean isMembersPreGenerated()	{ return this.$view.is_struct_pre_generated; }
 	public final boolean isStatementsGenerated()	{ return this.$view.is_struct_statements_generated; }
 	public final boolean isGenerated()				{ return this.$view.is_struct_generated; }
 	public final boolean isAnnotation()			{ return this.$view.is_struct_annotation; }
 	public final boolean isEnum()					{ return this.$view.is_struct_enum; }
-	public final boolean isSyntax()					{ return this.$view.is_struct_syntax; }
+	public final boolean isSyntax()					{ return this.getStruct().isSyntax(); }
 	public final boolean isLoadedFromBytecode()	{ return this.$view.is_struct_bytecode; }
 
 	@getter public JStructView get$child_jctx_clazz() { return this; }
@@ -227,9 +226,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			constPool.addAsciiCP(f.name);
 			constPool.addAsciiCP(f.type.getJType().java_signature);
 
-			if( f.isAccessedFromInner()) {
-				f.setPrivate(false);
-			}
+			if( f.isAccessedFromInner())
+				f.getDNode().setPkgPrivate();
 			if (f.meta.size() > 0) f.addAttr(new RVMetaAttr(f.meta));
 			if (f.isStatic() && f.init != null && f.init.isConstantExpr()) {
 				Object co = f.init.getConstValue();
@@ -250,9 +248,8 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 			try {
 				m.generate(constPool);
 
-				if( m.isAccessedFromInner()) {
-					m.setPrivate(false);
-				}
+				if( m.isAccessedFromInner())
+					m.getDNode().setPkgPrivate();
 
 				JWBCConditionView[] conditions = m.conditions;
 				for(int j=0; j < conditions.length; j++) {

@@ -37,17 +37,8 @@ public class Bytecoder implements JConstants {
 				+" but class "+bcclazz.getClazzName()+" found");
 		}
 
-		int fl = cl.getFlags();
-		// Clean java flags
-		fl &= ~JAVA_ACC_MASK;
 		// Clean some structure flags
-		fl &= ~(ACC_PACKAGE|ACC_VIRTUAL|ACC_PIZZACASE|ACC_ENUM|ACC_SYNTAX);
-		fl |= bcclazz.flags;
-		if ((fl & (ACC_PUBLIC | ACC_PRIVATE)) == (ACC_PUBLIC | ACC_PRIVATE)) {
-			fl &= ~ACC_PRIVATE;
-			fl |=  ACC_PACKAGE;
-		}
-		cl.flags = fl;
+		cl.flags = bcclazz.flags;
 		cl.acc.verifyAccessDecl(cl);
 
 		cl.setResolved(true);
@@ -178,11 +169,12 @@ public class Bytecoder implements JConstants {
 		MethodType mtype = (MethodType)Signature.getType(m_type);
 		MethodType jtype = mtype;
 		if( m == null ) {
-			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
-				mtype = new MethodType(mtype.args,Type.tpRule);
-				m = new RuleMethod(m_name,m_flags);
-			}
-			else if (m_name == nameInit || m_name == nameClassInit)
+//			if( (m_flags & ACC_RULEMETHOD) != 0 ) {
+//				mtype = new MethodType(mtype.args,Type.tpRule);
+//				m = new RuleMethod(m_name,m_flags);
+//			}
+//			else
+			if (m_name == nameInit || m_name == nameClassInit)
 				m = new Constructor(m_flags);
 			else
 				m = new Method(m_name,mtype.ret,m_flags);
@@ -512,9 +504,9 @@ public class Bytecoder implements JConstants {
 		bcclazz.pool = writeConstPool();
 
 	    // Access bitflags
-	    if( !cl.isInterface() )
-	    	cl.setSuper(true);
 		bcclazz.flags = cl.getJavaFlags();
+	    if( !cl.isInterface() )
+	    	bcclazz.flags |= ACC_SUPER;
 
 		// This class name
 		KString cl_sig = cl.type.getJType().java_signature;

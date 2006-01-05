@@ -30,24 +30,13 @@ public interface AccessFlags {
 	// Valid for bytecode mask
 	public static final int JAVA_ACC_MASK			= 0xFFFF;
 
-	// Struct specific
-	public static final int ACC_PACKAGE			= 1 << 18;
-	public static final int ACC_PIZZACASE			= 1 << 19;
-	public static final int ACC_SINGLRTON			= 1 << 20;
-	public static final int ACC_SYNTAX				= 1 << 21;
-	public static final int ACC_WRAPPER			= 1 << 22;
-	public static final int ACC_VIEW				= 1 << 23;
-	public static final int ACC_BYTECODE			= 1 << 24; // loaded from bytecode
-
-	// Method specific
-	public static final int ACC_MULTIMETHOD		= 1 << 16; // temporary used with java flags
-	public static final int ACC_RULEMETHOD			= 1 << 18; // temporary used with java flags
-	public static final int ACC_INVARIANT_METHOD	= 1 << 19; // temporary used with java flags
-
-	// Var/field specific
 	public static final int ACC_FORWARD			= 1 << 16; // temporary used with java flags
 	public static final int ACC_VIRTUAL			= 1 << 17; // temporary used with java flags
+	public static final int ACC_TYPE_UNERASABLE	= 1 << 18; // temporary used with java flags
 
+	// Struct specific
+	public static final int ACC_PACKAGE			= ACC_PRIVATE | ACC_PUBLIC;
+	public static final int ACC_SYNTAX				= ACC_PRIVATE | ACC_PROTECTED;
 }
 
 

@@ -168,16 +168,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
 
-		// multimethod	
-		public final boolean isMultiMethod() {
-			return this.$view.is_mth_multimethod;
-		}
-		public final void setMultiMethod(boolean on) {
-			if (this.$view.is_mth_multimethod != on) {
-				this.$view.is_mth_multimethod = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// virtual static method	
 		public final boolean isVirtualStatic() {
 			return this.$view.is_mth_virtual_static;
@@ -199,15 +189,9 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
-		// logic rule method	
+		// logic rule method
 		public final boolean isRuleMethod() {
-			return this.$view.is_mth_rule;
-		}
-		public final void setRuleMethod(boolean on) {
-			if (this.$view.is_mth_rule != on) {
-				this.$view.is_mth_rule = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
+			return this.$view instanceof RuleMethod.RuleMethodImpl;
 		}
 		// method with attached operator	
 		public final boolean isOperatorMethod() {
@@ -369,9 +353,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@getter public Method get$child_ctx_method() { return this; }
 	
-	// multimethod	
-	public boolean isMultiMethod() { return this.getMethodView().isMultiMethod(); }
-	public void setMultiMethod(boolean on) { this.getMethodView().setMultiMethod(on); }
 	// virtual static method	
 	public boolean isVirtualStatic() { return this.getMethodView().isVirtualStatic(); }
 	public void setVirtualStatic(boolean on) { this.getMethodView().setVirtualStatic(on); }
@@ -380,7 +361,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public void setVarArgs(boolean on) { this.getMethodView().setVarArgs(on); }
 	// logic rule method	
 	public boolean isRuleMethod() { return this.getMethodView().isRuleMethod(); }
-	public void setRuleMethod(boolean on) { this.getMethodView().setRuleMethod(on); }
 	// method with attached operator	
 	public boolean isOperatorMethod() { return this.getMethodView().isOperatorMethod(); }
 	public void setOperatorMethod(boolean on) { this.getMethodView().setOperatorMethod(on); }
@@ -659,7 +639,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
 		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
 		else if( clazz.isInterface() ) {
-			setPublic(true);
+			setPublic();
 			if( pbody == null ) setAbstract(true);
 		}
 

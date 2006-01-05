@@ -69,11 +69,11 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		
 		// is a virtual field
 		public final boolean isVirtual() {
-			return this.$view.is_fld_virtual;
+			return this.$view.is_virtual;
 		}
 		public final void setVirtual(boolean on) {
-			if (this.$view.is_fld_virtual != on) {
-				this.$view.is_fld_virtual = on;
+			if (this.$view.is_virtual != on) {
+				this.$view.is_virtual = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}

@@ -210,11 +210,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		foreach (DNode dn; me.members; dn.meta != null)
 			dn.meta.verify();
 		
+		
 		if (me.isAnnotation() || me.isEnum() || me.isSyntax()) {
 			if( me.args.length > 0 ) {
 				Kiev.reportError(me,"Type parameters are not allowed for "+me);
 				me.args.delAll();
 			}
+			me.setTypeUnerasable(false);
 		}
 		else if!(me.parent instanceof FileUnit) {
 			if (!me.isStatic()) {
@@ -225,8 +227,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					TypeDef td = new TypeDef(
 						new NameRef(me.pos,KString.from(nameThis+"$"+n+"$type")),
 						new TypeRef(pkg.type));
-					//td.meta = new MetaSet();
-					//td.meta.add(new MetaForward());
 					me.members.append(td);
 					Field f = new Field(
 						KString.from(nameThis+"$"+n),
@@ -236,6 +236,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					me.members.append(f);
 				}
 			}
+		}
+		
+		if (me.isTypeUnerasable()) {
+			foreach (TypeDef a; me.args)
+				a.setTypeUnerasable(true);
 		}
 
 		if (me.isSyntax()) {
@@ -353,7 +358,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			sup_ref.getType();
 		}
 		else if (clazz.isSyntax()) {
-			clazz.setPrivate(true);
 			clazz.setAbstract(true);
 			clazz.setMembersGenerated(true);
 			clazz.setStatementsGenerated(true);
@@ -376,9 +380,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		
 		clazz.type.bindings(); // update the type
 		if (clazz.type.isRtArgumented()) {
-			if (clazz.getMetaUnerasable() == null) {
+			if (!clazz.isTypeUnerasable()) {
 				Kiev.reportWarning(clazz,"Type "+clazz+" must be annotated as @unerasable");
-				clazz.meta.add(new MetaUnerasable());
+				clazz.setTypeUnerasable(true);
+				foreach (TypeDef a; clazz.args)
+					a.setTypeUnerasable(true);
 			}
 			clazz.interfaces.append(new TypeRef(Type.tpTypeInfoInterface));
 		}
@@ -426,7 +432,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if( me.isPackage() ) m.setStatic(true);
 				if( m.isPrivate() ) m.setFinal(true);
 				if( me.isClazz() && me.isFinal() ) m.setFinal(true);
-				else if( me.isInterface() ) 	m.setPublic(true);
+				else if( me.isInterface() ) 	m.setPublic();
 				m.acc.verifyAccessDecl(m);
 			}
 			else if( members[i] instanceof Method ) {
@@ -436,10 +442,9 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if( m.isPrivate() ) m.setFinal(false);
 				else if( me.isClazz() && me.isFinal() ) m.setFinal(true);
 				else if( me.isInterface() ) {
-					m.setPublic(true);
+					m.setPublic();
 				}
 				if( m.name.equals(nameInit) ) {
-					m.setNative(false);
 					m.setAbstract(false);
 					m.setSynchronized(false);
 					m.setFinal(false);
@@ -474,7 +479,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				// TODO: check flags for fields
 				if( me.isPackage() )
 					f.setStatic(true);
-				if( me.isView() && !f.isStatic()) {
+				if( me.isStructView() && !f.isStatic()) {
 					f.setFinal(true);
 					f.setAbstract(true);
 					f.setVirtual(true);
@@ -486,7 +491,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						f.setStatic(true);
 						f.setFinal(true);
 					}
-					f.setPublic(true);
+					f.setPublic();
 				}
 				f.acc.verifyAccessDecl(f); // recheck access
 				Type ftype = fdecl.type;
@@ -607,7 +612,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						Kiev.reportError(m, "Annotation methods may not have bodies");
 					if (m.conditions.length > 0)
 						Kiev.reportError(m, "Annotation methods may not have work-by-contruct conditions");
-					m.setPublic(true);
+					m.setPublic();
 					m.setAbstract(true);
 					m.pass3();
 					if (m.type.ret ≡ Type.tpVoid || m.type.ret ≡ Type.tpRule)

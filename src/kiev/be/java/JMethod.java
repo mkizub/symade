@@ -51,10 +51,9 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	@getter public final JFieldView[]			get$violated_fields()	{ return (JFieldView[])this.$view.violated_fields.toJViewArray(JFieldView.class); }
 	@getter public final JWBCConditionView[]	get$conditions()		{ return (JWBCConditionView[])this.$view.conditions.toJViewArray(JWBCConditionView.class); }
 
-	public final boolean isMultiMethod()		{ return this.$view.is_mth_multimethod; }
 	public final boolean isVirtualStatic()		{ return this.$view.is_mth_virtual_static; }
 	public final boolean isVarArgs()			{ return this.$view.is_mth_varargs; }
-	public final boolean isRuleMethod()		{ return this.$view.is_mth_rule; }
+	public final boolean isRuleMethod()		{ return this.$view instanceof RuleMethod.RuleMethodImpl; }
 	public final boolean isOperatorMethod()	{ return this.$view.is_mth_operator; }
 	public final boolean isNeedFieldInits()	{ return this.$view.is_mth_need_fields_init; }
 	public final boolean isInvariantMethod()	{ return this.$view.is_mth_invariant; }

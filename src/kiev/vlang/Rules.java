@@ -77,10 +77,10 @@ public class RuleMethod extends Method {
 	}
 
 	public RuleMethod(NameRef id, int fl) {
-		super(new RuleMethodImpl(id.pos, fl | ACC_RULEMETHOD), id.name, new TypeRef(Type.tpRule));
+		super(new RuleMethodImpl(id.pos, fl), id.name, new TypeRef(Type.tpRule));
 	}
 	public RuleMethod(KString name, int fl) {
-		super(new RuleMethodImpl(0, fl | ACC_RULEMETHOD), name, Type.tpRule);
+		super(new RuleMethodImpl(0, fl), name, Type.tpRule);
 	}
 
 	public int allocNewBase(int n) {
@@ -148,7 +148,7 @@ public class RuleMethod extends Method {
 		if( (flags & ACC_PRIVATE) != 0 ) setFinal(false);
 		else if( clazz.isClazz() && clazz.isFinal() ) setFinal(true);
 		else if( clazz.isInterface() ) {
-			setPublic(true);
+			setPublic();
 			if( pbody == null ) setAbstract(true);
 		}
 		params.insert(0, new FormPar(pos,namePEnv,Type.tpRule,FormPar.PARAM_RULE_ENV,ACC_FORWARD|ACC_FINAL));

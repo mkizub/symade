@@ -99,17 +99,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			return !isPackage() && !isInterface();
 		}
 		
-		// package	
-		public final boolean isPackage()  {
-			return this.$view.is_struct_package;
-		}
-		public final void setPackage(boolean on) {
-			assert(!on || (!isInterface() && ! isEnum() && !isSyntax()));
-			if (this.$view.is_struct_package != on) {
-				this.$view.is_struct_package = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// a pizza case	
 		public final boolean isPizzaCase() {
 			return this.$view.is_struct_pizza_case;
@@ -157,16 +146,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public final void setHasCases(boolean on) {
 			if (this.$view.is_struct_has_pizza_cases != on) {
 				this.$view.is_struct_has_pizza_cases = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// verified
-		public final boolean isVerified() {
-			return this.$view.is_struct_verified;
-		}
-		public final void setVerified(boolean on) {
-			if (this.$view.is_struct_verified != on) {
-				this.$view.is_struct_verified = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -250,17 +229,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public final void setEnum(boolean on) {
 			if (this.$view.is_struct_enum != on) {
 				this.$view.is_struct_enum = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
-		// kiev syntax
-		public final boolean isSyntax() {
-			return this.$view.is_struct_syntax;
-		}
-		public final void setSyntax(boolean on) {
-			assert(!on || (!isPackage() && ! isEnum()));
-			if (this.$view.is_struct_syntax != on) {
-				this.$view.is_struct_syntax = on;
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
@@ -379,7 +347,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public boolean isClazz() { return getStructView().isClazz(); }
 	// package	
 	public boolean isPackage() { return getStructView().isPackage(); }
-	public void setPackage(boolean on) { getStructView().setPackage(on); }
+	public void setPackage() { getStructView().setPackage(); }
 	// a pizza class case	
 	public boolean isPizzaCase() { return getStructView().isPizzaCase(); }
 	public void setPizzaCase(boolean on) { getStructView().setPizzaCase(on); }
@@ -395,9 +363,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	// has pizza cases
 	public boolean isHasCases() { return getStructView().isHasCases(); }
 	public void setHasCases(boolean on) { getStructView().setHasCases(on); }
-	// verified
-	public boolean isVerified() { return getStructView().isVerified(); }
-	public void setVerified(boolean on) { getStructView().setVerified(on); }
 	// indicates that structure members were generated
 	public boolean isMembersGenerated() { return getStructView().isMembersGenerated(); }
 	public void setMembersGenerated(boolean on) { getStructView().setMembersGenerated(on); }
@@ -422,9 +387,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	// java enum
 	public boolean isEnum() { return getStructView().isEnum(); }
 	public void setEnum(boolean on) { getStructView().setEnum(on); }
-	// kiev syntax
-	public boolean isSyntax() { return getStructView().isSyntax(); }
-	public void setSyntax(boolean on) { getStructView().setSyntax(on); }
 	// structure was loaded from bytecode
 	public boolean isLoadedFromBytecode() { return getStructView().isLoadedFromBytecode(); }
 	public void setLoadedFromBytecode(boolean on) { getStructView().setLoadedFromBytecode(on); }
@@ -449,12 +411,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 //		return (MetaPizzaCase)this.meta.get(MetaPizzaCase.NAME);
 		foreach (Meta m; meta.metas; m instanceof MetaPizzaCase)
 			return (MetaPizzaCase)m;
-		return null;
-	}
-
-	public MetaUnerasable getMetaUnerasable() {
-		foreach (Meta m; meta.metas; m instanceof MetaUnerasable)
-			return (MetaUnerasable)m;
 		return null;
 	}
 
@@ -994,7 +950,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				ClazzName.fromOuterAndName(this,nameClTypeInfo,false,true),this,flags,true
 				);
 			members.add(typeinfo_clazz);
-			typeinfo_clazz.setPublic(true);
+			typeinfo_clazz.setPublic();
 			typeinfo_clazz.setResolved(true);
 			if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
 				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
@@ -1193,16 +1149,16 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 							init.params.append(new FormPar(pos,nameEnumOrdinal,Type.tpInt,FormPar.PARAM_NORMAL,0));
 							//init.params.append(new FormPar(pos,KString.from("text"),Type.tpString,FormPar.PARAM_NORMAL,0));
 						}
-						if (isView()) {
+						if (isStructView()) {
 							init.params.append(new FormPar(pos,nameView,view_of.getType(),FormPar.PARAM_NORMAL,ACC_FINAL));
 						}
 					}
 					init.pos = pos;
 					init.body = new BlockStat(pos);
 					if (isEnum() || isSingleton())
-						init.setPrivate(true);
+						init.setPrivate();
 					else
-						init.setPublic(true);
+						init.setPublic();
 					addMethod(init);
 				}
 			}
@@ -1412,7 +1368,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						call_super.args.add(new ASTIdentifier(pos, nameEnumOrdinal));
 						//call_super.args.add(new ASTIdentifier(pos, KString.from("text")));
 					}
-					else if( isView() && super_type.getStruct().isView() ) {
+					else if( isStructView() && super_type.getStruct().isStructView() ) {
 						call_super.args.add(new ASTIdentifier(pos, nameView));
 					}
 					stats.insert(new ExprStat(call_super),0);
@@ -1428,7 +1384,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 						),p++
 					);
 				}
-				if (isView()) {
+				if (isStructView()) {
 					foreach (FormPar fp; m.params; fp.name.equals(nameView)) {
 						stats.insert(
 							new ExprStat(pos,
@@ -1461,15 +1417,16 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	protected void combineMethods() {
+		List<Method> multimethods = List.Nil;
 		for (int cur_m=0; cur_m < members.length; cur_m++) {
 			if !(members[cur_m] instanceof Method)
 				continue;
 			Method m = (Method)members[cur_m];
 			if (m.name.equals(nameClassInit) || m.name.equals(nameInit))
 				continue;
-			if (m.isBridgeMethod())
+			if (m.isMethodBridge())
 				continue;
-			if( m.isMultiMethod() ) {
+			if( multimethods.contains(m) ) {
 				trace(Kiev.debugMultiMethod,"Multimethod "+m+" already processed...");
 				continue; // do not process method twice...
 			}
@@ -1523,12 +1480,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
 				// mm will have the base type - so, no super. call will be done
-				if (overwr != null && overwr.isMultiMethod()) {
-					mm.setMultiMethod(true);
-					trace(Kiev.debugMultiMethod,"no need to dispatch "+m+" - just mark it as multimethod");
-				} else {
-					trace(Kiev.debugMultiMethod,"no need to dispatch "+m+" - not a multimethod");
-				}
+				trace(Kiev.debugMultiMethod,"no need to dispatch "+m);
 				continue;
 			}
 
@@ -1598,7 +1550,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				else
 					mm.body = body;
 			}
-			mm.setMultiMethod(true);
+			multimethods = new List<Method>.Cons(mm, multimethods);
 		}
 
 		// Setup java types for methods
@@ -2145,7 +2097,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 									" and "+mi.name+Type.getRealType(me.type,mi.type)+" equals");
 							if( !mj.isPublic() ) {
 								Kiev.reportWarning(me,"Method "+s+"."+mj+" must be declared public");
-								mj.setPublic(true);
+								mj.setPublic();
 							}
 							found = true;
 							break scan_class;

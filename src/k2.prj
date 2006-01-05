@@ -694,6 +694,7 @@ kiev.vlang.Meta.MetaImpl kiev/vlang/Meta$MetaImpl kiev\vlang\Meta.java
 kiev.vlang.Meta.MetaView kiev/vlang/Meta$MetaView kiev\vlang\Meta.java
 kiev.vlang.MetaAlias kiev/vlang/MetaAlias kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaAttrSlot kiev/vlang/MetaAttrSlot kiev\vlang\Tree.java
+kiev.vlang.MetaFlag kiev/vlang/MetaFlag kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaForward kiev/vlang/MetaForward kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacked kiev/vlang/MetaPacked kiev\vlang\MetaSpecial.java
 kiev.vlang.MetaPacker kiev/vlang/MetaPacker kiev\vlang\MetaSpecial.java

@@ -29,7 +29,6 @@ public interface StdTypes {
 	public static final int flArgumented		= 1 << 11;
 	public static final int flRtArgumented		= 1 << 12;
 	public static final int flArgVirtual		= 1 << 13;
-	public static final int flArgForward		= 1 << 14;
 
 	public static final BaseType tpEnv;
 	public static final CoreType tpAny;
@@ -140,9 +139,9 @@ public interface StdTypes {
 		tpCloneableClazz.setInterface(true);
 
 		
-		tpWrapperArg = new ArgumentType(KString.from("_boxed_"),null,Type.tpObject, false, false, false);
+		tpWrapperArg = new ArgumentType(KString.from("_boxed_"),null,Type.tpObject, false, false);
 		
-		tpArrayArg = new ArgumentType(KString.from("_elem_"),null,Type.tpAny, false, false, false);
+		tpArrayArg = new ArgumentType(KString.from("_elem_"),null,Type.tpAny, false, false);
 		tpArray					= ArrayType.newArrayType(Type.tpAny);
 		tpArray.flags			|= flResolved | flReference | flArray;
 
@@ -233,7 +232,7 @@ public interface StdTypes {
 
 		tpUnattachedArgs = new ArgumentType[128] ;
 		for (int i=0; i < tpUnattachedArgs.length; i++)
-			tpUnattachedArgs[i] = new ArgumentType(KString.from("_"+Integer.toHexString(i)+"_"),null,Type.tpAny, false, false, false);
+			tpUnattachedArgs[i] = new ArgumentType(KString.from("_"+Integer.toHexString(i)+"_"),null,Type.tpAny, false, false);
 	}
 }
 

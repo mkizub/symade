@@ -82,13 +82,15 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,16 boolean is_struct_local;
 		public packed:1,compileflags,17 boolean is_struct_anomymouse;
 		public packed:1,compileflags,18 boolean is_struct_has_pizza_cases;
-		public packed:1,compileflags,19 boolean is_struct_verified;
-		public packed:1,compileflags,20 boolean is_struct_members_generated;
-		public packed:1,compileflags,21 boolean is_struct_pre_generated;
-		public packed:1,compileflags,22 boolean is_struct_statements_generated;
-		public packed:1,compileflags,23 boolean is_struct_generated;
-		public packed:1,compileflags,24 boolean is_struct_type_resolved;
-		public packed:1,compileflags,25 boolean is_struct_args_resolved;
+		public packed:1,compileflags,19 boolean is_struct_members_generated;
+		public packed:1,compileflags,20 boolean is_struct_pre_generated;
+		public packed:1,compileflags,21 boolean is_struct_statements_generated;
+		public packed:1,compileflags,22 boolean is_struct_generated;
+		public packed:1,compileflags,23 boolean is_struct_type_resolved;
+		public packed:1,compileflags,24 boolean is_struct_args_resolved;
+		public packed:1,compileflags,25 boolean is_struct_bytecode;	// struct was loaded from bytecode
+		public packed:1,compileflags,26 boolean is_struct_singleton;
+		public packed:1,compileflags,27 boolean is_struct_pizza_case;
 		
 		// Expression flags
 		public packed:1,compileflags,16 boolean is_expr_use_no_proxy;
@@ -111,6 +113,7 @@ public abstract class ASTNode implements Constants {
 		public packed:1,compileflags,19 boolean is_mth_need_fields_init;
 		public packed:1,compileflags,20 boolean is_mth_local;
 		public packed:1,compileflags,21 boolean is_mth_dispatcher;
+		public packed:1,compileflags,22 boolean is_mth_invariant;
 		
 		// Var/field
 		public packed:1,compileflags,16 boolean is_init_wrapper;
@@ -540,24 +543,33 @@ public abstract class DNode extends ASTNode {
 		     public		int			flags;
 		@att public		MetaSet		meta;
 
+//		public packed:1,flags, 0 boolean is_acc_public;
+//		public packed:1,flags, 1 boolean is_acc_private;
+//		public packed:1,flags, 2 boolean is_acc_protected;
+		public packed:3,flags, 0 int     is_access;
+
+		public packed:1,flags, 3 boolean is_static;
+		public packed:1,flags, 4 boolean is_final;
+		public packed:1,flags, 5 boolean is_mth_synchronized;	// method
+		public packed:1,flags, 5 boolean is_struct_super;		// struct
+		public packed:1,flags, 6 boolean is_fld_volatile;		// field
+		public packed:1,flags, 6 boolean is_mth_bridge;		// method
+		public packed:1,flags, 7 boolean is_fld_transient;		// field
 		public packed:1,flags, 7 boolean is_mth_varargs;		// method
-		public packed:1,flags,13 boolean is_struct_annotation;	// struct
+		public packed:1,flags, 8 boolean is_mth_native;
+		public packed:1,flags, 9 boolean is_struct_interface;
+		public packed:1,flags,10 boolean is_abstract;
+		public packed:1,flags,11 boolean is_math_strict;		// strict math
+		public packed:1,flags,12 boolean is_synthetic;			// any decl that was generated (not in sources)
+		public packed:1,flags,13 boolean is_struct_annotation;
 		public packed:1,flags,14 boolean is_struct_enum;		// struct
 		public packed:1,flags,14 boolean is_fld_enum;			// field
+		
 		// Flags temporary used with java flags
-		public packed:1,flags,16 boolean is_forward;			// var/field/typedef
-		public packed:1,flags,17 boolean is_fld_virtual;		// field
-		public packed:1,flags,16 boolean is_mth_multimethod;	// method
-		public packed:1,flags,18 boolean is_mth_rule;			// method
-		public packed:1,flags,19 boolean is_mth_invariant;		// method
-		public packed:1,flags,18 boolean is_struct_package;	// struct
-		public packed:1,flags,19 boolean is_struct_pizza_case;	// struct
-		public packed:1,flags,20 boolean is_struct_singleton;	// struct
-		public packed:1,flags,21 boolean is_struct_syntax;		// struct
-		public packed:1,flags,22 boolean is_struct_wrapper;	// struct
-		public packed:1,flags,23 boolean is_struct_view;		// struct
-		public packed:1,flags,24 boolean is_struct_bytecode;	// struct was loaded from bytecode
-
+		public packed:1,flags,16 boolean is_forward;			// var/field/method, type is wrapper
+		public packed:1,flags,17 boolean is_virtual;			// var/field, method is 'static virtual', struct is 'view'
+		public packed:1,flags,18 boolean is_type_unerasable;	// typedecl, method/struct as parent of typedef
+		
 		public DNodeImpl() {}
 		public DNodeImpl(int pos) {
 			super(pos);
@@ -570,105 +582,149 @@ public abstract class DNode extends ASTNode {
 	@nodeview
 	public static view DNodeView of DNodeImpl extends NodeView {
 
+		private static final int MASK_ACC_DEFAULT   = 0;
+		private static final int MASK_ACC_PUBLIC    = ACC_PUBLIC;
+		private static final int MASK_ACC_PRIVATE   = ACC_PRIVATE;
+		private static final int MASK_ACC_PROTECTED = ACC_PROTECTED;
+		private static final int MASK_ACC_NAMESPACE = ACC_PACKAGE;
+		private static final int MASK_ACC_SYNTAX    = ACC_SYNTAX;
+		
 		public final DNode getDNode() { return (DNode)getNode(); }
 		public Dumper toJavaDecl(Dumper dmp) { return getDNode().toJavaDecl(dmp); }
 		
 		public int		flags;
 		public MetaSet	meta;
 
-		public final boolean isPublic()				{ return (flags & ACC_PUBLIC) != 0; }
-		public final boolean isPrivate()			{ return (flags & ACC_PRIVATE) != 0; }
-		public final boolean isProtected()			{ return (flags & ACC_PROTECTED) != 0; }
-		public final boolean isPackageVisable()	{ return (flags & (ACC_PROTECTED|ACC_PUBLIC|ACC_PROTECTED)) == 0; }
-		public final boolean isStatic()				{ return (flags & ACC_STATIC) != 0; }
-		public final boolean isFinal()				{ return (flags & ACC_FINAL) != 0; }
-		public final boolean isSynchronized()		{ return (flags & ACC_SYNCHRONIZED) != 0; }
-		public final boolean isVolatile()			{ return (flags & ACC_VOLATILE) != 0; }
-		public final boolean isTransient()			{ return (flags & ACC_TRANSIENT) != 0; }
-		public final boolean isBridgeMethod()		{ return (flags & ACC_BRIDGE) != 0; }
-		public final boolean isNative()				{ return (flags & ACC_NATIVE) != 0; }
-		public final boolean isInterface()			{ return (flags & ACC_INTERFACE) != 0; }
-		public final boolean isAbstract()			{ return (flags & ACC_ABSTRACT) != 0; }
-		public final boolean isSuper()				{ return (flags & ACC_SUPER) != 0; }
-		public final boolean isView()				{ return (flags & ACC_VIEW) != 0; }
+		public final boolean isPublic()				{ return this.$view.is_access == MASK_ACC_PUBLIC; }
+		public final boolean isPrivate()			{ return this.$view.is_access == MASK_ACC_PRIVATE; }
+		public final boolean isProtected()			{ return this.$view.is_access == MASK_ACC_PROTECTED; }
+		public final boolean isPkgPrivate()		{ return this.$view.is_access == MASK_ACC_DEFAULT; }
+		public final boolean isStatic()				{ return this.$view.is_static; }
+		public final boolean isFinal()				{ return this.$view.is_final; }
+		public final boolean isSynchronized()		{ return this.$view.is_mth_synchronized; }
+		public final boolean isFieldVolatile()		{ return this.$view.is_fld_volatile; }
+		public final boolean isMethodBridge()		{ return this.$view.is_mth_bridge; }
+		public final boolean isFieldTransient()	{ return this.$view.is_fld_transient; }
+		public final boolean isMethodVarargs()		{ return this.$view.is_mth_varargs; }
+		public final boolean isStructBcLoaded()	{ return this.$view.is_struct_bytecode; }
+		public final boolean isMethodNative()		{ return this.$view.is_mth_native; }
+		public final boolean isInterface()			{ return this.$view.is_struct_interface; }
+		public final boolean isAbstract()			{ return this.$view.is_abstract; }
+		
+		public final boolean isStructView()		{ return this.$view.is_virtual; }
+		public final boolean isTypeUnerasable()	{ return this.$view.is_type_unerasable; }
+		public final boolean isPackage()			{ return this.$view.is_access == MASK_ACC_NAMESPACE; }
+		public final boolean isSyntax()				{ return this.$view.is_access == MASK_ACC_SYNTAX; }
 
-		public void setPublic(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PUBLIC set to "+on+" from "+((flags & ACC_PUBLIC)!=0)+", now 0x"+Integer.toHexString(flags));
-			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-			if( on ) flags |= ACC_PUBLIC;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setPublic() {
+			if (this.$view.is_access != MASK_ACC_PUBLIC) {
+				this.$view.is_access = MASK_ACC_PUBLIC;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setPrivate(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PRIVATE set to "+on+" from "+((flags & ACC_PRIVATE)!=0)+", now 0x"+Integer.toHexString(flags));
-			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-			if( on ) flags |= ACC_PRIVATE;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setPrivate() {
+			if (this.$view.is_access != MASK_ACC_PRIVATE) {
+				this.$view.is_access = MASK_ACC_PRIVATE;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setProtected(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_PROTECTED set to "+on+" from "+((flags & ACC_PROTECTED)!=0)+", now 0x"+Integer.toHexString(flags));
-			flags &= ~(ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
-			if( on ) flags |= ACC_PROTECTED;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setProtected() {
+			if (this.$view.is_access != MASK_ACC_PROTECTED) {
+				this.$view.is_access = MASK_ACC_PROTECTED;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
+		public void setPkgPrivate() {
+			if (this.$view.is_access != MASK_ACC_DEFAULT) {
+				this.$view.is_access = MASK_ACC_DEFAULT;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		public final void setPackage() {
+			if (this.$view.is_access != MASK_ACC_NAMESPACE) {
+				this.$view.is_access = MASK_ACC_NAMESPACE;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		public final void setSyntax() {
+			if (this.$view.is_access != MASK_ACC_SYNTAX) {
+				this.$view.is_access = MASK_ACC_SYNTAX;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+
 		public void setStatic(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_STATIC set to "+on+" from "+((flags & ACC_STATIC)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_STATIC;
-			else flags &= ~ACC_STATIC;
-			this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_static != on) {
+				this.$view.is_static = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
 		public void setFinal(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_FINAL set to "+on+" from "+((flags & ACC_FINAL)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_FINAL;
-			else flags &= ~ACC_FINAL;
-			this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_final != on) {
+				this.$view.is_final = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
 		public void setSynchronized(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SYNCHRONIZED set to "+on+" from "+((flags & ACC_SYNCHRONIZED)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_SYNCHRONIZED;
-			else flags &= ~ACC_SYNCHRONIZED;
-			this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_mth_synchronized != on) {
+				this.$view.is_mth_synchronized = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setVolatile(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_VOLATILE set to "+on+" from "+((flags & ACC_VOLATILE)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_VOLATILE;
-			else flags &= ~ACC_VOLATILE;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setFieldVolatile(boolean on) {
+			if (this.$view.is_fld_volatile != on) {
+				this.$view.is_fld_volatile = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setTransient(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_TRANSIENT set to "+on+" from "+((flags & ACC_TRANSIENT)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_TRANSIENT;
-			else flags &= ~ACC_TRANSIENT;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setMethodBridge(boolean on) {
+			if (this.$view.is_mth_bridge != on) {
+				this.$view.is_mth_bridge = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setBridgeMethod(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_BRIDGE set to "+on+" from "+((flags & ACC_BRIDGE)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_BRIDGE;
-			else flags &= ~ACC_BRIDGE;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setFieldTransient(boolean on) {
+			if (this.$view.is_fld_transient != on) {
+				this.$view.is_fld_transient = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setNative(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_NATIVE set to "+on+" from "+((flags & ACC_NATIVE)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_NATIVE;
-			else flags &= ~ACC_NATIVE;
-			this.$view.callbackChildChanged(nodeattr$flags);
+		public void setMethodVarargs(boolean on) {
+			if (this.$view.is_mth_varargs != on) {
+				this.$view.is_mth_varargs = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		public void setMethodNative(boolean on) {
+			if (this.$view.is_mth_native != on) {
+				this.$view.is_mth_native = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
 		public void setInterface(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_INTERFACE set to "+on+" from "+((flags & ACC_INTERFACE)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_INTERFACE | ACC_ABSTRACT;
-			else flags &= ~ACC_INTERFACE;
-			this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_struct_interface != on) {
+				this.$view.is_struct_interface = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
 		public void setAbstract(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_ABSTRACT set to "+on+" from "+((flags & ACC_ABSTRACT)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_ABSTRACT;
-			else flags &= ~ACC_ABSTRACT;
-			this.$view.callbackChildChanged(nodeattr$flags);
+			if (this.$view.is_abstract != on) {
+				this.$view.is_abstract = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
-		public void setSuper(boolean on) {
-			trace(Kiev.debugFlags,"Member "+this+" flag ACC_SUPER set to "+on+" from "+((flags & ACC_SUPER)!=0)+", now 0x"+Integer.toHexString(flags));
-			if( on ) flags |= ACC_SUPER;
-			else flags &= ~ACC_SUPER;
-			this.$view.callbackChildChanged(nodeattr$flags);
+
+		public void setStructView() {
+			if (!this.$view.is_virtual) {
+				this.$view.is_virtual = true;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
+		public void setTypeUnerasable(boolean on) {
+			if (this.$view.is_type_unerasable != on) {
+				this.$view.is_type_unerasable = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
 		}
 	}
 
@@ -699,33 +755,43 @@ public abstract class DNode extends ASTNode {
 	public boolean isPublic()			{ return this.getDNodeView().isPublic(); }
 	public boolean isPrivate()			{ return this.getDNodeView().isPrivate(); }
 	public boolean isProtected()		{ return this.getDNodeView().isProtected(); }
-	public boolean isPackageVisable()	{ return this.getDNodeView().isPackageVisable(); }
+	public boolean isPkgPrivate()		{ return this.getDNodeView().isPkgPrivate(); }
 	public boolean isStatic()			{ return this.getDNodeView().isStatic(); }
 	public boolean isFinal()			{ return this.getDNodeView().isFinal(); }
 	public boolean isSynchronized()		{ return this.getDNodeView().isSynchronized(); }
-	public boolean isVolatile()			{ return this.getDNodeView().isVolatile(); }
-	public boolean isTransient()		{ return this.getDNodeView().isTransient(); }
-	public boolean isBridgeMethod()		{ return this.getDNodeView().isBridgeMethod(); }
-	public boolean isNative()			{ return this.getDNodeView().isNative(); }
+	public boolean isFieldVolatile()	{ return this.getDNodeView().isFieldVolatile(); }
+	public boolean isMethodBridge()		{ return this.getDNodeView().isMethodBridge(); }
+	public boolean isFieldTransient()	{ return this.getDNodeView().isFieldTransient(); }
+	public boolean isMethodVarargs()	{ return this.getDNodeView().isMethodVarargs(); }
+	public boolean isStructBcLoaded()	{ return this.getDNodeView().isStructBcLoaded(); }
+	public boolean isMethodNative()		{ return this.getDNodeView().isMethodNative(); }
 	public boolean isInterface()		{ return this.getDNodeView().isInterface(); }
 	public boolean isAbstract()			{ return this.getDNodeView().isAbstract(); }
-	public boolean isSuper()			{ return this.getDNodeView().isSuper(); }
-	public boolean isView()				{ return this.getDNodeView().isView(); }
 
-	public void setPublic(boolean on)		{ this.getDNodeView().setPublic(on); }
-	public void setPrivate(boolean on)		{ this.getDNodeView().setPrivate(on); }
-	public void setProtected(boolean on)	{ this.getDNodeView().setProtected(on); }
-	public void setStatic(boolean on)		{ this.getDNodeView().setStatic(on); }
-	public void setFinal(boolean on)		{ this.getDNodeView().setFinal(on); }
-	public void setSynchronized(boolean on){ this.getDNodeView().setSynchronized(on); }
-	public void setVolatile(boolean on)	{ this.getDNodeView().setVolatile(on); }
-	public void setTransient(boolean on)	{ this.getDNodeView().setTransient(on); }
-	public void setBridgeMethod(boolean on){ this.getDNodeView().setBridgeMethod(on); }
-	public void setNative(boolean on)		{ this.getDNodeView().setNative(on); }
-	public void setInterface(boolean on)	{ this.getDNodeView().setInterface(on); }
-	public void setAbstract(boolean on)	{ this.getDNodeView().setAbstract(on); }
-	public void setSuper(boolean on)		{ this.getDNodeView().setSuper(on); }
+	public boolean isStructView()		{ return this.getDNodeView().isStructView(); }
+	public boolean isTypeUnerasable()	{ return this.getDNodeView().isTypeUnerasable(); }
+	public boolean isPackage()			{ return this.getDNodeView().isPackage(); }
+	public boolean isSyntax()			{ return this.getDNodeView().isSyntax(); }
 
+	public void setPublic()						{ this.getDNodeView().setPublic(); }
+	public void setPrivate()					{ this.getDNodeView().setPrivate(); }
+	public void setProtected()					{ this.getDNodeView().setProtected(); }
+	public void setPkgPrivate()					{ this.getDNodeView().setPkgPrivate(); }
+	public void setStatic(boolean on)			{ this.getDNodeView().setStatic(on); }
+	public void setFinal(boolean on)			{ this.getDNodeView().setFinal(on); }
+	public void setSynchronized(boolean on)	{ this.getDNodeView().setSynchronized(on); }
+	public void setFieldVolatile(boolean on)	{ this.getDNodeView().setFieldVolatile(on); }
+	public void setMethodBridge(boolean on)	{ this.getDNodeView().setMethodBridge(on); }
+	public void setFieldTransient(boolean on)	{ this.getDNodeView().setFieldTransient(on); }
+	public void setMethodVarargs(boolean on)	{ this.getDNodeView().setMethodVarargs(on); }
+	public void setMethodNative(boolean on)	{ this.getDNodeView().setMethodNative(on); }
+	public void setInterface(boolean on)		{ this.getDNodeView().setInterface(on); }
+	public void setAbstract(boolean on)		{ this.getDNodeView().setAbstract(on); }
+	
+	public void setTypeUnerasable(boolean on)	{ this.getDNodeView().setTypeUnerasable(on); }
+	public void setStructView()					{ this.getDNodeView().setStructView(); }
+	public void setPackage()					{ this.getDNodeView().setPackage(); }
+	public void setSyntax()						{ this.getDNodeView().setSyntax(); }
 }
 
 /**
@@ -1265,25 +1331,10 @@ public abstract class TypeDecl extends DNode implements Named {
 	public abstract TypeDeclView	getTypeDeclView();
 	public abstract JTypeDeclView	getJTypeDeclView();
 
-	// the type is erasable	
-	public final boolean isTypeUnerasable() { return getMetaUnerasable() != null; }
-
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
-
-	public MetaUnerasable getMetaUnerasable() {
-		Struct clazz = ctx_clazz;
-		if (clazz == null)
-			return null;
-		MetaSet ms = clazz.meta;
-		if (ms != null) {
-			foreach (Meta m; ms.metas; m instanceof MetaUnerasable)
-				return (MetaUnerasable)m;
-		}
-		return null;
-	}
 
 }
 

@@ -219,10 +219,6 @@ public class Meta extends ENode {
 			m = (Meta)this.copyTo(new MetaPacked());
 		if (name == MetaPacker.NAME     && !(this instanceof MetaPacker))
 			m = (Meta)this.copyTo(new MetaPacker());
-		if (name == MetaUnerasable.NAME && !(this instanceof MetaUnerasable))
-			m = (Meta)this.copyTo(new MetaUnerasable());
-		if (name == MetaForward.NAME    && !(this instanceof MetaForward))
-			m = (Meta)this.copyTo(new MetaForward());
 		if (m != this) {
 			this.replaceWithNode(m);
 			foreach (MetaValue v; values)

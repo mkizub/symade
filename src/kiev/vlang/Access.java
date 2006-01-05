@@ -81,19 +81,19 @@ public class Access implements Constants {
 		if( r_public || w_public ) {
 			if( !n.isPublic() ) {
 				Kiev.reportWarning(n,"Node "+n+" needs to be declared public");
-				n.setPublic(true);
+				n.setPublic();
 			}
 		}
 		else if( r_protected || w_protected ) {
 			if( !(n.isPublic() || n.isProtected()) ) {
 				Kiev.reportWarning(n,"Node "+n+" needs to be declared protected or public");
-				n.setProtected(true);
+				n.setProtected();
 			}
 		}
 		else if( r_default || w_default ) {
 			if( n.isPrivate() ) {
 				Kiev.reportWarning(n,"Node "+n+" needs to be declared with default/protected or public access");
-				n.setPrivate(false);
+				n.setPrivate();
 			}
 		}
 		if( r_public ) {

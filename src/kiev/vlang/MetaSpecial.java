@@ -177,55 +177,72 @@ public class MetaPizzaCase extends Meta {
 	public void setTag(int tag) { setI(TAG, tag); }
 }
 
-@node
-public class MetaUnerasable extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.unerasable");
+public abstract class MetaFlag extends SpecialAttrSlot {
 
-	public MetaUnerasable() {
-		super(new TypeNameRef(NAME));
+	public final KString KNAME;
+	
+	protected MetaFlag(String name) {
+		super(name,false,Boolean.TYPE);
+		KNAME = KString.from(name);
 	}
 
-	public MetaUnerasable(TypeRef type) {
-		super(type);
+	public final void attach(ASTNode node) { this.set(node, Boolean.TRUE); }
+	public final void detach(ASTNode node) { this.set(node, Boolean.FALSE); }
+	public abstract void setZ(ASTNode node, boolean val);
+	public abstract boolean getZ(ASTNode node);
+	
+	public final void set(ASTNode node, Object value) {
+		try {
+			this.setZ(node, ((Boolean)value).booleanValue());
+		} catch (ClassCastException e) {
+			if (((Boolean)value).booleanValue())
+				node.addNodeData(new NodeData(KNAME,node));
+			else
+				node.delNodeData(KNAME);
+		}
+	}
+	public final Object get(ASTNode node) {
+		try {
+			return Boolean.valueOf(this.getZ(node));
+		} catch (ClassCastException e) {
+			return Boolean.valueOf(node.getNodeData(KNAME) != null);
+		}
 	}
 }
 
 @singleton
-public final class MetaSingleton extends SpecialAttrSlot {
-	public static final String  SNAME = "kiev.stdlib.meta.singleton";
-	public static final KString KNAME = KString.from(SNAME);
-	
-	private MetaSingleton() { super(SNAME,false,Boolean.TYPE); }
-	
-	public void attach(ASTNode node) { this.set(node, Boolean.TRUE); }
-	public void detach(ASTNode node) { this.set(node, Boolean.FALSE); }
+public class MetaUnerasable extends MetaFlag {
+	private MetaUnerasable() { super("kiev.stdlib.meta.unerasable"); }
 
-	public void set(ASTNode node, Object value) {
-		boolean val = ((Boolean)value).booleanValue();
-		if (node instanceof Struct)
-			node.setSingleton(val);
-		else if (val)
-			node.addNodeData(new NodeData(KNAME,node));
-		else
-			node.delNodeData(KNAME);
+	public void setZ(ASTNode node, boolean val) {
+		((DNode)node).setTypeUnerasable(val);
 	}
-	public Object get(ASTNode node) {
-		if (node instanceof Struct)
-			return Boolean.valueOf(node.isSingleton());
-		return Boolean.valueOf(node.getNodeData(KNAME) != null);
+	public boolean getZ(ASTNode node) {
+		return ((DNode)node).isTypeUnerasable();
 	}
 }
 
-@node
-public class MetaForward extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.forward");
-
-	public MetaForward() {
-		super(new TypeNameRef(NAME));
+@singleton
+public final class MetaSingleton extends MetaFlag {
+	private MetaSingleton() { super("kiev.stdlib.meta.singleton"); }
+	
+	public void setZ(ASTNode node, boolean val) {
+		((Struct)node).setSingleton(val);
 	}
+	public boolean getZ(ASTNode node) {
+		return ((Struct)node).isSingleton();
+	}
+}
 
-	public MetaForward(TypeRef type) {
-		super(type);
+@singleton
+public final class MetaForward extends MetaFlag {
+	private MetaForward() { super("kiev.stdlib.meta.forward"); }
+
+	public void setZ(ASTNode node, boolean val) {
+		((LvalDNode)node).setForward(val);
+	}
+	public boolean getZ(ASTNode node) {
+		return ((LvalDNode)node).isForward();
 	}
 }
 

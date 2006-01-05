@@ -510,9 +510,11 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 | < INVARIANT: "invariant" > { if(Kiev.javaMode || Kiev.disabled(Ext.Contract) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
 | < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
-| < WRAPPER: "$wrapper" > { if(Kiev.javaMode || Kiev.disabled(Ext.Wrappers) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < SINGLETON: "@singleton" >
+| < META_SINGLETON:  "@singleton"  >
+| < META_FORWARD:    "@forward"    >
+| < META_UNERASABLE: "@unerasable" >
+
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
@@ -1013,7 +1015,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 	|	"view"
 		name = Name()
 		{
-			clazz = mkStruct(name, ACC_VIEW, modifiers, parent);
+			clazz = mkStruct(name, ACC_VIRTUAL, modifiers, parent);
 		}
 		LOOKAHEAD({ getToken(1).kind==IDENTIFIER && getToken(1).image.equals("of") })
 		<IDENTIFIER> // "of"
@@ -1103,8 +1105,9 @@ Struct CaseTypeDeclaration(ASTModifiers modifiers, Struct parent) :
 	"case"
 	name = Name()
 	{
-		clazz = mkStruct(name, ACC_PIZZACASE|ACC_STATIC|ACC_FINAL, modifiers, parent);
+		clazz = mkStruct(name, ACC_STATIC|ACC_FINAL, modifiers, parent);
 		clazz.super_type = parent.type;
+		clazz.setPizzaCase(true);
 		clazz.setSingleton(true);
 	}
 	args = ClazzArguments() { clazz.args.addAll(args); }
@@ -1184,7 +1187,6 @@ int Modifier() :
 	| "volatile"		{ return AccessFlags.ACC_VOLATILE;		}
 	| "virtual"			{ return AccessFlags.ACC_VIRTUAL;		} // TODO: replace with @virtual
 	| "forward"			{ return AccessFlags.ACC_FORWARD;		} // TODO: replace with @forward
-	| "$wrapper"		{ return AccessFlags.ACC_WRAPPER;		} // TODO: replace with @wrapper
 	)
 }
 
@@ -1236,7 +1238,9 @@ int AccessSpec() :
 SpecialAttrSlot SpecialAnnotation() :
 {}
 {
-	"@singleton" { return MetaSingleton; }
+		"@singleton"    { return MetaSingleton; }
+	|	"@forward"      { return MetaForward; }
+	|	"@unerasable"   { return MetaUnerasable; }
 }
 
 NameRef KeywordAsName() :

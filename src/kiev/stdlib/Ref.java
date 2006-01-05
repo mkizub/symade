@@ -22,11 +22,11 @@ package kiev.stdlib;
 
 /**
  * @author Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
-public final $wrapper class Ref<A>
+public final class Ref<A>
 {
 
 	forward public A			$val;

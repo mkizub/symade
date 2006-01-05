@@ -21,7 +21,7 @@
 package kiev.stdlib;
 
 @unerasable
-public final $wrapper class PVar<A>
+public final class PVar<A>
 {
 
 	@virtual

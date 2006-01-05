@@ -29,7 +29,7 @@ public class ProcessView extends TransfProcessor implements Constants {
 	}
 	
 	public void autoGenerateMembers(Struct:ASTNode clazz) {
-		if !( clazz.isView() ) {
+		if !( clazz.isStructView() ) {
 			foreach (ASTNode dn; clazz.members; dn instanceof Struct) {
 				this.autoGenerateMembers(dn);
 			}

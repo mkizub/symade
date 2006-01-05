@@ -82,7 +82,7 @@ public class Env extends Struct {
 	private Env() {
 		super();
 		root = this;
-		setPackage(true);
+		setPackage();
 		setResolved(true);
 		this.imeta_type = new BaseTypeProvider(this);
 		((StructImpl)this.$v_impl).type = Type.tpEnv; // call StdType initialization
@@ -176,7 +176,7 @@ public class Env extends Struct {
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
-			bcl.setPackage(true);
+			bcl.setPackage();
 			bcl.setResolved(true);
 			return (Struct)bcl;
 		}
@@ -189,7 +189,7 @@ public class Env extends Struct {
 		if( bcl != null ) {
 			if !(bcl instanceof Struct)
 				throw new CompilerException("Cannot create struct "+name);
-			bcl.setPackage(true);
+			bcl.setPackage();
 			bcl.setResolved(true);
 			return (Struct)bcl;
 		}
@@ -199,7 +199,7 @@ public class Env extends Struct {
 
 	public static Struct newPackage(ClazzName name,Struct outer) {
 		Struct cl = newStruct(name,outer,0);
-		cl.setPackage(true);
+		cl.setPackage();
 		cl.setResolved(true);
 		return cl;
 	}
@@ -257,7 +257,7 @@ public class Env extends Struct {
 			}
 		}
 
-		root.setPackage(true);
+		root.setPackage();
 	}
 
 	public static void dumpProjectFile() {

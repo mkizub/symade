@@ -305,7 +305,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
 	public final boolean isRtArgumented()	{ return (flags & flRtArgumented)	!= 0 ; }
 	public final boolean isArgVirtual()	{ return (flags & flArgVirtual)		!= 0 ; }
-	public final boolean isArgForward()	{ return (flags & flArgForward)		!= 0 ; }
 
 	public boolean isAnnotation()			{ return false; }
 	public boolean isAbstract()				{ return false; }
@@ -740,7 +739,7 @@ public class ArgumentType extends Type {
 	/** Bound super-class for class arguments */
 	public Type						super_type;
 	
-	public ArgumentType(KString name, TypeDecl definer, Type sup, boolean is_unerasable, boolean is_virtual, boolean is_forward) {
+	public ArgumentType(KString name, TypeDecl definer, Type sup, boolean is_unerasable, boolean is_virtual) {
 		super(ArgumentTypeProvider.instance);
 		this.name = name;
 		this.definer = definer;
@@ -748,7 +747,6 @@ public class ArgumentType extends Type {
 		this.flags |= flReference | flArgumented;
 		if (is_unerasable) this.flags |= flRtArgumented;
 		if (is_virtual) this.flags |= flArgVirtual;
-		if (is_forward) this.flags |= flArgForward;
 	}
 	
 	public TVarSet bindings()			{ return TVarSet.emptySet; }
