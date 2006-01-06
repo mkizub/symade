@@ -34,7 +34,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 	public void generate(Code code, Type reqType) {
 		trace(Kiev.debugStatGen,"\t\tgenerating CallExpr: "+this);
 		code.setLinePos(this);
-		func.acc.verifyReadAccess(this,func);
+		Access.verifyRead(this,func);
 		CodeLabel ok_label = null;
 		CodeLabel null_cast_label = null;
 		if( func.jctx_clazz.type.isInstanceOf(Type.tpDebug) ) {

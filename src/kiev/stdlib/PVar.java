@@ -25,7 +25,7 @@ public final class PVar<A>
 {
 
 	@virtual
-	forward public virtual access:ro,rw			A		$var;
+	forward public virtual							A		$var;
 	        private 								PVar<A>	$pvar := null;
 	@virtual
 	        public virtual access:ro abstract 	boolean		$is_bound;

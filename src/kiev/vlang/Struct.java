@@ -91,7 +91,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public access:ro	NArr<DNode>			imported;
 		public access:ro	NArr<DNode>			members;
 
-		@setter public final void set$acc(Access val) { this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final BaseType	get$super_type()	{ return (BaseType)super_bound.lnk; }
 		@setter public final void set$super_type(BaseType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 		
@@ -331,7 +331,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
-		this.acc = new Access(0);
 		trace(Kiev.debugCreation,"New clazz created: "+name.short_name	+" as "+name.name+", member of "+outer);
 	}
 
@@ -2318,7 +2317,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				try {
 					f.type.checkResolved();
 					if (f.type.getStruct()!=null)
-						f.type.getStruct().acc.verifyReadWriteAccess(this,f.type.getStruct());
+						Access.verifyReadWrite(this,f.type.getStruct());
 				} catch(Exception e ) { Kiev.reportError(n,e); }
 			}
 			foreach(ASTNode n; members; n instanceof Method) {
@@ -2326,11 +2325,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				try {
 					m.type.ret.checkResolved();
 					if (m.type.ret.getStruct()!=null)
-						m.type.ret.getStruct().acc.verifyReadWriteAccess(this,m.type.ret.getStruct());
+						Access.verifyReadWrite(this,m.type.ret.getStruct());
 					foreach(Type t; m.type.args) {
 						t.checkResolved();
 						if (t.getStruct()!=null)
-							t.getStruct().acc.verifyReadWriteAccess(this,t.getStruct());
+							Access.verifyReadWrite(this,t.getStruct());
 					}
 				} catch(Exception e ) { Kiev.reportError(m,e); }
 			}

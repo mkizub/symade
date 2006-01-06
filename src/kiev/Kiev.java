@@ -256,7 +256,19 @@ public final class Kiev {
 		if( debug && verbose) new Exception().printStackTrace(System.out);
 		if (from != null) {
 			int pos = from.pos;
-			report(pos,from.ctx_file_unit,from.ctx_clazz,from.ctx_method,SeverError.Warning,msg);
+			int pos = from.pos;
+			FileUnit fu = null;
+			Struct clazz = null;
+			Method method = null;
+			try {
+				ASTNode f = from;
+				for (int i=0; i < 3 && f != null && pos == 0; i++, f = from.parent)
+					pos = f.pos;
+				method = from.ctx_method;
+				clazz = from.ctx_clazz;
+				fu = from.ctx_file_unit;
+			} catch (Exception e) { /*ignore*/}
+			report(pos,fu,clazz,method,SeverError.Warning,msg);
 		} else {
 			report(0,null,null,null,SeverError.Warning,msg);
 		}

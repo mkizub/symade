@@ -39,7 +39,7 @@ public class Bytecoder implements JConstants {
 
 		// Clean some structure flags
 		cl.flags = bcclazz.flags;
-		cl.acc.verifyAccessDecl(cl);
+		Access.verifyDecl(cl);
 
 		cl.setResolved(true);
 		cl.setMembersGenerated(true);

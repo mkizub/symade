@@ -346,7 +346,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 			setV.body = new BlockStat(0);
 			for(int i=0; i < aflds.length; i++) {
 				boolean isArr = aflds[i].getType().isInstanceOf(tpNArr);
-				if (isArr || aflds[i].isFinal() || !aflds[i].acc.writeable())
+				if (isArr || aflds[i].isFinal() || !Access.writeable(aflds[i]))
 					continue;
 				{	// check if we may not copy the field
 					Meta fmeta = aflds[i].meta.get(mnAtt);

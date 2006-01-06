@@ -433,7 +433,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if( m.isPrivate() ) m.setFinal(true);
 				if( me.isClazz() && me.isFinal() ) m.setFinal(true);
 				else if( me.isInterface() ) 	m.setPublic();
-				m.acc.verifyAccessDecl(m);
+				Access.verifyDecl(m);
 			}
 			else if( members[i] instanceof Method ) {
 				Method m = (Method)members[i];
@@ -449,7 +449,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					m.setSynchronized(false);
 					m.setFinal(false);
 				}
-				m.acc.verifyAccessDecl(m);
+				Access.verifyDecl(m);
 			}
 			else if (members[i] instanceof Field && ((Field)members[i]).isEnumField()) {
 				Field f = (Field)members[i];
@@ -493,7 +493,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					}
 					f.setPublic();
 				}
-				f.acc.verifyAccessDecl(f); // recheck access
+				Access.verifyDecl(f); // recheck access
 				Type ftype = fdecl.type;
 				MetaPacked pack = f.getMetaPacked();
 				if( pack != null ) {

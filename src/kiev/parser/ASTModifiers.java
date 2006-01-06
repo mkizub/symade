@@ -19,7 +19,6 @@ public final class ASTModifiers extends ASTNode {
 	
 	@node
 	public static final class ASTModifiersImpl extends TypeRefImpl {
-		@att public int					modifier;
 		@att public Access 				acc;
 		@att public NArr<Meta>			annotations;
 		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
@@ -27,13 +26,11 @@ public final class ASTModifiers extends ASTNode {
 	}
 	@nodeview
 	public static final view ASTModifiersView of ASTModifiersImpl extends TypeRefView {
-		public				int					modifier;
 		public				Access 				acc;
 		public access:ro	NArr<Meta>			annotations;
 		public				MetaSpecial[]		specials;		
 	}
 
-	@att public abstract virtual				int					modifier;
 	@att public abstract virtual				Access 				acc;
 	@att public abstract virtual access:ro		NArr<Meta>			annotations;
 	     public abstract virtual				MetaSpecial[]		specials;
@@ -41,20 +38,14 @@ public final class ASTModifiers extends ASTNode {
 	public NodeView				getNodeView()			{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
 	public ASTModifiersView		getASTModifiersView()	{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
 
-	@getter public int					get$modifier()		{ return this.getASTModifiersView().modifier; }
 	@getter public Access				get$acc()			{ return this.getASTModifiersView().acc; }
 	@getter public NArr<Meta>			get$annotations()	{ return this.getASTModifiersView().annotations; }
 	@getter public MetaSpecial[]		get$specials()		{ return this.getASTModifiersView().specials; }
-	@setter public void		set$modifier(int val)				{ this.getASTModifiersView().modifier = val; }
 	@setter public void		set$acc(Access val)					{ this.getASTModifiersView().acc = val; }
 	@setter public void		set$specials(MetaSpecial[] val)		{ this.getASTModifiersView().specials = val; }
 	
 	public ASTModifiers() { super(new ASTModifiersImpl()); }
 	
-	public int getFlags() {
-		return modifier;
-	}
-
 	public MetaSpecial add(MetaSpecial sa)
 		alias operator(5, lfy, +=)
 	{
@@ -65,9 +56,9 @@ public final class ASTModifiers extends ASTNode {
     public Dumper toJava(Dumper dmp) {
 		foreach (Meta m; annotations)
 			dmp.append(m);
-		Env.toJavaModifiers(dmp,(short)modifier);
-		if( (modifier & ACC_VIRTUAL		) > 0 ) dmp.append("/*virtual*/ ");
-		if( (modifier & ACC_FORWARD		) > 0 ) dmp.append("/*forward*/ ");
+		//Env.toJavaModifiers(dmp,(short)modifier);
+		//if( (modifier & ACC_VIRTUAL		) > 0 ) dmp.append("/*virtual*/ ");
+		//if( (modifier & ACC_FORWARD		) > 0 ) dmp.append("/*forward*/ ");
 		
 		if (acc != null) dmp.append(acc.toString());
 		

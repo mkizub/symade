@@ -438,7 +438,7 @@ public final class IFldExpr extends AccessExpr {
 		return false;
 	}
 	public Object	getConstValue() {
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		if( var.isFinal() ) {
 			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();
@@ -902,7 +902,7 @@ public final class SFldExpr extends AccessExpr {
 		return false;
 	}
 	public Object	getConstValue() {
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		if( var.isFinal() ) {
 			if (var.init != null && var.init.isConstantExpr())
 				return var.init.getConstValue();

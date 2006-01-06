@@ -223,12 +223,14 @@ public abstract class kiev040 {
 					+"$"+curClazz.countAnonymouseInnerStructs());
 			clname = ClazzName.fromBytecodeName(bytecode_name, false);
 		}
-		Struct clazz = Env.newStruct(clname,curClazz,flags|modifiers.getFlags(),true);
+		Struct clazz = Env.newStruct(clname,curClazz,flags,true);
 		if (name != null)
 			clazz.pos  = name.pos;
 		else
 			clazz.pos  = parent.pos;
 		clazz.setResolved(true);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(clazz);
 		if (modifiers.acc != null)
 			clazz.acc  = modifiers.acc;
 		if (parent instanceof FileUnit) {
@@ -242,8 +244,6 @@ public abstract class kiev040 {
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
-		foreach (MetaSpecial sa; modifiers.specials)
-			sa.attach(clazz);
 		
 		return clazz;
 	}
@@ -251,68 +251,69 @@ public abstract class kiev040 {
 	private TypeDef mkTypeDef(NameRef name, ASTModifiers modifiers) {
 		TypeDef arg = new TypeDef(name);
 		if (modifiers != null) {
-			arg.meta = new MetaSet();
-			foreach (Meta m; modifiers.annotations)
-				arg.meta.set((Meta)m.copy());
 			foreach (MetaSpecial sa; modifiers.specials)
 				sa.attach(arg);
+			if (modifiers.annotations.length > 0) {
+				arg.meta = new MetaSet();
+				foreach (Meta m; modifiers.annotations)
+					arg.meta.set((Meta)m.copy());
+			}
 		}
 		return arg;
 	}
 
 	private Constructor mkConstructor(NameRef id, ASTModifiers modifiers) {
-		Constructor meth = new Constructor(modifiers.getFlags());
+		Constructor meth = new Constructor(0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set((Meta)m.copy());
 		return meth;
 	}
 	
 	private Method mkMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		Method meth = new Method(id.name, ret, modifiers.getFlags());
+		Method meth = new Method(id.name, ret, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set((Meta)m.copy());
 		return meth;
 	}
 	
 	private RuleMethod mkRuleMethod(NameRef id, ASTModifiers modifiers, TypeRef ret) {
-		RuleMethod meth = new RuleMethod(id, modifiers.getFlags());
+		RuleMethod meth = new RuleMethod(id, 0);
 		meth.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			meth.meta.set((Meta)m.copy());
-		if( modifiers.acc != null ) meth.acc = modifiers.acc;
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(meth);
+		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (Meta m; modifiers.annotations)
+			meth.meta.set((Meta)m.copy());
 		return meth;
 	}
 	
 	private Field mkField(NameRef id, ASTModifiers modifiers, TypeRef ret, boolean first) {
 		if (!first)
 			ret = (TypeRef)ret.copy();
-		Field f = new Field(id.name,ret,modifiers.getFlags());
-		f.acc.flags = 0;
+		Field f = new Field(id.name,ret,0);
 		f.pos = id.pos;
 		if (first) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(f);
 			if (modifiers.acc != null)
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
 				f.meta.set((Meta)m.copy());
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(f);
 		} else {
+			foreach (MetaSpecial sa; modifiers.specials)
+				((MetaSpecial)sa.copy()).attach(f);
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
 			foreach (Meta m; modifiers.annotations)
 				f.meta.set((Meta)m.copy());
-			foreach (MetaSpecial sa; modifiers.specials)
-				((MetaSpecial)sa.copy()).attach(f);
 		}
 		return f;
 	}
@@ -321,67 +322,83 @@ public abstract class kiev040 {
 		Field f = new Field(id.name,new TypeRef(),ACC_ENUM|ACC_STATIC|ACC_FINAL|ACC_PUBLIC);
 		f.pos = id.pos;
 		f.setEnumField(true);
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set((Meta)m.copy());
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(f);
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 
 	private Field mkCaseField(NameRef id, ASTModifiers modifiers, TypeRef tp) {
-		Field f = new Field(id.name,tp,modifiers.getFlags()|ACC_PUBLIC);
+		Field f = new Field(id.name,tp,0|ACC_PUBLIC);
 		f.pos = id.pos;
-		foreach (Meta m; modifiers.annotations)
-			f.meta.set((Meta)m.copy());
 		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(f);
+		foreach (Meta m; modifiers.annotations)
+			f.meta.set((Meta)m.copy());
 		return f;
 	}
 	
 	private Var mkVar(NameRef id, ASTModifiers modifiers, TypeRef tp, boolean first) {
 		if (!first)
 			tp = (TypeRef)tp.copy();
-		Var v = new Var(id, tp, modifiers.getFlags());
+		Var v = new Var(id, tp, 0);
+		if (first) {
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(v);
+		} else {
+			foreach (MetaSpecial sa; modifiers.specials)
+				((MetaSpecial)sa.copy()).attach(v);
+		}
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			if (first) {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
-				foreach (MetaSpecial sa; modifiers.specials)
-					sa.attach(v);
 			} else {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
-				foreach (MetaSpecial sa; modifiers.specials)
-					((MetaSpecial)sa.copy()).attach(v);
 			}
 		}
 		return v;
 	}
 	
 	private FormPar mkFormPar(NameRef id, ASTModifiers modifiers, TypeRef vt, TypeRef st) {
-		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, modifiers.getFlags());
+		FormPar v = new FormPar(id, vt, st, FormPar.PARAM_NORMAL, 0);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(v);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
 				v.meta.set((Meta)m.copy());
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(v);
 		}
 		return v;
 	}
 	
 	private FormPar mkVarargPar(NameRef id, ASTModifiers modifiers, TypeRef vt) {
-		FormPar v = new FormPar(id, vt, (TypeRef)vt.copy(), FormPar.PARAM_VARARGS, modifiers.getFlags()|ACC_FINAL);
+		FormPar v = new FormPar(id, vt, (TypeRef)vt.copy(), FormPar.PARAM_VARARGS, ACC_FINAL);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(v);
 		if (modifiers.annotations.length > 0) {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
 				v.meta.set((Meta)m.copy());
-			foreach (MetaSpecial sa; modifiers.specials)
-				sa.attach(v);
 		}
 		return v;
 	}
+	
+	private	Initializer mkInitializer(int pos, ASTModifiers modifiers) {
+		Initializer init = new Initializer(pos,0);
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(init);
+		if (modifiers.annotations.length > 0) {
+			init.meta = new MetaSet();
+			foreach (Meta m; modifiers.annotations)
+				init.meta.set((Meta)m.copy());
+		}
+		return init;
+	}
+
 	
 	private ENode mkNotExpr(ASTOperator not, ENode cond) {
 		ASTExpression e = new ASTExpression();
@@ -535,18 +552,31 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 
 | < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
-| < META_INTERFACE:  "@interface"  >
-| < META_SINGLETON:  "@singleton"  >
-| < META_FORWARD:    "@forward"    >
-| < META_UNERASABLE: "@unerasable" >
-| < META_VIRTUAL:    "@virtual"    >
-| < META_PACKED:     "@packed"     >
+| < META_INTERFACE:    "@interface"    >
+| < META_SINGLETON:    "@singleton"    >
+| < META_FORWARD:      "@forward"      >
+| < META_UNERASABLE:   "@unerasable"   >
+| < META_VIRTUAL:      "@virtual"      >
+| < META_PACKED:       "@packed"       >
+| < META_PUBLIC:       "@public"       >
+| < META_PROTECTED:    "@protected"    >
+| < META_PRIVATE:      "@private"      >
+| < META_STATIC:       "@static"       >
+| < META_ABSTRACT:     "@abstract"     >
+| < META_FINAL:        "@final"        >
+| < META_NATIVE:       "@native"       >
+| < META_SYNCHRONIZED: "@synchronized" >
+| < META_TRANSIENT:    "@transient"    >
+| < META_VOLATILE:     "@volatile"     >
+| < META_THROWS:       "@throws"       >
 
 }
 
 TOKEN : /* RESERVED WORDS AND LITERALS */
 {
-< ACCESS: "access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+  < ACCESS: "access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+| < META_ACCESS1: "@access(" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
+| < META_ACCESS2: "@access:" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; } : IN_ACCESS
 }
 
 <IN_ACCESS>
@@ -557,6 +587,7 @@ TOKEN :
  | < READ_WRITE: "rw" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
  | < NO_READ_WRITE: "n" | "no" > { if(Kiev.javaMode || !parser.declMode) matchedToken.kind=IDENTIFIER; }
  | < COMMA1: "," >
+ | < CLOSE_ACCESS: ")" > : DEFAULT
 }
 <IN_ACCESS>
 SKIP :
@@ -858,13 +889,11 @@ FileUnit FileUnit(String filename) :
 }
 
 ASTModifiers Modifiers() :
-{ int modifier; }
+{}
 {	{ ASTModifiers n = new ASTModifiers(); }
 	(
 		n.annotations	+= Annotation()
 	|	n				+= SpecialAnnotation()
-	|	n				+= Pack()			// TODO: remove, use @packed
-	|	modifier		 = Modifier() {n.modifier |= modifier; }
 	|	n.acc			 = Access()			// TODO: remove, use @access and views
 	)*
 	{ return n; }
@@ -1210,35 +1239,28 @@ int Modifier() :
 	| "synchronized"	{ return AccessFlags.ACC_SYNCHRONIZED;	}
 	| "transient"		{ return AccessFlags.ACC_TRANSIENT;	}
 	| "volatile"		{ return AccessFlags.ACC_VOLATILE;		}
-	| "virtual"			{ return AccessFlags.ACC_VIRTUAL;		} // TODO: replace with @virtual
-	| "forward"			{ return AccessFlags.ACC_FORWARD;		} // TODO: replace with @forward
 	)
-}
-
-MetaPacked Pack() :
-{ MetaPacked mp = new MetaPacked(); }
-{
-	"packed"
-	[
-			":" 	mp.size   = IntConstExpression()
-		[
-			","		mp.fld    = Name()
-			","		mp.offset = IntConstExpression()
-		]
-	]
-	{ return mp; }
 }
 
 Access Access() :
 { int acc; 	int accflags = 0; int offset = 6; }
 {
 	LOOKAHEAD({Kiev.enabled(Ext.Access)})
-	"access:"
-	acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
-	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
-	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
-	[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
-	]]]
+	(
+		("access:" | "@access:")
+		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		]]]
+	|	"@access("
+		acc = AccessSpec()            { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		[ <COMMA1> acc = AccessSpec() { for(int i=offset; i >= 0; i-=2) { accflags &= ~(3 << i); accflags |= acc << i; } offset -= 2; }
+		]]]
+		<CLOSE_ACCESS> // ")"
+	)
 	{ return new Access(accflags); }
 }
 
@@ -1252,22 +1274,78 @@ int AccessSpec() :
 }
 
 MetaSpecial SpecialAnnotation() :
-{ MetaPacked mp; }
+{ MetaPacked mp; MetaThrows mt; TypeNameRef thr; }
 {
-		"@singleton"    { return MetaSingleton; }
-	|	"@forward"      { return MetaForward; }
-	|	"@unerasable"   { return MetaUnerasable; }
-	|	"@virtual"      { return new MetaVirtual(); }
-	|	"@packed"
+	  "@singleton"		{ return MetaSingleton; }
+
+	| "forward"			{ return MetaForward; }
+	| "@forward"		{ return MetaForward; }
+
+	| "@unerasable"		{ return MetaUnerasable; }
+	
+	| "@virtual"		{ return new MetaVirtual(); }
+	| "virtual"			{ return new MetaVirtual(); }
+	
+	| "public"			{ return MetaPublic; }
+	| "@public"			{ return MetaPublic; }
+
+	| "protected"		{ return MetaProtected; }
+	| "@protected"		{ return MetaProtected; }
+
+	| "private"			{ return MetaPrivate; }
+	| "@private"		{ return MetaPrivate; }
+	
+	| "static"			{ return MetaStatic; }
+	| "@static"			{ return MetaStatic; }
+	
+	| "abstract"		{ return MetaAbstract; }
+	| "@abstract"		{ return MetaAbstract; }
+
+	| "final"			{ return MetaFinal; }
+	| "@final"			{ return MetaFinal; }
+	
+	| "native"			{ return MetaNative; }
+	| "@native"			{ return MetaNative; }
+	
+	| "synchronized"	{ return MetaSynchronized; }
+	| "@synchronized"	{ return MetaSynchronized; }
+
+	| "transient"		{ return MetaTransient; }
+	| "@transient"		{ return MetaTransient; }
+
+	| "volatile"		{ return MetaVolatile; }
+	| "@volatile"		{ return MetaVolatile; }
+	
+	| ( "@packed" | "packed")
 		{ mp = new MetaPacked(); }
-		[	"("
-					 	mp.size   = IntConstExpression()
+		(
+			"("
+						mp.size   = IntConstExpression()
 			[	","		mp.fld    = Name()
 				","		mp.offset = IntConstExpression()
 			]
 			")"
-		]
+		|
+			":" 	mp.size   = IntConstExpression()
+			[
+			","		mp.fld    = Name()
+			","		mp.offset = IntConstExpression()
+			]
+		)?
 		{ return mp; }
+
+	| "@throws"
+		{ mt = new MetaThrows(); }
+		(
+			thr = TypeQName() { mt.add(thr); }
+			( "," thr = TypeQName() { mt.add(thr); } )*
+		|
+			"(" ["{"]
+			thr = TypeQName() { mt.add(thr); }
+			( "," thr = TypeQName() { mt.add(thr); } )*
+			 ["}"] ")"
+		)
+		{ return mt; }
 }
 
 NameRef KeywordAsName() :
@@ -1825,7 +1903,10 @@ RuleMethod RuleDeclaration(ASTModifiers modifiers) :
 }
 
 Initializer Initializer(ASTModifiers modifiers) :
-{ Initializer n = new Initializer(getToken(0).getPos(),modifiers.getFlags()); BlockStat bl; }
+{
+	Initializer n = mkInitializer(getToken(0).getPos(),modifiers);
+	BlockStat bl;
+}
 {
 	{
 		/*{

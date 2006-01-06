@@ -68,8 +68,10 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.set != null && mv.set != m)
 				return;
+			if (f.acc == null) f.acc = new Access(0);
 		} else {
 			s.addField(f=new Field(name,m.type.args[0],m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			f.acc = new Access(0);
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
@@ -98,7 +100,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.acc.w_private = true;
 		}
 		f.acc.flags |= f.acc.flags << 16;
-		f.acc.verifyAccessDecl(f);
+		Access.verifyDecl(f);
 	}
 	
 	private void addGetterForAbstractField(Struct s, KString name, Method m) {
@@ -110,8 +112,10 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			MetaVirtual mv = f.getMetaVirtual();
 			if (mv != null && mv.get != null && mv.get != m)
 				return;
+			if (f.acc == null) f.acc = new Access(0);
 		} else {
 			s.addField(f=new Field(name,m.type.ret,m.getJavaFlags() | ACC_VIRTUAL | ACC_ABSTRACT));
+			f.acc = new Access(0);
 			f.acc.flags = 0;
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
@@ -140,7 +144,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			f.acc.r_private = true;
 		}
 		f.acc.flags |= f.acc.flags << 16;
-		f.acc.verifyAccessDecl(f);
+		Access.verifyDecl(f);
 	}
 	
 	public BackendProcessor getBackend(Kiev.Backend backend) {
@@ -218,7 +222,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 				if( set_found ) break;
 			}
 		}
-		if( !set_found && f.acc.writeable() ) {
+		if( !set_found && Access.writeable(f) ) {
 			Method set_var = new Method(set_name,Type.tpVoid,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				set_var.setFinal(true);
@@ -311,13 +315,13 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			}
 			f.getMetaVirtual().set = set_var;
 		}
-		else if( set_found && !f.acc.writeable() ) {
+		else if( set_found && !Access.writeable(f) ) {
 			Kiev.reportError(f,"Virtual set$ method for non-writeable field");
 		}
 
 		if (!f.isVirtual())
 			return;		// no need to generate getter
-		if( !get_found && f.acc.readable()) {
+		if( !get_found && Access.readable(f)) {
 			Method get_var = new Method(get_name,f.type,f.getJavaFlags() | ACC_SYNTHETIC);
 			if (f.meta.get(ProcessVNode.mnAtt) != null)
 				get_var.setFinal(true);
@@ -341,7 +345,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 			}
 			f.getMetaVirtual().get = get_var;
 		}
-		else if( get_found && !f.acc.readable() ) {
+		else if( get_found && !Access.readable(f) ) {
 			Kiev.reportError(f,"Virtual get$ method for non-readable field");
 		}
 	}

@@ -769,6 +769,16 @@ public abstract class DNode extends ASTNode {
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
+
+		public final boolean isVirtual() {
+			return this.$view.is_virtual;
+		}
+		public final void setVirtual(boolean on) {
+			if (this.$view.is_virtual != on) {
+				this.$view.is_virtual = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
 	}
 
 	/** java flags */
@@ -815,6 +825,7 @@ public abstract class DNode extends ASTNode {
 	public boolean isTypeUnerasable()	{ return this.getDNodeView().isTypeUnerasable(); }
 	public boolean isPackage()			{ return this.getDNodeView().isPackage(); }
 	public boolean isSyntax()			{ return this.getDNodeView().isSyntax(); }
+	public boolean isVirtual() 			{ return this.getDNodeView().isVirtual(); }
 
 	public void setPublic()						{ this.getDNodeView().setPublic(); }
 	public void setPrivate()					{ this.getDNodeView().setPrivate(); }
@@ -835,6 +846,7 @@ public abstract class DNode extends ASTNode {
 	public void setStructView()					{ this.getDNodeView().setStructView(); }
 	public void setPackage()					{ this.getDNodeView().setPackage(); }
 	public void setSyntax()						{ this.getDNodeView().setSyntax(); }
+	public void setVirtual(boolean on)			{ this.getDNodeView().setVirtual(on); }
 }
 
 /**

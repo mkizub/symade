@@ -78,7 +78,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_getfield,var,obj.getType());
@@ -93,7 +93,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		obj.generate(code,null);
 		generateCheckCastIfNeeded(code);
 		code.addInstr(op_dup);
@@ -118,7 +118,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyWriteAccess(this,var);
+		Access.verifyWrite(this,var);
 		code.addInstr(op_putfield,var,obj.getType());
 	}
 
@@ -129,7 +129,7 @@ public final view JIFldExprView of IFldExprImpl extends JAccessExprView {
 			Kiev.reportError(this, "IFldExpr: Generating virtual field "+var+" directly");
 		if( var.isPackedField() )
 			Kiev.reportError(this, "IFldExpr: Generating packed field "+var+" directly");
-		var.acc.verifyWriteAccess(this,var);
+		Access.verifyWrite(this,var);
 		code.addInstr(op_dup_x);
 		code.addInstr(op_putfield,var,obj.getType());
 	}
@@ -480,14 +480,14 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 	public void generateLoad(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load only: "+this);
 		code.setLinePos(this);
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		code.addInstr(op_getstatic,var,code.clazz.type);
 	}
 
 	public void generateLoadDup(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - load & dup: "+this);
 		code.setLinePos(this);
-		var.acc.verifyReadAccess(this,var);
+		Access.verifyRead(this,var);
 		code.addInstr(op_getstatic,var,code.clazz.type);
 	}
 
@@ -498,14 +498,14 @@ public final view JSFldExprView of SFldExprImpl extends JAccessExprView {
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store only: "+this);
 		code.setLinePos(this);
-		var.acc.verifyWriteAccess(this,var);
+		Access.verifyWrite(this,var);
 		code.addInstr(op_putstatic,var,code.clazz.type);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SFldExpr - store & dup: "+this);
 		code.setLinePos(this);
-		var.acc.verifyWriteAccess(this,var);
+		Access.verifyWrite(this,var);
 		code.addInstr(op_dup);
 		code.addInstr(op_putstatic,var,code.clazz.type);
 	}

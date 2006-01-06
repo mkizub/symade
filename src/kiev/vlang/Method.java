@@ -166,7 +166,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		public				boolean				inlined_by_dispatcher;
 		public				boolean				invalid_types;
 
-		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Method)getDNode()); }
 
 		// virtual static method	
 		public final boolean isVirtualStatic() {
@@ -346,7 +346,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		this.name = new NodeName(name);
 		this.type_ret = type_ret;
 		this.dtype_ret = (TypeRef)type_ret.copy();
-		this.acc = new Access(0);
 		this.meta = new MetaSet();
 		invalid_types = true;
 	}

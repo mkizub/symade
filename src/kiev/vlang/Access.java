@@ -34,13 +34,6 @@ public class Access implements Constants {
 		this.flags = flags | (flags << 16);
 	}
 
-	public boolean readable() {
-		return r_private || r_default || r_protected || r_public;
-	}
-	public boolean writeable() {
-		return w_private || w_default || w_protected || w_public;
-	}
-
 	public String toString() {
 		StringBuffer sb = new StringBuffer("access:");
 
@@ -66,9 +59,37 @@ public class Access implements Constants {
 
 		return sb.toString();
 	}
+	
+	private static final int getFlags(DNode n) {
+		int flags;
+		Access acc = ((Accessable)n).acc;
+		if (acc != null)
+			return acc.flags;
+		else if (n.isPublic())
+			return 0xFF;
+		else if (n.isProtected())
+			return 0x3F;
+		else if (n.isPrivate())
+			return 0x03;
+		return 0x0F;
+	}
 
-	public void verifyAccessDecl(DNode n) {
+	public static boolean readable(Accessable n) {
+		int flags = getFlags((DNode)n);
+		return (flags & 0xAA) != 0;
+	}
+	public static boolean writeable(Accessable n) {
+		int flags = getFlags((DNode)n);
+		return (flags & 0x55) != 0;
+	}
 
+	public static void verifyDecl(Accessable n) {
+		Access acc = n.acc;
+		if (acc != null)
+			acc.verifyAccessDecl((DNode)n);
+	}
+	
+	private void verifyAccessDecl(DNode n) {
 		flags &= 0xFFFF0000;
 		flags |= (flags >>> 16);
 		if( flags == 0 ) {
@@ -150,29 +171,29 @@ public class Access implements Constants {
 		}
 	}
 
-	public void verifyReadAccess(ASTNode from, DNode n) { verifyAccess(from,n,2); }
-	public void verifyWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,1); }
-	public void verifyReadWriteAccess(ASTNode from, DNode n) { verifyAccess(from,n,3); }
-	public void verifyReadAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
-	public void verifyWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
-	public void verifyReadWriteAccess(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
-	public void verifyReadAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
-	public void verifyWriteAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
-	public void verifyReadWriteAccess(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
+	public static void verifyRead(ASTNode from, DNode n) { verifyAccess(from,n,2); }
+	public static void verifyWrite(ASTNode from, DNode n) { verifyAccess(from,n,1); }
+	public static void verifyReadWrite(ASTNode from, DNode n) { verifyAccess(from,n,3); }
+	public static void verifyRead(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
+	public static void verifyWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
+	public static void verifyReadWrite(ASTNode.NodeView from, ASTNode.NodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
+	public static void verifyRead(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),2); }
+	public static void verifyWrite(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),1); }
+	public static void verifyReadWrite(JNodeView from, JNodeView n) { verifyAccess(from.getNode(),n.getNode(),3); }
 
-	private Struct getStructOf(ASTNode n) {
+	private static Struct getStructOf(ASTNode n) {
 		if( n instanceof Struct ) return (Struct)n;
 		return n.ctx_clazz;
 	}
 
-	private Struct getPackageOf(ASTNode n) {
+	private static Struct getPackageOf(ASTNode n) {
 		Struct pkg = getStructOf(n);
 		while( !pkg.isPackage() ) pkg = pkg.package_clazz;
 		return pkg;
 	}
 
-	private void verifyAccess(ASTNode from, ASTNode n, int acc) {
-		assert( n instanceof Accessable && ((Accessable)n).acc == this );
+	private static void verifyAccess(ASTNode from, ASTNode n, int acc) {
+		int flags = getFlags((DNode)n);
 
 		// Quick check for public access
 		if( ((flags>>>6) & acc) == acc ) return;
@@ -216,7 +237,7 @@ public class Access implements Constants {
 		throwAccessError(from,n,acc,"public");
 	}
 
-	private void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
+	private static void throwAccessError(ASTNode from, ASTNode n, int acc, String astr) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Access denied - ").append(astr).append(' ');
 		if( acc == 2 ) sb.append("read");

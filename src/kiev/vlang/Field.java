@@ -64,19 +64,9 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		public				ConstExpr		const_value;
 		public access:ro	NArr<Method>	invs;
 		
-		@setter public final void set$acc(Access val)	{ this.$view.acc = val; this.$view.acc.verifyAccessDecl(getDNode()); }
+		@setter public final void set$acc(Access val)	{ this.$view.acc = val; Access.verifyDecl((Field)getDNode()); }
 		@getter public final Type	get$type()			{ return this.$view.ftype.getType(); }
 		
-		// is a virtual field
-		public final boolean isVirtual() {
-			return this.$view.is_virtual;
-		}
-		public final void setVirtual(boolean on) {
-			if (this.$view.is_virtual != on) {
-				this.$view.is_virtual = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// is a field of enum
 		public final boolean isEnumField() {
 			return this.$view.is_fld_enum;
@@ -156,7 +146,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		super(new FieldImpl(0,acc));
 		this.name = new NodeName(name);
 		this.ftype = ftype;
-		this.acc = new Access(0);
 		this.meta = new MetaSet();
 		trace(Kiev.debugCreation,"New field created: "+name+" with type "+ftype);
 	}
@@ -165,9 +154,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		this(name,new TypeRef(type),acc);
 	}
 	
-	// is a virtual field
-	public boolean isVirtual() { return this.getFieldView().isVirtual(); }
-	public void setVirtual(boolean on) { this.getFieldView().setVirtual(on); }
 	// is a field of enum
 	public boolean isEnumField() { return this.getFieldView().isEnumField(); }
 	public void setEnumField(boolean on) { this.getFieldView().setEnumField(on); }
