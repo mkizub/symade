@@ -104,18 +104,19 @@ public abstract class Type implements StdTypes, AccessFlags {
 	}
 
 	public final boolean equals(Object to) alias operator (60, xfx, ≈ ) {
-		if (to instanceof Type) return this.eq((Type)to);
+		if (to instanceof Type) return Type.type_equals(this,(Type)to);
 		return false;
 	}
 
 	public static boolean type_equals(Type t1, Type t2) alias operator (60, xfx, ≈ ) {
 		if (t1 ≡ null || t2 ≡ null) return false;
+		if (t1 ≡ t2) return true;
 		return t1.eq(t2);
 	}
 
 	public static boolean type_not_equals(Type t1, Type t2) alias operator (60, xfx, ≉ ) {
 		if (t1 ≡ null || t2 ≡ null) return true;
-		return !t1.eq(t2);
+		return !(t1 ≈ t2);
 	}
 	
 	protected access:no,rw,no,rw boolean eq(Type:Type t) { return false; }
