@@ -22,7 +22,7 @@ public final class ASTModifiers extends ASTNode {
 		@att public int					modifier;
 		@att public Access 				acc;
 		@att public NArr<Meta>			annotations;
-		     public SpecialAttrSlot[]	specials = SpecialAttrSlot.emptyArray;		
+		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
 		public ASTModifiersImpl() {}
 	}
 	@nodeview
@@ -30,13 +30,13 @@ public final class ASTModifiers extends ASTNode {
 		public				int					modifier;
 		public				Access 				acc;
 		public access:ro	NArr<Meta>			annotations;
-		public				SpecialAttrSlot[]	specials;		
+		public				MetaSpecial[]		specials;		
 	}
 
 	@att public abstract virtual				int					modifier;
 	@att public abstract virtual				Access 				acc;
 	@att public abstract virtual access:ro		NArr<Meta>			annotations;
-	     public abstract virtual				SpecialAttrSlot[]	specials;
+	     public abstract virtual				MetaSpecial[]		specials;
 	
 	public NodeView				getNodeView()			{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
 	public ASTModifiersView		getASTModifiersView()	{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
@@ -44,10 +44,10 @@ public final class ASTModifiers extends ASTNode {
 	@getter public int					get$modifier()		{ return this.getASTModifiersView().modifier; }
 	@getter public Access				get$acc()			{ return this.getASTModifiersView().acc; }
 	@getter public NArr<Meta>			get$annotations()	{ return this.getASTModifiersView().annotations; }
-	@getter public SpecialAttrSlot[]	get$specials()		{ return this.getASTModifiersView().specials; }
+	@getter public MetaSpecial[]		get$specials()		{ return this.getASTModifiersView().specials; }
 	@setter public void		set$modifier(int val)				{ this.getASTModifiersView().modifier = val; }
 	@setter public void		set$acc(Access val)					{ this.getASTModifiersView().acc = val; }
-	@setter public void		set$specials(SpecialAttrSlot[] val){ this.getASTModifiersView().specials = val; }
+	@setter public void		set$specials(MetaSpecial[] val)		{ this.getASTModifiersView().specials = val; }
 	
 	public ASTModifiers() { super(new ASTModifiersImpl()); }
 	
@@ -55,10 +55,10 @@ public final class ASTModifiers extends ASTNode {
 		return modifier;
 	}
 
-	public SpecialAttrSlot add(SpecialAttrSlot sa)
+	public MetaSpecial add(MetaSpecial sa)
 		alias operator(5, lfy, +=)
 	{
-		this.specials = (SpecialAttrSlot[])Arrays.append(this.specials, sa);
+		this.specials = (MetaSpecial[])Arrays.append(this.specials, sa);
 		return sa;
 	}
 

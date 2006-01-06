@@ -93,7 +93,7 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			CaseLabel cl = (CaseLabel)dfi.node;
+			CaseLabel cl = (CaseLabel)dfi.node_impl.getNode();
 			if (cl.parent instanceof SwitchStat) {
 				ENode sel = ((SwitchStat)cl.parent).sel;
 				if (sel != null)
@@ -165,16 +165,14 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 						//val = new ConstIntExpr(case_attr.caseno);
 						val = new ConstIntExpr(meta.getTag());
 						if( pattern.length > 0 ) {
-							ENode[] fields = meta.getFields();
-//							if( pattern.length != case_attr.casefields.length )
-//								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+case_attr.casefields.length+" fields");
+							Field[] fields = meta.getFields();
 							if( pattern.length != fields.length )
 								throw new RuntimeException("Pattern containce "+pattern.length+" items, but case class "+cas+" has "+fields.length+" fields");
 							for(int i=0, j=0; i < pattern.length; i++) {
 								Var p = pattern[i];
 								if( p.type == Type.tpVoid || p.name.name.len == 1 && p.name.name.byteAt(0) == '_')
 									continue;
-								Field f = cas.resolveField(((ConstStringExpr)fields[i]).value);
+								Field f = fields[i];
 								Type tp = Type.getRealType(sw.tmpvar.getType(),f.type);
 								if( !p.type.isInstanceOf(tp) ) // error, because of Cons<A,List<List.A>> != Cons<A,List<Cons.A>>
 									throw new RuntimeException("Pattern variable "+p.name+" has type "+p.type+" but type "+tp+" is expected");

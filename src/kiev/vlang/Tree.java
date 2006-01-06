@@ -41,6 +41,8 @@ public @interface ref {
 }
 
 public class AttrSlot {
+	public static final AttrSlot[] emptyArray = new AttrSlot[0];
+	
 	public final String  name; // field (property) name
 	public final boolean is_attr; // @att or @ref
 	public final boolean is_space; // if NArr<Node>
@@ -54,7 +56,6 @@ public class AttrSlot {
 	}
 	
 	public boolean isMeta() { return false; }
-	public boolean isSpecial() { return false; }
 
 	public void set(ASTNode node, Object value) {
 		node.setVal(name, value);
@@ -66,32 +67,15 @@ public class AttrSlot {
 
 public class MetaAttrSlot extends AttrSlot {
 	public final KString id;
-	public MetaAttrSlot(String name, KString id, boolean is_space, Class clazz) {
-		super(name,true,is_space,clazz);
-		this.id = id;
+	public MetaAttrSlot(KString name, Class clazz) {
+		super(name.toString().intern(),true,false,clazz);
+		this.id = name;
 	}
 	public boolean isMeta() { return true; }
-	public boolean isSpecial() { return false; }
 
 	public abstract void set(ASTNode node, Object value);
 	public abstract Object get(ASTNode node);
 }
-
-public abstract class SpecialAttrSlot extends MetaAttrSlot {
-	public static final SpecialAttrSlot[] emptyArray = new SpecialAttrSlot[0];
-
-	public SpecialAttrSlot(String name, boolean is_space, Class clazz) {
-		super(name,KString.Empty,is_space,clazz);
-	}
-	public boolean isMeta() { return true; }
-	public boolean isSpecial() { return true; }
-
-	public abstract void attach(ASTNode node);
-	public abstract void detach(ASTNode node);
-	public abstract void set(ASTNode node, Object value);
-	public abstract Object get(ASTNode node);
-}
-
 
 @unerasable
 public final class NArr<N extends ASTNode> {

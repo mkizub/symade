@@ -101,8 +101,14 @@ public final class Kiev {
    	public static void reportParserError(int pos, String msg, Throwable e) {
 		if (e instanceof CompilationAbortError)
 			throw (CompilationAbortError)e;
-		if (e instanceof ParseException)
-			pos = ((ParseException)e).currentToken.next.getPos();
+		if (e instanceof ParseException) {
+			if (e.currentToken == null)
+				;
+			else if (e.currentToken.next == null)
+				pos = e.currentToken.getPos();
+			else
+				pos = e.currentToken.next.getPos();
+		}
         errorPrompt = false;
 		if( debug ) e.printStackTrace(System.out);
 		report( pos, k.curFileUnit, k.curClazz, k.curMethod, SeverError.Error, msg);

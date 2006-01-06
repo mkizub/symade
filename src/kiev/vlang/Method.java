@@ -378,7 +378,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	public final void setDispatcherMethod(boolean on) { this.getMethodView().setDispatcherMethod(on); }
 
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.meta.get(MetaThrows.NAME);
+		return (MetaThrows)this.getNodeData(MetaThrows.ID);
 	}
 
 	public void checkRebuildTypes() {
@@ -715,7 +715,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			Method m = (Method)dfi.node;
+			Method m = (Method)dfi.node_impl.getNode();
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];
@@ -928,10 +928,10 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 }
 
 public enum WBCType {
-	public CondUnknown,
-	public CondRequire,
-	public CondEnsure,
-	public CondInvariant;
+	CondUnknown,
+	CondRequire,
+	CondEnsure,
+	CondInvariant;
 }
 
 @node

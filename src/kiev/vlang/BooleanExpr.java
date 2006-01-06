@@ -626,7 +626,7 @@ public class InstanceofExpr extends BoolExpr {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			res = ((InstanceofExpr)dfi.node).addNodeTypeInfo(DFFunc.calc(f, dfi));
+			res = ((InstanceofExpr)dfi.node_impl.getNode()).addNodeTypeInfo(DFFunc.calc(f, dfi));
 			dfi.setResult(res_idx, res);
 			return res;
 		}

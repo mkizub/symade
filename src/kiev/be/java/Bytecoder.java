@@ -119,8 +119,8 @@ public class Bytecoder implements JConstants {
 			f.name.aliases = nm.aliases;
 		if( packer_size >= 0 ) {
 			MetaPacker mpr = new MetaPacker();
-			mpr.size = packer_size;
-			f.meta.set(mpr);
+			mpr.setSize(packer_size);
+			f.addNodeData(mpr);
 			f.setPackerField(true);
 		}
 		f.init = f_init;

@@ -24,7 +24,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public final Method getMethod() { return (Method)this.getNode(); }
 		
 	public MetaThrows getMetaThrows() {
-		return (MetaThrows)this.meta.get(MetaThrows.NAME);
+		return (MetaThrows)this.$view.getNodeData(MetaThrows.ID);
 	}
 
 	public JVarView	getRetVar() {

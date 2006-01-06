@@ -23,11 +23,10 @@ package kiev.stdlib;
 /** a class for pairs
  * @author      Martin Odersky
  * @author      Maxim Kizub
- * @version $Revision: 182 $
+ * @version $Revision$
  *
  */
 
-@unerasable
 public class Pair<A,B>
 {
 

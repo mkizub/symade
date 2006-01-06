@@ -103,7 +103,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			InlineMethodStat node = (InlineMethodStat)dfi.node;
+			InlineMethodStat node = (InlineMethodStat)dfi.node_impl.getNode();
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < node.params_redir.length; i++) {
 				in = in.declNode(node.params_redir[i].new_var);
@@ -126,7 +126,7 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			InlineMethodStat node = (InlineMethodStat)dfi.node;
+			InlineMethodStat node = (InlineMethodStat)dfi.node_impl.getNode();
 			DataFlowInfo pdfi = node.parent.getDFlow();
 			res = DFFunc.calc(pdfi.getSocket(node.pslot.name).func_in, pdfi);
 			dfi.setResult(res_idx, res);
@@ -313,7 +313,7 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			BlockStat node = (BlockStat)dfi.node;
+			BlockStat node = (BlockStat)dfi.node_impl.getNode();
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)

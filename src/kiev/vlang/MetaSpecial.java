@@ -4,6 +4,7 @@ import kiev.Kiev;
 import kiev.stdlib.*;
 import kiev.parser.TypeNameRef;
 import kiev.parser.ASTIdentifier;
+import kiev.vlang.ASTNode.NodeImpl;
 
 import static kiev.stdlib.Debug.*;
 
@@ -13,207 +14,341 @@ import static kiev.stdlib.Debug.*;
  */
 
 @node
-public class MetaVirtual extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.virtual");
+public abstract class MetaSpecial extends ASTNode implements NodeData {
+	
+	public static final MetaSpecial[] emptyArray = new MetaSpecial[0];
+	
+	public final MetaAttrSlot attr;
+	
+	@node
+	public static class MetaSpecialImpl extends NodeImpl {}
+	@nodeview
+	public static view MetaSpecialView of NodeImpl extends NodeView {}
 
-	/** Getter/setter methods for this field */
-	@ref public Method		get;
-	@ref public Method		set;
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaSpecialView((MetaSpecialImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaSpecialView((MetaSpecialImpl)this.$v_impl); }
 
-	public MetaVirtual() {
-		super(new TypeNameRef(NAME));
+	public MetaSpecial(MetaSpecialImpl impl, MetaAttrSlot attr) {
+		super(impl);
+		this.attr = attr;
+	}
+	
+	public KString getNodeDataId() {
+		return attr.id;
+	}
+	
+	public void nodeAttached(NodeImpl node) {}
+	public void dataAttached(NodeImpl node) { this.callbackAttached(node.getNode(), attr); }
+	public void nodeDetached(NodeImpl node) {}
+	public void dataDetached(NodeImpl node) { this.callbackDetached(); }
+	
+	public void attach(ASTNode node) { node.addNodeData(this); }
+	public void detach(ASTNode node) { node.addNodeData(this); }
+}
+
+@node
+public final class MetaVirtual extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.virtual");
+	public static final MetaAttrSlot MetaVirtualAttr = new MetaAttrSlot(ID, MetaVirtual.class);
+
+	@node
+	public static final class MetaVirtualImpl extends MetaSpecialImpl {
+		/** Getter/setter methods for this field */
+		@ref public Method		get;
+		@ref public Method		set;
+	}
+	@nodeview
+	public static view MetaVirtualView of MetaVirtualImpl extends MetaSpecialView {
+		public Method		get;
+		public Method		set;
 	}
 
-	public MetaVirtual(TypeRef type) {
-		super(type);
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaVirtualView((MetaVirtualImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaVirtualView((MetaVirtualImpl)this.$v_impl); }
+	public MetaVirtualView	getMetaVirtualView()	alias operator(210,fy,$cast) { return new MetaVirtualView((MetaVirtualImpl)this.$v_impl); }
+
+	@ref public abstract virtual Method		get;
+	@ref public abstract virtual Method		set;
+
+	@getter public Method		get$get()					{ return this.getMetaVirtualView().get; }
+	@getter public Method		get$set()					{ return this.getMetaVirtualView().set; }
+	@setter public void 		set$get(Method val)			{ this.getMetaVirtualView().get = val; }
+	@setter public void 		set$set(Method val)			{ this.getMetaVirtualView().set = val; }
+
+	public MetaVirtual() { super(new MetaVirtualImpl(), MetaVirtualAttr); }
+}
+
+@node
+public class MetaPacked extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.packed");
+	public static final MetaAttrSlot MetaPackedAttr = new MetaAttrSlot(ID, MetaPacked.class);
+
+	@node
+	public static final class MetaPackedImpl extends MetaSpecialImpl {
+		@att public ENode			 size;
+		@att public ENode			 offset;
+		@att public NameRef			 fld;
+		@ref public Field			 packer;
+	}
+	@nodeview
+	public static view MetaPackedView of MetaPackedImpl extends MetaSpecialView {
+		public ENode			 size;
+		public ENode			 offset;
+		public NameRef			 fld;
+		public Field			 packer;
+	}
+
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaPackedView((MetaPackedImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaPackedView((MetaPackedImpl)this.$v_impl); }
+	public MetaPackedView	getMetaPackedView()		alias operator(210,fy,$cast) { return new MetaPackedView((MetaPackedImpl)this.$v_impl); }
+
+	@att public abstract virtual ENode			size;
+	@att public abstract virtual ENode			offset;
+	@att public abstract virtual NameRef		fld;
+	@ref public abstract virtual Field			packer;
+
+	@getter public ENode		get$size()					{ return this.getMetaPackedView().size; }
+	@getter public ENode		get$offset()				{ return this.getMetaPackedView().offset; }
+	@getter public NameRef		get$fld()					{ return this.getMetaPackedView().fld; }
+	@getter public Field		get$packer()				{ return this.getMetaPackedView().packer; }
+	@setter public void 		set$size(ENode val)			{ this.getMetaPackedView().size = val; }
+	@setter public void 		set$offset(ENode val)		{ this.getMetaPackedView().offset = val; }
+	@setter public void 		set$fld(NameRef val)		{ this.getMetaPackedView().fld = val; }
+	@setter public void 		set$packer(Field val)		{ this.getMetaPackedView().packer = val; }
+
+	public MetaPacked() { super(new MetaPackedImpl(), MetaPackedAttr); }
+
+	public KString getNodeDataId() {
+		return ID;
+	}
+
+	public int getSize() {
+		ENode size = this.size;
+		if (size instanceof ConstIntExpr)
+			return size.value;
+		return 0;
+	}
+	public void setSize(int val) {
+		size = new ConstIntExpr(val);
+	}
+	
+	public int getOffset() {
+		ENode offset = this.offset;
+		if (offset instanceof ConstIntExpr)
+			return offset.value;
+		return 0;
+	}
+	public void setOffset(int val) {
+		offset = new ConstIntExpr(val);
+	}
+	
+	public KString getFld() {
+		NameRef fld = this.fld;
+		if (fld != null)
+			return fld.name;
+		return KString.Empty;
+	}
+	public void setFld(KString val) {
+		fld = new NameRef(val);
+	}
+}
+
+@node
+public class MetaPacker extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.packer");
+	public static final MetaAttrSlot MetaPackerAttr = new MetaAttrSlot(ID, MetaPacker.class);
+
+	@node
+	public static final class MetaPackerImpl extends MetaSpecialImpl {
+		@att public ENode			 size;
+	}
+	@nodeview
+	public static view MetaPackerView of MetaPackerImpl extends MetaSpecialView {
+		public ENode			 size;
+	}
+
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaPackerView((MetaPackerImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaPackerView((MetaPackerImpl)this.$v_impl); }
+	public MetaPackerView	getMetaPackerView()		alias operator(210,fy,$cast) { return new MetaPackerView((MetaPackerImpl)this.$v_impl); }
+
+	@att public abstract virtual ENode			size;
+
+	@getter public ENode		get$size()					{ return this.getMetaPackerView().size; }
+	@setter public void 		set$size(ENode val)			{ this.getMetaPackerView().size = val; }
+
+	public MetaPacker() { super(new MetaPackerImpl(), MetaPackerAttr); }
+
+	public KString getNodeDataId() {
+		return ID;
+	}
+
+	public int getSize() {
+		ENode size = this.size;
+		if (size instanceof ConstIntExpr)
+			return size.value;
+		return 0;
+	}
+	public void setSize(int val) {
+		size = new ConstIntExpr(val);
 	}
 	
 }
 
 @node
-public class MetaPacked extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.packed");
-	public static final KString nameSize   = KString.from("size");
-	public static final KString nameOffset = KString.from("offset");
-	public static final KString nameIn     = KString.from("in");
+public class MetaAlias extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.alias");
+	public static final MetaAttrSlot MetaAliasAttr = new MetaAttrSlot(ID, MetaAlias.class);
 
-	@ref
-	public Field			 packer;
-	
-	@virtual
-	public virtual abstract int size;
-	@virtual
-	public virtual abstract int offset;
-	@virtual
-	public virtual abstract int in;
-
-	public MetaPacked() {
-		super(new TypeNameRef(NAME));
+	@node
+	public static final class MetaAliasImpl extends MetaSpecialImpl {
+		@att public NArr<ENode>		 aliases;
+	}
+	@nodeview
+	public static view MetaAliasView of MetaAliasImpl extends MetaSpecialView {
+		public access:ro NArr<ENode>		 aliases;
 	}
 
-	public MetaPacked(TypeRef type) {
-		super(type);
-	}
-	
-	@getter public int get$size() { return getI(nameSize); }
-	@setter public void set$size(int val) { setI(nameSize, val); }
-	@getter public int get$offset() { return getI(nameOffset); }
-	@setter public void set$offset(int val) { setI(nameOffset, val); }
-	@getter public KString get$fld() { return getS(nameIn); }
-	@setter public void set$fld(KString val) { setS(nameIn, val); }
-}
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaAliasView((MetaAliasImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaAliasView((MetaAliasImpl)this.$v_impl); }
+	public MetaAliasView	getMetaAliasView()		alias operator(210,fy,$cast) { return new MetaAliasView((MetaAliasImpl)this.$v_impl); }
 
-@node
-public class MetaPacker extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.packer");
-	public static final KString nameSize = KString.from("size");
+	@att public abstract virtual access:ro NArr<ENode>			aliases;
 
-	@virtual
-	public virtual abstract int size;
-
-	public MetaPacker() {
-		super(new TypeNameRef(NAME));
-	}
-
-	public MetaPacker(TypeRef type) {
-		super(type);
-	}
-	
-	@getter public int get$size() { return getI(nameSize); }
-	@setter public void set$size(int val) { setI(nameSize, val); }
-}
-
-@node
-public class MetaAlias extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.alias");
-	public static final KString VALUE = KString.from("value");
+	@getter public NArr<ENode>	get$aliases()	{ return this.getMetaAliasView().aliases; }
 
 	public MetaAlias() {
-		super(new TypeNameRef(NAME));
+		super(new MetaAliasImpl(), MetaAliasAttr);
 	}
 
 	public MetaAlias(ConstStringExpr name) {
-		super(new TypeNameRef(NAME));
-		MetaValueType mvt = new MetaValueType(VALUE, new ArrayType(Type.tpString));
-		MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{name});
-		set(mv);
+		super(new MetaAliasImpl(), MetaAliasAttr);
+		this.aliases.append(name);
 	}
 
-	public MetaAlias(TypeRef type) {
-		super(type);
-	}
-	
-	public ASTNode[] getAliases() {
-		MetaValueArray mv = (MetaValueArray)get(VALUE);
-		if (mv == null)
-			return new ASTNode[0];
-		return mv.values.toArray();
+	public ENode[] getAliases() {
+		return aliases.toArray();
 	}
 }
 
 @node
-public class MetaThrows extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.throws");
-	public static final KString VALUE = KString.from("value");
+public class MetaThrows extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.throws");
+	public static final MetaAttrSlot MetaThrowsAttr = new MetaAttrSlot(ID, MetaThrows.class);
+
+	@node
+	public static final class MetaThrowsImpl extends MetaSpecialImpl {
+		@att public NArr<TypeNameRef>		 exceptions;
+	}
+	@nodeview
+	public static view MetaThrowsView of MetaThrowsImpl extends MetaSpecialView {
+		public access:ro NArr<TypeNameRef>		 exceptions;
+	}
+
+	public NodeView			getNodeView()			alias operator(210,fy,$cast) { return new MetaThrowsView((MetaThrowsImpl)this.$v_impl); }
+	public MetaSpecialView	getMetaSpecialView()	alias operator(210,fy,$cast) { return new MetaThrowsView((MetaThrowsImpl)this.$v_impl); }
+	public MetaThrowsView	getMetaThrowsView()		alias operator(210,fy,$cast) { return new MetaThrowsView((MetaThrowsImpl)this.$v_impl); }
+
+	@att public abstract virtual access:ro NArr<TypeNameRef>			exceptions;
+
+	@getter public NArr<TypeNameRef>	get$exceptions()	{ return this.getMetaThrowsView().exceptions; }
 
 	public MetaThrows() {
-		super(new TypeNameRef(NAME));
+		super(new MetaThrowsImpl(), MetaThrowsAttr);
 	}
 
-	public MetaThrows(TypeRef type) {
-		super(type);
+	public void add(TypeNameRef thr) {
+		exceptions += thr;
 	}
 	
-	public void add(NameRef thr) {
-		if (size() == 0) {
-			MetaValueType mvt = new MetaValueType(VALUE, new ArrayType(Type.tpClass));
-			MetaValueArray mv = new MetaValueArray(mvt, new ENode[]{new TypeNameRef(thr)});
-			set(mv);
-		} else {
-			MetaValueArray mv = (MetaValueArray)get(VALUE);
-			mv.values.append(new TypeNameRef(thr));
-		}
-	}
-	
-	public ASTNode[] getThrowns() {
-		MetaValueArray mv = (MetaValueArray)get(VALUE);
-		if (mv == null)
-			return new TypeRef[0];
-		return mv.values.toArray();
+	public TypeNameRef[] getThrowns() {
+		return exceptions.toArray();
 	}
 }
 
 @node
-public class MetaPizzaCase extends Meta {
-	public static final KString NAME = KString.from("kiev.stdlib.meta.pcase");
-	public static final KString TAG = KString.from("tag");
-	public static final KString FIELDS = KString.from("fields");
+public class MetaPizzaCase extends MetaSpecial {
+	public static final KString ID = KString.from("kiev.stdlib.meta.pcase");
+	public static final MetaAttrSlot MetaPizzaCaseAttr = new MetaAttrSlot(ID, MetaPizzaCase.class);
+
+	@node
+	public static final class MetaPizzaCaseImpl extends MetaSpecialImpl {
+		@ref public NArr<Field>		 fields;
+		@att public int				 tag;
+	}
+	@nodeview
+	public static view MetaPizzaCaseView of MetaPizzaCaseImpl extends MetaSpecialView {
+		public access:ro NArr<Field>		 fields;
+		public int							 tag;
+	}
+
+	public NodeView				getNodeView()				alias operator(210,fy,$cast) { return new MetaPizzaCaseView((MetaPizzaCaseImpl)this.$v_impl); }
+	public MetaSpecialView		getMetaSpecialView()		alias operator(210,fy,$cast) { return new MetaPizzaCaseView((MetaPizzaCaseImpl)this.$v_impl); }
+	public MetaPizzaCaseView	getMetaPizzaCaseView()		alias operator(210,fy,$cast) { return new MetaPizzaCaseView((MetaPizzaCaseImpl)this.$v_impl); }
+
+	@ref public abstract virtual access:ro NArr<Field>			fields;
+	@att public abstract virtual int							tag;
+
+	@getter public NArr<TypeNameRef>	get$fields()		{ return this.getMetaPizzaCaseView().fields; }
+	@getter public int					get$tag()			{ return this.getMetaPizzaCaseView().tag; }
+	@setter public void 				set$tag(int val)	{ this.getMetaPizzaCaseView().tag = val; }
 
 	public MetaPizzaCase() {
-		this(new TypeNameRef(NAME));
+		super(new MetaPizzaCaseImpl(), MetaPizzaCaseAttr);
 	}
 
-	public MetaPizzaCase(TypeRef type) {
-		super(type);
-		setI(TAG, 0);
-		MetaValueType mvt = new MetaValueType(FIELDS, new ArrayType(Type.tpString));
-		MetaValueArray mv = new MetaValueArray(mvt, ENode.emptyArray);
-		set(mv);
-	}
-	
 	public void add(Field f) {
-		MetaValueArray mv = (MetaValueArray)get(FIELDS);
-		mv.values.append(new ConstStringExpr(f.name.name));
+		fields += f;
 	}
 	
-	public ENode[] getFields() {
-		MetaValueArray mv = (MetaValueArray)get(FIELDS);
-		if (mv == null)
-			return ENode.emptyArray;
-		return mv.values.toArray();
+	public Field[] getFields() {
+		return fields.toArray();
 	}
 	
-	public int getTag() { return getI(TAG); }
-	public void setTag(int tag) { setI(TAG, tag); }
+	public int getTag() { return this.tag; }
+	public void setTag(int tag) { this.tag = tag; }
 }
 
-public abstract class MetaFlag extends SpecialAttrSlot {
-
-	public final KString KNAME;
-	
-	protected MetaFlag(String name) {
-		super(name,false,Boolean.TYPE);
-		KNAME = KString.from(name);
-	}
+@node(copyable=false)
+public abstract class MetaFlag extends MetaSpecial {
 
 	public final void attach(ASTNode node) { this.set(node, Boolean.TRUE); }
 	public final void detach(ASTNode node) { this.set(node, Boolean.FALSE); }
 	public abstract void setZ(ASTNode node, boolean val);
 	public abstract boolean getZ(ASTNode node);
 	
+	public MetaFlag(MetaAttrSlot attr) { super(new MetaSpecialImpl(), attr); }
+	public Object copy() { return this; }
+	
 	public final void set(ASTNode node, Object value) {
 		try {
 			this.setZ(node, ((Boolean)value).booleanValue());
 		} catch (ClassCastException e) {
 			if (((Boolean)value).booleanValue())
-				node.addNodeData(new NodeData(KNAME,node));
+				node.addNodeData(this);
 			else
-				node.delNodeData(KNAME);
+				node.delNodeData(this.getNodeDataId());
 		}
 	}
 	public final Object get(ASTNode node) {
 		try {
 			return Boolean.valueOf(this.getZ(node));
 		} catch (ClassCastException e) {
-			return Boolean.valueOf(node.getNodeData(KNAME) != null);
+			return Boolean.valueOf(node.getNodeData(this.getNodeDataId()) != null);
 		}
 	}
 }
 
 @singleton
+@node(copyable=false)
 public class MetaUnerasable extends MetaFlag {
-	private MetaUnerasable() { super("kiev.stdlib.meta.unerasable"); }
+	public static final KString ID = KString.from("kiev.stdlib.meta.unerasable");
+	public static final MetaAttrSlot MetaUnerasableAttr = new MetaAttrSlot(ID, MetaUnerasable.class);
 
+	private MetaUnerasable() { super(MetaUnerasableAttr); }
+	
+	public KString getNodeDataId() {
+		return ID;
+	}
 	public void setZ(ASTNode node, boolean val) {
 		((DNode)node).setTypeUnerasable(val);
 	}
@@ -223,9 +358,16 @@ public class MetaUnerasable extends MetaFlag {
 }
 
 @singleton
+@node(copyable=false)
 public final class MetaSingleton extends MetaFlag {
-	private MetaSingleton() { super("kiev.stdlib.meta.singleton"); }
+	public static final KString ID = KString.from("kiev.stdlib.meta.singleton");
+	public static final MetaAttrSlot MetaSingletonAttr = new MetaAttrSlot(ID, MetaSingleton.class);
+
+	private MetaSingleton() { super(MetaSingletonAttr); }
 	
+	public KString getNodeDataId() {
+		return ID;
+	}
 	public void setZ(ASTNode node, boolean val) {
 		((Struct)node).setSingleton(val);
 	}
@@ -235,9 +377,16 @@ public final class MetaSingleton extends MetaFlag {
 }
 
 @singleton
+@node(copyable=false)
 public final class MetaForward extends MetaFlag {
-	private MetaForward() { super("kiev.stdlib.meta.forward"); }
+	public static final KString ID = KString.from("kiev.stdlib.meta.forward");
+	public static final MetaAttrSlot MetaForwardAttr = new MetaAttrSlot(ID, MetaForward.class);
 
+	private MetaForward() { super(MetaForwardAttr); }
+	
+	public KString getNodeDataId() {
+		return ID;
+	}
 	public void setZ(ASTNode node, boolean val) {
 		((LvalDNode)node).setForward(val);
 	}

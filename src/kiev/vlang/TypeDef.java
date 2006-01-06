@@ -83,12 +83,7 @@ public class TypeDef extends TypeDecl {
 	public final boolean isTypeVirtual() { return getMetaVirtual() != null; }
 
 	public final MetaVirtual getMetaVirtual() {
-		MetaSet ms = this.meta;
-		if (ms != null) {
-			foreach (Meta m; ms.metas; m instanceof MetaVirtual)
-				return (MetaVirtual)m;
-		}
-		return null;
+		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
 	}
 
 	public Type getType() {

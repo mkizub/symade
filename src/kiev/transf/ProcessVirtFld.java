@@ -74,7 +74,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)
-			f.meta.set(new MetaVirtual());
+			f.addNodeData(new MetaVirtual());
 		f.getMetaVirtual().set = m;
 		if( m.isPublic() ) {
 			f.acc.w_public = true;
@@ -116,7 +116,7 @@ public final class ProcessVirtFld extends TransfProcessor implements Constants {
 			trace(Kiev.debugCreation,"create abstract field "+f+" for methos "+m);
 		}
 		if (f.getMetaVirtual() == null)
-			f.meta.set(new MetaVirtual());
+			f.addNodeData(new MetaVirtual());
 		f.getMetaVirtual().get = m;
 		if( m.isPublic() ) {
 			f.acc.r_public = true;
@@ -196,7 +196,7 @@ class JavaVirtFldBackend extends BackendProcessor implements Constants {
 		if( !f.isVirtual() ) return;
 
 		if (f.getMetaVirtual() == null)
-			f.meta.set(new MetaVirtual());
+			f.addNodeData(new MetaVirtual());
 
 		// Check set$/get$ methods
 		boolean set_found = false;

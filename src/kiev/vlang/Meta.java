@@ -181,12 +181,6 @@ public class Meta extends ENode {
 	public static Meta newMeta(KString name)
 		alias operator(210,lfy,new)
 	{
-		if (name == MetaVirtual.NAME)
-			return new MetaVirtual(new TypeNameRef(name));
-		if (name == MetaPacked.NAME)
-			return new MetaPacked(new TypeNameRef(name));
-		if (name == MetaPacker.NAME)
-			return new MetaPacker(new TypeNameRef(name));
 		return new Meta(new TypeNameRef(name));
 	}
 
@@ -213,12 +207,6 @@ public class Meta extends ENode {
 		}
 		KString name = ((BaseType)mt).clazz.name.name;
 		Meta m = this;
-		if (name == MetaVirtual.NAME    && !(this instanceof MetaVirtual))
-			m = (Meta)this.copyTo(new MetaVirtual());
-		if (name == MetaPacked.NAME     && !(this instanceof MetaPacked))
-			m = (Meta)this.copyTo(new MetaPacked());
-		if (name == MetaPacker.NAME     && !(this instanceof MetaPacker))
-			m = (Meta)this.copyTo(new MetaPacker());
 		if (m != this) {
 			this.replaceWithNode(m);
 			foreach (MetaValue v; values)

@@ -499,7 +499,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				if( pack != null ) {
 					if( f.isStatic() ) {
 						Kiev.reportWarning(fdecl,"Packing of static field(s) ignored");
-						f.meta.unset(pack);
+						f.delNodeData(MetaPacked.ID);
 					}
 					else if( !ftype.isIntegerInCode() ) {
 						if( ftype.isEnum() ) {
@@ -507,28 +507,28 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 						} else {
 							Kiev.reportError(fdecl,"Packing of reference type is not allowed");
 						}
-						f.meta.unset(pack);
+						f.delNodeData(MetaPacked.ID);
 					} else {
 						int max_pack_size = 32;
 						if( ftype ≡ Type.tpShort || ftype ≡ Type.tpChar ) {
 							max_pack_size = 16;
-							if( pack.size <= 0 ) pack.size = 16;
+							if( pack.getSize() <= 0 ) pack.setSize(16);
 						}
 						else if( ftype ≡ Type.tpByte ) {
 							max_pack_size = 8;
-							if( pack.size <= 0 ) pack.size = 8;
+							if( pack.getSize() <= 0 ) pack.setSize(8);
 						}
 						else if( ftype ≡ Type.tpBoolean) {
 							max_pack_size = 1;
-							if( pack.size <= 0 ) pack.size = 1;
+							if( pack.getSize() <= 0 ) pack.setSize(1);
 						}
-						if( pack.size < 0 || pack.size > max_pack_size ) {
-							Kiev.reportError(fdecl,"Bad size "+pack.size+" of packed field");
-							f.meta.unset(pack);
+						if( pack.getSize() < 0 || pack.getSize() > max_pack_size ) {
+							Kiev.reportError(fdecl,"Bad size "+pack.getSize()+" of packed field");
+							f.delNodeData(MetaPacked.ID);
 						}
-						else if( pack.offset >= 0 && pack.size+pack.offset > 32) {
-							Kiev.reportError(fdecl,"Size+offset "+(pack.size+pack.offset)+" do not fit in 32 bit boundary");
-							f.meta.unset(pack);
+						else if( pack.getOffset() >= 0 && pack.getSize()+pack.getOffset() > 32) {
+							Kiev.reportError(fdecl,"Size+offset "+(pack.getSize()+pack.getOffset())+" do not fit in 32 bit boundary");
+							f.delNodeData(MetaPacked.ID);
 						}
 					}
 				}

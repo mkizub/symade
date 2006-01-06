@@ -466,7 +466,7 @@ public class AssignExpr extends LvalueExpr {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			res = ((AssignExpr)dfi.node).addNodeTypeInfo(f.calc(dfi));
+			res = ((AssignExpr)dfi.node_impl.getNode()).addNodeTypeInfo(f.calc(dfi));
 			dfi.setResult(res_idx, res);
 			return res;
 		}
@@ -1242,7 +1242,7 @@ public class BlockExpr extends ENode implements ScopeOfNames, ScopeOfMethods {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			BlockExpr node = (BlockExpr)dfi.node;
+			BlockExpr node = (BlockExpr)dfi.node_impl.getNode();
 			Vector<Var> vars = new Vector<Var>();
 			foreach (ASTNode n; node.stats; n instanceof VarDecl) vars.append(((VarDecl)n).var);
 			if (vars.length > 0)

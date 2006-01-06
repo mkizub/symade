@@ -7,6 +7,8 @@ import kiev.vlang.*;
 import kiev.transf.*;
 import kiev.parser.*;
 
+import kiev.vlang.ASTNode.NodeImpl;
+
 import kiev.be.java.JType;
 import kiev.be.java.JNodeView;
 import kiev.be.java.JDNodeView;
@@ -43,19 +45,13 @@ public enum TopLevelPass {
 	passGenerate			   		// resolve, generate and so on - each file separatly
 };
 
-public class NodeData {
-	public final KString	id;
-	public final ASTNode	node;
-	public NodeData			prev;
-	public NodeData			next;
-	public NodeData(KString id, ASTNode node) {
-		this.id = id;
-		this.node = node;
-	}
-	public void nodeAttached() {}
-	public void dataAttached() {}
-	public void nodeDetached() {}
-	public void dataDetached() {}
+public interface NodeData {
+	public KString	getNodeDataId();
+	public void nodeAttached(NodeImpl node);
+	public void dataAttached(NodeImpl node);
+	public void nodeDetached(NodeImpl node);
+	public void dataDetached(NodeImpl node);
+	public void walkTree(TreeWalker walker);
 };
 
 public class TreeWalker {
@@ -77,7 +73,7 @@ public abstract class ASTNode implements Constants {
 		protected	AttrSlot		pslot;
 		protected	ASTNode			pprev;
 		protected	ASTNode			pnext;
-		protected	NodeData		ndata;
+		protected	NodeData[]		ndata;
 		// Structures	
 		public packed:1,compileflags,16 boolean is_struct_local;
 		public packed:1,compileflags,17 boolean is_struct_anomymouse;
@@ -139,10 +135,26 @@ public abstract class ASTNode implements Constants {
 			this.pos = pos;
 		}
 		
+		public final ASTNode getNode() {
+			return this._self;
+		}
+		
+		public AttrSlot[] values() {
+			return AttrSlot.emptyArray;
+		}
+		public Object getVal(String name) {
+			throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
+		}
+		public void setVal(String name, Object val) {
+			throw new RuntimeException("No @att value \"" + name + "\" in NodeImpl");
+		}
+		
 		public Object copyTo(Object to$node) {
 			NodeImpl node = (NodeImpl)to$node;
 			node.pos			= this.pos;
 			node.compileflags	= this.compileflags;
+			if (this.ndata != null)
+				node.ndata = (NodeData[])this.ndata.clone();
 			return node;
 		}
 
@@ -153,11 +165,10 @@ public abstract class ASTNode implements Constants {
 		public final void callbackDetached() {
 			assert(isAttached());
 			// notify node data that we are detached
-			NodeData nd = ndata;
-			while (nd != null) {
-				NodeData nx = nd.next;
-				nd.nodeDetached();
-				nd = nx;
+			NodeData[] ndata = this.ndata;
+			if (ndata != null) {
+				foreach (NodeData nd; ndata)
+					nd.nodeDetached(this);
 			}
 			// do detcah
 			ASTNode parent = this.parent;
@@ -185,11 +196,10 @@ public abstract class ASTNode implements Constants {
 				public boolean pre_exec(ASTNode n) { n.callbackRootChanged(); return true; }
 			});
 			// notify node data that we are attached
-			NodeData nd = ndata;
-			while (nd != null) {
-				NodeData nx = nd.next;
-				nd.nodeAttached();
-				nd = nx;
+			NodeData[] ndata = this.ndata;
+			if (ndata != null) {
+				foreach (NodeData nd; ndata)
+					nd.nodeAttached(this);
 			}
 			// notify parent about the changed slot
 			parent.callbackChildChanged(pslot);
@@ -200,6 +210,91 @@ public abstract class ASTNode implements Constants {
 		public void callbackRootChanged() {
 			// do nothing
 		}	
+
+		public NodeData getNodeData(KString id) {
+			if (ndata != null) {
+				foreach (NodeData nd; ndata) {
+					if (nd.getNodeDataId() == id)
+						return nd;
+				}
+			}
+			return null;
+		}
+		
+		public void addNodeData(NodeData d) {
+			if (ndata != null) {
+				KString id = d.getNodeDataId();
+				NodeData[] ndata = this.ndata;
+				int sz = ndata.length;
+				for (int i=0; i < sz; i++) {
+					NodeData nd = ndata[i];
+					if (nd.getNodeDataId() == id) {
+						if (nd == d)
+							return;
+						nd.dataDetached(this);
+						d.dataAttached(this);
+						return;
+					}
+				}
+				NodeData[] tmp = new NodeData[sz+1];
+				for (int i=0; i < sz; i++)
+					tmp[i] = ndata[i];
+				tmp[sz] = d;
+				this.ndata = tmp;
+			} else {
+				this.ndata = new NodeData[]{d};
+			}
+			d.dataAttached(this);
+		}
+		
+		public void delNodeData(KString id) {
+			NodeData[] ndata = this.ndata;
+			if (ndata != null) {
+				int sz = ndata.length-1;
+				for (int idx=0; idx <= sz; idx++) {
+					NodeData nd = ndata[idx];
+					if (nd.getNodeDataId() == id) {
+						NodeData[] tmp   = new NodeData[sz];
+						nd.dataDetached(this);
+						int i;
+						for (i=0; i < idx; i++) tmp[i] = ndata[i];
+						for (   ; i <  sz; i++) tmp[i] = ndata[i+1];
+						this.ndata = tmp;
+						return;
+					}
+				}
+			}
+		}
+
+		public final void walkTree(TreeWalker walker) {
+			foreach (AttrSlot attr; this.values(); attr.is_attr) {
+				Object val = this.getVal(attr.name);
+				if (val == null)
+					continue;
+				if (attr.is_space) {
+					foreach (ASTNode n; (NArr<ASTNode>)val)
+						n.walkTree(walker);
+				}
+				else if (val instanceof ASTNode) {
+					val.walkTree(walker);
+				}
+			}
+			if (ndata != null) {
+				foreach (NodeData nd; this.ndata)
+					nd.walkTree(walker);
+			}
+		}
+
+		// build data flow for this node
+		final DataFlowInfo getDFlow() {
+			DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
+			if (df == null) {
+				df = DataFlowInfo.newDataFlowInfo(this);
+				this.addNodeData(df);
+			}
+			return df;
+		}
+	
 	}
 	@nodeview
 	public static view NodeView of NodeImpl implements Constants {
@@ -214,7 +309,6 @@ public abstract class ASTNode implements Constants {
 		public AttrSlot		pslot;
 		public ASTNode		pprev;
 		public ASTNode		pnext;
-		public NodeData		ndata;
 		
 		// the (private) field/method/struct is accessed from inner class (and needs proxy access)
 		@getter public final boolean isAccessedFromInner() {
@@ -274,8 +368,6 @@ public abstract class ASTNode implements Constants {
 	public abstract virtual							ASTNode			pprev;
 	@ref(copyable=false) @virtual
 	public abstract virtual							ASTNode			pnext;
-	@ref(copyable=false) @virtual
-	public abstract virtual access:no,no,no,rw		NodeData		ndata;
 
 	// for NodeView only
 	/*private*/ ASTNode() {}
@@ -291,7 +383,6 @@ public abstract class ASTNode implements Constants {
 	@getter public AttrSlot		get$pslot()			{ return this.getNodeView().pslot; }
 	@getter public ASTNode		get$pprev()			{ return this.getNodeView().pprev; }
 	@getter public ASTNode		get$pnext()			{ return this.getNodeView().pnext; }
-	@getter public NodeData		get$ndata()			{ return this.getNodeView().ndata; }
 	
 	@setter public void set$pos(int val)			{ this.getNodeView().pos = val; }
 	@setter public void set$compileflags(int val)	{ this.getNodeView().compileflags = val; }
@@ -299,7 +390,6 @@ public abstract class ASTNode implements Constants {
 	@setter public void set$pslot(AttrSlot val)	{ this.getNodeView().pslot = val; }
 	@setter public void set$pprev(ASTNode val)		{ this.getNodeView().pprev = val; }
 	@setter public void set$pnext(ASTNode val)		{ this.getNodeView().pnext = val; }
-	@setter public void set$ndata(NodeData val)	{ this.getNodeView().ndata = val; }
 
 	@getter public final ASTNode get$ctx_root() {
 		ASTNode parent = this.parent;
@@ -419,45 +509,15 @@ public abstract class ASTNode implements Constants {
     }
 	
 	public NodeData getNodeData(KString id) {
-		for (NodeData nd = ndata; nd != null; nd = nd.next) {
-			if (nd.id == id)
-				return nd;
-		}
-		return null;
+		return this.$v_impl.getNodeData(id);
 	}
 	
 	public void addNodeData(NodeData d) {
-		for (NodeData nd = ndata; nd != null; nd = nd.next) {
-			if (nd.id == d.id) {
-				if (nd == d)
-					return;
-				d.prev = nd.prev;
-				d.next = nd.next;
-				if (nd.prev != null) { d.prev.next = d; nd.prev = null; }
-				if (nd.next != null) { d.next.prev = d; nd.next = null; }
-				nd.dataDetached();
-				d.dataAttached();
-				return;
-			}
-		}
-		d.next = ndata;
-		if (d.next != null) d.next.prev = d;
-		ndata = d;
-		d.dataAttached();
+		this.$v_impl.addNodeData(d);
 	}
 	
 	public void delNodeData(KString id) {
-		for (NodeData nd = ndata; nd != null; nd = nd.next) {
-			if (nd.id == id) {
-				if (ndata == nd) ndata = nd.next;
-				if (nd.prev != null) nd.prev.next = nd.next;
-				if (nd.next != null) nd.next.prev = nd.prev;
-				nd.prev = null;
-				nd.next = null;
-				nd.dataDetached();
-				return;
-			}
-		}
+		this.$v_impl.delNodeData(id);
 	}
 	
 	public void cleanDFlow() {
@@ -467,13 +527,8 @@ public abstract class ASTNode implements Constants {
 	}
 	
 	// build data flow for this node
-	public DataFlowInfo getDFlow() {
-		DataFlowInfo df = (DataFlowInfo)getNodeData(DataFlowInfo.ID);
-		if (df == null) {
-			df = DataFlowInfo.newDataFlowInfo(this);
-			this.addNodeData(df);
-		}
-		return df;
+	public final DataFlowInfo getDFlow() {
+		return this.$v_impl.getDFlow();
 	}
 	
 	// get outgoing data flow for this node
@@ -494,20 +549,8 @@ public abstract class ASTNode implements Constants {
 	
 	
 	public final void walkTree(TreeWalker walker) {
-		if (walker.pre_exec(this)) {
-			foreach (AttrSlot attr; this.values(); attr.is_attr) {
-				Object val = this.getVal(attr.name);
-				if (val == null)
-					continue;
-				if (attr.is_space) {
-					foreach (ASTNode n; (NArr<ASTNode>)val)
-						n.walkTree(walker);
-				}
-				else if (val instanceof ASTNode) {
-					((ASTNode)val).walkTree(walker);
-				}
-			}
-		}
+		if (walker.pre_exec(this))
+			this.$v_impl.walkTree(walker);
 		walker.post_exec(this);
 	}
 

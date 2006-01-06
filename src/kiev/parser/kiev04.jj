@@ -242,7 +242,7 @@ public abstract class kiev040 {
 			clazz.setLocal(true);
 		foreach (Meta m; modifiers.annotations)
 			clazz.meta.set((Meta)m.copy());
-		foreach (SpecialAttrSlot sa; modifiers.specials)
+		foreach (MetaSpecial sa; modifiers.specials)
 			sa.attach(clazz);
 		
 		return clazz;
@@ -254,6 +254,8 @@ public abstract class kiev040 {
 			arg.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
 				arg.meta.set((Meta)m.copy());
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(arg);
 		}
 		return arg;
 	}
@@ -264,6 +266,8 @@ public abstract class kiev040 {
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(meth);
 		return meth;
 	}
 	
@@ -273,6 +277,8 @@ public abstract class kiev040 {
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(meth);
 		return meth;
 	}
 	
@@ -282,6 +288,8 @@ public abstract class kiev040 {
 		foreach (Meta m; modifiers.annotations)
 			meth.meta.set((Meta)m.copy());
 		if( modifiers.acc != null ) meth.acc = modifiers.acc;
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(meth);
 		return meth;
 	}
 	
@@ -296,11 +304,15 @@ public abstract class kiev040 {
 				f.acc = modifiers.acc;
 			foreach (Meta m; modifiers.annotations)
 				f.meta.set((Meta)m.copy());
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(f);
 		} else {
 			if (modifiers.acc != null)
 				f.acc = new Access(modifiers.acc.flags);
 			foreach (Meta m; modifiers.annotations)
 				f.meta.set((Meta)m.copy());
+			foreach (MetaSpecial sa; modifiers.specials)
+				((MetaSpecial)sa.copy()).attach(f);
 		}
 		return f;
 	}
@@ -311,6 +323,8 @@ public abstract class kiev040 {
 		f.setEnumField(true);
 		foreach (Meta m; modifiers.annotations)
 			f.meta.set((Meta)m.copy());
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(f);
 		return f;
 	}
 
@@ -319,6 +333,8 @@ public abstract class kiev040 {
 		f.pos = id.pos;
 		foreach (Meta m; modifiers.annotations)
 			f.meta.set((Meta)m.copy());
+		foreach (MetaSpecial sa; modifiers.specials)
+			sa.attach(f);
 		return f;
 	}
 	
@@ -331,9 +347,13 @@ public abstract class kiev040 {
 			if (first) {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
+				foreach (MetaSpecial sa; modifiers.specials)
+					sa.attach(v);
 			} else {
 				foreach (Meta m; modifiers.annotations)
 					v.meta.set((Meta)m.copy());
+				foreach (MetaSpecial sa; modifiers.specials)
+					((MetaSpecial)sa.copy()).attach(v);
 			}
 		}
 		return v;
@@ -345,6 +365,8 @@ public abstract class kiev040 {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
 				v.meta.set((Meta)m.copy());
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(v);
 		}
 		return v;
 	}
@@ -355,6 +377,8 @@ public abstract class kiev040 {
 			v.meta = new MetaSet();
 			foreach (Meta m; modifiers.annotations)
 				v.meta.set((Meta)m.copy());
+			foreach (MetaSpecial sa; modifiers.specials)
+				sa.attach(v);
 		}
 		return v;
 	}
@@ -511,9 +535,12 @@ TOKEN : /* RESERVED WORDS AND LITERALS */
 
 | < PACKED: "packed" > { if(Kiev.javaMode || Kiev.disabled(Ext.PackedFields) || !parser.declMode) matchedToken.kind=IDENTIFIER; }
 
+| < META_INTERFACE:  "@interface"  >
 | < META_SINGLETON:  "@singleton"  >
 | < META_FORWARD:    "@forward"    >
 | < META_UNERASABLE: "@unerasable" >
+| < META_VIRTUAL:    "@virtual"    >
+| < META_PACKED:     "@packed"     >
 
 }
 
@@ -836,10 +863,8 @@ ASTModifiers Modifiers() :
 	(
 		n.annotations	+= Annotation()
 	|	n				+= SpecialAnnotation()
-	)*
-	(
-		modifier		 = Modifier() {n.modifier |= modifier; }
-	|	n.annotations	+= Pack()			// TODO: remove, use @packed
+	|	n				+= Pack()			// TODO: remove, use @packed
+	|	modifier		 = Modifier() {n.modifier |= modifier; }
 	|	n.acc			 = Access()			// TODO: remove, use @access and views
 	)*
 	{ return n; }
@@ -1000,7 +1025,7 @@ Struct TypeDeclaration(ASTModifiers modifiers, ASTNode parent) :
 			clazz.interfaces += NArrType()
 			( "," clazz.interfaces += NArrType()	)*
 		]
-	|	"@" "interface"
+	|	"@interface"
 		(	name = Name()
 		|	name = KeywordAsName()
 		)
@@ -1093,7 +1118,7 @@ Field EnumFieldDeclaration(ASTModifiers modifiers) :
 		text = StringConstExpression()
 		{
 			text.value = KString.from("\""+text.value+"\"");
-			f.meta.set(new MetaAlias(text));
+			f.addNodeData(new MetaAlias(text));
 		}
 	]
 	{ return f; }
@@ -1190,27 +1215,18 @@ int Modifier() :
 	)
 }
 
-Meta Pack() :
-{ Token t; int size=-1; int offset=-1; String packer=null; }
+MetaPacked Pack() :
+{ MetaPacked mp = new MetaPacked(); }
 {
 	"packed"
 	[
-		":"
-		t=<INTEGER_LITERAL> { size = Integer.parseInt(t.image); t = null; }
+			":" 	mp.size   = IntConstExpression()
 		[
-		","
-		t=<IDENTIFIER> { packer = t.image; t = null; }
-		","
-		t=<INTEGER_LITERAL> { offset = Integer.parseInt(t.image); t = null; }
+			","		mp.fld    = Name()
+			","		mp.offset = IntConstExpression()
 		]
 	]
-	{
-		MetaPacked mp = new MetaPacked();
-		mp.size       = size;
-		mp.offset     = offset;
-		mp.fld        = KString.from(packer);
-		return mp;
-	}
+	{ return mp; }
 }
 
 Access Access() :
@@ -1235,12 +1251,23 @@ int AccessSpec() :
 |	<NO_READ_WRITE>	{ return 0; }
 }
 
-SpecialAttrSlot SpecialAnnotation() :
-{}
+MetaSpecial SpecialAnnotation() :
+{ MetaPacked mp; }
 {
 		"@singleton"    { return MetaSingleton; }
 	|	"@forward"      { return MetaForward; }
 	|	"@unerasable"   { return MetaUnerasable; }
+	|	"@virtual"      { return new MetaVirtual(); }
+	|	"@packed"
+		{ mp = new MetaPacked(); }
+		[	"("
+					 	mp.size   = IntConstExpression()
+			[	","		mp.fld    = Name()
+				","		mp.offset = IntConstExpression()
+			]
+			")"
+		]
+		{ return mp; }
 }
 
 NameRef KeywordAsName() :
@@ -1493,13 +1520,13 @@ FormPar FormalParameter(ASTModifiers modifiers) :
 }
 
 MetaThrows Throws() :
-{ MetaThrows n = new MetaThrows(); NameRef id; }
+{ MetaThrows n = new MetaThrows(); TypeNameRef thr; }
 {
 	"throws"
-	id = QName() { n.add(id); }
+	thr = TypeQName() { n.add(thr); }
 	(
 		","
-		id = QName() { n.add(id); }
+		thr = TypeQName() { n.add(thr); }
 	)*
 	{ return n; }
 }
@@ -1621,7 +1648,7 @@ Method MethodDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{m.meta.set(thr);} ]
+	[	thr = Throws()	{m.addNodeData(thr);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -1675,7 +1702,7 @@ Constructor ConstructorDeclaration(ASTModifiers modifiers) :
 	(
 		m.aliases += Alias()
 	)*
-	[	thr = Throws()	{m.meta.set(thr);} ]
+	[	thr = Throws()	{m.addNodeData(thr);} ]
 	(
 		m.conditions += RequareDeclaration()
 	|	m.conditions += EnsureDeclaration()
@@ -1849,8 +1876,8 @@ TypeRef TypeExpr() :
 	{ return res; }
 }
 
-TypeRef TypeQName() :
-{ NameRef id; TypeRef res; }
+TypeNameRef TypeQName() :
+{ NameRef id; TypeNameRef res; }
 {
 	id = Name() { res = new TypeNameRef(id); }
 	(
@@ -2768,7 +2795,7 @@ void BlockStatement(NArrENodes stats) :
 {
 	(
 		/* class declaration */
-		LOOKAHEAD( Modifiers() ("class" | "interface" | "@" "interface") )
+		LOOKAHEAD( Modifiers() ("class" | "interface" | "@interface") )
 		{
 			old_declMode = declMode;
 			declMode = true;

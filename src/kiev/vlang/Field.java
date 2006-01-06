@@ -178,20 +178,20 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public boolean isPackedField() { return this.getFieldView().isPackedField(); }
 	public void setPackedField(boolean on) { this.getFieldView().setPackedField(on); }
 
-	public MetaVirtual getMetaVirtual() {
-		return (MetaVirtual)this.meta.get(MetaVirtual.NAME);
+	public final MetaVirtual getMetaVirtual() {
+		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
 	}
 
-	public MetaPacked getMetaPacked() {
-		return (MetaPacked)this.meta.get(MetaPacked.NAME);
+	public final MetaPacked getMetaPacked() {
+		return (MetaPacked)this.getNodeData(MetaPacked.ID);
 	}
 
-	public MetaPacker getMetaPacker() {
-		return (MetaPacker)this.meta.get(MetaPacker.NAME);
+	public final MetaPacker getMetaPacker() {
+		return (MetaPacker)this.getNodeData(MetaPacker.ID);
 	}
 
-	public MetaAlias getMetaAlias() {
-		return (MetaAlias)this.meta.get(MetaAlias.NAME);
+	public final MetaAlias getMetaAlias() {
+		return (MetaAlias)this.getNodeData(MetaAlias.ID);
 	}
 
 	public String toString() { return name.toString()/*+":="+type*/; }

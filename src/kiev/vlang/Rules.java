@@ -183,7 +183,7 @@ public class RuleMethod extends Method {
 		DFState calc(DataFlowInfo dfi) {
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			RuleMethod m = (RuleMethod)dfi.node;
+			RuleMethod m = (RuleMethod)dfi.node_impl.getNode();
 			DFState in = DFState.makeNewState();
 			for(int i=0; i < m.params.length; i++) {
 				Var p = m.params[i];

@@ -118,7 +118,7 @@ public final class Label extends DNode {
 				throw new DFLoopException(this);
 			DFState res = dfi.getResult(res_idx);
 			if (res != null) return res;
-			Label node = (Label)dfi.node;
+			Label node = (Label)dfi.node_impl.getNode();
 			DFState tmp = node.getDFlow().in();
 			dfi.locks |= 1;
 			try {

@@ -246,7 +246,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public StructView		getStructView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
 	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
-	public JTypeDeclView		getJTypeDeclView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
+	public JTypeDeclView	getJTypeDeclView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 	public JStructView		getJStructView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 
 	/** Variouse names of the class */
@@ -408,10 +408,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public MetaPizzaCase getMetaPizzaCase() {
-//		return (MetaPizzaCase)this.meta.get(MetaPizzaCase.NAME);
-		foreach (Meta m; meta.metas; m instanceof MetaPizzaCase)
-			return (MetaPizzaCase)m;
-		return null;
+		return (MetaPizzaCase)this.getNodeData(MetaPizzaCase.ID);
 	}
 
 	public Field[] getEnumFields() {
@@ -758,10 +755,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				caseno = meta.getTag();
 		}
 		MetaPizzaCase meta = cas.getMetaPizzaCase();
-		if (meta == null) {
-			meta = new MetaPizzaCase();
-			cas.meta.set(meta);
-		}
+		if (meta == null)
+			cas.addNodeData(meta = new MetaPizzaCase());
 		meta.setTag(caseno + 1);
 		trace(Kiev.debugMembers,"Class's case "+cas+" added to class "	+this+" as case # "+meta.getTag());
 		return cas;
