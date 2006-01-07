@@ -86,7 +86,7 @@ public class Env extends Struct {
 		setResolved(true);
 		this.imeta_type = new BaseTypeProvider(this);
 		((StructImpl)this.$v_impl).type = Type.tpEnv; // call StdType initialization
-		this.super_bound = new TypeRef(Type.tpObject);
+		this.super_bound = new TypeRef();
 	}
 
 	public Object copy() {
