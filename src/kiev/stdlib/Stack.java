@@ -61,7 +61,7 @@ public class Stack<A> extends Vector<A> implements Cloneable
 	}
 
 	public synchronized Enumeration<A> elements() {
-		return new StackEnumerator<A>();
+		return new StackEnumerator();
 	}
     
 	public class StackEnumerator implements Enumeration {

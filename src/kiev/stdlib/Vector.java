@@ -119,7 +119,7 @@ public class Vector<A> implements Cloneable
 	}
 
 	public synchronized Enumeration<A> elements() {
-		return new VectorEnumerator<A>();
+		return new VectorEnumerator();
 	}
     
 	public boolean contains(A elem) {

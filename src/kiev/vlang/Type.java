@@ -388,7 +388,7 @@ public final class BaseType extends Type {
 			}
 			foreach (DNode d; clazz.members; d instanceof TypeDef) {
 				TypeDef td = (TypeDef)d;
-				vs.append(td.getAType(), td.getAType().super_type);
+				vs.append(td.getAType(), null/*td.getAType().super_type*/);
 			}
 			foreach (Type st; this.getDirectSuperTypes()) {
 				vs.append(st.bindings());
