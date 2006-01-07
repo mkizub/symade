@@ -1757,8 +1757,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// generate a class for interface non-abstract members
 		autoGenerateIdefault();
 		// build vtable
+		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
-		buildVTable(vtable);
+		buildVTable(vtable, processed);
 		if (Kiev.debugMultiMethod) {
 			trace("vtable for "+this+":");
 			foreach (VTableEntry vte; vtable) {
@@ -1790,21 +1791,28 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return true;
 	}
 	
-	static class VTableEntry {
+	static final class VTableEntry {
 		KString      name;
 		MethodType   etype;
+		access:no,ro,ro,rw
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
 		VTableEntry(KString name, MethodType etype) {
 			this.name = name;
 			this.etype = etype;
 		}
+		public void add(Method m) {
+			assert (!methods.contains(m));
+			methods = new List<Method>.Cons(m, methods);
+		}
 	}
 	
-	private void buildVTable(Vector<VTableEntry> vtable) {
+	private void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
+		if (processed.contains(this))
+			return;
 		// take vtable from super-types
 		foreach (Type sup; this.type.getDirectSuperTypes())
-			sup.getStruct().buildVTable(vtable);
+			sup.getStruct().buildVTable(vtable, processed);
 		
 		// process override
 		foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
@@ -1818,7 +1826,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if (name == vte.name && etype ≈ vte.etype) {
 					is_new = false;
 					if (!vte.methods.contains(m))
-						vte.methods = new List<Method>.Cons(m, vte.methods);
+						vte.add(m);
 				}
 			}
 			if (is_new)
@@ -1836,14 +1844,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					continue;
 				MethodType mt = new MethodType(m.etype.args,null);
 				if (mt ≈ et)
-					vte.methods = new List<Method>.Cons(m, vte.methods);
+					vte.add(m);
 			}
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
-					foreach (Method m; vte2.methods) {
+					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
 						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.type);
 						if (mt ≈ et)
-							vte.methods = new List<Method>.Cons(m, vte.methods);
+							vte.add(m);
 					}
 				}
 			}
@@ -1921,7 +1929,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 		}
 		if (found != root) {
-			vte.methods = new List<Method>.Cons(root, vte.methods);
+			vte.add(root);
 			mmset.append(root);
 		}
 		// check it's a multimethod entry
@@ -2014,7 +2022,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			else
 				m.body.addStatement(new ReturnStat(0,makeDispatchCall(0, m, def)));
 		}
-		vte.methods = new List<Method>.Cons(m, vte.methods);
+		vte.add(m);
 	}
 
 	public void autoBridgeMethods(VTableEntry vte) {
@@ -2053,7 +2061,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			else
 				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
-			vte.methods = new List<Method>.Cons(bridge, vte.methods);
+			vte.add(bridge);
 		}
 	}
 
