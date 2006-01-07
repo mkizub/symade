@@ -589,8 +589,8 @@ public final class BaseType extends Type {
 	}
 
 	public boolean isInstanceOf(Type _t2) {
-		if( this.equals(_t2) ) return true;
-		if( this.isReference() && _t2.equals(Type.tpObject) ) return true;
+		if( this ≡ _t2 ) return true;
+		if( this.isReference() && _t2 ≈ Type.tpObject ) return true;
 		if!(_t2 instanceof BaseType) {
 			if (_t2 instanceof ArgumentType)
 				return this.isInstanceOf(_t2.getSuperType());
@@ -605,19 +605,19 @@ public final class BaseType extends Type {
 			if( Kiev.verbose ) e.printStackTrace(System.out);
 			throw new RuntimeException("Unresolved type:"+e);
 		}
-		// Check class1 == class2 && arguments
-		if (t1.clazz == t2.clazz) {
+		// Check class1 >= class2 && bindings
+		if (t1.clazz.instanceOf(t2.clazz)) {
 			TVarSet b1 = t1.bindings();
 			TVarSet b2 = t2.bindings();
-			for(int i=0; i < b1.length; i++) {
-				if (!b1[i].result().isInstanceOf(b2[i].result()))
+			for(int i=0; i < b2.length; i++) {
+				TVar v2 = b2[i];
+				if (!v2.isBound() || v2.isAlias())
+					continue;
+				Type x = b1.resolve(v2.var);
+				if (!x.isInstanceOf(v2.result()))
 					return false;
 			}
 			return true;
-		}
-		foreach (Type sup; t1.getDirectSuperTypes()) {
-			if (Type.getRealType(t1,sup).isInstanceOf(t2))
-				return true;
 		}
 		return false;
 	}
