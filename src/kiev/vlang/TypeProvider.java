@@ -227,11 +227,12 @@ public final class TVarSet {
 		TVarSet sr = this.copy();
 		for(int i=0; i < vs_size; i++) {
 			TVar v = vs_vars[i];
-			if (!v.isBound()) continue;
+			if (!v.isBound() && !v.isAlias())
+				continue;
 			Type r = v.result();
 			for(int j=0; j < my_size; j++) {
 				TVar x = my_vars[j];
-				if (x.var ≡ v.var) {
+				if (x.var ≡ v.var && !x.isBound()) {
 					// bind
 					sr.set(sr.tvars[j], r);
 					continue;
