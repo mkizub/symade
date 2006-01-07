@@ -300,7 +300,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 	public void pass2(Struct:ASTNode astn) {
 		try {
 			Struct clazz = (Struct)astn;
-			getStructType(clazz);
+			getStructType(clazz, new Stack<Struct>());
 			if( !clazz.isPackage() ) {
 				foreach (DNode s; clazz.members; s instanceof Struct)
 					pass2(s);
@@ -308,17 +308,18 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		} catch(Exception e ) { Kiev.reportError(astn,e); }
 	}
 	
-	private BaseType getStructType(Struct clazz) {
+	private BaseType getStructType(Struct clazz, Stack<Struct> path) {
 		if (clazz.isTypeResolved()) {
 			if (!clazz.isArgsResolved())
-				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz);
+				throw new CompilerException(clazz, "Recursive type declaration for class "+clazz+" via "+path);
 			return clazz.type;
 		}
+		path.push(clazz);
 		
 		clazz.setTypeResolved(true);
 		
 		for (Struct p = clazz.package_clazz; p != null; p = p.package_clazz)
-			getStructType(p);
+			getStructType(p, path);
 
 		if (clazz.parent instanceof FileUnit)
 			clazz.setStatic(true);
@@ -342,7 +343,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.setStatic(true);
 			Struct p = clazz.ctx_clazz;
 			p.addCase(clazz);
-			getStructType(p);
+			getStructType(p, path);
 			TypeWithArgsRef sup_ref = new TypeWithArgsRef(new TypeRef(p.type));
 		next_case_arg:
 			for(int i=0; i < p.args.length; i++) {
@@ -357,7 +358,7 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.super_bound = sup_ref;
 			sup_ref.getType();
 		}
-		else if (clazz.isSyntax()) {
+		else if (clazz.isSyntax() || clazz.isPackage()) {
 			clazz.setAbstract(true);
 			clazz.setMembersGenerated(true);
 			clazz.setStatementsGenerated(true);
@@ -365,8 +366,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		else if( clazz.isInterface() ) {
 			clazz.super_type = Type.tpObject;
-			foreach(TypeRef tr; clazz.interfaces)
-				tr.getType();
+			foreach(TypeRef tr; clazz.interfaces) {
+				Struct s = tr.getType().getStruct();
+				if (s != null)
+					getStructType(s, path);
+			}
 		}
 		else {
 			if (clazz.view_of != null)
@@ -374,8 +378,16 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
 			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
 				clazz.super_type = Type.tpObject;
-			foreach(TypeRef tr; clazz.interfaces)
-				tr.getType();
+			if (sup != null) {
+				Struct s = sup.getStruct();
+				if (s != null)
+					getStructType(s, path);
+			}
+			foreach(TypeRef tr; clazz.interfaces) {
+				Struct s = tr.getType().getStruct();
+				if (s != null)
+					getStructType(s, path);
+			}
 		}
 		
 		clazz.type.bindings(); // update the type
@@ -390,7 +402,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 
 		clazz.setArgsResolved(true);
-			
+		path.pop();
+		
 		return clazz.type;
 	}
 
