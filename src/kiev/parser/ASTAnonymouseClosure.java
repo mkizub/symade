@@ -109,7 +109,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		if( ctx_method==null || ctx_method.isStatic() ) clazz.setStatic(true);
 		if( Env.getStruct(Type.tpClosureClazz.name) == null )
 			throw new RuntimeException("Core class "+Type.tpClosureClazz.name+" not found");
-		clazz.super_type = Type.tpClosureClazz.type;
+		clazz.super_type = Type.tpClosureClazz.concr_type.toTypeWithLowerBound(clazz.concr_type);
 
 		Type[] types = new Type[params.length];
 		for(int i=0; i < types.length; i++)
@@ -154,7 +154,7 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 				new IFldExpr(pos,new ThisExpr(pos),Type.tpClosureClazz.resolveField(nameClosureArgs)),
 				new ConstIntExpr(i));
 			if( !v.type.isReference() ) {
-				BaseType celltp = BaseType.getProxyType(v.type);
+				ConcreteType celltp = ConcreteType.getProxyType(v.type);
 				val = new IFldExpr(v.getPos(),
 						new CastExpr(v.getPos(),celltp,val,true),
 						celltp.clazz.resolveField(nameCellVal)

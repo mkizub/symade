@@ -180,7 +180,7 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		mode == ImportMode.IMPORT_STATIC && star && this.resolved instanceof Struct,
 		((Struct)this.resolved).checkResolved(),
 		path.enterMode(ResInfo.noForwards|ResInfo.noImports) : path.leaveMode(),
-		((Struct)this.resolved).type.resolveCallStaticR(node,path,name,mt),
+		((Struct)this.resolved).concr_type.resolveCallStaticR(node,path,name,mt),
 		node instanceof Method && node.isStatic() && node.isPublic()
 	}
 
@@ -221,11 +221,11 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	@setter public void set$op(ASTOperator val)		{ this.getTypeOpDefView().op = val; }
 	@setter public void set$type(TypeRef val)			{ this.getTypeOpDefView().type = val; }
-	@setter public void set$arg(TypeDef val)		{ this.getTypeOpDefView().arg = val; }
+	@setter public void set$arg(TypeDef val)			{ this.getTypeOpDefView().arg = val; }
 	
 	@att public abstract virtual ASTOperator	op;
 	@att public abstract virtual TypeRef		type;
-	@att public abstract virtual TypeDef	arg;
+	@att public abstract virtual TypeDef		arg;
 
 	public TypeOpDef() {
 		super(new TypeOpDefImpl());
@@ -237,6 +237,10 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 	
 	public NodeName	getName() {
 		return new NodeName(op.image);
+	}
+	
+	public Struct getStruct() {
+		return getType().getStruct();
 	}
 	
 	public Type getType() {

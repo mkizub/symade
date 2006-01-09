@@ -130,7 +130,7 @@ public class RuleMethod extends Method {
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.concr_type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,

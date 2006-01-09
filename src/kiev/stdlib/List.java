@@ -30,8 +30,8 @@ package kiev.stdlib;
 public class List<A>
 {
 
-	public case Nil<A>;
-	public case Cons<A>(A head, List<A> tail);
+	public case Nil;
+	public case Cons (A head, List<A> tail);
 
 /** return the length of the list
  */

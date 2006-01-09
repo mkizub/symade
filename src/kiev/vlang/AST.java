@@ -779,6 +779,16 @@ public abstract class DNode extends ASTNode {
 				this.$view.callbackChildChanged(nodeattr$flags);
 			}
 		}
+
+		@getter public final boolean isForward() {
+			return this.$view.is_forward;
+		}
+		@setter public final void setForward(boolean on) {
+			if (this.$view.is_forward != on) {
+				this.$view.is_forward = on;
+				this.$view.callbackChildChanged(nodeattr$flags);
+			}
+		}
 	}
 
 	/** java flags */
@@ -826,6 +836,7 @@ public abstract class DNode extends ASTNode {
 	public boolean isPackage()			{ return this.getDNodeView().isPackage(); }
 	public boolean isSyntax()			{ return this.getDNodeView().isSyntax(); }
 	public boolean isVirtual() 			{ return this.getDNodeView().isVirtual(); }
+	public boolean isForward()			{ return this.getDNodeView().isForward(); }
 
 	public void setPublic()						{ this.getDNodeView().setPublic(); }
 	public void setPrivate()					{ this.getDNodeView().setPrivate(); }
@@ -847,6 +858,7 @@ public abstract class DNode extends ASTNode {
 	public void setPackage()					{ this.getDNodeView().setPackage(); }
 	public void setSyntax()						{ this.getDNodeView().setSyntax(); }
 	public void setVirtual(boolean on)			{ this.getDNodeView().setVirtual(on); }
+	public void setForward(boolean on)			{ this.getDNodeView().setForward(on); }
 }
 
 /**
@@ -867,16 +879,6 @@ public abstract class LvalDNode extends DNode {
 			super($view);
 		}
 
-		// use no proxy	
-		@getter public final boolean isForward() {
-			return this.$view.is_forward;
-		}
-		@setter public final void setForward(boolean on) {
-			if (this.$view.is_forward != on) {
-				this.$view.is_forward = on;
-				this.$view.callbackChildChanged(nodeattr$flags);
-			}
-		}
 		// init wrapper
 		@getter public final boolean isInitWrapper() {
 			return this.$view.is_init_wrapper;
@@ -1390,7 +1392,14 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
+	public abstract Type		getSuperType();
+	public abstract Struct		getStruct();
 
+	public final boolean isTypeAbstract()		{ return this.isAbstract(); }
+	public final boolean isTypeVirtual()		{ return this.isVirtual(); }
+	public final boolean isTypeFinal()			{ return this.isFinal(); }
+	public final boolean isTypeStatic()		{ return this.isStatic(); }
+	public final boolean isTypeForward()		{ return this.isForward(); }
 }
 
 
@@ -1419,8 +1428,8 @@ public class TypeRef extends ENode {
 	public JENodeView		getJENodeView()		{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
 	public JTypeRefView		getJTypeRefView()	{ return new JTypeRefView((TypeRefImpl)this.$v_impl); }
 
-	@getter public Type		get$lnk()			{ return this.getTypeRefView().lnk; }
-	@setter public void		set$lnk(Type val)	{ this.getTypeRefView().lnk = val; }
+	@getter public Type		get$lnk()					{ return this.getTypeRefView().lnk; }
+	@setter public void		set$lnk(Type val)			{ this.getTypeRefView().lnk = val; }
 	
 	public TypeRef() {
 		super(new TypeRefImpl());
@@ -1444,16 +1453,22 @@ public class TypeRef extends ENode {
 		return lnk != null;
 	}
 	
+	public void setLowerBound(Type tp) {
+		lnk = lnk.toTypeWithLowerBound(tp);
+	}
+	
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
-	public Struct getStruct() { return getType().getStruct(); }
+	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
 	public JType getJType() { return getType().getJType(); }
 
 	public Type getType()
 		alias operator(210,fy,$cast)
 	{
-//		if (lnk == null)
-//			throw new CompilerException(this,"Type "+this+" is not found");
+		return lnk;
+	}
+	
+	public Type getTypeWithoutLower() {
 		return lnk;
 	}
 	

@@ -87,7 +87,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 				foreach (TypeDef td; targs)
 					vset.append(td.getAType(), null);
 			}
-			vset.append(getMethod().ctx_clazz.type.bindings());
+			vset.append(getMethod().ctx_clazz.concr_type.bindings());
 			Vector<Type> args = new Vector<Type>();
 			Vector<Type> dargs = new Vector<Type>();
 			foreach (FormPar fp; params) {
@@ -102,8 +102,8 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 					assert(fp.isForward());
 					assert(fp.isFinal());
 					assert(fp.name.name == nameThisDollar);
-					assert(fp.type ≈ this.getMethod().ctx_clazz.package_clazz.type);
-					dargs.append(this.getMethod().ctx_clazz.package_clazz.type);
+					assert(fp.type ≈ this.getMethod().ctx_clazz.package_clazz.concr_type);
+					dargs.append(this.getMethod().ctx_clazz.package_clazz.concr_type);
 					break;
 				case FormPar.PARAM_RULE_ENV:
 					assert(this instanceof RuleMethod.RuleMethodImpl);
@@ -604,7 +604,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	;
 		!this.isStatic() && path.isForwardsAllowed(),
 		path.enterForward(ThisExpr.thisPar) : path.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.type.resolveNameAccessR(node,path,name)
+		this.ctx_clazz.concr_type.resolveNameAccessR(node,path,name)
 	;
 		path.isForwardsAllowed(),
 		var @= params,
@@ -620,7 +620,7 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	{
 		!this.isStatic(),
 		info.enterForward(ThisExpr.thisPar) : info.leaveForward(ThisExpr.thisPar),
-		this.ctx_clazz.type.resolveCallAccessR(node,info,name,mt)
+		this.ctx_clazz.concr_type.resolveCallAccessR(node,info,name,mt)
 	;
 		n @= params,
 		n.isForward(),

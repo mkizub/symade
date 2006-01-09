@@ -23,6 +23,7 @@ public class TypeWithArgsRef extends TypeRef {
 	public static final class TypeWithArgsRefImpl extends TypeRefImpl {
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					base_type;
+		@att public TypeRef					lower;
 		public TypeWithArgsRefImpl() {}
 		public TypeWithArgsRefImpl(int pos) { super(pos, null); }
 	}
@@ -30,10 +31,12 @@ public class TypeWithArgsRef extends TypeRef {
 	public static final view TypeWithArgsRefView of TypeWithArgsRefImpl extends TypeRefView {
 		public access:ro	NArr<TypeRef>			args;
 		public				TypeRef					base_type;
+		public				TypeRef					lower;
 	}
 
 	@att public abstract virtual access:ro NArr<TypeRef>			args;
 	@att public abstract virtual           TypeRef					base_type;
+	@att public abstract virtual           TypeRef					lower;
 	
 	public NodeView				getNodeView()				{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
 	public ENodeView			getENodeView()				{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
@@ -42,7 +45,9 @@ public class TypeWithArgsRef extends TypeRef {
 
 	@getter public NArr<TypeRef>		get$args()		{ return this.getTypeWithArgsRefView().args; }
 	@getter public TypeRef				get$base_type()	{ return this.getTypeWithArgsRefView().base_type; }
+	@getter public TypeRef				get$lower()		{ return this.getTypeWithArgsRefView().lower; }
 	@setter public void		set$base_type(TypeRef val)	{ this.getTypeWithArgsRefView().base_type = val; }
+	@setter public void		set$lower(TypeRef val)		{ this.getTypeWithArgsRefView().lower = val; }
 	
 	public TypeWithArgsRef() {
 		super(new TypeWithArgsRefImpl());
@@ -56,13 +61,22 @@ public class TypeWithArgsRef extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
+	public void setLowerBound(Type tp) {
+		this.lower = new TypeRef(tp);
+		this.lnk = null;
+	}
 
-	public Type getType() {
+	public Struct getStruct() {
+		if (this.lnk != null) return this.lnk.getStruct();
+		return base_type.getStruct();
+	}
+
+	public Type getTypeWithoutLower() {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp = base_type.getType();
-		if (tp == null || !(tp instanceof BaseType))
-			throw new CompilerException(this,"Type "+base_type+" is not found");
+		if (tp == null || !(tp instanceof CompaundType))
+			throw new CompilerException(this,"Compaund type "+base_type+" is not found");
 		TVarSet tpset = tp.bindings();
 		TVarSet set = new TVarSet();
 		int a = 0;
@@ -79,7 +93,20 @@ public class TypeWithArgsRef extends TypeRef {
 		}
 		if (a < args.length)
 			Kiev.reportError(this,"Type "+tp+" has only "+a+" unbound type parameters");
-		this.lnk = tp.bind(set);
+		return tp.bind(set);
+	}
+	
+	public Type getType() {
+		if (this.lnk != null)
+			return this.lnk;
+	    Type tp = getTypeWithoutLower();
+		if (this.lower != null) {
+			Type lt = this.lower.getType();
+			if (!lt.isInstanceOf(tp))
+				throw new CompilerException(this,"Type '"+lt+"' is not a lower bound of "+tp);
+			tp = tp.toTypeWithLowerBound(lt);
+		}
+		this.lnk = tp;
 		return this.lnk;
 	}
 

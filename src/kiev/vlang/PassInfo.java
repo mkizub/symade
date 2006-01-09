@@ -121,6 +121,7 @@ public class PassInfo {
 		qname_tail ?= name.substr(name.lastIndexOf('.')+1),
 		resolveQualifiedNameR(from,sp,path,qname_head),
 		sp instanceof Struct,
+		path.space_prev = from,
 		((Struct)sp).resolveNameR(node,path,qname_tail)
 	;
 		pe = new ParentEnumerator(from),

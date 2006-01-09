@@ -18,14 +18,14 @@ import kiev.vlang.TypeRef.TypeRefView;
 public final class ASTModifiers extends ASTNode {
 	
 	@node
-	public static final class ASTModifiersImpl extends TypeRefImpl {
+	public static final class ASTModifiersImpl extends NodeImpl {
 		@att public Access 				acc;
 		@att public NArr<Meta>			annotations;
 		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
 		public ASTModifiersImpl() {}
 	}
 	@nodeview
-	public static final view ASTModifiersView of ASTModifiersImpl extends TypeRefView {
+	public static final view ASTModifiersView of ASTModifiersImpl extends NodeView {
 		public				Access 				acc;
 		public access:ro	NArr<Meta>			annotations;
 		public				MetaSpecial[]		specials;		

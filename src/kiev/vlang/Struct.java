@@ -37,9 +37,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		
 		     public Access						acc;
 		     public ClazzName					name;
-		     BaseTypeProvider					imeta_type;
+		     CompaundTypeProvider				imeta_type;
 		     WrapperTypeProvider				wmeta_type;
-		@ref public BaseType					type;
+		     public ConcreteType				concr_type;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
 		@att public NArr<TypeRef>				interfaces;
@@ -52,15 +52,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@att public NArr<DNode>					members;
 
 		public void callbackChildChanged(AttrSlot attr) {
-			if (attr.name == "members") {
-				if (type != null)
-					type.invalidate();
-			}
-			else if (attr.name == "meta") {
-				if (type != null)
-					type.invalidate();
-			}
-			else if (attr.name == "args") {
+			if (attr.name == "args") {
 				imeta_type.version++;
 			}
 			if (attr.name == "super_bound") {
@@ -76,25 +68,25 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 	@nodeview
 	public static final view StructView of StructImpl extends TypeDeclView {
-		public				Access				acc;
-		public				ClazzName			name;
-		public				BaseTypeProvider	imeta_type;
-		public				WrapperTypeProvider	wmeta_type;
-		public				BaseType			type;
-		public				TypeRef				view_of;
-		public				TypeRef				super_bound;
-		public access:ro	NArr<TypeRef>		interfaces;
-		public access:ro	NArr<TypeDef>		args;
-		public				Struct				package_clazz;
-		public				Struct				typeinfo_clazz;
-		public access:ro	NArr<Struct>		sub_clazz;
-		public access:ro	NArr<DNode>			imported;
-		public access:ro	NArr<DNode>			members;
+		public				Access					acc;
+		public				ClazzName				name;
+		public access:ro	CompaundTypeProvider	imeta_type;
+		public				WrapperTypeProvider		wmeta_type;
+		public access:ro	ConcreteType			concr_type;
+		public				TypeRef					view_of;
+		public				TypeRef					super_bound;
+		public access:ro	NArr<TypeRef>			interfaces;
+		public access:ro	NArr<TypeDef>			args;
+		public				Struct					package_clazz;
+		public				Struct					typeinfo_clazz;
+		public access:ro	NArr<Struct>			sub_clazz;
+		public access:ro	NArr<DNode>				imported;
+		public access:ro	NArr<DNode>				members;
 
 		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final BaseType	get$super_type()	{ return (BaseType)super_bound.lnk; }
 		@setter public final void set$super_type(BaseType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
-		
+
 		public boolean isClazz() {
 			return !isPackage() && !isInterface();
 		}
@@ -253,9 +245,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	     public abstract virtual			ClazzName					name;
 
 	/** Type associated with this class */
-	     public abstract virtual			BaseTypeProvider			imeta_type;
+	     public abstract virtual access:ro	CompaundTypeProvider		imeta_type;
 	     public abstract virtual			WrapperTypeProvider			wmeta_type;
-	@ref public abstract virtual access:ro	BaseType					type;
+	@ref public abstract virtual access:ro	ConcreteType				concr_type;
 	@att public abstract virtual			TypeRef						view_of;
 
 	/** Bound super-class for class arguments */
@@ -290,34 +282,31 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	/** Array of methods defined in this structure */
 	@att public abstract virtual access:ro	NArr<DNode>					members;
 	
-	@getter public Access				get$acc()					{ return this.getStructView().acc; }
-	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
-	@getter public BaseTypeProvider		get$imeta_type()			{ return this.getStructView().imeta_type; }
-	@getter public WrapperTypeProvider	get$wmeta_type()			{ return this.getStructView().wmeta_type; }
-	@getter public BaseType				get$type()					{ return this.getStructView().type; }
-	@getter public TypeRef				get$view_of()				{ return this.getStructView().view_of; }
-	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
-	@getter public NArr<TypeRef>		get$interfaces()			{ return this.getStructView().interfaces; }
-	@getter public NArr<TypeDef>		get$args()					{ return this.getStructView().args; }
-	@getter public Struct				get$package_clazz()			{ return this.getStructView().package_clazz; }
-	@getter public Struct				get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
-	@getter public NArr<Struct>			get$sub_clazz()				{ return this.getStructView().sub_clazz; }
-	@getter public NArr<DNode>			get$imported()				{ return this.getStructView().imported; }
-	@getter public NArr<DNode>			get$members()				{ return this.getStructView().members; }
-	@getter public BaseType				get$super_type()			{ return this.getStructView().super_type; }
+	@getter public Access					get$acc()					{ return this.getStructView().acc; }
+	@getter public ClazzName				get$name()					{ return this.getStructView().name; }
+	@getter public CompaundTypeProvider	get$imeta_type()			{ return this.getStructView().imeta_type; }
+	@getter public WrapperTypeProvider		get$wmeta_type()			{ return this.getStructView().wmeta_type; }
+	@getter public ConcreteType				get$concr_type()			{ return this.getStructView().concr_type; }
+	@getter public TypeRef					get$view_of()				{ return this.getStructView().view_of; }
+	@getter public TypeRef					get$super_bound()			{ return this.getStructView().super_bound; }
+	@getter public NArr<TypeRef>			get$interfaces()			{ return this.getStructView().interfaces; }
+	@getter public NArr<TypeDef>			get$args()					{ return this.getStructView().args; }
+	@getter public Struct					get$package_clazz()			{ return this.getStructView().package_clazz; }
+	@getter public Struct					get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
+	@getter public NArr<Struct>				get$sub_clazz()				{ return this.getStructView().sub_clazz; }
+	@getter public NArr<DNode>				get$imported()				{ return this.getStructView().imported; }
+	@getter public NArr<DNode>				get$members()				{ return this.getStructView().members; }
+	@getter public BaseType					get$super_type()			{ return this.getStructView().super_type; }
 
 	@setter public void set$acc(Access val)							{ this.getStructView().acc = val; }
 	@setter public void set$name(ClazzName val)						{ this.getStructView().name = val; }
-	@setter public void set$imeta_type(BaseTypeProvider val)			{ this.getStructView().imeta_type = val; }
 	@setter public void set$wmeta_type(WrapperTypeProvider val)		{ this.getStructView().wmeta_type = val; }
-//	@setter public void set$type(BaseType val)							{ this.getStructView().type = val; }
 	@setter public void set$view_of(TypeRef val)						{ this.getStructView().view_of = val; }
 	@setter public void set$super_bound(TypeRef val)					{ this.getStructView().super_bound = val; }
 	@setter public void set$package_clazz(Struct val)					{ this.getStructView().package_clazz = val; }
 	@setter public void set$typeinfo_clazz(Struct val)					{ this.getStructView().typeinfo_clazz = val; }
 	@setter public void set$super_type(BaseType val) 					{ this.getStructView().super_type = val; }
 
-	
 	Struct() {
 		super(new StructImpl(0,0));
 		this.name = ClazzName.Empty;
@@ -326,8 +315,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public Struct(ClazzName name, Struct outer, int acc) {
 		super(new StructImpl(0,acc));
 		this.name = name;
-		this.imeta_type = new BaseTypeProvider(this);
-		((StructImpl)this.$v_impl).type = new BaseType(this);
+		((StructImpl)this.$v_impl).imeta_type = new CompaundTypeProvider(this);
+		((StructImpl)this.$v_impl).concr_type = new ConcreteType(this.imeta_type, TVarSet.emptySet);
 		this.super_bound = new TypeRef();
 		this.meta = new MetaSet();
 		package_clazz = outer;
@@ -335,6 +324,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	@getter public Struct get$child_ctx_clazz()	{ return this; }
+
+	public Struct getStruct() { return this; }
 
 	public Object copy() {
 		throw new CompilerException(this,"Struct node cannot be copied");
@@ -479,7 +470,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public boolean instanceOf(Struct cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( super_bound.lnk != null && super_type.clazz.instanceOf(cl) )
+		if( super_bound.getStruct() != null && super_bound.getStruct().instanceOf(cl) )
 			return true;
 		if( cl.isInterface() ) {
 			for(int i=0; i < interfaces.length; i++) {
@@ -539,6 +530,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			package_clazz.resolveNameR(node,info,name),
 			$cut
 		;	info.isSuperAllowed(),
+			info.space_prev == null || (info.space_prev.pslot.name != "super_bound" && info.space_prev.pslot.name != "interfaces"),
 			trace(Kiev.debugResolve,"Struct: resolving in super-class of "+this),
 			resolveNameR_3(node,info,name), // resolve in super-classes
 			$cut
@@ -573,14 +565,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 	}
 	protected rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
-		Type@ sup;
+		TypeRef@ sup_ref;
+		Struct@ sup;
 	{
-			{	sup ?= super_type,
+			{	sup_ref ?= super_bound,
+				sup ?= sup_ref.getStruct(),
 				info.enterSuper() : info.leaveSuper(),
-				sup.getStruct().resolveNameR(node,info,name)
-			;	sup @= TypeRef.linked_elements(interfaces),
+				sup.resolveNameR(node,info,name)
+			;	sup_ref @= interfaces,
+				sup ?= sup_ref.getStruct(),
 				info.enterSuper() : info.leaveSuper(),
-				sup.getStruct().resolveNameR(node,info,name)
+				sup.resolveNameR(node,info,name)
 			}
 	}
 
@@ -613,7 +608,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	final public rule resolveMethodR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
-		resolveStructMethodR(node, info, name, mt, this.type)
+		resolveStructMethodR(node, info, name, mt, this.concr_type)
 	}
 
 	protected rule resolveStructMethodR(DNode@ node, ResInfo info, KString name, MethodType mt, Type tp)
@@ -655,8 +650,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			args[i] = (Type)va_args[i];
 		MethodType mt = new MethodType(args,ret);
 		DNode@ m;
-		if (!this.type.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
-			!this.type.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
+		if (!this.concr_type.resolveCallAccessR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic), name, mt) &&
+			!this.concr_type.resolveCallStaticR(m, new ResInfo(this,ResInfo.noForwards|ResInfo.noImports), name, mt))
 			throw new CompilerException(this,"Unresolved method "+name+mt+" in class "+this);
 		return (Method)m;
 	}
@@ -761,7 +756,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return cas;
 	}
 
-	public Type getType() { return this.type; }
+	public Type getType() { return this.concr_type; }
 
 /*
  TypeInfo has three modes - first, it's an unparametriezed
@@ -795,11 +790,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	public static String makeTypeInfoString(Type t) {
 		StringBuffer sb = new StringBuffer(128);
 		sb.append(t.getJType().toClassForNameString());
-		if( t instanceof BaseType && ((BaseType)t).clazz.isTypeUnerasable() ) {
-			BaseType bt = (BaseType)t;
+		if( t instanceof CompaundType && t.getStruct().isTypeUnerasable() ) {
+			CompaundType bt = (CompaundType)t;
 			sb.append('<');
 			boolean comma = false;
-			foreach (TVar tv; bt.clazz.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+			foreach (TVar tv; bt.clazz.concr_type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
 				Type ta = bt.resolve(tv.var);
 				if (comma) sb.append(',');
 				sb.append(makeTypeInfoString(ta));
@@ -813,7 +808,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	}
 
 	public ENode accessTypeInfoField(ASTNode from, Type t) {
-		if( this.isTypeUnerasable() && t.isRtArgumented() ) {
+		if( this.isTypeUnerasable() && t.isUnerasable() ) {
 			ENode ti_access;
 			Method ctx_method = from.ctx_method;
 			if (ctx_method != null && ctx_method.isStatic()) {
@@ -828,12 +823,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				ti_access = new IFldExpr(from.pos,new ThisExpr(pos),ti);
 			}
 			// Small optimization for the $typeinfo
-			if( this.type.isInstanceOf(t.getInitialType()) )
+			if( this.concr_type.isInstanceOf(t.getStruct().concr_type) )
 				return ti_access;
 
 			if (t.isArgument()) {
 				// Get corresponded type argument
-				ArgumentType at = (ArgumentType)t;
+				ArgType at = (ArgType)t;
 				KString fnm = new KStringBuffer(nameTypeInfo.len+1+at.name.len)
 						.append(nameTypeInfo).append('$').append(at.name).toKString();
 				Field ti_arg = typeinfo_clazz.resolveField(fnm);
@@ -849,11 +844,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// Special case for interfaces, that cannot have private fields,
 		// but need typeinfo in <clinit>
 		if ((from.ctx_method == null || from.ctx_method.name.name == nameClassInit) && from.ctx_clazz.isInterface()) {
-			BaseType ftype = Type.tpTypeInfo;
+			ConcreteType ftype = Type.tpTypeInfo;
 			if (t.getStruct().isTypeUnerasable()) {
 				if (t.getStruct().typeinfo_clazz == null)
 					t.getStruct().autoGenerateTypeinfoClazz();
-				ftype = t.getStruct().typeinfo_clazz.type;
+				ftype = t.getStruct().typeinfo_clazz.concr_type;
 			}
 			ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
 			ENode e = new CastExpr(from.pos,ftype,new CallExpr(from.pos,null,
@@ -875,11 +870,11 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			ENode e = new SFldExpr(from.pos,f);
 			return e;
 		}
-		BaseType ftype = Type.tpTypeInfo;
+		ConcreteType ftype = Type.tpTypeInfo;
 		if (t.getStruct().isTypeUnerasable()) {
 			if (t.getStruct().typeinfo_clazz == null)
 				t.getStruct().autoGenerateTypeinfoClazz();
-			ftype = t.getStruct().typeinfo_clazz.type;
+			ftype = t.getStruct().typeinfo_clazz.concr_type;
 		}
 		Field f = new Field(KString.from(nameTypeInfo+"$"+i),ftype,ACC_STATIC|ACC_FINAL); // package-private for inner classes
 		ENode[] ti_args = new ENode[]{new ConstStringExpr(ts)};
@@ -947,9 +942,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			typeinfo_clazz.setPublic();
 			typeinfo_clazz.setResolved(true);
 			if (super_type != null && ((Struct)super_type.clazz).typeinfo_clazz != null)
-				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.type;
+				typeinfo_clazz.super_type = ((Struct)super_type.clazz).typeinfo_clazz.concr_type.toTypeWithLowerBound(typeinfo_clazz.concr_type);
 			else
-				typeinfo_clazz.super_type = Type.tpTypeInfo;
+				typeinfo_clazz.super_type = Type.tpTypeInfo.toTypeWithLowerBound(typeinfo_clazz.concr_type);
 			addSubStruct(typeinfo_clazz);
 			typeinfo_clazz.pos = pos;
 
@@ -957,8 +952,8 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Constructor init = new Constructor(ACC_PUBLIC);
 			init.body = new BlockStat(pos);
 			// add in it arguments fields, and prepare for constructor
-			foreach (TVar tv; this.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
-				ArgumentType t = tv.var;
+			foreach (TVar tv; this.concr_type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+				ArgType t = tv.var;
 				KString fname = KString.from(nameTypeInfo+"$"+t.name);
 				Field f = new Field(fname,Type.tpTypeInfo,ACC_PUBLIC|ACC_FINAL);
 				typeinfo_clazz.addField(f);
@@ -973,7 +968,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 
 			// create typeinfo field
-			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.type,ACC_PUBLIC|ACC_FINAL));
+			Field tif = addField(new Field(nameTypeInfo,typeinfo_clazz.concr_type,ACC_PUBLIC|ACC_FINAL));
 			// add constructor to the class
 			typeinfo_clazz.addMethod(init);
 			
@@ -983,10 +978,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			} else {
 				init.setNeedFieldInits(true);
 				ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
-				foreach (TVar tv; super_type.clazz.type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
-					Type t = tv.var.rebind(this.type.bindings());
+				foreach (TVar tv; super_type.clazz.concr_type.bindings().tvars; !tv.isBound() && !tv.isAlias()) {
+					Type t = tv.var.rebind(this.concr_type.bindings());
 					ENode expr;
-					if (t instanceof ArgumentType) {
+					if (t instanceof ArgType) {
 						expr = new ASTIdentifier(pos,t.name);
 					} else {
 						expr = new CallExpr(pos,null,
@@ -1042,7 +1037,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				def.pos = m.pos;
 				def.params.moveFrom(m.params); // move, because the vars are resolved
 				m.params.copyFrom(def.params);
-				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.type,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
+				def.params.insert(0,new FormPar(pos,Constants.nameThis,this.concr_type,FormPar.PARAM_NORMAL,ACC_FINAL|ACC_FORWARD));
 				defaults.members.add(def);
 				def.body = (BlockStat)~m.body;
 				def.setVirtualStatic(true);
@@ -1110,14 +1105,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					if( package_clazz.isClazz() && !isStatic() ) {
 						// Insert outer class type as second argument, but first type
 						// in signature
-						targs = (Type[])Arrays.insert(targs,package_clazz.type,0);
+						targs = (Type[])Arrays.insert(targs,package_clazz.concr_type,0);
 						// Also add formal parameter
 						m.params.insert(new FormPar(m.pos,nameThisDollar,targs[0],FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL),0);
 						retype = true;
 					}
 					if (!isInterface() && isTypeUnerasable()) {
-						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.type,(retype?1:0));
-						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
+						targs = (Type[])Arrays.insert(targs,typeinfo_clazz.concr_type,(retype?1:0));
+						m.params.insert(new FormPar(m.pos,nameTypeInfo,typeinfo_clazz.concr_type,FormPar.PARAM_TYPEINFO,ACC_FINAL),(retype?1:0));
 						retype = true;
 					}
 				}
@@ -1126,17 +1121,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					Constructor init = new Constructor(ACC_PUBLIC);
 					if( super_type != null && super_type.clazz == Type.tpClosureClazz ) {
 						if( !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.concr_type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						} else {
 							init.params.append(new FormPar(pos,KString.from("max$args"),Type.tpInt,FormPar.PARAM_NORMAL,0));
 						}
 					} else {
 						if( package_clazz.isClazz() && !isStatic() ) {
-							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
+							init.params.append(new FormPar(pos,nameThisDollar,package_clazz.concr_type,FormPar.PARAM_OUTER_THIS,ACC_FORWARD|ACC_FINAL));
 						}
 						if (!isInterface() && isTypeUnerasable()) {
-							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
+							init.params.append(new FormPar(pos,nameTypeInfo,typeinfo_clazz.concr_type,FormPar.PARAM_TYPEINFO,ACC_FINAL));
 						}
 						if( isEnum() ) {
 							init.params.append(new FormPar(pos,KString.from("name"),Type.tpString,FormPar.PARAM_NORMAL,0));
@@ -1469,7 +1464,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			Method overwr = null;
 
 			if (super_type != null )
-				overwr = super_type.clazz.getOverwrittenMethod(this.type,m);
+				overwr = super_type.clazz.getOverwrittenMethod(this.concr_type,m);
 
 			// nothing to do, if no methods to combine
 			if (mlistb.length() == 1 && mm != null) {
@@ -1553,12 +1548,12 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if( mi.isStatic() || mi.isPrivate() || mi.name.equals(nameInit) ) continue;
 			Method m = null;
 			if( super_type != null )
-				m = super_type.clazz.getOverwrittenMethod(this.type,mi);
+				m = super_type.clazz.getOverwrittenMethod(this.concr_type,mi);
 			foreach(TypeRef si; interfaces ) {
 				if( m == null )
-					m = si.getStruct().getOverwrittenMethod(this.type,mi);
+					m = si.getStruct().getOverwrittenMethod(this.concr_type,mi);
 				else
-					si.getStruct().getOverwrittenMethod(this.type,mi);
+					si.getStruct().getOverwrittenMethod(this.concr_type,mi);
 			}
 			if( m != null ) {
 				for (int i=0; i < m.params.length; i++) {
@@ -1749,7 +1744,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( isPackage() ) return false;
 		
 		// first, pre-generate super-types
-		foreach (Type sup; type.getDirectSuperTypes())
+		foreach (Type sup; concr_type.getDirectSuperTypes())
 			sup.getStruct().preGenerate();
 
 		// generate typeinfo class, if needed
@@ -1811,7 +1806,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if (processed.contains(this))
 			return;
 		// take vtable from super-types
-		foreach (Type sup; this.type.getDirectSuperTypes())
+		foreach (Type sup; this.concr_type.getDirectSuperTypes())
 			sup.getStruct().buildVTable(vtable, processed);
 		
 		// process override
@@ -1849,7 +1844,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.type);
+						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.concr_type);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -1922,7 +1917,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		members.append(root);
 		// check if we already have this method in this class
 		foreach (Method m; mmset) {
-			if (m.ctx_clazz == this && m.type.rebind(this.type) ≈ root.type.rebind(this.type)) {
+			if (m.ctx_clazz == this && m.type.rebind(this.concr_type) ≈ root.type.rebind(this.concr_type)) {
 				members.detach(root);
 				root = found = m;
 				break;
@@ -1983,7 +1978,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				continue;
 			Method fnd = null;
 			Type[] args = m.type.args;
-			args = (Type[])Arrays.insert(args,m.ctx_clazz.type,0);
+			args = (Type[])Arrays.insert(args,m.ctx_clazz.concr_type,0);
 			MethodType mt = new MethodType(args, m.type.ret);
 			foreach (Method dm; i.members; dm instanceof Method && dm.name.name == m.name.name && dm.type ≈ mt) {
 				fnd = dm;

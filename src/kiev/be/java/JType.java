@@ -45,9 +45,13 @@ public abstract class JType {
 	public static final int flResolved			= StdTypes.flResolved;
 	public static final int flBoolean			= StdTypes.flBoolean;
 	public static final int flCallable			= StdTypes.flCallable;
-	public static final int flArgumented		= StdTypes.flArgumented;
-	public static final int flRtArgumented		= StdTypes.flRtArgumented;
-	public static final int flFake				= 1 << 16;
+	public static final int flAbstract			= StdTypes.flAbstract;
+	public static final int flUnerasable		= StdTypes.flUnerasable;
+	public static final int flVirtual			= StdTypes.flVirtual;
+	public static final int flFinal				= StdTypes.flFinal;
+	public static final int flStatic			= StdTypes.flStatic;
+	public static final int flForward			= StdTypes.flForward;
+	public static final int flFake				= 1 << 31;
 	
 	public static final JFakeType tpAny			= new JFakeType(StdTypes.tpAny,  JConstants.sigAny);
 	public static final JFakeType tpVoid			= new JFakeType(StdTypes.tpVoid, JConstants.sigVoid);
@@ -96,9 +100,13 @@ public abstract class JType {
 	public final boolean isDoubleSize()	{ return (flags & flDoubleSize)		!= 0 ; }
 	public final boolean isResolved()		{ return (flags & flResolved)		!= 0 ; }
 	public final boolean isBoolean()		{ return (flags & flBoolean)		!= 0 ; }
-	public final boolean isArgumented()	{ return (flags & flArgumented)		!= 0 ; }
-	public final boolean isRtArgumented()	{ return (flags & flRtArgumented)	!= 0 ; }
 	public final boolean isCallable()		{ return (flags & flCallable)		!= 0 ; }
+	public final boolean isAbstract()		{ return (flags & flAbstract)		!= 0 ; }
+	public final boolean isUnerasable()	{ return (flags & flUnerasable)		!= 0 ; }
+	public final boolean isVirtual()		{ return (flags & flVirtual)		!= 0 ; }
+	public final boolean isFinal()			{ return (flags & flFinal)			!= 0 ; }
+	public final boolean isStatic()			{ return (flags & flStatic)			!= 0 ; }
+	public final boolean isForward()		{ return (flags & flForward)		!= 0 ; }
 
 	public static JType leastCommonType(JType tp1, JType tp2) {
 		JType tp = tp1;
@@ -179,7 +187,7 @@ public class JBaseType extends JType {
 	public static JBaseType newJBaseType(Struct clazz)
 		alias operator(240,lfy,new)
 	{
-		if (clazz.type ≡ Type.tpRule) {
+		if (clazz.concr_type ≡ Type.tpRule) {
 			if (JType.tpRule == null)
 				return new JBaseType(JConstants.jsigRule,clazz);
 			return JType.tpRule;

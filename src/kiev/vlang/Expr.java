@@ -1381,7 +1381,7 @@ public class UnaryExpr extends ENode {
 		// Not a standard operator, find out overloaded
 		foreach(OpTypes opt; op.types ) {
 			if (ctx_clazz != null && opt.method != null && opt.method.type.args.length == 1) {
-				if ( !ctx_clazz.type.isStructInstanceOf((Struct)opt.method.parent) )
+				if ( !ctx_clazz.concr_type.isInstanceOf(opt.method.ctx_clazz.concr_type) )
 					continue;
 			}
 			Type[] tps = new Type[]{null,et};
@@ -1631,7 +1631,7 @@ public class ConditionalExpr extends ENode {
 		}
 		if( t1.isNumber() && t2.isNumber() ) {
 			if( t1 ≡ t2 ) return t1;
-			return Type.upperCastNumbers(t1,t2);
+			return CoreType.upperCastNumbers(t1,t2);
 		}
 		return expr1.getType();
 	}
@@ -1840,7 +1840,7 @@ public class CastExpr extends ENode {
 		if( !Kiev.javaMode && type.isInstanceOf(Type.tpEnum) && et.isIntegerInCode() ) {
 			if (type.isIntegerInCode())
 				return;
-			Method cm = ((BaseType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
+			Method cm = ((CompaundType)type).clazz.resolveMethod(nameCastOp,type,Type.tpInt);
 			replaceWithNodeResolve(reqType, new CallExpr(pos,null,cm,new ENode[]{(ENode)~expr}));
 			return;
 		}
@@ -1874,7 +1874,7 @@ public class CastExpr extends ENode {
 		if( et.isReference() && type.isReference() && et.getStruct() != null
 		 && et.getStruct().package_clazz.isClazz()
 		 && !et.isArgument()
-		 && !et.isStaticClazz() && et.getStruct().package_clazz.type.isAutoCastableTo(type)
+		 && !et.isStaticClazz() && et.getStruct().package_clazz.concr_type.isAutoCastableTo(type)
 		) {
 			replaceWithNodeResolve(reqType,
 				new CastExpr(pos,type,
