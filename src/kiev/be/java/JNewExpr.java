@@ -24,7 +24,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 	public				JENodeView		temp_expr;
 	public access:ro	JMethodView		func;
 	
-	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJENodeView(); }
+	@getter public final JENodeView		get$outer()				{ return this.$view.outer==null? null : this.$view.outer.getJView(); }
 	@getter public final JENodeView[]	get$args()				{ return (JENodeView[])this.$view.args.toJViewArray(JENodeView.class); }
 
 	public void generate(Code code, Type reqType) {
@@ -41,7 +41,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 			} else {
 				// If we have primitive type
 				if( !type.isReference() ) {
-					new ConstNullExpr().getJConstNullExprView().generate(code,type);
+					new ConstNullExpr().getJView().generate(code,type);
 					return;
 				}
 				int i;
@@ -56,7 +56,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 						new ENode[]{new ConstIntExpr(i)}),
 					true);
 				e.resolve(reqType);
-				e.getJENodeView().generate(code,reqType);
+				e.getJView().generate(code,reqType);
 				return;
 			}
 		}
@@ -76,7 +76,7 @@ public final view JNewExprView of NewExprImpl extends JENodeView {
 		for(int i=0; i < args.length; i++)
 			args[i].generate(code,null);
 		if( type.isLocalClazz() ) {
-			JStructView cl = ((BaseType)type).clazz.getJStructView();
+			JStructView cl = ((BaseType)type).clazz.getJView();
 			foreach (JDNodeView n; cl.members; n instanceof JFieldView) {
 				JFieldView f = (JFieldView)n;
 				if( !f.isNeedProxy() ) continue;

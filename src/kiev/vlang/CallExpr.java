@@ -18,7 +18,6 @@ import syntax kiev.Syntax;
  * @author Maxim Kizub
  *
  */
-@node
 public class CallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -26,8 +25,13 @@ public class CallExpr extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef NImpl = CallExprImpl;
+	@virtual typedef VView = CallExprView;
+	@virtual typedef JView = JCallExprView;
+
 	@node
 	public static class CallExprImpl extends ENodeImpl {
+		@virtual typedef ImplOf = CallExpr;
 		@att public ENode				obj;
 		@ref public Method				func;
 		@ref public MethodType			mt;
@@ -45,30 +49,8 @@ public class CallExpr extends ENode {
 		public				ENode			temp_expr;
 	}
 	
-	@att public abstract virtual			ENode				obj;
-	@ref public abstract virtual			Method				func;
-	@ref public abstract virtual			MethodType			mt;
-	@att public abstract virtual access:ro	NArr<ENode>			args;
-	@att public abstract virtual			ENode				temp_expr;
-	
-	@getter public ENode			get$obj()				{ return this.getCallExprView().obj; }
-	@getter public Method			get$func()				{ return this.getCallExprView().func; }
-	@getter public MethodType		get$mt()				{ return this.getCallExprView().mt; }
-	@getter public NArr<ENode>		get$args()				{ return this.getCallExprView().args; }
-	@getter public ENode			get$temp_expr()			{ return this.getCallExprView().temp_expr; }
-	
-	@setter public void		set$obj(ENode val)				{ this.getCallExprView().obj = val; }
-	@setter public void		set$func(Method val)			{ this.getCallExprView().func = val; }
-	@setter public void		set$mt(MethodType val)			{ this.getCallExprView().mt = val; }
-	@setter public void		set$temp_expr(ENode val)		{ this.getCallExprView().temp_expr = val; }
-
-	public NodeView				getNodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()		{ return new CallExprView((CallExprImpl)this.$v_impl); }
-	public CallExprView			getCallExprView()	{ return new CallExprView((CallExprImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()		{ return new JCallExprView((CallExprImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()		{ return new JCallExprView((CallExprImpl)this.$v_impl); }
-	public JCallExprView		getJCallExprView()	{ return new JCallExprView((CallExprImpl)this.$v_impl); }
-	
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public CallExpr() {
 		super(new CallExprImpl());
@@ -198,7 +180,6 @@ public class CallExpr extends ENode {
 	}
 }
 
-@node
 public class ClosureCallExpr extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -206,8 +187,13 @@ public class ClosureCallExpr extends ENode {
 	@dflow(in="expr", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef NImpl = ClosureCallExprImpl;
+	@virtual typedef VView = ClosureCallExprView;
+	@virtual typedef JView = JClosureCallExprView;
+
 	@node
 	public static class ClosureCallExprImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ClosureCallExpr;
 		@att public ENode				expr;
 		@att public NArr<ENode>			args;
 		@att public boolean				is_a_call;
@@ -221,23 +207,8 @@ public class ClosureCallExpr extends ENode {
 		public				boolean			is_a_call;
 	}
 	
-	@att public abstract virtual			ENode				expr;
-	@att public abstract virtual access:ro	NArr<ENode>			args;
-	@att public abstract virtual			boolean				is_a_call;
-	
-	@getter public ENode			get$expr()				{ return this.getClosureCallExprView().expr; }
-	@getter public NArr<ENode>		get$args()				{ return this.getClosureCallExprView().args; }
-	@getter public boolean			get$is_a_call()			{ return this.getClosureCallExprView().is_a_call; }
-	
-	@setter public void		set$expr(ENode val)				{ this.getClosureCallExprView().expr = val; }
-	@setter public void		set$is_a_call(boolean val)		{ this.getClosureCallExprView().is_a_call = val; }
-
-	public NodeView					getNodeView()				{ return new ClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
-	public ENodeView				getENodeView()				{ return new ClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
-	public ClosureCallExprView		getClosureCallExprView()	{ return new ClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
-	public JNodeView				getJNodeView()				{ return new JClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
-	public JENodeView				getJENodeView()				{ return new JClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
-	public JClosureCallExprView		getJClosureCallExprView()	{ return new JClosureCallExprView((ClosureCallExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ClosureCallExpr() {
 		super(new ClosureCallExprImpl());

@@ -159,7 +159,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			obj.generate(code,null);
 			index.generate(code,null);
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
+			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
@@ -205,7 +205,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 			ResInfo info = new ResInfo(getNode(),ResInfo.noForwards|ResInfo.noImports|ResInfo.noStatic);
 			if( !PassInfo.resolveBestMethodR(objType,v,info,nameArrayOp,mt) )
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt)+" in "+objType);
-			code.addInstr(Instr.op_call,v.getJMethodView(),false,objType);
+			code.addInstr(Instr.op_call,v.getJView(),false,objType);
 			// Pop return value
 			code.addInstr(Instr.op_pop);
 		}
@@ -233,7 +233,7 @@ public final view JContainerAccessExprView of ContainerAccessExprImpl extends JL
 				throw new CompilerException(this,"Can't find method "+Method.toString(nameArrayOp,mt));
 			// The method must return the value to duplicate
 			Method func = (Method)v;
-			code.addInstr(Instr.op_call,func.getJMethodView(),false,obj.getType());
+			code.addInstr(Instr.op_call,func.getJView(),false,obj.getType());
 			if( Kiev.verify
 			 && func.type.ret.isReference()
 			 && ( !func.type.ret.isInstanceOf(getType().getErasedType()) || getType().isArray() ) )
@@ -323,7 +323,7 @@ public final view JLVarExprView of LVarExprImpl extends JLvalueExprView {
 
 	public JFieldView resolveVarVal() {
 		BaseType prt = Type.getProxyType(var.type);
-		JFieldView var_valf = prt.clazz.getJStructView().resolveField(nameCellVal);
+		JFieldView var_valf = prt.clazz.getJView().resolveField(nameCellVal);
 		return var_valf;
 	}
 
@@ -522,7 +522,7 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++)
-			code.addInstr(op_getfield,outer_refs[i].getJFieldView(),code.clazz.type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.type);
 	}
 
 	public void generateLoadDup(Code code) {
@@ -531,7 +531,7 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length; i++) {
 			if( i == outer_refs.length-1 ) code.addInstr(op_dup);
-			code.addInstr(op_getfield,outer_refs[i].getJFieldView(),code.clazz.type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.type);
 		}
 	}
 
@@ -540,19 +540,19 @@ public final view JOuterThisAccessExprView of OuterThisAccessExprImpl extends JA
 		code.setLinePos(this);
 		code.addInstrLoadThis();
 		for(int i=0; i < outer_refs.length-1; i++) {
-			code.addInstr(op_getfield,outer_refs[i].getJFieldView(),code.clazz.type);
+			code.addInstr(op_getfield,outer_refs[i].getJView(),code.clazz.type);
 		}
 	}
 
 	public void generateStore(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating OuterThisAccessExpr - store only: "+this);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJFieldView(),code.clazz.type);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.type);
 	}
 
 	public void generateStoreDupValue(Code code) {
 		trace(Kiev.debugStatGen,"\t\tgenerating SimpleAccessExpr - store & dup: "+this);
 		code.addInstr(op_dup_x);
-		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJFieldView(),code.clazz.type);
+		code.addInstr(op_putfield,outer_refs[outer_refs.length-1].getJView(),code.clazz.type);
 	}
 
 }

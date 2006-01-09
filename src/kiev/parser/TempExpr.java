@@ -16,11 +16,14 @@ import syntax kiev.Syntax;
 /**
  * Base class to represent unresolved, temporary created expressions.
  */
-@node
 public abstract class UnresExpr extends ENode {
+
+	@virtual typedef NImpl = UnresExprImpl;
+	@virtual typedef VView = UnresExprView;
 
 	@node
 	public static class UnresExprImpl extends ENodeImpl {
+		@virtual typedef ImplOf = UnresExpr;
 		@ref public Operator				op;
 		public UnresExprImpl() {}
 		public UnresExprImpl(int pos, Operator op) { super(pos); this.op = op; }
@@ -30,15 +33,8 @@ public abstract class UnresExpr extends ENode {
 		public				Operator			op;
 	}
 	
-	@ref public abstract virtual			Operator				op;
-	
-	@getter public Operator			get$op()				{ return this.getUnresExprView().op; }
-	@setter public void		set$op(Operator val)			{ this.getUnresExprView().op = val; }
-
-	public NodeView					getNodeView()			{ return new UnresExprView((UnresExprImpl)this.$v_impl); }
-	public ENodeView				getENodeView()			{ return new UnresExprView((UnresExprImpl)this.$v_impl); }
-	public UnresExprView			getUnresExprView()		{ return new UnresExprView((UnresExprImpl)this.$v_impl); }
-	
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }	
 
 	public UnresExpr(UnresExprImpl $view) {
 		super($view);
@@ -60,11 +56,14 @@ public abstract class UnresExpr extends ENode {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@node
 public class PrefixExpr extends UnresExpr {
 	
+	@virtual typedef NImpl = PrefixExprImpl;
+	@virtual typedef VView = PrefixExprView;
+
 	@node
 	public static class PrefixExprImpl extends UnresExprImpl {
+		@virtual typedef ImplOf = PrefixExpr;
 		@ref public ENode				expr;
 		public PrefixExprImpl() {}
 		public PrefixExprImpl(int pos, Operator op) { super(pos, op); }
@@ -74,16 +73,8 @@ public class PrefixExpr extends UnresExpr {
 		public				ENode			expr;
 	}
 	
-	@ref public abstract virtual			ENode				expr;
-	
-	@getter public ENode			get$expr()				{ return this.getPrefixExprView().expr; }
-	
-	@setter public void		set$expr(ENode val)				{ this.getPrefixExprView().expr = val; }
-
-	public NodeView				getNodeView()			{ return new PrefixExprView((PrefixExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new PrefixExprView((PrefixExprImpl)this.$v_impl); }
-	public UnresExprView		getUnresExprView()		{ return new PrefixExprView((PrefixExprImpl)this.$v_impl); }
-	public PrefixExprView		getPrefixExprView()		{ return new PrefixExprView((PrefixExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public PrefixExpr() {
 		super(new PrefixExprImpl());
@@ -117,11 +108,14 @@ public class PrefixExpr extends UnresExpr {
  * 'expr' field is @ref to not change the owner of the expression.
  * The owner will be changed when concrete, resolved unary expression is created.
  */
-@node
 public class PostfixExpr extends UnresExpr {
 	
+	@virtual typedef NImpl = PostfixExprImpl;
+	@virtual typedef VView = PostfixExprView;
+
 	@node
 	public static class PostfixExprImpl extends UnresExprImpl {
+		@virtual typedef ImplOf = PostfixExpr;
 		@ref public ENode				expr;
 		public PostfixExprImpl() {}
 		public PostfixExprImpl(int pos, Operator op) { super(pos, op); }
@@ -131,16 +125,8 @@ public class PostfixExpr extends UnresExpr {
 		public				ENode			expr;
 	}
 	
-	@ref public abstract virtual			ENode				expr;
-	
-	@getter public ENode			get$expr()				{ return this.getPostfixExprView().expr; }
-	
-	@setter public void		set$expr(ENode val)				{ this.getPostfixExprView().expr = val; }
-
-	public NodeView				getNodeView()			{ return new PostfixExprView((PostfixExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new PostfixExprView((PostfixExprImpl)this.$v_impl); }
-	public UnresExprView		getUnresExprView()		{ return new PostfixExprView((PostfixExprImpl)this.$v_impl); }
-	public PostfixExprView		getPostfixExprView()	{ return new PostfixExprView((PostfixExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public PostfixExpr() {
 		super(new PostfixExprImpl());
@@ -172,11 +158,14 @@ public class PostfixExpr extends UnresExpr {
  * 'expr1' and 'expr2' fields are @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved binary expression is created.
  */
-@node
 public class InfixExpr extends UnresExpr {
+
+	@virtual typedef NImpl = InfixExprImpl;
+	@virtual typedef VView = InfixExprView;
 
 	@node
 	public static class InfixExprImpl extends UnresExprImpl {
+		@virtual typedef ImplOf = InfixExpr;
 		@ref public ENode				expr1;
 		@ref public ENode				expr2;
 		public InfixExprImpl() {}
@@ -188,19 +177,8 @@ public class InfixExpr extends UnresExpr {
 		public				ENode			expr2;
 	}
 	
-	@ref public abstract virtual			ENode				expr1;
-	@ref public abstract virtual			ENode				expr2;
-	
-	@getter public ENode			get$expr1()				{ return this.getInfixExprView().expr1; }
-	@getter public ENode			get$expr2()				{ return this.getInfixExprView().expr2; }
-	
-	@setter public void		set$expr1(ENode val)			{ this.getInfixExprView().expr1 = val; }
-	@setter public void		set$expr2(ENode val)			{ this.getInfixExprView().expr2 = val; }
-
-	public NodeView				getNodeView()			{ return new InfixExprView((InfixExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new InfixExprView((InfixExprImpl)this.$v_impl); }
-	public UnresExprView		getUnresExprView()		{ return new InfixExprView((InfixExprImpl)this.$v_impl); }
-	public InfixExprView		getInfixExprView()		{ return new InfixExprView((InfixExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public InfixExpr() {
 		super(new InfixExprImpl());
@@ -248,11 +226,14 @@ public class InfixExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@node
 public class MultiExpr extends UnresExpr {
+
+	@virtual typedef NImpl = MultiExprImpl;
+	@virtual typedef VView = MultiExprView;
 
 	@node
 	public static final class MultiExprImpl extends UnresExprImpl {
+		@virtual typedef ImplOf = MultiExpr;
 		@ref public NArr<ENode>			exprs;
 		public MultiExprImpl() {}
 		public MultiExprImpl(int pos, MultiOperator op) { super(pos, op); }
@@ -262,14 +243,8 @@ public class MultiExpr extends UnresExpr {
 		public access:ro	NArr<ENode>			exprs;
 	}
 
-	@ref public abstract virtual access:ro NArr<ENode>			exprs;
-	
-	public NodeView				getNodeView()			{ return new MultiExprView((MultiExprImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new MultiExprView((MultiExprImpl)this.$v_impl); }
-	public UnresExprView		getUnresExprView()		{ return new MultiExprView((MultiExprImpl)this.$v_impl); }
-	public MultiExprView		getMultiExprView()		{ return new MultiExprView((MultiExprImpl)this.$v_impl); }
-
-	@getter public NArr<ENode>		get$exprs()		{ return this.getMultiExprView().exprs; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public MultiExpr() {
 		super(new MultiExprImpl());
@@ -321,11 +296,14 @@ public class MultiExpr extends UnresExpr {
  * 'exprs' field is @ref to not change the owner of the expressions.
  * The owner will be changed when concrete, resolved multi-expression is created.
  */
-@node
 public class UnresCallExpr extends UnresExpr {
+
+	@virtual typedef NImpl = UnresCallExprImpl;
+	@virtual typedef VView = UnresCallExprView;
 
 	@node
 	public static class UnresCallExprImpl extends UnresExprImpl {
+		@virtual typedef ImplOf = UnresCallExpr;
 		@ref public ENode				obj;
 		@ref public Named				func;
 		@ref public MethodType			mt;
@@ -341,25 +319,8 @@ public class UnresCallExpr extends UnresExpr {
 		public access:ro	NArr<ENode>		args;
 	}
 	
-	@ref public abstract virtual			ENode				obj;
-	@ref public abstract virtual			Named				func;
-	@ref public abstract virtual			MethodType			mt;
-	@ref public abstract virtual access:ro	NArr<ENode>			args;
-	
-	@getter public ENode			get$obj()				{ return this.getUnresCallExprView().obj; }
-	@getter public Named			get$func()				{ return this.getUnresCallExprView().func; }
-	@getter public MethodType		get$mt()				{ return this.getUnresCallExprView().mt; }
-	@getter public NArr<ENode>		get$args()				{ return this.getUnresCallExprView().args; }
-	
-	@setter public void		set$obj(ENode val)				{ this.getUnresCallExprView().obj = val; }
-	@setter public void		set$func(Named val)				{ this.getUnresCallExprView().func = val; }
-	@setter public void		set$mt(MethodType val)			{ this.getUnresCallExprView().mt = val; }
-
-	public NodeView					getNodeView()			{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
-	public ENodeView				getENodeView()			{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
-	public UnresExprView			getUnresExprView()		{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
-	public UnresCallExprView		getUnresCallExprView()	{ return new UnresCallExprView((UnresCallExprImpl)this.$v_impl); }
-	
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public UnresCallExpr() {
 		super(new UnresCallExprImpl());

@@ -81,17 +81,17 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	}
 
 	public JENodeView accessTypeInfoField(JNodeView from, Type t) {
-		return getStruct().accessTypeInfoField(from.getNode(), t).getJENodeView();
+		return getStruct().accessTypeInfoField(from.getNode(), t).getJView();
 	}
 	
 	public boolean instanceOf(JStructView cl) {
 		if( cl == null ) return false;
 		if( this.equals(cl) ) return true;
-		if( super_type != null && super_type.clazz.getJStructView().instanceOf(cl) )
+		if( super_type != null && super_type.clazz.getJView().instanceOf(cl) )
 			return true;
 		if( cl.isInterface() ) {
 			for(int i=0; i < interfaces.length; i++) {
-				if( interfaces[i].getStruct().getJStructView().instanceOf(cl) ) return true;
+				if( interfaces[i].getStruct().getJView().instanceOf(cl) ) return true;
 			}
 		}
 		return false;
@@ -113,7 +113,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 				return f;
 		}
 		if( super_type != null )
-			return super_type.getStruct().getJStructView().resolveField(name,where,fatal);
+			return super_type.getStruct().getJView().resolveField(name,where,fatal);
 		if (fatal)
 			throw new RuntimeException("Unresolved field "+name+" in class "+where);
 		return null;

@@ -12,12 +12,27 @@ import kiev.stdlib.*;
  *
  */
 
-@node
 public class ASTOperator extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
-	public KString		image;
+	@virtual typedef NImpl = ASTOperatorImpl;
+	@virtual typedef VView = ASTOperatorView;
+
+	@node
+	static class ASTOperatorImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTOperator;
+		@att public KString		image;
+	}
+	@nodeview
+	static view ASTOperatorView of ASTOperatorImpl extends ENodeView {
+		public KString		image;
+	}
+	
+	ASTOperator() { super(new ASTOperatorImpl()); }
+	ASTOperator(ASTOperatorImpl impl) { super(impl); }
+	
+	public VView getVView() { return new VView(this.$v_impl); }
 
 	public void resolve(Type reqType) {
 		throw new RuntimeException();

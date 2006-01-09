@@ -14,10 +14,13 @@ import static kiev.vlang.Operator.*;
  *
  */
 
-@node
 public class Opdef extends DNode {
+	@virtual typedef NImpl = OpdefImpl;
+	@virtual typedef VView = OpdefView;
+
 	@node
 	static class OpdefImpl extends DNodeImpl {
+		@virtual typedef ImplOf = Opdef;
 		OpdefImpl() {}
 		@att int					prior;
 		@att int					opmode;
@@ -41,24 +44,8 @@ public class Opdef extends DNode {
 		@setter public final void set$image(KString val)		{ this.impl.image = val; }
 		@setter public final void set$resolved(Operator val)	{ this.impl.resolved = val; }
 	}
-	public NodeView			getNodeView()		{ return new OpdefView((OpdefImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new OpdefView((OpdefImpl)this.$v_impl); }
-	public OpdefView		getOpdefView()		{ return new OpdefView((OpdefImpl)this.$v_impl); }
-
-	@att public abstract virtual int					prior;
-	@att public abstract virtual int					opmode;
-	@att public abstract virtual KString				image;
-	@ref public abstract virtual Operator				resolved;
-	
-	@getter public int				get$prior()		{ return this.getOpdefView().get$prior(); }
-	@getter public int				get$opmode()	{ return this.getOpdefView().get$opmode(); }
-	@getter public KString			get$image()		{ return this.getOpdefView().get$image(); }
-	@getter public Operator			get$resolved()	{ return this.getOpdefView().get$resolved(); }
-	
-	@setter public void set$prior(int val)			{ this.getOpdefView().set$prior(val); }
-	@setter public void set$opmode(int val)		{ this.getOpdefView().set$opmode(val); }
-	@setter public void set$image(KString val)		{ this.getOpdefView().set$image(val); }
-	@setter public void set$resolved(Operator val)	{ this.getOpdefView().set$resolved(val); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public Opdef() {
 		super(new OpdefImpl());

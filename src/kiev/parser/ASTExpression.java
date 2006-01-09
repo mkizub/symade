@@ -19,15 +19,18 @@ typedef kiev.stdlib.List.Cons<kiev.vlang.ENode>	ConsAN;
  *
  */
 
-@node
 public class ASTExpression extends ENode {
 
 	@dflow(out="nodes") private static class DFI {
 	@dflow(in="this:in", seq="true")		ENode[]		nodes;
 	}
 	
+	@virtual typedef NImpl = ASTExpressionImpl;
+	@virtual typedef VView = ASTExpressionView;
+
 	@node
 	public static final class ASTExpressionImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTExpression;
 		@att public NArr<ENode>			nodes;
 		public ASTExpressionImpl() {}
 	}
@@ -36,13 +39,8 @@ public class ASTExpression extends ENode {
 		public access:ro	NArr<ENode>			nodes;
 	}
 
-	@att public abstract virtual access:ro NArr<ENode>			nodes;
-	
-	public NodeView				getNodeView()			{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
-	public ASTExpressionView	getASTExpressionView()	{ return new ASTExpressionView((ASTExpressionImpl)this.$v_impl); }
-
-	@getter public NArr<ENode>		get$nodes()		{ return this.getASTExpressionView().nodes; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public ASTExpression() {
 		super(new ASTExpressionImpl());

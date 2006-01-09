@@ -52,7 +52,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 		Struct s = getStruct();
 		if (s == null)
 			return null;
-		return s.getJStructView();
+		return s.getJView();
 	}
 	public Struct getStruct() { return null; }
 	public Meta getMeta(KString name) { return null; }
@@ -387,7 +387,7 @@ public final class BaseType extends Type {
 			}
 			foreach (DNode d; clazz.members; d instanceof TypeDef) {
 				TypeDef td = (TypeDef)d;
-				vs.append(td.getAType(), td.getAType().super_type);
+				vs.append(td.getAType(), null/*td.getAType().super_type*/);
 			}
 			foreach (Type st; this.getDirectSuperTypes()) {
 				vs.append(st.bindings());

@@ -14,13 +14,16 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public class TypeCallRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeCallRefImpl;
+	@virtual typedef VView = TypeCallRefView;
+
 	@node
 	public static final class TypeCallRefImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = TypeCallRef;
 		@ref public NArr<TypeDef>			targs;
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					ret;
@@ -33,20 +36,8 @@ public class TypeCallRef extends TypeRef {
 		public				TypeRef					ret;
 	}
 
-	@ref public abstract virtual access:ro NArr<TypeDef>			targs;
-	@att public abstract virtual access:ro NArr<TypeRef>			args;
-	@att public abstract virtual           TypeRef					ret;
-	
-	public NodeView			getNodeView()			{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
-	public TypeRefView		getTypeRefView()		{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
-	public TypeCallRefView	getTypeCallRefView()	{ return new TypeCallRefView((TypeCallRefImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
 
-	@getter public NArr<TypeDef>		get$targs()		{ return this.getTypeCallRefView().targs; }
-	@getter public NArr<TypeRef>		get$args()		{ return this.getTypeCallRefView().args; }
-	@getter public TypeRef				get$ret()		{ return this.getTypeCallRefView().ret; }
-	@setter public void		set$ret(TypeRef val)		{ this.getTypeCallRefView().ret = val; }
-	
 	public TypeCallRef() {
 		super(new TypeCallRefImpl());
 	}

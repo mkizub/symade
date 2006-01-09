@@ -27,10 +27,14 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public abstract class LoopStat extends ENode implements BreakTarget, ContinueTarget {
+	@virtual typedef NImpl = LoopStatImpl;
+	@virtual typedef VView = LoopStatView;
+	@virtual typedef JView = JLoopStatView;
+
 	@node
 	public static abstract class LoopStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = LoopStat;
 		@att(copyable=false)	public Label		lblcnt;
 		@att(copyable=false)	public Label		lblbrk;
 		public LoopStatImpl() {	}
@@ -42,15 +46,6 @@ public abstract class LoopStat extends ENode implements BreakTarget, ContinueTar
 		public access:ro	Label					lblbrk;
 	}
 
-	@att public abstract virtual access:ro	Label					lblcnt;
-	@att public abstract virtual access:ro	Label					lblbrk;
-
-	@getter public Label			get$lblcnt()			{ return this.getLoopStatView().lblcnt; }
-	@getter public Label			get$lblbrk()			{ return this.getLoopStatView().lblbrk; }
-
-	public abstract LoopStatView	getLoopStatView();
-	public abstract JLoopStatView	getJLoopStatView();
-	
 	protected LoopStat(LoopStatImpl $view) {
 		super($view);
 		$view.lblcnt = new Label();
@@ -60,13 +55,17 @@ public abstract class LoopStat extends ENode implements BreakTarget, ContinueTar
 }
 
 
-@node
 public final class Label extends DNode {
 	
 	@dflow(out="this:out()") private static class DFI {}
 
+	@virtual typedef NImpl = LabelImpl;
+	@virtual typedef VView = LabelView;
+	@virtual typedef JView = JLabelView;
+
 	@node
 	public final static class LabelImpl extends DNodeImpl {
+		@virtual typedef ImplOf = Label;
 		LabelImpl() {}
 		@ref(copyable=false)	public List<ASTNode>	links = List.Nil;
 								public CodeLabel		label;
@@ -82,18 +81,9 @@ public final class Label extends DNode {
 		public List<ASTNode>		links;
 	}
 	
-	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
-	public LabelView		getLabelView()		alias operator(210,fy,$cast) { return new LabelView((LabelImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
-	public JLabelView		getJLabelView()		alias operator(210,fy,$cast) { return new JLabelView((LabelImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@ref(copyable=false) public abstract virtual List<ASTNode>		links;
-
-	@getter public List<ASTNode>	get$links()						{ return this.getLabelView().links; }
-	@setter public void				set$links(List<ASTNode> val)	{ this.getLabelView().links = val; }
-	
 	public Label() {
 		super(new LabelImpl());
 	}
@@ -141,7 +131,6 @@ public final class Label extends DNode {
 	}
 }
 
-@node
 public class WhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -151,8 +140,13 @@ public class WhileStat extends LoopStat {
 	@dflow(in="cond:false")					Label		lblbrk;
 	}
 
+	@virtual typedef NImpl = WhileStatImpl;
+	@virtual typedef VView = WhileStatView;
+	@virtual typedef JView = JWhileStatView;
+
 	@node
 	public static final class WhileStatImpl extends LoopStatImpl {
+		@virtual typedef ImplOf = WhileStat;
 		@att public ENode		cond;
 		@att public ENode		body;
 		public WhileStatImpl() {}
@@ -164,23 +158,8 @@ public class WhileStat extends LoopStat {
 		public ENode		body;
 	}
 
-	@att public abstract virtual ENode			cond;
-	@att public abstract virtual ENode			body;
-	
-	@getter public ENode			get$cond()			{ return this.getWhileStatView().cond; }
-	@getter public ENode			get$body()			{ return this.getWhileStatView().body; }
-	
-	@setter public void		set$cond(ENode val)				{ this.getWhileStatView().cond = val; }
-	@setter public void		set$body(ENode val)				{ this.getWhileStatView().body = val; }
-	
-	public NodeView				getNodeView()			{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
-	public LoopStatView			getLoopStatView()		{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
-	public WhileStatView		getWhileStatView()		{ return new WhileStatView((WhileStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
-	public JLoopStatView		getJLoopStatView()		{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
-	public JWhileStatView		getJWhileStatView()		{ return new JWhileStatView((WhileStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public WhileStat() {
 		super(new WhileStatImpl());
@@ -217,7 +196,6 @@ public class WhileStat extends LoopStat {
 	}
 }
 
-@node
 public class DoWhileStat extends LoopStat {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -227,8 +205,13 @@ public class DoWhileStat extends LoopStat {
 	@dflow(in="cond:false")						Label		lblbrk;
 	}
 
+	@virtual typedef NImpl = DoWhileStatImpl;
+	@virtual typedef VView = DoWhileStatView;
+	@virtual typedef JView = JDoWhileStatView;
+
 	@node
 	public static final class DoWhileStatImpl extends LoopStatImpl {
+		@virtual typedef ImplOf = DoWhileStat;
 		@att public ENode		cond;
 		@att public ENode		body;
 		public DoWhileStatImpl() {}
@@ -240,23 +223,8 @@ public class DoWhileStat extends LoopStat {
 		public ENode		body;
 	}
 
-	@att public abstract virtual ENode			cond;
-	@att public abstract virtual ENode			body;
-	
-	@getter public ENode			get$cond()			{ return this.getDoWhileStatView().cond; }
-	@getter public ENode			get$body()			{ return this.getDoWhileStatView().body; }
-	
-	@setter public void		set$cond(ENode val)				{ this.getDoWhileStatView().cond = val; }
-	@setter public void		set$body(ENode val)				{ this.getDoWhileStatView().body = val; }
-	
-	public NodeView				getNodeView()			{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public LoopStatView			getLoopStatView()		{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public DoWhileStatView		getDoWhileStatView()	{ return new DoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public JLoopStatView		getJLoopStatView()		{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
-	public JDoWhileStatView		getJDoWhileStatView()	{ return new JDoWhileStatView((DoWhileStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public DoWhileStat() {
 		super(new DoWhileStatImpl());
@@ -299,15 +267,19 @@ public class DoWhileStat extends LoopStat {
 	}
 }
 
-@node
 public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="decls") private static class DFI {
 	@dflow(in="", seq="true")	Var[]		decls;
 	}
 
+	@virtual typedef NImpl = ForInitImpl;
+	@virtual typedef VView = ForInitView;
+	@virtual typedef JView = JForInitView;
+
 	@node
 	public static final class ForInitImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ForInit;
 		@att public final NArr<Var>		decls;
 		public ForInitImpl() {}
 		public ForInitImpl(int pos) { super(pos); }
@@ -317,17 +289,9 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 		public access:ro	NArr<Var>		decls;
 	}
 
-	@att public abstract virtual access:ro	NArr<Var>		decls;
-	
-	public NodeView				getNodeView()			{ return new ForInitView((ForInitImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new ForInitView((ForInitImpl)this.$v_impl); }
-	public ForInitView			getForInitView()		{ return new ForInitView((ForInitImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JForInitView((ForInitImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JForInitView((ForInitImpl)this.$v_impl); }
-	public JForInitView			getJForInitView()		{ return new JForInitView((ForInitImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public NArr<Var>	get$decls()				{ return this.getForInitView().decls; }
-	
 
 	public ForInit() {
 		super(new ForInitImpl());
@@ -372,7 +336,6 @@ public class ForInit extends ENode implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node
 public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -384,8 +347,13 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	@dflow(in="cond:false")				Label		lblbrk;
 	}
 	
+	@virtual typedef NImpl = ForStatImpl;
+	@virtual typedef VView = ForStatView;
+	@virtual typedef JView = JForStatView;
+
 	@node
 	public static final class ForStatImpl extends LoopStatImpl {
+		@virtual typedef ImplOf = ForStat;
 		@att public ENode		init;
 		@att public ENode		cond;
 		@att public ENode		body;
@@ -401,29 +369,8 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 		public ENode		iter;
 	}
 
-	@att public abstract virtual ENode			init;
-	@att public abstract virtual ENode			cond;
-	@att public abstract virtual ENode			body;
-	@att public abstract virtual ENode			iter;
-	
-	@getter public ENode			get$init()			{ return this.getForStatView().init; }
-	@getter public ENode			get$cond()			{ return this.getForStatView().cond; }
-	@getter public ENode			get$body()			{ return this.getForStatView().body; }
-	@getter public ENode			get$iter()			{ return this.getForStatView().iter; }
-	
-	@setter public void		set$init(ENode val)				{ this.getForStatView().init = val; }
-	@setter public void		set$cond(ENode val)				{ this.getForStatView().cond = val; }
-	@setter public void		set$body(ENode val)				{ this.getForStatView().body = val; }
-	@setter public void		set$iter(ENode val)				{ this.getForStatView().iter = val; }
-	
-	public NodeView				getNodeView()			{ return new ForStatView((ForStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new ForStatView((ForStatImpl)this.$v_impl); }
-	public LoopStatView			getLoopStatView()		{ return new ForStatView((ForStatImpl)this.$v_impl); }
-	public ForStatView			getForStatView()		{ return new ForStatView((ForStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JForStatView((ForStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JForStatView((ForStatImpl)this.$v_impl); }
-	public JLoopStatView		getJLoopStatView()		{ return new JForStatView((ForStatImpl)this.$v_impl); }
-	public JForStatView			getJForStatView()		{ return new JForStatView((ForStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public ForStat() {
 		super(new ForStatImpl());
@@ -516,7 +463,6 @@ public class ForStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	}
 }
 
-@node
 public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -540,8 +486,13 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 	public static final int	ELEMS = 3;
 	public static final int	RULE  = 4;
 
+	@virtual typedef NImpl = ForEachStatImpl;
+	@virtual typedef VView = ForEachStatView;
+	@virtual typedef JView = JForEachStatView;
+
 	@node
 	public static final class ForEachStatImpl extends LoopStatImpl {
+		@virtual typedef ImplOf = ForEachStat;
 		@att public int			mode;
 		@att public ENode		container;
 		@att public Var			var;
@@ -571,50 +522,8 @@ public class ForEachStat extends LoopStat implements ScopeOfNames, ScopeOfMethod
 		public ENode		iter_incr;
 	}
 
-	@att public abstract virtual int		mode;
-	@att public abstract virtual ENode		container;
-	@att public abstract virtual Var		var;
-	@att public abstract virtual Var		iter;
-	@att public abstract virtual Var		iter_array;
-	@att public abstract virtual ENode		iter_init;
-	@att public abstract virtual ENode		iter_cond;
-	@att public abstract virtual ENode		var_init;
-	@att public abstract virtual ENode		cond;
-	@att public abstract virtual ENode		body;
-	@att public abstract virtual ENode		iter_incr;
-
-	@getter public int				get$mode()			{ return this.getForEachStatView().mode; }
-	@getter public ENode			get$container()		{ return this.getForEachStatView().container; }
-	@getter public Var				get$var()			{ return this.getForEachStatView().var; }
-	@getter public Var				get$iter()			{ return this.getForEachStatView().iter; }
-	@getter public Var				get$iter_array()	{ return this.getForEachStatView().iter_array; }
-	@getter public ENode			get$iter_init()		{ return this.getForEachStatView().iter_init; }
-	@getter public ENode			get$iter_cond()		{ return this.getForEachStatView().iter_cond; }
-	@getter public ENode			get$var_init()		{ return this.getForEachStatView().var_init; }
-	@getter public ENode			get$cond()			{ return this.getForEachStatView().cond; }
-	@getter public ENode			get$body()			{ return this.getForEachStatView().body; }
-	@getter public ENode			get$iter_incr()		{ return this.getForEachStatView().iter_incr; }
-	
-	@setter public void		set$mode(int val)				{ this.getForEachStatView().mode = val; }
-	@setter public void		set$container(ENode val)		{ this.getForEachStatView().container = val; }
-	@setter public void		set$var(Var val)				{ this.getForEachStatView().var = val; }
-	@setter public void		set$iter(Var val)				{ this.getForEachStatView().iter = val; }
-	@setter public void		set$iter_array(Var val)			{ this.getForEachStatView().iter_array = val; }
-	@setter public void		set$iter_init(ENode val)		{ this.getForEachStatView().iter_init = val; }
-	@setter public void		set$iter_cond(ENode val)		{ this.getForEachStatView().iter_cond = val; }
-	@setter public void		set$var_init(ENode val)			{ this.getForEachStatView().var_init = val; }
-	@setter public void		set$cond(ENode val)				{ this.getForEachStatView().cond = val; }
-	@setter public void		set$body(ENode val)				{ this.getForEachStatView().body = val; }
-	@setter public void		set$iter_incr(ENode val)			{ this.getForEachStatView().iter_incr = val; }
-	
-	public NodeView				getNodeView()			{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public LoopStatView			getLoopStatView()		{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public ForEachStatView		getForEachStatView()	{ return new ForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public JLoopStatView		getJLoopStatView()		{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
-	public JForEachStatView		getJForEachStatView()	{ return new JForEachStatView((ForEachStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public ForEachStat() {
 		super(new ForEachStatImpl());

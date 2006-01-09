@@ -6,11 +6,14 @@ import kiev.Kiev;
 import kiev.vlang.*;
 import kiev.stdlib.*;
 
-@node
 public final class ASTPragma extends DNode {
+
+	@virtual typedef NImpl = ASTPragmaImpl;
+	@virtual typedef VView = ASTPragmaView;
 
 	@node
 	static class ASTPragmaImpl extends DNodeImpl {
+		@virtual typedef ImplOf = ASTPragma;
 		ASTPragmaImpl() {}
 		@att boolean				enable;
 		@att NArr<ConstStringExpr>	options;
@@ -24,19 +27,11 @@ public final class ASTPragma extends DNode {
 		public           boolean				enable;
 		public access:ro NArr<ConstStringExpr>	options;
 	}
-	public NodeView			getNodeView()		{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
-	public ASTPragmaView	getASTPragmaView()	{ return new ASTPragmaView((ASTPragmaImpl)this.$v_impl); }
-
-	@att public abstract           boolean					enable;
-	@att public abstract access:ro NArr<ConstStringExpr>	options;
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public ASTPragma() { super(new ASTPragmaImpl()); }
 	
-	@getter public boolean					get$enable()	{ return this.getASTPragmaView().enable; }
-	@getter public NArr<ConstStringExpr>	get$options()	{ return this.getASTPragmaView().options; }
-	@setter public void set$enable(boolean val)			{ this.getASTPragmaView().enable = val; }
-
 	public void resolve(Type reqType) {}
 	
 	public Dumper toJavaDecl(Dumper dmp) {

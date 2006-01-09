@@ -17,19 +17,34 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public final class ASTOperatorAlias extends ASTAlias {
 	public static final int	XFIX_UNKNOWN = 0;
 	public static final int	XFIX_PREFIX  = 1;
 	public static final int	XFIX_POSTFIX = 2;
 	public static final int	XFIX_INFIX   = 3;
 
-	public int					prior;
-	public int					opmode;
-	public KString				image;
-	public int					xfix;
+	@virtual typedef NImpl = ASTOperatorAliasImpl;
+	@virtual typedef VView = ASTOperatorAliasView;
 
-	public ASTOperatorAlias() { super(new NodeImpl()); }
+	@node
+	public static class ASTOperatorAliasImpl extends ASTAliasImpl {
+		@att public int					prior;
+		@att public int					opmode;
+		@att public KString				image;
+		@att public int					xfix;
+	}
+	@nodeview
+	public static view ASTOperatorAliasView of ASTAliasImpl extends ASTAliasView {
+		public int					prior;
+		public int					opmode;
+		public KString				image;
+		public int					xfix;
+	}
+
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
+	
+	public ASTOperatorAlias() { super(new ASTOperatorAliasImpl()); }
 	
 	public void setImage(ASTNode n) {
 		this.pos = n.pos;

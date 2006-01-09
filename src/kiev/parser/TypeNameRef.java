@@ -15,13 +15,16 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public class TypeNameRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeNameRefImpl;
+	@virtual typedef VView = TypeNameRefView;
+
 	@node
 	public static final class TypeNameRefImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = TypeNameRef;
 		@att public TypeRef					outer;
 		@att public KString					name;
 		public TypeNameRefImpl() {}
@@ -33,18 +36,8 @@ public class TypeNameRef extends TypeRef {
 		public KString				name;
 	}
 
-	@att public abstract virtual KString				name;
-	
-	public NodeView			getNodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
-	public TypeRefView		getTypeRefView()		{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
-	public TypeNameRefView	getTypeNameRefView()	{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
 
-	@getter public TypeRef		get$outer()			{ return this.getTypeNameRefView().outer; }
-	@getter public KString		get$name()			{ return this.getTypeNameRefView().name; }
-	@setter public void		set$outer(TypeRef val)	{ this.getTypeNameRefView().outer = val; }
-	@setter public void		set$name(KString val)	{ this.getTypeNameRefView().name = val; }
-	
 	public TypeNameRef() {
 		super(new TypeNameRefImpl());
 	}

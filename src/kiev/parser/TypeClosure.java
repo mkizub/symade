@@ -12,13 +12,16 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public class TypeClosureRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeClosureRefImpl;
+	@virtual typedef VView = TypeClosureRefView;
+
 	@node
 	public static final class TypeClosureRefImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = TypeClosureRef;
 		@att public NArr<TypeRef>		types;
 		public TypeClosureRefImpl() {}
 		public TypeClosureRefImpl(ClosureType tp) { super(0, tp); }
@@ -28,15 +31,8 @@ public class TypeClosureRef extends TypeRef {
 		public access:ro	NArr<TypeRef>			types;
 	}
 
-	@att public abstract virtual access:ro NArr<TypeRef>			types;
-	
-	public NodeView				getNodeView()			{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
-	public TypeRefView			getTypeRefView()		{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
-	public TypeClosureRefView	getTypeClosureRefView()	{ return new TypeClosureRefView((TypeClosureRefImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
 
-	@getter public NArr<TypeRef>		get$types()		{ return this.getTypeClosureRefView().types; }
-	
 	TypeClosureRef() {
 		super(new TypeClosureRefImpl());
 	}

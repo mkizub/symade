@@ -13,15 +13,18 @@ import kiev.transf.*;
  *
  */
 
-@node
 public class ASTNewInitializedArrayExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
 	@dflow(in="this:in", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef NImpl = ASTNewInitializedArrayExpressionImpl;
+	@virtual typedef VView = ASTNewInitializedArrayExpressionView;
+
 	@node
 	public static class ASTNewInitializedArrayExpressionImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTNewInitializedArrayExpression;
 		@att public int					dim;
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
@@ -35,20 +38,8 @@ public class ASTNewInitializedArrayExpression extends ENode {
 		public access:ro	NArr<ENode>		args;
 	}
 	
-	@att public abstract virtual			int					dim;
-	@att public abstract virtual			TypeRef				type;
-	@att public abstract virtual access:ro	NArr<ENode>			args;
-	
-	@getter public int				get$dim()				{ return this.getASTNewInitializedArrayExpressionView().dim; }
-	@getter public TypeRef			get$type()				{ return this.getASTNewInitializedArrayExpressionView().type; }
-	@getter public NArr<ENode>		get$args()				{ return this.getASTNewInitializedArrayExpressionView().args; }
-	
-	@setter public void		set$dim(int val)				{ this.getASTNewInitializedArrayExpressionView().dim = val; }
-	@setter public void		set$type(TypeRef val)			{ this.getASTNewInitializedArrayExpressionView().type = val; }
-
-	public NodeView							getNodeView()						{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
-	public ENodeView						getENodeView()						{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
-	public ASTNewInitializedArrayExpressionView	getASTNewInitializedArrayExpressionView()	{ return new ASTNewInitializedArrayExpressionView((ASTNewInitializedArrayExpressionImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ASTNewInitializedArrayExpression() {
 		super(new ASTNewInitializedArrayExpressionImpl());

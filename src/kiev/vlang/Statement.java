@@ -32,7 +32,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class InlineMethodStat extends ENode implements ScopeOfNames {
 	
 	@dflow(in="root()", out="this:out()") private static class DFI {}
@@ -43,8 +42,13 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		public ParamRedir(FormPar o, FormPar n) { old_var=o; new_var=n; }
 	};
 
+	@virtual typedef NImpl = InlineMethodStatImpl;
+	@virtual typedef VView = InlineMethodStatView;
+	@virtual typedef JView = JInlineMethodStatView;
+
 	@node
 	public static final class InlineMethodStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = InlineMethodStat;
 		@att public Method			method;
 		@ref public ParamRedir[]	params_redir;
 		public InlineMethodStatImpl() {}
@@ -56,21 +60,9 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 		public ParamRedir[]		params_redir;
 	}
 
-	@att public abstract virtual Method			method;
-	@ref public abstract virtual ParamRedir[]		params_redir;
-	
-	public NodeView					getNodeView()				{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
-	public ENodeView				getENodeView()				{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
-	public InlineMethodStatView		getInlineMethodStatView()	{ return new InlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
-	public JNodeView				getJNodeView()				{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
-	public JENodeView				getJENodeView()				{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
-	public JInlineMethodStatView	getJInlineMethodStatView()	{ return new JInlineMethodStatView((InlineMethodStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public Method			get$method()				{ return this.getInlineMethodStatView().method; }
-	@getter public ParamRedir[]		get$params_redir()			{ return this.getInlineMethodStatView().params_redir; }
-	@setter public void		set$method(Method val)				{ this.getInlineMethodStatView().method = val; }
-	@setter public void		set$params_redir(ParamRedir[] val)	{ this.getInlineMethodStatView().params_redir = val; }
-	
 	public InlineMethodStat() {
 		super(new InlineMethodStatImpl());
 	}
@@ -170,15 +162,19 @@ public class InlineMethodStat extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
 public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 	
 	@dflow(out="this:out()") private static class DFI {
 	@dflow(in="this:in", seq="true")	ENode[]		stats;
 	}
 
+	@virtual typedef NImpl = BlockStatImpl;
+	@virtual typedef VView = BlockStatView;
+	@virtual typedef JView = JBlockStatView;
+
 	@node
 	public static class BlockStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = BlockStat;
 		@att public NArr<ENode>		stats;
 		@ref public CodeLabel		break_label;
 		public BlockStatImpl() {}
@@ -189,16 +185,8 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 		public access:ro	NArr<ENode>		stats;
 	}
 	
-	@att public abstract virtual access:ro	NArr<ENode>			stats;
-	
-	@getter public NArr<ENode>		get$stats()				{ return this.getBlockStatView().stats; }
-
-	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public BlockStatView		getBlockStatView()		alias operator(210,fy,$cast) { return new BlockStatView((BlockStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
-	public JBlockStatView		getJBlockStatView()		alias operator(210,fy,$cast) { return new JBlockStatView((BlockStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BlockStat() {
 		super(new BlockStatImpl());
@@ -365,13 +353,17 @@ public class BlockStat extends ENode implements ScopeOfNames, ScopeOfMethods {
 
 }
 
-@node
 public class EmptyStat extends ENode {
 	
 	@dflow(out="this:in") private static class DFI {}
 	
+	@virtual typedef NImpl = EmptyStatImpl;
+	@virtual typedef VView = EmptyStatView;
+	@virtual typedef JView = JEmptyStatView;
+
 	@node
 	public static class EmptyStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = EmptyStat;
 		public EmptyStatImpl() {}
 		public EmptyStatImpl(int pos) { super(pos); }
 	}
@@ -380,12 +372,8 @@ public class EmptyStat extends ENode {
 		public EmptyStatView(EmptyStatImpl $view) { super($view); }
 	}
 	
-	public NodeView				getNodeView()			{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
-	public EmptyStatView		getEmptyStatView()		{ return new EmptyStatView((EmptyStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
-	public JEmptyStatView		getJEmptyStatView()		{ return new JEmptyStatView((EmptyStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public EmptyStat() {
 		super(new EmptyStatImpl());
@@ -403,15 +391,19 @@ public class EmptyStat extends ENode {
 	}
 }
 
-@node
 public class ExprStat extends ENode {
 	
 	@dflow(out="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef NImpl = ExprStatImpl;
+	@virtual typedef VView = ExprStatView;
+	@virtual typedef JView = JExprStatView;
+
 	@node
 	public static final class ExprStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ExprStat;
 		@att public ENode	expr;
 		public ExprStatImpl() {}
 		public ExprStatImpl(int pos) { super(pos); }
@@ -421,18 +413,9 @@ public class ExprStat extends ENode {
 		public ENode		expr;
 	}
 
-	@att public abstract virtual ENode expr;
-	
-	public NodeView			getNodeView()		{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
-	public ENodeView		getENodeView()		{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
-	public ExprStatView		getExprStatView()	{ return new ExprStatView((ExprStatImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()		{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
-	public JExprStatView	getJExprStatView()	{ return new JExprStatView((ExprStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public ENode	get$expr()				{ return this.getExprStatView().expr; }
-	@setter public void		set$expr(ENode val)		{ this.getExprStatView().expr = val; }
-	
 	public ExprStat() {
 		super(new ExprStatImpl());
 	}
@@ -468,15 +451,19 @@ public class ExprStat extends ENode {
 	}
 }
 
-@node
 public class ReturnStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef NImpl = ReturnStatImpl;
+	@virtual typedef VView = ReturnStatView;
+	@virtual typedef JView = JReturnStatView;
+
 	@node
 	public static final class ReturnStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ReturnStat;
 		@att public ENode	expr;
 		public ReturnStatImpl() {}
 		public ReturnStatImpl(int pos) { super(pos); }
@@ -486,18 +473,9 @@ public class ReturnStat extends ENode {
 		public ENode		expr;
 	}
 
-	@att public abstract virtual ENode expr;
-	
-	public NodeView			getNodeView()			{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
-	public ReturnStatView	getReturnStatView()		{ return new ReturnStatView((ReturnStatImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()			{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()			{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
-	public JReturnStatView	getJReturnStatView()	{ return new JReturnStatView((ReturnStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public ENode	get$expr()				{ return this.getReturnStatView().expr; }
-	@setter public void		set$expr(ENode val)		{ this.getReturnStatView().expr = val; }
-	
 	public ReturnStat() {
 		super(new ReturnStatImpl());
 	}
@@ -536,15 +514,19 @@ public class ReturnStat extends ENode {
 	}
 }
 
-@node
 public class ThrowStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef NImpl = ThrowStatImpl;
+	@virtual typedef VView = ThrowStatView;
+	@virtual typedef JView = JThrowStatView;
+
 	@node
 	public static final class ThrowStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ThrowStat;
 		@att public ENode	expr;
 		public ThrowStatImpl() {}
 		public ThrowStatImpl(int pos) { super(pos); }
@@ -554,18 +536,9 @@ public class ThrowStat extends ENode {
 		public ENode		expr;
 	}
 
-	@att public abstract virtual ENode expr;
-	
-	public NodeView			getNodeView()			{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
-	public ThrowStatView	getThrowStatView()		{ return new ThrowStatView((ThrowStatImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()			{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()			{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
-	public JThrowStatView	getJThrowStatView()		{ return new JThrowStatView((ThrowStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public ENode	get$expr()				{ return this.getThrowStatView().expr; }
-	@setter public void		set$expr(ENode val)		{ this.getThrowStatView().expr = val; }
-	
 	public ThrowStat() {
 		super(new ThrowStatImpl());
 	}
@@ -593,7 +566,6 @@ public class ThrowStat extends ENode {
 	}
 }
 
-@node
 public class IfElseStat extends ENode {
 	
 	@dflow(out="join thenSt elseSt") private static class DFI {
@@ -602,8 +574,13 @@ public class IfElseStat extends ENode {
 	@dflow(in="cond:false")	ENode		elseSt;
 	}
 
+	@virtual typedef NImpl = IfElseStatImpl;
+	@virtual typedef VView = IfElseStatView;
+	@virtual typedef JView = JIfElseStatView;
+
 	@node
 	public static class IfElseStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = IfElseStat;
 		@att public ENode			cond;
 		@att public ENode			thenSt;
 		@att public ENode			elseSt;
@@ -617,23 +594,8 @@ public class IfElseStat extends ENode {
 		public ENode		elseSt;
 	}
 	
-	@att public abstract virtual ENode			cond;
-	@att public abstract virtual ENode			thenSt;
-	@att public abstract virtual ENode			elseSt;
-	
-	@getter public ENode		get$cond()				{ return this.getIfElseStatView().cond; }
-	@getter public ENode		get$thenSt()			{ return this.getIfElseStatView().thenSt; }
-	@getter public ENode		get$elseSt()			{ return this.getIfElseStatView().elseSt; }
-	@setter public void			set$cond(ENode val)		{ this.getIfElseStatView().cond = val; }
-	@setter public void			set$thenSt(ENode val)	{ this.getIfElseStatView().thenSt = val; }
-	@setter public void			set$elseSt(ENode val)	{ this.getIfElseStatView().elseSt = val; }
-
-	public NodeView				getNodeView()			{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
-	public IfElseStatView		getIfElseStatView()		{ return new IfElseStatView((IfElseStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
-	public JIfElseStatView		getJIfElseStatView()	{ return new JIfElseStatView((IfElseStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public IfElseStat() {
 		super(new IfElseStatImpl());
@@ -701,7 +663,6 @@ public class IfElseStat extends ENode {
 	}
 }
 
-@node
 public class CondStat extends ENode {
 	
 	@dflow(out="cond:true") private static class DFI {
@@ -709,8 +670,13 @@ public class CondStat extends ENode {
 	@dflow(in="cond:false")		ENode		message;
 	}
 
+	@virtual typedef NImpl = CondStatImpl;
+	@virtual typedef VView = CondStatView;
+	@virtual typedef JView = JCondStatView;
+
 	@node
 	public static class CondStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = CondStat;
 		@att public ENode			cond;
 		@att public ENode			message;
 		public CondStatImpl() {}
@@ -722,20 +688,8 @@ public class CondStat extends ENode {
 		public ENode		message;
 	}
 	
-	@att public abstract virtual ENode			cond;
-	@att public abstract virtual ENode			message;
-	
-	@getter public ENode		get$cond()				{ return this.getCondStatView().cond; }
-	@getter public ENode		get$message()			{ return this.getCondStatView().message; }
-	@setter public void			set$cond(ENode val)		{ this.getCondStatView().cond = val; }
-	@setter public void			set$message(ENode val)	{ this.getCondStatView().message = val; }
-
-	public NodeView				getNodeView()			{ return new CondStatView((CondStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new CondStatView((CondStatImpl)this.$v_impl); }
-	public CondStatView			getCondStatView()		{ return new CondStatView((CondStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JCondStatView((CondStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JCondStatView((CondStatImpl)this.$v_impl); }
-	public JCondStatView		getJCondStatView()		{ return new JCondStatView((CondStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public CondStat() {
 		super(new CondStatImpl());
@@ -769,7 +723,6 @@ public class CondStat extends ENode {
 	}
 }
 
-@node
 public class LabeledStat extends ENode implements Named {
 	
 	@dflow(out="stat") private static class DFI {
@@ -779,8 +732,13 @@ public class LabeledStat extends ENode implements Named {
 
 	public static LabeledStat[]	emptyArray = new LabeledStat[0];
 
+	@virtual typedef NImpl = LabeledStatImpl;
+	@virtual typedef VView = LabeledStatView;
+	@virtual typedef JView = JLabeledStatView;
+
 	@node
 	public static class LabeledStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = LabeledStat;
 		@att                 public NameRef		ident;
 		@att(copyable=false) public Label			lbl;
 		@att                 public ENode			stat;
@@ -793,23 +751,8 @@ public class LabeledStat extends ENode implements Named {
 		public ENode			stat;
 	}
 	
-	@att                 public abstract virtual NameRef		ident;
-	@att(copyable=false) public abstract virtual Label			lbl;
-	@att                 public abstract virtual ENode			stat;
-	
-	@getter public NameRef		get$ident()				{ return this.getLabeledStatView().ident; }
-	@getter public Label		get$lbl()				{ return this.getLabeledStatView().lbl; }
-	@getter public ENode		get$stat()				{ return this.getLabeledStatView().stat; }
-	@setter public void			set$ident(NameRef val)	{ this.getLabeledStatView().ident = val; }
-	@setter public void			set$lbl(Label val)		{ this.getLabeledStatView().lbl = val; }
-	@setter public void			set$stat(ENode val)		{ this.getLabeledStatView().stat = val; }
-
-	public NodeView				getNodeView()			{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
-	public LabeledStatView		getLabeledStatView()	{ return new LabeledStatView((LabeledStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
-	public JLabeledStatView		getJLabeledStatView()	{ return new JLabeledStatView((LabeledStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public LabeledStat() {
 		super(new LabeledStatImpl());
@@ -833,13 +776,17 @@ public class LabeledStat extends ENode implements Named {
 	}
 }
 
-@node
 public class BreakStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = BreakStatImpl;
+	@virtual typedef VView = BreakStatView;
+	@virtual typedef JView = JBreakStatView;
+
 	@node
 	public static class BreakStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = BreakStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public BreakStatImpl() {}
@@ -850,20 +797,8 @@ public class BreakStat extends ENode {
 		public Label			dest;
 	}
 	
-	@att public abstract virtual NameRef		ident;
-	@ref public abstract virtual Label			dest;
-	
-	@getter public NameRef		get$ident()				{ return this.getBreakStatView().ident; }
-	@getter public Label		get$dest()				{ return this.getBreakStatView().dest; }
-	@setter public void			set$ident(NameRef val)	{ this.getBreakStatView().ident = val; }
-	@setter public void			set$dest(Label val)		{ this.getBreakStatView().dest = val; }
-
-	public NodeView				getNodeView()			{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
-	public BreakStatView		getBreakStatView()		{ return new BreakStatView((BreakStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
-	public JBreakStatView		getJBreakStatView()		{ return new JBreakStatView((BreakStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BreakStat() {
 		super(new BreakStatImpl());
@@ -996,13 +931,17 @@ public class BreakStat extends ENode {
 	}
 }
 
-@node
 public class ContinueStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = ContinueStatImpl;
+	@virtual typedef VView = ContinueStatView;
+	@virtual typedef JView = JContinueStatView;
+
 	@node
 	public static class ContinueStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ContinueStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public ContinueStatImpl() {}
@@ -1013,20 +952,8 @@ public class ContinueStat extends ENode {
 		public Label			dest;
 	}
 	
-	@att public abstract virtual NameRef		ident;
-	@ref public abstract virtual Label			dest;
-	
-	@getter public NameRef		get$ident()				{ return this.getContinueStatView().ident; }
-	@getter public Label		get$dest()				{ return this.getContinueStatView().dest; }
-	@setter public void			set$ident(NameRef val)	{ this.getContinueStatView().ident = val; }
-	@setter public void			set$dest(Label val)		{ this.getContinueStatView().dest = val; }
-
-	public NodeView				getNodeView()			{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
-	public ContinueStatView		getContinueStatView()	{ return new ContinueStatView((ContinueStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
-	public JContinueStatView	getJContinueStatView()	{ return new JContinueStatView((ContinueStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ContinueStat() {
 		super(new ContinueStatImpl());
@@ -1102,13 +1029,17 @@ public class ContinueStat extends ENode {
 	}
 }
 
-@node
 public class GotoStat extends ENode {
 	
 	@dflow(jmp="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = GotoStatImpl;
+	@virtual typedef VView = GotoStatView;
+	@virtual typedef JView = JGotoStatView;
+
 	@node
 	public static class GotoStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = GotoStat;
 		@att public NameRef		ident;
 		@ref public Label		dest;
 		public GotoStatImpl() {}
@@ -1119,20 +1050,8 @@ public class GotoStat extends ENode {
 		public Label			dest;
 	}
 	
-	@att public abstract virtual NameRef		ident;
-	@ref public abstract virtual Label			dest;
-	
-	@getter public NameRef		get$ident()				{ return this.getGotoStatView().ident; }
-	@getter public Label		get$dest()				{ return this.getGotoStatView().dest; }
-	@setter public void			set$ident(NameRef val)	{ this.getGotoStatView().ident = val; }
-	@setter public void			set$dest(Label val)		{ this.getGotoStatView().dest = val; }
-
-	public NodeView				getNodeView()			{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
-	public GotoStatView			getGotoStatView()		{ return new GotoStatView((GotoStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
-	public JGotoStatView		getJGotoStatView()		{ return new JGotoStatView((GotoStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public GotoStat() {
 		super(new GotoStatImpl());
@@ -1285,16 +1204,19 @@ public class GotoStat extends ENode {
 	}
 }
 
-@node
 public class GotoCaseStat extends ENode {
 	
 	@dflow(jmp="expr") private static class DFI {
 	@dflow(in="this:in")	ENode		expr;
 	}
 
+	@virtual typedef NImpl = GotoCaseStatImpl;
+	@virtual typedef VView = GotoCaseStatView;
+	@virtual typedef JView = JGotoCaseStatView;
 
 	@node
 	public static class GotoCaseStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = GotoCaseStat;
 		@att public ENode		expr;
 		@ref public SwitchStat	sw;
 		public GotoCaseStatImpl() {}
@@ -1305,20 +1227,8 @@ public class GotoCaseStat extends ENode {
 		public SwitchStat	sw;
 	}
 	
-	@att public abstract virtual ENode			expr;
-	@ref public abstract virtual SwitchStat	sw;
-	
-	@getter public ENode		get$expr()				{ return this.getGotoCaseStatView().expr; }
-	@getter public SwitchStat	get$sw()				{ return this.getGotoCaseStatView().sw; }
-	@setter public void			set$expr(ENode val)		{ this.getGotoCaseStatView().expr = val; }
-	@setter public void			set$sw(SwitchStat val)	{ this.getGotoCaseStatView().sw = val; }
-
-	public NodeView				getNodeView()			{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
-	public GotoCaseStatView		getGotoCaseStatView()	{ return new GotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
-	public JGotoCaseStatView	getJGotoCaseStatView()	{ return new JGotoCaseStatView((GotoCaseStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public GotoCaseStat() {
 		super(new GotoCaseStatImpl());

@@ -27,7 +27,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	@dflow(in="this:in()", out="stats") private static class DFI {
@@ -37,8 +36,13 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	
 	public static final CaseLabel[] emptyArray = new CaseLabel[0];
 
+	@virtual typedef NImpl = CaseLabelImpl;
+	@virtual typedef VView = CaseLabelView;
+	@virtual typedef JView = JCaseLabelView;
+
 	@node
 	public static final class CaseLabelImpl extends ENodeImpl {
+		@virtual typedef ImplOf = CaseLabel;
 		@att public ENode			val;
 		@ref public Type			type;
 		@att public NArr<Var>		pattern;
@@ -55,25 +59,8 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 		public access:ro	NArr<ENode>		stats;
 	}
 
-	@att public abstract virtual			ENode			val;
-	@ref public abstract virtual			Type			type;
-	@att public abstract virtual access:ro	NArr<Var>		pattern;
-	@att public abstract virtual access:ro	NArr<ENode>		stats;
-	
-	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
-	public CaseLabelView		getCaseLabelView()		alias operator(210,fy,$cast) { return new CaseLabelView((CaseLabelImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
-	public JCaseLabelView		getJCaseLabelView()		alias operator(210,fy,$cast) { return new JCaseLabelView((CaseLabelImpl)this.$v_impl); }
-
-	@getter public ENode			get$val()				{ return this.getCaseLabelView().val; }
-	@getter public Type				get$type()				{ return this.getCaseLabelView().type; }
-	@getter public NArr<Var>		get$pattern()			{ return this.getCaseLabelView().pattern; }
-	@getter public NArr<ENode>		get$stats()				{ return this.getCaseLabelView().stats; }
-	@setter public void		set$val(ENode val)				{ this.getCaseLabelView().val = val; }
-	@setter public void		set$type(Type val)				{ this.getCaseLabelView().type = val; }
-	
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public CaseLabel() {
 		super(new CaseLabelImpl());
@@ -242,7 +229,6 @@ public class CaseLabel extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
 public class SwitchStat extends ENode implements BreakTarget {
 	
 	@dflow(out="lblbrk") private static class DFI {
@@ -257,8 +243,13 @@ public class SwitchStat extends ENode implements BreakTarget {
 	public static final int TYPE_SWITCH = 2;
 	public static final int ENUM_SWITCH = 3;
 
+	@virtual typedef NImpl = SwitchStatImpl;
+	@virtual typedef VView = SwitchStatView;
+	@virtual typedef JView = JSwitchStatView;
+
 	@node
 	public static class SwitchStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = SwitchStat;
 		@att                 public int mode; /* = NORMAL_SWITCH; */
 		@att                 public ENode					sel;
 		@att                 public NArr<CaseLabel>		cases;
@@ -283,36 +274,8 @@ public class SwitchStat extends ENode implements BreakTarget {
 		public access:ro	Label					lblbrk;
 	}
 
-	@att public abstract virtual			int						mode;
-	@att public abstract virtual			ENode					sel;
-	@att public abstract virtual access:ro	NArr<CaseLabel>			cases;
-	@att public abstract virtual			LVarExpr				tmpvar;
-	@ref public abstract virtual			CaseLabel				defCase;
-	@ref public abstract virtual			Field					typehash; // needed for re-resolving
-	@att public abstract virtual access:ro	Label					lblcnt;
-	@att public abstract virtual access:ro	Label					lblbrk;
-
-	@getter public int				get$mode()				{ return this.getSwitchStatView().mode; }
-	@getter public ENode			get$sel()				{ return this.getSwitchStatView().sel; }
-	@getter public NArr<CaseLabel>	get$cases()				{ return this.getSwitchStatView().cases; }
-	@getter public LVarExpr			get$tmpvar()			{ return this.getSwitchStatView().tmpvar; }
-	@getter public CaseLabel		get$defCase()			{ return this.getSwitchStatView().defCase; }
-	@getter public Field			get$typehash()			{ return this.getSwitchStatView().typehash; }
-	@getter public Label			get$lblcnt()			{ return this.getSwitchStatView().lblcnt; }
-	@getter public Label			get$lblbrk()			{ return this.getSwitchStatView().lblbrk; }
-	
-	@setter public void			set$mode(int val)			{ this.getSwitchStatView().mode = val; }
-	@setter public void			set$sel(ENode val)			{ this.getSwitchStatView().sel = val; }
-	@setter public void			set$tmpvar(LVarExpr val)	{ this.getSwitchStatView().tmpvar = val; }
-	@setter public void			set$defCase(CaseLabel val)	{ this.getSwitchStatView().defCase = val; }
-	@setter public void			set$typehash(Field val)		{ this.getSwitchStatView().typehash = val; }
-
-	public NodeView					getNodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
-	public ENodeView				getENodeView()			alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
-	public SwitchStatView			getSwitchStatView()		alias operator(210,fy,$cast) { return new SwitchStatView((SwitchStatImpl)this.$v_impl); }
-	public JNodeView				getJNodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
-	public JENodeView				getJENodeView()			alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
-	public JSwitchStatView			getJSwitchStatView()	alias operator(210,fy,$cast) { return new JSwitchStatView((SwitchStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public SwitchStat() {
 		super(new SwitchStatImpl());
@@ -560,7 +523,6 @@ public class SwitchStat extends ENode implements BreakTarget {
 	}
 }
 
-@node
 public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	@dflow(out="body") private static class DFI {
@@ -570,8 +532,13 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	
 	static CatchInfo[] emptyArray = new CatchInfo[0];
 
+	@virtual typedef NImpl = CatchInfoImpl;
+	@virtual typedef VView = CatchInfoView;
+	@virtual typedef JView = JCatchInfoView;
+
 	@node
 	public static class CatchInfoImpl extends ENodeImpl {
+		@virtual typedef ImplOf = CatchInfo;
 		@att public Var				arg;
 		@att public ENode			body;
 		@att public CodeLabel		handler;
@@ -585,20 +552,8 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 		public ENode			body;
 	}
 	
-	@att public abstract virtual Var			arg;
-	@att public abstract virtual ENode			body;
-	
-	@getter public Var			get$arg()				{ return this.getCatchInfoView().arg; }
-	@getter public ENode		get$body()				{ return this.getCatchInfoView().body; }
-	@setter public void			set$arg(Var val)		{ this.getCatchInfoView().arg = val; }
-	@setter public void			set$body(ENode val)		{ this.getCatchInfoView().body = val; }
-
-	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
-	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new CatchInfoView((CatchInfoImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
-	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JCatchInfoView((CatchInfoImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public CatchInfo() {
 		super(new CatchInfoImpl());
@@ -632,7 +587,6 @@ public class CatchInfo extends ENode implements ScopeOfNames {
 	}
 }
 
-@node
 public class FinallyInfo extends CatchInfo {
 	
 	@dflow(out="body") private static class DFI {
@@ -640,8 +594,13 @@ public class FinallyInfo extends CatchInfo {
 	@dflow(in="arg")		ENode			body;
 	}
 	
+	@virtual typedef NImpl = FinallyInfoImpl;
+	@virtual typedef VView = FinallyInfoView;
+	@virtual typedef JView = JFinallyInfoView;
+
 	@node
 	public static class FinallyInfoImpl extends CatchInfoImpl {
+		@virtual typedef ImplOf = FinallyInfo;
 		@att public Var			ret_arg;
 		@att public CodeLabel	subr_label;
 		public FinallyInfoImpl() {}
@@ -652,19 +611,8 @@ public class FinallyInfo extends CatchInfo {
 		public Var			ret_arg;
 	}
 	
-	@att public abstract virtual Var			ret_arg;
-	
-	@getter public Var			get$ret_arg()				{ return this.getFinallyInfoView().ret_arg; }
-	@setter public void			set$ret_arg(Var val)		{ this.getFinallyInfoView().ret_arg = val; }
-
-	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public CatchInfoView		getCatchInfoView()		alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public FinallyInfoView		getFinallyInfoView()	alias operator(210,fy,$cast) { return new FinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public JCatchInfoView		getJCatchInfoView()		alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
-	public JFinallyInfoView		getJFinallyInfoView()	alias operator(210,fy,$cast) { return new JFinallyInfoView((FinallyInfoImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public FinallyInfo() {
 		super(new FinallyInfoImpl());
@@ -687,7 +635,6 @@ public class FinallyInfo extends CatchInfo {
 
 }
 
-@node
 public class TryStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -696,8 +643,13 @@ public class TryStat extends ENode {
 	@dflow(in="this:in")				FinallyInfo		finally_catcher;
 	}
 	
+	@virtual typedef NImpl = TryStatImpl;
+	@virtual typedef VView = TryStatView;
+	@virtual typedef JView = JTryStatView;
+
 	@node
 	public static final class TryStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = TryStat;
 		@att public ENode				body;
 		@att public NArr<CatchInfo>		catchers;
 		@att public FinallyInfo			finally_catcher;
@@ -712,24 +664,8 @@ public class TryStat extends ENode {
 		public				FinallyInfo			finally_catcher;
 	}
 
-	@att public abstract virtual			ENode				body;
-	@att public abstract virtual access:ro	NArr<CatchInfo>		catchers;
-	@att public abstract virtual			FinallyInfo			finally_catcher;
-	
-	@getter public ENode			get$body()				{ return this.getTryStatView().body; }
-	@getter public NArr<CatchInfo>	get$catchers()			{ return this.getTryStatView().catchers; }
-	@getter public FinallyInfo		get$finally_catcher()	{ return this.getTryStatView().finally_catcher; }
-	
-	@setter public void		set$body(ENode val)						{ this.getTryStatView().body = val; }
-	@setter public void		set$finally_catcher(FinallyInfo val)	{ this.getTryStatView().finally_catcher = val; }
-	
-	public NodeView				getNodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
-	public TryStatView			getTryStatView()		alias operator(210,fy,$cast) { return new TryStatView((TryStatImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
-	public JENodeView			getJENodeView()			alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
-	public JTryStatView			getJTryStatView()		alias operator(210,fy,$cast) { return new JTryStatView((TryStatImpl)this.$v_impl); }
-
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public TryStat() {
 		super(new TryStatImpl());
@@ -787,8 +723,6 @@ public class TryStat extends ENode {
 
 }
 
-@node
-@dflow(out="body")
 public class SynchronizedStat extends ENode {
 	
 	@dflow(out="body") private static class DFI {
@@ -796,8 +730,13 @@ public class SynchronizedStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
+	@virtual typedef NImpl = SynchronizedStatImpl;
+	@virtual typedef VView = SynchronizedStatView;
+	@virtual typedef JView = JSynchronizedStatView;
+
 	@node
 	public static final class SynchronizedStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = SynchronizedStat;
 		@att public ENode			expr;
 		@att public Var				expr_var;
 		@att public ENode			body;
@@ -814,25 +753,8 @@ public class SynchronizedStat extends ENode {
 		public ENode			body;
 	}
 
-	@att public abstract virtual ENode			expr;
-	@att public abstract virtual Var			expr_var;
-	@att public abstract virtual ENode			body;
-	
-	@getter public ENode			get$expr()		{ return this.getSynchronizedStatView().expr; }
-	@getter public Var				get$expr_var()	{ return this.getSynchronizedStatView().expr_var; }
-	@getter public ENode			get$body()		{ return this.getSynchronizedStatView().body; }
-	
-	@setter public void		set$expr(ENode val)		{ this.getSynchronizedStatView().expr = val; }
-	@setter public void		set$expr_var(Var val)	{ this.getSynchronizedStatView().expr_var = val; }
-	@setter public void		set$body(ENode val)		{ this.getSynchronizedStatView().body = val; }
-	
-	public NodeView					getNodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-	public ENodeView				getENodeView()				{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-	public SynchronizedStatView		getSynchronizedStatView()	{ return new SynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-	public JNodeView				getJNodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-	public JENodeView				getJENodeView()				{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-	public JSynchronizedStatView	getJSynchronizedStatView()	{ return new JSynchronizedStatView((SynchronizedStatImpl)this.$v_impl); }
-
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public SynchronizedStat() {
 		super(new SynchronizedStatImpl());
@@ -858,7 +780,6 @@ public class SynchronizedStat extends ENode {
 
 }
 
-@node
 public class WithStat extends ENode {
 
 	@dflow(out="body") private static class DFI {
@@ -866,8 +787,13 @@ public class WithStat extends ENode {
 	@dflow(in="expr")		ENode		body;
 	}
 	
+	@virtual typedef NImpl = WithStatImpl;
+	@virtual typedef VView = WithStatView;
+	@virtual typedef JView = JWithStatView;
+
 	@node
 	public static final class WithStatImpl extends ENodeImpl {
+		@virtual typedef ImplOf = WithStat;
 		@att public ENode		expr;
 		@att public ENode		body;
 		@ref public LvalDNode	var_or_field;
@@ -882,24 +808,8 @@ public class WithStat extends ENode {
 		public LvalDNode	var_or_field;
 	}
 
-	@att public abstract virtual ENode			expr;
-	@att public abstract virtual ENode			body;
-	@att public abstract virtual LvalDNode		var_or_field;
-	
-	@getter public ENode			get$expr()			{ return this.getWithStatView().expr; }
-	@getter public ENode			get$body()			{ return this.getWithStatView().body; }
-	@getter public LvalDNode		get$var_or_field()	{ return this.getWithStatView().var_or_field; }
-	
-	@setter public void		set$expr(ENode val)				{ this.getWithStatView().expr = val; }
-	@setter public void		set$body(ENode val)				{ this.getWithStatView().body = val; }
-	@setter public void		set$var_or_field(LvalDNode val)	{ this.getWithStatView().var_or_field = val; }
-	
-	public NodeView			getNodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
-	public ENodeView		getENodeView()		{ return new WithStatView((WithStatImpl)this.$v_impl); }
-	public WithStatView		getWithStatView()	{ return new WithStatView((WithStatImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
-	public JENodeView		getJENodeView()		{ return new JWithStatView((WithStatImpl)this.$v_impl); }
-	public JWithStatView	getJWithStatView()	{ return new JWithStatView((WithStatImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public WithStat() {
 		super(new WithStatImpl());

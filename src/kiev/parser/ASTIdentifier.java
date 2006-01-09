@@ -16,23 +16,38 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class ASTIdentifier extends ENode {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	private static KString op_instanceof = KString.from("instanceof");
-	public KString name;
+
+	@virtual typedef NImpl = ASTIdentifierImpl;
+	@virtual typedef VView = ASTIdentifierView;
+
+	@node
+	public static class ASTIdentifierImpl extends ENodeImpl {
+		@att public KString name;
+	}
+	@nodeview
+	public static view ASTIdentifierView of ASTIdentifierImpl extends ENodeView {
+		public KString name;
+	}
+
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ASTIdentifier() {
+		super(new ASTIdentifierImpl());
 	}
 
 	public ASTIdentifier(KString name) {
+		super(new ASTIdentifierImpl());
 		this.name = name;
 	}
 
 	public ASTIdentifier(int pos, KString name) {
-		super(0);
+		super(new ASTIdentifierImpl());
 		this.pos = pos;
 		this.name = name;
 	}

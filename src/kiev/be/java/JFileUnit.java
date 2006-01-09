@@ -42,7 +42,7 @@ public final view JFileUnitView of FileUnitImpl extends JDNodeView {
         	Kiev.setExtSet(disabled_extensions);
 			foreach (DNode dn; members; dn instanceof Struct) {
 				diff_time = curr_time = System.currentTimeMillis();
-				((Struct)dn).getJStructView().generate();
+				((Struct)dn).getJView().generate();
 				diff_time = System.currentTimeMillis() - curr_time;
 				if( Kiev.verbose )
 					Kiev.reportInfo("Generated clas "+dn,diff_time);

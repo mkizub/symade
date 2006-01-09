@@ -13,22 +13,46 @@ import kiev.transf.*;
  *
  */
 
-@node
 public abstract class ASTAlias extends ASTNode {
 	public static ASTAlias[]	emptyArray = new ASTAlias[0];
 	
-	public ASTAlias(NodeImpl v_impl) { super(v_impl); }
+	@virtual typedef NImpl = ASTAliasImpl;
+	@virtual typedef VView = ASTAliasView;
+
+	@node
+	public static class ASTAliasImpl extends NodeImpl {
+		@virtual typedef ImplOf = ASTAlias;
+	}
+	@nodeview
+	public static view ASTAliasView of ASTAliasImpl extends NodeView {
+		public ASTAliasView(ASTAliasImpl $view) { super($view); }
+	}
+
+	public ASTAlias(ASTAliasImpl v_impl) { super(v_impl); }
 	
 	public abstract void attach(ASTNode n);
 
 }
 
-@node
 public final class ASTIdentifierAlias extends ASTAlias {
 
-	@att public NameRef		name;
+	@virtual typedef NImpl = ASTIdentifierAliasImpl;
+	@virtual typedef VView = ASTIdentifierAliasView;
 
-	public ASTIdentifierAlias() { super(new NodeImpl()); }
+	@node
+	public static class ASTIdentifierAliasImpl extends ASTAliasImpl {
+		@virtual typedef ImplOf = ASTIdentifierAlias;
+		@att public NameRef		name;
+	}
+	@nodeview
+	public static view ASTIdentifierAliasView of ASTIdentifierAliasImpl extends ASTAliasView {
+		public NameRef		name;
+	}
+
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
+	
+	public ASTIdentifierAlias() { super(new ASTIdentifierAliasImpl()); }
 	
 	public void attach(ASTNode n) {
 		switch(n) {

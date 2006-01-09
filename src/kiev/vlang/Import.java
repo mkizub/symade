@@ -15,7 +15,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public final class Import extends DNode implements Constants, ScopeOfNames, ScopeOfMethods {
 	public static final Import[] emptyArray = new Import[0];
 
@@ -26,8 +25,12 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		IMPORT_SYNTAX;
 	}
 
+	@virtual typedef NImpl = ImportImpl;
+	@virtual typedef VView = ImportView;
+
 	@node
 	static final class ImportImpl extends DNodeImpl {
+		@virtual typedef ImplOf = Import;
 		ImportImpl() {}
 		@att NameRef				name;
 		@att ImportMode				mode = ImportMode.IMPORT_CLASS;
@@ -46,30 +49,8 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 		public				boolean				of_method;
 		public				DNode				resolved;
 	}
-	public NodeView			getNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new ImportView((ImportImpl)this.$v_impl); }
-	public ImportView		getImportView()		{ return new ImportView((ImportImpl)this.$v_impl); }
 
-	@att public abstract virtual				NameRef					name;
-	@att public abstract virtual				ImportMode				mode;
-	@att public abstract virtual				boolean					star;
-	@att public abstract virtual access:ro		NArr<TypeRef>			args;
-
-	@ref public abstract virtual				boolean					of_method;
-	@ref public abstract virtual				DNode					resolved;
-
-	@getter public NameRef				get$name()	{ return this.getImportView().name; }
-	@getter public ImportMode			get$mode()	{ return this.getImportView().mode; }
-	@getter public boolean				get$star()	{ return this.getImportView().star; }
-	@getter public NArr<TypeRef>		get$args()	{ return this.getImportView().args; }
-	@getter public boolean				get$of_method()	{ return this.getImportView().of_method; }
-	@getter public DNode				get$resolved()	{ return this.getImportView().resolved; }
-	
-	@setter public void set$name(NameRef val)			{ this.getImportView().name = val; }
-	@setter public void set$mode(ImportMode val)		{ this.getImportView().mode = val; }
-	@setter public void set$star(boolean val)			{ this.getImportView().star = val; }
-	@setter public void set$of_method(boolean val)		{ this.getImportView().of_method = val; }
-	@setter public void set$resolved(DNode val)		{ this.getImportView().resolved = val; }
+	public VView getVView() { return new VView(this.$v_impl); }
 
 	public Import() { super(new ImportImpl()); }
 
@@ -191,13 +172,16 @@ public final class Import extends DNode implements Constants, ScopeOfNames, Scop
 
 }
 
-@node
 public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeOpDefImpl;
+	@virtual typedef VView = TypeOpDefView;
+
 	@node
 	static final class TypeOpDefImpl extends TypeDeclImpl {
+		@virtual typedef ImplOf = TypeOpDef;
 		TypeOpDefImpl() {}
 		TypeOpDefImpl(int pos) { super(pos); }
 		@att ASTOperator	op;
@@ -210,22 +194,8 @@ public final class TypeOpDef extends TypeDecl implements Named, ScopeOfNames {
 		public	TypeRef			type;
 		public	TypeDef		arg;
 	}
-	public NodeView			getNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
-	public TypeDeclView		getTypeDeclView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
-	public TypeOpDefView	getTypeOpDefView()	{ return new TypeOpDefView((TypeOpDefImpl)this.$v_impl); }
 
-	@getter public ASTOperator		get$op()		{ return this.getTypeOpDefView().op; }
-	@getter public TypeRef			get$type()		{ return this.getTypeOpDefView().type; }
-	@getter public TypeDef		get$arg()		{ return this.getTypeOpDefView().arg; }
-
-	@setter public void set$op(ASTOperator val)		{ this.getTypeOpDefView().op = val; }
-	@setter public void set$type(TypeRef val)			{ this.getTypeOpDefView().type = val; }
-	@setter public void set$arg(TypeDef val)		{ this.getTypeOpDefView().arg = val; }
-	
-	@att public abstract virtual ASTOperator	op;
-	@att public abstract virtual TypeRef		type;
-	@att public abstract virtual TypeDef	arg;
+	public VView getVView() { return new VView(this.$v_impl); }
 
 	public TypeOpDef() {
 		super(new TypeOpDefImpl());

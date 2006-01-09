@@ -82,7 +82,7 @@ public final class TVarSet {
 		if (var.isArgVirtual()) {
 			for (int i=0; i < n; i++) {
 				if (tmp[i].var.isArgVirtual() && tmp[i].var.name == var.name) {
-					tmp[n] = new TVarAlias(this, i, var, tmp[i]);
+					tmp[n] = new TVarAlias(this, n, var, tmp[i]);
 					value = null;
 					break;
 				}
@@ -231,7 +231,7 @@ public final class TVarSet {
 			Type r = v.result();
 			for(int j=0; j < my_size; j++) {
 				TVar x = my_vars[j];
-				if (x.var ≡ v.var) {
+				if (x.var ≡ v.var && !x.isBound()) {
 					// bind
 					sr.set(sr.tvars[j], r);
 					continue;

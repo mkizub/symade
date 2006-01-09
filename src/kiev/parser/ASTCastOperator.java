@@ -13,18 +13,33 @@ import kiev.transf.*;
  *
  */
 
-@node
 public class ASTCastOperator extends ASTOperator {
 
 	@dflow(out="this:in") private static class DFI {}
 
 	static final KString fakeImage = KString.from("$cast");
 	
-	@att public TypeRef	type;
-	public boolean  reinterp;
-	public boolean  sure;
+	@virtual typedef NImpl = ASTCastOperatorImpl;
+	@virtual typedef VView = ASTCastOperatorView;
 
+	@node
+	public static class ASTCastOperatorImpl extends ASTOperatorImpl {
+		@virtual typedef ImplOf = ASTCastOperator;
+		@att public TypeRef	type;
+		@att public boolean  reinterp;
+		@att public boolean  sure;
+	}
+	@nodeview
+	public static view ASTCastOperatorView of ASTCastOperatorImpl extends ASTOperatorView {
+		public TypeRef	type;
+		public boolean  reinterp;
+		public boolean  sure;
+	}
+
+	public VView getVView() { return new VView(this.$v_impl); }
+	
 	public ASTCastOperator() {
+		super(new ASTCastOperatorImpl());
 		image = fakeImage;
 	}
 	

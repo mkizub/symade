@@ -12,7 +12,6 @@ import kiev.stdlib.*;
  *
  */
 
-@node
 public class ASTNewAccessExpression extends ENode {
 
 	@dflow(out="args") private static class DFI {
@@ -20,8 +19,12 @@ public class ASTNewAccessExpression extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef NImpl = ASTNewAccessExpressionImpl;
+	@virtual typedef VView = ASTNewAccessExpressionView;
+
 	@node
 	public static class ASTNewAccessExpressionImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTNewAccessExpression;
 		@att public ENode				obj;
 		@att public TypeRef				type;
 		@att public NArr<ENode>			args;
@@ -35,20 +38,8 @@ public class ASTNewAccessExpression extends ENode {
 		public access:ro	NArr<ENode>		args;
 	}
 	
-	@att public abstract virtual			ENode				obj;
-	@att public abstract virtual			TypeRef				type;
-	@att public abstract virtual access:ro	NArr<ENode>			args;
-	
-	@getter public ENode			get$obj()				{ return this.getASTNewAccessExpressionView().obj; }
-	@getter public TypeRef			get$type()				{ return this.getASTNewAccessExpressionView().type; }
-	@getter public NArr<ENode>		get$args()				{ return this.getASTNewAccessExpressionView().args; }
-	
-	@setter public void		set$obj(ENode val)				{ this.getASTNewAccessExpressionView().obj = val; }
-	@setter public void		set$type(TypeRef val)			{ this.getASTNewAccessExpressionView().type = val; }
-
-	public NodeView							getNodeView()						{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
-	public ENodeView						getENodeView()						{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
-	public ASTNewAccessExpressionView		getASTNewAccessExpressionView()		{ return new ASTNewAccessExpressionView((ASTNewAccessExpressionImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ASTNewAccessExpression() {
 		super(new ASTNewAccessExpressionImpl());

@@ -185,7 +185,7 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 
 	public JMethodView getMethodFor(JENodeView expr) {
 		Method m = clazzStringBuffer.resolveMethod(KString.from("append"),clazzStringBuffer.type,expr.getType());
-		return m.getJMethodView();
+		return m.getJView();
 	}
 
 
@@ -195,12 +195,12 @@ public view JStringConcatExprView of StringConcatExprImpl extends JENodeView {
 		JENodeView[] args = this.args;
 		code.addInstr(op_new,clazzStringBuffer.type);
 		code.addInstr(op_dup);
-		code.addInstr(op_call,clazzStringBufferInit.getJMethodView(),false);
+		code.addInstr(op_call,clazzStringBufferInit.getJView(),false);
 		for(int i=0; i < args.length; i++) {
 			args[i].generate(code,null);
 			code.addInstr(op_call,getMethodFor(args[i]),false);
 		}
-		code.addInstr(op_call,clazzStringBufferToString.getJMethodView(),false);
+		code.addInstr(op_call,clazzStringBufferToString.getJView(),false);
 		if( reqType ≡ Type.tpVoid ) code.addInstr(op_pop);
 	}
 

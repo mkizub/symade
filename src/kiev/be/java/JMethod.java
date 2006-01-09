@@ -30,7 +30,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 	public JVarView	getRetVar() {
 		if( this.$view.retvar == null )
 			this.$view.retvar = new Var(pos,nameResultVar,type.ret,ACC_FINAL);
-		return this.$view.retvar.getJVarView();
+		return this.$view.retvar.getJView();
 	}
 
 
@@ -99,7 +99,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 				if( !isBad() ) {
 					JVarView thisPar = null;
 					if( !isStatic() ) {
-						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJVarView();
+						thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 						code.addVar(thisPar);
 					}
 					code.addVars(params);
@@ -168,7 +168,7 @@ public final view JMethodView of MethodImpl extends JDNodeView {
 			ASTNode[] mthrs = throwns.getThrowns();
         	JStructView[] thrs = new JStructView[mthrs.length];
 			for (int i=0; i < mthrs.length; i++)
-				thrs[i] = mthrs[i].getType().getStruct().getJStructView();
+				thrs[i] = mthrs[i].getType().getStruct().getJView();
         	ExceptionsAttr athr = new ExceptionsAttr();
         	athr.exceptions = thrs;
 			this.addAttr(athr);
@@ -221,7 +221,7 @@ public final final view JWBCConditionView of WBCConditionImpl extends JDNodeView
 			try {
 				JVarView thisPar = null;
 				if( !isStatic() ) {
-					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJVarView();
+					thisPar = new FormPar(pos,Constants.nameThis,jctx_clazz.type,FormPar.PARAM_THIS,ACC_FINAL|ACC_FORWARD).getJView();
 					code.addVar(thisPar);
 				}
 				code.addVars(m.params);

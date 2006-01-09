@@ -14,13 +14,16 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
-	
+
 	@dflow(out="this:in") private static class DFI {}
+	
+	@virtual typedef NImpl = ASTAnonymouseClosureImpl;
+	@virtual typedef VView = ASTAnonymouseClosureView;
 	
 	@node
 	public static class ASTAnonymouseClosureImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTAnonymouseClosure;
 		@att public NArr<FormPar>				params;
 		@att public TypeRef						rettype;
 		@att public BlockStat					body;
@@ -40,29 +43,8 @@ public class ASTAnonymouseClosure extends ENode implements ScopeOfNames {
 		public				ClosureType					ctype;
 	}
 	
-	@att public abstract virtual access:ro	NArr<FormPar>				params;
-	@att public abstract virtual			TypeRef						rettype;
-	@att public abstract virtual			BlockStat					body;
-	@att public abstract virtual			NewClosure					new_closure;
-	@att public abstract virtual			Struct						clazz;
-	@ref public abstract virtual			ClosureType					ctype;
-	
-	@getter public NArr<FormPar>	get$params()			{ return this.getASTAnonymouseClosureView().params; }
-	@getter public TypeRef			get$rettype()			{ return this.getASTAnonymouseClosureView().rettype; }
-	@getter public BlockStat		get$body()				{ return this.getASTAnonymouseClosureView().body; }
-	@getter public NewClosure		get$new_closure()		{ return this.getASTAnonymouseClosureView().new_closure; }
-	@getter public Struct			get$clazz()				{ return this.getASTAnonymouseClosureView().clazz; }
-	@getter public ClosureType		get$ctype()				{ return this.getASTAnonymouseClosureView().ctype; }
-	
-	@setter public void		set$rettype(TypeRef val)		{ this.getASTAnonymouseClosureView().rettype = val; }
-	@setter public void		set$body(BlockStat val)			{ this.getASTAnonymouseClosureView().body = val; }
-	@setter public void		set$new_closure(NewClosure val)	{ this.getASTAnonymouseClosureView().new_closure = val; }
-	@setter public void		set$clazz(Struct val)			{ this.getASTAnonymouseClosureView().clazz = val; }
-	@setter public void		set$ctype(ClosureType val)		{ this.getASTAnonymouseClosureView().ctype = val; }
-
-	public NodeView						getNodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
-	public ASTAnonymouseClosureView		getASTAnonymouseClosureView()	{ return new ASTAnonymouseClosureView((ASTAnonymouseClosureImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public ASTAnonymouseClosure() {
 		super(new ASTAnonymouseClosureImpl());

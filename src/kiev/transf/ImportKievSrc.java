@@ -365,8 +365,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 		}
 		else if( clazz.isInterface() ) {
 			clazz.super_type = Type.tpObject;
-			foreach(TypeRef tr; clazz.interfaces)
-				tr.getType();
+			foreach(TypeRef tr; clazz.interfaces) {
+				Struct s = tr.getType().getStruct();
+				if (s != null)
+					getStructType(s);
+			}
 		}
 		else {
 			if (clazz.view_of != null)
@@ -374,8 +377,16 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			Type sup = clazz.super_bound == null ? null : clazz.super_bound.getType();
 			if (sup == null && !clazz.name.name.equals(Type.tpObject.clazz.name.name))
 				clazz.super_type = Type.tpObject;
-			foreach(TypeRef tr; clazz.interfaces)
-				tr.getType();
+			if (sup != null) {
+				Struct s = sup.getStruct();
+				if (s != null)
+					getStructType(s);
+			}
+			foreach(TypeRef tr; clazz.interfaces) {
+				Struct s = tr.getType().getStruct();
+				if (s != null)
+					getStructType(s);
+			}
 		}
 		
 		clazz.type.bindings(); // update the type
@@ -762,7 +773,7 @@ class JavaBackend extends BackendProcessor {
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			} else {
 				try {
-					node.getJFileUnitView().generate();
+					node.getJView().generate();
 				} catch (Exception rte) { Kiev.reportError(rte); }
 			}
 		}

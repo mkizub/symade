@@ -29,11 +29,15 @@ public interface IBoolExpr {
 	public abstract void generate_iffalse(Code code, CodeLabel label);
 }
 
-@node
 public abstract class BoolExpr extends ENode implements IBoolExpr {
+
+	@virtual typedef NImpl = BoolExprImpl;
+	@virtual typedef VView = BoolExprView;
+	@virtual typedef JView = JBoolExprView;
 
 	@node
 	public abstract static class BoolExprImpl extends ENodeImpl {
+		@virtual typedef ImplOf = BoolExpr;
 		public BoolExprImpl() {}
 		public BoolExprImpl(int pos) { super(pos); }
 	}
@@ -43,27 +47,25 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 			super($view);
 		}
 	}
-	public abstract BoolExprView		getBoolExprView();
-	public abstract JBoolExprView		getJBoolExprView();
 
 	public BoolExpr(BoolExprImpl impl) { super(impl); }
 
 	public Type getType() { return Type.tpBoolean; }
 
 	public final void generate_iftrue(Code code, CodeLabel label) {
-		this.getJBoolExprView().generate_iftrue(code, label);
+		this.getJView().generate_iftrue(code, label);
 	}
 
 	public final void generate_iffalse(Code code, CodeLabel label) {
-		this.getJBoolExprView().generate_iffalse(code, label);
+		this.getJView().generate_iffalse(code, label);
 	}
 
 	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iftrue(code, expr.getJENodeView(), label);
+		JBoolExprView.gen_iftrue(code, expr.getJView(), label);
 	}
 	
 	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iffalse(code, expr.getJENodeView(), label);
+		JBoolExprView.gen_iffalse(code, expr.getJView(), label);
 	}
 
 	public static void checkBool(ENode e) {
@@ -88,7 +90,6 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 	
 }
 
-@node
 public class BinaryBooleanOrExpr extends BoolExpr {
 
 	@dflow(tru="join expr1:true expr2:true", fls="expr2:false") private static class DFI {
@@ -96,8 +97,13 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 	@dflow(in="expr1:false")		ENode			expr2;
 	}
 	
+	@virtual typedef NImpl = BinaryBooleanOrExprImpl;
+	@virtual typedef VView = BinaryBooleanOrExprView;
+	@virtual typedef JView = JBinaryBooleanOrExprView;
+
 	@node
 	public static class BinaryBooleanOrExprImpl extends BoolExprImpl {
+		@virtual typedef ImplOf = BinaryBooleanOrExpr;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
 		public BinaryBooleanOrExprImpl() {}
@@ -109,22 +115,8 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 		public ENode		expr2;
 	}
 	
-	@att public abstract virtual ENode			expr1;
-	@att public abstract virtual ENode			expr2;
-	
-	@getter public ENode		get$expr1()				{ return this.getBinaryBooleanOrExprView().expr1; }
-	@getter public ENode		get$expr2()				{ return this.getBinaryBooleanOrExprView().expr2; }
-	@setter public void			set$expr1(ENode val)	{ this.getBinaryBooleanOrExprView().expr1 = val; }
-	@setter public void			set$expr2(ENode val)	{ this.getBinaryBooleanOrExprView().expr2 = val; }
-
-	public NodeView						getNodeView()					{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public BoolExprView					getBoolExprView()				{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public BinaryBooleanOrExprView		getBinaryBooleanOrExprView()	{ return new BinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public JNodeView					getJNodeView()					{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public JENodeView					getJENodeView()					{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
-	public JBinaryBooleanOrExprView		getJBinaryBooleanOrExprView()	{ return new JBinaryBooleanOrExprView((BinaryBooleanOrExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BinaryBooleanOrExpr() {
 		super(new BinaryBooleanOrExprImpl());
@@ -182,7 +174,6 @@ public class BinaryBooleanOrExpr extends BoolExpr {
 }
 
 
-@node
 public class BinaryBooleanAndExpr extends BoolExpr {
 
 	@dflow(fls="join expr1:false expr2:false", tru="expr2:true") private static class DFI {
@@ -190,8 +181,13 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	@dflow(in="expr1:true")		ENode			expr2;
 	}
 	
+	@virtual typedef NImpl = BinaryBooleanAndExprImpl;
+	@virtual typedef VView = BinaryBooleanAndExprView;
+	@virtual typedef JView = JBinaryBooleanAndExprView;
+
 	@node
 	public static class BinaryBooleanAndExprImpl extends BoolExprImpl {
+		@virtual typedef ImplOf = BinaryBooleanAndExpr;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
 		public BinaryBooleanAndExprImpl() {}
@@ -203,22 +199,8 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 		public ENode		expr2;
 	}
 	
-	@att public abstract virtual ENode			expr1;
-	@att public abstract virtual ENode			expr2;
-	
-	@getter public ENode		get$expr1()				{ return this.getBinaryBooleanAndExprView().expr1; }
-	@getter public ENode		get$expr2()				{ return this.getBinaryBooleanAndExprView().expr2; }
-	@setter public void			set$expr1(ENode val)	{ this.getBinaryBooleanAndExprView().expr1 = val; }
-	@setter public void			set$expr2(ENode val)	{ this.getBinaryBooleanAndExprView().expr2 = val; }
-
-	public NodeView						getNodeView()					{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public BoolExprView					getBoolExprView()				{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public BinaryBooleanAndExprView		getBinaryBooleanAndExprView()	{ return new BinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public JNodeView					getJNodeView()					{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public JENodeView					getJENodeView()					{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
-	public JBinaryBooleanAndExprView	getJBinaryBooleanAndExprView()	{ return new JBinaryBooleanAndExprView((BinaryBooleanAndExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BinaryBooleanAndExpr() {
 		super(new BinaryBooleanAndExprImpl());
@@ -270,7 +252,6 @@ public class BinaryBooleanAndExpr extends BoolExpr {
 	}
 }
 
-@node
 public class BinaryBoolExpr extends BoolExpr {
 	
 	@dflow(out="expr2") private static class DFI {
@@ -278,8 +259,13 @@ public class BinaryBoolExpr extends BoolExpr {
 	@dflow(in="expr1")			ENode			expr2;
 	}
 	
+	@virtual typedef NImpl = BinaryBoolExprImpl;
+	@virtual typedef VView = BinaryBoolExprView;
+	@virtual typedef JView = JBinaryBoolExprView;
+
 	@node
 	public static class BinaryBoolExprImpl extends BoolExprImpl {
+		@virtual typedef ImplOf = BinaryBoolExpr;
 		@ref public BinaryOperator	op;
 		@att public ENode			expr1;
 		@att public ENode			expr2;
@@ -293,25 +279,8 @@ public class BinaryBoolExpr extends BoolExpr {
 		public ENode			expr2;
 	}
 	
-	@att public abstract virtual BinaryOperator	op;
-	@att public abstract virtual ENode				expr1;
-	@att public abstract virtual ENode				expr2;
-	
-	@getter public BinaryOperator	get$op()					{ return this.getBinaryBoolExprView().op; }
-	@getter public ENode			get$expr1()					{ return this.getBinaryBoolExprView().expr1; }
-	@getter public ENode			get$expr2()					{ return this.getBinaryBoolExprView().expr2; }
-	@setter public void				set$op(BinaryOperator val)	{ this.getBinaryBoolExprView().op = val; }
-	@setter public void				set$expr1(ENode val)		{ this.getBinaryBoolExprView().expr1 = val; }
-	@setter public void				set$expr2(ENode val)		{ this.getBinaryBoolExprView().expr2 = val; }
-
-	public NodeView						getNodeView()					{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public BoolExprView					getBoolExprView()				{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public BinaryBoolExprView			getBinaryBoolExprView()			{ return new BinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public JNodeView					getJNodeView()					{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public JENodeView					getJENodeView()					{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public JBoolExprView				getJBoolExprView()				{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
-	public JBinaryBoolExprView			getJBinaryBoolExprView()		{ return new JBinaryBoolExprView((BinaryBoolExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BinaryBoolExpr() {
 		super(new BinaryBoolExprImpl());
@@ -514,15 +483,19 @@ public class BinaryBoolExpr extends BoolExpr {
 	}
 }
 
-@node
 public class InstanceofExpr extends BoolExpr {
 
 	@dflow(tru="this:tru()", fls="expr") private static class DFI {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
+	@virtual typedef NImpl = InstanceofExprImpl;
+	@virtual typedef VView = InstanceofExprView;
+	@virtual typedef JView = JInstanceofExprView;
+
 	@node
 	public static class InstanceofExprImpl extends BoolExprImpl {
+		@virtual typedef ImplOf = InstanceofExpr;
 		@att public ENode		expr;
 		@att public TypeRef		type;
 		public InstanceofExprImpl() {}
@@ -534,22 +507,8 @@ public class InstanceofExpr extends BoolExpr {
 		public TypeRef	type;
 	}
 	
-	@att public abstract virtual ENode			expr;
-	@att public abstract virtual TypeRef		type;
-	
-	@getter public ENode		get$expr()				{ return this.getInstanceofExprView().expr; }
-	@getter public TypeRef		get$type()				{ return this.getInstanceofExprView().type; }
-	@setter public void			set$expr(ENode val)		{ this.getInstanceofExprView().expr = val; }
-	@setter public void			set$type(TypeRef val)	{ this.getInstanceofExprView().type = val; }
-
-	public NodeView						getNodeView()					{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public BoolExprView					getBoolExprView()				{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public InstanceofExprView			getInstanceofExprView()			{ return new InstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public JNodeView					getJNodeView()					{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public JENodeView					getJENodeView()					{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public JBoolExprView				getJBoolExprView()				{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
-	public JInstanceofExprView			getJInstanceofExprView()		{ return new JInstanceofExprView((InstanceofExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public InstanceofExpr() {
 		super(new InstanceofExprImpl());
@@ -668,15 +627,19 @@ public class InstanceofExpr extends BoolExpr {
 	}
 }
 
-@node
 public class BooleanNotExpr extends BoolExpr {
 	
 	@dflow(fls="expr:true", tru="expr:false") private static class DFI {
 	@dflow(in="this:in")		ENode			expr;
 	}
 	
+	@virtual typedef NImpl = BooleanNotExprImpl;
+	@virtual typedef VView = BooleanNotExprView;
+	@virtual typedef JView = JBooleanNotExprView;
+
 	@node
 	public static class BooleanNotExprImpl extends BoolExprImpl {
+		@virtual typedef ImplOf = BooleanNotExpr;
 		@att public ENode		expr;
 		public BooleanNotExprImpl() {}
 		public BooleanNotExprImpl(int pos) { super(pos); }
@@ -686,19 +649,8 @@ public class BooleanNotExpr extends BoolExpr {
 		public ENode		expr;
 	}
 	
-	@att public abstract virtual ENode			expr;
-	
-	@getter public ENode		get$expr()				{ return this.getBooleanNotExprView().expr; }
-	@setter public void			set$expr(ENode val)		{ this.getBooleanNotExprView().expr = val; }
-
-	public NodeView						getNodeView()					{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public ENodeView					getENodeView()					{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public BoolExprView					getBoolExprView()				{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public BooleanNotExprView			getBooleanNotExprView()			{ return new BooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public JNodeView					getJNodeView()					{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public JENodeView					getJENodeView()					{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public JBoolExprView				getJBoolExprView()				{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
-	public JBooleanNotExprView			getJBooleanNotExprView()		{ return new JBooleanNotExprView((BooleanNotExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 	
 	public BooleanNotExpr() {
 		super(new BooleanNotExprImpl());

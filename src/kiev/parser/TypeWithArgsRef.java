@@ -14,13 +14,16 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public class TypeWithArgsRef extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeWithArgsRefImpl;
+	@virtual typedef VView = TypeWithArgsRefView;
+
 	@node
 	public static final class TypeWithArgsRefImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = TypeWithArgsRef;
 		@att public NArr<TypeRef>			args;
 		@att public TypeRef					base_type;
 		public TypeWithArgsRefImpl() {}
@@ -32,18 +35,9 @@ public class TypeWithArgsRef extends TypeRef {
 		public				TypeRef					base_type;
 	}
 
-	@att public abstract virtual access:ro NArr<TypeRef>			args;
-	@att public abstract virtual           TypeRef					base_type;
-	
-	public NodeView				getNodeView()				{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
-	public ENodeView			getENodeView()				{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
-	public TypeRefView			getTypeRefView()			{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
-	public TypeWithArgsRefView	getTypeWithArgsRefView()	{ return new TypeWithArgsRefView((TypeWithArgsRefImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public NArr<TypeRef>		get$args()		{ return this.getTypeWithArgsRefView().args; }
-	@getter public TypeRef				get$base_type()	{ return this.getTypeWithArgsRefView().base_type; }
-	@setter public void		set$base_type(TypeRef val)	{ this.getTypeWithArgsRefView().base_type = val; }
-	
 	public TypeWithArgsRef() {
 		super(new TypeWithArgsRefImpl());
 	}

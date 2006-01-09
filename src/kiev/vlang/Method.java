@@ -21,7 +21,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMethods,SetBody,Accessable,PreScanneable {
 	
 	@dflow(in="root()") private static class DFI {
@@ -29,8 +28,13 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 	@dflow(in="this:in")	WBCCondition[] 	conditions;
 	}
 
+	@virtual typedef NImpl = MethodImpl;
+	@virtual typedef VView = MethodView;
+	@virtual typedef JView = JMethodView;
+
 	@node
 	public static class MethodImpl extends DNodeImpl {
+		@virtual typedef ImplOf = Method;
 		public MethodImpl() {}
 		public MethodImpl(int pos) { super(pos); }
 		public MethodImpl(int pos, int fl) { super(pos, fl); }
@@ -244,83 +248,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 			}
 		}
 	}
-	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
-	public MethodView		getMethodView()		alias operator(210,fy,$cast) { return new MethodView((MethodImpl)this.$v_impl); }
 
-	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
-	public JMethodView		getJMethodView()	alias operator(210,fy,$cast) { return new JMethodView((MethodImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public static Method[]	emptyArray = new Method[0];
 
-	@getter public Access				get$acc()					{ return this.getMethodView().acc; }
-	@getter public NodeName				get$name()					{ return this.getMethodView().name; }
-	@getter public CallTypeProvider		get$meta_type()				{ return this.getMethodView().meta_type; }
-	@getter public NArr<TypeDef>		get$targs()					{ return this.getMethodView().targs; }
-	@getter public TypeRef				get$type_ret()				{ return this.getMethodView().type_ret; }
-	@getter public TypeRef				get$dtype_ret()				{ return this.getMethodView().dtype_ret; }
-	@getter public NArr<FormPar>		get$params()				{ return this.getMethodView().params; }
-	@getter public NArr<ASTAlias>		get$aliases()				{ return this.getMethodView().aliases; }
-	@getter public Var					get$retvar()				{ return this.getMethodView().retvar; }
-	@getter public BlockStat			get$body()					{ return this.getMethodView().body; }
-	@getter public PrescannedBody		get$pbody()					{ return this.getMethodView().pbody; }
-	@getter public NArr<WBCCondition>	get$conditions()			{ return this.getMethodView().conditions; }
-	@getter public NArr<Field>			get$violated_fields()		{ return this.getMethodView().violated_fields; }
-	@getter public MetaValue			get$annotation_default()	{ return this.getMethodView().annotation_default; }
-	@getter public boolean				get$inlined_by_dispatcher()	{ return this.getMethodView().inlined_by_dispatcher; }
-	@getter        boolean				get$invalid_types()			{ return this.getMethodView().invalid_types; }
-
-	@getter public MethodType			get$type()	{ return this.getMethodView().type; }
-	@getter public MethodType			get$dtype()	{ return this.getMethodView().dtype; }
-	@getter public MethodType			get$etype()	{ return this.getMethodView().etype; }
-
-	@setter public void set$acc(Access val)						{ this.getMethodView().acc = val; }
-	@setter public void set$name(NodeName val)						{ this.getMethodView().name = val; }
-	@setter public void set$meta_type(CallTypeProvider val)		{ this.getMethodView().meta_type = val; }
-	@setter public void set$type_ret(TypeRef val)					{ this.getMethodView().type_ret = val; }
-	@setter public void set$dtype_ret(TypeRef val)					{ this.getMethodView().dtype_ret = val; }
-	@setter public void set$retvar(Var val)						{ this.getMethodView().retvar = val; }
-	@setter public void set$body(BlockStat val)					{ this.getMethodView().body = val; }
-	@setter public void set$pbody(PrescannedBody val)				{ this.getMethodView().pbody = val; }
-	@setter public void set$annotation_default(MetaValue val)		{ this.getMethodView().annotation_default = val; }
-	@setter public void set$inlined_by_dispatcher(boolean val)		{ this.getMethodView().inlined_by_dispatcher = val; }
-	@setter        void set$invalid_types(boolean val)				{ this.getMethodView().invalid_types = val; }
-
-	/** Method's access */
-	     public abstract virtual			Access				acc;
-	/** Name of the method */
-	     public abstract virtual			NodeName			name;
-	/** Return type of the method and signature (argument's types) */
-	     public abstract virtual			CallTypeProvider	meta_type;
-	@att public abstract virtual access:ro	NArr<TypeDef>		targs;
-	@att public abstract virtual			TypeRef				type_ret;
-	/** The type of the dispatcher method (if method is a multimethod) */
-	@att public abstract virtual			TypeRef				dtype_ret;
-	/** Parameters of this method */
-	@att public abstract virtual access:ro	NArr<FormPar>		params;
-	/** Name/operator aliases of this method */
-    @att public abstract virtual access:ro	NArr<ASTAlias>		aliases;
-	/** Return value of this method */
-	@att public abstract virtual			Var					retvar;
-	/** Body of the method */
-	@att public abstract virtual			BlockStat			body;
-	@att public abstract virtual			PrescannedBody 		pbody;
-	/** Require & ensure clauses */
-	@att public abstract virtual access:ro	NArr<WBCCondition> 	conditions;
-	/** Violated by method fields for normal methods, and checked fields
-	 *  for invariant method */
-	@ref public abstract virtual access:ro	NArr<Field>			violated_fields;
-	/** Default meta-value for annotation methods */
-	@att public abstract virtual			MetaValue			annotation_default;
-	/** Indicates that this method is inlined by dispatcher method */
-	     public abstract virtual			boolean				inlined_by_dispatcher;
-	            abstract virtual			boolean				invalid_types;
-	
-	     public virtual abstract access:ro	MethodType			type; 
-		 public virtual abstract access:ro	MethodType			dtype; 
-	     public virtual abstract access:ro	MethodType			etype; 
-	
 	public Method() {
 		super(new MethodImpl());
 	}
@@ -352,36 +285,12 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 	@getter public Method get$child_ctx_method() { return this; }
 	
-	// virtual static method	
-	public boolean isVirtualStatic() { return this.getMethodView().isVirtualStatic(); }
-	public void setVirtualStatic(boolean on) { this.getMethodView().setVirtualStatic(on); }
-	// method with variable number of arguments	
-	public boolean isVarArgs() { return this.getMethodView().isVarArgs(); }
-	public void setVarArgs(boolean on) { this.getMethodView().setVarArgs(on); }
-	// logic rule method	
-	public boolean isRuleMethod() { return this.getMethodView().isRuleMethod(); }
-	// method with attached operator	
-	public boolean isOperatorMethod() { return this.getMethodView().isOperatorMethod(); }
-	public void setOperatorMethod(boolean on) { this.getMethodView().setOperatorMethod(on); }
-	// need fields initialization	
-	public boolean isNeedFieldInits() { return this.getMethodView().isNeedFieldInits(); }
-	public void setNeedFieldInits(boolean on) { this.getMethodView().setNeedFieldInits(on); }
-	// a method generated as invariant	
-	public boolean isInvariantMethod() { return this.getMethodView().isInvariantMethod(); }
-	public void setInvariantMethod(boolean on) { this.getMethodView().setInvariantMethod(on); }
-	// a local method (closure code or inner method)	
-	public boolean isLocalMethod() { return this.getMethodView().isLocalMethod(); }
-	public void setLocalMethod(boolean on) { this.getMethodView().setLocalMethod(on); }
-	// a dispatcher (for multimethods)	
-	public final boolean isDispatcherMethod() { return this.getMethodView().isDispatcherMethod(); }
-	public final void setDispatcherMethod(boolean on) { this.getMethodView().setDispatcherMethod(on); }
-
 	public MetaThrows getMetaThrows() {
 		return (MetaThrows)this.getNodeData(MetaThrows.ID);
 	}
 
 	public void checkRebuildTypes() {
-		this.getMethodView().checkRebuildTypes();
+		this.getVView().checkRebuildTypes();
 	}
 	
 	public FormPar getOuterThisParam() {
@@ -810,7 +719,6 @@ public class Method extends DNode implements Named,Typed,ScopeOfNames,ScopeOfMet
 
 }
 
-@node
 public class Constructor extends Method {
 	
 	@dflow(in="root()") private static class DFI {
@@ -819,8 +727,12 @@ public class Constructor extends Method {
 	@dflow(in="this:in")				WBCCondition[] 	conditions;
 	}
 
+	@virtual typedef NImpl = ConstructorImpl;
+	@virtual typedef VView = ConstructorView;
+
 	@node
 	public static final class ConstructorImpl extends MethodImpl {
+		@virtual typedef ImplOf = Constructor;
 		@att public NArr<ENode>			addstats;
 		public ConstructorImpl() {}
 		public ConstructorImpl(int pos, int flags) { super(pos, flags); }
@@ -830,14 +742,8 @@ public class Constructor extends Method {
 		public access:ro	NArr<ENode>			addstats;
 	}
 
-	@att public abstract virtual access:ro NArr<ENode>			addstats;
-	
-	public NodeView				getNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
-	public DNodeView			getDNodeView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
-	public MethodView			getMethodView()			{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
-	public ConstructorView		getConstructorView()	{ return new ConstructorView((ConstructorImpl)this.$v_impl); }
-
-	@getter public NArr<ENode>		get$addstats()		{ return this.getConstructorView().addstats; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public Constructor() {
 		super(new ConstructorImpl());
@@ -857,15 +763,19 @@ public class Constructor extends Method {
 	}
 }
 
-@node
 public class Initializer extends DNode implements SetBody, PreScanneable {
 	
 	@dflow(out="body") private static class DFI {
 	@dflow(in="this:in")				BlockStat		body;
 	}
 
+	@virtual typedef NImpl = InitializerImpl;
+	@virtual typedef VView = InitializerView;
+	@virtual typedef JView = JInitializerView;
+
 	@node
 	public static final class InitializerImpl extends DNodeImpl {
+		@virtual typedef ImplOf = Initializer;
 		@att public BlockStat				body;
 		@att public PrescannedBody			pbody;
 		public InitializerImpl() {}
@@ -877,21 +787,8 @@ public class Initializer extends DNode implements SetBody, PreScanneable {
 		public PrescannedBody			pbody;
 	}
 
-	@att public abstract virtual BlockStat			body;
-	@att public abstract virtual PrescannedBody	pbody;
-	
-	@getter public BlockStat		get$body()			{ return this.getInitializerView().body; }
-	@getter public PrescannedBody	get$pbody()			{ return this.getInitializerView().pbody; }
-	
-	@setter public void		set$body(BlockStat val)				{ this.getInitializerView().body = val; }
-	@setter public void		set$pbody(PrescannedBody val)		{ this.getInitializerView().pbody = val; }
-	
-	public NodeView				getNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
-	public DNodeView			getDNodeView()			{ return new InitializerView((InitializerImpl)this.$v_impl); }
-	public InitializerView		getInitializerView()	{ return new InitializerView((InitializerImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
-	public JDNodeView			getJDNodeView()			{ return new JInitializerView((InitializerImpl)this.$v_impl); }
-	public JInitializerView		getJInitializerView()	{ return new JInitializerView((InitializerImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public Initializer() {
 		super(new InitializerImpl());
@@ -933,15 +830,19 @@ public enum WBCType {
 	CondInvariant;
 }
 
-@node
 public class WBCCondition extends DNode {
 	
 	@dflow(out="body") private static class DFI {
 	@dflow(in="this:in")			ENode		body;
 	}
 	
+	@virtual typedef NImpl = WBCConditionImpl;
+	@virtual typedef VView = WBCConditionView;
+	@virtual typedef JView = JWBCConditionView;
+
 	@node
 	public static final class WBCConditionImpl extends DNodeImpl {
+		@virtual typedef ImplOf = WBCCondition;
 		@att public WBCType				cond;
 		@att public NameRef				name;
 		@att public ENode				body;
@@ -959,30 +860,8 @@ public class WBCCondition extends DNode {
 		public CodeAttr				code_attr;
 	}
 
-	@att public abstract virtual WBCType			cond;
-	@att public abstract virtual NameRef			name;
-	@att public abstract virtual ENode				body;
-	@ref public abstract virtual Method			definer;
-	@att public abstract virtual CodeAttr			code_attr;
-	
-	@getter public WBCType			get$cond()			{ return this.getWBCConditionView().cond; }
-	@getter public NameRef			get$name()			{ return this.getWBCConditionView().name; }
-	@getter public ENode			get$body()			{ return this.getWBCConditionView().body; }
-	@getter public Method			get$definer()		{ return this.getWBCConditionView().definer; }
-	@getter public CodeAttr			get$code_attr()		{ return this.getWBCConditionView().code_attr; }
-	
-	@setter public void		set$cond(WBCType val)				{ this.getWBCConditionView().cond = val; }
-	@setter public void		set$name(NameRef val)				{ this.getWBCConditionView().name = val; }
-	@setter public void		set$body(ENode val)					{ this.getWBCConditionView().body = val; }
-	@setter public void		set$definer(Method val)				{ this.getWBCConditionView().definer = val; }
-	@setter public void		set$code_attr(CodeAttr val)			{ this.getWBCConditionView().code_attr = val; }
-	
-	public NodeView				getNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
-	public DNodeView			getDNodeView()			{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
-	public WBCConditionView		getWBCConditionView()	{ return new WBCConditionView((WBCConditionImpl)this.$v_impl); }
-	public JNodeView			getJNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
-	public JDNodeView			getJDNodeView()			{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
-	public JWBCConditionView	getJWBCConditionView()	{ return new JWBCConditionView((WBCConditionImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public WBCCondition() {
 		super(new WBCConditionImpl());

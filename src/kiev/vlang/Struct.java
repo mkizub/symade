@@ -20,15 +20,19 @@ import syntax kiev.Syntax;
  */
 
 
-@node(copyable=false)
 public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMethods, ScopeOfOperators, SetBody, Accessable {
 	
 	@dflow(in="root()") private static class DFI {
 	@dflow(in="this:in", seq="false")	DNode[]		members;
 	}
 
-	@node
+	@virtual typedef NImpl = StructImpl;
+	@virtual typedef VView = StructView;
+	@virtual typedef JView = JStructView;
+
+	@node(copyable=false)
 	public static final class StructImpl extends TypeDeclImpl {
+		@virtual typedef ImplOf = Struct;
 		public StructImpl() {}
 		public StructImpl(int pos) { super(pos); }
 		public StructImpl(int pos, int fl) { super(pos, fl); }
@@ -240,84 +244,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			this.$view.is_struct_bytecode = on;
 		}
 	}
-	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
-	public TypeDeclView		getTypeDeclView()	alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
-	public StructView		getStructView()		alias operator(210,fy,$cast) { return new StructView((StructImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
-	public JTypeDeclView	getJTypeDeclView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
-	public JStructView		getJStructView()	alias operator(210,fy,$cast) { return new JStructView((StructImpl)this.$v_impl); }
 
-	/** Variouse names of the class */
-	     public abstract virtual			ClazzName					name;
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	/** Type associated with this class */
-	     public abstract virtual			BaseTypeProvider			imeta_type;
-	     public abstract virtual			WrapperTypeProvider			wmeta_type;
-	@ref public abstract virtual access:ro	BaseType					type;
-	@att public abstract virtual			TypeRef						view_of;
-
-	/** Bound super-class for class arguments */
-	@att public abstract virtual			TypeRef						super_bound;
-
-	/** Bound super-class for class arguments */
-	@ref public abstract virtual			BaseType					super_type;
-
-	/** SuperInterface types */
-	@att public abstract virtual access:ro	NArr<TypeRef>				interfaces;
-
-	/** Class' type arguments */
-	@att public abstract virtual access:ro	NArr<TypeDef>				args;
-	
-	/** Class' access */
-	     public abstract virtual			Access						acc;
-
-	/** Package structure this structure belongs to */
-	@ref public abstract virtual			Struct						package_clazz;
-
-	/** The auto-generated class for parametriezed
-	  classes, that containce type info
-	 */
-	@ref public abstract virtual			Struct						typeinfo_clazz;
-	
-	/** Array of substructures of the structure */
-	@ref public abstract virtual access:ro	NArr<Struct>				sub_clazz;
-
-	/** Array of imported classes,fields and methods */
-	@ref public abstract virtual access:ro	NArr<DNode>					imported;
-
-	/** Array of methods defined in this structure */
-	@att public abstract virtual access:ro	NArr<DNode>					members;
-	
-	@getter public Access				get$acc()					{ return this.getStructView().acc; }
-	@getter public ClazzName			get$name()					{ return this.getStructView().name; }
-	@getter public BaseTypeProvider		get$imeta_type()			{ return this.getStructView().imeta_type; }
-	@getter public WrapperTypeProvider	get$wmeta_type()			{ return this.getStructView().wmeta_type; }
-	@getter public BaseType				get$type()					{ return this.getStructView().type; }
-	@getter public TypeRef				get$view_of()				{ return this.getStructView().view_of; }
-	@getter public TypeRef				get$super_bound()			{ return this.getStructView().super_bound; }
-	@getter public NArr<TypeRef>		get$interfaces()			{ return this.getStructView().interfaces; }
-	@getter public NArr<TypeDef>		get$args()					{ return this.getStructView().args; }
-	@getter public Struct				get$package_clazz()			{ return this.getStructView().package_clazz; }
-	@getter public Struct				get$typeinfo_clazz()		{ return this.getStructView().typeinfo_clazz; }
-	@getter public NArr<Struct>			get$sub_clazz()				{ return this.getStructView().sub_clazz; }
-	@getter public NArr<DNode>			get$imported()				{ return this.getStructView().imported; }
-	@getter public NArr<DNode>			get$members()				{ return this.getStructView().members; }
-	@getter public BaseType				get$super_type()			{ return this.getStructView().super_type; }
-
-	@setter public void set$acc(Access val)							{ this.getStructView().acc = val; }
-	@setter public void set$name(ClazzName val)						{ this.getStructView().name = val; }
-	@setter public void set$imeta_type(BaseTypeProvider val)			{ this.getStructView().imeta_type = val; }
-	@setter public void set$wmeta_type(WrapperTypeProvider val)		{ this.getStructView().wmeta_type = val; }
-//	@setter public void set$type(BaseType val)							{ this.getStructView().type = val; }
-	@setter public void set$view_of(TypeRef val)						{ this.getStructView().view_of = val; }
-	@setter public void set$super_bound(TypeRef val)					{ this.getStructView().super_bound = val; }
-	@setter public void set$package_clazz(Struct val)					{ this.getStructView().package_clazz = val; }
-	@setter public void set$typeinfo_clazz(Struct val)					{ this.getStructView().typeinfo_clazz = val; }
-	@setter public void set$super_type(BaseType val) 					{ this.getStructView().super_type = val; }
-
-	
 	Struct() {
 		super(new StructImpl(0,0));
 		this.name = ClazzName.Empty;
@@ -341,54 +271,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	};
 
 	public String toString() { return name.name.toString(); }
-
-	// normal class
-	public boolean isClazz() { return getStructView().isClazz(); }
-	// package	
-	public boolean isPackage() { return getStructView().isPackage(); }
-	public void setPackage() { getStructView().setPackage(); }
-	// a pizza class case	
-	public boolean isPizzaCase() { return getStructView().isPizzaCase(); }
-	public void setPizzaCase(boolean on) { getStructView().setPizzaCase(on); }
-	// a structure with the only one instance (singleton)	
-	public boolean isSingleton() { return getStructView().isSingleton(); }
-	public void setSingleton(boolean on) { getStructView().setSingleton(on); }
-	// a local (in method) class	
-	public boolean isLocal() { return getStructView().isLocal(); }
-	public void setLocal(boolean on) { getStructView().setLocal(on); }
-	// an anonymouse (unnamed) class	
-	public boolean isAnonymouse() { return getStructView().isAnonymouse(); }
-	public void setAnonymouse(boolean on) { getStructView().setAnonymouse(on); }
-	// has pizza cases
-	public boolean isHasCases() { return getStructView().isHasCases(); }
-	public void setHasCases(boolean on) { getStructView().setHasCases(on); }
-	// indicates that structure members were generated
-	public boolean isMembersGenerated() { return getStructView().isMembersGenerated(); }
-	public void setMembersGenerated(boolean on) { getStructView().setMembersGenerated(on); }
-	// indicates that structure members were pre-generated
-	public boolean isMembersPreGenerated() { return getStructView().isMembersPreGenerated(); }
-	public void setMembersPreGenerated(boolean on) { getStructView().setMembersPreGenerated(on); }
-	// indicates that statements in code were generated
-	public boolean isStatementsGenerated() { return getStructView().isStatementsGenerated(); }
-	public void setStatementsGenerated(boolean on) { getStructView().setStatementsGenerated(on); }
-	// indicates that the structrue was generared (from template)
-	public boolean isGenerated() { return getStructView().isGenerated(); }
-	public void setGenerated(boolean on) { getStructView().setGenerated(on); }
-	// indicates that type arguments of the structure were resolved
-	public final boolean isTypeResolved() { return getStructView().isTypeResolved(); }
-	public final void setTypeResolved(boolean on) { getStructView().setTypeResolved(on); }
-	// indicates that type arguments of the structure were resolved
-	public final boolean isArgsResolved() { return getStructView().isArgsResolved(); }
-	public final void setArgsResolved(boolean on) { getStructView().setArgsResolved(on); }
-	// java annotation
-	public boolean isAnnotation() { return getStructView().isAnnotation(); }
-	public void setAnnotation(boolean on) { getStructView().setAnnotation(on); }
-	// java enum
-	public boolean isEnum() { return getStructView().isEnum(); }
-	public void setEnum(boolean on) { getStructView().setEnum(on); }
-	// structure was loaded from bytecode
-	public boolean isLoadedFromBytecode() { return getStructView().isLoadedFromBytecode(); }
-	public void setLoadedFromBytecode(boolean on) { getStructView().setLoadedFromBytecode(on); }
 
 	public NodeName getName() { return name; }
 	
@@ -1757,8 +1639,9 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		// generate a class for interface non-abstract members
 		autoGenerateIdefault();
 		// build vtable
+		List<Struct> processed = List.Nil;
 		Vector<VTableEntry> vtable = new Vector<VTableEntry>();
-		buildVTable(vtable);
+		buildVTable(vtable, processed);
 		if (Kiev.debugMultiMethod) {
 			trace("vtable for "+this+":");
 			foreach (VTableEntry vte; vtable) {
@@ -1790,21 +1673,28 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		return true;
 	}
 	
-	static class VTableEntry {
+	static final class VTableEntry {
 		KString      name;
 		MethodType   etype;
+		access:no,ro,ro,rw
 		List<Method> methods = List.Nil;
 		VTableEntry  overloader;
 		VTableEntry(KString name, MethodType etype) {
 			this.name = name;
 			this.etype = etype;
 		}
+		public void add(Method m) {
+			assert (!methods.contains(m));
+			methods = new List<Method>.Cons(m, methods);
+		}
 	}
 	
-	private void buildVTable(Vector<VTableEntry> vtable) {
+	private void buildVTable(Vector<VTableEntry> vtable, List<Struct> processed) {
+		if (processed.contains(this))
+			return;
 		// take vtable from super-types
 		foreach (Type sup; this.type.getDirectSuperTypes())
-			sup.getStruct().buildVTable(vtable);
+			sup.getStruct().buildVTable(vtable, processed);
 		
 		// process override
 		foreach (DNode n; members; n instanceof Method && !(n instanceof Constructor)) {
@@ -1818,7 +1708,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				if (name == vte.name && etype ≈ vte.etype) {
 					is_new = false;
 					if (!vte.methods.contains(m))
-						vte.methods = new List<Method>.Cons(m, vte.methods);
+						vte.add(m);
 				}
 			}
 			if (is_new)
@@ -1836,14 +1726,14 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 					continue;
 				MethodType mt = new MethodType(m.etype.args,null);
 				if (mt ≈ et)
-					vte.methods = new List<Method>.Cons(m, vte.methods);
+					vte.add(m);
 			}
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
-					foreach (Method m; vte2.methods) {
+					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
 						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.type);
 						if (mt ≈ et)
-							vte.methods = new List<Method>.Cons(m, vte.methods);
+							vte.add(m);
 					}
 				}
 			}
@@ -1921,7 +1811,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			}
 		}
 		if (found != root) {
-			vte.methods = new List<Method>.Cons(root, vte.methods);
+			vte.add(root);
 			mmset.append(root);
 		}
 		// check it's a multimethod entry
@@ -2014,7 +1904,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			else
 				m.body.addStatement(new ReturnStat(0,makeDispatchCall(0, m, def)));
 		}
-		vte.methods = new List<Method>.Cons(m, vte.methods);
+		vte.add(m);
 	}
 
 	public void autoBridgeMethods(VTableEntry vte) {
@@ -2053,7 +1943,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				bridge.body.stats.append(new ReturnStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
 			else
 				bridge.body.stats.append(new ExprStat(mo.pos,makeDispatchCall(mo.pos, bridge, mo)));
-			vte.methods = new List<Method>.Cons(bridge, vte.methods);
+			vte.add(bridge);
 		}
 	}
 

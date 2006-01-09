@@ -14,7 +14,6 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public class TypeExpr extends TypeRef {
 
 	@dflow(out="this:in") private static class DFI {}
@@ -22,8 +21,12 @@ public class TypeExpr extends TypeRef {
 	private static KString opPVar  = KString.from("@");
 	private static KString opRef   = KString.from("&");
 	
+	@virtual typedef NImpl = TypeExprImpl;
+	@virtual typedef VView = TypeExprView;
+
 	@node
 	public static final class TypeExprImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = TypeExpr;
 		@att public TypeRef					arg;
 		@att public KString					op;
 		public TypeExprImpl() {}
@@ -35,19 +38,8 @@ public class TypeExpr extends TypeRef {
 		public KString				op;
 	}
 
-	@att public abstract virtual TypeRef				arg;
-	@att public abstract virtual KString				op;
-	
-	public NodeView			getNodeView()			{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
-	public ENodeView		getENodeView()			{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
-	public TypeRefView		getTypeRefView()		{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
-	public TypeExprView		getTypeExprView()		{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
 
-	@getter public TypeRef		get$arg()			{ return this.getTypeExprView().arg; }
-	@getter public KString		get$op()			{ return this.getTypeExprView().op; }
-	@setter public void		set$arg(TypeRef val)	{ this.getTypeExprView().arg = val; }
-	@setter public void		set$op(KString val)		{ this.getTypeExprView().op = val; }
-	
 	public TypeExpr() {
 		super(new TypeExprImpl());
 	}

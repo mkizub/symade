@@ -20,11 +20,15 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public final class FileUnit extends DNode implements Constants, ScopeOfNames, ScopeOfMethods, ScopeOfOperators {
+
+	@virtual typedef NImpl = FileUnitImpl;
+	@virtual typedef VView = FileUnitView;
+	@virtual typedef JView = JFileUnitView;
 
 	@node
 	public static class FileUnitImpl extends DNodeImpl {
+		@virtual typedef ImplOf = FileUnit;
 		FileUnitImpl() {}
 		@att public KString			filename;
 		@att public TypeNameRef		pkg;
@@ -45,33 +49,9 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 		public access:ro	boolean[]				disabled_extensions;
 		public				boolean					scanned_for_interface_only;
 	}
-	public NodeView			getNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
-	public FileUnitView		getFileUnitView()	{ return new FileUnitView((FileUnitImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
-	public JFileUnitView	getJFileUnitView()	{ return new JFileUnitView((FileUnitImpl)this.$v_impl); }
 
-	@att public abstract virtual 				KString					filename;
-	@att public abstract virtual				TypeNameRef				pkg;
-	@att public abstract virtual access:ro		NArr<DNode>				syntax;
-	@att public abstract virtual access:ro		NArr<DNode>				members;
-	
-	@ref public abstract virtual access:ro		NArr<PrescannedBody>	bodies;
-	     public abstract virtual access:ro		boolean[]				disabled_extensions;
-	     public abstract virtual				boolean					scanned_for_interface_only;
-
-	@getter public KString					get$filename()	{ return this.getFileUnitView().filename; }
-	@getter public TypeNameRef				get$pkg()		{ return this.getFileUnitView().pkg; }
-	@getter public NArr<DNode>				get$syntax()	{ return this.getFileUnitView().syntax; }
-	@getter public NArr<DNode>				get$members()	{ return this.getFileUnitView().members; }
-	@getter public NArr<PrescannedBody>	get$bodies()	{ return this.getFileUnitView().bodies; }
-	@getter public boolean[]				get$disabled_extensions()			{ return this.getFileUnitView().disabled_extensions; }
-	@getter public boolean					get$scanned_for_interface_only()	{ return this.getFileUnitView().scanned_for_interface_only; }
-
-	@setter public void set$filename(KString val)						{ this.getFileUnitView().filename = val; }
-	@setter public void set$pkg(TypeNameRef val)						{ this.getFileUnitView().pkg = val; }
-	@setter public void set$scanned_for_interface_only(boolean val)	{ this.getFileUnitView().scanned_for_interface_only = val; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public FileUnit() {
 		this(KString.Empty, Env.root);
@@ -264,7 +244,7 @@ public final class FileUnit extends DNode implements Constants, ScopeOfNames, Sc
 	public void cleanup() {
         Kiev.parserAddresses.clear();
 		Kiev.k.presc = null;
-		foreach(DNode n; members; n instanceof Struct) ((Struct)n).getJStructView().cleanup();
+		foreach(DNode n; members; n instanceof Struct) ((Struct)n).getJView().cleanup();
 		bodies.delAll();
 	}
 

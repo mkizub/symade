@@ -109,7 +109,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				assert(tp.getStruct().isTypeUnerasable());
 				// Insert our-generated typeinfo, or from childs class?
 				if (mmm.getTypeInfoParam() != null)
-					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJENodeView();
+					temp_expr = new LVarExpr(pos,mmm.getTypeInfoParam().getVar()).getJView();
 				else
 					temp_expr = jctx_clazz.accessTypeInfoField(this,tp);
 				temp_expr.generate(code,null);
@@ -159,7 +159,7 @@ public final view JCallExprView of CallExprImpl extends JENodeView {
 				BaseType reft = Type.getRefTypeForPrimitive((CoreType)objt);
 				Field f = reft.clazz.resolveField(KString.from("TYPE"));
 				code.addInstr(Instr.op_pop);
-				code.addInstr(Instr.op_getstatic,f.getJFieldView(),reft);
+				code.addInstr(Instr.op_getstatic,f.getJView(),reft);
 			}
 			else if( func.name == nameObjHashCode ) {
 				switch(objt.getJType().java_signature.byteAt(0)) {
@@ -286,7 +286,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		JENodeView[] args = this.args;
 		// Clone it
 		if( args.length > 0 ) {
-			JMethodView clone_it = Type.tpClosureClazz.getJStructView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
+			JMethodView clone_it = Type.tpClosureClazz.getJView().resolveMethod(nameClone,KString.from("()Ljava/lang/Object;"));
 			code.addInstr(op_call,clone_it,false);
 			if( Kiev.verify )
 				code.addInstr(op_checkcast,Type.tpClosureClazz.type);
@@ -323,7 +323,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 			call_it_name = KString.from("call_"+tp.ret);
 			call_it_sign = KString.from("()"+tp.ret.getJType().java_signature);
 		}
-		return Type.tpClosureClazz.getJStructView().resolveMethod(call_it_name, call_it_sign);
+		return Type.tpClosureClazz.getJView().resolveMethod(call_it_name, call_it_sign);
 	}
 	
 	static final KString sigZ = KString.from("(Z)Lkiev/stdlib/closure;");
@@ -352,7 +352,7 @@ public final view JClosureCallExprView of ClosureCallExprImpl extends JENodeView
 		case '&':
 		case 'R': sig = sigObj; break;
 		}
-		JMethodView m = Type.tpClosureClazz.getJStructView().resolveMethod(KString.from("addArg"),sig);
+		JMethodView m = Type.tpClosureClazz.getJView().resolveMethod(KString.from("addArg"),sig);
 		if( m == null )
 			Kiev.reportError(expr,"Unknown method for kiev.vlang.closure");
 		return m;

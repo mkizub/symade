@@ -17,7 +17,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	public static Field[]	emptyArray = new Field[0];
 
@@ -25,8 +24,13 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 	@dflow(in="this:in")	ENode			init;
 	}
 
+	@virtual typedef NImpl = FieldImpl;
+	@virtual typedef VView = FieldView;
+	@virtual typedef JView = JFieldView;
+
 	@node
 	public static class FieldImpl extends LvalDNodeImpl {
+		@virtual typedef ImplOf = Field;
 		public FieldImpl() {}
 		public FieldImpl(int pos) { super(pos); }
 		public FieldImpl(int pos, int fl) { super(pos, fl); }
@@ -98,44 +102,10 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 			}
 		}
 	}
-	public NodeView			getNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
-	public LvalDNodeView	getLvalDNodeView()	alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
-	public FieldView		getFieldView()		alias operator(210,fy,$cast) { return new FieldView((FieldImpl)this.$v_impl); }
-	public JNodeView		getJNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
-	public JDNodeView		getJDNodeView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
-	public JLvalDNodeView	getJLvalDNodeView()	alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
-	public JFieldView		getJFieldView()		alias operator(210,fy,$cast) { return new JFieldView((FieldImpl)this.$v_impl); }
 
-	@getter public Access				get$acc()			{ return this.getFieldView().acc; }
-	@getter public NodeName				get$name()			{ return this.getFieldView().name; }
-	@getter public TypeRef				get$ftype()			{ return this.getFieldView().ftype; }
-	@getter public ENode				get$init()			{ return this.getFieldView().init; }
-	@getter public ConstExpr			get$const_value()	{ return this.getFieldView().const_value; }
-	@getter public NArr<Method>			get$invs()			{ return this.getFieldView().invs; }
-	
-	@getter public Type					get$type()			{ return this.getFieldView().type; }
-	
-	@setter public void set$acc(Access val)				{ this.getFieldView().acc = val; }
-	@setter public void set$name(NodeName val)				{ this.getFieldView().name = val; }
-	@setter public void set$ftype(TypeRef val)				{ this.getFieldView().ftype = val; }
-	@setter public void set$init(ENode val)				{ this.getFieldView().init = val; }
-	@setter public void set$const_value(ConstExpr val)		{ this.getFieldView().const_value = val; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	/** Field' access */
-	     public virtual abstract				Access			acc;
-	/** Name of the field */
-	     public virtual abstract				NodeName		name;
-	/** Type of the field */
-	@att public virtual abstract				TypeRef			ftype;
-	/** Initial value of this field */
-	@att public virtual abstract				ENode			init;
-	@ref public virtual abstract				ConstExpr		const_value;
-	/** Array of invariant methods, that check this field */
-	@ref public virtual abstract access:ro		NArr<Method>	invs;
-
-	@ref public abstract virtual access:ro		Type			type;
-	
 	public Field() { super(new FieldImpl()); }
 	
     /** Constructor for new field
@@ -154,16 +124,6 @@ public final class Field extends LvalDNode implements Named, Typed, Accessable {
 		this(name,new TypeRef(type),acc);
 	}
 	
-	// is a field of enum
-	public boolean isEnumField() { return this.getFieldView().isEnumField(); }
-	public void setEnumField(boolean on) { this.getFieldView().setEnumField(on); }
-	// packer field (auto-generated for packed fields)
-	public boolean isPackerField() { return this.getFieldView().isPackerField(); }
-	public void setPackerField(boolean on) { this.getFieldView().setPackerField(on); }
-	// packed field
-	public boolean isPackedField() { return this.getFieldView().isPackedField(); }
-	public void setPackedField(boolean on) { this.getFieldView().setPackedField(on); }
-
 	public final MetaVirtual getMetaVirtual() {
 		return (MetaVirtual)this.getNodeData(MetaVirtual.ID);
 	}

@@ -13,11 +13,14 @@ import syntax kiev.Syntax;
  */
 
 // Meta information about a node
-@node
 public final class MetaSet extends ASTNode {
 	
+	@virtual typedef NImpl = MetaSetImpl;
+	@virtual typedef VView = MetaSetView;
+
 	@node
 	public static final class MetaSetImpl extends NodeImpl {
+		@virtual typedef ImplOf = MetaSet;
 		@att public NArr<Meta>			metas;
 		public MetaSetImpl() {}
 	}
@@ -26,12 +29,8 @@ public final class MetaSet extends ASTNode {
 		public access:ro	NArr<Meta>			metas;
 	}
 
-	@att public abstract virtual access:ro NArr<Meta>			metas;
-	
-	public NodeView				getNodeView()			{ return new MetaSetView((MetaSetImpl)this.$v_impl); }
-	public MetaSetView			getMetaSetView()		{ return new MetaSetView((MetaSetImpl)this.$v_impl); }
-
-	@getter public NArr<Meta>		get$metas()		{ return this.getMetaSetView().metas; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public MetaSet() {
 		super(new MetaSetImpl());
@@ -142,12 +141,15 @@ public final class MetaValueType {
 	}
 }
 
-@node
 public class Meta extends ENode {
 	public final static Meta[] emptyArray = new Meta[0];
 	
+	@virtual typedef NImpl = MetaImpl;
+	@virtual typedef VView = MetaView;
+
 	@node
 	public static class MetaImpl extends ENodeImpl {
+		@virtual typedef ImplOf = Meta;
 		@att public TypeRef					type;
 		@att public NArr<MetaValue>			values;
 		public MetaImpl() {}
@@ -158,16 +160,8 @@ public class Meta extends ENode {
 		public access:ro	NArr<MetaValue>			values;
 	}
 
-	@att public abstract virtual			TypeRef					type;
-	@att public abstract virtual access:ro NArr<MetaValue>			values;
-	
-	public NodeView				getNodeView()			{ return new MetaView((MetaImpl)this.$v_impl); }
-	public ENodeView			getENodeView()			{ return new MetaView((MetaImpl)this.$v_impl); }
-	public MetaView				getMetaView()			{ return new MetaView((MetaImpl)this.$v_impl); }
-
-	@getter public TypeRef				get$type()		{ return this.getMetaView().type; }
-	@getter public NArr<MetaValue>		get$values()	{ return this.getMetaView().values; }
-	@setter public void		set$type(TypeRef val)		{ this.getMetaView().type = val; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public Meta() {
 		super(new MetaImpl());
@@ -459,12 +453,15 @@ public class Meta extends ENode {
 	}
 }
 
-@node
 public abstract class MetaValue extends ASTNode {
 	public final static MetaValue[] emptyArray = new MetaValue[0];
 
+	@virtual typedef NImpl = MetaValueImpl;
+	@virtual typedef VView = MetaValueView;
+
 	@node
 	public static abstract class MetaValueImpl extends NodeImpl {
+		@virtual typedef ImplOf = MetaValue;
 		@att public MetaValueType			type;
 		public MetaValueImpl() {}
 	}
@@ -472,13 +469,6 @@ public abstract class MetaValue extends ASTNode {
 	public static abstract view MetaValueView of MetaValueImpl extends NodeView {
 		public MetaValueType			type;
 	}
-
-	@att public abstract virtual MetaValueType			type;
-	
-	public abstract MetaValueView		getMetaValueView();
-
-	@getter public MetaValueType	get$type()					{ return this.getMetaValueView().type; }
-	@setter public void				set$type(MetaValueType val)	{ this.getMetaValueView().type = val; }
 
 	public MetaValue(MetaValueImpl v_impl) {
 		super(v_impl);
@@ -539,11 +529,14 @@ public abstract class MetaValue extends ASTNode {
 	public abstract boolean valueEquals(MetaValue mv);
 }
 
-@node
 public final class MetaValueScalar extends MetaValue {
+
+	@virtual typedef NImpl = MetaValueScalarImpl;
+	@virtual typedef VView = MetaValueScalarView;
 
 	@node
 	public static final class MetaValueScalarImpl extends MetaValueImpl {
+		@virtual typedef ImplOf = MetaValueScalar;
 		@att public ENode			value;
 		public MetaValueScalarImpl() {}
 	}
@@ -552,14 +545,8 @@ public final class MetaValueScalar extends MetaValue {
 		public ENode			value;
 	}
 
-	@att public abstract virtual ENode			value;
-	
-	public NodeView				getNodeView()				{ return new MetaValueScalarView((MetaValueScalarImpl)this.$v_impl); }
-	public MetaValueView		getMetaValueView()			{ return new MetaValueScalarView((MetaValueScalarImpl)this.$v_impl); }
-	public MetaValueScalarView	getMetaValueScalarView()	{ return new MetaValueScalarView((MetaValueScalarImpl)this.$v_impl); }
-
-	@getter public ENode		get$value()				{ return this.getMetaValueScalarView().value; }
-	@setter public void			set$value(ENode val)	{ this.getMetaValueScalarView().value = val; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public MetaValueScalar() {
 		super(new MetaValueScalarImpl());
@@ -600,11 +587,14 @@ public final class MetaValueScalar extends MetaValue {
 	}
 }
 
-@node
 public final class MetaValueArray extends MetaValue {
+
+	@virtual typedef NImpl = MetaValueArrayImpl;
+	@virtual typedef VView = MetaValueArrayView;
 
 	@node
 	public static final class MetaValueArrayImpl extends MetaValueImpl {
+		@virtual typedef ImplOf = MetaValueArray;
 		@att public NArr<ENode>			values;
 		public MetaValueArrayImpl() {}
 	}
@@ -613,13 +603,8 @@ public final class MetaValueArray extends MetaValue {
 		public access:ro	NArr<ENode>			values;
 	}
 
-	@att public abstract virtual access:ro NArr<ENode>			values;
-	
-	public NodeView				getNodeView()			{ return new MetaValueArrayView((MetaValueArrayImpl)this.$v_impl); }
-	public MetaValueView		getMetaValueView()		{ return new MetaValueArrayView((MetaValueArrayImpl)this.$v_impl); }
-	public MetaValueArrayView	getMetaValueArrayView()	{ return new MetaValueArrayView((MetaValueArrayImpl)this.$v_impl); }
-
-	@getter public NArr<ENode>		get$values()	{ return this.getMetaValueArrayView().values; }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public MetaValueArray() {
 		super(new MetaValueArrayImpl());

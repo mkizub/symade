@@ -15,7 +15,6 @@ import syntax kiev.Syntax;
  *
  */
 
-@node
 public class ASTCallAccessExpression extends ENode {
 	
 	@dflow(out="args") private static class DFI {
@@ -23,8 +22,12 @@ public class ASTCallAccessExpression extends ENode {
 	@dflow(in="obj", seq="true")		ENode[]		args;
 	}
 	
+	@virtual typedef NImpl = ASTCallAccessExpressionImpl;
+	@virtual typedef VView = ASTCallAccessExpressionView;
+
 	@node
 	public static class ASTCallAccessExpressionImpl extends ENodeImpl {
+		@virtual typedef ImplOf = ASTCallAccessExpression;
 		@att public ENode				obj;
 		@ref public NameRef				func;
 		@att public NArr<ENode>			args;
@@ -38,21 +41,8 @@ public class ASTCallAccessExpression extends ENode {
 		public access:ro	NArr<ENode>		args;
 	}
 	
-	@att public abstract virtual			ENode				obj;
-	@ref public abstract virtual			NameRef				func;
-	@att public abstract virtual access:ro	NArr<ENode>			args;
-	
-	@getter public ENode			get$obj()				{ return this.getASTCallAccessExpressionView().obj; }
-	@getter public NameRef			get$func()				{ return this.getASTCallAccessExpressionView().func; }
-	@getter public NArr<ENode>		get$args()				{ return this.getASTCallAccessExpressionView().args; }
-	
-	@setter public void		set$obj(ENode val)				{ this.getASTCallAccessExpressionView().obj = val; }
-	@setter public void		set$func(NameRef val)			{ this.getASTCallAccessExpressionView().func = val; }
-
-	public NodeView							getNodeView()						{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
-	public ENodeView						getENodeView()						{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
-	public ASTCallAccessExpressionView		getASTCallAccessExpressionView()	{ return new ASTCallAccessExpressionView((ASTCallAccessExpressionImpl)this.$v_impl); }
-	
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
 	public ASTCallAccessExpression() {
 		super(new ASTCallAccessExpressionImpl());

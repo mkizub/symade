@@ -137,7 +137,7 @@ public view JSwitchStatView of SwitchStatImpl extends JENodeView implements Brea
 			for(int i=0; i < cases.length; i++) {
 				if( isAutoReturnable() )
 					cases[i].setAutoReturnable(true);
-				((CaseLabel)cases[i]).getJCaseLabelView().generate(code,Type.tpVoid);
+				((CaseLabel)cases[i]).getJView().generate(code,Type.tpVoid);
 			}
 			Vector<JVarView> vars = new Vector<JVarView>();
 			for(int i=0; i < cases.length; i++) {

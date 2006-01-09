@@ -37,7 +37,7 @@ public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeVi
 		if( Kiev.verify )
 			generateArgumentCheck(code);
 		foreach (ParamRedir redir; params_redir)
-			redir.old_var.getJVarView().bcpos = redir.new_var.getJVarView().bcpos;
+			redir.old_var.getJView().bcpos = redir.new_var.getJView().bcpos;
 		method.body.generate(code,reqType);
 	}
 
@@ -45,9 +45,9 @@ public final view JInlineMethodStatView of InlineMethodStatImpl extends JENodeVi
 		for(int i=0; i < params_redir.length; i++) {
 			ParamRedir redir = params_redir[i];
 			if( !redir.new_var.type.equals(method.params[i].type) ) {
-				code.addInstr(Instr.op_load,redir.new_var.getJVarView());
+				code.addInstr(Instr.op_load,redir.new_var.getJView());
 				code.addInstr(Instr.op_checkcast,method.params[i].type);
-				code.addInstr(Instr.op_store,redir.new_var.getJVarView());
+				code.addInstr(Instr.op_store,redir.new_var.getJView());
 			}
 		}
 	}
@@ -146,7 +146,7 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 			else if (node instanceof JTryStatView) {
 				if( node.finally_catcher != null ) {
 					if( tmp_var==null && code.method.type.ret ≢ Type.tpVoid ) {
-						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
+						tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJView();
 						code.addVar(tmp_var);
 						code.addInstr(Instr.op_store,tmp_var);
 					}
@@ -155,7 +155,7 @@ public final view JReturnStatView of ReturnStatImpl extends JENodeView {
 			}
 			else if (node instanceof JSynchronizedStatView) {
 				if( tmp_var==null && code.method.type.ret ≢ Type.tpVoid ) {
-					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJVarView();
+					tmp_var = new Var(0,KString.Empty,code.method.type.ret,0).getJView();
 					code.addVar(tmp_var);
 					code.addInstr(Instr.op_store,tmp_var);
 				}
@@ -264,7 +264,7 @@ public final view JCondStatView of CondStatImpl extends JENodeView {
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString);
 		else
 			func = Type.tpDebug.clazz.resolveMethod(fname,Type.tpVoid,Type.tpString,Type.tpString);
-		return func.getJMethodView();
+		return func.getJView();
 	}
 	
 	public void generate(Code code, Type reqType) {
@@ -331,7 +331,7 @@ public final view JBreakStatView of BreakStatImpl extends JENodeView {
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				}
 				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
+					code.addInstr(Instr.op_load,((Var)lb[i]).getJView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			if( isAutoReturnable() )
@@ -412,7 +412,7 @@ public final view JContinueStatView of ContinueStatImpl extends JENodeView {
 				if( lb[i] instanceof CodeLabel )
 					code.addInstr(Instr.op_jsr,(CodeLabel)lb[i]);
 				else {
-					code.addInstr(Instr.op_load,((Var)lb[i]).getJVarView());
+					code.addInstr(Instr.op_load,((Var)lb[i]).getJView());
 					code.addInstr(Instr.op_monitorexit);
 				}
 			code.addInstr(Instr.op_goto,(CodeLabel)lb[i]);
@@ -571,7 +571,7 @@ public final view JGotoCaseStatView of GotoCaseStatImpl extends JENodeView {
 				if (node instanceof JTryStatView) {
 					if( node.finally_catcher != null ) {
 						if( tmp_var==null && Kiev.verify && !expr.isConstantExpr() ) {
-							tmp_var = new Var(0,KString.Empty,expr.getType(),0).getJVarView();
+							tmp_var = new Var(0,KString.Empty,expr.getType(),0).getJView();
 							code.addVar(tmp_var);
 							code.addInstr(Instr.op_store,tmp_var);
 						}

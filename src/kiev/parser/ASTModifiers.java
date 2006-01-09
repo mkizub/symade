@@ -14,11 +14,14 @@ import kiev.vlang.TypeRef.TypeRefView;
  *
  */
 
-@node
 public final class ASTModifiers extends ASTNode {
 	
+	@virtual typedef NImpl = ASTModifiersImpl;
+	@virtual typedef VView = ASTModifiersView;
+
 	@node
 	public static final class ASTModifiersImpl extends TypeRefImpl {
+		@virtual typedef ImplOf = ASTModifiers;
 		@att public Access 				acc;
 		@att public NArr<Meta>			annotations;
 		     public MetaSpecial[]		specials = MetaSpecial.emptyArray;
@@ -31,19 +34,9 @@ public final class ASTModifiers extends ASTNode {
 		public				MetaSpecial[]		specials;		
 	}
 
-	@att public abstract virtual				Access 				acc;
-	@att public abstract virtual access:ro		NArr<Meta>			annotations;
-	     public abstract virtual				MetaSpecial[]		specials;
-	
-	public NodeView				getNodeView()			{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
-	public ASTModifiersView		getASTModifiersView()	{ return new ASTModifiersView((ASTModifiersImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
+	public JView getJView() { return new JView(this.$v_impl); }
 
-	@getter public Access				get$acc()			{ return this.getASTModifiersView().acc; }
-	@getter public NArr<Meta>			get$annotations()	{ return this.getASTModifiersView().annotations; }
-	@getter public MetaSpecial[]		get$specials()		{ return this.getASTModifiersView().specials; }
-	@setter public void		set$acc(Access val)					{ this.getASTModifiersView().acc = val; }
-	@setter public void		set$specials(MetaSpecial[] val)		{ this.getASTModifiersView().specials = val; }
-	
 	public ASTModifiers() { super(new ASTModifiersImpl()); }
 	
 	public MetaSpecial add(MetaSpecial sa)

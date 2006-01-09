@@ -14,13 +14,16 @@ import kiev.vlang.TypeDecl.TypeDeclView;
  *
  */
 
-@node
 public class TypeDef extends TypeDecl {
 
 	@dflow(out="this:in") private static class DFI {}
 
+	@virtual typedef NImpl = TypeDefImpl;
+	@virtual typedef VView = TypeDefView;
+
 	@node
 	public static final class TypeDefImpl extends TypeDeclImpl {
+		@virtual typedef ImplOf = TypeDef;
 		@att public NameRef					name;
 		@att public TypeRef					super_bound;
 		@att public ArgumentType			lnk;
@@ -34,22 +37,8 @@ public class TypeDef extends TypeDecl {
 		public ArgumentType			lnk;
 	}
 
-	@att public abstract virtual NameRef				name;
-	@att public abstract virtual TypeRef				super_bound;
-	@att        abstract virtual ArgumentType			lnk;
-	
-	public NodeView			getNodeView()			{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public DNodeView		getDNodeView()			{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public TypeDeclView		getTypeDeclView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
-	public TypeDefView		getTypeDefView()		{ return new TypeDefView((TypeDefImpl)this.$v_impl); }
+	public VView getVView() { return new VView(this.$v_impl); }
 
-	@getter public NameRef		get$name()			{ return this.getTypeDefView().name; }
-	@getter public TypeRef		get$super_bound()	{ return this.getTypeDefView().super_bound; }
-	@getter        ArgumentType	get$lnk()			{ return this.getTypeDefView().lnk; }
-	@setter public void		set$name(NameRef val)			{ this.getTypeDefView().name = val; }
-	@setter public void		set$super_bound(TypeRef val)	{ this.getTypeDefView().super_bound = val; }
-	@setter        void		set$lnk(ArgumentType val)		{ this.getTypeDefView().lnk = val; }
-	
 	public TypeDef() { super(new TypeDefImpl()); }
 
 	public TypeDef(KString nm) {

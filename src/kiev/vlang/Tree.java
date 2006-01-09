@@ -343,7 +343,7 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		ASTNode.NodeView[] arr = (ASTNode.NodeView[])java.lang.reflect.Array.newInstance(cls, sz);
 		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getNodeView();
+			arr[i] = $nodes[i].getVView();
 		return arr;
 	}
 
@@ -351,7 +351,7 @@ public final class NArr<N extends ASTNode> {
 		int sz = $nodes.length;
 		JNodeView[] arr = (JNodeView[])java.lang.reflect.Array.newInstance(cls, sz);
 		for (int i=0; i < sz; i++)
-			arr[i] = $nodes[i].getJNodeView();
+			arr[i] = $nodes[i].getJView();
 		return arr;
 	}
 
