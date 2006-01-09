@@ -48,23 +48,55 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		@ref public Struct						typeinfo_clazz;
 		@ref public NArr<Struct>				sub_clazz;
 		@ref public NArr<DNode>					imported;
+		@ref public NArr<TypeDecl>				direct_extenders;
 		public kiev.be.java.Attr[]				attrs = kiev.be.java.Attr.emptyArray;
 		@att public NArr<DNode>					members;
+		     private TemplateType[]				super_types;
 
 		public void callbackChildChanged(AttrSlot attr) {
-			if (attr.name == "args") {
-				imeta_type.version++;
+			if (attr.name == "args" ||
+				attr.name == "super_bound" ||
+				attr.name == "interfaces" ||
+				attr.name == "package_clazz"
+			) {
+				this.callbackSuperTypeChanged(this);
 			}
-			if (attr.name == "super_bound") {
-				imeta_type.version++;
+		}
+		
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
+			super_types = null;
+			imeta_type.version++;
+			foreach (TypeDecl td; direct_extenders)
+				td.callbackSuperTypeChanged(chg);
+		}
+		
+		public TemplateType[] getAllSuperTypes() {
+			if (super_types != null)
+				return super_types;
+			Vector<TemplateType> types = new Vector<TemplateType>();
+			addSuperTypes(super_bound, types);
+			foreach (TypeRef it; interfaces)
+				addSuperTypes(it, types);
+			if (types.length == 0)
+				super_types = TemplateType.emptyArray;
+			else
+				super_types = types.toArray();
+			return super_types;
+		}
+		
+		private void addSuperTypes(TypeRef suptr, Vector<TemplateType> types) {
+			Type sup = suptr.getType();
+			if (sup == null)
+				return;
+			TemplateType tt = ((CompaundType)sup).clazz.imeta_type.templ_type;
+			if (!types.contains(tt))
+				types.append(tt);
+			TemplateType[] sup_types = ((CompaundType)sup).clazz.getAllSuperTypes();
+			foreach (TemplateType t; sup_types) {
+				if (!types.contains(t))
+					types.append(t);
 			}
-			else if (attr.name == "interfaces") {
-				imeta_type.version++;
-			}
-			else if (attr.name == "package_clazz") {
-				imeta_type.version++;
-			}
-		}	
+		}
 	}
 	@nodeview
 	public static final view StructView of StructImpl extends TypeDeclView {
@@ -81,12 +113,17 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				Struct					typeinfo_clazz;
 		public access:ro	NArr<Struct>			sub_clazz;
 		public access:ro	NArr<DNode>				imported;
+		public access:ro	NArr<TypeDecl>			direct_extenders;
 		public access:ro	NArr<DNode>				members;
 
 		@setter public final void set$acc(Access val) { this.$view.acc = val; Access.verifyDecl((Struct)getDNode()); }
 		@getter public final BaseType	get$super_type()	{ return (BaseType)super_bound.lnk; }
 		@setter public final void set$super_type(BaseType tp) { super_bound = new TypeRef(super_bound.pos, tp); }
 
+		public TemplateType[] getAllSuperTypes() {
+			return this.$view.getAllSuperTypes();
+		}
+		
 		public boolean isClazz() {
 			return !isPackage() && !isInterface();
 		}
@@ -333,6 +370,10 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 	public String toString() { return name.name.toString(); }
 
+	public TemplateType[] getAllSuperTypes() {
+		return getStructView().getAllSuperTypes();
+	}
+		
 	// normal class
 	public boolean isClazz() { return getStructView().isClazz(); }
 	// package	

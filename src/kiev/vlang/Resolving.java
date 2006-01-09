@@ -91,12 +91,15 @@ public class ResInfo {
 	}
 
 	public void enterSuper() {
-		enterSuper(1);
+		enterSuper(1,0);
 	}
 	public void enterSuper(int incr) {
+		enterSuper(incr,0);
+	}
+	public void enterSuper(int incr, int mode) {
 		assert ((flags & noSuper) == 0);
 		flags_stack[flags_p++] = flags;
-		flags |= noImports;
+		flags |= noImports | mode;
 		transforms += incr;
 		trace(Kiev.debugResolve,"Entering super, now "+this);
 	}

@@ -1374,15 +1374,20 @@ public final class NopExpr extends ENode {
 public abstract class TypeDecl extends DNode implements Named {
 
 	@node
-	public static class TypeDeclImpl extends DNodeImpl {		
+	public static abstract class TypeDeclImpl extends DNodeImpl {		
 		public TypeDeclImpl() {}
 		public TypeDeclImpl(int pos) { super(pos); }
 		public TypeDeclImpl(int pos, int fl) { super(pos, fl); }
+
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {}
 	}
 	@nodeview
 	public static view TypeDeclView of TypeDeclImpl extends DNodeView {
 		public TypeDeclView(TypeDeclImpl $view) {
 			super($view);
+		}
+		public void callbackSuperTypeChanged(TypeDeclImpl chg) {
+			this.$view.callbackSuperTypeChanged(chg);
 		}
 	}
 	public abstract TypeDeclView	getTypeDeclView();
@@ -1390,6 +1395,10 @@ public abstract class TypeDecl extends DNode implements Named {
 
 	public TypeDecl(TypeDeclImpl impl) { super(impl); }
 
+	public void callbackSuperTypeChanged(TypeDeclImpl chg) {
+		this.getTypeDeclView().callbackSuperTypeChanged(chg);
+	}
+		
 	public abstract NodeName	getName();
 	public abstract boolean		checkResolved();
 	public abstract Type		getSuperType();
