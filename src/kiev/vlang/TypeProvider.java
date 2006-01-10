@@ -212,6 +212,44 @@ public final class TVarSet {
 		return sr;
 	}
 
+	// change bound types, for virtual args, outer args, etc
+	public TVarSet rebind(TVarSet vs) {
+		TVar[] my_vars = this.tvars;
+		TVar[] vs_vars = vs.tvars;
+		final int my_size = my_vars.length;
+		final int vs_size = vs_vars.length;
+		TVarSet sr = this.copy();
+
+	next_my:
+		for(int i=0; i < my_size; i++) {
+			TVar x = my_vars[i];
+			// TVarBound already bound
+			if (x instanceof TVarBound) {
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
+					}
+				}
+				continue next_my;
+			}
+			// bind virtual aliases
+			if (x.var.isVirtual()) {
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
+					}
+				}
+				continue next_my;
+			}
+		}
+		if (ASSERT_MORE) sr.checkIntegrity();
+		return sr;
+	}
+
 	// Re-bind type set, replace all abstract types in current set
 	// with results of another set. It binds unbound vars, and re-binds
 	// (changes) vars bound to abstract types, i.e. it changes only 'TVar.bnd' field.
@@ -226,16 +264,16 @@ public final class TVarSet {
 	// class Bar<B> { B b; }
 	// class Foo<F> { F f; Foo<Bar<F>> fbf; }
 	// Foo<String> a;
-	// a.* :- binds Foo.F with String, and rebinds Bar.B (bound to Foo.F) with String
+	// a.* :- binds Foo.F with String, and applays Bar.B (bound to Foo.F) with String
 	//        producing: a.f = String; a.fbf = Foo<Bar<String>>; a.b = String 
 	// Foo<Bar<Foo<F>>> x;
-	// a.* :- binds Foo.F with Bar<Foo<F>>, and rebinds Bar.B (bound to Foo.F) with Bar<Foo<F>>,
+	// a.* :- binds Foo.F with Bar<Foo<F>>, and applays Bar.B (bound to Foo.F) with Bar<Foo<F>>,
 	//        producing: a.f = Bar<Foo<F>>; a.fbf = Foo<Bar<Bar<Foo<F>>>>; a.b = Bar<Foo<F>>
 	// a.fbf.* :- a.fbf.f = 
 	//
 	// my.bnd ≡ vs.var -> (my.var, vs.result())
 	
-	public TVarSet rebind(TVarSet vs) {
+	public TVarSet applay(TVarSet vs) {
 		TVar[] my_vars = this.tvars;
 		TVar[] vs_vars = vs.tvars;
 		final int my_size = my_vars.length;
@@ -258,7 +296,7 @@ public final class TVarSet {
 				}
 			} else {
 				// recursive
-				Type t = bnd.rebind(vs);
+				Type t = bnd.applay(vs);
 				if (t ≉ bnd)
 					sr.set(sr.tvars[i], t);
 			}
@@ -417,6 +455,7 @@ public abstract class TypeProvider {
 	public TypeProvider() {}
 	public abstract Type bind(Type t, TVarSet bindings);
 	public abstract Type rebind(Type t, TVarSet bindings);
+	public abstract Type applay(Type t, TVarSet bindings);
 }
 
 public class CoreTypeProvider extends TypeProvider {
@@ -426,6 +465,9 @@ public class CoreTypeProvider extends TypeProvider {
 		throw new RuntimeException("bind() in CoreType");
 	}
 	public Type rebind(Type t, TVarSet bindings) {
+		throw new RuntimeException("rebind() in CoreType");
+	}
+	public Type applay(Type t, TVarSet bindings) {
 		return t;
 	}
 }
@@ -446,8 +488,12 @@ public class CompaundTypeProvider extends TypeProvider {
 	}
 	
 	public Type rebind(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0) return t;
 		return new ConcreteType(this, t.bindings().rebind(bindings));
+	}
+	
+	public Type applay(Type t, TVarSet bindings) {
+		if (!t.isAbstract() || bindings.length == 0) return t;
+		return new ConcreteType(this, t.bindings().applay(bindings));
 	}
 	
 }
@@ -459,8 +505,11 @@ public class ArrayTypeProvider extends TypeProvider {
 		throw new RuntimeException("bind() in ArrayType");
 	}
 	public Type rebind(Type t, TVarSet bindings) {
+		throw new RuntimeException("rebind() in ArrayType");
+	}
+	public Type applay(Type t, TVarSet bindings) {
 		if( !t.isAbstract() || bindings.length == 0 ) return t;
-		return ArrayType.newArrayType(((ArrayType)t).arg.rebind(bindings));
+		return ArrayType.newArrayType(((ArrayType)t).arg.applay(bindings));
 	}
 }
 
@@ -471,6 +520,9 @@ public class ArgTypeProvider extends TypeProvider {
 		return t; //throw new RuntimeException("bind() in ArgType");
 	}
 	public Type rebind(Type t, TVarSet bindings) {
+		return t; //throw new RuntimeException("bind() in ArgType");
+	}
+	public Type applay(Type t, TVarSet bindings) {
 		if (bindings.length == 0) return t;
 		ArgType at = (ArgType)t;
 		for(int i=0; i < bindings.length; i++) {
@@ -499,8 +551,35 @@ public class WrapperTypeProvider extends TypeProvider {
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().bind(bindings));
 	}
 	public Type rebind(Type t, TVarSet bindings) {
-		if (!t.isAbstract() || bindings.length == 0) return t;
 		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().rebind(bindings));
+	}
+	public Type applay(Type t, TVarSet bindings) {
+		if (!t.isAbstract() || bindings.length == 0) return t;
+		return WrapperType.newWrapperType(((WrapperType)t).getUnwrappedType().applay(bindings));
+	}
+}
+
+public class OuterTypeProvider extends TypeProvider {
+	public final Struct		clazz;
+	public final TypeDef	tdef;
+	public static OuterTypeProvider instance(Struct clazz, TypeDef tdef) {
+		if (clazz.ometa_type == null)
+			clazz.ometa_type = new OuterTypeProvider(clazz, tdef);
+		return clazz.ometa_type;
+	}
+	private OuterTypeProvider(Struct clazz, TypeDef tdef) {
+		this.clazz = clazz;
+		this.tdef = tdef;
+	}
+	public Type bind(Type t, TVarSet bindings) {
+		return OuterType.newOuterType(clazz,((OuterType)t).outer.bind(bindings));
+	}
+	public Type rebind(Type t, TVarSet bindings) {
+		return OuterType.newOuterType(clazz,((OuterType)t).outer.rebind(bindings));
+	}
+	public Type applay(Type t, TVarSet bindings) {
+		if (!t.isAbstract() || bindings.length == 0) return t;
+		return OuterType.newOuterType(clazz,((OuterType)t).outer.applay(bindings));
 	}
 }
 
@@ -512,16 +591,24 @@ public class CallTypeProvider extends TypeProvider {
 		if!(t instanceof MethodType) return t;
 		MethodType mt = (MethodType)t;
 		mt = new MethodType(mt.bindings().bind(bindings),mt.args,mt.ret);
-		mt = (MethodType)this.rebind(mt,mt.bindings());
+		mt = (MethodType)this.applay(mt,mt.bindings());
 		return mt;
 	}
 	public Type rebind(Type t, TVarSet bindings) {
+		if (!t.isAbstract() || bindings.length == 0 || t.bindings().length == 0) return t;
+		if!(t instanceof MethodType) return t;
+		MethodType mt = (MethodType)t;
+		mt = new MethodType(mt.bindings().rebind(bindings),mt.args,mt.ret);
+		mt = (MethodType)this.applay(mt,mt.bindings());
+		return mt;
+	}
+	public Type applay(Type t, TVarSet bindings) {
 		if( !t.isAbstract() || bindings.length == 0 ) return t;
 		CallableType ct = (CallableType)t;
 		Type[] tpargs = new Type[ct.args.length];
 		for(int i=0; i < tpargs.length; i++)
-			tpargs[i] = ct.args[i].rebind(bindings);
-		Type ret = ct.ret.rebind(bindings);
+			tpargs[i] = ct.args[i].applay(bindings);
+		Type ret = ct.ret.applay(bindings);
 		if (t instanceof MethodType)
 			return new MethodType(tpargs,ret);
 		else if (t instanceof ClosureType)

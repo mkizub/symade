@@ -1009,7 +1009,7 @@ public final class OuterThisAccessExpr extends AccessExpr {
 				return outer.concr_type;
 			Type tp = ctx_clazz.concr_type;
 			foreach (Field f; outer_refs)
-				tp = f.type.rebind(tp.bindings());
+				tp = f.type.applay(tp);
 			return tp;
 		} catch(Exception e) {
 			Kiev.reportError(this,e);

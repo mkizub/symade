@@ -54,7 +54,7 @@ public class ASTNewAccessExpression extends ENode {
 		super(new ASTNewAccessExpressionImpl());
 	}
 	
-	public void resolve(Type reqType) {
+	public void mainResolveOut() {
     	for(int i=0; i < args.length; i++) {
         	try {
             	args[i].resolve(null);
@@ -62,7 +62,7 @@ public class ASTNewAccessExpression extends ENode {
             	Kiev.reportError(args[i],e);
             }
         }
-		replaceWithNodeResolve(reqType, new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));
+		replaceWithNode(new NewExpr(pos,type.getType(),args.delToArray(),(ENode)~obj));
 	}
 
 	public int		getPriority() { return Constants.opAccessPriority; }

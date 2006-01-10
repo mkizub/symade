@@ -121,8 +121,17 @@ public final class NewExpr extends ENode {
 
 	public Type getType() {
 		Type type = this.type.getType();
-		if (outer == null) return type;
-		return type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
+		Struct clazz = type.getStruct();
+		if (outer == null && type.getStruct() != null && type.getStruct().ometa_type != null) {
+			if (ctx_method != null || !ctx_method.isStatic())
+				outer = new ThisExpr(pos);
+		}
+		if (outer == null)
+			return type;
+		TVarSet vset = new TVarSet(
+			type.getStruct().ometa_type.tdef.getAType(),
+			new OuterType(type.getStruct(),outer.getType()) );
+		return type.rebind(vset);
 	}
 
 	public void resolve(Type reqType) {
@@ -148,18 +157,14 @@ public final class NewExpr extends ENode {
 			else
 				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
 		}
-		if( outer == null &&
-			( (!type.isStaticClazz() && type.isLocalClazz())
-			|| (!type.isStaticClazz() && !type.getStruct().package_clazz.isPackage()) )
-		)
-		{
+		if (outer == null && type.clazz.ometa_type != null) {
 			if( ctx_method==null || ctx_method.isStatic() )
 				throw new CompilerException(this,"'new' for inner class requares outer instance specification");
 			outer = new ThisExpr(pos);
 		}
 		if( outer != null ) {
 			outer.resolve(null);
-			type = (ConcreteType)type.bind(new TVarSet(type.getOuterArg(), outer.getType()));
+			type = (CompaundType)type.bind(new TVarSet(type.clazz.ometa_type.tdef.getAType(), outer.getType()));
 		}
 		for(int i=0; i < args.length; i++)
 			args[i].resolve(null);

@@ -39,6 +39,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		     public ClazzName					name;
 		     CompaundTypeProvider				imeta_type;
 		     WrapperTypeProvider				wmeta_type;
+		     OuterTypeProvider					ometa_type;
 		     public ConcreteType				concr_type;
 		@att public TypeRef						view_of;
 		@att public TypeRef						super_bound;
@@ -104,6 +105,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		public				ClazzName				name;
 		public access:ro	CompaundTypeProvider	imeta_type;
 		public				WrapperTypeProvider		wmeta_type;
+		public				OuterTypeProvider		ometa_type;
 		public access:ro	ConcreteType			concr_type;
 		public				TypeRef					view_of;
 		public				TypeRef					super_bound;
@@ -284,6 +286,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	/** Type associated with this class */
 	     public abstract virtual access:ro	CompaundTypeProvider		imeta_type;
 	     public abstract virtual			WrapperTypeProvider			wmeta_type;
+	     public abstract virtual			OuterTypeProvider			ometa_type;
 	@ref public abstract virtual access:ro	ConcreteType				concr_type;
 	@att public abstract virtual			TypeRef						view_of;
 
@@ -323,6 +326,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@getter public ClazzName				get$name()					{ return this.getStructView().name; }
 	@getter public CompaundTypeProvider	get$imeta_type()			{ return this.getStructView().imeta_type; }
 	@getter public WrapperTypeProvider		get$wmeta_type()			{ return this.getStructView().wmeta_type; }
+	@getter public OuterTypeProvider		get$ometa_type()			{ return this.getStructView().ometa_type; }
 	@getter public ConcreteType				get$concr_type()			{ return this.getStructView().concr_type; }
 	@getter public TypeRef					get$view_of()				{ return this.getStructView().view_of; }
 	@getter public TypeRef					get$super_bound()			{ return this.getStructView().super_bound; }
@@ -338,6 +342,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 	@setter public void set$acc(Access val)							{ this.getStructView().acc = val; }
 	@setter public void set$name(ClazzName val)						{ this.getStructView().name = val; }
 	@setter public void set$wmeta_type(WrapperTypeProvider val)		{ this.getStructView().wmeta_type = val; }
+	@setter public void set$ometa_type(OuterTypeProvider val)			{ this.getStructView().ometa_type = val; }
 	@setter public void set$view_of(TypeRef val)						{ this.getStructView().view_of = val; }
 	@setter public void set$super_bound(TypeRef val)					{ this.getStructView().super_bound = val; }
 	@setter public void set$package_clazz(Struct val)					{ this.getStructView().package_clazz = val; }
@@ -1023,7 +1028,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				ASTCallExpression call_super = new ASTCallExpression(pos, nameSuper, ENode.emptyArray);
 				TVar[] templ = super_type.clazz.imeta_type.templ_type.bindings().tvars;
 				foreach (TVar tv; templ; !tv.isBound() && !tv.isAlias()) {
-					Type t = tv.var.rebind(this.concr_type.bindings());
+					Type t = tv.var.applay(this.concr_type);
 					ENode expr;
 					if (t instanceof ArgType) {
 						expr = new ASTIdentifier(pos,t.name);
@@ -1120,15 +1125,6 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 
 		try {
 			autoGenerateTypeinfoClazz();
-	
-			// Check if it's an inner class
-//			if( isClazz() && package_clazz.isClazz() && !isStatic() ) {
-//				int n = 0;
-//				for(Struct pkg=package_clazz; pkg.isClazz() && !pkg.isStatic(); pkg=pkg.package_clazz)
-//					n++;
-//				Field f = addField(new Field(KString.from(nameThisDollar.toString()+n),type.getOuterArg(),ACC_FORWARD|ACC_FINAL));
-//				f.pos = pos;
-//			}
 	
 			if( !isInterface() && !isPackage() ) {
 				// Default <init> method, if no one is declared
@@ -1891,7 +1887,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 			if (!this.isInterface()) {
 				foreach (VTableEntry vte2; vtable; vte2 != vte && vte2.name == vte.name) {
 					foreach (Method m; vte2.methods; !vte.methods.contains(m)) {
-						MethodType mt = new MethodType(m.dtype.args,null).rebind(this.concr_type);
+						MethodType mt = new MethodType(m.dtype.args,null).applay(this.concr_type);
 						if (mt ≈ et)
 							vte.add(m);
 					}
@@ -1964,7 +1960,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		members.append(root);
 		// check if we already have this method in this class
 		foreach (Method m; mmset) {
-			if (m.ctx_clazz == this && m.type.rebind(this.concr_type) ≈ root.type.rebind(this.concr_type)) {
+			if (m.ctx_clazz == this && m.type.applay(this.concr_type) ≈ root.type.applay(this.concr_type)) {
 				members.detach(root);
 				root = found = m;
 				break;

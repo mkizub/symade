@@ -218,13 +218,11 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 					int n = 0;
 					for(Struct p=pkg; p.isClazz() && !p.isStatic(); p=p.package_clazz) n++;
 					TypeDef td = new TypeDef(
-						new NameRef(me.pos,KString.from(nameThis+"$"+n+"$type")),
-						new TypeRef(pkg.concr_type));
+						new NameRef(me.pos,KString.from("outer$"+n+"$type")),
+						new TypeRef(pkg.imeta_type.templ_type));
 					me.members.append(td);
-					Field f = new Field(
-						KString.from(nameThis+"$"+n),
-						td.getAType(),
-						ACC_FORWARD|ACC_FINAL);
+					OuterTypeProvider.instance(me,td);
+					Field f = new Field(KString.from(nameThis+"$"+n),td.getAType(),ACC_FORWARD|ACC_FINAL);
 					f.pos = me.pos;
 					me.members.append(f);
 				}

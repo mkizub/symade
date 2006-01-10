@@ -533,6 +533,8 @@ kiev.vlang.NopExpr kiev/vlang/NopExpr kiev\vlang\AST.java
 kiev.vlang.OpTypes kiev/vlang/OpTypes kiev\vlang\Operator.java
 kiev.vlang.Operator kiev/vlang/Operator kiev\vlang\Operator.java
 kiev.vlang.OuterThisAccessExpr kiev/vlang/OuterThisAccessExpr kiev\vlang\LvalueExpr.java
+kiev.vlang.OuterType kiev/vlang/OuterType kiev\vlang\Type.java
+kiev.vlang.OuterTypeProvider kiev/vlang/OuterTypeProvider kiev\vlang\TypeProvider.java
 kiev.vlang.ParentEnumerator kiev/vlang/ParentEnumerator kiev\vlang\PassInfo.java
 kiev.vlang.PassInfo kiev/vlang/PassInfo kiev\vlang\PassInfo.java
 kiev.vlang.PostfixOperator kiev/vlang/PostfixOperator kiev\vlang\Operator.java

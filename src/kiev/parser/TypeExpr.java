@@ -121,7 +121,7 @@ public class TypeExpr extends TypeRef {
 			if (t.getStruct().args.length != 1)
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			set.append(t.getStruct().args[0].getAType(), tp);
-			tp = t.rebind(set);
+			tp = t.applay(set);
 		}
 		this.lnk = tp;
 		return tp;
