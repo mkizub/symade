@@ -356,7 +356,6 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				}
 				sup_ref.args.add(new TypeRef(p.args[i].getAType()));
 			}
-			sup_ref.setLowerBound(clazz.concr_type);
 			clazz.super_bound = sup_ref;
 		}
 		else if (clazz.isSyntax() || clazz.isPackage()) {
@@ -369,10 +368,8 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
 			foreach(TypeRef tr; clazz.interfaces) {
 				Struct s = tr.getType().getStruct();
-				if (s != null) {
+				if (s != null)
 					getStructType(s, path);
-					tr.setLowerBound(clazz.concr_type);
-				}
 			}
 		}
 		else {
@@ -383,17 +380,13 @@ public final class ImportKievSrc extends TransfProcessor implements Constants {
 				clazz.super_type = sup = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
 			if (sup != null) {
 				Struct s = sup.getStruct();
-				if (s != null) {
+				if (s != null)
 					getStructType(s, path);
-					clazz.super_bound.setLowerBound(clazz.concr_type);
-				}
 			}
 			foreach(TypeRef tr; clazz.interfaces) {
 				Struct s = tr.getType().getStruct();
-				if (s != null) {
+				if (s != null)
 					getStructType(s, path);
-					tr.setLowerBound(clazz.concr_type);
-				}
 			}
 		}
 		

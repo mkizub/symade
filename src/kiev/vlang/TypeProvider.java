@@ -110,13 +110,13 @@ public final class TVarSet {
 		require { v.set == this && bnd != null; }
 	{
 		TVar[] tvars = this.tvars;
-		if (v.value() ≡ bnd || v.result() ≡ bnd)
+		if (v.bound() ≡ bnd)
 			return; // ignore duplicated alias
 		while (v.isAlias()) {
 			TVarAlias va = (TVarAlias)v;
 			// alias of another var, must point to 
 			v = va.bnd;
-			if (v.value() ≡ bnd || v.result() ≡ bnd)
+			if (v.bound() ≡ bnd)
 				return; // ignore duplicated alias
 		}
 		// non-aliased var, just bind or alias it
@@ -128,7 +128,7 @@ public final class TVarSet {
 					// set v as alias of av
 					while (av.isAlias()) av = ((TVarAlias)av).bnd;
 					if (v == av)
-						return; // don't bind a var to itself
+						break; // don't alias a var to itself 
 					tvars[v.idx] = new TVarAlias(this, v.idx, v.var, av);
 					assert (i < n);
 					for (i=0; i < n; i++)
@@ -160,6 +160,8 @@ public final class TVarSet {
 	// class Foo<F> extends Bar<F> :- binds Bar.B to Foo.F
 	// new Foo<String> :- binds Foo.F to String
 	// new Foo<Bar<Foo<F>>> :- binds Foo.F with Bar<Foo<F>>
+	//
+	// my.var ≡ vs.var -> (my.var, vs.result())
 
 	public TVarSet bind(TVarSet vs) {
 		TVar[] my_vars = this.tvars;
@@ -167,42 +169,46 @@ public final class TVarSet {
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
-		// bind known vars
-		for(int i=0; i < vs_size; i++) {
-			TVar v = vs_vars[i];
-			if (!v.isBound()) continue;
-			Type r = v.result();
-			for(int j=0; j < my_size; j++) {
-				TVar x = my_vars[j];
-				if (x.var ≡ v.var) {
-					// bind
-					sr.set(sr.tvars[j], r);
-					break;
+
+	next_my:
+		for(int i=0; i < my_size; i++) {
+			TVar x = my_vars[i];
+			// TVarBound already bound
+			if (x instanceof TVarBound)
+				continue;
+			// bind TVar
+			if!(x instanceof TVarAlias) {
+				// try known bind
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
+					}
+				}
+				// try pattern bind
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (y.var.definer == null) {
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
+					}
+				}
+				// bind to itself
+				sr.set(sr.tvars[i], sr.tvars[i].result());
+			}
+			// bind virtual aliases
+			if (x.var.isVirtual()) {
+				for (int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (x.var ≡ y.var) {
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
+					}
 				}
 			}
 		}
-		// bind free vars
-		for(int i=0; i < vs_size; i++) {
-			TVar v = vs_vars[i];
-			if (v.var.definer != null)
-				continue;
-			Type r = v.result();
-			for(int j=0; j < my_size; j++) {
-				TVar x = my_vars[j];
-				if (x.isAlias() || x.isBound())
-					continue;
-				// bind free var
-				sr.set(sr.tvars[j], r);
-				break;
-			}
-		}
-		// bind virtual vars
-		TVar[] sr_vars = sr.tvars;
-		for(int i=0; i < my_size; i++) {
-			TVar x = sr_vars[i];
-			if (!x.isBound() && x.var.isVirtual())
-				sr.set(x, x.var.getSuperType());
-		}
+		if (ASSERT_MORE) sr.checkIntegrity();
 		return sr;
 	}
 
@@ -226,42 +232,38 @@ public final class TVarSet {
 	// a.* :- binds Foo.F with Bar<Foo<F>>, and rebinds Bar.B (bound to Foo.F) with Bar<Foo<F>>,
 	//        producing: a.f = Bar<Foo<F>>; a.fbf = Foo<Bar<Bar<Foo<F>>>>; a.b = Bar<Foo<F>>
 	// a.fbf.* :- a.fbf.f = 
+	//
+	// my.bnd ≡ vs.var -> (my.var, vs.result())
+	
 	public TVarSet rebind(TVarSet vs) {
 		TVar[] my_vars = this.tvars;
 		TVar[] vs_vars = vs.tvars;
 		final int my_size = my_vars.length;
 		final int vs_size = vs_vars.length;
 		TVarSet sr = this.copy();
-		for(int i=0; i < vs_size; i++) {
-			TVar v = vs_vars[i];
-			if (!v.isBound() && !v.isAlias())
+	next_my:
+		for(int i=0; i < my_size; i++) {
+			TVar x = my_vars[i];
+			Type bnd = x.bound();
+			if (bnd == null || !bnd.isAbstract())
 				continue;
-			Type r = v.result();
-			for(int j=0; j < my_size; j++) {
-				TVar x = my_vars[j];
-				if (x.var ≡ v.var && !x.isBound()) {
-					// bind
-					sr.set(sr.tvars[j], r);
-					continue;
-				}
-				if!(x instanceof TVarBound)
-					continue;
-				TVarBound b = (TVarBound)x;
-				if (b.bnd instanceof ArgType) {
-					if (b.bnd ≡ v.var) {
+			if (bnd instanceof ArgType) {
+				for(int j=0; j < vs_size; j++) {
+					TVar y = vs_vars[j];
+					if (bnd ≡ y.var) {
 						// re-bind
-						sr.set(sr.tvars[j], r);
-					}
-				} else {
-					if (b.bnd.isAbstract()) {
-						// recursive
-						Type t = b.bnd.rebind(vs);
-						if (t ≢ b.bnd)
-							sr.set(sr.tvars[j], t);
+						sr.set(sr.tvars[i], y.result());
+						continue next_my;
 					}
 				}
+			} else {
+				// recursive
+				Type t = bnd.rebind(vs);
+				if (t ≉ bnd)
+					sr.set(sr.tvars[i], t);
 			}
 		}
+		if (ASSERT_MORE) sr.checkIntegrity();
 		return sr;
 	}
 	
@@ -296,10 +298,10 @@ public final class TVarSet {
 			else if (v.isBound()) {
 				TVarBound bv = (TVarBound)v;
 				assert(bv.bnd ≢ null);
-				if (bv.bnd instanceof ArgType) {
-					for (int j=0; j < n; j++)
-						assert(tvars[j].var ≢ bv.bnd);
-				}
+//				if (bv.bnd instanceof ArgType) {
+//					for (int j=0; j < n; j++)
+//						assert(tvars[j].var ≢ bv.bnd);
+//				}
 			}
 		}
 	}
@@ -320,7 +322,7 @@ public class TVar {
 
 	public final TVarSet		set;	// the set this TVar belongs to
 	public final int			idx;	// position in the set (set.tvars[idx] == this)
-	public final ArgType	var;	// variable
+	public final ArgType		var;	// variable
 
 	TVar(TVarSet set, int idx, ArgType var) {
 		this.set = set;
@@ -332,6 +334,7 @@ public class TVar {
 	public boolean isAlias() { return false; }
 	public Type    value()	  { return null; }
 	public Type    result()	  { return var; }
+	public Type    bound()	  { return null; }
 	public TVar copy(TVarSet set) {
 		return new TVar(set, idx, var);
 	}
@@ -356,6 +359,7 @@ public class TVarBound extends TVar {
 	public boolean isAlias() { return false; }
 	public Type    value()	  { return bnd; }
 	public Type    result()	  { return bnd; }
+	public Type    bound()	  { return bnd; }
 	public TVar copy(TVarSet set) {
 		return new TVarBound(set, idx, var, bnd);
 	}
@@ -384,6 +388,7 @@ public class TVarAlias extends TVar {
 	public boolean isAlias() { return true; }
 	public Type    value()	  { return bnd.var; }
 	public Type    result()	  { return bnd.result(); }
+	public Type    bound()	  { return bnd.bound(); }
 	public TVar copy(TVarSet set) {
 		return new TVarAlias(set, idx, var, bnd);
 	}
@@ -426,8 +431,8 @@ public class CoreTypeProvider extends TypeProvider {
 }
 
 public class CompaundTypeProvider extends TypeProvider {
-	final Struct			clazz;
-	final TemplateType		templ_type;
+	public final Struct			clazz;
+	public final TemplateType	templ_type;
 	
 	CompaundTypeProvider(Struct clazz) {
 		this.clazz = clazz;

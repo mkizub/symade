@@ -131,9 +131,8 @@ public class ASTNewExpression extends ENode {
 		clazz.setAnonymouse(true);
 		clazz.setStatic(ctx_method==null || ctx_method.isStatic());
 		TypeRef sup_tr = (TypeRef)this.type.copy();
-		sup_tr.setLowerBound(clazz.concr_type);
 		if( sup.isInterface() ) {
-			clazz.super_type = Type.tpObject.toTypeWithLowerBound(clazz.concr_type);
+			clazz.super_type = Type.tpObject;
 			clazz.interfaces.add(sup_tr);
 		} else {
 			clazz.super_bound = sup_tr;

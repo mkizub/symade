@@ -36,7 +36,7 @@ public final view JStructView of StructImpl extends JTypeDeclView {
 	public final JBaseType		get$jtype()			{ return (JBaseType)this.concr_type.getJType(); }
 	public final Type[]			get$interfaces()	{ return this.$view.interfaces.toTypeArray(); }
 	public final Type[]			get$args()			{ return this.$view.args.toTypeArray(); }
-	public final BaseType		get$super_type()	{ return getStruct().super_type; }
+	public final CompaundType	get$super_type()	{ return getStruct().super_type; }
 	public final JStructView[]	get$sub_clazz()		{ return (JStructView[])this.$view.sub_clazz.toJViewArray(JStructView.class); }
 	public final JDNodeView[]	get$members()		{ return (JDNodeView[])this.$view.members.toJViewArray(JDNodeView.class); }
 

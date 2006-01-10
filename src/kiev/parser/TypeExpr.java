@@ -26,7 +26,6 @@ public class TypeExpr extends TypeRef {
 	public static final class TypeExprImpl extends TypeRefImpl {
 		@att public TypeRef					arg;
 		@att public KString					op;
-		@att public TypeRef					lower;
 		public TypeExprImpl() {}
 		public TypeExprImpl(int pos) { super(pos, null); }
 	}
@@ -34,12 +33,10 @@ public class TypeExpr extends TypeRef {
 	public static final view TypeExprView of TypeExprImpl extends TypeRefView {
 		public TypeRef				arg;
 		public KString				op;
-		public TypeRef				lower;
 	}
 
 	@att public abstract virtual TypeRef				arg;
 	@att public abstract virtual KString				op;
-	@att public abstract virtual TypeRef				lower;
 	
 	public NodeView			getNodeView()			{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
 	public ENodeView		getENodeView()			{ return new TypeExprView((TypeExprImpl)this.$v_impl); }
@@ -48,10 +45,8 @@ public class TypeExpr extends TypeRef {
 
 	@getter public TypeRef		get$arg()			{ return this.getTypeExprView().arg; }
 	@getter public KString		get$op()			{ return this.getTypeExprView().op; }
-	@getter public TypeRef		get$lower()			{ return this.getTypeExprView().lower; }
 	@setter public void		set$arg(TypeRef val)	{ this.getTypeExprView().arg = val; }
 	@setter public void		set$op(KString val)		{ this.getTypeExprView().op = val; }
-	@setter public void		set$lower(TypeRef val)	{ this.getTypeExprView().lower = val; }
 	
 	public TypeExpr() {
 		super(new TypeExprImpl());
@@ -77,10 +72,6 @@ public class TypeExpr extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
-	public void setLowerBound(Type tp) {
-		this.lower = new TypeRef(tp);
-		this.lnk = null;
-	}
 	public Struct getStruct() {
 		if (this.lnk != null)
 			return this.lnk.getStruct();
@@ -100,7 +91,7 @@ public class TypeExpr extends TypeRef {
 		throw new CompilerException(this,"Expected to find type for "+op+", but found "+v);
 	}
 
-	public Type getTypeWithoutLower() {
+	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp = arg.getType();
@@ -131,20 +122,6 @@ public class TypeExpr extends TypeRef {
 				throw new CompilerException(this,"Type '"+t+"' of type operator "+op+" must have 1 argument");
 			set.append(t.getStruct().args[0].getAType(), tp);
 			tp = t.rebind(set);
-		}
-		return tp;
-	}
-	
-
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-	    Type tp = getTypeWithoutLower();
-		if (this.lower != null) {
-			Type lt = this.lower.getType();
-			if (!lt.isInstanceOf(tp))
-				throw new CompilerException(this,"Type '"+lt+"' is not a lower bound of "+tp);
-			tp = tp.toTypeWithLowerBound(lt);
 		}
 		this.lnk = tp;
 		return tp;

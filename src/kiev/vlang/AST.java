@@ -1462,10 +1462,6 @@ public class TypeRef extends ENode {
 		return lnk != null;
 	}
 	
-	public void setLowerBound(Type tp) {
-		lnk = lnk.toTypeWithLowerBound(tp);
-	}
-	
 	public boolean isArray() { return getType().isArray(); }
 	public boolean checkResolved() { return getType().checkResolved(); } 
 	public Struct getStruct() { if (lnk == null) return null; return lnk.getStruct(); }
@@ -1474,10 +1470,6 @@ public class TypeRef extends ENode {
 	public Type getType()
 		alias operator(210,fy,$cast)
 	{
-		return lnk;
-	}
-	
-	public Type getTypeWithoutLower() {
 		return lnk;
 	}
 	

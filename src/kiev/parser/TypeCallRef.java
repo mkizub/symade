@@ -62,8 +62,6 @@ public class TypeCallRef extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
-	public void setLowerBound(Type tp) {
-	}
 	public Struct getStruct() {
 		return null;
 	}

@@ -877,7 +877,7 @@ public final class RuleIsoneofExpr extends ASTRuleNode {
 		if( ctype.isArray() ) {
 			TVarSet set = new TVarSet();
 			set.append(Type.tpArrayEnumerator.clazz.args[0].getAType(), ((ArrayType)ctype).arg);
-			itype = Type.tpArrayEnumerator.bind(set);
+			itype = ((CompaundTypeProvider)Type.tpArrayEnumerator.meta_type).templ_type.bind(set);
 			mode = ARRAY;
 		} else if( ctype.isInstanceOf( Type.tpKievEnumeration) ) {
 			itype = ctype;

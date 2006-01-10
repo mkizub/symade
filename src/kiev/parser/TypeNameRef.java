@@ -24,7 +24,6 @@ public class TypeNameRef extends TypeRef {
 	public static final class TypeNameRefImpl extends TypeRefImpl {
 		@att public TypeRef					outer;
 		@att public KString					name;
-		@att public TypeRef					lower;
 		public TypeNameRefImpl() {}
 		public TypeNameRefImpl(int pos) { super(pos, null); }
 	}
@@ -32,12 +31,10 @@ public class TypeNameRef extends TypeRef {
 	public static final view TypeNameRefView of TypeNameRefImpl extends TypeRefView {
 		public TypeRef				outer;
 		public KString				name;
-		public TypeRef				lower;
 	}
 
 	@att public abstract virtual TypeRef				outer;
 	@att public abstract virtual KString				name;
-	@att public abstract virtual TypeRef				lower;
 	
 	public NodeView			getNodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
 	public ENodeView		getENodeView()			{ return new TypeNameRefView((TypeNameRefImpl)this.$v_impl); }
@@ -46,10 +43,8 @@ public class TypeNameRef extends TypeRef {
 
 	@getter public TypeRef		get$outer()			{ return this.getTypeNameRefView().outer; }
 	@getter public KString		get$name()			{ return this.getTypeNameRefView().name; }
-	@getter public TypeRef		get$lower()			{ return this.getTypeNameRefView().lower; }
 	@setter public void		set$outer(TypeRef val)	{ this.getTypeNameRefView().outer = val; }
 	@setter public void		set$name(KString val)	{ this.getTypeNameRefView().name = val; }
-	@setter public void		set$lower(TypeRef val)	{ this.getTypeNameRefView().lower = val; }
 	
 	public TypeNameRef() {
 		super(new TypeNameRefImpl());
@@ -81,12 +76,8 @@ public class TypeNameRef extends TypeRef {
 	public boolean isBound() {
 		return true;
 	}
-	public void setLowerBound(Type tp) {
-		this.lower = new TypeRef(tp);
-		this.lnk = null;
-	}
 
-	public Type getTypeWithoutLower() {
+	public Type getType() {
 		if (this.lnk != null)
 			return this.lnk;
 		Type tp;
@@ -104,19 +95,6 @@ public class TypeNameRef extends TypeRef {
 				throw new CompilerException(this,"Unresolved type "+name);
 			td.checkResolved();
 			tp = td.getType();
-		}
-		return tp;
-	}
-	
-	public Type getType() {
-		if (this.lnk != null)
-			return this.lnk;
-	    Type tp = getTypeWithoutLower();
-		if (this.lower != null) {
-			Type lt = this.lower.getType();
-			if (!lt.isInstanceOf(tp))
-				throw new CompilerException(this,"Type '"+lt+"' is not a lower bound of "+tp);
-			tp = tp.toTypeWithLowerBound(lt);
 		}
 		this.lnk = tp;
 		return this.lnk;

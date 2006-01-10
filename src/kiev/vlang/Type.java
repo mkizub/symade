@@ -29,7 +29,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract Type toTypeWithLowerBound(Type tp);
 	public abstract String toString();
 	public abstract boolean checkResolved();
-	public abstract Type[] getDirectSuperTypes();
+	public abstract Type[] getAllSuperTypes(); //getDirectSuperTypes();
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
 	public abstract TVarSet bindings();
@@ -63,34 +63,10 @@ public abstract class Type implements StdTypes, AccessFlags {
 		this.flags = flReference;
 	}
 
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
-		Type@ st;
-	{
-		st @= getDirectSuperTypes(),
-		st.resolveStaticNameR(node, info, name)
-	}
-	
-	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
-		Type@ st;
-	{
-		st @= getDirectSuperTypes(),
-		st.resolveNameAccessR(node, info, name)
-	}
-
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
-		Type@ st;
-	{
-		st @= getDirectSuperTypes(),
-		st.resolveCallStaticR(node, info, name, mt)
-	}
-	
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
-		Type@ st;
-	{
-		st @= getDirectSuperTypes(),
-		st.resolveCallAccessR(node, info, name, mt)
-	}
-	
+	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { false }
+	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 
 	public static boolean identity(Type t1, Type t2) alias operator (60, xfx, ≡ ) {
 		return t1 == t2;
@@ -283,7 +259,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public static ConcreteType getProxyType(Type tp) {
 		TVarSet set = new TVarSet();
 		set.append(tpRefProxy.clazz.args[0].getAType(), tp);
-		return (ConcreteType)tpRefProxy.bind(set);
+		return (ConcreteType)((CompaundTypeProvider)tpRefProxy.meta_type).templ_type.bind(set);
 	}
 
 }
@@ -302,7 +278,7 @@ public final class CoreType extends Type {
 	public Type getErasedType()			{ return this; }
 	public Type getSuperType()			{ return null; }
 	public boolean checkResolved()		{ return true; }
-	public Type[] getDirectSuperTypes(){ return Type.emptyArray; }
+	public Type[] getAllSuperTypes()	{ return Type.emptyArray; }
 	public String toString()			{ return name.toString(); }
 	public Dumper toJava(Dumper dmp)	{ return dmp.append(name.toString()); }
 
@@ -431,7 +407,7 @@ public final class ArgType extends Type {
 	public boolean isStructInstanceOf(Struct s)	{ return getSuperType().isStructInstanceOf(s); }
 	public Type getSuperType()						{ return definer.getSuperType(); }
 	public Meta getMeta(KString name)				{ return getSuperType().getMeta(name); }
-	public Type[] getDirectSuperTypes()			{ return getSuperType().getDirectSuperTypes(); }
+	public Type[] getAllSuperTypes()				{ return getSuperType().getAllSuperTypes(); }
 	public Struct getStruct()						{ return getSuperType().getStruct(); }
 
 	public Type toTypeWithLowerBound(Type tp) {
@@ -440,9 +416,7 @@ public final class ArgType extends Type {
 		return definer.getType();
 	}
 	
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { getSuperType().resolveNameAccessR(node, info, name) }
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { getSuperType().resolveCallAccessR(node, info, name, mt) }
 	
 	public Type getErasedType() { return getSuperType().getErasedType(); }
@@ -557,7 +531,7 @@ public abstract class CompaundType extends Type {
 			trace(Kiev.debugResolve,"Type: resolving in super-type of "+this),
 			resolveNameR_3(node,info,name),	// resolve in super-classes
 			$cut
-		;	info.isForwardsAllowed() && clazz instanceof Struct,
+		;	info.isForwardsAllowed(),
 			trace(Kiev.debugResolve,"Type: resolving in forwards of "+this),
 			resolveNameR_4(node,info,name),	// resolve in forwards
 			$cut
@@ -572,18 +546,18 @@ public abstract class CompaundType extends Type {
 	private rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
-		sup @= getDirectSuperTypes(),
-		info.enterSuper() : info.leaveSuper(),
+		info.enterSuper(1, ResInfo.noSuper) : info.leaveSuper(),
+		sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
 		sup.resolveNameAccessR(node,info,name)
 	}
 
 	private rule resolveNameR_4(DNode@ node, ResInfo info, KString name)
 		DNode@ forw;
 	{
-			forw @= getStruct().members,
-			forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
-			info.enterForward(forw) : info.leaveForward(forw),
-			Type.getRealType(this,((Field)forw).type).resolveNameAccessR(node,info,name)
+		forw @= getStruct().members,
+		forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
+		info.enterForward(forw) : info.leaveForward(forw),
+		((Field)forw).type.resolveNameAccessR(node,info,name)
 	}
 
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
@@ -607,12 +581,19 @@ public abstract class CompaundType extends Type {
 			((Method)node).equalsByCast(name,mt,this,info)
 		;
 			info.isSuperAllowed(),
-			info.enterSuper() : info.leaveSuper(),
-			sup @= getDirectSuperTypes(),
-			sup.resolveCallAccessR(node,info,name,mt)
+			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
+			sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
+			sup.bind(this.bindings()).resolveCallAccessR(node,info,name,mt)
 		;
-			info.isForwardsAllowed() && clazz instanceof Struct,
+			info.isForwardsAllowed(),
 			member @= getStruct().members,
+			member instanceof Field && ((Field)member).isForward(),
+			info.enterForward(member) : info.leaveForward(member),
+			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mt)
+		;
+			info.isForwardsAllowed(),
+			sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
+			member @= sup.getStruct().members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
 			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mt)
@@ -692,9 +673,14 @@ public abstract class CompaundType extends Type {
 		return new BaseType(meta_type, this.bindings(), ctp);
 	}
 	
+	public final Type[] getAllSuperTypes() {
+		return clazz.getAllSuperTypes();
+	}
 }
 
 public final class TemplateType extends CompaundType {
+	
+	public static final TemplateType[] emptyArray = new TemplateType[0];
 	
 	TemplateType(CompaundTypeProvider meta_type, TVarSet bindings) {
 		super(meta_type, bindings);
@@ -710,21 +696,16 @@ public final class TemplateType extends CompaundType {
 			vs.append(td.getAType(), td.getAType().getSuperType());
 		}
 		TypeRef st = clazz.super_bound;
-		if (st.getTypeWithoutLower() ≢ null) {
-			CompaundType sct = (CompaundType)st.getTypeWithoutLower();
+		if (st.getType() ≢ null) {
+			CompaundType sct = (CompaundType)st.getType();
 			vs.append(sct.makeBindings(false));
 			foreach (TypeRef it; clazz.interfaces) {
-				sct = (CompaundType)it.getTypeWithoutLower();
+				sct = (CompaundType)it.getType();
 				vs.append(sct.makeBindings(false));
 			}
 		}
 		return vs;
 	}
-	
-	public final Type[] getDirectSuperTypes() {
-		return clazz.concr_type.getDirectSuperTypes();
-	}
-
 }
 
 public final class ConcreteType extends CompaundType {
@@ -736,16 +717,6 @@ public final class ConcreteType extends CompaundType {
 	
 	protected TVarSet makeBindings(boolean with_lower) {
 		return ((CompaundTypeProvider)meta_type).templ_type.bindings().bind(this.bindings);
-	}
-
-	public final Type[] getDirectSuperTypes() {
-		Type st = getSuperType();
-		if (st == null) return Type.emptyArray;
-		Type[] sta = new Type[clazz.interfaces.length+1];
-		sta[0] = st.rebind(bindings());
-		for (int i=1; i < sta.length; i++)
-			sta[i] = clazz.interfaces[i-1].getType().rebind(bindings());
-		return sta;
 	}
 
 }
@@ -768,17 +739,6 @@ public final class BaseType extends CompaundType {
 			vs = vs.bind(lower_bound.bindings());
 		return vs;
 	}
-
-	public final Type[] getDirectSuperTypes() {
-		Type st = getSuperType();
-		if (st == null) return Type.emptyArray;
-		Type[] sta = new Type[clazz.interfaces.length+1];
-		sta[0] = st.toTypeWithLowerBound(lower_bound).rebind(bindings());
-		for (int i=1; i < sta.length; i++)
-			sta[i] = clazz.interfaces[i-1].getType().toTypeWithLowerBound(lower_bound).rebind(bindings());
-		return sta;
-	}
-
 }
 
 
@@ -806,7 +766,6 @@ public class ArrayType extends Type {
 	public ArgType getOuterArg()	{ return arg.getOuterArg(); }
 	
 	public JType getJType() {
-//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null) {
 			jtype = new JArrayType(this.arg.getJType());
 		}
@@ -837,16 +796,17 @@ public class ArrayType extends Type {
 	public boolean isStructInstanceOf(Struct s)	{ return s == tpObject.clazz; }
 	public Type getSuperType()						{ return tpObject; }
 	public Meta getMeta(KString name)				{ return null; }
-	public Type[] getDirectSuperTypes()			{ return new Type[] {tpObject, tpCloneable}; }
-
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name)
-	{
-		false
-	}
 	
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
+	public Type[] getAllSuperTypes() {
+		return new TemplateType[] {
+			((CompaundTypeProvider)tpObject.meta_type).templ_type,
+			((CompaundTypeProvider)tpCloneable.meta_type).templ_type
+		};
+	}
+
+	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
-		false
+		tpObject.resolveCallAccessR(node, info, name, mt)
 	}
 	
 	public Type getErasedType() {
@@ -936,7 +896,6 @@ public class WrapperType extends Type {
 	public Meta getMeta(KString name)	{ return getUnwrappedType().getMeta(name); }
 	public Type getSuperType()			{ return getUnwrappedType().getSuperType(); }
 
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
 	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name)
 	{
 		info.isForwardsAllowed(),$cut,
@@ -952,7 +911,7 @@ public class WrapperType extends Type {
 	;
 		getUnwrappedType().resolveNameAccessR(node, info, name)
 	}
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
+
 	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt)
 	{
 		info.isForwardsAllowed(),$cut,
@@ -987,15 +946,8 @@ public class WrapperType extends Type {
 		return false;
 	}
 
-	public Type[] getDirectSuperTypes() {
-		Type st = getSuperType();
-		if (st == null) return Type.emptyArray;
-		Struct clazz = getUnwrappedType().clazz;
-		Type[] sta = new Type[clazz.interfaces.length+1];
-		sta[0] = st;
-		for (int i=1; i < sta.length; i++)
-			sta[i] = clazz.interfaces[i-1].getType();
-		return sta;
+	public Type[] getAllSuperTypes() {
+		return getUnwrappedType().getAllSuperTypes();
 	}
 
 	public Type getErasedType() {
@@ -1034,7 +986,6 @@ public class ClosureType extends Type implements CallableType {
 	}
 
 	public JType getJType() {
-//		assert(Kiev.passGreaterEquals(TopLevelPass.passPreGenerate));
 		if (jtype == null)
 			jtype = Type.tpClosure.getJType();
 		return jtype;
@@ -1088,7 +1039,7 @@ public class ClosureType extends Type implements CallableType {
 		return true;
 	}
 
-	public Type[] getDirectSuperTypes() { return Type.emptyArray; }
+	public Type[] getAllSuperTypes() { return Type.emptyArray; }
 
 	public Type getErasedType() {
 		return Type.tpClosure;
@@ -1129,13 +1080,8 @@ public class MethodType extends Type implements CallableType {
 	@getter public Type[]	get$args()	{ return args; }
 	@getter public Type		get$ret()	{ return ret; }
 
-	public rule resolveStaticNameR(DNode@ node, ResInfo info, KString name) { false }
-	public rule resolveNameAccessR(DNode@ node, ResInfo info, KString name) { false }
-	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
-	public rule resolveCallAccessR(DNode@ node, ResInfo info, KString name, MethodType mt) { false }
-
 	public TVarSet bindings()			{ return bindings; }
-	public ArgType getOuterArg()	{ return null; }
+	public ArgType getOuterArg()		{ return null; }
 
 	public Type toTypeWithLowerBound(Type tp) {
 		if (tp ≡ this) return this;
@@ -1254,7 +1200,7 @@ public class MethodType extends Type implements CallableType {
 	
 	public Type getSuperType()			{ return null; }
 
-	public Type[] getDirectSuperTypes() { return Type.emptyArray; }
+	public Type[] getAllSuperTypes() { return Type.emptyArray; }
 
 	public Type getErasedType() {
 		if( args.length == 0 )
