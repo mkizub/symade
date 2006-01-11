@@ -1618,7 +1618,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 				ENode be = null;
 				if( mmt.m != null && !t.equals(mmt.m.type.args[j]) ) {
 					if (!t.isReference())
-						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), Type.getRefTypeForPrimitive((CoreType)t));
+						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), ((CoreType)t).getRefTypeForPrimitive());
 					else
 						be = new InstanceofExpr(pos, new LVarExpr(pos,mm.params[j]), t);
 				}
@@ -1784,7 +1784,7 @@ public class Struct extends TypeDecl implements Named, ScopeOfNames, ScopeOfMeth
 		if( isPackage() ) return false;
 		
 		// first, pre-generate super-types
-		foreach (Type sup; this.getAllSuperTypes() /*concr_type.getDirectSuperTypes()*/)
+		foreach (Type sup; this.getAllSuperTypes())
 			sup.getStruct().preGenerate();
 
 		// generate typeinfo class, if needed

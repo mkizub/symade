@@ -153,7 +153,7 @@ public final class NewExpr extends ENode {
 		}
 		if( !type.isArgument() && (type.isAbstract() || !type.isClazz()) ) {
 			if (type.isUnerasable())
-				throw new CompilerException(this,"Abstract unerasable class "+type+" instantiation");
+				/*throw new CompilerException*/ Kiev.reportWarning(this,"Abstract unerasable class "+type+" instantiation");
 			else
 				Kiev.reportWarning(this,"Abstract erasable class "+type+" instantiation");
 		}

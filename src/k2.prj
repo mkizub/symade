@@ -26,6 +26,7 @@ kiev.be.java.ContractAttr kiev/be/java/ContractAttr kiev\be\java\Attr.java
 kiev.be.java.DefaultMetaAttr kiev/be/java/DefaultMetaAttr kiev\be\java\Attr.java
 kiev.be.java.ExceptionsAttr kiev/be/java/ExceptionsAttr kiev\be\java\Attr.java
 kiev.be.java.FieldCP kiev/be/java/FieldCP kiev\be\java\ConstPool.java
+kiev.be.java.IBoolExpr kiev/be/java/IBoolExpr kiev\be\java\JBoolExpr.java
 kiev.be.java.InnerClassesAttr kiev/be/java/InnerClassesAttr kiev\be\java\Attr.java
 kiev.be.java.Instr kiev/be/java/Instr kiev\be\java\Instr.java
 kiev.be.java.InterfaceMethodCP kiev/be/java/InterfaceMethodCP kiev\be\java\ConstPool.java
@@ -473,7 +474,6 @@ kiev.vlang.ForStat kiev/vlang/ForStat kiev\vlang\LoopStatement.java
 kiev.vlang.FormPar kiev/vlang/FormPar kiev\vlang\Var.java
 kiev.vlang.GotoCaseStat kiev/vlang/GotoCaseStat kiev\vlang\Statement.java
 kiev.vlang.GotoStat kiev/vlang/GotoStat kiev\vlang\Statement.java
-kiev.vlang.IBoolExpr kiev/vlang/IBoolExpr kiev\vlang\BooleanExpr.java
 kiev.vlang.IFldExpr kiev/vlang/IFldExpr kiev\vlang\LvalueExpr.java
 kiev.vlang.IfElseStat kiev/vlang/IfElseStat kiev\vlang\Statement.java
 kiev.vlang.Import kiev/vlang/Import kiev\vlang\Import.java

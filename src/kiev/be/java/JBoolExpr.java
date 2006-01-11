@@ -16,6 +16,11 @@ import kiev.vlang.BinaryBoolExpr.BinaryBoolExprImpl;
 import kiev.vlang.InstanceofExpr.InstanceofExprImpl;
 import kiev.vlang.BooleanNotExpr.BooleanNotExprImpl;
 
+interface IBoolExpr {
+	public abstract void generate_iftrue(Code code, CodeLabel label);
+	public abstract void generate_iffalse(Code code, CodeLabel label);
+}
+
 @nodeview
 public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements IBoolExpr {
 	public JBoolExprView(BoolExprImpl $view) {
@@ -43,7 +48,7 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 
 	public static void gen_iftrue(Code code, JENodeView expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iftrue(code,label);
+			expr.generate_iftrue(code,label);
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if true): "+expr);
@@ -97,7 +102,7 @@ public abstract view JBoolExprView of BoolExprImpl extends JENodeView implements
 
 	public static void gen_iffalse(Code code, JENodeView expr, CodeLabel label) {
 		if (expr instanceof IBoolExpr) {
-			((IBoolExpr)expr).generate_iffalse(code, label);
+			expr.generate_iffalse(code, label);
 			return;
 		}
 		trace(Kiev.debugStatGen,"\t\tgenerating BooleanWarpperExpr (if false): "+expr);

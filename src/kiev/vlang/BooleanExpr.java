@@ -24,13 +24,8 @@ import syntax kiev.Syntax;
  *
  */
 
-public interface IBoolExpr {
-	public abstract void generate_iftrue(Code code, CodeLabel label);
-	public abstract void generate_iffalse(Code code, CodeLabel label);
-}
-
 @node
-public abstract class BoolExpr extends ENode implements IBoolExpr {
+public abstract class BoolExpr extends ENode {
 
 	@node
 	public abstract static class BoolExprImpl extends ENodeImpl {
@@ -49,22 +44,6 @@ public abstract class BoolExpr extends ENode implements IBoolExpr {
 	public BoolExpr(BoolExprImpl impl) { super(impl); }
 
 	public Type getType() { return Type.tpBoolean; }
-
-	public final void generate_iftrue(Code code, CodeLabel label) {
-		this.getJBoolExprView().generate_iftrue(code, label);
-	}
-
-	public final void generate_iffalse(Code code, CodeLabel label) {
-		this.getJBoolExprView().generate_iffalse(code, label);
-	}
-
-	public static void gen_iftrue(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iftrue(code, expr.getJENodeView(), label);
-	}
-	
-	public static void gen_iffalse(Code code, ENode expr, CodeLabel label) {
-		JBoolExprView.gen_iffalse(code, expr.getJENodeView(), label);
-	}
 
 	public static void checkBool(ENode e) {
 		Type et = e.getType();

@@ -31,7 +31,7 @@ import syntax kiev.Syntax;
 
 
 @node
-public final class ConstBoolExpr extends ConstExpr implements IBoolExpr {
+public final class ConstBoolExpr extends ConstExpr {
 	
 	@dflow(out="this:in") private static class DFI {}
 	

@@ -360,7 +360,7 @@ public final class ProcessVNode extends TransfProcessor implements Constants {
 				if (atp.isReference())
 					ee = new CastExpr(0,atp,new LVarExpr(0, setV.params[1]));
 				else
-					ee = new CastExpr(0,Type.getRefTypeForPrimitive((CoreType)atp),new LVarExpr(0, setV.params[1]));
+					ee = new CastExpr(0,((CoreType)atp).getRefTypeForPrimitive(),new LVarExpr(0, setV.params[1]));
 				((BlockStat)setV.body).addStatement(
 					new IfElseStat(0,
 						new BinaryBoolExpr(0, BinaryOperator.Equals,

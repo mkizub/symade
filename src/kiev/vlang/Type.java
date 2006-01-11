@@ -29,7 +29,7 @@ public abstract class Type implements StdTypes, AccessFlags {
 	public abstract Type toTypeWithLowerBound(Type tp);
 	public abstract String toString();
 	public abstract boolean checkResolved();
-	public abstract Type[] getAllSuperTypes(); //getDirectSuperTypes();
+	public abstract Type[] getAllSuperTypes();
 	public abstract Type getErasedType();
 	public abstract Dumper toJava(Dumper dmp);
 	public abstract TVarSet bindings();
@@ -112,12 +112,12 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( this ≡ Type.tpRule && t ≡ Type.tpBoolean ) return true;
 		if( this.isBoolean() && t.isBoolean() ) return true;
 		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
+			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
 			else if( !Kiev.javaMode && t ≡ Type.tpInt && this ≥ Type.tpEnum )
 				return true;
 		}
 		if( this.isReference() && !t.isReference() ) {
-			if( getRefTypeForPrimitive((CoreType)t) ≈ this ) return true;
+			if( ((CoreType)t).getRefTypeForPrimitive() ≈ this ) return true;
 			else if( !Kiev.javaMode && this ≡ Type.tpInt && t ≥ Type.tpEnum ) return true;
 		}
 		if( this.isWrapper() || t.isWrapper() ) {
@@ -196,20 +196,6 @@ public abstract class Type implements StdTypes, AccessFlags {
 		if( t.isWrapper())
 			return this.isCastableTo(((WrapperType)t).getUnwrappedType());
 		return false;
-	}
-
-	public static ConcreteType getRefTypeForPrimitive(CoreType tp) {
-		if     ( tp ≡ Type.tpBoolean) return Type.tpBooleanRef;
-		else if( tp ≡ Type.tpByte   ) return Type.tpByteRef;
-		else if( tp ≡ Type.tpShort  ) return Type.tpShortRef;
-		else if( tp ≡ Type.tpInt    ) return Type.tpIntRef;
-		else if( tp ≡ Type.tpLong   ) return Type.tpLongRef;
-		else if( tp ≡ Type.tpFloat  ) return Type.tpFloatRef;
-		else if( tp ≡ Type.tpDouble ) return Type.tpDoubleRef;
-		else if( tp ≡ Type.tpChar   ) return Type.tpCharRef;
-		else if( tp ≡ Type.tpVoid   ) return Type.tpVoidRef;
-		else
-			throw new RuntimeException("Unknown primitive type "+tp);
 	}
 
 	public boolean isArgument()				{ return false; }
@@ -364,6 +350,20 @@ public final class CoreType extends Type {
 		throw new RuntimeException("Bad number types "+tp1+" or "+tp2);
 	}
 
+	public ConcreteType getRefTypeForPrimitive() {
+		if     ( this ≡ Type.tpBoolean) return Type.tpBooleanRef;
+		else if( this ≡ Type.tpByte   ) return Type.tpByteRef;
+		else if( this ≡ Type.tpShort  ) return Type.tpShortRef;
+		else if( this ≡ Type.tpInt    ) return Type.tpIntRef;
+		else if( this ≡ Type.tpLong   ) return Type.tpLongRef;
+		else if( this ≡ Type.tpFloat  ) return Type.tpFloatRef;
+		else if( this ≡ Type.tpDouble ) return Type.tpDoubleRef;
+		else if( this ≡ Type.tpChar   ) return Type.tpCharRef;
+		else if( this ≡ Type.tpVoid   ) return Type.tpVoidRef;
+		else
+			throw new RuntimeException("No reference type for "+this);
+	}
+
 }
 
 public final class ArgType extends Type {
@@ -454,14 +454,11 @@ public abstract class CompaundType extends Type {
 	protected final void checkAbstract() {
 		flags &= ~flAbstract;
 		foreach(TVar v; this.bindings().tvars; !v.isAlias()) {
-			if (v.result().isAbstract()) {
+			Type r = v.result();
+			if (r.isAbstract() || r == v.var)
 				flags |= flAbstract;
-				break;
-			}
-			if (v.result().isUnerasable()) {
+			if (v.var.isUnerasable())
 				flags |= flUnerasable;
-				break;
-			}
 		}
 	}
 	
@@ -537,18 +534,25 @@ public abstract class CompaundType extends Type {
 	private rule resolveNameR_3(DNode@ node, ResInfo info, KString name)
 		Type@ sup;
 	{
-		info.enterSuper(1, ResInfo.noSuper) : info.leaveSuper(),
-		sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
-		sup.resolveNameAccessR(node,info,name)
+		info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
+		sup @= clazz.getAllSuperTypes(),
+		sup.bind(this.bindings()).resolveNameAccessR(node,info,name)
 	}
 
 	private rule resolveNameR_4(DNode@ node, ResInfo info, KString name)
 		DNode@ forw;
+		Type@ sup;
 	{
 		forw @= getStruct().members,
 		forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
 		info.enterForward(forw) : info.leaveForward(forw),
-		((Field)forw).type.resolveNameAccessR(node,info,name)
+		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
+	;	info.isSuperAllowed(),
+		sup @= clazz.getAllSuperTypes(),
+		forw @= sup.getStruct().members,
+		forw instanceof Field && ((Field)forw).isForward() && !forw.isStatic(),
+		info.enterForward(forw) : info.leaveForward(forw),
+		((Field)forw).type.applay(this).resolveNameAccessR(node,info,name)
 	}
 
 	public rule resolveCallStaticR(DNode@ node, ResInfo info, KString name, MethodType mt)
@@ -573,21 +577,21 @@ public abstract class CompaundType extends Type {
 		;
 			info.isSuperAllowed(),
 			info.enterSuper(1, ResInfo.noSuper|ResInfo.noForwards) : info.leaveSuper(),
-			sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
+			sup @= clazz.getAllSuperTypes(),
 			sup.bind(this.bindings()).resolveCallAccessR(node,info,name,mt)
 		;
 			info.isForwardsAllowed(),
 			member @= getStruct().members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mt)
+			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)
 		;
 			info.isForwardsAllowed(),
-			sup @= clazz.getAllSuperTypes(), //getDirectSuperTypes(),
+			sup @= clazz.getAllSuperTypes(),
 			member @= sup.getStruct().members,
 			member instanceof Field && ((Field)member).isForward(),
 			info.enterForward(member) : info.leaveForward(member),
-			Type.getRealType(this,((Field)member).type).resolveCallAccessR(node,info,name,mt)
+			((Field)member).type.applay(this).resolveCallAccessR(node,info,name,mt)
 		}
 	}
 
@@ -638,10 +642,15 @@ public abstract class CompaundType extends Type {
 			TVarSet b2 = t2.bindings();
 			for(int i=0; i < b2.length; i++) {
 				TVar v2 = b2[i];
-				if (!v2.isBound() || v2.isAlias())
+				if (v2.isAlias())
 					continue;
 				Type x = b1.resolve(v2.var);
-				if (!x.isInstanceOf(v2.result()))
+				if (x ≡ x)
+					continue;
+				Type y = v2.result();
+				if (y ≡ y || x ≡ y)
+					continue;
+				if (!x.isInstanceOf(y))
 					return false;
 			}
 			return true;
